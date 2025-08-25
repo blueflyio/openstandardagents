@@ -1,0 +1,37 @@
+{
+  "name": "@openapi-ai-agents/universal-toolkit",
+  "version": "1.0.0",
+  "description": "Universal Agent Toolkit for OpenAPI AI Agents Standard",
+  "main": "universal-agent-toolkit.js",
+  "scripts": {
+    "start": "node universal-agent-toolkit.js",
+    "dev": "nodemon universal-agent-toolkit.js",
+    "test": "echo 'No tests specified' && exit 0"
+  },
+  "keywords": [
+    "openapi",
+    "ai-agents", 
+    "toolkit",
+    "agent-generation",
+    "validation"
+  ],
+  "author": "OpenAPI AI Agents Consortium",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "helmet": "^7.0.0",
+    "express-rate-limit": "^6.8.1",
+    "express-validator": "^7.0.1",
+    "js-yaml": "^4.1.0",
+    "winston": "^3.10.0",
+    "compression": "^1.7.4",
+    "axios": "^1.6.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

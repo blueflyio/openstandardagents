@@ -1,0 +1,16 @@
+{
+  "metadata": {
+    "name": "test-agent",
+    "version": "1.0.0"
+  },
+  "agent_template": {
+    "required_capabilities": ["reasoning", "analysis"]
+  },
+  "protocol_support": {
+    "primary": "openapi",
+    "bridges": {
+      "mcp": { "enabled": true },
+      "a2a": { "enabled": false }
+    }
+  }
+}
