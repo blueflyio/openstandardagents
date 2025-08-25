@@ -1,0 +1,607 @@
+# OpenAPI for AI Agents - Universal Agent Configuration
+# Version: 2.1.0 - Production Ready
+# Compliant with OpenAPI for AI Agents Standard v2.1.0
+
+apiVersion: "ai.agents/v2"
+kind: "Agent"
+metadata:
+  name: "universal-agent"
+  version: "2.1.0"
+  namespace: "ai-agents"
+  labels:
+    domain: "multi-domain"
+    certification-level: "gold"
+    compliance: "iso-42001-2023"
+    framework: "agnostic"
+
+# 1. Enhanced Protocol Interoperability
+protocol_support:
+  primary: "openapi"
+  bridges:
+    mcp:
+      enabled: true
+      version: "1.0"
+      tools_endpoint: "/mcp/tools"
+      resource_endpoint: "/mcp/resources"
+      transport: ["stdio", "http", "sse"]
+    agent2agent:
+      enabled: true
+      version: "1.0"
+      discovery_endpoint: "/a2a/discover"
+      handoff_endpoint: "/a2a/handoff"
+      agent_card: published
+    aitp:
+      enabled: false
+      experimental: true
+  
+  negotiation:
+    auto_discover: true
+    prefer_protocol: "mcp"
+    fallback_chain: ["mcp", "openapi", "rest"]
+
+# 2. Advanced Token Management (tiktoken integration)
+token_management:
+  provider: "tiktoken"
+  encoding: "o200k_base"
+  tiktoken_integration:
+    enabled: true
+    cache_encodings: true
+    parallel_processing: true
+    optimization: "aggressive"
+  
+  budget_constraints:
+    max_tokens_per_request: 128000
+    per_request: 4096
+    per_minute: 100000
+    daily_token_limit: 10000000
+    cost_threshold_usd: 500.00
+    emergency_brake_percentage: 95
+  
+  optimization_strategies:
+    - prompt_compression
+    - response_streaming
+    - cache_frequent_patterns
+    - semantic_deduplication
+    - context_window_sliding
+  
+  monitoring:
+    track_token_usage: true
+    alert_on_anomalies: true
+    alert_threshold: 10000
+    cost_attribution: "per_agent"
+    efficiency_metrics: true
+
+# 3. Schema Evolution & Versioning
+x-schema-evolution:
+  version: "2.1.0"
+  compatibility: "BACKWARD_TRANSITIVE"
+  semantic_versioning: true
+  
+  migrations:
+    - from: "2.0.0"
+      type: "additive"
+      changes:
+        - added_field: "protocol_support"
+          default_value: null
+        - added_field: "token_management"
+          required: false
+        - added_field: "security.maestro"
+          required: true
+          
+  deprecations:
+    - field: "simple_task"
+      sunset_date: "2025-12-31"
+      migration_guide: "/docs/migration-v2"
+      replacement: "orchestration_patterns"
+
+# 4. Multi-Agent Orchestration Patterns
+orchestration_patterns:
+  - name: "diagnostic_first"
+    type: "sequential"
+    description: "Research → Analysis → Implementation pipeline"
+    agents:
+      - role: "drupal_expert"
+        timeout_seconds: 120
+        required_capabilities: ["module_development", "drupal_best_practices"]
+      - role: "test_agent"
+        timeout_seconds: 180
+        required_capabilities: ["unit_testing", "validation_workflows"]
+      - role: "general_expert"
+        timeout_seconds: 300
+        required_capabilities: ["task_execution", "problem_solving"]
+    
+    coordination:
+      strategy: "waterfall"
+      error_handling: "retry_with_different_model"
+      checkpoint_frequency: "per_agent"
+      rollback_strategy: "incremental"
+      
+  - name: "parallel_validation"
+    type: "concurrent"
+    description: "Multi-agent consensus validation"
+    agents:
+      - role: "security_auditor"
+        weight: 0.4
+        required_capabilities: ["vulnerability_scanning", "compliance_check"]
+      - role: "performance_optimizer"
+        weight: 0.3
+        required_capabilities: ["profiling", "optimization"]
+      - role: "test_agent"
+        weight: 0.3
+        required_capabilities: ["integration_testing", "validation_workflows"]
+        
+    coordination:
+      strategy: "vote_consensus"
+      minimum_agreement: 2
+      tie_breaker: "security_auditor"
+      timeout_seconds: 600
+
+  - name: "magentic_orchestration"
+    type: "dynamic"
+    description: "Self-organizing agent collaboration"
+    coordination:
+      strategy: "magentic"
+      auto_handoff: true
+      capability_matching: true
+      load_balancing: "capability_aware"
+
+  - name: "adaptive"
+    type: "adaptive"
+    description: "Context-aware adaptive orchestration"
+    x-orchestration-pattern: "adaptive"
+
+# 5. Enhanced Governance & Certification
+governance:
+  compliance_frameworks:
+    - framework: "ISO_42001_2023"
+      status: "certified"
+      certificate_id: "ISO-42001-UA-2024-001"
+      expiry_date: "2027-01-15"
+      x-compliance: "iso_42001_risk_assessed"
+    - framework: "NIST_AI_RMF_1_0"
+      status: "implemented"
+      maturity_level: "level_4"
+    - framework: "EU_AI_Act"
+      status: "compliant"
+      risk_classification: "limited_risk"
+  
+  certification_levels:
+    current_level: "gold"
+    
+    bronze:
+      requirements:
+        - basic_schema_validation: "passed"
+        - health_endpoints: "implemented"
+        - error_handling: "standard"
+      achieved: "2024-01-15"
+      
+    silver:
+      requirements:
+        - automated_testing: "95% coverage"
+        - performance_metrics: "sla_compliant"
+        - security_scanning: "weekly"
+      achieved: "2024-06-20"
+      
+    gold:
+      requirements:
+        - formal_verification: "theorem_proven"
+        - explainability_metrics: "lime_shap_integrated"
+        - bias_detection: "fairness_validated"
+      achieved: "2024-11-10"
+  
+  audit_trail:
+    retention_days: 2557
+    immutable_storage: true
+    blockchain_anchored: true
+
+# 6. Comprehensive Testing Framework
+testing:
+  strategies:
+    - type: "contract_testing"
+      tools: ["pact", "spring-cloud-contract"]
+      coverage_target: 98%
+      consumer_driven: true
+      
+    - type: "property_based"
+      framework: "hypothesis"
+      iterations: 10000
+      shrinking_enabled: true
+      
+    - type: "chaos_engineering"
+      scenarios:
+        - network_latency: 
+            max_delay_ms: 5000
+            probability: 0.1
+        - agent_failure:
+            failure_rate: 0.05
+            recovery_time_seconds: 30
+        - resource_exhaustion:
+            memory_pressure: "80%"
+            cpu_throttling: "50%"
+      
+    - type: "mutation_testing"
+      framework: "mutmut"
+      kill_rate_target: 85%
+  
+  ai_enhanced:
+    test_generation:
+      engine: "llm_based"
+      model: "gpt-4-turbo"
+      coverage_analysis: true
+      edge_case_discovery: true
+      
+    test_prioritization:
+      algorithm: "risk_based"
+      historical_weight: 0.7
+      code_change_impact: 0.3
+      
+    test_maintenance:
+      auto_update_assertions: true
+      dead_test_detection: true
+      flaky_test_quarantine: true
+
+# 7. Advanced Memory Management
+memory_management:
+  optimization:
+    algorithm: "zero_redundancy_optimizer"
+    complexity: "O(sqrt(t * log(t)))"
+    checkpoint_strategy: "incremental_gradient"
+    memory_pooling: true
+  
+  state_persistence:
+    backend: "distributed_redis_cluster"
+    serialization: "protobuf_v3"
+    compression: "zstd"
+    ttl_seconds: 86400
+    
+  context_window:
+    management: "sliding_window_with_semantic_compression"
+    compression: "extractive_summarization"
+    max_size_tokens: 200000
+    preservation_strategy: "importance_weighted"
+
+# 8. MAESTRO Security Framework
+security:
+  threat_model: "MAESTRO"
+  threat_categories:
+    - model_extraction
+    - data_poisoning
+    - prompt_injection
+    - compliance_violations
+    - adversarial_attacks
+  
+  authentication:
+    type: "oauth2"
+    methods:
+      - type: "oauth2_pkce"
+        enabled: true
+        token_lifetime_seconds: 3600
+        flows:
+          authorizationCode:
+            authorizationUrl: "https://auth.universal-agent.com/oauth/authorize"
+            tokenUrl: "https://auth.universal-agent.com/oauth/token"
+            scopes:
+              read: "Read access to agent capabilities"
+              write: "Execute agent tools"
+              admin: "Full administrative access"
+      - type: "mutual_tls"
+        enabled: true
+        cert_rotation_days: 30
+      - type: "api_key_rotation"
+        enabled: true
+        rotation_frequency_hours: 24
+        
+  authorization:
+    model: "rbac_with_attributes"
+    policy_engine: "open_policy_agent"
+    fine_grained_permissions: true
+    dynamic_policy_updates: true
+    
+  audit:
+    log_all_interactions: true
+    tamper_proof_storage: true
+    retention_days: 2557
+    real_time_monitoring: true
+    anomaly_detection: true
+    
+  runtime_protection:
+    input_sanitization:
+      enabled: true
+      methods: ["html_escape", "sql_injection_prevention", "xss_protection"]
+    output_filtering:
+      enabled: true
+      pii_detection: true
+      content_filtering: "enterprise_compliant"
+    rate_limiting:
+      per_minute: 1000
+      per_hour: 50000
+      burst: 2000
+      adaptive: true
+
+# 9. Domain-Specific Agents
+specialized_agents:
+  general_expert:
+    name: "General Expert"
+    description: "General purpose AI agent with universal capabilities"
+    capabilities:
+      - task_execution
+      - decision_making
+      - problem_solving
+      - decision_support
+      - terminology_understanding
+    certification: "universal_ready"
+  
+  drupal_expert:
+    name: "Drupal Expert"
+    description: "Specialized agent for Drupal development"
+    capabilities:
+      - module_development
+      - theme_integration
+      - drupal_best_practices
+      - hook_implementation
+      - entity_management
+    integration: "drupal_systems"
+  
+  test_agent:
+    name: "Test Agent"
+    description: "Specialized agent for testing and validation"
+    capabilities:
+      - unit_testing
+      - integration_testing
+      - validation_workflows
+      - contract_testing
+      - performance_testing
+    frameworks: ["jest", "phpunit", "cypress"]
+    
+  security_auditor:
+    name: "Security Auditor"
+    description: "Security assessment and compliance"
+    capabilities:
+      - vulnerability_scanning
+      - compliance_check
+      - threat_modeling
+      - penetration_testing
+    certification: "iso_27001"
+    
+  performance_optimizer:
+    name: "Performance Optimizer"
+    description: "System optimization and profiling"
+    capabilities:
+      - profiling
+      - optimization
+      - caching_strategies
+      - query_optimization
+    tools: ["xdebug", "blackfire", "new_relic"]
+
+# 10. Advanced Observability
+observability:
+  metrics:
+    business:
+      - name: "task_completion_rate"
+        type: "gauge"
+        unit: "percentage"
+        target: ">= 95%"
+      - name: "user_satisfaction"
+        type: "gauge"
+        unit: "rating"
+        target: ">= 4.5"
+    technical:
+      - name: "token_efficiency"
+        type: "histogram"
+        buckets: [0.1, 0.5, 1.0, 5.0, 10.0]
+      - name: "agent_handoff_latency"
+        type: "histogram"
+        unit: "milliseconds"
+      - name: "error_rate"
+        type: "counter"
+        unit: "errors_per_minute"
+        
+  tracing:
+    enabled: true
+    sampling_rate: 0.1
+    trace_correlation: true
+    distributed_tracing: "jaeger"
+    
+  logging:
+    structured: true
+    format: "json"
+    level: "info"
+    sensitive_data_scrubbing: true
+
+# 11. Performance Benchmarks
+performance:
+  sla:
+    availability: "99.95%"
+    response_time_p99: "2000ms"
+    throughput_rps: 1000
+    error_rate: "< 0.1%"
+    
+  benchmarks:
+    - name: "reasoning_accuracy"
+      target: ">= 98%"
+      measurement: "against_human_experts"
+    - name: "drupal_code_quality"
+      target: ">= 95%"
+      measurement: "phpcs_compliance"
+    - name: "test_coverage"
+      target: ">= 90%"
+      measurement: "code_coverage"
+
+# 12. Deployment Patterns
+deployment:
+  patterns:
+    - name: "hybrid_cloud_edge"
+      description: "Sensitive data on-premises, analysis in cloud"
+      components:
+        edge:
+          - data_preprocessing
+          - privacy_preservation
+        cloud:
+          - model_inference
+          - orchestration
+          - analytics
+          
+  environments:
+    development:
+      resource_limits:
+        cpu: "2 cores"
+        memory: "8GB"
+        gpu: "none"
+    production:
+      resource_limits:
+        cpu: "16 cores"
+        memory: "64GB"
+        gpu: "A100 x2"
+      high_availability: true
+      auto_scaling: true
+
+# 13. Integration Specifications
+integrations:
+  mcp_servers:
+    - name: "tddai_mcp"
+      url: "http://localhost:3001/mcp"
+      capabilities: ["code_generation", "testing", "optimization"]
+    - name: "vector_hub_mcp"
+      url: "http://localhost:6333/mcp"
+      capabilities: ["semantic_search", "embeddings", "rag"]
+    - name: "drupal_mcp"
+      url: "http://localhost:8081/mcp"
+      capabilities: ["module_scaffolding", "hook_generation"]
+      
+  external_apis:
+    - name: "drupal_api"
+      version: "10.x"
+      authentication: "oauth2"
+      rate_limit: "1000/hour"
+    - name: "testing_framework"
+      version: "latest"
+      authentication: "api_key"
+      
+  event_streaming:
+    platform: "kafka"
+    topics:
+      - "agent.interactions"
+      - "health.metrics"
+      - "audit.logs"
+      - "drupal.events"
+
+# 14. Continuous Learning
+ml_ops:
+  model_versioning:
+    strategy: "semantic_versioning"
+    registry: "mlflow"
+    automated_rollback: true
+    
+  continuous_training:
+    enabled: true
+    trigger: "performance_degradation"
+    data_pipeline: "automated"
+    validation: "statistical_significance"
+    
+  a_b_testing:
+    enabled: true
+    traffic_split: "10/90"
+    metrics: ["accuracy", "latency", "cost"]
+
+# 15. Business Intelligence
+business_intelligence:
+  kpis:
+    - name: "cost_per_task"
+      target: "< $2.00"
+      calculation: "total_cost / completed_tasks"
+    - name: "drupal_module_quality"
+      target: "> 95%"
+      source: "phpcs_analysis"
+    - name: "test_pass_rate"
+      target: "> 98%"
+      source: "ci_pipeline"
+      
+  reporting:
+    frequency: "daily"
+    stakeholders: ["cto", "engineering_lead", "qa_lead"]
+    dashboards: ["operational", "drupal_metrics", "testing_metrics"]
+
+# 16. Universal Capabilities
+universal_capabilities:
+  - multi_agent_orchestration
+  - framework_agnostic_development
+  - ai_workflow_execution
+  - code_quality_analysis
+  - security_auditing
+  - performance_optimization
+  - documentation_generation
+  - drupal_development
+  - comprehensive_testing
+  - universal_compliance
+
+# 17. Execution Patterns
+execution_patterns:
+  simple_task:
+    strategy: SINGLE_AGENT
+    estimated_time: 5_minutes
+    agents: [general_expert]
+    
+  drupal_development:
+    strategy: DIAGNOSTIC_FIRST
+    estimated_time: 30_minutes
+    agents: [drupal_expert, test_agent]
+    
+  complex_workflow:
+    strategy: SMART_PARALLEL
+    max_agents: 3
+    estimated_time: 45_minutes
+    agents: [general_expert, drupal_expert, test_agent]
+    
+  security_audit:
+    strategy: MULTI_PHASE_SPECIALISTS
+    estimated_time: 60_minutes
+    agents: [security_auditor, test_agent]
+    
+  performance_optimization:
+    strategy: DIAGNOSTIC_FIRST
+    estimated_time: 30_minutes
+    agents: [performance_optimizer, test_agent]
+
+# 18. Safety Framework
+safety_framework:
+  mandatory_checks:
+    - research_phase_completed
+    - conflict_assessment_passed
+    - rollback_plan_exists
+    - token_budget_approved
+    - workspace_partitioned
+    - drupal_standards_compliance
+    - test_coverage_adequate
+  
+  recovery_strategies:
+    - retry_with_same_agent
+    - retry_with_different_model
+    - reassign_to_specialist
+    - decompose_and_retry
+    - fallback_to_serial
+    - request_human_intervention
+
+  checkpoints:
+    - input_validation
+    - execution_monitoring
+    - output_validation
+    - drupal_coding_standards
+    - test_execution
+    
+  rollback:
+    enabled: true
+    triggers:
+      - validation_failure
+      - safety_violation
+      - performance_degradation
+      - test_failure
+      - compliance_violation
+
+# 19. Environment Configuration
+env:
+  required: [OPENAI_API_KEY, ANTHROPIC_API_KEY]
+  optional: [LOG_LEVEL, MAX_AGENTS, WORKSPACE_PATH, DRUPAL_ROOT]
+
+# 20. Transport Configuration
+transport: mcp-stdio
+description: "Universal Agent - Multi-domain AI agent with enterprise-grade capabilities for general, Drupal, and testing domains"
