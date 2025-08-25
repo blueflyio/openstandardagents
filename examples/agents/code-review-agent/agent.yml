@@ -1,0 +1,175 @@
+# Code Review Agent - Practical Example
+# Demonstrates a real-world agent for automated code review
+
+apiVersion: "openapi-ai-agents/v0.1.0"
+kind: "Agent"
+metadata:
+  name: "code-review-agent"
+  version: "1.0.0"
+  namespace: "development-tools"
+  labels:
+    domain: "software-engineering"
+    certification-level: "silver"
+    framework: "langchain"
+
+spec:
+  openapi_spec: "./openapi.yaml"
+  capabilities:
+    - "code_analysis"
+    - "security_scanning"
+    - "performance_optimization"
+    - "best_practices_validation"
+  protocols: ["openapi", "mcp"]
+  
+# Agent Configuration
+agent_config:
+  description: "Automated code review with security and performance analysis"
+  
+  models:
+    primary: "gpt-4-turbo"
+    fallback: "claude-3-sonnet"
+    
+  review_types:
+    - type: "security"
+      enabled: true
+      rules:
+        - "sql_injection_detection"
+        - "xss_vulnerability_check"
+        - "authentication_bypass"
+        - "sensitive_data_exposure"
+    
+    - type: "performance"
+      enabled: true
+      metrics:
+        - "time_complexity_analysis"
+        - "memory_usage_optimization"
+        - "database_query_efficiency"
+        - "caching_opportunities"
+    
+    - type: "code_quality"
+      enabled: true
+      checks:
+        - "naming_conventions"
+        - "code_duplication"
+        - "cyclomatic_complexity"
+        - "test_coverage"
+
+# Token Management
+token_management:
+  provider: "tiktoken"
+  encoding: "cl100k_base"
+  
+  limits:
+    per_file: 4000
+    per_review: 16000
+    daily_budget: 100000
+    
+  optimization:
+    compress_code: true
+    remove_comments: false
+    summarize_large_files: true
+
+# Security Configuration
+security:
+  authentication:
+    type: "api_key"
+    header: "X-API-Key"
+    
+  rate_limiting:
+    per_minute: 60
+    per_hour: 1000
+    
+  audit:
+    log_reviews: true
+    retention_days: 90
+
+# Integration Points
+integrations:
+  version_control:
+    - type: "github"
+      events: ["pull_request", "push"]
+      webhook_secret: "${GITHUB_WEBHOOK_SECRET}"
+      
+    - type: "gitlab"
+      events: ["merge_request", "commit"]
+      token: "${GITLAB_TOKEN}"
+      
+  ci_cd:
+    - type: "jenkins"
+      pipeline_integration: true
+      quality_gate: true
+      
+    - type: "github_actions"
+      workflow_dispatch: true
+      
+  issue_tracking:
+    - type: "jira"
+      create_issues: true
+      project_key: "DEV"
+      
+# Orchestration Pattern
+orchestration:
+  pattern: "sequential_analysis"
+  
+  phases:
+    - name: "initial_scan"
+      timeout_seconds: 30
+      actions:
+        - "syntax_validation"
+        - "dependency_check"
+        
+    - name: "deep_analysis"
+      timeout_seconds: 120
+      parallel: true
+      actions:
+        - "security_scan"
+        - "performance_analysis"
+        - "code_quality_check"
+        
+    - name: "report_generation"
+      timeout_seconds: 60
+      actions:
+        - "aggregate_findings"
+        - "generate_recommendations"
+        - "create_report"
+
+# Compliance
+compliance:
+  frameworks:
+    - framework: "OWASP"
+      version: "Top10-2021"
+      checks_enabled: true
+      
+    - framework: "CWE"
+      version: "4.0"
+      top_25_coverage: true
+
+# Performance SLA
+performance:
+  sla:
+    response_time_p95: "30s"
+    availability: "99.9%"
+    
+  benchmarks:
+    - name: "false_positive_rate"
+      target: "< 5%"
+    - name: "critical_issue_detection"
+      target: "> 95%"
+
+# Reporting
+reporting:
+  formats: ["json", "markdown", "sarif"]
+  
+  severity_levels:
+    - critical: "Immediate attention required"
+    - high: "Should be fixed before merge"
+    - medium: "Fix in next iteration"
+    - low: "Consider improving"
+    - info: "Informational only"
+    
+  include_metrics:
+    - lines_analyzed
+    - issues_found
+    - estimated_fix_time
+    - security_score
+    - maintainability_index

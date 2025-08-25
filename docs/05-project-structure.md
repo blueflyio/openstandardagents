@@ -1,17 +1,28 @@
-# OpenAPI AI Agents Standard - Project Structure Guide
+# 05. Project Structure
 
 **IMPORTANT: This document defines the ONLY allowed directory structure. AI bots and contributors MUST follow this structure exactly.**
 
-## 🚫 What NOT to Create
+## 🚫 What NOT to Create in Root
 
-**NEVER create these directories or files:**
-- `compliance-reports/` (generated at build time)
-- `security-reports/` (generated at build time)
-- `performance-reports/` (generated at build time)
-- `test-results/` (generated at build time)
-- `temp/`, `tmp/`, `random/` (temporary files)
-- `ai-generated/`, `bot-created/` (AI bot artifacts)
-- Any directory not listed below
+**The root directory MUST contain ONLY:**
+- `.git/` (Git repository - auto-created)
+- `.gitlab/` (GitLab CI components)
+- `docs/` (All documentation)
+- `examples/` (All examples)
+- `services/` (All services and agents)
+- `CODE_OF_CONDUCT.md`
+- `CONTRIBUTING.md`
+- `LICENSE`
+- `README.md`
+- `ROADMAP.md`
+
+**NEVER create in root:**
+- `package.json`, `package-lock.json` (move to services/)
+- `node_modules/` (should be in specific service directories)
+- `scripts/` (move to services/scripts/)
+- `agents/` (move to services/agents/)
+- Any test files (move to appropriate service)
+- Any other files or directories
 
 ## ✅ Allowed Directory Structure
 
@@ -22,25 +33,22 @@ openapi-ai-agents-standard/
 │   └── ci-components/
 │       └── agent-validator/
 │           └── template.yml
-├── .gitignore                     # Git ignore rules
-├── .gitlab-ci.yml                # GitLab CI/CD pipeline
-├── CODE_OF_CONDUCT.md            # Community guidelines
-├── CONTRIBUTING.md               # Contribution guidelines
-├── LICENSE                       # MIT license
-├── PROJECT_STRUCTURE.md          # This file
-├── README.md                     # Main project documentation
-├── ROADMAP.md                    # Development roadmap
-├── package.json                  # NPM package configuration
-├── package-lock.json             # NPM lock file (auto-generated)
-├── node_modules/                 # Dependencies (auto-generated, gitignored)
+├── CODE_OF_CONDUCT.md            # Community guidelines (Switzerland of AI)
+├── CONTRIBUTING.md               # Contribution guidelines with revenue sharing
+├── LICENSE                       # Apache 2.0 license (enterprise-friendly)
+├── README.md                     # Main documentation with strategic positioning
+├── ROADMAP.md                    # 90-day market domination plan
+├── STRATEGIC_POSITIONING.md      # Market strategy and competitive analysis
 │
-├── docs/                         # Documentation only
-│   ├── specification.md          # Technical specification
-│   ├── integration-guide.md     # Framework integration guide
-│   ├── governance.md            # Governance and compliance
-│   └── INTEGRATION.md           # Integration examples
+├── docs/                         # Comprehensive documentation suite
+│   ├── README.md                # Documentation index and navigation
+│   ├── 01-technical-specification.md  # Core standard definition
+│   ├── 02-integration-guide.md       # Framework integration patterns
+│   ├── 03-governance-compliance.md   # Enterprise governance model
+│   ├── 04-enterprise-integrations.md # Priority integration targets
+│   └── 05-project-structure.md       # This file - structure rules
 │
-├── examples/                     # Example implementations only
+├── examples/                     # All example implementations
 │   ├── README.md                # Examples overview
 │   ├── basic/                   # Basic templates
 │   │   ├── agent.yml            # Basic agent template
@@ -56,19 +64,39 @@ openapi-ai-agents-standard/
 │       ├── python/              # Python client examples
 │       └── typescript/          # TypeScript client examples
 │
-├── scripts/                      # Build and automation scripts only
-│   └── report-compliance.js     # Compliance reporting script
-│
-└── services/                     # Core services only
+└── services/                     # All services, agents, and scripts
+    ├── package.json             # Root package configuration
+    ├── package-lock.json        # Root package lock file
+    ├── scripts/                 # All automation scripts
+    │   ├── report-compliance.js # Compliance reporting script
+    │   └── test-agents.js       # Agent test suite
+    │
+    ├── agents/                  # Agent implementations
+    │   ├── protocol-bridge/     # Protocol Bridge Agent
+    │   │   ├── package.json
+    │   │   └── src/
+    │   │       ├── index.js
+    │   │       ├── index.test.js
+    │   │       ├── protocol-converter.js
+    │   │       ├── mcp-bridge.js
+    │   │       └── a2a-bridge.js
+    │   ├── framework-integration/  # Framework Integration Agent
+    │   ├── performance-optimization/ # Performance Agent
+    │   ├── documentation-generation/ # Documentation Agent
+    │   └── quality-assurance/      # QA Agent
+    │
     ├── agent-orchestrator/      # Agent orchestration service
     │   ├── agent.yml            # Service agent config
     │   └── openapi.yaml         # Service OpenAPI spec
+    │
     ├── agent-registry/          # Agent registry service
     │   ├── agent.yml            # Service agent config
     │   └── openapi.yaml         # Service OpenAPI spec
+    │
     ├── universal-agent-toolkit/ # Universal agent toolkit
     │   ├── package.json         # Service package config
     │   └── server.js            # Service server
+    │
     ├── validation-api/          # Validation API service
     │   ├── Dockerfile           # Service container
     │   ├── docker-compose.yml   # Service compose
@@ -91,6 +119,7 @@ openapi-ai-agents-standard/
     │   │   └── token-estimator.js
     │   └── scripts/             # Service scripts
     │       └── bulk-agent-validator.js
+    │
     └── validation-cli/          # Validation CLI tool
         └── lib/                 # CLI library
             ├── package.json     # CLI package config
@@ -110,8 +139,8 @@ openapi-ai-agents-standard/
 ## 🔒 File Creation Rules
 
 ### **Root Directory**
-- **ALLOWED**: `.md`, `.yml`, `.yaml`, `.js`, `.ts`, `.json` files
-- **FORBIDDEN**: Any other file types or random directories
+- **ALLOWED ONLY**: `CODE_OF_CONDUCT.md`, `CONTRIBUTING.md`, `LICENSE`, `README.md`, `ROADMAP.md`
+- **FORBIDDEN**: ALL other files including `.json`, `.js`, `.ts`, test files, or any directories except those listed
 
 ### **Documentation (`docs/`)**
 - **ALLOWED**: `.md` files only

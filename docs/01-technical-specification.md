@@ -1,8 +1,8 @@
-# OpenAPI AI Agents Standard - Specification
+# 01. Technical Specification
 
-## Overview
+## Executive Summary
 
-The OpenAPI AI Agents Standard is a framework-agnostic specification that enables universal interoperability between AI agents, regardless of their underlying implementation or framework.
+The OpenAPI AI Agents Standard (OAAS) is the "Switzerland of AI Agents" - a neutral bridge between competing protocols (MCP, A2A) that adds enterprise compliance capabilities no other standard provides. This specification defines the technical requirements for achieving both interoperability AND compliance certification.
 
 ## Core Components
 

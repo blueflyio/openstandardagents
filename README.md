@@ -1,56 +1,153 @@
 # OpenAPI AI Agents Standard
 
-[![Version](https://img.shields.io/badge/version-0.2.0-blue.svg)](ROADMAP.md)
-[![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
-[![OpenAPI](https://img.shields.io/badge/OpenAPI-3.1-orange.svg)](examples/basic/openapi.yaml)
-[![Compliance](https://img.shields.io/badge/Compliance-Enterprise-red.svg)](docs/compliance.md)
-[![Security](https://img.shields.io/badge/Security-MAESTRO-yellow.svg)](docs/security.md)
+## Version 0.1.1
 
-**Enterprise-grade standard for AI agent interoperability across all frameworks**
+The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED", "MAY", and "OPTIONAL" in this document are to be interpreted as described in [BCP 14](https://tools.ietf.org/html/bcp14) [RFC2119](https://tools.ietf.org/html/rfc2119) [RFC8174](https://tools.ietf.org/html/rfc8174) when, and only when, they appear in all capitals, as shown here.
 
-> Enable any AI agent to communicate with any other AI agent, regardless of framework or implementation, with enterprise-grade compliance, security, and governance.
+This document is licensed under The Apache License, Version 2.0.
 
-## 🎯 What This Is
+## Introduction
 
-An **enterprise-grade open standard specification** that allows AI agents built with different frameworks (LangChain, CrewAI, AutoGen, custom implementations) to work together seamlessly through:
+The OpenAPI AI Agents Standard (OAAS) is the "Switzerland of AI Agents" - a neutral, trusted, and necessary bridge between competing AI ecosystems. Unlike MCP (Anthropic) or A2A (Google) which compete for dominance, OAAS embraces all protocols while adding what enterprises actually need: **built-in compliance and governance**.
 
-- **Standard API contracts** - OpenAPI 3.1 specifications with agent extensions
-- **Agent configuration format** - Universal agent.yml structure with governance
-- **Comprehensive validation** - Multi-framework compliance checking (ISO 42001, NIST AI RMF, EU AI Act)
-- **Security framework** - MAESTRO threat modeling and security assessment
-- **Protocol bridges** - MCP, A2A, and custom protocol support
-- **Enterprise tooling** - CI/CD pipelines, compliance reporting, and quality gates
+### Why OAAS Will Become THE Standard
 
-## 🚫 What This Is NOT
+1. **We Don't Compete, We Bridge**: Works WITH MCP, A2A, and other protocols through our bridge architecture
+2. **Enterprise Compliance Built-In**: The ONLY standard with ISO 42001, NIST AI RMF, and EU AI Act validation
+3. **OpenAPI Foundation**: Leverages 10+ million developers already familiar with OpenAPI
+4. **Revenue Model**: Certification program ensures sustainability and enterprise adoption
 
-- ❌ An AI agent platform or framework
-- ❌ A hosting or deployment solution  
-- ❌ A specific implementation
-- ❌ Competition with existing frameworks
+An OpenAPI AI Agents Standard Description enables enterprises to achieve compliance, developers to ensure interoperability, and platforms to monetize through certification - making it not just the best standard, but the NECESSARY standard.
 
-## 🏗️ Architecture
+## Overview
 
-### Dual-Format Standard with Enterprise Features
+The OpenAPI AI Agents Standard establishes a universal framework for AI agent interoperability across all frameworks and implementations. This specification defines:
 
-Every compliant agent consists of two files with enhanced enterprise capabilities:
+- **Dual-format architecture** for agent definition and API specification
+- **Compliance frameworks** for enterprise adoption (ISO 42001, NIST AI RMF, EU AI Act)
+- **Security assessment** using the MAESTRO threat modeling framework
+- **Certification levels** (Platinum, Gold, Silver, Bronze) based on compliance scores
+- **Protocol bridges** for MCP, A2A, and custom protocol interoperability
+- **Token management** with cost optimization and budget controls
+
+## Architecture
+
+### Dual-Format Standard
+
+Every compliant AI agent MUST consist of two specification files:
 
 ```
-my-agent/
+agent-name/
 ├── agent.yml      # Agent metadata, capabilities, governance, compliance
 └── openapi.yaml   # API endpoints, schemas, security, extensions
 ```
 
 This separation enables:
-- **Rich metadata** without cluttering API specs
+- **Rich metadata** without cluttering API specifications
 - **Framework-specific configurations** alongside standard APIs
 - **Independent validation** of both concerns
-- **Clear separation** between what the agent *is* and what it *does*
+- **Clear separation** between agent identity and capabilities
 - **Enterprise governance** with compliance tracking
 - **Security assessment** with threat modeling
 
-## 🚀 Quick Start
+### Agent Configuration (agent.yml)
 
-### 1. Validate an Existing Agent
+The agent configuration file defines agent metadata, capabilities, and governance requirements. This file MUST conform to the OpenAPI AI Agents Standard schema and SHOULD include:
+
+- Agent metadata (name, version, namespace)
+- Capability definitions and protocols
+- Security and compliance frameworks
+- Token management configuration
+- Governance and risk management settings
+
+### OpenAPI Specification (openapi.yaml)
+
+The OpenAPI specification file defines the agent's API interface. This file MUST conform to OpenAPI 3.1.0 and SHOULD include:
+
+- Standard API endpoints for agent communication
+- Request/response schemas and data structures
+- Security schemes and authentication methods
+- Standard extensions for agent metadata
+- Protocol bridge configurations
+
+## Compliance Frameworks
+
+### Supported Standards
+
+The OpenAPI AI Agents Standard provides validation against the following compliance frameworks:
+
+| Framework | Version | Status | Description |
+|-----------|---------|--------|-------------|
+| **ISO 42001** | 2023 | Implemented | AI Management Systems |
+| **NIST AI RMF** | 1.0 | Implemented | AI Risk Management Framework |
+| **EU AI Act** | Current | Implemented | European AI regulations |
+| **FISMA** | Current | Implemented | Federal Information Security |
+| **FedRAMP** | Current | Implemented | Cloud security requirements |
+| **SOC2** | Current | Implemented | Trust service criteria |
+
+### Certification Levels
+
+Compliance validation determines agent certification levels:
+
+- **Platinum** (95%+): Enterprise excellence with comprehensive governance
+- **Gold** (90%+): Production ready with advanced security controls
+- **Silver** (80%+): Enhanced features with standard compliance
+- **Bronze** (70%+): Basic compliance with core requirements
+
+## Security Framework
+
+### MAESTRO Threat Modeling
+
+The standard implements the MAESTRO security framework for comprehensive threat assessment:
+
+- **Model extraction** prevention and detection
+- **Data poisoning** identification and mitigation
+- **Prompt injection** protection and validation
+- **Compliance violations** monitoring and reporting
+- **Adversarial attacks** detection and response
+
+### Security Requirements
+
+All compliant agents MUST implement:
+
+- Authentication mechanisms (OAuth2, API Key, mTLS)
+- Input validation and sanitization
+- Rate limiting and abuse prevention
+- Audit logging for compliance
+- Security scheme definitions in OpenAPI specifications
+
+## Protocol Interoperability
+
+### Supported Protocols
+
+The standard supports multiple communication protocols:
+
+- **OpenAPI** (REQUIRED): Standard REST API interactions
+- **MCP** (RECOMMENDED): Model Context Protocol for tool sharing
+- **A2A** (RECOMMENDED): Agent-to-Agent direct communication
+- **Custom protocols** (OPTIONAL): Framework-specific extensions
+
+### Protocol Bridges
+
+Protocol bridges enable seamless communication between different protocols:
+
+- Automatic protocol negotiation
+- Translation between protocol formats
+- Fallback mechanisms for compatibility
+- Performance optimization for each protocol
+
+## Implementation
+
+### Validation Services
+
+The standard provides comprehensive validation services:
+
+- **REST API** (`/api/v1/validate/*`): Programmatic validation endpoints
+- **CLI Tools**: Command-line validation and compliance checking
+- **CI/CD Integration**: Automated quality gates and validation
+- **Compliance Reporting**: Detailed framework analysis and scoring
+
+### Quick Start
 
 ```bash
 # Clone the repository
@@ -63,222 +160,149 @@ npm run setup
 # Start validation API
 npm run dev:validation-api
 
-# Test dual-format validation with example agent
-curl -X POST http://localhost:3001/api/v1/validate/dual-format \
-  -H "Content-Type: application/json" \
-  -H "X-API-Key: test-api-key" \
-  -d '{
-    "agent_config": { /* agent.yml content */ },
-    "openapi_spec": { /* openapi.yaml content */ }
-  }'
-```
-
-### 2. Create Your First Compliant Agent
-
-```bash
-# Copy enterprise templates
-cp examples/basic/agent.yml my-agent/
-cp examples/basic/openapi.yaml my-agent/
-
-# Customize for your agent
-vim my-agent/agent.yml     # Edit metadata, capabilities, and governance
-vim my-agent/openapi.yaml  # Define your API endpoints and security
-
-# Validate compliance
+# Validate agent compliance
 npm run compliance
 
 # Generate compliance report
 npm run report:compliance
 ```
 
-### 3. Enterprise Integration
+### API Usage Examples
 
-**Python**:
-```python
-from openapi_ai_agents import ValidationClient, ComplianceReporter
+#### 1. Basic Agent Validation
 
-client = ValidationClient("http://localhost:3001")
-result = client.validate_agent_bundle("./my-agent/")
+```http
+POST /api/v1/validate/dual-format
+Content-Type: application/json
+X-API-Key: your-api-key
 
-if result.valid:
-    print(f"✅ {result.certification_level} certification")
-    print(f"📊 Compliance score: {result.overall_score}%")
+{
+  "agent_config": {
+    "name": "code-review-agent",
+    "version": "1.0.0",
+    "class": "specialist",
+    "capabilities": ["code_analysis", "security_scanning"],
+    "protocols": ["openapi", "mcp"]
+  },
+  "openapi_spec": {
+    "openapi": "3.1.0",
+    "info": {
+      "title": "Code Review Agent",
+      "version": "1.0.0"
+    },
+    "paths": {
+      "/analyze": {
+        "post": {
+          "summary": "Analyze code for issues",
+          "operationId": "analyzeCode"
+        }
+      }
+    }
+  }
+}
+```
+
+#### 2. Command-Line Validation
+
+```bash
+# Validate a single agent
+openapi-agent-validate examples/basic/agent.yml
+
+# Validate with compliance checking
+openapi-agent-validate examples/basic/agent.yml --compliance NIST_AI_RMF
+
+# Validate all agents in a directory
+openapi-agent-validate examples/agents/ --recursive
 
 # Generate compliance report
-reporter = ComplianceReporter()
-report = reporter.generate_report("./my-agent/")
+openapi-agent-validate examples/basic/agent.yml --report --output report.json
 ```
 
-**Node.js**:
-```javascript
-import { OpenAPIAgentsClient } from '@openapi-ai-agents/client';
+#### 3. Integration in CI/CD Pipeline
 
-const client = new OpenAPIAgentsClient({ baseURL: 'http://localhost:3001' });
-const result = await client.validateAgentBundle('./my-agent/');
-
-console.log(`Valid: ${result.valid}, Level: ${result.certification_level}`);
-console.log(`Score: ${result.overall_score}%`);
+```yaml
+# .gitlab-ci.yml
+validate-agents:
+  stage: test
+  script:
+    - npm install -g @openapi-ai-agents/cli
+    - openapi-agent-validate agents/ --compliance ISO_42001_2023
+    - openapi-agent-report --format junit > test-results.xml
+  artifacts:
+    reports:
+      junit: test-results.xml
 ```
 
-## 📁 Project Structure
+## Project Structure
 
 **⚠️ IMPORTANT: This project has a strict directory structure. See [PROJECT_STRUCTURE.md](PROJECT_STRUCTURE.md) for complete rules.**
 
 ```
 openapi-ai-agents-standard/
-├── README.md                    # This file
-├── ROADMAP.md                   # Development roadmap
+├── README.md                    # This specification document
 ├── PROJECT_STRUCTURE.md         # Directory structure rules
-├── package.json                 # Enhanced package with enterprise scripts
-├── .gitlab-ci.yml              # Comprehensive CI/CD pipeline
+├── ROADMAP.md                   # Development roadmap
+├── package.json                 # Package configuration
+├── .gitlab-ci.yml              # CI/CD pipeline configuration
 ├── 
-├── examples/                    # Templates and examples
-│   ├── basic/                   # Enterprise-ready templates
-│   │   ├── agent.yml            # Universal agent template with governance
-│   │   └── openapi.yaml         # OpenAPI template with extensions
-│   └── agents/                  # Example implementations
+├── docs/                        # Specification documentation
+│   ├── specification.md         # Detailed technical specification
+│   ├── integration-guide.md     # Framework integration guide
+│   ├── compliance.md            # Compliance and certification
+│   ├── security.md              # Security and MAESTRO framework
+│   └── governance.md            # Governance and risk management
+│
+├── examples/                    # Reference implementations
+│   ├── basic/                   # Basic templates
+│   │   ├── agent.yml            # Universal agent template
+│   │   └── openapi.yaml         # OpenAPI template
+│   └── agents/                  # Agent examples
 │       └── crew-ai-agent/       # CrewAI integration example
 │
-├── services/                    # Validation and toolkit services
-│   ├── validation-api/          # REST API for validation with compliance
+├── services/                    # Core validation services
+│   ├── validation-api/          # REST API for validation
 │   ├── validation-cli/          # Command-line tools
 │   ├── universal-agent-toolkit/ # Agent orchestration service
 │   ├── agent-registry/          # Agent discovery service
 │   └── agent-orchestrator/      # Multi-agent coordination
 │
-├── scripts/                     # Enterprise automation scripts
-│   └── report-compliance.js     # Comprehensive compliance reporting
-│
-└── docs/                        # Comprehensive documentation
-    ├── specification.md         # Detailed standard specification
-    ├── integration-guide.md     # Framework integration guide
-    ├── compliance.md            # Compliance and certification
-    ├── security.md              # Security and MAESTRO framework
-    └── governance.md            # Governance and risk management
+└── scripts/                     # Automation scripts
+    └── report-compliance.js     # Compliance reporting
 ```
 
 **🚨 AI Bots: NEVER create random directories like `compliance-reports/`, `temp/`, or `ai-generated/`. Follow the structure guide exactly.**
 
-## 🎯 Core Features
+## Development
 
-### 🔧 Enhanced Validation Services
+### Prerequisites
 
-**REST API** (`services/validation-api/`):
-- **Dual-format validation** - Validates agent.yml ↔ openapi.yaml consistency
-- **Multi-framework compliance** - ISO 42001, NIST AI RMF, EU AI Act, FISMA, FedRAMP, SOC2
-- **Security assessment** - MAESTRO threat modeling and security validation
-- **Quality gates** - Automated compliance checking and reporting
-- **Token estimation** - Cost optimization with tiktoken integration
+- Node.js 18.0.0 or higher
+- npm 8.0.0 or higher
+- Git for version control
 
-**CLI Tools** (`services/validation-cli/`):
-- **Command-line validation** - Local compliance checking
-- **Batch processing** - Bulk agent validation
-- **CI/CD integration** - Automated quality gates
-- **Compliance reporting** - Detailed framework analysis
-
-### 📊 Enterprise Certification Levels
-
-**Platinum** - Enterprise excellence (95%+)
-- ✅ All Gold requirements
-- ✅ Comprehensive governance framework
-- ✅ Advanced security controls
-- ✅ Full compliance validation
-- ✅ Production deployment ready
-
-**Gold** - Production ready (90%+)
-- ✅ All Silver requirements
-- ✅ Protocol bridge support
-- ✅ Token management optimization
-- ✅ Multi-framework compliance
-- ✅ Security assessment passed
-
-**Silver** - Enhanced features (80%+)
-- ✅ All Bronze requirements
-- ✅ Standard extensions included
-- ✅ 5+ API endpoints defined
-- ✅ Proper error handling
-- ✅ Basic compliance validation
-
-**Bronze** - Basic compliance (70%+)
-- ✅ Valid agent.yml structure
-- ✅ Basic OpenAPI 3.1 spec
-- ✅ Security scheme defined
-- ✅ Governance configuration
-- ✅ Risk management processes
-
-### 🌉 Advanced Protocol Bridges
-
-- **MCP (Model Context Protocol)** - Tool and resource sharing
-- **A2A (Agent-to-Agent)** - Direct agent communication
-- **OpenAPI** - Standard REST API interactions
-- **Custom protocols** - Framework-specific extensions
-
-### 🛡️ Enterprise Governance & Compliance
-
-- **ISO 42001:2023** - AI Management Systems
-- **NIST AI RMF 1.0** - AI Risk Management Framework  
-- **EU AI Act** - European AI regulations
-- **FISMA** - Federal Information Security
-- **FedRAMP** - Cloud security requirements
-- **SOC2** - Trust service criteria
-- **MAESTRO** - Security threat modeling
-
-## 💡 Example Agents
-
-### [CrewAI Agent](examples/agents/crew-ai-agent/)
-**Framework**: CrewAI | **Level**: Silver  
-Demonstrates hierarchical multi-agent coordination with role-based execution and compliance validation.
-
-### [Agent Registry](services/agent-registry/)
-**Framework**: Custom | **Level**: Gold  
-Service for discovering and managing agents across frameworks with enterprise governance.
-
-### [Agent Orchestrator](services/agent-orchestrator/)
-**Framework**: Custom | **Level**: Gold  
-Coordinates complex multi-agent workflows with parallel execution and compliance monitoring.
-
-## 🔗 Framework Integration
-
-### Supported Frameworks
-
-| Framework | Status | Integration Guide | Compliance Level |
-|-----------|--------|-------------------|------------------|
-| **CrewAI** | ✅ Example Available | [View Example](examples/agents/crew-ai-agent/) | Silver |
-| **LangChain** | 🔄 In Progress | [Integration Guide](docs/integration-guide.md) | Bronze |
-| **AutoGen** | 📋 Planned | [Request Feature](https://github.com/openapi-ai-agents/standard/issues) | - |
-| **Custom** | ✅ Template Available | [Basic Template](examples/basic/) | Bronze+ |
-
-### For Framework Developers
-
-Integrate the standard into your framework:
-
-1. **Use our validation API** to check agent compliance
-2. **Export agent.yml + openapi.yaml** from your framework
-3. **Follow our templates** for consistent structure
-4. **Implement protocol bridges** for interoperability
-5. **Add governance controls** for enterprise adoption
-
-See [Integration Guide](docs/integration-guide.md) for detailed instructions.
-
-## 🧪 Development & Testing
-
-### Run All Services Locally
+### Local Development
 
 ```bash
-# Start validation API
-npm run dev:validation-api  # Port 3001
+# Install dependencies
+npm install
 
-# Start agent toolkit  
-npm run dev:toolkit         # Port 3002
+# Run validation services
+npm run dev:validation-api
+npm run dev:toolkit
 
-# Run comprehensive tests
+# Execute tests
 npm test
 
-# Test compliance specifically
-npm run test:compliance
+# Validate compliance
+npm run compliance
+
+# Generate reports
+npm run report:compliance
 ```
 
-### Enterprise Quality Gates
+### Quality Gates
+
+The standard implements comprehensive quality gates:
 
 ```bash
 # Run all quality checks
@@ -292,73 +316,65 @@ npm run security
 
 # Compliance validation
 npm run compliance
-
-# Generate reports
-npm run report:compliance
-npm run report:security
-npm run report:quality
 ```
 
-### CI/CD Integration
+## Contributing
 
-```yaml
-# .gitlab-ci.yml example (already included)
-validate-agents:
-  script:
-    - npm install
-    - npm test
-    - npm run compliance
-    - npm run security
-    - npm run quality:strict
-```
-
-## 📚 Documentation
-
-- **[Specification Guide](docs/specification.md)** - Detailed technical specification
-- **[Integration Guide](docs/integration-guide.md)** - Framework integration instructions
-- **[Compliance Guide](docs/compliance.md)** - Compliance and certification process
-- **[Security Guide](docs/security.md)** - Security and MAESTRO framework
-- **[Governance Guide](docs/governance.md)** - Governance and risk management
-- **[API Documentation](services/validation-api/)** - REST API reference
-
-## 🤝 Contributing
+### Contribution Process
 
 1. **Fork the repository**
-2. **Create feature branch**: `git checkout -b feature/my-feature`
-3. **Follow the standard**: Validate your changes with `npm run compliance`
+2. **Create feature branch**: `git checkout -b feature/description`
+3. **Follow the standard**: Validate changes with `npm run compliance`
 4. **Submit pull request**: Clear description of changes and compliance impact
 
 ### Contribution Areas
 
-- **Framework integrations** - Add support for new frameworks
-- **Validation improvements** - Enhance validation logic
-- **Compliance frameworks** - Add new regulatory standards
-- **Security enhancements** - Improve MAESTRO implementation
-- **Documentation** - Improve guides and examples
-- **Protocol bridges** - Implement new communication protocols
+- **Framework integrations**: Add support for new frameworks
+- **Validation improvements**: Enhance validation logic
+- **Compliance frameworks**: Add new regulatory standards
+- **Security enhancements**: Improve MAESTRO implementation
+- **Documentation**: Improve guides and examples
+- **Protocol bridges**: Implement new communication protocols
 
-## 📈 Roadmap & Status
+### Code Standards
 
-See [ROADMAP.md](ROADMAP.md) for:
-- ✅ Completed features
-- 🔄 Current priorities  
-- 📋 Planned features
-- 🎯 Release goals
+- Follow ESLint configuration
+- Maintain 90%+ test coverage
+- Use TypeScript for new code
+- Follow OpenAPI 3.1 standards
+- Include comprehensive documentation
 
-**Current Status**: v0.2.0 - Enterprise compliance complete, ready for production adoption
+## Support & Partnership Opportunities
 
-## 🆘 Support
+### Documentation
+
+- **[Technical Specification](docs/01-technical-specification.md)**: Core standard definition and compliance frameworks
+- **[Integration Guide](docs/02-integration-guide.md)**: Framework integration with revenue opportunities
+- **[Governance & Compliance](docs/03-governance-compliance.md)**: Enterprise governance and certification program
+- **[Enterprise Integrations](docs/04-enterprise-integrations.md)**: Priority integration patterns (Salesforce→OpenAI, etc.)
+- **[Project Structure](docs/05-project-structure.md)**: Repository organization and contribution guidelines
+- **[Academic Papers](docs/06-academic-papers.md)**: Research publications and peer review strategy
+
+### Partnership Programs
+
+- **Enterprise Certification**: $10,000/year certification program
+- **Consulting Partners**: Big 4 firm partnership opportunities
+- **Tool Vendor Integration**: Add "Export as OAAS" to your platform
+- **Training Partners**: Deliver $5,000 workshop programs
+
+### Community
 
 - **Issues**: [GitLab Issues](https://gitlab.bluefly.io/llm/openapi-ai-agents-standard/-/issues)
 - **Discussions**: [GitHub Discussions](https://github.com/openapi-ai-agents/standard/discussions)
-- **Email**: standards@openapi-ai-agents.org
-- **Enterprise Support**: enterprise@openapi-ai-agents.org
+- **Partnership Inquiries**: partners@openapi-ai-agents.org
+- **Enterprise Certification**: certification@openapi-ai-agents.org
+- **General Support**: standards@openapi-ai-agents.org
 
-## 📄 License
+## License
 
-MIT License - see [LICENSE](LICENSE) for details.
+Apache License, Version 2.0 - see [LICENSE](LICENSE) for details.
 
 ---
 
-**Made with ❤️ by the OpenAPI AI Agents Consortium**  
+**OpenAPI AI Agents Standard v0.1.1**  
 *Building the future of enterprise AI agent interoperability*

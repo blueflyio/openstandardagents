@@ -1,14 +1,15 @@
-# Contributing to OpenAPI for AI Agents Standard
+# Contributing to OpenAPI AI Agents Standard
 
-Thank you for your interest in contributing to the OpenAPI for AI Agents Standard! This document provides guidelines for contributing to make the process smooth and effective.
+Thank you for your interest in contributing to the OpenAPI AI Agents Standard - the "Switzerland of AI Agents"! This document provides guidelines for contributing to make the process smooth and effective.
 
 ## 🌟 Why Contribute?
 
-By contributing to this standard, you're helping shape the future of AI agent interoperability across the entire industry. Your contributions will:
-- Enable seamless communication between different AI frameworks
-- Reduce development time and costs for AI applications
-- Establish security and governance best practices
-- Create a vibrant ecosystem of interoperable AI agents
+By contributing to this standard, you're helping build the necessary bridge between competing AI ecosystems. Your contributions will:
+- Enable seamless communication between MCP, A2A, and other protocols
+- Provide enterprise-grade compliance (ISO 42001, NIST AI RMF, EU AI Act)
+- Reduce development time through protocol bridges, not new protocols
+- Establish the de facto standard for AI agent governance
+- Create monetization opportunities through certification programs
 
 ## 📋 How to Contribute
 
@@ -19,11 +20,12 @@ By contributing to this standard, you're helping shape the future of AI agent in
 
 ### 2. Types of Contributions
 
-#### 🔧 Technical Contributions
-- **Specification Improvements**: Propose enhancements to the OpenAPI specification
-- **Reference Implementations**: Create implementations in different languages
-- **Protocol Bridges**: Develop bridges for MCP, A2A, AITP, or other protocols
-- **Testing Tools**: Build validation and compliance testing tools
+#### 🔧 Technical Contributions (PRIORITY AREAS)
+- **Protocol Bridges**: MCP and A2A bridges are CRITICAL - we embrace, not compete
+- **Enterprise Integrations**: Salesforce→OpenAI, Copilot→Vertex bridges needed
+- **Compliance Tools**: ISO 42001, NIST AI RMF validation tools
+- **Reference Implementations**: Focus on enterprise use cases that matter
+- **Token Optimization**: Achieve 35-45% savings with tiktoken integration
 
 #### 📚 Documentation
 - **Tutorials**: Create getting-started guides and tutorials
@@ -43,10 +45,11 @@ Join one of our specialized working groups:
 
 | Working Group | Focus Area | Meeting Schedule |
 |--------------|------------|------------------|
-| Core Specification | OpenAPI spec development | Weekly - Mondays 2pm PT |
-| Protocol Interoperability | MCP, A2A, AITP bridges | Weekly - Tuesdays 11am PT |
-| Security & Governance | MAESTRO framework, compliance | Bi-weekly - Wednesdays 3pm PT |
-| Testing & Validation | Test frameworks, certification | Weekly - Fridays 1pm PT |
+| Core Specification | Dual-format (agent.yml + OpenAPI) development | Weekly - Mondays 2pm PT |
+| Protocol Bridges | MCP, A2A integration (not competition) | Weekly - Tuesdays 11am PT |
+| Enterprise Compliance | ISO 42001, NIST, EU AI Act certification | Bi-weekly - Wednesdays 3pm PT |
+| Partner Integration | Big 4, tool vendors, platforms | Weekly - Thursdays 10am PT |
+| Certification Program | $10K enterprise certification development | Weekly - Fridays 1pm PT |
 
 To join a working group, submit a request via [GitHub Discussions](https://github.com/openapi-ai-agents/standard/discussions).
 
@@ -142,20 +145,22 @@ refactor(tokens): optimize token counting logic
 - Keep README files up to date
 - Add JSDoc comments for public APIs
 
-## 🏆 Recognition
+## 🏆 Recognition & Opportunities
 
 ### Contributors
 All contributors will be recognized in:
 - CONTRIBUTORS.md file
 - GitHub contributors page
-- Annual contributor report
-- Conference presentations
+- Annual AI Governance Summit
+- Enterprise certification materials
+- Partner consulting opportunities
 
 ### Levels of Recognition
-- 🥉 **Bronze**: 1-5 merged PRs
-- 🥈 **Silver**: 6-15 merged PRs
-- 🥇 **Gold**: 16+ merged PRs
-- 💎 **Diamond**: Core maintainer status
+- 🥉 **Bronze**: 1-5 merged PRs + Community badge
+- 🥈 **Silver**: 6-15 merged PRs + Certified implementer status
+- 🥇 **Gold**: 16+ merged PRs + Speaking opportunities
+- 💎 **Diamond**: Core maintainer + Revenue sharing from certifications
+- 🚀 **Platinum**: Strategic partner + Big 4 consulting referrals
 
 ## 🔒 Code of Conduct
 
@@ -185,7 +190,7 @@ Need help with your contribution?
 
 ## 📜 License
 
-By contributing, you agree that your contributions will be licensed under the MIT License.
+By contributing, you agree that your contributions will be licensed under the Apache License 2.0, ensuring maximum enterprise adoption.
 
 ## 🙏 Thank You!
 

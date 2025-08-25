@@ -1,8 +1,8 @@
-# OpenAPI AI Agents Standard - Governance
+# 03. Governance & Compliance
 
 ## Standards Governance Model
 
-The OpenAPI AI Agents Standard follows an open governance model designed to ensure broad community participation while maintaining technical excellence and coherent evolution.
+The OpenAPI AI Agents Standard operates as the "Switzerland of AI Agents" - maintaining strict neutrality between competing protocols while providing the enterprise compliance framework that makes adoption NECESSARY, not optional. Our governance model ensures both vendor neutrality and enterprise-grade reliability.
 
 ## Governance Structure
 
@@ -15,28 +15,28 @@ The OpenAPI AI Agents Standard follows an open governance model designed to ensu
 ### Working Groups
 
 #### Core Specification Working Group
-- **Focus**: Core OpenAPI specification evolution
-- **Members**: 8-12 technical experts
+- **Focus**: Dual-format architecture (agent.yml + OpenAPI)
+- **Members**: 8-12 technical experts including OpenAPI Initiative members
 - **Meetings**: Bi-weekly, public notes
-- **Deliverables**: Specification updates, breaking change proposals
+- **Deliverables**: Specification updates maintaining backward compatibility
 
-#### Security Working Group  
-- **Focus**: MAESTRO security framework development
-- **Members**: Security experts from adopting organizations
-- **Meetings**: Monthly, some closed for vulnerability discussion
-- **Deliverables**: Security requirements, audit procedures
-
-#### Compliance Working Group
-- **Focus**: Regulatory and enterprise compliance
-- **Members**: Compliance officers, legal experts, enterprise users
-- **Meetings**: Monthly
-- **Deliverables**: Compliance mappings, certification requirements
+#### Enterprise Compliance Working Group (PRIORITY)
+- **Focus**: ISO 42001, NIST AI RMF, EU AI Act certification
+- **Members**: Big 4 consultants, Fortune 500 compliance officers
+- **Meetings**: Monthly with quarterly enterprise summits
+- **Deliverables**: Certification frameworks ($10K/company program)
 
 #### Protocol Bridge Working Group
-- **Focus**: MCP, A2A, AITP, and other protocol integrations
-- **Members**: Protocol developers, framework maintainers
-- **Meetings**: Bi-weekly
-- **Deliverables**: Bridge specifications, reference implementations
+- **Focus**: EMBRACE don't compete - MCP, A2A, AITP bridges
+- **Members**: Anthropic, Google, Microsoft representatives
+- **Meetings**: Bi-weekly coordination calls
+- **Deliverables**: <100ms latency bridges, not new protocols
+
+#### Revenue & Partnership Working Group (NEW)
+- **Focus**: Monetization through certification and training
+- **Members**: Business development, enterprise sales experts
+- **Meetings**: Weekly revenue reviews
+- **Deliverables**: Partnership programs, certification pricing
 
 ### Community Council
 - **Representation**: Elected representatives from user community
