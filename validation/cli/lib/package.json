@@ -4,7 +4,8 @@
   "description": "Core validation libraries for OpenAPI AI Agents Standard",
   "main": "index.js",
   "scripts": {
-    "test": "jest",
+    "test": "jest --coverage",
+    "test:watch": "jest --watch",
     "lint": "eslint .",
     "build": "echo 'No build required'"
   },
@@ -19,5 +20,19 @@
   },
   "engines": {
     "node": ">=18.0.0"
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "collectCoverageFrom": [
+      "validators/**/*.js",
+      "!**/node_modules/**",
+      "!**/coverage/**"
+    ],
+    "coverageReporters": ["text", "lcov", "cobertura"],
+    "coverageDirectory": "coverage",
+    "testMatch": [
+      "**/__tests__/**/*.test.js",
+      "**/tests/**/*.test.js"
+    ]
   }
 }

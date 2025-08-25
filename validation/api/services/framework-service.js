@@ -16,8 +16,28 @@ class FrameworkService {
     }));
   }
 
+  getAvailableFrameworks() {
+    return this.getFrameworks();
+  }
+
   getSupportedProtocols() {
-    return this.protocols;
+    return this.protocols.map(protocol => ({
+      id: protocol,
+      name: this.getProtocolName(protocol),
+      required_fields: ['configuration', 'endpoints'],
+      description: `${protocol.toUpperCase()} protocol support`,
+      version: '1.0'
+    }));
+  }
+
+  getProtocolName(protocol) {
+    const names = {
+      'mcp': 'Model Context Protocol',
+      'openapi': 'OpenAPI 3.1',
+      'a2a': 'Agent-to-Agent Protocol',
+      'aitp': 'AI Transfer Protocol'
+    };
+    return names[protocol] || protocol.toUpperCase();
   }
 }
 module.exports = FrameworkService;

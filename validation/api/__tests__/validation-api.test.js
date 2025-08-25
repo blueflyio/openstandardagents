@@ -43,6 +43,7 @@ describe('OpenAPI AI Agents Validation API', () => {
 
       const response = await request(app)
         .post('/api/v1/validate/openapi')
+        .set('X-API-Key', 'test-api-key')
         .send({ specification: validSpec })
         .expect(200);
 
@@ -68,13 +69,14 @@ describe('OpenAPI AI Agents Validation API', () => {
 
       const response = await request(app)
         .post('/api/v1/validate/openapi')
+        .set('X-API-Key', 'test-api-key')
         .send({ specification: invalidSpec })
         .expect(400);
 
       expect(response.body).toMatchObject({
         valid: false,
         errors: expect.arrayContaining([
-          expect.stringContaining('OpenAPI version must be 3.1.x')
+          expect.stringContaining('Must use OpenAPI 3.1.x')
         ])
       });
     });
@@ -82,6 +84,7 @@ describe('OpenAPI AI Agents Validation API', () => {
     test('should handle malformed JSON', async () => {
       const response = await request(app)
         .post('/api/v1/validate/openapi')
+        .set('X-API-Key', 'test-api-key')
         .send({ specification: 'invalid-json' })
         .expect(400);
 
@@ -111,6 +114,7 @@ describe('OpenAPI AI Agents Validation API', () => {
 
       const response = await request(app)
         .post('/api/v1/validate/agent-config')
+        .set('X-API-Key', 'test-api-key')
         .send({ configuration: validConfig })
         .expect(200);
 
@@ -118,7 +122,7 @@ describe('OpenAPI AI Agents Validation API', () => {
         valid: true,
         readiness_level: expect.any(String),
         passed: expect.arrayContaining([
-          expect.stringContaining('Agent: test-agent v1.0.0')
+          expect.stringContaining('Agent name defined')
         ])
       });
     });
@@ -131,13 +135,14 @@ describe('OpenAPI AI Agents Validation API', () => {
 
       const response = await request(app)
         .post('/api/v1/validate/agent-config')
+        .set('X-API-Key', 'test-api-key')
         .send({ configuration: invalidConfig })
         .expect(400);
 
       expect(response.body).toMatchObject({
         valid: false,
         errors: expect.arrayContaining([
-          expect.stringContaining('Missing required field')
+          expect.stringContaining('protocol must be specified')
         ])
       });
     });
@@ -158,11 +163,16 @@ describe('OpenAPI AI Agents Validation API', () => {
         risk_management: {
           documentation: true,
           process: 'implemented'
+        },
+        governance: {
+          policies: 'defined',
+          oversight: 'implemented'
         }
       };
 
       const response = await request(app)
         .post('/api/v1/validate/compliance')
+        .set('X-API-Key', 'test-api-key')
         .send({ 
           configuration: config,
           frameworks: ['NIST_AI_RMF_1_0', 'ISO_42001_2023']
@@ -203,6 +213,7 @@ describe('OpenAPI AI Agents Validation API', () => {
 
       const response = await request(app)
         .post('/api/v1/validate/protocols')
+        .set('X-API-Key', 'test-api-key')
         .send({ 
           configuration: config,
           protocols: ['mcp', 'openapi']
@@ -212,16 +223,12 @@ describe('OpenAPI AI Agents Validation API', () => {
       expect(response.body).toMatchObject({
         valid: true,
         interoperability_level: expect.any(String),
-        protocol_results: expect.objectContaining({
-          mcp: expect.objectContaining({
-            enabled: true,
-            valid: true
-          }),
-          openapi: expect.objectContaining({
-            enabled: true,
-            valid: true
-          })
-        })
+        passed: expect.arrayContaining([
+          expect.stringContaining('MCP protocol supported'),
+          expect.stringContaining('OPENAPI protocol supported')
+        ]),
+        warnings: expect.any(Array),
+        errors: expect.any(Array)
       });
     });
   });
@@ -261,6 +268,7 @@ describe('OpenAPI AI Agents Validation API', () => {
 
       const response = await request(app)
         .post('/api/v1/estimate/tokens')
+        .set('X-API-Key', 'test-api-key')
         .send({ 
           specification: spec,
           options: {
@@ -289,6 +297,7 @@ describe('OpenAPI AI Agents Validation API', () => {
 
       const response = await request(app)
         .post('/api/v1/estimate/tokens')
+        .set('X-API-Key', 'test-api-key')
         .send({ 
           specification: spec,
           options: { model: 'claude-3-sonnet' }

@@ -188,7 +188,7 @@ app.post('/api/v1/validate/compliance', [
     const result = await services.compliance.validateCompliance(configuration, frameworks);
     
     const response = {
-      valid: result.totalErrors === 0,
+      valid: result.valid,
       authorization_readiness: result.authorization_readiness || 'development',
       framework_results: result.framework_results,
       summary: {
@@ -198,7 +198,7 @@ app.post('/api/v1/validate/compliance', [
       }
     };
 
-    const statusCode = result.totalErrors === 0 ? 200 : 400;
+    const statusCode = result.valid ? 200 : 400;
     res.status(statusCode).json(response);
 
   } catch (error) {
@@ -225,18 +225,14 @@ app.post('/api/v1/validate/protocols', [
     const result = await services.protocol.validateProtocols(configuration, protocols);
     
     const response = {
-      valid: result.totalErrors === 0,
+      valid: result.valid,
       interoperability_level: result.interoperability_level || 'basic',
-      protocol_results: result.protocol_results,
-      summary: {
-        protocols_validated: result.protocolsValidated,
-        total_passed: result.totalPassed,
-        total_warnings: result.totalWarnings,
-        total_errors: result.totalErrors
-      }
+      passed: result.passed,
+      warnings: result.warnings,
+      errors: result.errors
     };
 
-    const statusCode = result.totalErrors === 0 ? 200 : 400;
+    const statusCode = result.valid ? 200 : 400;
     res.status(statusCode).json(response);
 
   } catch (error) {
@@ -263,17 +259,9 @@ app.post('/api/v1/estimate/tokens', [
     const result = await services.tokenEstimator.estimateTokens(specification, options);
     
     const response = {
-      total_tokens: result.totalTokens,
-      compressed_tokens: result.compressedTokens,
-      cost_projections: {
-        model: result.model,
-        daily_cost: result.dailyCost,
-        monthly_cost: result.monthlyCost,
-        annual_cost: result.annualCost,
-        annual_savings: result.annualSavings,
-        savings_percentage: result.savingsPercentage
-      },
-      token_breakdown: result.tokenBreakdown,
+      total_tokens: result.total_tokens,
+      compressed_tokens: result.compressed_tokens,
+      cost_projections: result.cost_projections,
       optimizations: result.optimizations
     };
 
@@ -797,19 +785,21 @@ app.use((err, req, res, next) => {
   res.status(500).json({ error: 'Internal server error' });
 });
 
-// Start server
-const server = app.listen(port, () => {
-  logger.info(`🚀 OpenAPI AI Agents Validation API running on port ${port}`);
-  logger.info(`📖 API Documentation available at http://localhost:${port}/api/docs`);
-});
-
-// Graceful shutdown
-process.on('SIGTERM', () => {
-  logger.info('SIGTERM received, shutting down gracefully');
-  server.close(() => {
-    logger.info('Server closed');
-    process.exit(0);
+// Start server only if not in test environment
+if (process.env.NODE_ENV !== 'test') {
+  const server = app.listen(port, () => {
+    logger.info(`🚀 OpenAPI AI Agents Validation API running on port ${port}`);
+    logger.info(`📖 API Documentation available at http://localhost:${port}/api/docs`);
   });
-});
+
+  // Graceful shutdown
+  process.on('SIGTERM', () => {
+    logger.info('SIGTERM received, shutting down gracefully');
+    server.close(() => {
+      logger.info('Server closed');
+      process.exit(0);
+    });
+  });
+}
 
 module.exports = app;
