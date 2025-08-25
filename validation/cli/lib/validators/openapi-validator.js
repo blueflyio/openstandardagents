@@ -84,6 +84,55 @@ class OpenAPIAgentValidator {
       this.passed.push(`✅ Compliance frameworks: ${agentMeta.compliance.join(', ')}`);
     }
   }
+
+  /**
+   * Main validation method that orchestrates all validation checks
+   * @param {Object} specification - OpenAPI specification to validate
+   * @returns {Object} Validation result with errors, warnings, and passed checks
+   */
+  async validateSpecification(specification) {
+    // Reset validation state
+    this.errors = [];
+    this.warnings = [];
+    this.passed = [];
+
+    try {
+      // Run all validation checks
+      this.validateVersion(specification);
+      this.validateMetadata(specification);
+      this.validateTokenManagement(specification);
+      this.validateProtocolSupport(specification);
+      this.validatePaths(specification);
+      this.validateSecurity(specification);
+      this.validateCompliance(specification);
+
+      // Determine certification level based on validation results
+      let certification_level = 'bronze';
+      if (this.errors.length === 0) {
+        if (this.warnings.length === 0) {
+          certification_level = 'platinum';
+        } else if (this.warnings.length <= 2) {
+          certification_level = 'gold';
+        } else {
+          certification_level = 'silver';
+        }
+      }
+
+      return {
+        errors: this.errors,
+        warnings: this.warnings,
+        passed: this.passed,
+        certification_level
+      };
+    } catch (error) {
+      return {
+        errors: [`Validation error: ${error.message}`],
+        warnings: this.warnings,
+        passed: this.passed,
+        certification_level: 'bronze'
+      };
+    }
+  }
 }
 
 module.exports = OpenAPIAgentValidator;
