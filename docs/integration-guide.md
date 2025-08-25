@@ -53,6 +53,129 @@ info:
     domains: ["coding", "analysis"]
 ```
 
+## Dual-Format Validation
+
+The OpenAPI AI Agents Standard supports dual-format validation, allowing you to validate both `agent.yml` configuration files and their corresponding `openapi.yaml` specifications together for consistency and compliance.
+
+### What is Dual-Format Validation?
+
+Dual-format validation ensures that:
+- **agent.yml**: Contains agent metadata, capabilities, and configuration
+- **openapi.yaml**: Contains the actual API specification with endpoints and schemas
+- **Relationship consistency**: Both formats reference the same agent capabilities and maintain consistency
+
+### Basic Usage
+
+```bash
+# Validate dual-format via API
+curl -X POST http://localhost:3001/api/v1/validate/dual-format \
+  -H "Content-Type: application/json" \
+  -H "X-API-Key: your-api-key" \
+  -d '{
+    "agent_config": { /* agent.yml content */ },
+    "openapi_spec": { /* openapi.yaml content */ }
+  }'
+```
+
+### Integration Example
+
+```javascript
+const fs = require('fs');
+const yaml = require('js-yaml');
+const axios = require('axios');
+
+async function validateDualFormat(agentYmlPath, openApiYamlPath) {
+  try {
+    // Load both files
+    const agentConfig = yaml.load(fs.readFileSync(agentYmlPath, 'utf8'));
+    const openApiSpec = yaml.load(fs.readFileSync(openApiYamlPath, 'utf8'));
+    
+    // Validate dual-format
+    const response = await axios.post('http://localhost:3001/api/v1/validate/dual-format', {
+      agent_config: agentConfig,
+      openapi_spec: openApiSpec
+    }, {
+      headers: {
+        'Content-Type': 'application/json',
+        'X-API-Key': process.env.VALIDATION_API_KEY
+      }
+    });
+    
+    return {
+      valid: response.data.valid,
+      certification_level: response.data.certification_level,
+      passed: response.data.passed,
+      warnings: response.data.warnings,
+      errors: response.data.errors,
+      details: response.data.details
+    };
+  } catch (error) {
+    throw new Error(`Dual-format validation failed: ${error.message}`);
+  }
+}
+
+// Usage
+validateDualFormat('./examples/basic/agent.yml', './examples/basic/openapi.yaml')
+  .then(result => {
+    console.log('Validation result:', result);
+    console.log('Certification level:', result.certification_level);
+  });
+```
+
+### Validation Checks Performed
+
+The dual-format validator performs comprehensive checks:
+
+1. **Individual Format Validation**
+   - agent.yml schema compliance with OpenAPI AI Agents Standard v0.1.0
+   - openapi.yaml schema compliance with OpenAPI 3.1.0
+
+2. **Cross-Format Relationship Validation**
+   - Capability-endpoint mapping consistency
+   - Security configuration alignment
+   - Protocol support verification
+   - Token management consistency
+   - Metadata consistency (names, versions)
+
+3. **Certification Level Assessment**
+   - **Bronze**: Basic validation passed with some errors
+   - **Silver**: Good compliance with minimal warnings (≤3 warnings, ≥10 passed checks)
+   - **Gold**: Excellent compliance with no warnings (≥15 passed checks)
+
+### Best Practices for Dual-Format
+
+1. **Keep Configurations Synchronized**
+   ```yaml
+   # agent.yml
+   metadata:
+     name: "data-processor-agent"
+     version: "1.2.0"
+   
+   # openapi.yaml  
+   info:
+     title: "Data Processor Agent API"
+     version: "1.2.0"  # Must match agent.yml version
+   ```
+
+2. **Map Capabilities to Endpoints**
+   ```yaml
+   # agent.yml
+   spec:
+     capabilities:
+       - "universal_agent_interface"
+       - "token_optimization"
+   
+   # openapi.yaml should include corresponding endpoints:
+   # /agent/orchestrate (for universal_agent_interface)
+   # /tokens/preflight (for token_optimization)
+   ```
+
+3. **Align Security Configurations**
+   ```yaml
+   # Both files should reference compatible security schemes
+   # agent.yml references OAuth2 -> openapi.yaml must define OAuth2 scheme
+   ```
+
 ## Framework-Specific Integration Examples
 
 ### LangChain Integration

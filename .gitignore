@@ -13,6 +13,13 @@ coverage/
 *.lcov
 coverage-final.json
 
+# Generated Reports (AI bots should not create these)
+compliance-reports/
+security-reports/
+performance-reports/
+test-results/
+bulk-validation-report.json
+
 # OS Files
 .DS_Store
 .DS_Store?
@@ -41,3 +48,10 @@ dist/
 build/
 *.tgz
 *.tar.gz
+
+# Temporary files created by AI bots
+temp/
+tmp/
+random/
+ai-generated/
+bot-created/

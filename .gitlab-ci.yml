@@ -1,223 +1,457 @@
+# OpenAPI AI Agents Standard - GitLab CI/CD Pipeline
+# Enterprise-grade automation for compliance and quality assurance
+
 stages:
   - validate
   - test
+  - security
+  - compliance
   - build
+  - deploy
+  - release
 
 variables:
-  NODE_VERSION: "18"
+  NODE_VERSION: "18.19.0"
+  NPM_CONFIG_CACHE: "$CI_PROJECT_DIR/.npm"
+  CACHE_FALLBACK_KEY: "fallback-$CI_COMMIT_REF_SLUG"
 
-# Template for Node.js jobs
-.node_template: &node_template
-  image: node:18-alpine
-  before_script:
-    - npm --version
-    - node --version
+# Cache dependencies across jobs
+cache:
+  key: "$CI_COMMIT_REF_SLUG"
+  paths:
+    - node_modules/
+    - .npm/
+    - coverage/
+  fallback_keys:
+    - $CACHE_FALLBACK_KEY
+    - "fallback-main"
 
-# Validate OpenAPI specifications
-validate_openapi:
-  <<: *node_template
+# Global before_script for all jobs
+before_script:
+  - echo "🚀 Starting OpenAPI AI Agents Standard CI/CD pipeline"
+  - echo "Branch: $CI_COMMIT_REF_NAME"
+  - echo "Commit: $CI_COMMIT_SHA"
+  - echo "Pipeline: $CI_PIPELINE_ID"
+  - node --version
+  - npm --version
+
+# Validation Stage - Ensure code quality and standards
+validate:code:
   stage: validate
+  image: node:${NODE_VERSION}-alpine
   script:
-    - echo "🔍 Validating core OpenAPI specification..."
-    - cd validation/api
-    - npm install --only=dev
-    - node -e "
-        const fs = require('fs');
-        const yaml = require('js-yaml');
-        try {
-          const spec = yaml.load(fs.readFileSync('../../openapi.yaml', 'utf8'));
-          if (!spec.openapi || !spec.info) {
-            console.error('❌ Invalid OpenAPI specification structure');
-            process.exit(1);
-          }
-          console.log('✅ Core OpenAPI specification is valid');
-        } catch (err) {
-          console.error('❌ Failed to parse OpenAPI specification:', err.message);
-          process.exit(1);
-        }
-      "
-    - echo "🔍 Validating example specifications..."
-    - node -e "
-        const fs = require('fs');
-        const yaml = require('js-yaml');
-        try {
-          const example = yaml.load(fs.readFileSync('../../examples/basic/hello-agent.yaml', 'utf8'));
-          if (!example.openapi) {
-            console.error('❌ Example specification invalid');
-            process.exit(1);
-          }
-          console.log('✅ Example specifications valid');
-        } catch (err) {
-          console.log('⚠️ Example validation skipped - yaml parser not available');
-        }
-      "
-  only:
-    - main
-    - development
-    - merge_requests
+    - echo "🔍 Validating code quality and standards..."
+    - npm ci
+    - npm run lint
+    - npm run format:check
+    - echo "✅ Code validation completed"
+  artifacts:
+    reports:
+      junit: test-results/validation.xml
+    expire_in: 1 week
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+    - if: $CI_COMMIT_BRANCH =~ /^release\/.*$/
 
-# Test validation API
-test_validation_api:
-  <<: *node_template
-  stage: test
+validate:schema:
+  stage: validate
+  image: node:${NODE_VERSION}-alpine
   script:
-    - echo "🧪 Testing validation API..."
-    - cd validation/api
-    - npm install
-    - NODE_ENV=test npm test
+    - echo "🔍 Validating JSON schemas and OpenAPI specifications..."
+    - npm ci
+    - npm run validate:schemas
+    - npm run validate:openapi
+    - echo "✅ Schema validation completed"
+  artifacts:
+    reports:
+      junit: test-results/schema-validation.xml
+    expire_in: 1 week
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+
+# Testing Stage - Comprehensive test coverage
+test:unit:
+  stage: test
+  image: node:${NODE_VERSION}-alpine
+  script:
+    - echo "🧪 Running unit tests..."
+    - npm ci
+    - npm run test:unit -- --coverage --reporter=verbose
+    - npm run test:coverage:report
+    - echo "✅ Unit tests completed"
+  coverage: '/All files[^|]*\|[^|]*\|[^|]*\|[^|]*\s+(\d+)/'
+  artifacts:
+    reports:
+      coverage_report:
+        coverage_format: cobertura
+        path: coverage/cobertura-coverage.xml
+      junit: test-results/unit-tests.xml
+    paths:
+      - coverage/
+    expire_in: 1 week
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+
+test:integration:
+  stage: test
+  image: node:${NODE_VERSION}-alpine
+  services:
+    - name: postgres:15-alpine
+      alias: postgres
+  variables:
+    POSTGRES_DB: test_db
+    POSTGRES_USER: test_user
+    POSTGRES_PASSWORD: test_password
+    DATABASE_URL: "postgresql://test_user:test_password@postgres:5432/test_db"
+  script:
+    - echo "🧪 Running integration tests..."
+    - npm ci
+    - npm run test:integration -- --reporter=verbose
+    - echo "✅ Integration tests completed"
+  artifacts:
+    reports:
+      junit: test-results/integration-tests.xml
+    expire_in: 1 week
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+    - if: $CI_COMMIT_BRANCH =~ /^release\/.*$/
+
+test:validation-api:
+  stage: test
+  image: node:${NODE_VERSION}-alpine
+  script:
+    - echo "🧪 Testing validation API endpoints..."
+    - cd services/validation-api
+    - npm ci
+    - npm run test:api
+    - npm run test:endpoints
     - echo "✅ Validation API tests completed"
   artifacts:
     reports:
-      junit: validation/api/test-results.xml
-    paths:
-      - validation/api/coverage/
+      junit: test-results/validation-api-tests.xml
     expire_in: 1 week
-  coverage: '/All files[^|]*\|[^|]*\s+([\d\.]+)/'
-  only:
-    - main
-    - development
-    - merge_requests
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
 
-# Test CLI validators
-test_cli_validators:
-  <<: *node_template
+test:compliance:
   stage: test
+  image: node:${NODE_VERSION}-alpine
   script:
-    - echo "🧪 Testing CLI validators..."
-    - cd validation/cli/lib
-    - npm install
-    - npm test || echo "⚠️ CLI tests skipped - no test command configured"
-    - echo "✅ CLI validation completed"
-  only:
-    - main
-    - development
-    - merge_requests
+    - echo "🧪 Testing compliance validation logic..."
+    - npm ci
+    - npm run test:compliance
+    - npm run test:dual-format
+    - echo "✅ Compliance tests completed"
+  artifacts:
+    reports:
+      junit: test-results/compliance-tests.xml
+    expire_in: 1 week
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
 
-# Lint and validate project structure
-lint_project:
-  <<: *node_template
-  stage: validate
+# Security Stage - Security scanning and vulnerability assessment
+security:scan:
+  stage: security
+  image: node:${NODE_VERSION}-alpine
   script:
-    - echo "🔍 Validating project structure..."
-    - |
-      # Check required files exist
-      required_files=(
-        "README.md"
-        "ROADMAP.md" 
-        "openapi.yaml"
-        "agent.yml"
-        "validation/api/server.js"
-        "validation/api/package.json"
-        "examples/basic/hello-agent.yaml"
-      )
-      
-      for file in "${required_files[@]}"; do
-        if [ ! -f "$file" ]; then
-          echo "❌ Missing required file: $file"
-          exit 1
-        fi
-      done
-      
-      echo "✅ All required files present"
-    
-    - echo "🔍 Checking documentation links..."
-    - |
-      # Check that key documentation files exist
-      docs_files=(
-        "docs/specification.md"
-        "docs/integration-guide.md"
-        "docs/governance.md"
-      )
-      
-      for file in "${docs_files[@]}"; do
-        if [ ! -f "$file" ]; then
-          echo "❌ Missing documentation file: $file"
-          exit 1
-        fi
-      done
-      
-      echo "✅ Documentation structure valid"
-    
-    - echo "✅ Project structure validation completed"
-  only:
-    - main
-    - development
-    - merge_requests
+    - echo "🔒 Running security scans..."
+    - npm ci
+    - npm audit --audit-level=moderate
+    - npm run security:scan
+    - echo "✅ Security scan completed"
+  artifacts:
+    reports:
+      security: gl-sast-report.json
+      dependency_scanning: gl-dependency-scanning-report.json
+    expire_in: 1 week
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
 
-# Build validation Docker image (for deployment readiness)
-build_validation_api:
+security:maestro:
+  stage: security
+  image: node:${NODE_VERSION}-alpine
+  script:
+    - echo "🔒 Running MAESTRO security framework assessment..."
+    - npm ci
+    - npm run security:maestro
+    - npm run security:threat-modeling
+    - echo "✅ MAESTRO assessment completed"
+  artifacts:
+    reports:
+      junit: test-results/maestro-assessment.xml
+    paths:
+      - security-reports/
+    expire_in: 1 week
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+
+# Compliance Stage - Regulatory and standards compliance
+compliance:iso42001:
+  stage: compliance
+  image: node:${NODE_VERSION}-alpine
+  script:
+    - echo "📋 Validating ISO 42001:2023 compliance..."
+    - npm ci
+    - npm run compliance:iso42001
+    - npm run compliance:report
+    - echo "✅ ISO 42001 compliance validation completed"
+  artifacts:
+    reports:
+      junit: test-results/iso42001-compliance.xml
+    paths:
+      - compliance-reports/
+    expire_in: 1 week
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+
+compliance:nist-rmf:
+  stage: compliance
+  image: node:${NODE_VERSION}-alpine
+  script:
+    - echo "📋 Validating NIST AI RMF 1.0 compliance..."
+    - npm ci
+    - npm run compliance:nist-rmf
+    - npm run compliance:risk-assessment
+    - echo "✅ NIST AI RMF compliance validation completed"
+  artifacts:
+    reports:
+      junit: test-results/nist-rmf-compliance.xml
+    paths:
+      - compliance-reports/
+    expire_in: 1 week
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+
+compliance:eu-ai-act:
+  stage: compliance
+  image: node:${NODE_VERSION}-alpine
+  script:
+    - echo "📋 Validating EU AI Act compliance..."
+    - npm ci
+    - npm run compliance:eu-ai-act
+    - npm run compliance:transparency
+    - echo "✅ EU AI Act compliance validation completed"
+  artifacts:
+    reports:
+      junit: test-results/eu-ai-act-compliance.xml
+    paths:
+      - compliance-reports/
+    expire_in: 1 week
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+
+# Build Stage - Create production artifacts
+build:services:
   stage: build
-  image: docker:latest
+  image: node:${NODE_VERSION}-alpine
+  script:
+    - echo "🏗️ Building validation services..."
+    - cd services/validation-api
+    - npm ci
+    - npm run build
+    - cd ../universal-agent-toolkit
+    - npm ci
+    - npm run build
+    - echo "✅ Services built successfully"
+  artifacts:
+    paths:
+      - services/*/dist/
+      - services/*/build/
+    expire_in: 1 month
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+    - if: $CI_COMMIT_BRANCH =~ /^release\/.*$/
+
+build:docker:
+  stage: build
+  image: docker:24.0.5
   services:
-    - docker:dind
+    - docker:24.0.5-dind
+  variables:
+    DOCKER_TLS_CERTDIR: "/certs"
+    DOCKER_DRIVER: overlay2
   script:
-    - echo "🐳 Building validation API Docker image..."
-    - cd validation/api
-    - |
-      if [ -f "Dockerfile" ]; then
-        docker build -t openapi-ai-agents/validation-api .
-        echo "✅ Docker image built successfully"
-      else
-        echo "⚠️ No Dockerfile found - skipping Docker build"
-      fi
-  only:
-    - main
-    - development
+    - echo "🐳 Building Docker images..."
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - cd services/validation-api
+    - docker build -t $CI_REGISTRY_IMAGE/validation-api:$CI_COMMIT_SHA .
+    - docker build -t $CI_REGISTRY_IMAGE/validation-api:latest .
+    - docker push $CI_REGISTRY_IMAGE/validation-api:$CI_COMMIT_SHA
+    - docker push $CI_REGISTRY_IMAGE/validation-api:latest
+    - cd ../universal-agent-toolkit
+    - docker build -t $CI_REGISTRY_IMAGE/universal-agent-toolkit:$CI_COMMIT_SHA .
+    - docker build -t $CI_REGISTRY_IMAGE/universal-agent-toolkit:latest .
+    - docker push $CI_REGISTRY_IMAGE/universal-agent-toolkit:$CI_COMMIT_SHA
+    - docker push $CI_REGISTRY_IMAGE/universal-agent-toolkit:latest
+    - echo "✅ Docker images built and pushed"
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+    - if: $CI_COMMIT_BRANCH =~ /^release\/.*$/
 
-# Integration test - validate server can start
-integration_test:
-  <<: *node_template
-  stage: test
-  script:
-    - echo "🔗 Running integration tests..."
-    - cd validation/api
-    - npm install
-    - |
-      echo "Testing server initialization..."
-      NODE_ENV=test timeout 10s node -e "
-        const app = require('./server.js');
-        console.log('✅ Server initialized successfully');
-        process.exit(0);
-      " || echo "⚠️ Server test skipped - initialization timeout"
-      
-      echo "Testing service modules..."
-      node -e "
-        try {
-          require('./services/openapi-validator.js');
-          require('./services/agent-config-validator.js');
-          require('./services/compliance-validator.js');
-          console.log('✅ All service modules load correctly');
-        } catch (err) {
-          console.error('❌ Service module error:', err.message);
-          process.exit(1);
-        }
-      "
-      
-      echo "✅ Integration tests completed"
-  only:
-    - main
-    - development
-
-# Deploy to staging (for development branch)
-deploy_staging:
-  stage: build
+# Deploy Stage - Deploy to staging and production
+deploy:staging:
+  stage: deploy
   image: alpine:latest
+  environment:
+    name: staging
+    url: https://staging.openapi-ai-agents.org
   script:
-    - echo "🚀 Preparing staging deployment..."
-    - echo "✅ Staging deployment prepared (actual deployment configured separately)"
-  only:
-    - development
+    - echo "🚀 Deploying to staging environment..."
+    - apk add --no-cache curl
+    - curl -X POST $STAGING_DEPLOY_WEBHOOK \
+        -H "Content-Type: application/json" \
+        -d "{\"ref\": \"$CI_COMMIT_REF_NAME\", \"sha\": \"$CI_COMMIT_SHA\"}"
+    - echo "✅ Staging deployment initiated"
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
   when: manual
 
-# Success notification
-success:
+deploy:production:
+  stage: deploy
+  image: alpine:latest
+  environment:
+    name: production
+    url: https://api.openapi-ai-agents.org
+  script:
+    - echo "🚀 Deploying to production environment..."
+    - apk add --no-cache curl
+    - curl -X POST $PRODUCTION_DEPLOY_WEBHOOK \
+        -H "Content-Type: application/json" \
+        -d "{\"ref\": \"$CI_COMMIT_REF_NAME\", \"sha\": \"$CI_COMMIT_SHA\"}"
+    - echo "✅ Production deployment initiated"
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+  when: manual
+  dependencies:
+    - deploy:staging
+
+# Release Stage - Create releases and tags
+release:create:
+  stage: release
+  image: registry.gitlab.com/gitlab-org/release-cli:latest
+  script:
+    - echo "🏷️ Creating release..."
+    - |
+      release-cli create \
+        --name "Release $CI_COMMIT_TAG" \
+        --tag-name $CI_COMMIT_TAG \
+        --assets-link "{\"name\":\"Validation API\",\"url\":\"$CI_REGISTRY_IMAGE/validation-api:$CI_COMMIT_TAG\"}" \
+        --assets-link "{\"name\":\"Universal Agent Toolkit\",\"url\":\"$CI_REGISTRY_IMAGE/universal-agent-toolkit:$CI_COMMIT_TAG\"}" \
+        --assets-link "{\"name\":\"Compliance Report\",\"url\":\"$CI_PROJECT_URL/-/jobs/artifacts/$CI_COMMIT_TAG/browse/compliance-reports?job=compliance:iso42001\"}"
+  rules:
+    - if: $CI_COMMIT_TAG =~ /^v\d+\.\d+\.\d+$/
+  dependencies:
+    - build:docker
+    - compliance:iso42001
+
+# Quality Gates and Notifications
+quality:gate:
+  stage: .pre
+  image: node:${NODE_VERSION}-alpine
+  script:
+    - echo "🔍 Running quality gates..."
+    - npm ci
+    - npm run quality:check
+    - |
+      if [ "$CI_COMMIT_BRANCH" = "$CI_DEFAULT_BRANCH" ]; then
+        echo "🚨 Quality gate: Main branch protection"
+        npm run quality:strict
+      fi
+    - echo "✅ Quality gates passed"
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+
+notify:success:
   stage: .post
   image: alpine:latest
   script:
-    - echo "🎉 All CI stages completed successfully!"
-    - echo "✅ OpenAPI AI Agents Standard validation passed"
-    - echo "📊 Ready for development and integration"
-  only:
-    - main
-    - development
-    - merge_requests
+    - echo "✅ Pipeline completed successfully"
+    - |
+      if [ -n "$SLACK_WEBHOOK_URL" ]; then
+        curl -X POST $SLACK_WEBHOOK_URL \
+          -H "Content-Type: application/json" \
+          -d "{\"text\":\"🎉 OpenAPI AI Agents Standard pipeline completed successfully! Branch: $CI_COMMIT_REF_NAME, Commit: $CI_COMMIT_SHA\"}"
+      fi
+  rules:
+    - when: on_success
+
+notify:failure:
+  stage: .post
+  image: alpine:latest
+  script:
+    - echo "❌ Pipeline failed"
+    - |
+      if [ -n "$SLACK_WEBHOOK_URL" ]; then
+        curl -X POST $SLACK_WEBHOOK_URL \
+          -H "Content-Type: application/json" \
+          -d "{\"text\":\"🚨 OpenAPI AI Agents Standard pipeline failed! Branch: $CI_COMMIT_REF_NAME, Commit: $CI_COMMIT_SHA. Check: $CI_PIPELINE_URL\"}"
+      fi
+  rules:
+    - when: on_failure
+
+# Performance and Monitoring
+performance:test:
+  stage: test
+  image: node:${NODE_VERSION}-alpine
+  script:
+    - echo "📊 Running performance tests..."
+    - npm ci
+    - npm run test:performance
+    - npm run test:load
+    - echo "✅ Performance tests completed"
+  artifacts:
+    reports:
+      junit: test-results/performance-tests.xml
+    paths:
+      - performance-reports/
+    expire_in: 1 week
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+  allow_failure: true
+
+# Documentation Generation
+docs:generate:
+  stage: build
+  image: node:${NODE_VERSION}-alpine
+  script:
+    - echo "📚 Generating documentation..."
+    - npm ci
+    - npm run docs:generate
+    - npm run docs:validate
+    - echo "✅ Documentation generated"
+  artifacts:
+    paths:
+      - docs/generated/
+      - docs/api/
+    expire_in: 1 month
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+    - if: $CI_COMMIT_BRANCH =~ /^release\/.*$/
+
+# Security and Compliance Reporting
+report:compliance:
+  stage: .post
+  image: node:${NODE_VERSION}-alpine
+  script:
+    - echo "📋 Generating compliance report..."
+    - npm ci
+    - npm run report:compliance
+    - npm run report:security
+    - echo "✅ Compliance report generated"
+  artifacts:
+    paths:
+      - compliance-reports/
+      - security-reports/
+    expire_in: 1 month
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+  dependencies:
+    - compliance:iso42001
+    - compliance:nist-rmf
+    - compliance:eu-ai-act
+    - security:maestro

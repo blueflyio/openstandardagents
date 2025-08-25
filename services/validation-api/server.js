@@ -15,6 +15,7 @@ const ProtocolValidator = require('./services/protocol-validator');
 const TokenEstimator = require('./services/token-estimator');
 const FrameworkService = require('./services/framework-service');
 const TDDAIIntegration = require('./services/tddai-integration');
+const DualFormatValidator = require('./services/dual-format-validator');
 
 const app = express();
 const port = process.env.PORT || 3001;
@@ -80,7 +81,8 @@ const services = {
   protocol: new ProtocolValidator(),
   tokenEstimator: new TokenEstimator(),
   frameworks: new FrameworkService(),
-  tddai: new TDDAIIntegration()
+  tddai: new TDDAIIntegration(),
+  dualFormat: new DualFormatValidator()
 };
 
 // Initialize TDDAI integration
@@ -237,6 +239,41 @@ app.post('/api/v1/validate/protocols', [
 
   } catch (error) {
     logger.error('Protocol validation error:', error);
+    res.status(500).json({ error: 'Internal validation error' });
+  }
+});
+
+// Dual-format validation (agent.yml + openapi.yaml)
+app.post('/api/v1/validate/dual-format', [
+  body('agent_config').isObject().withMessage('Agent configuration must be a valid object'),
+  body('openapi_spec').isObject().withMessage('OpenAPI specification must be a valid object')
+], async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ 
+        error: 'Invalid request format',
+        details: errors.array()
+      });
+    }
+
+    const { agent_config, openapi_spec } = req.body;
+    const result = await services.dualFormat.validateDualFormat(agent_config, openapi_spec);
+    
+    const response = {
+      valid: result.valid,
+      certification_level: result.certification_level,
+      passed: result.passed,
+      warnings: result.warnings,
+      errors: result.errors,
+      details: result.details
+    };
+
+    const statusCode = result.valid ? 200 : 400;
+    res.status(statusCode).json(response);
+
+  } catch (error) {
+    logger.error('Dual-format validation error:', error);
     res.status(500).json({ error: 'Internal validation error' });
   }
 });

@@ -52,8 +52,8 @@ class UniversalAgentToolkit {
 
   loadTemplates() {
     try {
-      const agentTemplate = yaml.load(fs.readFileSync(path.join(__dirname, '../../agent.yml'), 'utf8'));
-      const openapiTemplate = yaml.load(fs.readFileSync(path.join(__dirname, '../../openapi.yaml'), 'utf8'));
+      const agentTemplate = yaml.load(fs.readFileSync(path.join(__dirname, '../../examples/basic/agent.yml'), 'utf8'));
+      const openapiTemplate = yaml.load(fs.readFileSync(path.join(__dirname, '../../examples/basic/openapi.yaml'), 'utf8'));
       return { agent: agentTemplate, openapi: openapiTemplate };
     } catch (error) {
       logger.error('Failed to load templates:', error);
@@ -84,6 +84,54 @@ class UniversalAgentToolkit {
     };
   }
 
+  discoverAgents() {
+    const agents = [];
+    const searchPaths = [
+      path.join(__dirname, '../../examples/agents'),
+      path.join(__dirname, '../../services')
+    ];
+
+    for (const searchPath of searchPaths) {
+      try {
+        if (fs.existsSync(searchPath)) {
+          const entries = fs.readdirSync(searchPath, { withFileTypes: true });
+          
+          for (const entry of entries) {
+            if (entry.isDirectory()) {
+              const agentPath = path.join(searchPath, entry.name);
+              const agentYmlPath = path.join(agentPath, 'agent.yml');
+              const openapiYmlPath = path.join(agentPath, 'openapi.yaml');
+              
+              if (fs.existsSync(agentYmlPath) && fs.existsSync(openapiYmlPath)) {
+                try {
+                  const agentConfig = yaml.load(fs.readFileSync(agentYmlPath, 'utf8'));
+                  const openapiSpec = yaml.load(fs.readFileSync(openapiYmlPath, 'utf8'));
+                  
+                  agents.push({
+                    name: entry.name,
+                    path: agentPath,
+                    type: searchPath.includes('examples') ? 'example' : 'service',
+                    agent_config: agentConfig,
+                    openapi_spec: openapiSpec,
+                    endpoints: Object.keys(openapiSpec.paths || {}),
+                    capabilities: agentConfig.spec?.capabilities || [],
+                    certification_level: agentConfig.metadata?.labels?.['openapi-ai-agents.org/certification-level'] || 'bronze'
+                  });
+                } catch (parseError) {
+                  logger.warn(`Failed to parse agent ${entry.name}:`, parseError.message);
+                }
+              }
+            }
+          }
+        }
+      } catch (error) {
+        logger.warn(`Failed to scan directory ${searchPath}:`, error.message);
+      }
+    }
+
+    return agents;
+  }
+
   async validateWithAPI(specification) {
     try {
       const response = await axios.post(`${this.validationApiUrl}/validate/openapi`, {
@@ -99,6 +147,25 @@ class UniversalAgentToolkit {
     } catch (error) {
       logger.error('Validation API call failed:', error.message);
       throw new Error('Validation service unavailable');
+    }
+  }
+
+  async validateDualFormatWithAPI(agentConfig, openApiSpec) {
+    try {
+      const response = await axios.post(`${this.validationApiUrl}/validate/dual-format`, {
+        agent_config: agentConfig,
+        openapi_spec: openApiSpec
+      }, {
+        headers: {
+          'X-API-Key': 'toolkit-service',
+          'Content-Type': 'application/json'
+        },
+        timeout: 15000 // Longer timeout for dual-format validation
+      });
+      return response.data;
+    } catch (error) {
+      logger.error('Dual-format validation API call failed:', error.message);
+      throw new Error('Dual-format validation service unavailable');
     }
   }
 
@@ -334,6 +401,35 @@ app.post('/validate', [
   }
 });
 
+// Validate dual-format (agent.yml + openapi.yaml)
+app.post('/validate/dual-format', [
+  body('agent_config').isObject(),
+  body('openapi_spec').isObject()
+], async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    const { agent_config, openapi_spec } = req.body;
+    const validation = await toolkit.validateDualFormatWithAPI(agent_config, openapi_spec);
+    
+    res.json({
+      success: true,
+      validation_result: validation,
+      certification_level: validation.certification_level,
+      consistency_checks: validation.details?.relationship_validation || {},
+      next_steps: validation.valid ? 
+        ['Execute agent with full compliance', 'Add to orchestration', 'Deploy to production'] :
+        ['Fix validation errors', 'Address warnings', 'Re-validate dual-format']
+    });
+  } catch (error) {
+    logger.error('Dual-format validation failed:', error);
+    res.status(500).json({ error: 'Dual-format validation failed', details: error.message });
+  }
+});
+
 // Protocol bridges
 app.get('/bridges/:protocol', (req, res) => {
   const { protocol } = req.params;
@@ -362,6 +458,129 @@ app.get('/templates', (req, res) => {
       openapi_template: '/templates/openapi'
     }
   });
+});
+
+// Get agent template
+app.get('/templates/agent', (req, res) => {
+  if (!toolkit.templates.agent) {
+    return res.status(404).json({ error: 'Agent template not loaded' });
+  }
+  res.json({
+    template: toolkit.templates.agent,
+    source: 'examples/basic/agent.yml'
+  });
+});
+
+// Get OpenAPI template
+app.get('/templates/openapi', (req, res) => {
+  if (!toolkit.templates.openapi) {
+    return res.status(404).json({ error: 'OpenAPI template not loaded' });
+  }
+  res.json({
+    template: toolkit.templates.openapi,
+    source: 'examples/basic/openapi.yaml'
+  });
+});
+
+// Discover all agents in new structure
+app.get('/agents/discover', async (req, res) => {
+  try {
+    const agents = toolkit.discoverAgents();
+    const validateOnDiscovery = req.query.validate === 'true';
+    
+    // If validation requested, validate each agent using dual-format validation
+    if (validateOnDiscovery) {
+      const validatedAgents = [];
+      
+      for (const agent of agents) {
+        try {
+          const validation = await toolkit.validateDualFormatWithAPI(agent.agent_config, agent.openapi_spec);
+          validatedAgents.push({
+            ...agent,
+            validation_result: {
+              valid: validation.valid,
+              certification_level: validation.certification_level,
+              passed_checks: validation.passed?.length || 0,
+              warnings: validation.warnings?.length || 0,
+              errors: validation.errors?.length || 0,
+              last_validated: new Date().toISOString()
+            }
+          });
+        } catch (validationError) {
+          validatedAgents.push({
+            ...agent,
+            validation_result: {
+              valid: false,
+              error: 'Validation service unavailable',
+              last_validated: new Date().toISOString()
+            }
+          });
+        }
+      }
+      
+      return res.json({
+        success: true,
+        agents_found: agents.length,
+        search_paths: ['examples/agents/', 'services/'],
+        validation_enabled: true,
+        agents: validatedAgents.map(agent => ({
+          name: agent.name,
+          type: agent.type,
+          certification_level: agent.validation_result?.certification_level || agent.certification_level,
+          capabilities: agent.capabilities,
+          endpoints: agent.endpoints.length,
+          validation_status: agent.validation_result?.valid ? 'valid' : 'invalid',
+          validation_summary: {
+            passed: agent.validation_result?.passed_checks || 0,
+            warnings: agent.validation_result?.warnings || 0,
+            errors: agent.validation_result?.errors || 0
+          }
+        })),
+        detailed_agents: validatedAgents
+      });
+    }
+    
+    // Default behavior without validation
+    res.json({
+      success: true,
+      agents_found: agents.length,
+      search_paths: ['examples/agents/', 'services/'],
+      validation_enabled: false,
+      validation_hint: 'Add ?validate=true to enable dual-format validation on discovery',
+      agents: agents.map(agent => ({
+        name: agent.name,
+        type: agent.type,
+        certification_level: agent.certification_level,
+        capabilities: agent.capabilities,
+        endpoints: agent.endpoints.length
+      })),
+      detailed_agents: agents
+    });
+  } catch (error) {
+    logger.error('Agent discovery failed:', error);
+    res.status(500).json({ error: 'Agent discovery failed', details: error.message });
+  }
+});
+
+// Get specific agent details
+app.get('/agents/:agentName', (req, res) => {
+  try {
+    const { agentName } = req.params;
+    const agents = toolkit.discoverAgents();
+    const agent = agents.find(a => a.name === agentName);
+    
+    if (!agent) {
+      return res.status(404).json({ error: `Agent '${agentName}' not found` });
+    }
+    
+    res.json({
+      success: true,
+      agent: agent
+    });
+  } catch (error) {
+    logger.error(`Failed to get agent ${req.params.agentName}:`, error);
+    res.status(500).json({ error: 'Failed to get agent', details: error.message });
+  }
 });
 
 // Error handling middleware

@@ -56,6 +56,77 @@ x-protocol-bridges:
     discovery_endpoint: "/a2a/discover"
 ```
 
+## Dual-Format Validation
+
+The OpenAPI AI Agents Standard requires both `agent.yml` and `openapi.yaml` files to work together seamlessly. Dual-format validation ensures consistency and compliance across both specification formats.
+
+### Validation API
+
+The standard provides a comprehensive validation API endpoint:
+
+```http
+POST /api/v1/validate/dual-format
+Content-Type: application/json
+X-API-Key: your-api-key
+
+{
+  "agent_config": { /* agent.yml content */ },
+  "openapi_spec": { /* openapi.yaml content */ }
+}
+```
+
+### Validation Response
+
+```json
+{
+  "valid": true,
+  "certification_level": "gold",
+  "passed": [
+    "✅ Agent configuration schema valid",
+    "✅ OpenAPI specification schema valid",
+    "✅ Capability-endpoint mapping validated"
+  ],
+  "warnings": [],
+  "errors": [],
+  "details": {
+    "agent_config": { /* validation details */ },
+    "openapi_spec": { /* validation details */ },
+    "relationship_validation": { /* cross-validation details */ }
+  }
+}
+```
+
+### Cross-Format Consistency Checks
+
+1. **Metadata Consistency**
+   - Agent name and OpenAPI title correlation
+   - Version synchronization between formats
+   - Description alignment
+
+2. **Capability-Endpoint Mapping**
+   - `universal_agent_interface` → `/agent/orchestrate`
+   - `protocol_bridging` → `/protocols/mcp/bridge`
+   - `token_optimization` → `/tokens/preflight`
+   - `compliance_validation` → `/governance/compliance/validate`
+
+3. **Security Alignment**
+   - Authentication methods consistency
+   - Security scheme definitions
+   - Authorization requirements
+
+4. **Protocol Support**
+   - Protocol declarations in agent.yml
+   - Corresponding endpoints in openapi.yaml
+   - Transport mechanism compatibility
+
+### Certification Levels
+
+Dual-format validation determines the agent's certification level:
+
+- **Bronze**: Basic validation passed, may have errors
+- **Silver**: Good compliance (≤3 warnings, ≥10 passed checks)  
+- **Gold**: Excellent compliance (0 warnings, ≥15 passed checks)
+
 ## Protocol Interoperability
 
 ### Model Context Protocol (MCP)
