@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: OpenAPI for AI Agents - Universal Standard
-  version: 2.1.0
+  version: 0.1.0
   description: |
     Universal OpenAPI specification for AI Agent interoperability across all frameworks.
     This standard enables seamless communication between AI agents regardless of their
@@ -1600,8 +1600,8 @@ webhooks:
           description: Compliance violation processed
 
 # OpenAPI Extensions for AI Agents
-x-ai-agent-standard:
-  version: "2.1.0"
+x-openapi-ai-agents-standard:
+  version: "0.1.0"
   certification: "gold"
   compliance_frameworks:
     - ISO_42001_2023

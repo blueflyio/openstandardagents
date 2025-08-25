@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: Universal Agent API
-  version: 2.1.0
+  version: 0.1.0
   description: |
     Universal AI Agent API compliant with OpenAPI for AI Agents Standard.
     Provides multi-domain AI capabilities with enterprise-grade security, governance,
@@ -16,7 +16,7 @@ info:
     email: universal-agent@example.com
     
   x-compliance:
-    standard: OpenAPI for AI Agents v2.1.0
+    standard: OpenAPI AI Agents Standard v0.1.0
     certification-level: gold
     frameworks:
       - ISO_42001_2023

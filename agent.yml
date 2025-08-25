@@ -1,12 +1,12 @@
 # OpenAPI for AI Agents - Universal Agent Configuration Standard
-# Version: 2.1.0 - Production Ready
+# Version: 0.1.0 - Production Ready
 # Framework-agnostic configuration for any AI agent implementation
 
 apiVersion: "ai.agents/v2"
 kind: "Agent"
 metadata:
   name: "universal-ai-agent"
-  version: "2.1.0"
+  version: "0.1.0"
   namespace: "ai-agents"
   labels:
     domain: "universal"
@@ -73,7 +73,7 @@ token_management:
 
 # 3. Schema Evolution & Versioning
 x-schema-evolution:
-  version: "2.1.0"
+  version: "0.1.0"
   compatibility: "BACKWARD_TRANSITIVE"
   semantic_versioning: true
   

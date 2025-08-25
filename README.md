@@ -1,6 +1,6 @@
 # OpenAPI for AI Agents Standard
 
-[![Version](https://img.shields.io/badge/version-2.1.0-blue.svg)](https://github.com/openapi-ai-agents/standard/releases)
+[![Version](https://img.shields.io/badge/OpenAPI_AI_Agents_Standard-0.1.0-blue.svg)](https://github.com/openapi-ai-agents/standard/releases)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![OpenAPI](https://img.shields.io/badge/OpenAPI-3.1-orange.svg)](openapi.yaml)
 [![Certification](https://img.shields.io/badge/certification-GOLD-gold.svg)](universal-agent/COMPLIANCE_REPORT.md)

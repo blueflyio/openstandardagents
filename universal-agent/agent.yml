@@ -1,12 +1,12 @@
 # OpenAPI for AI Agents - Universal Agent Configuration
-# Version: 2.1.0 - Production Ready
-# Compliant with OpenAPI for AI Agents Standard v2.1.0
+# Version: 0.1.0 - Production Ready
+# Compliant with OpenAPI AI Agents Standard v0.1.0
 
 apiVersion: "ai.agents/v2"
 kind: "Agent"
 metadata:
   name: "universal-agent"
-  version: "2.1.0"
+  version: "0.1.0"
   namespace: "ai-agents"
   labels:
     domain: "multi-domain"
@@ -73,7 +73,7 @@ token_management:
 
 # 3. Schema Evolution & Versioning
 x-schema-evolution:
-  version: "2.1.0"
+  version: "0.1.0"
   compatibility: "BACKWARD_TRANSITIVE"
   semantic_versioning: true
   

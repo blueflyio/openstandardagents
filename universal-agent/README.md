@@ -1,12 +1,12 @@
 # Universal Agent
 
-🏆 **GOLD CERTIFIED** - Fully compliant with OpenAPI for AI Agents Standard v2.1.0
+🏆 **GOLD CERTIFIED** - Fully compliant with OpenAPI AI Agents Standard v0.1.0
 
 Universal AI agent for multi-domain operations with enterprise-grade security, governance, and comprehensive protocol interoperability.
 
 ## 🎯 Compliance Status
 
-**Standard**: OpenAPI for AI Agents v2.1.0  
+**Standard**: OpenAPI AI Agents Standard v0.1.0  
 **Certification Level**: GOLD 🏆  
 **Compliance**: ISO 42001:2023 Certified  
 
@@ -174,6 +174,6 @@ npm run validate:report
 
 ---
 
-**Version**: 2.1.0  
-**Standard**: OpenAPI for AI Agents v2.1.0  
+**Version**: 0.1.0  
+**Standard**: OpenAPI AI Agents Standard v0.1.0  
 **Last Updated**: 2024-12-27

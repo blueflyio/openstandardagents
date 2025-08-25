@@ -13,8 +13,8 @@
       "name": "MIT",
       "url": "https://opensource.org/licenses/MIT"
     },
-    "x-agent-metadata": {
-      "class": "tool",
+    "x-openapi-ai-agents-standard": {
+      "version": "0.1.0",
       "certification_level": "gold",
       "protocols": ["openapi"],
       "compliance": ["ISO_42001_2023", "NIST_AI_RMF_1_0"]
@@ -831,7 +831,7 @@
       }
     }
   },
-  "x-token-management": {
+  "x-openapi-ai-agents-token-management": {
     "provider": "tiktoken",
     "budgets": {
       "per_request": 1000,
@@ -843,7 +843,7 @@
       "batch_processing": true
     }
   },
-  "x-protocol-bridges": {
+  "x-openapi-ai-agents-protocol-bridges": {
     "openapi": {
       "enabled": true,
       "version": "3.1.0"

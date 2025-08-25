@@ -117,8 +117,8 @@ components:
       description: Simple API key for demonstration
 
 # OpenAPI Extensions for AI Agents
-x-ai-agent-standard:
-  version: "2.1.0"
+x-openapi-ai-agents-standard:
+  version: "0.1.0"
   certification: "bronze"
   
 x-token-optimization:
