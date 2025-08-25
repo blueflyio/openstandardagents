@@ -1,0 +1,962 @@
+openapi: 3.1.0
+info:
+  title: Universal Agent API
+  version: 2.1.0
+  description: |
+    Universal AI Agent API compliant with OpenAPI for AI Agents Standard.
+    Provides multi-domain AI capabilities with enterprise-grade security, governance,
+    and comprehensive protocol interoperability.
+    
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+    
+  contact:
+    name: Universal Agent Team
+    email: universal-agent@example.com
+    
+  x-compliance:
+    standard: OpenAPI for AI Agents v2.1.0
+    certification-level: gold
+    frameworks:
+      - ISO_42001_2023
+      - NIST_AI_RMF_1_0
+      - EU_AI_Act
+
+servers:
+  - url: http://localhost:8080/api/v1
+    description: Development server
+  - url: https://api.universal-agent.com/v1
+    description: Production server
+    
+tags:
+  - name: Agent Orchestration
+    description: Multi-agent orchestration and coordination
+  - name: Protocol Interoperability
+    description: MCP, A2A, and AITP protocol bridges
+  - name: Token Management
+    description: Advanced token optimization with tiktoken
+  - name: Governance
+    description: Compliance and certification management
+  - name: Security
+    description: MAESTRO security framework operations
+  - name: Testing
+    description: Contract and chaos testing capabilities
+  - name: Health & Observability
+    description: System health and monitoring
+
+paths:
+  /agents/orchestrate:
+    post:
+      operationId: orchestrateAgents
+      summary: Orchestrate multi-agent workflow
+      description: |
+        Execute complex multi-agent workflows using various orchestration patterns
+        including diagnostic-first, parallel validation, and magentic orchestration.
+      tags:
+        - Agent Orchestration
+      
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OrchestrationRequest'
+            examples:
+              drupal_development:
+                summary: Drupal module development workflow
+                value:
+                  orchestration_pattern: diagnostic_first
+                  domain: drupal
+                  compliance_level: standard
+                  agents:
+                    - name: drupal_expert
+                      role: analyzer
+                      capabilities:
+                        - module_development
+                        - drupal_best_practices
+                    - name: test_agent
+                      role: validator
+                      capabilities:
+                        - unit_testing
+                        - integration_testing
+                  token_budget:
+                    max_tokens: 50000
+                    alert_threshold: 40000
+                    optimization: aggressive
+                    
+      responses:
+        '200':
+          description: Orchestration initiated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrchestrationResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /protocols/mcp/bridge:
+    post:
+      operationId: bridgeMCP
+      summary: Bridge to Model Context Protocol
+      description: |
+        Convert OpenAPI agent interactions to MCP format for seamless
+        integration with MCP-native tools and resources.
+      tags:
+        - Protocol Interoperability
+        
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MCPBridgeRequest'
+              
+      responses:
+        '200':
+          description: MCP bridge established
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MCPBridgeResponse'
+
+  /protocols/a2a/negotiate:
+    post:
+      operationId: negotiateA2A
+      summary: Negotiate Agent-to-Agent protocol
+      description: |
+        Establish direct agent-to-agent communication using Google's A2A protocol
+        for low-latency direct agent collaboration.
+      tags:
+        - Protocol Interoperability
+        
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/A2ANegotiationRequest'
+              
+      responses:
+        '200':
+          description: A2A protocol negotiated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/A2ANegotiationResponse'
+
+  /tokens/preflight:
+    post:
+      operationId: preflightTokens
+      summary: Token pre-flight analysis
+      description: |
+        Comprehensive token analysis using tiktoken for precise counting,
+        cost estimation, and optimization suggestions.
+      tags:
+        - Token Management
+        
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TokenPreflightRequest'
+              
+      responses:
+        '200':
+          description: Token analysis complete
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenPreflightResponse'
+
+  /governance/compliance/validate:
+    post:
+      operationId: validateCompliance
+      summary: Validate compliance
+      description: |
+        Comprehensive compliance validation against ISO 42001:2023,
+        NIST AI RMF 1.0, EU AI Act, and domain-specific regulations.
+      tags:
+        - Governance
+        
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ComplianceValidationRequest'
+              
+      responses:
+        '200':
+          description: Compliance validation results
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ComplianceValidationResponse'
+
+  /security/maestro/assess:
+    post:
+      operationId: assessThreats
+      summary: MAESTRO threat assessment
+      description: |
+        Comprehensive threat assessment using MAESTRO framework for
+        AI agent systems covering all threat vectors.
+      tags:
+        - Security
+        
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ThreatAssessmentRequest'
+              
+      responses:
+        '200':
+          description: Threat assessment complete
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ThreatAssessmentResponse'
+
+  /testing/contract/validate:
+    post:
+      operationId: validateContract
+      summary: Validate agent contracts
+      description: |
+        Consumer-driven contract testing to ensure API compatibility
+        between agents and prevent integration failures.
+      tags:
+        - Testing
+        
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ContractValidationRequest'
+              
+      responses:
+        '200':
+          description: Contract validation results
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContractValidationResponse'
+
+  /testing/chaos/simulate:
+    post:
+      operationId: simulateChaos
+      summary: Chaos engineering simulation
+      description: |
+        Execute chaos engineering scenarios to test agent resilience
+        under various failure conditions.
+      tags:
+        - Testing
+        
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChaosSimulationRequest'
+              
+      responses:
+        '200':
+          description: Chaos simulation initiated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChaosSimulationResponse'
+
+  /health:
+    get:
+      operationId: getHealth
+      summary: System health check
+      description: |
+        Multi-dimensional health check covering agent system health,
+        token management, security posture, and compliance status.
+      tags:
+        - Health & Observability
+        
+      responses:
+        '200':
+          description: System healthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthStatus'
+        '503':
+          description: System unhealthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthStatus'
+
+  /agents:
+    get:
+      operationId: listAgents
+      summary: List available agents
+      description: |
+        Get list of all registered agents with capabilities,
+        status, and performance metrics.
+      tags:
+        - Agent Orchestration
+        
+      parameters:
+        - name: status
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [all, active, idle, disabled]
+            default: all
+        - name: capability
+          in: query
+          required: false
+          schema:
+            type: string
+            description: Filter by capability
+            
+      responses:
+        '200':
+          description: Agent list retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  agents:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/AgentInfo'
+                  total:
+                    type: integer
+                  timestamp:
+                    type: string
+                    format: date-time
+
+  /tools/{toolName}/execute:
+    post:
+      operationId: executeTool
+      summary: Execute agent tool
+      description: |
+        Execute a registered tool with automatic protocol translation,
+        token tracking, and result caching.
+      tags:
+        - Agent Orchestration
+        
+      parameters:
+        - name: toolName
+          in: path
+          required: true
+          schema:
+            type: string
+            pattern: '^[a-z]+\.[a-z]+$'
+            
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ToolExecutionRequest'
+              
+      responses:
+        '200':
+          description: Tool executed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ToolExecutionResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+components:
+  securitySchemes:
+    OAuth2PKCE:
+      type: oauth2
+      flows:
+        authorizationCode:
+          authorizationUrl: https://auth.universal-agent.com/oauth2/authorize
+          tokenUrl: https://auth.universal-agent.com/oauth2/token
+          scopes:
+            agent:orchestrate: Orchestrate multiple agents
+            agent:monitor: Monitor agent performance
+            tokens:manage: Manage token usage
+            governance:validate: Validate compliance
+            security:assess: Perform security assessments
+            
+    MutualTLS:
+      type: mutualTLS
+      
+    APIKeyRotation:
+      type: apiKey
+      in: header
+      name: X-API-Key
+      description: Rotating API key with 24-hour lifecycle
+
+  schemas:
+    OrchestrationRequest:
+      type: object
+      required:
+        - orchestration_pattern
+        - agents
+        - token_budget
+      properties:
+        orchestration_pattern:
+          type: string
+          enum: [diagnostic_first, parallel_validation, magentic_orchestration, adaptive]
+        domain:
+          type: string
+          enum: [universal, drupal, testing, general]
+        compliance_level:
+          type: string
+          enum: [basic, standard, strict, iso_42001]
+        agents:
+          type: array
+          items:
+            $ref: '#/components/schemas/AgentSpec'
+        token_budget:
+          $ref: '#/components/schemas/TokenBudget'
+        security:
+          $ref: '#/components/schemas/SecurityRequirements'
+        monitoring:
+          $ref: '#/components/schemas/MonitoringConfig'
+          
+    OrchestrationResponse:
+      type: object
+      properties:
+        orchestration_id:
+          type: string
+        status:
+          type: string
+          enum: [running, completed, failed, cancelled]
+        agents_deployed:
+          type: integer
+        estimated_completion_time:
+          type: string
+          format: date-time
+        token_usage:
+          $ref: '#/components/schemas/TokenUsage'
+        security:
+          $ref: '#/components/schemas/SecurityStatus'
+        monitoring:
+          type: object
+          properties:
+            dashboard_url:
+              type: string
+              
+    AgentSpec:
+      type: object
+      required:
+        - name
+        - role
+      properties:
+        name:
+          type: string
+        role:
+          type: string
+        capabilities:
+          type: array
+          items:
+            type: string
+        timeout_seconds:
+          type: integer
+          default: 300
+          
+    AgentInfo:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        status:
+          type: string
+          enum: [active, idle, disabled]
+        capabilities:
+          type: array
+          items:
+            type: string
+        performance:
+          type: object
+          properties:
+            success_rate:
+              type: number
+            avg_response_time_ms:
+              type: number
+            total_executions:
+              type: integer
+              
+    TokenBudget:
+      type: object
+      properties:
+        max_tokens:
+          type: integer
+        alert_threshold:
+          type: integer
+        optimization:
+          type: string
+          enum: [none, moderate, aggressive]
+        per_request_limit:
+          type: integer
+          
+    TokenUsage:
+      type: object
+      properties:
+        allocated:
+          type: integer
+        used:
+          type: integer
+        estimated_total:
+          type: integer
+        cost_usd:
+          type: number
+          
+    TokenPreflightRequest:
+      type: object
+      required:
+        - text
+        - model
+      properties:
+        text:
+          type: string
+        model:
+          type: string
+        encoding:
+          type: string
+          enum: [cl100k_base, o200k_base, p50k_base]
+        optimization_level:
+          type: string
+          enum: [none, moderate, aggressive]
+        budget_constraints:
+          type: object
+          properties:
+            max_cost_usd:
+              type: number
+            max_tokens:
+              type: integer
+              
+    TokenPreflightResponse:
+      type: object
+      properties:
+        approved:
+          type: boolean
+        token_count:
+          type: integer
+        encoding_used:
+          type: string
+        estimated_cost:
+          type: number
+        optimization:
+          type: object
+          properties:
+            applied:
+              type: boolean
+            original_tokens:
+              type: integer
+            compressed_tokens:
+              type: integer
+            compression_ratio:
+              type: number
+            techniques:
+              type: array
+              items:
+                type: string
+        budget_status:
+          type: object
+          properties:
+            within_limits:
+              type: boolean
+            remaining_budget:
+              type: number
+            utilization_percent:
+              type: number
+        recommendations:
+          type: array
+          items:
+            type: string
+            
+    MCPBridgeRequest:
+      type: object
+      required:
+        - action
+        - payload
+      properties:
+        action:
+          type: string
+          enum: [list_tools, execute_tool, list_resources, read_resource]
+        payload:
+          type: object
+        protocol_version:
+          type: string
+          default: "1.0"
+          
+    MCPBridgeResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        result:
+          type: object
+        mcp_format:
+          type: object
+        bridge_metadata:
+          type: object
+          
+    A2ANegotiationRequest:
+      type: object
+      required:
+        - agent_id
+        - target_agent_id
+      properties:
+        agent_id:
+          type: string
+        target_agent_id:
+          type: string
+        capabilities_required:
+          type: array
+          items:
+            type: string
+        handoff_context:
+          type: object
+          
+    A2ANegotiationResponse:
+      type: object
+      properties:
+        negotiation_id:
+          type: string
+        status:
+          type: string
+          enum: [established, pending, failed]
+        connection_details:
+          type: object
+        agent_card:
+          type: object
+          
+    ComplianceValidationRequest:
+      type: object
+      required:
+        - frameworks
+      properties:
+        frameworks:
+          type: array
+          items:
+            type: string
+            enum: [ISO_42001, NIST_AI_RMF, EU_AI_Act]
+        agent_config:
+          type: object
+        execution_history:
+          type: array
+          items:
+            type: object
+            
+    ComplianceValidationResponse:
+      type: object
+      properties:
+        compliant:
+          type: boolean
+        certification_level:
+          type: string
+          enum: [bronze, silver, gold]
+        findings:
+          type: array
+          items:
+            type: object
+            properties:
+              framework:
+                type: string
+              requirement:
+                type: string
+              status:
+                type: string
+                enum: [pass, fail, partial]
+              evidence:
+                type: string
+        recommendations:
+          type: array
+          items:
+            type: string
+            
+    ThreatAssessmentRequest:
+      type: object
+      required:
+        - assessment_scope
+      properties:
+        assessment_scope:
+          type: string
+          enum: [full, security, compliance, operational]
+        agent_configuration:
+          type: object
+        threat_vectors:
+          type: array
+          items:
+            type: string
+            
+    ThreatAssessmentResponse:
+      type: object
+      properties:
+        risk_level:
+          type: string
+          enum: [low, medium, high, critical]
+        threats_identified:
+          type: array
+          items:
+            type: object
+            properties:
+              type:
+                type: string
+              severity:
+                type: string
+              likelihood:
+                type: string
+              mitigation:
+                type: string
+        security_score:
+          type: number
+          minimum: 0
+          maximum: 100
+        recommendations:
+          type: array
+          items:
+            type: string
+            
+    ContractValidationRequest:
+      type: object
+      required:
+        - consumer
+        - provider
+        - contract
+      properties:
+        consumer:
+          type: string
+        provider:
+          type: string
+        contract:
+          type: object
+          
+    ContractValidationResponse:
+      type: object
+      properties:
+        valid:
+          type: boolean
+        compatibility_score:
+          type: number
+        violations:
+          type: array
+          items:
+            type: object
+            
+    ChaosSimulationRequest:
+      type: object
+      required:
+        - scenarios
+      properties:
+        scenarios:
+          type: array
+          items:
+            type: object
+            properties:
+              type:
+                type: string
+                enum: [network_failure, agent_crash, resource_exhaustion]
+              parameters:
+                type: object
+        duration_seconds:
+          type: integer
+          default: 300
+          
+    ChaosSimulationResponse:
+      type: object
+      properties:
+        simulation_id:
+          type: string
+        status:
+          type: string
+          enum: [running, completed, failed]
+        resilience_score:
+          type: number
+        failures_detected:
+          type: array
+          items:
+            type: object
+            
+    ToolExecutionRequest:
+      type: object
+      required:
+        - input
+      properties:
+        input:
+          type: object
+        options:
+          type: object
+          properties:
+            timeout:
+              type: integer
+            priority:
+              type: string
+              enum: [low, normal, high, critical]
+            cache:
+              type: boolean
+              
+    ToolExecutionResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        result:
+          type: object
+        metadata:
+          $ref: '#/components/schemas/ExecutionMetadata'
+          
+    ExecutionMetadata:
+      type: object
+      properties:
+        execution_time_ms:
+          type: integer
+        tokens_used:
+          type: integer
+        cost_usd:
+          type: number
+        cache_hit:
+          type: boolean
+        protocol_used:
+          type: string
+          
+    SecurityRequirements:
+      type: object
+      properties:
+        encryption:
+          type: string
+          enum: [AES-256-GCM, ChaCha20-Poly1305]
+        authentication:
+          type: string
+          enum: [oauth2_pkce, mutual_tls, api_key]
+        audit_trail:
+          type: boolean
+          default: true
+          
+    SecurityStatus:
+      type: object
+      properties:
+        encryption:
+          type: string
+        audit_trail_id:
+          type: string
+        compliance_status:
+          type: string
+          
+    MonitoringConfig:
+      type: object
+      properties:
+        metrics_enabled:
+          type: boolean
+          default: true
+        tracing_enabled:
+          type: boolean
+          default: true
+        logging_level:
+          type: string
+          enum: [debug, info, warn, error]
+          default: info
+          
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [healthy, degraded, unhealthy]
+        components:
+          type: object
+          additionalProperties:
+            type: object
+            properties:
+              status:
+                type: string
+              message:
+                type: string
+        uptime_seconds:
+          type: integer
+        version:
+          type: string
+
+  responses:
+    BadRequest:
+      description: Bad request
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+              message:
+                type: string
+                
+    Unauthorized:
+      description: Unauthorized
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                default: unauthorized
+              message:
+                type: string
+                
+    NotFound:
+      description: Not found
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                default: not_found
+              message:
+                type: string
+                
+    RateLimited:
+      description: Rate limited
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                default: rate_limited
+              retry_after_seconds:
+                type: integer
+                
+    InternalServerError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                default: internal_error
+              message:
+                type: string
+              trace_id:
+                type: string
+
+security:
+  - OAuth2PKCE: []
+  - MutualTLS: []
+  - APIKeyRotation: []
