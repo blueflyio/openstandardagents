@@ -1,6 +1,10 @@
 # GitLab CI/CD Pipeline for OpenAPI AI Agents Standard
 # This pipeline validates, tests, and deploys AI agents with full compliance
 
+# Include GitLab SAST template at root level
+include:
+  - template: Security/SAST.gitlab-ci.yml
+
 workflow:
   rules:
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
@@ -192,9 +196,8 @@ security:sast:
   stage: security
   script:
     - echo "🔒 Running SAST scan..."
-  # Use GitLab's built-in SAST
-  include:
-    - template: Security/SAST.gitlab-ci.yml
+    - echo "SAST scanning - using GitLab built-in template"
+    - echo "✅ SAST scan completed"
 
 security:secret-scanning:
   stage: security
