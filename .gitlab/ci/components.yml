@@ -1,0 +1,49 @@
+# GitLab CI Components Configuration
+# This file defines the components available in this project
+
+components:
+  - name: agent-validator
+    version: "1.0.0"
+    description: "Validates OpenAPI specifications against the AI Agents standard"
+    path: ".gitlab/ci-components/agent-validator/template.yml"
+    
+  - name: token-monitor
+    version: "1.0.0"
+    description: "Monitors and optimizes token usage across AI agents"
+    path: ".gitlab/ci-components/token-monitor/template.yml"
+    
+  - name: security-scan
+    version: "1.0.0"
+    description: "Comprehensive security scanning using MAESTRO framework"
+    path: ".gitlab/ci-components/security-scan/template.yml"
+    
+  - name: agent-deploy
+    version: "1.0.0"
+    description: "Automated deployment of AI agents to multiple environments"
+    path: ".gitlab/ci-components/agent-deploy/template.yml"
+
+# Component registry configuration
+registry:
+  url: "https://gitlab.bluefly.io/llm/gitlab_components"
+  namespace: "llm"
+  project: "gitlab_components"
+  
+# Usage examples
+examples:
+  basic:
+    description: "Basic component usage"
+    yaml: |
+      include:
+        - component: gitlab.bluefly.io/llm/gitlab_components/agent-validator@1.0.0
+          inputs:
+            agent-spec-file: "openapi.yaml"
+            certification-target: "silver"
+            
+  advanced:
+    description: "Advanced component usage with all components"
+    yaml: |
+      include:
+        - component: gitlab.bluefly.io/llm/gitlab_components/agent-validator@1.0.0
+        - component: gitlab.bluefly.io/llm/gitlab_components/token-monitor@1.0.0
+        - component: gitlab.bluefly.io/llm/gitlab_components/security-scan@1.0.0
+        - component: gitlab.bluefly.io/llm/gitlab_components/agent-deploy@1.0.0
