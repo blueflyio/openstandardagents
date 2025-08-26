@@ -1,12 +1,17 @@
 # Documentation Index
 
-## OpenAPI AI Agents Standard - "The Switzerland of AI Agents"
+## OpenAPI AI Agents Standard + Universal Agent Discovery Protocol (UADP)
+### "The Switzerland of AI Agents" + "Every Project AI-Ready"
 
-Welcome to the comprehensive documentation for the OpenAPI AI Agents Standard (OAAS). This standard bridges competing protocols while providing enterprise-grade compliance that makes adoption NECESSARY, not optional.
+## 🌟 **BREAKTHROUGH: Universal Agent Discovery Protocol (UADP)**
+
+**UADP revolutionizes AI agent deployment by enabling ANY PROJECT to become AI-ready by simply adding a `.agents/` folder.**
+
+Welcome to the comprehensive documentation for the OpenAPI AI Agents Standard (OAAS) and the revolutionary Universal Agent Discovery Protocol (UADP). This standard bridges competing protocols while providing enterprise-grade compliance AND enables any project worldwide to become AI-ready through simple directory conventions.
 
 ## 📚 Documentation Structure
 
-### Core Documentation
+### Core OAAS Specifications
 
 1. **[01. Technical Specification](01-technical-specification.md)**
    - Dual-format architecture (agent.yml + openapi.yaml)
@@ -43,6 +48,50 @@ Welcome to the comprehensive documentation for the OpenAPI AI Agents Standard (O
    - Paper abstracts and targets
    - Publication timeline
    - Co-authorship opportunities
+
+### 🚀 **UADP Extensions**
+
+**7. [07. Universal Agent Discovery Protocol](07-universal-agent-discovery-protocol.md)** - **🌟 REVOLUTIONARY SPECIFICATION**
+   - **Project-Level**: Make any project AI-ready with `.agents/` directory
+   - **Workspace-Level**: Automatic discovery and aggregation of all project agents
+   - **Enterprise-Level**: Global agent marketplace with governance and compliance
+   - **Complete Specification**: Technical architecture and compliance requirements
+
+**8. [08. UADP Implementation Guide](08-uadp-implementation-guide.md)** - **🛠️ PRACTICAL IMPLEMENTATION**
+   - **5-Minute Quick Start**: Make your project AI-ready immediately
+   - **Real-World Examples**: Drupal, React, ML projects with complete configurations
+   - **API Usage**: JavaScript/Python SDKs, REST endpoints, troubleshooting
+   - **Enterprise Patterns**: Monorepos, security, federation, performance optimization
+
+**9. [09. .agents/ Folder Specification](09-agents-folder-specification.md)** - **🏆 GOLDEN STANDARD**
+   - **Complete Template**: Ready-to-use `.agents/` folder with all files
+   - **Universal Framework Compatibility**: LangChain, CrewAI, AutoGen, OpenAI, Anthropic, Google
+   - **1000+ Line Agent Configuration**: Production-ready enterprise template
+   - **Cross-Platform Training Data**: Generic patterns for all major AI frameworks
+
+## 🚀 **UADP Quick Start (5 Minutes) - GOLDEN STANDARD**
+
+**Make ANY project AI-ready with the complete template:**
+
+```bash
+# 1. Copy the complete GOLDEN STANDARD template
+cp -r /path/to/openapi-ai-agents-standard/examples/.agents/ your-project/.agents/
+
+# 2. Customize for your project
+cd your-project/.agents/
+mv agent-name-skill/ your-actual-agent-name/
+
+# 3. Update configuration files
+sed -i 's/your-project-name/my-awesome-project/g' agent-registry.yml
+sed -i 's/agent-name-skill/your-actual-agent-name/g' agent-registry.yml
+sed -i 's/Your Project Name/My Awesome Project/g' context.yml
+
+# 4. Your project is now AI-discoverable with FULL framework compatibility!
+```
+
+**Result**: Your project automatically appears in workspace discovery engines with support for LangChain, CrewAI, AutoGen, OpenAI Assistants, Anthropic MCP, Google Vertex AI, and more!
+
+👉 **[Complete Implementation Guide →](08-uadp-implementation-guide.md)**
 
 ## 🎯 Quick Links
 

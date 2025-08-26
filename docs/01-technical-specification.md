@@ -6,6 +6,21 @@ The OpenAPI AI Agents Standard (OAAS) is the "Switzerland of AI Agents" - a neut
 
 ## Core Components
 
+### GOLDEN STANDARD Structure
+
+Every OAAS-compliant agent MUST follow the 4-file golden standard:
+```
+agent-name/
+├── agent.yml        # 1000+ lines of comprehensive metadata
+├── openapi.yaml     # 800+ lines of complete API specification
+├── README.md        # 400+ lines of documentation
+└── data/            # Training and configuration data
+    ├── training-data.json    # Cross-platform training patterns
+    ├── knowledge-base.json   # Domain expertise
+    ├── configurations.json   # Agent behavior settings
+    └── examples.json         # API usage examples
+```
+
 ### 1. OpenAPI 3.1 Specification (`openapi.yaml`)
 
 The main specification file defining:
@@ -17,12 +32,14 @@ The main specification file defining:
 
 ### 2. Agent Configuration (`agent.yml`)
 
-Universal agent configuration format supporting:
-- **Agent Metadata**: Name, version, capabilities, domains
-- **Protocol Support**: Which protocols the agent implements
-- **Security Configuration**: Authentication requirements
-- **Performance Parameters**: SLA, resource limits, timeouts
-- **Compliance Frameworks**: ISO 42001, NIST AI RMF, etc.
+Universal agent configuration format - THE GOLDEN STANDARD:
+- **Agent Metadata**: Name, version, capabilities, domains, annotations, labels
+- **Framework Annotations**: LangChain, CrewAI, AutoGen, OpenAI, Anthropic, Google, HuggingFace
+- **Protocol Support**: OpenAPI, MCP, A2A, UADP with bridges
+- **Security Configuration**: Authentication, RBAC, encryption at-rest and in-transit
+- **Performance Parameters**: Token optimization (35-45%), caching, compression
+- **Compliance Frameworks**: ISO 42001, NIST AI RMF, EU AI Act
+- **Enterprise Features**: Audit logging, compliance monitoring, resource requirements
 
 ### 3. Standard Extensions
 
@@ -31,9 +48,11 @@ Required OpenAPI extensions for agent compatibility:
 #### `x-openapi-ai-agents-standard`
 ```yaml
 x-openapi-ai-agents-standard:
-  version: "0.1.0"
-  certification_level: "bronze|silver|gold"
-  compliance_frameworks: ["iso_42001", "nist_ai_rmf"]
+  version: "0.1.1"  # Updated to match golden standard
+  certification_level: "bronze|silver|gold|platinum"
+  compliance_frameworks: ["iso_42001", "nist_ai_rmf", "eu_ai_act"]
+  protocols: ["openapi", "mcp", "a2a", "uadp"]
+  uadp_enabled: true
 ```
 
 #### `x-agent-metadata`

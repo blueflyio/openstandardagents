@@ -1,6 +1,18 @@
-# OpenAPI AI Agents - Example Implementations
+# OpenAPI AI Agents + UADP - Example Implementations
 
-Practical examples focused on our three core areas: **Application Development**, **AI Innovation**, and **Government Security**.
+Practical examples focused on our three core areas: **Application Development**, **AI Innovation**, and **Government Security** + **Universal Agent Discovery Protocol (UADP)**.
+
+## 🚀 **Quick Start: Make Your Project AI-Ready in 5 Minutes**
+
+👉 **[UADP Quick Start Templates](quick-start/)** - Copy, modify, done!
+
+```bash
+# Add UADP to any project:
+mkdir -p .agents/my-expert/data
+curl -o .agents/agent-registry.yml https://raw.githubusercontent.com/openapi-ai-agents/standard/main/examples/quick-start/agent-registry.yml
+curl -o .agents/context.yml https://raw.githubusercontent.com/openapi-ai-agents/standard/main/examples/quick-start/context.yml
+# Your project is now AI-discoverable!
+```
 
 ## 📁 Directory Structure
 

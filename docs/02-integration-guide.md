@@ -19,7 +19,23 @@
 
 ## Quick Start for Framework Developers
 
-### 1. Install the Standard Validation Tools
+### 1. Use the GOLDEN STANDARD Template
+
+Copy the complete GOLDEN STANDARD template and integrate it with your framework:
+
+```bash
+# Copy the complete template
+cp -r examples/.agents/ your-framework-integration/.agents/
+
+# Customize for your framework
+cd your-framework-integration/.agents/
+mv agent-name-skill/ your-framework-agent/
+
+# Update with framework-specific configurations
+# See framework integration examples in agent.yml
+```
+
+### 2. Install the Standard Validation Tools
 
 ```bash
 # NPM package (coming soon)

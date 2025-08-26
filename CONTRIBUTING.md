@@ -1,15 +1,43 @@
-# Contributing to OpenAPI AI Agents Standard
+# Contributing to OpenAPI AI Agents Standard + Universal Agent Discovery Protocol (UADP)
 
-Thank you for your interest in contributing to the OpenAPI AI Agents Standard - the "Switzerland of AI Agents"! This document provides guidelines for contributing to make the process smooth and effective.
+Thank you for your interest in contributing to the OpenAPI AI Agents Standard - the "Switzerland of AI Agents" and the revolutionary Universal Agent Discovery Protocol (UADP)! This document provides guidelines for contributing to make the process smooth and effective.
+
+## 🌟 **BREAKTHROUGH: Universal Agent Discovery Protocol (UADP)**
+
+UADP is a game-changing extension that enables **any project worldwide** to become AI-ready by simply adding a `.agents/` directory. This creates a decentralized network of specialized AI capabilities.
 
 ## 🌟 Why Contribute?
 
-By contributing to this standard, you're helping build the necessary bridge between competing AI ecosystems. Your contributions will:
-- Enable seamless communication between MCP, A2A, and other protocols
-- Provide enterprise-grade compliance (ISO 42001, NIST AI RMF, EU AI Act)
-- Reduce development time through protocol bridges, not new protocols
-- Establish the de facto standard for AI agent governance
-- Create monetization opportunities through certification programs
+By contributing to this standard and UADP, you're helping build:
+- **Universal AI Readiness**: Any project can add `.agents/` folder → instantly AI-discoverable
+- **Decentralized Intelligence**: Projects maintain specialized agents, workspaces aggregate capabilities
+- **Zero-Config Integration**: Standard interface, automatic discovery, contextual awareness  
+- **Enterprise Scale**: From single developer to Fortune 500 agent marketplaces
+- **Protocol Bridging**: Seamless communication between MCP, A2A, and other protocols
+- **Compliance Framework**: Enterprise-grade compliance (ISO 42001, NIST AI RMF, EU AI Act)
+- **Academic Impact**: Peer-reviewed publications establishing the de facto standard
+
+## 🎯 **UADP Contribution Areas**
+
+### **Priority 1: Core UADP Infrastructure** 
+- **Discovery Engine**: Workspace scanning and agent indexing
+- **Context Aggregator**: Project intelligence and domain classification
+- **Universal Orchestrator**: Optimal agent deployment and coordination
+- **Registry Standards**: Agent manifest and capability definitions
+
+### **Priority 2: UADP-Enabled Agents**
+- **Migration & Standardization**: Convert any agent format to OAAS+UADP
+- **Protocol Bridges**: MCP, A2A, FIPA protocol translation
+- **Compliance Validators**: Automated governance and regulatory compliance
+- **Domain Experts**: Specialized agents for various industries/frameworks
+
+### **Priority 3: Standardization Improvements** 🆕 CRITICAL
+*Based on real-world production audit findings*
+
+- **Agent Status Consistency**: Canonical lifecycle states across all definitions
+- **Path Portability**: Template system for environment-independent configurations
+- **Security Configuration**: Mandatory security schemes for all API endpoints
+- **Definition Consolidation**: Single source of truth for agent specifications
 
 ## 📋 How to Contribute
 
@@ -21,6 +49,14 @@ By contributing to this standard, you're helping build the necessary bridge betw
 ### 2. Types of Contributions
 
 #### 🔧 Technical Contributions (PRIORITY AREAS)
+
+**HIGH PRIORITY - Audit-Based Improvements**
+- **Agent Status Standardization**: Fix inconsistent status tracking across agent definitions
+- **Path Template System**: Replace hardcoded paths with portable environment variables
+- **Security Configuration**: Ensure all API endpoints have proper authentication schemes
+- **Context Validation**: Implement completeness scoring for project context.yml files
+
+**ONGOING PRIORITIES**
 - **Protocol Bridges**: MCP and A2A bridges are CRITICAL - we embrace, not compete
 - **Enterprise Integrations**: Salesforce→OpenAI, Copilot→Vertex bridges needed
 - **Compliance Tools**: ISO 42001, NIST AI RMF validation tools
