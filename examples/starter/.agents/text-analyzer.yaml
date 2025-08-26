@@ -1,0 +1,226 @@
+# Professional Text Analysis Agent - Starter Level
+# 150-200 lines with real substance and competitive advantages
+apiVersion: openapi-ai-agents/v0.2.0
+kind: Agent
+metadata:
+  name: text-analyzer
+  version: 2.0.0
+  description: Production-ready text analysis with multi-framework support
+  labels:
+    domain: nlp
+    tier: production
+    complexity: starter
+  annotations:
+    # Framework compatibility - our competitive advantage
+    frameworks/langchain: "native"
+    frameworks/crewai: "native" 
+    frameworks/autogen: "compatible"
+    frameworks/openai: "assistants-api"
+    bridge/mcp: "supported"
+    
+    # UADP Discovery - unique to OAAS
+    uadp/auto-discovery: "enabled"
+    uadp/workspace-scan: "true"
+    uadp/capability-advertising: "broadcast"
+    
+spec:
+  # Clear capabilities with framework mappings
+  capabilities:
+    - id: sentiment_analysis
+      description: "Analyze sentiment with confidence scoring"
+      frameworks: [langchain, crewai, openai]
+      output_schema:
+        type: object
+        properties:
+          sentiment: {type: string, enum: [positive, negative, neutral]}
+          confidence: {type: number, minimum: 0, maximum: 1}
+          
+    - id: entity_extraction  
+      description: "Extract named entities (PERSON, ORG, LOCATION)"
+      frameworks: [langchain, autogen, openai]
+      output_schema:
+        type: array
+        items:
+          type: object
+          properties:
+            text: {type: string}
+            label: {type: string}
+            confidence: {type: number}
+            
+    - id: keyword_extraction
+      description: "Extract key terms and phrases"
+      frameworks: all
+      
+    - id: text_classification
+      description: "Classify text into predefined categories"
+      frameworks: [langchain, crewai]
+
+  # OpenAPI specification - industry standard foundation
+  api:
+    openapi: "3.1.0"
+    servers:
+      - url: http://localhost:8080
+        description: Local development
+      - url: https://api.example.com
+        description: Production deployment
+        
+    paths:
+      /analyze:
+        post:
+          operationId: analyzeText
+          summary: Comprehensive text analysis
+          requestBody:
+            required: true
+            content:
+              application/json:
+                schema:
+                  type: object
+                  required: [text]
+                  properties:
+                    text:
+                      type: string
+                      minLength: 1
+                      maxLength: 10000
+                      description: Text to analyze
+                    options:
+                      type: object
+                      properties:
+                        include_entities: {type: boolean, default: true}
+                        include_sentiment: {type: boolean, default: true}
+                        include_keywords: {type: boolean, default: false}
+                        confidence_threshold: {type: number, default: 0.7}
+          responses:
+            200:
+              description: Analysis results
+              content:
+                application/json:
+                  schema:
+                    type: object
+                    properties:
+                      sentiment:
+                        type: object
+                        properties:
+                          label: {type: string}
+                          confidence: {type: number}
+                      entities:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Entity'
+                      keywords:
+                        type: array
+                        items: {type: string}
+                      processing_time_ms: {type: number}
+            400:
+              description: Invalid input
+            429:
+              description: Rate limit exceeded
+
+  # Framework-specific configurations - show real integration
+  frameworks:
+    langchain:
+      tool_name: "text_analyzer"
+      tool_description: "Analyze text for sentiment, entities, and keywords"
+      return_direct: false
+      args_schema:
+        type: object
+        properties:
+          text: {type: string}
+          options: {type: object}
+      
+    crewai:
+      role: "Senior Text Analyst"
+      goal: "Provide comprehensive and accurate text analysis"
+      backstory: |
+        You are an expert text analyst with deep knowledge of NLP.
+        You excel at extracting meaningful insights from text data.
+      tools: [web_search, calculator]
+      max_iterations: 3
+      delegation: false
+      
+    openai:
+      assistant_instructions: |
+        You are a text analysis assistant. Use the analyze_text function
+        to provide comprehensive analysis including sentiment and entities.
+      function_definitions:
+        - name: analyze_text
+          description: Analyze text for sentiment and entities
+          parameters:
+            type: object
+            properties:
+              text: {type: string}
+              
+  # Performance and monitoring - prove efficiency
+  performance:
+    response_time_target_ms: 500
+    throughput_target_rps: 100
+    token_optimization:
+      enabled: true
+      strategies: [semantic_compression, response_caching]
+      
+  monitoring:
+    health_check:
+      path: /health
+      interval_seconds: 30
+    metrics:
+      endpoint: /metrics  
+      format: prometheus
+      custom_metrics:
+        - text_analysis_requests_total
+        - analysis_latency_histogram
+        - token_usage_per_request
+        
+  # Security - production ready
+  security:
+    authentication:
+      - type: apiKey
+        name: X-API-Key
+        in: header
+      - type: http
+        scheme: bearer
+        bearerFormat: JWT
+    rate_limiting:
+      requests_per_minute: 1000
+      burst_allowance: 100
+      
+  # UADP Discovery configuration - our differentiator  
+  discovery:
+    auto_register: true
+    workspace_broadcast: true
+    health_check_url: /health
+    capability_endpoint: /capabilities
+    tags: [nlp, production, multi-framework]
+    
+components:
+  schemas:
+    Entity:
+      type: object
+      required: [text, label, start, end]
+      properties:
+        text: {type: string}
+        label: {type: string}
+        start: {type: integer}
+        end: {type: integer}
+        confidence: {type: number}
+        
+    AnalysisOptions:
+      type: object
+      properties:
+        include_sentiment: {type: boolean, default: true}
+        include_entities: {type: boolean, default: true}
+        include_keywords: {type: boolean, default: false}
+        confidence_threshold: {type: number, default: 0.7}
+        
+# Configuration for different environments
+config:
+  development:
+    model: gpt-4o-mini
+    temperature: 0.3
+    max_tokens: 2000
+    debug: true
+    
+  production:
+    model: gpt-4o
+    temperature: 0.1
+    max_tokens: 1500
+    debug: false
+    cache_ttl: 3600

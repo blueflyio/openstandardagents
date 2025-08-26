@@ -1,18 +1,22 @@
-# OpenAPI AI Agents + UADP - Example Implementations
+# OAAS Examples - Professional Standards at Every Level
 
-Practical examples focused on our three core areas: **Application Development**, **AI Innovation**, and **Government Security** + **Universal Agent Discovery Protocol (UADP)**.
+## Choose Your Complexity Level
 
-## 🚀 **Quick Start: Make Your Project AI-Ready in 5 Minutes**
+OAAS provides progressive complexity without dumbing down the technology. Every level demonstrates real competitive advantages.
 
-👉 **[UADP Quick Start Templates](quick-start/)** - Copy, modify, done!
+### 🎯 **Starter** (150-200 lines) - Professional Foundation
+**Path**: `starter/`  
+**Time**: 5-10 minutes  
+**Perfect For**: Production deployments, team projects, real applications
 
-```bash
-# Add UADP to any project:
-mkdir -p .agents/my-expert/data
-curl -o .agents/agent-registry.yml https://raw.githubusercontent.com/openapi-ai-agents/standard/main/examples/quick-start/agent-registry.yml
-curl -o .agents/context.yml https://raw.githubusercontent.com/openapi-ai-agents/standard/main/examples/quick-start/context.yml
-# Your project is now AI-discoverable!
-```
+**What You Get**:
+- Multi-framework support (LangChain, CrewAI, AutoGen, OpenAI)
+- UADP automatic discovery (our killer feature)
+- Production monitoring and security
+- Real performance benchmarks
+- Comprehensive API specifications
+
+**Not Toy Examples**: These are professional-grade agents with substance, just without enterprise complexity.
 
 ## 📁 Directory Structure
 

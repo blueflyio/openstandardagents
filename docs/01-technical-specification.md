@@ -1,332 +1,471 @@
 # 01. Technical Specification
 
-## Executive Summary
+## OpenAPI AI Agents Standard - Progressive Complexity Architecture
 
-The OpenAPI AI Agents Standard (OAAS) is the "Switzerland of AI Agents" - a neutral bridge between competing protocols (MCP, A2A) that adds enterprise compliance capabilities no other standard provides. This specification defines the technical requirements for achieving both interoperability AND compliance certification.
+The OpenAPI AI Agents Standard (OAAS) provides a flexible, progressive approach to agent development with automatic discovery through UADP. Start simple, scale when needed.
 
-## Core Components
+## Core Philosophy
 
-### GOLDEN STANDARD Structure
+**Progressive Complexity**: Developers can start with a 50-line YAML file and progressively add complexity only when needed. This isn't about simplification - it's about right-sizing solutions.
 
-Every OAAS-compliant agent MUST follow the 4-file golden standard:
-```
-agent-name/
-├── agent.yml        # 1000+ lines of comprehensive metadata
-├── openapi.yaml     # 800+ lines of complete API specification
-├── README.md        # 400+ lines of documentation
-└── data/            # Training and configuration data
-    ├── training-data.json    # Cross-platform training patterns
-    ├── knowledge-base.json   # Domain expertise
-    ├── configurations.json   # Agent behavior settings
-    └── examples.json         # API usage examples
-```
+## Three Levels of Agent Definition
 
-### 1. OpenAPI 3.1 Specification (`openapi.yaml`)
+### Level 1: Quick Start (50 lines)
 
-The main specification file defining:
-- **Agent Endpoints**: Standard API endpoints for agent communication
-- **Data Schemas**: Common data structures for agent interactions  
-- **Protocol Extensions**: Support for MCP, A2A, and other protocols
-- **Security Schemes**: Authentication and authorization patterns
-- **Error Handling**: Standardized error responses
+**Purpose**: Get an agent running in 2 minutes
+**Use Case**: Prototypes, simple tools, learning
 
-### 2. Agent Configuration (`agent.yml`)
-
-Universal agent configuration format - THE GOLDEN STANDARD:
-- **Agent Metadata**: Name, version, capabilities, domains, annotations, labels
-- **Framework Annotations**: LangChain, CrewAI, AutoGen, OpenAI, Anthropic, Google, HuggingFace
-- **Protocol Support**: OpenAPI, MCP, A2A, UADP with bridges
-- **Security Configuration**: Authentication, RBAC, encryption at-rest and in-transit
-- **Performance Parameters**: Token optimization (35-45%), caching, compression
-- **Compliance Frameworks**: ISO 42001, NIST AI RMF, EU AI Act
-- **Enterprise Features**: Audit logging, compliance monitoring, resource requirements
-
-### 3. Standard Extensions
-
-Required OpenAPI extensions for agent compatibility:
-
-#### `x-openapi-ai-agents-standard`
 ```yaml
-x-openapi-ai-agents-standard:
-  version: "0.1.1"  # Updated to match golden standard
-  certification_level: "bronze|silver|gold|platinum"
-  compliance_frameworks: ["iso_42001", "nist_ai_rmf", "eu_ai_act"]
-  protocols: ["openapi", "mcp", "a2a", "uadp"]
-  uadp_enabled: true
+# .agents/my-agent.yaml
+oaas: 1.0
+agent:
+  name: text-analyzer
+  version: 1.0.0
+  description: Analyzes text sentiment and entities
+  
+discover:
+  auto: true
+  workspace: true
+  
+capabilities:
+  - sentiment_analysis
+  - entity_extraction
+  - keyword_detection
+  
+api:
+  POST /analyze:
+    description: Analyze text
+    input: text string
+    output: analysis object
+  GET /status:
+    description: Health check
+    output: status object
+    
+config:
+  model: gpt-4
+  temperature: 0.7
 ```
 
-#### `x-agent-metadata`
+### Level 2: Standard (100-200 lines)
+
+**Purpose**: Production-ready agents with framework support
+**Use Case**: Real applications, team projects, integrations
+
 ```yaml
-x-agent-metadata:
-  class: "specialist|generalist|orchestrator"
-  protocols: ["openapi", "mcp", "a2a"]
-  capabilities: ["reasoning", "code_generation", "analysis"]
-  domains: ["general", "coding", "healthcare", "finance"]
+# .agents/my-agent.yaml
+apiVersion: openapi-ai-agents/v0.2.0
+kind: Agent
+metadata:
+  name: text-analyzer
+  version: 2.0.0
+  labels:
+    domain: nlp
+    tier: production
+  annotations:
+    frameworks/langchain: "native"
+    frameworks/crewai: "compatible"
+    frameworks/autogen: "bridge"
+    bridge/mcp: "supported"
+    
+spec:
+  description: Production text analysis with multi-framework support
+  
+  capabilities:
+    - id: sentiment_analysis
+      description: Analyze text sentiment
+      frameworks: [langchain, crewai]
+    - id: entity_extraction
+      description: Extract named entities
+      frameworks: [langchain, autogen]
+    - id: keyword_detection
+      description: Detect key phrases
+      frameworks: all
+      
+  api:
+    openapi: "3.1.0"
+    servers:
+      - url: http://localhost:8080
+        description: Local development
+    endpoints:
+      - path: /analyze
+        method: POST
+        operationId: analyzeText
+        summary: Comprehensive text analysis
+        requestBody:
+          required: true
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  text:
+                    type: string
+                    maxLength: 10000
+                  options:
+                    type: object
+        responses:
+          200:
+            description: Analysis results
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/AnalysisResult'
+                  
+  frameworks:
+    langchain:
+      tool_type: structured
+      async_support: true
+      streaming: true
+      memory: conversational
+    crewai:
+      role: analyst
+      backstory: Expert text analyst
+      delegation: false
+    autogen:
+      agent_type: assistant
+      system_message: You are a text analysis expert
+      
+  monitoring:
+    health_check: /health
+    metrics_endpoint: /metrics
+    logging_level: info
+    
+  security:
+    api_key:
+      type: apiKey
+      in: header
+      name: X-API-Key
+    rate_limit:
+      requests_per_minute: 100
+      burst: 20
 ```
 
-#### `x-protocol-bridges`
+### Level 3: Enterprise (Full Structure)
+
+**Purpose**: Complete control, compliance, advanced features
+**Use Case**: Enterprise deployments, regulated industries, complex orchestration
+
+```
+.agents/
+├── agent.yml                 # Full metadata (400+ lines)
+├── openapi.yaml             # Complete API spec (800+ lines)
+├── README.md                # Documentation (400+ lines)
+├── config/
+│   ├── frameworks.yml       # Framework configurations
+│   ├── security.yml         # Security policies
+│   └── monitoring.yml       # Observability setup
+├── data/
+│   ├── training-data.json   # Training examples
+│   ├── knowledge-base.json  # Domain knowledge
+│   ├── examples.json        # Usage examples
+│   └── benchmarks.json      # Performance data
+└── tests/
+    ├── unit/
+    ├── integration/
+    └── performance/
+```
+
+## Universal Agent Discovery Protocol (UADP)
+
+### Core Innovation
+
+UADP enables automatic discovery of agents across projects and workspaces without any configuration.
+
+### Discovery Hierarchy
+
+```
+Workspace Root
+├── .agents-workspace/       # Workspace-level discovery
+│   ├── registry.yml        # Master registry
+│   ├── discovery.yml       # Discovery configuration
+│   └── context.yml         # Workspace context
+│
+├── project-a/
+│   └── .agents/            # Project agents
+│       ├── agent-1.yaml
+│       └── agent-2.yaml
+│
+└── project-b/
+    └── .agents/            # More project agents
+        └── agent-3.yaml
+```
+
+### Discovery Process
+
+1. **Automatic Scanning**: UADP recursively scans for `.agents/` directories
+2. **Registry Building**: Creates searchable index of all agents
+3. **Capability Mapping**: Maps capabilities to agents
+4. **Real-time Updates**: Monitors file system for changes
+5. **Context Aggregation**: Builds understanding from project files
+
+## Protocol Bridges
+
+### MCP (Model Context Protocol) Bridge
+
+Enables OAAS agents to work with Claude Desktop and other MCP clients.
+
 ```yaml
-x-protocol-bridges:
+# MCP Bridge Configuration
+bridge:
   mcp:
     enabled: true
-    tools_endpoint: "/mcp/tools"
+    server_type: stdio
+    transport: json-rpc
+    tools:
+      - name: analyzeText
+        description: Analyze text sentiment
+        input_schema:
+          type: object
+          properties:
+            text: {type: string}
+    resources:
+      - name: knowledge_base
+        type: file
+        path: ./data/knowledge.json
+```
+
+### A2A (Agent-to-Agent) Bridge
+
+Enables communication with A2A protocol agents.
+
+```yaml
+# A2A Bridge Configuration  
+bridge:
   a2a:
     enabled: true
-    discovery_endpoint: "/a2a/discover"
+    agent_card:
+      name: text-analyzer
+      capabilities: [nlp, sentiment]
+      endpoint: http://localhost:8080
+    discovery:
+      method: broadcast
+      interval: 30s
 ```
 
-## Dual-Format Validation
+### LangChain Native Integration
 
-The OpenAPI AI Agents Standard requires both `agent.yml` and `openapi.yaml` files to work together seamlessly. Dual-format validation ensures consistency and compliance across both specification formats.
+Direct support for LangChain tools and agents.
 
-### Validation API
+```python
+# Generated LangChain Tool
+from langchain.tools import Tool
 
-The standard provides a comprehensive validation API endpoint:
-
-```http
-POST /api/v1/validate/dual-format
-Content-Type: application/json
-X-API-Key: your-api-key
-
-{
-  "agent_config": { /* agent.yml content */ },
-  "openapi_spec": { /* openapi.yaml content */ }
-}
+text_analyzer = Tool(
+    name="text_analyzer",
+    description="Analyzes text sentiment and entities",
+    func=analyze_text_function,
+    args_schema=TextAnalysisInput
+)
 ```
 
-### Validation Response
+## Performance Analytics
 
-```json
-{
-  "valid": true,
-  "certification_level": "gold",
-  "passed": [
-    "✅ Agent configuration schema valid",
-    "✅ OpenAPI specification schema valid",
-    "✅ Capability-endpoint mapping validated"
-  ],
-  "warnings": [],
-  "errors": [],
-  "details": {
-    "agent_config": { /* validation details */ },
-    "openapi_spec": { /* validation details */ },
-    "relationship_validation": { /* cross-validation details */ }
-  }
-}
-```
+### Evidence-Based Metrics
 
-### Cross-Format Consistency Checks
-
-1. **Metadata Consistency**
-   - Agent name and OpenAPI title correlation
-   - Version synchronization between formats
-   - Description alignment
-
-2. **Capability-Endpoint Mapping**
-   - `universal_agent_interface` → `/agent/orchestrate`
-   - `protocol_bridging` → `/protocols/mcp/bridge`
-   - `token_optimization` → `/tokens/preflight`
-   - `compliance_validation` → `/governance/compliance/validate`
-
-3. **Security Alignment**
-   - Authentication methods consistency
-   - Security scheme definitions
-   - Authorization requirements
-
-4. **Protocol Support**
-   - Protocol declarations in agent.yml
-   - Corresponding endpoints in openapi.yaml
-   - Transport mechanism compatibility
-
-### Certification Levels
-
-Dual-format validation determines the agent's certification level:
-
-- **Bronze**: Basic validation passed, may have errors
-- **Silver**: Good compliance (≤3 warnings, ≥10 passed checks)  
-- **Gold**: Excellent compliance (0 warnings, ≥15 passed checks)
-
-## Protocol Interoperability
-
-### Model Context Protocol (MCP)
-- Standard bridge for MCP tools and resources
-- Automatic translation between OpenAPI and MCP formats
-- Support for stdio, HTTP, and SSE transports
-
-### Agent-to-Agent (A2A)
-- Direct agent communication protocol
-- Discovery and capability negotiation
-- Task handoff and coordination
-
-### Custom Protocols
-- Extensible framework for proprietary protocols
-- Plugin architecture for protocol bridges
-- Backward compatibility guarantees
-
-## Certification Levels
-
-### Bronze Certification
-**Requirements:**
-- Valid OpenAPI 3.1 specification
-- Required standard extensions
-- Basic health endpoints
-- Error handling compliance
-
-**Benefits:**
-- Listed in agent directory
-- Use of certification badge
-- Community support
-
-### Silver Certification
-**Requirements:**
-- Bronze certification +
-- 95%+ test coverage
-- Performance SLA compliance
-- Security audit passed
-- Protocol bridge implementation
-
-**Benefits:**
-- Priority community support
-- Marketing co-opportunities
-- Case study participation
-
-### Gold Certification
-**Requirements:**
-- Silver certification +
-- Formal verification
-- Explainability metrics
-- Bias detection and mitigation
-- Enterprise compliance (SOC2, HIPAA)
-
-**Benefits:**
-- Enterprise sales support
-- Co-marketing opportunities
-- Standards body representation
-
-## Validation Requirements
-
-### Required Endpoints
-All compliant agents must implement:
+The Performance Analytics Platform provides real data, not marketing claims.
 
 ```yaml
+metrics:
+  performance:
+    token_usage:
+      method: tiktoken
+      models: [gpt-4, claude-3, gemini-pro]
+    latency:
+      percentiles: [P50, P95, P99]
+      breakdown: [network, processing, response]
+    throughput:
+      measure: requests_per_second
+      capacity: concurrent_requests
+    cost:
+      providers: [openai, anthropic, google]
+      optimization: token_reduction_strategies
+      
+  quality:
+    accuracy:
+      measure: task_completion_rate
+      validation: ground_truth_comparison
+    reliability:
+      uptime: 99.9%
+      error_rate: <0.1%
+    scalability:
+      tested_to: 1000_agents
+      load_patterns: [steady, burst, ramp]
+```
+
+## API Specification
+
+### OpenAPI 3.1 Foundation
+
+All OAAS agents use OpenAPI 3.1 as the foundation, ensuring compatibility with existing tools.
+
+```yaml
+openapi: 3.1.0
+info:
+  title: OAAS Agent API
+  version: 1.0.0
+  x-oaas:
+    version: 0.2.0
+    discovery: automatic
+    complexity: progressive
+    
 paths:
-  /health:
+  /agent/discover:
     get:
-      summary: Agent health check
+      summary: Discover agent capabilities
+      x-oaas-capability: discovery
       responses:
-        '200':
-          description: Agent is operational
+        200:
+          description: Agent capabilities
           
-  /capabilities:
-    get:
-      summary: Agent capabilities
-      responses:
-        '200':
-          description: List of agent capabilities
-          
-  /protocols:
-    get:
-      summary: Supported protocols
-      responses:
-        '200':
-          description: Available protocol bridges
+  /agent/invoke:
+    post:
+      summary: Invoke agent capability
+      x-oaas-capability: execution
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InvokeRequest'
 ```
 
-### Schema Validation
-- All requests/responses must validate against OpenAPI schema
-- Standard error response format required
-- Consistent data types across all endpoints
+## Security Model
 
-### Security Requirements
-- Authentication mechanism (OAuth2, API Key, mTLS)
-- Input validation and sanitization
-- Rate limiting implementation
-- Audit logging for compliance
+### Progressive Security
 
-## Implementation Guidelines
+- **Level 1**: API key authentication
+- **Level 2**: JWT with role-based access
+- **Level 3**: mTLS, OAuth2, audit logging
 
-### For Framework Developers
-1. **Integrate, Don't Fork**: Implement validation against this standard
-2. **Use Standard CLI**: Call `openapi-agents validate` in your toolchain
-3. **Provide Extensions**: Add framework-specific OpenAPI extensions
-4. **Support Bridges**: Implement protocol bridge adapters
-
-### For Agent Developers
-1. **Start with Examples**: Use provided templates and examples
-2. **Validate Early**: Use validation API during development
-3. **Follow Conventions**: Use standard naming and patterns
-4. **Document Extensions**: Clearly document any custom extensions
-
-### For Enterprise Users
-1. **Certification First**: Require certified agents in procurement
-2. **Compliance Mapping**: Map to your regulatory requirements
-3. **Security Integration**: Integrate with existing security frameworks
-4. **Monitoring Setup**: Implement standard observability patterns
-
-## Compliance Frameworks
-
-### ISO 42001:2023 (AI Management Systems)
-- Risk management documentation
-- Governance structure requirements
-- Performance monitoring mandates
-- Audit trail specifications
-
-### NIST AI RMF 1.0 (AI Risk Management Framework)
-- Risk assessment procedures
-- Bias testing requirements
-- Explainability standards
-- Continuous monitoring
-
-### EU AI Act Compliance
-- Risk classification procedures
-- Transparency requirements
-- Human oversight mandates
-- Conformity assessment processes
-
-## Extension Points
-
-### Custom Capabilities
 ```yaml
-x-agent-metadata:
-  custom_capabilities:
-    domain_specific: ["medical_diagnosis", "legal_analysis"]
-    industry_specific: ["financial_modeling", "supply_chain"]
+security:
+  # Level 1
+  api_key:
+    type: apiKey
+    in: header
+    name: X-API-Key
+    
+  # Level 2  
+  jwt:
+    type: http
+    scheme: bearer
+    bearerFormat: JWT
+    
+  # Level 3
+  mtls:
+    type: mutualTLS
+    certificates: /path/to/certs
+  oauth2:
+    type: oauth2
+    flows:
+      authorizationCode:
+        authorizationUrl: /oauth/authorize
+        tokenUrl: /oauth/token
 ```
 
-### Protocol Extensions
-```yaml
-x-protocol-bridges:
-  custom_protocol:
-    enabled: true
-    specification: "https://example.com/protocol-spec"
-    bridge_implementation: "custom-protocol-bridge"
+## Framework Compatibility
+
+### Native Support
+
+- **LangChain**: Tool wrappers, chains, agents
+- **CrewAI**: Role-based agents, crews
+- **AutoGen**: Conversation agents, group chat
+- **OpenAI**: Assistants API, function calling
+
+### Bridge Support
+
+- **MCP**: Full bidirectional translation
+- **A2A**: Agent card compatibility
+- **Custom**: Plugin architecture
+
+## Migration Paths
+
+### From MCP
+
+```bash
+oaas migrate mcp server.json --output .agents/
 ```
 
-### Security Extensions
-```yaml
-x-security-extensions:
-  threat_model: "custom_maestro"
-  compliance_frameworks: ["custom_framework"]
-  audit_requirements: ["custom_audit_trail"]
+### From A2A
+
+```bash
+oaas migrate a2a agent-card.json --output .agents/
 ```
 
-## Versioning and Evolution
+### From Custom Format
 
-### Semantic Versioning
-- **Major**: Breaking changes to core specification
-- **Minor**: New features, backward compatible
-- **Patch**: Bug fixes, clarifications
+```bash
+oaas migrate custom legacy-agent.yml --format custom --output .agents/
+```
 
-### Deprecation Policy
-- 12-month notice for breaking changes
-- 6-month overlap period for deprecated features
-- Migration guides for all changes
+## Validation & Testing
 
-### Standards Evolution
-- Community RFC process for major changes
-- Working group approval for specification updates
-- Quarterly review cycles for minor updates
+### Progressive Validation
+
+```bash
+# Level 1: Basic structure
+oaas validate --level quick
+
+# Level 2: Full validation
+oaas validate --level standard
+
+# Level 3: Enterprise compliance
+oaas validate --level enterprise --compliance all
+```
+
+### Performance Testing
+
+```bash
+# Benchmark agent performance
+oaas benchmark my-agent.yaml --iterations 1000
+
+# Compare with MCP/A2A
+oaas compare my-agent.yaml --against mcp,a2a
+
+# Stress testing
+oaas stress-test my-agent.yaml --concurrent 100 --duration 60s
+```
+
+## Non-Functional Requirements
+
+### Performance Targets
+
+- **Discovery**: <100ms for 1000 agents
+- **First Agent**: <2 minutes from zero
+- **Bridge Translation**: <10ms overhead
+- **API Latency**: P95 <100ms
+
+### Scalability
+
+- **Agents**: Tested to 1000+ per workspace
+- **Concurrent Requests**: 10,000+ per agent
+- **File Size**: Optimized for <1MB per agent
+
+### Reliability
+
+- **Uptime**: 99.9% for core services
+- **Error Recovery**: Automatic retry with backoff
+- **Data Integrity**: Checksums and validation
+
+## Future Considerations
+
+### Post-Adoption Features
+
+These will be developed based on community needs:
+
+- Enterprise compliance frameworks
+- Advanced orchestration patterns
+- Multi-cloud deployment
+- Federated discovery
+- Blockchain verification
+
+### Research Areas
+
+- Token optimization strategies (prove before claiming)
+- Semantic agent matching
+- Autonomous agent evolution
+- Cross-framework memory sharing
 
 ---
 
-For implementation examples and detailed guides, see [Integration Guide](../INTEGRATION.md) and [Examples](../examples/).
+*Technical Specification v0.2.0 - Progressive Complexity Architecture*

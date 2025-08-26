@@ -1,53 +1,47 @@
 # 02. Integration Guide
 
-## Why Integrate OAAS? The Business Case
+## Framework-First Approach to Agent Development
 
-### For Tool Vendors (LangFlow, Flowise, CrewAI)
-- **Instant Enterprise Sales**: "Export as OAAS" = enterprise compliance
-- **Certification Revenue**: Share in $10K/company certification fees
-- **Big 4 Partnerships**: Deloitte/PwC recommend OAAS-compliant tools
+This guide shows how to integrate OAAS agents with popular AI frameworks. Start with your preferred framework, add OAAS for discovery and interoperability.
 
-### For Platforms (Salesforce, Microsoft, AWS)
-- **Regulatory Compliance**: EU AI Act requires governance by 2025
-- **Cross-Cloud Interop**: Your agents work with competitor platforms
-- **Risk Mitigation**: Built-in security and audit trails
+## Quick Start (2 Minutes)
 
-### For Enterprises
-- **Vendor Independence**: No lock-in to OpenAI, Google, or Microsoft
-- **Compliance Automation**: ISO 42001, NIST AI RMF built-in
-- **Cost Optimization**: 35-45% token savings with tiktoken
-
-## Quick Start for Framework Developers
-
-### 1. Use the GOLDEN STANDARD Template
-
-Copy the complete GOLDEN STANDARD template and integrate it with your framework:
+### Option 1: CLI Tool
 
 ```bash
-# Copy the complete template
-cp -r examples/.agents/ your-framework-integration/.agents/
+# Install OAAS CLI
+npm install -g @oaas/cli
 
-# Customize for your framework
-cd your-framework-integration/.agents/
-mv agent-name-skill/ your-framework-agent/
+# Create your first agent
+npx create-oaas-agent my-agent
 
-# Update with framework-specific configurations
-# See framework integration examples in agent.yml
+# Start the agent
+cd my-agent
+npm start
 ```
 
-### 2. Install the Standard Validation Tools
+### Option 2: Manual Setup
 
 ```bash
-# NPM package (coming soon)
-npm install -g @openapi-ai-agents/cli
+# Create .agents folder
+mkdir .agents
 
-# Or use the validation API directly
-curl -X POST http://localhost:3000/api/v1/validate/openapi \
-  -H "Content-Type: application/json" \
-  -d '{"specification": {...}}'
+# Create simple agent
+cat > .agents/my-agent.yaml << EOF
+oaas: 1.0
+agent:
+  name: my-agent
+  version: 1.0.0
+discover:
+  auto: true
+capabilities:
+  - text_analysis
+api:
+  POST /analyze: Analyze text
+EOF
+
+# Your agent is now discoverable!
 ```
-
-### 2. Framework Integration Pattern
 
 **CRITICAL: We don't compete with your framework - we make it enterprise-ready!**
 

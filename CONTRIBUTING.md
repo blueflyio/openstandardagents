@@ -1,43 +1,40 @@
-# Contributing to OpenAPI AI Agents Standard + Universal Agent Discovery Protocol (UADP)
+# Contributing to OpenAPI AI Agents Standard (OAAS)
 
-Thank you for your interest in contributing to the OpenAPI AI Agents Standard - the "Switzerland of AI Agents" and the revolutionary Universal Agent Discovery Protocol (UADP)! This document provides guidelines for contributing to make the process smooth and effective.
+Thank you for contributing to OAAS - the universal standard for AI agent interoperability with automatic discovery through the Universal Agent Discovery Protocol (UADP).
 
-## 🌟 **BREAKTHROUGH: Universal Agent Discovery Protocol (UADP)**
+## 🌟 **Our Mission**
 
-UADP is a game-changing extension that enables **any project worldwide** to become AI-ready by simply adding a `.agents/` directory. This creates a decentralized network of specialized AI capabilities.
+We're building the definitive agent standard that:
+- **Automatically discovers agents** through UADP (`.agents/` folders)
+- **Bridges all protocols** (MCP, A2A, LangChain, OpenAI)
+- **Provides progressive complexity** (50 lines → enterprise)
+- **Uses industry standards** (OpenAPI 3.1, not proprietary formats)
 
 ## 🌟 Why Contribute?
 
-By contributing to this standard and UADP, you're helping build:
-- **Universal AI Readiness**: Any project can add `.agents/` folder → instantly AI-discoverable
-- **Decentralized Intelligence**: Projects maintain specialized agents, workspaces aggregate capabilities
-- **Zero-Config Integration**: Standard interface, automatic discovery, contextual awareness  
-- **Enterprise Scale**: From single developer to Fortune 500 agent marketplaces
-- **Protocol Bridging**: Seamless communication between MCP, A2A, and other protocols
-- **Compliance Framework**: Enterprise-grade compliance (ISO 42001, NIST AI RMF, EU AI Act)
-- **Academic Impact**: Peer-reviewed publications establishing the de facto standard
+You're helping build:
+- **The only standard with automatic discovery** - No manual configuration
+- **Universal interoperability** - Work with ALL AI frameworks
+- **Developer-first tools** - 2-minute agent creation
+- **Production-ready agents** - Not theory, working code
+- **Open ecosystem** - Vendor-neutral, community-driven
 
-## 🎯 **UADP Contribution Areas**
+## 🎯 **Current Priorities (from ROADMAP)**
 
-### **Priority 1: Core UADP Infrastructure** 
-- **Discovery Engine**: Workspace scanning and agent indexing
-- **Context Aggregator**: Project intelligence and domain classification
-- **Universal Orchestrator**: Optimal agent deployment and coordination
-- **Registry Standards**: Agent manifest and capability definitions
+### **Phase 1: Core Agents (Active Now)**
+1. **Configuration Optimizer** - Smart config optimization
+2. **Discovery Engine** - UADP implementation 
+3. **Protocol Bridge System** - MCP/A2A compatibility
+4. **Developer Experience Suite** - CLI, templates, VS Code
+5. **Performance Analytics** - Real metrics and benchmarks
 
-### **Priority 2: UADP-Enabled Agents**
-- **Migration & Standardization**: Convert any agent format to OAAS+UADP
-- **Protocol Bridges**: MCP, A2A, FIPA protocol translation
-- **Compliance Validators**: Automated governance and regulatory compliance
-- **Domain Experts**: Specialized agents for various industries/frameworks
-
-### **Priority 3: Standardization Improvements** 🆕 CRITICAL
-*Based on real-world production audit findings*
-
-- **Agent Status Consistency**: Canonical lifecycle states across all definitions
-- **Path Portability**: Template system for environment-independent configurations
-- **Security Configuration**: Mandatory security schemes for all API endpoints
-- **Definition Consolidation**: Single source of truth for agent specifications
+### **What We Need Help With**
+- **Discovery Engine**: File system monitoring, agent indexing
+- **MCP Bridge**: Working integration with Claude Desktop
+- **A2A Bridge**: Agent card generation and routing
+- **CLI Tools**: `oaas create`, `oaas validate`, `oaas deploy`
+- **VS Code Extension**: IntelliSense, validation, discovery panel
+- **Framework Templates**: LangChain, CrewAI, AutoGen, OpenAI
 
 ## 📋 How to Contribute
 
@@ -48,20 +45,21 @@ By contributing to this standard and UADP, you're helping build:
 
 ### 2. Types of Contributions
 
-#### 🔧 Technical Contributions (PRIORITY AREAS)
+#### 🔧 Technical Contributions
 
-**HIGH PRIORITY - Audit-Based Improvements**
-- **Agent Status Standardization**: Fix inconsistent status tracking across agent definitions
-- **Path Template System**: Replace hardcoded paths with portable environment variables
-- **Security Configuration**: Ensure all API endpoints have proper authentication schemes
-- **Context Validation**: Implement completeness scoring for project context.yml files
+**Immediate Needs**:
+- **Working examples** using the `.agents/` structure
+- **Framework integrations** that actually work
+- **Performance benchmarks** with real data
+- **Protocol bridges** that pass round-trip tests
+- **Developer tools** that save time
 
-**ONGOING PRIORITIES**
-- **Protocol Bridges**: MCP and A2A bridges are CRITICAL - we embrace, not compete
-- **Enterprise Integrations**: Salesforce→OpenAI, Copilot→Vertex bridges needed
-- **Compliance Tools**: ISO 42001, NIST AI RMF validation tools
-- **Reference Implementations**: Focus on enterprise use cases that matter
-- **Token Optimization**: Achieve 35-45% savings with tiktoken integration
+**Code Quality Requirements**:
+- Everything must work (no theoretical implementations)
+- Tests required (80%+ coverage)
+- Documentation required
+- Examples required
+- Performance metrics required
 
 #### 📚 Documentation
 - **Tutorials**: Create getting-started guides and tutorials
@@ -75,19 +73,13 @@ By contributing to this standard and UADP, you're helping build:
 - **Security Testing**: Help identify and fix security vulnerabilities
 - **Compliance Validation**: Test against ISO 42001, NIST AI RMF
 
-### 3. Working Groups
+### 3. How to Start Contributing
 
-Join one of our specialized working groups:
-
-| Working Group | Focus Area | Meeting Schedule |
-|--------------|------------|------------------|
-| Core Specification | Dual-format (agent.yml + OpenAPI) development | Weekly - Mondays 2pm PT |
-| Protocol Bridges | MCP, A2A integration (not competition) | Weekly - Tuesdays 11am PT |
-| Enterprise Compliance | ISO 42001, NIST, EU AI Act certification | Bi-weekly - Wednesdays 3pm PT |
-| Partner Integration | Big 4, tool vendors, platforms | Weekly - Thursdays 10am PT |
-| Certification Program | $10K enterprise certification development | Weekly - Fridays 1pm PT |
-
-To join a working group, submit a request via [GitHub Discussions](https://github.com/openapi-ai-agents/standard/discussions).
+1. **Read the ROADMAP.md** - Understand our priorities
+2. **Check existing issues** - Find something you can help with
+3. **Join discussions** - Share your ideas and feedback
+4. **Submit PRs** - Start with small, focused changes
+5. **Test everything** - Make sure it actually works
 
 ## 🚀 Getting Started
 
@@ -181,22 +173,19 @@ refactor(tokens): optimize token counting logic
 - Keep README files up to date
 - Add JSDoc comments for public APIs
 
-## 🏆 Recognition & Opportunities
+## 🏆 Recognition
 
 ### Contributors
 All contributors will be recognized in:
 - CONTRIBUTORS.md file
 - GitHub contributors page
-- Annual AI Governance Summit
-- Enterprise certification materials
-- Partner consulting opportunities
+- Project documentation
 
-### Levels of Recognition
-- 🥉 **Bronze**: 1-5 merged PRs + Community badge
-- 🥈 **Silver**: 6-15 merged PRs + Certified implementer status
-- 🥇 **Gold**: 16+ merged PRs + Speaking opportunities
-- 💎 **Diamond**: Core maintainer + Revenue sharing from certifications
-- 🚀 **Platinum**: Strategic partner + Big 4 consulting referrals
+### Contribution Levels
+- **Contributor**: 1+ merged PRs
+- **Active Contributor**: 5+ merged PRs
+- **Core Contributor**: 10+ merged PRs
+- **Maintainer**: Ongoing commitment to project
 
 ## 🔒 Code of Conduct
 

@@ -1,0 +1,271 @@
+# Professional Code Assistant Agent - Starter Level  
+# Real development use case with substantial features
+apiVersion: openapi-ai-agents/v0.2.0
+kind: Agent
+metadata:
+  name: code-assistant
+  version: 2.1.0
+  description: AI-powered code analysis, generation, and review assistant
+  labels:
+    domain: software-development
+    tier: production
+    complexity: starter
+  annotations:
+    # Multi-framework support - competitive advantage
+    frameworks/langchain: "native"
+    frameworks/crewai: "role-based"
+    frameworks/autogen: "conversation"
+    frameworks/openai: "function-calling"
+    bridge/mcp: "tools-compatible"
+    
+    # UADP capabilities
+    uadp/auto-discovery: "enabled"
+    uadp/skill-advertising: "programming,review,debugging"
+    uadp/context-aware: "true"
+    
+spec:
+  capabilities:
+    - id: code_review
+      description: "Comprehensive code review with best practices"
+      languages: [python, javascript, typescript, go, rust]
+      frameworks: [langchain, crewai]
+      checks: [style, security, performance, maintainability]
+      
+    - id: code_generation
+      description: "Generate code from natural language descriptions"
+      languages: [python, javascript, typescript]
+      frameworks: [langchain, openai]
+      patterns: [functions, classes, apis, tests]
+      
+    - id: bug_detection
+      description: "Identify potential bugs and code smells"
+      frameworks: [langchain, autogen]
+      analysis_types: [static, logic, security]
+      
+    - id: documentation_generation
+      description: "Generate comprehensive code documentation"
+      frameworks: all
+      formats: [docstrings, markdown, api-docs]
+      
+    - id: test_generation
+      description: "Create unit and integration tests"
+      frameworks: [langchain, crewai]
+      test_frameworks: [pytest, jest, mocha, go-test]
+
+  api:
+    openapi: "3.1.0"
+    servers:
+      - url: http://localhost:8081
+        description: Development server
+      - url: https://code-assistant.example.com
+        description: Production API
+        
+    paths:
+      /review:
+        post:
+          operationId: reviewCode
+          summary: Review code for quality and best practices
+          requestBody:
+            content:
+              application/json:
+                schema:
+                  type: object
+                  required: [code, language]
+                  properties:
+                    code: {type: string, maxLength: 50000}
+                    language: {type: string, enum: [python, javascript, typescript, go, rust]}
+                    checks: 
+                      type: array
+                      items: {type: string}
+                      default: [style, security, performance]
+          responses:
+            200:
+              description: Code review results
+              content:
+                application/json:
+                  schema:
+                    $ref: '#/components/schemas/ReviewResult'
+                    
+      /generate:
+        post:
+          operationId: generateCode
+          summary: Generate code from description
+          requestBody:
+            content:
+              application/json:
+                schema:
+                  type: object
+                  required: [description, language]
+                  properties:
+                    description: {type: string, maxLength: 5000}
+                    language: {type: string, enum: [python, javascript, typescript]}
+                    style: {type: string, enum: [functional, oop, procedural]}
+                    include_tests: {type: boolean, default: false}
+          responses:
+            200:
+              description: Generated code
+              content:
+                application/json:
+                  schema:
+                    $ref: '#/components/schemas/GeneratedCode'
+                    
+      /debug:
+        post:
+          operationId: debugCode
+          summary: Identify and suggest fixes for bugs
+          requestBody:
+            content:
+              application/json:
+                schema:
+                  type: object
+                  required: [code, language, error_message]
+                  properties:
+                    code: {type: string}
+                    language: {type: string}
+                    error_message: {type: string}
+                    context: {type: string}
+          responses:
+            200:
+              description: Debug suggestions
+              content:
+                application/json:
+                  schema:
+                    $ref: '#/components/schemas/DebugSuggestion'
+
+  # Framework integrations with real substance
+  frameworks:
+    langchain:
+      tool_name: "code_assistant"
+      tool_description: "AI code assistant for review, generation, and debugging"
+      available_functions:
+        - review_code
+        - generate_code  
+        - debug_code
+        - generate_docs
+      memory_type: "conversation_buffer"
+      
+    crewai:
+      role: "Senior Software Engineer"
+      goal: "Help developers write better, more maintainable code"
+      backstory: |
+        You are a senior software engineer with 15+ years of experience
+        across multiple programming languages and frameworks. You excel
+        at code review, mentoring, and architectural decisions.
+      tools: [web_search, file_reader, documentation_search]
+      delegation: true
+      max_iterations: 5
+      
+    openai:
+      assistant_name: "Code Assistant Pro"
+      instructions: |
+        You are an expert code assistant. Use your functions to help with
+        code review, generation, debugging, and documentation. Always
+        consider best practices, security, and maintainability.
+      tools:
+        - type: function
+          function:
+            name: review_code
+            description: Review code for quality issues
+        - type: function  
+          function:
+            name: generate_code
+            description: Generate code from requirements
+
+  # Performance specifications
+  performance:
+    code_review_time_ms: 2000
+    code_generation_time_ms: 5000
+    max_code_size_chars: 50000
+    concurrent_requests: 50
+    
+  monitoring:
+    health_check:
+      path: /health
+      dependencies: [llm_provider, syntax_parser]
+    metrics:
+      endpoint: /metrics
+      tracked_operations: [review, generate, debug]
+      custom_metrics:
+        - code_reviews_completed
+        - code_generation_success_rate
+        - average_review_quality_score
+        
+  security:
+    authentication:
+      - type: apiKey
+        name: X-Code-API-Key
+        in: header
+    input_validation:
+      max_code_length: 50000
+      allowed_languages: [python, javascript, typescript, go, rust]
+      content_filtering: true
+    rate_limiting:
+      requests_per_hour: 500
+      burst_size: 20
+      
+  # UADP discovery with development context
+  discovery:
+    auto_register: true
+    context_hints: [software-development, code-review, pair-programming]
+    skill_tags: [python, javascript, typescript, code-review, debugging]
+    integration_patterns: [ide-plugin, cli-tool, ci-cd-pipeline]
+
+components:
+  schemas:
+    ReviewResult:
+      type: object
+      properties:
+        overall_score: {type: number, minimum: 0, maximum: 10}
+        issues:
+          type: array
+          items:
+            type: object
+            properties:
+              type: {type: string, enum: [style, security, performance, logic]}
+              severity: {type: string, enum: [low, medium, high, critical]}
+              line: {type: integer}
+              message: {type: string}
+              suggestion: {type: string}
+        suggestions:
+          type: array
+          items: {type: string}
+        complexity_score: {type: number}
+        maintainability_index: {type: number}
+        
+    GeneratedCode:
+      type: object
+      properties:
+        code: {type: string}
+        explanation: {type: string}
+        best_practices: {type: array, items: {type: string}}
+        tests: {type: string}
+        documentation: {type: string}
+        
+    DebugSuggestion:
+      type: object
+      properties:
+        root_cause: {type: string}
+        fix_suggestions:
+          type: array
+          items:
+            type: object
+            properties:
+              approach: {type: string}
+              code_change: {type: string}
+              explanation: {type: string}
+        prevention_tips: {type: array, items: {type: string}}
+
+# Environment-specific configuration
+config:
+  development:
+    model: gpt-4o-mini
+    temperature: 0.2
+    enable_debug: true
+    max_tokens: 4000
+    
+  production:
+    model: gpt-4o  
+    temperature: 0.1
+    enable_debug: false
+    max_tokens: 3000
+    cache_duration: 1800
