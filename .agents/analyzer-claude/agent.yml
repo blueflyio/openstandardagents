@@ -54,59 +54,53 @@ metadata:
     certification: "silver"
 
 spec:
+  # Required OAAS agent section
+  agent:
+    name: "Claude Code Analyzer"
+    expertise: "Specialized Claude Code agent providing comprehensive code analysis, security scanning, performance optimization, and quality assessment capabilities"
+
   description: "Specialized Claude Code agent providing comprehensive code analysis, security scanning, performance optimization, and quality assessment capabilities"
 
-  # Core capabilities
+  # OAAS-compliant capabilities (flat array format)
   capabilities:
-    primary:
-      - id: "code_quality_analysis"
-        name: "Code Quality Analysis"
-        description: "Analyze code quality, patterns, conventions, and maintainability metrics"
-        frameworks: ["mcp", "openai", "langchain"]
-        input_schema: "./schemas/code-analysis.input.json"
-        output_schema: "./schemas/code-analysis.output.json"
-        compliance: ["iso-42001"]
-        sla: "99.5%"
-        performance:
-          response_time_ms: { target: 300, max: 500 }
-          throughput_rps: { target: 100, max: 200 }
+    - name: "code_quality_analysis"
+      description: "Analyze code quality, patterns, conventions, and maintainability metrics"
+      frameworks: ["mcp", "openai", "langchain"]
+      input_schema: "./schemas/code-analysis.input.json"
+      output_schema: "./schemas/code-analysis.output.json"
+      compliance: ["iso-42001"]
+      performance:
+        response_time_ms: { target: 300, max: 500 }
+        throughput_rps: { target: 100, max: 200 }
 
-      - id: "security_vulnerability_scan"
-        name: "Security Vulnerability Scanning"
-        description: "Scan code for security vulnerabilities, OWASP compliance, and potential threats"
-        frameworks: ["mcp", "openai", "langchain"]
-        input_schema: "./schemas/security-scan.input.json"
-        output_schema: "./schemas/security-scan.output.json"
-        compliance: ["iso-42001", "nist-ai-rmf"]
-        sla: "99.9%"
-        performance:
-          response_time_ms: { target: 500, max: 1000 }
-          accuracy: { target: 95, min: 90 }
+    - name: "security_vulnerability_scan"
+      description: "Scan code for security vulnerabilities, OWASP compliance, and potential threats"
+      frameworks: ["mcp", "openai", "langchain"]
+      input_schema: "./schemas/security-scan.input.json"
+      output_schema: "./schemas/security-scan.output.json"
+      compliance: ["iso-42001", "nist-ai-rmf"]
+      performance:
+        response_time_ms: { target: 500, max: 1000 }
+        accuracy: { target: 95, min: 90 }
 
-      - id: "performance_optimization"
-        name: "Performance Optimization"
-        description: "Identify performance bottlenecks and suggest optimizations"
-        frameworks: ["mcp", "openai"]
-        input_schema: "./schemas/performance.input.json"
-        output_schema: "./schemas/performance.output.json"
-        compliance: ["iso-42001"]
-        sla: "99.0%"
+    - name: "performance_optimization"
+      description: "Identify performance bottlenecks and suggest optimizations"
+      frameworks: ["mcp", "openai"]
+      input_schema: "./schemas/performance.input.json"
+      output_schema: "./schemas/performance.output.json"
+      compliance: ["iso-42001"]
 
-    secondary:
-      - id: "dependency_analysis"
-        name: "Dependency Analysis"
-        description: "Analyze dependencies for security, licensing, and version compatibility"
-        frameworks: ["mcp", "langchain"]
+    - name: "dependency_analysis"
+      description: "Analyze dependencies for security, licensing, and version compatibility"
+      frameworks: ["mcp", "langchain"]
 
-      - id: "code_metrics_calculation"
-        name: "Code Metrics Calculation"
-        description: "Calculate cyclomatic complexity, maintainability index, and other metrics"
-        frameworks: ["mcp", "openai"]
+    - name: "code_metrics_calculation"
+      description: "Calculate cyclomatic complexity, maintainability index, and other metrics"
+      frameworks: ["mcp", "openai"]
 
-      - id: "best_practices_validation"
-        name: "Best Practices Validation"
-        description: "Validate against language-specific and framework best practices"
-        frameworks: ["mcp", "langchain"]
+    - name: "best_practices_validation"
+      description: "Validate against language-specific and framework best practices"
+      frameworks: ["mcp", "langchain"]
 
   protocols:
     supported: ["openapi", "mcp", "uadp"]
@@ -178,6 +172,7 @@ spec:
     authorization:
       model: "rbac"
       roles: ["developer", "security_analyst", "admin"]
+    data_classification: "confidential"
     rate_limiting:
       requests_per_minute: 50
       burst_allowance: 10
@@ -236,17 +231,20 @@ spec:
   # Framework configurations
   frameworks:
     mcp:
+      enabled: true
       server_type: "claude_code_analyzer"
       tools: ["analyze_code", "scan_vulnerabilities", "calculate_metrics"]
       resources: ["analysis_rules", "security_patterns"]
       streaming: true
 
     openai:
+      enabled: true
       assistant_type: "code_analysis"
       functions: ["analyze_code", "scan_vulnerabilities", "calculate_metrics"]
       model_preferences: ["gpt-4", "gpt-4-turbo"]
 
     langchain:
+      enabled: true
       tool_type: "structured"
       async_support: true
       chains: ["code_analysis", "security_scan"]
