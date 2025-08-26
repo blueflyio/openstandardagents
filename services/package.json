@@ -1,49 +1,63 @@
 {
-  "name": "@openapi-ai-agents/services",
-  "version": "0.1.0",
-  "description": "OpenAPI AI Agents Standard - Core Services",
-  "main": "index.js",
+  "name": "@bluefly/oaas-services",
+  "version": "1.0.0",
+  "description": "OpenAPI AI Agents Standard - Complete Universal Services Package with Runtime Translation",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "scripts": {
-    "build": "npm run build --workspaces",
-    "test": "npm run test --workspaces",
-    "lint": "npm run lint --workspaces",
-    "validate": "node scripts/workspace-discovery.js"
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "lint": "eslint src/**/*.ts",
+    "clean": "rm -rf dist",
+    "prepare": "npm run build",
+    "prepublishOnly": "npm run clean && npm run build"
   },
-  "workspaces": [
-    "validation-api",
-    "compliance-checker",
-    "discovery-engine",
-    "agents/*",
-    "agent-orchestrator",
-    "agent-registry",
-    "universal-agent-toolkit",
-    "validation-cli"
-  ],
   "keywords": [
-    "openapi",
     "ai-agents",
-    "standard",
-    "interoperability",
-    "compliance"
+    "oaas",
+    "openapi",
+    "universal-translator",
+    "runtime-bridge",
+    "drupal",
+    "mcp",
+    "langchain",
+    "crewai",
+    "no-file-modification"
   ],
-  "author": "OpenAPI AI Agents Standard Contributors",
-  "license": "Apache-2.0",
+  "author": "Bluefly LLM Platform",
+  "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/openapi-ai-agents/standard.git"
+    "url": "https://github.com/bluefly-ai/openapi-ai-agents-standard.git",
+    "directory": "services"
   },
+  "homepage": "https://github.com/bluefly-ai/openapi-ai-agents-standard#readme",
   "bugs": {
-    "url": "https://github.com/openapi-ai-agents/standard/issues"
+    "url": "https://github.com/bluefly-ai/openapi-ai-agents-standard/issues"
   },
-  "homepage": "https://openapi-ai-agents.org",
   "engines": {
-    "node": ">=18.0.0",
-    "npm": ">=8.0.0"
+    "node": ">=18.0.0"
+  },
+  "dependencies": {
+    "@types/js-yaml": "^4.0.5",
+    "ajv": "^8.12.0",
+    "ajv-formats": "^3.0.1",
+    "chalk": "^5.4.1",
+    "commander": "^12.1.0",
+    "glob": "^10.3.10",
+    "js-yaml": "^4.1.0",
+    "php-parser": "^3.1.5",
+    "typescript": "^5.0.0",
+    "winston": "^3.17.0"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",
-    "typescript": "^5.0.0",
-    "eslint": "^8.0.0",
-    "prettier": "^3.0.0"
-  }
+    "@typescript-eslint/eslint-plugin": "^6.0.0",
+    "@typescript-eslint/parser": "^6.0.0",
+    "eslint": "^8.0.0"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ]
 }
