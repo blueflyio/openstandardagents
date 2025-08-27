@@ -24,7 +24,7 @@
 
 #### **TDDAI Integration - PRODUCTION READY**
 
-- **Location**: `/Users/flux423/Sites/LLM/common_npm/tddai/.agents/`
+- **Location**: `${WORKSPACE_ROOT}/common_npm/tddai/.agents/`
 - **Status**: ✅ **FULLY OPERATIONAL** with Gold-level OAAS compliance
 - **Agents Deployed**:
   - `tddai-expert`: Enterprise-grade TDD methodology and AI-enhanced testing
@@ -34,7 +34,7 @@
 
 #### **Validation API Server - OPERATIONAL**
 
-- **Location**: `/Users/flux423/Sites/LLM/openapi-ai-agents-standard/services/validation-server.js`
+- **Location**: `./services/validation-server.js`
 - **Status**: ✅ **RUNNING** on port 3003
 - **Features**:
   - Complete validation and compliance services
@@ -49,7 +49,7 @@
 
 #### **Golden Standard Templates - DEPLOYED**
 
-- **Location**: `/Users/flux423/Sites/LLM/openapi-ai-agents-standard/examples/.agents/`
+- **Location**: `./examples/.agents/`
 - **Status**: ✅ **PRODUCTION TEMPLATES** with 1000+ line comprehensive specifications
 - **Templates Available**:
   - `agent-name-skill-01`: Complete Level 4 Enterprise template
@@ -59,7 +59,7 @@
 
 #### **Workspace Orchestrator Service - IMPLEMENTED**
 
-- **Location**: `/Users/flux423/Sites/LLM/openapi-ai-agents-standard/services/workspace-orchestrator/`
+- **Location**: `./services/workspace-orchestrator/`
 - **Status**: ✅ **IMPLEMENTED** with TypeScript services
 - **Features**:
   - Question analysis and complexity assessment
@@ -842,7 +842,7 @@ class OAASValidator {
 #### **TDDAI Integration - FULLY OPERATIONAL**
 
 - **Status**: ✅ **PRODUCTION READY** with Gold-level OAAS compliance
-- **Location**: `/Users/flux423/Sites/LLM/common_npm/tddai/.agents/`
+- **Location**: `${WORKSPACE_ROOT}/common_npm/tddai/.agents/`
 - **Agents Deployed**:
   - `tddai-expert`: Enterprise TDD methodology and AI-enhanced testing
   - `token-optimizer`: Universal token optimization across LLM providers
@@ -852,7 +852,7 @@ class OAASValidator {
 #### **Golden Standard Templates - DEPLOYED**
 
 - **Status**: ✅ **PRODUCTION TEMPLATES** with comprehensive specifications
-- **Location**: `/Users/flux423/Sites/LLM/openapi-ai-agents-standard/examples/.agents/`
+- **Location**: `./examples/.agents/`
 - **Templates**: Complete Level 4 Enterprise templates with 1000+ line specifications
 - **Data Structure**: Full training data, knowledge base, configurations, and examples
 

@@ -40,7 +40,7 @@ export class UniversalTranslator {
   async translateToOAAS(agent: TranslatableAgent): Promise<any> {
     const startTime = Date.now();
     
-    console.log(`🔄 Translating ${agent.format} agent: ${agent.id}`);
+    
 
     try {
       let oaasSpec: any;
@@ -64,7 +64,7 @@ export class UniversalTranslator {
       }
 
       const translationTime = Date.now() - startTime;
-      console.log(`✅ Translated ${agent.id} in ${translationTime}ms`);
+      
       
       return oaasSpec;
 

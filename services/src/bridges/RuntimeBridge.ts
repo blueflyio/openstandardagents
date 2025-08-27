@@ -34,7 +34,7 @@ export class RuntimeBridge {
     capability: AgentCapability, 
     input: any
   ): Promise<ExecutionResult> {
-    console.log(`🚀 Executing ${agent.name}.${capability.name} (${agent.format} format)`);
+    
 
     const startTime = Date.now();
 
@@ -88,7 +88,7 @@ export class RuntimeBridge {
     agent: DiscoveredAgent, 
     targetFramework: 'langchain' | 'crewai' | 'openai' | 'anthropic' | 'mcp'
   ): Promise<any> {
-    console.log(`🔄 Translating ${agent.name} for ${targetFramework} framework`);
+    
 
     switch (targetFramework) {
       case 'langchain':

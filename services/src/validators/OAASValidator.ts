@@ -38,7 +38,7 @@ export class OAASValidator {
    * Validate single agent specification
    */
   async validate(agentSpec: any): Promise<ValidationResult> {
-    console.log(`✅ Validating agent specification...`);
+    // Validate agent specification against OAAS v0.1.1 standard
 
     const errors: ValidationError[] = [];
     const warnings: ValidationWarning[] = [];
@@ -71,14 +71,14 @@ export class OAASValidator {
    * Validate multiple agents
    */
   async validateMultiple(agents: any[]): Promise<ValidationResult[]> {
-    console.log(`✅ Validating ${agents.length} agent specifications...`);
+    // Validate multiple agent specifications
     
     const results = await Promise.all(
       agents.map(agent => this.validate(agent.oaas_spec || agent))
     );
 
     const summary = this.generateValidationSummary(results);
-    console.log(`📊 Validation Summary:`, summary);
+    // Validation completed successfully
 
     return results;
   }
