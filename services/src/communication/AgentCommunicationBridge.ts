@@ -57,7 +57,7 @@ export class AgentCommunicationBridge {
    */
   async registerPeer(peer: AgentPeer): Promise<void> {
     this.peers.set(peer.id, peer);
-    console.log(`🤝 Registered peer: ${peer.name} (${peer.framework})`);
+    // Peer registration completed successfully
   }
 
   /**

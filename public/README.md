@@ -4,7 +4,7 @@ Welcome to the comprehensive documentation for the OpenAPI AI Agents Standard (O
 
 ## 🚀 Quick Navigation
 
-- **[Getting Started](getting-started.html)** - Quick start guide and basic examples
+- **[Getting Started](getting-started.html)** - Implementation guide and reference examples
 - **[API Documentation](api-specs.html)** - Interactive API documentation with Swagger UI
 - **[Examples](examples/)** - Production-ready examples and templates
 - **[Schemas](schemas.html)** - JSON Schema definitions
@@ -33,14 +33,14 @@ The OpenAPI AI Agents Standard (OAAS) establishes the definitive technical frame
 
 ### Compliance Levels
 
-- **Bronze (Basic)**: Valid OAAS structure, health endpoint, basic capability declaration
+- **Bronze (Foundation)**: Valid OAAS structure, health endpoint, capability declaration
 - **Silver (Production)**: All Bronze + token optimization, protocol bridges, security controls
 - **Gold (Enterprise)**: All Silver + full governance compliance, explainability, audit trails
 
 ## 📚 Documentation Structure
 
 ### Examples
-- **[01-agent-basic](examples/01-agent-basic/)** - Simple agent with basic capabilities
+- **[01-agent-foundation](examples/01-agent-basic/)** - Foundational agent implementation
 - **[02-agent-integration](examples/02-agent-integration/)** - Multi-framework integration
 - **[03-agent-production](examples/03-agent-production/)** - Production-ready with security
 - **[04-agent-enterprise](examples/04-agent-enterprise/)** - Full compliance and governance
