@@ -1,6 +1,6 @@
 {
-  "name": "@bluefly/oaas-services",
-  "version": "1.0.0",
+  "name": "@openapi-ai-agents/oaas-services",
+  "version": "0.1.1",
   "description": "OpenAPI AI Agents Standard - Complete Universal Services Package with Runtime Translation",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -36,21 +36,22 @@
     "crewai",
     "no-file-modification"
   ],
-  "author": "Bluefly LLM Platform",
-  "license": "MIT",
+  "author": "OpenAPI AI Agents Community",
+  "license": "Apache-2.0",
   "repository": {
     "type": "git",
-    "url": "https://github.com/bluefly-ai/openapi-ai-agents-standard.git",
+    "url": "https://github.com/openapi-ai-agents/standard.git",
     "directory": "services"
   },
-  "homepage": "https://github.com/bluefly-ai/openapi-ai-agents-standard#readme",
+  "homepage": "https://github.com/openapi-ai-agents/standard#readme",
   "bugs": {
-    "url": "https://github.com/bluefly-ai/openapi-ai-agents-standard/issues"
+    "url": "https://github.com/openapi-ai-agents/standard/issues"
   },
   "engines": {
     "node": ">=18.0.0"
   },
   "dependencies": {
+    "@apidevtools/swagger-parser": "^12.0.0",
     "@types/js-yaml": "^4.0.5",
     "ajv": "^8.12.0",
     "ajv-formats": "^3.0.1",

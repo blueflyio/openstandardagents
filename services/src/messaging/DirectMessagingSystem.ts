@@ -92,7 +92,7 @@ export class DirectMessagingSystem extends EventEmitter {
         priority: options.priority || 'normal',
         timeout_ms: options.timeout_ms || 30000,
         require_receipt: options.require_receipt || this.config.enableDeliveryReceipts
-      }
+      } as any
     };
 
     // Add to sender's outbox and recipient's inbox

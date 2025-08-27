@@ -248,7 +248,7 @@ export class WorkspaceOrchestrator {
                 name: 'TDD Expert Agent',
                 version: '1.0.0',
                 format: 'oaas',
-                source_path: '/Users/flux423/Sites/LLM/common_npm/tddai/.agents/tddai-expert',
+                source_path: 'examples/.agents/tddai-expert',
                 capabilities: [
                     {
                         name: 'test_generation',
@@ -269,7 +269,7 @@ export class WorkspaceOrchestrator {
                 name: 'Token Optimizer Agent',
                 version: '1.0.0',
                 format: 'oaas',
-                source_path: '/Users/flux423/Sites/LLM/common_npm/tddai/.agents/token-optimizer',
+                source_path: 'examples/.agents/token-optimizer',
                 capabilities: [
                     {
                         name: 'llm_optimization',

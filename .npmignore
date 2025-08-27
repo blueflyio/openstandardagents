@@ -1,0 +1,71 @@
+# Development files
+.git
+.gitlab
+.gitignore
+.gitlab-ci.yml
+*.log
+*.tmp
+
+# Test files
+tests/
+test/
+*.test.ts
+*.test.js
+*.spec.ts
+*.spec.js
+coverage/
+.nyc_output/
+
+# Source files (only publish dist)
+services/src/
+services/*.ts
+!services/dist/
+
+# Development configs
+tsconfig.json
+tsconfig.prod.json
+jest.config.js
+.eslintrc*
+.prettierrc*
+
+# Local/personal files
+.env
+.env.local
+*.local.*
+node_modules/
+
+# Documentation sources (keep compiled docs)
+docs/*.md.bak
+docs/drafts/
+
+# Validation API (separate service)
+services/validation-api/
+services/validation-server.js
+services/workspace-orchestrator/src/
+services/workspace-orchestrator/*.ts
+services/workspace-orchestrator/node_modules/
+
+# Build artifacts
+*.tsbuildinfo
+dist.bak/
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Example data that might contain personal info
+examples/**/*.local.json
+examples/**/*.local.yml
+examples/**/*.local.yaml
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*

@@ -40,7 +40,7 @@ export class AgentRegistry {
    * Update registry with discovered agents
    */
   async updateAgents(agents: DiscoveredAgent[]): Promise<void> {
-    console.log(`📝 Updating registry with ${agents.length} agents...`);
+    
     
     const updateTime = new Date();
     let newAgents = 0;
@@ -78,7 +78,7 @@ export class AgentRegistry {
     }
 
     this.lastDiscovery = updateTime;
-    console.log(`✅ Registry updated: ${newAgents} new, ${updatedAgents} updated`);
+    
   }
 
   /**
@@ -92,11 +92,11 @@ export class AgentRegistry {
       agent.last_accessed = new Date();
       this.accessCounts.set(agentId, agent.access_count);
       
-      console.log(`🎯 Retrieved agent: ${agentId} (accessed ${agent.access_count} times)`);
+      
       return agent;
     }
 
-    console.log(`❓ Agent not found: ${agentId}`);
+    
     return null;
   }
 
@@ -111,7 +111,7 @@ export class AgentRegistry {
    * Search agents with filters
    */
   async searchAgents(options: SearchOptions = {}): Promise<CachedAgent[]> {
-    console.log('🔍 Searching agents with filters:', options);
+    
     
     let results = Array.from(this.agents.values());
 
@@ -134,7 +134,7 @@ export class AgentRegistry {
       results = results.slice(0, options.limit);
     }
 
-    console.log(`📊 Search returned ${results.length} agents`);
+    
     return results;
   }
 
@@ -160,13 +160,13 @@ export class AgentRegistry {
    * Clear registry cache
    */
   async clearCache(): Promise<void> {
-    console.log('🗑️  Clearing agent registry cache...');
+    
     
     this.agents.clear();
     this.accessCounts.clear();
     this.lastDiscovery = null;
     
-    console.log('✅ Registry cache cleared');
+    
   }
 
   private generateCacheKey(agent: DiscoveredAgent): string {
