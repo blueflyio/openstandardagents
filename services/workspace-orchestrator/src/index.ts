@@ -33,7 +33,7 @@ app.get('/health', (req, res) => {
 app.post('/api/v1/discover', async (req, res) => {
     try {
         const { workspace_path } = req.body;
-        const agents = await orchestrator.discoverAgents(workspace_path || '/Users/flux423/Sites/LLM');
+        const agents = await orchestrator.discoverAgents(workspace_path || process.cwd());
 
         res.json({
             success: true,

@@ -32,8 +32,8 @@ export class DiscoveryEngine {
    * Discover all agents across all supported formats
    */
   async discoverAll(): Promise<DiscoveryResult[]> {
-    console.log('🔍 Starting universal agent discovery...');
-    console.log(`📁 Project root: ${this.config.projectRoot}`);
+    
+    
 
     const discoveries: DiscoveryResult[] = [];
 
@@ -61,7 +61,7 @@ export class DiscoveryEngine {
     const uniqueDiscoveries = this.deduplicateDiscoveries(discoveries);
     const sortedDiscoveries = uniqueDiscoveries.sort((a, b) => b.confidence - a.confidence);
 
-    console.log(`✅ Discovered ${sortedDiscoveries.length} unique agents`);
+    
     return sortedDiscoveries;
   }
 

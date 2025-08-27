@@ -302,10 +302,10 @@ build:documentation:
           
           <section id="getting-started">
               <h2>Getting Started</h2>
-              <p>Quick start guide and basic examples to get you up and running with OAAS.</p>
+              <p>Implementation guide and reference examples for OAAS integration.</p>
               <ul>
                   <li><a href="getting-started.html">Getting Started Guide</a></li>
-                  <li><a href="examples/01-agent-basic/">Basic Agent Example</a></li>
+                  <li><a href="examples/01-agent-basic/">Foundation Agent Example</a></li>
                   <li><a href="examples/02-agent-integration/">Integration Example</a></li>
               </ul>
           </section>
@@ -592,7 +592,7 @@ pages:
               <div class="grid">
                   <div class="card">
                       <h3>🚀 Getting Started</h3>
-                      <p>Quick start guide and basic examples to get you up and running with OAAS.</p>
+                      <p>Implementation guide and reference examples for OAAS integration.</p>
                       <a href="getting-started.html">Get Started</a>
                   </div>
                   

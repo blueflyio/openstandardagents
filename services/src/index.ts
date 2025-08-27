@@ -1,5 +1,5 @@
 /**
- * @bluefly/oaas-services - Universal AI Agent Services
+ * @openapi-ai-agents/oaas - Universal AI Agent Services
  * Runtime translation for any agent format to OAAS without file modification
  */
 
@@ -60,7 +60,7 @@ export class OAASService {
    * NO FILE MODIFICATION - purely read-only operation
    */
   async discoverAgents(): Promise<DiscoveredAgent[]> {
-    console.log('🔍 Discovering agents across all formats...');
+    
     
     const agents = await this.discovery.discoverAll();
     const translatedAgents = await Promise.all(
@@ -94,7 +94,7 @@ export class OAASService {
     const discoveredAgents: DiscoveredAgent[] = translatedAgents;
     await this.registry.updateAgents(discoveredAgents);
     
-    console.log(`✅ Discovered ${discoveredAgents.length} agents`);
+    
     return discoveredAgents;
   }
 
@@ -102,7 +102,7 @@ export class OAASService {
    * Execute any agent capability regardless of original format
    */
   async executeCapability(agentId: string, capabilityName: string, input: any): Promise<any> {
-    console.log(`🚀 Executing ${agentId}.${capabilityName}...`);
+    
     
     const agent = await this.registry.getAgent(agentId);
     if (!agent) {

@@ -1,0 +1,674 @@
+{
+  "agent_configurations": {
+    "basic_setup": {
+      "description": "Basic GitLab CI/CD agent configuration for small teams",
+      "configuration": {
+        "gitlab": {
+          "url": "https://gitlab.example.com",
+          "api_version": "v4",
+          "timeout": 30000,
+          "rate_limit": {
+            "requests_per_minute": 100,
+            "burst_allowance": 20
+          }
+        },
+        "security": {
+          "authentication": ["api_key", "jwt"],
+          "encryption": {
+            "at_rest": true,
+            "in_transit": "tls_1_3"
+          },
+          "audit_logging": true
+        },
+        "performance": {
+          "caching": {
+            "enabled": true,
+            "ttl": 1800
+          },
+          "token_optimization": {
+            "enabled": true,
+            "target_savings": 35
+          }
+        }
+      }
+    },
+    "enterprise_setup": {
+      "description": "Enterprise configuration with full compliance and monitoring",
+      "configuration": {
+        "gitlab": {
+          "url": "https://gitlab.enterprise.com",
+          "api_version": "v4",
+          "timeout": 60000,
+          "rate_limit": {
+            "requests_per_minute": 1000,
+            "burst_allowance": 100
+          },
+          "webhook_verification": true
+        },
+        "security": {
+          "authentication": ["api_key", "jwt", "oauth2", "gitlab_token"],
+          "authorization": {
+            "model": "rbac",
+            "roles": ["developer", "devops", "admin", "security", "compliance"]
+          },
+          "encryption": {
+            "at_rest": true,
+            "in_transit": "tls_1_3",
+            "key_rotation": "90_days"
+          },
+          "audit_logging": true,
+          "compliance_monitoring": true
+        },
+        "compliance": {
+          "frameworks": ["soc2", "iso27001", "gdpr", "nist_cybersecurity", "pci_dss"],
+          "certification_level": "gold",
+          "automated_validation": true,
+          "reporting": {
+            "frequency": "daily",
+            "retention": "7_years"
+          }
+        },
+        "monitoring": {
+          "metrics": {
+            "enabled": true,
+            "retention": "90d"
+          },
+          "alerting": {
+            "channels": ["email", "slack", "pagerduty"],
+            "thresholds": {
+              "error_rate": 0.001,
+              "response_time": 500,
+              "availability": 0.999
+            }
+          },
+          "dashboards": ["pipeline_performance", "security_overview", "deployment_health"]
+        },
+        "scaling": {
+          "min_replicas": 3,
+          "max_replicas": 20,
+          "auto_scaling": true,
+          "resource_limits": {
+            "cpu": "2000m",
+            "memory": "4Gi"
+          }
+        }
+      }
+    }
+  },
+  "pipeline_templates": {
+    "node_js_application": {
+      "name": "Node.js Application Pipeline",
+      "description": "Optimized CI/CD pipeline for Node.js applications with security scanning",
+      "gitlab_ci_yaml": "stages:\n  - validate\n  - build\n  - test\n  - security\n  - deploy\n\nvariables:\n  NODE_VERSION: \"18\"\n  DOCKER_DRIVER: overlay2\n  DOCKER_TLS_CERTDIR: \"\"\n  SECURE_ANALYZERS_PREFIX: \"$CI_TEMPLATE_REGISTRY_HOST/security-products\"\n\n# Cache for faster builds\ncache:\n  key: \"$CI_COMMIT_REF_SLUG\"\n  paths:\n    - node_modules/\n    - .npm/\n\n# Validate stage\nvalidate-package:\n  stage: validate\n  image: node:${NODE_VERSION}-alpine\n  script:\n    - npm audit --audit-level moderate\n    - npm run lint\n  artifacts:\n    reports:\n      codequality: gl-codequality.json\n  rules:\n    - if: $CI_MERGE_REQUEST_IID\n    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH\n\n# Build stage\nbuild:\n  stage: build\n  image: node:${NODE_VERSION}-alpine\n  before_script:\n    - npm ci --cache .npm --prefer-offline\n  script:\n    - npm run build\n  artifacts:\n    paths:\n      - dist/\n    expire_in: 1 hour\n  parallel:\n    matrix:\n      - BUILD_ENV: [development, production]\n  rules:\n    - if: $CI_MERGE_REQUEST_IID\n    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH\n\n# Test stage\nunit-tests:\n  stage: test\n  image: node:${NODE_VERSION}-alpine\n  needs: [\"build\"]\n  before_script:\n    - npm ci --cache .npm --prefer-offline\n  script:\n    - npm run test:unit -- --coverage\n  coverage: '/All files[^|]*\\|[^|]*\\s+([\\d\\.]+)/'  \n  artifacts:\n    reports:\n      junit: junit.xml\n      coverage_report:\n        coverage_format: cobertura\n        path: coverage/cobertura-coverage.xml\n  rules:\n    - if: $CI_MERGE_REQUEST_IID\n    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH\n\nintegration-tests:\n  stage: test\n  image: node:${NODE_VERSION}-alpine\n  needs: [\"build\"]\n  services:\n    - postgres:13-alpine\n    - redis:7-alpine\n  variables:\n    DATABASE_URL: \"postgresql://postgres:postgres@postgres:5432/test\"\n    REDIS_URL: \"redis://redis:6379\"\n    POSTGRES_DB: \"test\"\n    POSTGRES_USER: \"postgres\"\n    POSTGRES_PASSWORD: \"postgres\"\n  before_script:\n    - npm ci --cache .npm --prefer-offline\n  script:\n    - npm run test:integration\n  artifacts:\n    reports:\n      junit: junit-integration.xml\n  rules:\n    - if: $CI_MERGE_REQUEST_IID\n    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH\n\n# Security stage\nsast:\n  stage: security\n  extends: .sast\n  rules:\n    - if: $CI_MERGE_REQUEST_IID\n    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH\n\ndependency_scanning:\n  stage: security\n  extends: .dependency_scanning\n  rules:\n    - if: $CI_MERGE_REQUEST_IID\n    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH\n\nsecret_detection:\n  stage: security\n  extends: .secret_detection\n  rules:\n    - if: $CI_MERGE_REQUEST_IID\n    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH\n\ncontainer_scanning:\n  stage: security\n  extends: .container_scanning\n  variables:\n    DOCKER_IMAGE: $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA\n  rules:\n    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH\n\n# Deploy stage\ndeploy-staging:\n  stage: deploy\n  image: alpine/helm:latest\n  environment:\n    name: staging\n    url: https://app-staging.example.com\n  before_script:\n    - helm repo add stable https://charts.helm.sh/stable\n    - helm repo update\n  script:\n    - helm upgrade --install app-staging ./helm-chart\n        --set image.tag=$CI_COMMIT_SHA\n        --set environment=staging\n        --namespace staging\n        --create-namespace\n        --wait\n  rules:\n    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH\n\ndeploy-production:\n  stage: deploy\n  image: alpine/helm:latest\n  environment:\n    name: production\n    url: https://app.example.com\n  before_script:\n    - helm repo add stable https://charts.helm.sh/stable\n    - helm repo update\n  script:\n    - helm upgrade --install app-production ./helm-chart\n        --set image.tag=$CI_COMMIT_SHA\n        --set environment=production\n        --namespace production\n        --create-namespace\n        --wait\n  when: manual\n  rules:\n    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH\n\n# Include security templates\ninclude:\n  - template: Security/SAST.gitlab-ci.yml\n  - template: Security/Dependency-Scanning.gitlab-ci.yml\n  - template: Security/Secret-Detection.gitlab-ci.yml\n  - template: Security/Container-Scanning.gitlab-ci.yml\n",
+      "optimizations": [
+        "Parallel build matrix for different environments",
+        "Intelligent caching for node_modules and npm cache",
+        "Security scanning integration with GitLab templates",
+        "Optimized Docker layer caching",
+        "Conditional execution rules for efficiency"
+      ],
+      "estimated_duration": "8-12 minutes",
+      "security_features": ["SAST", "Dependency Scanning", "Secret Detection", "Container Scanning"]
+    },
+    "python_microservice": {
+      "name": "Python Microservice Pipeline",
+      "description": "High-performance CI/CD pipeline for Python microservices with comprehensive testing",
+      "gitlab_ci_yaml": "stages:\n  - lint\n  - test\n  - build\n  - security\n  - deploy\n\nvariables:\n  PYTHON_VERSION: \"3.11\"\n  PIP_CACHE_DIR: \"$CI_PROJECT_DIR/.cache/pip\"\n  DOCKER_DRIVER: overlay2\n  DOCKER_TLS_CERTDIR: \"\"\n\n# Global cache settings\ncache:\n  key: \"${CI_COMMIT_REF_SLUG}-python\"\n  paths:\n    - .cache/pip/\n    - venv/\n\n# Lint stage\nlint:\n  stage: lint\n  image: python:${PYTHON_VERSION}-slim\n  before_script:\n    - python -m venv venv\n    - source venv/bin/activate\n    - pip install --upgrade pip\n    - pip install -r requirements-dev.txt\n  script:\n    - black --check .\n    - isort --check-only .\n    - flake8 .\n    - mypy .\n  artifacts:\n    reports:\n      codequality: gl-codequality.json\n  rules:\n    - if: $CI_MERGE_REQUEST_IID\n    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH\n\n# Test stage with parallel execution\nunit-tests:\n  stage: test\n  image: python:${PYTHON_VERSION}-slim\n  services:\n    - postgres:14-alpine\n    - redis:7-alpine\n  variables:\n    DATABASE_URL: \"postgresql://postgres:postgres@postgres:5432/test\"\n    REDIS_URL: \"redis://redis:6379\"\n    POSTGRES_DB: \"test\"\n    POSTGRES_USER: \"postgres\"\n    POSTGRES_PASSWORD: \"postgres\"\n  before_script:\n    - python -m venv venv\n    - source venv/bin/activate\n    - pip install --upgrade pip\n    - pip install -r requirements.txt\n    - pip install -r requirements-dev.txt\n  script:\n    - pytest tests/unit --cov=src --cov-report=xml --cov-report=term --junitxml=junit.xml\n  coverage: '/(?i)total.*? (100(?:\\.0+)?\\%|[1-9]?\\d(?:\\.\\d+)?\\%)$/'\n  artifacts:\n    reports:\n      junit: junit.xml\n      coverage_report:\n        coverage_format: cobertura\n        path: coverage.xml\n  parallel:\n    matrix:\n      - TEST_SUITE: [unit, integration, e2e]\n  rules:\n    - if: $CI_MERGE_REQUEST_IID\n    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH\n\n# Build stage\nbuild-image:\n  stage: build\n  image: docker:20.10.16\n  services:\n    - docker:20.10.16-dind\n  variables:\n    DOCKER_BUILDKIT: 1\n  before_script:\n    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY\n  script:\n    - docker build\n        --cache-from $CI_REGISTRY_IMAGE:latest\n        --tag $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA\n        --tag $CI_REGISTRY_IMAGE:latest\n        --build-arg BUILDKIT_INLINE_CACHE=1\n        .\n    - docker push $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA\n    - docker push $CI_REGISTRY_IMAGE:latest\n  rules:\n    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH\n\n# Security scanning\nsast:\n  extends: .sast\n  stage: security\n  rules:\n    - if: $CI_MERGE_REQUEST_IID\n    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH\n\ndependency_scanning:\n  extends: .dependency_scanning\n  stage: security\n  rules:\n    - if: $CI_MERGE_REQUEST_IID\n    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH\n\ncontainer_scanning:\n  extends: .container_scanning\n  stage: security\n  variables:\n    DOCKER_IMAGE: $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA\n  rules:\n    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH\n\n# Deployment with different strategies\ndeploy-dev:\n  stage: deploy\n  image: bitnami/kubectl:latest\n  environment:\n    name: development\n    url: https://api-dev.example.com\n  script:\n    - kubectl set image deployment/api-dev api=$CI_REGISTRY_IMAGE:$CI_COMMIT_SHA\n    - kubectl rollout status deployment/api-dev --timeout=300s\n  rules:\n    - if: $CI_COMMIT_BRANCH == \"develop\"\n\ndeploy-staging:\n  stage: deploy\n  image: bitnami/kubectl:latest\n  environment:\n    name: staging\n    url: https://api-staging.example.com\n  script:\n    - kubectl set image deployment/api-staging api=$CI_REGISTRY_IMAGE:$CI_COMMIT_SHA\n    - kubectl rollout status deployment/api-staging --timeout=600s\n    # Health check\n    - kubectl wait --for=condition=available --timeout=300s deployment/api-staging\n  rules:\n    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH\n\ndeploy-production-canary:\n  stage: deploy\n  image: bitnami/kubectl:latest\n  environment:\n    name: production\n    url: https://api.example.com\n  script:\n    # Canary deployment - 10% traffic\n    - kubectl patch deployment api-production-canary -p '{\"spec\":{\"template\":{\"spec\":{\"containers\":[{\"name\":\"api\",\"image\":\"'$CI_REGISTRY_IMAGE:$CI_COMMIT_SHA'\"}]}}}}'\n    - kubectl rollout status deployment/api-production-canary --timeout=300s\n    # Wait for monitoring validation\n    - sleep 300\n  when: manual\n  rules:\n    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH\n\ndeploy-production-full:\n  stage: deploy\n  image: bitnami/kubectl:latest\n  environment:\n    name: production\n    url: https://api.example.com\n  script:\n    # Full production deployment\n    - kubectl set image deployment/api-production api=$CI_REGISTRY_IMAGE:$CI_COMMIT_SHA\n    - kubectl rollout status deployment/api-production --timeout=600s\n    - kubectl wait --for=condition=available --timeout=600s deployment/api-production\n  needs: [\"deploy-production-canary\"]\n  when: manual\n  rules:\n    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH\n\n# Include security templates\ninclude:\n  - template: Security/SAST.gitlab-ci.yml\n  - template: Security/Dependency-Scanning.gitlab-ci.yml\n  - template: Security/Container-Scanning.gitlab-ci.yml\n",
+      "optimizations": [
+        "Parallel test execution by test suite type",
+        "Docker BuildKit with inline caching",
+        "Python virtual environment caching",
+        "Canary deployment strategy for production",
+        "Health checks and rollout status verification"
+      ],
+      "estimated_duration": "6-10 minutes",
+      "security_features": ["SAST", "Dependency Scanning", "Container Scanning"]
+    }
+  },
+  "security_policies": {
+    "soc2_compliance": {
+      "name": "SOC2 Compliance Policy",
+      "description": "Security policy ensuring SOC2 Type II compliance requirements",
+      "rules": [
+        {
+          "type": "vulnerability_threshold",
+          "condition": {
+            "critical_count": 0,
+            "high_count": 0,
+            "medium_count": 5
+          },
+          "action": "block",
+          "message": "Critical and high vulnerabilities must be resolved before deployment"
+        },
+        {
+          "type": "quality_gate",
+          "condition": {
+            "code_coverage": 80,
+            "security_hotspots": 0,
+            "duplication": 5
+          },
+          "action": "warn",
+          "message": "Code quality thresholds not met"
+        },
+        {
+          "type": "license_policy",
+          "condition": {
+            "allowed_licenses": ["MIT", "Apache-2.0", "BSD-3-Clause", "ISC"],
+            "blocked_licenses": ["GPL-3.0", "AGPL-3.0", "LGPL-3.0"]
+          },
+          "action": "block",
+          "message": "Incompatible license detected"
+        }
+      ],
+      "compliance_frameworks": ["soc2"],
+      "audit_requirements": {
+        "log_retention": "7_years",
+        "access_logging": true,
+        "change_tracking": true
+      }
+    },
+    "enterprise_security": {
+      "name": "Enterprise Security Policy",
+      "description": "Comprehensive security policy for enterprise environments",
+      "rules": [
+        {
+          "type": "vulnerability_threshold",
+          "condition": {
+            "critical_count": 0,
+            "high_count": 0,
+            "medium_count": 10,
+            "cvss_threshold": 7.0
+          },
+          "action": "block",
+          "message": "Security vulnerabilities exceed acceptable thresholds"
+        },
+        {
+          "type": "dependency_policy",
+          "condition": {
+            "max_age_days": 365,
+            "security_advisories": true,
+            "license_compliance": true
+          },
+          "action": "warn",
+          "message": "Dependencies require review"
+        },
+        {
+          "type": "container_policy",
+          "condition": {
+            "base_image_scanning": true,
+            "runtime_security": true,
+            "resource_limits": true
+          },
+          "action": "block",
+          "message": "Container security requirements not met"
+        }
+      ],
+      "compliance_frameworks": ["soc2", "iso27001", "nist_cybersecurity"],
+      "enforcement": {
+        "merge_request_blocking": true,
+        "deployment_gates": true,
+        "exception_approval": "security_team"
+      }
+    }
+  },
+  "deployment_strategies": {
+    "blue_green": {
+      "name": "Blue/Green Deployment",
+      "description": "Zero-downtime deployment strategy with instant rollback capability",
+      "configuration": {
+        "strategy": "blue_green",
+        "health_checks": {
+          "enabled": true,
+          "path": "/health",
+          "interval": 30,
+          "timeout": 10,
+          "retries": 3
+        },
+        "traffic_switching": {
+          "method": "load_balancer",
+          "validation_period": 300,
+          "auto_switch": false
+        },
+        "rollback": {
+          "enabled": true,
+          "automatic": true,
+          "health_check_failures": 3,
+          "timeout": 600
+        }
+      },
+      "prerequisites": [
+        "Duplicate infrastructure capacity",
+        "Load balancer configuration",
+        "Database migration compatibility",
+        "Session state management"
+      ],
+      "benefits": [
+        "Zero-downtime deployments",
+        "Instant rollback capability",
+        "Full environment validation",
+        "Reduced deployment risk"
+      ],
+      "considerations": [
+        "Double infrastructure cost during deployment",
+        "Database schema compatibility required",
+        "Session handling complexity"
+      ]
+    },
+    "canary": {
+      "name": "Canary Deployment",
+      "description": "Gradual traffic shift deployment with risk mitigation",
+      "configuration": {
+        "strategy": "canary",
+        "phases": [
+          {
+            "name": "initial",
+            "traffic_percentage": 5,
+            "duration": 300,
+            "success_criteria": {
+              "error_rate": 0.1,
+              "response_time": 500,
+              "success_rate": 99.5
+            }
+          },
+          {
+            "name": "ramp_up",
+            "traffic_percentage": 25,
+            "duration": 600,
+            "success_criteria": {
+              "error_rate": 0.1,
+              "response_time": 500,
+              "success_rate": 99.5
+            }
+          },
+          {
+            "name": "full_deployment",
+            "traffic_percentage": 100,
+            "duration": 0,
+            "success_criteria": {
+              "error_rate": 0.1,
+              "response_time": 500,
+              "success_rate": 99.5
+            }
+          }
+        ],
+        "monitoring": {
+          "metrics": ["error_rate", "response_time", "throughput", "cpu_usage", "memory_usage"],
+          "alerts": ["high_error_rate", "slow_response_time", "resource_exhaustion"],
+          "dashboard": "canary_deployment"
+        },
+        "rollback": {
+          "automatic": true,
+          "conditions": ["error_rate > 0.5%", "response_time > 1000ms", "success_rate < 99%"],
+          "notification": ["slack", "email", "pagerduty"]
+        }
+      },
+      "benefits": [
+        "Gradual risk exposure",
+        "Real user traffic validation",
+        "Automatic rollback on issues",
+        "Detailed performance monitoring"
+      ]
+    },
+    "rolling": {
+      "name": "Rolling Deployment",
+      "description": "Sequential instance replacement with configurable batch sizes",
+      "configuration": {
+        "strategy": "rolling",
+        "batch_size": "25%",
+        "max_unavailable": 1,
+        "health_checks": {
+          "enabled": true,
+          "path": "/ready",
+          "interval": 10,
+          "timeout": 5
+        },
+        "deployment_timeout": 600,
+        "rollback_on_failure": true
+      },
+      "benefits": [
+        "No additional infrastructure required",
+        "Configurable deployment speed",
+        "Automatic health checking",
+        "Resource efficient"
+      ]
+    }
+  },
+  "monitoring_configurations": {
+    "pipeline_metrics": {
+      "name": "Pipeline Performance Monitoring",
+      "description": "Comprehensive pipeline performance tracking and alerting",
+      "metrics": [
+        {
+          "name": "pipeline_duration",
+          "type": "histogram",
+          "labels": ["project", "branch", "status"],
+          "alert_threshold": "30m"
+        },
+        {
+          "name": "pipeline_success_rate",
+          "type": "gauge",
+          "labels": ["project", "environment"],
+          "alert_threshold": "95%"
+        },
+        {
+          "name": "job_execution_time",
+          "type": "histogram",
+          "labels": ["job_name", "stage", "project"],
+          "alert_threshold": "15m"
+        },
+        {
+          "name": "queue_wait_time",
+          "type": "histogram",
+          "labels": ["runner", "project"],
+          "alert_threshold": "5m"
+        }
+      ],
+      "alerts": [
+        {
+          "name": "high_pipeline_failure_rate",
+          "condition": "pipeline_success_rate < 95",
+          "duration": "5m",
+          "severity": "warning",
+          "actions": ["slack_notification", "email_alert"]
+        },
+        {
+          "name": "long_pipeline_duration",
+          "condition": "pipeline_duration > 30m",
+          "duration": "1m",
+          "severity": "warning",
+          "actions": ["slack_notification"]
+        }
+      ]
+    },
+    "security_metrics": {
+      "name": "Security Monitoring",
+      "description": "Security vulnerability and compliance tracking",
+      "metrics": [
+        {
+          "name": "vulnerabilities_count",
+          "type": "gauge",
+          "labels": ["severity", "project", "scan_type"],
+          "alert_threshold": "critical: 0, high: 0"
+        },
+        {
+          "name": "scan_duration",
+          "type": "histogram",
+          "labels": ["scan_type", "project"],
+          "alert_threshold": "20m"
+        },
+        {
+          "name": "compliance_score",
+          "type": "gauge",
+          "labels": ["framework", "project"],
+          "alert_threshold": "90%"
+        }
+      ],
+      "alerts": [
+        {
+          "name": "critical_vulnerability_detected",
+          "condition": "vulnerabilities_count{severity=\"critical\"} > 0",
+          "duration": "1m",
+          "severity": "critical",
+          "actions": ["pagerduty_alert", "security_team_notification"]
+        },
+        {
+          "name": "compliance_threshold_breach",
+          "condition": "compliance_score < 90",
+          "duration": "5m",
+          "severity": "warning",
+          "actions": ["compliance_team_notification"]
+        }
+      ]
+    }
+  },
+  "environment_configurations": {
+    "development": {
+      "name": "Development Environment",
+      "tier": "development",
+      "characteristics": {
+        "auto_deploy": true,
+        "branch_protection": false,
+        "security_scanning": "basic",
+        "monitoring_level": "minimal",
+        "resource_limits": {
+          "cpu": "500m",
+          "memory": "1Gi"
+        }
+      },
+      "deployment_strategy": "rolling",
+      "approval_required": false,
+      "retention_policy": "7d"
+    },
+    "staging": {
+      "name": "Staging Environment",
+      "tier": "staging",
+      "characteristics": {
+        "auto_deploy": false,
+        "branch_protection": true,
+        "security_scanning": "comprehensive",
+        "monitoring_level": "standard",
+        "resource_limits": {
+          "cpu": "1000m",
+          "memory": "2Gi"
+        }
+      },
+      "deployment_strategy": "blue_green",
+      "approval_required": true,
+      "approvers": ["lead_developer", "devops_team"],
+      "retention_policy": "30d",
+      "data_refresh": {
+        "frequency": "weekly",
+        "source": "production_sanitized",
+        "anonymization": true
+      }
+    },
+    "production": {
+      "name": "Production Environment",
+      "tier": "production",
+      "characteristics": {
+        "auto_deploy": false,
+        "branch_protection": true,
+        "security_scanning": "comprehensive",
+        "monitoring_level": "full",
+        "resource_limits": {
+          "cpu": "2000m",
+          "memory": "4Gi"
+        }
+      },
+      "deployment_strategy": "canary",
+      "approval_required": true,
+      "approvers": ["tech_lead", "devops_lead", "security_team"],
+      "retention_policy": "indefinite",
+      "backup_strategy": {
+        "frequency": "daily",
+        "retention": "90d",
+        "cross_region": true
+      },
+      "disaster_recovery": {
+        "rto": "4h",
+        "rpo": "1h",
+        "failover_region": "us-west-2"
+      }
+    }
+  },
+  "integration_examples": {
+    "langchain": {
+      "name": "LangChain Integration Example",
+      "description": "Using GitLab CI/CD agent with LangChain framework",
+      "code": "from langchain.tools import StructuredTool\nfrom pydantic import BaseModel\nimport requests\nfrom typing import List, Optional\n\nclass PipelineOptimizationInput(BaseModel):\n    pipeline_id: int\n    optimization_targets: List[str]\n    constraints: Optional[dict] = None\n\nclass SecurityScanInput(BaseModel):\n    project_id: int\n    scan_types: List[str]\n    target_branch: str = \"main\"\n\nclass DeploymentInput(BaseModel):\n    project_id: int\n    environment: str\n    ref: str\n    strategy: str\n\nclass GitLabCICDAgent:\n    def __init__(self, base_url: str, api_key: str):\n        self.base_url = base_url\n        self.headers = {\"X-API-Key\": api_key, \"Content-Type\": \"application/json\"}\n    \n    def optimize_pipeline(self, pipeline_id: int, optimization_targets: List[str], constraints: dict = None) -> dict:\n        \"\"\"Optimize GitLab CI/CD pipeline configuration.\"\"\"\n        payload = {\n            \"optimization_targets\": optimization_targets,\n            \"constraints\": constraints or {}\n        }\n        response = requests.post(\n            f\"{self.base_url}/pipelines/{pipeline_id}/optimize\",\n            json=payload,\n            headers=self.headers\n        )\n        return response.json()\n    \n    def execute_security_scan(self, project_id: int, scan_types: List[str], target_branch: str = \"main\") -> dict:\n        \"\"\"Execute comprehensive security scan.\"\"\"\n        payload = {\n            \"project_id\": project_id,\n            \"scan_types\": scan_types,\n            \"target_branch\": target_branch\n        }\n        response = requests.post(\n            f\"{self.base_url}/security/scan\",\n            json=payload,\n            headers=self.headers\n        )\n        return response.json()\n    \n    def create_deployment(self, project_id: int, environment: str, ref: str, strategy: str) -> dict:\n        \"\"\"Create deployment with specified strategy.\"\"\"\n        payload = {\n            \"project_id\": project_id,\n            \"environment\": environment,\n            \"ref\": ref,\n            \"strategy\": strategy\n        }\n        response = requests.post(\n            f\"{self.base_url}/deployments\",\n            json=payload,\n            headers=self.headers\n        )\n        return response.json()\n\n# Create tools for LangChain\nagent = GitLabCICDAgent(\"http://localhost:8080/api/v1\", \"your-api-key\")\n\npipeline_optimizer = StructuredTool(\n    name=\"gitlab_pipeline_optimizer\",\n    description=\"Optimize GitLab CI/CD pipeline for performance, cost, and reliability\",\n    func=agent.optimize_pipeline,\n    args_schema=PipelineOptimizationInput\n)\n\nsecurity_scanner = StructuredTool(\n    name=\"gitlab_security_scanner\",\n    description=\"Execute comprehensive security scanning including SAST, DAST, and container scanning\",\n    func=agent.execute_security_scan,\n    args_schema=SecurityScanInput\n)\n\ndeployment_manager = StructuredTool(\n    name=\"gitlab_deployment_manager\",\n    description=\"Create and manage deployments with various strategies (blue/green, canary, rolling)\",\n    func=agent.create_deployment,\n    args_schema=DeploymentInput\n)\n\n# Usage example\ntools = [pipeline_optimizer, security_scanner, deployment_manager]",
+      "features": [
+        "Type-safe tool definitions",
+        "Structured input validation",
+        "Error handling and retries",
+        "Async support for long-running operations"
+      ]
+    },
+    "crewai": {
+      "name": "CrewAI Integration Example",
+      "description": "DevOps crew with GitLab CI/CD specialization",
+      "code": "from crewai import Agent, Task, Crew, Process\nimport requests\n\nclass GitLabDevOpsSpecialist(Agent):\n    def __init__(self):\n        super().__init__(\n            role=\"GitLab DevOps Specialist\",\n            goal=\"Optimize CI/CD pipelines and manage secure deployments\",\n            backstory=\"Expert DevOps engineer with 10+ years experience in GitLab CI/CD, \"\n                     \"container orchestration, and security automation\",\n            verbose=True,\n            allow_delegation=True,\n            max_iter=3,\n            tools=[self.optimize_pipeline, self.scan_security, self.deploy_application]\n        )\n        self.base_url = \"http://localhost:8080/api/v1\"\n        self.headers = {\"X-API-Key\": \"your-api-key\"}\n    \n    def optimize_pipeline(self, pipeline_id: int, targets: list) -> str:\n        \"\"\"Optimize GitLab CI/CD pipeline.\"\"\"\n        response = requests.post(\n            f\"{self.base_url}/pipelines/{pipeline_id}/optimize\",\n            json={\"optimization_targets\": targets},\n            headers=self.headers\n        )\n        return f\"Pipeline optimization completed: {response.json()}\"\n    \n    def scan_security(self, project_id: int, scan_types: list) -> str:\n        \"\"\"Execute security scanning.\"\"\"\n        response = requests.post(\n            f\"{self.base_url}/security/scan\",\n            json={\"project_id\": project_id, \"scan_types\": scan_types},\n            headers=self.headers\n        )\n        return f\"Security scan initiated: {response.json()}\"\n    \n    def deploy_application(self, project_id: int, environment: str, strategy: str) -> str:\n        \"\"\"Deploy application using specified strategy.\"\"\"\n        response = requests.post(\n            f\"{self.base_url}/deployments\",\n            json={\n                \"project_id\": project_id,\n                \"environment\": environment,\n                \"ref\": \"main\",\n                \"strategy\": strategy\n            },\n            headers=self.headers\n        )\n        return f\"Deployment created: {response.json()}\"\n\nclass SecuritySpecialist(Agent):\n    def __init__(self):\n        super().__init__(\n            role=\"Security Specialist\",\n            goal=\"Ensure comprehensive security scanning and compliance validation\",\n            backstory=\"Cybersecurity expert specializing in DevSecOps, vulnerability assessment, \"\n                     \"and compliance frameworks (SOC2, ISO27001, GDPR)\",\n            verbose=True,\n            allow_delegation=False\n        )\n\n# Create crew\ndevops_specialist = GitLabDevOpsSpecialist()\nsecurity_specialist = SecuritySpecialist()\n\n# Define tasks\npipeline_optimization_task = Task(\n    description=\"Analyze and optimize the CI/CD pipeline for project 123, focusing on performance and cost reduction\",\n    agent=devops_specialist,\n    expected_output=\"Detailed optimization report with recommended changes and estimated improvements\"\n)\n\nsecurity_validation_task = Task(\n    description=\"Perform comprehensive security validation including SAST, DAST, and container scanning for project 123\",\n    agent=security_specialist,\n    expected_output=\"Security assessment report with vulnerability findings and remediation recommendations\"\n)\n\ndeployment_task = Task(\n    description=\"Execute canary deployment to production environment with automated monitoring and rollback capabilities\",\n    agent=devops_specialist,\n    expected_output=\"Deployment status with performance metrics and rollback plan\"\n)\n\n# Create and execute crew\ncrew = Crew(\n    agents=[devops_specialist, security_specialist],\n    tasks=[pipeline_optimization_task, security_validation_task, deployment_task],\n    process=Process.sequential,\n    verbose=True\n)\n\nresult = crew.kickoff()\nprint(f\"Crew execution result: {result}\")",
+      "features": [
+        "Specialized agent roles for DevOps and Security",
+        "Sequential task execution with dependencies",
+        "Delegation between agents for complex workflows",
+        "Comprehensive error handling and logging"
+      ]
+    }
+  },
+  "compliance_templates": {
+    "soc2_checklist": {
+      "name": "SOC2 Type II Compliance Checklist",
+      "description": "Comprehensive checklist for SOC2 Type II compliance validation",
+      "categories": [
+        {
+          "name": "Security",
+          "description": "Information and systems are protected against unauthorized access",
+          "controls": [
+            {
+              "id": "CC6.1",
+              "title": "Logical and Physical Access Controls",
+              "description": "The entity implements logical access security software, infrastructure, and architectures over protected information assets",
+              "requirements": [
+                "Multi-factor authentication enabled",
+                "Role-based access control implemented",
+                "Regular access reviews conducted",
+                "Privileged account monitoring"
+              ],
+              "validation_methods": [
+                "API endpoint: GET /security/policies",
+                "Audit log review",
+                "Access control matrix verification"
+              ]
+            },
+            {
+              "id": "CC6.2",
+              "title": "System Access Monitoring",
+              "description": "Prior to issuing system credentials and granting system access, the entity registers and authorizes new internal and external users",
+              "requirements": [
+                "User registration process",
+                "Authorization workflows",
+                "Access provisioning tracking",
+                "Deprovisioning procedures"
+              ],
+              "validation_methods": [
+                "API endpoint: GET /compliance/validate",
+                "User lifecycle audit",
+                "Access control verification"
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Availability",
+          "description": "Information and systems are available for operation and use as committed or agreed",
+          "controls": [
+            {
+              "id": "A1.1",
+              "title": "Performance Monitoring",
+              "description": "The entity monitors system performance and evaluates the effectiveness of system processing",
+              "requirements": [
+                "Performance metrics collection",
+                "SLA monitoring and reporting",
+                "Capacity planning",
+                "Performance optimization"
+              ],
+              "validation_methods": [
+                "API endpoint: GET /monitoring/pipelines/performance",
+                "SLA compliance reports",
+                "Performance dashboards"
+              ]
+            }
+          ]
+        }
+      ],
+      "automation": {
+        "validation_frequency": "daily",
+        "report_generation": "weekly",
+        "alert_thresholds": {
+          "compliance_score": 95,
+          "control_failures": 0
+        }
+      }
+    },
+    "gdpr_compliance": {
+      "name": "GDPR Compliance Framework",
+      "description": "General Data Protection Regulation compliance validation",
+      "principles": [
+        {
+          "name": "Data Minimization",
+          "description": "Personal data shall be adequate, relevant and limited to what is necessary",
+          "requirements": [
+            "Data inventory and classification",
+            "Purpose limitation documentation",
+            "Retention policy implementation",
+            "Regular data audits"
+          ]
+        },
+        {
+          "name": "Security of Processing",
+          "description": "Appropriate technical and organizational measures to ensure security",
+          "requirements": [
+            "Encryption at rest and in transit",
+            "Access controls and authentication",
+            "Security incident response",
+            "Regular security assessments"
+          ],
+          "validation": {
+            "api_endpoints": ["/security/policies", "/security/scans/{scan_id}"],
+            "checks": ["encryption_enabled", "access_controls", "audit_logging"]
+          }
+        }
+      ]
+    }
+  },
+  "best_practices": {
+    "pipeline_optimization": [
+      "Use parallel jobs to reduce overall pipeline duration",
+      "Implement intelligent caching strategies for dependencies and build artifacts",
+      "Optimize Docker image builds with multi-stage builds and layer caching",
+      "Use conditional job execution to avoid unnecessary work",
+      "Implement fail-fast strategies for quick feedback",
+      "Cache test results and only run affected tests when possible",
+      "Use GitLab's dependency scanning and security scanning templates",
+      "Implement proper error handling and retry mechanisms",
+      "Monitor pipeline performance and set up alerting for degradation",
+      "Use resource limits to prevent resource contention"
+    ],
+    "security_scanning": [
+      "Integrate security scanning early in the development lifecycle (shift-left)",
+      "Use multiple scanning types: SAST, DAST, dependency scanning, container scanning",
+      "Set appropriate vulnerability thresholds based on risk appetite",
+      "Implement security gates that block deployments with critical vulnerabilities",
+      "Regularly update scanning tools and vulnerability databases",
+      "Create exception processes for false positives with proper approval workflows",
+      "Monitor security metrics and trends over time",
+      "Provide developer training on secure coding practices",
+      "Implement license compliance scanning for open source dependencies",
+      "Use container scanning for base image vulnerabilities"
+    ],
+    "deployment_strategies": [
+      "Choose deployment strategy based on application characteristics and risk tolerance",
+      "Implement comprehensive health checks for all deployment strategies",
+      "Use blue/green for zero-downtime deployments with instant rollback needs",
+      "Use canary deployments for gradual risk exposure with real user traffic",
+      "Implement automated rollback based on performance metrics and error rates",
+      "Monitor deployment performance and success rates",
+      "Use infrastructure as code for consistent environment provisioning",
+      "Implement proper secret management and rotation",
+      "Set up monitoring and alerting for deployment health",
+      "Document runbooks for manual intervention scenarios"
+    ],
+    "compliance_management": [
+      "Implement compliance validation as code with automated testing",
+      "Maintain audit trails for all system changes and access",
+      "Regularly review and update compliance policies",
+      "Conduct periodic compliance assessments and gap analyses",
+      "Implement data governance and classification policies",
+      "Provide compliance training for development and operations teams",
+      "Use automated tools for continuous compliance monitoring",
+      "Maintain documentation for compliance frameworks and controls",
+      "Implement incident response procedures for compliance violations",
+      "Regular third-party compliance assessments and certifications"
+    ]
+  }
+}
