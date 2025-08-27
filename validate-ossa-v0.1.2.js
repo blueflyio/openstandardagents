@@ -6,9 +6,9 @@
  */
 
 import fs from 'fs';
-import path from 'path';
-import yaml from 'js-yaml';
 import { glob } from 'glob';
+import yaml from 'js-yaml';
+import path from 'path';
 
 class OSSAValidator {
     constructor() {
