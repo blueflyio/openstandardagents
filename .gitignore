@@ -38,4 +38,4 @@ temp/
 tmp/
 
 # Claude
-.claude
+.claude.DS_Store

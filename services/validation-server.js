@@ -9,7 +9,7 @@ const path = require('path');
 const fs = require('fs').promises;
 
 const app = express();
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORT || 3003;
 const FASTAPI_GATEWAY = process.env.FASTAPI_GATEWAY_URL || 'http://fastapi-gateway:8000';
 const VALIDATION_MODE = process.env.VALIDATION_MODE || 'strict';
 
