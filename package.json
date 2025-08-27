@@ -5,7 +5,7 @@
   "main": "validate-ossa-v0.1.2.js",
   "type": "module",
   "bin": {
-    "ossa-validate": "./validate-ossa-v0.1.2.js"
+    "ossa-validate": "validate-ossa-v0.1.2.js"
   },
   "scripts": {
     "validate": "node validate-ossa-v0.1.2.js",
@@ -17,7 +17,7 @@
     "ossa",
     "open-standards",
     "ai-agents",
-    "agent-interoperability", 
+    "agent-interoperability",
     "vendor-neutral",
     "conformance",
     "governance",
@@ -33,7 +33,7 @@
   "license": "Apache-2.0",
   "repository": {
     "type": "git",
-    "url": "https://github.com/open-standards-scalable-agents/standard.git"
+    "url": "git+https://github.com/open-standards-scalable-agents/standard.git"
   },
   "homepage": "https://github.com/open-standards-scalable-agents/standard#readme",
   "bugs": {
