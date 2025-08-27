@@ -3,8 +3,8 @@ kind: Agent
 metadata:
   name: agent-name-skill
   version: 1.0.0
-  created: '2025-01-26'
-  updated: '2025-01-26'
+  created: "2025-01-26"
+  updated: "2025-01-26"
   description: Golden standard agent template demonstrating full OAAS compliance and cross-platform compatibility
   annotations:
     oaas/version: 0.1.1
@@ -15,18 +15,18 @@ metadata:
     oaas/framework-support: langchain,crewai,autogen,openai,anthropic,google,huggingface
     langchain/tool-type: structured
     langchain/integration-method: function_call
-    langchain/async-support: 'true'
+    langchain/async-support: "true"
     langchain/streaming: supported
-    langchain/memory-compatible: 'true'
-    langchain/chain-compatible: 'true'
+    langchain/memory-compatible: "true"
+    langchain/chain-compatible: "true"
     crewai/role-type: specialist
     crewai/collaboration-mode: sequential
-    crewai/delegation-enabled: 'true'
+    crewai/delegation-enabled: "true"
     crewai/task-execution: parallel
     crewai/memory-sharing: enabled
     autogen/agent-type: assistant
     autogen/conversation-role: participant
-    autogen/handoff-enabled: 'true'
+    autogen/handoff-enabled: "true"
     autogen/group-chat: compatible
     autogen/code-execution: supported
     openai/assistant-type: function_calling
@@ -60,20 +60,20 @@ metadata:
     enterprise/rbac: supported
     enterprise/encryption: at-rest-and-transit
     enterprise/compliance-monitoring: automated
+    ossa.io/conformance-level: core
+    ossa.io/migration-date: "2025-08-27"
+    ossa.io/source-format: migrated
   labels:
     domain: universal-template
     category: golden-standard
     complexity: comprehensive
     maturity: stable
     certification: gold
+    tier: core
 spec:
   agent:
     name: Universal Agent Template
-    expertise: >-
-      Golden standard agent template demonstrating full OAAS compliance and cross-platform compatibility with all major
-      AI agent frameworks including LangChain, CrewAI, AutoGen, OpenAI Assistants, Anthropic MCP, Google Vertex AI, and
-      Hugging Face. Provides enterprise-grade compliance, 35-45% token optimization, and Universal Agent Discovery
-      Protocol support.
+    expertise: Golden standard agent template demonstrating full OAAS compliance and cross-platform compatibility with all major AI agent frameworks including LangChain, CrewAI, AutoGen, OpenAI Assistants, Anthropic MCP, Google Vertex AI, and Hugging Face. Provides enterprise-grade compliance, 35-45% token optimization, and Universal Agent Discovery Protocol support.
     description: |
       This is the GOLDEN STANDARD agent template for the OpenAPI AI Agents Standard (OAAS).
       It demonstrates complete cross-platform compatibility with ALL major AI agent frameworks:
@@ -621,12 +621,12 @@ spec:
       iso_42001:
         status: compliant
         controls:
-          - '5.2.1: AI policy'
-          - '6.2: AI risk management'
-          - '7.3: AI system documentation'
-          - '8.1: AI system planning and control'
-        assessment_date: '2025-01-26'
-        next_review: '2025-07-26'
+          - "5.2.1: AI policy"
+          - "6.2: AI risk management"
+          - "7.3: AI system documentation"
+          - "8.1: AI system planning and control"
+        assessment_date: "2025-01-26"
+        next_review: "2025-07-26"
       nist_ai_rmf:
         status: compliant
         functions:
@@ -877,54 +877,60 @@ spec:
     specification: ./openapi.yaml
     base_url: http://localhost:8080/api/v1
     endpoints: {}
+  discovery:
+    uadp:
+      enabled: true
+      tags:
+        - universal-template
+        - core
 status:
   deployment:
     phase: ready
     environment: production
-    last_deployed: '2025-01-26T10:00:00Z'
+    last_deployed: "2025-01-26T10:00:00Z"
     deployment_id: golden-standard-v1.0.0
   health:
     overall: healthy
-    last_check: '2025-01-26T10:00:00Z'
+    last_check: "2025-01-26T10:00:00Z"
     uptime: 99.9%
   framework_compatibility:
     langchain:
       status: fully_compatible
       version: 0.1.0
-      last_tested: '2025-01-26T10:00:00Z'
+      last_tested: "2025-01-26T10:00:00Z"
       test_coverage: 100%
     crewai:
       status: fully_compatible
       version: 0.1.0
-      last_tested: '2025-01-26T10:00:00Z'
+      last_tested: "2025-01-26T10:00:00Z"
       test_coverage: 100%
     autogen:
       status: fully_compatible
       version: 0.1.0
-      last_tested: '2025-01-26T10:00:00Z'
+      last_tested: "2025-01-26T10:00:00Z"
       test_coverage: 100%
     openai:
       status: fully_compatible
       version: 1.0.0
-      last_tested: '2025-01-26T10:00:00Z'
+      last_tested: "2025-01-26T10:00:00Z"
       test_coverage: 100%
     anthropic:
       status: fully_compatible
       version: 1.0.0
-      last_tested: '2025-01-26T10:00:00Z'
+      last_tested: "2025-01-26T10:00:00Z"
       test_coverage: 100%
     google:
       status: fully_compatible
       version: 1.0.0
-      last_tested: '2025-01-26T10:00:00Z'
+      last_tested: "2025-01-26T10:00:00Z"
       test_coverage: 100%
   compliance:
     overall_status: compliant
     iso_42001: compliant
     nist_ai_rmf: compliant
     eu_ai_act: compliant
-    last_audit: '2025-01-26T10:00:00Z'
-    next_audit: '2025-07-26T10:00:00Z'
+    last_audit: "2025-01-26T10:00:00Z"
+    next_audit: "2025-07-26T10:00:00Z"
   performance:
     token_optimization_ratio: 42%
     average_response_time: 150ms
