@@ -153,3 +153,8 @@ export {
   AgentRegistry,
   OAASValidator
 };
+
+// Export communication components
+export { AgentCommunicationBridge } from './communication/AgentCommunicationBridge.js';
+export { ProtocolAdapterFactory, MCPProtocolAdapter, LangChainProtocolAdapter, CrewAIProtocolAdapter, OpenAIProtocolAdapter, AnthropicProtocolAdapter } from './communication/ProtocolAdapters.js';
+export { DirectMessagingSystem } from './messaging/DirectMessagingSystem.js';

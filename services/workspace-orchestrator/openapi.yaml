@@ -1,0 +1,792 @@
+openapi: 3.1.0
+info:
+  title: Workspace Orchestrator Service API
+  version: 1.0.0
+  description: Enterprise Workspace Orchestrator for OpenAPI AI Agents Standard - Intelligent multi-agent coordination and response synthesis
+  contact:
+    name: OpenAPI AI Agents Standard
+    url: https://github.com/openapi-ai-agents/standard
+  license:
+    name: Apache 2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0
+
+  # OAAS Extensions
+  x-openapi-ai-agents-standard:
+    version: "0.1.1"
+    certification_level: "gold"
+    compliance_frameworks: ["iso-42001", "nist-ai-rmf", "eu-ai-act"]
+    token_optimization: "enabled"
+    protocol_bridges: ["mcp", "openai", "custom"]
+
+  x-agent-metadata:
+    class: "workspace-orchestrator"
+    type: "orchestration"
+    protocols: ["openapi", "mcp", "uadp"]
+    capabilities:
+      ["multi_agent_coordination", "response_synthesis", "intelligent_routing"]
+    domains:
+      ["orchestration", "ai-agents", "enterprise", "workspace-management"]
+    specialization: "enterprise-orchestration"
+
+  x-orchestration-features:
+    question_analysis: true
+    agent_selection: true
+    response_synthesis: true
+    conflict_resolution: true
+    performance_monitoring: true
+    multi_strategy_support: true
+
+  x-protocol-bridges:
+    mcp:
+      enabled: true
+      latency: "<200ms"
+      server_compatible: true
+      tools_endpoint: "/mcp/tools"
+      resources_endpoint: "/mcp/resources"
+    openai:
+      enabled: true
+      latency: "<300ms"
+      function_calling: true
+      assistant_api: true
+    uadp:
+      enabled: true
+      discovery_endpoint: "/uadp/discover"
+      capability_advertising: true
+
+  x-token-management:
+    optimization_enabled: true
+    target_savings: "35-45%"
+    strategies:
+      - "context_compression"
+      - "result_caching"
+      - "pattern_recognition"
+      - "intelligent_synthesis"
+
+  x-performance:
+    caching: "semantic"
+    compression: "enabled"
+    response_time_target: "500ms"
+    throughput_target: "50rps"
+
+servers:
+  - url: http://localhost:3004
+    description: Local workspace orchestrator service
+  - url: http://localhost:8080/api/v1/orchestrator
+    description: Local development server
+
+security:
+  - ApiKeyAuth: []
+  - BearerAuth: []
+
+paths:
+  /health:
+    get:
+      operationId: healthCheck
+      summary: Health check endpoint
+      description: Returns the health status of the workspace orchestrator service
+      tags:
+        - Health
+      security: []
+      responses:
+        "200":
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+
+  /api/v1/discover:
+    post:
+      operationId: discoverAgents
+      summary: Discover agents in workspace
+      description: Scans the workspace for available AI agents and registers them
+      tags:
+        - Agent Discovery
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DiscoveryRequest"
+      responses:
+        "200":
+          description: Agents discovered successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DiscoveryResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  /api/v1/orchestrate:
+    post:
+      operationId: orchestrate
+      summary: Orchestrate multi-agent response
+      description: Coordinates multiple agents to provide a comprehensive answer to a question
+      tags:
+        - Orchestration
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OrchestrationRequest"
+      responses:
+        "200":
+          description: Orchestration completed successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OrchestrationResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  /api/v1/stats:
+    get:
+      operationId: getStats
+      summary: Get orchestration statistics
+      description: Returns performance and usage statistics for the orchestrator
+      tags:
+        - Statistics
+      responses:
+        "200":
+          description: Statistics retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StatsResponse"
+
+  /api/v1/agents:
+    get:
+      operationId: getAgents
+      summary: Get discovered agents
+      description: Returns the list of currently discovered and registered agents
+      tags:
+        - Agent Management
+      responses:
+        "200":
+          description: Agents retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AgentsResponse"
+
+  /api/v1/agents/{agentId}/performance:
+    post:
+      operationId: updateAgentPerformance
+      summary: Update agent performance score
+      description: Updates the performance score for a specific agent
+      tags:
+        - Agent Management
+      parameters:
+        - name: agentId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: The ID of the agent to update
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PerformanceUpdateRequest"
+      responses:
+        "200":
+          description: Performance updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UpdateResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /api/v1/agents/{agentId}/availability:
+    post:
+      operationId: updateAgentAvailability
+      summary: Update agent availability status
+      description: Updates the availability status for a specific agent
+      tags:
+        - Agent Management
+      parameters:
+        - name: agentId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: The ID of the agent to update
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AvailabilityUpdateRequest"
+      responses:
+        "200":
+          description: Availability updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UpdateResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    HealthStatus:
+      type: object
+      required: [status, timestamp, service, version]
+      properties:
+        status:
+          type: string
+          enum: [healthy, degraded, unhealthy]
+        timestamp:
+          type: string
+          format: date-time
+        service:
+          type: string
+          example: "workspace-orchestrator"
+        version:
+          type: string
+          example: "1.0.0"
+
+    DiscoveryRequest:
+      type: object
+      properties:
+        workspace_path:
+          type: string
+          description: Path to the workspace to scan for agents
+          default: "/Users/flux423/Sites/LLM"
+        deep_scan:
+          type: boolean
+          description: Whether to perform a deep scan of subdirectories
+          default: true
+        include_patterns:
+          type: array
+          items:
+            type: string
+          description: File patterns to include in the scan
+          default: ["**/.agents/**"]
+
+    DiscoveryResponse:
+      type: object
+      required: [success, agents, total_agents, timestamp]
+      properties:
+        success:
+          type: boolean
+        agents:
+          type: array
+          items:
+            $ref: "#/components/schemas/DiscoveredAgent"
+        total_agents:
+          type: integer
+        timestamp:
+          type: string
+          format: date-time
+
+    DiscoveredAgent:
+      type: object
+      required:
+        [
+          id,
+          name,
+          version,
+          format,
+          source_path,
+          capabilities,
+          confidence,
+          last_discovered,
+        ]
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        version:
+          type: string
+        format:
+          type: string
+          enum: [oaas, mcp, langchain, crewai, openai, anthropic, unknown]
+        source_path:
+          type: string
+        capabilities:
+          type: array
+          items:
+            $ref: "#/components/schemas/AgentCapability"
+        metadata:
+          type: object
+        confidence:
+          type: number
+          minimum: 0
+          maximum: 1
+        last_discovered:
+          type: string
+          format: date-time
+
+    AgentCapability:
+      type: object
+      required: [name, description, frameworks]
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        frameworks:
+          type: array
+          items:
+            type: string
+
+    OrchestrationRequest:
+      type: object
+      required: [question]
+      properties:
+        question:
+          type: string
+          description: The question to orchestrate across multiple agents
+        context:
+          type: object
+          properties:
+            workspace_path:
+              type: string
+            user_id:
+              type: string
+            session_id:
+              type: string
+            preferences:
+              type: object
+        options:
+          type: object
+          properties:
+            max_agents:
+              type: integer
+              minimum: 1
+              maximum: 10
+              default: 5
+            timeout_ms:
+              type: integer
+              minimum: 1000
+              maximum: 60000
+              default: 30000
+            synthesis_strategy:
+              type: string
+              enum: [consensus, weighted_average, expert_priority, hierarchical]
+              default: consensus
+            include_metadata:
+              type: boolean
+              default: true
+
+    OrchestrationResponse:
+      type: object
+      required:
+        [
+          orchestration_id,
+          question,
+          question_analysis,
+          agent_selection,
+          agent_responses,
+          synthesis_result,
+          execution_metadata,
+          status,
+          timestamp,
+        ]
+      properties:
+        orchestration_id:
+          type: string
+        question:
+          type: string
+        question_analysis:
+          $ref: "#/components/schemas/QuestionAnalysis"
+        agent_selection:
+          $ref: "#/components/schemas/AgentSelectionResult"
+        agent_responses:
+          type: array
+          items:
+            $ref: "#/components/schemas/AgentResponse"
+        synthesis_result:
+          $ref: "#/components/schemas/SynthesisResult"
+        execution_metadata:
+          $ref: "#/components/schemas/ExecutionMetadata"
+        status:
+          type: string
+          enum: [completed, failed, partial]
+        errors:
+          type: array
+          items:
+            type: string
+        timestamp:
+          type: string
+          format: date-time
+
+    QuestionAnalysis:
+      type: object
+      required:
+        [
+          id,
+          question,
+          complexity,
+          required_capabilities,
+          technical_terms,
+          domain,
+          estimated_tokens,
+          confidence,
+          analysis_time_ms,
+        ]
+      properties:
+        id:
+          type: string
+        question:
+          type: string
+        complexity:
+          type: string
+          enum: [low, medium, high, expert]
+        required_capabilities:
+          type: array
+          items:
+            type: string
+        technical_terms:
+          type: array
+          items:
+            type: string
+        domain:
+          type: string
+        estimated_tokens:
+          type: integer
+        confidence:
+          type: number
+          minimum: 0
+          maximum: 1
+        analysis_time_ms:
+          type: integer
+
+    AgentSelectionResult:
+      type: object
+      required:
+        [
+          primary_agent,
+          supporting_agents,
+          selection_strategy,
+          total_candidates,
+          selection_time_ms,
+        ]
+      properties:
+        primary_agent:
+          $ref: "#/components/schemas/AgentCandidate"
+        supporting_agents:
+          type: array
+          items:
+            $ref: "#/components/schemas/AgentCandidate"
+        selection_strategy:
+          type: string
+        total_candidates:
+          type: integer
+        selection_time_ms:
+          type: integer
+
+    AgentCandidate:
+      type: object
+      required:
+        [
+          agent_id,
+          name,
+          capabilities,
+          expertise_score,
+          availability_score,
+          performance_score,
+          overall_score,
+          confidence,
+          reasoning,
+        ]
+      properties:
+        agent_id:
+          type: string
+        name:
+          type: string
+        capabilities:
+          type: array
+          items:
+            type: string
+        expertise_score:
+          type: number
+          minimum: 0
+          maximum: 1
+        availability_score:
+          type: number
+          minimum: 0
+          maximum: 1
+        performance_score:
+          type: number
+          minimum: 0
+          maximum: 1
+        overall_score:
+          type: number
+          minimum: 0
+          maximum: 1
+        confidence:
+          type: number
+          minimum: 0
+          maximum: 1
+        reasoning:
+          type: string
+
+    AgentResponse:
+      type: object
+      required:
+        [
+          agent_id,
+          agent_name,
+          capability_used,
+          response,
+          confidence,
+          execution_time_ms,
+          timestamp,
+        ]
+      properties:
+        agent_id:
+          type: string
+        agent_name:
+          type: string
+        capability_used:
+          type: string
+        response:
+          type: object
+        confidence:
+          type: number
+          minimum: 0
+          maximum: 1
+        execution_time_ms:
+          type: integer
+        timestamp:
+          type: string
+          format: date-time
+        metadata:
+          type: object
+
+    SynthesisResult:
+      type: object
+      required:
+        [
+          synthesized_answer,
+          confidence,
+          synthesis_strategy,
+          agent_contributions,
+          conflicts_detected,
+          synthesis_time_ms,
+          token_usage,
+        ]
+      properties:
+        synthesized_answer:
+          type: string
+        confidence:
+          type: number
+          minimum: 0
+          maximum: 1
+        synthesis_strategy:
+          type: string
+        agent_contributions:
+          type: array
+          items:
+            $ref: "#/components/schemas/AgentContribution"
+        conflicts_detected:
+          type: array
+          items:
+            $ref: "#/components/schemas/ConflictInfo"
+        synthesis_time_ms:
+          type: integer
+        token_usage:
+          $ref: "#/components/schemas/TokenUsage"
+
+    AgentContribution:
+      type: object
+      required: [agent_id, contribution_weight, key_insights]
+      properties:
+        agent_id:
+          type: string
+        contribution_weight:
+          type: number
+          minimum: 0
+          maximum: 1
+        key_insights:
+          type: array
+          items:
+            type: string
+
+    ConflictInfo:
+      type: object
+      required: [type, agents_involved, description, resolution, confidence]
+      properties:
+        type:
+          type: string
+          enum: [contradiction, uncertainty, scope_difference]
+        agents_involved:
+          type: array
+          items:
+            type: string
+        description:
+          type: string
+        resolution:
+          type: string
+        confidence:
+          type: number
+          minimum: 0
+          maximum: 1
+
+    TokenUsage:
+      type: object
+      required: [input_tokens, output_tokens, total_tokens]
+      properties:
+        input_tokens:
+          type: integer
+        output_tokens:
+          type: integer
+        total_tokens:
+          type: integer
+
+    ExecutionMetadata:
+      type: object
+      required:
+        [
+          total_time_ms,
+          question_analysis_time_ms,
+          agent_selection_time_ms,
+          execution_time_ms,
+          synthesis_time_ms,
+        ]
+      properties:
+        total_time_ms:
+          type: integer
+        question_analysis_time_ms:
+          type: integer
+        agent_selection_time_ms:
+          type: integer
+        execution_time_ms:
+          type: integer
+        synthesis_time_ms:
+          type: integer
+
+    StatsResponse:
+      type: object
+      required: [success, stats, timestamp]
+      properties:
+        success:
+          type: boolean
+        stats:
+          type: object
+          properties:
+            total_agents:
+              type: integer
+            agent_stats:
+              type: object
+            last_discovery:
+              type: string
+              format: date-time
+              nullable: true
+        timestamp:
+          type: string
+          format: date-time
+
+    AgentsResponse:
+      type: object
+      required: [success, agents, total_agents, timestamp]
+      properties:
+        success:
+          type: boolean
+        agents:
+          type: array
+          items:
+            $ref: "#/components/schemas/DiscoveredAgent"
+        total_agents:
+          type: integer
+        timestamp:
+          type: string
+          format: date-time
+
+    PerformanceUpdateRequest:
+      type: object
+      required: [performance_score]
+      properties:
+        performance_score:
+          type: number
+          minimum: 0
+          maximum: 1
+          description: Performance score between 0 and 1
+
+    AvailabilityUpdateRequest:
+      type: object
+      required: [status]
+      properties:
+        status:
+          type: string
+          enum: [online, offline, busy]
+          description: Availability status of the agent
+
+    UpdateResponse:
+      type: object
+      required: [success, message, timestamp]
+      properties:
+        success:
+          type: boolean
+        message:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+
+    ErrorResponse:
+      type: object
+      required: [success, error, timestamp]
+      properties:
+        success:
+          type: boolean
+          example: false
+        error:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+
+  responses:
+    BadRequest:
+      description: Bad request
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+
+    Unauthorized:
+      description: Unauthorized
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+
+    InternalError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
