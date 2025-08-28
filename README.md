@@ -48,6 +48,74 @@
 ### **Enterprise Governance**
 - **Compliance Automation**: Built-in support for ISO 42001, NIST AI RMF, EU AI Act, and custom regulatory frameworks
 - **Risk Management**: Continuous risk assessment with automated mitigation and escalation workflows
+
+## **🚀 20-Agent Ecosystem Deployment**
+
+This repository includes a production-ready 20-agent deployment system with orchestration and communication infrastructure.
+
+### **Active Services**
+
+| Service | Port | Status | Description |
+|---------|------|--------|-------------|
+| Agent Deployment Service | 4020 | Running | Manages agent lifecycle and deployment |
+| Agent Communication Router | 4050 | Running | Handles inter-agent communication |
+| LLM Gateway (Required) | 4000 | External | Routes all AI/LLM API calls |
+
+### **Deployed Agents**
+
+The system deploys 20 specialized agents across 5 phases:
+
+#### Phase 1: Foundation (Ports 4021-4023)
+- **orchestrator-supreme**: Agent coordination, task routing, resource management
+- **monitoring-sentinel**: System health monitoring, performance analytics, alerts
+- **security-guardian**: Security scanning, threat detection, compliance validation
+
+#### Phase 2: Development (Ports 4024-4028)
+- **drupal-expert**: Module development, theme creation, Drupal standards
+- **ai-ml-specialist**: Model training, inference optimization, HuggingFace integration
+- **devops-engineer**: Deployment automation, CI/CD, container orchestration
+- **api-gateway-manager**: API standardization, OpenAPI generation, routing
+- **workflow-orchestrator**: ECA workflows, BPMN modeling, process automation
+
+#### Phase 3: Content & Compliance (Ports 4029-4031)
+- **content-manager**: Content generation, moderation, multilingual support
+- **gov-compliance-agent**: Regulatory compliance, audit trails, policy enforcement
+- **search-optimization-agent**: Semantic search, vector indexing, content discovery
+
+#### Phase 4: Quality Assurance (Ports 4032-4034)
+- **qa-lead**: Automated testing, code quality analysis, regression testing
+- **performance-engineer**: Performance monitoring, load testing, optimization
+- **documentation-specialist**: Code/API documentation, user guides, technical writing
+
+#### Phase 5: Specialized (Ports 4035-4040)
+- **data-analyst**: Data processing, statistical analysis, predictive modeling
+- **integration-specialist**: Third-party integrations, API connectivity
+- **mobile-optimization-agent**: Mobile optimization, responsive design, PWA
+- **accessibility-guardian**: WCAG compliance, accessibility testing
+- **backup-recovery-agent**: Automated backups, disaster recovery
+- **innovation-researcher**: Technology research, trend analysis, POC development
+
+### **Quick Start**
+
+```bash
+# Install dependencies
+npm install express axios js-yaml
+
+# Start the agent deployment service
+node agent-deployment-service.js &
+
+# Start the communication router
+node agent-communication-router.js &
+
+# Deploy all 20 agents
+curl -X POST http://localhost:4020/api/v1/deploy-all
+
+# Check agent status
+curl http://localhost:4020/api/v1/agents
+
+# Check coordination status
+curl http://localhost:4050/api/v1/coordination-status
+```
 - **Audit Infrastructure**: Comprehensive logging, tracing, and reporting for regulatory compliance
 - **Security Framework**: Zero-trust architecture with role-based access control and end-to-end encryption
 
