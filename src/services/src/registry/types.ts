@@ -52,4 +52,6 @@ export interface MCPRegistryBackend {
     delete(id: string): Promise<boolean>;
     query(query: MCPRegistryQuery): Promise<MCPRegistryRecord[]>;
     close(): Promise<void>;
+    getStats(): { recordCount: number; tags: string[]; toolCount: number };
+    clear(): Promise<void>;
 }
