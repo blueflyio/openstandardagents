@@ -1,25 +1,16 @@
 {
-<<<<<<< HEAD
   "name": "open-standards-scalable-agents",
-  "version": "1.3.0",
-  "description": "OpenAPI AI Agents Standard (OAAS) - Vendor-neutral specification for universal AI agent interoperability",
-  "main": "validate-oaas-v1.3.0.js",
-=======
-  "name": "@bluefly/oaas",
-  "version": "1.2.0",
+  "version": "0.1.3",
   "description": "Open Standards for Scalable Agents (OSSA) - Vendor-neutral specification for universal AI agent interoperability",
-  "main": "validate-ossa-v0.1.2.js",
->>>>>>> feature/final-package-cleanup
+  "main": "validate-ossa-v0.1.3.js",
   "type": "module",
   "bin": {
-    "ossa-validate": "validate-ossa-v0.1.2.js",
-    "oaas-validate": "validate-oaas-v1.3.0.js",
-    "oaas-validate-v1.2": "validate-oaas-v1.2.0.js"
+    "ossa-validate": "validate-ossa-v0.1.3.js",
+    "ossa-validate-legacy": "tools/validation/validate-ossa-v0.1.2.js"
   },
   "scripts": {
-    "validate": "node validate-oaas-v1.3.0.js",
-    "validate:v1.2": "node validate-oaas-v1.2.0.js", 
-    "validate:legacy": "node validate-ossa-v0.1.2.js",
+    "validate": "node validate-ossa-v0.1.3.js",
+    "validate:legacy": "node tools/validation/validate-ossa-v0.1.2.js",
     "validate:verbose": "node validate-oaas-v1.3.0.js --verbose",
     "test": "npm run validate examples/",
     "lint": "echo 'No linting configured'",
