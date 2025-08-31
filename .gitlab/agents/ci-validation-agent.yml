@@ -1,0 +1,67 @@
+apiVersion: open-standards-scalable-agents/v0.1.3
+kind: Agent
+metadata:
+  name: ci-validation-agent
+  description: "GitLab CI/CD OSSA validation and deployment agent"
+  version: 0.1.3
+  tags:
+    - ci-cd
+    - gitlab
+    - validation
+    - deployment
+spec:
+  capabilities:
+    - ci_pipeline_validation
+    - ossa_compliance_checking
+    - automated_testing
+    - deployment_orchestration
+  model:
+    provider: anthropic
+    model: claude-sonnet
+    temperature: 0.2
+
+# OSSA v0.1.3 Extensions
+x-ossa-token-budget:
+  total_budget: 10000
+  allocation:
+    validation: 3500      # 35%
+    testing: 3000        # 30%
+    deployment: 2000     # 20%
+    reporting: 1000      # 10%
+    emergency: 500       # 5%
+
+x-ossa-acta:
+  tokenOptimization:
+    enabled: true
+    targetReduction: 0.75  # 75% reduction
+    strategy: "ci-focused"
+  vectorStorage:
+    provider: "qdrant"
+    endpoint: "http://localhost:6333"
+    collection: "ci_validation_contexts"
+
+x-ossa-acdl:
+  capabilityTaxonomy: "ai-capabilities/infrastructure/ci-cd"
+  hierarchicalDiscovery: true
+  semanticMatching: enabled
+
+# GitLab CI/CD Integration
+x-gitlab-cicd:
+  pipelines:
+    - name: "ossa-validation"
+      trigger: "merge_request"
+      stages:
+        - validate
+        - test
+        - deploy
+    - name: "agent-compliance"
+      trigger: "push"
+      stages:
+        - lint
+        - validate-ossa
+        - security-scan
+  environments:
+    - development
+    - staging  
+    - production
+  deploymentStrategy: "blue-green"
