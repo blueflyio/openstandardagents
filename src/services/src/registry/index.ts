@@ -3,21 +3,21 @@
  * Service discovery registry for MCP servers
  */
 
-import { MCPRegistry, MCPRegistryBackend, MCPRegistryQuery, MCPRegistryRecord } from './types';
+import { MemoryMCPRegistryBackend } from './backends/memory';
+import { MCPRegistry, MCPRegistryQuery, MCPRegistryRecord } from './types';
 
 export class MCPRegistryService implements MCPRegistry {
-    private backend: MCPRegistryBackend;
+    private backend: MemoryMCPRegistryBackend;
     private initialized = false;
 
-    constructor(backend: MCPRegistryBackend) {
-        this.backend = backend;
+    constructor() {
+        this.backend = new MemoryMCPRegistryBackend();
     }
 
     async initialize(): Promise<void> {
         if (this.initialized) {
             return;
         }
-
         await this.backend.initialize();
         this.initialized = true;
     }
@@ -71,6 +71,44 @@ export class MCPRegistryService implements MCPRegistry {
         await this.backend.set(updateRecord);
     }
 
+    /**
+     * Discover servers by tag with fallback ordering
+     */
+    async discoverWithFallback(tag: string, fallbackTags: string[] = []): Promise<MCPRegistryRecord[]> {
+        this.ensureInitialized();
+
+        // Try primary tag first
+        let candidates = await this.backend.query({ tag });
+
+        // If no candidates found, try fallback tags
+        if (candidates.length === 0 && fallbackTags.length > 0) {
+            for (const fallbackTag of fallbackTags) {
+                candidates = await this.backend.query({ tag: fallbackTag });
+                if (candidates.length > 0) {
+                    break;
+                }
+            }
+        }
+
+        return candidates;
+    }
+
+    /**
+     * Get registry statistics
+     */
+    getStats(): { recordCount: number; tags: string[]; toolCount: number } {
+        this.ensureInitialized();
+        return this.backend.getStats();
+    }
+
+    /**
+     * Clear all records (useful for testing)
+     */
+    async clear(): Promise<void> {
+        this.ensureInitialized();
+        await this.backend.clear();
+    }
+
     async close(): Promise<void> {
         if (!this.initialized) {
             return;
@@ -86,6 +124,9 @@ export class MCPRegistryService implements MCPRegistry {
         }
     }
 }
+
+// Export singleton instance
+export const mcpRegistry = new MCPRegistryService();
 
 // Re-export types and backends for convenience
 export * from './types';

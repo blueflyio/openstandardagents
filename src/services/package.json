@@ -1,9 +1,8 @@
 {
-  "name": "@openapi-ai-agents/oaas-services",
-  "version": "0.1.1",
-  "description": "OpenAPI AI Agents Standard - Complete Universal Services Package with Runtime Translation",
+  "name": "@ossa/services",
+  "version": "0.1.4",
+  "description": "OSSA Services - MCP Bridge, Registry, and Runtime Services",
   "main": "dist/index.js",
-  "types": "dist/index.d.ts",
   "type": "module",
   "scripts": {
     "build": "tsc",
@@ -15,71 +14,47 @@
     "test:coverage": "jest --coverage",
     "test:watch": "jest --watch",
     "lint": "eslint src/**/*.ts",
-    "lint:fix": "eslint src/**/*.ts --fix",
-    "clean": "rm -rf dist coverage",
-    "prepare": "npm run build",
-    "prepublishOnly": "npm run clean && npm run build",
-    "deploy:staging": "echo 'Deploying to staging...' && npm run build:production",
-    "deploy:production": "echo 'Deploying to production...' && npm run build:production",
-    "validate": "npm run lint && npm run test",
-    "docs": "typedoc --out ../public/api-docs src/index.ts",
-    "start:validation-api": "node validation-server.js",
-    "start:validation-api:dev": "nodemon validation-server.js"
+    "format": "prettier --write src/**/*.ts",
+    "clean": "rm -rf dist",
+    "dev": "tsx watch src/index.ts"
   },
   "keywords": [
-    "ai-agents",
-    "oaas",
-    "openapi",
-    "universal-translator",
-    "runtime-bridge",
-    "drupal",
+    "ossa",
     "mcp",
-    "langchain",
-    "crewai",
-    "no-file-modification"
+    "ai-agents",
+    "orchestration",
+    "registry",
+    "bridge"
   ],
-  "author": "OpenAPI AI Agents Community",
-  "license": "Apache-2.0",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/openapi-ai-agents/standard.git",
-    "directory": "services"
-  },
-  "homepage": "https://github.com/openapi-ai-agents/standard#readme",
-  "bugs": {
-    "url": "https://github.com/openapi-ai-agents/standard/issues"
-  },
-  "engines": {
-    "node": ">=18.0.0"
-  },
+  "author": "BlueFly.io",
+  "license": "MIT",
   "dependencies": {
-    "@apidevtools/swagger-parser": "^12.0.0",
-    "@types/js-yaml": "^4.0.5",
     "ajv": "^8.12.0",
-    "ajv-formats": "^3.0.1",
-    "chalk": "^5.4.1",
-    "commander": "^12.1.0",
-    "express": "^5.1.0",
-    "glob": "^10.3.10",
-    "js-yaml": "^4.1.0",
-    "php-parser": "^3.1.5",
-    "typescript": "^5.0.0",
-    "winston": "^3.17.0"
+    "crypto": "^1.0.1"
   },
   "devDependencies": {
-    "@types/jest": "^29.5.0",
     "@types/node": "^20.0.0",
     "@typescript-eslint/eslint-plugin": "^6.0.0",
     "@typescript-eslint/parser": "^6.0.0",
     "eslint": "^8.0.0",
     "jest": "^29.5.0",
     "nyc": "^15.1.0",
+    "prettier": "^3.0.0",
     "ts-jest": "^29.1.0",
+    "tsx": "^4.0.0",
     "typedoc": "^0.25.0",
+    "typescript": "^5.0.0",
     "vitest": "^1.0.0"
   },
-  "files": [
-    "dist",
-    "README.md"
-  ]
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/bluefly-io/ossa"
+  },
+  "bugs": {
+    "url": "https://github.com/bluefly-io/ossa/issues"
+  },
+  "homepage": "https://github.com/bluefly-io/ossa#readme"
 }

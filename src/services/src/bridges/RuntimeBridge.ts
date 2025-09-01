@@ -3,7 +3,7 @@
  * Enables cross-framework execution without file modification
  */
 
-import { DiscoveredAgent, AgentCapability } from '../index.js';
+import { AgentCapability, DiscoveredAgent } from '../index';
 
 export interface RuntimeBridgeConfig {
   projectRoot: string;
@@ -24,24 +24,24 @@ export interface ExecutionResult {
 }
 
 export class RuntimeBridge {
-  constructor(private config: RuntimeBridgeConfig) {}
+  constructor(private config: RuntimeBridgeConfig) { }
 
   /**
    * Execute agent capability regardless of original format
    */
   async executeCapability(
-    agent: DiscoveredAgent, 
-    capability: AgentCapability, 
+    agent: DiscoveredAgent,
+    capability: AgentCapability,
     input: any
   ): Promise<ExecutionResult> {
-    
+
 
     const startTime = Date.now();
 
     try {
       // Simulate execution based on format
       let result: any;
-      
+
       switch (agent.format) {
         case 'drupal':
           result = await this.executeDrupalCapability(agent, capability, input);
@@ -60,7 +60,7 @@ export class RuntimeBridge {
       }
 
       const executionTime = Date.now() - startTime;
-      
+
       return {
         success: true,
         result,
@@ -71,7 +71,7 @@ export class RuntimeBridge {
 
     } catch (error: any) {
       const executionTime = Date.now() - startTime;
-      
+
       return {
         success: false,
         error: error.message,
@@ -85,10 +85,10 @@ export class RuntimeBridge {
    * Translate agent for specific framework compatibility
    */
   async translateForFramework(
-    agent: DiscoveredAgent, 
+    agent: DiscoveredAgent,
     targetFramework: 'langchain' | 'crewai' | 'openai' | 'anthropic' | 'mcp'
   ): Promise<any> {
-    
+
 
     switch (targetFramework) {
       case 'langchain':
