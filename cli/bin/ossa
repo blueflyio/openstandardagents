@@ -1,0 +1,261 @@
+#!/usr/bin/env node
+
+const { program } = require('commander');
+const chalk = require('chalk');
+const fs = require('fs');
+const path = require('path');
+const YAML = require('yaml');
+
+program
+  .name('ossa')
+  .description('OSSA v0.1.3 Agent CLI')
+  .version('0.1.3');
+
+// Create agent command
+program
+  .command('create <name>')
+  .description('Create new OSSA v0.1.3 compliant agent')
+  .option('-d, --domain <domain>', 'Agent domain', 'general')
+  .option('-p, --priority <priority>', 'Priority level', 'medium')
+  .option('-t, --tier <tier>', 'Conformance tier', 'advanced')
+  .action((name, options) => {
+    console.log(chalk.blue('🚀 Creating OSSA v0.1.3 agent:'), chalk.bold(name));
+    createAgent(name, options);
+  });
+
+// Validate agent command  
+program
+  .command('validate [path]')
+  .description('Validate OSSA agent specification')
+  .option('-v, --verbose', 'Verbose output')
+  .action((agentPath, options) => {
+    console.log(chalk.blue('🔍 Validating OSSA agent...'));
+    validateAgent(agentPath || '.', options);
+  });
+
+// List agents command
+program
+  .command('list')
+  .description('List all OSSA agents in workspace')
+  .option('-f, --format <format>', 'Output format (table|json)', 'table')
+  .action((options) => {
+    console.log(chalk.blue('📋 Listing OSSA agents...'));
+    listAgents(options);
+  });
+
+// Upgrade agent command
+program
+  .command('upgrade [path]')
+  .description('Upgrade agent to OSSA v0.1.3')
+  .option('--dry-run', 'Show what would be upgraded')
+  .action((agentPath, options) => {
+    console.log(chalk.blue('⬆️ Upgrading to OSSA v0.1.3...'));
+    upgradeAgent(agentPath || '.', options);
+  });
+
+function createAgent(name, options) {
+  const { domain, priority, tier } = options;
+  
+  // Create directory structure
+  const agentDir = path.join(process.cwd(), name);
+  
+  if (fs.existsSync(agentDir)) {
+    console.log(chalk.red('❌ Agent directory already exists'));
+    return;
+  }
+  
+  fs.mkdirSync(agentDir, { recursive: true });
+  fs.mkdirSync(path.join(agentDir, 'data'), { recursive: true });
+  fs.mkdirSync(path.join(agentDir, 'config'), { recursive: true });
+  fs.mkdirSync(path.join(agentDir, 'schemas'), { recursive: true });
+  
+  // Create agent.yml
+  const agentSpec = {
+    apiVersion: 'open-standards-scalable-agents/v0.1.3',
+    kind: 'Agent',
+    metadata: {
+      name: name,
+      version: '1.0.0',
+      created: new Date().toISOString().split('T')[0],
+      description: `OSSA v0.1.3 ${tier} tier agent for ${domain}`,
+      annotations: {
+        'ossa.io/conformance-level': tier,
+        'ossa.io/specification-version': '0.1.3',
+        'ossa.io/compliance-frameworks': 'iso-42001,nist-ai-rmf,eu-ai-act',
+        'ossa.io/framework-support': 'mcp,langchain,crewai,autogen,openai'
+      },
+      labels: {
+        domain: domain,
+        priority: priority,
+        tier: tier
+      }
+    },
+    spec: {
+      agent: {
+        name: name.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' '),
+        expertise: `Specialized ${domain} operations`,
+        specializations: [`${domain} processing`, 'Multi-framework integration', 'Enterprise compliance']
+      },
+      capabilities: [{
+        name: 'analyze',
+        description: `Perform ${domain} analysis`,
+        frameworks: ['openapi', 'mcp', 'langchain', 'crewai']
+      }],
+      protocols: {
+        supported: ['openapi', 'mcp', 'uadp'],
+        primary: 'openapi'
+      },
+      frameworks: {
+        mcp: { enabled: true },
+        langchain: { enabled: true, tool_type: 'structured_tool' },
+        crewai: { enabled: true, role: 'specialist' }
+      }
+    }
+  };
+  
+  fs.writeFileSync(path.join(agentDir, 'agent.yml'), YAML.stringify(agentSpec));
+  
+  // Create minimal OpenAPI spec
+  const openApiSpec = {
+    openapi: '3.1.0',
+    info: {
+      title: `${name} Agent API`,
+      version: '1.0.0',
+      'x-openapi-ai-agents-standard': {
+        version: '0.1.3',
+        conformance_level: tier
+      }
+    },
+    paths: {
+      '/health': {
+        get: {
+          summary: 'Health check',
+          responses: {
+            '200': { description: 'Healthy' }
+          }
+        }
+      }
+    }
+  };
+  
+  fs.writeFileSync(path.join(agentDir, 'openapi.yaml'), YAML.stringify(openApiSpec));
+  
+  // Create README
+  const readme = `# ${name} Agent\n\n[![OSSA v0.1.3](https://img.shields.io/badge/OSSA-v0.1.3-green.svg)]()\n\nOSSA v0.1.3 ${tier} tier agent for ${domain}.\n\n## Quick Start\n\n\`\`\`bash\nossa validate\nossa list\n\`\`\``;
+  
+  fs.writeFileSync(path.join(agentDir, 'README.md'), readme);
+  
+  console.log(chalk.green('✅ Created OSSA v0.1.3 agent:'), chalk.bold(name));
+  console.log(chalk.gray('   📁'), agentDir);
+  console.log(chalk.gray('   📄 agent.yml'));
+  console.log(chalk.gray('   📄 openapi.yaml'));
+  console.log(chalk.gray('   📄 README.md'));
+}
+
+function validateAgent(agentPath, options) {
+  const agentFile = path.join(agentPath, 'agent.yml');
+  const openApiFile = path.join(agentPath, 'openapi.yaml');
+  
+  if (!fs.existsSync(agentFile)) {
+    console.log(chalk.red('❌ No agent.yml found'));
+    return;
+  }
+  
+  try {
+    const agent = YAML.parse(fs.readFileSync(agentFile, 'utf8'));
+    
+    // Basic validation
+    let valid = true;
+    const issues = [];
+    
+    if (!agent.apiVersion || !agent.apiVersion.includes('v0.1.3')) {
+      issues.push('❌ Missing or invalid apiVersion');
+      valid = false;
+    }
+    
+    if (!agent.metadata?.annotations?.['ossa.io/conformance-level']) {
+      issues.push('⚠️  Missing conformance level annotation');
+    }
+    
+    if (!fs.existsSync(openApiFile)) {
+      issues.push('⚠️  Missing openapi.yaml');
+    }
+    
+    if (valid && issues.length === 0) {
+      console.log(chalk.green('✅ OSSA v0.1.3 agent is valid'));
+      console.log(chalk.gray('   Agent:'), agent.metadata.name);
+      console.log(chalk.gray('   Tier:'), agent.metadata?.annotations?.['ossa.io/conformance-level'] || 'unknown');
+    } else {
+      console.log(chalk.yellow('⚠️  Agent has issues:'));
+      issues.forEach(issue => console.log('   ' + issue));
+    }
+    
+  } catch (error) {
+    console.log(chalk.red('❌ Invalid YAML:'), error.message);
+  }
+}
+
+function listAgents(options) {
+  // Scan current directory for OSSA agents
+  const agents = [];
+  
+  function scanDir(dir, depth = 0) {
+    if (depth > 3) return;
+    
+    try {
+      const items = fs.readdirSync(dir);
+      
+      for (const item of items) {
+        const itemPath = path.join(dir, item);
+        const agentFile = path.join(itemPath, 'agent.yml');
+        
+        if (fs.existsSync(agentFile)) {
+          try {
+            const agent = YAML.parse(fs.readFileSync(agentFile, 'utf8'));
+            if (agent.apiVersion?.includes('v0.1.3')) {
+              agents.push({
+                name: agent.metadata?.name || item,
+                path: path.relative(process.cwd(), itemPath),
+                tier: agent.metadata?.annotations?.['ossa.io/conformance-level'] || 'unknown',
+                domain: agent.metadata?.labels?.domain || 'general'
+              });
+            }
+          } catch (e) {
+            // Skip invalid agents
+          }
+        }
+        
+        if (fs.statSync(itemPath).isDirectory()) {
+          scanDir(itemPath, depth + 1);
+        }
+      }
+    } catch (e) {
+      // Skip inaccessible directories
+    }
+  }
+  
+  scanDir(process.cwd());
+  
+  if (agents.length === 0) {
+    console.log(chalk.yellow('No OSSA v0.1.3 agents found'));
+    return;
+  }
+  
+  if (options.format === 'json') {
+    console.log(JSON.stringify(agents, null, 2));
+  } else {
+    console.log(chalk.bold('OSSA v0.1.3 Agents:'));
+    agents.forEach(agent => {
+      console.log(`  ${chalk.blue(agent.name)} (${agent.tier}) - ${agent.domain}`);
+      console.log(`    ${chalk.gray(agent.path)}`);
+    });
+    console.log(`\nTotal: ${agents.length} agents`);
+  }
+}
+
+function upgradeAgent(agentPath, options) {
+  console.log(chalk.yellow('⚠️  Upgrade functionality coming soon'));
+  console.log(chalk.gray('   Use: ossa create <name> for new agents'));
+}
+
+program.parse();
