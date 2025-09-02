@@ -73,3 +73,6 @@ conformance-report.json
 
 # Claude
 .claude.DS_Store
+
+# Safe deletion folder - move files here instead of using rm -rf
+__DELETE_LATER/
