@@ -1,12 +1,19 @@
-apiVersion: openapi-ai-agents/v1.2.0
+apiVersion: open-standards-scalable-agents/v0.1.3
 kind: Agent
 metadata:
   name: example-basic
-  version: 1.0.0
+  version: "1.0.0"
   description: |
     A simple agent showing the minimum viable configuration for a useful
-    OAAS agent with framework compatibility and clear capabilities.
+    OSSA agent with framework compatibility and clear capabilities.
   created: '2025-08-27T21:50:05.395Z'
+  labels:
+    tier: core
+    domain: development
+  annotations:
+    ossa.io/conformance-level: "core"
+    ossa.io/migration-date: "2024-01-15"
+    ossa.io/source-format: "oaas"
 spec:
   agent:
     name: example-basic
@@ -32,6 +39,11 @@ spec:
     authorization: rbac
     audit_logging: true
     data_classification: confidential
+  discovery:
+    uadp:
+      enabled: true
+      tags: ["development", "code-analysis", "documentation", "syntax"]
+      priority: 50
   protocols:
     - openapi
     - mcp

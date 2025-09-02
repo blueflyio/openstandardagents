@@ -1,12 +1,21 @@
-apiVersion: openapi-ai-agents/v1.2.0
+apiVersion: open-standards-scalable-agents/v0.1.3
 kind: Agent
 metadata:
   name: example-integration
-  version: 2.0.0
+  version: "2.0.0"
   description: Integration-ready agent with framework compatibility
   created: '2025-08-27T21:50:05.362Z'
+  labels:
+    tier: governed
+    domain: integration
+  annotations:
+    ossa.io/conformance-level: "governed"
+    ossa.io/migration-date: "2024-01-15"
+    ossa.io/source-format: "oaas"
 spec:
-  expertise: Demonstrates framework integration and API specification
+  agent:
+    name: "Integration Agent"
+    expertise: "Demonstrates framework integration and API specification with comprehensive capability coverage"
   capabilities:
     - name: analyze_project
       description: Comprehensive project analysis
@@ -56,6 +65,11 @@ spec:
     authorization: rbac
     audit_logging: true
     data_classification: confidential
+  discovery:
+    uadp:
+      enabled: true
+      tags: ["integration", "framework", "analysis", "generation", "compliance"]
+      priority: 80
   protocols:
     - openapi
     - mcp

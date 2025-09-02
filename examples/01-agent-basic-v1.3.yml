@@ -7,8 +7,8 @@
 # Grade Target: A+ (95+ points)
 # ==============================================================================
 
-# REQUIRED: OpenAPI AI Agents Standard specification v1.3.0
-apiVersion: openapi-ai-agents/v1.3.0
+# REQUIRED: Open Standards for Scalable Agents specification v0.1.2
+apiVersion: open-standards-scalable-agents/v0.1.3
 kind: Agent
 
 # ENHANCED: Agent metadata with comprehensive labeling
@@ -26,13 +26,16 @@ metadata:
     
   # Enhanced labeling for better discovery and categorization  
   labels:
-    tier: "standard"           # basic|standard|advanced|enterprise
+    tier: governed             # core|governed|advanced
     domain: "development"      # development|analysis|automation|support
     environment: "production"  # development|staging|production
     complexity: "medium"       # low|medium|high
     
   # Enhanced annotations for framework-specific metadata
   annotations:
+    ossa.io/conformance-level: "governed"
+    ossa.io/migration-date: "2024-01-15"
+    ossa.io/source-format: "oaas"
     oaas.io/version: "1.3.0"
     oaas.io/features: "ai-insights,enhanced-validation,multi-framework"
     oaas.io/grade-target: "A+"
@@ -189,13 +192,20 @@ spec:
       endpoint: "/health"
       interval: 30
       
-  # ENHANCED: Security configuration
+  # ENHANCED: Security configuration for governed tier
   security:
-    authentication: "bearer_token"
-    authorization: "rbac"
+    authentication:
+      required: true
+      methods: ["bearer_token", "jwt"]
+    authorization:
+      enabled: true
+      model: "rbac"
     audit_logging: true
     data_classification: "internal"
     vulnerability_scanning: true
+    encryption:
+      in_transit: true
+      at_rest: true
     
   # ENHANCED: Compliance configuration
   compliance:
@@ -207,6 +217,13 @@ spec:
     audit:
       enabled: true
       level: "comprehensive"
+      
+  # ENHANCED: Discovery configuration for UADP compatibility
+  discovery:
+    uadp:
+      enabled: true
+      tags: ["development", "code-analysis", "ai-insights", "multi-framework", "enhanced"]
+      priority: 85
 
 # ==============================================================================
 # v1.3.0 Enhanced Features Demonstrated:

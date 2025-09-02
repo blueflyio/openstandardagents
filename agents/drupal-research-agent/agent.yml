@@ -1,0 +1,491 @@
+# OpenAPI AI Agents Standard (OAAS) v0.1.3 - Drupal Research Agent
+# Full Governed Tier compliance for comprehensive Drupal ecosystem research
+
+apiVersion: openapi-ai-agents/v0.1.3
+kind: Agent
+metadata:
+  name: drupal-research-agent
+  version: 2.0.0
+  description: |
+    Expert Drupal research agent specializing in ecosystem analysis, module discovery,
+    best practices research, and technology trend analysis. Provides comprehensive
+    research capabilities for informed Drupal development decisions.
+  created: '2025-09-02T12:00:00.000Z'
+  
+  # Enhanced metadata for v0.1.3 Governed Tier
+  labels:
+    tier: governed
+    domain: research-analysis
+    category: research-specialist
+    complexity: enterprise
+    maturity: production-ready
+    certification: governed-tier
+    deployment: multi-source
+    
+  annotations:
+    ossa.io/conformance-level: "governed"
+    ossa.io/migration-date: "2025-09-02"
+    ossa.io/source-format: "ossa-v0.1.3"
+    ossa.io/grade-target: "A+"
+    ossa.io/compliance-level: "governed"
+    ossa.io/certification: "drupal-research-agent"
+    
+    # Framework integration annotations
+    drupal/sources: "drupal.org,github,gitlab,packagist,documentation"
+    drupal/apis: "drupal-api,composer-api,git-api,documentation-api"
+    drupal/research-depth: "comprehensive"
+    drupal/trend-analysis: "enabled"
+    
+    langchain/tool-type: "research"
+    langchain/async-support: "true"
+    langchain/streaming: "supported"
+    langchain/memory-compatible: "true"
+    
+    crewai/role-type: "research-lead"
+    crewai/collaboration-mode: "coordinator"
+    crewai/delegation-enabled: "true"
+    
+    mcp/server-type: "research-tools"
+    mcp/capabilities: "module-discovery,trend-analysis,documentation-search"
+    
+    llm-platform/integration: "gateway-routed"
+    llm-platform/optimization: "research-focused"
+
+spec:
+  # Agent identity and expertise
+  agent:
+    name: Drupal Research Specialist
+    expertise: |
+      Senior Drupal research specialist with expertise in:
+      - Comprehensive Drupal ecosystem analysis and module discovery
+      - Technology trend analysis and adoption recommendations
+      - Best practices research and implementation guidance
+      - Community analysis and contribution patterns
+      - Security research and vulnerability analysis
+      - Performance benchmarking and optimization research
+      - Documentation analysis and knowledge synthesis
+      
+  # Comprehensive research capabilities
+  capabilities:
+    - name: drupal_module_discovery
+      description: Discover and analyze Drupal modules for specific requirements
+      input_schema:
+        type: object
+        properties:
+          requirements: { type: string, description: "Functional requirements to research" }
+          module_types: { type: array, items: { type: string }, enum: ["core", "contrib", "custom", "sandbox"] }
+          drupal_versions: { type: array, items: { type: string }, enum: ["9.x", "10.x", "11.x"] }
+          stability_requirements: { type: string, enum: ["dev", "alpha", "beta", "rc", "stable"], default: "stable" }
+          usage_threshold: { type: number, minimum: 0, description: "Minimum installation count" }
+          maintenance_status: { type: string, enum: ["actively_maintained", "minimally_maintained", "unsupported", "any"], default: "actively_maintained" }
+        required: ["requirements"]
+      output_schema:
+        type: object
+        properties:
+          recommended_modules: { type: array, items: { type: object } }
+          comparative_analysis: { type: object, description: "Feature comparison matrix" }
+          implementation_roadmap: { type: string, description: "Implementation strategy" }
+          risk_assessment: { type: object, description: "Module adoption risks" }
+          alternative_solutions: { type: array, items: { type: object } }
+          community_insights: { type: object, description: "Community feedback analysis" }
+        required: ["recommended_modules", "comparative_analysis"]
+      frameworks: ["mcp", "langchain", "drupal"]
+      sla: "99.8%"
+      performance_targets:
+        response_time: "< 15s for comprehensive search"
+        accuracy: "> 95%"
+        
+    - name: drupal_best_practices_research
+      description: Research current best practices for Drupal development and architecture
+      input_schema:
+        type: object
+        properties:
+          research_domain: { type: string, enum: ["development", "architecture", "security", "performance", "accessibility", "testing"] }
+          project_scale: { type: string, enum: ["small", "medium", "large", "enterprise"], default: "medium" }
+          industry_focus: { type: string, description: "Specific industry requirements" }
+          compliance_requirements: { type: array, items: { type: string } }
+          technology_constraints: { type: object, description: "Technology stack limitations" }
+        required: ["research_domain"]
+      output_schema:
+        type: object
+        properties:
+          best_practices_summary: { type: string, description: "Comprehensive best practices guide" }
+          implementation_patterns: { type: array, items: { type: object } }
+          anti_patterns: { type: array, items: { type: string } }
+          case_studies: { type: array, items: { type: object } }
+          community_consensus: { type: object, description: "Community agreement analysis" }
+          evolution_timeline: { type: object, description: "Practice evolution over time" }
+        required: ["best_practices_summary", "implementation_patterns"]
+      frameworks: ["langchain", "mcp", "research"]
+      sla: "99.7%"
+      
+    - name: drupal_ecosystem_analysis
+      description: Analyze Drupal ecosystem trends, health, and future direction
+      input_schema:
+        type: object
+        properties:
+          analysis_scope: { type: string, enum: ["core", "contrib", "community", "ecosystem", "comprehensive"] }
+          time_horizon: { type: string, enum: ["6months", "1year", "3years", "5years"], default: "1year" }
+          focus_areas: { type: array, items: { type: string }, enum: ["adoption", "development", "security", "performance", "innovation"] }
+          comparison_frameworks: { type: array, items: { type: string }, description: "Other frameworks to compare with" }
+        required: ["analysis_scope"]
+      output_schema:
+        type: object
+        properties:
+          ecosystem_health_report: { type: object, description: "Overall ecosystem assessment" }
+          trend_analysis: { type: object, description: "Key trends and patterns" }
+          future_predictions: { type: array, items: { type: object } }
+          adoption_metrics: { type: object, description: "Usage and growth statistics" }
+          competitive_analysis: { type: object, description: "Comparison with other platforms" }
+          recommendations: { type: array, items: { type: string } }
+        required: ["ecosystem_health_report", "trend_analysis"]
+      frameworks: ["research", "analytics", "mcp"]
+      sla: "99.6%"
+      
+    - name: drupal_security_research
+      description: Research security trends, vulnerabilities, and mitigation strategies
+      input_schema:
+        type: object
+        properties:
+          research_focus: { type: string, enum: ["vulnerabilities", "mitigation", "trends", "compliance", "comprehensive"] }
+          time_period: { type: string, enum: ["1month", "3months", "6months", "1year"], default: "6months" }
+          severity_levels: { type: array, items: { type: string }, enum: ["low", "medium", "high", "critical"] }
+          include_contrib: { type: boolean, default: true }
+          compliance_frameworks: { type: array, items: { type: string } }
+        required: ["research_focus"]
+      output_schema:
+        type: object
+        properties:
+          security_landscape: { type: object, description: "Current security state analysis" }
+          vulnerability_patterns: { type: array, items: { type: object } }
+          mitigation_strategies: { type: object, description: "Recommended security measures" }
+          compliance_guidance: { type: object, description: "Framework-specific compliance advice" }
+          threat_intelligence: { type: object, description: "Emerging threat analysis" }
+          security_roadmap: { type: string, description: "Security improvement plan" }
+        required: ["security_landscape", "mitigation_strategies"]
+      frameworks: ["security", "mcp", "intelligence"]
+      sla: "99.9%"
+
+  # Advanced context management for research
+  context_management:
+    max_tokens: 512000
+    optimization:
+      strategy: research_optimized
+      compression: true
+      summarization: true
+      deduplication: true
+      knowledge_synthesis: true
+    memory:
+      type: persistent
+      capacity: 50000
+      storage: vector_db
+      retention: "365d"
+      research_knowledge_base: true
+    
+  # Multi-framework configuration for research
+  frameworks:
+    mcp:
+      enabled: true
+      version: "2024-11-05"
+      server_name: drupal-research-agent
+      server_config:
+        host: "0.0.0.0"
+        port: 3212
+        tools:
+          - drupal_org_api
+          - github_research
+          - packagist_analyzer
+          - documentation_crawler
+          - community_analyzer
+          - trend_tracker
+        
+    langchain:
+      enabled: true
+      version: "0.1.0"
+      tool_type: research_specialized
+      async_support: true
+      streaming: true
+      memory_compatible: true
+      chain_compatible: true
+      custom_chains:
+        - research_synthesis_chain
+        - trend_analysis_chain
+        - community_analysis_chain
+        - comparative_research_chain
+        
+    crewai:
+      enabled: true
+      version: "0.1.0"
+      role: research_coordinator
+      backstory: |
+        Senior research analyst with 12+ years of experience in technology
+        research, ecosystem analysis, and trend forecasting. Specialized in
+        open-source communities and development platform analysis.
+      delegation: true
+      collaboration: coordinator
+      skills:
+        - ecosystem_analysis
+        - trend_forecasting
+        - community_research
+        - technology_assessment
+        - competitive_intelligence
+      
+    research_tools:
+      enabled: true
+      web_research: true
+      api_integration: true
+      data_analysis: true
+      trend_analysis: true
+      sources:
+        - drupal_org
+        - github_com
+        - packagist_org
+        - drupal_planet
+        - drupal_groups
+        - stackoverflow
+        - reddit_drupal
+        
+    drupal:
+      enabled: true
+      version: "10.x,11.x"
+      api_endpoints:
+        drupal_org_api: "https://www.drupal.org/api-d7/"
+        update_status_api: "https://updates.drupal.org/"
+        security_advisories: "https://www.drupal.org/security"
+      community_sources:
+        - drupal_slack
+        - drupal_planet
+        - drupalcon_presentations
+        - contribution_statistics
+        
+    llm_platform:
+      enabled: true
+      gateway_routing: true
+      model_selection: "research_optimized"
+      token_optimization: "content_synthesis"
+      caching_strategy: "research_based"
+
+  # UADP Discovery configuration for research services
+  discovery:
+    uadp:
+      enabled: true
+      endpoints:
+        - url: "https://api.drupal-llm-platform.com/v1/discovery"
+          method: GET
+          headers:
+            X-Agent-Type: "drupal-research-agent"
+            X-Capabilities: "module-discovery,ecosystem-analysis,trend-research,security-intel"
+        - url: "https://research.drupal.org/api/agents"
+          method: POST
+          payload:
+            agent_type: "research-agent"
+            specialization: "drupal-ecosystem-research"
+      tags: ["drupal", "research", "analysis", "trends", "discovery", "intelligence", "ecosystem"]
+      priority: 80
+      drupal_specific:
+        research_scope: "comprehensive"
+        data_sources: ["drupal.org", "github", "packagist", "community"]
+        analysis_depth: "expert-level"
+        
+  # Enterprise integration for research operations
+  integration:
+    research_databases:
+      academic: true
+      industry_reports: true
+      patent_databases: false
+      technical_documentation: true
+      
+    authentication:
+      type: jwt
+      config:
+        issuer: https://auth.drupal-platform.com
+        audience: drupal-research-agent
+        algorithms: ["RS256", "ES256"]
+        research_access_token: true
+    
+    rate_limiting:
+      enabled: true
+      requests_per_minute: 100
+      burst: 50
+      by_user: true
+      research_queue_management: true
+      
+    timeout:
+      request: 600000  # 10 minutes for comprehensive research
+      connection: 60000
+      deep_research: 3600000  # 1 hour for ecosystem analysis
+
+  # Comprehensive monitoring for research operations
+  monitoring:
+    metrics:
+      enabled: true
+      export: prometheus
+      endpoint: /metrics
+      interval: 60
+      custom_metrics:
+        - research_queries_completed
+        - modules_analyzed
+        - trends_identified
+        - reports_generated
+        - research_accuracy_score
+        - knowledge_synthesis_rate
+        
+    research_tracking:
+      query_performance: true
+      source_reliability: true
+      synthesis_quality: true
+      trend_prediction_accuracy: true
+      
+    logging:
+      level: info
+      format: json
+      destinations:
+        - stdout
+        - research_logs
+        - elasticsearch
+        - research_warehouse
+      sampling_rate: 1.0
+      research_audit_trail: true
+      
+    alerting:
+      enabled: true
+      channels: ["email", "slack", "research_dashboard"]
+      thresholds:
+        research_failure_rate: 0.05
+        response_time: 300000
+        data_source_failures: 3
+        synthesis_quality_drop: 0.15
+
+  # Enhanced security for research operations
+  security:
+    authentication:
+      methods: ["jwt", "api_key", "oauth2"]
+      required: true
+      research_access_controls: true
+      
+    authorization:
+      model: rbac
+      roles: ["researcher", "analyst", "research_lead", "admin"]
+      permissions:
+        researcher: ["read", "basic_research", "module_discovery"]
+        analyst: ["read", "advanced_research", "trend_analysis", "ecosystem_analysis"]
+        research_lead: ["read", "comprehensive_research", "intelligence_gathering", "report_generation"]
+        admin: ["all_permissions"]
+        
+    research_security:
+      source_validation: true
+      data_integrity_checks: true
+      intellectual_property_protection: true
+      research_confidentiality: true
+      
+    secrets_management:
+      provider: vault
+      path: /secret/drupal-research-agent
+      auto_rotation: true
+      api_credentials_management: true
+
+  # Compliance framework for research operations
+  compliance:
+    frameworks:
+      - research_ethics
+      - data_privacy_gdpr
+      - intellectual_property
+      - open_source_compliance
+      - academic_standards
+      
+    certification_level: governed
+    audit_trail: true
+    research_methodology_validation: true
+    
+    research_ethics:
+      source_attribution: mandatory
+      fair_use_compliance: true
+      privacy_protection: required
+      bias_mitigation: implemented
+      
+    data_handling:
+      encryption: both
+      retention: "2years"
+      anonymization: true
+      source_protection: true
+      
+    reporting:
+      enabled: true
+      frequency: weekly
+      formats: ["json", "pdf", "html", "csv"]
+      recipients: ["research-team@company.com"]
+      dashboards: ["research_portal", "trend_dashboard"]
+
+  # API specification for research operations
+  api:
+    specification: ./openapi-drupal-research-agent.yaml
+    base_url: https://api.drupal-platform.com/v1/research
+    version: 1.0.0
+    endpoints:
+      - path: /modules/discover
+        method: POST
+        description: Discover modules matching requirements
+      - path: /practices/research
+        method: POST
+        description: Research best practices for domain
+      - path: /ecosystem/analyze
+        method: POST
+        description: Analyze Drupal ecosystem trends
+      - path: /security/research
+        method: POST
+        description: Research security landscape
+      - path: /reports/generate
+        method: POST
+        description: Generate comprehensive research reports
+    
+  # Performance optimization for research operations
+  performance:
+    token_optimization:
+      enabled: true
+      target_savings: "60-70%"
+      strategies:
+        - research_result_caching
+        - query_optimization
+        - source_prioritization
+        - incremental_research
+        - knowledge_graph_utilization
+        
+    caching:
+      enabled: true
+      ttl: 21600  # 6 hours
+      levels: ["request", "computation", "result", "context", "research_cache"]
+      storage: redis
+      intelligent_invalidation: true
+      
+    scaling:
+      auto_scale: true
+      min_replicas: 1
+      max_replicas: 5
+      target_cpu: 75
+      target_memory: 80
+      research_workload_based: true
+
+status:
+  phase: ready
+  conditions:
+    - type: ready
+      status: "true"
+      last_transition_time: "2025-09-02T12:00:00Z"
+    - type: healthy
+      status: "true"
+      last_transition_time: "2025-09-02T12:00:00Z"
+    - type: compliant
+      status: "true"
+      last_transition_time: "2025-09-02T12:00:00Z"
+    - type: research_certified
+      status: "true"
+      last_transition_time: "2025-09-02T12:00:00Z"
+      
+  deployment:
+    replicas: 1
+    available_replicas: 1
+    ready_replicas: 1
+    
+  last_updated: "2025-09-02T12:00:00Z"
+  research_sources_connected: 12
+  knowledge_base_size: "2.5TB"

@@ -19,9 +19,15 @@ spec:
     name: ossa-0-1-3-working-example
     expertise: Demonstrates OSSA 0.1.3 compliance and validation
   capabilities:
-    - validate-ossa-schema
-    - demonstrate-compliance
-    - provide-reference-example
+    - name: validate-ossa-schema
+      description: Validate OSSA schema compliance and structure
+      frameworks: ["mcp", "langchain"]
+    - name: demonstrate-compliance
+      description: Demonstrate OSSA compliance validation process
+      frameworks: ["mcp", "crewai"]
+    - name: provide-reference-example
+      description: Provide reference implementation example
+      frameworks: ["langchain", "crewai"]
   discovery:
     uadp:
       enabled: true

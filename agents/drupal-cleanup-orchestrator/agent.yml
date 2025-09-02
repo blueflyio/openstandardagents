@@ -1,0 +1,486 @@
+# OpenAPI AI Agents Standard (OAAS) v0.1.3 - Drupal Cleanup Orchestrator Agent
+# Full Governed Tier compliance for system cleanup and maintenance automation
+
+apiVersion: openapi-ai-agents/v0.1.3
+kind: Agent
+metadata:
+  name: drupal-cleanup-orchestrator
+  version: 2.0.0
+  description: |
+    Expert Drupal cleanup orchestrator specializing in automated system maintenance,
+    legacy code removal, database cleanup, and comprehensive system optimization.
+    Coordinates multi-agent cleanup operations for enterprise Drupal environments.
+  created: '2025-09-02T12:00:00.000Z'
+  
+  # Enhanced metadata for v0.1.3 Governed Tier
+  labels:
+    tier: governed
+    domain: system-maintenance
+    category: orchestrator-specialist
+    complexity: enterprise
+    maturity: production-ready
+    certification: governed-tier
+    deployment: maintenance-automation
+    
+  annotations:
+    ossa.io/conformance-level: "governed"
+    ossa.io/migration-date: "2025-09-02"
+    ossa.io/source-format: "ossa-v0.1.3"
+    ossa.io/grade-target: "A+"
+    ossa.io/compliance-level: "governed"
+    ossa.io/certification: "drupal-cleanup-orchestrator"
+    
+    # Framework integration annotations
+    drupal/cleanup-scope: "code,database,files,cache,logs,configuration"
+    drupal/orchestration-patterns: "parallel,sequential,conditional,rollback"
+    drupal/maintenance-types: "routine,deep-clean,migration-cleanup,security"
+    drupal/automation-level: "full-automation,supervised,manual-approval"
+    
+    langchain/tool-type: "orchestration"
+    langchain/async-support: "true"
+    langchain/streaming: "supported"
+    langchain/memory-compatible: "true"
+    
+    crewai/role-type: "cleanup-orchestrator"
+    crewai/collaboration-mode: "coordinator"
+    crewai/delegation-enabled: "true"
+    
+    mcp/server-type: "orchestration-tools"
+    mcp/capabilities: "cleanup-planning,task-coordination,progress-monitoring"
+
+spec:
+  # Agent identity and expertise
+  agent:
+    name: Drupal Cleanup Orchestration Specialist
+    expertise: |
+      Senior system maintenance orchestrator with expertise in:
+      - Automated Drupal system cleanup and maintenance coordination
+      - Multi-agent task orchestration and workflow management
+      - Database cleanup, optimization, and maintenance automation
+      - Legacy code identification and safe removal strategies
+      - File system cleanup and storage optimization
+      - Cache management and performance optimization
+      - Backup coordination and disaster recovery preparation
+      
+  # Comprehensive cleanup orchestration capabilities
+  capabilities:
+    - name: comprehensive_cleanup_orchestration
+      description: Orchestrate comprehensive Drupal system cleanup operations
+      input_schema:
+        type: object
+        properties:
+          cleanup_scope: { type: array, items: { type: string }, enum: ["code", "database", "files", "cache", "logs", "configuration", "security"] }
+          cleanup_depth: { type: string, enum: ["surface", "standard", "deep", "forensic"], default: "standard" }
+          execution_mode: { type: string, enum: ["parallel", "sequential", "conditional"], default: "conditional" }
+          safety_level: { type: string, enum: ["aggressive", "standard", "conservative", "paranoid"], default: "standard" }
+          backup_required: { type: boolean, default: true }
+          rollback_plan: { type: boolean, default: true }
+          maintenance_window: { type: string, description: "Available maintenance time window" }
+        required: ["cleanup_scope"]
+      output_schema:
+        type: object
+        properties:
+          orchestration_plan: { type: object, description: "Complete cleanup orchestration strategy" }
+          agent_assignments: { type: array, items: { type: object }, description: "Tasks assigned to specialized agents" }
+          execution_timeline: { type: object, description: "Cleanup execution schedule" }
+          safety_measures: { type: array, items: { type: string }, description: "Implemented safety protocols" }
+          monitoring_setup: { type: object, description: "Progress monitoring configuration" }
+          rollback_procedures: { type: string, description: "Emergency rollback plan" }
+        required: ["orchestration_plan", "agent_assignments"]
+      frameworks: ["mcp", "langchain", "crewai"]
+      sla: "99.9%"
+      performance_targets:
+        response_time: "< 60s for complex orchestration"
+        coordination_accuracy: "> 99%"
+        
+    - name: database_cleanup_coordination
+      description: Coordinate comprehensive database cleanup and optimization
+      input_schema:
+        type: object
+        properties:
+          cleanup_targets: { type: array, items: { type: string }, enum: ["orphaned_data", "unused_tables", "log_tables", "cache_tables", "temp_data", "revisions"] }
+          optimization_level: { type: string, enum: ["basic", "standard", "aggressive"], default: "standard" }
+          data_retention_policy: { type: object, description: "Data retention requirements" }
+          performance_targets: { type: object, description: "Database performance goals" }
+          concurrent_operations: { type: boolean, default: false }
+        required: ["cleanup_targets"]
+      output_schema:
+        type: object
+        properties:
+          cleanup_strategy: { type: object, description: "Database cleanup plan" }
+          optimization_queries: { type: array, items: { type: string }, description: "Database optimization scripts" }
+          data_migration_plan: { type: object, description: "Data preservation and migration" }
+          performance_monitoring: { type: object, description: "Database performance tracking" }
+          maintenance_schedule: { type: object, description: "Ongoing maintenance plan" }
+        required: ["cleanup_strategy", "optimization_queries"]
+      frameworks: ["database", "mcp", "monitoring"]
+      sla: "99.8%"
+      
+    - name: legacy_code_removal_orchestration
+      description: Safely orchestrate legacy code identification and removal
+      input_schema:
+        type: object
+        properties:
+          analysis_depth: { type: string, enum: ["surface", "detailed", "comprehensive"], default: "detailed" }
+          code_age_threshold: { type: string, description: "Minimum age for legacy classification" }
+          dependency_analysis: { type: boolean, default: true }
+          impact_assessment: { type: boolean, default: true }
+          removal_strategy: { type: string, enum: ["immediate", "phased", "deprecation_path"], default: "phased" }
+        required: ["analysis_depth"]
+      output_schema:
+        type: object
+        properties:
+          legacy_inventory: { type: object, description: "Comprehensive legacy code catalog" }
+          removal_plan: { type: object, description: "Safe removal strategy" }
+          dependency_map: { type: object, description: "Code dependency analysis" }
+          impact_assessment: { type: object, description: "Removal impact evaluation" }
+          migration_support: { type: string, description: "Legacy functionality migration" }
+        required: ["legacy_inventory", "removal_plan"]
+      frameworks: ["code_analysis", "mcp", "dependency"]
+      sla: "99.7%"
+      
+    - name: automated_maintenance_scheduling
+      description: Create and manage automated maintenance schedules and workflows
+      input_schema:
+        type: object
+        properties:
+          maintenance_types: { type: array, items: { type: string }, enum: ["cleanup", "optimization", "security", "backup", "monitoring"] }
+          frequency: { type: string, enum: ["daily", "weekly", "monthly", "quarterly"], default: "weekly" }
+          maintenance_windows: { type: array, items: { type: object }, description: "Available maintenance time slots" }
+          automation_level: { type: string, enum: ["full_auto", "supervised", "manual_approval"], default: "supervised" }
+          alert_configuration: { type: object, description: "Alerting and notification setup" }
+        required: ["maintenance_types"]
+      output_schema:
+        type: object
+        properties:
+          maintenance_schedule: { type: object, description: "Complete maintenance calendar" }
+          automation_workflows: { type: array, items: { type: object }, description: "Automated maintenance workflows" }
+          monitoring_integration: { type: object, description: "Monitoring and alerting setup" }
+          escalation_procedures: { type: string, description: "Issue escalation protocols" }
+          reporting_configuration: { type: object, description: "Maintenance reporting setup" }
+        required: ["maintenance_schedule", "automation_workflows"]
+      frameworks: ["automation", "scheduling", "mcp"]
+      sla: "99.9%"
+
+  # Advanced context management for orchestration
+  context_management:
+    max_tokens: 768000
+    optimization:
+      strategy: orchestration_optimized
+      compression: true
+      summarization: true
+      deduplication: true
+      workflow_pattern_recognition: true
+    memory:
+      type: persistent
+      capacity: 200000
+      storage: vector_db
+      retention: "365d"
+      orchestration_knowledge_base: true
+    
+  # Multi-framework configuration for orchestration
+  frameworks:
+    mcp:
+      enabled: true
+      version: "2024-11-05"
+      server_name: drupal-cleanup-orchestrator
+      server_config:
+        host: "0.0.0.0"
+        port: 3215
+        tools:
+          - orchestration_planner
+          - task_coordinator
+          - progress_monitor
+          - safety_validator
+          - rollback_manager
+          - cleanup_analyzer
+        
+    langchain:
+      enabled: true
+      version: "0.1.0"
+      tool_type: orchestration_specialized
+      async_support: true
+      streaming: true
+      memory_compatible: true
+      chain_compatible: true
+      custom_chains:
+        - cleanup_orchestration_chain
+        - maintenance_planning_chain
+        - safety_validation_chain
+        
+    crewai:
+      enabled: true
+      version: "0.1.0"
+      role: cleanup_orchestrator
+      backstory: |
+        Senior DevOps engineer and system orchestrator with 18+ years of experience
+        in large-scale system maintenance, automation, and cleanup operations.
+        Specialized in zero-downtime maintenance and disaster recovery.
+      delegation: true
+      collaboration: coordinator
+      skills:
+        - system_orchestration
+        - maintenance_automation
+        - risk_management
+        - disaster_recovery
+        - team_coordination
+      crew_coordination:
+        - task_distribution: true
+        - progress_monitoring: true
+        - quality_assurance: true
+        - rollback_coordination: true
+      
+    orchestration_tools:
+      enabled: true
+      workflow_engine: true
+      task_scheduling: true
+      progress_tracking: true
+      safety_monitoring: true
+      
+    drupal:
+      enabled: true
+      version: "10.x,11.x"
+      maintenance_modules:
+        - ultimate_cron
+        - backup_migrate
+        - database_cleanup
+        - cache_clear
+        - log_cleanup
+      orchestration_apis:
+        - queue_api
+        - batch_api
+        - cron_api
+        - cache_api
+        
+    llm_platform:
+      enabled: true
+      gateway_routing: true
+      model_selection: "orchestration_optimized"
+      token_optimization: "workflow_focused"
+      caching_strategy: "orchestration_pattern_based"
+
+  # UADP Discovery configuration for orchestration services
+  discovery:
+    uadp:
+      enabled: true
+      endpoints:
+        - url: "https://api.drupal-llm-platform.com/v1/discovery"
+          method: GET
+          headers:
+            X-Agent-Type: "drupal-cleanup-orchestrator"
+            X-Capabilities: "cleanup-orchestration,maintenance-automation,workflow-coordination"
+        - url: "https://orchestration.drupal.org/api/agents"
+          method: POST
+          payload:
+            agent_type: "cleanup-orchestrator"
+            specialization: "drupal-maintenance-automation"
+      tags: ["drupal", "orchestration", "cleanup", "maintenance", "automation", "coordination"]
+      priority: 90
+      drupal_specific:
+        orchestration_scope: "comprehensive-maintenance"
+        coordination_patterns: ["parallel", "sequential", "conditional"]
+        safety_protocols: "enterprise-grade"
+        
+  # Enterprise integration for orchestration operations
+  integration:
+    orchestration_platforms:
+      kubernetes: true
+      docker_swarm: true
+      ansible: true
+      jenkins: true
+      gitlab_ci: true
+      
+    authentication:
+      type: jwt
+      config:
+        issuer: https://auth.drupal-platform.com
+        audience: drupal-cleanup-orchestrator
+        algorithms: ["RS256", "ES256"]
+        orchestration_privileges: true
+    
+    rate_limiting:
+      enabled: true
+      requests_per_minute: 100
+      burst: 50
+      by_user: true
+      orchestration_queue_management: true
+      
+    timeout:
+      request: 300000  # 5 minutes for orchestration planning
+      connection: 60000
+      orchestration_execution: 14400000  # 4 hours for major cleanup operations
+
+  # Comprehensive monitoring for orchestration operations
+  monitoring:
+    metrics:
+      enabled: true
+      export: prometheus
+      endpoint: /metrics
+      interval: 30
+      custom_metrics:
+        - orchestrations_planned
+        - cleanup_operations_coordinated
+        - maintenance_tasks_automated
+        - safety_validations_passed
+        - rollback_operations_executed
+        - system_uptime_maintained
+        
+    orchestration_monitoring:
+      workflow_execution: true
+      agent_coordination: true
+      task_completion_rates: true
+      safety_protocol_adherence: true
+      
+    logging:
+      level: info
+      format: json
+      destinations:
+        - stdout
+        - orchestration_logs
+        - elasticsearch
+        - operations_center
+      sampling_rate: 1.0
+      orchestration_audit_trail: true
+      
+    alerting:
+      enabled: true
+      channels: ["email", "slack", "pagerduty", "operations_dashboard"]
+      thresholds:
+        orchestration_failure_rate: 0.01
+        task_completion_rate: 0.95
+        safety_violation: 1
+        rollback_trigger: 1
+
+  # Enhanced security for orchestration operations
+  security:
+    authentication:
+      methods: ["jwt", "service_account", "certificate"]
+      required: true
+      privileged_operations: true
+      
+    authorization:
+      model: rbac
+      roles: ["maintenance_operator", "orchestration_specialist", "cleanup_coordinator", "admin"]
+      permissions:
+        maintenance_operator: ["read", "basic_cleanup", "routine_maintenance"]
+        orchestration_specialist: ["read", "orchestrate_cleanup", "coordinate_maintenance", "monitor_operations"]
+        cleanup_coordinator: ["read", "comprehensive_cleanup", "emergency_operations", "rollback_execution"]
+        admin: ["all_permissions"]
+        
+    orchestration_security:
+      operation_approval_required: true
+      safety_validation_mandatory: true
+      rollback_capabilities_verified: true
+      audit_trail_comprehensive: true
+      
+    secrets_management:
+      provider: vault
+      path: /secret/drupal-cleanup-orchestrator
+      auto_rotation: true
+      orchestration_credentials: true
+
+  # Compliance framework for orchestration operations
+  compliance:
+    frameworks:
+      - itil_v4
+      - iso_20000
+      - cobit_2019
+      - change_management_framework
+      - disaster_recovery_standards
+      - data_retention_policies
+      
+    certification_level: governed
+    audit_trail: true
+    change_management_integration: true
+    
+    operations_governance:
+      change_approval_required: true
+      rollback_plan_mandatory: true
+      safety_validation_enforced: true
+      documentation_required: comprehensive
+      
+    data_handling:
+      encryption: both
+      retention: "7years"
+      backup_verification: automated
+      disaster_recovery_tested: monthly
+      
+    reporting:
+      enabled: true
+      frequency: daily
+      formats: ["json", "pdf", "operations_dashboard"]
+      recipients: ["operations-team@company.com", "infrastructure@company.com"]
+
+  # API specification for orchestration operations
+  api:
+    specification: ./openapi-drupal-cleanup-orchestrator.yaml
+    base_url: https://api.drupal-platform.com/v1/orchestrate
+    version: 1.0.0
+    endpoints:
+      - path: /cleanup/orchestrate
+        method: POST
+        description: Orchestrate comprehensive cleanup operations
+      - path: /database/cleanup
+        method: POST
+        description: Coordinate database cleanup and optimization
+      - path: /legacy/remove
+        method: POST
+        description: Orchestrate legacy code removal
+      - path: /maintenance/schedule
+        method: POST
+        description: Create automated maintenance schedules
+      - path: /operations/monitor
+        method: GET
+        description: Monitor orchestration operations status
+    
+  # Performance optimization for orchestration operations
+  performance:
+    token_optimization:
+      enabled: true
+      target_savings: "45-55%"
+      strategies:
+        - orchestration_pattern_caching
+        - workflow_template_reuse
+        - parallel_processing_optimization
+        - coordination_efficiency
+        - knowledge_base_utilization
+        
+    caching:
+      enabled: true
+      ttl: 7200  # 2 hours
+      levels: ["request", "computation", "result", "context", "orchestration_cache"]
+      storage: redis
+      workflow_pattern_caching: true
+      
+    scaling:
+      auto_scale: true
+      min_replicas: 2
+      max_replicas: 6
+      target_cpu: 70
+      target_memory: 75
+      orchestration_load_aware: true
+
+status:
+  phase: ready
+  conditions:
+    - type: ready
+      status: "true"
+      last_transition_time: "2025-09-02T12:00:00Z"
+    - type: healthy
+      status: "true"
+      last_transition_time: "2025-09-02T12:00:00Z"
+    - type: compliant
+      status: "true"
+      last_transition_time: "2025-09-02T12:00:00Z"
+    - type: orchestration_certified
+      status: "true"
+      last_transition_time: "2025-09-02T12:00:00Z"
+      
+  deployment:
+    replicas: 2
+    available_replicas: 2
+    ready_replicas: 2
+    
+  last_updated: "2025-09-02T12:00:00Z"
+  orchestration_patterns_supported: 15
+  maintenance_automation_coverage: "95%"

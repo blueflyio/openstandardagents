@@ -1,4 +1,4 @@
-apiVersion: openapi-ai-agents/v1.2.0
+apiVersion: open-standards-scalable-agents/v0.1.3
 kind: Agent
 metadata:
   name: example-production
@@ -6,13 +6,19 @@ metadata:
   description: Production-ready agent with comprehensive features
   labels:
     environment: production
-    tier: standard
+    tier: advanced
+    domain: production
   annotations:
+    ossa.io/conformance-level: "advanced"
+    ossa.io/migration-date: "2024-01-15"
+    ossa.io/source-format: "oaas"
     oaas/certification-level: silver
     oaas/compliance-frameworks: iso-42001,nist-ai-rmf
   created: '2025-08-27T21:50:05.428Z'
 spec:
-  expertise: Production-grade agent with security, monitoring, and scalability
+  agent:
+    name: "Production Agent"
+    expertise: "Production-grade agent with security, monitoring, and scalability for enterprise environments"
   capabilities:
     - name: code_analysis
       description: Comprehensive code analysis with security scanning
@@ -195,6 +201,11 @@ spec:
       - secure
       - scalable
       - monitored
+  discovery:
+    uadp:
+      enabled: true
+      tags: ["production", "security", "monitoring", "scalability", "enterprise"]
+      priority: 95
   protocols:
     - openapi
     - mcp
