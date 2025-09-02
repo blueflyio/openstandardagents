@@ -1,0 +1,509 @@
+openapi: 3.1.0
+info:
+  title: "OSSA Orchestration Manager API"
+  version: "1.0.0"
+  description: "Universal Agent Discovery Protocol (UADP) orchestration manager for multi-agent coordination"
+  
+  x-openapi-ai-agents-standard:
+    version: "0.1.3"
+    conformance_tier: "advanced"
+    certification_level: "gold"
+    compliance_frameworks: ["ISO_42001", "NIST_AI_RMF", "EU_AI_Act"]
+    
+  x-agent-metadata:
+    class: "orchestrator"
+    category: "coordination"
+    protocols: ["openapi", "mcp", "a2a", "uadp"]
+    capabilities: ["agent_discovery", "multi_agent_orchestration", "workflow_coordination", "universal_agent_interface"]
+    domains: ["orchestration", "coordination", "workflow_management"]
+    
+  x-protocol-bridges:
+    mcp:
+      enabled: true
+      latency: "<35ms"
+      tools_endpoint: "/mcp/tools"
+      resources_endpoint: "/mcp/resources"
+    a2a:
+      enabled: true
+      latency: "<25ms"
+      coordination_endpoint: "/a2a/coordinate"
+      discovery_endpoint: "/a2a/discover"
+    uadp:
+      enabled: true
+      latency: "<50ms"
+      registry_endpoint: "/uadp/registry"
+      discovery_endpoint: "/uadp/discover"
+
+  x-orchestration-patterns:
+    supported_patterns: ["sequential", "parallel", "conditional", "hybrid", "diagnostic_first", "parallel_validation"]
+    max_concurrent_agents: 100
+    timeout_management: true
+    error_recovery: "automatic"
+    load_balancing: "round_robin"
+
+  x-discovery-protocol:
+    uadp_version: "0.1.3"
+    hierarchical_discovery: true
+    agent_registry: true
+    capability_matching: true
+    performance_ranking: true
+    health_monitoring: true
+    cache_ttl: "5m"
+
+  contact:
+    name: "OSSA Community"
+    url: "https://gitlab.com/bluefly-ai/ossa-standard"
+  
+  license:
+    name: "Apache 2.0"
+    url: "https://www.apache.org/licenses/LICENSE-2.0.html"
+
+servers:
+  - url: "https://orchestration.ossa.agents/v1"
+    description: "Production OSSA Orchestration API"
+  - url: "http://localhost:3004/api/v1"
+    description: "Local development server"
+
+security:
+  - ApiKeyAuth: []
+  - OAuth2: ["read", "orchestrate", "admin"]
+  - mTLS: []
+
+paths:
+  /health:
+    get:
+      summary: "Orchestration manager health check"
+      description: "Returns orchestration manager health, agent registry status, and system metrics"
+      operationId: "getHealth"
+      responses:
+        '200':
+          description: "Orchestration manager is healthy"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrchestrationHealthResponse'
+
+  /capabilities:
+    get:
+      summary: "Get orchestration capabilities"
+      description: "Returns orchestration patterns, discovery protocols, and framework support"
+      operationId: "getCapabilities"
+      responses:
+        '200':
+          description: "Orchestration capabilities"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrchestrationCapabilitiesResponse'
+
+  /agents/discover:
+    get:
+      summary: "Discover available agents"
+      description: "UADP-compliant agent discovery with capability filtering and performance ranking"
+      operationId: "discoverAgents"
+      security:
+        - ApiKeyAuth: []
+      parameters:
+        - name: capabilities
+          in: query
+          description: "Filter agents by capabilities"
+          schema:
+            type: array
+            items:
+              type: string
+        - name: protocols
+          in: query
+          description: "Filter agents by supported protocols"
+          schema:
+            type: array
+            items:
+              type: string
+        - name: performance_tier
+          in: query
+          description: "Minimum performance tier"
+          schema:
+            type: string
+            enum: ["bronze", "silver", "gold"]
+      responses:
+        '200':
+          description: "Available agents discovered"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentDiscoveryResponse'
+
+  /agents/register:
+    post:
+      summary: "Register agent with orchestration manager"
+      description: "Register an agent in the UADP registry for discovery and orchestration"
+      operationId: "registerAgent"
+      security:
+        - ApiKeyAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AgentRegistrationRequest'
+      responses:
+        '201':
+          description: "Agent registered successfully"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentRegistrationResponse'
+
+  /orchestrate:
+    post:
+      summary: "Orchestrate multi-agent workflow"
+      description: "Execute coordinated workflow across multiple agents using specified orchestration pattern"
+      operationId: "orchestrateWorkflow"
+      security:
+        - OAuth2: ["orchestrate"]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OrchestrationRequest'
+      responses:
+        '200':
+          description: "Workflow orchestration initiated"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrchestrationResponse'
+        '202':
+          description: "Workflow accepted for asynchronous processing"
+        '400':
+          description: "Invalid orchestration request"
+
+  /workflows/{workflowId}:
+    get:
+      summary: "Get workflow status"
+      description: "Retrieve status and results of orchestrated workflow"
+      operationId: "getWorkflowStatus"
+      security:
+        - ApiKeyAuth: []
+      parameters:
+        - name: workflowId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: "Workflow status"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkflowStatusResponse'
+
+  /workflows/{workflowId}/cancel:
+    post:
+      summary: "Cancel workflow execution"
+      description: "Cancel a running workflow and cleanup resources"
+      operationId: "cancelWorkflow"
+      security:
+        - OAuth2: ["orchestrate"]
+      parameters:
+        - name: workflowId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: "Workflow cancellation initiated"
+
+  /monitor:
+    get:
+      summary: "Get orchestration metrics"
+      description: "Real-time orchestration performance metrics and agent health status"
+      operationId: "getOrchestrationMetrics"
+      security:
+        - ApiKeyAuth: []
+      responses:
+        '200':
+          description: "Orchestration metrics"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrchestrationMetricsResponse'
+
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+    OAuth2:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: "/oauth/token"
+          scopes:
+            read: "Read access to orchestration services"
+            orchestrate: "Execute orchestration workflows"
+            admin: "Full administrative access"
+    mTLS:
+      type: mutualTLS
+      description: "Mutual TLS for inter-agent communication"
+
+  schemas:
+    OrchestrationHealthResponse:
+      type: object
+      required:
+        - status
+        - version
+        - registry_status
+        - active_workflows
+      properties:
+        status:
+          type: string
+          enum: ["healthy", "degraded", "unhealthy"]
+        version:
+          type: string
+        ossa_version:
+          type: string
+        registry_status:
+          type: object
+          properties:
+            total_agents:
+              type: integer
+            healthy_agents:
+              type: integer
+            last_discovery:
+              type: string
+              format: date-time
+        active_workflows:
+          type: integer
+        system_metrics:
+          type: object
+          properties:
+            cpu_usage:
+              type: number
+            memory_usage:
+              type: number
+            network_latency:
+              type: number
+
+    OrchestrationCapabilitiesResponse:
+      type: object
+      properties:
+        orchestration_patterns:
+          type: array
+          items:
+            type: string
+        discovery_protocols:
+          type: array
+          items:
+            type: string
+        framework_support:
+          type: object
+          additionalProperties:
+            type: object
+        max_concurrent_agents:
+          type: integer
+        performance_metrics:
+          type: object
+
+    AgentDiscoveryResponse:
+      type: object
+      required:
+        - agents
+        - discovery_time
+        - total_found
+      properties:
+        agents:
+          type: array
+          items:
+            $ref: '#/components/schemas/DiscoveredAgent'
+        discovery_time:
+          type: string
+          format: date-time
+        total_found:
+          type: integer
+        performance_ranking:
+          type: boolean
+
+    DiscoveredAgent:
+      type: object
+      required:
+        - id
+        - name
+        - capabilities
+        - protocols
+        - health_status
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        version:
+          type: string
+        capabilities:
+          type: array
+          items:
+            type: string
+        protocols:
+          type: array
+          items:
+            type: string
+        health_status:
+          type: string
+          enum: ["healthy", "degraded", "unhealthy"]
+        performance_tier:
+          type: string
+          enum: ["bronze", "silver", "gold"]
+        endpoint:
+          type: string
+          format: uri
+        last_seen:
+          type: string
+          format: date-time
+
+    AgentRegistrationRequest:
+      type: object
+      required:
+        - name
+        - version
+        - endpoint
+        - capabilities
+        - protocols
+      properties:
+        name:
+          type: string
+        version:
+          type: string
+        endpoint:
+          type: string
+          format: uri
+        capabilities:
+          type: array
+          items:
+            type: string
+        protocols:
+          type: array
+          items:
+            type: string
+        health_check_endpoint:
+          type: string
+        metadata:
+          type: object
+
+    AgentRegistrationResponse:
+      type: object
+      properties:
+        agent_id:
+          type: string
+          format: uuid
+        registered:
+          type: boolean
+        registry_endpoint:
+          type: string
+        health_check_interval:
+          type: string
+
+    OrchestrationRequest:
+      type: object
+      required:
+        - pattern
+        - agents
+        - workflow
+      properties:
+        pattern:
+          type: string
+          enum: ["sequential", "parallel", "conditional", "hybrid", "diagnostic_first", "parallel_validation"]
+        agents:
+          type: array
+          items:
+            type: object
+            properties:
+              agent_id:
+                type: string
+              role:
+                type: string
+              requirements:
+                type: object
+        workflow:
+          type: object
+          description: "Workflow definition specific to orchestration pattern"
+        timeout:
+          type: string
+          description: "ISO 8601 duration"
+        priority:
+          type: string
+          enum: ["low", "normal", "high", "critical"]
+
+    OrchestrationResponse:
+      type: object
+      properties:
+        workflow_id:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum: ["initiated", "running", "completed", "failed", "cancelled"]
+        agents_assigned:
+          type: integer
+        estimated_completion:
+          type: string
+          format: date-time
+        monitoring_endpoint:
+          type: string
+
+    WorkflowStatusResponse:
+      type: object
+      properties:
+        workflow_id:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum: ["running", "completed", "failed", "cancelled"]
+        progress:
+          type: number
+          minimum: 0
+          maximum: 100
+        agents_status:
+          type: array
+          items:
+            type: object
+            properties:
+              agent_id:
+                type: string
+              status:
+                type: string
+              last_update:
+                type: string
+                format: date-time
+        results:
+          type: object
+          description: "Workflow execution results"
+
+    OrchestrationMetricsResponse:
+      type: object
+      properties:
+        active_workflows:
+          type: integer
+        total_agents:
+          type: integer
+        healthy_agents:
+          type: integer
+        average_response_time:
+          type: number
+        success_rate:
+          type: number
+        resource_utilization:
+          type: object
+          properties:
+            cpu:
+              type: number
+            memory:
+              type: number
+            network:
+              type: number

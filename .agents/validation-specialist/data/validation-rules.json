@@ -1,0 +1,246 @@
+{
+  "ossa_version": "0.1.3",
+  "validation_rules": {
+    "core_requirements": {
+      "openapi_version": {
+        "rule": "must_equal",
+        "value": "3.1.0",
+        "severity": "error",
+        "message": "OpenAPI version must be 3.1.0 for OSSA compliance"
+      },
+      "ossa_extension": {
+        "rule": "must_exist",
+        "path": "info.x-openapi-ai-agents-standard",
+        "severity": "error",
+        "message": "x-openapi-ai-agents-standard extension is required"
+      },
+      "ossa_version_match": {
+        "rule": "must_equal",
+        "path": "info.x-openapi-ai-agents-standard.version",
+        "value": "0.1.3",
+        "severity": "error",
+        "message": "OSSA standard version must be 0.1.3"
+      },
+      "agent_metadata": {
+        "rule": "must_exist",
+        "path": "info.x-agent-metadata",
+        "severity": "error",
+        "message": "x-agent-metadata extension is required for agent classification"
+      },
+      "health_endpoint": {
+        "rule": "must_exist",
+        "path": "paths./health",
+        "severity": "error",
+        "message": "Health endpoint (/health) is required for all OSSA agents"
+      },
+      "capabilities_endpoint": {
+        "rule": "must_exist",
+        "path": "paths./capabilities",
+        "severity": "error",
+        "message": "Capabilities endpoint (/capabilities) is required for agent discovery"
+      }
+    },
+    "conformance_tiers": {
+      "core": {
+        "required_fields": [
+          "info.x-openapi-ai-agents-standard.version",
+          "info.x-agent-metadata.class",
+          "info.x-agent-metadata.capabilities",
+          "paths./health",
+          "paths./capabilities"
+        ],
+        "min_score": 0.7
+      },
+      "governed": {
+        "required_fields": [
+          "info.x-openapi-ai-agents-standard.conformance_tier",
+          "info.x-protocol-bridges",
+          "info.x-compliance-frameworks",
+          "security"
+        ],
+        "min_score": 0.8,
+        "inherits": "core"
+      },
+      "advanced": {
+        "required_fields": [
+          "info.x-openapi-ai-agents-standard.certification_level",
+          "info.x-orchestration-patterns",
+          "info.x-discovery-protocol",
+          "components.securitySchemes"
+        ],
+        "min_score": 0.9,
+        "inherits": "governed"
+      }
+    },
+    "certification_levels": {
+      "bronze": {
+        "min_passed_checks": 10,
+        "max_errors": 5,
+        "max_warnings": 10,
+        "required_endpoints": ["/health", "/capabilities"],
+        "required_protocols": ["openapi"]
+      },
+      "silver": {
+        "min_passed_checks": 15,
+        "max_errors": 2,
+        "max_warnings": 3,
+        "required_endpoints": ["/health", "/capabilities"],
+        "required_protocols": ["openapi", "mcp"],
+        "performance_requirements": {
+          "health_response_time": 100,
+          "capabilities_response_time": 200
+        }
+      },
+      "gold": {
+        "min_passed_checks": 20,
+        "max_errors": 0,
+        "max_warnings": 0,
+        "required_endpoints": ["/health", "/capabilities"],
+        "required_protocols": ["openapi", "mcp", "a2a"],
+        "compliance_frameworks": ["ISO_42001", "NIST_AI_RMF"],
+        "performance_requirements": {
+          "health_response_time": 50,
+          "capabilities_response_time": 100
+        }
+      }
+    },
+    "protocol_validation": {
+      "mcp": {
+        "required_extension": "info.x-protocol-bridges.mcp",
+        "required_fields": [
+          "info.x-protocol-bridges.mcp.enabled",
+          "info.x-protocol-bridges.mcp.tools_endpoint"
+        ],
+        "endpoint_pattern": "/mcp/.*"
+      },
+      "a2a": {
+        "required_extension": "info.x-protocol-bridges.a2a",
+        "required_fields": [
+          "info.x-protocol-bridges.a2a.enabled",
+          "info.x-protocol-bridges.a2a.coordination_endpoint"
+        ],
+        "endpoint_pattern": "/a2a/.*"
+      }
+    },
+    "compliance_validation": {
+      "ISO_42001": {
+        "required_fields": [
+          "info.x-compliance-frameworks.ISO_42001.implemented",
+          "info.x-compliance-frameworks.ISO_42001.audit_endpoints"
+        ],
+        "audit_endpoint_required": true
+      },
+      "NIST_AI_RMF": {
+        "required_fields": [
+          "info.x-compliance-frameworks.NIST_AI_RMF.implemented",
+          "info.x-compliance-frameworks.NIST_AI_RMF.functions_mapping"
+        ],
+        "risk_assessment_required": true
+      },
+      "EU_AI_Act": {
+        "required_fields": [
+          "info.x-compliance-frameworks.EU_AI_Act.compliant",
+          "info.x-compliance-frameworks.EU_AI_Act.risk_classification"
+        ],
+        "transparency_required": true
+      }
+    },
+    "security_validation": {
+      "authentication_required": {
+        "rule": "must_exist",
+        "path": "security",
+        "severity": "warning",
+        "message": "Security requirements should be defined"
+      },
+      "api_key_auth": {
+        "rule": "recommended",
+        "path": "components.securitySchemes.ApiKeyAuth",
+        "severity": "info",
+        "message": "API Key authentication is recommended for production use"
+      },
+      "oauth2_support": {
+        "rule": "optional",
+        "path": "components.securitySchemes.OAuth2",
+        "severity": "info",
+        "message": "OAuth2 support enhances security posture"
+      }
+    },
+    "performance_validation": {
+      "health_endpoint_response": {
+        "max_response_time_ms": 100,
+        "required_fields": ["status", "version", "timestamp"]
+      },
+      "capabilities_endpoint_response": {
+        "max_response_time_ms": 200,
+        "required_fields": ["agent_name", "capabilities", "protocols"]
+      }
+    },
+    "dual_format_validation": {
+      "consistency_checks": {
+        "agent_name": {
+          "agent_yml_path": "metadata.name",
+          "openapi_path": "info.title",
+          "transformation": "title_case"
+        },
+        "version": {
+          "agent_yml_path": "metadata.version",
+          "openapi_path": "info.version",
+          "must_match": true
+        },
+        "capabilities": {
+          "agent_yml_path": "spec.capabilities",
+          "openapi_path": "info.x-agent-metadata.capabilities",
+          "must_overlap": true
+        },
+        "protocols": {
+          "agent_yml_path": "spec.protocols",
+          "openapi_path": "info.x-agent-metadata.protocols",
+          "must_overlap": true
+        }
+      },
+      "framework_alignment": {
+        "langchain_support": {
+          "agent_yml_check": "spec.framework_support.langchain.enabled",
+          "openapi_integration_required": true
+        },
+        "crewai_support": {
+          "agent_yml_check": "spec.framework_support.crewai.enabled",
+          "openapi_role_mapping_required": true
+        },
+        "mcp_support": {
+          "agent_yml_check": "spec.framework_support.mcp.enabled",
+          "openapi_bridge_required": "info.x-protocol-bridges.mcp"
+        }
+      }
+    }
+  },
+  "validation_categories": {
+    "structural": {
+      "weight": 0.3,
+      "checks": ["openapi_version", "ossa_extension", "agent_metadata"]
+    },
+    "functional": {
+      "weight": 0.3,
+      "checks": ["health_endpoint", "capabilities_endpoint", "protocol_validation"]
+    },
+    "compliance": {
+      "weight": 0.25,
+      "checks": ["compliance_validation", "security_validation"]
+    },
+    "performance": {
+      "weight": 0.15,
+      "checks": ["performance_validation", "endpoint_response_times"]
+    }
+  },
+  "scoring": {
+    "error_penalty": -10,
+    "warning_penalty": -2,
+    "passed_check_bonus": 5,
+    "perfect_score": 100,
+    "certification_thresholds": {
+      "bronze": 70,
+      "silver": 85,
+      "gold": 95
+    }
+  }
+}

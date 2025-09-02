@@ -1,0 +1,254 @@
+ossa: 0.1.3
+compliance_config:
+  name: "compliance-auditor-config"
+  version: "1.0.0"
+  environment: "production"
+  
+  api_settings:
+    host: "0.0.0.0"
+    port: 3005
+    base_path: "/api/v1"
+    cors:
+      enabled: true
+      origins: ["*"]
+      methods: ["GET", "POST", "PUT", "DELETE"]
+    
+  security:
+    authentication:
+      api_key:
+        enabled: true
+        header_name: "X-API-Key"
+      oauth2:
+        enabled: true
+        scopes: ["read", "audit", "admin"]
+      saml:
+        enabled: true
+        idp_metadata_url: "https://sso.company.com/saml/metadata"
+        sp_entity_id: "ossa-compliance-auditor"
+    
+    authorization:
+      rbac_enabled: true
+      roles:
+        auditor: ["read", "audit"]
+        compliance_officer: ["read", "audit", "admin"]
+        admin: ["read", "audit", "admin", "config"]
+    
+    audit_logging:
+      enabled: true
+      log_level: "info"
+      log_file: "/var/log/ossa/compliance-audit.log"
+      retention_years: 7
+      encryption: "aes_256"
+      integrity_checking: true
+  
+  compliance_frameworks:
+    iso_42001:
+      enabled: true
+      version: "2023"
+      certification_body: "BSI"
+      audit_schedule: "annual"
+      last_audit: "2025-01-15"
+      next_audit: "2025-07-15"
+      strict_validation: true
+      automated_evidence_collection: true
+      
+      controls:
+        A.5: 
+          enabled: true
+          automation_level: "full"
+        A.6:
+          enabled: true
+          automation_level: "full"
+        A.8:
+          enabled: true
+          automation_level: "partial"
+        A.9:
+          enabled: true
+          automation_level: "manual"
+    
+    nist_ai_rmf:
+      enabled: true
+      version: "1.0"
+      target_maturity_level: 5
+      current_maturity_level: 4
+      assessment_schedule: "quarterly"
+      last_assessment: "2025-01-10"
+      next_assessment: "2025-04-10"
+      
+      functions:
+        GOVERN:
+          enabled: true
+          automation_level: "advanced"
+        MAP:
+          enabled: true
+          automation_level: "advanced"
+        MEASURE:
+          enabled: true
+          automation_level: "advanced"
+        MANAGE:
+          enabled: true
+          automation_level: "intermediate"
+    
+    eu_ai_act:
+      enabled: true
+      risk_classification: "limited"
+      conformity_assessment_required: false
+      voluntary_compliance: true
+      transparency_requirements: true
+      human_oversight_level: "meaningful"
+      documentation_complete: true
+      
+      requirements:
+        transparency: "implemented"
+        data_governance: "implemented"
+        technical_documentation: "complete"
+        record_keeping: "implemented"
+        human_oversight: "implemented"
+        accuracy_robustness: "validated"
+        cybersecurity: "implemented"
+  
+  audit_engine:
+    automated_auditing:
+      enabled: true
+      schedule: "daily"
+      concurrent_audits: 5
+      timeout_minutes: 30
+    
+    evidence_collection:
+      enabled: true
+      automated: true
+      continuous: true
+      retention_years: 7
+      encryption: true
+      digital_signatures: true
+    
+    risk_assessment:
+      enabled: true
+      methodology: "nist_800_30"
+      frequency: "monthly"
+      risk_appetite: "moderate"
+      
+    continuous_monitoring:
+      enabled: true
+      real_time_alerts: true
+      threshold_based: true
+      ml_anomaly_detection: true
+  
+  reporting:
+    formats: ["pdf", "json", "xml", "html"]
+    templates: "/etc/ossa/compliance/templates"
+    automated_generation: true
+    schedule: "monthly"
+    
+    executive_reports:
+      enabled: true
+      frequency: "monthly"
+      recipients: ["ceo@company.com", "cto@company.com"]
+    
+    compliance_dashboard:
+      enabled: true
+      real_time: true
+      public_endpoint: "/dashboard"
+      authentication_required: true
+    
+    audit_trails:
+      immutable: true
+      blockchain_anchoring: false
+      cryptographic_hashing: true
+      timestamp_authority: "rfc3161"
+  
+  integrations:
+    mcp:
+      enabled: true
+      server_mode: true
+      tools_endpoint: "/mcp/tools"
+      audit_resources: "/mcp/audit"
+      real_time_monitoring: true
+    
+    langchain:
+      enabled: true
+      compliance_tools: true
+      audit_chain: true
+      evidence_extraction: true
+    
+    crewai:
+      enabled: true
+      compliance_workflows: true
+      audit_crews: true
+      multi_agent_auditing: true
+    
+    external_systems:
+      siem_integration: true
+      grc_platforms: ["archer", "servicenow_grc"]
+      ticketing_systems: ["jira", "servicenow"]
+      notification_channels: ["slack", "teams", "email"]
+  
+  database:
+    type: "postgresql"
+    host: "localhost"
+    port: 5432
+    database: "ossa_compliance"
+    username: "ossa_auditor"
+    ssl_mode: "require"
+    connection_pool:
+      min_connections: 10
+      max_connections: 100
+      idle_timeout_minutes: 15
+    
+    backup:
+      enabled: true
+      frequency: "daily"
+      retention_days: 2555  # 7 years
+      encryption: "pgp"
+  
+  storage:
+    evidence:
+      type: "filesystem"
+      base_path: "/var/lib/ossa/evidence"
+      encryption: "luks"
+      backup_enabled: true
+    
+    reports:
+      type: "s3"
+      bucket: "ossa-compliance-reports"
+      region: "us-east-1"
+      encryption: "sse_s3"
+      lifecycle_policy: "7_years"
+    
+    audit_logs:
+      type: "elasticsearch"
+      hosts: ["localhost:9200"]
+      index_pattern: "ossa-audit-logs-*"
+      retention_years: 7
+  
+  monitoring:
+    health_checks:
+      enabled: true
+      interval_seconds: 30
+      include_framework_status: true
+      include_database_status: true
+    
+    metrics:
+      enabled: true
+      endpoint: "/metrics"
+      prometheus_format: true
+      custom_metrics: true
+    
+    alerting:
+      enabled: true
+      channels: ["email", "slack", "pagerduty"]
+      thresholds:
+        compliance_score_drop: 0.05
+        audit_failure_rate: 0.10
+        evidence_collection_failure: 0.02
+        control_failure: 1
+  
+  features:
+    automated_compliance_checking: true
+    continuous_compliance_monitoring: true
+    risk_based_auditing: true
+    cross_framework_correlation: true
+    predictive_compliance_analytics: true
+    automated_remediation_suggestions: true
+    compliance_gap_analysis: true
+    regulatory_change_monitoring: true

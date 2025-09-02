@@ -1,0 +1,678 @@
+openapi: 3.1.0
+info:
+  title: "Enterprise Agent Advanced API"
+  version: "2.0.0"
+  description: "Advanced enterprise agent demonstrating OSSA 0.1.3 Advanced conformance tier with comprehensive compliance framework integration"
+  
+  x-openapi-ai-agents-standard:
+    version: "0.1.3"
+    conformance_tier: "advanced"
+    certification_level: "gold"
+    compliance_frameworks: [
+      "ISO_42001", "NIST_AI_RMF", "EU_AI_Act", "SOC2_Type2", 
+      "ISO_27001", "GDPR", "HIPAA", "FedRAMP"
+    ]
+    enterprise_features: true
+    
+  x-agent-metadata:
+    class: "enterprise"
+    category: "multi_purpose"
+    protocols: ["openapi", "mcp", "a2a", "uadp", "grpc", "graphql"]
+    capabilities: [
+      "universal_agent_interface", "multi_framework_orchestration", 
+      "enterprise_compliance_auditing", "advanced_security_management", 
+      "real_time_monitoring", "predictive_analytics"
+    ]
+    domains: [
+      "enterprise", "compliance", "orchestration", "security", 
+      "monitoring", "analytics", "governance"
+    ]
+    
+  x-protocol-bridges:
+    mcp:
+      enabled: true
+      latency: "<25ms"
+      advanced_features: ["resource_streaming", "progress_tracking"]
+      tools_endpoint: "/mcp/tools"
+      resources_endpoint: "/mcp/resources"
+      streaming_endpoint: "/mcp/stream"
+    a2a:
+      enabled: true
+      latency: "<20ms"
+      coordination_patterns: ["hierarchical", "mesh", "federated"]
+      coordination_endpoint: "/a2a/coordinate"
+      mesh_endpoint: "/a2a/mesh"
+      federation_endpoint: "/a2a/federate"
+    uadp:
+      enabled: true
+      latency: "<30ms"
+      discovery_modes: ["active", "passive", "predictive"]
+      registry_endpoint: "/uadp/registry"
+      discovery_endpoint: "/uadp/discover"
+      prediction_endpoint: "/uadp/predict"
+    grpc:
+      enabled: true
+      streaming: true
+      reflection: true
+      health_check: true
+    graphql:
+      enabled: true
+      subscriptions: true
+      federation: true
+      endpoint: "/graphql"
+
+  x-orchestration-patterns:
+    supported_patterns: [
+      "sequential", "parallel", "conditional", "hybrid", 
+      "event_driven", "reactive", "batch_processing", 
+      "stream_processing", "federated_learning", "consensus_based"
+    ]
+    max_concurrent_workflows: 1000
+    auto_scaling: true
+    load_balancing: "intelligent"
+    fault_tolerance: "byzantine"
+    state_management: "distributed"
+
+  x-discovery-protocol:
+    uadp_version: "0.1.3"
+    hierarchical_discovery: true
+    federated_discovery: true
+    predictive_discovery: true
+    multi_region_support: true
+    capability_inference: true
+    performance_prediction: true
+    cost_optimization: true
+
+  x-enterprise-features:
+    multi_tenancy: true
+    white_labeling: true
+    custom_branding: true
+    advanced_analytics: true
+    predictive_insights: true
+    automated_optimization: true
+    enterprise_sla: "99.99%"
+    dedicated_support: true
+    disaster_recovery: true
+    business_continuity: true
+
+  x-compliance-frameworks:
+    ISO_42001:
+      implemented: true
+      certification_level: "gold"
+      controls_automated: 47
+      audit_endpoints: ["/audit/iso42001", "/compliance/iso42001"]
+      evidence_collection: "automated"
+      continuous_monitoring: true
+      last_certification: "2025-01-15"
+    NIST_AI_RMF:
+      implemented: true
+      maturity_level: 5
+      functions_covered: ["GOVERN", "MAP", "MEASURE", "MANAGE"]
+      audit_endpoints: ["/audit/nist-ai-rmf", "/risk/nist-assessment"]
+      risk_management: "advanced"
+    EU_AI_Act:
+      compliant: true
+      risk_classification: "high"
+      conformity_assessment: "completed"
+      audit_endpoints: ["/compliance/eu-ai-act", "/transparency/eu"]
+      transparency_level: "full"
+      human_oversight: "meaningful"
+    SOC2_Type2:
+      certified: true
+      controls: ["security", "availability", "confidentiality"]
+      audit_period: "12_months"
+      report_endpoint: "/compliance/soc2"
+    ISO_27001:
+      certified: true
+      controls_implemented: 114
+      scope: "information_security_management"
+      audit_endpoint: "/audit/iso27001"
+    GDPR:
+      compliant: true
+      privacy_by_design: true
+      data_protection_impact_assessment: "completed"
+      privacy_endpoint: "/privacy/gdpr"
+    HIPAA:
+      compliant: true
+      safeguards: ["administrative", "physical", "technical"]
+      compliance_endpoint: "/compliance/hipaa"
+    FedRAMP:
+      authorized: true
+      level: "moderate"
+      ato_status: "granted"
+      continuous_monitoring: true
+      fedramp_endpoint: "/compliance/fedramp"
+
+  x-security:
+    authentication: ["api_key", "oauth2", "saml", "oidc", "mtls", "jwt", "kerberos"]
+    authorization: "rbac_abac_hybrid"
+    encryption:
+      at_rest: "aes_256_gcm"
+      in_transit: "tls_1_3"
+      in_processing: "homomorphic"
+    zero_trust: true
+    threat_detection: true
+    vulnerability_scanning: true
+    security_headers: "complete"
+
+  x-performance:
+    latency:
+      health_check: "<25ms"
+      capabilities: "<50ms"
+      orchestration: "<100ms"
+      compliance_check: "<200ms"
+    throughput:
+      requests_per_second: 10000
+      concurrent_workflows: 1000
+    availability:
+      uptime_target: 99.99
+      recovery_time_objective: "15m"
+
+  contact:
+    name: "Enterprise AI Solutions Team"
+    url: "https://gitlab.com/bluefly-ai/ossa-standard"
+    email: "enterprise@ossa.agents"
+  
+  license:
+    name: "Apache 2.0"
+    url: "https://www.apache.org/licenses/LICENSE-2.0.html"
+
+servers:
+  - url: "https://enterprise.ossa.agents/v2"
+    description: "Production Enterprise API"
+  - url: "https://staging-enterprise.ossa.agents/v2"  
+    description: "Staging Enterprise API"
+  - url: "http://localhost:3006/api/v2"
+    description: "Local development server"
+
+security:
+  - ApiKeyAuth: []
+  - OAuth2: ["read", "write", "admin", "orchestrate", "audit"]
+  - mTLS: []
+  - SAML: []
+  - OIDC: []
+
+paths:
+  /health:
+    get:
+      summary: "Advanced health check with dependency status"
+      description: "Comprehensive health check including all dependent services, compliance status, and performance metrics"
+      operationId: "getAdvancedHealth"
+      tags: ["Health"]
+      responses:
+        '200':
+          description: "System is healthy"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdvancedHealthResponse'
+
+  /capabilities:
+    get:
+      summary: "Get comprehensive agent capabilities"
+      description: "Returns detailed capabilities including enterprise features, compliance frameworks, and performance metrics"
+      operationId: "getAdvancedCapabilities"
+      tags: ["Discovery"]
+      responses:
+        '200':
+          description: "Agent capabilities"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdvancedCapabilitiesResponse'
+
+  /discover:
+    get:
+      summary: "Advanced UADP agent discovery"
+      description: "Discover agents using Universal Agent Discovery Protocol with predictive capabilities"
+      operationId: "discoverAgentsAdvanced"
+      tags: ["Discovery"]
+      security:
+        - ApiKeyAuth: []
+      parameters:
+        - name: capabilities
+          in: query
+          schema:
+            type: array
+            items:
+              type: string
+        - name: compliance_level
+          in: query
+          schema:
+            type: string
+            enum: ["basic", "enterprise", "government"]
+        - name: performance_tier
+          in: query
+          schema:
+            type: string
+            enum: ["bronze", "silver", "gold", "platinum"]
+        - name: prediction_mode
+          in: query
+          schema:
+            type: boolean
+            default: false
+      responses:
+        '200':
+          description: "Agents discovered successfully"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdvancedDiscoveryResponse'
+
+  /orchestrate:
+    post:
+      summary: "Advanced multi-agent orchestration"
+      description: "Execute complex orchestration patterns with enterprise-grade reliability"
+      operationId: "orchestrateAdvanced"
+      tags: ["Orchestration"]
+      security:
+        - OAuth2: ["orchestrate", "admin"]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AdvancedOrchestrationRequest'
+      responses:
+        '200':
+          description: "Orchestration initiated"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdvancedOrchestrationResponse'
+
+  /comply:
+    get:
+      summary: "Get comprehensive compliance status"
+      description: "Returns status across all compliance frameworks with detailed metrics"
+      operationId: "getComplianceStatus"
+      tags: ["Compliance"]
+      security:
+        - OAuth2: ["read", "audit"]
+      responses:
+        '200':
+          description: "Compliance status"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ComprehensiveComplianceResponse'
+
+  /comply/audit:
+    post:
+      summary: "Initiate comprehensive compliance audit"
+      description: "Start automated audit across all configured compliance frameworks"
+      operationId: "initiateComprehensiveAudit"
+      tags: ["Compliance"]
+      security:
+        - OAuth2: ["audit", "admin"]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ComprehensiveAuditRequest'
+      responses:
+        '202':
+          description: "Audit initiated"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ComprehensiveAuditResponse'
+
+  /monitor:
+    get:
+      summary: "Real-time monitoring dashboard"
+      description: "Get real-time performance, security, and compliance metrics"
+      operationId: "getMonitoringDashboard"
+      tags: ["Monitoring"]
+      security:
+        - ApiKeyAuth: []
+      responses:
+        '200':
+          description: "Monitoring data"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MonitoringDashboardResponse'
+
+  /analytics/predict:
+    post:
+      summary: "Predictive analytics endpoint"
+      description: "Generate predictive insights for performance, compliance, and optimization"
+      operationId: "generatePredictiveInsights"
+      tags: ["Analytics"]
+      security:
+        - OAuth2: ["read", "admin"]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PredictiveAnalyticsRequest'
+      responses:
+        '200':
+          description: "Predictive insights generated"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PredictiveAnalyticsResponse'
+
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+    OAuth2:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: "/oauth/token"
+          scopes:
+            read: "Read access"
+            write: "Write access"
+            admin: "Administrative access"
+            orchestrate: "Orchestration capabilities"
+            audit: "Audit capabilities"
+    mTLS:
+      type: mutualTLS
+    SAML:
+      type: http
+      scheme: bearer
+      bearerFormat: "SAML"
+    OIDC:
+      type: openIdConnect
+      openIdConnectUrl: "https://auth.ossa.agents/.well-known/openid-configuration"
+
+  schemas:
+    AdvancedHealthResponse:
+      type: object
+      required:
+        - status
+        - version
+        - compliance_status
+        - performance_metrics
+      properties:
+        status:
+          type: string
+          enum: ["healthy", "degraded", "unhealthy", "maintenance"]
+        version:
+          type: string
+        ossa_version:
+          type: string
+        compliance_status:
+          type: object
+          properties:
+            overall_score:
+              type: number
+              minimum: 0
+              maximum: 1
+            frameworks_status:
+              type: object
+              additionalProperties:
+                type: string
+        performance_metrics:
+          type: object
+          properties:
+            response_time_p95:
+              type: number
+            throughput:
+              type: number
+            error_rate:
+              type: number
+        dependencies:
+          type: array
+          items:
+            type: object
+            properties:
+              service:
+                type: string
+              status:
+                type: string
+              response_time:
+                type: number
+
+    AdvancedCapabilitiesResponse:
+      type: object
+      properties:
+        agent_name:
+          type: string
+        conformance_tier:
+          type: string
+        enterprise_features:
+          type: array
+          items:
+            type: string
+        compliance_frameworks:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+              level:
+                type: string
+              certification_status:
+                type: string
+        orchestration_patterns:
+          type: array
+          items:
+            type: string
+        performance_guarantees:
+          type: object
+          properties:
+            sla_uptime:
+              type: number
+            max_response_time:
+              type: number
+        security_features:
+          type: array
+          items:
+            type: string
+
+    AdvancedDiscoveryResponse:
+      type: object
+      properties:
+        agents:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+              name:
+                type: string
+              conformance_tier:
+                type: string
+              compliance_score:
+                type: number
+              performance_tier:
+                type: string
+              predicted_suitability:
+                type: number
+        discovery_metadata:
+          type: object
+          properties:
+            prediction_enabled:
+              type: boolean
+            total_discovered:
+              type: integer
+            discovery_time_ms:
+              type: number
+
+    AdvancedOrchestrationRequest:
+      type: object
+      required:
+        - pattern
+        - agents
+      properties:
+        pattern:
+          type: string
+          enum: [
+            "sequential", "parallel", "conditional", "hybrid",
+            "event_driven", "reactive", "batch_processing",
+            "stream_processing", "federated_learning", "consensus_based"
+          ]
+        agents:
+          type: array
+          items:
+            type: object
+        enterprise_options:
+          type: object
+          properties:
+            sla_requirements:
+              type: object
+            compliance_level:
+              type: string
+            disaster_recovery:
+              type: boolean
+        optimization:
+          type: object
+          properties:
+            cost_optimization:
+              type: boolean
+            performance_optimization:
+              type: boolean
+            predictive_scaling:
+              type: boolean
+
+    AdvancedOrchestrationResponse:
+      type: object
+      properties:
+        workflow_id:
+          type: string
+        status:
+          type: string
+        sla_guarantees:
+          type: object
+        compliance_validation:
+          type: object
+        predicted_completion:
+          type: string
+          format: date-time
+        resource_allocation:
+          type: object
+
+    ComprehensiveComplianceResponse:
+      type: object
+      properties:
+        overall_compliance_score:
+          type: number
+          minimum: 0
+          maximum: 1
+        frameworks:
+          type: object
+          additionalProperties:
+            type: object
+            properties:
+              status:
+                type: string
+              score:
+                type: number
+              last_audit:
+                type: string
+              next_audit:
+                type: string
+              critical_issues:
+                type: integer
+        risk_assessment:
+          type: object
+          properties:
+            overall_risk_level:
+              type: string
+            risk_factors:
+              type: array
+              items:
+                type: object
+        continuous_monitoring:
+          type: object
+          properties:
+            active:
+              type: boolean
+            last_check:
+              type: string
+            next_check:
+              type: string
+
+    ComprehensiveAuditRequest:
+      type: object
+      properties:
+        frameworks:
+          type: array
+          items:
+            type: string
+        audit_scope:
+          type: string
+          enum: ["full", "incremental", "targeted"]
+        priority:
+          type: string
+          enum: ["low", "normal", "high", "critical"]
+        compliance_requirements:
+          type: object
+
+    ComprehensiveAuditResponse:
+      type: object
+      properties:
+        audit_id:
+          type: string
+        status:
+          type: string
+        estimated_completion:
+          type: string
+        frameworks_included:
+          type: array
+          items:
+            type: string
+        enterprise_features:
+          type: object
+          properties:
+            automated_remediation:
+              type: boolean
+            real_time_monitoring:
+              type: boolean
+
+    MonitoringDashboardResponse:
+      type: object
+      properties:
+        real_time_metrics:
+          type: object
+        performance_analytics:
+          type: object
+        security_status:
+          type: object
+        compliance_monitoring:
+          type: object
+        predictive_alerts:
+          type: array
+          items:
+            type: object
+
+    PredictiveAnalyticsRequest:
+      type: object
+      properties:
+        analysis_type:
+          type: string
+          enum: ["performance", "compliance", "security", "cost"]
+        time_horizon:
+          type: string
+          enum: ["1h", "24h", "7d", "30d", "90d"]
+        confidence_level:
+          type: number
+          minimum: 0.5
+          maximum: 0.99
+
+    PredictiveAnalyticsResponse:
+      type: object
+      properties:
+        predictions:
+          type: array
+          items:
+            type: object
+        confidence_intervals:
+          type: object
+        recommendations:
+          type: array
+          items:
+            type: object
+        risk_factors:
+          type: array
+          items:
+            type: object

@@ -1,0 +1,211 @@
+ossa: 0.1.3
+orchestration_config:
+  name: "orchestration-manager-config"
+  version: "1.0.0"
+  environment: "production"
+  
+  api_settings:
+    host: "0.0.0.0"
+    port: 3004
+    base_path: "/api/v1"
+    cors:
+      enabled: true
+      origins: ["*"]
+      methods: ["GET", "POST", "PUT", "DELETE", "PATCH"]
+    
+  security:
+    authentication:
+      api_key:
+        enabled: true
+        header_name: "X-API-Key"
+      oauth2:
+        enabled: true
+        scopes: ["read", "orchestrate", "admin"]
+      mtls:
+        enabled: true
+        cert_path: "/etc/ssl/certs/orchestration.crt"
+        key_path: "/etc/ssl/private/orchestration.key"
+    
+    authorization:
+      rbac_enabled: true
+      default_role: "user"
+      admin_role: "admin"
+    
+    inter_agent_security:
+      zero_trust: true
+      encryption: "tls_1_3"
+      certificate_validation: "strict"
+  
+  discovery:
+    uadp:
+      enabled: true
+      version: "0.1.3"
+      hierarchical_discovery: true
+      discovery_interval_seconds: 30
+      health_check_interval_seconds: 10
+      timeout_seconds: 5
+      max_retries: 3
+    
+    registry:
+      type: "distributed"
+      consistency: "eventual"
+      replication_factor: 3
+      sync_interval_seconds: 60
+    
+    caching:
+      enabled: true
+      ttl_seconds: 300
+      max_entries: 10000
+      eviction_policy: "lru"
+    
+    capability_matching:
+      fuzzy_matching: true
+      semantic_similarity: true
+      confidence_threshold: 0.8
+    
+    performance_ranking:
+      enabled: true
+      factors: ["response_time", "success_rate", "uptime"]
+      weights: [0.4, 0.4, 0.2]
+  
+  orchestration:
+    patterns:
+      sequential:
+        enabled: true
+        max_agents: 50
+        timeout_minutes: 60
+      parallel:
+        enabled: true
+        max_concurrent: 20
+        timeout_minutes: 30
+      conditional:
+        enabled: true
+        max_conditions: 10
+        evaluation_timeout_seconds: 10
+      hybrid:
+        enabled: true
+        complexity_limit: 100
+      diagnostic_first:
+        enabled: true
+        diagnostic_timeout_seconds: 30
+      parallel_validation:
+        enabled: true
+        validation_threshold: 0.8
+    
+    workflow_management:
+      max_concurrent_workflows: 50
+      default_timeout_minutes: 60
+      retry_attempts: 3
+      retry_backoff_seconds: 30
+      cleanup_completed_after_hours: 24
+    
+    load_balancing:
+      algorithm: "round_robin"
+      health_based: true
+      performance_based: true
+      sticky_sessions: false
+    
+    failover:
+      enabled: true
+      detection_interval_seconds: 10
+      failover_timeout_seconds: 30
+      auto_recovery: true
+  
+  monitoring:
+    health_checks:
+      enabled: true
+      endpoint: "/health"
+      detailed_checks: true
+      include_dependencies: true
+    
+    metrics:
+      enabled: true
+      endpoint: "/metrics"
+      collection_interval_seconds: 30
+      retention_days: 30
+      include_histograms: true
+    
+    performance:
+      response_time_tracking: true
+      throughput_monitoring: true
+      error_rate_monitoring: true
+      resource_usage_tracking: true
+    
+    alerting:
+      enabled: true
+      thresholds:
+        error_rate: 0.05
+        response_time_p95_ms: 500
+        queue_length: 100
+        agent_failure_rate: 0.10
+      notification_channels: ["slack", "email", "webhook"]
+  
+  integrations:
+    langchain:
+      enabled: true
+      orchestrator_mode: true
+      agent_coordination: true
+      tool_sharing: true
+    
+    crewai:
+      enabled: true
+      crew_manager_mode: true
+      role_mapping: true
+      task_distribution: true
+    
+    autogen:
+      enabled: true
+      conversation_management: true
+      group_chat_orchestration: true
+    
+    mcp:
+      enabled: true
+      protocol_bridge: true
+      tools_discovery: true
+    
+    a2a:
+      enabled: true
+      coordination_protocol: true
+      message_routing: true
+  
+  database:
+    type: "postgresql"
+    host: "localhost"
+    port: 5432
+    database: "ossa_orchestration"
+    username: "ossa_orchestrator"
+    connection_pool:
+      min_connections: 5
+      max_connections: 50
+      idle_timeout_minutes: 10
+  
+  storage:
+    workflows:
+      type: "filesystem"
+      base_path: "/var/lib/ossa/workflows"
+      backup_enabled: true
+      backup_interval_hours: 6
+    
+    agent_registry:
+      type: "redis"
+      host: "localhost"
+      port: 6379
+      database: 1
+      ttl_seconds: 3600
+    
+    metrics:
+      type: "influxdb"
+      host: "localhost"
+      port: 8086
+      database: "ossa_metrics"
+      retention_policy: "30d"
+  
+  features:
+    multi_agent_orchestration: true
+    workflow_coordination: true
+    universal_agent_interface: true
+    hierarchical_discovery: true
+    protocol_translation: true
+    performance_optimization: true
+    auto_scaling: true
+    fault_tolerance: true

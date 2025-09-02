@@ -1,0 +1,42 @@
+apiVersion: open-standards-scalable-agents/v0.1.3
+kind: Agent
+metadata:
+  name: ossa-0-1-3-working-example
+  version: 0.1.3
+  description: |
+    Working OSSA 0.1.3 compliant agent example that passes validation.
+    Demonstrates proper structure and all required fields for public release.
+  created: '2025-09-02T18:00:00.000Z'
+  labels:
+    tier: core
+    domain: development
+  annotations:
+    ossa.io/conformance-level: core
+    ossa.io/migration-date: '2025-09-02'
+    ossa.io/source-format: yaml
+spec:
+  agent:
+    name: ossa-0-1-3-working-example
+    expertise: Demonstrates OSSA 0.1.3 compliance and validation
+  capabilities:
+    - validate-ossa-schema
+    - demonstrate-compliance
+    - provide-reference-example
+  discovery:
+    uadp:
+      enabled: true
+      tags:
+        - ossa
+        - 0.1.3
+        - reference
+        - validation
+  frameworks:
+    mcp:
+      enabled: true
+    langchain:
+      enabled: true
+    crewai:
+      enabled: true
+  security:
+    enabled: true
+    level: basic

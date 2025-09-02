@@ -1,0 +1,366 @@
+openapi: 3.1.0
+info:
+  title: "OSSA Validation Specialist API"
+  version: "1.0.0"
+  description: "OpenAPI AI Agents Standard v0.1.3 compliance validation specialist"
+  
+  x-openapi-ai-agents-standard:
+    version: "0.1.3"
+    conformance_tier: "governed"
+    certification_level: "gold"
+    compliance_frameworks: ["ISO_42001", "NIST_AI_RMF", "EU_AI_Act"]
+    
+  x-agent-metadata:
+    class: "specialist"
+    category: "validation"
+    protocols: ["openapi", "mcp", "a2a"]
+    capabilities: ["spec_validation", "conformance_testing", "compliance_auditing"]
+    domains: ["validation", "compliance", "quality_assurance"]
+    
+  x-protocol-bridges:
+    mcp:
+      enabled: true
+      latency: "<50ms"
+      tools_endpoint: "/mcp/tools"
+      resources_endpoint: "/mcp/resources"
+    a2a:
+      enabled: true
+      latency: "<35ms"
+      coordination_endpoint: "/a2a/coordinate"
+
+  x-compliance-frameworks:
+    ISO_42001:
+      implemented: true
+      audit_endpoints: ["/audit/iso42001"]
+      controls_mapping: "./data/iso42001-controls.json"
+    NIST_AI_RMF:
+      implemented: true
+      audit_endpoints: ["/audit/nist-ai-rmf"]
+      controls_mapping: "./data/nist-controls.json"
+    EU_AI_Act:
+      compliant: true
+      risk_classification: "limited"
+      documentation_endpoint: "/compliance/eu-ai-act"
+
+  contact:
+    name: "OSSA Community"
+    url: "https://gitlab.com/bluefly-ai/ossa-standard"
+  
+  license:
+    name: "Apache 2.0"
+    url: "https://www.apache.org/licenses/LICENSE-2.0.html"
+
+servers:
+  - url: "https://api.ossa.agents/v1"
+    description: "Production OSSA Validation API"
+  - url: "http://localhost:3003/api/v1"
+    description: "Local development server"
+
+security:
+  - ApiKeyAuth: []
+  - OAuth2: ["read", "validate", "certify"]
+
+paths:
+  /health:
+    get:
+      summary: "Health check endpoint"
+      description: "Returns agent health and readiness status"
+      operationId: "getHealth"
+      responses:
+        '200':
+          description: "Agent is healthy and ready"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+
+  /capabilities:
+    get:
+      summary: "Get agent capabilities"
+      description: "Returns comprehensive agent capabilities and supported protocols"
+      operationId: "getCapabilities"
+      responses:
+        '200':
+          description: "Agent capabilities"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CapabilitiesResponse'
+
+  /validate/openapi:
+    post:
+      summary: "Validate OpenAPI specification"
+      description: "Validates an OpenAPI 3.1 specification against OSSA v0.1.3 standard"
+      operationId: "validateOpenAPI"
+      security:
+        - ApiKeyAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OpenAPIValidationRequest'
+          application/yaml:
+            schema:
+              type: string
+              description: "Raw YAML OpenAPI specification"
+      responses:
+        '200':
+          description: "Validation completed"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationResponse'
+        '400':
+          description: "Invalid request format"
+        '401':
+          description: "Authentication required"
+
+  /validate/dual-format:
+    post:
+      summary: "Validate dual-format agent specification"
+      description: "Validates both agent.yml and openapi.yaml for consistency and compliance"
+      operationId: "validateDualFormat"
+      security:
+        - ApiKeyAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DualFormatValidationRequest'
+      responses:
+        '200':
+          description: "Dual-format validation completed"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationResponse'
+
+  /certify:
+    post:
+      summary: "Certify agent for compliance level"
+      description: "Comprehensive certification assessment for Bronze/Silver/Gold levels"
+      operationId: "certifyAgent"
+      security:
+        - OAuth2: ["certify"]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CertificationRequest'
+      responses:
+        '200':
+          description: "Certification completed"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CertificationResponse'
+
+  /mcp/tools:
+    get:
+      summary: "MCP Tools Bridge"
+      description: "Model Context Protocol tools endpoint for framework interoperability"
+      operationId: "getMCPTools"
+      responses:
+        '200':
+          description: "Available MCP tools"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MCPToolsResponse'
+
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+    OAuth2:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: "/oauth/token"
+          scopes:
+            read: "Read access to validation services"
+            validate: "Perform validation operations"
+            certify: "Perform certification operations"
+
+  schemas:
+    HealthResponse:
+      type: object
+      required:
+        - status
+        - version
+        - timestamp
+      properties:
+        status:
+          type: string
+          enum: ["healthy", "degraded", "unhealthy"]
+        version:
+          type: string
+          example: "1.0.0"
+        ossa_version:
+          type: string
+          example: "0.1.3"
+        timestamp:
+          type: string
+          format: date-time
+        uptime:
+          type: integer
+          description: "Uptime in seconds"
+
+    CapabilitiesResponse:
+      type: object
+      required:
+        - agent_name
+        - capabilities
+        - protocols
+        - conformance_tier
+      properties:
+        agent_name:
+          type: string
+          example: "validation-specialist"
+        capabilities:
+          type: array
+          items:
+            type: string
+          example: ["spec_validation", "conformance_testing", "compliance_auditing"]
+        protocols:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+              version:
+                type: string
+              required:
+                type: boolean
+        conformance_tier:
+          type: string
+          enum: ["core", "governed", "advanced"]
+        compliance_frameworks:
+          type: array
+          items:
+            type: string
+
+    OpenAPIValidationRequest:
+      type: object
+      required:
+        - specification
+      properties:
+        specification:
+          type: object
+          description: "OpenAPI 3.1 specification to validate"
+        validation_level:
+          type: string
+          enum: ["basic", "standard", "strict"]
+          default: "standard"
+        target_certification:
+          type: string
+          enum: ["bronze", "silver", "gold"]
+
+    DualFormatValidationRequest:
+      type: object
+      required:
+        - agent_config
+        - openapi_spec
+      properties:
+        agent_config:
+          type: object
+          description: "agent.yml configuration"
+        openapi_spec:
+          type: object
+          description: "openapi.yaml specification"
+
+    ValidationResponse:
+      type: object
+      required:
+        - valid
+        - ossa_version
+        - conformance_tier
+      properties:
+        valid:
+          type: boolean
+        ossa_version:
+          type: string
+        conformance_tier:
+          type: string
+        certification_level:
+          type: string
+          enum: ["bronze", "silver", "gold", "none"]
+        passed:
+          type: integer
+          description: "Number of validation checks passed"
+        warnings:
+          type: integer
+          description: "Number of warnings"
+        errors:
+          type: array
+          items:
+            type: object
+            properties:
+              code:
+                type: string
+              message:
+                type: string
+              path:
+                type: string
+        details:
+          type: object
+          description: "Detailed validation results"
+
+    CertificationRequest:
+      type: object
+      required:
+        - agent_specification
+        - target_level
+      properties:
+        agent_specification:
+          type: object
+        target_level:
+          type: string
+          enum: ["bronze", "silver", "gold"]
+        compliance_requirements:
+          type: array
+          items:
+            type: string
+
+    CertificationResponse:
+      type: object
+      required:
+        - certified
+        - level
+        - valid_until
+      properties:
+        certified:
+          type: boolean
+        level:
+          type: string
+          enum: ["bronze", "silver", "gold"]
+        valid_until:
+          type: string
+          format: date
+        certificate_id:
+          type: string
+        compliance_status:
+          type: object
+          additionalProperties:
+            type: string
+
+    MCPToolsResponse:
+      type: object
+      properties:
+        tools:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+              description:
+                type: string
+              inputSchema:
+                type: object

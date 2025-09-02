@@ -1,0 +1,96 @@
+ossa: 0.1.3
+metadata:
+  name: "validation-specialist"
+  version: "1.0.0"
+  description: "OSSA v0.1.3 compliance validation specialist for agent specifications"
+  author: "Open Standards for Scalable Agents Community"
+  license: "Apache-2.0"
+  created: "2025-01-28"
+  updated: "2025-01-28"
+
+spec:
+  conformance_tier: "governed"
+  
+  class: "specialist"
+  category: "validation"
+  
+  capabilities:
+    primary:
+      - "spec_validation"
+      - "conformance_testing" 
+      - "compliance_auditing"
+    secondary:
+      - "dual_format_validation"
+      - "certification_assessment"
+      - "error_reporting"
+  
+  protocols:
+    - name: "openapi"
+      version: "3.1.0"
+      required: true
+    - name: "mcp"
+      version: "2024-11-05"
+      required: false
+    - name: "a2a"
+      version: "0.1.3"
+      required: false
+  
+  framework_support:
+    langchain:
+      enabled: true
+      integration_type: "tool"
+    crewai:
+      enabled: true
+      integration_type: "agent"
+    openai:
+      enabled: true
+      integration_type: "assistant"
+    mcp:
+      enabled: true
+      integration_type: "server"
+
+  compliance_frameworks:
+    - name: "ISO_42001"
+      level: "implemented"
+      audit_ready: true
+    - name: "NIST_AI_RMF"
+      level: "implemented"
+      audit_ready: true
+    - name: "EU_AI_Act"
+      level: "compliant"
+      audit_ready: false
+
+  performance:
+    latency:
+      health_check: "<100ms"
+      validation: "<500ms"
+      certification: "<2s"
+    throughput:
+      concurrent_validations: 50
+      max_spec_size: "10MB"
+
+  security:
+    authentication:
+      - "api_key"
+      - "oauth2"
+    authorization: "rbac"
+    audit_logging: true
+    encryption: "tls_1_3"
+
+  endpoints:
+    health: "/health"
+    capabilities: "/capabilities"
+    validate_spec: "/validate/openapi"
+    validate_dual: "/validate/dual-format"
+    certify: "/certify"
+
+  data:
+    schemas_path: "./data/schemas"
+    validation_rules: "./data/validation-rules.json"
+    compliance_mappings: "./data/compliance-mappings.json"
+
+  config:
+    validation_strictness: "strict"
+    certification_auto: false
+    max_errors: 100
+    detailed_reporting: true
