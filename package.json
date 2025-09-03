@@ -5,8 +5,8 @@
   "main": "lib/cli.js",
   "type": "module",
   "bin": {
-    "ossa-validate": "lib/cli.js",
-    "ossa-validate-legacy": "lib/tools/validation/validate-ossa-v0.1.2.js"
+    "ossa": "bin/ossa",
+    "ossa-validate": "lib/tools/validation/validate-ossa.js"
   },
   "scripts": {
     "validate": "echo '⚠️ DEPRECATED: Use CLI instead: ossa validate' && node lib/cli.js",
@@ -52,6 +52,8 @@
     "node": ">=18.0.0"
   },
   "files": [
+    "bin/",
+    "lib/",
     "schemas/",
     "examples/",
     "conformance/",
@@ -59,7 +61,6 @@
     "tests/",
     "docs/",
     "validate-ossa-v0.1.2.js",
-    "validate-ossa-v0.1.6.js",
     "validate-oaas-v1.2.0.js",
     "validate-oaas-v1.3.0.js",
     "README.md",
