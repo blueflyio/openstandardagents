@@ -8,11 +8,11 @@
 
 > **🚨 MIGRATION REQUIRED**: Legacy validation scripts are deprecated as of September 2025. Please migrate to the CLI: `npm install -g @bluefly/open-standards-scalable-agents@0.1.3` and use `ossa validate` instead of direct script execution. See [DEPRECATION_NOTICE.md](DEPRECATION_NOTICE.md) for details.
 
-> **Open Standards for Scalable Agents (OSSA) 0.1.3** - The definitive framework for AI agent definition, discovery, and orchestration with enterprise governance
+> **Open Standards for Scalable Agents (OSSA) 0.1.3** - A framework for AI agent definition, discovery, and orchestration with enterprise governance
 
 ## Executive Summary
 
-**Open Standards for Scalable Agents (OSSA) 0.1.3** establishes the definitive framework for **AI agent definition, discovery, and orchestration** with enterprise-grade governance. Building on OpenAPI 3.1 foundations, OSSA provides a comprehensive specification system with three conformance tiers (Core, Governed, Advanced) and seamless integration across all major AI frameworks.
+**Open Standards for Scalable Agents (OSSA) 0.1.3** establishes a framework for **AI agent definition, discovery, and orchestration** with enterprise-grade governance. Building on OpenAPI 3.1 foundations, OSSA provides a comprehensive specification system with three conformance tiers (Core, Governed, Advanced) and seamless integration across all major AI frameworks.
 
 ### **🎯 Strategic Value Proposition**
 
@@ -38,8 +38,8 @@
 ### **Universal Discovery and Orchestration**
 - **Hierarchical Discovery**: Multi-level agent discovery across workspaces, projects, and organizations
 - **Intelligent Orchestration**: Automated agent coordination with capability-based routing and load balancing
-- **Performance Optimization**: Sub-100ms response times with intelligent caching and request optimization
-- **Scalability**: Container-native architecture supporting thousands of concurrent agent interactions
+- **Performance Optimization**: Optimized response times with caching and request optimization
+- **Scalability**: Container-native architecture for concurrent agent interactions
 
 ### **Framework-Agnostic Integration**
 - **Native Protocol Support**: Direct integration with MCP, LangChain, CrewAI, AutoGen, and OpenAI frameworks
@@ -144,13 +144,13 @@ curl http://localhost:4050/api/v1/coordination-status
 | **AutoGen** | ✅ **PRODUCTION** | Conversational agents, multi-agent orchestration | Protocol bridge integration |
 | **OpenAI Functions** | ✅ **PRODUCTION** | Function calling, tool integration | OpenAPI specification mapping |
 
-### **🔧 ACTIVE DEVELOPMENT**
+### **🔧 ROADMAP**
 
 | Component | Priority | Status | Target |
 |-----------|----------|--------|---------|
-| **Orchestration Engine** | **HIGH** | 🚧 Development | Enhanced multi-agent coordination |
-| **Enterprise Dashboard** | **MEDIUM** | 🚧 Development | Management interface for enterprise deployments |
-| **Advanced Compliance** | **HIGH** | 🚧 Planning | Additional regulatory frameworks and automated reporting |
+| **Orchestration Engine** | **HIGH** | Planned | Enhanced multi-agent coordination |
+| **Enterprise Dashboard** | **MEDIUM** | Planned | Management interface for enterprise deployments |
+| **Advanced Compliance** | **HIGH** | Planned | Additional regulatory frameworks and automated reporting |
 
 ## **🛡️ Enterprise Security and Compliance**
 
@@ -215,8 +215,8 @@ info:
         frameworks: ["mcp", "langchain", "crewai", "openai"]
         compliance: ["iso-42001", "gdpr", "hipaa"]
         performance:
-          response_time_ms: { target: 100, max: 500 }
-          throughput_rps: { target: 1000, max: 5000 }
+          response_time_ms: { target: 200, max: 1000 }
+          throughput_rps: { target: 100, max: 500 }
     protocols: ["openapi", "mcp", "uadp", "a2a"] # Supported protocol list
     framework_integration:                     # Framework-specific configurations
       mcp:
@@ -229,10 +229,10 @@ info:
         role_mapping: "specialist"
         collaboration_mode: "sequential"
     performance:                               # Performance characteristics
-      response_time_ms: { target: 100, max: 500 }
-      memory_usage_mb: { target: 50, max: 200 }
-      cpu_utilization: { target: 10, max: 25 }
-      throughput_rps: { target: 1000, max: 10000 }
+      response_time_ms: { target: 200, max: 1000 }
+      memory_usage_mb: { target: 100, max: 500 }
+      cpu_utilization: { target: 20, max: 50 }
+      throughput_rps: { target: 100, max: 1000 }
     security:                                  # Security configuration
       authentication: ["api_key", "jwt", "oauth2"]
       encryption: "tls_1_3"
