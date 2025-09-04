@@ -1,0 +1,325 @@
+apiVersion: open-standards-scalable-agents/v0.1.8
+kind: Agent
+metadata:
+  name: data-analyst-observable
+  version: 1.0.0
+  namespace: analytics
+  description: Data analyst agent with comprehensive observability
+  labels:
+    tier: advanced
+    domain: data-analysis
+    framework: langchain
+    observability: enabled
+  annotations:
+    ossa.io/conformance-level: advanced
+    ossa.io/security-level: enhanced
+    ossa.io/observability-version: v0.1.8
+
+spec:
+  agent:
+    name: "Observable Data Analyst"
+    expertise: "Data analysis, visualization, statistical analysis, and business intelligence with comprehensive observability and monitoring"
+    description: "An intelligent data analyst agent capable of processing datasets, generating insights, creating visualizations, and providing statistical analysis with full tracing and metrics collection."
+    personality: "Analytical, detail-oriented, and precise with clear communication of findings"
+
+  capabilities:
+    - name: analyze_dataset
+      description: "Analyze datasets and provide statistical insights"
+      input_schema:
+        type: object
+        required: ["data_source"]
+        properties:
+          data_source:
+            type: string
+            description: "Path to dataset or connection string"
+          analysis_type:
+            type: string
+            enum: ["descriptive", "predictive", "diagnostic", "prescriptive"]
+            default: "descriptive"
+          format:
+            type: string
+            enum: ["csv", "json", "parquet", "sql"]
+            default: "csv"
+      output_schema:
+        type: object
+        properties:
+          insights:
+            type: array
+            items:
+              type: object
+          visualizations:
+            type: array
+            items:
+              type: object
+          recommendations:
+            type: array
+            items:
+              type: string
+      timeout_ms: 60000
+      streaming: true
+
+    - name: generate_report
+      description: "Generate comprehensive data analysis reports"
+      input_schema:
+        type: object
+        required: ["analysis_results", "format"]
+        properties:
+          analysis_results:
+            type: object
+            description: "Results from dataset analysis"
+          format:
+            type: string
+            enum: ["pdf", "html", "markdown", "powerpoint"]
+            default: "html"
+          template:
+            type: string
+            description: "Report template to use"
+      output_schema:
+        type: object
+        properties:
+          report_url:
+            type: string
+          summary:
+            type: string
+          sections:
+            type: array
+            items:
+              type: object
+      timeout_ms: 45000
+      streaming: false
+
+    - name: create_visualization
+      description: "Create data visualizations and charts"
+      input_schema:
+        type: object
+        required: ["data", "chart_type"]
+        properties:
+          data:
+            type: object
+            description: "Data to visualize"
+          chart_type:
+            type: string
+            enum: ["bar", "line", "scatter", "pie", "heatmap", "histogram"]
+          title:
+            type: string
+          styling:
+            type: object
+      output_schema:
+        type: object
+        properties:
+          chart_url:
+            type: string
+          chart_config:
+            type: object
+          interactive:
+            type: boolean
+      timeout_ms: 30000
+      streaming: false
+
+  frameworks:
+    mcp:
+      enabled: true
+      tools:
+        - "data-processor"
+        - "visualization-engine"
+        - "statistical-analyzer"
+    
+    langchain:
+      enabled: true
+      tools:
+        - "pandas-agent"
+        - "sql-agent"
+        - "plotting-agent"
+    
+    openai:
+      enabled: true
+      functions:
+        - name: "analyze_data"
+          description: "Analyze structured data"
+        - name: "generate_insights"
+          description: "Generate business insights"
+
+  security:
+    authentication: oauth2
+    authorization: rbac
+    audit_logging: true
+    data_classification: confidential
+    encryption:
+      in_transit: true
+      at_rest: true
+
+  protocols:
+    - openapi
+    - mcp
+    - http
+    - websocket
+
+  api:
+    specification: "./openapi/data-analyst-spec.yaml"
+    base_url: "https://api.analytics.company.com/v1"
+    endpoints:
+      analyze: "/analyze"
+      report: "/report"
+      visualize: "/visualize"
+
+  resources:
+    - name: "primary-database"
+      type: "dataset"
+      uri: "postgresql://db.company.com/analytics"
+      access: "read"
+    - name: "ml-models"
+      type: "model"
+      uri: "s3://company-ml-models/analytics/"
+      access: "read"
+
+# OSSA Observability Configuration
+x-ossa-observability:
+  enabled: true
+  version: "0.1.8"
+
+  tracing:
+    enabled: true
+    serviceName: "ossa-data-analyst-observable"
+    environment: "production"
+    sampleRate: 0.8
+
+    openTelemetry:
+      enabled: true
+      exporters: ["otlp", "console"]
+      endpoint: "https://otel.company.com/v1/traces"
+      headers:
+        authorization: "Bearer ${OTEL_API_KEY}"
+
+    traceloop:
+      enabled: true
+      apiKey: "${TRACELOOP_API_KEY}"
+      endpoint: "https://api.traceloop.com"
+      batchSize: 50
+      flushInterval: 10000
+
+    langfuse:
+      enabled: true
+      publicKey: "${LANGFUSE_PUBLIC_KEY}"
+      secretKey: "${LANGFUSE_SECRET_KEY}"
+      baseUrl: "https://cloud.langfuse.com"
+      flushInterval: 15000
+
+  metrics:
+    enabled: true
+    collectors: ["prometheus", "custom"]
+
+    builtInMetrics:
+      agentInvocations: true
+      agentLatency: true
+      agentErrors: true
+      llmTokenUsage: true
+      llmLatency: true
+      mcpOperations: true
+
+    customMetrics:
+      - name: "dataset_size_processed"
+        type: "histogram"
+        description: "Size of datasets processed by the agent"
+        labels: ["data_format", "analysis_type"]
+      
+      - name: "insights_generated"
+        type: "counter"
+        description: "Total number of insights generated"
+        labels: ["insight_type", "confidence_level"]
+      
+      - name: "report_generation_time"
+        type: "histogram"
+        description: "Time taken to generate reports"
+        labels: ["format", "complexity"]
+
+    export:
+      prometheus:
+        enabled: true
+        port: 9091
+        endpoint: "/metrics"
+
+  logging:
+    enabled: true
+    level: "info"
+    format: "json"
+    targets: ["console", "file"]
+
+    file:
+      enabled: true
+      path: "./logs/data-analyst-observable.log"
+      maxSize: "50MB"
+      maxFiles: 10
+      rotate: true
+
+    includeFields:
+      agentId: true
+      agentType: true
+      capability: true
+      traceId: true
+      spanId: true
+      timestamp: true
+      duration: true
+      success: true
+      error: true
+      metadata: true
+
+  dashboard:
+    enabled: true
+    port: 3001
+    auth:
+      enabled: true
+      username: "analyst"
+      password: "${DASHBOARD_PASSWORD}"
+    refreshInterval: 20000
+    retentionPeriod: "30d"
+
+  privacy:
+    redactPII: true
+    redactSecrets: true
+    allowedFields:
+      - "agentId"
+      - "agentType"
+      - "capability"
+      - "timestamp"
+      - "duration"
+      - "success"
+      - "error"
+      - "tokenCount"
+      - "datasetSize"
+      - "analysisType"
+    redactedFields:
+      - "apiKey"
+      - "password"
+      - "token"
+      - "secret"
+      - "email"
+      - "phone"
+      - "ssn"
+      - "customer_id"
+      - "personal_data"
+
+  alerting:
+    enabled: true
+    rules:
+      - name: "high_error_rate"
+        condition: "error_rate > 0.05"
+        severity: "high"
+        actions: ["log", "webhook"]
+      
+      - name: "slow_response_time"
+        condition: "avg_latency > 30000"
+        severity: "medium"
+        actions: ["log"]
+      
+      - name: "token_usage_spike"
+        condition: "token_usage > 100000 in 5m"
+        severity: "medium"
+        actions: ["log", "webhook"]
+
+    channels:
+      webhook:
+        enabled: true
+        url: "https://alerts.company.com/webhook/ossa"
+        headers:
+          authorization: "Bearer ${WEBHOOK_TOKEN}"
+          content-type: "application/json"
