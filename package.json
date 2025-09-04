@@ -7,7 +7,8 @@
   "bin": {
     "ossa": "bin/ossa",
     "ossa-validate": "lib/tools/validation/validate-ossa.js",
-    "ossa-langchain": "lib/integrations/langchain/langchain-cli.js"
+    "ossa-langchain": "lib/integrations/langchain/langchain-cli.js",
+    "ossa-crewai": "lib/integrations/crewai/cli.js"
   },
   "scripts": {
     "validate": "node lib/cli.js",
@@ -19,6 +20,10 @@
     "observability:test": "node examples/observability/quick-test.js",
     "observability:dashboard": "node lib/cli.js --dashboard",
     "test:observability": "npm run validate examples/observability/agent-with-full-observability.yml",
+    "crewai:basic": "node examples/crewai/basic-team-example.js",
+    "crewai:patterns": "node examples/crewai/coordination-patterns-demo.js",
+    "crewai:observability": "node examples/crewai/observability-demo.js",
+    "test:crewai": "ossa-crewai validate -i examples/01-agent-basic-ossa-v0.1.2.yml",
     "lint": "echo 'No linting configured'",
     "clean": "find . -name 'node_modules' -type d -prune -exec rm -rf {} +",
     "build": "echo \"OSSA package ready for publication\"",
@@ -71,6 +76,7 @@
     "ROADMAP.md"
   ],
   "dependencies": {
+    "@ag-ui/crewai": "^0.0.2",
     "@anthropic-ai/dxt": "^0.2.6",
     "@langchain/anthropic": "^0.3.26",
     "@langchain/community": "^0.3.54",
@@ -88,8 +94,11 @@
     "@traceloop/instrumentation-openai": "^0.18.0",
     "@traceloop/node-server-sdk": "^0.18.1",
     "axios": "^1.11.0",
+    "commander": "^14.0.0",
+    "crewai-ts": "^0.2.0",
     "express": "^5.1.0",
     "glob": "^10.4.5",
+    "jcrewai": "^0.1.0",
     "js-yaml": "^4.1.0",
     "langchain": "^0.3.32",
     "langfuse": "^3.38.5",
