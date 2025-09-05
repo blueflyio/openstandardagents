@@ -1,17 +1,21 @@
 {
   "name": "@bluefly/open-standards-scalable-agents",
-  "version": "0.1.7",
+  "version": "0.1.8",
   "description": "Open Standards for Scalable Agents (OSSA) - Research-enhanced specification for universal AI agent interoperability with ACTA and memory systems integration",
   "main": "lib/cli.js",
   "type": "module",
   "bin": {
     "ossa": "bin/ossa",
+    "ossa-working": "bin/ossa-working",
     "ossa-validate": "lib/tools/validation/validate-ossa.js"
   },
   "scripts": {
     "validate": "node lib/cli.js",
     "validate:legacy": "node lib/tools/validation/validate-ossa-v0.1.2.js",
-    "test": "npm run validate examples/",
+    "test": "node bin/ossa-working test",
+    "demo": "node bin/ossa-working demo",
+    "serve": "node services/validation-server.js",
+    "workflow-demo": "node examples/end-to-end/complete-workflow-demo.js",
     "lint": "echo 'No linting configured'",
     "clean": "find . -name 'node_modules' -type d -prune -exec rm -rf {} +",
     "build": "echo \"OSSA package ready for publication\"",
