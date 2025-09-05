@@ -1,0 +1,317 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ossa.agents/schemas/v0.1.8/graphql-schema.json",
+  "title": "OSSA GraphQL Schema Definition v0.1.8",
+  "description": "GraphQL schema structure for OSSA v0.1.8 API-first agents",
+  "type": "object",
+  "required": ["version", "schema"],
+  "properties": {
+    "version": {
+      "type": "string",
+      "const": "0.1.8"
+    },
+    "schema": {
+      "type": "object",
+      "required": ["types", "queries"],
+      "properties": {
+        "types": {
+          "type": "object",
+          "properties": {
+            "Agent": {
+              "$ref": "#/$defs/graphql_type"
+            },
+            "Capability": {
+              "$ref": "#/$defs/graphql_type"
+            },
+            "HealthStatus": {
+              "$ref": "#/$defs/graphql_type"
+            },
+            "Metric": {
+              "$ref": "#/$defs/graphql_type"
+            }
+          },
+          "additionalProperties": {
+            "$ref": "#/$defs/graphql_type"
+          }
+        },
+        "queries": {
+          "type": "object",
+          "required": ["health", "capabilities"],
+          "properties": {
+            "health": {
+              "$ref": "#/$defs/graphql_query"
+            },
+            "capabilities": {
+              "$ref": "#/$defs/graphql_query"
+            },
+            "metrics": {
+              "$ref": "#/$defs/graphql_query"
+            },
+            "agents": {
+              "$ref": "#/$defs/graphql_query"
+            }
+          },
+          "additionalProperties": {
+            "$ref": "#/$defs/graphql_query"
+          }
+        },
+        "mutations": {
+          "type": "object",
+          "properties": {
+            "executeCapability": {
+              "$ref": "#/$defs/graphql_mutation"
+            },
+            "registerAgent": {
+              "$ref": "#/$defs/graphql_mutation"
+            },
+            "updateConfiguration": {
+              "$ref": "#/$defs/graphql_mutation"
+            }
+          },
+          "additionalProperties": {
+            "$ref": "#/$defs/graphql_mutation"
+          }
+        },
+        "subscriptions": {
+          "type": "object",
+          "properties": {
+            "healthUpdates": {
+              "$ref": "#/$defs/graphql_subscription"
+            },
+            "metricsStream": {
+              "$ref": "#/$defs/graphql_subscription"
+            },
+            "agentEvents": {
+              "$ref": "#/$defs/graphql_subscription"
+            }
+          },
+          "additionalProperties": {
+            "$ref": "#/$defs/graphql_subscription"
+          }
+        },
+        "directives": {
+          "type": "object",
+          "properties": {
+            "@auth": {
+              "$ref": "#/$defs/graphql_directive"
+            },
+            "@rateLimit": {
+              "$ref": "#/$defs/graphql_directive"
+            },
+            "@deprecated": {
+              "$ref": "#/$defs/graphql_directive"
+            }
+          },
+          "additionalProperties": {
+            "$ref": "#/$defs/graphql_directive"
+          }
+        }
+      }
+    },
+    "federation": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "service_name": {
+          "type": "string"
+        },
+        "entities": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "authentication": {
+      "type": "object",
+      "properties": {
+        "required": {
+          "type": "boolean"
+        },
+        "schemes": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["bearer", "api_key", "oauth2"]
+          }
+        }
+      }
+    },
+    "rate_limiting": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "default_limit": {
+          "type": "integer"
+        },
+        "window": {
+          "type": "string",
+          "enum": ["second", "minute", "hour", "day"]
+        }
+      }
+    }
+  },
+  "$defs": {
+    "graphql_type": {
+      "type": "object",
+      "required": ["kind"],
+      "properties": {
+        "kind": {
+          "type": "string",
+          "enum": ["OBJECT", "SCALAR", "ENUM", "INPUT_OBJECT", "INTERFACE", "UNION"]
+        },
+        "description": {
+          "type": "string"
+        },
+        "fields": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/graphql_field"
+          }
+        },
+        "implements": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "graphql_field": {
+      "type": "object",
+      "required": ["type"],
+      "properties": {
+        "type": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "nullable": {
+          "type": "boolean"
+        },
+        "list": {
+          "type": "boolean"
+        },
+        "args": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/graphql_argument"
+          }
+        },
+        "directives": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "graphql_argument": {
+      "type": "object",
+      "required": ["type"],
+      "properties": {
+        "type": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "required": {
+          "type": "boolean"
+        },
+        "default_value": true
+      }
+    },
+    "graphql_query": {
+      "type": "object",
+      "required": ["return_type"],
+      "properties": {
+        "return_type": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "args": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/graphql_argument"
+          }
+        },
+        "complexity": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    },
+    "graphql_mutation": {
+      "type": "object",
+      "required": ["return_type"],
+      "properties": {
+        "return_type": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "args": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/graphql_argument"
+          }
+        },
+        "side_effects": {
+          "type": "boolean"
+        }
+      }
+    },
+    "graphql_subscription": {
+      "type": "object",
+      "required": ["return_type"],
+      "properties": {
+        "return_type": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "args": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/graphql_argument"
+          }
+        },
+        "trigger": {
+          "type": "string"
+        }
+      }
+    },
+    "graphql_directive": {
+      "type": "object",
+      "properties": {
+        "description": {
+          "type": "string"
+        },
+        "locations": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["QUERY", "MUTATION", "SUBSCRIPTION", "FIELD", "FIELD_DEFINITION", "OBJECT", "ARGUMENT_DEFINITION"]
+          }
+        },
+        "args": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/graphql_argument"
+          }
+        }
+      }
+    }
+  }
+}

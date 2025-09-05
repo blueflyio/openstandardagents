@@ -1,0 +1,840 @@
+# OSSA Agent Production Schema v0.1.8
+# Level 3: Production-ready agent with comprehensive security and monitoring
+# Enterprise features with compliance and performance optimization
+
+type: object
+required:
+  - name
+  - version
+  - expertise
+  - capabilities
+  - frameworks
+  - openapi
+  - security
+  - monitoring
+properties:
+  name:
+    type: string
+    pattern: '^[a-z0-9-]+$'
+    minLength: 3
+    maxLength: 50
+    description: Agent identifier (lowercase, alphanumeric, hyphens)
+    
+  version:
+    type: string
+    pattern: '^[0-9]+\.[0-9]+\.[0-9]+$'
+    description: Agent version (semantic versioning)
+    
+  expertise:
+    type: string
+    maxLength: 500
+    description: Detailed description of agent's domain expertise
+    
+  description:
+    type: string
+    maxLength: 2000
+    description: Comprehensive agent description with use cases
+    
+  capabilities:
+    type: array
+    minItems: 1
+    items:
+      type: object
+      required:
+        - name
+        - description
+      properties:
+        name:
+          type: string
+          pattern: '^[a-z0-9_]+$'
+          description: Capability identifier
+          
+        description:
+          type: string
+          maxLength: 200
+          description: Capability description
+          
+        input_schema:
+          type: string
+          description: Path to input schema file
+          
+        output_schema:
+          type: string
+          description: Path to output schema file
+          
+        frameworks:
+          type: array
+          items:
+            type: string
+            enum: ["langchain", "crewai", "openai", "anthropic", "google", "autogen", "mcp"]
+          description: Framework compatibility for this capability
+          
+        sla:
+          type: string
+          pattern: '^[0-9]+(\.[0-9]+)?%$'
+          description: Service level agreement (e.g., "99.9%")
+          
+        cost_estimate:
+          type: object
+          properties:
+            tokens_per_request:
+              type: integer
+              minimum: 1
+              
+            cost_per_request:
+              type: number
+              minimum: 0
+              
+          additionalProperties: false
+          
+      additionalProperties: false
+    description: Production-grade capabilities with SLA and cost estimates
+    
+  openapi:
+    type: object
+    required:
+      - version
+      - specification
+    properties:
+      version:
+        type: string
+        enum: ["3.0.0", "3.0.1", "3.0.2", "3.0.3", "3.1.0"]
+        description: OpenAPI specification version
+        
+      specification:
+        type: string
+        description: Path to OpenAPI specification file
+        
+      validation:
+        type: boolean
+        default: true
+        description: Enable OpenAPI validation
+        
+    additionalProperties: false
+    
+  frameworks:
+    type: object
+    description: Comprehensive framework compatibility
+    properties:
+      mcp:
+        type: object
+        properties:
+          enabled:
+            type: boolean
+            default: true
+            
+          server_config:
+            type: object
+            properties:
+              name:
+                type: string
+              version:
+                type: string
+              description:
+                type: string
+              tools:
+                type: array
+                items:
+                  type: object
+            additionalProperties: false
+            
+          performance_config:
+            type: object
+            properties:
+              timeout:
+                type: integer
+                minimum: 1000
+                default: 30000
+              retry_attempts:
+                type: integer
+                minimum: 0
+                default: 3
+            additionalProperties: false
+            
+        additionalProperties: false
+        
+      langchain:
+        type: object
+        properties:
+          enabled:
+            type: boolean
+            default: false
+            
+          tools_format:
+            type: string
+            enum: ["function_calling", "tool_calling", "structured_output"]
+            default: "function_calling"
+            
+          chain_type:
+            type: string
+            enum: ["llm", "conversation", "sequential", "map_reduce"]
+            
+          memory_type:
+            type: string
+            enum: ["buffer", "summary", "conversation_kg", "vector_store"]
+            
+        additionalProperties: false
+        
+      crewai:
+        type: object
+        properties:
+          enabled:
+            type: boolean
+            default: false
+            
+          role:
+            type: string
+            maxLength: 100
+            
+          goal:
+            type: string
+            maxLength: 200
+            
+          backstory:
+            type: string
+            maxLength: 500
+            
+          tools:
+            type: array
+            items:
+              type: string
+              
+          delegation:
+            type: boolean
+            default: false
+            
+        additionalProperties: false
+        
+    additionalProperties:
+      type: object
+      
+  security:
+    type: object
+    required:
+      - authentication
+      - authorization
+    description: Production security configuration
+    properties:
+      authentication:
+        type: object
+        required:
+          - type
+          - required
+        properties:
+          type:
+            type: string
+            enum: ["api_key", "bearer", "oauth2", "jwt", "mtls"]
+            
+          required:
+            type: boolean
+            default: true
+            
+          header:
+            type: string
+            description: Authentication header name
+            
+          validation:
+            type: object
+            properties:
+              issuer:
+                type: string
+                format: uri
+              audience:
+                type: string
+              algorithm:
+                type: string
+                enum: ["RS256", "HS256", "ES256"]
+            additionalProperties: false
+            
+        additionalProperties: false
+        
+      authorization:
+        type: object
+        required:
+          - enabled
+        properties:
+          enabled:
+            type: boolean
+            default: true
+            
+          model:
+            type: string
+            enum: ["rbac", "abac"]
+            default: "rbac"
+            
+          policies:
+            type: array
+            items:
+              type: object
+              properties:
+                role:
+                  type: string
+                permissions:
+                  type: array
+                  items:
+                    type: string
+              additionalProperties: false
+              
+        additionalProperties: false
+        
+      encryption:
+        type: object
+        properties:
+          in_transit:
+            type: boolean
+            default: true
+            
+          at_rest:
+            type: boolean
+            default: false
+            
+          algorithms:
+            type: array
+            items:
+              type: string
+              enum: ["AES-256-GCM", "ChaCha20-Poly1305"]
+              
+        additionalProperties: false
+        
+      rate_limiting:
+        type: object
+        properties:
+          enabled:
+            type: boolean
+            default: true
+            
+          requests_per_minute:
+            type: integer
+            minimum: 1
+            default: 100
+            
+          burst_limit:
+            type: integer
+            minimum: 1
+            default: 200
+            
+          strategy:
+            type: string
+            enum: ["fixed_window", "sliding_window", "token_bucket"]
+            default: "sliding_window"
+            
+        additionalProperties: false
+        
+    additionalProperties: false
+    
+  monitoring:
+    type: object
+    required:
+      - metrics
+      - health_checks
+      - logging
+    description: Comprehensive monitoring configuration
+    properties:
+      metrics:
+        type: object
+        required:
+          - enabled
+        properties:
+          enabled:
+            type: boolean
+            default: true
+            
+          port:
+            type: integer
+            minimum: 1024
+            maximum: 65535
+            default: 9090
+            
+          path:
+            type: string
+            default: "/metrics"
+            
+          format:
+            type: string
+            enum: ["prometheus", "openmetrics"]
+            default: "prometheus"
+            
+          custom_metrics:
+            type: array
+            items:
+              type: string
+            description: Custom business metrics
+            
+        additionalProperties: false
+        
+      health_checks:
+        type: object
+        properties:
+          liveness:
+            type: object
+            properties:
+              path:
+                type: string
+                default: "/health/live"
+              interval:
+                type: integer
+                default: 30
+              timeout:
+                type: integer
+                default: 5
+            additionalProperties: false
+            
+          readiness:
+            type: object
+            properties:
+              path:
+                type: string
+                default: "/health/ready"
+              interval:
+                type: integer
+                default: 10
+              timeout:
+                type: integer
+                default: 3
+            additionalProperties: false
+            
+        additionalProperties: false
+        
+      logging:
+        type: object
+        required:
+          - level
+          - format
+        properties:
+          level:
+            type: string
+            enum: ["debug", "info", "warn", "error"]
+            default: "info"
+            
+          format:
+            type: string
+            enum: ["json", "text"]
+            default: "json"
+            
+          structured:
+            type: boolean
+            default: true
+            
+          destinations:
+            type: array
+            items:
+              type: string
+              enum: ["stdout", "stderr", "file", "syslog", "elasticsearch"]
+            default: ["stdout"]
+            
+          sampling:
+            type: object
+            properties:
+              error:
+                type: number
+                minimum: 0
+                maximum: 1
+                default: 1.0
+              warning:
+                type: number
+                minimum: 0
+                maximum: 1
+                default: 1.0
+              info:
+                type: number
+                minimum: 0
+                maximum: 1
+                default: 0.1
+            additionalProperties: false
+            
+        additionalProperties: false
+        
+      tracing:
+        type: object
+        properties:
+          enabled:
+            type: boolean
+            default: true
+            
+          provider:
+            type: string
+            enum: ["jaeger", "zipkin", "datadog", "otel"]
+            
+          sampling_rate:
+            type: number
+            minimum: 0
+            maximum: 1
+            default: 0.1
+            
+          endpoint:
+            type: string
+            format: uri
+            
+        additionalProperties: false
+        
+      alerting:
+        type: object
+        properties:
+          enabled:
+            type: boolean
+            default: true
+            
+          rules:
+            type: array
+            items:
+              type: object
+              properties:
+                name:
+                  type: string
+                condition:
+                  type: string
+                severity:
+                  type: string
+                  enum: ["info", "warning", "critical"]
+                channels:
+                  type: array
+                  items:
+                    type: string
+              additionalProperties: false
+              
+        additionalProperties: false
+        
+    additionalProperties: false
+    
+  performance:
+    type: object
+    description: Performance optimization configuration
+    properties:
+      timeout:
+        type: integer
+        minimum: 1000
+        default: 30000
+        description: Request timeout in milliseconds
+        
+      retry:
+        type: object
+        properties:
+          enabled:
+            type: boolean
+            default: true
+            
+          max_attempts:
+            type: integer
+            minimum: 0
+            default: 3
+            
+          backoff:
+            type: string
+            enum: ["linear", "exponential", "fixed"]
+            default: "exponential"
+            
+          initial_delay:
+            type: integer
+            minimum: 100
+            default: 1000
+            
+        additionalProperties: false
+        
+      circuit_breaker:
+        type: object
+        properties:
+          enabled:
+            type: boolean
+            default: true
+            
+          failure_threshold:
+            type: integer
+            minimum: 1
+            default: 5
+            
+          reset_timeout:
+            type: integer
+            minimum: 1000
+            default: 60000
+            
+        additionalProperties: false
+        
+      caching:
+        type: object
+        properties:
+          enabled:
+            type: boolean
+            default: true
+            
+          ttl:
+            type: integer
+            minimum: 60
+            default: 3600
+            description: Cache TTL in seconds
+            
+          strategy:
+            type: string
+            enum: ["lru", "lfu", "ttl"]
+            default: "lru"
+            
+          max_size:
+            type: integer
+            minimum: 10
+            default: 1000
+            description: Maximum cache entries
+            
+        additionalProperties: false
+        
+    additionalProperties: false
+    
+  deployment:
+    type: object
+    description: Production deployment configuration
+    properties:
+      environments:
+        type: array
+        items:
+          type: string
+          enum: ["development", "staging", "production"]
+        minItems: 1
+        
+      strategy:
+        type: string
+        enum: ["recreate", "rolling_update", "blue_green", "canary"]
+        default: "rolling_update"
+        
+      scaling:
+        type: object
+        properties:
+          min_replicas:
+            type: integer
+            minimum: 1
+            default: 2
+            
+          max_replicas:
+            type: integer
+            minimum: 1
+            default: 10
+            
+          auto_scale:
+            type: boolean
+            default: true
+            
+          target_cpu_utilization:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 70
+            
+        additionalProperties: false
+        
+      resources:
+        type: object
+        properties:
+          requests:
+            type: object
+            properties:
+              cpu:
+                type: string
+                pattern: '^[0-9]+m?$'
+              memory:
+                type: string
+                pattern: '^[0-9]+[KMGT]i?$'
+            additionalProperties: false
+            
+          limits:
+            type: object
+            properties:
+              cpu:
+                type: string
+                pattern: '^[0-9]+m?$'
+              memory:
+                type: string
+                pattern: '^[0-9]+[KMGT]i?$'
+            additionalProperties: false
+            
+        additionalProperties: false
+        
+    additionalProperties: false
+    
+  compliance:
+    type: object
+    description: Basic compliance configuration
+    properties:
+      frameworks:
+        type: array
+        items:
+          type: string
+          enum: ["iso_42001", "nist_ai_rmf", "eu_ai_act", "sox", "hipaa", "gdpr"]
+        description: Applicable compliance frameworks
+        
+      data_handling:
+        type: object
+        properties:
+          classification:
+            type: string
+            enum: ["public", "internal", "confidential", "restricted"]
+            default: "internal"
+            
+          retention:
+            type: string
+            pattern: '^[0-9]+[dmy]$'
+            default: "90d"
+            
+          encryption_required:
+            type: boolean
+            default: true
+            
+        additionalProperties: false
+        
+      audit:
+        type: object
+        properties:
+          enabled:
+            type: boolean
+            default: true
+            
+          level:
+            type: string
+            enum: ["basic", "detailed", "comprehensive"]
+            default: "detailed"
+            
+        additionalProperties: false
+        
+    additionalProperties: false
+    
+  context_management:
+    type: object
+    description: Advanced context and token management
+    properties:
+      max_tokens:
+        type: integer
+        minimum: 1000
+        maximum: 200000
+        default: 16000
+        
+      optimization:
+        type: object
+        properties:
+          strategy:
+            type: string
+            enum: ["adaptive", "fixed", "progressive", "sliding_window"]
+            default: "adaptive"
+            
+          compression:
+            type: boolean
+            default: true
+            
+          summarization:
+            type: boolean
+            default: true
+            
+          caching:
+            type: boolean
+            default: true
+            
+        additionalProperties: false
+        
+      memory:
+        type: object
+        properties:
+          type:
+            type: string
+            enum: ["short_term", "long_term", "persistent", "vector_memory"]
+            default: "long_term"
+            
+          capacity:
+            type: integer
+            minimum: 10
+            default: 100
+            
+        additionalProperties: false
+        
+    additionalProperties: false
+    
+  data:
+    type: object
+    description: Agent data and knowledge configuration
+    properties:
+      training_data:
+        type: string
+        description: Path to training data
+        
+      knowledge_base:
+        type: string
+        description: Path to knowledge base
+        
+      examples:
+        type: string
+        description: Path to example interactions
+        
+      configurations:
+        type: string
+        description: Path to additional configurations
+        
+      vector_store:
+        type: object
+        properties:
+          enabled:
+            type: boolean
+            default: false
+            
+          provider:
+            type: string
+            enum: ["pinecone", "weaviate", "qdrant", "chroma"]
+            
+          collection:
+            type: string
+            
+          dimensions:
+            type: integer
+            minimum: 1
+            
+        additionalProperties: false
+        
+    additionalProperties: false
+    
+  metadata:
+    type: object
+    description: Comprehensive metadata
+    properties:
+      author:
+        type: string
+        maxLength: 100
+        
+      organization:
+        type: string
+        maxLength: 100
+        
+      license:
+        type: string
+        maxLength: 50
+        
+      repository:
+        type: string
+        format: uri
+        
+      documentation:
+        type: string
+        format: uri
+        
+      support:
+        type: string
+        format: email
+        
+      tags:
+        type: array
+        items:
+          type: string
+          maxLength: 30
+        maxItems: 15
+        
+      certification:
+        type: object
+        properties:
+          level:
+            type: string
+            enum: ["bronze", "silver", "gold"]
+            
+          issued_by:
+            type: string
+            
+          valid_until:
+            type: string
+            format: date
+            
+        additionalProperties: false
+        
+    additionalProperties: false
+    
+additionalProperties: false

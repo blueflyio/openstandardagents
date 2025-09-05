@@ -11,6 +11,9 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as yaml from 'js-yaml';
 import { addUADPCommands } from './uadp-commands.js';
+import { createOrchestrateCommands } from './commands/orchestrate.js';
+import { createStandardizeCommands } from './commands/standardize.js';
+import { createAgentForgeIntegration } from './commands/agent-forge-integration.js';
 
 // Configure program
 program
@@ -62,6 +65,15 @@ program
 
 // Add UADP discovery commands
 addUADPCommands(program);
+
+// Add orchestration commands
+program.addCommand(createOrchestrateCommands());
+
+// Add standardization commands  
+program.addCommand(createStandardizeCommands());
+
+// Add agent-forge integration
+program.addCommand(createAgentForgeIntegration());
 
 // Implementation functions
 
