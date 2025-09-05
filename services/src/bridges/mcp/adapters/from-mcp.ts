@@ -3,191 +3,99 @@
  * Converts MCP tools and resources back to OSSA format
  */
 
-import { MCPResource, MCPTool } from '../../types/mcp';
-import { OSSACapability, OSSAResourceRef } from '../../types/ossa-capability';
+import { MCPResource, MCPTool } from '../../../types/mcp';
+import { OSSACapability, OSSAResourceRef } from '../../../types/ossa-capability';
 
 /**
  * Convert MCP tool to OSSA capability
- * Implements reverse mapping from to-mcp.ts
+ * Reverse of the to-mcp conversion
  */
 export function mcpToolToCapability(tool: MCPTool): OSSACapability {
-    // Extract agent ID and capability name from tool name if possible
-    const { agentId, capabilityName } = parseStableToolName(tool.name);
+    // Convert kebab-case back to readable name
+    const capabilityName = convertFromKebabCase(tool.name);
 
     return {
-        id: capabilityName || tool.name,
-        name: capabilityName || tool.name,
+        name: capabilityName,
         description: tool.description,
         inputSchema: tool.inputSchema,
         outputSchema: tool.outputSchema,
-        resources: [], // MCP tools don't carry resource references
-        hints: {
-            streaming: false, // Default to non-streaming
-            timeoutMs: 30000  // Default 30 second timeout
+        metadata: {
+            originalMcpName: tool.name
         }
     };
 }
 
 /**
- * Convert MCP resource to OSSA resource reference
+ * Convert MCP resources to OSSA resource references
  */
-export function mcpResourceToOSSA(res: MCPResource): OSSAResourceRef {
-    // Infer kind from URI scheme
-    const kind = inferResourceKind(res.uri);
-
-    return {
-        id: res.name || extractIdFromUri(res.uri),
-        kind,
-        uri: res.uri,
-        schema: res.schema
-    };
+export function mcpResourcesToOSSA(resources: MCPResource[] = []): OSSAResourceRef[] {
+    return resources.map(resource => ({
+        id: resource.name || extractIdFromUri(resource.uri),
+        uri: resource.uri,
+        schema: resource.schema,
+        metadata: {
+            description: resource.description
+        }
+    }));
 }
 
 /**
- * Parse stable tool name to extract agent ID and capability name
- * Handles format: ossa.{agentId}.{capabilityName}
- */
-function parseStableToolName(toolName: string): { agentId: string; capabilityName: string } {
-    const parts = toolName.split('.');
-
-    if (parts.length >= 3 && parts[0] === 'ossa') {
-        return {
-            agentId: parts[1],
-            capabilityName: parts.slice(2).join('.')
-        };
-    }
-
-    // Fallback: treat as capability name only
-    return {
-        agentId: 'unknown',
-        capabilityName: toolName
-    };
-}
-
-/**
- * Infer resource kind from URI scheme
- */
-function inferResourceKind(uri: string): OSSAResourceRef['kind'] {
-    const scheme = uri.split('://')[0];
-
-    switch (scheme) {
-        case 'http':
-        case 'https':
-            return 'endpoint';
-        case 'file':
-            return 'document';
-        case 'secret':
-            return 'secret';
-        case 'dataset':
-            return 'dataset';
-        case 'collection':
-            return 'collection';
-        case 'ossa':
-            return 'document'; // OSSA resources are typically documents
-        default:
-            return 'document'; // Default to document
-    }
-}
-
-/**
- * Extract ID from URI
+ * Extract identifier from OSSA resource URI
+ * Handles ossa:// protocol URIs
  */
 function extractIdFromUri(uri: string): string {
-    // Try to extract meaningful ID from URI
-    const url = new URL(uri);
-    const pathParts = url.pathname.split('/').filter(Boolean);
-
-    if (pathParts.length > 0) {
-        return pathParts[pathParts.length - 1];
+    if (uri.startsWith('ossa://')) {
+        return uri.substring(7);
     }
-
-    // Fallback: use hostname or generate hash
-    return url.hostname || `resource-${Date.now()}`;
+    
+    // For other URIs, extract the last path segment as ID
+    const parts = uri.split('/');
+    return parts[parts.length - 1] || 'unknown-resource';
 }
 
 /**
- * Convert MCP server config to OSSA agent stub
- * Used for discovery and round-trip testing
+ * Convert kebab-case MCP tool names back to readable format
  */
-export function mcpServerToOSSAStub(
-    serverId: string,
-    serverName: string,
-    tools: MCPTool[],
-    resources: MCPResource[] = []
-): {
-    id: string;
-    name: string;
-    capabilities: OSSACapability[];
-    resources: OSSAResourceRef[];
-} {
-    return {
-        id: serverId,
-        name: serverName,
-        capabilities: tools.map(mcpToolToCapability),
-        resources: resources.map(mcpResourceToOSSA)
-    };
+function convertFromKebabCase(kebabName: string): string {
+    // Remove ossa. prefix if present
+    let name = kebabName.replace(/^ossa\..*?\./, '');
+    
+    // Convert kebab-case to Title Case
+    return name
+        .split('-')
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(' ');
 }
 
 /**
- * Validate MCP tool schema compatibility with OSSA
+ * Validate MCP tool format for OSSA compatibility
  */
-export function validateMCPToolCompatibility(tool: MCPTool): {
-    compatible: boolean;
-    issues: string[];
-} {
-    const issues: string[] = [];
+export function validateMcpToolForOSSA(tool: MCPTool): { valid: boolean; errors: string[] } {
+    const errors: string[] = [];
 
-    // Check required fields
     if (!tool.name) {
-        issues.push('Tool name is required');
+        errors.push('Tool name is required');
     }
 
     if (!tool.inputSchema) {
-        issues.push('Input schema is required');
+        errors.push('Input schema is required for OSSA compatibility');
     }
 
-    // Validate schema structure
-    if (tool.inputSchema && typeof tool.inputSchema !== 'object') {
-        issues.push('Input schema must be an object');
-    }
-
-    if (tool.outputSchema && typeof tool.outputSchema !== 'object') {
-        issues.push('Output schema must be an object');
-    }
-
-    // Check for valid JSON Schema structure
-    if (tool.inputSchema && !isValidJSONSchema(tool.inputSchema)) {
-        issues.push('Input schema must be valid JSON Schema');
-    }
-
-    if (tool.outputSchema && !isValidJSONSchema(tool.outputSchema)) {
-        issues.push('Output schema must be valid JSON Schema');
+    if (typeof tool.inputSchema !== 'object') {
+        errors.push('Input schema must be a valid JSON Schema object');
     }
 
     return {
-        compatible: issues.length === 0,
-        issues
+        valid: errors.length === 0,
+        errors
     };
 }
 
 /**
- * Basic JSON Schema validation
+ * Extract OSSA agent ID from MCP tool name
+ * Assumes format: ossa.{agentId}.{capability}
  */
-function isValidJSONSchema(schema: object): boolean {
-    const schemaObj = schema as any;
-
-    // Check for basic JSON Schema structure
-    if (schemaObj.type && typeof schemaObj.type !== 'string') {
-        return false;
-    }
-
-    if (schemaObj.properties && typeof schemaObj.properties !== 'object') {
-        return false;
-    }
-
-    if (schemaObj.$ref && typeof schemaObj.$ref !== 'string') {
-        return false;
-    }
-
-    return true;
+export function extractAgentIdFromToolName(toolName: string): string | null {
+    const match = toolName.match(/^ossa\.([^.]+)\./);
+    return match ? match[1] : null;
 }

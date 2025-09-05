@@ -4,7 +4,7 @@
  */
 
 import { ChildProcess, spawn } from 'child_process';
-import { MCPCallOptions, MCPCallResult, MCPServerConfig } from '../../types/mcp';
+import { MCPCallOptions, MCPCallResult, MCPServerConfig } from '../../../types/mcp';
 
 export class MCPClient {
     private process: ChildProcess | null = null;

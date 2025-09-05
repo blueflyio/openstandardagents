@@ -1,37 +1,28 @@
 /**
- * OSSA Capability Interface
- * Core contract for AI agent capabilities in OSSA format
+ * OSSA Capability Types
+ * For bridging OSSA agents to MCP protocol
  */
 
 export interface OSSACapability {
-    id: string;
     name: string;
     description?: string;
-    // Input contract (OpenAPI 3.1 schema or JSON Schema)
     inputSchema: object;
-    // Output contract (OpenAPI 3.1 schema or JSON Schema)
     outputSchema?: object;
-    // Optional resource bindings (URIs, datasets, collections)
-    resources?: OSSAResourceRef[];
-    // Execution hints (streaming, timeouts, model preference)
-    hints?: {
-        streaming?: boolean;
-        timeoutMs?: number;
-        model?: string;
-    };
+    tags?: string[];
+    metadata?: Record<string, any>;
 }
 
 export interface OSSAResourceRef {
     id: string;
-    kind: 'dataset' | 'document' | 'collection' | 'endpoint' | 'secret';
-    uri?: string;                     // canonical reference
-    schema?: object;                  // JSON Schema for resource shape
+    uri?: string;
+    schema?: object;
+    metadata?: Record<string, any>;
 }
 
 export interface OSSAAgent {
     id: string;
     name: string;
-    version?: string;
+    description?: string;
     capabilities: OSSACapability[];
     resources?: OSSAResourceRef[];
     metadata?: Record<string, any>;

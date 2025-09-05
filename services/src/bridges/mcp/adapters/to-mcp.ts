@@ -4,8 +4,8 @@
  */
 
 import { createHash } from 'crypto';
-import { MCPResource, MCPServerConfig, MCPTool } from '../../types/mcp';
-import { OSSACapability, OSSAResourceRef } from '../../types/ossa-capability';
+import { MCPResource, MCPServerConfig, MCPTool } from '../../../types/mcp';
+import { OSSACapability, OSSAResourceRef } from '../../../types/ossa-capability';
 
 /**
  * Convert OSSA capability to MCP tool

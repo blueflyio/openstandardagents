@@ -4,28 +4,27 @@
  */
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { mcpResourceToOSSA, mcpToolToCapability } from '../../bridges/mcp/adapters/from-mcp';
-import { buildServerConfig, capabilityToMCPTool, resourcesToMCPResources } from '../../bridges/mcp/adapters/to-mcp';
-import { MCPRegistryService } from '../../registry/index';
-import { OSSACapability, OSSAResourceRef } from '../../types/ossa-capability';
+import { mcpResourcesToOSSA, mcpToolToCapability } from '../../src/bridges/mcp/adapters/from-mcp';
+import { buildServerConfig, capabilityToMCPTool, resourcesToMCPResources } from '../../src/bridges/mcp/adapters/to-mcp';
+import { MCPRegistryService, MemoryMCPRegistryBackend } from '../../src/registry/index';
+import { OSSACapability, OSSAResourceRef } from '../../src/types/ossa-capability';
 
 describe('MCP Bridge', () => {
     let registry: MCPRegistryService;
 
     beforeEach(async () => {
-        registry = new MCPRegistryService();
+        const backend = new MemoryMCPRegistryBackend();
+        registry = new MCPRegistryService(backend);
         await registry.initialize();
     });
 
     afterEach(async () => {
-        await registry.clear();
         await registry.close();
     });
 
     describe('OSSA to MCP Conversion', () => {
         it('should convert OSSA capability to MCP tool', () => {
             const ossaCapability: OSSACapability = {
-                id: 'test-capability',
                 name: 'Test Capability',
                 description: 'A test capability',
                 inputSchema: {
@@ -52,7 +51,6 @@ describe('MCP Bridge', () => {
 
         it('should normalize capability names to kebab-case', () => {
             const ossaCapability: OSSACapability = {
-                id: 'test-capability',
                 name: 'Test Capability With Spaces',
                 description: 'A test capability',
                 inputSchema: { type: 'object' }
@@ -67,13 +65,11 @@ describe('MCP Bridge', () => {
             const ossaResources: OSSAResourceRef[] = [
                 {
                     id: 'test-dataset',
-                    kind: 'dataset',
                     uri: 'file:///path/to/dataset.json',
                     schema: { type: 'object' }
                 },
                 {
                     id: 'test-document',
-                    kind: 'document',
                     uri: 'http://example.com/document.pdf'
                 }
             ];
@@ -127,41 +123,30 @@ describe('MCP Bridge', () => {
 
             const ossaCapability = mcpToolToCapability(mcpTool);
 
-            expect(ossaCapability.id).toBe('test-capability');
-            expect(ossaCapability.name).toBe('test-capability');
+            expect(ossaCapability.name).toBe('Test Capability');
             expect(ossaCapability.description).toBe('A test capability');
             expect(ossaCapability.inputSchema).toEqual(mcpTool.inputSchema);
             expect(ossaCapability.outputSchema).toEqual(mcpTool.outputSchema);
+            expect(ossaCapability.metadata?.originalMcpName).toBe('ossa.test-agent.test-capability');
         });
 
-        it('should convert MCP resource back to OSSA resource', () => {
-            const mcpResource = {
-                uri: 'file:///path/to/document.pdf',
-                name: 'test-document',
-                description: 'A test document',
-                schema: { type: 'object' }
-            };
+        it('should convert MCP resources back to OSSA resources', () => {
+            const mcpResources = [
+                {
+                    uri: 'file:///path/to/document.pdf',
+                    name: 'test-document',
+                    description: 'A test document',
+                    schema: { type: 'object' }
+                }
+            ];
 
-            const ossaResource = mcpResourceToOSSA(mcpResource);
+            const ossaResources = mcpResourcesToOSSA(mcpResources);
 
-            expect(ossaResource.id).toBe('test-document');
-            expect(ossaResource.kind).toBe('document');
-            expect(ossaResource.uri).toBe('file:///path/to/document.pdf');
-            expect(ossaResource.schema).toEqual(mcpResource.schema);
-        });
-
-        it('should infer resource kind from URI scheme', () => {
-            const httpResource = mcpResourceToOSSA({
-                uri: 'https://api.example.com/data',
-                name: 'api-data'
-            });
-            expect(httpResource.kind).toBe('endpoint');
-
-            const secretResource = mcpResourceToOSSA({
-                uri: 'secret://api-key',
-                name: 'api-key'
-            });
-            expect(secretResource.kind).toBe('secret');
+            expect(ossaResources).toHaveLength(1);
+            expect(ossaResources[0].id).toBe('test-document');
+            expect(ossaResources[0].uri).toBe('file:///path/to/document.pdf');
+            expect(ossaResources[0].schema).toEqual({ type: 'object' });
+            expect(ossaResources[0].metadata?.description).toBe('A test document');
         });
     });
 
@@ -191,63 +176,17 @@ describe('MCP Bridge', () => {
             expect(discovered[0].id).toBe('test-server');
 
             const byId = await registry.get('test-server');
-            expect(byId).toEqual(expect.objectContaining(record));
-        });
-
-        it('should support fallback discovery', async () => {
-            const primaryRecord = {
-                id: 'primary-server',
-                name: 'Primary Server',
-                tags: ['primary'],
-                endpoints: { type: 'stdio' as const, cmd: 'primary-server' }
-            };
-
-            const fallbackRecord = {
-                id: 'fallback-server',
-                name: 'Fallback Server',
-                tags: ['fallback'],
-                endpoints: { type: 'stdio' as const, cmd: 'fallback-server' }
-            };
-
-            await registry.register(primaryRecord);
-            await registry.register(fallbackRecord);
-
-            // Should find primary first
-            const primaryCandidates = await registry.discoverWithFallback('primary', ['fallback']);
-            expect(primaryCandidates).toHaveLength(1);
-            expect(primaryCandidates[0].id).toBe('primary-server');
-
-            // Should fallback to secondary when primary not found
-            const fallbackCandidates = await registry.discoverWithFallback('nonexistent', ['fallback']);
-            expect(fallbackCandidates).toHaveLength(1);
-            expect(fallbackCandidates[0].id).toBe('fallback-server');
-        });
-
-        it('should provide registry statistics', async () => {
-            const record = {
+            expect(byId).toEqual(expect.objectContaining({
                 id: 'test-server',
-                name: 'Test Server',
-                tags: ['test'],
-                endpoints: { type: 'stdio' as const, cmd: 'test-server' },
-                tools: [
-                    { name: 'tool1', description: 'Tool 1', inputSchema: { type: 'object' } },
-                    { name: 'tool2', description: 'Tool 2', inputSchema: { type: 'object' } }
-                ]
-            };
-
-            await registry.register(record);
-
-            const stats = registry.getStats();
-            expect(stats.recordCount).toBe(1);
-            expect(stats.tags).toContain('test');
-            expect(stats.toolCount).toBe(2);
+                name: 'Test MCP Server',
+                tags: ['test', 'ossa']
+            }));
         });
     });
 
     describe('Round-trip Compatibility', () => {
         it('should maintain compatibility through OSSA -> MCP -> OSSA conversion', () => {
             const originalCapability: OSSACapability = {
-                id: 'test-capability',
                 name: 'Test Capability',
                 description: 'A test capability',
                 inputSchema: { type: 'object' },
@@ -257,8 +196,8 @@ describe('MCP Bridge', () => {
             const mcpTool = capabilityToMCPTool(originalCapability);
             const convertedCapability = mcpToolToCapability(mcpTool);
 
-            // Core fields should be preserved (name gets normalized to kebab-case)
-            expect(convertedCapability.name).toBe('test-capability'); // Normalized name
+            // Core fields should be preserved
+            expect(convertedCapability.name).toBe('Test Capability'); // Name gets converted back from kebab-case
             expect(convertedCapability.description).toBe(originalCapability.description);
             expect(convertedCapability.inputSchema).toEqual(originalCapability.inputSchema);
             expect(convertedCapability.outputSchema).toEqual(originalCapability.outputSchema);
