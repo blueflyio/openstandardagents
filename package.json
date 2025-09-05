@@ -1,6 +1,6 @@
 {
   "name": "@bluefly/open-standards-scalable-agents",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "description": "Open Standards for Scalable Agents (OSSA) - Research-enhanced specification for universal AI agent interoperability with ACTA and memory systems integration",
   "main": "lib/cli.js",
   "type": "module",
@@ -9,14 +9,12 @@
     "ossa-validate": "lib/tools/validation/validate-ossa.js"
   },
   "scripts": {
-    "validate": "echo '⚠️ DEPRECATED: Use CLI instead: ossa validate' && node lib/cli.js",
-    "validate:legacy": "echo '⚠️ DEPRECATED: Use CLI instead: ossa validate --legacy' && node lib/tools/validation/validate-ossa-v0.1.2.js",
-    "validate:verbose": "echo '⚠️ DEPRECATED: Use CLI instead: ossa validate --verbose' && node validate-oaas-v1.3.0.js --verbose",
-    "test": "echo '⚠️ DEPRECATED: Use CLI instead: ossa validate examples/' && npm run validate examples/",
+    "validate": "node lib/cli.js",
+    "validate:legacy": "node lib/tools/validation/validate-ossa-v0.1.2.js",
+    "test": "npm run validate examples/",
     "lint": "echo 'No linting configured'",
     "clean": "find . -name 'node_modules' -type d -prune -exec rm -rf {} +",
     "build": "echo \"OSSA package ready for publication\"",
-    "migration-help": "echo 'Migration Guide: docs/MIGRATION_GUIDE.md' && echo 'CLI Install: npm install -g @bluefly/open-standards-scalable-agents@0.1.6'",
     "version:patch": "npm version patch --no-git-tag-version",
     "version:check": "node ../common_npm/scripts/version-control.js",
     "publish:safe": "node ../common_npm/scripts/safe-publish.js",

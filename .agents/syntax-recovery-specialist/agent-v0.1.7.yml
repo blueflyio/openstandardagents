@@ -1,0 +1,475 @@
+apiVersion: open-standards-scalable-agents/v0.1.7
+kind: Agent
+metadata:
+  name: "syntax-recovery-specialist"
+  version: "1.0.0"
+  description: "OSSA v0.1.7 syntax recovery specialist with ML-powered pattern detection and automated correction across 17 NPM projects (491,492 files)"
+  author: "Open Standards for Scalable Agents Community"
+  license: "Apache-2.0"
+  created: "2025-09-04"
+  updated: "2025-09-04"
+  labels:
+    tier: "advanced"
+    category: "syntax-recovery"
+    framework-compatibility: "universal"
+    scope: "ecosystem-wide"
+
+spec:
+  # Three-Tier Conformance System
+  conformance:
+    tier: "advanced"
+    level: "enterprise"
+    certification:
+      iso_42001: "certified"
+      nist_ai_rmf: "level_4"
+      syntax_expertise: "expert_level"
+  
+  # Universal Framework Compatibility (OSSA v0.1.7 requirement)
+  framework_adapters:
+    mcp:
+      enabled: true
+      version: "2024-11-05"
+      endpoint: "/mcp"
+      tools:
+        - "detect_syntax_patterns"
+        - "learn_from_corrections"
+        - "apply_corrections"
+        - "generate_training_data"
+        - "validate_fixes"
+        - "ecosystem_analysis"
+      integration_type: "syntax_recovery_server"
+      capabilities: ["pattern_detection", "ml_learning", "automated_correction"]
+    langchain:
+      enabled: true
+      version: "0.2.x"
+      adapter_class: "SyntaxRecoveryChain"
+      chains: ["detection_chain", "correction_chain", "validation_chain"]
+      vector_store: "syntax_patterns"
+    crewai:
+      enabled: true
+      version: "0.67.x"
+      role: "syntax_recovery_coordinator"
+      goal: "Detect, learn from, and correct systematic syntax corruption across the entire LLM ecosystem"
+      backstory: "Expert syntax recovery specialist with deep knowledge of TypeScript patterns, ML-powered detection, and ecosystem-wide coordination"
+      crew_capabilities: ["pattern_analysis", "bulk_correction", "learning_optimization"]
+    autogen:
+      enabled: true
+      version: "0.2.x"
+      agent_type: "SyntaxExpert"
+      human_input_mode: "NEVER"
+      system_message: "You are a specialized syntax recovery expert capable of detecting and correcting systematic code corruption"
+      max_consecutive_auto_reply: 10
+    openai:
+      enabled: true
+      assistant_type: "syntax_recovery_specialist"
+      tools: ["pattern_detector", "syntax_corrector", "training_generator"]
+      fine_tuned_models: ["syntax-recovery-ft"]
+
+  # Core Agent Definition
+  class: "specialist"
+  category: "syntax-recovery"
+  
+  capabilities:
+    primary:
+      - "ecosystem_wide_syntax_analysis"
+      - "ml_powered_pattern_detection"
+      - "automated_syntax_correction"
+      - "learning_from_corrections"
+      - "training_data_generation"
+    secondary:
+      - "typescript_ast_analysis"
+      - "bulk_file_processing"
+      - "correction_validation"
+      - "pattern_frequency_tracking"
+      - "continuous_learning_integration"
+      - "feedback_loop_optimization"
+  
+  # Enhanced Protocol Support (v0.1.7)
+  protocols:
+    - name: "openapi"
+      version: "3.1.0"
+      required: true
+      spec_file: "./openapi.yaml"
+      async_operations: true
+    - name: "mcp"
+      version: "2024-11-05"
+      required: true
+      tools_manifest: "./mcp-tools.json"
+      server_capabilities: ["syntax_recovery", "pattern_learning", "bulk_correction"]
+    - name: "agent2agent"
+      version: "0.1.7"
+      required: true
+      discovery_endpoint: "/a2a/discover"
+      coordination_protocols: ["syntax_coordination", "correction_consensus"]
+    - name: "typescript"
+      version: "5.x"
+      required: true
+      ast_parser: "typescript-compiler"
+      validation: "tsc"
+
+  # Enhanced Security Architecture (v0.1.7)
+  security:
+    authentication:
+      methods: ["api_key", "oauth2_pkce", "service_account"]
+      default: "oauth2_pkce"
+      file_access_control: true
+    authorization:
+      model: "rbac_with_file_permissions"
+      fine_grained_permissions: true
+      syntax_modification_scope: ["read", "write", "validate"]
+    encryption:
+      at_rest: "aes_256_gcm"
+      in_transit: "tls_1_3"
+      backup_encryption: true
+    audit:
+      comprehensive_logging: true
+      syntax_change_audit: true
+      correction_history: "immutable"
+      retention_policy: "2_years"
+
+  # Performance & Resource Management (v0.1.7)
+  performance:
+    sla:
+      availability: "99.95%"
+      latency:
+        pattern_detection: "<100ms per file"
+        bulk_correction: "<5s per 1000 files"
+        learning_update: "<200ms"
+        validation: "<50ms per fix"
+      throughput:
+        files_per_minute: 10000
+        patterns_per_second: 500
+        corrections_per_minute: 5000
+    resources:
+      cpu_cores: 12
+      memory_gb: 32
+      storage_gb: 500
+      gpu_required: false
+      temp_storage_gb: 100
+    scaling:
+      horizontal: true
+      auto_scale: true
+      max_instances: 20
+      scale_metrics: ["file_queue_depth", "cpu_utilization", "memory_pressure"]
+
+  # Ecosystem Coverage
+  target_projects:
+    - name: "agent-brain"
+      path: "/Users/flux423/Sites/LLM/common_npm/agent-brain"
+      estimated_files: 25545
+      priority: "high"
+      patterns: ["vector_operations", "ml_training"]
+    - name: "agent-chat"
+      path: "/Users/flux423/Sites/LLM/common_npm/agent-chat"
+      estimated_files: 609
+      priority: "medium"
+      patterns: ["async_messaging", "websockets"]
+    - name: "agent-docker"
+      path: "/Users/flux423/Sites/LLM/common_npm/agent-docker"
+      estimated_files: 168
+      priority: "medium"
+      patterns: ["container_management", "docker_api"]
+    - name: "agent-forge"
+      path: "/Users/flux423/Sites/LLM/common_npm/agent-forge"
+      estimated_files: 505008
+      priority: "critical"
+      patterns: ["cli_commands", "build_systems"]
+    - name: "agent-mesh"
+      path: "/Users/flux423/Sites/LLM/common_npm/agent-mesh"
+      estimated_files: 16881
+      priority: "high"
+      patterns: ["service_mesh", "networking"]
+    - name: "agent-ops"
+      path: "/Users/flux423/Sites/LLM/common_npm/agent-ops"
+      estimated_files: 165123
+      priority: "high"
+      patterns: ["operations", "monitoring"]
+    - name: "agent-protocol"
+      path: "/Users/flux423/Sites/LLM/common_npm/agent-protocol"
+      estimated_files: 34818
+      priority: "high"
+      patterns: ["protocol_handlers", "serialization"]
+    - name: "agent-router"
+      path: "/Users/flux423/Sites/LLM/common_npm/agent-router"
+      estimated_files: 207171
+      priority: "critical"
+      patterns: ["routing_logic", "middleware"]
+    - name: "agent-studio"
+      path: "/Users/flux423/Sites/LLM/common_npm/agent-studio"
+      estimated_files: 54006
+      priority: "high"
+      patterns: ["ui_components", "development_tools"]
+    - name: "agent-tracker"
+      path: "/Users/flux423/Sites/LLM/common_npm/agent-tracker"
+      estimated_files: 118161
+      priority: "high"
+      patterns: ["tracking_systems", "analytics"]
+    - name: "agentic-flows"
+      path: "/Users/flux423/Sites/LLM/common_npm/agentic-flows"
+      estimated_files: 98238
+      priority: "critical"
+      patterns: ["workflow_engines", "state_machines"]
+    - name: "compliance-engine"
+      path: "/Users/flux423/Sites/LLM/common_npm/compliance-engine"
+      estimated_files: 2457
+      priority: "high"
+      patterns: ["compliance_checks", "auditing"]
+    - name: "doc-engine"
+      path: "/Users/flux423/Sites/LLM/common_npm/doc-engine"
+      estimated_files: 222
+      priority: "medium"
+      patterns: ["documentation", "markdown"]
+    - name: "foundation-bridge"
+      path: "/Users/flux423/Sites/LLM/common_npm/foundation-bridge"
+      estimated_files: 37332
+      priority: "high"
+      patterns: ["api_bridges", "integrations"]
+    - name: "rfp-automation"
+      path: "/Users/flux423/Sites/LLM/common_npm/rfp-automation"
+      estimated_files: 137949
+      priority: "critical"
+      patterns: ["document_processing", "automation"]
+    - name: "studio-ui"
+      path: "/Users/flux423/Sites/LLM/common_npm/studio-ui"
+      estimated_files: 62346
+      priority: "high"
+      patterns: ["react_components", "ui_frameworks"]
+    - name: "workflow-engine"
+      path: "/Users/flux423/Sites/LLM/common_npm/workflow-engine"
+      estimated_files: 12813
+      priority: "high"
+      patterns: ["workflow_execution", "task_management"]
+
+  # Syntax Pattern Detection
+  syntax_patterns:
+    parentheses_to_curly_corruption:
+      pattern: "/function\\s+(\\w+)\\s*\\{([^}]*)\\}/g"
+      replacement: "function $1($2)"
+      description: "Function parameters corrupted from () to {}"
+      severity: "critical"
+      frequency: "high"
+      auto_fix: true
+    
+    method_parameter_corruption:
+      pattern: "/(\\w+)\\s*\\{([^}]*)\\}\\s*:/g"
+      replacement: "$1($2):"
+      description: "Method parameters corrupted"
+      severity: "critical"
+      frequency: "high"
+      auto_fix: true
+    
+    arrow_function_corruption:
+      pattern: "/=>\\s*\\{([^}]*)\\}\\s*=>/g"
+      replacement: "=> ($1) =>"
+      description: "Arrow function parameters corrupted"
+      severity: "critical"
+      frequency: "medium"
+      auto_fix: true
+    
+    constructor_corruption:
+      pattern: "/constructor\\s*\\{([^}]*)\\}/g"
+      replacement: "constructor($1)"
+      description: "Constructor parameters corrupted"
+      severity: "critical"
+      frequency: "medium"
+      auto_fix: true
+    
+    template_literal_corruption:
+      pattern: "/`[^`]*\\{[^}]*\\}[^`]*`/g"
+      replacement: "COMPLEX_TEMPLATE_DETECTION"
+      description: "Template literals with corrupted expressions"
+      severity: "high"
+      frequency: "low"
+      auto_fix: false
+
+  # ML Learning Configuration
+  learning_system:
+    model_architecture: "transformer_based"
+    training_data_format: "ossa_v0_1_7"
+    features:
+      - "line_context"
+      - "ast_structure"
+      - "pattern_frequency"
+      - "correction_success_rate"
+      - "project_specific_patterns"
+    
+    feedback_loop:
+      enabled: true
+      update_frequency: "real_time"
+      confidence_threshold: 0.85
+      human_review_threshold: 0.60
+    
+    pattern_learning:
+      new_pattern_detection: true
+      frequency_tracking: true
+      success_rate_monitoring: true
+      project_correlation_analysis: true
+
+  # API Endpoints (OpenAPI 3.1.0 compliant)
+  endpoints:
+    health:
+      path: "/health"
+      method: "GET"
+      auth_required: false
+      response_time_sla: "25ms"
+    capabilities:
+      path: "/capabilities"
+      method: "GET"
+      auth_required: true
+      caching: "5m"
+    detect_patterns:
+      path: "/syntax/detect"
+      method: "POST"
+      auth_required: true
+      max_payload_size: "100MB"
+      timeout: "5m"
+    apply_corrections:
+      path: "/syntax/correct"
+      method: "POST"
+      auth_required: true
+      bulk_processing: true
+      progress_tracking: true
+    learn_patterns:
+      path: "/syntax/learn"
+      method: "POST"
+      auth_required: true
+      ml_training: true
+    validate_fixes:
+      path: "/syntax/validate"
+      method: "POST"
+      auth_required: true
+      typescript_validation: true
+    ecosystem_analysis:
+      path: "/ecosystem/analyze"
+      method: "POST"
+      auth_required: true
+      async: true
+      webhook_callback: true
+
+# OSSA v0.1.7 Extensions
+x-ossa-token-optimization:
+  enabled: true
+  total_budget: 25000
+  allocation:
+    pattern_detection: 8000        # 32%
+    syntax_correction: 10000       # 40%
+    learning_updates: 4000         # 16%
+    validation: 2000               # 8%
+    emergency: 1000                # 4%
+  optimization:
+    target_reduction: 0.80
+    strategy: "syntax_pattern_caching"
+    bulk_optimization: true
+    incremental_learning: true
+
+x-ossa-memory-integration:
+  vector_storage:
+    provider: "qdrant"
+    endpoint: "http://localhost:6333"
+    collection: "syntax_patterns_v0_1_7"
+    dimensions: 1536
+    index_type: "hnsw"
+    shard_number: 8
+  knowledge_graphs:
+    enabled: true
+    provider: "neo4j"
+    endpoint: "bolt://localhost:7687"
+    database: "syntax_knowledge"
+    pattern_relationships: true
+  pattern_cache:
+    enabled: true
+    cache_strategy: "lru_with_ml_priority"
+    max_entries: 100000
+    ttl: "24h"
+    cache_invalidation: "smart"
+  semantic_search:
+    enabled: true
+    similarity_threshold: 0.92
+    pattern_matching: "fuzzy_ast"
+    cross_project_correlation: true
+
+x-ossa-orchestration:
+  discovery:
+    enabled: true
+    protocols: ["dns_sd", "consul", "kubernetes"]
+    heartbeat_interval: "10s"
+    health_check_timeout: "2s"
+    syntax_service_registry: true
+  coordination:
+    bulk_processing_coordination: true
+    project_level_locking: true
+    correction_consensus: true
+  messaging:
+    broker: "apache_kafka"
+    topics: 
+      - "syntax_patterns_detected"
+      - "corrections_applied"
+      - "learning_updates"
+      - "validation_results"
+    serialization: "avro"
+    message_compression: true
+  workflow_integration:
+    ci_cd_integration: true
+    pre_commit_hooks: true
+    continuous_monitoring: true
+
+x-ossa-monitoring:
+  metrics:
+    prometheus_endpoint: "/metrics"
+    custom_metrics:
+      - "syntax_patterns_detected_total"
+      - "corrections_applied_total"
+      - "correction_success_rate"
+      - "learning_accuracy_score"
+      - "files_processed_per_second"
+      - "pattern_detection_latency_seconds"
+  logging:
+    level: "info"
+    format: "structured_json"
+    syntax_change_correlation: true
+    correction_audit_trail: true
+    sensitive_data_filtering: true
+  tracing:
+    enabled: true
+    provider: "jaeger"
+    sampling_rate: 0.3
+    correction_trace_correlation: true
+  alerts:
+    channels: ["slack", "email", "webhook"]
+    rules:
+      - name: "high_corruption_detected"
+        condition: "patterns_detected_rate > 1000/hour"
+        severity: "critical"
+        window: "5m"
+      - name: "correction_failure_rate_high"
+        condition: "correction_success_rate < 0.95"
+        severity: "high"
+        window: "10m"
+      - name: "learning_accuracy_drop"
+        condition: "ml_accuracy < 0.90"
+        severity: "warning"
+        window: "30m"
+
+x-ossa-deployment:
+  container:
+    image: "ossa/syntax-recovery-specialist:v0.1.7"
+    registry: "docker.io"
+    security_scanning: true
+    syntax_tools_included: true
+  kubernetes:
+    namespace: "ossa-syntax-recovery"
+    service_account: "syntax-recovery-sa"
+    network_policies: true
+    pod_security_standards: "restricted"
+    resource_quotas: true
+    persistent_volume: "500Gi"
+  helm:
+    chart_version: "0.1.7"
+    values_schema: "./helm/values.schema.json"
+    upgrade_strategy: "rolling_update"
+    syntax_validation_on_deploy: true
+  monitoring:
+    service_monitor: true
+    grafana_dashboard: true
+    alert_rules: true
+    syntax_recovery_dashboard: true

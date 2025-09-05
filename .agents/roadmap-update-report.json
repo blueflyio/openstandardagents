@@ -1,0 +1,682 @@
+{
+  "total": 45,
+  "successful": 45,
+  "failed": 0,
+  "projects": [
+    {
+      "path": "/Users/flux423/Sites/LLM/all_drupal_custom/modules/mcp_registry/ROADMAP.md",
+      "success": true,
+      "analysis": {
+        "name": "mcp_registry",
+        "type": "Drupal Custom Module",
+        "purpose": "MCP Registry Module - Model Context Protocol ecosystem manager with server lifecycle management",
+        "currentVersion": "0.1.0",
+        "hasAgent": false,
+        "endpoints": 199,
+        "functions": 2988,
+        "services": 99,
+        "complexity": "High"
+      }
+    },
+    {
+      "path": "/Users/flux423/Sites/LLM/all_drupal_custom/modules/recipe_onboarding/ROADMAP.md",
+      "success": true,
+      "analysis": {
+        "name": "recipe_onboarding",
+        "type": "Drupal Custom Module",
+        "purpose": "Recipe Onboarding Module - Comprehensive Drupal recipe management system with sub-recipe support and validation",
+        "currentVersion": "0.1.0",
+        "hasAgent": false,
+        "endpoints": 43,
+        "functions": 648,
+        "services": 21,
+        "complexity": "High"
+      }
+    },
+    {
+      "path": "/Users/flux423/Sites/LLM/all_drupal_custom/modules/ai_agent_orchestra/ROADMAP.md",
+      "success": true,
+      "analysis": {
+        "name": "ai_agent_orchestra",
+        "type": "Drupal Custom Module",
+        "purpose": "AI Agent Orchestra - Multi-agent orchestration for Drupal",
+        "currentVersion": "0.1.0",
+        "hasAgent": false,
+        "endpoints": 41,
+        "functions": 624,
+        "services": 20,
+        "complexity": "High"
+      }
+    },
+    {
+      "path": "/Users/flux423/Sites/LLM/all_drupal_custom/modules/llm/ROADMAP.md",
+      "success": true,
+      "analysis": {
+        "name": "llm",
+        "type": "Drupal Custom Module",
+        "purpose": "LLM Platform Core Module - Comprehensive AI/LLM integration for Drupal with token optimization, analytics, and provider management",
+        "currentVersion": "0.1.0",
+        "hasAgent": false,
+        "endpoints": 256,
+        "functions": 3852,
+        "services": 128,
+        "complexity": "High"
+      }
+    },
+    {
+      "path": "/Users/flux423/Sites/LLM/all_drupal_custom/modules/ai_provider_apple/ROADMAP.md",
+      "success": true,
+      "analysis": {
+        "name": "ai_provider_apple",
+        "type": "Drupal Custom Module",
+        "purpose": "AI Provider Apple Module - Apple Intelligence integration with device status monitoring and token management",
+        "currentVersion": "0.1.0",
+        "hasAgent": false,
+        "endpoints": 33,
+        "functions": 501,
+        "services": 16,
+        "complexity": "High"
+      }
+    },
+    {
+      "path": "/Users/flux423/Sites/LLM/all_drupal_custom/modules/ai_provider_langchain/ROADMAP.md",
+      "success": true,
+      "analysis": {
+        "name": "ai_provider_langchain",
+        "type": "Drupal Custom Module",
+        "purpose": "AI Provider LangChain Module - LangChain integration with chain building and evaluation capabilities",
+        "currentVersion": "0.1.0",
+        "hasAgent": false,
+        "endpoints": 34,
+        "functions": 519,
+        "services": 17,
+        "complexity": "High"
+      }
+    },
+    {
+      "path": "/Users/flux423/Sites/LLM/all_drupal_custom/modules/ai_agent_marketplace/ROADMAP.md",
+      "success": true,
+      "analysis": {
+        "name": "ai_agent_marketplace",
+        "type": "Drupal Custom Module",
+        "purpose": "Comprehensive AI agent marketplace for discovery, deployment, and management of AI agents.",
+        "currentVersion": "0.1.0",
+        "hasAgent": false,
+        "endpoints": 5,
+        "functions": 84,
+        "services": 2,
+        "complexity": "Medium"
+      }
+    },
+    {
+      "path": "/Users/flux423/Sites/LLM/all_drupal_custom/modules/dita_ccms/ROADMAP.md",
+      "success": true,
+      "analysis": {
+        "name": "dita_ccms",
+        "type": "Drupal Custom Module",
+        "purpose": "DITA CCMS Module - Component Content Management System integration for DITA documentation",
+        "currentVersion": "0.1.0",
+        "hasAgent": false,
+        "endpoints": 14,
+        "functions": 222,
+        "services": 7,
+        "complexity": "High"
+      }
+    },
+    {
+      "path": "/Users/flux423/Sites/LLM/all_drupal_custom/modules/alternative_services/ROADMAP.md",
+      "success": true,
+      "analysis": {
+        "name": "alternative_services",
+        "type": "Drupal Custom Module",
+        "purpose": "Alternative Services Module - Service orchestration and management for Drupal applications",
+        "currentVersion": "0.1.0",
+        "hasAgent": false,
+        "endpoints": 87,
+        "functions": 1305,
+        "services": 43,
+        "complexity": "High"
+      }
+    },
+    {
+      "path": "/Users/flux423/Sites/LLM/all_drupal_custom/modules/ai_agent_crewai/ROADMAP.md",
+      "success": true,
+      "analysis": {
+        "name": "ai-agent-crewai",
+        "type": "Drupal Custom Module",
+        "purpose": "AI Agent CrewAI Module - Multi-agent orchestration with security auditing and performance monitoring",
+        "currentVersion": "0.1.0",
+        "hasAgent": true,
+        "endpoints": 14,
+        "functions": 216,
+        "services": 7,
+        "complexity": "High"
+      }
+    },
+    {
+      "path": "/Users/flux423/Sites/LLM/all_drupal_custom/modules/ai_agents_client/ROADMAP.md",
+      "success": true,
+      "analysis": {
+        "name": "ai_agents_client",
+        "type": "Drupal Custom Module",
+        "purpose": "AI Agents Client Module - Distributed agent orchestration client for receiving tasks and reporting data",
+        "currentVersion": "0.1.0",
+        "hasAgent": false,
+        "endpoints": 9,
+        "functions": 144,
+        "services": 4,
+        "complexity": "Medium"
+      }
+    },
+    {
+      "path": "/Users/flux423/Sites/LLM/all_drupal_custom/modules/ai_agentic_workflows/ROADMAP.md",
+      "success": true,
+      "analysis": {
+        "name": "ai_agentic_workflows",
+        "type": "Drupal Custom Module",
+        "purpose": "AI Agentic Workflows Module - Advanced workflow orchestration with dual-agent coordination, memory optimization, and real-time monitoring",
+        "currentVersion": "0.1.0",
+        "hasAgent": false,
+        "endpoints": 55,
+        "functions": 831,
+        "services": 27,
+        "complexity": "High"
+      }
+    },
+    {
+      "path": "/Users/flux423/Sites/LLM/all_drupal_custom/modules/api_normalizer/ROADMAP.md",
+      "success": true,
+      "analysis": {
+        "name": "api_normalizer",
+        "type": "Drupal Custom Module",
+        "purpose": "API Normalizer Module - API-first development with GraphQL primary API and REST fallback",
+        "currentVersion": "0.1.0",
+        "hasAgent": false,
+        "endpoints": 178,
+        "functions": 2679,
+        "services": 89,
+        "complexity": "High"
+      }
+    },
+    {
+      "path": "/Users/flux423/Sites/LLM/all_drupal_custom/modules/ai_agents/ROADMAP.md",
+      "success": true,
+      "analysis": {
+        "name": "ai_agents",
+        "type": "Drupal Custom Module",
+        "purpose": "Allows AI agents to be used on Drupal websites to do changes and lookup things.",
+        "currentVersion": "0.1.0",
+        "hasAgent": false,
+        "endpoints": 83,
+        "functions": 1254,
+        "services": 41,
+        "complexity": "High"
+      }
+    },
+    {
+      "path": "/Users/flux423/Sites/LLM/all_drupal_custom/modules/gov_compliance/ROADMAP.md",
+      "success": true,
+      "analysis": {
+        "name": "gov-compliance",
+        "type": "Drupal Custom Module",
+        "purpose": "Government Compliance Module - FedRAMP, FISMA, and SOC2 compliance management with security orchestration",
+        "currentVersion": "0.1.0",
+        "hasAgent": true,
+        "endpoints": 19,
+        "functions": 294,
+        "services": 9,
+        "complexity": "High"
+      }
+    },
+    {
+      "path": "/Users/flux423/Sites/LLM/all_drupal_custom/modules/ai_agent_huggingface/ROADMAP.md",
+      "success": true,
+      "analysis": {
+        "name": "ai_agent_huggingface",
+        "type": "Drupal Custom Module",
+        "purpose": "HuggingFace AI agent with advanced model discovery and pipeline management",
+        "currentVersion": "0.1.0",
+        "hasAgent": false,
+        "endpoints": 23,
+        "functions": 348,
+        "services": 11,
+        "complexity": "High"
+      }
+    },
+    {
+      "path": "/Users/flux423/Sites/LLM/all_drupal_custom/modules/code_executor/ROADMAP.md",
+      "success": true,
+      "analysis": {
+        "name": "code_executor",
+        "type": "Drupal Custom Module",
+        "purpose": "Code Executor Module - Secure code execution environment with sandboxing and validation",
+        "currentVersion": "0.1.0",
+        "hasAgent": false,
+        "endpoints": 61,
+        "functions": 927,
+        "services": 30,
+        "complexity": "High"
+      }
+    },
+    {
+      "path": "/Users/flux423/Sites/LLM/models/agent-studio_model/docs/development/ROADMAP.md",
+      "success": true,
+      "analysis": {
+        "name": "development",
+        "type": "Unknown",
+        "purpose": "To be determined",
+        "currentVersion": "0.1.0",
+        "hasAgent": false,
+        "endpoints": 3,
+        "functions": 10,
+        "services": 1,
+        "complexity": "Low"
+      }
+    },
+    {
+      "path": "/Users/flux423/Sites/LLM/ROADMAP.md",
+      "success": true,
+      "analysis": {
+        "name": "LLM",
+        "type": "Unknown",
+        "purpose": "To be determined",
+        "currentVersion": "0.1.0",
+        "hasAgent": false,
+        "endpoints": 112378,
+        "functions": 1685673,
+        "services": 56189,
+        "complexity": "High"
+      }
+    },
+    {
+      "path": "/Users/flux423/Sites/LLM/common_npm/agent-ops/ROADMAP.md",
+      "success": true,
+      "analysis": {
+        "name": "llmcli",
+        "type": "NPM Package",
+        "purpose": "LLM CLI management agent for platform operations",
+        "currentVersion": "0.1.0",
+        "hasAgent": true,
+        "endpoints": 11008,
+        "functions": 165123,
+        "services": 5504,
+        "complexity": "High"
+      }
+    },
+    {
+      "path": "/Users/flux423/Sites/LLM/common_npm/workflow-engine/ROADMAP.md",
+      "success": true,
+      "analysis": {
+        "name": "workflow-engine",
+        "type": "NPM Package",
+        "purpose": "Open source Langflow-Drupal integration with custom components for visual AI workflow building in CMS",
+        "currentVersion": "0.1.0",
+        "hasAgent": false,
+        "endpoints": 854,
+        "functions": 12813,
+        "services": 427,
+        "complexity": "High"
+      }
+    },
+    {
+      "path": "/Users/flux423/Sites/LLM/common_npm/agent-protocol/ROADMAP.md",
+      "success": true,
+      "analysis": {
+        "name": "agent-protocol",
+        "type": "NPM Package",
+        "purpose": "MCP Server Management & Orchestration Platform with AI-powered marketplace, vector intelligence, and automated deployment - Phase 2",
+        "currentVersion": "0.1.0",
+        "hasAgent": false,
+        "endpoints": 2321,
+        "functions": 34818,
+        "services": 1160,
+        "complexity": "High"
+      }
+    },
+    {
+      "path": "/Users/flux423/Sites/LLM/common_npm/doc-engine/public/microservices/tddai/docs/ROADMAP.md",
+      "success": true,
+      "analysis": {
+        "name": "docs",
+        "type": "Unknown",
+        "purpose": "To be determined",
+        "currentVersion": "0.1.0",
+        "hasAgent": false,
+        "endpoints": 3,
+        "functions": 10,
+        "services": 1,
+        "complexity": "Low"
+      }
+    },
+    {
+      "path": "/Users/flux423/Sites/LLM/common_npm/doc-engine/public/microservices/tddai_cursor_agent/docs/ROADMAP.md",
+      "success": true,
+      "analysis": {
+        "name": "docs",
+        "type": "Unknown",
+        "purpose": "To be determined",
+        "currentVersion": "0.1.0",
+        "hasAgent": false,
+        "endpoints": 3,
+        "functions": 10,
+        "services": 1,
+        "complexity": "Low"
+      }
+    },
+    {
+      "path": "/Users/flux423/Sites/LLM/common_npm/doc-engine/public/models/tddai_model/docs/development/ROADMAP.md",
+      "success": true,
+      "analysis": {
+        "name": "development",
+        "type": "Unknown",
+        "purpose": "To be determined",
+        "currentVersion": "0.1.0",
+        "hasAgent": false,
+        "endpoints": 3,
+        "functions": 10,
+        "services": 1,
+        "complexity": "Low"
+      }
+    },
+    {
+      "path": "/Users/flux423/Sites/LLM/common_npm/doc-engine/ROADMAP.md",
+      "success": true,
+      "analysis": {
+        "name": "doc-engine",
+        "type": "NPM Package",
+        "purpose": "Documentation management and generation",
+        "currentVersion": "0.1.0",
+        "hasAgent": false,
+        "endpoints": 14,
+        "functions": 222,
+        "services": 7,
+        "complexity": "High"
+      }
+    },
+    {
+      "path": "/Users/flux423/Sites/LLM/common_npm/agent-router/ROADMAP.md",
+      "success": true,
+      "analysis": {
+        "name": "agent-router",
+        "type": "NPM Package",
+        "purpose": "Unified LLM Gateway with LibreChat integration, government workflows, and Drupal SSO",
+        "currentVersion": "0.1.0",
+        "hasAgent": false,
+        "endpoints": 13811,
+        "functions": 207171,
+        "services": 6905,
+        "complexity": "High"
+      }
+    },
+    {
+      "path": "/Users/flux423/Sites/LLM/common_npm/studio-ui/ROADMAP.md",
+      "success": true,
+      "analysis": {
+        "name": "studio-ui",
+        "type": "NPM Package",
+        "purpose": "Clean, minimal React components for LLM interfaces - 95% code reduction",
+        "currentVersion": "0.1.0",
+        "hasAgent": false,
+        "endpoints": 4156,
+        "functions": 62346,
+        "services": 2078,
+        "complexity": "High"
+      }
+    },
+    {
+      "path": "/Users/flux423/Sites/LLM/common_npm/foundation-bridge/ROADMAP.md",
+      "success": true,
+      "analysis": {
+        "name": "foundation-bridge",
+        "type": "NPM Package",
+        "purpose": "Apple Foundation Models Framework integration with TypeScript support, Swift bridge, and privacy-first on-device AI processing",
+        "currentVersion": "0.1.0",
+        "hasAgent": false,
+        "endpoints": 2488,
+        "functions": 37332,
+        "services": 1244,
+        "complexity": "High"
+      }
+    },
+    {
+      "path": "/Users/flux423/Sites/LLM/common_npm/compliance-engine/ROADMAP.md",
+      "success": true,
+      "analysis": {
+        "name": "compliance-engine",
+        "type": "NPM Package",
+        "purpose": "Modern security suite with RBAC, audit logging, and security middleware",
+        "currentVersion": "0.1.0",
+        "hasAgent": false,
+        "endpoints": 163,
+        "functions": 2457,
+        "services": 81,
+        "complexity": "High"
+      }
+    },
+    {
+      "path": "/Users/flux423/Sites/LLM/common_npm/agent-brain/ROADMAP.md",
+      "success": true,
+      "analysis": {
+        "name": "agent-brain",
+        "type": "NPM Package",
+        "purpose": "Enterprise-grade vector database client SDK for Bluefly LLM Platform with multi-backend support",
+        "currentVersion": "0.1.0",
+        "hasAgent": false,
+        "endpoints": 1703,
+        "functions": 25545,
+        "services": 851,
+        "complexity": "High"
+      }
+    },
+    {
+      "path": "/Users/flux423/Sites/LLM/common_npm/agent-studio/ide/ROADMAP.md",
+      "success": true,
+      "analysis": {
+        "name": "ide",
+        "type": "NPM Package",
+        "purpose": "TDDAI Studio Mac Desktop - Native macOS IDE with local AI integration",
+        "currentVersion": "0.1.0",
+        "hasAgent": false,
+        "endpoints": 3,
+        "functions": 10,
+        "services": 1,
+        "complexity": "Low"
+      }
+    },
+    {
+      "path": "/Users/flux423/Sites/LLM/common_npm/agent-studio/docker/ROADMAP.md",
+      "success": true,
+      "analysis": {
+        "name": "docker",
+        "type": "NPM Package",
+        "purpose": "TDDAI Studio - Docker/Kubernetes Enterprise Deployment",
+        "currentVersion": "1.0.0",
+        "hasAgent": false,
+        "endpoints": 1595,
+        "functions": 23931,
+        "services": 797,
+        "complexity": "High"
+      }
+    },
+    {
+      "path": "/Users/flux423/Sites/LLM/common_npm/agent-studio/core/ROADMAP.md",
+      "success": true,
+      "analysis": {
+        "name": "core",
+        "type": "NPM Package",
+        "purpose": "TDDAI Studio Core - Shared components for Docker and Desktop versions",
+        "currentVersion": "1.0.0",
+        "hasAgent": false,
+        "endpoints": 1518,
+        "functions": 22776,
+        "services": 759,
+        "complexity": "High"
+      }
+    },
+    {
+      "path": "/Users/flux423/Sites/LLM/common_npm/agent-studio/extension/docs/ROADMAP.md",
+      "success": true,
+      "analysis": {
+        "name": "docs",
+        "type": "Unknown",
+        "purpose": "To be determined",
+        "currentVersion": "0.1.0",
+        "hasAgent": false,
+        "endpoints": 3,
+        "functions": 10,
+        "services": 1,
+        "complexity": "Low"
+      }
+    },
+    {
+      "path": "/Users/flux423/Sites/LLM/common_npm/agent-studio/extension/ROADMAP.md",
+      "success": true,
+      "analysis": {
+        "name": "extension",
+        "type": "Drupal Custom Module",
+        "purpose": "Drupal module for LLM platform",
+        "currentVersion": "0.1.0",
+        "hasAgent": false,
+        "endpoints": 485,
+        "functions": 7287,
+        "services": 242,
+        "complexity": "High"
+      }
+    },
+    {
+      "path": "/Users/flux423/Sites/LLM/common_npm/agent-studio/ROADMAP.md",
+      "success": true,
+      "analysis": {
+        "name": "agent-studio",
+        "type": "Unknown",
+        "purpose": "To be determined",
+        "currentVersion": "0.1.0",
+        "hasAgent": false,
+        "endpoints": 3600,
+        "functions": 54006,
+        "services": 1800,
+        "complexity": "High"
+      }
+    },
+    {
+      "path": "/Users/flux423/Sites/LLM/common_npm/agent-forge/ROADMAP.md",
+      "success": true,
+      "analysis": {
+        "name": "agent-forge",
+        "type": "NPM Package",
+        "purpose": "AI-Enhanced Test-Driven Development Framework - No-BS production-ready development tool",
+        "currentVersion": "0.1.0",
+        "hasAgent": false,
+        "endpoints": 33667,
+        "functions": 505008,
+        "services": 16833,
+        "complexity": "High"
+      }
+    },
+    {
+      "path": "/Users/flux423/Sites/LLM/common_npm/agent-docker/ROADMAP.md",
+      "success": true,
+      "analysis": {
+        "name": "agent-docker",
+        "type": "NPM Package",
+        "purpose": "Docker intelligence and management",
+        "currentVersion": "0.1.0",
+        "hasAgent": false,
+        "endpoints": 11,
+        "functions": 168,
+        "services": 5,
+        "complexity": "High"
+      }
+    },
+    {
+      "path": "/Users/flux423/Sites/LLM/common_npm/agentic-flows/ROADMAP.md",
+      "success": true,
+      "analysis": {
+        "name": "agentic-flows",
+        "type": "NPM Package",
+        "purpose": "N8N custom nodes for CrewAI agent orchestration, vector operations, and LLM platform integration",
+        "currentVersion": "0.1.0",
+        "hasAgent": false,
+        "endpoints": 6549,
+        "functions": 98238,
+        "services": 3274,
+        "complexity": "High"
+      }
+    },
+    {
+      "path": "/Users/flux423/Sites/LLM/common_npm/agent-chat/ROADMAP.md",
+      "success": true,
+      "analysis": {
+        "name": "agent-chat",
+        "type": "NPM Package",
+        "purpose": "Chat interface and conversation management",
+        "currentVersion": "0.1.0",
+        "hasAgent": false,
+        "endpoints": 40,
+        "functions": 609,
+        "services": 20,
+        "complexity": "High"
+      }
+    },
+    {
+      "path": "/Users/flux423/Sites/LLM/common_npm/rfp-automation/ROADMAP.md",
+      "success": true,
+      "analysis": {
+        "name": "rfp-automation",
+        "type": "NPM Package",
+        "purpose": "AI-powered RFP automation platform that dramatically speeds up proposal creation",
+        "currentVersion": "0.1.0",
+        "hasAgent": false,
+        "endpoints": 9196,
+        "functions": 137949,
+        "services": 4598,
+        "complexity": "High"
+      }
+    },
+    {
+      "path": "/Users/flux423/Sites/LLM/common_npm/agent-mesh/ROADMAP.md",
+      "success": true,
+      "analysis": {
+        "name": "agent-mesh",
+        "type": "NPM Package",
+        "purpose": "Agent Mesh - A distributed coordination layer for AI agents and microservices",
+        "currentVersion": "0.1.0",
+        "hasAgent": false,
+        "endpoints": 1125,
+        "functions": 16881,
+        "services": 562,
+        "complexity": "High"
+      }
+    },
+    {
+      "path": "/Users/flux423/Sites/LLM/common_npm/agent-tracker/ROADMAP.md",
+      "success": true,
+      "analysis": {
+        "name": "agent-tracker",
+        "type": "NPM Package",
+        "purpose": "Agent Tracer - Distributed AI agent tracing, monitoring, and intelligence optimization platform with comprehensive observability",
+        "currentVersion": "0.1.0",
+        "hasAgent": false,
+        "endpoints": 7877,
+        "functions": 118161,
+        "services": 3938,
+        "complexity": "High"
+      }
+    },
+    {
+      "path": "/Users/flux423/Sites/LLM/OSSA/ROADMAP.md",
+      "success": true,
+      "analysis": {
+        "name": "OSSA",
+        "type": "NPM Package",
+        "purpose": "Open Standards for Scalable Agents (OSSA) - Research-enhanced specification for universal AI agent interoperability with ACTA and memory systems integration",
+        "currentVersion": "0.1.7",
+        "hasAgent": false,
+        "endpoints": 948,
+        "functions": 14226,
+        "services": 474,
+        "complexity": "High"
+      }
+    }
+  ]
+}
