@@ -1,8 +1,8 @@
 #!/usr/bin/env tsx
 
 /**
- * OSSA CLI v0.1.6 - Enhanced with UADP Discovery Protocol
- * Lightweight CLI for OSSA v0.1.6 agent management with discovery capabilities
+ * OSSA CLI v0.1.8 - Enhanced with UADP Discovery Protocol
+ * Lightweight CLI for OSSA v0.1.8 agent management with discovery capabilities
  */
 
 import { program } from 'commander';
@@ -15,18 +15,18 @@ import { addUADPCommands } from './uadp-commands.js';
 // Configure program
 program
   .name('ossa')
-  .description('OSSA v0.1.6 Agent CLI with UADP Discovery Protocol')
-  .version('0.1.6');
+  .description('OSSA v0.1.8 Agent CLI with UADP Discovery Protocol')
+  .version('0.1.8');
 
 // Create agent command
 program
   .command('create <name>')
-  .description('Create new OSSA v0.1.6 compliant agent')
+  .description('Create new OSSA v0.1.8 compliant agent')
   .option('-d, --domain <domain>', 'Agent domain', 'general')
   .option('-p, --priority <priority>', 'Priority level', 'medium')
   .option('-t, --tier <tier>', 'Conformance tier', 'advanced')
   .action((name, options) => {
-    console.log(chalk.blue('🚀 Creating OSSA v0.1.6 agent:'), chalk.bold(name));
+    console.log(chalk.blue('🚀 Creating OSSA v0.1.8 agent:'), chalk.bold(name));
     createAgent(name, options);
   });
 
@@ -53,10 +53,10 @@ program
 // Upgrade agent command
 program
   .command('upgrade [path]')
-  .description('Upgrade agent to OSSA v0.1.6')
+  .description('Upgrade agent to OSSA v0.1.8')
   .option('--dry-run', 'Show what would be upgraded')
   .action((agentPath, options) => {
-    console.log(chalk.blue('⬆️ Upgrading to OSSA v0.1.6...'));
+    console.log(chalk.blue('⬆️ Upgrading to OSSA v0.1.8...'));
     upgradeAgent(agentPath || '.', options);
   });
 
@@ -81,13 +81,13 @@ function createAgent(name: string, options: any) {
   fs.mkdirSync(path.join(agentDir, 'config'), { recursive: true });
   fs.mkdirSync(path.join(agentDir, 'schemas'), { recursive: true });
   
-  // Create agent.yml with enhanced OSSA v0.1.6 spec
+  // Create agent.yml with enhanced OSSA v0.1.8 spec
   const agentSpec = {
-    ossa: '0.1.6',
+    ossa: '0.1.8',
     metadata: {
       name: name,
       version: '1.0.0',
-      description: `OSSA v0.1.6 ${tier} tier agent for ${domain}`,
+      description: `OSSA v0.1.8 ${tier} tier agent for ${domain}`,
       author: 'OSSA CLI',
       license: 'Apache-2.0',
       created: new Date().toISOString().split('T')[0],
@@ -117,7 +117,7 @@ function createAgent(name: string, options: any) {
         },
         {
           name: 'uadp',
-          version: '0.1.6',
+          version: '0.1.8',
           required: true,
           discovery_modes: ['active', 'passive']
         }
@@ -198,9 +198,9 @@ function createAgent(name: string, options: any) {
     info: {
       title: `${name.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')} Agent API`,
       version: '1.0.0',
-      description: `OSSA v0.1.6 ${tier} tier agent for ${domain} operations`,
+      description: `OSSA v0.1.8 ${tier} tier agent for ${domain} operations`,
       'x-openapi-ai-agents-standard': {
-        version: '0.1.6',
+        version: '0.1.8',
         conformance_tier: tier,
         certification_level: 'gold',
         compliance_frameworks: ['ISO_42001', 'NIST_AI_RMF'],
@@ -224,7 +224,7 @@ function createAgent(name: string, options: any) {
       '/health': {
         get: {
           summary: 'Health check endpoint',
-          description: 'OSSA v0.1.6 compliant health check',
+          description: 'OSSA v0.1.8 compliant health check',
           operationId: 'getHealth',
           tags: ['Health'],
           responses: {
@@ -251,7 +251,7 @@ function createAgent(name: string, options: any) {
       '/capabilities': {
         get: {
           summary: 'Get agent capabilities',
-          description: 'Returns comprehensive agent capabilities per OSSA v0.1.6',
+          description: 'Returns comprehensive agent capabilities per OSSA v0.1.8',
           operationId: 'getCapabilities',
           tags: ['Discovery'],
           responses: {
@@ -308,14 +308,14 @@ function createAgent(name: string, options: any) {
   // Create enhanced README with UADP integration
   const readme = `# ${name} Agent
 
-[![OSSA v0.1.6](https://img.shields.io/badge/OSSA-v0.1.6-green.svg)](https://ossa.agents)
+[![OSSA v0.1.8](https://img.shields.io/badge/OSSA-v0.1.8-green.svg)](https://ossa.agents)
 [![UADP](https://img.shields.io/badge/UADP-Discovery-blue.svg)](https://ossa.agents)
 
-OSSA v0.1.6 ${tier} tier agent for ${domain} operations with UADP discovery protocol support.
+OSSA v0.1.8 ${tier} tier agent for ${domain} operations with UADP discovery protocol support.
 
 ## Features
 
-- 🚀 OSSA v0.1.6 compliant
+- 🚀 OSSA v0.1.8 compliant
 - 🔍 UADP discovery protocol
 - 🎯 ${tier} conformance tier
 - 🔗 Multi-framework integration (LangChain, CrewAI, OpenAI, MCP)
@@ -359,14 +359,14 @@ This agent supports multiple AI frameworks:
 
 - ISO 42001 (AI Management Systems)
 - NIST AI Risk Management Framework
-- OSSA v0.1.6 Advanced Conformance Tier
+- OSSA v0.1.8 Advanced Conformance Tier
 `;
   
   fs.writeFileSync(path.join(agentDir, 'README.md'), readme);
   
-  console.log(chalk.green('✅ Created OSSA v0.1.6 agent:'), chalk.bold(name));
+  console.log(chalk.green('✅ Created OSSA v0.1.8 agent:'), chalk.bold(name));
   console.log(chalk.gray('   📁'), agentDir);
-  console.log(chalk.gray('   📄 agent.yml (Enhanced OSSA v0.1.6)'));
+  console.log(chalk.gray('   📄 agent.yml (Enhanced OSSA v0.1.8)'));
   console.log(chalk.gray('   📄 openapi.yaml (UADP integrated)'));
   console.log(chalk.gray('   📄 README.md (Quick start guide)'));
   console.log('');
@@ -388,14 +388,14 @@ function validateAgent(agentPath: string, options: any) {
   try {
     const agent = yaml.load(fs.readFileSync(agentFile, 'utf8')) as any;
     
-    // Enhanced OSSA v0.1.6 validation
+    // Enhanced OSSA v0.1.8 validation
     let valid = true;
     const issues = [];
     const warnings = [];
     
     // Version check
-    if (!agent.ossa || agent.ossa !== '0.1.6') {
-      issues.push('❌ Missing or invalid OSSA version (expected: 0.1.6)');
+    if (!agent.ossa || agent.ossa !== '0.1.8') {
+      issues.push('❌ Missing or invalid OSSA version (expected: 0.1.8)');
       valid = false;
     }
     
@@ -420,7 +420,7 @@ function validateAgent(agentPath: string, options: any) {
     } else {
       const hasOpenAPI = agent.spec.protocols.some((p: any) => p.name === 'openapi');
       if (!hasOpenAPI) {
-        issues.push('❌ Missing OpenAPI protocol (required by OSSA v0.1.6)');
+        issues.push('❌ Missing OpenAPI protocol (required by OSSA v0.1.8)');
         valid = false;
       }
       
@@ -459,7 +459,7 @@ function validateAgent(agentPath: string, options: any) {
     
     // Results
     if (valid && issues.length === 0) {
-      console.log(chalk.green('✅ OSSA v0.1.6 agent is valid'));
+      console.log(chalk.green('✅ OSSA v0.1.8 agent is valid'));
       console.log(chalk.gray('   Agent:'), agent.metadata.name);
       console.log(chalk.gray('   Version:'), agent.metadata.version || '1.0.0');
       console.log(chalk.gray('   Tier:'), agent.spec.conformance_tier);
@@ -489,7 +489,7 @@ function validateAgent(agentPath: string, options: any) {
 }
 
 function listAgents(options: any) {
-  // Enhanced agent scanning with OSSA v0.1.6 detection
+  // Enhanced agent scanning with OSSA v0.1.8 detection
   const agents: any[] = [];
   
   function scanDir(dir: string, depth = 0) {
@@ -505,7 +505,7 @@ function listAgents(options: any) {
         if (fs.existsSync(agentFile)) {
           try {
             const agent = yaml.load(fs.readFileSync(agentFile, 'utf8')) as any;
-            if (agent.ossa === '0.1.6') {
+            if (agent.ossa === '0.1.8') {
               agents.push({
                 name: agent.metadata?.name || item,
                 version: agent.metadata?.version || '1.0.0',
@@ -534,7 +534,7 @@ function listAgents(options: any) {
   scanDir(process.cwd());
   
   if (agents.length === 0) {
-    console.log(chalk.yellow('No OSSA v0.1.6 agents found'));
+    console.log(chalk.yellow('No OSSA v0.1.8 agents found'));
     console.log(chalk.gray('Use: ossa create <name> to create your first agent'));
     return;
   }
@@ -542,7 +542,7 @@ function listAgents(options: any) {
   if (options.format === 'json') {
     console.log(JSON.stringify(agents, null, 2));
   } else {
-    console.log(chalk.bold('OSSA v0.1.6 Agents:'));
+    console.log(chalk.bold('OSSA v0.1.8 Agents:'));
     console.log('');
     
     agents.forEach((agent, index) => {
@@ -565,12 +565,12 @@ function listAgents(options: any) {
 
 function upgradeAgent(agentPath: string, options: any) {
   console.log(chalk.yellow('⚠️  Agent upgrade functionality'));
-  console.log(chalk.gray('   Current version supports OSSA v0.1.6 creation'));
+  console.log(chalk.gray('   Current version supports OSSA v0.1.8 creation'));
   console.log(chalk.gray('   For upgrades, recreate with: ossa create <name>'));
   
   if (options.dryRun) {
     console.log(chalk.blue('\nDry run mode - would upgrade:'));
-    console.log(chalk.gray('   - Update ossa version to 0.1.6'));
+    console.log(chalk.gray('   - Update ossa version to 0.1.8'));
     console.log(chalk.gray('   - Add UADP discovery support'));
     console.log(chalk.gray('   - Enhance OpenAPI extensions'));
     console.log(chalk.gray('   - Add compliance frameworks'));

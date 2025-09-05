@@ -1,7 +1,7 @@
 # OpenAPI AI Agents Standard (OAAS) v0.1.1 - Test Agent
 # Production-ready agent configuration for OAAS validation and testing
 
-apiVersion: open-standards-scalable-agents/v0.1.3
+apiVersion: open-standards-scalable-agents/v0.1.8
 kind: "Agent"
 metadata:
   name: "test-agent"

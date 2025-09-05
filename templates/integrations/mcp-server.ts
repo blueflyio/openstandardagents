@@ -1,5 +1,5 @@
 /**
- * OSSA v0.1.6 - Model Context Protocol (MCP) Server Integration
+ * OSSA v0.1.8 - Model Context Protocol (MCP) Server Integration
  * Provides standardized MCP server implementation for OSSA-compliant agents
  */
 
@@ -49,7 +49,7 @@ export class OSSAMCPServer {
       {
         name: config.frameworks.mcp.server_name,
         version: config.agent.version,
-        description: `OSSA v0.1.6 MCP Server for ${config.agent.name}`,
+        description: `OSSA v0.1.8 MCP Server for ${config.agent.name}`,
         capabilities: {
           tools: {},
           prompts: config.frameworks.mcp.prompts ? {} : undefined,

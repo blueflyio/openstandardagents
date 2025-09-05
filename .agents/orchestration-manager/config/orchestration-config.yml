@@ -1,4 +1,4 @@
-ossa: 0.1.6
+ossa: 0.1.8
 orchestration_config:
   name: "orchestration-manager-config"
   version: "1.0.0"
@@ -39,7 +39,7 @@ orchestration_config:
   discovery:
     uadp:
       enabled: true
-      version: "0.1.6"
+      version: "0.1.8"
       hierarchical_discovery: true
       discovery_interval_seconds: 30
       health_check_interval_seconds: 10

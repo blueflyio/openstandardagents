@@ -1,5 +1,5 @@
 {
-  "registry_version": "0.1.6",
+  "registry_version": "0.1.8",
   "last_updated": "2025-01-28T00:00:00Z",
   "discovery_protocol": "uadp",
   "total_agents": 3,
@@ -109,7 +109,7 @@
         },
         {
           "name": "uadp",
-          "version": "0.1.6",
+          "version": "0.1.8",
           "required": true,
           "endpoints": {
             "registry": "/uadp/registry",
@@ -118,7 +118,7 @@
         },
         {
           "name": "a2a",
-          "version": "0.1.6",
+          "version": "0.1.8",
           "required": true,
           "endpoints": {
             "coordinate": "/a2a/coordinate",
@@ -262,7 +262,7 @@
     }
   },
   "discovery_metadata": {
-    "uadp_version": "0.1.6",
+    "uadp_version": "0.1.8",
     "hierarchical_discovery": true,
     "capability_matching": true,
     "performance_ranking": true,

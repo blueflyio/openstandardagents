@@ -2,9 +2,9 @@ openapi: 3.1.0
 info:
   title: Test Security Agent Agent API
   version: 1.0.0
-  description: OSSA v0.1.6 advanced tier agent for security operations
+  description: OSSA v0.1.8 advanced tier agent for security operations
   x-openapi-ai-agents-standard:
-    version: 0.1.6
+    version: 0.1.8
     conformance_tier: advanced
     certification_level: gold
     compliance_frameworks:
@@ -31,7 +31,7 @@ paths:
   /health:
     get:
       summary: Health check endpoint
-      description: OSSA v0.1.6 compliant health check
+      description: OSSA v0.1.8 compliant health check
       operationId: getHealth
       tags:
         - Health
@@ -61,7 +61,7 @@ paths:
   /capabilities:
     get:
       summary: Get agent capabilities
-      description: Returns comprehensive agent capabilities per OSSA v0.1.6
+      description: Returns comprehensive agent capabilities per OSSA v0.1.8
       operationId: getCapabilities
       tags:
         - Discovery

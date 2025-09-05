@@ -1,6 +1,6 @@
 """
 LangChain integration for OSSA Validation Specialist Agent
-Provides OSSA v0.1.3 validation tools for LangChain workflows
+Provides OSSA v0.1.8 validation tools for LangChain workflows
 """
 
 from typing import Dict, List, Optional, Any
@@ -16,7 +16,7 @@ class OSSAValidationTool(BaseTool):
     """LangChain tool for OSSA specification validation"""
     
     name = "ossa_validate"
-    description = "Validate OpenAPI AI Agents Standard (OSSA) v0.1.3 specifications"
+    description = "Validate OpenAPI AI Agents Standard (OSSA) v0.1.8 specifications"
     
     validation_api_url: str = Field(default="http://localhost:3003/api/v1")
     api_key: Optional[str] = Field(default=None)
@@ -232,7 +232,7 @@ if __name__ == "__main__":
             "title": "Test Agent",
             "version": "1.0.0",
             "x-openapi-ai-agents-standard": {
-                "version": "0.1.3"
+                "version": "0.1.8"
             }
         }
     }

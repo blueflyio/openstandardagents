@@ -1,7 +1,7 @@
 {
   "name": "ossa-cli",
-  "version": "0.1.6",
-  "description": "Lightweight CLI for OSSA v0.1.6 agent management with UADP discovery",
+  "version": "0.1.8",
+  "description": "Lightweight CLI for OSSA v0.1.8 agent management with UADP discovery",
   "main": "dist/index.js",
   "type": "module",
   "bin": {

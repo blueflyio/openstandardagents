@@ -1,9 +1,9 @@
-apiVersion: open-standards-scalable-agents/v0.1.6
+apiVersion: open-standards-scalable-agents/v0.1.8
 kind: Agent
 metadata:
   name: orchestration-agent
   description: "Multi-agent orchestration and coordination agent"
-  version: 0.1.6
+  version: 0.1.8
   tags:
     - orchestration
     - coordination
@@ -19,7 +19,7 @@ spec:
     model: claude-sonnet
     temperature: 0.3
 
-# OSSA v0.1.6 Extensions
+# OSSA v0.1.8 Extensions
 x-ossa-token-budget:
   total_budget: 15000
   allocation:

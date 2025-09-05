@@ -376,7 +376,7 @@ export function createMigrationCommands() {
   migrationCommand
     .command('plan <project>')
     .description('Generate migration plan for projects')
-    .option('--target-version <version>', 'Target version for migration', '0.1.6')
+    .option('--target-version <version>', 'Target version for migration', '0.1.8')
     .option('--include-risk', 'Include risk assessment in plan')
     .option('--prioritize-usage', 'Prioritize by script usage patterns')
     .option('--save', 'Save plan to JSON file')

@@ -1,5 +1,5 @@
 # ISO 42001 AI Management System Compliance Template
-# For OSSA v0.1.6 Agent Compliance Framework
+# For OSSA v0.1.8 Agent Compliance Framework
 
 iso_42001:
   version: "2023"

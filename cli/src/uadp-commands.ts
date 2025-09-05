@@ -19,7 +19,7 @@ export function addUADPCommands(program: Command) {
     .command('discovery')
     .description('UADP agent discovery commands')
     .action(() => {
-      console.log(chalk.blue('🔍 UADP Discovery Protocol v0.1.6'));
+      console.log(chalk.blue('🔍 UADP Discovery Protocol v0.1.8'));
       console.log(chalk.gray('   Use: ossa discovery --help for commands'));
     });
 
@@ -342,7 +342,7 @@ function extractProtocols(agentSpec: any): Array<{ name: string; version: string
     }
   }
   
-  // Ensure OpenAPI is included (OSSA 0.1.6 requirement)
+  // Ensure OpenAPI is included (OSSA 0.1.8 requirement)
   if (!protocols.find(p => p.name === 'openapi')) {
     protocols.push({
       name: 'openapi',

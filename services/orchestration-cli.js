@@ -9,7 +9,7 @@ const config = JSON.parse(readFileSync('./microservices.config.json', 'utf-8'));
 program
   .name('ossa-orchestrate')
   .description('OSSA Microservices Orchestration CLI')
-  .version('0.1.6');
+  .version('0.1.8');
 
 // Microservices command group
 const microservices = program
@@ -103,13 +103,13 @@ microservices
 // OSSA compliance check
 program
   .command('validate')
-  .description('Validate OSSA v0.1.6 compliance')
+  .description('Validate OSSA v0.1.8 compliance')
   .action(() => {
     console.log('\n🔍 OSSA Compliance Check\n');
     console.log(`Version: ${config['ossa-compliance'].version} ✅`);
     console.log(`Extensions: ${config['ossa-compliance'].extensions.join(', ')} ✅`);
     console.log(`Token Optimization: ${config['ossa-compliance']['token-optimization']['target-reduction'] * 100}% reduction ✅`);
-    console.log('\n✅ Fully OSSA v0.1.6 compliant');
+    console.log('\n✅ Fully OSSA v0.1.8 compliant');
   });
 
 program.parse(process.argv);

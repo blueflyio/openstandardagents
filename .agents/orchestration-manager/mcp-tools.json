@@ -2,7 +2,7 @@
   "protocol_version": "2024-11-05",
   "server_name": "orchestration-manager-mcp",
   "server_version": "1.1.0",
-  "description": "MCP tools for OSSA v0.1.7 orchestration manager with universal agent discovery and workflow coordination",
+  "description": "MCP tools for OSSA v0.1.8 orchestration manager with universal agent discovery and workflow coordination",
   "tools": [
     {
       "name": "discover_agents",
@@ -475,7 +475,7 @@
   "capabilities": {
     "uadp_discovery": {
       "enabled": true,
-      "version": "0.1.7",
+      "version": "0.1.8",
       "hierarchical": true,
       "semantic_matching": true,
       "ml_ranking": true
@@ -529,7 +529,7 @@
     },
     "protocols": {
       "openapi": "3.1.0",
-      "agent2agent": "0.1.7",
+      "agent2agent": "0.1.8",
       "jsonrpc": "2.0",
       "websocket": "RFC 6455"
     }

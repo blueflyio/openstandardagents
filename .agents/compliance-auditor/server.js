@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /**
- * OSSA v0.1.7 Compliance Auditor Agent Server
+ * OSSA v0.1.8 Compliance Auditor Agent Server
  * 
  * A lightweight deployment server for the compliance-auditor agent
  * Implements the OpenAPI 3.1.0 spec with MCP tool integration
@@ -367,7 +367,7 @@ class ComplianceAuditorServer {
     const server = http.createServer((req, res) => this.handleRequest(req, res));
     
     server.listen(PORT, HOST, () => {
-      console.log(`🚀 OSSA v0.1.7 Compliance Auditor Agent started`);
+      console.log(`🚀 OSSA v0.1.8 Compliance Auditor Agent started`);
       console.log(`📍 Server: http://${HOST}:${PORT}`);
       console.log(`🔧 Health: http://${HOST}:${PORT}/health`);
       console.log(`📋 Capabilities: http://${HOST}:${PORT}/capabilities`);

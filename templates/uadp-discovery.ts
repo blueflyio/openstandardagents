@@ -1,5 +1,5 @@
 /**
- * OSSA v0.1.6 - Universal Agent Discovery Protocol (UADP) Implementation
+ * OSSA v0.1.8 - Universal Agent Discovery Protocol (UADP) Implementation
  * Provides standardized agent discovery and registration capabilities
  */
 

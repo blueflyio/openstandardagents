@@ -1,4 +1,4 @@
-ossa: 0.1.6
+ossa: 0.1.8
 compliance_config:
   name: "compliance-auditor-config"
   version: "1.0.0"

@@ -1,8 +1,8 @@
-ossa: 0.1.6
+ossa: 0.1.8
 metadata:
   name: test-security-agent
   version: 1.0.0
-  description: OSSA v0.1.6 advanced tier agent for security
+  description: OSSA v0.1.8 advanced tier agent for security
   author: OSSA CLI
   license: Apache-2.0
   created: '2025-09-02'
@@ -38,7 +38,7 @@ spec:
         - resource_streaming
         - progress_tracking
     - name: uadp
-      version: 0.1.6
+      version: 0.1.8
       required: true
       discovery_modes:
         - active

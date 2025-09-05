@@ -1,9 +1,9 @@
-apiVersion: open-standards-scalable-agents/v0.1.7
+apiVersion: open-standards-scalable-agents/v0.1.8
 kind: Agent
 metadata:
   name: "orchestration-manager"
   version: "1.1.0"
-  description: "Multi-agent orchestration manager with OSSA v0.1.7 universal framework compatibility and enhanced discovery"
+  description: "Multi-agent orchestration manager with OSSA v0.1.8 universal framework compatibility and enhanced discovery"
   author: "Open Standards for Scalable Agents Community"
   license: "Apache-2.0"
   created: "2025-01-28"
@@ -24,7 +24,7 @@ spec:
       nist_ai_rmf: "level_4"
       orchestration_compliance: "full"
   
-  # Universal Framework Compatibility (OSSA v0.1.7 requirement)
+  # Universal Framework Compatibility (OSSA v0.1.8 requirement)
   framework_adapters:
     mcp:
       enabled: true
@@ -84,7 +84,7 @@ spec:
       - "workflow_pattern_optimization"
       - "distributed_consensus_management"
   
-  # Enhanced Protocol Support (v0.1.7)
+  # Enhanced Protocol Support (v0.1.8)
   protocols:
     - name: "openapi"
       version: "3.1.0"
@@ -97,12 +97,12 @@ spec:
       tools_manifest: "./mcp-tools.json"
       server_capabilities: ["orchestration", "discovery", "monitoring"]
     - name: "agent2agent"
-      version: "0.1.7"
+      version: "0.1.8"
       required: true
       discovery_endpoint: "/a2a/discover"
       coordination_protocols: ["consensus", "leader_election", "distributed_locking"]
     - name: "uadp"
-      version: "0.1.7"
+      version: "0.1.8"
       required: true
       hierarchical_discovery: true
       capability_matching: "semantic"
@@ -113,7 +113,7 @@ spec:
       transport: ["websocket", "http"]
       batch_requests: true
 
-  # Enhanced Security Architecture (v0.1.7)
+  # Enhanced Security Architecture (v0.1.8)
   security:
     authentication:
       methods: ["api_key", "oauth2_pkce", "saml_2_0", "mTLS", "zero_trust_network"]
@@ -143,7 +143,7 @@ spec:
       cross_border_compliance: true
       right_to_erasure: "supported"
   
-  # Performance & Resource Management (v0.1.7)
+  # Performance & Resource Management (v0.1.8)
   performance:
     sla:
       availability: "99.99%"
@@ -261,7 +261,7 @@ spec:
       real_time: true
       metrics_format: "prometheus"
 
-# OSSA v0.1.7 Extensions
+# OSSA v0.1.8 Extensions
 x-ossa-token-optimization:
   enabled: true
   total_budget: 15000
@@ -376,7 +376,7 @@ x-ossa-monitoring:
 
 x-ossa-deployment:
   container:
-    image: "ossa/orchestration-manager:v0.1.7"
+    image: "ossa/orchestration-manager:v0.1.8"
     registry: "docker.io"
     security_scanning: true
     multi_arch_support: ["amd64", "arm64"]
@@ -388,7 +388,7 @@ x-ossa-deployment:
     horizontal_pod_autoscaler: true
     resource_quotas: true
   helm:
-    chart_version: "0.1.7"
+    chart_version: "0.1.8"
     values_schema: "./helm/values.schema.json"
     upgrade_strategy: "rolling_update"
     rollback_capability: true

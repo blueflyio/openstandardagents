@@ -169,7 +169,7 @@ class OSSACrewManager:
                 "version": "1.0.0",
                 "description": agent_config["goal"],
                 "x-openapi-ai-agents-standard": {
-                    "version": "0.1.3",
+                    "version": "0.1.8",
                     "conformance_tier": "core"
                 },
                 "x-agent-metadata": {

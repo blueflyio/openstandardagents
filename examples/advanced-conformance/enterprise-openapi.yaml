@@ -2,10 +2,10 @@ openapi: 3.1.0
 info:
   title: "Enterprise Agent Advanced API"
   version: "2.0.0"
-  description: "Advanced enterprise agent demonstrating OSSA 0.1.6 Advanced conformance tier with comprehensive compliance framework integration"
+  description: "Advanced enterprise agent demonstrating OSSA 0.1.8 Advanced conformance tier with comprehensive compliance framework integration"
   
   x-openapi-ai-agents-standard:
-    version: "0.1.6"
+    version: "0.1.8"
     conformance_tier: "advanced"
     certification_level: "gold"
     compliance_frameworks: [
@@ -74,7 +74,7 @@ info:
     state_management: "distributed"
 
   x-discovery-protocol:
-    uadp_version: "0.1.6"
+    uadp_version: "0.1.8"
     hierarchical_discovery: true
     federated_discovery: true
     predictive_discovery: true

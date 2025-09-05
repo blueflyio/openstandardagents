@@ -1,7 +1,7 @@
-# OpenAPI AI Agents Standard (OAAS) v0.1.3 - Drupal Expert Agent
+# OpenAPI AI Agents Standard (OAAS) v0.1.8 - Drupal Expert Agent
 # Full Governed Tier compliance with enhanced capabilities and security
 
-apiVersion: openapi-ai-agents/v0.1.3
+apiVersion: openapi-ai-agents/v0.1.8
 kind: Agent
 metadata:
   name: drupal-expert
@@ -12,7 +12,7 @@ metadata:
     development guidance with performance optimization and security-first approach.
   created: '2025-09-02T12:00:00.000Z'
   
-  # Enhanced metadata for v0.1.3 Governed Tier
+  # Enhanced metadata for v0.1.8 Governed Tier
   labels:
     tier: governed
     domain: drupal-development
@@ -25,7 +25,7 @@ metadata:
   annotations:
     ossa.io/conformance-level: "governed"
     ossa.io/migration-date: "2025-09-02"
-    ossa.io/source-format: "ossa-v0.1.3"
+    ossa.io/source-format: "ossa-v0.1.8"
     ossa.io/grade-target: "A+"
     ossa.io/compliance-level: "governed"
     ossa.io/certification: "drupal-expert"

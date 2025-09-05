@@ -1,5 +1,5 @@
 {
-  "ossa_version": "0.1.6",
+  "ossa_version": "0.1.8",
   "validation_rules": {
     "core_requirements": {
       "openapi_version": {
@@ -17,9 +17,9 @@
       "ossa_version_match": {
         "rule": "must_equal",
         "path": "info.x-openapi-ai-agents-standard.version",
-        "value": "0.1.6",
+        "value": "0.1.8",
         "severity": "error",
-        "message": "OSSA standard version must be 0.1.6"
+        "message": "OSSA standard version must be 0.1.8"
       },
       "agent_metadata": {
         "rule": "must_exist",

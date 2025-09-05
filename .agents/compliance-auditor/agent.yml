@@ -1,9 +1,9 @@
-apiVersion: open-standards-scalable-agents/v0.1.7
+apiVersion: open-standards-scalable-agents/v0.1.8
 kind: Agent
 metadata:
   name: "compliance-auditor"
   version: "1.1.0"
-  description: "Enterprise compliance auditor with OSSA v0.1.7 universal framework compatibility"
+  description: "Enterprise compliance auditor with OSSA v0.1.8 universal framework compatibility"
   author: "Open Standards for Scalable Agents Community"
   license: "Apache-2.0"
   created: "2025-01-28"
@@ -23,7 +23,7 @@ spec:
       nist_ai_rmf: "level_4"
       eu_ai_act: "compliant"
   
-  # Universal Framework Compatibility (OSSA v0.1.7 requirement)
+  # Universal Framework Compatibility (OSSA v0.1.8 requirement)
   framework_adapters:
     mcp:
       enabled: true
@@ -67,15 +67,15 @@ spec:
       - "risk_assessment"
       - "control_validation"
       - "audit_reporting"
-      - "framework_adaptation"  # New in v0.1.7
+      - "framework_adaptation"  # New in v0.1.8
     secondary:
       - "evidence_collection"
       - "gap_analysis"
       - "remediation_tracking"
       - "continuous_monitoring"
-      - "cross_framework_orchestration"  # New in v0.1.7
+      - "cross_framework_orchestration"  # New in v0.1.8
   
-  # Enhanced Protocol Support (v0.1.7)
+  # Enhanced Protocol Support (v0.1.8)
   protocols:
     - name: "openapi"
       version: "3.1.0"
@@ -83,10 +83,10 @@ spec:
       spec_file: "./openapi.yaml"
     - name: "mcp"
       version: "2024-11-05"
-      required: true  # Mandatory in v0.1.7
+      required: true  # Mandatory in v0.1.8
       tools_manifest: "./mcp-tools.json"
     - name: "agent2agent"
-      version: "0.1.7"
+      version: "0.1.8"
       required: true  # New requirement
       discovery_endpoint: "/a2a/discover"
     - name: "jsonrpc"
@@ -94,7 +94,7 @@ spec:
       required: false
       transport: "websocket"
 
-  # Enhanced Security Architecture (v0.1.7)
+  # Enhanced Security Architecture (v0.1.8)
   security:
     authentication:
       methods: ["api_key", "oauth2_pkce", "saml_2_0", "mTLS"]
@@ -118,7 +118,7 @@ spec:
       anonymization: "differential_privacy"
       right_to_erasure: "supported"
   
-  # Performance & Resource Management (v0.1.7)
+  # Performance & Resource Management (v0.1.8)
   performance:
     sla:
       availability: "99.99%"
@@ -197,10 +197,10 @@ spec:
       auth_required: true
       formats: ["json", "pdf", "xml"]
 
-# OSSA v0.1.7 Extensions
+# OSSA v0.1.8 Extensions
 x-ossa-token-optimization:
   enabled: true
-  total_budget: 12000  # Increased for v0.1.7
+  total_budget: 12000  # Increased for v0.1.8
   allocation:
     validation: 4000      # 33.3%
     compliance: 3500      # 29.2%
@@ -273,7 +273,7 @@ x-ossa-monitoring:
 
 x-ossa-deployment:
   container:
-    image: "ossa/compliance-auditor:v0.1.7"
+    image: "ossa/compliance-auditor:v0.1.8"
     registry: "docker.io"
     security_scanning: true
   kubernetes:
@@ -282,6 +282,6 @@ x-ossa-deployment:
     network_policies: true
     pod_security_standards: "restricted"
   helm:
-    chart_version: "0.1.7"
+    chart_version: "0.1.8"
     values_schema: "./helm/values.schema.json"
     upgrade_strategy: "rolling_update"

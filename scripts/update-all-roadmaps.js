@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /**
- * OSSA v0.1.7 ROADMAP Update Script
+ * OSSA v0.1.8 ROADMAP Update Script
  * Uses deployed agents to analyze and update all ROADMAP.md files
  */
 
@@ -26,7 +26,7 @@ const roadmapFiles = execSync('find /Users/flux423/Sites/LLM -name "ROADMAP.md" 
 console.log(`🔍 Found ${roadmapFiles.length} ROADMAP.md files to update`);
 
 // Load template
-const template = readFileSync('/Users/flux423/Sites/LLM/OSSA/.agents/roadmap-template-v0.1.7.md', 'utf8');
+const template = readFileSync('/Users/flux423/Sites/LLM/OSSA/.agents/roadmap-template-v0.1.8.md', 'utf8');
 
 // Project analysis function
 async function analyzeProject(projectPath) {
@@ -176,7 +176,7 @@ async function updateRoadmap(roadmapPath) {
 
 // Process all roadmaps
 async function updateAllRoadmaps() {
-  console.log('🚀 Starting OSSA v0.1.7 ROADMAP update process...\n');
+  console.log('🚀 Starting OSSA v0.1.8 ROADMAP update process...\n');
   
   const results = {
     total: roadmapFiles.length,
@@ -240,9 +240,9 @@ async function updateAllRoadmaps() {
     });
   }
   
-  console.log('\n🎉 OSSA v0.1.7 ROADMAP update process completed!');
+  console.log('\n🎉 OSSA v0.1.8 ROADMAP update process completed!');
   console.log('🔗 All projects now include:');
-  console.log('   • OSSA v0.1.7 compliance roadmap');
+  console.log('   • OSSA v0.1.8 compliance roadmap');
   console.log('   • Universal framework compatibility');
   console.log('   • Enterprise security & compliance');
   console.log('   • Neural network training system');

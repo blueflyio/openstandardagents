@@ -1,9 +1,9 @@
-apiVersion: open-standards-scalable-agents/v0.1.6
+apiVersion: open-standards-scalable-agents/v0.1.8
 kind: AgentRegistry
 metadata:
   name: ossa-project-registry
-  description: "OSSA v0.1.6 compliant agent registry"
-  version: 0.1.6
+  description: "OSSA v0.1.8 compliant agent registry"
+  version: 0.1.8
 
 spec:
   agents:
@@ -47,7 +47,7 @@ spec:
         - deployment_orchestration
 
   configuration:
-    ossa_version: "0.1.6"
+    ossa_version: "0.1.8"
     compliance_level: "gold"
     token_optimization: 75
     discovery_latency: 50  # ms

@@ -1,6 +1,6 @@
 {
   "name": "ossa-microservices",
-  "version": "0.1.6",
+  "version": "0.1.8",
   "description": "OSSA Microservices Architecture Configuration",
   "services": {
     "coordination": {
@@ -41,7 +41,7 @@
     "service-mesh": "istio-compatible"
   },
   "ossa-compliance": {
-    "version": "0.1.6",
+    "version": "0.1.8",
     "extensions": ["x-ossa-acta", "x-ossa-acdl", "x-ossa-coordination"],
     "token-optimization": {
       "enabled": true,

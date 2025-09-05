@@ -1,5 +1,5 @@
 """
-OSSA v0.1.3 - CrewAI Agent Integration
+OSSA v0.1.8 - CrewAI Agent Integration
 Provides standardized CrewAI agent implementation for OSSA-compliant agents
 """
 
@@ -111,7 +111,7 @@ class DataProcessingTool(OSSAComplianceTool):
 
 
 class OSSACrewAIAgent:
-    """OSSA v0.1.3 compliant CrewAI Agent"""
+    """OSSA v0.1.8 compliant CrewAI Agent"""
     
     def __init__(self, config: OSSAAgentConfig):
         self.config = config

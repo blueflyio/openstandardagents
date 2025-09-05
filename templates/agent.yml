@@ -1,9 +1,9 @@
-# OSSA v0.1.6 Agent Specification
+# OSSA v0.1.8 Agent Specification
 # Open Standards for Scalable Agents
 # https://gitlab.com/bluefly-ai/ossa-standard
 
 ossa:
-  version: "0.1.6"
+  version: "0.1.8"
   conformance: "governed"  # core | governed | advanced
   
 agent:

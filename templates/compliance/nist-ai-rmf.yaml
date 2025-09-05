@@ -1,5 +1,5 @@
 # NIST AI Risk Management Framework (AI RMF 1.0) Compliance Template
-# For OSSA v0.1.6 Agent Compliance Framework
+# For OSSA v0.1.8 Agent Compliance Framework
 
 nist_ai_rmf:
   version: "1.0"

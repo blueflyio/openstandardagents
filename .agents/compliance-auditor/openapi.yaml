@@ -5,7 +5,7 @@ info:
   description: "Enterprise-grade compliance auditor for ISO 42001, NIST AI RMF, and EU AI Act frameworks"
   
   x-openapi-ai-agents-standard:
-    version: "0.1.6"
+    version: "0.1.8"
     conformance_tier: "advanced"
     certification_level: "gold"
     compliance_frameworks: ["ISO_42001", "NIST_AI_RMF", "EU_AI_Act"]

@@ -1,7 +1,7 @@
 {
   "name": "@ossa/validation-specialist",
   "version": "1.1.0",
-  "description": "OSSA v0.1.7 validation specialist with universal framework compatibility",
+  "description": "OSSA v0.1.8 validation specialist with universal framework compatibility",
   "main": "server.js",
   "type": "module",
   "scripts": {

@@ -2,10 +2,10 @@ openapi: 3.1.0
 info:
   title: "OSSA Validation Specialist API"
   version: "1.0.0"
-  description: "OpenAPI AI Agents Standard v0.1.6 compliance validation specialist"
+  description: "OpenAPI AI Agents Standard v0.1.8 compliance validation specialist"
   
   x-openapi-ai-agents-standard:
-    version: "0.1.6"
+    version: "0.1.8"
     conformance_tier: "governed"
     certification_level: "gold"
     compliance_frameworks: ["ISO_42001", "NIST_AI_RMF", "EU_AI_Act"]
@@ -90,7 +90,7 @@ paths:
   /validate/openapi:
     post:
       summary: "Validate OpenAPI specification"
-      description: "Validates an OpenAPI 3.1 specification against OSSA v0.1.6 standard"
+      description: "Validates an OpenAPI 3.1 specification against OSSA v0.1.8 standard"
       operationId: "validateOpenAPI"
       security:
         - ApiKeyAuth: []
@@ -203,7 +203,7 @@ components:
           example: "1.0.0"
         ossa_version:
           type: string
-          example: "0.1.6"
+          example: "0.1.8"
         timestamp:
           type: string
           format: date-time

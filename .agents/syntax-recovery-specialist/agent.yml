@@ -1,9 +1,9 @@
-apiVersion: open-standards-scalable-agents/v0.1.7
+apiVersion: open-standards-scalable-agents/v0.1.8
 kind: Agent
 metadata:
   name: "syntax-recovery-specialist"
   version: "1.0.0"
-  description: "OSSA v0.1.7 syntax recovery specialist with ML-powered pattern detection and automated correction across 17 NPM projects (491,492 files)"
+  description: "OSSA v0.1.8 syntax recovery specialist with ML-powered pattern detection and automated correction across 17 NPM projects (491,492 files)"
   author: "Open Standards for Scalable Agents Community"
   license: "Apache-2.0"
   created: "2025-09-04"
@@ -24,7 +24,7 @@ spec:
       nist_ai_rmf: "level_4"
       syntax_expertise: "expert_level"
   
-  # Universal Framework Compatibility (OSSA v0.1.7 requirement)
+  # Universal Framework Compatibility (OSSA v0.1.8 requirement)
   framework_adapters:
     mcp:
       enabled: true
@@ -84,7 +84,7 @@ spec:
       - "continuous_learning_integration"
       - "feedback_loop_optimization"
   
-  # Enhanced Protocol Support (v0.1.7)
+  # Enhanced Protocol Support (v0.1.8)
   protocols:
     - name: "openapi"
       version: "3.1.0"
@@ -97,7 +97,7 @@ spec:
       tools_manifest: "./mcp-tools.json"
       server_capabilities: ["syntax_recovery", "pattern_learning", "bulk_correction"]
     - name: "agent2agent"
-      version: "0.1.7"
+      version: "0.1.8"
       required: true
       discovery_endpoint: "/a2a/discover"
       coordination_protocols: ["syntax_coordination", "correction_consensus"]
@@ -107,7 +107,7 @@ spec:
       ast_parser: "typescript-compiler"
       validation: "tsc"
 
-  # Enhanced Security Architecture (v0.1.7)
+  # Enhanced Security Architecture (v0.1.8)
   security:
     authentication:
       methods: ["api_key", "oauth2_pkce", "service_account"]
@@ -127,7 +127,7 @@ spec:
       correction_history: "immutable"
       retention_policy: "2_years"
 
-  # Performance & Resource Management (v0.1.7)
+  # Performance & Resource Management (v0.1.8)
   performance:
     sla:
       availability: "99.95%"
@@ -346,7 +346,7 @@ spec:
       async: true
       webhook_callback: true
 
-# OSSA v0.1.7 Extensions
+# OSSA v0.1.8 Extensions
 x-ossa-token-optimization:
   enabled: true
   total_budget: 25000
@@ -452,7 +452,7 @@ x-ossa-monitoring:
 
 x-ossa-deployment:
   container:
-    image: "ossa/syntax-recovery-specialist:v0.1.7"
+    image: "ossa/syntax-recovery-specialist:v0.1.8"
     registry: "docker.io"
     security_scanning: true
     syntax_tools_included: true
@@ -464,7 +464,7 @@ x-ossa-deployment:
     resource_quotas: true
     persistent_volume: "500Gi"
   helm:
-    chart_version: "0.1.7"
+    chart_version: "0.1.8"
     values_schema: "./helm/values.schema.json"
     upgrade_strategy: "rolling_update"
     syntax_validation_on_deploy: true

@@ -5,7 +5,7 @@ info:
   description: "Universal Agent Discovery Protocol (UADP) orchestration manager for multi-agent coordination"
   
   x-openapi-ai-agents-standard:
-    version: "0.1.6"
+    version: "0.1.8"
     conformance_tier: "advanced"
     certification_level: "gold"
     compliance_frameworks: ["ISO_42001", "NIST_AI_RMF", "EU_AI_Act"]
@@ -42,7 +42,7 @@ info:
     load_balancing: "round_robin"
 
   x-discovery-protocol:
-    uadp_version: "0.1.6"
+    uadp_version: "0.1.8"
     hierarchical_discovery: true
     agent_registry: true
     capability_matching: true

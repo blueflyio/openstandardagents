@@ -1,5 +1,5 @@
 """
-OSSA v0.1.3 - LangChain Agent Integration
+OSSA v0.1.8 - LangChain Agent Integration
 Provides standardized LangChain agent implementation for OSSA-compliant agents
 """
 
@@ -74,7 +74,7 @@ class OSSACallbackHandler(BaseCallbackHandler):
 
 
 class OSSALangChainAgent:
-    """OSSA v0.1.3 compliant LangChain Agent"""
+    """OSSA v0.1.8 compliant LangChain Agent"""
     
     def __init__(self, config: OSSAAgentConfig):
         self.config = config
@@ -236,7 +236,7 @@ class OSSALangChainAgent:
         agent_description = self.agent_config.get('description', '')
         capabilities = self.agent_config.get('capabilities', {})
         
-        message = f"""You are {self.agent_config['name']}, an OSSA v0.1.3 compliant AI agent.
+        message = f"""You are {self.agent_config['name']}, an OSSA v0.1.8 compliant AI agent.
 
 Description: {agent_description}
 

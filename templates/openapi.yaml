@@ -3,7 +3,7 @@ info:
   title: OSSA Agent API
   version: 1.0.0
   description: |
-    OSSA v0.1.6 compliant AI Agent API specification with x-openapi-ai-agents-standard extensions.
+    OSSA v0.1.8 compliant AI Agent API specification with x-openapi-ai-agents-standard extensions.
     This agent provides enterprise-grade AI capabilities with full governance and compliance support.
   contact:
     name: Bluefly AI Team
@@ -15,7 +15,7 @@ info:
   
   # OSSA x-openapi-ai-agents-standard extensions
   x-openapi-ai-agents-standard:
-    version: "0.1.6"
+    version: "0.1.8"
     conformance: "governed"
     agent:
       id: "agent-unique-id"

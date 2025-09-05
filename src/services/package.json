@@ -1,6 +1,6 @@
 {
   "name": "@ossa/services",
-  "version": "0.1.6",
+  "version": "0.1.8",
   "description": "OSSA Services - MCP Bridge, Registry, and Runtime Services",
   "main": "dist/index.js",
   "type": "module",

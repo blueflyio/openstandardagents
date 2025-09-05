@@ -1,8 +1,8 @@
-ossa: 0.1.6
+ossa: 0.1.8
 metadata:
   name: "enterprise-agent-advanced"
   version: "2.0.0"
-  description: "Advanced enterprise agent demonstrating OSSA 0.1.6 Advanced conformance tier with full compliance framework integration"
+  description: "Advanced enterprise agent demonstrating OSSA 0.1.8 Advanced conformance tier with full compliance framework integration"
   author: "Enterprise AI Solutions Team"
   license: "Apache-2.0"
   created: "2025-01-28"
@@ -44,11 +44,11 @@ spec:
       required: true
       advanced_features: ["resource_streaming", "progress_tracking"]
     - name: "a2a"
-      version: "0.1.6"
+      version: "0.1.8"
       required: true
       coordination_patterns: ["hierarchical", "mesh", "federated"]
     - name: "uadp"
-      version: "0.1.6"
+      version: "0.1.8"
       required: true
       discovery_modes: ["active", "passive", "predictive"]
     - name: "grpc"

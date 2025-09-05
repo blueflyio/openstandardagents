@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /**
- * OSSA v0.1.7 Validation Specialist Agent Server
+ * OSSA v0.1.8 Validation Specialist Agent Server
  * Comprehensive validation with universal framework compatibility
  */
 
@@ -29,7 +29,7 @@ addFormats(ajv);
 // Load agent configuration
 let agentConfig;
 try {
-  const configYaml = readFileSync('./agent-v0.1.7.yml', 'utf8');
+  const configYaml = readFileSync('./agent-v0.1.8.yml', 'utf8');
   agentConfig = YAML.parse(configYaml);
 } catch (error) {
   console.error('Failed to load agent configuration:', error.message);
@@ -64,14 +64,14 @@ const performanceMetrics = {
   avgValidationTime: 0
 };
 
-// OSSA v0.1.7 Schema (simplified for demo)
+// OSSA v0.1.8 Schema (simplified for demo)
 const ossaSchema = {
   type: "object",
   required: ["apiVersion", "kind", "metadata", "spec"],
   properties: {
     apiVersion: {
       type: "string",
-      enum: ["open-standards-scalable-agents/v0.1.7"]
+      enum: ["open-standards-scalable-agents/v0.1.8"]
     },
     kind: {
       type: "string",
@@ -170,7 +170,7 @@ app.get('/capabilities', (req, res) => {
     protocols: agentConfig.spec.protocols,
     framework_adapters: agentConfig.spec.framework_adapters,
     validation_engines: {
-      ossa_schema_validator: { version: '0.1.7', enabled: true },
+      ossa_schema_validator: { version: '0.1.8', enabled: true },
       openapi_validator: { versions: ['3.0.x', '3.1.x'], enabled: true },
       json_schema_validator: { version: 'draft-2020-12', enabled: true },
       yaml_validator: { version: '1.2', enabled: true }
@@ -273,7 +273,7 @@ app.post('/validate/ossa', upload.single('specification'), (req, res) => {
     
     const result = {
       valid: errors.length === 0,
-      version: '0.1.7',
+      version: '0.1.8',
       validation_time: new Date().toISOString(),
       compliance_score: complianceScore,
       errors,
@@ -281,7 +281,7 @@ app.post('/validate/ossa', upload.single('specification'), (req, res) => {
       recommendations,
       schema_validation: {
         valid: schemaValid,
-        schema_version: '0.1.7',
+        schema_version: '0.1.8',
         errors: errors.filter(e => e.code.startsWith('SCHEMA')),
         validated_fields: countValidatedFields(parsedSpec),
         schema_coverage: calculateSchemaCoverage(parsedSpec)
@@ -889,7 +889,7 @@ function getSuggestionForError(error) {
     'enum': 'Use one of the allowed values',
     'type': 'Check the data type of this field'
   };
-  return suggestions[error.keyword] || 'Check the OSSA v0.1.7 specification for correct format';
+  return suggestions[error.keyword] || 'Check the OSSA v0.1.8 specification for correct format';
 }
 
 function performSemanticValidation(spec) {
@@ -1058,12 +1058,12 @@ process.on('SIGINT', () => {
 
 // Start server
 app.listen(PORT, () => {
-  console.log(`🚀 OSSA v0.1.7 Validation Specialist started successfully!`);
+  console.log(`🚀 OSSA v0.1.8 Validation Specialist started successfully!`);
   console.log(`📍 Server: http://localhost:${PORT}`);
   console.log(`🆔 Agent ID: ${AGENT_ID}`);
   console.log(`⚡ Capabilities: ${agentConfig.spec.capabilities?.primary?.length || 0} primary, ${agentConfig.spec.capabilities?.secondary?.length || 0} secondary`);
   console.log(`🔌 Frameworks: ${Object.keys(agentConfig.spec.framework_adapters || {}).join(', ')}`);
-  console.log(`🔍 Validation Engines: OSSA v0.1.7, OpenAPI 3.1.0, JSON Schema, YAML`);
+  console.log(`🔍 Validation Engines: OSSA v0.1.8, OpenAPI 3.1.0, JSON Schema, YAML`);
   console.log(`📊 Monitoring: /monitor, /metrics, /health`);
   console.log(`🎯 Validation: /validate/ossa, /validate/openapi, /validate/batch`);
   console.log(`📜 Certification: /certify`);

@@ -1,4 +1,4 @@
-apiVersion: open-standards-scalable-agents/v0.1.7
+apiVersion: open-standards-scalable-agents/v0.1.8
 kind: Agent
 metadata:
   name: "safe-syntax-analyzer"

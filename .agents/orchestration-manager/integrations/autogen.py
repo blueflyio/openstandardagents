@@ -78,7 +78,7 @@ class OSSAAutoGenOrchestrator:
                 "version": "1.0.0",
                 "description": system_message,
                 "x-openapi-ai-agents-standard": {
-                    "version": "0.1.3",
+                    "version": "0.1.8",
                     "conformance_tier": "core"
                 },
                 "x-agent-metadata": {

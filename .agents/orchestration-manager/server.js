@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /**
- * OSSA v0.1.7 Orchestration Manager Agent Server
+ * OSSA v0.1.8 Orchestration Manager Agent Server
  * Multi-agent orchestration with universal framework compatibility
  */
 
@@ -31,7 +31,7 @@ addFormats(ajv);
 // Load agent configuration
 let agentConfig;
 try {
-  const configYaml = readFileSync('./agent-v0.1.7.yml', 'utf8');
+  const configYaml = readFileSync('./agent-v0.1.8.yml', 'utf8');
   agentConfig = YAML.parse(configYaml);
 } catch (error) {
   console.error('Failed to load agent configuration:', error.message);
@@ -745,7 +745,7 @@ process.on('SIGINT', () => {
 
 // Start server
 server.listen(PORT, () => {
-  console.log(`🚀 OSSA v0.1.7 Orchestration Manager started successfully!`);
+  console.log(`🚀 OSSA v0.1.8 Orchestration Manager started successfully!`);
   console.log(`📍 Server: http://localhost:${PORT}`);
   console.log(`🆔 Agent ID: ${AGENT_ID}`);
   console.log(`⚡ Capabilities: ${agentConfig.spec.capabilities?.primary?.length || 0} primary, ${agentConfig.spec.capabilities?.secondary?.length || 0} secondary`);

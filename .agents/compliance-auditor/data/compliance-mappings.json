@@ -1,5 +1,5 @@
 {
-  "ossa_version": "0.1.6",
+  "ossa_version": "0.1.8",
   "compliance_frameworks": {
     "ISO_42001": {
       "standard_name": "ISO/IEC 42001:2023",

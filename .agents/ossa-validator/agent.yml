@@ -1,9 +1,9 @@
-apiVersion: open-standards-scalable-agents/v0.1.6
+apiVersion: open-standards-scalable-agents/v0.1.8
 kind: Agent
 metadata:
   name: ossa-validator-agent
-  description: "OSSA v0.1.6 compliance validation agent"
-  version: 0.1.6
+  description: "OSSA v0.1.8 compliance validation agent"
+  version: 0.1.8
   tags:
     - validation
     - compliance
@@ -18,7 +18,7 @@ spec:
     model: claude-sonnet
     temperature: 0.1
   
-# OSSA v0.1.6 Extensions
+# OSSA v0.1.8 Extensions
 x-ossa-token-budget:
   total_budget: 8000
   allocation:

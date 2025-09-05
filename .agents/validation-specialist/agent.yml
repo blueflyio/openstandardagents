@@ -1,9 +1,9 @@
-apiVersion: open-standards-scalable-agents/v0.1.7
+apiVersion: open-standards-scalable-agents/v0.1.8
 kind: Agent
 metadata:
   name: "validation-specialist"
   version: "1.1.0"
-  description: "OSSA v0.1.7 compliance validation specialist with universal framework support and advanced specification validation"
+  description: "OSSA v0.1.8 compliance validation specialist with universal framework support and advanced specification validation"
   author: "Open Standards for Scalable Agents Community"
   license: "Apache-2.0"
   created: "2025-01-28"
@@ -20,11 +20,11 @@ spec:
     tier: "governed"
     level: "production"
     certification:
-      ossa_compliance: "v0.1.7_certified"
+      ossa_compliance: "v0.1.8_certified"
       validation_authority: "certified"
       specification_expertise: "expert_level"
   
-  # Universal Framework Compatibility (OSSA v0.1.7 requirement)
+  # Universal Framework Compatibility (OSSA v0.1.8 requirement)
   framework_adapters:
     mcp:
       enabled: true
@@ -84,7 +84,7 @@ spec:
       - "validation_report_generation"
       - "continuous_compliance_monitoring"
   
-  # Enhanced Protocol Support (v0.1.7)
+  # Enhanced Protocol Support (v0.1.8)
   protocols:
     - name: "openapi"
       version: "3.1.0"
@@ -97,7 +97,7 @@ spec:
       tools_manifest: "./mcp-tools.json"
       server_capabilities: ["validation", "compliance", "certification"]
     - name: "agent2agent"
-      version: "0.1.7"
+      version: "0.1.8"
       required: true
       discovery_endpoint: "/a2a/discover"
       validation_protocols: ["spec_exchange", "compliance_verification"]
@@ -112,7 +112,7 @@ spec:
       schema_validation: true
       linting: "yamllint"
 
-  # Enhanced Security Architecture (v0.1.7)
+  # Enhanced Security Architecture (v0.1.8)
   security:
     authentication:
       methods: ["api_key", "oauth2_pkce", "saml_2_0", "client_certificates"]
@@ -140,7 +140,7 @@ spec:
       validation_data_anonymization: true
       gdpr_compliance: true
   
-  # Performance & Resource Management (v0.1.7)
+  # Performance & Resource Management (v0.1.8)
   performance:
     sla:
       availability: "99.9%"
@@ -169,7 +169,7 @@ spec:
   # Advanced Validation Capabilities
   validation_engines:
     ossa_schema_validator:
-      version: "0.1.7"
+      version: "0.1.8"
       strict_mode: true
       custom_validators: true
       extension_validation: true
@@ -261,7 +261,7 @@ spec:
       auth_required: true
       formats: ["json", "html", "pdf"]
 
-# OSSA v0.1.7 Extensions
+# OSSA v0.1.8 Extensions
 x-ossa-token-optimization:
   enabled: true
   total_budget: 10000
@@ -366,7 +366,7 @@ x-ossa-monitoring:
 
 x-ossa-deployment:
   container:
-    image: "ossa/validation-specialist:v0.1.7"
+    image: "ossa/validation-specialist:v0.1.8"
     registry: "docker.io"
     security_scanning: true
     validation_tools_included: true
@@ -377,7 +377,7 @@ x-ossa-deployment:
     pod_security_standards: "baseline"
     resource_quotas: true
   helm:
-    chart_version: "0.1.7"
+    chart_version: "0.1.8"
     values_schema: "./helm/values.schema.json"
     upgrade_strategy: "rolling_update"
     validation_on_deploy: true

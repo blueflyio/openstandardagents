@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /**
- * OSSA Deprecation Management API v0.1.6
+ * OSSA Deprecation Management API v0.1.8
  * 
  * API-first deprecation management system for the LLM ecosystem.
  * Provides REST endpoints for script migration tracking, CLI command mapping,
@@ -43,7 +43,7 @@ function initializeDatabase() {
   }
   
   if (!existsSync(SCRIPTS_DB)) {
-    writeFileSync(SCRIPTS_DB, JSON.stringify({ scripts: {}, metadata: { version: '0.1.6', created: new Date().toISOString() } }, null, 2));
+    writeFileSync(SCRIPTS_DB, JSON.stringify({ scripts: {}, metadata: { version: '0.1.8', created: new Date().toISOString() } }, null, 2));
   }
   
   if (!existsSync(MIGRATIONS_DB)) {
@@ -102,7 +102,7 @@ function validateScript(scriptData) {
 app.get('/api/v1/health', (req, res) => {
   res.json({
     status: 'healthy',
-    version: '0.1.6',
+    version: '0.1.8',
     timestamp: new Date().toISOString(),
     api: 'OSSA Deprecation Management API'
   });
@@ -469,7 +469,7 @@ app.post('/api/v1/migration/plan/:project', (req, res) => {
     
     const plan = {
       project,
-      version: req.body.targetVersion || '0.1.6',
+      version: req.body.targetVersion || '0.1.8',
       created: new Date().toISOString(),
       steps,
       estimatedCompletion: estimatedCompletion.toISOString(),
@@ -836,8 +836,8 @@ app.use((req, res) => {
 initializeDatabase();
 
 app.listen(PORT, () => {
-  console.log(`🚀 OSSA Deprecation Management API v0.1.6 running on port ${PORT}`);
-  console.log(`📖 OpenAPI documentation: http://localhost:${PORT}/api/v1/deprecation-management-api-v0.1.6.yaml`);
+  console.log(`🚀 OSSA Deprecation Management API v0.1.8 running on port ${PORT}`);
+  console.log(`📖 OpenAPI documentation: http://localhost:${PORT}/api/v1/deprecation-management-api-v0.1.8.yaml`);
   console.log(`💡 Health check: http://localhost:${PORT}/api/v1/health`);
 });
 
