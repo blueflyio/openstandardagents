@@ -1,0 +1,100 @@
+{
+  "validation_timestamp": "2025-09-04T21:39:29.320Z",
+  "ossa_version": "0.1.7",
+  "total_agents": 2,
+  "valid_agents": 1,
+  "average_compliance_score": 66,
+  "agents": {
+    "agent-v0.1.7.yml": {
+      "agent": "agent-v0.1.7.yml",
+      "valid": true,
+      "errors": [],
+      "warnings": [
+        "Framework adapter openai is enabled but missing version"
+      ],
+      "compliance_score": 98,
+      "v0_1_7_features": {
+        "universal_framework_compatibility": true,
+        "three_tier_conformance": true,
+        "enhanced_security": true,
+        "token_optimization": true,
+        "memory_integration": true,
+        "orchestration_support": true,
+        "monitoring_integration": true
+      }
+    },
+    "agent.yml": {
+      "agent": "agent.yml",
+      "valid": false,
+      "errors": [
+        "Invalid apiVersion: expected open-standards-scalable-agents/v0.1.7, got undefined",
+        "Missing required metadata.labels",
+        "Missing required metadata.labels",
+        "Missing required spec.conformance",
+        "Missing required spec.framework_adapters",
+        "Missing required framework_adapters section",
+        "Missing required security.audit",
+        "security.authentication.methods must be an array",
+        "Missing required performance.sla",
+        "Missing required performance.resources",
+        "Missing required performance.scaling",
+        "Missing required extension: x-ossa-token-optimization",
+        "Missing required extension: x-ossa-memory-integration",
+        "Missing required extension: x-ossa-orchestration",
+        "Missing required extension: x-ossa-monitoring",
+        "Missing required extension: x-ossa-deployment"
+      ],
+      "warnings": [
+        "MCP tools manifest (mcp-tools.json) not found"
+      ],
+      "compliance_score": 34,
+      "v0_1_7_features": {
+        "universal_framework_compatibility": false,
+        "three_tier_conformance": false,
+        "enhanced_security": false,
+        "token_optimization": false,
+        "memory_integration": false,
+        "orchestration_support": false,
+        "monitoring_integration": false
+      }
+    }
+  },
+  "summary": {
+    "compliance_distribution": {
+      "excellent": 1,
+      "good": 0,
+      "needs_improvement": 1
+    },
+    "common_issues": [
+      {
+        "error": "Missing required metadata.labels",
+        "count": 2
+      },
+      {
+        "error": "Invalid apiVersion: expected open-standards-scalable-agents/v0.1.7, got undefined",
+        "count": 1
+      },
+      {
+        "error": "Missing required spec.conformance",
+        "count": 1
+      },
+      {
+        "error": "Missing required spec.framework_adapters",
+        "count": 1
+      },
+      {
+        "error": "Missing required framework_adapters section",
+        "count": 1
+      }
+    ],
+    "v0_1_7_adoption": {
+      "universal_framework_compatibility": 50,
+      "three_tier_conformance": 50,
+      "enhanced_security": 50,
+      "token_optimization": 50,
+      "memory_integration": 50,
+      "orchestration_support": 50,
+      "monitoring_integration": 50
+    }
+  }
+}

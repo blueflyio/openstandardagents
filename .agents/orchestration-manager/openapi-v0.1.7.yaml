@@ -1,0 +1,1104 @@
+openapi: 3.1.0
+info:
+  title: OSSA v0.1.7 Orchestration Manager Agent
+  version: 1.1.0
+  description: |
+    Multi-agent orchestration manager with universal framework compatibility and enhanced discovery.
+    
+    This agent provides comprehensive orchestration capabilities for complex multi-agent workflows
+    with support for hierarchical discovery, real-time performance optimization, and enterprise-grade
+    security and compliance features.
+  contact:
+    name: Open Standards for Scalable Agents Community
+    url: https://github.com/ossa-community
+  license:
+    name: Apache 2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0.html
+  
+servers:
+  - url: http://localhost:8081
+    description: Development server
+  - url: https://orchestration-manager.ossa.local
+    description: Local testing environment
+  - url: https://orchestration-manager.ossa.io
+    description: Production server
+
+security:
+  - oauth2_pkce: []
+  - apiKey: []
+  - bearerAuth: []
+
+paths:
+  /health:
+    get:
+      summary: Health check endpoint
+      description: Returns the current health status of the orchestration manager
+      operationId: getHealth
+      security: []
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthStatus'
+              example:
+                status: "healthy"
+                uptime: 12345
+                version: "1.1.0"
+                dependencies:
+                  agent_registry: "healthy"
+                  workflow_engine: "healthy"
+                  message_broker: "healthy"
+        '503':
+          description: Service is unhealthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthStatus'
+
+  /capabilities:
+    get:
+      summary: Get agent capabilities
+      description: Returns comprehensive capabilities and configuration of the orchestration manager
+      operationId: getCapabilities
+      responses:
+        '200':
+          description: Agent capabilities
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentCapabilities'
+
+  /agents/discover:
+    get:
+      summary: Discover available agents
+      description: Discover agents using Universal Agent Discovery Protocol (UADP)
+      operationId: discoverAgents
+      parameters:
+        - name: capability
+          in: query
+          description: Filter by specific capability
+          schema:
+            type: string
+          example: "compliance_auditing"
+        - name: framework
+          in: query
+          description: Filter by supported framework
+          schema:
+            type: string
+            enum: ["mcp", "langchain", "crewai", "autogen", "openai"]
+        - name: tier
+          in: query
+          description: Filter by conformance tier
+          schema:
+            type: string
+            enum: ["core", "governed", "advanced"]
+        - name: max_results
+          in: query
+          description: Maximum number of results
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 1000
+            default: 50
+      responses:
+        '200':
+          description: Discovered agents
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DiscoveryResponse'
+
+    post:
+      summary: Advanced agent discovery
+      description: Perform semantic capability matching and ML-based performance ranking
+      operationId: advancedDiscovery
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DiscoveryRequest'
+      responses:
+        '200':
+          description: Advanced discovery results
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdvancedDiscoveryResponse'
+
+  /orchestrate:
+    post:
+      summary: Start workflow orchestration
+      description: Initiate a multi-agent workflow with specified patterns and agents
+      operationId: orchestrateWorkflow
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OrchestrationRequest'
+      responses:
+        '202':
+          description: Workflow started successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkflowResponse'
+        '400':
+          description: Invalid workflow configuration
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /workflows:
+    get:
+      summary: List workflows
+      description: Get list of all workflows with filtering and pagination
+      operationId: listWorkflows
+      parameters:
+        - name: status
+          in: query
+          description: Filter by workflow status
+          schema:
+            type: string
+            enum: ["pending", "running", "completed", "failed", "cancelled"]
+        - name: pattern
+          in: query
+          description: Filter by orchestration pattern
+          schema:
+            type: string
+        - name: page
+          in: query
+          description: Page number for pagination
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: limit
+          in: query
+          description: Number of items per page
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+      responses:
+        '200':
+          description: List of workflows
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkflowList'
+
+    post:
+      summary: Create workflow template
+      description: Create a reusable workflow template
+      operationId: createWorkflowTemplate
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WorkflowTemplate'
+      responses:
+        '201':
+          description: Workflow template created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkflowTemplateResponse'
+
+  /workflows/{workflowId}:
+    get:
+      summary: Get workflow details
+      description: Retrieve detailed information about a specific workflow
+      operationId: getWorkflow
+      parameters:
+        - name: workflowId
+          in: path
+          required: true
+          description: Unique workflow identifier
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Workflow details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkflowDetails'
+        '404':
+          description: Workflow not found
+
+    put:
+      summary: Update workflow
+      description: Update workflow configuration or status
+      operationId: updateWorkflow
+      parameters:
+        - name: workflowId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WorkflowUpdate'
+      responses:
+        '200':
+          description: Workflow updated successfully
+        '404':
+          description: Workflow not found
+
+    delete:
+      summary: Cancel workflow
+      description: Cancel a running workflow
+      operationId: cancelWorkflow
+      parameters:
+        - name: workflowId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Workflow cancelled successfully
+        '404':
+          description: Workflow not found
+        '409':
+          description: Workflow cannot be cancelled in current state
+
+  /monitor:
+    get:
+      summary: Real-time monitoring
+      description: Get real-time performance metrics and system status
+      operationId: getMonitoring
+      parameters:
+        - name: format
+          in: query
+          description: Response format
+          schema:
+            type: string
+            enum: ["json", "prometheus"]
+            default: "json"
+        - name: metrics
+          in: query
+          description: Specific metrics to include
+          schema:
+            type: array
+            items:
+              type: string
+          style: form
+          explode: false
+      responses:
+        '200':
+          description: Monitoring data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MonitoringData'
+            text/plain:
+              schema:
+                type: string
+                description: Prometheus format metrics
+
+  /a2a/discover:
+    get:
+      summary: Agent-to-agent discovery
+      description: OSSA Agent-to-Agent (A2A) protocol discovery endpoint
+      operationId: a2aDiscover
+      security: []
+      responses:
+        '200':
+          description: Agent discovery information
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/A2ADiscovery'
+
+  /mcp:
+    get:
+      summary: MCP server capabilities
+      description: Model Context Protocol server capabilities and tools
+      operationId: getMcpCapabilities
+      responses:
+        '200':
+          description: MCP server information
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/McpCapabilities'
+
+  /mcp/tools/call:
+    post:
+      summary: Call MCP tool
+      description: Execute an MCP tool with specified parameters
+      operationId: callMcpTool
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/McpToolCall'
+      responses:
+        '200':
+          description: Tool execution result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/McpToolResult'
+
+  /metrics:
+    get:
+      summary: Prometheus metrics
+      description: Prometheus-format metrics endpoint
+      operationId: getPrometheusMetrics
+      security: []
+      responses:
+        '200':
+          description: Prometheus metrics
+          content:
+            text/plain:
+              schema:
+                type: string
+                description: Prometheus format metrics
+
+components:
+  securitySchemes:
+    oauth2_pkce:
+      type: oauth2
+      flows:
+        authorizationCode:
+          authorizationUrl: /oauth2/authorize
+          tokenUrl: /oauth2/token
+          scopes:
+            orchestration:read: Read orchestration data
+            orchestration:write: Manage orchestration workflows
+            agents:discover: Discover agents
+            metrics:read: Read monitoring metrics
+            admin: Administrative access
+    
+    apiKey:
+      type: apiKey
+      in: header
+      name: X-API-Key
+    
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    HealthStatus:
+      type: object
+      required: [status, uptime, version]
+      properties:
+        status:
+          type: string
+          enum: ["healthy", "unhealthy", "degraded"]
+          description: Overall service health status
+        uptime:
+          type: number
+          description: Service uptime in seconds
+        version:
+          type: string
+          description: Agent version
+        dependencies:
+          type: object
+          additionalProperties:
+            type: string
+            enum: ["healthy", "unhealthy", "unknown"]
+          description: Health status of dependencies
+
+    AgentCapabilities:
+      type: object
+      required: [name, version, conformance, capabilities, protocols]
+      properties:
+        name:
+          type: string
+          example: "orchestration-manager"
+        version:
+          type: string
+          example: "1.1.0"
+        conformance:
+          $ref: '#/components/schemas/ConformanceInfo'
+        capabilities:
+          type: object
+          properties:
+            primary:
+              type: array
+              items:
+                type: string
+            secondary:
+              type: array
+              items:
+                type: string
+        protocols:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProtocolInfo'
+        framework_adapters:
+          type: object
+          additionalProperties: true
+
+    ConformanceInfo:
+      type: object
+      required: [tier, level]
+      properties:
+        tier:
+          type: string
+          enum: ["core", "governed", "advanced"]
+        level:
+          type: string
+          enum: ["development", "production", "enterprise"]
+        certification:
+          type: object
+          additionalProperties: true
+
+    ProtocolInfo:
+      type: object
+      required: [name, version, required]
+      properties:
+        name:
+          type: string
+        version:
+          type: string
+        required:
+          type: boolean
+        endpoint:
+          type: string
+
+    DiscoveryRequest:
+      type: object
+      required: [query]
+      properties:
+        query:
+          type: string
+          description: Natural language capability description
+          example: "Find agents that can perform compliance auditing with ISO 42001 support"
+        semantic_search:
+          type: boolean
+          default: true
+          description: Enable semantic capability matching
+        performance_ranking:
+          type: boolean
+          default: true
+          description: Enable ML-based performance ranking
+        filters:
+          type: object
+          properties:
+            frameworks:
+              type: array
+              items:
+                type: string
+            tiers:
+              type: array
+              items:
+                type: string
+            min_performance_score:
+              type: number
+              minimum: 0
+              maximum: 1
+        max_results:
+          type: integer
+          minimum: 1
+          maximum: 1000
+          default: 50
+
+    DiscoveryResponse:
+      type: object
+      required: [agents, total_count]
+      properties:
+        agents:
+          type: array
+          items:
+            $ref: '#/components/schemas/DiscoveredAgent'
+        total_count:
+          type: integer
+        query_time_ms:
+          type: number
+
+    AdvancedDiscoveryResponse:
+      allOf:
+        - $ref: '#/components/schemas/DiscoveryResponse'
+        - type: object
+          properties:
+            semantic_matches:
+              type: array
+              items:
+                type: object
+                properties:
+                  agent_id:
+                    type: string
+                  similarity_score:
+                    type: number
+                  matched_capabilities:
+                    type: array
+                    items:
+                      type: string
+            performance_ranking:
+              type: array
+              items:
+                type: object
+                properties:
+                  agent_id:
+                    type: string
+                  performance_score:
+                    type: number
+                  ranking_factors:
+                    type: object
+
+    DiscoveredAgent:
+      type: object
+      required: [id, name, capabilities, health_status]
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        version:
+          type: string
+        capabilities:
+          type: array
+          items:
+            type: string
+        frameworks:
+          type: array
+          items:
+            type: string
+        tier:
+          type: string
+          enum: ["core", "governed", "advanced"]
+        health_status:
+          type: string
+          enum: ["healthy", "unhealthy", "unknown"]
+        performance_score:
+          type: number
+          minimum: 0
+          maximum: 1
+        endpoint:
+          type: string
+          format: uri
+        last_seen:
+          type: string
+          format: date-time
+
+    OrchestrationRequest:
+      type: object
+      required: [workflow_id, pattern, agents]
+      properties:
+        workflow_id:
+          type: string
+          description: Unique workflow identifier
+        pattern:
+          type: string
+          enum: [
+            "sequential_pipeline",
+            "parallel_execution", 
+            "conditional_branching",
+            "hybrid_workflows",
+            "event_driven",
+            "reactive_streams",
+            "map_reduce",
+            "pipeline_parallelism"
+          ]
+          description: Orchestration pattern to use
+        agents:
+          type: array
+          items:
+            $ref: '#/components/schemas/AgentSpec'
+          minItems: 1
+        configuration:
+          type: object
+          properties:
+            timeout:
+              type: integer
+              description: Workflow timeout in seconds
+              default: 3600
+            retry_policy:
+              $ref: '#/components/schemas/RetryPolicy'
+            resource_constraints:
+              $ref: '#/components/schemas/ResourceConstraints'
+        callback_url:
+          type: string
+          format: uri
+          description: Webhook URL for workflow status updates
+
+    AgentSpec:
+      type: object
+      required: [agent_id, role]
+      properties:
+        agent_id:
+          type: string
+          description: Discovered agent ID
+        role:
+          type: string
+          description: Role in the workflow
+        parameters:
+          type: object
+          additionalProperties: true
+          description: Agent-specific parameters
+        dependencies:
+          type: array
+          items:
+            type: string
+          description: IDs of agents this agent depends on
+
+    RetryPolicy:
+      type: object
+      properties:
+        max_retries:
+          type: integer
+          minimum: 0
+          default: 3
+        backoff_strategy:
+          type: string
+          enum: ["fixed", "exponential", "linear"]
+          default: "exponential"
+        base_delay_ms:
+          type: integer
+          minimum: 100
+          default: 1000
+
+    ResourceConstraints:
+      type: object
+      properties:
+        max_concurrent_agents:
+          type: integer
+          minimum: 1
+          default: 100
+        cpu_cores:
+          type: number
+          minimum: 0.1
+        memory_gb:
+          type: number
+          minimum: 0.5
+        timeout_per_agent_s:
+          type: integer
+          minimum: 1
+          default: 300
+
+    WorkflowResponse:
+      type: object
+      required: [workflow_id, status, created_at]
+      properties:
+        workflow_id:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum: ["pending", "running", "completed", "failed", "cancelled"]
+        created_at:
+          type: string
+          format: date-time
+        estimated_completion:
+          type: string
+          format: date-time
+        callback_url:
+          type: string
+          format: uri
+
+    WorkflowList:
+      type: object
+      required: [workflows, pagination]
+      properties:
+        workflows:
+          type: array
+          items:
+            $ref: '#/components/schemas/WorkflowSummary'
+        pagination:
+          type: object
+          properties:
+            page:
+              type: integer
+            limit:
+              type: integer
+            total:
+              type: integer
+            has_next:
+              type: boolean
+
+    WorkflowSummary:
+      type: object
+      required: [workflow_id, pattern, status, created_at]
+      properties:
+        workflow_id:
+          type: string
+          format: uuid
+        pattern:
+          type: string
+        status:
+          type: string
+          enum: ["pending", "running", "completed", "failed", "cancelled"]
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+        duration_ms:
+          type: number
+        agent_count:
+          type: integer
+
+    WorkflowDetails:
+      allOf:
+        - $ref: '#/components/schemas/WorkflowSummary'
+        - type: object
+          properties:
+            configuration:
+              type: object
+            agents:
+              type: array
+              items:
+                $ref: '#/components/schemas/AgentStatus'
+            execution_log:
+              type: array
+              items:
+                $ref: '#/components/schemas/LogEntry'
+            metrics:
+              type: object
+              additionalProperties: true
+
+    AgentStatus:
+      type: object
+      required: [agent_id, status]
+      properties:
+        agent_id:
+          type: string
+        role:
+          type: string
+        status:
+          type: string
+          enum: ["pending", "running", "completed", "failed", "cancelled"]
+        started_at:
+          type: string
+          format: date-time
+        completed_at:
+          type: string
+          format: date-time
+        error_message:
+          type: string
+        output:
+          type: object
+          additionalProperties: true
+
+    LogEntry:
+      type: object
+      required: [timestamp, level, message]
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+        level:
+          type: string
+          enum: ["debug", "info", "warning", "error"]
+        message:
+          type: string
+        agent_id:
+          type: string
+        workflow_id:
+          type: string
+        metadata:
+          type: object
+          additionalProperties: true
+
+    WorkflowTemplate:
+      type: object
+      required: [name, pattern, template]
+      properties:
+        name:
+          type: string
+          description: Template name
+        description:
+          type: string
+        pattern:
+          type: string
+        template:
+          type: object
+          description: Workflow configuration template
+        parameters:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+              type:
+                type: string
+              required:
+                type: boolean
+              default:
+                oneOf:
+                  - type: string
+                  - type: number
+                  - type: boolean
+
+    WorkflowTemplateResponse:
+      allOf:
+        - $ref: '#/components/schemas/WorkflowTemplate'
+        - type: object
+          required: [template_id, created_at]
+          properties:
+            template_id:
+              type: string
+              format: uuid
+            created_at:
+              type: string
+              format: date-time
+
+    WorkflowUpdate:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: ["running", "cancelled"]
+        configuration:
+          type: object
+        agents:
+          type: array
+          items:
+            $ref: '#/components/schemas/AgentSpec'
+
+    MonitoringData:
+      type: object
+      required: [timestamp, system_metrics, workflow_metrics]
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+        system_metrics:
+          type: object
+          properties:
+            cpu_usage:
+              type: number
+              minimum: 0
+              maximum: 100
+            memory_usage:
+              type: number
+              minimum: 0
+              maximum: 100
+            active_workflows:
+              type: integer
+            discovered_agents:
+              type: integer
+        workflow_metrics:
+          type: object
+          properties:
+            total_workflows:
+              type: integer
+            successful_workflows:
+              type: integer
+            failed_workflows:
+              type: integer
+            average_completion_time_ms:
+              type: number
+        agent_metrics:
+          type: object
+          properties:
+            total_agents:
+              type: integer
+            healthy_agents:
+              type: integer
+            average_response_time_ms:
+              type: number
+
+    A2ADiscovery:
+      type: object
+      required: [agent_id, name, version, capabilities]
+      properties:
+        agent_id:
+          type: string
+          format: uuid
+        name:
+          type: string
+          example: "orchestration-manager"
+        version:
+          type: string
+          example: "1.1.0"
+        ossa_version:
+          type: string
+          example: "0.1.7"
+        capabilities:
+          type: array
+          items:
+            type: string
+        endpoints:
+          type: object
+          additionalProperties:
+            type: string
+        health_status:
+          type: string
+          enum: ["healthy", "unhealthy", "degraded"]
+        last_heartbeat:
+          type: string
+          format: date-time
+
+    McpCapabilities:
+      type: object
+      required: [protocol_version, server_name, tools]
+      properties:
+        protocol_version:
+          type: string
+          example: "2024-11-05"
+        server_name:
+          type: string
+          example: "orchestration-manager-mcp"
+        tools:
+          type: array
+          items:
+            $ref: '#/components/schemas/McpTool'
+        resources:
+          type: array
+          items:
+            type: object
+        prompts:
+          type: array
+          items:
+            type: object
+
+    McpTool:
+      type: object
+      required: [name, description]
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        inputSchema:
+          type: object
+          description: JSON Schema for tool input
+
+    McpToolCall:
+      type: object
+      required: [name, arguments]
+      properties:
+        name:
+          type: string
+          description: Name of the MCP tool to call
+        arguments:
+          type: object
+          additionalProperties: true
+          description: Tool arguments as key-value pairs
+
+    McpToolResult:
+      type: object
+      required: [success]
+      properties:
+        success:
+          type: boolean
+        result:
+          oneOf:
+            - type: object
+            - type: array
+            - type: string
+            - type: number
+            - type: boolean
+        error:
+          type: object
+          properties:
+            code:
+              type: string
+            message:
+              type: string
+
+    ErrorResponse:
+      type: object
+      required: [error, message]
+      properties:
+        error:
+          type: string
+          description: Error code
+        message:
+          type: string
+          description: Human-readable error message
+        details:
+          type: object
+          additionalProperties: true
+          description: Additional error details
+        timestamp:
+          type: string
+          format: date-time
+        request_id:
+          type: string
+          format: uuid
+
+  examples:
+    HealthyResponse:
+      summary: Healthy service response
+      value:
+        status: "healthy"
+        uptime: 86400
+        version: "1.1.0"
+        dependencies:
+          agent_registry: "healthy"
+          workflow_engine: "healthy"
+          message_broker: "healthy"
+
+    SimpleOrchestrationRequest:
+      summary: Simple sequential workflow
+      value:
+        workflow_id: "compliance-audit-workflow"
+        pattern: "sequential_pipeline"
+        agents:
+          - agent_id: "compliance-auditor-uuid"
+            role: "primary_auditor"
+            parameters:
+              framework: "ISO_42001"
+              target: "llm_platform"
+          - agent_id: "validation-specialist-uuid"
+            role: "validator"
+            dependencies: ["compliance-auditor-uuid"]
+        configuration:
+          timeout: 1800
+          retry_policy:
+            max_retries: 2
+            backoff_strategy: "exponential"
+
+webhooks:
+  workflowStatusUpdate:
+    post:
+      requestBody:
+        description: Workflow status update notification
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                workflow_id:
+                  type: string
+                  format: uuid
+                status:
+                  type: string
+                  enum: ["running", "completed", "failed", "cancelled"]
+                timestamp:
+                  type: string
+                  format: date-time
+                details:
+                  type: object
+      responses:
+        '200':
+          description: Webhook received successfully
+
+tags:
+  - name: Health
+    description: Service health and status endpoints
+  - name: Discovery
+    description: Agent discovery and capability matching
+  - name: Orchestration
+    description: Workflow orchestration and management
+  - name: Monitoring
+    description: Performance monitoring and metrics
+  - name: MCP
+    description: Model Context Protocol integration
+  - name: A2A
+    description: Agent-to-Agent communication protocol

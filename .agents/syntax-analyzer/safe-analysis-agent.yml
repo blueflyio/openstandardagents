@@ -1,0 +1,95 @@
+apiVersion: open-standards-scalable-agents/v0.1.7
+kind: Agent
+metadata:
+  name: "safe-syntax-analyzer"
+  version: "1.0.0"
+  description: "READ-ONLY syntax analysis agent - NO file modifications, only detection and reporting"
+  author: "OSSA Community"
+  license: "Apache-2.0"
+  safety_level: "READ_ONLY_ANALYSIS"
+
+spec:
+  conformance:
+    tier: "governed"
+    level: "production"
+    safety_certification: "read_only_certified"
+  
+  # SAFETY CONSTRAINTS - NEVER MODIFY FILES
+  safety_constraints:
+    file_operations:
+      read: true
+      write: false
+      delete: false
+      move: false
+      create: false
+    
+    analysis_only: true
+    modification_disabled: true
+    backup_required: false  # No modifications = no backups needed
+    
+    reporting_only:
+      detection_reports: true
+      pattern_analysis: true
+      recommendations: true
+      dry_run_simulation: true
+
+  capabilities:
+    primary:
+      - "read_only_syntax_analysis"
+      - "pattern_detection_reporting"
+      - "safe_project_scanning"
+    secondary:
+      - "syntax_pattern_documentation"
+      - "non_destructive_validation"
+      - "recommendation_generation"
+
+  # Safe project analysis configuration
+  project_analysis:
+    mode: "READ_ONLY"
+    create_reports_only: true
+    never_modify_source: true
+    
+    safety_checks:
+      - verify_read_only_mode
+      - confirm_no_write_operations
+      - validate_backup_not_needed
+      - ensure_analysis_only
+
+  # What this agent WILL do (safely)
+  safe_operations:
+    - scan_files_for_patterns
+    - generate_detection_reports
+    - create_analysis_summaries
+    - document_findings
+    - provide_recommendations
+    - simulate_potential_fixes
+
+  # What this agent will NEVER do
+  prohibited_operations:
+    - modify_source_files
+    - create_new_files
+    - delete_any_files
+    - move_or_rename_files
+    - execute_any_changes
+    - run_automated_fixes
+
+  endpoints:
+    analyze_project:
+      path: "/analyze"
+      method: "POST"
+      description: "READ-ONLY analysis of project files"
+      safety: "no_modifications"
+    
+    generate_report:
+      path: "/report"
+      method: "GET"
+      description: "Get analysis report without any changes"
+      safety: "read_only"
+
+# Explicit safety declaration
+x-ossa-safety-declaration:
+  operation_mode: "READ_ONLY_ANALYSIS"
+  file_modification: "PROHIBITED"
+  analysis_only: true
+  user_approval_required: true
+  safety_verified: true
