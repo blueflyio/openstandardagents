@@ -1,0 +1,410 @@
+apiVersion: ossa.agents/v0.1.8
+kind: Protocol
+metadata:
+  name: universal-agent-discovery-protocol
+  namespace: ossa-system
+  labels:
+    protocol.ossa.agents/name: uadp
+    protocol.ossa.agents/version: 0.1.8
+    protocol.ossa.agents/type: discovery
+  annotations:
+    protocol.ossa.agents/description: "Universal Agent Discovery Protocol for OSSA v0.1.8"
+    protocol.ossa.agents/specification-url: "https://ossa.agents/protocols/uadp/v0.1.8"
+
+spec:
+  # Protocol Identification
+  protocolName: "Universal Agent Discovery Protocol"
+  shortName: "UADP"
+  version: "0.1.8"
+  
+  # Protocol Specification
+  specification:
+    description: |
+      The Universal Agent Discovery Protocol (UADP) enables automatic discovery,
+      capability matching, and orchestration of AI agents within the OSSA ecosystem.
+      It provides standardized methods for agents to advertise their capabilities
+      and for coordinators to find suitable agents for specific tasks.
+    
+    scope:
+      - Agent capability advertisement
+      - Dynamic agent discovery
+      - Capability-based matching
+      - Performance-aware selection
+      - Multi-protocol coordination
+    
+    # Core Operations
+    operations:
+      advertise:
+        description: "Agent capability advertisement"
+        method: POST
+        endpoint: "/uadp/advertise"
+        required: true
+        
+      discover:
+        description: "Discover agents by capabilities"
+        method: GET
+        endpoint: "/uadp/discover"
+        required: true
+        
+      health_check:
+        description: "Agent health verification"
+        method: GET
+        endpoint: "/uadp/health"
+        required: true
+        
+      capability_query:
+        description: "Detailed capability information"
+        method: GET
+        endpoint: "/uadp/capabilities"
+        required: false
+        
+      recommend:
+        description: "AI-powered agent recommendations"
+        method: POST
+        endpoint: "/uadp/recommend"
+        required: false
+  
+  # Message Formats
+  messageFormats:
+    advertisement:
+      schema:
+        type: object
+        required: [agent_id, capabilities, endpoints]
+        properties:
+          agent_id:
+            type: string
+            pattern: '^[a-zA-Z0-9_-]+$'
+          capabilities:
+            $ref: '#/definitions/CapabilityDeclaration'
+          endpoints:
+            $ref: '#/definitions/EndpointDeclaration'
+          metadata:
+            $ref: '#/definitions/AgentMetadata'
+    
+    discovery_request:
+      schema:
+        type: object
+        required: [query_type]
+        properties:
+          query_type:
+            type: string
+            enum: [capability_match, semantic_search, hybrid]
+          capabilities:
+            type: array
+            items:
+              type: string
+          domain:
+            type: string
+          performance_requirements:
+            $ref: '#/definitions/PerformanceRequirements'
+          context:
+            type: object
+    
+    discovery_response:
+      schema:
+        type: object
+        required: [agents, query_id]
+        properties:
+          agents:
+            type: array
+            items:
+              $ref: '#/definitions/AgentMatch'
+          query_id:
+            type: string
+          total_matches:
+            type: integer
+          execution_time:
+            type: number
+          ranking_criteria:
+            type: array
+            items:
+              type: string
+  
+  # Data Definitions
+  definitions:
+    CapabilityDeclaration:
+      type: object
+      required: [primary]
+      properties:
+        primary:
+          type: array
+          items:
+            type: string
+          description: "Core capabilities this agent provides"
+        secondary:
+          type: array
+          items:
+            type: string
+          description: "Additional capabilities"
+        domains:
+          type: array
+          items:
+            type: string
+          description: "Domain expertise areas"
+        frameworks:
+          type: array
+          items:
+            type: string
+          description: "Supported AI/ML frameworks"
+        performance_profile:
+          $ref: '#/definitions/PerformanceProfile'
+    
+    EndpointDeclaration:
+      type: object
+      required: [base_url, health]
+      properties:
+        base_url:
+          type: string
+          format: uri
+        health:
+          type: string
+          format: uri-reference
+        api:
+          type: string
+          format: uri-reference
+        capabilities:
+          type: string
+          format: uri-reference
+        websocket:
+          type: string
+          format: uri-reference
+    
+    AgentMetadata:
+      type: object
+      properties:
+        class:
+          type: string
+          enum: [general, specialist, workflow, integration, security, data, nlp, vision, audio]
+        category:
+          type: string
+          enum: [assistant, tool, service, coordinator]
+        conformance_tier:
+          type: string
+          enum: [core, governed, advanced]
+        certification_level:
+          type: string
+          enum: [bronze, silver, gold, platinum]
+        tags:
+          type: array
+          items:
+            type: string
+    
+    PerformanceProfile:
+      type: object
+      properties:
+        latency:
+          type: object
+          properties:
+            typical:
+              type: string
+              pattern: '^\d+ms$'
+            maximum:
+              type: string
+              pattern: '^\d+ms$'
+        throughput:
+          type: object
+          properties:
+            requests_per_second:
+              type: integer
+            concurrent_requests:
+              type: integer
+        resource_usage:
+          type: object
+          properties:
+            cpu_cores:
+              type: number
+            memory_gb:
+              type: number
+            gpu_required:
+              type: boolean
+    
+    PerformanceRequirements:
+      type: object
+      properties:
+        max_latency:
+          type: string
+          pattern: '^\d+ms$'
+        min_throughput:
+          type: integer
+        availability:
+          type: number
+          minimum: 0
+          maximum: 100
+        priority:
+          type: string
+          enum: [low, normal, high, critical]
+    
+    AgentMatch:
+      type: object
+      required: [agent_id, match_score]
+      properties:
+        agent_id:
+          type: string
+        agent_name:
+          type: string
+        match_score:
+          type: number
+          minimum: 0
+          maximum: 1
+          description: "Capability match score (0-1)"
+        capabilities:
+          $ref: '#/definitions/CapabilityDeclaration'
+        endpoints:
+          $ref: '#/definitions/EndpointDeclaration'
+        metadata:
+          $ref: '#/definitions/AgentMetadata'
+        performance:
+          $ref: '#/definitions/PerformanceProfile'
+        matching_criteria:
+          type: array
+          items:
+            type: object
+            properties:
+              criteria:
+                type: string
+              match_strength:
+                type: string
+                enum: [exact, partial, semantic]
+              confidence:
+                type: number
+  
+  # Protocol Bindings
+  bindings:
+    http:
+      version: "1.1"
+      content_types:
+        - "application/json"
+        - "application/yaml"
+      headers:
+        required:
+          - "Content-Type"
+          - "User-Agent"
+        optional:
+          - "X-UADP-Version"
+          - "X-Request-ID"
+          - "Authorization"
+    
+    websocket:
+      version: "13"
+      subprotocols:
+        - "uadp.ossa.agents"
+      message_types:
+        - "advertisement"
+        - "discovery_request"
+        - "discovery_response"
+        - "capability_update"
+        - "health_check"
+  
+  # Security Specifications
+  security:
+    authentication:
+      supported_schemes:
+        - none
+        - api_key
+        - oauth2
+        - jwt
+      
+    message_integrity:
+      supported:
+        - hmac_sha256
+        - digital_signature
+      
+    encryption:
+      in_transit: true
+      schemes:
+        - tls_1_2
+        - tls_1_3
+  
+  # Quality of Service
+  qos:
+    reliability:
+      message_delivery: at_least_once
+      retry_policy:
+        max_retries: 3
+        backoff_strategy: exponential
+        initial_delay: "100ms"
+        max_delay: "30s"
+    
+    performance:
+      discovery_timeout: "5s"
+      advertisement_ttl: "300s"
+      health_check_interval: "30s"
+    
+    scalability:
+      max_concurrent_discoveries: 1000
+      max_advertised_agents: 10000
+      batch_size_limit: 100
+  
+  # Extension Points
+  extensions:
+    custom_matchers:
+      enabled: true
+      interface: "CapabilityMatcher"
+      
+    semantic_search:
+      enabled: true
+      providers:
+        - openai
+        - anthropic
+        - local_embedding
+      
+    caching:
+      enabled: true
+      strategies:
+        - in_memory
+        - redis
+        - distributed
+      
+    observability:
+      metrics: true
+      tracing: true
+      logging: true
+      
+  # Compatibility
+  compatibility:
+    backward_compatible_versions:
+      - "0.1.7"
+      - "0.1.6"
+    
+    migration_path:
+      from_0_1_7:
+        breaking_changes: []
+        deprecated_fields:
+          - "legacy_endpoint_format"
+        new_features:
+          - "ai_powered_recommendations"
+          - "semantic_capability_matching"
+    
+    interoperability:
+      protocols:
+        - openapi: "3.1.0"
+        - mcp: "1.0.0"
+        - graphql: "16.0.0"
+      
+      standards:
+        - ossa: "0.1.8"
+        - openai_function_calling: "1.0"
+        - anthropic_tool_use: "2023-06-01"
+
+status:
+  phase: Active
+  implementation_status: Stable
+  compliance:
+    ossa_v0_1_8: true
+    iso_42001: true
+    nist_ai_rmf: true
+  
+  adoption:
+    implementations:
+      - name: "OSSA CLI"
+        version: "0.1.8"
+        status: "production"
+      
+      - name: "Platform Coordinator"
+        version: "0.1.8"
+        status: "production"
+    
+    metrics:
+      total_agents_supporting: 0
+      discovery_requests_per_day: 0
+      average_discovery_time: "150ms"

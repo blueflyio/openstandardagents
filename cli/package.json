@@ -16,35 +16,41 @@
     "clean": "rm -rf dist coverage *.tsbuildinfo",
     "prepublish": "npm run build"
   },
-  "keywords": ["ossa", "agents", "cli", "openapi"],
+  "keywords": [
+    "ossa",
+    "agents",
+    "cli",
+    "openapi"
+  ],
   "license": "Apache-2.0",
   "dependencies": {
-    "commander": "^11.1.0",
-    "chalk": "^5.3.0",
-    "yaml": "^2.3.4",
     "axios": "^1.6.0",
-    "js-yaml": "^4.1.0",
-    "inquirer": "^9.2.12",
-    "glob": "^10.3.10",
-    "fs-extra": "^11.2.0",
-    "simple-git": "^3.20.0",
-    "ora": "^7.0.1",
     "boxen": "^7.1.1",
+    "chalk": "^5.3.0",
+    "commander": "^11.1.0",
+    "execa": "^9.6.0",
+    "fs-extra": "^11.2.0",
+    "glob": "^10.3.10",
+    "inquirer": "^9.2.12",
+    "js-yaml": "^4.1.0",
+    "ora": "^7.0.1",
+    "semver": "^7.5.4",
+    "simple-git": "^3.20.0",
     "table": "^6.8.1",
-    "semver": "^7.5.4"
+    "yaml": "^2.3.4"
   },
   "devDependencies": {
-    "typescript": "^5.3.2",
-    "tsx": "^4.6.2",
-    "@types/node": "^20.10.0",
-    "@types/js-yaml": "^4.0.9",
     "@types/fs-extra": "^11.0.4",
     "@types/inquirer": "^9.0.7",
+    "@types/js-yaml": "^4.0.9",
+    "@types/node": "^20.10.0",
     "@types/semver": "^7.5.6",
-    "vitest": "^1.1.0",
-    "eslint": "^8.56.0",
     "@typescript-eslint/eslint-plugin": "^6.15.0",
-    "@typescript-eslint/parser": "^6.15.0"
+    "@typescript-eslint/parser": "^6.15.0",
+    "eslint": "^8.56.0",
+    "tsx": "^4.6.2",
+    "typescript": "^5.3.2",
+    "vitest": "^1.1.0"
   },
   "engines": {
     "node": ">=18.0.0"
