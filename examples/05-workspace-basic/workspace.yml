@@ -1,36 +1,33 @@
-# OAAS Workspace Basic Configuration
-# Minimal workspace setup for multi-agent discovery and orchestration
+# OSSA Basic Workspace Example - Level 5
+# Simple multi-project agent discovery and coordination
 
-version: "1.0.0"
-
-workspace:
+ossa: "0.1.8"
+kind: Workspace
+metadata:
   name: basic-workspace
-  description: "Simple workspace configuration for agent discovery"
+  version: "1.0.0"
+  description: Basic workspace demonstrating simple agent discovery across projects
+
+spec:
+  conformance_tier: core
+  projects:
+    - path: "./project-1"
+      name: "frontend-app"
+    - path: "./project-2"
+      name: "backend-api"
   
   discovery:
     enabled: true
-    scan_paths:
-      - .agents
-      - agents
-      - services/agents
-    auto_register: true
-    refresh_interval: 300  # 5 minutes
-    
+    auto_scan: true
+    patterns:
+      - ".agents/agent.yml"
+      - "agent.yml"
+  
   orchestration:
-    strategy: adaptive  # adaptive, sequential, parallel, hierarchical
-    max_concurrent: 3
-    timeout: 30000  # 30 seconds
+    patterns:
+      - sequential
+      - parallel
     
-  context:
-    environment: development
-    variables:
-      API_BASE_URL: "http://localhost:3000"
-      LOG_LEVEL: "info"
-      
-  bridges:
-    - protocol: mcp
-      enabled: true
-    - protocol: langchain
-      enabled: true
-    - protocol: crewai
-      enabled: false
+    routing:
+      default_strategy: "round_robin"
+      load_balancing: true

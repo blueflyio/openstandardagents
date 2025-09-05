@@ -1,4 +1,4 @@
-apiVersion: open-standards-scalable-agents/v0.1.8
+ossa: "0.1.8"
 kind: Agent
 metadata:
   name: example-integration

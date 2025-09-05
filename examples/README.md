@@ -1,19 +1,20 @@
-# 📚 OAAS Examples - Learn by Building
+# 📚 OSSA Examples - Learn by Building
 
-> **OpenAPI AI Agents Standard - Educational Examples**
+> **Open Standards for Scalable Agents v0.1.8 - Educational Examples**
 > 
-> These examples are designed to teach you OAAS from zero to enterprise level.
+> These examples are designed to teach you OSSA from zero to enterprise level.
 > Each example builds on the previous one, introducing new concepts progressively.
 
 ## 🎯 Quick Start Guide
 
-**New to OAAS?** Start here:
+**New to OSSA?** Start here:
 
-1. **Read** `01-agent-basic/` (5 minutes)
-2. **Copy** the example to your project
-3. **Modify** for your use case
-4. **Validate** with `oaas validate agent.yml`
-5. **Deploy** and test discovery
+1. **Read** `00-agent-minimal/` (2 minutes)
+2. **Progress** through `01-agent-basic/` (5 minutes)
+3. **Copy** the example to your project
+4. **Modify** for your use case
+5. **Validate** with `ossa validate agent.yml`
+6. **Deploy** and test discovery
 
 ## 📊 Complexity Levels - Choose Your Path
 
@@ -30,17 +31,24 @@ graph TD
     Q3 -->|Yes| L4[Level 4: Enterprise<br/>400+ lines]
 ```
 
-### 📁 Example Structure
+### 📁 Complete Example Structure
 
-| Level | Directory | Lines | Purpose | Key Features | When to Use |
-|-------|-----------|-------|---------|--------------|-------------|
-| **0** | `agent-minimal/` | 7 | Testing only | Bare minimum | Never in production |
-| **1** | `01-agent-basic/` | 30 | **Start Here** | Core features | Learning, prototypes |
-| **2** | `02-agent-integration/` | 50 | Framework ready | OpenAPI, auth | Multi-framework apps |
-| **3** | `03-agent-production/` | 200 | Production | Security, monitoring | Real deployments |
-| **4** | `04-agent-enterprise/` | 400+ | Enterprise | Full compliance | Regulated industries |
-| **W1** | `05-workspace-basic/` | 25 | Multi-agent | Discovery, routing | Team projects |
-| **W2** | `06-workspace-enterprise/` | 250 | Enterprise workspace | Compliance, DR | Large organizations |
+| Level | Directory | Focus | Key Features | When to Use |
+|-------|-----------|-------|--------------|-------------|
+| **00** | `00-agent-minimal/` | Discovery | Bare minimum | Learning only |
+| **01** | `01-agent-basic/` | **Start Here** | Core features | Learning, prototypes |
+| **02** | `02-agent-integration/` | Frameworks | OpenAPI, auth | Multi-framework apps |
+| **03** | `03-agent-production/` | Production | Security, monitoring | Real deployments |
+| **04** | `04-agent-enterprise/` | Enterprise | Full compliance | Regulated industries |
+| **05** | `05-workspace-basic/` | Multi-project | Discovery, routing | Team projects |
+| **06** | `06-workspace-enterprise/` | Enterprise workspace | Compliance, DR | Large organizations |
+| **07** | `07-agent-communication/` | Inter-agent | Discovery, protocols | Agent coordination |
+| **08** | `08-devops-integration/` | CI/CD | Pipeline automation | DevOps workflows |
+| **09** | `09-framework-integration/` | All frameworks | Universal compatibility | Framework bridging |
+| **10** | `10-workspace-orchestration/` | Orchestration | 6 coordination patterns | Complex workflows |
+| **11** | `11-observability-validation/` | Monitoring | Metrics, compliance | Production monitoring |
+| **12** | `12-enterprise-devops/` | Enterprise CI/CD | Security, compliance | Enterprise deployment |
+| **13** | `13-complete-workflow/` | End-to-end | Full lifecycle | Complete examples |
 
 ## 🚀 Learning Path
 

@@ -1,14 +1,14 @@
-# OpenAPI AI Agents Standard (OAAS) v0.1.8 - Test Agent
-# Production-ready agent configuration for OAAS validation and testing
+# OpenAPI AI Agents Standard (OSSA) v0.1.8 - Test Agent
+# Production-ready agent configuration for OSSA validation and testing
 
-apiVersion: open-standards-scalable-agents/v0.1.8
+ossa: "0.1.8"
 kind: "Agent"
 metadata:
   name: "test-agent"
   version: "1.0.0"
   created: "2025-01-26"
   updated: "2025-01-26"
-  description: "Comprehensive test agent for OAAS validation, testing, and analysis with full framework compatibility"
+  description: "Comprehensive test agent for OSSA validation, testing, and analysis with full framework compatibility"
 
   # Universal Framework Compatibility Annotations
   annotations:
@@ -110,7 +110,7 @@ spec:
       sla: "99.9%"
 
     - name: "validation_analysis"
-      description: "Analyze and validate OAAS compliance across multiple frameworks"
+      description: "Analyze and validate OSSA compliance across multiple frameworks"
       frameworks: ["langchain", "openai", "anthropic"]
       input_schema: "./schemas/validation.input.json"
       output_schema: "./schemas/validation.output.json"
@@ -161,7 +161,7 @@ spec:
                 test_type: { type: "string" }
                 parameters: { type: "object" }
           - name: "validate_compliance"
-            description: "Validate OAAS compliance"
+            description: "Validate OSSA compliance"
             input_schema:
               type: "object"
               properties:
@@ -299,7 +299,7 @@ spec:
 
     autogen:
       agent_type: "assistant"
-      system_message: "You are a comprehensive test agent specializing in OAAS validation and analysis"
+      system_message: "You are a comprehensive test agent specializing in OSSA validation and analysis"
       conversation_style: "professional"
       code_execution: true
 

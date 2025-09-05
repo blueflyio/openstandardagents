@@ -1,0 +1,101 @@
+version: '3.8'
+
+services:
+  # API Gateway - Single entry point
+  gateway:
+    build: ./gateway
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+      - SERVICE_PORT=3000
+    depends_on:
+      - discovery
+      - coordination
+      - orchestration
+      - monitoring
+    networks:
+      - ossa-network
+
+  # Discovery Service - ACDL implementation
+  discovery:
+    build: ./discovery
+    ports:
+      - "3011:3011"
+    environment:
+      - NODE_ENV=development
+      - SERVICE_PORT=3011
+    volumes:
+      - discovery-data:/app/data
+    networks:
+      - ossa-network
+
+  # Coordination Service - Agent management
+  coordination:
+    build: ./coordination
+    ports:
+      - "3010:3010"
+    environment:
+      - NODE_ENV=development
+      - SERVICE_PORT=3010
+      - REDIS_URL=redis://redis:6379
+    depends_on:
+      - redis
+    networks:
+      - ossa-network
+
+  # Orchestration Service - Workflow management
+  orchestration:
+    build: ./orchestration
+    ports:
+      - "3012:3012"
+    environment:
+      - NODE_ENV=development
+      - SERVICE_PORT=3012
+    networks:
+      - ossa-network
+
+  # Monitoring Service - Observability
+  monitoring:
+    build: ./monitoring
+    ports:
+      - "3013:3013"
+      - "9090:9090"  # Prometheus metrics
+    environment:
+      - NODE_ENV=development
+      - SERVICE_PORT=3013
+    networks:
+      - ossa-network
+
+  # Redis for coordination service
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - ossa-network
+
+  # PostgreSQL for persistent storage
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: ossa
+      POSTGRES_USER: ossa
+      POSTGRES_PASSWORD: ossa_dev_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - ossa-network
+
+networks:
+  ossa-network:
+    driver: bridge
+
+volumes:
+  discovery-data:
+  redis-data:
+  postgres-data:

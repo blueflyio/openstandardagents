@@ -1,4 +1,4 @@
-apiVersion: open-standards-scalable-agents/v0.1.8
+ossa: "0.1.8"
 kind: Agent
 metadata:
   name: example-basic
@@ -17,7 +17,7 @@ metadata:
 spec:
   agent:
     name: example-basic
-    expertise: Basic agent demonstrating core OAAS features
+    expertise: Basic agent demonstrating core OSSA features
   capabilities:
     - name: analyze_code
       description: Analyzes code quality and structure

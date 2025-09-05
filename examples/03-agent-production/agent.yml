@@ -1,4 +1,4 @@
-apiVersion: open-standards-scalable-agents/v0.1.8
+ossa: "0.1.8"
 kind: Agent
 metadata:
   name: example-production
@@ -190,7 +190,7 @@ spec:
       path: /secret/production-agent
     data_classification: confidential
   metadata:
-    author: OAAS Team
+    author: OSSA Team
     organization: Example Corp
     license: MIT
     repository: https://github.com/example/production-agent

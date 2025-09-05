@@ -14,6 +14,7 @@ import { addUADPCommands } from './uadp-commands.js';
 import { createOrchestrateCommands } from './commands/orchestrate.js';
 import { createStandardizeCommands } from './commands/standardize.js';
 import { createAgentForgeIntegration } from './commands/agent-forge-integration.js';
+import { createServicesCommand } from './commands/services.js';
 
 // Configure program
 program
@@ -71,6 +72,9 @@ program.addCommand(createOrchestrateCommands());
 
 // Add standardization commands  
 program.addCommand(createStandardizeCommands());
+
+// Add services management commands
+program.addCommand(createServicesCommand());
 
 // Add agent-forge integration
 program.addCommand(createAgentForgeIntegration());

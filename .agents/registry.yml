@@ -45,6 +45,18 @@ spec:
         - ossa_compliance_checking
         - automated_testing
         - deployment_orchestration
+        
+    - name: gitlab-pipeline-monitor
+      file: ../.gitlab/agents/gitlab-pipeline-monitor.yml
+      status: active
+      compliance: gold
+      capabilities:
+        - gitlab_api_authentication
+        - pipeline_status_monitoring
+        - failed_job_analysis
+        - contextual_troubleshooting
+        - ci_cd_optimization_recommendations
+        - bluefly_ecosystem_integration
 
   configuration:
     ossa_version: "0.1.8"

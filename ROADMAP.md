@@ -1472,3 +1472,13 @@ OAAS has established itself as the universal standard for AI agents, bridging fr
 | **Phase 3** | Weeks 7-10 | ✅ **COMPLETED** | Framework-Agnostic Adapters & Bridges |
 | **Phase 4** | Weeks 11-14 | ✅ **COMPLETED** | Governance, Compliance & Registry |
 | **Phase 5** | Weeks 15-18 | ✅ **COMPLETED** | Tooling, CI/CD & Developer Experience |
+
+### Test Folder Structure Standardization
+- [ ] **Framework-Aware Test Directory Organization**
+  - [ ] JavaScript/TypeScript projects: Migrate to `__tests__/` pattern (Jest/Vitest standard)
+  - [ ] PHP/Drupal projects: Validate `tests/` pattern (Drupal/PHPUnit standard)  
+  - [ ] Mixed projects: Follow primary language ecosystem convention
+  - [ ] Implement automated validation via testing-quality-agent
+  - [ ] Update build configurations for new test patterns
+  - [ ] Migrate existing test files maintaining test coverage
+  - [ ] Document test organization standards in project README
