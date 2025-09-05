@@ -76,3 +76,4 @@ conformance-report.json
 
 # Safe deletion folder - move files here instead of using rm -rf
 __DELETE_LATER/
+reports/
