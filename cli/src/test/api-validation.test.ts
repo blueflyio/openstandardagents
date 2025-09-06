@@ -23,7 +23,7 @@ describe('OSSA API Validation Framework', () => {
 
   describe('OpenAPI Specification Validation', () => {
     it('should validate a correct OpenAPI 3.1.0 spec with OSSA extensions', async () => {
-      const validSpec: OpenAPISchema = {
+      const validSpec = {
         openapi: '3.1.0',
         info: {
           title: 'Test API',

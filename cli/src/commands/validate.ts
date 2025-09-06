@@ -11,16 +11,17 @@ import { Command } from 'commander';
 import chalk from 'chalk';
 import ora from 'ora';
 import inquirer from 'inquirer';
-import { writeFileSync, readFileSync, pathExists } from 'fs-extra';
+import fs from 'fs-extra';
+const { writeFileSync, readFileSync, pathExists } = fs;
 import { glob } from 'glob';
 import { 
   validator,
   ValidationFormatter,
   ValidationOptions,
   ValidationResult
-} from '../validation/api-validator';
-import { ossaClient } from '../api/client';
-import type { Agent, WorkflowDefinition } from '../api/generated-types';
+} from '../validation/api-validator.js';
+import { ossaClient } from '../api/client.js';
+import type { Agent, WorkflowDefinition } from '../api/generated-types.js';
 
 // =====================================================================
 // Validation Commands Registration

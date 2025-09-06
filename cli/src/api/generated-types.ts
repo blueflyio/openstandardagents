@@ -576,4 +576,4 @@ export interface OpenAPISchema {
 }
 
 // Export all types for external consumption
-export * from './types';
+export * from './types.js';
