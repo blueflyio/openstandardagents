@@ -1,0 +1,730 @@
+openapi: 3.1.0
+info:
+  title: OSSA OpenMP Parallel Computing API
+  version: 0.1.8
+  description: |
+    Extended OSSA API for high-performance parallel agent orchestration using OpenMP.
+    Enables agents to submit, monitor, and manage parallel workloads with performance optimization.
+  
+  contact:
+    name: OSSA Community
+    url: https://github.com/ossa-ai/ossa-standard
+    email: community@ossa-ai.org
+    
+  license:
+    name: Apache 2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0.html
+
+servers:
+  - url: https://api.ossa-ai.org/v0.1.8
+    description: OSSA Production API
+  - url: https://staging-api.ossa-ai.org/v0.1.8  
+    description: OSSA Staging API
+  - url: http://localhost:8080/v0.1.8
+    description: Local Development
+
+tags:
+  - name: parallel-workloads
+    description: Parallel workload submission and management
+  - name: performance
+    description: Performance monitoring and metrics
+  - name: resource-management
+    description: Parallel resource allocation and scheduling
+
+paths:
+  /agents/{agentId}/workloads/parallel:
+    post:
+      tags: [parallel-workloads]
+      summary: Submit parallel workload
+      description: Submit a computational workload for parallel execution using OpenMP
+      operationId: submitParallelWorkload
+      
+      parameters:
+        - name: agentId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Unique identifier of the executing agent
+          
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ParallelWorkloadRequest'
+            examples:
+              document_processing:
+                summary: Parallel document processing
+                value:
+                  workload_type: "data_processing"
+                  input_data:
+                    documents: ["doc1.pdf", "doc2.pdf", "doc3.pdf"]
+                  parallelization:
+                    strategy: "loop_parallelization"
+                    max_threads: 8
+                    schedule: "dynamic"
+                    chunk_size: 100
+                  resource_requirements:
+                    memory: "4GB"
+                    cpu_cores: 8
+                    
+              ai_inference:
+                summary: Parallel AI inference
+                value:
+                  workload_type: "ai_inference"
+                  input_data:
+                    batch_size: 1000
+                    model_path: "/models/classifier.onnx"
+                  parallelization:
+                    strategy: "batch_inference"
+                    max_threads: 16
+                    vectorization: true
+                    
+      responses:
+        '202':
+          description: Parallel workload accepted and queued
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkloadResponse'
+        '400':
+          description: Invalid workload specification
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: Resource capacity exceeded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+                
+    get:
+      tags: [parallel-workloads]
+      summary: List agent parallel workloads
+      description: Retrieve all parallel workloads for an agent
+      operationId: listParallelWorkloads
+      
+      parameters:
+        - name: agentId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [queued, running, completed, failed, cancelled]
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+            
+      responses:
+        '200':
+          description: List of parallel workloads
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  workloads:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ParallelWorkload'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+
+  /agents/{agentId}/workloads/parallel/{workloadId}:
+    get:
+      tags: [parallel-workloads]
+      summary: Get parallel workload status
+      description: Retrieve detailed status and progress of a parallel workload
+      operationId: getParallelWorkload
+      
+      parameters:
+        - name: agentId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: workloadId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+            
+      responses:
+        '200':
+          description: Parallel workload details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ParallelWorkload'
+        '404':
+          description: Workload not found
+          
+    delete:
+      tags: [parallel-workloads]
+      summary: Cancel parallel workload
+      description: Cancel a running or queued parallel workload
+      operationId: cancelParallelWorkload
+      
+      parameters:
+        - name: agentId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: workloadId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+            
+      responses:
+        '204':
+          description: Workload cancelled successfully
+        '404':
+          description: Workload not found
+        '409':
+          description: Workload cannot be cancelled (already completed)
+
+  /agents/{agentId}/workloads/batch:
+    post:
+      tags: [parallel-workloads]
+      summary: Submit batch parallel workloads  
+      description: Submit multiple parallel workloads as a coordinated batch
+      operationId: submitBatchWorkloads
+      
+      parameters:
+        - name: agentId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+            
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [workloads, batch_config]
+              properties:
+                workloads:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/ParallelWorkloadRequest'
+                  minItems: 1
+                  maxItems: 100
+                batch_config:
+                  $ref: '#/components/schemas/BatchConfig'
+                  
+      responses:
+        '202':
+          description: Batch workloads accepted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  batch_id:
+                    type: string
+                    format: uuid
+                  workload_ids:
+                    type: array
+                    items:
+                      type: string
+                      format: uuid
+                  estimated_completion:
+                    type: string
+                    format: date-time
+
+  /agents/{agentId}/performance/openmp:
+    get:
+      tags: [performance]
+      summary: Get OpenMP performance metrics
+      description: Retrieve real-time and historical OpenMP performance data
+      operationId: getOpenMPMetrics
+      
+      parameters:
+        - name: agentId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: time_range
+          in: query
+          schema:
+            type: string
+            enum: [1h, 6h, 24h, 7d, 30d]
+            default: 1h
+        - name: metrics
+          in: query
+          schema:
+            type: array
+            items:
+              type: string
+              enum: [thread_utilization, parallel_efficiency, load_balance, memory_bandwidth, cache_performance]
+          style: form
+          explode: false
+          
+      responses:
+        '200':
+          description: OpenMP performance metrics
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OpenMPMetrics'
+
+  /agents/{agentId}/resources/parallel:
+    get:
+      tags: [resource-management]
+      summary: Get parallel resource allocation
+      description: Retrieve current parallel resource allocation and availability
+      operationId: getParallelResources
+      
+      parameters:
+        - name: agentId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+            
+      responses:
+        '200':
+          description: Parallel resource information
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ParallelResourceInfo'
+                
+    put:
+      tags: [resource-management]
+      summary: Update parallel resource allocation
+      description: Modify parallel resource allocation for an agent
+      operationId: updateParallelResources
+      
+      parameters:
+        - name: agentId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+            
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ParallelResourceRequest'
+              
+      responses:
+        '200':
+          description: Resource allocation updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ParallelResourceInfo'
+        '409':
+          description: Insufficient resources available
+
+  /system/parallel/capacity:
+    get:
+      tags: [resource-management]
+      summary: Get system parallel capacity
+      description: Retrieve overall system parallel computing capacity and utilization
+      operationId: getSystemParallelCapacity
+      
+      responses:
+        '200':
+          description: System parallel capacity information
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SystemParallelCapacity'
+
+components:
+  schemas:
+    ParallelWorkloadRequest:
+      type: object
+      required: [workload_type, input_data, parallelization]
+      properties:
+        workload_type:
+          type: string
+          enum: [data_processing, matrix_computation, ai_inference, custom]
+          description: Type of parallel workload
+        input_data:
+          type: object
+          description: Input data for the workload (schema varies by workload_type)
+        parallelization:
+          $ref: '#/components/schemas/ParallelizationConfig'
+        resource_requirements:
+          $ref: '#/components/schemas/ResourceRequirements'
+        priority:
+          type: integer
+          minimum: 1
+          maximum: 10
+          default: 5
+        timeout:
+          type: integer
+          minimum: 1
+          maximum: 3600
+          description: Timeout in seconds
+          
+    ParallelizationConfig:
+      type: object
+      required: [strategy]
+      properties:
+        strategy:
+          type: string
+          enum: [loop_parallelization, task_parallelization, batch_inference, matrix_parallel]
+        max_threads:
+          type: integer
+          minimum: 1
+          maximum: 1024
+        schedule:
+          type: string
+          enum: [static, dynamic, guided, auto]
+          default: guided
+        chunk_size:
+          type: integer
+          minimum: 1
+        vectorization:
+          type: boolean
+          default: false
+        memory_binding:
+          type: boolean
+          default: false
+        numa_aware:
+          type: boolean
+          default: false
+          
+    ResourceRequirements:
+      type: object
+      properties:
+        memory:
+          type: string
+          pattern: '^[0-9]+[KMG]B$'
+          example: "4GB"
+        cpu_cores:
+          type: integer
+          minimum: 1
+        gpu_required:
+          type: boolean
+          default: false
+        storage:
+          type: string
+          pattern: '^[0-9]+[KMG]B$'
+        network_bandwidth:
+          type: string
+          pattern: '^[0-9]+[KMG]bps$'
+          
+    ParallelWorkload:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        agent_id:
+          type: string
+          format: uuid
+        workload_type:
+          type: string
+        status:
+          type: string
+          enum: [queued, running, completed, failed, cancelled]
+        progress:
+          type: number
+          minimum: 0
+          maximum: 100
+        submitted_at:
+          type: string
+          format: date-time
+        started_at:
+          type: string
+          format: date-time
+        completed_at:
+          type: string
+          format: date-time
+        parallelization:
+          $ref: '#/components/schemas/ParallelizationConfig'
+        performance_metrics:
+          $ref: '#/components/schemas/WorkloadPerformanceMetrics'
+        results:
+          type: object
+          description: Workload results (available when status is completed)
+          
+    WorkloadResponse:
+      type: object
+      properties:
+        workload_id:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum: [queued, running]
+        estimated_completion:
+          type: string
+          format: date-time
+        resource_allocation:
+          $ref: '#/components/schemas/ResourceAllocation'
+          
+    BatchConfig:
+      type: object
+      properties:
+        execution_strategy:
+          type: string
+          enum: [sequential, parallel, pipeline]
+          default: parallel
+        max_concurrent:
+          type: integer
+          minimum: 1
+          maximum: 50
+          default: 10
+        failure_policy:
+          type: string
+          enum: [stop_on_first_failure, continue_on_failure]
+          default: continue_on_failure
+        resource_sharing:
+          type: boolean
+          default: true
+          
+    OpenMPMetrics:
+      type: object
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+        agent_id:
+          type: string
+          format: uuid
+        thread_utilization:
+          type: number
+          minimum: 0
+          maximum: 100
+          description: Thread utilization percentage
+        parallel_efficiency:
+          type: number
+          minimum: 0
+          maximum: 1
+          description: Parallel efficiency ratio
+        load_balance:
+          type: object
+          properties:
+            mean_load:
+              type: number
+            standard_deviation:
+              type: number
+            coefficient_of_variation:
+              type: number
+        memory_bandwidth:
+          type: object
+          properties:
+            read_bandwidth:
+              type: number
+              description: MB/s
+            write_bandwidth:
+              type: number
+              description: MB/s
+            total_bandwidth:
+              type: number
+              description: MB/s
+        cache_performance:
+          type: object
+          properties:
+            l1_hit_rate:
+              type: number
+            l2_hit_rate:  
+              type: number
+            l3_hit_rate:
+              type: number
+        synchronization_overhead:
+          type: object
+          properties:
+            barrier_time:
+              type: number
+              description: nanoseconds
+            critical_section_time:
+              type: number
+              description: nanoseconds
+            lock_contention:
+              type: number
+              description: percentage
+              
+    WorkloadPerformanceMetrics:
+      type: object
+      properties:
+        execution_time:
+          type: number
+          description: Total execution time in seconds
+        parallel_speedup:
+          type: number
+          description: Speedup factor compared to sequential execution
+        efficiency:
+          type: number
+          minimum: 0
+          maximum: 1
+        threads_used:
+          type: integer
+        memory_peak:
+          type: string
+          pattern: '^[0-9]+[KMG]B$'
+        throughput:
+          type: number
+          description: Operations per second
+          
+    ParallelResourceInfo:
+      type: object
+      properties:
+        agent_id:
+          type: string
+          format: uuid
+        allocated_threads:
+          type: integer
+        max_threads:
+          type: integer
+        memory_allocated:
+          type: string
+          pattern: '^[0-9]+[KMG]B$'
+        cpu_affinity:
+          type: array
+          items:
+            type: integer
+        numa_node:
+          type: integer
+        current_utilization:
+          type: number
+          minimum: 0
+          maximum: 100
+          
+    ParallelResourceRequest:
+      type: object
+      properties:
+        max_threads:
+          type: integer
+          minimum: 1
+          maximum: 1024
+        memory_limit:
+          type: string
+          pattern: '^[0-9]+[KMG]B$'
+        cpu_affinity:
+          type: array
+          items:
+            type: integer
+        numa_preference:
+          type: integer
+        priority:
+          type: integer
+          minimum: 1
+          maximum: 10
+          
+    SystemParallelCapacity:
+      type: object
+      properties:
+        total_cpu_cores:
+          type: integer
+        available_cpu_cores:
+          type: integer
+        total_memory:
+          type: string
+          pattern: '^[0-9]+[KMG]B$'
+        available_memory:
+          type: string
+          pattern: '^[0-9]+[KMG]B$'
+        numa_topology:
+          type: array
+          items:
+            type: object
+            properties:
+              node_id:
+                type: integer
+              cpu_cores:
+                type: array
+                items:
+                  type: integer
+              memory:
+                type: string
+                pattern: '^[0-9]+[KMG]B$'
+        active_agents:
+          type: integer
+        queued_workloads:
+          type: integer
+        system_load:
+          type: number
+          minimum: 0
+          maximum: 100
+          
+    ResourceAllocation:
+      type: object
+      properties:
+        threads:
+          type: integer
+        memory:
+          type: string
+          pattern: '^[0-9]+[KMG]B$'
+        cpu_cores:
+          type: array
+          items:
+            type: integer
+        numa_node:
+          type: integer
+        priority:
+          type: integer
+          
+    Pagination:
+      type: object
+      properties:
+        total:
+          type: integer
+        limit:
+          type: integer
+        offset:
+          type: integer
+        has_next:
+          type: boolean
+          
+    Error:
+      type: object
+      required: [code, message]
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+        details:
+          type: object
+        timestamp:
+          type: string
+          format: date-time
+
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+    apiKey:
+      type: apiKey
+      in: header
+      name: X-API-Key
+
+security:
+  - bearerAuth: []
+  - apiKey: []

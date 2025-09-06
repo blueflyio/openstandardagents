@@ -97,13 +97,13 @@ export class OAASToOSSAMigrator {
           console.log(`⏭️  ${result.source}: ${result.message}`);
         }
       } catch (error) {
-        console.error(`💥 Failed to migrate ${agentFile}:`, error.message);
+        console.error(`💥 Failed to migrate ${agentFile}:`, (error as Error).message);
         migrationResults.push({
           source: agentFile,
           target: '',
           status: 'error',
           level: 'unknown',
-          message: error.message
+          message: (error as Error).message
         });
       }
     }
@@ -164,7 +164,7 @@ export class OAASToOSSAMigrator {
         target: '',
         status: 'error',
         level: 'unknown',
-        message: `Failed to parse YAML: ${error.message}`
+        message: `Failed to parse YAML: ${(error as Error).message}`
       };
     }
     
@@ -546,4 +546,4 @@ if (require.main === module) {
   migrator.migrateWorkspace().catch(console.error);
 }
 
-export { OAASToOSSAMigrator };
+// OAASToOSSAMigrator already exported above

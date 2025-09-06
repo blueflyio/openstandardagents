@@ -1,0 +1,366 @@
+# OSSA Agent Manifest: Parallel Document Processor
+# Demonstrates OpenMP integration for high-performance document analysis
+
+apiVersion: "ossa/v0.1.8"
+kind: "Agent"
+metadata:
+  name: "parallel-document-processor"
+  version: "1.0.0"
+  namespace: "document-processing"
+  labels:
+    performance: "high"
+    parallel: "true"
+    use-case: "rfp-analysis"
+  annotations:
+    description: "High-performance document processor using OpenMP for parallel RFP analysis"
+    documentation: "https://docs.ossa-ai.org/agents/parallel-document-processor"
+
+spec:
+  # Runtime Configuration
+  runtime: "container"
+  image: "ossa/document-processor:openmp-1.0.0"
+  
+  # OpenMP Parallel Computing Capabilities
+  capabilities:
+    parallel_compute:
+      enabled: true
+      max_threads: 32
+      numa_aware: true
+      vectorization: ["AVX2", "AVX512"]
+      memory_model: "shared"
+      affinity_policy: "spread"
+      
+    # Core OSSA capabilities
+    nlp: true
+    document_analysis: true
+    content_extraction: true
+    classification: true
+    
+  # Parallel Workload Definitions
+  workloads:
+    # PDF Text Extraction - Loop Parallelization
+    - type: "data_processing"
+      name: "pdf_text_extraction"
+      description: "Extract text from multiple PDF documents in parallel"
+      parallelization:
+        strategy: "loop_parallelization"
+        directives:
+          - "#pragma omp parallel for schedule(dynamic, 10)"
+          - "#pragma omp critical (file_output)"
+        scheduling: "dynamic"
+        chunk_size: 10
+        memory_binding: true
+        vectorization: false
+      input_schema:
+        type: "object"
+        properties:
+          documents:
+            type: "array"
+            items:
+              type: "string"
+              format: "uri"
+        required: ["documents"]
+      performance_target:
+        throughput: "50 docs/minute"
+        latency: "<2s per doc"
+        
+    # Content Classification - Batch AI Inference
+    - type: "ai_inference" 
+      name: "content_classification"
+      description: "Classify document sections using parallel AI inference"
+      parallelization:
+        strategy: "batch_inference"
+        directives:
+          - "#pragma omp parallel for simd"
+          - "#pragma omp task depend(in: input_batch) depend(out: results)"
+        vectorization: true
+        memory_binding: true
+        numa_aware: true
+      input_schema:
+        type: "object"
+        properties:
+          text_sections:
+            type: "array"
+            items:
+              type: "string"
+          model_path:
+            type: "string"
+        required: ["text_sections", "model_path"]
+      performance_target:
+        throughput: "1000 sections/minute"
+        accuracy: ">95%"
+        
+    # Compliance Analysis - Task Parallelization
+    - type: "data_processing"
+      name: "compliance_analysis"
+      description: "Analyze multiple compliance frameworks in parallel"
+      parallelization:
+        strategy: "task_parallelization"
+        directives:
+          - "#pragma omp task"
+          - "#pragma omp taskwait"
+          - "#pragma omp taskloop grainsize(5)"
+        dependencies: true
+        synchronization: "barrier"
+      input_schema:
+        type: "object"
+        properties:
+          frameworks:
+            type: "array"
+            items:
+              type: "string"
+              enum: ["FAR", "DFARS", "NIST", "FedRAMP", "SOX", "GDPR"]
+          document_content:
+            type: "string"
+        required: ["frameworks", "document_content"]
+            
+    # Large Document Processing - NUMA-Aware Matrix Operations  
+    - type: "matrix_computation"
+      name: "similarity_matrix"
+      description: "Compute document similarity matrix for large document sets"
+      parallelization:
+        strategy: "matrix_parallel"
+        directives:
+          - "#pragma omp parallel for collapse(2) schedule(static)"
+          - "#pragma omp simd"
+        memory_access: "contiguous"
+        numa_aware: true
+        cache_optimization: true
+      input_schema:
+        type: "object"
+        properties:
+          document_vectors:
+            type: "array"
+            items:
+              type: "array"
+              items:
+                type: "number"
+        required: ["document_vectors"]
+      performance_target:
+        complexity: "O(n²) with parallel efficiency >80%"
+        memory_bandwidth: ">50GB/s"
+
+  # Resource Requirements
+  resources:
+    requests:
+      cpu: "8"
+      memory: "16Gi"
+      openmp_threads: 16
+      storage: "10Gi"
+    limits:
+      cpu: "32"
+      memory: "64Gi" 
+      openmp_threads: 32
+      storage: "50Gi"
+      
+  # OpenMP-Specific Resource Configuration
+  openmp_config:
+    runtime_settings:
+      num_threads: 16
+      dynamic_threads: true
+      nested_parallelism: false
+      schedule: "guided,100"
+      
+    memory_settings:
+      stack_size: "16MB"
+      numa_policy: "bind"
+      hugepages: true
+      memory_bandwidth_limit: "40GB/s"
+      
+    affinity_settings:
+      places: "cores"
+      proc_bind: "spread" 
+      cpu_list: "0-31:2"  # Use even-numbered cores
+      
+  # Performance Monitoring & Telemetry
+  telemetry:
+    openmp_metrics: true
+    performance_profiling: true
+    resource_monitoring: true
+    
+    custom_metrics:
+      - name: "documents_per_second"
+        type: "gauge"
+        description: "Document processing throughput"
+        
+      - name: "parallel_efficiency"
+        type: "histogram"
+        description: "OpenMP parallel efficiency distribution"
+        
+      - name: "memory_bandwidth_utilization"
+        type: "counter"
+        description: "Memory bandwidth usage"
+        
+      - name: "load_imbalance"
+        type: "histogram" 
+        description: "Thread load distribution"
+        
+    dashboards:
+      - name: "openmp_performance"
+        panels:
+          - "Thread Utilization"
+          - "Parallel Speedup"
+          - "Memory Bandwidth"
+          - "Cache Performance" 
+          - "Load Balance"
+          
+  # Security & Isolation
+  security:
+    process_isolation: true
+    memory_protection:
+      stack_guard: true
+      heap_protection: true
+      address_randomization: true
+      
+    resource_limits:
+      max_memory_per_thread: "2GB"
+      max_execution_time: "600s"
+      max_file_descriptors: 2048
+      max_processes: 1
+      
+    audit_logging:
+      parallel_operations: true
+      resource_usage: true
+      performance_metrics: true
+      
+  # Integration Points
+  integrations:
+    # Input/Output
+    - name: "document_storage"
+      type: "s3"
+      config:
+        bucket: "document-processing-input"
+        parallel_uploads: 8
+        
+    - name: "results_database"  
+      type: "postgresql"
+      config:
+        connection_pool: 16
+        bulk_operations: true
+        
+    # External APIs
+    - name: "ai_models_api"
+      type: "http"
+      config:
+        batch_size: 100
+        parallel_requests: 4
+        
+  # Health Checks
+  health:
+    liveness_probe:
+      http:
+        path: "/health/live"
+        port: 8080
+      initial_delay: 30
+      period: 10
+      
+    readiness_probe:
+      http:
+        path: "/health/ready"
+        port: 8080
+      initial_delay: 5
+      period: 5
+      
+    # OpenMP-specific health checks
+    openmp_health:
+      thread_count_check: true
+      memory_usage_check: true
+      performance_threshold: 
+        min_efficiency: 0.7
+        max_load_imbalance: 0.3
+        
+  # Environment Variables
+  environment:
+    # OpenMP Runtime
+    - name: "OMP_NUM_THREADS"
+      value: "16"
+    - name: "OMP_SCHEDULE"
+      value: "guided,100"
+    - name: "OMP_PROC_BIND"
+      value: "spread"
+    - name: "OMP_PLACES"
+      value: "cores"
+      
+    # Application Specific
+    - name: "PARALLEL_BATCH_SIZE"
+      value: "100"
+    - name: "MAX_DOCUMENT_SIZE"
+      value: "100MB"
+    - name: "VECTORIZATION_ENABLED"
+      value: "true"
+      
+  # Volume Mounts
+  volumes:
+    - name: "temp-processing"
+      mount_path: "/tmp/processing"
+      size: "20Gi"
+      access_mode: "ReadWriteOnce"
+      storage_class: "high-iops"
+      
+    - name: "model-cache"
+      mount_path: "/models"  
+      size: "10Gi"
+      access_mode: "ReadOnlyMany"
+      storage_class: "fast-read"
+
+# Example Usage Scenarios
+usage_examples:
+  - name: "RFP Batch Processing"
+    description: "Process 1000 RFP documents in parallel"
+    input:
+      documents: ["s3://rfps/batch1/*.pdf"]
+      frameworks: ["FAR", "DFARS"]
+      analysis_type: "comprehensive"
+    expected_output:
+      processing_time: "15 minutes"
+      parallel_efficiency: ">80%"
+      documents_processed: 1000
+      
+  - name: "Real-time Classification"
+    description: "Classify incoming documents in real-time with parallel inference"
+    input:
+      stream: "document-ingestion-queue"
+      batch_size: 50
+      models: ["classification", "sentiment", "compliance"]
+    expected_output:
+      latency: "<5 seconds per batch"
+      throughput: "600 docs/minute"
+      accuracy: ">95%"
+      
+  - name: "Compliance Audit"
+    description: "Audit large document corpus against multiple compliance frameworks"
+    input:
+      document_corpus: "s3://compliance-audit/2024/"
+      frameworks: ["NIST", "FedRAMP", "SOX", "GDPR"]
+      audit_depth: "comprehensive"
+    expected_output:
+      processing_time: "2 hours for 10,000 documents"
+      compliance_coverage: "100%"
+      parallel_speedup: "25x vs sequential"
+
+# Performance Benchmarks
+benchmarks:
+  baseline_sequential:
+    documents_per_minute: 20
+    memory_usage: "4GB"
+    cpu_utilization: "25%"
+    
+  openmp_parallel_16_threads:
+    documents_per_minute: 280
+    memory_usage: "24GB"
+    cpu_utilization: "85%"
+    parallel_speedup: "14x"
+    efficiency: "87.5%"
+    
+  openmp_parallel_32_threads:
+    documents_per_minute: 480
+    memory_usage: "48GB" 
+    cpu_utilization: "90%"
+    parallel_speedup: "24x"
+    efficiency: "75%"
+    
+  performance_targets:
+    min_efficiency: "70%"
+    max_memory_per_thread: "2GB"
+    target_throughput: "400 docs/minute"
+    max_latency: "3 seconds per document"

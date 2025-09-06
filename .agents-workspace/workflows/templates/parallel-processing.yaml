@@ -1,0 +1,102 @@
+# OSSA Parallel Processing Workflow Template v0.1.8
+# Demonstrates OpenMP extension capabilities for high-performance computing
+
+apiVersion: ossa.ai/v1
+kind: WorkflowTemplate
+metadata:
+  name: parallel-processing
+  version: "0.1.8"
+  description: "Parallel document processing with OpenMP acceleration"
+  tags:
+    - "parallel"
+    - "openmp"
+    - "document-processing"
+
+spec:
+  inputs:
+    - name: documents
+      type: "array"
+      description: "List of documents to process"
+      required: true
+    - name: processing_type
+      type: "string"
+      enum: ["extract", "summarize", "analyze"]
+      default: "extract"
+    - name: max_threads
+      type: "integer"
+      default: 8
+      min: 1
+      max: 32
+
+  outputs:
+    - name: processed_documents
+      type: "array"
+      description: "Results of document processing"
+    - name: performance_metrics
+      type: "object"
+      description: "Processing performance statistics"
+
+  steps:
+    - name: initialize
+      agent: "ossa-platform-agent"
+      action: "workflow.initialize"
+      inputs:
+        workflow_type: "parallel"
+        max_threads: "{{ inputs.max_threads }}"
+      
+    - name: parallel_process
+      agent: "ossa-platform-agent"
+      action: "documents.process_parallel"
+      parallel:
+        enabled: true
+        max_workers: "{{ inputs.max_threads }}"
+        chunk_size: 10
+      inputs:
+        documents: "{{ inputs.documents }}"
+        processing_type: "{{ inputs.processing_type }}"
+        use_openmp: true
+      outputs:
+        - processed_documents
+        
+    - name: aggregate_results
+      agent: "ossa-platform-agent"
+      action: "results.aggregate"
+      inputs:
+        results: "{{ steps.parallel_process.outputs.processed_documents }}"
+      outputs:
+        - aggregated_results
+        
+    - name: generate_metrics
+      agent: "ossa-platform-agent"
+      action: "metrics.generate"
+      inputs:
+        start_time: "{{ workflow.start_time }}"
+        thread_count: "{{ inputs.max_threads }}"
+        document_count: "{{ len(inputs.documents) }}"
+      outputs:
+        - performance_metrics
+
+  error_handling:
+    retry_policy:
+      max_retries: 3
+      backoff: "exponential"
+      base_delay: "5s"
+      max_delay: "60s"
+    
+    on_failure:
+      - action: "workflow.cleanup"
+      - action: "metrics.record_failure"
+        
+  security:
+    execution_context:
+      run_as_user: 1000
+      capabilities: ["PARALLEL_COMPUTE"]
+    resource_limits:
+      cpu: "{{ inputs.max_threads * 500 }}m"
+      memory: "{{ inputs.max_threads * 512 }}Mi"
+      
+  compliance:
+    frameworks:
+      - "ISO_42001"
+    audit_logging: true
+    data_retention: "30d"

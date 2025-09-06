@@ -1,0 +1,616 @@
+# OSSA v0.1.8 GraphQL Schema
+# Complete GraphQL specification for Open Standards for Scalable Agents
+
+scalar JSON
+scalar DateTime
+scalar UUID
+
+enum AgentStatus {
+  ACTIVE
+  INACTIVE
+  PENDING
+  FAILED
+  PAUSED
+}
+
+enum CapabilityType {
+  COGNITIVE
+  OPERATIONAL
+  COMMUNICATION
+  DATA_PROCESSING
+  SECURITY
+}
+
+enum ComplianceFramework {
+  FEDRAMP
+  NIST_800_53
+  ISO_42001
+  EU_AI_ACT
+  SOX
+  GDPR
+}
+
+type Agent {
+  id: UUID!
+  name: String!
+  version: String!
+  status: AgentStatus!
+  capabilities: [Capability!]!
+  workspace: Workspace
+  metadata: AgentMetadata!
+  health: HealthStatus!
+  metrics: AgentMetrics!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type AgentMetadata {
+  description: String
+  author: String
+  tags: [String!]!
+  runtime: RuntimeConfig!
+  resources: ResourceRequirements!
+}
+
+type RuntimeConfig {
+  container: String!
+  environment: JSON
+  ports: [PortMapping!]!
+  volumes: [VolumeMapping!]!
+}
+
+type ResourceRequirements {
+  cpu: String!
+  memory: String!
+  storage: String
+  gpu: String
+}
+
+type PortMapping {
+  containerPort: Int!
+  hostPort: Int
+  protocol: String!
+}
+
+type VolumeMapping {
+  source: String!
+  target: String!
+  readOnly: Boolean!
+}
+
+type Capability {
+  id: String!
+  version: String!
+  type: CapabilityType!
+  name: String!
+  description: String
+  inputs: [CapabilityInput!]!
+  outputs: [CapabilityOutput!]!
+  compliance: [ComplianceMapping!]!
+}
+
+type CapabilityInput {
+  name: String!
+  type: String!
+  required: Boolean!
+  description: String
+  schema: JSON
+}
+
+type CapabilityOutput {
+  name: String!
+  type: String!
+  description: String
+  schema: JSON
+}
+
+type ComplianceMapping {
+  framework: ComplianceFramework!
+  controls: [String!]!
+  requirements: [String!]!
+  status: ComplianceStatus!
+}
+
+enum ComplianceStatus {
+  COMPLIANT
+  NON_COMPLIANT
+  PARTIAL
+  NOT_APPLICABLE
+  UNDER_REVIEW
+}
+
+type Workspace {
+  id: UUID!
+  name: String!
+  tier: WorkspaceTier!
+  agents: [Agent!]!
+  workflows: [Workflow!]!
+  configuration: WorkspaceConfig!
+  metrics: WorkspaceMetrics!
+  security: SecurityConfig!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+enum WorkspaceTier {
+  DEVELOPMENT
+  STAGING
+  PRODUCTION
+  ENTERPRISE
+}
+
+type WorkspaceConfig {
+  resources: WorkspaceResources!
+  networking: NetworkConfig!
+  storage: StorageConfig!
+  observability: ObservabilityConfig!
+}
+
+type WorkspaceResources {
+  maxAgents: Int!
+  cpuLimit: String!
+  memoryLimit: String!
+  storageLimit: String!
+}
+
+type NetworkConfig {
+  ingress: IngressConfig!
+  egress: EgressConfig!
+  isolation: Boolean!
+}
+
+type IngressConfig {
+  enabled: Boolean!
+  tls: Boolean!
+  hosts: [String!]!
+}
+
+type EgressConfig {
+  allowedDomains: [String!]!
+  blockedDomains: [String!]!
+  requireProxy: Boolean!
+}
+
+type StorageConfig {
+  encryption: EncryptionConfig!
+  retention: RetentionPolicy!
+  backup: BackupConfig!
+}
+
+type EncryptionConfig {
+  algorithm: String!
+  keyRotation: Boolean!
+  transitEncryption: Boolean!
+}
+
+type RetentionPolicy {
+  logs: String!
+  metrics: String!
+  data: String!
+}
+
+type BackupConfig {
+  enabled: Boolean!
+  schedule: String!
+  retention: String!
+  compression: Boolean!
+}
+
+type ObservabilityConfig {
+  metrics: MetricsConfig!
+  tracing: TracingConfig!
+  logging: LoggingConfig!
+}
+
+type MetricsConfig {
+  enabled: Boolean!
+  endpoint: String!
+  interval: String!
+}
+
+type TracingConfig {
+  enabled: Boolean!
+  sampler: String!
+  endpoint: String!
+}
+
+type LoggingConfig {
+  level: String!
+  format: String!
+  aggregation: Boolean!
+}
+
+type SecurityConfig {
+  authentication: AuthConfig!
+  authorization: AuthzConfig!
+  encryption: EncryptionConfig!
+  compliance: [ComplianceMapping!]!
+}
+
+type AuthConfig {
+  provider: String!
+  mfa: Boolean!
+  sessionTimeout: String!
+}
+
+type AuthzConfig {
+  rbac: Boolean!
+  policies: [String!]!
+  defaultRole: String!
+}
+
+type Workflow {
+  id: UUID!
+  name: String!
+  version: String!
+  agents: [Agent!]!
+  steps: [WorkflowStep!]!
+  status: WorkflowStatus!
+  metrics: WorkflowMetrics!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+enum WorkflowStatus {
+  DRAFT
+  ACTIVE
+  PAUSED
+  COMPLETED
+  FAILED
+  CANCELLED
+}
+
+type WorkflowStep {
+  id: String!
+  name: String!
+  agent: Agent!
+  capability: String!
+  inputs: JSON
+  outputs: JSON
+  dependencies: [String!]!
+  timeout: String
+}
+
+type HealthStatus {
+  status: String!
+  lastCheck: DateTime!
+  details: JSON
+}
+
+type AgentMetrics {
+  cpu: Float!
+  memory: Float!
+  requests: Int!
+  errors: Int!
+  latency: Float!
+  uptime: String!
+}
+
+type WorkspaceMetrics {
+  totalAgents: Int!
+  activeAgents: Int!
+  totalWorkflows: Int!
+  activeWorkflows: Int!
+  resourceUtilization: ResourceUtilization!
+}
+
+type WorkflowMetrics {
+  executions: Int!
+  successRate: Float!
+  avgDuration: Float!
+  errorRate: Float!
+}
+
+type ResourceUtilization {
+  cpu: Float!
+  memory: Float!
+  storage: Float!
+  network: Float!
+}
+
+# Query Operations
+type Query {
+  # Agent Queries
+  agent(id: UUID!): Agent
+  agents(
+    workspaceId: UUID
+    status: AgentStatus
+    capability: String
+    limit: Int
+    offset: Int
+  ): [Agent!]!
+  
+  # Workspace Queries
+  workspace(id: UUID!): Workspace
+  workspaces(
+    tier: WorkspaceTier
+    limit: Int
+    offset: Int
+  ): [Workspace!]!
+  
+  # Capability Queries
+  capability(id: String!): Capability
+  capabilities(
+    type: CapabilityType
+    compliance: ComplianceFramework
+  ): [Capability!]!
+  
+  # Workflow Queries
+  workflow(id: UUID!): Workflow
+  workflows(
+    workspaceId: UUID!
+    status: WorkflowStatus
+    limit: Int
+    offset: Int
+  ): [Workflow!]!
+  
+  # Health & Metrics
+  agentHealth(id: UUID!): HealthStatus!
+  workspaceMetrics(id: UUID!, period: String!): WorkspaceMetrics!
+  
+  # Compliance
+  complianceStatus(
+    workspaceId: UUID!
+    framework: ComplianceFramework!
+  ): [ComplianceMapping!]!
+}
+
+# Mutation Operations
+type Mutation {
+  # Agent Management
+  createAgent(input: CreateAgentInput!): Agent!
+  updateAgent(id: UUID!, input: UpdateAgentInput!): Agent!
+  deleteAgent(id: UUID!): Boolean!
+  
+  deployAgent(id: UUID!, environment: String!): Boolean!
+  startAgent(id: UUID!): Boolean!
+  stopAgent(id: UUID!): Boolean!
+  restartAgent(id: UUID!): Boolean!
+  
+  # Workspace Management
+  createWorkspace(input: CreateWorkspaceInput!): Workspace!
+  updateWorkspace(id: UUID!, input: UpdateWorkspaceInput!): Workspace!
+  deleteWorkspace(id: UUID!): Boolean!
+  
+  # Workflow Management
+  createWorkflow(input: CreateWorkflowInput!): Workflow!
+  updateWorkflow(id: UUID!, input: UpdateWorkflowInput!): Workflow!
+  deleteWorkflow(id: UUID!): Boolean!
+  
+  startWorkflow(id: UUID!): Boolean!
+  pauseWorkflow(id: UUID!): Boolean!
+  stopWorkflow(id: UUID!): Boolean!
+  
+  # Registry Management
+  registerCapability(input: RegisterCapabilityInput!): Capability!
+  updateCapability(id: String!, input: UpdateCapabilityInput!): Capability!
+  deregisterCapability(id: String!): Boolean!
+}
+
+# Subscription Operations
+type Subscription {
+  # Real-time Agent Updates
+  agentStatusChanged(agentId: UUID): Agent!
+  agentMetricsUpdated(agentId: UUID): AgentMetrics!
+  
+  # Real-time Workspace Updates
+  workspaceUpdated(workspaceId: UUID!): Workspace!
+  workspaceMetricsUpdated(workspaceId: UUID!): WorkspaceMetrics!
+  
+  # Real-time Workflow Updates
+  workflowStatusChanged(workflowId: UUID): Workflow!
+  workflowStepCompleted(workflowId: UUID!): WorkflowStep!
+  
+  # Real-time Health Updates
+  healthStatusChanged(agentId: UUID): HealthStatus!
+}
+
+# Input Types
+input CreateAgentInput {
+  name: String!
+  version: String!
+  workspaceId: UUID!
+  metadata: AgentMetadataInput!
+  capabilities: [String!]!
+}
+
+input AgentMetadataInput {
+  description: String
+  author: String
+  tags: [String!]!
+  runtime: RuntimeConfigInput!
+  resources: ResourceRequirementsInput!
+}
+
+input RuntimeConfigInput {
+  container: String!
+  environment: JSON
+  ports: [PortMappingInput!]!
+  volumes: [VolumeMappingInput!]!
+}
+
+input ResourceRequirementsInput {
+  cpu: String!
+  memory: String!
+  storage: String
+  gpu: String
+}
+
+input PortMappingInput {
+  containerPort: Int!
+  hostPort: Int
+  protocol: String!
+}
+
+input VolumeMappingInput {
+  source: String!
+  target: String!
+  readOnly: Boolean!
+}
+
+input UpdateAgentInput {
+  version: String
+  metadata: AgentMetadataInput
+  capabilities: [String!]
+}
+
+input CreateWorkspaceInput {
+  name: String!
+  tier: WorkspaceTier!
+  configuration: WorkspaceConfigInput!
+}
+
+input WorkspaceConfigInput {
+  resources: WorkspaceResourcesInput!
+  networking: NetworkConfigInput!
+  storage: StorageConfigInput!
+  observability: ObservabilityConfigInput!
+}
+
+input WorkspaceResourcesInput {
+  maxAgents: Int!
+  cpuLimit: String!
+  memoryLimit: String!
+  storageLimit: String!
+}
+
+input NetworkConfigInput {
+  ingress: IngressConfigInput!
+  egress: EgressConfigInput!
+  isolation: Boolean!
+}
+
+input IngressConfigInput {
+  enabled: Boolean!
+  tls: Boolean!
+  hosts: [String!]!
+}
+
+input EgressConfigInput {
+  allowedDomains: [String!]!
+  blockedDomains: [String!]!
+  requireProxy: Boolean!
+}
+
+input StorageConfigInput {
+  encryption: EncryptionConfigInput!
+  retention: RetentionPolicyInput!
+  backup: BackupConfigInput!
+}
+
+input EncryptionConfigInput {
+  algorithm: String!
+  keyRotation: Boolean!
+  transitEncryption: Boolean!
+}
+
+input RetentionPolicyInput {
+  logs: String!
+  metrics: String!
+  data: String!
+}
+
+input BackupConfigInput {
+  enabled: Boolean!
+  schedule: String!
+  retention: String!
+  compression: Boolean!
+}
+
+input ObservabilityConfigInput {
+  metrics: MetricsConfigInput!
+  tracing: TracingConfigInput!
+  logging: LoggingConfigInput!
+}
+
+input MetricsConfigInput {
+  enabled: Boolean!
+  endpoint: String!
+  interval: String!
+}
+
+input TracingConfigInput {
+  enabled: Boolean!
+  sampler: String!
+  endpoint: String!
+}
+
+input LoggingConfigInput {
+  level: String!
+  format: String!
+  aggregation: Boolean!
+}
+
+input UpdateWorkspaceInput {
+  name: String
+  tier: WorkspaceTier
+  configuration: WorkspaceConfigInput
+}
+
+input CreateWorkflowInput {
+  name: String!
+  version: String!
+  workspaceId: UUID!
+  agents: [UUID!]!
+  steps: [WorkflowStepInput!]!
+}
+
+input WorkflowStepInput {
+  id: String!
+  name: String!
+  agentId: UUID!
+  capability: String!
+  inputs: JSON
+  dependencies: [String!]!
+  timeout: String
+}
+
+input UpdateWorkflowInput {
+  name: String
+  version: String
+  agents: [UUID!]
+  steps: [WorkflowStepInput!]
+}
+
+input RegisterCapabilityInput {
+  id: String!
+  version: String!
+  type: CapabilityType!
+  name: String!
+  description: String
+  inputs: [CapabilityInputDefinition!]!
+  outputs: [CapabilityOutputDefinition!]!
+  compliance: [ComplianceMappingInput!]!
+}
+
+input CapabilityInputDefinition {
+  name: String!
+  type: String!
+  required: Boolean!
+  description: String
+  schema: JSON
+}
+
+input CapabilityOutputDefinition {
+  name: String!
+  type: String!
+  description: String
+  schema: JSON
+}
+
+input ComplianceMappingInput {
+  framework: ComplianceFramework!
+  controls: [String!]!
+  requirements: [String!]!
+  status: ComplianceStatus!
+}
+
+input UpdateCapabilityInput {
+  version: String
+  type: CapabilityType
+  name: String
+  description: String
+  inputs: [CapabilityInputDefinition!]
+  outputs: [CapabilityOutputDefinition!]
+  compliance: [ComplianceMappingInput!]
+}

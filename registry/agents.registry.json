@@ -1,0 +1,328 @@
+{
+  "$schema": "https://ossa.ai/schemas/v0.1.8/registry/agents.schema.json",
+  "apiVersion": "ossa.ai/v0.1.8",
+  "kind": "AgentRegistry",
+  "metadata": {
+    "name": "ossa-agent-registry",
+    "version": "0.1.8",
+    "description": "Central registry for OSSA-compliant agents",
+    "maintainers": [
+      {
+        "name": "OSSA Registry Team",
+        "email": "registry@ossa.ai"
+      }
+    ],
+    "created": "2024-01-01T00:00:00Z",
+    "updated": "2024-12-01T00:00:00Z"
+  },
+  "spec": {
+    "version": "v1",
+    "agents": [
+      {
+        "id": "nlp-processor",
+        "name": "NLP Text Processor",
+        "version": "1.2.0",
+        "description": "Advanced natural language processing agent with multi-language support",
+        "author": "OSSA Community",
+        "category": "nlp",
+        "tags": ["nlp", "text-processing", "multi-language"],
+        "capabilities": [
+          {
+            "id": "nlp.text-extraction",
+            "version": "2.0",
+            "required": true
+          },
+          {
+            "id": "nlp.summarization",
+            "version": "1.5",
+            "required": true
+          },
+          {
+            "id": "nlp.sentiment-analysis",
+            "version": "1.0",
+            "required": false
+          }
+        ],
+        "runtime": {
+          "container": "node:20-alpine",
+          "architecture": ["x86_64", "arm64"],
+          "minMemory": "512Mi",
+          "minCpu": "250m"
+        },
+        "repository": "https://gitlab.ossa.ai/agents/nlp-processor",
+        "documentation": "https://docs.ossa.ai/agents/nlp-processor",
+        "license": "Apache-2.0",
+        "certification": {
+          "level": "gold",
+          "certifiedBy": "OSSA Foundation",
+          "validUntil": "2025-12-01T00:00:00Z"
+        },
+        "compliance": {
+          "frameworks": ["FedRAMP", "NIST-800-53", "ISO-42001"],
+          "status": "compliant",
+          "lastAssessed": "2024-11-01T00:00:00Z"
+        },
+        "metrics": {
+          "downloads": 15420,
+          "rating": 4.8,
+          "reviews": 89
+        }
+      },
+      {
+        "id": "data-analytics",
+        "name": "Data Analytics Engine",
+        "version": "2.1.0",
+        "description": "Comprehensive data analysis and visualization agent",
+        "author": "DataTech Solutions",
+        "category": "analytics",
+        "tags": ["analytics", "visualization", "machine-learning"],
+        "capabilities": [
+          {
+            "id": "analytics.data-processing",
+            "version": "3.0",
+            "required": true
+          },
+          {
+            "id": "analytics.statistical-analysis",
+            "version": "2.5",
+            "required": true
+          },
+          {
+            "id": "analytics.visualization",
+            "version": "1.8",
+            "required": false
+          }
+        ],
+        "runtime": {
+          "container": "python:3.11-slim",
+          "architecture": ["x86_64"],
+          "minMemory": "2Gi",
+          "minCpu": "1000m"
+        },
+        "repository": "https://gitlab.ossa.ai/agents/data-analytics",
+        "documentation": "https://docs.ossa.ai/agents/data-analytics",
+        "license": "MIT",
+        "certification": {
+          "level": "silver",
+          "certifiedBy": "OSSA Foundation",
+          "validUntil": "2025-06-01T00:00:00Z"
+        },
+        "compliance": {
+          "frameworks": ["GDPR", "SOX"],
+          "status": "compliant",
+          "lastAssessed": "2024-10-15T00:00:00Z"
+        },
+        "metrics": {
+          "downloads": 8743,
+          "rating": 4.5,
+          "reviews": 56
+        }
+      },
+      {
+        "id": "security-monitor",
+        "name": "Security Monitoring Agent",
+        "version": "3.0.1",
+        "description": "Real-time security monitoring and threat detection agent",
+        "author": "SecureAI Corp",
+        "category": "security",
+        "tags": ["security", "monitoring", "threat-detection"],
+        "capabilities": [
+          {
+            "id": "security.threat-detection",
+            "version": "4.0",
+            "required": true
+          },
+          {
+            "id": "security.anomaly-detection",
+            "version": "2.2",
+            "required": true
+          },
+          {
+            "id": "security.incident-response",
+            "version": "1.5",
+            "required": false
+          }
+        ],
+        "runtime": {
+          "container": "golang:1.21-alpine",
+          "architecture": ["x86_64", "arm64"],
+          "minMemory": "1Gi",
+          "minCpu": "500m"
+        },
+        "repository": "https://gitlab.ossa.ai/agents/security-monitor",
+        "documentation": "https://docs.ossa.ai/agents/security-monitor",
+        "license": "Apache-2.0",
+        "certification": {
+          "level": "platinum",
+          "certifiedBy": "OSSA Foundation",
+          "validUntil": "2026-01-01T00:00:00Z"
+        },
+        "compliance": {
+          "frameworks": ["FedRAMP", "NIST-800-53", "ISO-27001"],
+          "status": "compliant",
+          "lastAssessed": "2024-11-15T00:00:00Z"
+        },
+        "metrics": {
+          "downloads": 12956,
+          "rating": 4.9,
+          "reviews": 127
+        }
+      },
+      {
+        "id": "workflow-orchestrator",
+        "name": "Workflow Orchestration Agent",
+        "version": "1.8.0",
+        "description": "Multi-agent workflow orchestration and coordination",
+        "author": "FlowTech Inc",
+        "category": "orchestration",
+        "tags": ["orchestration", "workflow", "coordination"],
+        "capabilities": [
+          {
+            "id": "orchestration.workflow-management",
+            "version": "2.5",
+            "required": true
+          },
+          {
+            "id": "orchestration.agent-coordination",
+            "version": "3.0",
+            "required": true
+          },
+          {
+            "id": "orchestration.load-balancing",
+            "version": "1.2",
+            "required": false
+          }
+        ],
+        "runtime": {
+          "container": "node:20-alpine",
+          "architecture": ["x86_64", "arm64"],
+          "minMemory": "1Gi",
+          "minCpu": "750m"
+        },
+        "repository": "https://gitlab.ossa.ai/agents/workflow-orchestrator",
+        "documentation": "https://docs.ossa.ai/agents/workflow-orchestrator",
+        "license": "MIT",
+        "certification": {
+          "level": "gold",
+          "certifiedBy": "OSSA Foundation",
+          "validUntil": "2025-09-01T00:00:00Z"
+        },
+        "compliance": {
+          "frameworks": ["NIST-800-53", "ISO-42001"],
+          "status": "compliant",
+          "lastAssessed": "2024-10-30T00:00:00Z"
+        },
+        "metrics": {
+          "downloads": 6234,
+          "rating": 4.6,
+          "reviews": 42
+        }
+      },
+      {
+        "id": "content-moderator",
+        "name": "AI Content Moderation Agent",
+        "version": "2.3.1",
+        "description": "Intelligent content moderation with bias detection",
+        "author": "SafeContent Solutions",
+        "category": "moderation",
+        "tags": ["content-moderation", "ai-safety", "bias-detection"],
+        "capabilities": [
+          {
+            "id": "moderation.content-analysis",
+            "version": "3.5",
+            "required": true
+          },
+          {
+            "id": "moderation.bias-detection",
+            "version": "2.0",
+            "required": true
+          },
+          {
+            "id": "moderation.policy-enforcement",
+            "version": "1.8",
+            "required": false
+          }
+        ],
+        "runtime": {
+          "container": "python:3.11-slim",
+          "architecture": ["x86_64"],
+          "minMemory": "1.5Gi",
+          "minCpu": "500m"
+        },
+        "repository": "https://gitlab.ossa.ai/agents/content-moderator",
+        "documentation": "https://docs.ossa.ai/agents/content-moderator",
+        "license": "Apache-2.0",
+        "certification": {
+          "level": "gold",
+          "certifiedBy": "OSSA Foundation",
+          "validUntil": "2025-08-01T00:00:00Z"
+        },
+        "compliance": {
+          "frameworks": ["EU-AI-ACT", "GDPR", "CCPA"],
+          "status": "compliant",
+          "lastAssessed": "2024-11-20T00:00:00Z"
+        },
+        "metrics": {
+          "downloads": 9876,
+          "rating": 4.7,
+          "reviews": 73
+        }
+      }
+    ],
+    "categories": [
+      {
+        "id": "nlp",
+        "name": "Natural Language Processing",
+        "description": "Agents specialized in text and language processing"
+      },
+      {
+        "id": "analytics",
+        "name": "Data Analytics",
+        "description": "Agents for data analysis and business intelligence"
+      },
+      {
+        "id": "security",
+        "name": "Security & Monitoring",
+        "description": "Security-focused agents for monitoring and protection"
+      },
+      {
+        "id": "orchestration",
+        "name": "Orchestration & Workflow",
+        "description": "Agents for managing workflows and coordination"
+      },
+      {
+        "id": "moderation",
+        "name": "Content Moderation",
+        "description": "Agents for content safety and moderation"
+      }
+    ],
+    "stats": {
+      "totalAgents": 5,
+      "totalDownloads": 53229,
+      "averageRating": 4.7,
+      "totalReviews": 387,
+      "certificationLevels": {
+        "platinum": 1,
+        "gold": 3,
+        "silver": 1,
+        "bronze": 0
+      }
+    }
+  },
+  "registryInfo": {
+    "endpoint": "https://registry.ossa.ai/v1",
+    "mirrors": [
+      "https://mirror1.ossa.ai/registry",
+      "https://mirror2.ossa.ai/registry"
+    ],
+    "syncStatus": {
+      "lastSync": "2024-12-01T12:00:00Z",
+      "nextSync": "2024-12-02T00:00:00Z",
+      "status": "healthy"
+    },
+    "authentication": {
+      "required": false,
+      "methods": ["api-key", "oauth2"]
+    }
+  }
+}

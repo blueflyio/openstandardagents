@@ -1,0 +1,543 @@
+{
+  "$schema": "https://ossa.ai/schemas/v0.1.8/registry/capabilities.schema.json",
+  "apiVersion": "ossa.ai/v0.1.8",
+  "kind": "CapabilityRegistry",
+  "metadata": {
+    "name": "ossa-capability-registry",
+    "version": "0.1.8",
+    "description": "Central registry for standardized agent capabilities",
+    "maintainers": [
+      {
+        "name": "OSSA Capability Working Group",
+        "email": "capabilities@ossa.ai"
+      }
+    ],
+    "created": "2024-01-01T00:00:00Z",
+    "updated": "2024-12-01T00:00:00Z"
+  },
+  "spec": {
+    "version": "v1",
+    "capabilities": {
+      "nlp": {
+        "name": "Natural Language Processing",
+        "description": "Capabilities for processing and understanding natural language",
+        "capabilities": [
+          {
+            "id": "nlp.text-extraction",
+            "name": "Text Extraction",
+            "version": "2.0",
+            "description": "Extract structured text from various document formats",
+            "category": "nlp",
+            "type": "cognitive",
+            "inputs": [
+              {
+                "name": "document",
+                "type": "binary",
+                "required": true,
+                "description": "Document file to extract text from",
+                "supportedFormats": ["pdf", "docx", "html", "txt"]
+              },
+              {
+                "name": "options",
+                "type": "object",
+                "required": false,
+                "description": "Extraction options",
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "preserveFormatting": {
+                      "type": "boolean",
+                      "default": false
+                    },
+                    "language": {
+                      "type": "string",
+                      "enum": ["auto", "en", "es", "fr", "de", "zh", "ja"]
+                    }
+                  }
+                }
+              }
+            ],
+            "outputs": [
+              {
+                "name": "extractedText",
+                "type": "string",
+                "description": "Extracted text content"
+              },
+              {
+                "name": "metadata",
+                "type": "object",
+                "description": "Document metadata and extraction statistics"
+              }
+            ],
+            "compliance": [
+              {
+                "framework": "GDPR",
+                "controls": ["Art. 25", "Art. 32"],
+                "status": "compliant"
+              }
+            ]
+          },
+          {
+            "id": "nlp.summarization",
+            "name": "Text Summarization",
+            "version": "1.5",
+            "description": "Generate concise summaries of long text content",
+            "category": "nlp",
+            "type": "cognitive",
+            "inputs": [
+              {
+                "name": "text",
+                "type": "string",
+                "required": true,
+                "description": "Text content to summarize",
+                "maxLength": 50000
+              },
+              {
+                "name": "summaryLength",
+                "type": "integer",
+                "required": false,
+                "description": "Target summary length in words",
+                "default": 150,
+                "min": 50,
+                "max": 500
+              },
+              {
+                "name": "style",
+                "type": "string",
+                "required": false,
+                "description": "Summary style",
+                "enum": ["abstract", "bullet-points", "executive"],
+                "default": "abstract"
+              }
+            ],
+            "outputs": [
+              {
+                "name": "summary",
+                "type": "string",
+                "description": "Generated summary text"
+              },
+              {
+                "name": "keyTopics",
+                "type": "array",
+                "description": "Identified key topics and themes"
+              },
+              {
+                "name": "confidence",
+                "type": "number",
+                "description": "Confidence score for summary quality"
+              }
+            ],
+            "compliance": [
+              {
+                "framework": "EU-AI-ACT",
+                "controls": ["Art. 13", "Art. 14"],
+                "status": "compliant"
+              }
+            ]
+          },
+          {
+            "id": "nlp.sentiment-analysis",
+            "name": "Sentiment Analysis",
+            "version": "1.0",
+            "description": "Analyze emotional tone and sentiment in text",
+            "category": "nlp",
+            "type": "cognitive",
+            "inputs": [
+              {
+                "name": "text",
+                "type": "string",
+                "required": true,
+                "description": "Text content to analyze",
+                "maxLength": 10000
+              },
+              {
+                "name": "granularity",
+                "type": "string",
+                "required": false,
+                "description": "Analysis granularity level",
+                "enum": ["document", "sentence", "aspect"],
+                "default": "document"
+              }
+            ],
+            "outputs": [
+              {
+                "name": "sentiment",
+                "type": "object",
+                "description": "Overall sentiment analysis results",
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "polarity": {
+                      "type": "string",
+                      "enum": ["positive", "negative", "neutral"]
+                    },
+                    "score": {
+                      "type": "number",
+                      "minimum": -1,
+                      "maximum": 1
+                    },
+                    "confidence": {
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 1
+                    }
+                  }
+                }
+              },
+              {
+                "name": "emotions",
+                "type": "object",
+                "description": "Detected emotional categories and intensities"
+              }
+            ],
+            "compliance": [
+              {
+                "framework": "ISO-42001",
+                "controls": ["5.4", "6.2"],
+                "status": "compliant"
+              }
+            ]
+          }
+        ]
+      },
+      "analytics": {
+        "name": "Data Analytics",
+        "description": "Capabilities for data analysis and business intelligence",
+        "capabilities": [
+          {
+            "id": "analytics.data-processing",
+            "name": "Data Processing Engine",
+            "version": "3.0",
+            "description": "Process and transform large datasets",
+            "category": "analytics",
+            "type": "data_processing",
+            "inputs": [
+              {
+                "name": "dataset",
+                "type": "object",
+                "required": true,
+                "description": "Input dataset in various formats",
+                "supportedFormats": ["json", "csv", "parquet", "avro"]
+              },
+              {
+                "name": "transformations",
+                "type": "array",
+                "required": true,
+                "description": "List of transformation operations to apply"
+              }
+            ],
+            "outputs": [
+              {
+                "name": "processedData",
+                "type": "object",
+                "description": "Transformed dataset"
+              },
+              {
+                "name": "processingStats",
+                "type": "object",
+                "description": "Processing statistics and metadata"
+              }
+            ],
+            "compliance": [
+              {
+                "framework": "GDPR",
+                "controls": ["Art. 25", "Art. 35"],
+                "status": "compliant"
+              }
+            ]
+          },
+          {
+            "id": "analytics.statistical-analysis",
+            "name": "Statistical Analysis",
+            "version": "2.5",
+            "description": "Perform advanced statistical analysis on datasets",
+            "category": "analytics",
+            "type": "cognitive",
+            "inputs": [
+              {
+                "name": "data",
+                "type": "object",
+                "required": true,
+                "description": "Dataset for statistical analysis"
+              },
+              {
+                "name": "analysisType",
+                "type": "string",
+                "required": true,
+                "description": "Type of statistical analysis",
+                "enum": ["descriptive", "inferential", "regression", "correlation"]
+              }
+            ],
+            "outputs": [
+              {
+                "name": "results",
+                "type": "object",
+                "description": "Statistical analysis results"
+              },
+              {
+                "name": "visualizations",
+                "type": "array",
+                "description": "Generated charts and graphs"
+              }
+            ],
+            "compliance": [
+              {
+                "framework": "SOX",
+                "controls": ["302", "404"],
+                "status": "compliant"
+              }
+            ]
+          }
+        ]
+      },
+      "security": {
+        "name": "Security & Monitoring",
+        "description": "Security-focused capabilities for protection and monitoring",
+        "capabilities": [
+          {
+            "id": "security.threat-detection",
+            "name": "Threat Detection Engine",
+            "version": "4.0",
+            "description": "Real-time threat detection and analysis",
+            "category": "security",
+            "type": "security",
+            "inputs": [
+              {
+                "name": "logData",
+                "type": "object",
+                "required": true,
+                "description": "Security log data for analysis"
+              },
+              {
+                "name": "threatIntel",
+                "type": "object",
+                "required": false,
+                "description": "Threat intelligence feeds"
+              }
+            ],
+            "outputs": [
+              {
+                "name": "threats",
+                "type": "array",
+                "description": "Identified security threats"
+              },
+              {
+                "name": "riskScore",
+                "type": "number",
+                "description": "Overall risk assessment score"
+              }
+            ],
+            "compliance": [
+              {
+                "framework": "NIST-800-53",
+                "controls": ["SI-4", "AU-6"],
+                "status": "compliant"
+              }
+            ]
+          },
+          {
+            "id": "security.anomaly-detection",
+            "name": "Anomaly Detection",
+            "version": "2.2",
+            "description": "Detect anomalous behavior patterns",
+            "category": "security",
+            "type": "cognitive",
+            "inputs": [
+              {
+                "name": "behaviorData",
+                "type": "object",
+                "required": true,
+                "description": "System or user behavior data"
+              },
+              {
+                "name": "baseline",
+                "type": "object",
+                "required": false,
+                "description": "Baseline behavior patterns"
+              }
+            ],
+            "outputs": [
+              {
+                "name": "anomalies",
+                "type": "array",
+                "description": "Detected anomalous behaviors"
+              },
+              {
+                "name": "severity",
+                "type": "string",
+                "description": "Severity level of detected anomalies"
+              }
+            ],
+            "compliance": [
+              {
+                "framework": "FedRAMP",
+                "controls": ["SI-4", "AC-2"],
+                "status": "compliant"
+              }
+            ]
+          }
+        ]
+      },
+      "orchestration": {
+        "name": "Orchestration & Workflow",
+        "description": "Capabilities for managing workflows and agent coordination",
+        "capabilities": [
+          {
+            "id": "orchestration.workflow-management",
+            "name": "Workflow Management",
+            "version": "2.5",
+            "description": "Manage complex multi-step workflows",
+            "category": "orchestration",
+            "type": "operational",
+            "inputs": [
+              {
+                "name": "workflowDefinition",
+                "type": "object",
+                "required": true,
+                "description": "Workflow definition and steps"
+              },
+              {
+                "name": "executionContext",
+                "type": "object",
+                "required": false,
+                "description": "Execution context and parameters"
+              }
+            ],
+            "outputs": [
+              {
+                "name": "executionStatus",
+                "type": "string",
+                "description": "Current workflow execution status"
+              },
+              {
+                "name": "results",
+                "type": "object",
+                "description": "Workflow execution results"
+              }
+            ],
+            "compliance": [
+              {
+                "framework": "ISO-42001",
+                "controls": ["7.3", "8.1"],
+                "status": "compliant"
+              }
+            ]
+          }
+        ]
+      },
+      "moderation": {
+        "name": "Content Moderation",
+        "description": "Capabilities for content safety and moderation",
+        "capabilities": [
+          {
+            "id": "moderation.content-analysis",
+            "name": "Content Analysis",
+            "version": "3.5",
+            "description": "Analyze content for policy violations and safety issues",
+            "category": "moderation",
+            "type": "cognitive",
+            "inputs": [
+              {
+                "name": "content",
+                "type": "object",
+                "required": true,
+                "description": "Content to analyze (text, image, video)",
+                "supportedTypes": ["text", "image", "video", "audio"]
+              },
+              {
+                "name": "policies",
+                "type": "array",
+                "required": true,
+                "description": "Content policies to check against"
+              }
+            ],
+            "outputs": [
+              {
+                "name": "violations",
+                "type": "array",
+                "description": "Identified policy violations"
+              },
+              {
+                "name": "recommendations",
+                "type": "array",
+                "description": "Recommended actions for content"
+              }
+            ],
+            "compliance": [
+              {
+                "framework": "EU-AI-ACT",
+                "controls": ["Art. 9", "Art. 26"],
+                "status": "compliant"
+              }
+            ]
+          },
+          {
+            "id": "moderation.bias-detection",
+            "name": "Bias Detection",
+            "version": "2.0",
+            "description": "Detect and analyze potential bias in content and decisions",
+            "category": "moderation",
+            "type": "cognitive",
+            "inputs": [
+              {
+                "name": "content",
+                "type": "object",
+                "required": true,
+                "description": "Content or decision data to analyze for bias"
+              },
+              {
+                "name": "biasTypes",
+                "type": "array",
+                "required": false,
+                "description": "Specific bias types to check for"
+              }
+            ],
+            "outputs": [
+              {
+                "name": "biasAnalysis",
+                "type": "object",
+                "description": "Detailed bias analysis results"
+              },
+              {
+                "name": "mitigationSuggestions",
+                "type": "array",
+                "description": "Suggestions for bias mitigation"
+              }
+            ],
+            "compliance": [
+              {
+                "framework": "EU-AI-ACT",
+                "controls": ["Art. 10", "Art. 15"],
+                "status": "compliant"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "stats": {
+      "totalCapabilities": 12,
+      "byCategory": {
+        "nlp": 3,
+        "analytics": 2,
+        "security": 2,
+        "orchestration": 1,
+        "moderation": 2
+      },
+      "byType": {
+        "cognitive": 8,
+        "operational": 1,
+        "data_processing": 1,
+        "security": 2
+      },
+      "complianceFrameworks": ["GDPR", "EU-AI-ACT", "ISO-42001", "NIST-800-53", "FedRAMP", "SOX"]
+    }
+  },
+  "registryInfo": {
+    "endpoint": "https://registry.ossa.ai/v1/capabilities",
+    "documentation": "https://docs.ossa.ai/capabilities",
+    "schemaVersion": "v0.1.8",
+    "lastUpdated": "2024-12-01T12:00:00Z",
+    "maintainerContact": "capabilities@ossa.ai"
+  }
+}

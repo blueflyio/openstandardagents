@@ -1,0 +1,170 @@
+---
+# OSSA Multi-Agent Workspace Configuration v0.1.8
+apiVersion: ossa.ai/v1
+kind: Workspace
+metadata:
+  name: ossa-platform-workspace
+  version: "0.1.8"
+  created: "2025-09-06T19:00:00Z"
+  description: "OSSA v0.1.8 compliant multi-agent workspace"
+
+spec:
+  # OSSA Compliance Configuration
+  ossa:
+    version: "0.1.8"
+    conformance_tier: "advanced"
+    certification_level: "platinum"
+    compliance_frameworks:
+      - "ISO_42001"
+      - "NIST_AI_RMF"
+      - "EU_AI_ACT"
+
+  # Universal Agent Discovery Protocol (UADP)
+  discovery:
+    enabled: true
+    protocol: "uadp"
+    endpoints:
+      - "http://localhost:8080/discover"
+      - "https://api.ossa.ai/discover"
+    refresh_interval: "30s"
+    health_check_interval: "10s"
+
+  # Agent Registry Configuration
+  registry:
+    type: "distributed"
+    persistence: true
+    storage_path: "./data/registry.db"
+    backup_enabled: true
+    backup_interval: "1h"
+
+  # Resource Management
+  resources:
+    limits:
+      max_agents: 100
+      max_workflows: 50
+      memory_limit: "8Gi"
+      cpu_limit: "4000m"
+    allocation:
+      cpu_per_agent: "100m"
+      memory_per_agent: "256Mi"
+    scaling:
+      enabled: true
+      min_replicas: 1
+      max_replicas: 10
+
+  # Security & Compliance
+  security:
+    encryption:
+      at_rest: true
+      in_transit: true
+      algorithm: "AES-256-GCM"
+    authentication:
+      required: true
+      method: "oauth2"
+      token_expiry: "24h"
+    authorization:
+      rbac_enabled: true
+      default_role: "agent-user"
+    audit:
+      enabled: true
+      log_level: "info"
+      retention_days: 90
+
+  # Monitoring & Observability  
+  monitoring:
+    metrics:
+      enabled: true
+      endpoint: "http://localhost:9090"
+      scrape_interval: "15s"
+    tracing:
+      enabled: true
+      provider: "opentelemetry"
+      endpoint: "http://localhost:14268/api/traces"
+    logging:
+      level: "info"
+      format: "json"
+      output: "./logs/workspace.log"
+
+  # Framework Integrations
+  integrations:
+    mcp:
+      enabled: true
+      servers:
+        - name: "filesystem"
+          command: "npx"
+          args: ["@modelcontextprotocol/server-filesystem", "/tmp"]
+        - name: "memory"
+          command: "npx"
+          args: ["@modelcontextprotocol/server-memory"]
+    langchain:
+      enabled: true
+      version: "0.2.x"
+    crewai:
+      enabled: true
+      version: "0.67.x"
+    openai:
+      enabled: true
+      api_version: "2024-02-15-preview"
+
+  # Workflow Configuration
+  workflows:
+    engine: "ossa-workflow-engine"
+    templates_path: "./workflows/templates"
+    execution_timeout: "30m"
+    retry_policy:
+      max_retries: 3
+      backoff: "exponential"
+    cleanup:
+      completed_retention: "7d"
+      failed_retention: "30d"
+
+  # Data Management
+  data:
+    storage:
+      type: "filesystem"
+      path: "./data"
+      compression: true
+    vectors:
+      provider: "qdrant"
+      endpoint: "http://localhost:6333"
+      collection: "ossa-workspace"
+    cache:
+      ttl: "1h"
+      max_size: "1Gi"
+
+  # Extension Support
+  extensions:
+    openmp:
+      enabled: true
+      max_threads: 8
+      scheduler: "dynamic"
+    custom_extensions_path: "./extensions"
+
+  # Health Checks
+  health:
+    checks:
+      - name: "agent-registry"
+        endpoint: "/health/registry"
+        interval: "30s"
+        timeout: "5s"
+      - name: "workflow-engine"
+        endpoint: "/health/workflows"
+        interval: "60s"
+        timeout: "10s"
+    startup_probe:
+      initial_delay: "10s"
+      period: "5s"
+      timeout: "3s"
+    liveness_probe:
+      period: "30s"
+      timeout: "5s"
+      failure_threshold: 3
+
+  # Development Settings
+  development:
+    debug_mode: false
+    hot_reload: false
+    profiling: false
+    dev_tools:
+      enabled: false
+      port: 9229

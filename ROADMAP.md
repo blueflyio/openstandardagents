@@ -1,32 +1,43 @@
-# Open Standards for Scalable Agents (OSSA) v0.1.7 - Critical Issues & Roadmap
+# OSSA v0.1.8 - Master Ecosystem Migration Roadmap
 
-## 🚨 **CRITICAL ISSUES DISCOVERED (September 2025)**
+## 🎯 CRITICAL: OSSA v0.1.8 Ecosystem Migration
 
-**Status**: **NOT READY FOR PRODUCTION** - Multiple critical issues prevent stable release
+**Status**: **COORDINATED MIGRATION IN PROGRESS** - Systematic upgrade across entire LLM platform
 
-### **❌ Immediate Blocking Issues:**
+### Executive Summary
+This roadmap coordinates the migration of the entire LLM platform ecosystem from OSSA v0.1.2 to v0.1.8, representing a fundamental architectural shift from configuration-based to API-first, production-ready agent systems with enterprise-grade compliance.
 
-1. **Broken CLI Implementation**
-   - `lib/cli.js` points to non-existent `validate-ossa-v0.1.6.js`
-   - Primary validation tool completely non-functional
-   - **Impact**: Core functionality unusable
+## Global Migration Timeline
 
-2. **Version Inconsistency Crisis**
-   - Examples use `openapi-ai-agents/v1.2.0` (old OAAS)
-   - Package claims v0.1.7 (OSSA)  
-   - Documentation mixes v0.1.6, v0.1.7, v1.2.0
-   - **Impact**: Complete confusion about actual specification
+### Phase 1: Foundation (Week 1-2)
+**Core Infrastructure & Validation**
 
-3. **Fantasy Implementation Claims**
-   - README claims 20 running agents on ports 4021-4040
-   - No actual services running on these ports
-   - Detailed agent descriptions for non-existent systems
-   - **Impact**: Fraudulent claims, credibility damage
+#### Agent-Forge (CRITICAL PATH)
+- [ ] Fix module loading errors in CLI
+- [ ] Update `ossa-validator.ts` for v0.1.8 schema
+- [ ] Create API-first templates (OpenAPI/GraphQL/gRPC)
+- [ ] Build v0.1.2 to v0.1.8 migration tools
 
-4. **No Working Examples**
-   - Basic examples reference non-existent services
-   - OpenAPI specs don't match actual capabilities
-   - **Impact**: Cannot demonstrate basic functionality
+#### Compliance-Engine (PARALLEL)
+- [ ] Implement OSSA v0.1.8 validation endpoints
+- [ ] Add FedRAMP/NIST 800-53 control mapping
+- [ ] Create compliance scoring algorithms
+- [ ] Build automated compliance reporting
+
+### Phase 2: Core Services (Week 3-4)
+**API Gateway & Service Infrastructure**
+
+#### Agent-Router
+- [ ] Implement OSSA agent discovery protocol
+- [ ] Add multi-protocol support (REST/GraphQL/gRPC)
+- [ ] OAuth2/JWT authentication middleware
+- [ ] Real-time compliance validation
+
+#### Agent-Orchestra
+- [ ] Upgrade to OSSA v0.1.8 orchestration API
+- [ ] Multi-agent workflow orchestration
+- [ ] Dynamic agent scaling and load balancing
+- [ ] Workflow compliance validation
 
 ### **🔍 Research Analysis Complete - 40 Agent Investigation Results**
 
@@ -1701,3 +1712,31 @@ OAAS has established itself as the universal standard for AI agents, bridging fr
   - [ ] Update build configurations for new test patterns
   - [ ] Migrate existing test files maintaining test coverage
   - [ ] Document test organization standards in project README
+
+
+## AI/MCP Integration Roadmap (Editors: Cursor, Claude Code, Windsurf, Zed)
+
+- **Vision**: Unify editors with shared MCP servers, tokens, and commands; zero drift across all projects.
+- **Today**
+  - Single token store at `~/.tokens` loaded via `~/.zshrc`
+  - Synced MCP servers across editors: GitLab (HTTP MCP), GitHub, Filesystem, Fetch, Memory, Git, Redis, SQLite/Prisma, Supabase, Linear, DeepWiki, SonarQube, Playwright, Prisma, Slack, OpenAI, Anthropic, Gemini, Cohere, Hugging Face, Qdrant
+  - Observability: OpenTelemetry (Prom 8889), Loki, Langfuse, Airflow, Grafana
+- **Next 30 days**
+  - Canonical MCP registry `~/.mcp/mcp_servers.d` → autogenerate `~/.cursor/mcp.json` and `~/.codeium/windsurf/mcp_config.json`
+  - Settings MCP: global model defaults, LLM profiles, org style rules
+  - Dev Health Snapshot MCP: one JSON of infra status
+  - Editor commands for `tddai` workflows (validate, agents, drupal audit/fix)
+- **Editor parity**
+  - Cursor: command palette + one‑click tasks; consistent directives
+  - Claude Code: pinned workspace knowledge; directives (Refactor, Tests, Perf, Security)
+  - Windsurf: MCP plugins toggled to stay under tool cap; raw config sync
+  - Zed: adopt same MCP set via config; bind common `tddai` tasks in task runner
+- **CI and drift control**
+  - Pre-commit: validate MCP parity and envs
+  - CI: `tddai orchestrate scan/validate`, Drupal/Node quality gates, infra probes
+- **Drupal integration**
+  - Expose Drush/DDEV tasks as MCP tools; enforce `drupal:fix:massive` → `drupal:fix:intelligent`
+- **Observability**
+  - Endpoints: OTel 13133/8889, Loki 3100, Langfuse 3333, Qdrant 6333, Airflow 8081, Grafana 3000
+- **Ownership**
+  - Source of truth: `common_npm/` docs; per‑project ROADMAP tracks adoption and deltas

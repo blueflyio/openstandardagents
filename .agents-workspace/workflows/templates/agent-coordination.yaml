@@ -1,0 +1,209 @@
+# OSSA Multi-Agent Coordination Workflow Template v0.1.8
+# Demonstrates agent coordination and communication patterns
+
+apiVersion: ossa.ai/v1
+kind: WorkflowTemplate
+metadata:
+  name: agent-coordination
+  version: "0.1.8"
+  description: "Coordinate multiple agents for complex task completion"
+  tags:
+    - "multi-agent"
+    - "coordination"
+    - "communication"
+
+spec:
+  inputs:
+    - name: task_description
+      type: "string"
+      description: "High-level description of task to complete"
+      required: true
+    - name: agent_pool
+      type: "array"
+      description: "Available agents for task execution"
+      default: ["nlp-agent", "vision-agent", "reasoning-agent"]
+    - name: coordination_strategy
+      type: "string"
+      enum: ["sequential", "parallel", "hierarchical"]
+      default: "hierarchical"
+
+  outputs:
+    - name: task_result
+      type: "object"
+      description: "Final consolidated result"
+    - name: coordination_metrics
+      type: "object"
+      description: "Agent coordination performance data"
+
+  agents:
+    coordinator:
+      name: "ossa-platform-agent"
+      role: "coordinator"
+      capabilities: ["task_planning", "agent_management"]
+      
+    workers:
+      - name: "nlp-agent"
+        capabilities: ["text_processing", "language_understanding"]
+        resources:
+          cpu: "500m"
+          memory: "1Gi"
+          
+      - name: "vision-agent"
+        capabilities: ["image_processing", "visual_analysis"]
+        resources:
+          cpu: "1000m"
+          memory: "2Gi"
+          
+      - name: "reasoning-agent"
+        capabilities: ["logical_reasoning", "decision_making"]
+        resources:
+          cpu: "750m"
+          memory: "1.5Gi"
+
+  steps:
+    - name: task_analysis
+      agent: "coordinator"
+      action: "task.analyze"
+      inputs:
+        task_description: "{{ inputs.task_description }}"
+        available_agents: "{{ inputs.agent_pool }}"
+      outputs:
+        - task_breakdown
+        - agent_assignments
+        
+    - name: agent_discovery
+      agent: "coordinator"
+      action: "agents.discover"
+      protocol: "uadp"
+      inputs:
+        required_capabilities: "{{ steps.task_analysis.outputs.required_capabilities }}"
+      outputs:
+        - discovered_agents
+        
+    - name: coordination_setup
+      agent: "coordinator"
+      action: "coordination.initialize"
+      inputs:
+        strategy: "{{ inputs.coordination_strategy }}"
+        agents: "{{ steps.agent_discovery.outputs.discovered_agents }}"
+        assignments: "{{ steps.task_analysis.outputs.agent_assignments }}"
+      outputs:
+        - coordination_plan
+        
+    - name: parallel_execution
+      type: "parallel"
+      branches:
+        - name: "nlp_processing"
+          condition: "{{ 'nlp' in steps.task_analysis.outputs.required_capabilities }}"
+          agent: "nlp-agent"
+          action: "nlp.process"
+          inputs:
+            task_data: "{{ steps.task_analysis.outputs.nlp_tasks }}"
+          outputs:
+            - nlp_results
+            
+        - name: "vision_processing"
+          condition: "{{ 'vision' in steps.task_analysis.outputs.required_capabilities }}"
+          agent: "vision-agent"
+          action: "vision.analyze"
+          inputs:
+            task_data: "{{ steps.task_analysis.outputs.vision_tasks }}"
+          outputs:
+            - vision_results
+            
+        - name: "reasoning_processing"
+          condition: "{{ 'reasoning' in steps.task_analysis.outputs.required_capabilities }}"
+          agent: "reasoning-agent"
+          action: "reasoning.solve"
+          inputs:
+            task_data: "{{ steps.task_analysis.outputs.reasoning_tasks }}"
+          outputs:
+            - reasoning_results
+            
+    - name: result_consolidation
+      agent: "coordinator"
+      action: "results.consolidate"
+      inputs:
+        nlp_results: "{{ steps.parallel_execution.nlp_processing.outputs.nlp_results }}"
+        vision_results: "{{ steps.parallel_execution.vision_processing.outputs.vision_results }}"
+        reasoning_results: "{{ steps.parallel_execution.reasoning_processing.outputs.reasoning_results }}"
+        original_task: "{{ inputs.task_description }}"
+      outputs:
+        - consolidated_result
+        
+    - name: quality_validation
+      agent: "coordinator"
+      action: "quality.validate"
+      inputs:
+        result: "{{ steps.result_consolidation.outputs.consolidated_result }}"
+        quality_criteria: "{{ steps.task_analysis.outputs.quality_criteria }}"
+      outputs:
+        - validation_result
+        
+    - name: coordination_metrics
+      agent: "coordinator"
+      action: "metrics.collect"
+      inputs:
+        workflow_start: "{{ workflow.start_time }}"
+        agent_performance: "{{ workflow.agent_metrics }}"
+        communication_stats: "{{ workflow.communication_stats }}"
+      outputs:
+        - performance_metrics
+
+  communication:
+    protocol: "mcp"
+    channels:
+      - name: "coordinator_broadcast"
+        type: "broadcast"
+        participants: ["coordinator"]
+        subscribers: ["nlp-agent", "vision-agent", "reasoning-agent"]
+        
+      - name: "peer_to_peer"
+        type: "p2p"
+        participants: ["nlp-agent", "vision-agent", "reasoning-agent"]
+        
+    message_formats:
+      - type: "task_assignment"
+        schema: "schemas/task_assignment.json"
+      - type: "progress_update"
+        schema: "schemas/progress_update.json"
+      - type: "result_submission"
+        schema: "schemas/result_submission.json"
+
+  error_handling:
+    agent_failure:
+      strategy: "failover"
+      backup_agents: true
+      timeout: "300s"
+      
+    communication_failure:
+      strategy: "retry"
+      max_retries: 5
+      backoff: "linear"
+      
+    coordination_failure:
+      strategy: "escalate"
+      escalation_target: "human_supervisor"
+
+  monitoring:
+    metrics:
+      - "agent_response_time"
+      - "task_completion_rate" 
+      - "communication_latency"
+      - "resource_utilization"
+      
+    alerts:
+      - condition: "agent_response_time > 30s"
+        action: "notify_coordinator"
+      - condition: "task_completion_rate < 0.8"
+        action: "trigger_analysis"
+
+  security:
+    inter_agent_auth: true
+    message_encryption: true
+    audit_all_communications: true
+    
+  compliance:
+    frameworks: ["ISO_42001", "NIST_AI_RMF"]
+    data_lineage: true
+    decision_audit: true

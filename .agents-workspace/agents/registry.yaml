@@ -1,0 +1,66 @@
+# OSSA Agent Registry v0.1.8
+# Central registration for all agents in the workspace
+
+apiVersion: ossa.ai/v1
+kind: AgentRegistry
+metadata:
+  name: ossa-workspace-registry
+  version: "0.1.8"
+  created: "2025-09-06T19:00:00Z"
+
+spec:
+  discovery:
+    protocol: "uadp"
+    endpoint: "http://localhost:8080/discover"
+    refresh_interval: "30s"
+    
+  registration:
+    auto_register: true
+    validation: true
+    approval_required: false
+    health_check_required: true
+    
+  agents:
+    - id: "ossa-platform-agent"
+      name: "OSSA Platform Agent"
+      version: "0.1.8"
+      status: "active"
+      manifest_path: "./agent.yaml"
+      runtime_path: "./runtime/"
+      health_endpoint: "http://localhost:8080/health"
+      capabilities:
+        - "nlp"
+        - "multimodal"
+        - "langchain"
+        - "crewai"
+        - "openai"
+        - "mcp"
+      tags:
+        - "platform"
+        - "orchestration"
+        - "multi-framework"
+      last_seen: "2025-09-06T19:00:00Z"
+      
+  health_checks:
+    interval: "30s"
+    timeout: "5s"
+    retries: 3
+    failure_threshold: 3
+    
+  metrics:
+    enabled: true
+    endpoint: "/metrics"
+    scrape_interval: "15s"
+    
+  compliance:
+    frameworks:
+      - "ISO_42001"
+      - "NIST_AI_RMF"
+      - "EU_AI_ACT"
+    audit_logging: true
+    encryption: "AES-256-GCM"
+    
+  load_balancing:
+    algorithm: "round_robin"
+    health_check_based: true
+    capability_based: true

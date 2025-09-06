@@ -1,0 +1,116 @@
+# OSSA Agent Manifest
+# Specification Version: 0.1.8
+
+apiVersion: "ossa/v0.1.8"
+kind: "Agent"
+metadata:
+  name: "ossa-platform-agent"
+  version: "0.1.8"
+  namespace: "default"
+  labels:
+    environment: "production"
+    tier: "advanced"
+    framework: "multi"
+  annotations:
+    description: "OSSA Platform orchestration agent"
+    documentation: "https://docs.ossa-ai.org/agents/platform"
+    
+spec:
+  runtime: "container"
+  image: "ossa/platform-agent:0.1.8"
+  
+  capabilities:
+    # Core capabilities
+    nlp: true
+    computer_vision: false
+    audio_processing: false
+    multimodal: true
+    
+    # Framework support
+    frameworks:
+      - name: "langchain"
+        version: ">=0.3.0"
+      - name: "crewai"
+        version: ">=0.5.0"
+      - name: "openai"
+        version: ">=1.0.0"
+      - name: "anthropic"
+        version: ">=0.35.0"
+      - name: "mcp"
+        version: ">=1.0.0"
+        
+    # Protocols
+    protocols:
+      - "openapi"
+      - "graphql"
+      - "uadp"
+      - "mcp"
+      - "websocket"
+      
+    # Parallel computing (OpenMP extension)
+    parallel_compute:
+      enabled: true
+      max_threads: 16
+      numa_aware: true
+      vectorization: ["AVX2"]
+      
+  resources:
+    requests:
+      cpu: "2"
+      memory: "4Gi"
+      storage: "10Gi"
+    limits:
+      cpu: "8"
+      memory: "16Gi"
+      storage: "100Gi"
+      
+  networking:
+    ports:
+      - name: "http"
+        port: 8080
+        protocol: "TCP"
+      - name: "grpc"
+        port: 9090
+        protocol: "TCP"
+      - name: "metrics"
+        port: 9091
+        protocol: "TCP"
+        
+  security:
+    run_as_user: 1000
+    run_as_group: 1000
+    read_only_root_filesystem: true
+    allow_privilege_escalation: false
+    capabilities:
+      drop: ["ALL"]
+      add: ["NET_BIND_SERVICE"]
+      
+  health:
+    liveness_probe:
+      http:
+        path: "/health/live"
+        port: 8080
+      initial_delay: 30
+      period: 10
+    readiness_probe:
+      http:
+        path: "/health/ready"
+        port: 8080
+      initial_delay: 5
+      period: 5
+      
+  telemetry:
+    metrics: true
+    traces: true
+    logs: true
+    export:
+      endpoint: "http://localhost:4317"
+      protocol: "otlp"
+      
+  compliance:
+    frameworks:
+      - "ISO_42001"
+      - "NIST_AI_RMF"
+    audit_logging: true
+    data_classification: "confidential"
+    retention_policy: "30d"

@@ -1,0 +1,122 @@
+# OSSA Agent Capabilities Registry v0.1.8
+# Defines available capabilities across all agents
+
+apiVersion: ossa.ai/v1
+kind: CapabilityRegistry
+metadata:
+  name: ossa-capability-registry
+  version: "0.1.8"
+
+spec:
+  capabilities:
+    # Core AI Capabilities
+    nlp:
+      description: "Natural Language Processing"
+      category: "core"
+      protocols: ["openai", "anthropic", "huggingface"]
+      frameworks: ["langchain", "transformers"]
+      
+    computer_vision:
+      description: "Computer Vision and Image Processing"
+      category: "core"
+      protocols: ["opencv", "pytorch", "tensorflow"]
+      frameworks: ["yolo", "detectron2"]
+      
+    audio_processing:
+      description: "Audio Analysis and Generation"
+      category: "core"
+      protocols: ["whisper", "tortoise", "bark"]
+      frameworks: ["librosa", "pydub"]
+      
+    multimodal:
+      description: "Multi-modal AI Processing"
+      category: "core"
+      protocols: ["openai-vision", "anthropic-claude", "google-gemini"]
+      frameworks: ["langchain", "llamaindex"]
+      
+    # Framework Support
+    langchain:
+      description: "LangChain Framework Integration"
+      category: "framework"
+      version_requirement: ">=0.3.0"
+      protocols: ["openai", "anthropic", "huggingface"]
+      
+    crewai:
+      description: "CrewAI Multi-Agent Framework"
+      category: "framework" 
+      version_requirement: ">=0.5.0"
+      protocols: ["openai", "anthropic"]
+      
+    openai:
+      description: "OpenAI API Integration"
+      category: "provider"
+      version_requirement: ">=1.0.0"
+      models: ["gpt-4", "gpt-3.5-turbo", "whisper", "dall-e"]
+      
+    anthropic:
+      description: "Anthropic Claude Integration"
+      category: "provider"
+      version_requirement: ">=0.35.0"
+      models: ["claude-3-opus", "claude-3-sonnet", "claude-3-haiku"]
+      
+    mcp:
+      description: "Model Context Protocol"
+      category: "protocol"
+      version_requirement: ">=1.0.0"
+      protocols: ["websocket", "stdio"]
+      
+    # Communication Protocols
+    openapi:
+      description: "OpenAPI/REST Protocol Support"
+      category: "protocol"
+      specifications: ["3.0", "3.1"]
+      
+    graphql:
+      description: "GraphQL Protocol Support"
+      category: "protocol"
+      specifications: ["2023"]
+      
+    uadp:
+      description: "Universal Agent Discovery Protocol"
+      category: "protocol"
+      version: "0.1.8"
+      
+    websocket:
+      description: "WebSocket Communication"
+      category: "protocol"
+      specifications: ["RFC6455"]
+      
+    # Parallel Computing (OpenMP Extension)
+    parallel_compute:
+      description: "High-Performance Parallel Computing"
+      category: "extension"
+      extension_name: "openmp"
+      features:
+        - "multi_threading"
+        - "numa_awareness" 
+        - "vectorization"
+        - "memory_optimization"
+      architectures: ["x86_64", "arm64"]
+      
+  capability_groups:
+    ai_core:
+      - "nlp"
+      - "computer_vision"
+      - "audio_processing"
+      - "multimodal"
+      
+    frameworks:
+      - "langchain"
+      - "crewai"
+      - "openai"
+      - "anthropic"
+      - "mcp"
+      
+    protocols:
+      - "openapi"
+      - "graphql"
+      - "uadp"
+      - "websocket"
+      
+    extensions:
+      - "parallel_compute"

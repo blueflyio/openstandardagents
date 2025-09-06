@@ -12,7 +12,8 @@ import chalk from 'chalk';
 import { table } from 'table';
 import ora from 'ora';
 import inquirer from 'inquirer';
-import { writeFileSync, readFileSync } from 'fs-extra';
+import fs from 'fs-extra';
+const { writeFileSync, readFileSync } = fs;
 import { 
   ossaClient,
   type Workflow,
@@ -20,7 +21,7 @@ import {
   type WorkflowExecution,
   type WorkflowExecutionRequest,
   type WorkflowFilters
-} from '../api/client';
+} from '../api/client.js';
 
 // =====================================================================
 // Orchestration Commands Registration
@@ -409,7 +410,7 @@ export function registerGraphQLCommands(program: Command): void {
         spinner.stop();
 
         if (options.types) {
-          displaySchemaTypes(response.data.data.__schema.types);
+          displaySchemaTypes(response.data.data?.__schema?.types || []);
         } else {
           displayGraphQLResponse(response.data);
         }
@@ -565,7 +566,7 @@ function displaySchemaTypes(types: any[]): void {
 
   Object.entries(typesByKind).forEach(([kind, typeList]) => {
     console.log(`\n${chalk.blue(kind)}:`);
-    typeList.forEach(type => {
+    (typeList as any[]).forEach((type: any) => {
       console.log(`  ${chalk.green(type.name)}`);
       if (type.description) {
         console.log(`    ${chalk.gray(type.description)}`);
