@@ -1,0 +1,309 @@
+openapi: 3.1.0
+info:
+  title: OpenAPI Expert Agent API
+  version: 1.0.0
+  description: Expert OpenAPI 3.1.0 specification validation and guidance agent with complete technical reference training
+  x-openapi-ai-agents-standard:
+    version: 0.1.8
+    conformance_tier: advanced
+    certification_level: gold
+    compliance_frameworks:
+      - ISO_42001
+      - NIST_AI_RMF
+    enterprise_features: true
+  x-agent-metadata:
+    class: api
+    category: assistant
+    protocols:
+      - openapi
+      - mcp
+      - uadp
+    capabilities:
+      - openapi_specification_validation
+      - json_schema_draft_2020_12_expertise
+      - api_documentation_generation
+      - specification_compliance_checking
+      - openapi_3_1_migration_assistance
+      - webhook_specification_design
+    domains:
+      - api
+servers:
+  - url: http://localhost:3000/api
+    description: Local development server
+paths:
+  /validate:
+    post:
+      summary: Validate OpenAPI specification
+      description: Validates an OpenAPI 3.1.0 specification against the complete standard
+      operationId: validateOpenAPISpec
+      tags:
+        - Validation
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                specification:
+                  oneOf:
+                    - type: string
+                      description: YAML or JSON string of OpenAPI spec
+                    - type: object
+                      description: Parsed OpenAPI specification object
+                validation_level:
+                  type: string
+                  enum: [strict, standard, permissive]
+                  default: standard
+      responses:
+        '200':
+          description: Validation results
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationResult'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /migrate:
+    post:
+      summary: Migrate OpenAPI specification to 3.1.0
+      description: Migrates OpenAPI 3.0.x specifications to 3.1.0 with proper JSON Schema alignment
+      operationId: migrateOpenAPISpec
+      tags:
+        - Migration
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                specification:
+                  type: object
+                  description: OpenAPI 3.0.x specification to migrate
+                preserve_extensions:
+                  type: boolean
+                  default: true
+      responses:
+        '200':
+          description: Migration results
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  migrated_spec:
+                    type: object
+                  migration_notes:
+                    type: array
+                    items:
+                      type: string
+                  warnings:
+                    type: array
+                    items:
+                      type: string
+  /generate:
+    post:
+      summary: Generate OpenAPI specification
+      description: Generates OpenAPI 3.1.0 specification from requirements
+      operationId: generateOpenAPISpec
+      tags:
+        - Generation
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                api_description:
+                  type: string
+                endpoints:
+                  type: array
+                  items:
+                    type: object
+                security_requirements:
+                  type: array
+                  items:
+                    type: string
+      responses:
+        '200':
+          description: Generated specification
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  specification:
+                    type: object
+                  generation_notes:
+                    type: array
+                    items:
+                      type: string
+  /health:
+    get:
+      summary: Health check endpoint
+      description: OSSA v0.1.8 compliant health check
+      operationId: getHealth
+      tags:
+        - Health
+      responses:
+        '200':
+          description: Agent is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum:
+                      - healthy
+                      - degraded
+                      - unhealthy
+                  version:
+                    type: string
+                  ossa_version:
+                    type: string
+                  uptime:
+                    type: number
+                  timestamp:
+                    type: string
+                    format: date-time
+  /capabilities:
+    get:
+      summary: Get agent capabilities
+      description: Returns comprehensive agent capabilities per OSSA v0.1.8
+      operationId: getCapabilities
+      tags:
+        - Discovery
+      responses:
+        '200':
+          description: Agent capabilities
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  agent_name:
+                    type: string
+                  conformance_tier:
+                    type: string
+                  capabilities:
+                    type: array
+                    items:
+                      type: string
+                  protocols:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        name:
+                          type: string
+                        version:
+                          type: string
+                        required:
+                          type: boolean
+                  framework_support:
+                    type: object
+components:
+  schemas:
+    ValidationResult:
+      type: object
+      required: [valid, errors, warnings]
+      properties:
+        valid:
+          type: boolean
+          description: Whether the specification is valid
+        errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/ValidationIssue'
+          description: Critical validation errors
+        warnings:
+          type: array
+          items:
+            $ref: '#/components/schemas/ValidationIssue'
+          description: Non-critical validation warnings
+        info:
+          type: array
+          items:
+            $ref: '#/components/schemas/ValidationIssue'
+          description: Informational messages
+        statistics:
+          type: object
+          properties:
+            total_paths:
+              type: integer
+            total_operations:
+              type: integer
+            total_schemas:
+              type: integer
+            openapi_version:
+              type: string
+
+    ValidationIssue:
+      type: object
+      required: [code, message, severity]
+      properties:
+        code:
+          type: string
+          pattern: '^[A-Z_]+$'
+          description: Machine-readable error code
+        message:
+          type: string
+          description: Human-readable error message
+        severity:
+          type: string
+          enum: [error, warning, info]
+        path:
+          type: string
+          description: JSON pointer to the problematic location
+        line:
+          type: integer
+          description: Line number if parsing from YAML/JSON
+        column:
+          type: integer
+          description: Column number if parsing from YAML/JSON
+        suggestion:
+          type: string
+          description: Suggested fix for the issue
+
+    Error:
+      type: object
+      required: [code, message]
+      properties:
+        code:
+          type: string
+          pattern: '^[A-Z_]+$'
+        message:
+          type: string
+        details:
+          type: array
+          items:
+            type: object
+            properties:
+              field:
+                type: string
+              issue:
+                type: string
+        timestamp:
+          type: string
+          format: date-time
+        traceId:
+          type: string
+          format: uuid
+
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+        version:
+          type: string
+        timestamp:
+          type: string
