@@ -3,7 +3,7 @@
   "version": "0.1.8",
   "description": "Open Standards for Scalable Agents (OSSA) - Research-enhanced specification for universal AI agent interoperability with ACTA and memory systems integration",
   "publishConfig": {
-    "registry": "https://npm.bluefly.io/"
+    "registry": "https://gitlab.bluefly.io/api/v4/projects/1553/packages/npm/"
   },
   "type": "module",
   "workspaces": [
@@ -44,7 +44,7 @@
     "services:health": "npx tsx cli/src/index.ts services health",
     "version:patch": "npm version patch --no-git-tag-version",
     "version:check": "echo 'Version check disabled for dual registry setup'",
-    "publish:private": "npm publish --registry https://npm.bluefly.io/",
+    "publish:private": "npm publish --registry https://gitlab.bluefly.io/api/v4/projects/1553/packages/npm/",
     "publish:public": "npm publish --registry https://registry.npmjs.org/",
     "publish:safe": "npm run publish:private",
     "prepublishOnly": "echo 'Pre-publish checks disabled for dual registry setup'"

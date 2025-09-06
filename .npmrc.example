@@ -1,0 +1,4 @@
+# GitLab Package Registry Authentication
+# Copy to .npmrc and replace <YOUR_GITLAB_TOKEN> with your actual token
+@bluefly:registry=https://gitlab.bluefly.io/api/v4/projects/1553/packages/npm/
+//gitlab.bluefly.io/api/v4/projects/1553/packages/npm/:_authToken=<YOUR_GITLAB_TOKEN>
