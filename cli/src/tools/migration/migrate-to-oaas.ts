@@ -57,7 +57,7 @@ class OAASMigrator {
       console.log(chalk.gray(`Agent files created in: ${this.options.output}`));
       
     } catch (error) {
-      console.error(chalk.red(`\n❌ Migration failed: ${error.message}`));
+      console.error(chalk.red(`\n❌ Migration failed: ${(error as Error).message}`));
       process.exit(1);
     }
   }
@@ -162,7 +162,7 @@ class OAASMigrator {
       }
     }
     
-    info.capabilities = info.tools.map(t => t.name);
+    info.capabilities = info.tools.map((t: any) => t.name);
     return info;
   }
   
@@ -217,7 +217,7 @@ class OAASMigrator {
         name: config.name || 'mcp-server',
         description: config.description,
         version: config.version || '1.0.0',
-        capabilities: (config.tools || []).map(t => t.name),
+        capabilities: (config.tools || []).map((t: any) => t.name),
         tools: config.tools || [],
         framework: 'mcp'
       };
@@ -256,7 +256,7 @@ class OAASMigrator {
       }
       
       if (config.functions) {
-        info.capabilities = config.functions.map(f => f.name || f);
+        info.capabilities = config.functions.map((f: any) => f.name || f);
       }
     }
     
@@ -273,8 +273,8 @@ class OAASMigrator {
         expertise: assistant.instructions || assistant.description,
         model: assistant.model,
         capabilities: (assistant.tools || [])
-          .filter(t => t.type === 'function')
-          .map(t => t.function.name),
+          .filter((t: any) => t.type === 'function')
+          .map((t: any) => t.function.name),
         tools: assistant.tools || [],
         framework: 'openai'
       };
@@ -313,7 +313,7 @@ class OAASMigrator {
       return {
         name: this.kebabCase(answers.name),
         expertise: answers.expertise,
-        capabilities: answers.capabilities.split(',').map(c => c.trim()),
+        capabilities: answers.capabilities.split(',').map((c: any) => c.trim()),
         framework: 'custom'
       };
     }
@@ -370,14 +370,14 @@ class OAASMigrator {
       name: info.name,
       version: info.version || '1.0.0',
       expertise: info.expertise || `${info.framework} agent with enhanced capabilities`,
-      capabilities: info.capabilities.map(cap => ({
+      capabilities: info.capabilities.map((cap: any) => ({
         name: cap,
         description: `${cap} functionality`
       })),
       frameworks: {
         [info.framework]: { enabled: true }
       },
-      api_endpoints: info.capabilities.map(cap => `/${cap}`)
+      api_endpoints: info.capabilities.map((cap: any) => `/${cap}`)
     };
   }
   
@@ -421,7 +421,7 @@ class OAASMigrator {
           name: this.titleCase(info.name),
           expertise: info.expertise
         },
-        capabilities: info.capabilities.map(cap => ({
+        capabilities: info.capabilities.map((cap: any) => ({
           name: cap,
           description: `Production ${cap} capability`,
           frameworks: [info.framework],
@@ -721,7 +721,7 @@ ${agent.expertise || agent.spec?.agent?.expertise || 'Migrated agent'}
 - **Migration Date**: ${new Date().toISOString().split('T')[0]}
 
 ## Capabilities
-${(agent.capabilities || []).map(cap => 
+${(agent.capabilities || []).map((cap: any) => 
   `- ${typeof cap === 'string' ? cap : cap.name}`
 ).join('\n')}
 
@@ -788,7 +788,7 @@ For issues or questions:
     const agentFile = path.join(
       this.options.output,
       '.agents',
-      this.options.source.split('/').pop(),
+      this.options.source.split('/').pop() || 'unknown',
       'agent.yml'
     );
     
@@ -796,8 +796,8 @@ For issues or questions:
       throw new Error('Agent file not created');
     }
     
-    const agent = yaml.load(fs.readFileSync(agentFile, 'utf8'));
-    if (!agent.name && !agent.metadata?.name) {
+    const agent = yaml.load(fs.readFileSync(agentFile, 'utf8')) as any;
+    if (!(agent as any).name && !(agent as any).metadata?.name) {
       throw new Error('Agent name not set');
     }
   }

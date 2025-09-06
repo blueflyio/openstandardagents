@@ -13,7 +13,7 @@
 // Core System Types
 // ========================================================================
 
-export interface HealthStatus {
+export interface HealthResponse {
   status: 'healthy' | 'degraded' | 'unhealthy';
   version: string;
   ossa_version?: string;
@@ -513,7 +513,7 @@ export const isApiError = (obj: any): obj is ApiError => {
   return obj && typeof obj.error === 'string';
 };
 
-export const isHealthStatus = (obj: any): obj is HealthStatus => {
+export const isHealthResponse = (obj: any): obj is HealthResponse => {
   return obj &&
     typeof obj.status === 'string' &&
     ['healthy', 'degraded', 'unhealthy'].includes(obj.status) &&
@@ -576,4 +576,4 @@ export interface OpenAPISchema {
 }
 
 // Export all types for external consumption
-export * from './types';
+export * from './types.js';

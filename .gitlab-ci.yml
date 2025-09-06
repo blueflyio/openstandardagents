@@ -6,6 +6,7 @@ stages:
   - test
   - security
   - build
+  - publish
   - deploy
   - pages
 
@@ -650,6 +651,37 @@ pages:
   only:
     - main
     - develop
+
+# Dual Registry Publishing
+publish:private:
+  stage: publish
+  image: node:18-alpine
+  before_script:
+    - npm ci
+  script:
+    - echo "Publishing OSSA $CI_COMMIT_TAG to private registry..."
+    - npm run publish:private
+  rules:
+    - if: $CI_COMMIT_TAG && $CI_COMMIT_REF_NAME != "main"
+  environment:
+    name: private-registry
+    url: https://gitlab.bluefly.io/llm/openapi-ai-agents-standard/-/packages
+
+publish:public:
+  stage: publish
+  image: node:18-alpine
+  before_script:
+    - npm ci
+    - echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > .npmrc
+  script:
+    - echo "Publishing OSSA $CI_COMMIT_TAG to npmjs.org..."
+    - npm run publish:public
+  rules:
+    - if: $CI_COMMIT_TAG && $CI_COMMIT_REF_NAME == "main"
+  environment:
+    name: npm-public
+    url: https://www.npmjs.com/package/@bluefly/open-standards-scalable-agents
+  when: manual
 
 # Cache configuration
 cache:
