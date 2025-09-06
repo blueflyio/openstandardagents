@@ -16,7 +16,8 @@ import chalk from 'chalk';
 import { table } from 'table';
 import ora from 'ora';
 import inquirer from 'inquirer';
-import { writeFileSync, readFileSync } from 'fs-extra';
+import fs from 'fs-extra';
+const { writeFileSync, readFileSync } = fs;
 import { 
   ossaClient, 
   createAPIKeyClient,
@@ -33,9 +34,9 @@ import {
   CONFORMANCE_TIERS,
   AGENT_CLASSES,
   AGENT_CATEGORIES
-} from '../api/client';
-import { registerMonitoringCommands, registerAdvancedCommands } from './api-monitoring';
-import { registerOrchestrationCommands, registerGraphQLCommands } from './api-orchestration';
+} from '../api/client.js';
+import { registerMonitoringCommands, registerAdvancedCommands } from './api-monitoring.js';
+import { registerOrchestrationCommands, registerGraphQLCommands } from './api-orchestration.js';
 
 // =====================================================================
 // Command Registration Function

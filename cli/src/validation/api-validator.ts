@@ -23,7 +23,7 @@ import {
   CONFORMANCE_TIERS,
   AGENT_CLASSES,
   AGENT_CATEGORIES
-} from '../api/generated-types';
+} from '../api/generated-types.js';
 
 // =====================================================================
 // Validation Interfaces

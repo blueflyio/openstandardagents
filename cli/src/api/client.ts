@@ -64,7 +64,7 @@ import type {
   PaginatedResponse,
   ApiError,
   MetricsFilters
-} from './generated-types';
+} from './generated-types.js';
 
 // Enhanced client configuration with full OSSA support
 export interface EnhancedApiClientConfig extends ApiClientConfig {
@@ -607,7 +607,7 @@ export {
   isHealthStatus,
   isAgent,
   isApiError,
-} from './generated-types';
+} from './generated-types.js';
 
 // Export constants
 export {
@@ -620,4 +620,4 @@ export {
   DEFAULT_AGENT_FILTERS,
   DEFAULT_METRICS_FILTERS,
   DEFAULT_API_CONFIG
-} from './generated-types';
+} from './generated-types.js';

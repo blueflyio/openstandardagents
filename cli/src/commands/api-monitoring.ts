@@ -12,13 +12,14 @@ import chalk from 'chalk';
 import { table } from 'table';
 import ora from 'ora';
 import inquirer from 'inquirer';
-import { writeFileSync } from 'fs-extra';
+import fs from 'fs-extra';
+const { writeFileSync } = fs;
 import { 
   ossaClient,
   type PlatformMetrics,
   type MetricsFilters,
   type HealthResponse
-} from '../api/client';
+} from '../api/client.js';
 
 // =====================================================================
 // Monitoring Commands Registration

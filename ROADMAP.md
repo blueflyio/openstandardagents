@@ -1701,3 +1701,31 @@ OAAS has established itself as the universal standard for AI agents, bridging fr
   - [ ] Update build configurations for new test patterns
   - [ ] Migrate existing test files maintaining test coverage
   - [ ] Document test organization standards in project README
+
+
+## AI/MCP Integration Roadmap (Editors: Cursor, Claude Code, Windsurf, Zed)
+
+- **Vision**: Unify editors with shared MCP servers, tokens, and commands; zero drift across all projects.
+- **Today**
+  - Single token store at `~/.tokens` loaded via `~/.zshrc`
+  - Synced MCP servers across editors: GitLab (HTTP MCP), GitHub, Filesystem, Fetch, Memory, Git, Redis, SQLite/Prisma, Supabase, Linear, DeepWiki, SonarQube, Playwright, Prisma, Slack, OpenAI, Anthropic, Gemini, Cohere, Hugging Face, Qdrant
+  - Observability: OpenTelemetry (Prom 8889), Loki, Langfuse, Airflow, Grafana
+- **Next 30 days**
+  - Canonical MCP registry `~/.mcp/mcp_servers.d` → autogenerate `~/.cursor/mcp.json` and `~/.codeium/windsurf/mcp_config.json`
+  - Settings MCP: global model defaults, LLM profiles, org style rules
+  - Dev Health Snapshot MCP: one JSON of infra status
+  - Editor commands for `tddai` workflows (validate, agents, drupal audit/fix)
+- **Editor parity**
+  - Cursor: command palette + one‑click tasks; consistent directives
+  - Claude Code: pinned workspace knowledge; directives (Refactor, Tests, Perf, Security)
+  - Windsurf: MCP plugins toggled to stay under tool cap; raw config sync
+  - Zed: adopt same MCP set via config; bind common `tddai` tasks in task runner
+- **CI and drift control**
+  - Pre-commit: validate MCP parity and envs
+  - CI: `tddai orchestrate scan/validate`, Drupal/Node quality gates, infra probes
+- **Drupal integration**
+  - Expose Drush/DDEV tasks as MCP tools; enforce `drupal:fix:massive` → `drupal:fix:intelligent`
+- **Observability**
+  - Endpoints: OTel 13133/8889, Loki 3100, Langfuse 3333, Qdrant 6333, Airflow 8081, Grafana 3000
+- **Ownership**
+  - Source of truth: `common_npm/` docs; per‑project ROADMAP tracks adoption and deltas
