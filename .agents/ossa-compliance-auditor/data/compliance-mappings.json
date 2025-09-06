@@ -1,0 +1,339 @@
+{
+  "ossa_version": "0.1.8",
+  "compliance_frameworks": {
+    "ISO_42001": {
+      "standard_name": "ISO/IEC 42001:2023",
+      "full_title": "Information Security Management Systems — Requirements for AI Management Systems",
+      "version": "2023",
+      "authority": "ISO/IEC",
+      "effective_date": "2023-12-15",
+      "scope": "AI management systems, information security for AI",
+      "certification_body": "BSI",
+      "control_families": {
+        "A.5": {
+          "name": "Information Security Policies",
+          "controls_count": 2,
+          "implementation_status": "implemented",
+          "controls": {
+            "A.5.1": {
+              "name": "Policies for information security",
+              "status": "implemented",
+              "evidence": "Policy-AI-001.pdf",
+              "last_reviewed": "2025-01-15"
+            },
+            "A.5.2": {
+              "name": "Information security roles and responsibilities",
+              "status": "implemented",
+              "evidence": "Roles-AI-001.pdf",
+              "last_reviewed": "2025-01-15"
+            }
+          }
+        },
+        "A.6": {
+          "name": "Organization of Information Security",
+          "controls_count": 8,
+          "implementation_status": "implemented",
+          "controls": {
+            "A.6.1": {
+              "name": "Information security roles and responsibilities",
+              "status": "implemented",
+              "evidence": "Org-Structure-AI-001.pdf"
+            },
+            "A.6.2": {
+              "name": "Segregation of duties",
+              "status": "implemented",
+              "evidence": "Segregation-AI-001.pdf"
+            }
+          }
+        },
+        "A.8": {
+          "name": "Asset Management",
+          "controls_count": 10,
+          "implementation_status": "implemented",
+          "controls": {
+            "A.8.1": {
+              "name": "Responsibility for assets",
+              "status": "implemented",
+              "evidence": "Asset-Management-AI-001.pdf"
+            },
+            "A.8.2": {
+              "name": "Information classification",
+              "status": "implemented",
+              "evidence": "Classification-AI-001.pdf"
+            }
+          }
+        },
+        "A.9": {
+          "name": "Access Control",
+          "controls_count": 14,
+          "implementation_status": "partial",
+          "controls": {
+            "A.9.1": {
+              "name": "Business requirements of access control",
+              "status": "implemented",
+              "evidence": "Access-Policy-AI-001.pdf"
+            },
+            "A.9.2": {
+              "name": "User access management",
+              "status": "in_progress",
+              "evidence": "pending",
+              "remediation_plan": "Complete by 2025-03-01"
+            }
+          }
+        }
+      },
+      "audit_schedule": {
+        "type": "annual",
+        "last_audit": "2025-01-15",
+        "next_audit": "2025-07-15",
+        "auditor": "BSI Group",
+        "scope": "full_certification"
+      },
+      "compliance_score": 0.94,
+      "certification_status": "certified",
+      "certificate_number": "AI-ISO42001-2025-001",
+      "valid_until": "2028-01-15"
+    },
+    "NIST_AI_RMF": {
+      "standard_name": "NIST AI Risk Management Framework",
+      "version": "1.0",
+      "authority": "NIST",
+      "effective_date": "2023-01-26",
+      "scope": "AI risk management, trustworthy AI development",
+      "maturity_level": 4,
+      "functions": {
+        "GOVERN": {
+          "name": "Govern",
+          "description": "Cultivate a culture of risk management",
+          "implementation_status": "implemented",
+          "subcategories": {
+            "GOVERN-1.1": {
+              "name": "Legal and regulatory requirements are understood",
+              "status": "implemented",
+              "evidence": "Legal-Review-NIST-001.pdf"
+            },
+            "GOVERN-1.2": {
+              "name": "AI risk management strategy is established",
+              "status": "implemented",
+              "evidence": "AI-Risk-Strategy-001.pdf"
+            }
+          }
+        },
+        "MAP": {
+          "name": "Map",
+          "description": "Categorize AI systems and map risks",
+          "implementation_status": "implemented",
+          "subcategories": {
+            "MAP-1.1": {
+              "name": "AI system categories are identified",
+              "status": "implemented",
+              "evidence": "AI-Categories-Map-001.pdf"
+            },
+            "MAP-2.1": {
+              "name": "AI system impacts are characterized",
+              "status": "implemented",
+              "evidence": "Impact-Assessment-001.pdf"
+            }
+          }
+        },
+        "MEASURE": {
+          "name": "Measure",
+          "description": "Analyze, assess, benchmark risks",
+          "implementation_status": "implemented",
+          "subcategories": {
+            "MEASURE-1.1": {
+              "name": "Risks are measured and monitored",
+              "status": "implemented",
+              "evidence": "Risk-Monitoring-Dashboard.json"
+            },
+            "MEASURE-2.1": {
+              "name": "AI system performance is measured",
+              "status": "implemented",
+              "evidence": "Performance-Metrics-001.pdf"
+            }
+          }
+        },
+        "MANAGE": {
+          "name": "Manage",
+          "description": "Allocate resources, implement responses",
+          "implementation_status": "implemented",
+          "subcategories": {
+            "MANAGE-1.1": {
+              "name": "AI risks are mitigated",
+              "status": "implemented",
+              "evidence": "Risk-Mitigation-Plan-001.pdf"
+            },
+            "MANAGE-2.1": {
+              "name": "Risks are monitored and reviewed",
+              "status": "implemented",
+              "evidence": "Risk-Review-Process-001.pdf"
+            }
+          }
+        }
+      },
+      "assessment_schedule": {
+        "type": "quarterly",
+        "last_assessment": "2025-01-10",
+        "next_assessment": "2025-04-10",
+        "assessor": "Internal AI Risk Team"
+      },
+      "compliance_score": 0.89,
+      "maturity_target": 5
+    },
+    "EU_AI_Act": {
+      "standard_name": "European Union Artificial Intelligence Act",
+      "regulation_number": "2024/1689",
+      "authority": "European Union",
+      "effective_date": "2024-08-01",
+      "full_application_date": "2026-08-02",
+      "scope": "AI systems placed on EU market",
+      "risk_classification": "limited",
+      "conformity_assessment": {
+        "required": false,
+        "status": "completed_voluntarily",
+        "completion_date": "2024-12-01",
+        "assessor": "TÜV SÜD"
+      },
+      "requirements": {
+        "transparency": {
+          "status": "met",
+          "implementation": {
+            "user_information": "implemented",
+            "ai_system_disclosure": "implemented",
+            "human_oversight_info": "implemented"
+          },
+          "evidence": "Transparency-Report-EU-001.pdf"
+        },
+        "data_governance": {
+          "status": "met",
+          "implementation": {
+            "data_quality": "implemented",
+            "bias_detection": "implemented",
+            "data_management": "implemented"
+          },
+          "evidence": "Data-Governance-EU-001.pdf"
+        },
+        "technical_documentation": {
+          "status": "complete",
+          "documents": [
+            "Technical-Documentation-EU-001.pdf",
+            "Risk-Assessment-EU-001.pdf",
+            "Quality-Management-EU-001.pdf"
+          ]
+        },
+        "record_keeping": {
+          "status": "implemented",
+          "retention_period": "10_years",
+          "logging_system": "EU-AI-Audit-Logs-v1.0"
+        },
+        "human_oversight": {
+          "status": "implemented",
+          "oversight_level": "meaningful",
+          "implementation": {
+            "human_in_the_loop": "implemented",
+            "human_on_the_loop": "implemented",
+            "human_in_command": "implemented"
+          }
+        },
+        "accuracy_robustness": {
+          "status": "validated",
+          "testing_completed": "2024-11-15",
+          "validation_report": "Accuracy-Validation-EU-001.pdf"
+        },
+        "cybersecurity": {
+          "status": "implemented",
+          "security_measures": "ISO_27001_aligned",
+          "security_assessment": "Security-Assessment-EU-001.pdf"
+        }
+      },
+      "compliance_score": 0.90,
+      "next_review": "2025-08-01"
+    }
+  },
+  "cross_framework_mapping": {
+    "risk_management": {
+      "ISO_42001": ["A.8", "A.12", "A.14"],
+      "NIST_AI_RMF": ["GOVERN", "MAP", "MEASURE", "MANAGE"],
+      "EU_AI_Act": ["risk_assessment", "risk_mitigation"]
+    },
+    "data_governance": {
+      "ISO_42001": ["A.8", "A.13"],
+      "NIST_AI_RMF": ["MAP-2", "MEASURE-1"],
+      "EU_AI_Act": ["data_governance", "record_keeping"]
+    },
+    "human_oversight": {
+      "ISO_42001": ["A.9", "A.11"],
+      "NIST_AI_RMF": ["MANAGE-1", "MANAGE-2"],
+      "EU_AI_Act": ["human_oversight"]
+    },
+    "transparency": {
+      "ISO_42001": ["A.5", "A.7"],
+      "NIST_AI_RMF": ["GOVERN-1"],
+      "EU_AI_Act": ["transparency", "technical_documentation"]
+    },
+    "security": {
+      "ISO_42001": ["A.9", "A.10", "A.13", "A.14"],
+      "NIST_AI_RMF": ["MANAGE-1"],
+      "EU_AI_Act": ["cybersecurity", "accuracy_robustness"]
+    }
+  },
+  "audit_calendar": {
+    "2025": {
+      "Q1": [
+        {
+          "date": "2025-01-15",
+          "framework": "ISO_42001",
+          "type": "surveillance_audit",
+          "auditor": "BSI Group",
+          "status": "completed"
+        },
+        {
+          "date": "2025-03-15",
+          "framework": "NIST_AI_RMF",
+          "type": "quarterly_assessment",
+          "assessor": "Internal Team",
+          "status": "scheduled"
+        }
+      ],
+      "Q2": [
+        {
+          "date": "2025-04-10",
+          "framework": "NIST_AI_RMF",
+          "type": "quarterly_assessment",
+          "assessor": "Internal Team",
+          "status": "scheduled"
+        },
+        {
+          "date": "2025-06-01",
+          "framework": "EU_AI_Act",
+          "type": "compliance_review",
+          "assessor": "Legal Team",
+          "status": "scheduled"
+        }
+      ],
+      "Q3": [
+        {
+          "date": "2025-07-15",
+          "framework": "ISO_42001",
+          "type": "recertification_audit",
+          "auditor": "BSI Group",
+          "status": "scheduled"
+        }
+      ]
+    }
+  },
+  "reporting": {
+    "automated_reports": {
+      "daily": ["compliance_dashboard", "risk_alerts"],
+      "weekly": ["compliance_summary", "trend_analysis"],
+      "monthly": ["executive_report", "framework_status"],
+      "quarterly": ["comprehensive_audit", "gap_analysis"]
+    },
+    "stakeholder_distribution": {
+      "executive_team": ["monthly", "quarterly"],
+      "compliance_officer": ["daily", "weekly", "monthly"],
+      "risk_manager": ["daily", "weekly"],
+      "legal_team": ["monthly", "quarterly"]
+    }
+  }
+}

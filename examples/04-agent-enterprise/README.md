@@ -1,6 +1,6 @@
-# Test Agent - OAAS v0.1.1 Gold Standard
+# Test Agent - OAAS v0.1.8 Gold Standard
 
-[![OAAS Version](https://img.shields.io/badge/OAAS-v0.1.1-green.svg)](https://github.com/openapi-ai-agents/standard)
+[![OAAS Version](https://img.shields.io/badge/OAAS-v0.1.8-green.svg)](https://github.com/openapi-ai-agents/standard)
 [![Certification Level](https://img.shields.io/badge/Certification-Gold-yellow.svg)](https://github.com/openapi-ai-agents/standard)
 [![Compliance](https://img.shields.io/badge/Compliance-ISO%2042001%20%7C%20NIST%20AI%20RMF%20%7C%20EU%20AI%20Act-blue.svg)](https://github.com/openapi-ai-agents/standard)
 
@@ -490,7 +490,7 @@ curl -X POST http://localhost:8080/api/v1/test/execute \
 curl -X POST http://localhost:8080/api/v1/validate/compliance \
   -H "Content-Type: application/json" \
   -d '{
-    "specification": "apiVersion: openapi-ai-agents/v0.1.1",
+    "specification": "apiVersion: openapi-ai-agents/v0.1.8",
     "frameworks": ["iso-42001"]
   }'
 ```

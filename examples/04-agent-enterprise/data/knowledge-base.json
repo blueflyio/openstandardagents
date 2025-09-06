@@ -4,7 +4,7 @@
   "agent_domain": "testing_validation",
   
   "oaas_standard_knowledge": {
-    "current_version": "0.1.1",
+    "current_version": "0.1.8",
     "compliance_levels": {
       "bronze": {
         "requirements": ["basic_openapi_compliance", "dual_format_structure"],

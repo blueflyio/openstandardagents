@@ -1,0 +1,449 @@
+apiVersion: ossa.agents/v0.1.8
+kind: CapabilityRegistry
+metadata:
+  name: ossa-capability-registry
+  namespace: ossa-system
+  labels:
+    component: capability-registry
+    version: 0.1.8
+    tier: advanced
+  annotations:
+    registry.ossa.agents/description: "Comprehensive capability registry for OSSA ecosystem"
+    registry.ossa.agents/maintainer: "OSSA Platform Team"
+
+spec:
+  # Registry Configuration
+  configuration:
+    name: "OSSA Capability Registry"
+    description: |
+      Comprehensive registry of agent capabilities, domains, and protocols
+      supporting the OSSA v0.1.8 ecosystem. Provides standardized capability
+      definitions, semantic matching, and discovery optimization.
+    
+    version: "0.1.8"
+    schema_version: "2024-01"
+  
+  # Capability Categories
+  categories:
+    # Core AI/ML Capabilities
+    core_ai:
+      name: "Core AI/ML"
+      description: "Fundamental AI and machine learning capabilities"
+      capabilities:
+        - id: "natural-language-processing"
+          name: "Natural Language Processing"
+          description: "Text understanding, generation, and manipulation"
+          subcategories:
+            - "text-generation"
+            - "text-classification"
+            - "sentiment-analysis"
+            - "named-entity-recognition"
+            - "text-summarization"
+            - "language-translation"
+          
+        - id: "computer-vision"
+          name: "Computer Vision"
+          description: "Image and video processing and analysis"
+          subcategories:
+            - "image-classification"
+            - "object-detection"
+            - "image-generation"
+            - "video-analysis"
+            - "ocr"
+            - "face-recognition"
+        
+        - id: "speech-processing"
+          name: "Speech Processing"
+          description: "Audio processing and speech capabilities"
+          subcategories:
+            - "speech-to-text"
+            - "text-to-speech"
+            - "voice-recognition"
+            - "audio-analysis"
+            - "music-generation"
+        
+        - id: "machine-learning"
+          name: "Machine Learning"
+          description: "Traditional ML algorithms and techniques"
+          subcategories:
+            - "supervised-learning"
+            - "unsupervised-learning"
+            - "reinforcement-learning"
+            - "deep-learning"
+            - "feature-engineering"
+            - "model-optimization"
+    
+    # Data and Analytics
+    data_analytics:
+      name: "Data and Analytics"
+      description: "Data processing, analysis, and visualization capabilities"
+      capabilities:
+        - id: "data-analysis"
+          name: "Data Analysis"
+          description: "Statistical analysis and data exploration"
+          subcategories:
+            - "statistical-analysis"
+            - "exploratory-data-analysis"
+            - "time-series-analysis"
+            - "predictive-modeling"
+            - "anomaly-detection"
+            - "pattern-recognition"
+        
+        - id: "data-processing"
+          name: "Data Processing"
+          description: "Data transformation and ETL operations"
+          subcategories:
+            - "data-cleaning"
+            - "data-transformation"
+            - "data-validation"
+            - "data-enrichment"
+            - "batch-processing"
+            - "stream-processing"
+        
+        - id: "visualization"
+          name: "Data Visualization"
+          description: "Charts, graphs, and visual representations"
+          subcategories:
+            - "chart-generation"
+            - "dashboard-creation"
+            - "interactive-visualizations"
+            - "report-generation"
+            - "infographic-creation"
+            - "3d-visualization"
+    
+    # Integration and Automation
+    integration:
+      name: "Integration and Automation"
+      description: "System integration and workflow automation"
+      capabilities:
+        - id: "api-integration"
+          name: "API Integration"
+          description: "External service and API connectivity"
+          subcategories:
+            - "rest-api-integration"
+            - "graphql-integration"
+            - "webhook-handling"
+            - "oauth-authentication"
+            - "rate-limiting"
+            - "api-versioning"
+        
+        - id: "workflow-automation"
+          name: "Workflow Automation"
+          description: "Process automation and orchestration"
+          subcategories:
+            - "task-scheduling"
+            - "event-processing"
+            - "condition-evaluation"
+            - "parallel-execution"
+            - "error-handling"
+            - "retry-mechanisms"
+        
+        - id: "database-operations"
+          name: "Database Operations"
+          description: "Database connectivity and operations"
+          subcategories:
+            - "sql-queries"
+            - "nosql-operations"
+            - "data-migration"
+            - "backup-restore"
+            - "performance-tuning"
+            - "schema-management"
+    
+    # Security and Compliance
+    security:
+      name: "Security and Compliance"
+      description: "Security, privacy, and compliance capabilities"
+      capabilities:
+        - id: "authentication"
+          name: "Authentication"
+          description: "Identity verification and management"
+          subcategories:
+            - "user-authentication"
+            - "multi-factor-authentication"
+            - "single-sign-on"
+            - "token-management"
+            - "session-management"
+            - "biometric-authentication"
+        
+        - id: "authorization"
+          name: "Authorization"
+          description: "Access control and permissions"
+          subcategories:
+            - "role-based-access-control"
+            - "attribute-based-access-control"
+            - "policy-enforcement"
+            - "permission-management"
+            - "audit-logging"
+            - "compliance-reporting"
+        
+        - id: "encryption"
+          name: "Encryption"
+          description: "Data encryption and cryptographic operations"
+          subcategories:
+            - "data-encryption"
+            - "key-management"
+            - "digital-signatures"
+            - "certificate-management"
+            - "secure-communication"
+            - "zero-knowledge-proofs"
+    
+    # Communication and Collaboration
+    communication:
+      name: "Communication"
+      description: "Communication and collaboration capabilities"
+      capabilities:
+        - id: "messaging"
+          name: "Messaging"
+          description: "Various messaging and communication formats"
+          subcategories:
+            - "email-processing"
+            - "chat-integration"
+            - "sms-messaging"
+            - "push-notifications"
+            - "voice-calls"
+            - "video-conferencing"
+        
+        - id: "collaboration"
+          name: "Collaboration"
+          description: "Team collaboration and coordination"
+          subcategories:
+            - "document-collaboration"
+            - "task-management"
+            - "calendar-integration"
+            - "meeting-scheduling"
+            - "file-sharing"
+            - "version-control"
+  
+  # Domain Classifications
+  domains:
+    business:
+      name: "Business"
+      description: "Business process and management domains"
+      subdomains:
+        - "finance"
+        - "accounting"
+        - "human-resources"
+        - "supply-chain"
+        - "customer-service"
+        - "sales"
+        - "marketing"
+        - "operations"
+    
+    technology:
+      name: "Technology"
+      description: "Technology and engineering domains"
+      subdomains:
+        - "software-development"
+        - "devops"
+        - "cybersecurity"
+        - "cloud-computing"
+        - "data-engineering"
+        - "system-administration"
+        - "network-management"
+        - "infrastructure"
+    
+    healthcare:
+      name: "Healthcare"
+      description: "Medical and healthcare domains"
+      subdomains:
+        - "clinical-decision-support"
+        - "medical-imaging"
+        - "patient-management"
+        - "drug-discovery"
+        - "telemedicine"
+        - "health-monitoring"
+        - "medical-research"
+        - "regulatory-compliance"
+    
+    education:
+      name: "Education"
+      description: "Educational and training domains"
+      subdomains:
+        - "curriculum-development"
+        - "student-assessment"
+        - "personalized-learning"
+        - "educational-content"
+        - "training-programs"
+        - "skill-development"
+        - "research-assistance"
+        - "academic-administration"
+    
+    government:
+      name: "Government"
+      description: "Government and public sector domains"
+      subdomains:
+        - "policy-analysis"
+        - "regulatory-compliance"
+        - "citizen-services"
+        - "public-safety"
+        - "urban-planning"
+        - "environmental-monitoring"
+        - "emergency-response"
+        - "administrative-processes"
+  
+  # Protocol Specifications
+  protocols:
+    openapi:
+      name: "OpenAPI"
+      versions: ["3.0.0", "3.1.0"]
+      description: "REST API specification standard"
+      extensions:
+        - "x-openapi-ai-agents-standard"
+        - "x-agent-metadata"
+        - "x-ossa-discovery"
+        - "x-ossa-security"
+    
+    mcp:
+      name: "Model Context Protocol"
+      versions: ["1.0.0"]
+      description: "Context sharing between AI models"
+      extensions:
+        - "context-sharing"
+        - "model-coordination"
+    
+    uadp:
+      name: "Universal Agent Discovery Protocol"
+      versions: ["0.1.8"]
+      description: "Agent discovery and capability matching"
+      extensions:
+        - "capability-matching"
+        - "semantic-discovery"
+    
+    graphql:
+      name: "GraphQL"
+      versions: ["16.0.0", "15.0.0"]
+      description: "Query language for APIs"
+      extensions:
+        - "subscriptions"
+        - "federation"
+        - "introspection"
+  
+  # Semantic Mappings
+  semantic_mappings:
+    synonyms:
+      "nlp": ["natural-language-processing", "text-processing"]
+      "ml": ["machine-learning", "artificial-intelligence"]
+      "cv": ["computer-vision", "image-processing"]
+      "data-viz": ["visualization", "data-visualization"]
+      "auth": ["authentication", "identity-verification"]
+      "db": ["database-operations", "data-storage"]
+    
+    related_capabilities:
+      "text-generation":
+        - "natural-language-processing"
+        - "content-creation"
+        - "writing-assistance"
+      
+      "data-analysis":
+        - "statistical-analysis"
+        - "predictive-modeling"
+        - "pattern-recognition"
+      
+      "image-classification":
+        - "computer-vision"
+        - "machine-learning"
+        - "pattern-recognition"
+    
+    capability_hierarchies:
+      "artificial-intelligence":
+        children:
+          - "machine-learning"
+          - "natural-language-processing"
+          - "computer-vision"
+          - "speech-processing"
+      
+      "machine-learning":
+        children:
+          - "supervised-learning"
+          - "unsupervised-learning"
+          - "reinforcement-learning"
+          - "deep-learning"
+  
+  # Matching Algorithms
+  matching_algorithms:
+    exact_match:
+      weight: 1.0
+      description: "Exact capability name matching"
+      
+    semantic_match:
+      weight: 0.8
+      description: "Semantic similarity matching using embeddings"
+      model: "sentence-transformers/all-MiniLM-L6-v2"
+      
+    synonym_match:
+      weight: 0.9
+      description: "Synonym and alias matching"
+      
+    hierarchical_match:
+      weight: 0.7
+      description: "Parent-child capability matching"
+      
+    domain_match:
+      weight: 0.6
+      description: "Domain-specific capability matching"
+      
+    fuzzy_match:
+      weight: 0.5
+      description: "Fuzzy string matching for typos"
+      threshold: 0.8
+  
+  # Quality Metrics
+  quality_metrics:
+    completeness:
+      description: "Coverage of capability space"
+      target: 90
+      current: 85
+      
+    consistency:
+      description: "Naming and classification consistency"
+      target: 95
+      current: 92
+      
+    usability:
+      description: "Ease of discovery and matching"
+      target: 90
+      current: 88
+      
+    accuracy:
+      description: "Matching accuracy"
+      target: 95
+      current: 93
+
+status:
+  phase: Active
+  total_capabilities: 247
+  total_domains: 32
+  total_protocols: 4
+  
+  statistics:
+    most_common_capabilities:
+      - name: "natural-language-processing"
+        usage_count: 156
+      - name: "data-analysis"
+        usage_count: 134
+      - name: "api-integration"
+        usage_count: 98
+      - name: "authentication"
+        usage_count: 87
+      - name: "workflow-automation"
+        usage_count: 76
+    
+    domain_distribution:
+      business: 32
+      technology: 45
+      healthcare: 18
+      education: 12
+      government: 15
+      other: 25
+    
+    protocol_adoption:
+      openapi: 95
+      mcp: 23
+      uadp: 67
+      graphql: 34
+  
+  health:
+    registry_status: healthy
+    last_updated: "2024-01-15T10:00:00Z"
+    sync_status: "synchronized"
+    validation_errors: 0

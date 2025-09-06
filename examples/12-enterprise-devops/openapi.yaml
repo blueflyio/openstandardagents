@@ -1,0 +1,1837 @@
+openapi: 3.1.0
+info:
+  title: GitLab CI/CD DevOps Agent API
+  description: |
+    Enterprise GitLab CI/CD DevOps Agent providing comprehensive pipeline optimization,
+    security scanning, deployment orchestration, and multi-environment coordination.
+    
+    This API implements OAAS v0.1.8 Gold compliance with full protocol bridge support
+    for MCP, LangChain, CrewAI, and other AI frameworks.
+    
+    ## Key Features
+    - Pipeline optimization and performance tuning
+    - Comprehensive security scanning integration (SAST, DAST, container scanning)
+    - Blue/green, canary, and rolling deployment strategies
+    - Multi-environment coordination and promotion workflows
+    - Container registry and artifact lifecycle management
+    - Secret management and compliance validation
+    - Performance monitoring and alerting
+    
+    ## Performance Targets
+    - Response time: <500ms (95th percentile)
+    - Throughput: 1000+ RPS
+    - Availability: 99.9% SLA
+    - Error rate: <0.1%
+    
+    ## Security & Compliance
+    - SOC2, ISO27001, GDPR, NIST Cybersecurity Framework
+    - RBAC with developer/devops/admin/security/compliance roles
+    - Audit logging and compliance monitoring
+    - Encryption at rest and in transit (TLS 1.3)
+  version: 1.0.0
+  contact:
+    name: GitLab CI/CD Agent Support
+    email: support@example.com
+    url: https://example.com/support
+  license:
+    name: Apache 2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0.html
+  
+servers:
+  - url: http://localhost:8080/api/v1
+    description: Development server
+  - url: https://gitlab-cicd-agent.example.com/api/v1
+    description: Production server
+
+paths:
+  # Health and Status Endpoints
+  /health:
+    get:
+      summary: Health check endpoint
+      description: Returns the health status of the GitLab CI/CD agent and its dependencies
+      operationId: getHealth
+      tags: [Health]
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthStatus'
+        '503':
+          description: Service is unhealthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /ready:
+    get:
+      summary: Readiness check endpoint
+      description: Returns readiness status for load balancer integration
+      operationId: getReadiness
+      tags: [Health]
+      responses:
+        '200':
+          description: Service is ready
+        '503':
+          description: Service is not ready
+
+  /metrics:
+    get:
+      summary: Prometheus metrics endpoint
+      description: Returns metrics in Prometheus format
+      operationId: getMetrics
+      tags: [Monitoring]
+      responses:
+        '200':
+          description: Metrics data
+          content:
+            text/plain:
+              schema:
+                type: string
+
+  # Pipeline Management
+  /pipelines:
+    get:
+      summary: List GitLab pipelines
+      description: Retrieve pipelines with filtering and pagination
+      operationId: listPipelines
+      tags: [Pipelines]
+      security:
+        - ApiKeyAuth: []
+        - BearerAuth: []
+      parameters:
+        - name: project_id
+          in: query
+          description: GitLab project ID
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+        - name: status
+          in: query
+          description: Pipeline status filter
+          schema:
+            type: string
+            enum: [created, waiting_for_resource, preparing, pending, running, success, failed, canceled, skipped, manual, scheduled]
+        - name: ref
+          in: query
+          description: Git reference (branch/tag)
+          schema:
+            type: string
+        - name: page
+          in: query
+          description: Page number for pagination
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: per_page
+          in: query
+          description: Items per page
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+      responses:
+        '200':
+          description: List of pipelines
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Pipeline'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+
+  /pipelines/{pipeline_id}/optimize:
+    post:
+      summary: Optimize pipeline configuration
+      description: Analyze and optimize a GitLab CI/CD pipeline for performance, cost, and reliability
+      operationId: optimizePipeline
+      tags: [Pipelines]
+      security:
+        - ApiKeyAuth: []
+        - BearerAuth: []
+      parameters:
+        - name: pipeline_id
+          in: path
+          required: true
+          description: Pipeline ID to optimize
+          schema:
+            type: integer
+            minimum: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PipelineOptimizationRequest'
+      responses:
+        '200':
+          description: Pipeline optimization results
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PipelineOptimizationResult'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  # Security Scanning
+  /security/scan:
+    post:
+      summary: Execute comprehensive security scan
+      description: Run SAST, DAST, dependency scanning, and container vulnerability scanning
+      operationId: executeScan
+      tags: [Security]
+      security:
+        - ApiKeyAuth: []
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SecurityScanRequest'
+      responses:
+        '202':
+          description: Security scan initiated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SecurityScanJob'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+
+  /security/scans/{scan_id}:
+    get:
+      summary: Get security scan results
+      description: Retrieve detailed security scan results and findings
+      operationId: getScanResults
+      tags: [Security]
+      security:
+        - ApiKeyAuth: []
+        - BearerAuth: []
+      parameters:
+        - name: scan_id
+          in: path
+          required: true
+          description: Security scan job ID
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Security scan results
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SecurityScanResult'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /security/policies:
+    get:
+      summary: List security policies
+      description: Retrieve configured security policies and compliance rules
+      operationId: listSecurityPolicies
+      tags: [Security]
+      security:
+        - ApiKeyAuth: []
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Security policies
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SecurityPolicy'
+
+    post:
+      summary: Create security policy
+      description: Create a new security policy with compliance rules
+      operationId: createSecurityPolicy
+      tags: [Security]
+      security:
+        - ApiKeyAuth: []
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateSecurityPolicyRequest'
+      responses:
+        '201':
+          description: Security policy created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SecurityPolicy'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  # Deployment Management
+  /deployments:
+    get:
+      summary: List deployments
+      description: Retrieve deployments across all environments
+      operationId: listDeployments
+      tags: [Deployments]
+      security:
+        - ApiKeyAuth: []
+        - BearerAuth: []
+      parameters:
+        - name: environment
+          in: query
+          description: Filter by environment
+          schema:
+            type: string
+            enum: [development, staging, production]
+        - name: status
+          in: query
+          description: Deployment status filter
+          schema:
+            type: string
+            enum: [created, running, success, failed, canceled]
+        - name: strategy
+          in: query
+          description: Deployment strategy filter
+          schema:
+            type: string
+            enum: [blue_green, canary, rolling, recreate]
+      responses:
+        '200':
+          description: List of deployments
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Deployment'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+    post:
+      summary: Create deployment
+      description: Initiate deployment using specified strategy
+      operationId: createDeployment
+      tags: [Deployments]
+      security:
+        - ApiKeyAuth: []
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateDeploymentRequest'
+      responses:
+        '201':
+          description: Deployment created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Deployment'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  /deployments/{deployment_id}:
+    get:
+      summary: Get deployment details
+      description: Retrieve detailed deployment information and status
+      operationId: getDeployment
+      tags: [Deployments]
+      security:
+        - ApiKeyAuth: []
+        - BearerAuth: []
+      parameters:
+        - name: deployment_id
+          in: path
+          required: true
+          description: Deployment ID
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Deployment details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Deployment'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      summary: Cancel or rollback deployment
+      description: Cancel an in-progress deployment or initiate rollback
+      operationId: cancelDeployment
+      tags: [Deployments]
+      security:
+        - ApiKeyAuth: []
+        - BearerAuth: []
+      parameters:
+        - name: deployment_id
+          in: path
+          required: true
+          description: Deployment ID
+          schema:
+            type: string
+            format: uuid
+        - name: action
+          in: query
+          description: Action to perform
+          required: true
+          schema:
+            type: string
+            enum: [cancel, rollback]
+      responses:
+        '200':
+          description: Deployment action initiated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Deployment'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # Environment Management
+  /environments:
+    get:
+      summary: List environments
+      description: Retrieve all configured environments
+      operationId: listEnvironments
+      tags: [Environments]
+      security:
+        - ApiKeyAuth: []
+        - BearerAuth: []
+      responses:
+        '200':
+          description: List of environments
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Environment'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+    post:
+      summary: Create environment
+      description: Create a new deployment environment
+      operationId: createEnvironment
+      tags: [Environments]
+      security:
+        - ApiKeyAuth: []
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateEnvironmentRequest'
+      responses:
+        '201':
+          description: Environment created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Environment'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  /environments/{environment_id}/promote:
+    post:
+      summary: Promote between environments
+      description: Promote deployment from one environment to another
+      operationId: promoteEnvironment
+      tags: [Environments]
+      security:
+        - ApiKeyAuth: []
+        - BearerAuth: []
+      parameters:
+        - name: environment_id
+          in: path
+          required: true
+          description: Source environment ID
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PromoteEnvironmentRequest'
+      responses:
+        '200':
+          description: Promotion initiated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Deployment'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  # Container Registry Management
+  /containers/images:
+    get:
+      summary: List container images
+      description: Retrieve container images from GitLab registry
+      operationId: listContainerImages
+      tags: [Containers]
+      security:
+        - ApiKeyAuth: []
+        - BearerAuth: []
+      parameters:
+        - name: project_id
+          in: query
+          description: GitLab project ID
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+        - name: repository
+          in: query
+          description: Repository name filter
+          schema:
+            type: string
+      responses:
+        '200':
+          description: List of container images
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ContainerImage'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /containers/images/{image_id}/scan:
+    post:
+      summary: Scan container image
+      description: Perform vulnerability scanning on container image
+      operationId: scanContainerImage
+      tags: [Containers]
+      security:
+        - ApiKeyAuth: []
+        - BearerAuth: []
+      parameters:
+        - name: image_id
+          in: path
+          required: true
+          description: Container image ID
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '202':
+          description: Container scan initiated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContainerScanJob'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # Secret Management
+  /secrets:
+    get:
+      summary: List secrets metadata
+      description: Retrieve metadata for managed secrets (not values)
+      operationId: listSecrets
+      tags: [Secrets]
+      security:
+        - ApiKeyAuth: []
+        - BearerAuth: []
+      parameters:
+        - name: environment
+          in: query
+          description: Filter by environment
+          schema:
+            type: string
+            enum: [development, staging, production, global]
+      responses:
+        '200':
+          description: List of secret metadata
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SecretMetadata'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+    post:
+      summary: Create or update secret
+      description: Create a new secret or update existing one
+      operationId: createSecret
+      tags: [Secrets]
+      security:
+        - ApiKeyAuth: []
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateSecretRequest'
+      responses:
+        '201':
+          description: Secret created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SecretMetadata'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  /secrets/{secret_id}/rotate:
+    post:
+      summary: Rotate secret
+      description: Initiate secret rotation process
+      operationId: rotateSecret
+      tags: [Secrets]
+      security:
+        - ApiKeyAuth: []
+        - BearerAuth: []
+      parameters:
+        - name: secret_id
+          in: path
+          required: true
+          description: Secret ID
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Secret rotation initiated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SecretRotationJob'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # Compliance and Governance
+  /compliance/validate:
+    post:
+      summary: Validate compliance
+      description: Validate project against compliance frameworks
+      operationId: validateCompliance
+      tags: [Compliance]
+      security:
+        - ApiKeyAuth: []
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ComplianceValidationRequest'
+      responses:
+        '200':
+          description: Compliance validation results
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ComplianceValidationResult'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /compliance/reports:
+    get:
+      summary: List compliance reports
+      description: Retrieve compliance audit reports
+      operationId: listComplianceReports
+      tags: [Compliance]
+      security:
+        - ApiKeyAuth: []
+        - BearerAuth: []
+      parameters:
+        - name: framework
+          in: query
+          description: Compliance framework filter
+          schema:
+            type: string
+            enum: [soc2, iso27001, gdpr, nist_cybersecurity, pci_dss]
+        - name: start_date
+          in: query
+          description: Start date for report filter
+          schema:
+            type: string
+            format: date
+        - name: end_date
+          in: query
+          description: End date for report filter
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: List of compliance reports
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ComplianceReport'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  # Performance Monitoring
+  /monitoring/pipelines/performance:
+    get:
+      summary: Get pipeline performance metrics
+      description: Retrieve performance metrics for pipelines
+      operationId: getPipelineMetrics
+      tags: [Monitoring]
+      security:
+        - ApiKeyAuth: []
+        - BearerAuth: []
+      parameters:
+        - name: project_id
+          in: query
+          description: GitLab project ID
+          schema:
+            type: integer
+            minimum: 1
+        - name: time_range
+          in: query
+          description: Time range for metrics
+          schema:
+            type: string
+            enum: [1h, 24h, 7d, 30d]
+            default: 24h
+      responses:
+        '200':
+          description: Pipeline performance metrics
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PipelineMetrics'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /monitoring/deployments/performance:
+    get:
+      summary: Get deployment performance metrics
+      description: Retrieve performance metrics for deployments
+      operationId: getDeploymentMetrics
+      tags: [Monitoring]
+      security:
+        - ApiKeyAuth: []
+        - BearerAuth: []
+      parameters:
+        - name: environment
+          in: query
+          description: Environment filter
+          schema:
+            type: string
+            enum: [development, staging, production]
+        - name: time_range
+          in: query
+          description: Time range for metrics
+          schema:
+            type: string
+            enum: [1h, 24h, 7d, 30d]
+            default: 24h
+      responses:
+        '200':
+          description: Deployment performance metrics
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeploymentMetrics'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+components:
+  schemas:
+    # Health and Status
+    HealthStatus:
+      type: object
+      required: [status, timestamp, services]
+      properties:
+        status:
+          type: string
+          enum: [healthy, degraded, unhealthy]
+        timestamp:
+          type: string
+          format: date-time
+        services:
+          type: object
+          properties:
+            gitlab_api:
+              $ref: '#/components/schemas/ServiceStatus'
+            database:
+              $ref: '#/components/schemas/ServiceStatus'
+            redis:
+              $ref: '#/components/schemas/ServiceStatus'
+            container_registry:
+              $ref: '#/components/schemas/ServiceStatus'
+        version:
+          type: string
+        uptime:
+          type: integer
+          description: Uptime in seconds
+
+    ServiceStatus:
+      type: object
+      required: [status]
+      properties:
+        status:
+          type: string
+          enum: [healthy, unhealthy]
+        response_time:
+          type: number
+          description: Response time in milliseconds
+        last_check:
+          type: string
+          format: date-time
+
+    # Pipeline Schemas
+    Pipeline:
+      type: object
+      required: [id, project_id, status, ref, created_at]
+      properties:
+        id:
+          type: integer
+        project_id:
+          type: integer
+        status:
+          type: string
+          enum: [created, waiting_for_resource, preparing, pending, running, success, failed, canceled, skipped, manual, scheduled]
+        ref:
+          type: string
+        sha:
+          type: string
+        web_url:
+          type: string
+          format: uri
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+        started_at:
+          type: string
+          format: date-time
+        finished_at:
+          type: string
+          format: date-time
+        duration:
+          type: integer
+          description: Duration in seconds
+        jobs:
+          type: array
+          items:
+            $ref: '#/components/schemas/PipelineJob'
+
+    PipelineJob:
+      type: object
+      required: [id, name, status, stage]
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        status:
+          type: string
+          enum: [created, pending, running, success, failed, canceled, skipped, manual]
+        stage:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        started_at:
+          type: string
+          format: date-time
+        finished_at:
+          type: string
+          format: date-time
+        duration:
+          type: number
+        web_url:
+          type: string
+          format: uri
+
+    PipelineOptimizationRequest:
+      type: object
+      required: [optimization_targets]
+      properties:
+        optimization_targets:
+          type: array
+          items:
+            type: string
+            enum: [performance, cost, reliability, security, maintainability]
+        current_config:
+          type: string
+          description: Current GitLab CI YAML configuration
+        constraints:
+          type: object
+          properties:
+            max_duration:
+              type: integer
+              description: Maximum pipeline duration in minutes
+            budget_limit:
+              type: number
+              description: Budget limit for pipeline execution
+            resource_limits:
+              type: object
+              properties:
+                cpu:
+                  type: string
+                memory:
+                  type: string
+
+    PipelineOptimizationResult:
+      type: object
+      required: [optimized_config, improvements, estimated_savings]
+      properties:
+        optimized_config:
+          type: string
+          description: Optimized GitLab CI YAML configuration
+        improvements:
+          type: array
+          items:
+            $ref: '#/components/schemas/OptimizationImprovement'
+        estimated_savings:
+          type: object
+          properties:
+            time_reduction:
+              type: number
+              description: Estimated time reduction in percentage
+            cost_reduction:
+              type: number
+              description: Estimated cost reduction in percentage
+            performance_gain:
+              type: number
+              description: Estimated performance improvement
+        recommendations:
+          type: array
+          items:
+            type: string
+
+    OptimizationImprovement:
+      type: object
+      required: [type, description, impact]
+      properties:
+        type:
+          type: string
+          enum: [parallelization, caching, resource_optimization, dependency_optimization]
+        description:
+          type: string
+        impact:
+          type: string
+          enum: [high, medium, low]
+        estimated_benefit:
+          type: string
+
+    # Security Schemas
+    SecurityScanRequest:
+      type: object
+      required: [project_id, scan_types]
+      properties:
+        project_id:
+          type: integer
+        scan_types:
+          type: array
+          items:
+            type: string
+            enum: [sast, dast, dependency_scanning, container_scanning, license_compliance]
+        target_branch:
+          type: string
+          default: main
+        security_policies:
+          type: array
+          items:
+            type: string
+            format: uuid
+        configuration:
+          type: object
+          properties:
+            severity_threshold:
+              type: string
+              enum: [critical, high, medium, low, info]
+              default: medium
+            fail_on_critical:
+              type: boolean
+              default: true
+
+    SecurityScanJob:
+      type: object
+      required: [id, status, scan_types, created_at]
+      properties:
+        id:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum: [queued, running, completed, failed, canceled]
+        scan_types:
+          type: array
+          items:
+            type: string
+        progress:
+          type: integer
+          minimum: 0
+          maximum: 100
+        created_at:
+          type: string
+          format: date-time
+        started_at:
+          type: string
+          format: date-time
+        completed_at:
+          type: string
+          format: date-time
+        estimated_completion:
+          type: string
+          format: date-time
+
+    SecurityScanResult:
+      type: object
+      required: [id, status, findings_summary, completed_at]
+      properties:
+        id:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum: [passed, failed, warning]
+        findings_summary:
+          type: object
+          properties:
+            critical:
+              type: integer
+            high:
+              type: integer
+            medium:
+              type: integer
+            low:
+              type: integer
+            info:
+              type: integer
+        findings:
+          type: array
+          items:
+            $ref: '#/components/schemas/SecurityFinding'
+        compliance_status:
+          type: object
+          properties:
+            soc2:
+              type: boolean
+            iso27001:
+              type: boolean
+            gdpr:
+              type: boolean
+            pci_dss:
+              type: boolean
+        completed_at:
+          type: string
+          format: date-time
+        report_url:
+          type: string
+          format: uri
+
+    SecurityFinding:
+      type: object
+      required: [id, severity, title, description]
+      properties:
+        id:
+          type: string
+        severity:
+          type: string
+          enum: [critical, high, medium, low, info]
+        title:
+          type: string
+        description:
+          type: string
+        category:
+          type: string
+          enum: [vulnerability, license, quality, security_hotspot]
+        location:
+          type: object
+          properties:
+            file:
+              type: string
+            line:
+              type: integer
+            column:
+              type: integer
+        remediation:
+          type: string
+        cwe_id:
+          type: string
+        cvss_score:
+          type: number
+          minimum: 0
+          maximum: 10
+
+    SecurityPolicy:
+      type: object
+      required: [id, name, rules, compliance_frameworks]
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        description:
+          type: string
+        rules:
+          type: array
+          items:
+            $ref: '#/components/schemas/SecurityRule'
+        compliance_frameworks:
+          type: array
+          items:
+            type: string
+            enum: [soc2, iso27001, gdpr, nist_cybersecurity, pci_dss]
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    SecurityRule:
+      type: object
+      required: [type, condition, action]
+      properties:
+        type:
+          type: string
+          enum: [vulnerability_threshold, license_policy, quality_gate, dependency_policy]
+        condition:
+          type: object
+        action:
+          type: string
+          enum: [block, warn, allow]
+        message:
+          type: string
+
+    CreateSecurityPolicyRequest:
+      type: object
+      required: [name, rules, compliance_frameworks]
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 255
+        description:
+          type: string
+        rules:
+          type: array
+          items:
+            $ref: '#/components/schemas/SecurityRule'
+        compliance_frameworks:
+          type: array
+          items:
+            type: string
+            enum: [soc2, iso27001, gdpr, nist_cybersecurity, pci_dss]
+
+    # Deployment Schemas
+    Deployment:
+      type: object
+      required: [id, environment, status, strategy, created_at]
+      properties:
+        id:
+          type: string
+          format: uuid
+        environment:
+          type: string
+          enum: [development, staging, production]
+        status:
+          type: string
+          enum: [created, running, success, failed, canceled]
+        strategy:
+          type: string
+          enum: [blue_green, canary, rolling, recreate]
+        project_id:
+          type: integer
+        ref:
+          type: string
+        sha:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        started_at:
+          type: string
+          format: date-time
+        completed_at:
+          type: string
+          format: date-time
+        duration:
+          type: integer
+          description: Duration in seconds
+        progress:
+          type: integer
+          minimum: 0
+          maximum: 100
+        configuration:
+          type: object
+        rollback_info:
+          type: object
+          properties:
+            previous_deployment_id:
+              type: string
+              format: uuid
+            rollback_enabled:
+              type: boolean
+        web_url:
+          type: string
+          format: uri
+
+    CreateDeploymentRequest:
+      type: object
+      required: [project_id, environment, ref, strategy]
+      properties:
+        project_id:
+          type: integer
+          minimum: 1
+        environment:
+          type: string
+          enum: [development, staging, production]
+        ref:
+          type: string
+        strategy:
+          type: string
+          enum: [blue_green, canary, rolling, recreate]
+        configuration:
+          type: object
+          properties:
+            timeout:
+              type: integer
+              description: Deployment timeout in seconds
+              minimum: 60
+              maximum: 3600
+            auto_rollback:
+              type: boolean
+              default: true
+            health_checks:
+              type: object
+              properties:
+                enabled:
+                  type: boolean
+                path:
+                  type: string
+                interval:
+                  type: integer
+                timeout:
+                  type: integer
+            canary_config:
+              type: object
+              properties:
+                traffic_percentage:
+                  type: integer
+                  minimum: 1
+                  maximum: 100
+                duration:
+                  type: integer
+                  description: Canary duration in minutes
+
+    # Environment Schemas
+    Environment:
+      type: object
+      required: [id, name, tier, created_at]
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        tier:
+          type: string
+          enum: [development, staging, production]
+        url:
+          type: string
+          format: uri
+        project_id:
+          type: integer
+        deployment_strategy:
+          type: string
+          enum: [blue_green, canary, rolling, recreate]
+        auto_stop_enabled:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+        last_deployment:
+          $ref: '#/components/schemas/Deployment'
+
+    CreateEnvironmentRequest:
+      type: object
+      required: [name, tier, project_id]
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 255
+        tier:
+          type: string
+          enum: [development, staging, production]
+        project_id:
+          type: integer
+          minimum: 1
+        url:
+          type: string
+          format: uri
+        deployment_strategy:
+          type: string
+          enum: [blue_green, canary, rolling, recreate]
+          default: rolling
+        auto_stop_enabled:
+          type: boolean
+          default: false
+
+    PromoteEnvironmentRequest:
+      type: object
+      required: [target_environment]
+      properties:
+        target_environment:
+          type: string
+          enum: [development, staging, production]
+        deployment_strategy:
+          type: string
+          enum: [blue_green, canary, rolling, recreate]
+        configuration:
+          type: object
+
+    # Container Schemas
+    ContainerImage:
+      type: object
+      required: [id, name, tag, created_at]
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        tag:
+          type: string
+        digest:
+          type: string
+        size:
+          type: integer
+          description: Image size in bytes
+        created_at:
+          type: string
+          format: date-time
+        last_activity:
+          type: string
+          format: date-time
+        vulnerability_report:
+          type: object
+          properties:
+            critical:
+              type: integer
+            high:
+              type: integer
+            medium:
+              type: integer
+            low:
+              type: integer
+            last_scan:
+              type: string
+              format: date-time
+
+    ContainerScanJob:
+      type: object
+      required: [id, image_id, status, created_at]
+      properties:
+        id:
+          type: string
+          format: uuid
+        image_id:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum: [queued, running, completed, failed]
+        progress:
+          type: integer
+          minimum: 0
+          maximum: 100
+        created_at:
+          type: string
+          format: date-time
+        estimated_completion:
+          type: string
+          format: date-time
+
+    # Secret Management Schemas
+    SecretMetadata:
+      type: object
+      required: [id, name, environment, created_at]
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        environment:
+          type: string
+          enum: [development, staging, production, global]
+        description:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+        last_accessed:
+          type: string
+          format: date-time
+        expires_at:
+          type: string
+          format: date-time
+        rotation_policy:
+          type: object
+          properties:
+            enabled:
+              type: boolean
+            interval_days:
+              type: integer
+            next_rotation:
+              type: string
+              format: date-time
+
+    CreateSecretRequest:
+      type: object
+      required: [name, value, environment]
+      properties:
+        name:
+          type: string
+          pattern: "^[a-zA-Z][a-zA-Z0-9_]*$"
+          minLength: 1
+          maxLength: 255
+        value:
+          type: string
+          minLength: 1
+        environment:
+          type: string
+          enum: [development, staging, production, global]
+        description:
+          type: string
+        expires_at:
+          type: string
+          format: date-time
+        rotation_policy:
+          type: object
+          properties:
+            enabled:
+              type: boolean
+              default: false
+            interval_days:
+              type: integer
+              minimum: 1
+              maximum: 365
+
+    SecretRotationJob:
+      type: object
+      required: [id, secret_id, status, created_at]
+      properties:
+        id:
+          type: string
+          format: uuid
+        secret_id:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum: [queued, running, completed, failed]
+        created_at:
+          type: string
+          format: date-time
+        completed_at:
+          type: string
+          format: date-time
+
+    # Compliance Schemas
+    ComplianceValidationRequest:
+      type: object
+      required: [project_id, frameworks]
+      properties:
+        project_id:
+          type: integer
+          minimum: 1
+        frameworks:
+          type: array
+          items:
+            type: string
+            enum: [soc2, iso27001, gdpr, nist_cybersecurity, pci_dss]
+        scope:
+          type: array
+          items:
+            type: string
+            enum: [security, privacy, quality, operations]
+
+    ComplianceValidationResult:
+      type: object
+      required: [overall_status, framework_results, created_at]
+      properties:
+        overall_status:
+          type: string
+          enum: [compliant, non_compliant, partial]
+        framework_results:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/FrameworkResult'
+        recommendations:
+          type: array
+          items:
+            type: string
+        created_at:
+          type: string
+          format: date-time
+
+    FrameworkResult:
+      type: object
+      required: [status, score, checks]
+      properties:
+        status:
+          type: string
+          enum: [compliant, non_compliant, partial]
+        score:
+          type: number
+          minimum: 0
+          maximum: 100
+        checks:
+          type: array
+          items:
+            $ref: '#/components/schemas/ComplianceCheck'
+
+    ComplianceCheck:
+      type: object
+      required: [id, title, status]
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        status:
+          type: string
+          enum: [pass, fail, warning, not_applicable]
+        description:
+          type: string
+        remediation:
+          type: string
+
+    ComplianceReport:
+      type: object
+      required: [id, framework, project_id, status, created_at]
+      properties:
+        id:
+          type: string
+          format: uuid
+        framework:
+          type: string
+          enum: [soc2, iso27001, gdpr, nist_cybersecurity, pci_dss]
+        project_id:
+          type: integer
+        status:
+          type: string
+          enum: [compliant, non_compliant, partial]
+        score:
+          type: number
+          minimum: 0
+          maximum: 100
+        created_at:
+          type: string
+          format: date-time
+        report_url:
+          type: string
+          format: uri
+
+    # Monitoring Schemas
+    PipelineMetrics:
+      type: object
+      required: [success_rate, average_duration, total_executions]
+      properties:
+        success_rate:
+          type: number
+          minimum: 0
+          maximum: 100
+        average_duration:
+          type: number
+          description: Average duration in minutes
+        total_executions:
+          type: integer
+        failure_rate:
+          type: number
+          minimum: 0
+          maximum: 100
+        performance_trend:
+          type: string
+          enum: [improving, stable, degrading]
+        bottlenecks:
+          type: array
+          items:
+            type: object
+            properties:
+              stage:
+                type: string
+              average_duration:
+                type: number
+              impact:
+                type: string
+                enum: [high, medium, low]
+
+    DeploymentMetrics:
+      type: object
+      required: [success_rate, average_duration, total_deployments]
+      properties:
+        success_rate:
+          type: number
+          minimum: 0
+          maximum: 100
+        average_duration:
+          type: number
+          description: Average deployment duration in minutes
+        total_deployments:
+          type: integer
+        rollback_rate:
+          type: number
+          minimum: 0
+          maximum: 100
+        mttr:
+          type: number
+          description: Mean Time To Recovery in minutes
+        deployment_frequency:
+          type: number
+          description: Deployments per day
+        lead_time:
+          type: number
+          description: Lead time in hours
+
+    # Common Schemas
+    Pagination:
+      type: object
+      required: [page, per_page, total, pages]
+      properties:
+        page:
+          type: integer
+          minimum: 1
+        per_page:
+          type: integer
+          minimum: 1
+        total:
+          type: integer
+          minimum: 0
+        pages:
+          type: integer
+          minimum: 0
+
+    Error:
+      type: object
+      required: [message, code]
+      properties:
+        message:
+          type: string
+        code:
+          type: string
+        details:
+          type: object
+        timestamp:
+          type: string
+          format: date-time
+        trace_id:
+          type: string
+
+    ValidationError:
+      type: object
+      required: [message, code, validation_errors]
+      properties:
+        message:
+          type: string
+        code:
+          type: string
+        validation_errors:
+          type: array
+          items:
+            type: object
+            properties:
+              field:
+                type: string
+              message:
+                type: string
+              code:
+                type: string
+
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+      description: API key for authentication
+
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT token for authentication
+
+    GitLabTokenAuth:
+      type: apiKey
+      in: header
+      name: Private-Token
+      description: GitLab personal or project access token
+
+  responses:
+    Unauthorized:
+      description: Authentication required
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            message: "Authentication required"
+            code: "UNAUTHORIZED"
+
+    Forbidden:
+      description: Access forbidden
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            message: "Insufficient permissions"
+            code: "FORBIDDEN"
+
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            message: "Resource not found"
+            code: "NOT_FOUND"
+
+    BadRequest:
+      description: Invalid request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            message: "Invalid request parameters"
+            code: "BAD_REQUEST"
+
+    ValidationError:
+      description: Validation error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ValidationError'
+          example:
+            message: "Validation failed"
+            code: "VALIDATION_ERROR"
+            validation_errors:
+              - field: "project_id"
+                message: "Project ID must be a positive integer"
+                code: "INVALID_TYPE"
+
+    TooManyRequests:
+      description: Rate limit exceeded
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            message: "Rate limit exceeded"
+            code: "TOO_MANY_REQUESTS"
+      headers:
+        Retry-After:
+          description: Seconds until rate limit resets
+          schema:
+            type: integer
+
+tags:
+  - name: Health
+    description: Health check and system status endpoints
+  - name: Pipelines
+    description: GitLab CI/CD pipeline management and optimization
+  - name: Security
+    description: Security scanning and policy management
+  - name: Deployments
+    description: Deployment orchestration and management
+  - name: Environments
+    description: Environment configuration and promotion
+  - name: Containers
+    description: Container registry and image management
+  - name: Secrets
+    description: Secret management and rotation
+  - name: Compliance
+    description: Compliance validation and reporting
+  - name: Monitoring
+    description: Performance monitoring and metrics

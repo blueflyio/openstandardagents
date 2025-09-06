@@ -1,0 +1,1426 @@
+openapi: 3.1.0
+info:
+  title: OSSA Multi-Agent Platform API
+  description: |
+    Comprehensive API-first implementation for the Open Source AI Agent Standard (OSSA) v0.1.8
+    
+    This API provides complete orchestration, discovery, and management capabilities for 
+    multi-agent systems with full OSSA compliance and enterprise-grade features.
+    
+    ## Features
+    - Full OSSA v0.1.8 compliance with x-openapi-ai-agents-standard extensions
+    - Universal Agent Discovery Protocol (UADP) support
+    - Enterprise governance and observability
+    - GraphQL federation and real-time subscriptions
+    - Comprehensive security and performance monitoring
+    
+    ## Authentication
+    - API Key authentication for most endpoints
+    - OAuth2 for enterprise features
+    - JWT tokens for agent-to-agent communication
+    
+    ## Rate Limiting
+    - 1000 requests per minute per API key
+    - Burst limit of 100 requests per second
+    - Enterprise plans have higher limits
+  version: 0.1.8
+  contact:
+    name: OSSA Platform Team
+    email: platform@ossa.agents
+    url: https://ossa.agents
+  license:
+    name: Apache 2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0
+  termsOfService: https://ossa.agents/terms
+
+servers:
+  - url: https://api.ossa.agents/v1
+    description: Production API
+  - url: https://staging-api.ossa.agents/v1
+    description: Staging API
+  - url: http://localhost:8080/v1
+    description: Local development
+
+# OSSA v0.1.8 Extensions
+x-openapi-ai-agents-standard:
+  version: "0.1.8"
+  conformance_tier: "advanced"
+  certification_level: "platinum"
+  compliance_frameworks:
+    - "ISO_42001"
+    - "NIST_AI_RMF"
+    - "EU_AI_ACT"
+    - "SOC2"
+    - "GDPR"
+  enterprise_features: true
+  api_versioning:
+    strategy: "header"
+    current: "v1"
+    supported: ["v1", "v0.1.8"]
+
+x-agent-metadata:
+  class: "workflow"
+  category: "coordinator"
+  protocols: ["openapi", "mcp", "uadp", "graphql"]
+  capabilities:
+    - "agent-orchestration"
+    - "discovery"
+    - "governance"
+    - "monitoring"
+    - "federation"
+  domains:
+    - "platform-management"
+    - "multi-agent-coordination"
+    - "enterprise-governance"
+  frameworks: ["openai", "anthropic", "mcp", "langchain", "crewai"]
+
+x-ossa-discovery:
+  uadp_enabled: true
+  discovery_endpoints:
+    capabilities: "/capabilities"
+    health: "/health"
+    metrics: "/metrics"
+  registry_compatible: true
+
+x-ossa-security:
+  authentication_schemes: ["api_key", "oauth2", "jwt"]
+  authorization_model: "rbac"
+  rate_limiting:
+    enabled: true
+    strategy: "sliding_window"
+    limits:
+      requests_per_minute: 1000
+      burst_limit: 100
+  encryption:
+    at_rest: "aes_256"
+    in_transit: "tls_1_3"
+
+x-ossa-performance:
+  sla_targets:
+    availability: 99.9
+    response_time_p95: "200ms"
+    error_rate_threshold: 0.1
+  scaling:
+    horizontal: true
+    vertical: true
+    auto_scaling: true
+  monitoring:
+    metrics_endpoint: "/metrics"
+    health_endpoint: "/health"
+    observability_level: "comprehensive"
+
+x-ossa-graphql:
+  enabled: true
+  endpoint: "/graphql"
+  subscriptions: true
+  introspection: true
+  apollo_federation: true
+
+security:
+  - ApiKeyAuth: []
+  - OAuth2: [read, write, admin]
+  - JWTAuth: []
+
+paths:
+  # Health and System Endpoints
+  /health:
+    get:
+      summary: Get system health status
+      description: Returns comprehensive health information for the OSSA platform
+      operationId: getHealth
+      tags: [System]
+      x-ossa-observability:
+        monitoring_enabled: true
+        alert_on_failure: true
+        sla_critical: true
+      responses:
+        '200':
+          description: System health information
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthStatus'
+              example:
+                status: "healthy"
+                version: "0.1.8"
+                ossa_version: "0.1.8"
+                uptime: 86400
+                services:
+                  database: "healthy"
+                  redis: "healthy"
+                  agent_registry: "healthy"
+                timestamp: "2024-01-15T10:30:00Z"
+
+  /version:
+    get:
+      summary: Get version information
+      description: Returns version details for API and platform components
+      operationId: getVersion
+      tags: [System]
+      security: []
+      responses:
+        '200':
+          description: Version information
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VersionInfo'
+
+  /metrics:
+    get:
+      summary: Get platform metrics
+      description: Returns comprehensive platform and agent metrics
+      operationId: getMetrics
+      tags: [Monitoring]
+      parameters:
+        - name: timeframe
+          in: query
+          description: Time range for metrics
+          schema:
+            type: string
+            enum: [1h, 24h, 7d, 30d]
+            default: 1h
+        - name: format
+          in: query
+          description: Metrics format
+          schema:
+            type: string
+            enum: [json, prometheus]
+            default: json
+      responses:
+        '200':
+          description: Platform metrics
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlatformMetrics'
+            text/plain:
+              schema:
+                type: string
+                description: Prometheus format metrics
+
+  # Agent Management Endpoints
+  /agents:
+    get:
+      summary: List all agents
+      description: Retrieve a paginated list of registered agents with filtering
+      operationId: listAgents
+      tags: [Agents]
+      parameters:
+        - name: limit
+          in: query
+          description: Number of agents to return
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+        - name: offset
+          in: query
+          description: Number of agents to skip
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+        - name: tier
+          in: query
+          description: Filter by conformance tier
+          schema:
+            type: string
+            enum: [core, governed, advanced]
+        - name: class
+          in: query
+          description: Filter by agent class
+          schema:
+            type: string
+            enum: [general, specialist, workflow, integration, security, data, nlp, vision, audio]
+        - name: status
+          in: query
+          description: Filter by agent status
+          schema:
+            type: string
+            enum: [healthy, degraded, unhealthy, unknown]
+        - name: capability
+          in: query
+          description: Filter by capability
+          schema:
+            type: string
+        - name: domain
+          in: query
+          description: Filter by domain
+          schema:
+            type: string
+      responses:
+        '200':
+          description: List of agents
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentList'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+    post:
+      summary: Register a new agent
+      description: Register a new agent with the OSSA platform
+      operationId: registerAgent
+      tags: [Agents]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AgentRegistration'
+            example:
+              name: "data-analyst-agent"
+              version: "1.0.0"
+              description: "Advanced data analysis and visualization agent"
+              endpoint: "https://data-agent.company.com"
+              spec:
+                conformance_tier: "advanced"
+                class: "data"
+                category: "service"
+                capabilities:
+                  primary: ["data-analysis", "visualization", "statistical-modeling"]
+                  secondary: ["report-generation", "anomaly-detection"]
+                protocols:
+                  - name: "openapi"
+                    version: "3.1.0"
+                    required: true
+                  - name: "mcp"
+                    version: "1.0.0"
+                    required: false
+                endpoints:
+                  health: "/health"
+                  capabilities: "/capabilities"
+                  api: "/api"
+      responses:
+        '201':
+          description: Agent registered successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Agent'
+          headers:
+            Location:
+              description: URL of the newly created agent
+              schema:
+                type: string
+                format: uri
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '409':
+          description: Agent already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /agents/{agentId}:
+    get:
+      summary: Get agent by ID
+      description: Retrieve detailed information about a specific agent
+      operationId: getAgent
+      tags: [Agents]
+      parameters:
+        - name: agentId
+          in: path
+          required: true
+          description: Unique agent identifier
+          schema:
+            type: string
+            pattern: '^[a-zA-Z0-9_-]+$'
+      responses:
+        '200':
+          description: Agent details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Agent'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+    put:
+      summary: Update agent
+      description: Update an existing agent's configuration
+      operationId: updateAgent
+      tags: [Agents]
+      parameters:
+        - name: agentId
+          in: path
+          required: true
+          description: Unique agent identifier
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AgentUpdate'
+      responses:
+        '200':
+          description: Agent updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Agent'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      summary: Unregister agent
+      description: Remove an agent from the platform registry
+      operationId: unregisterAgent
+      tags: [Agents]
+      parameters:
+        - name: agentId
+          in: path
+          required: true
+          description: Unique agent identifier
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Agent unregistered successfully
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          description: Cannot unregister active agent
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+
+  /agents/{agentId}/health:
+    get:
+      summary: Get agent health
+      description: Check the health status of a specific agent
+      operationId: getAgentHealth
+      tags: [Agents, Monitoring]
+      parameters:
+        - name: agentId
+          in: path
+          required: true
+          description: Unique agent identifier
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Agent health status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentStatus'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /agents/{agentId}/capabilities:
+    get:
+      summary: Get agent capabilities
+      description: Retrieve detailed capabilities of a specific agent
+      operationId: getAgentCapabilities
+      tags: [Agents, Discovery]
+      parameters:
+        - name: agentId
+          in: path
+          required: true
+          description: Unique agent identifier
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Agent capabilities
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  capabilities:
+                    $ref: '#/components/schemas/AgentCapabilities'
+                  protocols:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Protocol'
+                  endpoints:
+                    type: object
+                    additionalProperties:
+                      type: string
+                      format: uri
+
+  # Discovery Endpoints (UADP)
+  /discover:
+    get:
+      summary: Discover agents by capabilities
+      description: Universal Agent Discovery Protocol (UADP) endpoint for finding agents
+      operationId: discoverAgents
+      tags: [Discovery]
+      parameters:
+        - name: capabilities
+          in: query
+          description: Required capabilities (comma-separated)
+          schema:
+            type: string
+            example: "data-analysis,visualization"
+        - name: domain
+          in: query
+          description: Domain filter
+          schema:
+            type: string
+            example: "finance"
+        - name: tier
+          in: query
+          description: Minimum conformance tier
+          schema:
+            type: string
+            enum: [core, governed, advanced]
+        - name: class
+          in: query
+          description: Agent class filter
+          schema:
+            type: string
+            enum: [general, specialist, workflow, integration, security, data, nlp, vision, audio]
+        - name: protocol
+          in: query
+          description: Required protocol support
+          schema:
+            type: string
+            enum: [openapi, mcp, uadp, graphql, grpc, websocket]
+        - name: availability_threshold
+          in: query
+          description: Minimum availability percentage
+          schema:
+            type: number
+            minimum: 0
+            maximum: 100
+            default: 95
+      responses:
+        '200':
+          description: Discovery results
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DiscoveryResult'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /discover/recommend:
+    post:
+      summary: Get agent recommendations
+      description: AI-powered agent recommendations based on task requirements
+      operationId: recommendAgents
+      tags: [Discovery, AI]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [task_description]
+              properties:
+                task_description:
+                  type: string
+                  description: Natural language description of the task
+                  example: "I need to analyze quarterly sales data and create visualizations"
+                context:
+                  type: object
+                  description: Additional context for recommendations
+                  properties:
+                    industry:
+                      type: string
+                    data_sources:
+                      type: array
+                      items:
+                        type: string
+                    output_format:
+                      type: string
+                max_recommendations:
+                  type: integer
+                  minimum: 1
+                  maximum: 10
+                  default: 5
+      responses:
+        '200':
+          description: Agent recommendations
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  recommendations:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        agent:
+                          $ref: '#/components/schemas/Agent'
+                        confidence_score:
+                          type: number
+                          minimum: 0
+                          maximum: 1
+                        reasoning:
+                          type: string
+                        matching_capabilities:
+                          type: array
+                          items:
+                            type: string
+                  task_analysis:
+                    type: object
+                    properties:
+                      required_capabilities:
+                        type: array
+                        items:
+                          type: string
+                      suggested_workflow:
+                        type: string
+                      complexity_score:
+                        type: number
+
+  # Orchestration Endpoints
+  /orchestration/workflows:
+    get:
+      summary: List orchestration workflows
+      description: Get all available orchestration workflows
+      operationId: listWorkflows
+      tags: [Orchestration]
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [active, paused, completed, failed]
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+      responses:
+        '200':
+          description: List of workflows
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  workflows:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Workflow'
+                  total:
+                    type: integer
+
+    post:
+      summary: Create orchestration workflow
+      description: Create a new multi-agent workflow
+      operationId: createWorkflow
+      tags: [Orchestration]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WorkflowDefinition'
+      responses:
+        '201':
+          description: Workflow created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Workflow'
+
+  /orchestration/workflows/{workflowId}:
+    get:
+      summary: Get workflow details
+      description: Retrieve detailed information about a specific workflow
+      operationId: getWorkflow
+      tags: [Orchestration]
+      parameters:
+        - name: workflowId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Workflow details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Workflow'
+
+    post:
+      summary: Execute workflow
+      description: Start execution of a workflow
+      operationId: executeWorkflow
+      tags: [Orchestration]
+      parameters:
+        - name: workflowId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                input_data:
+                  type: object
+                  description: Input data for the workflow
+                execution_context:
+                  type: object
+                  properties:
+                    priority:
+                      type: string
+                      enum: [low, normal, high, critical]
+                    timeout:
+                      type: string
+                      pattern: '^\d+[smhd]$'
+                    retry_policy:
+                      type: object
+                      properties:
+                        max_retries:
+                          type: integer
+                        backoff_strategy:
+                          type: string
+                          enum: [fixed, exponential, linear]
+      responses:
+        '202':
+          description: Workflow execution started
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkflowExecution'
+
+  /orchestration/executions/{executionId}:
+    get:
+      summary: Get execution status
+      description: Get the current status and results of a workflow execution
+      operationId: getExecution
+      tags: [Orchestration]
+      parameters:
+        - name: executionId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Execution details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkflowExecution'
+
+    delete:
+      summary: Cancel execution
+      description: Cancel a running workflow execution
+      operationId: cancelExecution
+      tags: [Orchestration]
+      parameters:
+        - name: executionId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Execution cancelled
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum: [cancelled]
+                  message:
+                    type: string
+
+  # GraphQL Endpoint
+  /graphql:
+    post:
+      summary: GraphQL endpoint
+      description: Execute GraphQL queries and mutations
+      operationId: executeGraphQL
+      tags: [GraphQL]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GraphQLRequest'
+      responses:
+        '200':
+          description: GraphQL response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GraphQLResponse'
+
+  # WebSocket for real-time features
+  /ws:
+    get:
+      summary: WebSocket connection
+      description: Establish WebSocket connection for real-time updates
+      operationId: connectWebSocket
+      tags: [WebSocket]
+      responses:
+        '101':
+          description: WebSocket connection established
+
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+      description: API key for authentication
+    
+    OAuth2:
+      type: oauth2
+      flows:
+        authorizationCode:
+          authorizationUrl: https://auth.ossa.agents/oauth/authorize
+          tokenUrl: https://auth.ossa.agents/oauth/token
+          scopes:
+            read: Read access to resources
+            write: Write access to resources
+            admin: Administrative access
+    
+    JWTAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT token for agent-to-agent authentication
+
+  schemas:
+    HealthStatus:
+      type: object
+      required: [status, version, timestamp]
+      properties:
+        status:
+          type: string
+          enum: [healthy, degraded, unhealthy]
+          description: Overall system health status
+        version:
+          type: string
+          description: API version
+        ossa_version:
+          type: string
+          description: OSSA standard version
+        uptime:
+          type: integer
+          description: System uptime in seconds
+        services:
+          type: object
+          additionalProperties:
+            type: string
+            enum: [healthy, degraded, unhealthy]
+          description: Health status of individual services
+        timestamp:
+          type: string
+          format: date-time
+          description: Timestamp of health check
+
+    VersionInfo:
+      type: object
+      required: [api, ossa, platform]
+      properties:
+        api:
+          type: string
+          description: API version
+        ossa:
+          type: string
+          description: OSSA standard version
+        platform:
+          type: string
+          description: Platform version
+        build:
+          type: string
+          description: Build number
+        commit:
+          type: string
+          description: Git commit hash
+
+    Agent:
+      type: object
+      required: [id, name, version, spec, registered_at]
+      properties:
+        id:
+          type: string
+          description: Unique agent identifier
+          pattern: '^[a-zA-Z0-9_-]+$'
+        name:
+          type: string
+          description: Human-readable agent name
+          minLength: 1
+          maxLength: 100
+        version:
+          type: string
+          description: Agent version (semver)
+          pattern: '^(\d+)\.(\d+)\.(\d+)(?:-([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?(?:\+([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?$'
+        description:
+          type: string
+          description: Agent description
+          maxLength: 500
+        spec:
+          $ref: '#/components/schemas/AgentSpec'
+        status:
+          $ref: '#/components/schemas/AgentStatus'
+        registered_at:
+          type: string
+          format: date-time
+          description: Registration timestamp
+        updated_at:
+          type: string
+          format: date-time
+          description: Last update timestamp
+
+    AgentSpec:
+      type: object
+      required: [conformance_tier, class, capabilities, endpoints]
+      properties:
+        conformance_tier:
+          type: string
+          enum: [core, governed, advanced]
+          description: OSSA conformance tier
+        class:
+          type: string
+          enum: [general, specialist, workflow, integration, security, data, nlp, vision, audio]
+          description: Agent classification
+        category:
+          type: string
+          enum: [assistant, tool, service, coordinator]
+          description: Agent category
+        capabilities:
+          $ref: '#/components/schemas/AgentCapabilities'
+        protocols:
+          type: array
+          items:
+            $ref: '#/components/schemas/Protocol'
+          description: Supported protocols
+        endpoints:
+          type: object
+          required: [health]
+          properties:
+            health:
+              type: string
+              format: uri-reference
+              description: Health check endpoint
+            capabilities:
+              type: string
+              format: uri-reference
+              description: Capabilities discovery endpoint
+            api:
+              type: string
+              format: uri-reference
+              description: Main API endpoint
+          additionalProperties:
+            type: string
+            format: uri-reference
+
+    AgentCapabilities:
+      type: object
+      required: [primary]
+      properties:
+        primary:
+          type: array
+          items:
+            type: string
+          description: Primary capabilities
+          minItems: 1
+        secondary:
+          type: array
+          items:
+            type: string
+          description: Secondary capabilities
+        domains:
+          type: array
+          items:
+            type: string
+          description: Domain specializations
+        frameworks:
+          type: array
+          items:
+            type: string
+            enum: [langchain, crewai, autogen, openai, anthropic, mcp, custom]
+          description: Supported frameworks
+
+    Protocol:
+      type: object
+      required: [name, version, required]
+      properties:
+        name:
+          type: string
+          enum: [openapi, mcp, uadp, graphql, grpc, websocket]
+          description: Protocol name
+        version:
+          type: string
+          description: Protocol version
+        required:
+          type: boolean
+          description: Whether protocol is required
+        extensions:
+          type: array
+          items:
+            type: string
+          description: Protocol extensions
+
+    AgentStatus:
+      type: object
+      required: [health, last_seen]
+      properties:
+        health:
+          type: string
+          enum: [healthy, degraded, unhealthy, unknown]
+          description: Current health status
+        last_seen:
+          type: string
+          format: date-time
+          description: Last health check timestamp
+        metrics:
+          type: object
+          properties:
+            requests_per_minute:
+              type: number
+              minimum: 0
+            average_response_time:
+              type: number
+              minimum: 0
+              description: Average response time in milliseconds
+            error_rate:
+              type: number
+              minimum: 0
+              maximum: 100
+              description: Error rate percentage
+            cpu_usage:
+              type: number
+              minimum: 0
+              maximum: 100
+            memory_usage:
+              type: number
+              minimum: 0
+              maximum: 100
+
+    AgentRegistration:
+      type: object
+      required: [name, version, endpoint, spec]
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 100
+        version:
+          type: string
+          pattern: '^(\d+)\.(\d+)\.(\d+)(?:-([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?(?:\+([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?$'
+        description:
+          type: string
+          maxLength: 500
+        endpoint:
+          type: string
+          format: uri
+        spec:
+          $ref: '#/components/schemas/AgentSpec'
+
+    AgentUpdate:
+      type: object
+      properties:
+        version:
+          type: string
+          pattern: '^(\d+)\.(\d+)\.(\d+)(?:-([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?(?:\+([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?$'
+        description:
+          type: string
+          maxLength: 500
+        endpoint:
+          type: string
+          format: uri
+        spec:
+          $ref: '#/components/schemas/AgentSpec'
+
+    AgentList:
+      type: object
+      required: [agents, total, limit, offset]
+      properties:
+        agents:
+          type: array
+          items:
+            $ref: '#/components/schemas/Agent'
+        total:
+          type: integer
+          minimum: 0
+        limit:
+          type: integer
+          minimum: 1
+        offset:
+          type: integer
+          minimum: 0
+
+    DiscoveryResult:
+      type: object
+      required: [agents, query]
+      properties:
+        agents:
+          type: array
+          items:
+            $ref: '#/components/schemas/Agent'
+        query:
+          type: object
+          properties:
+            capabilities:
+              type: array
+              items:
+                type: string
+            domain:
+              type: string
+            tier:
+              type: string
+            class:
+              type: string
+        total:
+          type: integer
+        execution_time:
+          type: number
+          description: Discovery execution time in milliseconds
+
+    PlatformMetrics:
+      type: object
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+        timeframe:
+          type: string
+          description: Metrics time window
+        agents:
+          type: object
+          properties:
+            total:
+              type: integer
+              minimum: 0
+            active:
+              type: integer
+              minimum: 0
+            by_tier:
+              type: object
+              properties:
+                core:
+                  type: integer
+                governed:
+                  type: integer
+                advanced:
+                  type: integer
+            by_class:
+              type: object
+              additionalProperties:
+                type: integer
+        requests:
+          type: object
+          properties:
+            total:
+              type: integer
+              minimum: 0
+            success_rate:
+              type: number
+              minimum: 0
+              maximum: 100
+            average_response_time:
+              type: number
+              minimum: 0
+        errors:
+          type: array
+          items:
+            type: object
+            properties:
+              code:
+                type: string
+              message:
+                type: string
+              count:
+                type: integer
+                minimum: 0
+
+    Workflow:
+      type: object
+      required: [id, name, version, definition, created_at]
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        version:
+          type: string
+        description:
+          type: string
+        definition:
+          $ref: '#/components/schemas/WorkflowDefinition'
+        status:
+          type: string
+          enum: [draft, active, paused, completed, failed]
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    WorkflowDefinition:
+      type: object
+      required: [name, steps]
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        version:
+          type: string
+        steps:
+          type: array
+          items:
+            $ref: '#/components/schemas/WorkflowStep'
+        error_handling:
+          type: object
+          properties:
+            strategy:
+              type: string
+              enum: [fail_fast, continue, retry]
+            max_retries:
+              type: integer
+            timeout:
+              type: string
+
+    WorkflowStep:
+      type: object
+      required: [id, type, agent_id]
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        type:
+          type: string
+          enum: [agent_call, condition, parallel, sequential]
+        agent_id:
+          type: string
+        input_mapping:
+          type: object
+        output_mapping:
+          type: object
+        conditions:
+          type: object
+        next_steps:
+          type: array
+          items:
+            type: string
+
+    WorkflowExecution:
+      type: object
+      required: [id, workflow_id, status, created_at]
+      properties:
+        id:
+          type: string
+        workflow_id:
+          type: string
+        status:
+          type: string
+          enum: [queued, running, completed, failed, cancelled]
+        input_data:
+          type: object
+        output_data:
+          type: object
+        steps:
+          type: array
+          items:
+            type: object
+            properties:
+              step_id:
+                type: string
+              status:
+                type: string
+                enum: [pending, running, completed, failed, skipped]
+              started_at:
+                type: string
+                format: date-time
+              completed_at:
+                type: string
+                format: date-time
+              output:
+                type: object
+              error:
+                type: string
+        created_at:
+          type: string
+          format: date-time
+        started_at:
+          type: string
+          format: date-time
+        completed_at:
+          type: string
+          format: date-time
+
+    GraphQLRequest:
+      type: object
+      required: [query]
+      properties:
+        query:
+          type: string
+          description: GraphQL query or mutation
+        variables:
+          type: object
+          description: Query variables
+        operationName:
+          type: string
+          description: Operation name for multiple operations
+
+    GraphQLResponse:
+      type: object
+      properties:
+        data:
+          type: object
+          description: Query result data
+        errors:
+          type: array
+          items:
+            type: object
+            required: [message]
+            properties:
+              message:
+                type: string
+              locations:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    line:
+                      type: integer
+                    column:
+                      type: integer
+              path:
+                type: array
+                items:
+                  type: string
+
+    ApiError:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: string
+          description: Error message
+        details:
+          type: object
+          description: Additional error details
+        request_id:
+          type: string
+          description: Request identifier for tracking
+        timestamp:
+          type: string
+          format: date-time
+
+  responses:
+    BadRequest:
+      description: Bad request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiError'
+          example:
+            error: "Invalid request parameters"
+            details:
+              field: "name"
+              reason: "required field missing"
+
+    Unauthorized:
+      description: Unauthorized
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiError'
+          example:
+            error: "Authentication required"
+
+    Forbidden:
+      description: Forbidden
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiError'
+          example:
+            error: "Insufficient permissions"
+
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiError'
+          example:
+            error: "Agent not found"
+
+    Conflict:
+      description: Resource conflict
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiError'
+          example:
+            error: "Agent already registered"
+
+    RateLimitExceeded:
+      description: Rate limit exceeded
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiError'
+          example:
+            error: "Rate limit exceeded"
+            details:
+              limit: 1000
+              window: "1h"
+              reset_at: "2024-01-15T11:00:00Z"
+
+    InternalServerError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiError'
+          example:
+            error: "Internal server error"
+            request_id: "req_123456789"
+
+tags:
+  - name: System
+    description: System health and information endpoints
+  - name: Agents
+    description: Agent registration and management
+  - name: Discovery
+    description: Universal Agent Discovery Protocol (UADP)
+  - name: Orchestration
+    description: Multi-agent workflow orchestration
+  - name: Monitoring
+    description: Platform and agent monitoring
+  - name: GraphQL
+    description: GraphQL API endpoint
+  - name: WebSocket
+    description: Real-time WebSocket connections
+  - name: AI
+    description: AI-powered platform features

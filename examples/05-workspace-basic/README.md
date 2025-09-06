@@ -1,96 +1,28 @@
-# 05-workspace-basic: Simple Workspace Configuration
+# 🏢 Level 5: Basic Workspace
 
-## Overview
-Basic workspace configuration for discovering and orchestrating multiple agents. Perfect for small teams or projects with 2-10 agents.
+Simple multi-project workspace with basic agent discovery and coordination.
 
-## Features
-- ✅ Automatic agent discovery
-- ✅ Basic orchestration strategies
-- ✅ Protocol bridge support
-- ✅ Environment configuration
-- ✅ Simple timeout and concurrency controls
+## What This Shows
 
-## Configuration
+- **Project Discovery**: Automatic scanning for `.agents/` directories
+- **Basic Orchestration**: Sequential and parallel coordination patterns
+- **Load Balancing**: Simple round-robin routing
+- **Cross-Project Communication**: Agents can discover and call each other
 
-### Discovery Settings
-```yaml
-discovery:
-  scan_paths:
-    - .agents       # Project-level agents
-    - agents        # Alternative location
-    - services/agents  # Service agents
-```
-Automatically finds all agents in these directories.
+## Quick Start
 
-### Orchestration
-```yaml
-orchestration:
-  strategy: adaptive  # Smart routing based on capabilities
-  max_concurrent: 3   # Run up to 3 agents simultaneously
-```
-
-### Protocol Bridges
-Enables automatic bridge generation for:
-- MCP (Model Context Protocol)
-- LangChain
-- CrewAI (disabled by default)
-
-## Usage
-
-### 1. Place in your workspace root:
 ```bash
-cp examples/05-workspace-basic/workspace.yml ~/my-project/.agents-workspace/
+# Initialize workspace
+ossa workspace init --config workspace.yml
+
+# Scan for agents across projects
+ossa workspace discover
+
+# List discovered agents
+ossa agents list --workspace
 ```
 
-### 2. Run discovery:
-```bash
-oaas workspace scan
-# Discovers all agents in configured paths
-```
+## Next Steps
 
-### 3. Test orchestration:
-```bash
-oaas workspace ask "How do I implement authentication?"
-# Routes to relevant agents and synthesizes response
-```
-
-### 4. Generate bridges:
-```bash
-oaas workspace export --format=mcp
-# Creates MCP configurations for all agents
-```
-
-## Directory Structure
-```
-my-project/
-├── .agents-workspace/
-│   └── workspace.yml    # This configuration
-├── .agents/
-│   ├── agent-1/
-│   └── agent-2/
-└── services/agents/
-    └── agent-3/
-```
-
-## Orchestration Strategies
-
-- **adaptive**: Automatically selects best strategy
-- **sequential**: Process agents one by one
-- **parallel**: Process all agents simultaneously
-- **hierarchical**: Use agent priorities
-
-## Environment Variables
-```yaml
-variables:
-  API_BASE_URL: "http://localhost:3000"
-  LOG_LEVEL: "info"
-```
-Available to all agents in the workspace.
-
-## Upgrade to Enterprise
-See `06-workspace-enterprise` for:
-- Advanced routing rules
-- Multi-region support
-- Compliance frameworks
-- Monitoring and metrics
-- Registry backends
+→ **Level 6**: `06-workspace-enterprise/` - Add compliance, security, and monitoring
+→ **Level 7**: `10-workspace-orchestration/` - Advanced orchestration patterns

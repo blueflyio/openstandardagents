@@ -1,0 +1,39 @@
+{
+  "name": "@ossa/gateway-service",
+  "version": "0.1.8",
+  "description": "OSSA API Gateway Service - Routing, authentication, and load balancing",
+  "main": "dist/index.js",
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "tsx src/index.ts",
+    "test": "vitest",
+    "lint": "eslint src/**/*.ts"
+  },
+  "keywords": ["ossa", "gateway", "routing", "authentication", "load-balancing"],
+  "license": "Apache-2.0",
+  "dependencies": {
+    "express": "^4.18.0",
+    "cors": "^2.8.5",
+    "helmet": "^7.1.0",
+    "winston": "^3.11.0",
+    "express-rate-limit": "^7.1.0",
+    "jsonwebtoken": "^9.0.2"
+  },
+  "devDependencies": {
+    "typescript": "^5.3.2",
+    "tsx": "^4.6.2",
+    "@types/node": "^20.10.0",
+    "@types/jsonwebtoken": "^9.0.5",
+    "vitest": "^1.1.0",
+    "eslint": "^8.56.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "config": {
+    "port": 3000,
+    "endpoint": "/api/v1"
+  }
+}

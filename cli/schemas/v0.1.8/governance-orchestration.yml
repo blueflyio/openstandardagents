@@ -1,0 +1,1143 @@
+# OSSA Governance Orchestration Schema v1.0
+# Governance hooks, audit trails, and compliance checking for multi-agent orchestration
+# Framework-agnostic governance controls with policy enforcement and risk management
+
+$schema: "https://json-schema.org/draft/2020-12/schema"
+$id: "https://openapi-ai-agents.org/schemas/governance-orchestration/v1.0"
+title: "OSSA Governance Orchestration Schema"
+description: "Standardized governance hooks and compliance checking for orchestration workflows"
+
+type: object
+required:
+  - ossa
+  - kind
+  - metadata
+  - spec
+
+properties:
+  ossa:
+    type: string
+    const: "openapi-ai-agents/v1.0"
+    description: "OSSA governance specification version"
+    
+  kind:
+    type: string
+    const: "GovernanceOrchestration"
+    description: "Resource type for governance orchestration specifications"
+    
+  metadata:
+    type: object
+    required:
+      - name
+      - version
+    properties:
+      name:
+        type: string
+        pattern: '^[a-z0-9-]+$'
+        minLength: 3
+        maxLength: 50
+        description: "Governance policy identifier"
+      version:
+        type: string
+        pattern: '^[0-9]+\.[0-9]+\.[0-9]+$'
+        description: "Governance policy version (semantic versioning)"
+      description:
+        type: string
+        maxLength: 1000
+        description: "Governance policy description"
+      labels:
+        type: object
+        additionalProperties:
+          type: string
+        description: "Key-value labels for policy organization"
+      annotations:
+        type: object
+        additionalProperties:
+          type: string
+        description: "Additional metadata including compliance frameworks"
+      created:
+        type: string
+        format: date-time
+        description: "Policy creation timestamp"
+      effective_date:
+        type: string
+        format: date-time
+        description: "Policy effective date"
+      expiration_date:
+        type: string
+        format: date-time
+        description: "Optional policy expiration date"
+    additionalProperties: false
+    
+  spec:
+    type: object
+    required:
+      - governance
+      - compliance_frameworks
+      - policy_hooks
+      - audit_requirements
+    properties:
+      governance:
+        type: object
+        required:
+          - policy_level
+          - enforcement_mode
+        properties:
+          policy_level:
+            type: string
+            enum: ["advisory", "warning", "enforcing", "blocking"]
+            description: "Policy enforcement level"
+          enforcement_mode:
+            type: string
+            enum: ["permissive", "strict", "fail_safe"]
+            description: "How to handle policy violations"
+          scope:
+            type: object
+            properties:
+              orchestrations:
+                type: array
+                items:
+                  type: string
+                description: "Orchestration patterns this governance applies to"
+              agents:
+                type: array
+                items:
+                  type: string
+                description: "Agent types this governance applies to"
+              tasks:
+                type: array
+                items:
+                  type: string
+                description: "Task types this governance applies to"
+              frameworks:
+                type: array
+                items:
+                  type: string
+                  enum: ["langchain", "crewai", "autogen", "openai", "anthropic", "mcp", "all"]
+                description: "Frameworks this governance applies to"
+            additionalProperties: false
+          priority:
+            type: integer
+            minimum: 1
+            maximum: 100
+            description: "Policy priority for conflict resolution"
+        additionalProperties: false
+        
+      compliance_frameworks:
+        type: array
+        minItems: 1
+        items:
+          type: object
+          required:
+            - framework
+            - controls
+          properties:
+            framework:
+              type: string
+              enum: ["ISO_42001_2023", "NIST_AI_RMF_1_0", "EU_AI_Act", "SOX", "HIPAA", "GDPR", "CCPA", "PCI_DSS", "FedRAMP", "SOC2"]
+              description: "Compliance framework identifier"
+            version:
+              type: string
+              description: "Framework version"
+            controls:
+              type: array
+              items:
+                $ref: "#/$defs/ComplianceControl"
+              description: "Specific controls to enforce"
+            certification_required:
+              type: boolean
+              default: false
+              description: "Whether certification is required for this framework"
+            audit_frequency:
+              type: string
+              enum: ["continuous", "daily", "weekly", "monthly", "quarterly", "annually"]
+              description: "Required audit frequency"
+          additionalProperties: false
+        description: "Applicable compliance frameworks and controls"
+        
+      policy_hooks:
+        type: object
+        required:
+          - pre_orchestration
+          - pre_agent_execution
+          - post_agent_execution
+          - post_orchestration
+        properties:
+          pre_orchestration:
+            type: array
+            items:
+              $ref: "#/$defs/PolicyHook"
+            description: "Hooks executed before orchestration starts"
+          pre_agent_execution:
+            type: array
+            items:
+              $ref: "#/$defs/PolicyHook"
+            description: "Hooks executed before each agent execution"
+          during_execution:
+            type: array
+            items:
+              $ref: "#/$defs/PolicyHook"
+            description: "Hooks executed during agent execution"
+          post_agent_execution:
+            type: array
+            items:
+              $ref: "#/$defs/PolicyHook"
+            description: "Hooks executed after each agent execution"
+          post_orchestration:
+            type: array
+            items:
+              $ref: "#/$defs/PolicyHook"
+            description: "Hooks executed after orchestration completes"
+          on_error:
+            type: array
+            items:
+              $ref: "#/$defs/PolicyHook"
+            description: "Hooks executed when errors occur"
+          on_timeout:
+            type: array
+            items:
+              $ref: "#/$defs/PolicyHook"
+            description: "Hooks executed on timeout"
+        additionalProperties: false
+        
+      audit_requirements:
+        type: object
+        required:
+          - audit_level
+          - retention_policy
+        properties:
+          audit_level:
+            type: string
+            enum: ["none", "basic", "detailed", "comprehensive", "forensic"]
+            description: "Level of audit logging required"
+          retention_policy:
+            $ref: "#/$defs/RetentionPolicy"
+          log_destinations:
+            type: array
+            items:
+              $ref: "#/$defs/LogDestination"
+            description: "Where audit logs should be sent"
+          encryption_required:
+            type: boolean
+            default: true
+            description: "Whether audit logs must be encrypted"
+          integrity_protection:
+            $ref: "#/$defs/IntegrityProtection"
+          access_controls:
+            $ref: "#/$defs/AccessControls"
+        additionalProperties: false
+        
+      risk_assessment:
+        type: object
+        properties:
+          risk_framework:
+            type: string
+            enum: ["NIST", "ISO_31000", "COSO", "FAIR", "custom"]
+            description: "Risk assessment framework to use"
+          risk_categories:
+            type: array
+            items:
+              $ref: "#/$defs/RiskCategory"
+            description: "Risk categories to assess"
+          risk_matrix:
+            $ref: "#/$defs/RiskMatrix"
+          mitigation_strategies:
+            type: array
+            items:
+              $ref: "#/$defs/MitigationStrategy"
+          continuous_monitoring:
+            type: boolean
+            default: true
+            description: "Whether to continuously monitor risks"
+        additionalProperties: false
+        
+      incident_response:
+        type: object
+        properties:
+          response_procedures:
+            type: array
+            items:
+              $ref: "#/$defs/ResponseProcedure"
+          escalation_matrix:
+            $ref: "#/$defs/EscalationMatrix"
+          notification_requirements:
+            $ref: "#/$defs/NotificationRequirements"
+          recovery_procedures:
+            $ref: "#/$defs/RecoveryProcedures"
+        additionalProperties: false
+        
+      data_governance:
+        type: object
+        properties:
+          data_classification:
+            $ref: "#/$defs/DataClassification"
+          privacy_controls:
+            $ref: "#/$defs/PrivacyControls"
+          data_lineage:
+            type: boolean
+            default: true
+            description: "Whether to track data lineage"
+          consent_management:
+            $ref: "#/$defs/ConsentManagement"
+          data_minimization:
+            type: boolean
+            default: true
+            description: "Whether to apply data minimization principles"
+        additionalProperties: false
+        
+      monitoring_and_alerting:
+        type: object
+        properties:
+          real_time_monitoring:
+            type: boolean
+            default: true
+            description: "Enable real-time governance monitoring"
+          alert_thresholds:
+            $ref: "#/$defs/AlertThresholds"
+          notification_channels:
+            type: array
+            items:
+              $ref: "#/$defs/NotificationChannel"
+          dashboard_requirements:
+            $ref: "#/$defs/DashboardRequirements"
+        additionalProperties: false
+        
+    additionalProperties: false
+
+# Schema definitions for reusable components
+$defs:
+  ComplianceControl:
+    type: object
+    required:
+      - control_id
+      - description
+      - implementation
+    properties:
+      control_id:
+        type: string
+        description: "Unique control identifier within framework"
+      description:
+        type: string
+        description: "Control description"
+      implementation:
+        type: string
+        enum: ["manual", "automated", "hybrid"]
+        description: "How this control is implemented"
+      validation_method:
+        type: string
+        enum: ["continuous", "periodic", "event_driven", "manual"]
+        description: "How compliance is validated"
+      evidence_requirements:
+        type: array
+        items:
+          type: string
+        description: "Required evidence for compliance"
+      responsible_party:
+        type: string
+        description: "Who is responsible for this control"
+      frequency:
+        type: string
+        enum: ["continuous", "daily", "weekly", "monthly", "quarterly", "annually"]
+        description: "Control execution frequency"
+      criticality:
+        type: string
+        enum: ["low", "medium", "high", "critical"]
+        description: "Control criticality level"
+    additionalProperties: false
+    
+  PolicyHook:
+    type: object
+    required:
+      - name
+      - type
+      - action
+    properties:
+      name:
+        type: string
+        description: "Policy hook name"
+      type:
+        type: string
+        enum: ["validation", "audit", "compliance", "security", "performance", "data_governance", "risk_assessment"]
+        description: "Hook type"
+      action:
+        type: string
+        enum: ["allow", "deny", "modify", "warn", "log", "escalate", "quarantine"]
+        description: "Action to take when hook is triggered"
+      condition:
+        type: string
+        description: "Condition expression for hook execution"
+      priority:
+        type: integer
+        minimum: 1
+        maximum: 100
+        description: "Hook execution priority"
+      configuration:
+        type: object
+        properties:
+          evaluation_criteria:
+            type: array
+            items:
+              type: object
+              properties:
+                criterion:
+                  type: string
+                operator:
+                  type: string
+                  enum: ["equals", "not_equals", "greater_than", "less_than", "contains", "regex", "custom"]
+                value:
+                  type: string
+                weight:
+                  type: number
+                  minimum: 0
+                  maximum: 1
+          thresholds:
+            type: object
+            additionalProperties:
+              type: number
+          custom_logic:
+            type: string
+            description: "Custom evaluation logic"
+          timeout:
+            type: integer
+            minimum: 1
+            description: "Hook execution timeout in seconds"
+        additionalProperties: true
+      remediation_actions:
+        type: array
+        items:
+          type: string
+        description: "Actions to take for policy violations"
+      notification_required:
+        type: boolean
+        default: false
+        description: "Whether to send notifications when triggered"
+    additionalProperties: false
+    
+  RetentionPolicy:
+    type: object
+    required:
+      - retention_period_days
+      - archival_strategy
+    properties:
+      retention_period_days:
+        type: integer
+        minimum: 1
+        description: "How long to retain audit logs (in days)"
+      archival_strategy:
+        type: string
+        enum: ["delete", "archive_cold", "archive_glacier", "archive_tape", "keep_indefinitely"]
+        description: "What to do with logs after retention period"
+      geographic_requirements:
+        type: array
+        items:
+          type: object
+          properties:
+            jurisdiction:
+              type: string
+            data_residency_required:
+              type: boolean
+            specific_requirements:
+              type: array
+              items:
+                type: string
+      legal_hold_procedures:
+        type: object
+        properties:
+          trigger_events:
+            type: array
+            items:
+              type: string
+          hold_duration:
+            type: string
+          notification_process:
+            type: string
+      purging_procedures:
+        type: object
+        properties:
+          secure_deletion_required:
+            type: boolean
+            default: true
+          verification_required:
+            type: boolean
+            default: true
+          certificate_of_destruction:
+            type: boolean
+            default: false
+    additionalProperties: false
+    
+  LogDestination:
+    type: object
+    required:
+      - type
+      - endpoint
+    properties:
+      type:
+        type: string
+        enum: ["syslog", "splunk", "elasticsearch", "s3", "azure_blob", "gcp_storage", "database", "webhook", "kafka"]
+        description: "Log destination type"
+      endpoint:
+        type: string
+        format: uri
+        description: "Log destination endpoint"
+      authentication:
+        type: object
+        properties:
+          method:
+            type: string
+            enum: ["none", "api_key", "oauth2", "certificate", "custom"]
+          configuration:
+            type: object
+            additionalProperties: true
+      format:
+        type: string
+        enum: ["json", "xml", "csv", "syslog", "cef", "leef", "custom"]
+        description: "Log format"
+      batch_size:
+        type: integer
+        minimum: 1
+        description: "Number of log entries per batch"
+      max_retry_attempts:
+        type: integer
+        minimum: 0
+        default: 3
+        description: "Maximum retry attempts for failed deliveries"
+    additionalProperties: false
+    
+  IntegrityProtection:
+    type: object
+    properties:
+      method:
+        type: string
+        enum: ["hash", "digital_signature", "blockchain", "immutable_storage"]
+        description: "Integrity protection method"
+      algorithm:
+        type: string
+        enum: ["sha256", "sha512", "rsa", "ecdsa", "ed25519"]
+        description: "Cryptographic algorithm"
+      key_management:
+        type: object
+        properties:
+          key_source:
+            type: string
+            enum: ["hsm", "kms", "local", "external"]
+          rotation_policy:
+            type: object
+            properties:
+              rotation_frequency_days:
+                type: integer
+                minimum: 1
+              automatic_rotation:
+                type: boolean
+                default: true
+      verification_frequency:
+        type: string
+        enum: ["continuous", "hourly", "daily", "weekly", "on_access"]
+        description: "How often to verify integrity"
+    additionalProperties: false
+    
+  AccessControls:
+    type: object
+    properties:
+      authentication_required:
+        type: boolean
+        default: true
+      authorization_model:
+        type: string
+        enum: ["rbac", "abac", "dac", "mac", "custom"]
+        description: "Authorization model"
+      roles:
+        type: array
+        items:
+          type: object
+          properties:
+            role_name:
+              type: string
+            permissions:
+              type: array
+              items:
+                type: string
+            constraints:
+              type: array
+              items:
+                type: string
+      access_logging:
+        type: boolean
+        default: true
+        description: "Log all access attempts"
+      session_management:
+        type: object
+        properties:
+          timeout_minutes:
+            type: integer
+            minimum: 1
+          multi_session_allowed:
+            type: boolean
+            default: false
+          session_invalidation:
+            type: array
+            items:
+              type: string
+              enum: ["logout", "timeout", "policy_violation", "admin_revoke"]
+    additionalProperties: false
+    
+  RiskCategory:
+    type: object
+    required:
+      - category
+      - description
+    properties:
+      category:
+        type: string
+        enum: ["operational", "security", "compliance", "financial", "reputational", "strategic", "technical"]
+        description: "Risk category"
+      description:
+        type: string
+        description: "Risk category description"
+      risk_factors:
+        type: array
+        items:
+          type: object
+          properties:
+            factor:
+              type: string
+            probability:
+              type: number
+              minimum: 0
+              maximum: 1
+            impact:
+              type: string
+              enum: ["low", "medium", "high", "critical"]
+            detectability:
+              type: string
+              enum: ["easy", "moderate", "difficult", "very_difficult"]
+      assessment_frequency:
+        type: string
+        enum: ["continuous", "daily", "weekly", "monthly", "quarterly"]
+        description: "How often to assess risks in this category"
+    additionalProperties: false
+    
+  RiskMatrix:
+    type: object
+    properties:
+      probability_levels:
+        type: array
+        items:
+          type: object
+          properties:
+            level:
+              type: string
+            description:
+              type: string
+            probability_range:
+              type: object
+              properties:
+                min:
+                  type: number
+                  minimum: 0
+                  maximum: 1
+                max:
+                  type: number
+                  minimum: 0
+                  maximum: 1
+      impact_levels:
+        type: array
+        items:
+          type: object
+          properties:
+            level:
+              type: string
+            description:
+              type: string
+            impact_criteria:
+              type: array
+              items:
+                type: string
+      risk_tolerance:
+        type: object
+        properties:
+          acceptable:
+            type: array
+            items:
+              type: string
+          monitor:
+            type: array
+            items:
+              type: string
+          mitigate:
+            type: array
+            items:
+              type: string
+          avoid:
+            type: array
+            items:
+              type: string
+    additionalProperties: false
+    
+  MitigationStrategy:
+    type: object
+    required:
+      - strategy_name
+      - risk_categories
+      - implementation
+    properties:
+      strategy_name:
+        type: string
+      risk_categories:
+        type: array
+        items:
+          type: string
+      implementation:
+        type: object
+        properties:
+          method:
+            type: string
+            enum: ["accept", "avoid", "mitigate", "transfer", "monitor"]
+          controls:
+            type: array
+            items:
+              type: string
+          automation_level:
+            type: string
+            enum: ["manual", "semi_automated", "fully_automated"]
+          effectiveness_score:
+            type: number
+            minimum: 0
+            maximum: 1
+      monitoring_requirements:
+        type: object
+        properties:
+          frequency:
+            type: string
+          metrics:
+            type: array
+            items:
+              type: string
+          thresholds:
+            type: object
+            additionalProperties:
+              type: number
+      review_schedule:
+        type: string
+        enum: ["weekly", "monthly", "quarterly", "annually"]
+    additionalProperties: false
+    
+  ResponseProcedure:
+    type: object
+    required:
+      - incident_type
+      - procedure_steps
+    properties:
+      incident_type:
+        type: string
+        enum: ["security_violation", "compliance_breach", "data_leak", "system_failure", "policy_violation", "performance_degradation"]
+      severity_level:
+        type: string
+        enum: ["low", "medium", "high", "critical"]
+      procedure_steps:
+        type: array
+        items:
+          type: object
+          properties:
+            step_number:
+              type: integer
+            description:
+              type: string
+            responsible_role:
+              type: string
+            max_duration_minutes:
+              type: integer
+            automation_available:
+              type: boolean
+      containment_actions:
+        type: array
+        items:
+          type: string
+      investigation_requirements:
+        type: object
+        properties:
+          evidence_collection:
+            type: array
+            items:
+              type: string
+          analysis_tools:
+            type: array
+            items:
+              type: string
+          reporting_requirements:
+            type: array
+            items:
+              type: string
+    additionalProperties: false
+    
+  EscalationMatrix:
+    type: object
+    properties:
+      escalation_levels:
+        type: array
+        items:
+          type: object
+          properties:
+            level:
+              type: integer
+            title:
+              type: string
+            contact_info:
+              type: string
+            escalation_criteria:
+              type: array
+              items:
+                type: string
+            max_response_time_minutes:
+              type: integer
+      automatic_escalation:
+        type: boolean
+        default: true
+      escalation_triggers:
+        type: array
+        items:
+          type: object
+          properties:
+            trigger:
+              type: string
+            escalation_level:
+              type: integer
+            delay_minutes:
+              type: integer
+    additionalProperties: false
+    
+  NotificationRequirements:
+    type: object
+    properties:
+      internal_notifications:
+        type: array
+        items:
+          type: object
+          properties:
+            recipient_role:
+              type: string
+            incident_types:
+              type: array
+              items:
+                type: string
+            notification_method:
+              type: array
+              items:
+                type: string
+                enum: ["email", "sms", "slack", "webhook", "dashboard"]
+            max_delay_minutes:
+              type: integer
+      external_notifications:
+        type: array
+        items:
+          type: object
+          properties:
+            recipient:
+              type: string
+            conditions:
+              type: array
+              items:
+                type: string
+            notification_method:
+              type: string
+            regulatory_requirement:
+              type: boolean
+              default: false
+      breach_notifications:
+        type: object
+        properties:
+          regulatory_timeline_hours:
+            type: integer
+          customer_timeline_hours:
+            type: integer
+          media_timeline_hours:
+            type: integer
+    additionalProperties: false
+    
+  RecoveryProcedures:
+    type: object
+    properties:
+      recovery_time_objectives:
+        type: object
+        properties:
+          rto_minutes:
+            type: integer
+            description: "Recovery Time Objective in minutes"
+          rpo_minutes:
+            type: integer
+            description: "Recovery Point Objective in minutes"
+      backup_procedures:
+        type: array
+        items:
+          type: object
+          properties:
+            backup_type:
+              type: string
+              enum: ["full", "incremental", "differential", "snapshot"]
+            frequency:
+              type: string
+            storage_location:
+              type: string
+            retention_period:
+              type: string
+      restoration_procedures:
+        type: array
+        items:
+          type: object
+          properties:
+            step:
+              type: integer
+            description:
+              type: string
+            estimated_duration_minutes:
+              type: integer
+            verification_required:
+              type: boolean
+      continuity_planning:
+        type: object
+        properties:
+          alternative_systems:
+            type: array
+            items:
+              type: string
+          manual_procedures:
+            type: array
+            items:
+              type: string
+          communication_plans:
+            type: array
+            items:
+              type: string
+    additionalProperties: false
+    
+  DataClassification:
+    type: object
+    properties:
+      classification_levels:
+        type: array
+        items:
+          type: object
+          properties:
+            level:
+              type: string
+              enum: ["public", "internal", "confidential", "restricted", "top_secret"]
+            description:
+              type: string
+            handling_requirements:
+              type: array
+              items:
+                type: string
+            retention_requirements:
+              type: string
+            access_restrictions:
+              type: array
+              items:
+                type: string
+      automatic_classification:
+        type: boolean
+        default: false
+      classification_rules:
+        type: array
+        items:
+          type: object
+          properties:
+            rule_name:
+              type: string
+            condition:
+              type: string
+            classification:
+              type: string
+            confidence_threshold:
+              type: number
+              minimum: 0
+              maximum: 1
+    additionalProperties: false
+    
+  PrivacyControls:
+    type: object
+    properties:
+      pii_detection:
+        type: boolean
+        default: true
+      pii_categories:
+        type: array
+        items:
+          type: string
+          enum: ["name", "email", "phone", "ssn", "credit_card", "address", "biometric", "health", "financial", "custom"]
+      anonymization_required:
+        type: boolean
+        default: false
+      pseudonymization_required:
+        type: boolean
+        default: false
+      data_subject_rights:
+        type: object
+        properties:
+          right_to_access:
+            type: boolean
+            default: true
+          right_to_rectification:
+            type: boolean
+            default: true
+          right_to_erasure:
+            type: boolean
+            default: true
+          right_to_portability:
+            type: boolean
+            default: true
+          right_to_object:
+            type: boolean
+            default: true
+      cross_border_restrictions:
+        type: array
+        items:
+          type: object
+          properties:
+            jurisdiction:
+              type: string
+            restrictions:
+              type: array
+              items:
+                type: string
+    additionalProperties: false
+    
+  ConsentManagement:
+    type: object
+    properties:
+      consent_required:
+        type: boolean
+        default: false
+      consent_types:
+        type: array
+        items:
+          type: string
+          enum: ["explicit", "implicit", "opt_in", "opt_out", "granular"]
+      consent_tracking:
+        type: boolean
+        default: true
+      withdrawal_mechanism:
+        type: string
+        enum: ["self_service", "request_based", "automatic"]
+      consent_renewal:
+        type: object
+        properties:
+          renewal_required:
+            type: boolean
+          renewal_frequency_days:
+            type: integer
+          renewal_method:
+            type: string
+    additionalProperties: false
+    
+  AlertThresholds:
+    type: object
+    properties:
+      policy_violations:
+        type: object
+        properties:
+          threshold_per_hour:
+            type: integer
+          severity_weighting:
+            type: boolean
+            default: true
+      compliance_failures:
+        type: object
+        properties:
+          threshold_per_hour:
+            type: integer
+          framework_weighting:
+            type: boolean
+            default: true
+      risk_score_changes:
+        type: object
+        properties:
+          percentage_increase:
+            type: number
+            minimum: 0
+            maximum: 1
+          absolute_threshold:
+            type: number
+            minimum: 0
+            maximum: 1
+      performance_degradation:
+        type: object
+        properties:
+          latency_increase_percent:
+            type: number
+          error_rate_threshold:
+            type: number
+            minimum: 0
+            maximum: 1
+          availability_threshold:
+            type: number
+            minimum: 0
+            maximum: 1
+    additionalProperties: false
+    
+  NotificationChannel:
+    type: object
+    required:
+      - type
+      - configuration
+    properties:
+      type:
+        type: string
+        enum: ["email", "sms", "slack", "teams", "webhook", "dashboard", "log", "pager"]
+      configuration:
+        type: object
+        additionalProperties: true
+      priority_levels:
+        type: array
+        items:
+          type: string
+          enum: ["low", "medium", "high", "critical"]
+      rate_limiting:
+        type: object
+        properties:
+          max_notifications_per_hour:
+            type: integer
+          burst_limit:
+            type: integer
+      message_templates:
+        type: object
+        additionalProperties:
+          type: string
+    additionalProperties: false
+    
+  DashboardRequirements:
+    type: object
+    properties:
+      real_time_metrics:
+        type: array
+        items:
+          type: string
+          enum: ["policy_violations", "compliance_status", "risk_scores", "audit_events", "performance_metrics"]
+      refresh_interval_seconds:
+        type: integer
+        minimum: 1
+        default: 60
+      visualization_types:
+        type: array
+        items:
+          type: string
+          enum: ["charts", "gauges", "tables", "heat_maps", "graphs", "alerts"]
+      access_controls:
+        type: object
+        properties:
+          role_based_access:
+            type: boolean
+            default: true
+          allowed_roles:
+            type: array
+            items:
+              type: string
+      export_capabilities:
+        type: array
+        items:
+          type: string
+          enum: ["pdf", "excel", "csv", "json", "api"]
+      alerting_integration:
+        type: boolean
+        default: true
+    additionalProperties: false
+
+additionalProperties: false

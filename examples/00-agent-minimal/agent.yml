@@ -1,0 +1,16 @@
+# OSSA Agent Minimal Example - Level 0
+# Absolute minimum configuration for agent discovery
+
+ossa: "0.1.8"
+kind: Agent
+metadata:
+  name: minimal-example
+  version: "1.0.0"
+
+spec:
+  conformance_tier: core
+  class: general
+  capabilities:
+    primary:
+      - code_analysis
+      - documentation

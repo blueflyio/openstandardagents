@@ -1,0 +1,827 @@
+# OSSA Enterprise Workspace Schema v0.1.8
+# Comprehensive enterprise workspace configuration schema
+# Based on real-world enterprise patterns and comprehensive governance requirements
+
+type: object
+required:
+  - ossa
+  - kind
+  - metadata
+  - spec
+properties:
+  ossa:
+    type: string
+    pattern: '^openapi-ai-agents/v[0-9]+\.[0-9]+\.[0-9]+$'
+    description: OSSA API version
+    example: "0.1.8"
+    
+  kind:
+    type: string
+    enum: [Workspace]
+    description: Resource type
+    
+  metadata:
+    type: object
+    required:
+      - name
+      - version
+    properties:
+      name:
+        type: string
+        pattern: '^[a-z0-9-]+$'
+        description: Workspace identifier
+        
+      version:
+        type: string
+        pattern: '^[0-9]+\.[0-9]+\.[0-9]+$'
+        description: Workspace configuration version
+        
+      created:
+        type: string
+        format: date
+        description: Creation date
+        
+      updated:
+        type: string
+        format: date
+        description: Last update date
+        
+      description:
+        type: string
+        maxLength: 500
+        description: Workspace purpose and capabilities
+        
+      annotations:
+        type: object
+        description: UADP and framework annotations
+        properties:
+          # UADP annotations
+          workspace.uadp/discovery-enabled:
+            type: string
+            enum: ["true", "false"]
+            default: "true"
+            
+          workspace.uadp/orchestration-enabled:
+            type: string
+            enum: ["true", "false"]
+            default: "true"
+            
+          workspace.uadp/auto-scaling:
+            type: string
+            enum: ["true", "false"]
+            default: "false"
+            
+          workspace.uadp/cross-project-routing:
+            type: string
+            enum: ["enabled", "disabled"]
+            default: "enabled"
+            
+          workspace.uadp/compliance-monitoring:
+            type: string
+            enum: ["automated", "manual", "disabled"]
+            default: "manual"
+            
+          # Enterprise governance
+          enterprise/organization:
+            type: string
+            description: Organization name
+            
+          enterprise/domain:
+            type: string
+            description: Business domain
+            
+          enterprise/compliance-level:
+            type: string
+            enum: ["bronze", "silver", "gold"]
+            default: "bronze"
+            
+          enterprise/security-classification:
+            type: string
+            enum: ["public", "internal", "confidential", "restricted"]
+            default: "internal"
+            
+          # Framework support
+          frameworks/langchain:
+            type: string
+            enum: ["supported", "bridge", "unsupported"]
+            default: "supported"
+            
+          frameworks/crewai:
+            type: string
+            enum: ["supported", "bridge", "unsupported"]
+            default: "supported"
+            
+          frameworks/autogen:
+            type: string
+            enum: ["supported", "bridge", "unsupported"]
+            default: "bridge"
+            
+          frameworks/openai:
+            type: string
+            enum: ["supported", "bridge", "unsupported"]
+            default: "supported"
+            
+          frameworks/anthropic:
+            type: string
+            enum: ["supported", "bridge", "unsupported"]
+            default: "bridge"
+            
+          frameworks/google:
+            type: string
+            enum: ["supported", "bridge", "unsupported"]
+            default: "supported"
+            
+        additionalProperties:
+          type: string
+          
+      labels:
+        type: object
+        description: Classification and filtering labels
+        properties:
+          environment:
+            type: string
+            enum: ["development", "staging", "production"]
+            
+          region:
+            type: string
+            description: Primary AWS/GCP/Azure region
+            
+          compliance:
+            type: string
+            description: Comma-separated compliance frameworks
+            
+          tier:
+            type: string
+            enum: ["basic", "standard", "enterprise"]
+            
+          organization:
+            type: string
+            description: Organization identifier
+            
+        additionalProperties:
+          type: string
+          
+  spec:
+    type: object
+    required:
+      - workspace
+    properties:
+      workspace:
+        type: object
+        required:
+          - name
+        properties:
+          name:
+            type: string
+            description: Workspace display name
+            
+          description:
+            type: string
+            description: Detailed workspace description
+            
+      discovery:
+        type: object
+        description: Agent discovery configuration
+        properties:
+          enabled:
+            type: boolean
+            default: true
+            
+          scan_paths:
+            type: array
+            items:
+              type: string
+            default: [".agents", "agents", "services/agents"]
+            description: Paths to scan for agents
+            
+          exclude_paths:
+            type: array
+            items:
+              type: string
+            default: ["**/node_modules/**", "**/.git/**", "**/test/**"]
+            description: Paths to exclude from scanning
+            
+          auto_register:
+            type: boolean
+            default: true
+            description: Automatically register discovered agents
+            
+          refresh_interval:
+            type: integer
+            minimum: 60
+            default: 300
+            description: Discovery refresh interval in seconds
+            
+          validation:
+            type: object
+            properties:
+              required_level:
+                type: integer
+                minimum: 0
+                maximum: 4
+                default: 0
+                description: Minimum required agent level
+                
+              enforce_schemas:
+                type: boolean
+                default: false
+                description: Enforce schema validation
+                
+              reject_invalid:
+                type: boolean
+                default: false
+                description: Reject invalid agents
+                
+      orchestration:
+        type: object
+        description: Multi-agent orchestration configuration
+        properties:
+          strategy:
+            type: string
+            enum: ["sequential", "parallel", "adaptive", "hierarchical", "intelligent_routing"]
+            default: "hierarchical"
+            
+          max_concurrent:
+            type: integer
+            minimum: 1
+            default: 5
+            
+          timeout:
+            type: integer
+            minimum: 1000
+            default: 30000
+            description: Global timeout in milliseconds
+            
+          error_handling:
+            type: string
+            enum: ["stop", "continue", "retry", "fallback"]
+            default: "retry"
+            
+          retry:
+            type: object
+            properties:
+              max_attempts:
+                type: integer
+                minimum: 1
+                default: 3
+                
+              backoff:
+                type: string
+                enum: ["linear", "exponential"]
+                default: "exponential"
+                
+              initial_delay:
+                type: integer
+                minimum: 100
+                default: 1000
+                description: Initial delay in milliseconds
+                
+          routing_rules:
+            type: array
+            items:
+              type: object
+              properties:
+                pattern:
+                  type: string
+                  description: Regex pattern for request routing
+                  
+                agents:
+                  type: array
+                  items:
+                    type: string
+                  description: Target agents for this pattern
+                  
+                priority:
+                  type: string
+                  enum: ["low", "medium", "high", "critical"]
+                  default: "medium"
+                  
+          conflict_resolution:
+            type: string
+            enum: ["first_wins", "last_wins", "weighted_confidence", "human_override"]
+            default: "weighted_confidence"
+            
+          cache:
+            type: object
+            properties:
+              enabled:
+                type: boolean
+                default: false
+                
+              ttl:
+                type: integer
+                minimum: 300
+                default: 3600
+                description: Cache TTL in seconds
+                
+              backend:
+                type: string
+                enum: ["memory", "redis", "memcached"]
+                default: "memory"
+                
+      registry:
+        type: object
+        description: Agent registry configuration
+        properties:
+          type:
+            type: string
+            enum: ["local", "redis", "etcd", "consul"]
+            default: "local"
+            
+          connection:
+            type: string
+            description: Registry connection string
+            
+          namespace:
+            type: string
+            default: "oaas"
+            
+          replication:
+            type: object
+            properties:
+              enabled:
+                type: boolean
+                default: false
+                
+              factor:
+                type: integer
+                minimum: 1
+                default: 1
+                
+          backup:
+            type: object
+            properties:
+              enabled:
+                type: boolean
+                default: false
+                
+              schedule:
+                type: string
+                description: Cron expression for backup schedule
+                
+              retention:
+                type: integer
+                minimum: 1
+                default: 7
+                description: Backup retention in days
+                
+      context:
+        type: object
+        description: Shared workspace context
+        properties:
+          environment:
+            type: string
+            enum: ["development", "staging", "production"]
+            default: "development"
+            
+          region:
+            type: string
+            description: Primary deployment region
+            
+          variables:
+            type: object
+            additionalProperties:
+              type: string
+            description: Environment variables
+            
+          resources:
+            type: array
+            items:
+              type: object
+              properties:
+                type:
+                  type: string
+                  enum: ["database", "api", "file", "vector_store", "cache", "queue"]
+                  
+                name:
+                  type: string
+                  
+                connection:
+                  type: string
+                  
+                description:
+                  type: string
+                  
+            description: Shared resources
+            
+      bridges:
+        type: array
+        description: Protocol bridge configurations
+        items:
+          type: object
+          required:
+            - protocol
+            - enabled
+          properties:
+            protocol:
+              type: string
+              enum: ["mcp", "langchain", "crewai", "autogen", "openai", "anthropic", "google", "custom"]
+              
+            enabled:
+              type: boolean
+              
+            config:
+              type: object
+              description: Protocol-specific configuration
+              
+      compliance:
+        type: object
+        description: Enterprise compliance configuration
+        properties:
+          frameworks:
+            type: array
+            items:
+              type: string
+              enum: ["iso_42001", "nist_ai_rmf", "eu_ai_act", "sox", "hipaa", "gdpr", "ccpa"]
+            description: Applicable compliance frameworks
+            
+          audit:
+            type: object
+            properties:
+              enabled:
+                type: boolean
+                default: false
+                
+              level:
+                type: string
+                enum: ["basic", "standard", "comprehensive", "forensic"]
+                default: "basic"
+                
+              storage:
+                type: string
+                enum: ["local", "s3", "elasticsearch", "splunk"]
+                default: "local"
+                
+              retention:
+                type: string
+                pattern: '^[0-9]+[dmy]$'
+                default: "90d"
+                description: Retention period (d=days, m=months, y=years)
+                
+          data_governance:
+            type: object
+            properties:
+              classification:
+                type: string
+                enum: ["open", "standard", "strict", "maximum"]
+                default: "standard"
+                
+              encryption:
+                type: string
+                enum: ["disabled", "at_rest", "in_transit", "required"]
+                default: "in_transit"
+                
+              anonymization:
+                type: boolean
+                default: false
+                
+              gdpr_compliant:
+                type: boolean
+                default: false
+                
+      monitoring:
+        type: object
+        description: Workspace monitoring configuration
+        properties:
+          metrics:
+            type: object
+            properties:
+              enabled:
+                type: boolean
+                default: true
+                
+              export:
+                type: string
+                enum: ["prometheus", "datadog", "cloudwatch", "azure_monitor"]
+                default: "prometheus"
+                
+              endpoint:
+                type: string
+                default: "/metrics"
+                
+              interval:
+                type: integer
+                minimum: 10
+                default: 60
+                description: Collection interval in seconds
+                
+              custom_metrics:
+                type: array
+                items:
+                  type: string
+                description: Custom metrics to collect
+                
+          logging:
+            type: object
+            properties:
+              level:
+                type: string
+                enum: ["debug", "info", "warn", "error"]
+                default: "info"
+                
+              format:
+                type: string
+                enum: ["json", "text"]
+                default: "json"
+                
+              destinations:
+                type: array
+                items:
+                  type: string
+                description: Log destinations
+                
+              sampling:
+                type: object
+                properties:
+                  error:
+                    type: number
+                    minimum: 0
+                    maximum: 1
+                    default: 1.0
+                    
+                  warning:
+                    type: number
+                    minimum: 0
+                    maximum: 1
+                    default: 1.0
+                    
+                  info:
+                    type: number
+                    minimum: 0
+                    maximum: 1
+                    default: 0.1
+                    
+                  debug:
+                    type: number
+                    minimum: 0
+                    maximum: 1
+                    default: 0.01
+                    
+          tracing:
+            type: object
+            properties:
+              enabled:
+                type: boolean
+                default: false
+                
+              provider:
+                type: string
+                enum: ["jaeger", "zipkin", "xray", "datadog"]
+                
+              endpoint:
+                type: string
+                format: uri
+                
+              sampling_rate:
+                type: number
+                minimum: 0
+                maximum: 1
+                default: 0.1
+                
+          alerting:
+            type: object
+            properties:
+              enabled:
+                type: boolean
+                default: false
+                
+              channels:
+                type: array
+                items:
+                  type: string
+                  enum: ["slack", "pagerduty", "email", "webhook"]
+                  
+              rules:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    name:
+                      type: string
+                      
+                    condition:
+                      type: string
+                      
+                    severity:
+                      type: string
+                      enum: ["low", "medium", "high", "critical"]
+                      
+                    channel:
+                      type: string
+                      
+      security:
+        type: object
+        description: Workspace security configuration
+        properties:
+          authentication:
+            type: object
+            properties:
+              enabled:
+                type: boolean
+                default: false
+                
+              providers:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    type:
+                      type: string
+                      enum: ["oauth2", "api_key", "jwt", "mtls", "saml"]
+                      
+                    issuer:
+                      type: string
+                      format: uri
+                      
+                    client_id:
+                      type: string
+                      
+                    header:
+                      type: string
+                      
+          authorization:
+            type: object
+            properties:
+              enabled:
+                type: boolean
+                default: false
+                
+              model:
+                type: string
+                enum: ["rbac", "abac", "rbac+abac"]
+                default: "rbac"
+                
+              policies:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    role:
+                      type: string
+                      
+                    permissions:
+                      type: array
+                      items:
+                        type: string
+                        
+          encryption:
+            type: object
+            properties:
+              at_rest:
+                type: boolean
+                default: false
+                
+              in_transit:
+                type: boolean
+                default: true
+                
+              key_management:
+                type: string
+                enum: ["local", "vault", "aws-kms", "azure-key-vault"]
+                default: "local"
+                
+          network:
+            type: object
+            properties:
+              allowed_ips:
+                type: array
+                items:
+                  type: string
+                  pattern: '^([0-9]{1,3}\.){3}[0-9]{1,3}(\/[0-9]{1,2})?$'
+                description: CIDR blocks for allowed IPs
+                
+              tls:
+                type: object
+                properties:
+                  enabled:
+                    type: boolean
+                    default: true
+                    
+                  min_version:
+                    type: string
+                    enum: ["1.2", "1.3"]
+                    default: "1.2"
+                    
+      deployment:
+        type: object
+        description: Deployment configuration
+        properties:
+          multi_region:
+            type: object
+            properties:
+              enabled:
+                type: boolean
+                default: false
+                
+              regions:
+                type: array
+                items:
+                  type: string
+                description: Deployment regions
+                
+              failover:
+                type: string
+                enum: ["manual", "automatic"]
+                default: "manual"
+                
+          disaster_recovery:
+            type: object
+            properties:
+              enabled:
+                type: boolean
+                default: false
+                
+              rpo:
+                type: integer
+                minimum: 0
+                description: Recovery Point Objective in seconds
+                
+              rto:
+                type: integer
+                minimum: 0
+                description: Recovery Time Objective in seconds
+                
+              backup_regions:
+                type: array
+                items:
+                  type: string
+                description: Backup regions for disaster recovery
+                
+          scaling:
+            type: object
+            properties:
+              auto_scale:
+                type: boolean
+                default: false
+                
+              min_instances:
+                type: integer
+                minimum: 1
+                default: 1
+                
+              max_instances:
+                type: integer
+                minimum: 1
+                default: 10
+                
+              target_utilization:
+                type: number
+                minimum: 0.1
+                maximum: 1.0
+                default: 0.7
+                
+      cost_management:
+        type: object
+        description: Cost management and optimization
+        properties:
+          budgets:
+            type: object
+            properties:
+              daily_budget:
+                type: number
+                minimum: 0
+                description: Daily budget in USD
+                
+              monthly_budget:
+                type: number
+                minimum: 0
+                description: Monthly budget in USD
+                
+              per_team:
+                type: object
+                additionalProperties:
+                  type: number
+                description: Per-team budgets
+                
+          optimization:
+            type: object
+            properties:
+              token_caching:
+                type: string
+                enum: ["disabled", "basic", "aggressive"]
+                default: "basic"
+                
+              model_selection:
+                type: string
+                enum: ["fixed", "cost-aware", "performance-aware"]
+                default: "cost-aware"
+                
+              request_batching:
+                type: boolean
+                default: false
+                
+          alerts:
+            type: object
+            properties:
+              budget_threshold:
+                type: number
+                minimum: 0.1
+                maximum: 1.0
+                default: 0.8
+                description: Alert when budget utilization exceeds this threshold
+                
+              channels:
+                type: array
+                items:
+                  type: string
+                description: Alert channels for budget notifications

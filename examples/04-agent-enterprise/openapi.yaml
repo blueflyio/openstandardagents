@@ -12,7 +12,7 @@ info:
 
   # OAAS Extensions
   x-openapi-ai-agents-standard:
-    version: "0.1.1"
+    version: "0.1.8"
     certification_level: "gold"
     compliance_frameworks: ["iso-42001", "nist-ai-rmf", "eu-ai-act"]
     token_optimization: "enabled"

@@ -1,0 +1,624 @@
+{
+  "protocol_version": "2024-11-05",
+  "server_name": "validation-specialist-mcp",
+  "server_version": "1.1.0",
+  "description": "MCP tools for OSSA v0.1.8 validation specialist with comprehensive specification validation and automated certification",
+  "tools": [
+    {
+      "name": "validate_agent_spec",
+      "description": "Comprehensive validation of OSSA v0.1.8 agent specifications with schema, semantic, and compliance validation",
+      "inputSchema": {
+        "type": "object",
+        "required": ["specification"],
+        "properties": {
+          "specification": {
+            "type": "string",
+            "description": "OSSA agent specification in YAML or JSON format",
+            "examples": [
+              "apiVersion: open-standards-scalable-agents/v0.1.8\nkind: Agent\nmetadata:\n  name: example-agent",
+              "{\"apiVersion\": \"open-standards-scalable-agents/v0.1.8\", \"kind\": \"Agent\"}"
+            ]
+          },
+          "validation_level": {
+            "type": "string",
+            "enum": ["basic", "comprehensive", "strict", "enterprise"],
+            "default": "comprehensive",
+            "description": "Level of validation to perform"
+          },
+          "target_version": {
+            "type": "string",
+            "default": "0.1.8",
+            "description": "Target OSSA version for validation"
+          },
+          "include_recommendations": {
+            "type": "boolean",
+            "default": true,
+            "description": "Include improvement recommendations in results"
+          },
+          "compliance_frameworks": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": ["ISO_42001", "NIST_AI_RMF", "EU_AI_Act", "SOC2", "HIPAA", "GDPR"]
+            },
+            "description": "Compliance frameworks to validate against"
+          },
+          "strict_mode": {
+            "type": "boolean",
+            "default": false,
+            "description": "Enable strict validation mode (fail on warnings)"
+          }
+        }
+      }
+    },
+    {
+      "name": "validate_openapi_schema",
+      "description": "Validate OpenAPI 3.0.x or 3.1.x specifications with comprehensive schema, security, and documentation validation",
+      "inputSchema": {
+        "type": "object",
+        "required": ["specification"],
+        "properties": {
+          "specification": {
+            "type": "string",
+            "description": "OpenAPI specification in YAML or JSON format"
+          },
+          "openapi_version": {
+            "type": "string",
+            "enum": ["3.0.0", "3.0.1", "3.0.2", "3.0.3", "3.1.0"],
+            "default": "3.1.0",
+            "description": "Target OpenAPI version"
+          },
+          "validation_scope": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": ["schema", "security", "documentation", "examples", "servers", "paths"]
+            },
+            "default": ["schema", "security", "documentation"],
+            "description": "Aspects of the specification to validate"
+          },
+          "security_analysis": {
+            "type": "boolean",
+            "default": true,
+            "description": "Perform detailed security analysis"
+          },
+          "documentation_check": {
+            "type": "boolean", 
+            "default": true,
+            "description": "Check documentation completeness"
+          },
+          "best_practices": {
+            "type": "boolean",
+            "default": true,
+            "description": "Validate against OpenAPI best practices"
+          }
+        }
+      }
+    },
+    {
+      "name": "check_compliance",
+      "description": "Comprehensive compliance validation against multiple enterprise frameworks with detailed gap analysis",
+      "inputSchema": {
+        "type": "object",
+        "required": ["specification", "frameworks"],
+        "properties": {
+          "specification": {
+            "type": "string",
+            "description": "Agent specification or system configuration to validate"
+          },
+          "frameworks": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": ["ISO_42001", "NIST_AI_RMF", "EU_AI_Act", "SOC2_Type2", "HIPAA", "GDPR", "FedRAMP", "PCI_DSS"]
+            },
+            "minItems": 1,
+            "description": "Compliance frameworks to validate against"
+          },
+          "assessment_level": {
+            "type": "string",
+            "enum": ["basic", "detailed", "audit_ready"],
+            "default": "detailed",
+            "description": "Level of compliance assessment"
+          },
+          "include_controls_mapping": {
+            "type": "boolean",
+            "default": true,
+            "description": "Include detailed controls mapping in results"
+          },
+          "generate_evidence_requirements": {
+            "type": "boolean",
+            "default": false,
+            "description": "Generate evidence requirements for audit preparation"
+          },
+          "risk_assessment": {
+            "type": "boolean",
+            "default": true,
+            "description": "Include risk assessment in compliance check"
+          },
+          "remediation_guidance": {
+            "type": "boolean",
+            "default": true,
+            "description": "Provide remediation guidance for non-compliant areas"
+          }
+        }
+      }
+    },
+    {
+      "name": "generate_validation_report",
+      "description": "Generate comprehensive validation reports with analytics, trends, and actionable insights",
+      "inputSchema": {
+        "type": "object",
+        "required": ["report_type"],
+        "properties": {
+          "report_type": {
+            "type": "string",
+            "enum": [
+              "validation_summary",
+              "compliance_audit", 
+              "security_analysis",
+              "performance_benchmarks",
+              "trend_analysis",
+              "certification_readiness",
+              "gap_analysis",
+              "best_practices_review"
+            ],
+            "description": "Type of validation report to generate"
+          },
+          "data_sources": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "enum": ["validation_results", "compliance_checks", "certification_data", "performance_metrics"]
+                },
+                "source": {
+                  "type": "string",
+                  "description": "Data source identifier or query"
+                },
+                "date_range": {
+                  "type": "object",
+                  "properties": {
+                    "start": {
+                      "type": "string",
+                      "format": "date"
+                    },
+                    "end": {
+                      "type": "string", 
+                      "format": "date"
+                    }
+                  }
+                }
+              }
+            },
+            "description": "Data sources for report generation"
+          },
+          "output_format": {
+            "type": "string",
+            "enum": ["json", "html", "pdf", "markdown", "csv"],
+            "default": "json",
+            "description": "Desired output format"
+          },
+          "include_charts": {
+            "type": "boolean",
+            "default": true,
+            "description": "Include charts and visualizations"
+          },
+          "include_recommendations": {
+            "type": "boolean",
+            "default": true,
+            "description": "Include actionable recommendations"
+          },
+          "executive_summary": {
+            "type": "boolean",
+            "default": true,
+            "description": "Include executive summary section"
+          },
+          "detailed_findings": {
+            "type": "boolean",
+            "default": true,
+            "description": "Include detailed findings and analysis"
+          },
+          "custom_sections": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "title": {
+                  "type": "string"
+                },
+                "content_type": {
+                  "type": "string",
+                  "enum": ["metrics", "analysis", "recommendations", "compliance_status"]
+                },
+                "filters": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            },
+            "description": "Custom report sections to include"
+          }
+        }
+      }
+    },
+    {
+      "name": "certify_agent",
+      "description": "Automated agent certification with multi-level assessment and certificate generation",
+      "inputSchema": {
+        "type": "object",
+        "required": ["agent_specification", "certification_level"],
+        "properties": {
+          "agent_specification": {
+            "type": "string",
+            "description": "Complete OSSA agent specification for certification"
+          },
+          "certification_level": {
+            "type": "string",
+            "enum": ["basic", "standard", "premium", "enterprise", "government"],
+            "description": "Target certification level"
+          },
+          "compliance_requirements": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": ["ISO_42001", "NIST_AI_RMF", "EU_AI_Act", "FedRAMP", "SOC2", "HIPAA"]
+            },
+            "description": "Required compliance frameworks for certification"
+          },
+          "certification_scope": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "specification_compliance",
+                "security_assessment",
+                "performance_validation",
+                "interoperability_testing",
+                "documentation_review",
+                "code_quality_analysis"
+              ]
+            },
+            "default": ["specification_compliance", "security_assessment"],
+            "description": "Scope of certification assessment"
+          },
+          "automated_testing": {
+            "type": "boolean",
+            "default": true,
+            "description": "Enable automated testing during certification"
+          },
+          "certificate_validity_months": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 36,
+            "default": 12,
+            "description": "Certificate validity period in months"
+          },
+          "include_performance_benchmarks": {
+            "type": "boolean",
+            "default": false,
+            "description": "Include performance benchmarking in certification"
+          },
+          "generate_certificate": {
+            "type": "boolean",
+            "default": true,
+            "description": "Generate digital certificate upon successful assessment"
+          }
+        }
+      }
+    },
+    {
+      "name": "validate_cross_format",
+      "description": "Advanced cross-format validation ensuring consistency between YAML/JSON representations and semantic equivalence",
+      "inputSchema": {
+        "type": "object",
+        "required": ["primary_specification", "secondary_specification"],
+        "properties": {
+          "primary_specification": {
+            "type": "object",
+            "required": ["format", "content"],
+            "properties": {
+              "format": {
+                "type": "string",
+                "enum": ["yaml", "json"]
+              },
+              "content": {
+                "type": "string",
+                "description": "Specification content in the specified format"
+              },
+              "encoding": {
+                "type": "string",
+                "enum": ["utf-8", "utf-16", "ascii"],
+                "default": "utf-8"
+              }
+            }
+          },
+          "secondary_specification": {
+            "type": "object",
+            "required": ["format", "content"],
+            "properties": {
+              "format": {
+                "type": "string",
+                "enum": ["yaml", "json"]
+              },
+              "content": {
+                "type": "string",
+                "description": "Specification content in the specified format"
+              },
+              "encoding": {
+                "type": "string",
+                "enum": ["utf-8", "utf-16", "ascii"],
+                "default": "utf-8"
+              }
+            }
+          },
+          "validation_rules": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "schema_consistency",
+                "semantic_equivalence", 
+                "format_compliance",
+                "value_preservation",
+                "structure_integrity",
+                "type_consistency",
+                "metadata_alignment"
+              ]
+            },
+            "default": ["schema_consistency", "semantic_equivalence", "format_compliance"],
+            "description": "Cross-format validation rules to apply"
+          },
+          "tolerance_level": {
+            "type": "string",
+            "enum": ["strict", "moderate", "lenient"],
+            "default": "moderate",
+            "description": "Tolerance level for format differences"
+          },
+          "auto_correction": {
+            "type": "boolean",
+            "default": false,
+            "description": "Attempt automatic correction of minor inconsistencies"
+          },
+          "detailed_diff": {
+            "type": "boolean",
+            "default": true,
+            "description": "Provide detailed difference analysis"
+          }
+        }
+      }
+    }
+  ],
+  "resources": [
+    {
+      "uri": "ossa://validation/schemas",
+      "name": "Validation Schemas",
+      "description": "OSSA validation schemas and rules",
+      "mimeType": "application/json"
+    },
+    {
+      "uri": "ossa://validation/reports",
+      "name": "Validation Reports",
+      "description": "Historical validation reports and analytics",
+      "mimeType": "application/json"
+    },
+    {
+      "uri": "ossa://compliance/frameworks",
+      "name": "Compliance Frameworks",
+      "description": "Compliance framework definitions and controls",
+      "mimeType": "application/yaml"
+    },
+    {
+      "uri": "ossa://certificates/registry",
+      "name": "Certificate Registry",
+      "description": "Registry of issued certificates and their status",
+      "mimeType": "application/json"
+    }
+  ],
+  "prompts": [
+    {
+      "name": "validation_guidance",
+      "description": "Provide guidance on fixing validation errors and improving specification quality",
+      "arguments": [
+        {
+          "name": "validation_results",
+          "description": "Validation results with errors and warnings",
+          "required": true
+        },
+        {
+          "name": "target_compliance_level",
+          "description": "Target compliance level for recommendations",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "compliance_gap_analysis",
+      "description": "Analyze compliance gaps and provide remediation roadmap",
+      "arguments": [
+        {
+          "name": "current_compliance_status",
+          "description": "Current compliance assessment results",
+          "required": true
+        },
+        {
+          "name": "target_frameworks",
+          "description": "Target compliance frameworks",
+          "required": true
+        },
+        {
+          "name": "timeline_constraints",
+          "description": "Timeline and resource constraints",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "certification_preparation",
+      "description": "Guide preparation for agent certification including requirements and best practices",
+      "arguments": [
+        {
+          "name": "certification_level",
+          "description": "Target certification level",
+          "required": true
+        },
+        {
+          "name": "current_agent_spec",
+          "description": "Current agent specification",
+          "required": true
+        },
+        {
+          "name": "timeline",
+          "description": "Certification timeline",
+          "required": false
+        }
+      ]
+    }
+  ],
+  "capabilities": {
+    "validation_engines": {
+      "ossa_schema_validator": {
+        "version": "0.1.8",
+        "strict_mode": true,
+        "custom_validators": true
+      },
+      "openapi_validator": {
+        "versions": ["3.0.x", "3.1.x"],
+        "security_validation": true,
+        "documentation_validation": true
+      },
+      "json_schema_validator": {
+        "version": "draft-2020-12",
+        "meta_schema_validation": true,
+        "format_validation": true
+      },
+      "yaml_validator": {
+        "version": "1.2",
+        "syntax_validation": true,
+        "semantic_validation": true
+      }
+    },
+    "compliance_frameworks": {
+      "iso_42001": {
+        "status": "implemented",
+        "controls": 35,
+        "automation_level": "high"
+      },
+      "nist_ai_rmf": {
+        "status": "implemented",
+        "maturity_level": 3,
+        "functions": ["GOVERN", "MAP", "MEASURE", "MANAGE"]
+      },
+      "eu_ai_act": {
+        "status": "compliant",
+        "risk_classification": "minimal_risk",
+        "transparency_requirements": "met"
+      }
+    },
+    "certification_levels": ["basic", "standard", "premium", "enterprise", "government"],
+    "supported_formats": ["yaml", "json", "xml"],
+    "output_formats": ["json", "html", "pdf", "markdown", "csv"],
+    "batch_processing": {
+      "enabled": true,
+      "max_batch_size": 100,
+      "parallel_workers": 10,
+      "async_processing": true
+    },
+    "performance": {
+      "validation_latency": "<200ms",
+      "certification_process": "<5s",
+      "batch_throughput": "500 specs/minute",
+      "concurrent_validations": 200
+    }
+  },
+  "integration": {
+    "frameworks": {
+      "mcp": {
+        "version": "2024-11-05",
+        "features": ["tools", "resources", "prompts", "sampling"]
+      },
+      "langchain": {
+        "version": "0.2.x",
+        "integration_type": "validation_tool"
+      },
+      "crewai": {
+        "version": "0.67.x",
+        "integration_type": "validation_agent"
+      },
+      "autogen": {
+        "version": "0.2.x",
+        "integration_type": "assistant_agent"
+      },
+      "openai": {
+        "version": "latest",
+        "integration_type": "validation_assistant"
+      }
+    },
+    "protocols": {
+      "openapi": "3.1.0",
+      "agent2agent": "0.1.8",
+      "jsonrpc": "2.0"
+    }
+  },
+  "security": {
+    "authentication": ["oauth2_pkce", "api_key", "saml_2_0", "client_certificates"],
+    "authorization": "rbac_with_validation_scopes",
+    "encryption": {
+      "at_rest": "aes_256_gcm",
+      "in_transit": "tls_1_3"
+    },
+    "audit": {
+      "comprehensive_logging": true,
+      "validation_audit_trail": true,
+      "compliance_reporting": "automated"
+    },
+    "privacy": {
+      "data_minimization": true,
+      "validation_data_anonymization": true,
+      "gdpr_compliance": true
+    }
+  },
+  "extensions": {
+    "token_optimization": {
+      "enabled": true,
+      "budget_allocation": {
+        "schema_validation": 35,
+        "compliance_checking": 30,
+        "report_generation": 20,
+        "semantic_analysis": 10,
+        "emergency": 5
+      },
+      "optimization_strategy": "structured_validation_caching"
+    },
+    "memory_integration": {
+      "vector_storage": {
+        "provider": "qdrant",
+        "collection": "validation_knowledge_v0_1_7"
+      },
+      "knowledge_graphs": {
+        "enabled": true,
+        "provider": "neo4j",
+        "schema_relationships": true
+      },
+      "validation_cache": {
+        "enabled": true,
+        "strategy": "lru_with_ttl",
+        "max_entries": 10000
+      }
+    },
+    "orchestration": {
+      "discovery": {
+        "enabled": true,
+        "protocols": ["dns_sd", "consul", "kubernetes"],
+        "validation_service_registry": true
+      },
+      "coordination": {
+        "validation_consensus": true,
+        "distributed_validation": true,
+        "peer_review_system": true
+      }
+    }
+  }
+}

@@ -1,0 +1,62 @@
+# OSSA DevOps Integration Example - Level 8
+# CI/CD pipeline integration and deployment automation
+
+ossa: "0.1.8"
+kind: Agent
+metadata:
+  name: devops-integration-demo
+  version: "1.0.0"
+  description: DevOps agent for CI/CD pipeline integration and deployment automation
+
+spec:
+  conformance_tier: advanced
+  class: integration
+  category: service
+  
+  capabilities:
+    primary:
+      - cicd_integration
+      - deployment_automation
+      - pipeline_monitoring
+    secondary:
+      - test_automation
+      - security_scanning
+      - artifact_management
+  
+  protocols:
+    - name: openapi
+      version: "3.1.0"
+      required: true
+    - name: webhook
+      version: "1.0"
+      required: true
+  
+  devops_integration:
+    platforms:
+      - github_actions
+      - gitlab_ci
+      - jenkins
+      - azure_devops
+    
+    pipeline_stages:
+      - build
+      - test
+      - security_scan
+      - deploy
+      - monitor
+    
+    deployment_targets:
+      - development
+      - staging
+      - production
+    
+    automation:
+      auto_deploy: false
+      rollback_on_failure: true
+      health_check_timeout: 300s
+  
+  security:
+    secret_management: true
+    vulnerability_scanning: true
+    compliance_checks: true
+    audit_logging: true

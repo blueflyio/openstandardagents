@@ -1,0 +1,34 @@
+{
+  "name": "@ossa/compliance-auditor",
+  "version": "1.1.0",
+  "description": "OSSA v0.1.8 Compliance Auditor Agent with universal framework compatibility",
+  "main": "server.js",
+  "bin": {
+    "ossa-compliance-auditor": "./server.js"
+  },
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js",
+    "test": "node test/basic-tests.js",
+    "health-check": "curl -f http://localhost:8080/health || exit 1"
+  },
+  "keywords": [
+    "ossa",
+    "compliance",
+    "auditor", 
+    "ai-governance",
+    "iso-42001",
+    "nist-ai-rmf",
+    "eu-ai-act",
+    "mcp"
+  ],
+  "author": "OSSA Community",
+  "license": "Apache-2.0",
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ossa-community/compliance-auditor"
+  }
+}

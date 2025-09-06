@@ -1,0 +1,321 @@
+apiVersion: ossa.agents/v0.1.8
+kind: Agent
+metadata:
+  name: ossa-platform-coordinator
+  namespace: ossa-system
+  labels:
+    tier: advanced
+    class: workflow
+    category: coordinator
+    version: 0.1.8
+  annotations:
+    ossa.agents/conformance-tier: advanced
+    ossa.agents/certification-level: platinum
+    ossa.agents/last-updated: "2024-01-15T10:00:00Z"
+    ossa.agents/maintainer: "OSSA Platform Team"
+
+spec:
+  # Basic Agent Information
+  displayName: "OSSA Platform Coordinator"
+  description: |
+    Advanced multi-agent orchestration coordinator providing comprehensive
+    platform management, discovery, and governance capabilities with full
+    OSSA v0.1.8 compliance.
+  
+  version: "0.1.8"
+  
+  # OSSA Conformance
+  conformance:
+    tier: advanced
+    certification_level: platinum
+    compliance_frameworks:
+      - ISO_42001
+      - NIST_AI_RMF
+      - EU_AI_ACT
+      - SOC2
+      - GDPR
+  
+  # Agent Classification
+  classification:
+    class: workflow
+    category: coordinator
+    domains:
+      - platform-management
+      - multi-agent-coordination
+      - enterprise-governance
+      - system-orchestration
+    
+  # Capabilities Declaration
+  capabilities:
+    primary:
+      - agent-orchestration
+      - discovery-coordination
+      - governance-enforcement
+      - platform-monitoring
+      - workflow-management
+      - security-coordination
+    
+    secondary:
+      - compliance-auditing
+      - performance-optimization
+      - error-handling
+      - resource-allocation
+      - federation-management
+      - observability-coordination
+    
+    advanced:
+      - ai-powered-recommendations
+      - predictive-scaling
+      - automated-remediation
+      - cross-platform-integration
+      - enterprise-reporting
+      - anomaly-detection
+  
+  # Protocol Support
+  protocols:
+    - name: openapi
+      version: "3.1.0"
+      required: true
+      extensions:
+        - x-openapi-ai-agents-standard
+        - x-agent-metadata
+        - x-ossa-discovery
+        - x-ossa-security
+        - x-ossa-performance
+    
+    - name: mcp
+      version: "1.0.0"
+      required: false
+      extensions:
+        - model-context-protocol
+        - context-sharing
+    
+    - name: uadp
+      version: "0.1.8"
+      required: true
+      extensions:
+        - universal-discovery
+        - capability-matching
+        - agent-recommendation
+    
+    - name: graphql
+      version: "16.0.0"
+      required: false
+      extensions:
+        - subscriptions
+        - federation
+        - introspection
+    
+    - name: websocket
+      version: "13.0.0"
+      required: false
+      extensions:
+        - real-time-updates
+        - event-streaming
+  
+  # Service Endpoints
+  endpoints:
+    base_url: "https://api.ossa.agents/v1"
+    
+    health:
+      path: "/health"
+      method: GET
+      description: "Comprehensive health check endpoint"
+      
+    capabilities:
+      path: "/capabilities"
+      method: GET
+      description: "Agent capabilities discovery"
+      
+    api:
+      path: "/agents"
+      method: GET
+      description: "Main agent management API"
+      
+    discovery:
+      path: "/discover"
+      method: GET
+      description: "Universal Agent Discovery Protocol endpoint"
+      
+    orchestration:
+      path: "/orchestration"
+      method: POST
+      description: "Workflow orchestration endpoint"
+      
+    graphql:
+      path: "/graphql"
+      method: POST
+      description: "GraphQL API endpoint"
+      
+    websocket:
+      path: "/ws"
+      protocol: websocket
+      description: "WebSocket for real-time updates"
+  
+  # Security Configuration
+  security:
+    authentication:
+      schemes:
+        - api_key
+        - oauth2
+        - jwt
+      
+    authorization:
+      model: rbac
+      roles:
+        - admin
+        - operator
+        - viewer
+        - agent
+      
+    rate_limiting:
+      enabled: true
+      strategy: sliding_window
+      limits:
+        requests_per_minute: 1000
+        burst_limit: 100
+      
+    encryption:
+      at_rest: aes_256
+      in_transit: tls_1_3
+  
+  # Performance Specifications
+  performance:
+    sla_targets:
+      availability: 99.9
+      response_time_p95: "200ms"
+      error_rate_threshold: 0.1
+      
+    scaling:
+      horizontal: true
+      vertical: true
+      auto_scaling: true
+      
+    monitoring:
+      metrics_enabled: true
+      observability_level: comprehensive
+      alert_thresholds:
+        response_time: "500ms"
+        error_rate: 1.0
+        availability: 99.0
+  
+  # Integration Configuration
+  integration:
+    frameworks:
+      - openai
+      - anthropic
+      - langchain
+      - crewai
+      - mcp
+      
+    data_formats:
+      - json
+      - yaml
+      - protobuf
+      - avro
+      
+    communication_patterns:
+      - request-response
+      - publish-subscribe
+      - event-streaming
+      - batch-processing
+  
+  # Governance and Compliance
+  governance:
+    policies:
+      - data_privacy
+      - security_compliance
+      - audit_logging
+      - resource_quotas
+      
+    audit:
+      enabled: true
+      retention_days: 90
+      log_level: detailed
+      
+    compliance_checks:
+      - automated_validation
+      - periodic_audits
+      - certification_renewal
+  
+  # Resource Requirements
+  resources:
+    minimum:
+      cpu: "1"
+      memory: "2Gi"
+      storage: "10Gi"
+      
+    recommended:
+      cpu: "4"
+      memory: "8Gi"
+      storage: "50Gi"
+      
+    maximum:
+      cpu: "16"
+      memory: "32Gi"
+      storage: "200Gi"
+  
+  # Environment Configuration
+  environment:
+    supported_platforms:
+      - kubernetes
+      - docker
+      - cloud_run
+      - lambda
+      
+    dependencies:
+      - postgresql: ">=13"
+      - redis: ">=6.2"
+      - prometheus: ">=2.30"
+      - grafana: ">=8.0"
+  
+  # Workflow Definitions
+  workflows:
+    agent_discovery:
+      description: "Discover and recommend agents based on capabilities"
+      trigger: api_request
+      steps:
+        - capability_analysis
+        - agent_matching
+        - scoring_ranking
+        - recommendation_generation
+      
+    orchestration_management:
+      description: "Manage multi-agent workflow execution"
+      trigger: workflow_request
+      steps:
+        - workflow_validation
+        - agent_allocation
+        - execution_monitoring
+        - result_aggregation
+      
+    platform_monitoring:
+      description: "Monitor platform health and performance"
+      trigger: scheduled
+      interval: "1m"
+      steps:
+        - health_checks
+        - metrics_collection
+        - alert_evaluation
+        - remediation_actions
+
+status:
+  phase: Active
+  conditions:
+    - type: Ready
+      status: "True"
+      lastTransitionTime: "2024-01-15T10:00:00Z"
+      reason: "FullyOperational"
+      message: "Agent is fully operational and ready to serve requests"
+      
+    - type: Compliant
+      status: "True"
+      lastTransitionTime: "2024-01-15T10:00:00Z"
+      reason: "OSSACompliant"
+      message: "Agent meets all OSSA v0.1.8 compliance requirements"
+      
+    - type: Certified
+      status: "True"
+      lastTransitionTime: "2024-01-15T10:00:00Z"
+      reason: "PlatinumCertified"
+      message: "Agent has achieved platinum certification level"

@@ -1,6 +1,6 @@
 /**
  * Universal Agent Discovery Protocol (UADP) Implementation
- * OSSA v0.1.6 compliant agent discovery system
+ * OSSA v0.1.8 compliant agent discovery system
  */
 
 import { EventEmitter } from 'events';
@@ -99,7 +99,7 @@ export class UADPDiscoveryEngine extends EventEmitter {
     this.registry = {
       agents: {},
       discovery_metadata: {
-        uadp_version: '0.1.6',
+        uadp_version: '0.1.8',
         hierarchical_discovery: true,
         capability_matching: true,
         performance_ranking: true,
@@ -127,7 +127,7 @@ export class UADPDiscoveryEngine extends EventEmitter {
     this.httpClient = axios.create({
       timeout: options.requestTimeout || 5000,
       headers: {
-        'User-Agent': 'OSSA-UADP-Discovery/0.1.6',
+        'User-Agent': 'OSSA-UADP-Discovery/0.1.8',
         'Content-Type': 'application/json'
       }
     });
@@ -149,7 +149,7 @@ export class UADPDiscoveryEngine extends EventEmitter {
       last_seen: now
     };
 
-    // Validate agent against OSSA 0.1.6 standard
+    // Validate agent against OSSA 0.1.8 standard
     await this.validateAgentCompliance(fullAgent);
 
     this.registry.agents[agentId] = fullAgent;
@@ -319,19 +319,19 @@ export class UADPDiscoveryEngine extends EventEmitter {
   }
 
   /**
-   * Export registry in OSSA 0.1.6 format
+   * Export registry in OSSA 0.1.8 format
    */
   exportRegistry(): UADPRegistry {
     return JSON.parse(JSON.stringify(this.registry));
   }
 
   /**
-   * Import registry from OSSA 0.1.6 format
+   * Import registry from OSSA 0.1.8 format
    */
   async importRegistry(registryData: UADPRegistry): Promise<void> {
     // Validate registry format
-    if (registryData.discovery_metadata?.uadp_version !== '0.1.6') {
-      throw new Error('Invalid UADP version. Expected 0.1.6');
+    if (registryData.discovery_metadata?.uadp_version !== '0.1.8') {
+      throw new Error('Invalid UADP version. Expected 0.1.8');
     }
 
     this.registry = registryData;
@@ -396,10 +396,10 @@ export class UADPDiscoveryEngine extends EventEmitter {
   }
 
   /**
-   * Validate agent compliance with OSSA 0.1.6 standard
+   * Validate agent compliance with OSSA 0.1.8 standard
    */
   private async validateAgentCompliance(agent: UADPAgent): Promise<void> {
-    // Basic OSSA 0.1.6 validation
+    // Basic OSSA 0.1.8 validation
     if (!agent.name || !agent.version || !agent.endpoint) {
       throw new Error('Agent missing required fields: name, version, endpoint');
     }
@@ -412,10 +412,10 @@ export class UADPDiscoveryEngine extends EventEmitter {
       throw new Error('Agent must support at least one protocol');
     }
 
-    // Ensure OpenAPI protocol is supported (required by OSSA 0.1.6)
+    // Ensure OpenAPI protocol is supported (required by OSSA 0.1.8)
     const supportsOpenAPI = agent.protocols.some(p => p.name === 'openapi');
     if (!supportsOpenAPI) {
-      throw new Error('Agent must support OpenAPI protocol (OSSA 0.1.6 requirement)');
+      throw new Error('Agent must support OpenAPI protocol (OSSA 0.1.8 requirement)');
     }
 
     // Validate conformance tier

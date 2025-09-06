@@ -1,0 +1,387 @@
+apiVersion: open-standards-scalable-agents/v0.1.8
+kind: Agent
+metadata:
+  name: "validation-specialist"
+  version: "1.1.0"
+  description: "OSSA v0.1.8 compliance validation specialist with universal framework support and advanced specification validation"
+  author: "Open Standards for Scalable Agents Community"
+  license: "Apache-2.0"
+  created: "2025-01-28"
+  updated: "2025-01-29"
+  labels:
+    tier: "governed"
+    category: "validation"
+    framework-compatibility: "universal"
+    validation-scope: "comprehensive"
+
+spec:
+  # Three-Tier Conformance System
+  conformance:
+    tier: "governed"
+    level: "production"
+    certification:
+      ossa_compliance: "v0.1.8_certified"
+      validation_authority: "certified"
+      specification_expertise: "expert_level"
+  
+  # Universal Framework Compatibility (OSSA v0.1.8 requirement)
+  framework_adapters:
+    mcp:
+      enabled: true
+      version: "2024-11-05"
+      endpoint: "/mcp"
+      tools:
+        - "validate_agent_spec"
+        - "validate_openapi_schema"
+        - "check_compliance"
+        - "generate_validation_report"
+        - "certify_agent"
+      integration_type: "validation_server"
+      capabilities: ["spec_validation", "compliance_checking", "certification"]
+    langchain:
+      enabled: true
+      version: "0.2.x"
+      adapter_class: "ValidationSpecialistTool"
+      schema_validation: true
+      compliance_chains: true
+      error_analysis: true
+    crewai:
+      enabled: true
+      version: "0.67.x"
+      role: "validation_specialist"
+      goal: "Ensure comprehensive compliance and specification validation across all agent implementations"
+      backstory: "Expert validation specialist with deep knowledge of OSSA standards, OpenAPI specifications, and regulatory compliance frameworks"
+      expertise_areas: ["schema_validation", "compliance_auditing", "specification_analysis"]
+    autogen:
+      enabled: true
+      version: "0.2.x"
+      agent_type: "AssistantAgent"
+      human_input_mode: "TERMINATE"
+      system_message: "You are a specialized validation expert for agent specifications and compliance"
+      validation_capabilities: true
+    openai:
+      enabled: true
+      assistant_type: "validation_specialist"
+      tools: ["schema_validator", "compliance_checker", "specification_analyzer"]
+      fine_tuned_models: ["validation-expert-ft"]
+
+  # Core Agent Definition
+  class: "specialist"
+  category: "validation"
+  
+  capabilities:
+    primary:
+      - "ossa_v017_specification_validation"
+      - "multi_format_schema_validation"
+      - "comprehensive_compliance_testing"
+      - "automated_certification_assessment"
+      - "cross_framework_compatibility_validation"
+    secondary:
+      - "semantic_specification_analysis"
+      - "performance_requirement_validation"
+      - "security_configuration_auditing"
+      - "integration_testing_coordination"
+      - "validation_report_generation"
+      - "continuous_compliance_monitoring"
+  
+  # Enhanced Protocol Support (v0.1.8)
+  protocols:
+    - name: "openapi"
+      version: "3.1.0"
+      required: true
+      spec_file: "./openapi.yaml"
+      validation_capabilities: ["schema", "security", "documentation"]
+    - name: "mcp"
+      version: "2024-11-05"
+      required: true
+      tools_manifest: "./mcp-tools.json"
+      server_capabilities: ["validation", "compliance", "certification"]
+    - name: "agent2agent"
+      version: "0.1.8"
+      required: true
+      discovery_endpoint: "/a2a/discover"
+      validation_protocols: ["spec_exchange", "compliance_verification"]
+    - name: "jsonschema"
+      version: "draft-2020-12"
+      required: true
+      validation_engine: "ajv"
+      custom_formats: true
+    - name: "yaml_validation"
+      version: "1.2"
+      required: true
+      schema_validation: true
+      linting: "yamllint"
+
+  # Enhanced Security Architecture (v0.1.8)
+  security:
+    authentication:
+      methods: ["api_key", "oauth2_pkce", "saml_2_0", "client_certificates"]
+      default: "oauth2_pkce"
+      mfa_required: false  # Governed tier doesn't require MFA
+      session_management: true
+    authorization:
+      model: "rbac_with_validation_scopes"
+      fine_grained_permissions: true
+      validation_authorities: ["admin", "validator", "auditor", "reader"]
+      context_aware: true
+    encryption:
+      at_rest: "aes_256_gcm"
+      in_transit: "tls_1_3"
+      key_management: "standard_rotation"
+      validation_data_protection: true
+    audit:
+      comprehensive_logging: true
+      validation_audit_trail: true
+      compliance_reporting: "automated"
+      retention_policy: "5_years"
+      tamper_detection: true
+    privacy:
+      data_minimization: true
+      validation_data_anonymization: true
+      gdpr_compliance: true
+  
+  # Performance & Resource Management (v0.1.8)
+  performance:
+    sla:
+      availability: "99.9%"
+      latency:
+        health_check: "<50ms"
+        simple_validation: "<200ms"
+        complex_validation: "<1s"
+        certification_process: "<5s"
+      throughput:
+        concurrent_validations: 200
+        specifications_per_minute: 500
+        max_specification_size: "50MB"
+        batch_processing: true
+    resources:
+      cpu_cores: 4
+      memory_gb: 16
+      storage_gb: 200
+      gpu_required: false
+      validation_cache_size: "2GB"
+    scaling:
+      horizontal: true
+      auto_scale: true
+      max_instances: 20
+      scale_metrics: ["validation_queue_depth", "cpu_utilization"]
+  
+  # Advanced Validation Capabilities
+  validation_engines:
+    ossa_schema_validator:
+      version: "0.1.8"
+      strict_mode: true
+      custom_validators: true
+      extension_validation: true
+    openapi_validator:
+      version: "3.1.0"
+      swagger_validator: true
+      security_validation: true
+      documentation_validation: true
+    json_schema_validator:
+      version: "draft-2020-12"
+      meta_schema_validation: true
+      format_validation: true
+      semantic_validation: true
+    yaml_validator:
+      version: "1.2"
+      syntax_validation: true
+      semantic_validation: true
+      best_practices_checking: true
+
+  # Enterprise Compliance Features
+  compliance_frameworks:
+    iso_42001:
+      status: "implemented"
+      controls_implemented: 35
+      validation_coverage: "100%"
+      automation_level: "high"
+      last_audit: "2025-01-15"
+      next_audit: "2025-07-15"
+      auditor: "BSI"
+    nist_ai_rmf:
+      status: "implemented"
+      maturity_level: 3
+      functions: ["GOVERN", "MAP", "MEASURE", "MANAGE"]
+      validation_integration: "automated"
+      last_assessment: "2025-01-10"
+      next_assessment: "2025-04-10"
+    eu_ai_act:
+      status: "compliant"
+      risk_classification: "minimal_risk"
+      transparency_requirements: "met"
+      validation_documentation: "comprehensive"
+      audit_ready: true
+
+  # API Endpoints (OpenAPI 3.1.0 compliant)
+  endpoints:
+    health:
+      path: "/health"
+      method: "GET"
+      auth_required: false
+      response_time_sla: "50ms"
+    capabilities:
+      path: "/capabilities"
+      method: "GET"
+      auth_required: true
+      caching: "10m"
+    validate_ossa_spec:
+      path: "/validate/ossa"
+      method: "POST"
+      auth_required: true
+      max_payload_size: "50MB"
+      validation_types: ["schema", "semantic", "compliance"]
+    validate_openapi:
+      path: "/validate/openapi"
+      method: "POST"
+      auth_required: true
+      openapi_versions: ["3.0.x", "3.1.x"]
+      validation_depth: "comprehensive"
+    validate_dual_format:
+      path: "/validate/dual-format"
+      method: "POST"
+      auth_required: true
+      supported_formats: ["yaml", "json"]
+      cross_format_validation: true
+    batch_validate:
+      path: "/validate/batch"
+      method: "POST"
+      auth_required: true
+      max_batch_size: 100
+      async_processing: true
+    certify:
+      path: "/certify"
+      method: "POST"
+      auth_required: true
+      certification_levels: ["basic", "standard", "premium"]
+      automated_certification: true
+    validation_report:
+      path: "/reports/validation"
+      methods: ["GET", "POST"]
+      auth_required: true
+      formats: ["json", "html", "pdf"]
+
+# OSSA v0.1.8 Extensions
+x-ossa-token-optimization:
+  enabled: true
+  total_budget: 10000
+  allocation:
+    schema_validation: 3500     # 35%
+    compliance_checking: 3000   # 30%
+    report_generation: 2000     # 20%
+    semantic_analysis: 1000     # 10%
+    emergency: 500              # 5%
+  optimization:
+    target_reduction: 0.75
+    strategy: "structured_validation_caching"
+    pattern_reuse: true
+    incremental_validation: true
+
+x-ossa-memory-integration:
+  vector_storage:
+    provider: "qdrant"
+    endpoint: "http://localhost:6333"
+    collection: "validation_knowledge_v0_1_7"
+    dimensions: 1536
+    index_type: "hnsw"
+  knowledge_graphs:
+    enabled: true
+    provider: "neo4j"
+    endpoint: "bolt://localhost:7687"
+    database: "validation_ontology"
+    schema_relationships: true
+  validation_cache:
+    enabled: true
+    cache_strategy: "lru_with_ttl"
+    max_entries: 10000
+    ttl: "1h"
+    cache_invalidation: "smart"
+  semantic_search:
+    enabled: true
+    similarity_threshold: 0.88
+    validation_pattern_matching: true
+    error_similarity_detection: true
+
+x-ossa-orchestration:
+  discovery:
+    enabled: true
+    protocols: ["dns_sd", "consul", "kubernetes"]
+    heartbeat_interval: "30s"
+    health_check_timeout: "5s"
+    validation_service_registry: true
+  coordination:
+    validation_consensus: true
+    distributed_validation: true
+    peer_review_system: true
+  messaging:
+    broker: "apache_kafka"
+    topics: 
+      - "validation_requests"
+      - "validation_results"
+      - "compliance_alerts"
+      - "certification_events"
+    serialization: "avro"
+    message_validation: true
+  workflow_integration:
+    validation_pipelines: true
+    automated_testing: true
+    continuous_validation: true
+
+x-ossa-monitoring:
+  metrics:
+    prometheus_endpoint: "/metrics"
+    custom_metrics:
+      - "validations_total"
+      - "validation_duration_seconds"
+      - "compliance_score_distribution"
+      - "certification_success_rate"
+      - "schema_error_frequency"
+      - "validation_cache_hit_rate"
+  logging:
+    level: "info"
+    format: "structured_json"
+    validation_context_logging: true
+    error_categorization: true
+    sensitive_data_filtering: true
+  tracing:
+    enabled: true
+    provider: "jaeger"
+    sampling_rate: 0.2
+    validation_trace_correlation: true
+  alerts:
+    channels: ["slack", "email", "webhook"]
+    rules:
+      - name: "validation_failure_rate_high"
+        condition: "failure_rate > 0.05"
+        severity: "high"
+        window: "10m"
+      - name: "compliance_score_drop"
+        condition: "avg_compliance_score < 0.8"
+        severity: "warning"
+        window: "1h"
+      - name: "certification_backlog_high"
+        condition: "certification_queue > 100"
+        severity: "medium"
+        window: "30m"
+
+x-ossa-deployment:
+  container:
+    image: "ossa/validation-specialist:v0.1.8"
+    registry: "docker.io"
+    security_scanning: true
+    validation_tools_included: true
+  kubernetes:
+    namespace: "ossa-validation"
+    service_account: "validation-specialist-sa"
+    network_policies: true
+    pod_security_standards: "baseline"
+    resource_quotas: true
+  helm:
+    chart_version: "0.1.8"
+    values_schema: "./helm/values.schema.json"
+    upgrade_strategy: "rolling_update"
+    validation_on_deploy: true
+  monitoring:
+    service_monitor: true
+    grafana_dashboard: true
+    alert_rules: true

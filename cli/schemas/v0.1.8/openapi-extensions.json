@@ -1,0 +1,259 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ossa.agents/schemas/v0.1.8/openapi-extensions.json",
+  "title": "OSSA OpenAPI Extensions Schema v0.1.8",
+  "description": "Schema for OSSA v0.1.8 OpenAPI 3.1+ extensions",
+  "type": "object",
+  "properties": {
+    "x-openapi-ai-agents-standard": {
+      "type": "object",
+      "required": ["version", "conformance_tier"],
+      "properties": {
+        "version": {
+          "type": "string",
+          "const": "0.1.8"
+        },
+        "conformance_tier": {
+          "type": "string",
+          "enum": ["core", "governed", "advanced"]
+        },
+        "certification_level": {
+          "type": "string",
+          "enum": ["bronze", "silver", "gold", "platinum"]
+        },
+        "compliance_frameworks": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["ISO_42001", "NIST_AI_RMF", "EU_AI_ACT", "SOC2", "GDPR"]
+          }
+        },
+        "enterprise_features": {
+          "type": "boolean",
+          "description": "Indicates enterprise feature support"
+        },
+        "api_versioning": {
+          "type": "object",
+          "properties": {
+            "strategy": {
+              "type": "string",
+              "enum": ["header", "path", "query"]
+            },
+            "current": {
+              "type": "string"
+            },
+            "supported": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    },
+    "x-agent-metadata": {
+      "type": "object",
+      "required": ["class", "category"],
+      "properties": {
+        "class": {
+          "type": "string",
+          "enum": ["general", "specialist", "workflow", "integration", "security", "data", "nlp", "vision", "audio"]
+        },
+        "category": {
+          "type": "string",
+          "enum": ["assistant", "tool", "service", "coordinator"]
+        },
+        "protocols": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["openapi", "mcp", "uadp", "graphql", "grpc", "websocket"]
+          }
+        },
+        "capabilities": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "domains": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "frameworks": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["langchain", "crewai", "autogen", "openai", "anthropic", "mcp"]
+          }
+        }
+      }
+    },
+    "x-ossa-discovery": {
+      "type": "object",
+      "properties": {
+        "uadp_enabled": {
+          "type": "boolean",
+          "description": "Universal Agent Discovery Protocol support"
+        },
+        "discovery_endpoints": {
+          "type": "object",
+          "properties": {
+            "capabilities": {
+              "type": "string",
+              "format": "uri-reference"
+            },
+            "health": {
+              "type": "string",
+              "format": "uri-reference"
+            },
+            "metrics": {
+              "type": "string",
+              "format": "uri-reference"
+            }
+          }
+        },
+        "registry_compatible": {
+          "type": "boolean"
+        }
+      }
+    },
+    "x-ossa-security": {
+      "type": "object",
+      "properties": {
+        "authentication_schemes": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["api_key", "oauth2", "jwt", "basic", "none"]
+          }
+        },
+        "authorization_model": {
+          "type": "string",
+          "enum": ["rbac", "abac", "simple", "none"]
+        },
+        "rate_limiting": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean"
+            },
+            "strategy": {
+              "type": "string",
+              "enum": ["token_bucket", "fixed_window", "sliding_window"]
+            },
+            "limits": {
+              "type": "object",
+              "properties": {
+                "requests_per_minute": {
+                  "type": "integer",
+                  "minimum": 1
+                },
+                "burst_limit": {
+                  "type": "integer",
+                  "minimum": 1
+                }
+              }
+            }
+          }
+        },
+        "encryption": {
+          "type": "object",
+          "properties": {
+            "at_rest": {
+              "type": "string",
+              "enum": ["aes_256", "aes_128", "none"]
+            },
+            "in_transit": {
+              "type": "string",
+              "enum": ["tls_1_3", "tls_1_2", "none"]
+            }
+          }
+        }
+      }
+    },
+    "x-ossa-performance": {
+      "type": "object",
+      "properties": {
+        "sla_targets": {
+          "type": "object",
+          "properties": {
+            "availability": {
+              "type": "number",
+              "minimum": 90,
+              "maximum": 100
+            },
+            "response_time_p95": {
+              "type": "string",
+              "pattern": "^\\d+ms$"
+            },
+            "error_rate_threshold": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 100
+            }
+          }
+        },
+        "scaling": {
+          "type": "object",
+          "properties": {
+            "horizontal": {
+              "type": "boolean"
+            },
+            "vertical": {
+              "type": "boolean"
+            },
+            "auto_scaling": {
+              "type": "boolean"
+            }
+          }
+        },
+        "monitoring": {
+          "type": "object",
+          "properties": {
+            "metrics_endpoint": {
+              "type": "string",
+              "format": "uri-reference"
+            },
+            "health_endpoint": {
+              "type": "string",
+              "format": "uri-reference"
+            },
+            "observability_level": {
+              "type": "string",
+              "enum": ["basic", "detailed", "comprehensive"]
+            }
+          }
+        }
+      }
+    },
+    "x-ossa-graphql": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "endpoint": {
+          "type": "string",
+          "format": "uri-reference",
+          "description": "GraphQL endpoint path"
+        },
+        "subscriptions": {
+          "type": "boolean",
+          "description": "WebSocket subscriptions support"
+        },
+        "introspection": {
+          "type": "boolean",
+          "description": "Schema introspection enabled"
+        },
+        "apollo_federation": {
+          "type": "boolean",
+          "description": "Apollo Federation support"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,662 @@
+# OSSA Agent Orchestration Schema v1.0
+# Multi-agent coordination patterns for framework-agnostic orchestration
+# Compatible with LangChain, CrewAI, AutoGen, OpenAI, Anthropic, and custom frameworks
+
+$schema: "https://json-schema.org/draft/2020-12/schema"
+$id: "https://openapi-ai-agents.org/schemas/agent-orchestration/v1.0"
+title: "OSSA Agent Orchestration Schema"
+description: "Standardized multi-agent coordination patterns and orchestration state machine"
+
+type: object
+required:
+  - ossa
+  - kind
+  - metadata
+  - spec
+
+properties:
+  ossa:
+    type: string
+    const: "openapi-ai-agents/v1.0"
+    description: "OSSA orchestration specification version"
+    
+  kind:
+    type: string
+    const: "AgentOrchestration"
+    description: "Resource type for orchestration specifications"
+    
+  metadata:
+    type: object
+    required:
+      - name
+      - version
+    properties:
+      name:
+        type: string
+        pattern: '^[a-z0-9-]+$'
+        minLength: 3
+        maxLength: 50
+        description: "Orchestration identifier (lowercase, alphanumeric, hyphens)"
+      version:
+        type: string
+        pattern: '^[0-9]+\.[0-9]+\.[0-9]+$'
+        description: "Orchestration version (semantic versioning)"
+      description:
+        type: string
+        maxLength: 1000
+        description: "Detailed orchestration description"
+      labels:
+        type: object
+        additionalProperties:
+          type: string
+        description: "Key-value labels for organization"
+      annotations:
+        type: object
+        additionalProperties:
+          type: string
+        description: "Additional metadata including framework compatibility"
+    additionalProperties: false
+    
+  spec:
+    type: object
+    required:
+      - orchestration
+      - agents
+      - coordination
+    properties:
+      orchestration:
+        type: object
+        required:
+          - name
+          - strategy
+          - state_machine
+        properties:
+          name:
+            type: string
+            description: "Orchestration display name"
+          strategy:
+            type: string
+            enum: ["parallel", "sequential", "hierarchical", "pipeline", "fanout", "mapreduce", "circuit_breaker"]
+            description: "Coordination strategy pattern"
+          state_machine:
+            $ref: "#/$defs/StateMachine"
+          timeout:
+            type: integer
+            minimum: 1
+            maximum: 86400
+            description: "Maximum orchestration timeout in seconds"
+          retry_policy:
+            $ref: "#/$defs/RetryPolicy"
+        additionalProperties: false
+        
+      agents:
+        type: array
+        minItems: 2
+        maxItems: 100
+        items:
+          $ref: "#/$defs/AgentReference"
+        description: "Participating agents in orchestration"
+        
+      coordination:
+        type: object
+        required:
+          - pattern
+        properties:
+          pattern:
+            $ref: "#/$defs/CoordinationPattern"
+          handoff_contracts:
+            type: array
+            items:
+              $ref: "#/$defs/HandoffContract"
+          dependencies:
+            type: array
+            items:
+              $ref: "#/$defs/TaskDependency"
+          conflict_resolution:
+            $ref: "#/$defs/ConflictResolution"
+        additionalProperties: false
+        
+      framework_compatibility:
+        type: object
+        properties:
+          langchain:
+            $ref: "#/$defs/LangChainOrchestration"
+          crewai:
+            $ref: "#/$defs/CrewAIOrchestration"
+          autogen:
+            $ref: "#/$defs/AutoGenOrchestration"
+          openai:
+            $ref: "#/$defs/OpenAIOrchestration"
+          anthropic:
+            $ref: "#/$defs/AnthropicOrchestration"
+          custom:
+            type: object
+            additionalProperties: true
+            description: "Custom framework orchestration configuration"
+        additionalProperties: false
+        
+      governance:
+        type: object
+        properties:
+          audit_enabled:
+            type: boolean
+            default: true
+            description: "Enable comprehensive audit logging"
+          risk_assessment:
+            $ref: "#/$defs/RiskAssessment"
+          compliance_frameworks:
+            type: array
+            items:
+              type: string
+              enum: ["ISO_42001_2023", "NIST_AI_RMF_1_0", "EU_AI_Act", "SOX", "HIPAA", "GDPR"]
+          policy_hooks:
+            $ref: "#/$defs/PolicyHooks"
+        additionalProperties: false
+        
+      monitoring:
+        type: object
+        properties:
+          performance_tracking:
+            type: boolean
+            default: true
+          metrics_collection:
+            type: array
+            items:
+              type: string
+              enum: ["latency", "throughput", "error_rate", "resource_usage", "cost"]
+          alerting:
+            $ref: "#/$defs/AlertingConfiguration"
+        additionalProperties: false
+        
+    additionalProperties: false
+
+# Schema definitions for reusable components
+$defs:
+  StateMachine:
+    type: object
+    required:
+      - initial_state
+      - states
+      - transitions
+    properties:
+      initial_state:
+        type: string
+        enum: ["planned"]
+        description: "Initial orchestration state"
+      states:
+        type: array
+        items:
+          type: object
+          required:
+            - name
+            - description
+          properties:
+            name:
+              type: string
+              enum: ["planned", "dispatched", "running", "completed", "failed", "cancelled", "timeout", "evaluated"]
+            description:
+              type: string
+            actions:
+              type: array
+              items:
+                type: string
+            timeout:
+              type: integer
+              description: "State timeout in seconds"
+      transitions:
+        type: array
+        items:
+          type: object
+          required:
+            - from
+            - to
+            - trigger
+          properties:
+            from:
+              type: string
+            to:
+              type: string
+            trigger:
+              type: string
+            condition:
+              type: string
+              description: "Optional transition condition"
+            actions:
+              type: array
+              items:
+                type: string
+    additionalProperties: false
+    
+  RetryPolicy:
+    type: object
+    properties:
+      max_attempts:
+        type: integer
+        minimum: 1
+        maximum: 10
+        default: 3
+      backoff_strategy:
+        type: string
+        enum: ["fixed", "exponential", "linear"]
+        default: "exponential"
+      initial_delay:
+        type: integer
+        minimum: 1
+        default: 1000
+        description: "Initial retry delay in milliseconds"
+      max_delay:
+        type: integer
+        minimum: 1000
+        default: 30000
+        description: "Maximum retry delay in milliseconds"
+    additionalProperties: false
+    
+  AgentReference:
+    type: object
+    required:
+      - id
+      - type
+      - role
+    properties:
+      id:
+        type: string
+        pattern: '^[a-zA-Z0-9_-]+$'
+        description: "Unique agent identifier within orchestration"
+      type:
+        type: string
+        description: "Agent type or capability class"
+      role:
+        type: string
+        enum: ["coordinator", "executor", "validator", "synthesizer", "specialist"]
+        description: "Agent role in orchestration"
+      agent_spec:
+        type: string
+        format: uri
+        description: "Reference to agent OSSA specification"
+      capabilities:
+        type: array
+        items:
+          type: string
+        description: "Required capabilities for this orchestration"
+      priority:
+        type: integer
+        minimum: 1
+        maximum: 10
+        default: 5
+        description: "Agent priority in orchestration (1=lowest, 10=highest)"
+      framework:
+        type: string
+        enum: ["langchain", "crewai", "autogen", "openai", "anthropic", "mcp", "custom"]
+        description: "Framework this agent is implemented in"
+    additionalProperties: false
+    
+  CoordinationPattern:
+    type: object
+    required:
+      - type
+    properties:
+      type:
+        type: string
+        enum: ["parallel", "sequential", "hierarchical", "pipeline", "fanout", "mapreduce", "circuit_breaker"]
+      configuration:
+        type: object
+        properties:
+          parallel:
+            type: object
+            properties:
+              max_concurrent:
+                type: integer
+                minimum: 1
+                maximum: 50
+              wait_for_all:
+                type: boolean
+                default: true
+          sequential:
+            type: object
+            properties:
+              chain_order:
+                type: array
+                items:
+                  type: string
+              stop_on_failure:
+                type: boolean
+                default: true
+          hierarchical:
+            type: object
+            properties:
+              levels:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    level:
+                      type: integer
+                    agents:
+                      type: array
+                      items:
+                        type: string
+              escalation_policy:
+                type: string
+                enum: ["immediate", "delayed", "on_failure"]
+          pipeline:
+            type: object
+            properties:
+              stages:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    name:
+                      type: string
+                    agents:
+                      type: array
+                      items:
+                        type: string
+                    parallel_execution:
+                      type: boolean
+                      default: false
+          circuit_breaker:
+            type: object
+            properties:
+              failure_threshold:
+                type: integer
+                minimum: 1
+                default: 5
+              recovery_timeout:
+                type: integer
+                minimum: 1000
+                default: 60000
+              fallback_agent:
+                type: string
+        additionalProperties: false
+    additionalProperties: false
+    
+  HandoffContract:
+    type: object
+    required:
+      - from_agent
+      - to_agent
+      - interface
+    properties:
+      from_agent:
+        type: string
+        description: "Source agent ID"
+      to_agent:
+        type: string
+        description: "Target agent ID"
+      interface:
+        type: object
+        required:
+          - input_schema
+          - output_schema
+        properties:
+          input_schema:
+            type: object
+            description: "JSON Schema for handoff input"
+          output_schema:
+            type: object
+            description: "JSON Schema for handoff output"
+          validation_rules:
+            type: array
+            items:
+              type: string
+          transformation_rules:
+            type: array
+            items:
+              type: object
+              properties:
+                source_field:
+                  type: string
+                target_field:
+                  type: string
+                transformation:
+                  type: string
+      conditions:
+        type: array
+        items:
+          type: string
+        description: "Conditions that must be met for handoff"
+      timeout:
+        type: integer
+        minimum: 1
+        description: "Handoff timeout in seconds"
+    additionalProperties: false
+    
+  TaskDependency:
+    type: object
+    required:
+      - dependent_agent
+      - prerequisite_agents
+      - type
+    properties:
+      dependent_agent:
+        type: string
+        description: "Agent that depends on others"
+      prerequisite_agents:
+        type: array
+        items:
+          type: string
+        description: "Agents that must complete before dependent can start"
+      type:
+        type: string
+        enum: ["hard", "soft", "conditional"]
+        description: "Dependency type"
+      condition:
+        type: string
+        description: "Optional condition for conditional dependencies"
+    additionalProperties: false
+    
+  ConflictResolution:
+    type: object
+    properties:
+      strategy:
+        type: string
+        enum: ["consensus", "majority_vote", "weighted_confidence", "expert_priority", "first_wins", "manual"]
+        default: "consensus"
+      configuration:
+        type: object
+        properties:
+          consensus_threshold:
+            type: number
+            minimum: 0.5
+            maximum: 1.0
+            default: 0.8
+          expert_weights:
+            type: object
+            additionalProperties:
+              type: number
+              minimum: 0.0
+              maximum: 1.0
+          timeout:
+            type: integer
+            minimum: 1
+            description: "Conflict resolution timeout in seconds"
+    additionalProperties: false
+    
+  # Framework-specific orchestration configurations
+  LangChainOrchestration:
+    type: object
+    properties:
+      chain_type:
+        type: string
+        enum: ["sequential", "parallel", "conditional", "custom"]
+      memory_sharing:
+        type: boolean
+        default: false
+      tool_sharing:
+        type: boolean
+        default: true
+      callback_handlers:
+        type: array
+        items:
+          type: string
+    additionalProperties: false
+    
+  CrewAIOrchestration:
+    type: object
+    properties:
+      crew_configuration:
+        type: object
+        properties:
+          process:
+            type: string
+            enum: ["sequential", "hierarchical"]
+          manager_llm:
+            type: string
+          verbose:
+            type: boolean
+            default: false
+      role_hierarchy:
+        type: array
+        items:
+          type: object
+          properties:
+            agent_id:
+              type: string
+            hierarchy_level:
+              type: integer
+    additionalProperties: false
+    
+  AutoGenOrchestration:
+    type: object
+    properties:
+      group_chat_config:
+        type: object
+        properties:
+          max_round:
+            type: integer
+            minimum: 1
+            default: 10
+          speaker_selection_method:
+            type: string
+            enum: ["auto", "manual", "random", "round_robin"]
+          allow_repeat_speaker:
+            type: boolean
+            default: true
+    additionalProperties: false
+    
+  OpenAIOrchestration:
+    type: object
+    properties:
+      assistant_coordination:
+        type: object
+        properties:
+          thread_sharing:
+            type: boolean
+            default: false
+          tool_resource_sharing:
+            type: boolean
+            default: true
+          file_sharing:
+            type: boolean
+            default: false
+    additionalProperties: false
+    
+  AnthropicOrchestration:
+    type: object
+    properties:
+      claude_coordination:
+        type: object
+        properties:
+          context_sharing:
+            type: boolean
+            default: true
+          tool_use_coordination:
+            type: boolean
+            default: true
+          message_threading:
+            type: boolean
+            default: false
+    additionalProperties: false
+    
+  RiskAssessment:
+    type: object
+    properties:
+      risk_level:
+        type: string
+        enum: ["low", "medium", "high", "critical"]
+      risk_factors:
+        type: array
+        items:
+          type: string
+      mitigation_strategies:
+        type: array
+        items:
+          type: string
+      review_required:
+        type: boolean
+        default: false
+    additionalProperties: false
+    
+  PolicyHooks:
+    type: object
+    properties:
+      pre_orchestration:
+        type: array
+        items:
+          $ref: "#/$defs/PolicyHook"
+      pre_agent_execution:
+        type: array
+        items:
+          $ref: "#/$defs/PolicyHook"
+      post_agent_execution:
+        type: array
+        items:
+          $ref: "#/$defs/PolicyHook"
+      post_orchestration:
+        type: array
+        items:
+          $ref: "#/$defs/PolicyHook"
+    additionalProperties: false
+    
+  PolicyHook:
+    type: object
+    required:
+      - name
+      - type
+      - action
+    properties:
+      name:
+        type: string
+      type:
+        type: string
+        enum: ["validation", "audit", "compliance", "security", "performance"]
+      action:
+        type: string
+        enum: ["allow", "deny", "modify", "warn", "log"]
+      condition:
+        type: string
+        description: "Condition expression for policy execution"
+      configuration:
+        type: object
+        additionalProperties: true
+    additionalProperties: false
+    
+  AlertingConfiguration:
+    type: object
+    properties:
+      enabled:
+        type: boolean
+        default: true
+      channels:
+        type: array
+        items:
+          type: string
+          enum: ["email", "slack", "webhook", "log"]
+      thresholds:
+        type: object
+        properties:
+          error_rate:
+            type: number
+            minimum: 0
+            maximum: 1
+          latency_p95:
+            type: integer
+            minimum: 1
+          resource_usage:
+            type: number
+            minimum: 0
+            maximum: 1
+    additionalProperties: false
+
+additionalProperties: false

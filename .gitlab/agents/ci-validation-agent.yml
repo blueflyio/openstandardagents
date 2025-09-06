@@ -1,9 +1,9 @@
-apiVersion: open-standards-scalable-agents/v0.1.6
+apiVersion: open-standards-scalable-agents/v0.1.8
 kind: Agent
 metadata:
   name: ci-validation-agent
   description: "GitLab CI/CD OSSA validation and deployment agent"
-  version: 0.1.6
+  version: 0.1.8
   tags:
     - ci-cd
     - gitlab
@@ -20,7 +20,7 @@ spec:
     model: claude-sonnet
     temperature: 0.2
 
-# OSSA v0.1.6 Extensions
+# OSSA v0.1.8 Extensions
 x-ossa-token-budget:
   total_budget: 10000
   allocation:

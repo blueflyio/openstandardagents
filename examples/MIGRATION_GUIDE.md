@@ -392,7 +392,7 @@ Before migrating, answer these:
 def extract_agent_info(custom_agent):
     return {
         "name": custom_agent.id or "unnamed",
-        "version": custom_agent.version or "0.1.0",
+        "version": custom_agent.version or "0.1.8",
         "expertise": custom_agent.description or "Custom agent",
         "capabilities": extract_capabilities(custom_agent)
     }

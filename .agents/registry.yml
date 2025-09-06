@@ -1,9 +1,9 @@
-apiVersion: open-standards-scalable-agents/v0.1.6
+apiVersion: open-standards-scalable-agents/v0.1.8
 kind: AgentRegistry
 metadata:
   name: ossa-project-registry
-  description: "OSSA v0.1.6 compliant agent registry"
-  version: 0.1.6
+  description: "OSSA v0.1.8 compliant agent registry"
+  version: 0.1.8
 
 spec:
   agents:
@@ -45,9 +45,21 @@ spec:
         - ossa_compliance_checking
         - automated_testing
         - deployment_orchestration
+        
+    - name: gitlab-pipeline-monitor
+      file: ../.gitlab/agents/gitlab-pipeline-monitor.yml
+      status: active
+      compliance: gold
+      capabilities:
+        - gitlab_api_authentication
+        - pipeline_status_monitoring
+        - failed_job_analysis
+        - contextual_troubleshooting
+        - ci_cd_optimization_recommendations
+        - bluefly_ecosystem_integration
 
   configuration:
-    ossa_version: "0.1.6"
+    ossa_version: "0.1.8"
     compliance_level: "gold"
     token_optimization: 75
     discovery_latency: 50  # ms

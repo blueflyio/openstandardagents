@@ -1,6 +1,6 @@
 /**
  * Universal Agent Discovery Protocol (UADP) Implementation
- * OSSA v0.1.6 compliant agent discovery system
+ * OSSA v0.1.8 compliant agent discovery system
  */
 import { EventEmitter } from 'events';
 export interface UADPAgent {
@@ -115,11 +115,11 @@ export declare class UADPDiscoveryEngine extends EventEmitter {
      */
     getRegistryStats(): UADPRegistry['registry_stats'];
     /**
-     * Export registry in OSSA 0.1.6 format
+     * Export registry in OSSA 0.1.8 format
      */
     exportRegistry(): UADPRegistry;
     /**
-     * Import registry from OSSA 0.1.6 format
+     * Import registry from OSSA 0.1.8 format
      */
     importRegistry(registryData: UADPRegistry): Promise<void>;
     /**
@@ -139,7 +139,7 @@ export declare class UADPDiscoveryEngine extends EventEmitter {
      */
     stopHealthMonitoring(): void;
     /**
-     * Validate agent compliance with OSSA 0.1.6 standard
+     * Validate agent compliance with OSSA 0.1.8 standard
      */
     private validateAgentCompliance;
     /**

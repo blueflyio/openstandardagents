@@ -1,0 +1,61 @@
+# OSSA Agent Communication Example - Level 7
+# Demonstrates inter-agent communication patterns and protocols
+
+ossa: "0.1.8"
+kind: Agent
+metadata:
+  name: communication-demo
+  version: "1.0.0"
+  description: Agent demonstrating various communication patterns with other agents
+
+spec:
+  conformance_tier: advanced
+  class: coordinator
+  category: service
+  
+  capabilities:
+    primary:
+      - agent_discovery
+      - protocol_negotiation
+      - message_routing
+    secondary:
+      - load_balancing
+      - circuit_breaking
+      - retry_logic
+  
+  protocols:
+    - name: openapi
+      version: "3.1.0"
+      required: true
+    - name: mcp
+      version: "2024-12-05" 
+      required: false
+    - name: uadp
+      version: "1.0.0"
+      required: true
+      extensions:
+        - peer_discovery
+        - capability_matching
+  
+  communication:
+    patterns:
+      - synchronous: "HTTP/REST API calls"
+      - asynchronous: "Message queues and events"
+      - streaming: "WebSocket connections"
+      - pub_sub: "Event broadcasting"
+    
+    discovery:
+      auto_discovery: true
+      capability_matching: true
+      health_checks: true
+    
+    routing:
+      strategies:
+        - round_robin
+        - capability_based
+        - load_aware
+      
+    reliability:
+      retry_count: 3
+      circuit_breaker: true
+      timeout: 30s

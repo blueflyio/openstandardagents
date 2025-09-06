@@ -1,0 +1,659 @@
+openapi: 3.1.0
+info:
+  title: "OSSA Compliance Auditor API"
+  version: "1.0.0"
+  description: "Enterprise-grade compliance auditor for ISO 42001, NIST AI RMF, and EU AI Act frameworks"
+  
+  x-openapi-ai-agents-standard:
+    version: "0.1.8"
+    conformance_tier: "advanced"
+    certification_level: "gold"
+    compliance_frameworks: ["ISO_42001", "NIST_AI_RMF", "EU_AI_Act"]
+    
+  x-agent-metadata:
+    class: "auditor"
+    category: "compliance"
+    protocols: ["openapi", "mcp", "a2a"]
+    capabilities: ["compliance_auditing", "risk_assessment", "control_validation", "audit_reporting"]
+    domains: ["compliance", "risk_management", "governance", "audit"]
+    
+  x-protocol-bridges:
+    mcp:
+      enabled: true
+      latency: "<50ms"
+      tools_endpoint: "/mcp/tools"
+      audit_resources: "/mcp/audit"
+    a2a:
+      enabled: true
+      latency: "<35ms"
+      coordination_endpoint: "/a2a/coordinate"
+
+  x-compliance-frameworks:
+    ISO_42001:
+      implemented: true
+      audit_endpoints: ["/audit/iso42001", "/compliance/iso42001"]
+      controls_mapping: "./data/iso42001-controls.json"
+      automation_level: "advanced"
+      certification_status: "certified"
+      auditor_accreditation: "BSI"
+      last_audit: "2025-01-15"
+      controls_count: 47
+    NIST_AI_RMF:
+      implemented: true
+      audit_endpoints: ["/audit/nist-ai-rmf", "/risk/nist-assessment"]
+      functions_mapping: "./data/nist-functions.json"
+      automation_level: "advanced"
+      maturity_level: 4
+      functions_covered: ["GOVERN", "MAP", "MEASURE", "MANAGE"]
+    EU_AI_Act:
+      compliant: true
+      audit_endpoints: ["/compliance/eu-ai-act", "/risk/eu-classification"]
+      risk_classification: "limited"
+      conformity_assessment: "completed"
+      documentation_endpoint: "/compliance/eu-ai-act/documentation"
+      transparency_requirements: "met"
+
+  x-audit-capabilities:
+    automated_evidence_collection: true
+    continuous_compliance_monitoring: true
+    risk_based_audit_planning: true
+    cross_framework_mapping: true
+    audit_trail_integrity: true
+    real_time_alerts: true
+    evidence_retention_years: 7
+
+  contact:
+    name: "OSSA Compliance Team"
+    url: "https://gitlab.com/bluefly-ai/ossa-standard"
+    email: "compliance@ossa.agents"
+  
+  license:
+    name: "Apache 2.0"
+    url: "https://www.apache.org/licenses/LICENSE-2.0.html"
+
+servers:
+  - url: "https://compliance.ossa.agents/v1"
+    description: "Production OSSA Compliance API"
+  - url: "http://localhost:3005/api/v1"
+    description: "Local development server"
+
+security:
+  - ApiKeyAuth: []
+  - OAuth2: ["read", "audit", "admin"]
+  - SAML: []
+
+paths:
+  /health:
+    get:
+      summary: "Compliance auditor health check"
+      description: "Returns auditor health status and framework connectivity"
+      operationId: "getHealth"
+      responses:
+        '200':
+          description: "Compliance auditor is healthy"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ComplianceHealthResponse'
+
+  /capabilities:
+    get:
+      summary: "Get compliance audit capabilities"
+      description: "Returns supported frameworks, audit types, and automation levels"
+      operationId: "getCapabilities"
+      responses:
+        '200':
+          description: "Compliance audit capabilities"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ComplianceCapabilitiesResponse'
+
+  /audit:
+    post:
+      summary: "Initiate comprehensive compliance audit"
+      description: "Start full compliance audit across all configured frameworks"
+      operationId: "initiateAudit"
+      security:
+        - OAuth2: ["audit"]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AuditRequest'
+      responses:
+        '202':
+          description: "Audit initiated successfully"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuditResponse'
+        '400':
+          description: "Invalid audit request"
+
+  /audit/{auditId}:
+    get:
+      summary: "Get audit status and results"
+      description: "Retrieve status and findings of a specific audit"
+      operationId: "getAuditStatus"
+      security:
+        - ApiKeyAuth: []
+      parameters:
+        - name: auditId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: "Audit status and results"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuditStatusResponse'
+
+  /compliance/check:
+    post:
+      summary: "Quick compliance check"
+      description: "Perform rapid compliance validation against specific framework controls"
+      operationId: "quickComplianceCheck"
+      security:
+        - ApiKeyAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ComplianceCheckRequest'
+      responses:
+        '200':
+          description: "Compliance check results"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ComplianceCheckResponse'
+
+  /compliance/iso42001:
+    get:
+      summary: "ISO 42001 compliance status"
+      description: "Current ISO 42001:2023 compliance status and control implementation"
+      operationId: "getISO42001Status"
+      security:
+        - ApiKeyAuth: []
+      responses:
+        '200':
+          description: "ISO 42001 compliance status"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ISO42001StatusResponse'
+
+  /compliance/nist-ai-rmf:
+    get:
+      summary: "NIST AI RMF compliance status"
+      description: "NIST AI Risk Management Framework implementation status"
+      operationId: "getNISTAIRMFStatus"
+      security:
+        - ApiKeyAuth: []
+      responses:
+        '200':
+          description: "NIST AI RMF compliance status"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NISTAIRMFStatusResponse'
+
+  /compliance/eu-ai-act:
+    get:
+      summary: "EU AI Act compliance status"
+      description: "European Union AI Act compliance status and risk classification"
+      operationId: "getEUAIActStatus"
+      security:
+        - ApiKeyAuth: []
+      responses:
+        '200':
+          description: "EU AI Act compliance status"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EUAIActStatusResponse'
+
+  /risk/assess:
+    post:
+      summary: "Conduct risk assessment"
+      description: "Comprehensive AI risk assessment across multiple frameworks"
+      operationId: "conductRiskAssessment"
+      security:
+        - OAuth2: ["audit"]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RiskAssessmentRequest'
+      responses:
+        '200':
+          description: "Risk assessment completed"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RiskAssessmentResponse'
+
+  /reports/{reportId}:
+    get:
+      summary: "Download audit report"
+      description: "Download compliance audit report in specified format"
+      operationId: "downloadReport"
+      security:
+        - ApiKeyAuth: []
+      parameters:
+        - name: reportId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: format
+          in: query
+          schema:
+            type: string
+            enum: ["pdf", "json", "xml"]
+            default: "pdf"
+      responses:
+        '200':
+          description: "Audit report"
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuditReport'
+
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+    OAuth2:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: "/oauth/token"
+          scopes:
+            read: "Read access to compliance data"
+            audit: "Perform compliance audits"
+            admin: "Full administrative access"
+    SAML:
+      type: http
+      scheme: bearer
+      bearerFormat: "SAML"
+
+  schemas:
+    ComplianceHealthResponse:
+      type: object
+      required:
+        - status
+        - version
+        - frameworks_status
+      properties:
+        status:
+          type: string
+          enum: ["healthy", "degraded", "unhealthy"]
+        version:
+          type: string
+        ossa_version:
+          type: string
+        frameworks_status:
+          type: object
+          properties:
+            iso42001:
+              $ref: '#/components/schemas/FrameworkHealth'
+            nist_ai_rmf:
+              $ref: '#/components/schemas/FrameworkHealth'
+            eu_ai_act:
+              $ref: '#/components/schemas/FrameworkHealth'
+        active_audits:
+          type: integer
+        last_update:
+          type: string
+          format: date-time
+
+    FrameworkHealth:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: ["operational", "degraded", "offline"]
+        last_check:
+          type: string
+          format: date-time
+        controls_monitored:
+          type: integer
+        compliance_score:
+          type: number
+          minimum: 0
+          maximum: 1
+
+    ComplianceCapabilitiesResponse:
+      type: object
+      properties:
+        supported_frameworks:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+              version:
+                type: string
+              automation_level:
+                type: string
+              controls_count:
+                type: integer
+        audit_types:
+          type: array
+          items:
+            type: string
+        evidence_collection:
+          type: object
+          properties:
+            automated:
+              type: boolean
+            continuous_monitoring:
+              type: boolean
+            retention_period:
+              type: string
+        reporting_formats:
+          type: array
+          items:
+            type: string
+
+    AuditRequest:
+      type: object
+      required:
+        - scope
+        - frameworks
+      properties:
+        scope:
+          type: string
+          enum: ["full", "partial", "controls_specific"]
+        frameworks:
+          type: array
+          items:
+            type: string
+            enum: ["ISO_42001", "NIST_AI_RMF", "EU_AI_Act"]
+        specific_controls:
+          type: array
+          items:
+            type: string
+        evidence_collection:
+          type: boolean
+          default: true
+        priority:
+          type: string
+          enum: ["low", "normal", "high", "critical"]
+          default: "normal"
+
+    AuditResponse:
+      type: object
+      properties:
+        audit_id:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum: ["initiated", "in_progress", "completed", "failed"]
+        estimated_completion:
+          type: string
+          format: date-time
+        frameworks_included:
+          type: array
+          items:
+            type: string
+        monitoring_endpoint:
+          type: string
+
+    AuditStatusResponse:
+      type: object
+      properties:
+        audit_id:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum: ["in_progress", "completed", "failed", "cancelled"]
+        progress:
+          type: number
+          minimum: 0
+          maximum: 100
+        findings:
+          type: object
+          properties:
+            total_controls_assessed:
+              type: integer
+            compliant_controls:
+              type: integer
+            non_compliant_controls:
+              type: integer
+            high_risk_findings:
+              type: integer
+            medium_risk_findings:
+              type: integer
+            low_risk_findings:
+              type: integer
+        framework_results:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/FrameworkResult'
+        report_available:
+          type: boolean
+        report_id:
+          type: string
+          format: uuid
+
+    FrameworkResult:
+      type: object
+      properties:
+        compliance_score:
+          type: number
+          minimum: 0
+          maximum: 1
+        controls_assessed:
+          type: integer
+        controls_compliant:
+          type: integer
+        findings:
+          type: array
+          items:
+            $ref: '#/components/schemas/Finding'
+
+    Finding:
+      type: object
+      properties:
+        control_id:
+          type: string
+        severity:
+          type: string
+          enum: ["low", "medium", "high", "critical"]
+        description:
+          type: string
+        evidence:
+          type: string
+        recommendation:
+          type: string
+        remediation_timeline:
+          type: string
+
+    ComplianceCheckRequest:
+      type: object
+      required:
+        - framework
+        - controls
+      properties:
+        framework:
+          type: string
+          enum: ["ISO_42001", "NIST_AI_RMF", "EU_AI_Act"]
+        controls:
+          type: array
+          items:
+            type: string
+        evidence_required:
+          type: boolean
+          default: false
+
+    ComplianceCheckResponse:
+      type: object
+      properties:
+        framework:
+          type: string
+        controls_checked:
+          type: integer
+        compliant_controls:
+          type: integer
+        overall_compliance:
+          type: number
+          minimum: 0
+          maximum: 1
+        findings:
+          type: array
+          items:
+            $ref: '#/components/schemas/Finding'
+
+    ISO42001StatusResponse:
+      type: object
+      properties:
+        certification_status:
+          type: string
+        auditor_accreditation:
+          type: string
+        last_audit:
+          type: string
+          format: date
+        next_audit:
+          type: string
+          format: date
+        controls_implemented:
+          type: integer
+        compliance_score:
+          type: number
+          minimum: 0
+          maximum: 1
+        key_controls:
+          type: object
+          additionalProperties:
+            type: string
+
+    NISTAIRMFStatusResponse:
+      type: object
+      properties:
+        maturity_level:
+          type: integer
+          minimum: 1
+          maximum: 5
+        functions_implemented:
+          type: array
+          items:
+            type: string
+        risk_assessment_current:
+          type: boolean
+        last_assessment:
+          type: string
+          format: date
+        governance_score:
+          type: number
+          minimum: 0
+          maximum: 1
+
+    EUAIActStatusResponse:
+      type: object
+      properties:
+        risk_classification:
+          type: string
+          enum: ["minimal", "limited", "high", "unacceptable"]
+        conformity_assessment:
+          type: string
+          enum: ["required", "completed", "not_required"]
+        transparency_requirements:
+          type: string
+          enum: ["met", "partial", "not_met"]
+        human_oversight:
+          type: string
+          enum: ["implemented", "partial", "not_implemented"]
+        documentation_complete:
+          type: boolean
+
+    RiskAssessmentRequest:
+      type: object
+      properties:
+        assessment_type:
+          type: string
+          enum: ["comprehensive", "targeted", "periodic"]
+        frameworks:
+          type: array
+          items:
+            type: string
+        risk_categories:
+          type: array
+          items:
+            type: string
+
+    RiskAssessmentResponse:
+      type: object
+      properties:
+        assessment_id:
+          type: string
+          format: uuid
+        overall_risk_score:
+          type: number
+          minimum: 0
+          maximum: 1
+        risk_level:
+          type: string
+          enum: ["low", "medium", "high", "critical"]
+        framework_risks:
+          type: object
+          additionalProperties:
+            type: object
+        mitigation_recommendations:
+          type: array
+          items:
+            type: object
+            properties:
+              risk:
+                type: string
+              mitigation:
+                type: string
+              priority:
+                type: string
+
+    AuditReport:
+      type: object
+      properties:
+        report_id:
+          type: string
+          format: uuid
+        audit_id:
+          type: string
+          format: uuid
+        generated_at:
+          type: string
+          format: date-time
+        executive_summary:
+          type: string
+        compliance_overview:
+          type: object
+        detailed_findings:
+          type: array
+          items:
+            $ref: '#/components/schemas/Finding'
+        recommendations:
+          type: array
+          items:
+            type: string
+        appendices:
+          type: object

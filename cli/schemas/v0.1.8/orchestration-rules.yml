@@ -1,0 +1,1077 @@
+# OSSA Orchestration Rules Schema v0.1.8
+# Comprehensive orchestration patterns for enterprise multi-agent coordination
+# Based on production enterprise patterns and real-world use cases
+
+type: object
+required:
+  - ossa
+  - kind
+  - metadata
+  - spec
+properties:
+  ossa:
+    type: string
+    pattern: '^openapi-ai-agents/v[0-9]+\.[0-9]+\.[0-9]+$'
+    description: OSSA API version
+    example: "0.1.8"
+    
+  kind:
+    type: string
+    enum: [OrchestrationRules]
+    description: Resource type
+    
+  metadata:
+    type: object
+    required:
+      - name
+      - version
+    properties:
+      name:
+        type: string
+        pattern: '^[a-z0-9-]+$'
+        description: Orchestration rules identifier
+        
+      version:
+        type: string
+        pattern: '^[0-9]+\.[0-9]+\.[0-9]+$'
+        description: Rules version
+        
+      description:
+        type: string
+        maxLength: 500
+        description: Orchestration rules description
+        
+      annotations:
+        type: object
+        description: Metadata annotations
+        properties:
+          compliance/frameworks:
+            type: string
+            description: Compliance frameworks (comma-separated)
+            
+          security/classification:
+            type: string
+            enum: ["public", "internal", "confidential", "restricted"]
+            
+          monitoring/enabled:
+            type: string
+            enum: ["true", "false"]
+            
+        additionalProperties:
+          type: string
+          
+  spec:
+    type: object
+    required:
+      - routing_rules
+    properties:
+      routing_rules:
+        type: object
+        description: Agent routing and selection rules
+        properties:
+          default_strategy:
+            type: string
+            enum: ["capability_match", "load_balance", "priority", "intelligent_routing", "round_robin"]
+            default: "intelligent_routing"
+            
+          fallback_strategy:
+            type: string
+            enum: ["round_robin", "random", "least_loaded", "fail_fast"]
+            default: "round_robin"
+            
+          cache_routing_decisions:
+            type: boolean
+            default: true
+            
+          cache_ttl:
+            type: integer
+            minimum: 60
+            default: 300
+            description: Cache TTL in seconds
+            
+          capability_routing:
+            type: array
+            items:
+              type: object
+              required:
+                - capability
+                - required_confidence
+              properties:
+                capability:
+                  type: string
+                  description: Target capability
+                  
+                required_confidence:
+                  type: number
+                  minimum: 0
+                  maximum: 1
+                  description: Minimum confidence threshold
+                  
+                preferred_projects:
+                  type: array
+                  items:
+                    type: string
+                  description: Preferred projects for this capability
+                  
+                fallback_projects:
+                  type: array
+                  items:
+                    type: string
+                  description: Fallback projects
+                  
+                load_balancing:
+                  type: string
+                  enum: ["round_robin", "weighted_round_robin", "least_latency", "resource_aware"]
+                  default: "weighted_round_robin"
+                  
+                weights:
+                  type: object
+                  additionalProperties:
+                    type: number
+                    minimum: 0
+                    maximum: 1
+                  description: Project weights for load balancing
+                  
+                health_check_required:
+                  type: boolean
+                  default: true
+                  
+                timeout:
+                  type: integer
+                  minimum: 1000
+                  default: 30000
+                  description: Timeout in milliseconds
+                  
+                require_certification:
+                  type: string
+                  enum: ["bronze", "silver", "gold"]
+                  description: Required certification level
+                  
+                isolation_level:
+                  type: string
+                  enum: ["none", "basic", "strict"]
+                  default: "none"
+                  
+                audit_trail:
+                  type: boolean
+                  default: false
+                  
+                resource_thresholds:
+                  type: object
+                  properties:
+                    cpu:
+                      type: integer
+                      minimum: 0
+                      maximum: 100
+                    memory:
+                      type: integer
+                      minimum: 0
+                      maximum: 100
+                    gpu:
+                      type: integer
+                      minimum: 0
+                      maximum: 100
+                  additionalProperties: false
+                  
+                queue_overflow_strategy:
+                  type: string
+                  enum: ["queue", "reject", "elastic_scaling", "circuit_breaker"]
+                  default: "queue"
+                  
+              additionalProperties: false
+              
+          domain_routing:
+            type: array
+            items:
+              type: object
+              required:
+                - domain
+                - route_to_projects
+              properties:
+                domain:
+                  type: string
+                  description: Business domain
+                  
+                expertise_required:
+                  type: array
+                  items:
+                    type: string
+                  description: Required expertise areas
+                  
+                route_to_projects:
+                  type: array
+                  items:
+                    type: string
+                  description: Target projects for this domain
+                  
+                confidence_threshold:
+                  type: number
+                  minimum: 0
+                  maximum: 1
+                  default: 0.8
+                  
+                gpu_required:
+                  type: boolean
+                  default: false
+                  
+                compliance_requirements:
+                  type: array
+                  items:
+                    type: string
+                    enum: ["sox", "hipaa", "gdpr", "pci-dss", "iso-42001"]
+                  description: Required compliance frameworks
+                  
+                data_residency:
+                  type: string
+                  description: Required data residency region
+                  
+              additionalProperties: false
+              
+          team_routing:
+            type: object
+            additionalProperties:
+              type: object
+              properties:
+                allowed_projects:
+                  type: array
+                  items:
+                    type: string
+                  description: Projects this team can access
+                  
+                priority:
+                  type: string
+                  enum: ["low", "medium", "high", "critical"]
+                  default: "medium"
+                  
+                rate_limit:
+                  oneOf:
+                    - type: integer
+                      minimum: 1
+                    - type: string
+                      enum: ["unlimited"]
+                  description: Requests per minute
+                  
+                budget_limit:
+                  oneOf:
+                    - type: integer
+                      minimum: 0
+                    - type: string
+                      enum: ["unlimited"]
+                  description: Token budget per hour
+                  
+                gpu_access:
+                  type: boolean
+                  default: false
+                  
+                bypass_queue:
+                  type: boolean
+                  default: false
+                  
+                audit_exempt:
+                  type: boolean
+                  default: false
+                  
+                require_mfa:
+                  type: boolean
+                  default: false
+                  
+              additionalProperties: false
+              
+          cost_optimization:
+            type: object
+            properties:
+              enabled:
+                type: boolean
+                default: false
+                
+              strategies:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    name:
+                      type: string
+                      
+                    max_tokens_per_request:
+                      type: integer
+                      minimum: 100
+                      
+                    max_cost_per_request:
+                      type: number
+                      minimum: 0
+                      
+                    prefer_cached_responses:
+                      type: boolean
+                      default: true
+                      
+                    prefer_smaller_models:
+                      type: boolean
+                      default: false
+                      
+                    fallback_on_budget_exceeded:
+                      type: boolean
+                      default: true
+                      
+                    alert_on_threshold:
+                      type: integer
+                      minimum: 0
+                      maximum: 100
+                      description: Alert threshold percentage
+                      
+                  additionalProperties: false
+                  
+            additionalProperties: false
+            
+        additionalProperties: false
+        
+      orchestration_patterns:
+        type: object
+        description: Multi-agent coordination patterns
+        properties:
+          sequential:
+            type: array
+            items:
+              type: object
+              required:
+                - name
+                - description
+                - steps
+              properties:
+                name:
+                  type: string
+                  description: Pattern name
+                  
+                description:
+                  type: string
+                  maxLength: 500
+                  description: Pattern description
+                  
+                retry_on_failure:
+                  type: boolean
+                  default: false
+                  
+                max_retries:
+                  type: integer
+                  minimum: 0
+                  default: 0
+                  
+                steps:
+                  type: array
+                  minItems: 1
+                  items:
+                    type: object
+                    required:
+                      - name
+                      - project
+                      - agent
+                    properties:
+                      name:
+                        type: string
+                        description: Step name
+                        
+                      project:
+                        type: string
+                        description: Target project
+                        
+                      agent:
+                        type: string
+                        description: Target agent
+                        
+                      timeout:
+                        type: string
+                        pattern: '^[0-9]+[ms]?$'
+                        description: Step timeout
+                        
+                      required:
+                        type: boolean
+                        default: true
+                        
+                      on_failure:
+                        type: string
+                        enum: ["stop", "continue", "retry", "alert_security", "continue_with_warning"]
+                        default: "stop"
+                        
+                    additionalProperties: false
+                    
+              additionalProperties: false
+              
+          parallel:
+            type: array
+            items:
+              type: object
+              required:
+                - name
+                - description
+                - groups
+              properties:
+                name:
+                  type: string
+                  
+                description:
+                  type: string
+                  maxLength: 500
+                  
+                max_parallel:
+                  type: integer
+                  minimum: 1
+                  default: 5
+                  
+                timeout_strategy:
+                  type: string
+                  enum: ["wait_for_all", "wait_for_first", "wait_for_majority"]
+                  default: "wait_for_all"
+                  
+                groups:
+                  type: array
+                  minItems: 1
+                  items:
+                    type: object
+                    required:
+                      - name
+                      - projects
+                      - agent_type
+                    properties:
+                      name:
+                        type: string
+                        
+                      projects:
+                        type: array
+                        items:
+                          type: string
+                        minItems: 1
+                        
+                      agent_type:
+                        type: string
+                        
+                      max_parallel:
+                        type: integer
+                        minimum: 1
+                        default: 3
+                        
+                      collect_metrics:
+                        type: boolean
+                        default: false
+                        
+                      require_healthy_state:
+                        type: boolean
+                        default: false
+                        
+                    additionalProperties: false
+                    
+              additionalProperties: false
+              
+          fanout:
+            type: array
+            items:
+              type: object
+              required:
+                - name
+                - description
+                - fanout
+              properties:
+                name:
+                  type: string
+                  
+                description:
+                  type: string
+                  maxLength: 500
+                  
+                fanout:
+                  type: object
+                  required:
+                    - target
+                    - agent
+                  properties:
+                    target:
+                      type: string
+                      enum: ["all_projects", "matching_projects", "specific_projects"]
+                      
+                    filter:
+                      type: string
+                      description: Filter criteria
+                      
+                    agent:
+                      type: string
+                      description: Target agent type
+                      
+                    batch_size:
+                      type: integer
+                      minimum: 1
+                      default: 1
+                      
+                    parallel_batches:
+                      type: integer
+                      minimum: 1
+                      default: 1
+                      
+                    collect_results:
+                      type: boolean
+                      default: true
+                      
+                  additionalProperties: false
+                  
+                fanin:
+                  type: object
+                  properties:
+                    aggregation:
+                      type: string
+                      description: Aggregation service
+                      
+                    aggregation_strategy:
+                      type: string
+                      enum: ["merge_findings", "weighted_average", "consensus", "first_valid"]
+                      default: "merge_findings"
+                      
+                    deduplication:
+                      type: boolean
+                      default: false
+                      
+                    severity_threshold:
+                      type: string
+                      enum: ["low", "medium", "high", "critical"]
+                      
+                  additionalProperties: false
+                  
+              additionalProperties: false
+              
+          pipeline:
+            type: array
+            items:
+              type: object
+              required:
+                - name
+                - description
+                - stages
+              properties:
+                name:
+                  type: string
+                  
+                description:
+                  type: string
+                  maxLength: 500
+                  
+                stages:
+                  type: array
+                  minItems: 2
+                  items:
+                    type: object
+                    required:
+                      - name
+                      - project
+                      - agents
+                    properties:
+                      name:
+                        type: string
+                        
+                      project:
+                        type: string
+                        
+                      agents:
+                        type: array
+                        items:
+                          type: string
+                        minItems: 1
+                        
+                      parallel:
+                        type: boolean
+                        default: false
+                        
+                      gpu_required:
+                        type: boolean
+                        default: false
+                        
+                      checkpoint_enabled:
+                        type: boolean
+                        default: false
+                        
+                    additionalProperties: false
+                    
+              additionalProperties: false
+              
+          mapreduce:
+            type: array
+            items:
+              type: object
+              required:
+                - name
+                - description
+                - map
+                - reduce
+              properties:
+                name:
+                  type: string
+                  
+                description:
+                  type: string
+                  maxLength: 500
+                  
+                map:
+                  type: object
+                  required:
+                    - splitter
+                    - mapper_agent
+                  properties:
+                    splitter:
+                      type: string
+                      
+                    chunk_size:
+                      type: string
+                      pattern: '^[0-9]+[KMGT]?B$'
+                      
+                    parallel_mappers:
+                      type: integer
+                      minimum: 1
+                      default: 1
+                      
+                    mapper_agent:
+                      type: string
+                      
+                  additionalProperties: false
+                  
+                reduce:
+                  type: object
+                  required:
+                    - reducer_agent
+                  properties:
+                    reducer_agent:
+                      type: string
+                      
+                    reduction_strategy:
+                      type: string
+                      enum: ["sequential", "hierarchical", "parallel"]
+                      default: "sequential"
+                      
+                    intermediate_storage:
+                      type: string
+                      format: uri
+                      
+                  additionalProperties: false
+                  
+              additionalProperties: false
+              
+          circuit_breaker:
+            type: array
+            items:
+              type: object
+              required:
+                - name
+                - description
+                - threshold
+                - states
+              properties:
+                name:
+                  type: string
+                  
+                description:
+                  type: string
+                  maxLength: 500
+                  
+                threshold:
+                  type: integer
+                  minimum: 1
+                  description: Failure threshold
+                  
+                timeout:
+                  type: integer
+                  minimum: 1000
+                  description: Circuit breaker timeout in milliseconds
+                  
+                reset_timeout:
+                  type: integer
+                  minimum: 1000
+                  description: Reset timeout in milliseconds
+                  
+                half_open_requests:
+                  type: integer
+                  minimum: 1
+                  default: 1
+                  
+                states:
+                  type: object
+                  required:
+                    - closed
+                    - open
+                    - half_open
+                  properties:
+                    closed:
+                      type: object
+                      properties:
+                        allow_requests:
+                          type: boolean
+                          default: true
+                        monitor_failures:
+                          type: boolean
+                          default: true
+                      additionalProperties: false
+                      
+                    open:
+                      type: object
+                      properties:
+                        allow_requests:
+                          type: boolean
+                          default: false
+                        fallback:
+                          type: string
+                        alert:
+                          type: string
+                      additionalProperties: false
+                      
+                    half_open:
+                      type: object
+                      properties:
+                        allow_requests:
+                          type: string
+                          enum: ["limited", "all", "none"]
+                          default: "limited"
+                        test_requests:
+                          type: integer
+                          minimum: 1
+                          default: 1
+                      additionalProperties: false
+                      
+                  additionalProperties: false
+                  
+              additionalProperties: false
+              
+        additionalProperties: false
+        
+      coordination:
+        type: object
+        description: Agent coordination strategies
+        properties:
+          consensus:
+            type: object
+            properties:
+              default_mechanism:
+                type: string
+                enum: ["majority_vote", "unanimous", "weighted", "quorum"]
+                default: "majority_vote"
+                
+              mechanisms:
+                type: object
+                additionalProperties:
+                  type: object
+                  properties:
+                    required_votes:
+                      type: number
+                      minimum: 0
+                      maximum: 1
+                      
+                    timeout:
+                      type: integer
+                      minimum: 1000
+                      
+                    weight_by:
+                      type: string
+                      enum: ["expertise_score", "certification_level", "success_rate"]
+                      
+                    threshold:
+                      type: number
+                      minimum: 0
+                      maximum: 1
+                      
+                    minimum_participants:
+                      type: integer
+                      minimum: 1
+                      
+                    required_agreement:
+                      type: number
+                      minimum: 0
+                      maximum: 1
+                      
+                  additionalProperties: false
+                  
+            additionalProperties: false
+            
+          conflict_resolution:
+            type: object
+            properties:
+              default_strategy:
+                type: string
+                enum: ["expertise_weighted", "seniority_based", "performance_based", "human_override"]
+                default: "expertise_weighted"
+                
+              strategies:
+                type: object
+                additionalProperties:
+                  type: object
+                  properties:
+                    factors:
+                      type: array
+                      items:
+                        type: string
+                        
+                    require_approval:
+                      type: boolean
+                      default: false
+                      
+                    approvers:
+                      type: array
+                      items:
+                        type: string
+                        
+                  additionalProperties: false
+                  
+            additionalProperties: false
+            
+          load_balancing:
+            type: object
+            properties:
+              algorithms:
+                type: object
+                additionalProperties:
+                  type: object
+                  properties:
+                    reset_counter:
+                      type: integer
+                      minimum: 100
+                      
+                    weight_update_interval:
+                      type: integer
+                      minimum: 60
+                      description: Weight update interval in seconds
+                      
+                    connection_tracking:
+                      type: boolean
+                      default: false
+                      
+                    latency_window:
+                      type: string
+                      pattern: '^[0-9]+[smh]$'
+                      
+                    percentile:
+                      type: integer
+                      minimum: 50
+                      maximum: 99
+                      
+                    metrics:
+                      type: array
+                      items:
+                        type: string
+                        enum: ["cpu", "memory", "gpu", "tokens", "latency"]
+                        
+                    threshold_based:
+                      type: boolean
+                      default: false
+                      
+                    ml_model:
+                      type: string
+                      
+                    features:
+                      type: array
+                      items:
+                        type: string
+                        
+                  additionalProperties: false
+                  
+            additionalProperties: false
+            
+        additionalProperties: false
+        
+      monitoring:
+        type: object
+        description: Orchestration monitoring configuration
+        properties:
+          metrics:
+            type: object
+            properties:
+              enabled:
+                type: boolean
+                default: true
+                
+              interval:
+                type: string
+                pattern: '^[0-9]+[ms]?$'
+                default: "15s"
+                
+              retention:
+                type: string
+                pattern: '^[0-9]+[dmy]$'
+                default: "30d"
+                
+              collected_metrics:
+                type: array
+                items:
+                  type: string
+                  enum: ["orchestration_latency", "routing_decisions", "pattern_usage", "success_rate", "error_rate", "token_usage", "cost_per_orchestration"]
+                  
+            additionalProperties: false
+            
+          tracing:
+            type: object
+            properties:
+              enabled:
+                type: boolean
+                default: false
+                
+              sampling_rate:
+                type: number
+                minimum: 0
+                maximum: 1
+                default: 0.1
+                
+              trace_id_propagation:
+                type: string
+                enum: ["w3c", "jaeger", "zipkin"]
+                default: "w3c"
+                
+            additionalProperties: false
+            
+          alerts:
+            type: array
+            items:
+              type: object
+              required:
+                - name
+                - condition
+                - severity
+              properties:
+                name:
+                  type: string
+                  
+                condition:
+                  type: string
+                  description: Alert condition expression
+                  
+                severity:
+                  type: string
+                  enum: ["info", "warning", "critical"]
+                  
+              additionalProperties: false
+              
+        additionalProperties: false
+        
+      security:
+        type: object
+        description: Orchestration security configuration
+        properties:
+          inter_agent_auth:
+            type: object
+            properties:
+              method:
+                type: string
+                enum: ["none", "api_key", "jwt", "mutual_tls", "oauth2"]
+                default: "api_key"
+                
+              certificate_rotation:
+                type: string
+                pattern: '^[0-9]+[dmy]$'
+                default: "30d"
+                
+            additionalProperties: false
+            
+          orchestration_auth:
+            type: object
+            properties:
+              model:
+                type: string
+                enum: ["none", "rbac", "abac"]
+                default: "rbac"
+                
+              policy_engine:
+                type: string
+                enum: ["opa", "cedar", "casbin"]
+                
+              policy_update_interval:
+                type: string
+                pattern: '^[0-9]+[smh]$'
+                default: "5m"
+                
+            additionalProperties: false
+            
+          encryption:
+            type: object
+            properties:
+              in_transit:
+                type: string
+                enum: ["none", "tls_1_2", "tls_1_3"]
+                default: "tls_1_3"
+                
+              at_rest:
+                type: string
+                enum: ["none", "aes_256_gcm", "chacha20_poly1305"]
+                default: "aes_256_gcm"
+                
+              key_management:
+                type: string
+                enum: ["local", "vault", "aws_kms", "azure_key_vault"]
+                default: "vault"
+                
+            additionalProperties: false
+            
+        additionalProperties: false
+        
+      compliance:
+        type: object
+        description: Compliance configuration
+        properties:
+          audit:
+            type: object
+            properties:
+              enabled:
+                type: boolean
+                default: false
+                
+              events:
+                type: array
+                items:
+                  type: string
+                  enum: ["routing_decision", "orchestration_start", "orchestration_complete", "errors", "policy_violation"]
+                  
+              retention:
+                type: string
+                pattern: '^[0-9]+[dmy]$'
+                default: "90d"
+                
+              immutable_storage:
+                type: boolean
+                default: false
+                
+            additionalProperties: false
+            
+          data_governance:
+            type: object
+            properties:
+              pii_detection:
+                type: boolean
+                default: false
+                
+              pii_handling:
+                type: string
+                enum: ["allow", "redact", "block", "encrypt"]
+                default: "allow"
+                
+              data_residency_enforcement:
+                type: boolean
+                default: false
+                
+            additionalProperties: false
+            
+          validation:
+            type: object
+            properties:
+              pre_orchestration:
+                type: boolean
+                default: false
+                
+              post_orchestration:
+                type: boolean
+                default: false
+                
+              continuous:
+                type: boolean
+                default: false
+                
+              frameworks:
+                type: array
+                items:
+                  type: string
+                  enum: ["iso-42001", "nist-ai-rmf", "sox", "hipaa", "gdpr"]
+                  
+            additionalProperties: false
+            
+        additionalProperties: false
+        
+    additionalProperties: false
+    
+additionalProperties: false

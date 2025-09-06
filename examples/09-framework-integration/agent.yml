@@ -1,0 +1,97 @@
+# OSSA Framework Integration Example - Level 6
+# Comprehensive multi-framework agent demonstrating all major AI framework integrations
+
+ossa: "0.1.8"
+kind: Agent
+metadata:
+  name: framework-integration-demo
+  version: "1.0.0"
+  description: |
+    Comprehensive demonstration of OSSA agent integration with all major AI frameworks:
+    LangChain, CrewAI, AutoGen, OpenAI Assistants, Anthropic MCP, Google Vertex AI, 
+    and Hugging Face Transformers.
+
+spec:
+  conformance_tier: advanced
+  class: integration
+  category: assistant
+  
+  capabilities:
+    primary:
+      - multi_framework_execution
+      - protocol_translation
+      - cross_platform_compatibility
+    secondary:
+      - performance_optimization
+      - compliance_validation
+      - framework_bridging
+  
+  protocols:
+    - name: openapi
+      version: "3.1.0"
+      required: true
+    - name: mcp
+      version: "2024-12-05"
+      required: true
+    - name: uadp
+      version: "1.0.0"
+      required: false
+  
+  framework_support:
+    langchain:
+      enabled: true
+      integration_type: "tool_wrapper"
+      version: "0.3.x"
+      config:
+        async_support: true
+        streaming: true
+        tool_calling: true
+    
+    crewai:
+      enabled: true
+      integration_type: "agent_role"
+      version: "latest"
+      config:
+        collaboration: true
+        task_delegation: true
+        sequential_processing: true
+    
+    openai:
+      enabled: true
+      integration_type: "assistant_api"
+      version: "1.x"
+      config:
+        function_calling: true
+        file_search: true
+        code_interpreter: true
+    
+    anthropic:
+      enabled: true
+      integration_type: "mcp_server"
+      version: "1.x"
+      config:
+        tools: true
+        resources: true
+        prompts: true
+    
+    mcp:
+      enabled: true
+      integration_type: "native_server"
+      config:
+        server_name: "framework-integration-demo"
+        capabilities: ["tools", "resources", "prompts"]
+  
+  endpoints:
+    health: "/health"
+    capabilities: "/capabilities"
+    discover: "/discover"
+    frameworks: "/frameworks"
+    
+  performance:
+    latency:
+      health_check: "<50ms"
+      capabilities: "<100ms"
+    throughput:
+      requests_per_second: 100
+    availability:
+      uptime_target: 99.9

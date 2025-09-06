@@ -26,7 +26,7 @@ info:
 
 # OAAS Extension - Required for all OAAS agents
 x-openapi-ai-agents-standard:
-  version: "0.1.1"
+  version: "0.1.8"
   agent:
     name: "example-basic"
     level: 1
