@@ -17,8 +17,10 @@
   },
   "include": [
     "index.ts",
+    "api/**/*.ts",
     "commands/**/*.ts",
     "validation/**/*.ts",
+    "services/**/*.ts",
     "uadp-commands.ts",
     "standardizer.ts",
     "uadp-discovery.ts",
@@ -28,7 +30,6 @@
     "node_modules",
     "dist",
     "templates/**",
-    "api/**",
     "__tests__/**",
     "test/**",
     "schemas/**",
