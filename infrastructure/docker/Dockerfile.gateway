@@ -1,25 +1,29 @@
-FROM node:18-alpine
+FROM node:20-alpine
 
 WORKDIR /app
 
 # Copy package files
 COPY package*.json ./
 
-# Install dependencies
-RUN npm ci --only=production
+# Install root dependencies (may be minimal)
+RUN npm install || true
 
 # Copy source code
 COPY . .
 
-# Build the application
-RUN npm run build
+# Install and build the CLI package located at src/cli
+WORKDIR /app/src/cli
+RUN npm install && npm run build
+
+# Return to app root
+WORKDIR /app
 
 # Expose port
 EXPOSE 3000
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD curl -f http://localhost:3000/health || exit 1
+  CMD wget -qO- http://localhost:3000/health || exit 1
 
-# Start the application
-CMD ["npm", "start"]
+# Start the CLI server
+CMD ["node", "/app/src/cli/bin/ossa", "serve"]
