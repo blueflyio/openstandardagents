@@ -54,6 +54,21 @@ cd ossa
 npm install
 ```
 
+### Services (Local Dev with OrbStack)
+
+```bash
+# Minimal: Redis only (host 6382)
+docker compose -f infrastructure/docker/docker-compose.orbstack.yml -p ossa up -d
+
+# Gateway (host 4003) → connects to host Redis on 6382
+docker compose -f infrastructure/docker/docker-compose.gateway.yml -p ossa up -d
+
+# Status & Logs
+docker compose -p ossa ps
+docker compose -p ossa logs -f ossa-gateway-1
+curl http://127.0.0.1:4003/health
+```
+
 ### Experience the Golden Standard
 
 ```bash
