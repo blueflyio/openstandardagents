@@ -1,0 +1,282 @@
+{
+  "dashboard": {
+    "id": null,
+    "title": "OSSA Production Monitoring Dashboard",
+    "tags": ["ossa", "agents", "production"],
+    "timezone": "browser",
+    "panels": [
+      {
+        "id": 1,
+        "title": "OSSA Service Health Overview",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "up{job=\"ossa-api\"}",
+            "legendFormat": "Service Status"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "thresholds"
+            },
+            "thresholds": {
+              "steps": [
+                {"color": "red", "value": 0},
+                {"color": "green", "value": 1}
+              ]
+            }
+          }
+        },
+        "gridPos": {"h": 8, "w": 6, "x": 0, "y": 0}
+      },
+      {
+        "id": 2,
+        "title": "Active Agents Count",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "ossa_agents_active_total",
+            "legendFormat": "Active Agents"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "short",
+            "color": {"mode": "palette-classic"}
+          }
+        },
+        "gridPos": {"h": 8, "w": 6, "x": 6, "y": 0}
+      },
+      {
+        "id": 3,
+        "title": "Token Reduction Efficiency",
+        "type": "gauge",
+        "targets": [
+          {
+            "expr": "ossa_token_reduction_percentage",
+            "legendFormat": "Token Reduction %"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "min": 0,
+            "max": 100,
+            "unit": "percent",
+            "thresholds": {
+              "steps": [
+                {"color": "red", "value": 0},
+                {"color": "yellow", "value": 60},
+                {"color": "green", "value": 68}
+              ]
+            }
+          }
+        },
+        "gridPos": {"h": 8, "w": 6, "x": 12, "y": 0}
+      },
+      {
+        "id": 4,
+        "title": "System Uptime (24h)",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "avg_over_time(up{job=\"ossa-api\"}[24h]) * 100",
+            "legendFormat": "Uptime %"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percent",
+            "decimals": 3,
+            "thresholds": {
+              "steps": [
+                {"color": "red", "value": 0},
+                {"color": "yellow", "value": 99.9},
+                {"color": "green", "value": 99.97}
+              ]
+            }
+          }
+        },
+        "gridPos": {"h": 8, "w": 6, "x": 18, "y": 0}
+      },
+      {
+        "id": 5,
+        "title": "360° Feedback Loop Performance",
+        "type": "timeseries",
+        "targets": [
+          {
+            "expr": "rate(ossa_feedback_loop_completed_total[5m])",
+            "legendFormat": "Completed Loops/min"
+          },
+          {
+            "expr": "histogram_quantile(0.95, ossa_feedback_loop_duration_seconds)",
+            "legendFormat": "P95 Duration"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 8}
+      },
+      {
+        "id": 6,
+        "title": "VORTEX Token Exchange Metrics",
+        "type": "timeseries",
+        "targets": [
+          {
+            "expr": "rate(ossa_vortex_token_exchanges_total[5m])",
+            "legendFormat": "Exchanges/min"
+          },
+          {
+            "expr": "histogram_quantile(0.99, ossa_vortex_token_exchange_duration_seconds) * 1000",
+            "legendFormat": "P99 Latency (ms)"
+          },
+          {
+            "expr": "rate(ossa_vortex_cache_hits_total[5m]) / rate(ossa_vortex_cache_requests_total[5m]) * 100",
+            "legendFormat": "Cache Hit Rate %"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 8}
+      },
+      {
+        "id": 7,
+        "title": "Agent Registry Status",
+        "type": "table",
+        "targets": [
+          {
+            "expr": "ossa_agent_registry_connections",
+            "legendFormat": "Active Connections",
+            "format": "table",
+            "instant": true
+          }
+        ],
+        "transformations": [
+          {
+            "id": "organize",
+            "options": {
+              "excludeByName": {"Time": true},
+              "indexByName": {},
+              "renameByName": {}
+            }
+          }
+        ],
+        "gridPos": {"h": 8, "w": 8, "x": 0, "y": 16}
+      },
+      {
+        "id": 8,
+        "title": "OpenAPI Generator SDK Statistics",
+        "type": "timeseries",
+        "targets": [
+          {
+            "expr": "rate(ossa_openapi_sdk_generations_total[5m])",
+            "legendFormat": "SDK Generations/min"
+          },
+          {
+            "expr": "rate(ossa_openapi_sdk_generation_failures_total[5m])",
+            "legendFormat": "Generation Failures/min"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 8, "x": 8, "y": 16}
+      },
+      {
+        "id": 9,
+        "title": "Security & Trust Metrics",
+        "type": "timeseries",
+        "targets": [
+          {
+            "expr": "avg(ossa_agent_trust_score)",
+            "legendFormat": "Average Trust Score"
+          },
+          {
+            "expr": "rate(ossa_security_incidents_total[5m])",
+            "legendFormat": "Security Incidents/min"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 8, "x": 16, "y": 16}
+      },
+      {
+        "id": 10,
+        "title": "Circuit Breaker Status",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "ossa_circuit_breaker_state",
+            "legendFormat": "{{breaker_name}}"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "mappings": [
+              {"options": {"0": {"text": "CLOSED"}}, "type": "value"},
+              {"options": {"1": {"text": "OPEN"}}, "type": "value"},
+              {"options": {"2": {"text": "HALF_OPEN"}}, "type": "value"}
+            ],
+            "color": {
+              "mode": "thresholds"
+            },
+            "thresholds": {
+              "steps": [
+                {"color": "green", "value": 0},
+                {"color": "red", "value": 1},
+                {"color": "yellow", "value": 2}
+              ]
+            }
+          }
+        },
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 24}
+      },
+      {
+        "id": 11,
+        "title": "Memory System Performance (ACTA)",
+        "type": "timeseries",
+        "targets": [
+          {
+            "expr": "ossa_memory_hot_tier_usage_bytes / ossa_memory_hot_tier_capacity_bytes * 100",
+            "legendFormat": "Hot Tier Usage %"
+          },
+          {
+            "expr": "ossa_memory_warm_tier_usage_bytes / ossa_memory_warm_tier_capacity_bytes * 100",
+            "legendFormat": "Warm Tier Usage %"
+          },
+          {
+            "expr": "rate(ossa_memory_coherence_checks_total[5m])",
+            "legendFormat": "Coherence Checks/min"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 24}
+      },
+      {
+        "id": 12,
+        "title": "Cost Optimization Metrics",
+        "type": "timeseries",
+        "targets": [
+          {
+            "expr": "ossa_cost_savings_total",
+            "legendFormat": "Total Cost Savings ($)"
+          },
+          {
+            "expr": "rate(ossa_token_usage_optimized_total[1h])",
+            "legendFormat": "Optimized Tokens/hour"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 32}
+      },
+      {
+        "id": 13,
+        "title": "API Response Time Distribution",
+        "type": "heatmap",
+        "targets": [
+          {
+            "expr": "rate(ossa_http_request_duration_seconds_bucket[5m])",
+            "legendFormat": "{{le}}"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 32}
+      }
+    ],
+    "time": {
+      "from": "now-1h",
+      "to": "now"
+    },
+    "refresh": "10s",
+    "schemaVersion": 30,
+    "version": 1
+  }
+}

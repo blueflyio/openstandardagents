@@ -58,6 +58,83 @@ services:
     networks:
       - ossa-network
 
+  # Monitoring Stack - Prometheus, Grafana, AlertManager
+  prometheus:
+    container_name: ossa-prometheus
+    image: prom/prometheus:latest
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=200h'
+      - '--web.enable-lifecycle'
+    restart: unless-stopped
+    ports:
+      - '9091:9090'
+    volumes:
+      - ./monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./monitoring/prometheus/ossa-alerts.yml:/etc/prometheus/ossa-alerts.yml
+      - prometheus-data:/prometheus
+    networks:
+      - ossa-network
+    depends_on:
+      - ossa
+
+  grafana:
+    container_name: ossa-grafana
+    image: grafana/grafana:latest
+    restart: unless-stopped
+    ports:
+      - '3080:3000'
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=ossa-monitor-2025
+      - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_INSTALL_PLUGINS=grafana-clock-panel,grafana-simple-json-datasource
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning
+      - ./monitoring/grafana/ossa-dashboard.json:/var/lib/grafana/dashboards/ossa-dashboard.json
+    networks:
+      - ossa-network
+    depends_on:
+      - prometheus
+
+  alertmanager:
+    container_name: ossa-alertmanager
+    image: prom/alertmanager:latest
+    restart: unless-stopped
+    ports:
+      - '9093:9093'
+    volumes:
+      - ./monitoring/alertmanager/alertmanager.yml:/etc/alertmanager/alertmanager.yml
+      - alertmanager-data:/alertmanager
+    command:
+      - '--config.file=/etc/alertmanager/alertmanager.yml'
+      - '--storage.path=/alertmanager'
+      - '--web.external-url=http://localhost:9093'
+    networks:
+      - ossa-network
+
+  node-exporter:
+    container_name: ossa-node-exporter
+    image: prom/node-exporter:latest
+    restart: unless-stopped
+    ports:
+      - '9100:9100'
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    command:
+      - '--path.procfs=/host/proc'
+      - '--path.rootfs=/rootfs'
+      - '--path.sysfs=/host/sys'
+      - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)'
+    networks:
+      - ossa-network
+
 networks:
   ossa-network:
     driver: bridge
@@ -65,3 +142,6 @@ networks:
 volumes:
   redis-data:
   postgres-data:
+  prometheus-data:
+  grafana-data:
+  alertmanager-data:

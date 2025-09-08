@@ -88,24 +88,14 @@ program.addCommand(createServicesCommand());
 // Add agent-forge integration
 program.addCommand(createAgentForgeIntegration());
 
-<<<<<<< HEAD:src/cli/index.ts
-=======
-<<<<<<< Updated upstream:cli/src/index.ts
-=======
->>>>>>> feature/0.1.0-ossa-implementation:cli/src/index.ts
 // Add comprehensive agent management commands
 program.addCommand(createAgentManagementCommands());
 
 // Add workspace management commands  
 program.addCommand(createWorkspaceManagementCommands());
 
-<<<<<<< HEAD:src/cli/index.ts
-=======
 // Add OpenAPI Generator commands
 program.addCommand(generateCommand);
-
->>>>>>> Stashed changes:src/cli/index.ts
->>>>>>> feature/0.1.0-ossa-implementation:cli/src/index.ts
 // Implementation functions
 
 function createAgent(name: string, options: any) {
@@ -135,15 +125,8 @@ function createAgent(name: string, options: any) {
   fs.mkdirSync(path.join(agentDir, 'handlers'), { recursive: true });
   fs.mkdirSync(path.join(agentDir, 'integrations'), { recursive: true });
   fs.mkdirSync(path.join(agentDir, 'schemas'), { recursive: true });
-<<<<<<< HEAD:src/cli/index.ts
-  fs.mkdirSync(path.join(agentDir, 'training-modules'), { recursive: true });
-=======
-<<<<<<< Updated upstream:cli/src/index.ts
-=======
   fs.mkdirSync(path.join(agentDir, 'training-modules'), { recursive: true });
   fs.mkdirSync(path.join(agentDir, '_roadmap'), { recursive: true });
->>>>>>> Stashed changes:src/cli/index.ts
->>>>>>> feature/0.1.0-ossa-implementation:cli/src/index.ts
   
   // Create agent.yml with enhanced OSSA v0.1.8 spec
   const agentSpec = {
@@ -433,14 +416,6 @@ This agent supports multiple AI frameworks:
   
   console.log(chalk.green('✅ Created OSSA v0.1.8 agent:'), chalk.bold(name));
   console.log(chalk.gray('   📁'), agentDir);
-<<<<<<< HEAD:src/cli/index.ts
-=======
-<<<<<<< Updated upstream:cli/src/index.ts
-  console.log(chalk.gray('   📄 agent.yml (Enhanced OSSA v0.1.8)'));
-  console.log(chalk.gray('   📄 openapi.yaml (UADP integrated)'));
-  console.log(chalk.gray('   📄 README.md (Quick start guide)'));
-=======
->>>>>>> feature/0.1.0-ossa-implementation:cli/src/index.ts
   console.log(chalk.gray('   📁 behaviors/        (Agent behavior definitions)'));
   console.log(chalk.gray('   📁 config/           (Configuration files)'));
   console.log(chalk.gray('   📁 data/             (Agent data and state)'));
@@ -448,17 +423,10 @@ This agent supports multiple AI frameworks:
   console.log(chalk.gray('   📁 integrations/     (Framework integrations)'));
   console.log(chalk.gray('   📁 schemas/          (Data validation schemas)'));
   console.log(chalk.gray('   📁 training-modules/ (Training and learning modules)'));
-<<<<<<< HEAD:src/cli/index.ts
-  console.log(chalk.gray('   📄 agent.yml         (Enhanced OSSA v0.1.8 spec)'));
-  console.log(chalk.gray('   📄 openapi.yaml      (UADP integrated API spec)'));
-  console.log(chalk.gray('   📄 README.md         (Quick start guide)'));
-=======
   console.log(chalk.gray('   📁 _roadmap/         (Versioned roadmap files)'));
   console.log(chalk.gray('   📄 agent.yml         (Enhanced OSSA v0.1.8 spec)'));
   console.log(chalk.gray('   📄 openapi.yaml      (UADP integrated API spec)'));
   console.log(chalk.gray('   📄 README.md         (Quick start guide)'));
->>>>>>> Stashed changes:src/cli/index.ts
->>>>>>> feature/0.1.0-ossa-implementation:cli/src/index.ts
   console.log('');
   console.log(chalk.blue('Next steps:'));
   console.log(chalk.gray('   1. ossa validate'), name);
@@ -476,15 +444,8 @@ function validateAgent(agentPath: string, options: any) {
     return;
   }
   
-<<<<<<< HEAD:src/cli/index.ts
-  // Check required directories
-  const requiredDirs = ['behaviors', 'config', 'data', 'handlers', 'integrations', 'schemas', 'training-modules'];
-=======
-<<<<<<< Updated upstream:cli/src/index.ts
-=======
   // Check required directories
   const requiredDirs = ['behaviors', 'config', 'data', 'handlers', 'integrations', 'schemas', 'training-modules', '_roadmap'];
->>>>>>> feature/0.1.0-ossa-implementation:cli/src/index.ts
   const missingDirs = requiredDirs.filter(dir => !fs.existsSync(path.join(agentPath, dir)));
   
   if (missingDirs.length > 0) {
@@ -495,8 +456,6 @@ function validateAgent(agentPath: string, options: any) {
     return;
   }
   
-<<<<<<< HEAD:src/cli/index.ts
-=======
   // Check roadmap structure
   const roadmapDir = path.join(agentPath, '_roadmap');
   const roadmapMetaFile = path.join(roadmapDir, 'roadmap_meta.json');
@@ -525,8 +484,6 @@ function validateAgent(agentPath: string, options: any) {
     }
   }
   
->>>>>>> Stashed changes:src/cli/index.ts
->>>>>>> feature/0.1.0-ossa-implementation:cli/src/index.ts
   try {
     const agent = yaml.load(fs.readFileSync(agentFile, 'utf8')) as any;
     
@@ -649,15 +606,6 @@ function listAgents(options: any) {
           try {
             const agent = yaml.load(fs.readFileSync(agentFile, 'utf8')) as any;
             if (agent.ossa === '0.1.8') {
-<<<<<<< HEAD:src/cli/index.ts
-              // Check for standard directory structure
-              const requiredDirs = ['behaviors', 'config', 'data', 'handlers', 'integrations', 'schemas', 'training-modules'];
-              const existingDirs = requiredDirs.filter(dir => fs.existsSync(path.join(itemPath, dir)));
-              const structureComplete = existingDirs.length === requiredDirs.length;
-              
-=======
-<<<<<<< Updated upstream:cli/src/index.ts
-=======
               // Check for standard directory structure
               const requiredDirs = ['behaviors', 'config', 'data', 'handlers', 'integrations', 'schemas', 'training-modules', '_roadmap'];
               const existingDirs = requiredDirs.filter(dir => fs.existsSync(path.join(itemPath, dir)));
@@ -679,8 +627,6 @@ function listAgents(options: any) {
                 }
               }
               
->>>>>>> Stashed changes:src/cli/index.ts
->>>>>>> feature/0.1.0-ossa-implementation:cli/src/index.ts
               agents.push({
                 name: agent.metadata?.name || item,
                 version: agent.metadata?.version || '1.0.0',
@@ -689,21 +635,11 @@ function listAgents(options: any) {
                 domain: agent.spec?.class || agent.metadata?.tags?.[0] || 'general',
                 protocols: agent.spec?.protocols?.map((p: any) => p.name).join(', ') || 'none',
                 hasOpenAPI: fs.existsSync(path.join(itemPath, 'openapi.yaml')),
-<<<<<<< HEAD:src/cli/index.ts
-                uadpEnabled: agent.spec?.discovery?.uadp_enabled || false,
-                structureComplete,
-                missingDirs: requiredDirs.filter(dir => !fs.existsSync(path.join(itemPath, dir)))
-=======
-<<<<<<< Updated upstream:cli/src/index.ts
-                uadpEnabled: agent.spec?.discovery?.uadp_enabled || false
-=======
                 uadpEnabled: agent.spec?.discovery?.uadp_enabled || false,
                 structureComplete,
                 missingDirs: requiredDirs.filter(dir => !fs.existsSync(path.join(itemPath, dir))),
                 roadmapStatus,
                 roadmapVersions
->>>>>>> Stashed changes:src/cli/index.ts
->>>>>>> feature/0.1.0-ossa-implementation:cli/src/index.ts
               });
             }
           } catch (e) {
@@ -737,35 +673,19 @@ function listAgents(options: any) {
     agents.forEach((agent, index) => {
       const uadpIcon = agent.uadpEnabled ? '🔍' : '⚪';
       const openApiIcon = agent.hasOpenAPI ? '📋' : '❌';
-<<<<<<< HEAD:src/cli/index.ts
-      const structureIcon = agent.structureComplete ? '📁' : '⚠️';
-=======
-<<<<<<< Updated upstream:cli/src/index.ts
-=======
       const structureIcon = agent.structureComplete ? '📁' : '⚠️';
       const roadmapIcon = getRoadmapIcon(agent.roadmapStatus);
->>>>>>> Stashed changes:src/cli/index.ts
->>>>>>> feature/0.1.0-ossa-implementation:cli/src/index.ts
       
       console.log(`${index + 1}. ${chalk.blue(agent.name)} ${chalk.gray('v' + agent.version)}`);
       console.log(`   ${chalk.gray('Path:')} ${agent.path}`);
       console.log(`   ${chalk.gray('Tier:')} ${getTierIcon(agent.tier)} ${agent.tier}`);
       console.log(`   ${chalk.gray('Domain:')} ${agent.domain}`);
       console.log(`   ${chalk.gray('Protocols:')} ${agent.protocols}`);
-<<<<<<< HEAD:src/cli/index.ts
-      console.log(`   ${chalk.gray('Features:')} ${openApiIcon} OpenAPI ${uadpIcon} UADP ${structureIcon} Structure`);
-=======
-<<<<<<< Updated upstream:cli/src/index.ts
-      console.log(`   ${chalk.gray('Features:')} ${openApiIcon} OpenAPI ${uadpIcon} UADP`);
-=======
       console.log(`   ${chalk.gray('Features:')} ${openApiIcon} OpenAPI ${uadpIcon} UADP ${structureIcon} Structure ${roadmapIcon} Roadmap`);
->>>>>>> feature/0.1.0-ossa-implementation:cli/src/index.ts
       
       if (!agent.structureComplete && agent.missingDirs && agent.missingDirs.length > 0) {
         console.log(`   ${chalk.yellow('Missing dirs:')} ${agent.missingDirs.join(', ')}`);
       }
-<<<<<<< HEAD:src/cli/index.ts
-=======
       
       if (agent.roadmapStatus && agent.roadmapStatus !== 'complete') {
         const roadmapStatusText = agent.roadmapStatus === 'none' ? 'No roadmap' : 
@@ -773,21 +693,11 @@ function listAgents(options: any) {
                                  agent.roadmapStatus === 'meta-only' ? 'Metadata only' : 'Invalid roadmap';
         console.log(`   ${chalk.yellow('Roadmap:')} ${roadmapStatusText}`);
       }
->>>>>>> Stashed changes:src/cli/index.ts
->>>>>>> feature/0.1.0-ossa-implementation:cli/src/index.ts
       console.log('');
     });
     
     console.log(chalk.gray(`Total: ${agents.length} agents`));
-<<<<<<< HEAD:src/cli/index.ts
-    console.log(chalk.gray('Legend: 📋 OpenAPI spec, 🔍 UADP enabled, 📁 Complete structure'));
-=======
-<<<<<<< Updated upstream:cli/src/index.ts
-    console.log(chalk.gray('Legend: 📋 OpenAPI spec, 🔍 UADP enabled'));
-=======
     console.log(chalk.gray('Legend: 📋 OpenAPI spec, 🔍 UADP enabled, 📁 Complete structure, 🗺️ Roadmap complete'));
->>>>>>> Stashed changes:src/cli/index.ts
->>>>>>> feature/0.1.0-ossa-implementation:cli/src/index.ts
   }
 }
 
@@ -814,10 +724,6 @@ function getTierIcon(tier: string): string {
   }
 }
 
-<<<<<<< HEAD:src/cli/index.ts
-=======
-<<<<<<< Updated upstream:cli/src/index.ts
-=======
 function getRoadmapIcon(roadmapStatus: string): string {
   switch (roadmapStatus) {
     case 'complete': return '🗺️';
@@ -828,8 +734,6 @@ function getRoadmapIcon(roadmapStatus: string): string {
     default: return '❌';
   }
 }
-
->>>>>>> feature/0.1.0-ossa-implementation:cli/src/index.ts
 function validateAgentName(name: string): { valid: boolean; errors: string[] } {
   const errors: string[] = [];
   
@@ -887,8 +791,6 @@ function validateAgentName(name: string): { valid: boolean; errors: string[] } {
   };
 }
 
-<<<<<<< HEAD:src/cli/index.ts
-=======
 function createAgentRoadmaps(agentDir: string, name: string, currentVersion: string, domain: string, tier: string) {
   const roadmapDir = path.join(agentDir, '_roadmap');
   
