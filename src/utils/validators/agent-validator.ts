@@ -5,6 +5,8 @@
 
 import { readFileSync } from 'fs';
 import { parse as parseYaml } from 'yaml';
+import { join, dirname } from 'path';
+import { fileURLToPath } from 'url';
 import Ajv from 'ajv';
 import addFormats from 'ajv-formats';
 
@@ -50,7 +52,9 @@ export class AgentValidator {
     addFormats(this.ajv);
     
     // Load schema
-    const defaultSchemaPath = schemaPath || './v0.1.8/schemas/agent-core.json';
+    const __filename = fileURLToPath(import.meta.url);
+    const __dirname = dirname(__filename);
+    const defaultSchemaPath = schemaPath || join(__dirname, '../../api/schemas/agent.json');
     try {
       const schemaContent = readFileSync(defaultSchemaPath, 'utf-8');
       this.schema = JSON.parse(schemaContent);

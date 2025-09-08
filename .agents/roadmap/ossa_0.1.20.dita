@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
+<topic id="ossa-0120">
+  <title>OSSA 0.1.20 – Enterprise Rollout</title>
+  <shortdesc>Ship Drupal recipe, IDE integrations, company chat, conformance kit, federation, ROI routing, and HITL governance.</shortdesc>
+  <body>
+    
+<section>
+  <title>Objectives</title>
+  <p>Deliver enterprise-grade deployment: Drupal recipe for orchestration, Agent Studio integrations, company chat, conformance badging, federation, ROI routing, and HITL controls.</p>
+</section>
+<section>
+  <title>Key Artifacts</title>
+  <p>Drupal recipe and modules; IDE plugins and apps; chat gateway; conformance CLI and badges; federation router and sitemap extensions; cost-optimizer; review-gates UI; skills registry.</p>
+</section>
+<section>
+  <title>Implementation Notes</title>
+  <p>Support multi-tenant scoping and RBAC; log every action to audit; provide explainable routing tied to cost/quality KPIs; enable pre-warming vectors across dependent modules.</p>
+</section>
+<section>
+  <title>Governance</title>
+  <p>Define risk matrix and escalation paths. Require approvals for critical actions with durable signatures.</p>
+</section>
+<section>
+  <title>Acceptance</title>
+  <p>Orchestration from Drupal UI end-to-end; measurable cost reductions at equal quality; reproducible conformance reports; federation plans visible across projects.</p>
+</section>
+
+  </body>
+</topic>

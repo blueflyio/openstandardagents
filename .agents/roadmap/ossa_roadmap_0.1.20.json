@@ -1,0 +1,282 @@
+{
+  "global": {
+    "project": "OSSA (Open Standards for Scalable Agents)",
+    "owner": "Bluefly.io",
+    "lastUpdated": "2025-09-08",
+    "principles": [
+      "Interoperability-first (no framework rewrites required)",
+      "Token-efficiency by design (budgets, deltas, IDs over blobs)",
+      "Auditability and governance as first-class concepts",
+      "Docs-native (DITA) with machine-lean JSON sitemap",
+      "Portable agent taxonomy (roles, subtypes, capabilities)"
+    ],
+    "uriConventions": {
+      "artifact": "artifact://{repo}/{path}@{commit}",
+      "vector": "vec://{space}/{id}",
+      "dita": "dita://{collection}/{topicId}"
+    },
+    "agentTaxonomy": {
+      "agentType": [
+        "orchestrator",
+        "worker",
+        "critic",
+        "verifier",
+        "judge",
+        "integrator",
+        "trainer",
+        "governor",
+        "telemetry"
+      ],
+      "examples": [
+        "worker.drupal",
+        "critic.security",
+        "verifier.openapi",
+        "governor.cost",
+        "telemetry.metrics"
+      ]
+    },
+    "ecaEvents": [
+      "execution.reported",
+      "review.submitted",
+      "judge.decision",
+      "learning.persisted",
+      "budget.threshold.hit",
+      "audit.appended"
+    ],
+    "tokenEfficiencyPlaybook": [
+      "Key-based context (pass IDs not docs)",
+      "Delta-first prompts",
+      "Tiered prompting (shallow\u2192deep)",
+      "Critic-on-outputs (lint/test) not full artifacts",
+      "Cacheable policy/style capsules (versioned)",
+      "Vector pre-filters (top-k IDs, expand late)",
+      "Pre-LLM validators (rules/regex/schema)",
+      "Payload compression allowed (zstd/base64)",
+      "Checkpoint memos instead of full history",
+      "Early-exit heuristics"
+    ]
+  },
+  "versionPlan": {
+    "version": "0.1.20",
+    "theme": "Enterprise Rollout: Drupal Recipe, Studio, Chat, Conformance",
+    "milestones": [
+      {
+        "id": "M1",
+        "title": "Drupal Recipe & Multi-tenant",
+        "due": "2026-01-18"
+      },
+      {
+        "id": "M2",
+        "title": "Studio & Chat Integrations",
+        "due": "2026-02-01"
+      },
+      {
+        "id": "M3",
+        "title": "Conformance & Federation",
+        "due": "2026-02-15"
+      }
+    ],
+    "epics": [
+      {
+        "id": "E-120-RECIPE",
+        "title": "Drupal Deployable AI Control Recipe",
+        "description": "Company-wide OSSA management (agents, MCPs, workflows) via Drupal ECA; supports on-prem, data-sovereign installs.",
+        "deliverables": [
+          "drupal/recipes/ai_control_ossa",
+          "drupal/modules/ai_agents_ossa (full)",
+          "docs/ops/deployment-guide.md"
+        ],
+        "tasks": [
+          "ECA blueprints for execution.reported and budget.threshold.hit",
+          "Org/project scoping and RBAC",
+          "K8s Helm chart values and SLOs"
+        ],
+        "acceptanceCriteria": [
+          "E2E orchestration from Drupal UI",
+          "Multi-tenant org/project scoping",
+          "On-prem and data-sovereign deployment options",
+          "ECA triggers for all OSSA event types"
+        ],
+        "deploymentOptions": {
+          "kubernetes": "Helm chart with SLOs",
+          "docker": "Docker Compose for development",
+          "drupal": "Native recipe installation",
+          "cloud": "Multi-cloud deployment guides"
+        },
+        "dependencies": [
+          "E-018-DRUPAL",
+          "E-019-ADP",
+          "E-019-GOV"
+        ]
+      },
+      {
+        "id": "E-120-STUDIO",
+        "title": "Agent Studio (IDE) Integrations",
+        "description": "VS Code/Codium plugin, macOS/iOS shells; workspace awareness; budget/metrics panel.",
+        "deliverables": [
+          "studio/plugins/vscode",
+          "studio/apps/macos",
+          "studio/apps/ios",
+          "docs/studio/user-guide.md"
+        ],
+        "tasks": [
+          "Read .agents-workspace in realtime",
+          "Inline budget alerts & judge results",
+          "MCP resource browser and token cost panel"
+        ],
+        "acceptanceCriteria": [
+          "Reads .agents-workspace live",
+          "Inline budget alerts & judge results",
+          "MCP resource browser integrated",
+          "Token cost panel with real-time updates"
+        ],
+        "ideFeatures": {
+          "vscode": "Extension with workspace panel",
+          "macos": "Native app with menu bar integration",
+          "ios": "Mobile companion for monitoring",
+          "webui": "Browser-based dashboard"
+        },
+      },
+      {
+        "id": "E-120-CHAT",
+        "title": "LibreChat-based Company Chat Module",
+        "description": "Org chat with OSSA-aware tools/resources; MCP/props token expansion in chat flows.",
+        "deliverables": [
+          "services/chat-gateway",
+          "adapters/chat-ossa-tools",
+          "docs/chat/admin-guide.md"
+        ],
+        "tasks": [
+          "Trigger plan/exec/feedback from chat",
+          "Audit every action",
+          "Organization-level tool catalogs"
+        ],
+        "acceptanceCriteria": [
+          "Chat can trigger plan/exec/feedback",
+          "All actions audited"
+        ]
+      },
+      {
+        "id": "E-120-CONF",
+        "title": "Conformance Kit & Badging (Bronze/Silver/Gold)",
+        "description": "CLI validator + example traces; generate badge and report.",
+        "deliverables": [
+          "tools/ossa-conformance-cli",
+          "docs/spec/conformance.md",
+          "badges/*"
+        ],
+        "tasks": [
+          "JSON Schema suites and scenario runners",
+          "Produce machine-readable conformance.json",
+          "CI example for third parties"
+        ],
+        "acceptanceCriteria": [
+          "Vendors can self-certify",
+          "Reports are reproducible"
+        ]
+      },
+      {
+        "id": "E-120-FED",
+        "title": "Federation & Multi-Project Routing",
+        "description": "Cross-repo roadmap awareness; route tasks between modules/projects with dependency planning.",
+        "deliverables": [
+          "services/federation-router",
+          "roadmap/sitemap federation extensions",
+          "docs/spec/federation.md"
+        ],
+        "tasks": [
+          "Detect upstream/downstream epics via sitemaps",
+          "Pre-warm vectors for dependent modules",
+          "Explainable routing records in audit"
+        ],
+        "acceptanceCriteria": [
+          "Detects upstream/downstream epics",
+          "Prepares Module A for Module B\u2019s upcoming features"
+        ]
+      },
+      {
+        "id": "E-120-ROI",
+        "title": "ROI-based Auto-Routing",
+        "description": "Route work based on cost/quality KPIs per agent/model; open-source + cloud mix.",
+        "deliverables": [
+          "governor/cost-optimizer",
+          "model-catalog with prices/capabilities",
+          "docs/spec/roi-routing.md"
+        ],
+        "tasks": [
+          "Collect KPIs per agent/model",
+          "Switching policy with rollback",
+          "A/B tests for cost reduction targets"
+        ],
+        "acceptanceCriteria": [
+          "\u2265 25% cost reduction at same quality on benchmarks",
+          "Model switching logged and explainable",
+          "ROI metrics collected per agent/model combination",
+          "A/B testing framework for cost optimization"
+        ],
+        "optimizationStrategies": {
+          "modelMixing": "Open-source + cloud model routing",
+          "qualityThresholds": "Maintain quality while reducing cost",
+          "learningCurves": "Improve routing over time",
+          "fallbackPolicies": "Graceful degradation on budget limits"
+        },
+      },
+      {
+        "id": "E-120-HITL",
+        "title": "Human-in-the-Loop & Policy Escalations",
+        "description": "Review gates for high-risk changes; sign-offs recorded in audit.",
+        "deliverables": [
+          "ui/review-gates",
+          "policy/escalation-rules",
+          "docs/policy/hitl-handbook.md"
+        ],
+        "tasks": [
+          "Risk classification matrix",
+          "Approver roles & SLAs",
+          "UI for approve/reject with rationale"
+        ],
+        "acceptanceCriteria": [
+          "Critical actions require approval",
+          "Approvals traceable to identities"
+        ]
+      },
+      {
+        "id": "E-120-TRAIN",
+        "title": "Learning Curriculum & Skill Packs",
+        "description": "Trainer agents manage skill updates; publish domain skill packs (security/a11y/openapi/drupal).",
+        "deliverables": [
+          "trainer/skills-registry",
+          "packs/skill-*.json",
+          "docs/training/skills-authoring.md"
+        ],
+        "tasks": [
+          "Define skill manifest schema",
+          "Publish initial packs",
+          "Track adoption via LearningSignal events"
+        ],
+        "acceptanceCriteria": [
+          "LearningSignal updates vectors/skills",
+          "Skill adoption measurable over time"
+        ]
+      }
+    ],
+    "metrics": {
+      "enterprise": [
+        "Multi-tenant deployments working",
+        "SLOs for latency/cost per task"
+      ],
+      "governance": [
+        "100% actions audited",
+        "Policy violations auto-routed or blocked"
+      ]
+    },
+    "traceability": {
+      "repoHints": {
+        "drupalRecipe": "drupal/recipes/ai_control_ossa",
+        "studio": "studio/*",
+        "chat": "services/chat-gateway",
+        "conformance": "tools/ossa-conformance-cli"
+      }
+    }
+  }
+}

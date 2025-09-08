@@ -1,0 +1,271 @@
+{
+  "global": {
+    "project": "OSSA (Open Standards for Scalable Agents)",
+    "owner": "Bluefly.io",
+    "lastUpdated": "2025-09-08",
+    "principles": [
+      "Interoperability-first (no framework rewrites required)",
+      "Token-efficiency by design (budgets, deltas, IDs over blobs)",
+      "Auditability and governance as first-class concepts",
+      "Docs-native (DITA) with machine-lean JSON sitemap",
+      "Portable agent taxonomy (roles, subtypes, capabilities)"
+    ],
+    "360FeedbackLoop": {
+      "phases": [
+        "Plan (orchestrator): set goal, constraints, per-task/subtask token budgets",
+        "Execute (workers): produce artifacts + self-report",
+        "Critique (critic/rater/verifier agents): multi-view reviews",
+        "Compare (judge agent): rank outputs, select winner or request revisions",
+        "Integrate (integrator): merge, commit, create changelog, update roadmap/DITA",
+        "Learn (trainer/memory agent): write deltas to memory, embeddings, skills registry",
+        "Govern (compliance/cost agent): enforce budgets, guardrails, audit log",
+        "Signal (telemetry agent): emit KPIs to metrics bus; update per-agent scorecards"
+      ]
+    },
+    "uriConventions": {
+      "artifact": "artifact://{repo}/{path}@{commit}",
+      "vector": "vec://{space}/{id}",
+      "dita": "dita://{collection}/{topicId}"
+    },
+    "agentTaxonomy": {
+      "agentType": [
+        "orchestrator",
+        "worker",
+        "critic",
+        "verifier",
+        "judge",
+        "integrator",
+        "trainer",
+        "governor",
+        "telemetry"
+      ],
+      "subtypes": {
+        "orchestrator": ["planner", "router", "scheduler"],
+        "worker": ["drupal", "docs", "devops", "nlp", "vision"],
+        "critic": ["security", "style", "accessibility", "licensing", "compliance"],
+        "verifier": ["test-runner", "schema-validator", "lint", "SAST/DAST"],
+        "judge": ["pairwise", "A/B/n", "RAG-assisted"],
+        "integrator": ["PR/MR", "conflict-resolver", "changelog"],
+        "trainer": ["embeddings", "skill-updates", "curriculum"],
+        "governor": ["cost", "policy", "budget-enforcement"],
+        "telemetry": ["metrics", "traces", "budget-events"]
+      },
+      "examples": [
+        "worker.drupal",
+        "critic.security",
+        "verifier.openapi",
+        "governor.cost",
+        "telemetry.metrics"
+      ]
+    },
+    "ecaEvents": [
+      "execution.reported",
+      "review.submitted",
+      "judge.decision",
+      "learning.persisted",
+      "budget.threshold.hit",
+      "audit.appended"
+    ],
+    "tokenEfficiencyPlaybook": [
+      "Key-based context (pass IDs not docs)",
+      "Delta-first prompts",
+      "Tiered prompting (shallow\u2192deep)",
+      "Critic-on-outputs (lint/test) not full artifacts",
+      "Cacheable policy/style capsules (versioned)",
+      "Vector pre-filters (top-k IDs, expand late)",
+      "Pre-LLM validators (rules/regex/schema)",
+      "Payload compression allowed (zstd/base64)",
+      "Checkpoint memos instead of full history",
+      "Early-exit heuristics"
+    ]
+  },
+  "versionPlan": {
+    "version": "0.1.8",
+    "theme": "Foundations & Minimal Viable Standard",
+    "milestones": [
+      {
+        "id": "M1",
+        "title": "Spec & Schemas Ready",
+        "due": "2025-09-21"
+      },
+      {
+        "id": "M2",
+        "title": "Workspace & CLI Alpha",
+        "due": "2025-10-05"
+      },
+      {
+        "id": "M3",
+        "title": "MCP + Drupal Skeleton",
+        "due": "2025-10-19"
+      }
+    ],
+    "epics": [
+      {
+        "id": "E-018-STD",
+        "title": "Core OpenAPI Schema (Foundational Objects + Endpoints)",
+        "description": "Introduce Budget, ExecutionReport, Review, FeedbackPacket, LearningSignal, AuditEvent and control-plane endpoints (/plan, /execute, /feedback, /learn, /governance/budget/enforce, /audit).",
+        "deliverables": [
+          "openapi/ossa-control-plane.yaml (3.1)",
+          "jsonschema/*.schema.json for each object",
+          "examples/traces/*.json for each endpoint",
+          "docs/spec/objects.md (normative definitions)"
+        ],
+        "tasks": [
+          "Define JSON Schemas with $defs for reuse",
+          "Add example traces for happy-path and error cases",
+          "Set required/optional with defaults for Budget.handoffPolicy",
+          "Document error codes and problem+json format"
+        ],
+        "acceptanceCriteria": [
+          "All objects validate via JSON Schema",
+          "Round-trip examples provided for each endpoint",
+          "Budget supports task/subtask/planning + handoffPolicy"
+        ],
+        "dependencies": [],
+        "risks": [
+          "Scope creep\u2014keep endpoints minimal but extensible"
+        ]
+      },
+      {
+        "id": "E-018-TAX",
+        "title": "Agent Taxonomy & Type System",
+        "description": "Define agentType and agentSubType namespaces and registry format.",
+        "deliverables": [
+          ".agents-workspace/config/taxonomy.json",
+          "docs/spec/agent-taxonomy.md",
+          "tools/taxonomy-validator.js"
+        ],
+        "tasks": [
+          "Reserve core names and collision policy",
+          "Implement validator with CI rule",
+          "Publish guidance for vendor-specific subtypes"
+        ],
+        "acceptanceCriteria": [
+          "Reserved names documented",
+          "Validator rejects unknown/illegal subtypes"
+        ]
+      },
+      {
+        "id": "E-018-WS",
+        "title": ".agents-workspace Structure",
+        "description": "Standardize workspace folders for plans, executions, feedback, learning, audit, roadmap.",
+        "deliverables": [
+          "docs/spec/workspace-layout.md",
+          "templates/workspace-skeleton.zip",
+          "tools/workspace-init.sh"
+        ],
+        "tasks": [
+          "Define file naming conventions",
+          "Windows/macOS/Linux path compatibility tests",
+          "Add sample populated workspace with T-000 baseline"
+        ],
+        "acceptanceCriteria": [
+          "Forge CLI bootstrap creates compliant layout",
+          "Read/write paths stable across OS"
+        ]
+      },
+      {
+        "id": "E-018-CLI",
+        "title": "Agent Forge (CLI) Minimal Commands",
+        "description": "Plan, Exec, Review, Judge, Learn, Budget Enforce, Audit Emit\u2014file I/O only.",
+        "deliverables": [
+          "packages/forge-cli",
+          "commands: plan, exec, review, judge, learn, budget enforce, audit emit",
+          "docs/cli/usage.md"
+        ],
+        "tasks": [
+          "Implement JSON read/write with schema validation",
+          "Add --dry-run and --verbose flags",
+          "Provide sample scripts for CI"
+        ],
+        "acceptanceCriteria": [
+          "Commands operate on workspace JSON files",
+          "No network calls; dry-run supported"
+        ]
+      },
+      {
+        "id": "E-018-DITA",
+        "title": "Docs-Native: DITA + Roadmap Sitemap (JSON)",
+        "description": "DITA topic skeletons + machine-lean roadmap sitemap.json with pointers to DITA and vectors.",
+        "deliverables": [
+          "docs/dita/topics/*.dita",
+          ".agents-workspace/roadmap/sitemap.json",
+          "docs/dita/build-instructions.md"
+        ],
+        "tasks": [
+          "Create overview, feedback-packet, budget, audit DITA topics",
+          "Configure DITA-OT build pipeline",
+          "Demonstrate pointer resolution to vectors"
+        ],
+        "acceptanceCriteria": [
+          "Sitemap keys resolve to DITA/vector URIs",
+          "DITA builds to HTML/PDF via DITA-OT"
+        ]
+      },
+      {
+        "id": "E-018-MCP",
+        "title": "MCP Minimal Server (Read-only Resources + Tools Stubs)",
+        "description": "Expose roadmap, DITA topics, and memory deltas as MCP resources; expose plan/feedback/learn as stub tools.",
+        "deliverables": [
+          "servers/mcp-ossa-minimal",
+          "docs/integration/mcp-minimal.md"
+        ],
+        "tasks": [
+          "Implement resource listing for sitemap and DITA topics",
+          "Expose tool schemas for /plan, /feedback, /learn",
+          "Local dev runner & health checks"
+        ],
+        "acceptanceCriteria": [
+          "MCP client can list resources and tool schemas",
+          "No auth yet; local dev only"
+        ]
+      },
+      {
+        "id": "E-018-DRUPAL",
+        "title": "Drupal ECA Hooks (Skeleton)",
+        "description": "Map core events to Drupal ECA actions and webhooks for OSSA endpoints.",
+        "deliverables": [
+          "drupal/modules/ai_agents_ossa (skeleton)",
+          "docs/integration/drupal-eca.md"
+        ],
+        "tasks": [
+          "Define ECA events for execution.reported & judge.decision",
+          "Implement webhook actions",
+          "Example: open MR on failing critic.security"
+        ],
+        "acceptanceCriteria": [
+          "ECA can trigger on execution.reported",
+          "Webhooks hit local control-plane stub"
+        ]
+      }
+    ],
+    "metrics": {
+      "tokenBudgetDefaults": {
+        "maxTokensTask": 12000,
+        "maxTokensSubtask": 4000,
+        "maxTokensPlanning": 2000,
+        "stopOnExceed": true,
+        "handoffPolicy": "subtask",
+        "routingOptions": ["subtask", "specialist", "abort"]
+      },
+      "tokenEfficiencyTargets": {
+        "baseline": "naive markdown prompts",
+        "v018Target": "30% reduction",
+        "v019Target": "50% reduction",
+        "v020Target": "70% reduction"
+      },
+      "ci": [
+        "Schema validation passes",
+        "Workspace validator passes"
+      ]
+    },
+    "traceability": {
+      "repoHints": {
+        "standard": "feature/0.1.8",
+        "cli": "packages/forge-cli",
+        "mcp": "servers/mcp-ossa-minimal",
+        "drupal": "drupal/modules/ai_agents_ossa"
+      }
+    }
+  }
+}

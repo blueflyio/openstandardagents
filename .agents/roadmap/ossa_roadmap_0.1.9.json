@@ -1,0 +1,239 @@
+{
+  "global": {
+    "project": "OSSA (Open Standards for Scalable Agents)",
+    "owner": "Bluefly.io",
+    "lastUpdated": "2025-09-07",
+    "principles": [
+      "Interoperability-first (no framework rewrites required)",
+      "Token-efficiency by design (budgets, deltas, IDs over blobs)",
+      "Auditability and governance as first-class concepts",
+      "Docs-native (DITA) with machine-lean JSON sitemap",
+      "Portable agent taxonomy (roles, subtypes, capabilities)"
+    ],
+    "uriConventions": {
+      "artifact": "artifact://{repo}/{path}@{commit}",
+      "vector": "vec://{space}/{id}",
+      "dita": "dita://{collection}/{topicId}"
+    },
+    "agentTaxonomy": {
+      "agentType": [
+        "orchestrator",
+        "worker",
+        "critic",
+        "verifier",
+        "judge",
+        "integrator",
+        "trainer",
+        "governor",
+        "telemetry"
+      ],
+      "examples": [
+        "worker.drupal",
+        "critic.security",
+        "verifier.openapi",
+        "governor.cost",
+        "telemetry.metrics"
+      ]
+    },
+    "ecaEvents": [
+      "execution.reported",
+      "review.submitted",
+      "judge.decision",
+      "learning.persisted",
+      "budget.threshold.hit",
+      "audit.appended"
+    ],
+    "tokenEfficiencyPlaybook": [
+      "Key-based context (pass IDs not docs)",
+      "Delta-first prompts",
+      "Tiered prompting (shallow\u2192deep)",
+      "Critic-on-outputs (lint/test) not full artifacts",
+      "Cacheable policy/style capsules (versioned)",
+      "Vector pre-filters (top-k IDs, expand late)",
+      "Pre-LLM validators (rules/regex/schema)",
+      "Payload compression allowed (zstd/base64)",
+      "Checkpoint memos instead of full history",
+      "Early-exit heuristics"
+    ]
+  },
+  "versionPlan": {
+    "version": "0.1.9",
+    "theme": "Interoperability Adapters, Governance, and Evaluation",
+    "milestones": [
+      {
+        "id": "M1",
+        "title": "Adapters \u03b1",
+        "due": "2025-11-02"
+      },
+      {
+        "id": "M2",
+        "title": "Governors & Critics \u03b2",
+        "due": "2025-11-16"
+      },
+      {
+        "id": "M3",
+        "title": "Audit & Props GA",
+        "due": "2025-11-30"
+      }
+    ],
+    "epics": [
+      {
+        "id": "E-019-ADP",
+        "title": "Reference Adapters (LangGraph, AutoGen, Semantic Kernel, MLflow, MCP)",
+        "description": "Thin bridges that translate native objects/flows to OSSA JSON and endpoints.",
+        "deliverables": [
+          "adapters/langgraph-js",
+          "adapters/autogen-py",
+          "adapters/semantic-kernel-net",
+          "adapters/mlflow-evaluator",
+          "adapters/mcp-server"
+        ],
+        "tasks": [
+          "Hello-world examples per framework",
+          "Read/write ExecutionReport & FeedbackPacket",
+          "CI matrix for adapters across OS/runtime versions"
+        ],
+        "acceptanceCriteria": [
+          "Hello-world flows run end-to-end in each framework",
+          "Adapters read/write ExecutionReport/FeedbackPacket"
+        ],
+        "dependencies": [
+          "E-018-STD",
+          "E-018-MCP"
+        ]
+      },
+      {
+        "id": "E-019-GOV",
+        "title": "Budget Governor (Enforcement & Routing)",
+        "description": "Pre-flight checks on budgets; auto subtasking or specialist routing when thresholds hit.",
+        "deliverables": [
+          "services/governor-cost",
+          "docs/spec/budget-governor.md"
+        ],
+        "tasks": [
+          "Implement stopOnExceed semantics",
+          "Add routing rules (subtask vs specialist vs abort)",
+          "Emit audit events for each decision"
+        ],
+        "acceptanceCriteria": [
+          "Enforcement prevents overflow by policy",
+          "Routing logs appear in audit JSONL"
+        ]
+      },
+      {
+        "id": "E-019-METRICS",
+        "title": "Review Metrics Vocabulary & MLflow Mapping",
+        "description": "Standard names/units for review dimensions; map to MLflow runs/tags/artifacts.",
+        "deliverables": [
+          "docs/spec/review-metrics.md",
+          "adapters/mlflow-evaluator (v2)",
+          "dashboards/mlflow-ossa.json"
+        ],
+        "tasks": [
+          "Define metrics: security.score, a11y.score, cost.per1kTokens, latency.ms",
+          "Emit judge evidence (pairwise) as artifacts",
+          "Dashboard JSON for quick import"
+        ],
+        "acceptanceCriteria": [
+          "Dashboards show security/style/cost charts",
+          "Judge decisions display evidence"
+        ]
+      },
+      {
+        "id": "E-019-AUDIT",
+        "title": "Audit Trail JSONL + Governance Views",
+        "description": "Append-only audit format with replay; minimal web UI to browse trails.",
+        "deliverables": [
+          "services/audit-api",
+          "ui/audit-viewer"
+        ],
+        "tasks": [
+          "Hash-chain audit entries",
+          "Time/actor filters, export CSV",
+          "Role-based visibility"
+        ],
+        "acceptanceCriteria": [
+          "Immutable entries (hash chained)",
+          "Time-range filter and actor filter work"
+        ]
+      },
+      {
+        "id": "E-019-PROPS",
+        "title": "Props Tokens Keyspace & Resolution",
+        "description": "Shorthand tokens for roadmap/spec pieces (e.g., @RM:PROJ:VER:ID) with server-side expansion.",
+        "deliverables": [
+          "docs/spec/props-tokens.md",
+          "services/props-resolver"
+        ],
+        "tasks": [
+          "Define token grammar and escaping",
+          "Resolvers for DITA/vector/artifact URIs",
+          "Measure prompt size reduction vs baseline"
+        ],
+        "acceptanceCriteria": [
+          "Resolvers expand tokens to DITA/vector/artifact URIs",
+          "Prompt size reduction >= 40% vs. baseline"
+        ]
+      },
+      {
+        "id": "E-019-SEC",
+        "title": "Security & Accessibility Critics (Reference)",
+        "description": "First-class critic packs for security/accessibility/license with configurable rules.",
+        "deliverables": [
+          "critics/security-pack",
+          "critics/a11y-pack",
+          "critics/license-pack"
+        ],
+        "tasks": [
+          "Implement rules and fixtures",
+          "Exit-early pass/fail semantics",
+          "Map outputs to Review schema"
+        ],
+        "acceptanceCriteria": [
+          "Critic outputs conform to Review schema",
+          "Exit early policy supported"
+        ]
+      },
+      {
+        "id": "E-019-MCPSEC",
+        "title": "MCP Security Guidance",
+        "description": "AuthN/Z patterns, resource allowlists, prompt-injection guards for OSSA MCP servers.",
+        "deliverables": [
+          "docs/integration/mcp-security.md",
+          "mcp-server security presets"
+        ],
+        "tasks": [
+          "JWT/OIDC examples for MCP servers",
+          "Prompt-injection mitigations catalog",
+          "Security tests and checklists"
+        ],
+        "acceptanceCriteria": [
+          "Hardening checklist published",
+          "Security tests pass locally"
+        ]
+      }
+    ],
+    "metrics": {
+      "interoperability": [
+        "All adapters pass conformance tests",
+        "MLflow dashboards render judge evidence"
+      ],
+      "tokenSavingsTarget": "\u2265 50% vs. naive markdown prompts on benchmark tasks",
+      "frameworkCompatibility": {
+        "langchain": "Full support via adapter",
+        "autogen": "Full support via adapter",
+        "semanticKernel": "Full support via adapter",
+        "mlflow": "Native integration for evaluation",
+        "mcp": "Native protocol support"
+      }
+    },
+    "traceability": {
+      "repoHints": {
+        "adapters": "adapters/*",
+        "governor": "services/governor-cost",
+        "audit": "services/audit-api",
+        "props": "services/props-resolver"
+      }
+    }
+  }
+}

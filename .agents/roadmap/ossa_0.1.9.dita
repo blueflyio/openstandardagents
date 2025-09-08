@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
+<topic id="ossa-019">
+  <title>OSSA 0.1.9 – Interoperability, Governance, and Evaluation</title>
+  <shortdesc>Deliver cross-framework adapters, enforce token budgets, formalize review metrics and auditability, and introduce props tokens.</shortdesc>
+  <body>
+    
+<section>
+  <title>Objectives</title>
+  <p>Make OSSA portable across LangGraph, AutoGen, Semantic Kernel, and observable in MLflow. Enforce budgets proactively and introduce auditor-friendly trails.</p>
+</section>
+<section>
+  <title>Key Artifacts</title>
+  <p>Adapters for major frameworks; Budget Governor service; Review Metrics vocabulary and MLflow dashboards; Audit API and UI; Props token grammar and resolver.</p>
+</section>
+<section>
+  <title>Implementation Notes</title>
+  <p>Ensure adapters are thin and stateless; map ExecutionReport/FeedbackPacket directly. Hash-chain audit entries. Target ≥ 50% prompt-size reduction using props tokens.</p>
+</section>
+<section>
+  <title>Security</title>
+  <p>Publish MCP hardening guide: AuthN/Z examples, resource allowlists, and prompt-injection mitigations. Provide presets and tests.</p>
+</section>
+<section>
+  <title>Acceptance</title>
+  <p>End-to-end demos for each adapter; budget overflow prevented with explainable routing; MLflow visualizes judge evidence; audit viewer filters by time and actor.</p>
+</section>
+
+  </body>
+</topic>

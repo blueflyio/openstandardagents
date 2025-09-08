@@ -1,0 +1,299 @@
+# OSSA v0.1.8 Agent Specification (OpenAPI 3.1.0 Aligned)
+# Open Standards for Scalable Agents
+# Aligned with /src/api/schemas/agent.yaml OpenAPI specification
+
+ossa:
+  version: "0.1.8"
+  conformance_tier: "advanced"  # core | governed | advanced (matching OpenAPI x-conformance levels: bronze | silver | gold)
+  acdl_version: "1.0.0"
+  
+# Agent Registration (maps to /components/schemas/AgentRegistration)
+agent:
+  agentId: "agent-unique-id"  # Pattern: ^[a-z0-9-]+$
+  name: "Agent Display Name"
+  type: "worker"  # orchestrator | worker | critic | verifier | judge | integrator | trainer | governor | telemetry
+  subtype: "worker.drupal"  # Optional subtype specification
+  version: "1.0.0"
+  description: "Comprehensive agent description explaining capabilities and purpose"
+  
+  # ACDL Metadata
+  metadata:
+    created: "2025-01-01T00:00:00Z"
+    modified: "2025-01-01T00:00:00Z"
+    authors:
+      - name: "Bluefly AI Team"
+        email: "ai@bluefly.io"
+        organization: "Bluefly.io"
+    license: "MIT"
+    tags:
+      - "ai"
+      - "automation"
+      - "enterprise"
+    
+  # Capabilities (maps to /components/schemas/Capability)
+  capabilities:
+    - domain: "nlp"
+      name: "text-generation"
+      version: "2.1.0"
+      models:
+        - name: "gpt-4"
+          version: "1.0.0"
+          precision: "fp16"
+    - domain: "reasoning"
+      name: "logical"
+      version: "1.0.0"
+    - domain: "data"
+      name: "retrieval"
+      version: "1.5.0"
+      
+  # Endpoints (maps to /components/schemas/Endpoint)
+  endpoints:
+    - url: "https://agent.bluefly.io/api"
+      protocol: "https"  # https | http | grpc | websocket
+      healthCheck: "/health"
+      authentication: "bearer"  # none | bearer | apikey | oauth2 | mtls
+    - url: "wss://agent.bluefly.io/ws"
+      protocol: "websocket"
+      authentication: "bearer"
+      
+  # Constraints (maps to /components/schemas/AgentConstraints)
+  constraints:
+    maxConcurrency: 10
+    maxPayloadSize: 10485760  # 10MB
+    timeout: 30000  # 30 seconds
+    rateLimit:
+      requests: 100
+      window: 60000  # 1 minute
+      
+  # Performance Metrics (maps to /components/schemas/PerformanceMetrics)
+  performance:
+    throughput: 100.0
+    latencyP99: 250.0
+    availability: 99.9
+    errorRate: 0.01
+    
+  # Compatibility (maps to /components/schemas/CompatibilitySpec)
+  compatibility:
+    requires:
+      - agent: "orchestrator-supreme"
+        version: ">=2.0.0"
+      - agent: "vector-database"
+        version: ">=1.0.0"
+    provides:
+      - interface: "ossa-worker-v1"
+        version: "1.0.0"
+      - interface: "langchain-tool"
+        version: "0.1.0"
+
+# Framework Integration (aligned with x-agent-capabilities)
+frameworks:
+  # MCP Framework
+  mcp:
+    enabled: true
+    server_name: "agent-mcp-server"
+    capabilities:
+      - "execution"
+      - "feedback-collection"
+      - "token-resolution"
+      
+  # LangChain Framework  
+  langchain:
+    enabled: true
+    integration_type: "structured_tool"
+    async_execution: true
+    capabilities:
+      - "text-generation"
+      - "retrieval"
+      
+  # CrewAI Framework
+  crewai:
+    enabled: true
+    integration_type: "specialist"
+    role: "worker_expert"
+    
+  # OpenAI Function Calling
+  openai:
+    enabled: true
+    integration_type: "assistant"
+    function_calling: true
+
+# Discovery Protocol (aligned with UADP)
+discovery:
+  uadp_enabled: true
+  hierarchical_discovery: true
+  capability_inference: true
+  registry_endpoint: "https://registry.bluefly.io/agents"
+  heartbeat_interval: 30
+  
+# Budget Management (maps to /components/schemas/Budget)
+governance:
+  budget:
+    id: "budget-001"
+    name: "Agent Monthly Budget"
+    total:
+      tokens: 1000000
+      dollars: 50.0
+    period: "monthly"  # hourly | daily | weekly | monthly | per_execution
+    handoffPolicy: "queue"  # block | queue | delegate | escalate
+    thresholds:
+      - percent: 80
+        action: "alert"
+      - percent: 95
+        action: "throttle"
+      - percent: 100
+        action: "block"
+        
+# Audit Configuration (maps to /components/schemas/AuditEvent)
+audit:
+  enabled: true
+  eventTypes:
+    - "execution.reported"
+    - "review.submitted"
+    - "judge.decision"
+    - "learning.persisted"
+    - "budget.threshold.hit"
+    - "audit.appended"
+  immutable: true
+  hash_chain: true
+  
+# Workspace Configuration (maps to /components/schemas/WorkspaceInfo)
+workspace:
+  projectId: "project-001"
+  path: "./.agents-workspace"
+  structure:
+    plans: "./plans"
+    executions: "./executions"
+    feedback: "./feedback"
+    learning: "./learning"
+    audit: "./audit"
+    roadmap: "./roadmap"
+    
+# Security Configuration (aligned with securitySchemes)
+security:
+  authentication:
+    methods:
+      - type: "BearerAuth"
+        scheme: "bearer"
+        bearerFormat: "JWT"
+      - type: "ApiKey"
+        in: "header"
+        name: "X-API-Key"
+      - type: "OAuth2"
+        flows:
+          authorizationCode:
+            authorizationUrl: "https://auth.ossa.bluefly.io/authorize"
+            tokenUrl: "https://auth.ossa.bluefly.io/token"
+            scopes:
+              read: "Read access"
+              write: "Write access"
+              admin: "Admin access"
+              
+# Compliance Frameworks (aligned with x-conformance)
+compliance:
+  conformance_level: "gold"  # bronze | silver | gold
+  requirements:
+    bronze:
+      - "Basic OSSA object support"
+      - "Plan/Execute/Review endpoints"
+      - "JSON schema validation"
+    silver:
+      - "Full feedback loop"
+      - "Budget enforcement"
+      - "Audit logging"
+      - "ACDL registration"
+    gold:
+      - "Multi-protocol support"
+      - "Props token resolution"
+      - "Learning signals"
+      - "Workspace management"
+  frameworks:
+    iso_42001:
+      level: "implemented"
+      audit_ready: true
+    nist_ai_rmf:
+      level: "implemented"
+      maturity_level: 3
+      
+# Token Efficiency Configuration (aligned with x-token-efficiency)
+optimization:
+  token_efficiency:
+    maxTokensTask: 12000
+    maxTokensSubtask: 4000
+    maxTokensPlanning: 2000
+  strategies:
+    - "Key-based context (pass IDs not docs)"
+    - "Delta-first prompts"
+    - "Tiered prompting (shallow→deep)"
+    - "Critic-on-outputs (lint/test) not full artifacts"
+    - "Cacheable policy/style capsules (versioned)"
+    - "Vector pre-filters (top-k IDs, expand late)"
+    - "Pre-LLM validators (rules/regex/schema)"
+    - "Payload compression allowed (zstd/base64)"
+    - "Checkpoint memos instead of full history"
+    - "Early-exit heuristics"
+    
+# Props Token Resolution (aligned with x-uri-conventions)
+props:
+  enabled: true
+  conventions:
+    artifact: "artifact://{repo}/{path}@{commit}"
+    vector: "vec://{space}/{id}"
+    dita: "dita://{collection}/{topicId}"
+    props: "@{namespace}:{project}:{version}:{id}"
+    workspace: "workspace://{project}/.agents-workspace/{category}/{id}"
+  tokens:
+    - "@RM:OSSA:0.1.8:E-018-STD"
+    - "@DITA:spec:agent-taxonomy"
+    
+# Deployment Configuration
+deployment:
+  servers:
+    - url: "https://api.ossa.bluefly.io/v1"
+      description: "Production OSSA API"
+      protocols: ["https"]
+    - url: "grpc://grpc.ossa.bluefly.io:50051"
+      description: "gRPC endpoint"
+      protocols: ["grpc"]
+    - url: "wss://ws.ossa.bluefly.io/realtime"
+      description: "WebSocket real-time endpoint"
+      protocols: ["websocket"]
+    - url: "http://localhost:8080/v1"
+      description: "Local development"
+      protocols: ["http"]
+      
+# Monitoring and Observability
+monitoring:
+  health:
+    endpoint: "/health"
+    interval: 30
+    timeout: 5
+  metrics:
+    endpoint: "/metrics"
+    format: "prometheus"
+  tracing:
+    enabled: true
+    provider: "opentelemetry"
+    
+# Agent Operation Metadata (x-agent-operation)
+operations:
+  planning:
+    capability: "planning"
+    complexity: "high"
+    requiresBudget: true
+  execution:
+    capability: "execution"
+    complexity: "variable"
+    requiresBudget: true
+    auditable: true
+  feedback:
+    capability: "feedback-collection"
+    complexity: "low"
+    auditable: true
+  learning:
+    capability: "learning"
+    complexity: "high"
+    async: true
+  governance:
+    capability: "budget-enforcement"
+    complexity: "low"
+    critical: true
