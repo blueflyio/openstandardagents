@@ -1,0 +1,19 @@
+#!/usr/bin/env node
+
+/**
+ * OSSA CLI - Open Standards for Scalable Agents v0.1.8
+ * API-first GraphQL agent management platform
+ */
+
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+// Import the main CLI from dist
+import(join(__dirname, '../dist/index.js')).catch((error) => {
+  console.error('Failed to load OSSA CLI:', error.message);
+  console.error('Make sure to run "npm run build" first to compile TypeScript sources');
+  process.exit(1);
+});
