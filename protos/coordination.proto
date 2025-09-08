@@ -1,0 +1,685 @@
+syntax = "proto3";
+
+package ossa.v1;
+
+import "common.proto";
+import "agent.proto";
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/duration.proto";
+import "google/protobuf/struct.proto";
+import "google/protobuf/any.proto";
+
+option go_package = "github.com/ossa/proto/v1;ossav1";
+option java_package = "io.ossa.proto.v1";
+option java_multiple_files = true;
+option csharp_namespace = "Ossa.Proto.V1";
+
+// Coordination service for multi-agent communication and state management
+service CoordinationService {
+  // Initialize coordination session
+  rpc InitiateCoordination(InitiateCoordinationRequest) returns (InitiateCoordinationResponse);
+  
+  // Join an existing coordination session
+  rpc JoinCoordination(JoinCoordinationRequest) returns (JoinCoordinationResponse);
+  
+  // Leave a coordination session
+  rpc LeaveCoordination(LeaveCoordinationRequest) returns (LeaveCoordinationResponse);
+  
+  // Send message to coordination session
+  rpc SendMessage(SendMessageRequest) returns (SendMessageResponse);
+  
+  // Stream messages from coordination session
+  rpc StreamMessages(StreamMessagesRequest) returns (stream CoordinationMessage);
+  
+  // Coordinate state synchronization
+  rpc SynchronizeState(SynchronizeStateRequest) returns (SynchronizeStateResponse);
+  
+  // Elect leader for coordination session
+  rpc ElectLeader(ElectLeaderRequest) returns (ElectLeaderResponse);
+  
+  // Acquire distributed lock
+  rpc AcquireLock(AcquireLockRequest) returns (AcquireLockResponse);
+  
+  // Release distributed lock
+  rpc ReleaseLock(ReleaseLockRequest) returns (ReleaseLockResponse);
+  
+  // Consensus protocol operations
+  rpc ProposeConsensus(ProposeConsensusRequest) returns (ProposeConsensusResponse);
+  
+  // Vote on consensus proposal
+  rpc VoteConsensus(VoteConsensusRequest) returns (VoteConsensusResponse);
+  
+  // Get coordination session status
+  rpc GetCoordinationStatus(GetCoordinationStatusRequest) returns (GetCoordinationStatusResponse);
+  
+  // Resolve conflicts between agents
+  rpc ResolveConflict(ResolveConflictRequest) returns (ResolveConflictResponse);
+}
+
+// Coordination session definition
+message CoordinationSession {
+  OSSAIdentifier id = 1;                   // Session identifier
+  CoordinationMetadata metadata = 2;       // Session metadata
+  CoordinationSpec spec = 3;               // Session specification
+  CoordinationStatus status = 4;           // Current session status
+  repeated CoordinationParticipant participants = 5; // Session participants
+}
+
+message CoordinationMetadata {
+  string name = 1;                         // Human-readable session name
+  string description = 2;                  // Session description
+  string initiator = 3;                    // Agent that initiated session
+  google.protobuf.Timestamp created = 4;   // Creation timestamp
+  google.protobuf.Timestamp expires = 5;   // Optional expiration
+  map<string, string> labels = 6;          // Classification labels
+  CoordinationPriority priority = 7;       // Session priority
+}
+
+enum CoordinationPriority {
+  COORDINATION_PRIORITY_UNSPECIFIED = 0;
+  COORDINATION_PRIORITY_LOW = 1;
+  COORDINATION_PRIORITY_NORMAL = 2;
+  COORDINATION_PRIORITY_HIGH = 3;
+  COORDINATION_PRIORITY_CRITICAL = 4;
+  COORDINATION_PRIORITY_EMERGENCY = 5;
+}
+
+message CoordinationSpec {
+  CoordinationType type = 1;               // Type of coordination
+  CoordinationPattern pattern = 2;         // Coordination pattern
+  ConsensusProtocol consensus = 3;         // Consensus mechanism
+  LeadershipModel leadership = 4;          // Leadership model
+  ConflictResolution conflict_resolution = 5; // Conflict resolution strategy
+  StateManagement state_management = 6;    // State management configuration
+  MessageDelivery message_delivery = 7;    // Message delivery guarantees
+  SecuritySettings security = 8;           // Security configuration
+  PerformanceSettings performance = 9;     // Performance parameters
+}
+
+enum CoordinationType {
+  COORDINATION_TYPE_UNSPECIFIED = 0;
+  COORDINATION_TYPE_COLLABORATIVE = 1;     // Collaborative coordination
+  COORDINATION_TYPE_COMPETITIVE = 2;       // Competitive coordination
+  COORDINATION_TYPE_HIERARCHICAL = 3;      // Hierarchical coordination
+  COORDINATION_TYPE_PEER_TO_PEER = 4;      // Peer-to-peer coordination
+  COORDINATION_TYPE_MESH = 5;              // Mesh coordination
+  COORDINATION_TYPE_FEDERATION = 6;        // Federated coordination
+}
+
+enum CoordinationPattern {
+  COORDINATION_PATTERN_UNSPECIFIED = 0;
+  COORDINATION_PATTERN_BROADCAST = 1;      // One-to-many broadcast
+  COORDINATION_PATTERN_MULTICAST = 2;      // Selective multicast
+  COORDINATION_PATTERN_POINT_TO_POINT = 3; // Direct agent-to-agent
+  COORDINATION_PATTERN_PUBLISH_SUBSCRIBE = 4; // Pub/sub pattern
+  COORDINATION_PATTERN_REQUEST_REPLY = 5;  // Synchronous request/reply
+  COORDINATION_PATTERN_PIPELINE = 6;       // Sequential pipeline
+  COORDINATION_PATTERN_SCATTER_GATHER = 7; // Scatter/gather pattern
+}
+
+message ConsensusProtocol {
+  ConsensusAlgorithm algorithm = 1;
+  int32 quorum_size = 2;                   // Required quorum size
+  google.protobuf.Duration timeout = 3;    // Consensus timeout
+  int32 max_rounds = 4;                    // Maximum consensus rounds
+  double agreement_threshold = 5;          // Agreement threshold (0.0-1.0)
+}
+
+enum ConsensusAlgorithm {
+  CONSENSUS_ALGORITHM_UNSPECIFIED = 0;
+  CONSENSUS_ALGORITHM_RAFT = 1;           // Raft consensus
+  CONSENSUS_ALGORITHM_PBFT = 2;           // Practical Byzantine Fault Tolerance
+  CONSENSUS_ALGORITHM_POW = 3;            // Proof of Work
+  CONSENSUS_ALGORITHM_POS = 4;            // Proof of Stake
+  CONSENSUS_ALGORITHM_TENDERMINT = 5;     // Tendermint consensus
+  CONSENSUS_ALGORITHM_HOTSTUFF = 6;       // HotStuff consensus
+}
+
+message LeadershipModel {
+  LeadershipType type = 1;
+  google.protobuf.Duration election_timeout = 2;
+  google.protobuf.Duration heartbeat_interval = 3;
+  LeaderElectionStrategy election_strategy = 4;
+  bool automatic_failover = 5;
+}
+
+enum LeadershipType {
+  LEADERSHIP_TYPE_UNSPECIFIED = 0;
+  LEADERSHIP_TYPE_NONE = 1;               // No leader
+  LEADERSHIP_TYPE_SINGLE = 2;             // Single leader
+  LEADERSHIP_TYPE_MULTIPLE = 3;           // Multiple leaders
+  LEADERSHIP_TYPE_ROTATING = 4;           // Rotating leadership
+  LEADERSHIP_TYPE_DEMOCRATIC = 5;         // Democratic leadership
+}
+
+enum LeaderElectionStrategy {
+  LEADER_ELECTION_STRATEGY_UNSPECIFIED = 0;
+  LEADER_ELECTION_STRATEGY_RANDOM = 1;
+  LEADER_ELECTION_STRATEGY_PRIORITY = 2;
+  LEADER_ELECTION_STRATEGY_CAPABILITY = 3;
+  LEADER_ELECTION_STRATEGY_PERFORMANCE = 4;
+  LEADER_ELECTION_STRATEGY_LOAD = 5;
+}
+
+message ConflictResolution {
+  ConflictResolutionStrategy strategy = 1;
+  ConflictPriority priority_scheme = 2;
+  google.protobuf.Duration resolution_timeout = 3;
+  bool automatic_resolution = 4;
+  bool human_intervention_allowed = 5;
+}
+
+enum ConflictResolutionStrategy {
+  CONFLICT_RESOLUTION_STRATEGY_UNSPECIFIED = 0;
+  CONFLICT_RESOLUTION_STRATEGY_PRIORITY_BASED = 1;
+  CONFLICT_RESOLUTION_STRATEGY_VOTING = 2;
+  CONFLICT_RESOLUTION_STRATEGY_CONSENSUS = 3;
+  CONFLICT_RESOLUTION_STRATEGY_ARBITRATION = 4;
+  CONFLICT_RESOLUTION_STRATEGY_NEGOTIATION = 5;
+  CONFLICT_RESOLUTION_STRATEGY_MARKET_BASED = 6;
+}
+
+enum ConflictPriority {
+  CONFLICT_PRIORITY_UNSPECIFIED = 0;
+  CONFLICT_PRIORITY_FIRST_COME_FIRST_SERVED = 1;
+  CONFLICT_PRIORITY_CAPABILITY_BASED = 2;
+  CONFLICT_PRIORITY_PERFORMANCE_BASED = 3;
+  CONFLICT_PRIORITY_LOAD_BASED = 4;
+  CONFLICT_PRIORITY_TRUST_BASED = 5;
+}
+
+message StateManagement {
+  StateSynchronization synchronization = 1;
+  StateConsistency consistency = 2;
+  StateReplication replication = 3;
+  bool distributed_state = 4;
+  google.protobuf.Duration sync_interval = 5;
+}
+
+enum StateSynchronization {
+  STATE_SYNCHRONIZATION_UNSPECIFIED = 0;
+  STATE_SYNCHRONIZATION_EAGER = 1;       // Immediate synchronization
+  STATE_SYNCHRONIZATION_LAZY = 2;        // Deferred synchronization
+  STATE_SYNCHRONIZATION_PERIODIC = 3;    // Periodic synchronization
+  STATE_SYNCHRONIZATION_EVENT_DRIVEN = 4; // Event-driven synchronization
+}
+
+enum StateConsistency {
+  STATE_CONSISTENCY_UNSPECIFIED = 0;
+  STATE_CONSISTENCY_STRONG = 1;          // Strong consistency
+  STATE_CONSISTENCY_EVENTUAL = 2;        // Eventual consistency
+  STATE_CONSISTENCY_WEAK = 3;            // Weak consistency
+  STATE_CONSISTENCY_CAUSAL = 4;          // Causal consistency
+}
+
+enum StateReplication {
+  STATE_REPLICATION_UNSPECIFIED = 0;
+  STATE_REPLICATION_NONE = 1;            // No replication
+  STATE_REPLICATION_MASTER_SLAVE = 2;    // Master-slave replication
+  STATE_REPLICATION_MULTI_MASTER = 3;    // Multi-master replication
+  STATE_REPLICATION_DISTRIBUTED = 4;     // Distributed replication
+}
+
+message MessageDelivery {
+  DeliveryGuarantee guarantee = 1;
+  MessageOrdering ordering = 2;
+  google.protobuf.Duration delivery_timeout = 3;
+  int32 max_retries = 4;
+  bool duplicate_detection = 5;
+}
+
+enum DeliveryGuarantee {
+  DELIVERY_GUARANTEE_UNSPECIFIED = 0;
+  DELIVERY_GUARANTEE_AT_MOST_ONCE = 1;   // At most once delivery
+  DELIVERY_GUARANTEE_AT_LEAST_ONCE = 2;  // At least once delivery
+  DELIVERY_GUARANTEE_EXACTLY_ONCE = 3;   // Exactly once delivery
+}
+
+enum MessageOrdering {
+  MESSAGE_ORDERING_UNSPECIFIED = 0;
+  MESSAGE_ORDERING_NONE = 1;             // No ordering guarantee
+  MESSAGE_ORDERING_FIFO = 2;             // First-in-first-out
+  MESSAGE_ORDERING_CAUSAL = 3;           // Causal ordering
+  MESSAGE_ORDERING_TOTAL = 4;            // Total ordering
+}
+
+message SecuritySettings {
+  bool encryption_required = 1;
+  bool authentication_required = 2;
+  bool authorization_required = 3;
+  repeated string allowed_participants = 4;
+  bool audit_all_messages = 5;
+  TrustModel trust_model = 6;
+}
+
+enum TrustModel {
+  TRUST_MODEL_UNSPECIFIED = 0;
+  TRUST_MODEL_FULL_TRUST = 1;           // Full trust between agents
+  TRUST_MODEL_PARTIAL_TRUST = 2;       // Partial trust with verification
+  TRUST_MODEL_ZERO_TRUST = 3;          // Zero trust model
+  TRUST_MODEL_REPUTATION_BASED = 4;    // Reputation-based trust
+}
+
+message PerformanceSettings {
+  google.protobuf.Duration max_latency = 1;
+  int32 max_throughput = 2;             // Messages per second
+  int32 max_participants = 3;           // Maximum session participants
+  ResourceLimits resource_limits = 4;   // Resource consumption limits
+}
+
+message ResourceLimits {
+  int64 max_memory_mb = 1;
+  double max_cpu_cores = 2;
+  int64 max_network_bandwidth_mbps = 3;
+  int32 max_concurrent_operations = 4;
+}
+
+message CoordinationStatus {
+  CoordinationState state = 1;
+  google.protobuf.Timestamp last_activity = 2;
+  int32 active_participants = 3;
+  CoordinationStatistics statistics = 4;
+  repeated CoordinationIssue issues = 5;
+  OSSAIdentifier current_leader = 6;
+}
+
+enum CoordinationState {
+  COORDINATION_STATE_UNSPECIFIED = 0;
+  COORDINATION_STATE_INITIALIZING = 1;
+  COORDINATION_STATE_ACTIVE = 2;
+  COORDINATION_STATE_DEGRADED = 3;
+  COORDINATION_STATE_SUSPENDED = 4;
+  COORDINATION_STATE_TERMINATING = 5;
+  COORDINATION_STATE_TERMINATED = 6;
+}
+
+message CoordinationStatistics {
+  int64 messages_sent = 1;
+  int64 messages_received = 2;
+  int64 consensus_rounds = 3;
+  int64 conflicts_resolved = 4;
+  google.protobuf.Duration average_latency = 5;
+  double message_loss_rate = 6;
+  int32 leader_elections = 7;
+}
+
+message CoordinationIssue {
+  IssueType type = 1;
+  IssueSeverity severity = 2;
+  string description = 3;
+  google.protobuf.Timestamp occurred = 4;
+  OSSAIdentifier affected_agent = 5;
+  bool resolved = 6;
+}
+
+enum IssueType {
+  ISSUE_TYPE_UNSPECIFIED = 0;
+  ISSUE_TYPE_COMMUNICATION_FAILURE = 1;
+  ISSUE_TYPE_CONSENSUS_FAILURE = 2;
+  ISSUE_TYPE_LEADER_ELECTION_FAILURE = 3;
+  ISSUE_TYPE_STATE_SYNC_FAILURE = 4;
+  ISSUE_TYPE_CONFLICT_RESOLUTION_FAILURE = 5;
+  ISSUE_TYPE_PERFORMANCE_DEGRADATION = 6;
+  ISSUE_TYPE_SECURITY_VIOLATION = 7;
+}
+
+enum IssueSeverity {
+  ISSUE_SEVERITY_UNSPECIFIED = 0;
+  ISSUE_SEVERITY_LOW = 1;
+  ISSUE_SEVERITY_MEDIUM = 2;
+  ISSUE_SEVERITY_HIGH = 3;
+  ISSUE_SEVERITY_CRITICAL = 4;
+}
+
+message CoordinationParticipant {
+  OSSAIdentifier agent_id = 1;
+  ParticipantRole role = 2;
+  ParticipantStatus status = 3;
+  google.protobuf.Timestamp joined = 4;
+  google.protobuf.Timestamp last_seen = 5;
+  map<string, string> properties = 6;
+  TrustLevel trust_level = 7;
+}
+
+enum ParticipantRole {
+  PARTICIPANT_ROLE_UNSPECIFIED = 0;
+  PARTICIPANT_ROLE_LEADER = 1;
+  PARTICIPANT_ROLE_FOLLOWER = 2;
+  PARTICIPANT_ROLE_OBSERVER = 3;
+  PARTICIPANT_ROLE_COORDINATOR = 4;
+  PARTICIPANT_ROLE_FACILITATOR = 5;
+}
+
+enum ParticipantStatus {
+  PARTICIPANT_STATUS_UNSPECIFIED = 0;
+  PARTICIPANT_STATUS_JOINING = 1;
+  PARTICIPANT_STATUS_ACTIVE = 2;
+  PARTICIPANT_STATUS_INACTIVE = 3;
+  PARTICIPANT_STATUS_LEAVING = 4;
+  PARTICIPANT_STATUS_DISCONNECTED = 5;
+}
+
+enum TrustLevel {
+  TRUST_LEVEL_UNSPECIFIED = 0;
+  TRUST_LEVEL_UNTRUSTED = 1;
+  TRUST_LEVEL_LOW = 2;
+  TRUST_LEVEL_MEDIUM = 3;
+  TRUST_LEVEL_HIGH = 4;
+  TRUST_LEVEL_VERIFIED = 5;
+}
+
+message CoordinationMessage {
+  OSSAIdentifier message_id = 1;
+  OSSAIdentifier session_id = 2;
+  OSSAIdentifier sender_id = 3;
+  repeated OSSAIdentifier recipient_ids = 4;
+  MessageType type = 5;
+  MessagePriority priority = 6;
+  google.protobuf.Any payload = 7;
+  google.protobuf.Timestamp timestamp = 8;
+  map<string, string> headers = 9;
+  bool requires_ack = 10;
+  google.protobuf.Duration ttl = 11;
+}
+
+enum MessageType {
+  MESSAGE_TYPE_UNSPECIFIED = 0;
+  MESSAGE_TYPE_COORDINATION = 1;          // General coordination message
+  MESSAGE_TYPE_CONSENSUS = 2;             // Consensus-related message
+  MESSAGE_TYPE_LEADERSHIP = 3;            // Leadership-related message
+  MESSAGE_TYPE_STATE_SYNC = 4;            // State synchronization message
+  MESSAGE_TYPE_CONFLICT_RESOLUTION = 5;   // Conflict resolution message
+  MESSAGE_TYPE_HEARTBEAT = 6;             // Heartbeat message
+  MESSAGE_TYPE_NOTIFICATION = 7;          // General notification
+  MESSAGE_TYPE_COMMAND = 8;               // Command message
+  MESSAGE_TYPE_RESPONSE = 9;              // Response message
+}
+
+enum MessagePriority {
+  MESSAGE_PRIORITY_UNSPECIFIED = 0;
+  MESSAGE_PRIORITY_LOW = 1;
+  MESSAGE_PRIORITY_NORMAL = 2;
+  MESSAGE_PRIORITY_HIGH = 3;
+  MESSAGE_PRIORITY_URGENT = 4;
+  MESSAGE_PRIORITY_CRITICAL = 5;
+}
+
+// Lock management for distributed coordination
+message DistributedLock {
+  OSSAIdentifier lock_id = 1;
+  string resource = 2;
+  OSSAIdentifier holder = 3;
+  LockType type = 4;
+  google.protobuf.Timestamp acquired = 5;
+  google.protobuf.Duration ttl = 6;
+  bool renewable = 7;
+  map<string, string> metadata = 8;
+}
+
+enum LockType {
+  LOCK_TYPE_UNSPECIFIED = 0;
+  LOCK_TYPE_EXCLUSIVE = 1;               // Exclusive lock
+  LOCK_TYPE_SHARED = 2;                  // Shared lock
+  LOCK_TYPE_READ = 3;                    // Read lock
+  LOCK_TYPE_WRITE = 4;                   // Write lock
+}
+
+// Consensus proposal for distributed decision making
+message ConsensusProposal {
+  OSSAIdentifier proposal_id = 1;
+  OSSAIdentifier proposer = 2;
+  ProposalType type = 3;
+  google.protobuf.Any proposal_data = 4;
+  google.protobuf.Timestamp proposed = 5;
+  google.protobuf.Duration voting_period = 6;
+  int32 required_votes = 7;
+  double approval_threshold = 8;
+}
+
+enum ProposalType {
+  PROPOSAL_TYPE_UNSPECIFIED = 0;
+  PROPOSAL_TYPE_CONFIGURATION_CHANGE = 1;
+  PROPOSAL_TYPE_LEADER_ELECTION = 2;
+  PROPOSAL_TYPE_RESOURCE_ALLOCATION = 3;
+  PROPOSAL_TYPE_CONFLICT_RESOLUTION = 4;
+  PROPOSAL_TYPE_STATE_CHANGE = 5;
+  PROPOSAL_TYPE_PROTOCOL_UPGRADE = 6;
+}
+
+message ConsensusVote {
+  OSSAIdentifier vote_id = 1;
+  OSSAIdentifier voter = 2;
+  OSSAIdentifier proposal_id = 3;
+  VoteChoice choice = 4;
+  string rationale = 5;
+  google.protobuf.Timestamp cast = 6;
+  double confidence = 7;                  // Confidence level (0.0-1.0)
+}
+
+enum VoteChoice {
+  VOTE_CHOICE_UNSPECIFIED = 0;
+  VOTE_CHOICE_APPROVE = 1;
+  VOTE_CHOICE_REJECT = 2;
+  VOTE_CHOICE_ABSTAIN = 3;
+  VOTE_CHOICE_DEFER = 4;
+}
+
+// Request/Response messages for CoordinationService
+
+message InitiateCoordinationRequest {
+  CoordinationSession session = 1;
+  repeated OSSAIdentifier initial_participants = 2;
+  bool auto_start = 3;
+}
+
+message InitiateCoordinationResponse {
+  OSSAIdentifier session_id = 1;
+  CoordinationState state = 2;
+  string join_token = 3;
+  Error error = 4;
+}
+
+message JoinCoordinationRequest {
+  OSSAIdentifier session_id = 1;
+  OSSAIdentifier agent_id = 2;
+  string join_token = 3;
+  ParticipantRole requested_role = 4;
+}
+
+message JoinCoordinationResponse {
+  bool accepted = 1;
+  ParticipantRole assigned_role = 2;
+  CoordinationSession session = 3;
+  Error error = 4;
+}
+
+message LeaveCoordinationRequest {
+  OSSAIdentifier session_id = 1;
+  OSSAIdentifier agent_id = 2;
+  bool graceful = 3;
+}
+
+message LeaveCoordinationResponse {
+  bool success = 1;
+  google.protobuf.Timestamp left_at = 2;
+  Error error = 3;
+}
+
+message SendMessageRequest {
+  OSSAIdentifier session_id = 1;
+  CoordinationMessage message = 2;
+  bool wait_for_ack = 3;
+  google.protobuf.Duration ack_timeout = 4;
+}
+
+message SendMessageResponse {
+  bool delivered = 1;
+  int32 recipients_reached = 2;
+  repeated OSSAIdentifier failed_recipients = 3;
+  Error error = 4;
+}
+
+message StreamMessagesRequest {
+  OSSAIdentifier session_id = 1;
+  OSSAIdentifier agent_id = 2;
+  repeated MessageType message_types = 3;
+  MessagePriority min_priority = 4;
+}
+
+message SynchronizeStateRequest {
+  OSSAIdentifier session_id = 1;
+  OSSAIdentifier agent_id = 2;
+  google.protobuf.Struct state = 3;
+  bool force_sync = 4;
+}
+
+message SynchronizeStateResponse {
+  bool synchronized = 1;
+  google.protobuf.Struct merged_state = 2;
+  repeated StateConflict conflicts = 3;
+  Error error = 4;
+}
+
+message StateConflict {
+  string field = 1;
+  google.protobuf.Any local_value = 2;
+  google.protobuf.Any remote_value = 3;
+  ConflictResolutionStrategy resolution = 4;
+}
+
+message ElectLeaderRequest {
+  OSSAIdentifier session_id = 1;
+  OSSAIdentifier candidate = 2;
+  string campaign_message = 3;
+}
+
+message ElectLeaderResponse {
+  bool election_started = 1;
+  OSSAIdentifier elected_leader = 2;
+  int32 votes_received = 3;
+  Error error = 4;
+}
+
+message AcquireLockRequest {
+  OSSAIdentifier session_id = 1;
+  DistributedLock lock = 2;
+  google.protobuf.Duration timeout = 3;
+  bool blocking = 4;
+}
+
+message AcquireLockResponse {
+  bool acquired = 1;
+  OSSAIdentifier lock_id = 2;
+  google.protobuf.Duration ttl = 3;
+  Error error = 4;
+}
+
+message ReleaseLockRequest {
+  OSSAIdentifier session_id = 1;
+  OSSAIdentifier lock_id = 2;
+  bool force = 3;
+}
+
+message ReleaseLockResponse {
+  bool released = 1;
+  Error error = 2;
+}
+
+message ProposeConsensusRequest {
+  OSSAIdentifier session_id = 1;
+  ConsensusProposal proposal = 2;
+  bool immediate_voting = 3;
+}
+
+message ProposeConsensusResponse {
+  OSSAIdentifier proposal_id = 1;
+  bool accepted = 2;
+  google.protobuf.Timestamp voting_starts = 3;
+  Error error = 4;
+}
+
+message VoteConsensusRequest {
+  OSSAIdentifier session_id = 1;
+  ConsensusVote vote = 2;
+}
+
+message VoteConsensusResponse {
+  bool vote_recorded = 1;
+  int32 current_votes = 2;
+  int32 required_votes = 3;
+  bool consensus_reached = 4;
+  Error error = 5;
+}
+
+message GetCoordinationStatusRequest {
+  OSSAIdentifier session_id = 1;
+  bool include_statistics = 2;
+  bool include_issues = 3;
+}
+
+message GetCoordinationStatusResponse {
+  CoordinationSession session = 1;
+  Error error = 2;
+}
+
+message ResolveConflictRequest {
+  OSSAIdentifier session_id = 1;
+  ConflictDescription conflict = 2;
+  ConflictResolutionStrategy preferred_strategy = 3;
+}
+
+message ConflictDescription {
+  OSSAIdentifier conflict_id = 1;
+  ConflictType type = 2;
+  repeated OSSAIdentifier involved_agents = 3;
+  google.protobuf.Any conflict_data = 4;
+  ConflictSeverity severity = 5;
+}
+
+enum ConflictType {
+  CONFLICT_TYPE_UNSPECIFIED = 0;
+  CONFLICT_TYPE_RESOURCE = 1;             // Resource access conflict
+  CONFLICT_TYPE_STATE = 2;                // State inconsistency conflict
+  CONFLICT_TYPE_COORDINATION = 3;         // Coordination protocol conflict
+  CONFLICT_TYPE_PRIORITY = 4;             // Priority assignment conflict
+  CONFLICT_TYPE_CAPABILITY = 5;           // Capability overlap conflict
+}
+
+enum ConflictSeverity {
+  CONFLICT_SEVERITY_UNSPECIFIED = 0;
+  CONFLICT_SEVERITY_LOW = 1;
+  CONFLICT_SEVERITY_MEDIUM = 2;
+  CONFLICT_SEVERITY_HIGH = 3;
+  CONFLICT_SEVERITY_CRITICAL = 4;
+}
+
+message ResolveConflictResponse {
+  bool resolved = 1;
+  ConflictResolution resolution = 2;
+  repeated ConflictAction actions = 3;
+  Error error = 4;
+}
+
+message ConflictResolution {
+  OSSAIdentifier resolution_id = 1;
+  ConflictResolutionStrategy strategy = 2;
+  google.protobuf.Any resolution_data = 3;
+  google.protobuf.Timestamp resolved_at = 4;
+  OSSAIdentifier resolver = 5;
+}
+
+message ConflictAction {
+  ActionType type = 1;
+  OSSAIdentifier target_agent = 2;
+  google.protobuf.Any action_data = 3;
+  bool mandatory = 4;
+}
+
+enum ActionType {
+  ACTION_TYPE_UNSPECIFIED = 0;
+  ACTION_TYPE_RESOURCE_REALLOCATION = 1;
+  ACTION_TYPE_PRIORITY_ADJUSTMENT = 2;
+  ACTION_TYPE_STATE_ROLLBACK = 3;
+  ACTION_TYPE_AGENT_SUSPENSION = 4;
+  ACTION_TYPE_PROTOCOL_CHANGE = 5;
+}

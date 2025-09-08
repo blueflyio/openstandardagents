@@ -1,0 +1,1275 @@
+openapi: 3.1.0
+info:
+  title: "OSSA Agent Types API v0.1.8"
+  version: "0.1.8"
+  description: |
+    OSSA Agent Types API v0.1.8
+    
+    This API provides management and interaction interfaces for all OSSA agent
+    types across the conformance spectrum: Minimal, Basic, Integration,
+    Production, and Enterprise agents.
+    
+    Agent Type Hierarchy:
+    - **Minimal**: Basic discovery and capabilities (Level 0)
+    - **Basic**: MCP support, Claude Desktop ready (Level 1)  
+    - **Integration**: Multi-framework support, APIs (Level 2)
+    - **Production**: Full lifecycle management, monitoring (Level 3)
+    - **Enterprise**: Governance, compliance, advanced features (Level 4)
+    
+    Features:
+    - Type-specific agent registration and discovery
+    - Capability validation and conformance checking
+    - Cross-type communication and orchestration  
+    - Progressive enhancement pathways
+    - Performance optimization per agent type
+    
+  contact:
+    name: "OSSA Agent Types Team"
+    url: "https://ossa.ai/agents"
+    
+  license:
+    name: "Apache 2.0"
+    url: "https://www.apache.org/licenses/LICENSE-2.0.html"
+    
+  x-ossa-agent-types:
+    version: "0.1.8"
+    supported_types: ["minimal", "basic", "integration", "production", "enterprise"]
+    conformance_levels: [0, 1, 2, 3, 4]
+    progressive_enhancement: true
+    
+servers:
+  - url: "https://api.ossa.ai/agents/v1"
+    description: "Production Agent Types API"
+  - url: "http://localhost:4000/api/agents/v1"
+    description: "Local development server"
+
+paths:
+  # Agent Type Discovery
+  /types:
+    get:
+      summary: "List supported agent types"
+      description: "Get all supported agent types with their specifications"
+      operationId: "getAgentTypes"
+      tags: ["Types"]
+      responses:
+        '200':
+          description: "List of agent types"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AgentTypesList"
+
+  /types/{agentType}/specification:
+    get:
+      summary: "Get type specification"
+      description: "Get the complete specification for a specific agent type"
+      operationId: "getAgentTypeSpecification"
+      tags: ["Types"]
+      parameters:
+        - name: "agentType"
+          in: "path"
+          required: true
+          schema:
+            $ref: "#/components/schemas/AgentType"
+      responses:
+        '200':
+          description: "Agent type specification"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AgentTypeSpecification"
+        '404':
+          $ref: "#/components/responses/NotFound"
+
+  # Minimal Agents (Level 0)
+  /minimal:
+    get:
+      summary: "List minimal agents"
+      description: "Get all registered minimal agents (Level 0 conformance)"
+      operationId: "listMinimalAgents"
+      tags: ["Minimal"]
+      parameters:
+        - name: "capability"
+          in: "query"
+          schema:
+            type: "string"
+        - name: "limit"
+          in: "query"
+          schema:
+            type: "integer"
+            minimum: 1
+            maximum: 100
+            default: 20
+      responses:
+        '200':
+          description: "List of minimal agents"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MinimalAgentList"
+
+    post:
+      summary: "Register minimal agent"
+      description: "Register a new minimal agent with basic capabilities"
+      operationId: "registerMinimalAgent"
+      tags: ["Minimal"]
+      security:
+        - api_key: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MinimalAgentRegistration"
+      responses:
+        '201':
+          description: "Minimal agent registered"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MinimalAgent"
+        '400':
+          $ref: "#/components/responses/BadRequest"
+
+  /minimal/{agentId}:
+    get:
+      summary: "Get minimal agent"
+      operationId: "getMinimalAgent"
+      tags: ["Minimal"]
+      parameters:
+        - name: "agentId"
+          in: "path"
+          required: true
+          schema:
+            type: "string"
+            format: "uuid"
+      responses:
+        '200':
+          description: "Minimal agent details"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MinimalAgent"
+        '404':
+          $ref: "#/components/responses/NotFound"
+
+  # Basic Agents (Level 1)
+  /basic:
+    get:
+      summary: "List basic agents"
+      description: "Get all registered basic agents (Level 1 conformance with MCP support)"
+      operationId: "listBasicAgents"
+      tags: ["Basic"]
+      parameters:
+        - name: "mcpCompatible"
+          in: "query"
+          schema:
+            type: "boolean"
+        - name: "capability"
+          in: "query"
+          schema:
+            type: "string"
+      responses:
+        '200':
+          description: "List of basic agents"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BasicAgentList"
+
+    post:
+      summary: "Register basic agent"
+      description: "Register a new basic agent with MCP support"
+      operationId: "registerBasicAgent"
+      tags: ["Basic"]
+      security:
+        - api_key: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BasicAgentRegistration"
+      responses:
+        '201':
+          description: "Basic agent registered"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BasicAgent"
+
+  /basic/{agentId}/mcp:
+    get:
+      summary: "Get MCP configuration"
+      description: "Get Model Context Protocol configuration for basic agent"
+      operationId: "getBasicAgentMcp"
+      tags: ["Basic"]
+      parameters:
+        - name: "agentId"
+          in: "path"
+          required: true
+          schema:
+            type: "string"
+            format: "uuid"
+      responses:
+        '200':
+          description: "MCP configuration"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/McpConfiguration"
+
+  # Integration Agents (Level 2)
+  /integration:
+    get:
+      summary: "List integration agents"
+      description: "Get all registered integration agents (Level 2 conformance with multi-framework support)"
+      operationId: "listIntegrationAgents"
+      tags: ["Integration"]
+      parameters:
+        - name: "framework"
+          in: "query"
+          schema:
+            type: "string"
+            enum: ["langchain", "crewai", "openai", "anthropic", "custom"]
+        - name: "apiVersion"
+          in: "query"
+          schema:
+            type: "string"
+      responses:
+        '200':
+          description: "List of integration agents"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/IntegrationAgentList"
+
+    post:
+      summary: "Register integration agent"
+      description: "Register a new integration agent with API support"
+      operationId: "registerIntegrationAgent"
+      tags: ["Integration"]
+      security:
+        - api_key: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/IntegrationAgentRegistration"
+      responses:
+        '201':
+          description: "Integration agent registered"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/IntegrationAgent"
+
+  /integration/{agentId}/frameworks:
+    get:
+      summary: "Get supported frameworks"
+      description: "Get all frameworks supported by the integration agent"
+      operationId: "getIntegrationAgentFrameworks"
+      tags: ["Integration"]
+      parameters:
+        - name: "agentId"
+          in: "path"
+          required: true
+          schema:
+            type: "string"
+            format: "uuid"
+      responses:
+        '200':
+          description: "Supported frameworks"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SupportedFrameworks"
+
+  # Production Agents (Level 3)
+  /production:
+    get:
+      summary: "List production agents"
+      description: "Get all registered production agents (Level 3 conformance with full lifecycle management)"
+      operationId: "listProductionAgents"
+      tags: ["Production"]
+      security:
+        - api_key: []
+      parameters:
+        - name: "health"
+          in: "query"
+          schema:
+            type: "string"
+            enum: ["healthy", "degraded", "unhealthy"]
+        - name: "environment"
+          in: "query"
+          schema:
+            type: "string"
+            enum: ["development", "staging", "production"]
+      responses:
+        '200':
+          description: "List of production agents"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProductionAgentList"
+
+    post:
+      summary: "Deploy production agent"
+      description: "Deploy a new production agent with full monitoring"
+      operationId: "deployProductionAgent"
+      tags: ["Production"]
+      security:
+        - api_key: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProductionAgentDeployment"
+      responses:
+        '201':
+          description: "Production agent deployed"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProductionAgent"
+
+  /production/{agentId}/health:
+    get:
+      summary: "Get production agent health"
+      description: "Get comprehensive health status of production agent"
+      operationId: "getProductionAgentHealth"
+      tags: ["Production"]
+      security:
+        - api_key: []
+      parameters:
+        - name: "agentId"
+          in: "path"
+          required: true
+          schema:
+            type: "string"
+            format: "uuid"
+      responses:
+        '200':
+          description: "Agent health status"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProductionAgentHealth"
+
+  /production/{agentId}/metrics:
+    get:
+      summary: "Get production agent metrics"
+      description: "Get performance and operational metrics"
+      operationId: "getProductionAgentMetrics"
+      tags: ["Production"]
+      security:
+        - api_key: []
+      parameters:
+        - name: "agentId"
+          in: "path"
+          required: true
+          schema:
+            type: "string"
+            format: "uuid"
+        - name: "timeframe"
+          in: "query"
+          schema:
+            type: "string"
+            enum: ["1h", "6h", "24h", "7d", "30d"]
+            default: "24h"
+      responses:
+        '200':
+          description: "Agent metrics"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProductionAgentMetrics"
+
+  # Enterprise Agents (Level 4)
+  /enterprise:
+    get:
+      summary: "List enterprise agents"
+      description: "Get all registered enterprise agents (Level 4 conformance with full governance)"
+      operationId: "listEnterpriseAgents"
+      tags: ["Enterprise"]
+      security:
+        - api_key: []
+      parameters:
+        - name: "complianceLevel"
+          in: "query"
+          schema:
+            type: "string"
+            enum: ["basic", "enhanced", "premium", "platinum"]
+        - name: "governancePolicy"
+          in: "query"
+          schema:
+            type: "string"
+      responses:
+        '200':
+          description: "List of enterprise agents"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EnterpriseAgentList"
+
+    post:
+      summary: "Deploy enterprise agent"
+      description: "Deploy a new enterprise agent with full governance and compliance"
+      operationId: "deployEnterpriseAgent"
+      tags: ["Enterprise"]
+      security:
+        - api_key: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EnterpriseAgentDeployment"
+      responses:
+        '201':
+          description: "Enterprise agent deployed"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EnterpriseAgent"
+
+  /enterprise/{agentId}/compliance:
+    get:
+      summary: "Get compliance status"
+      description: "Get comprehensive compliance status and audit trail"
+      operationId: "getEnterpriseAgentCompliance"
+      tags: ["Enterprise"]
+      security:
+        - api_key: []
+      parameters:
+        - name: "agentId"
+          in: "path"
+          required: true
+          schema:
+            type: "string"
+            format: "uuid"
+      responses:
+        '200':
+          description: "Compliance status"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ComplianceStatus"
+
+  /enterprise/{agentId}/governance:
+    get:
+      summary: "Get governance configuration"
+      description: "Get governance policies and enforcement status"
+      operationId: "getEnterpriseAgentGovernance"
+      tags: ["Enterprise"]
+      security:
+        - api_key: []
+      parameters:
+        - name: "agentId"
+          in: "path"
+          required: true
+          schema:
+            type: "string"
+            format: "uuid"
+      responses:
+        '200':
+          description: "Governance configuration"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GovernanceConfiguration"
+
+  # Cross-Type Operations
+  /upgrade:
+    post:
+      summary: "Upgrade agent type"
+      description: "Upgrade an agent to a higher conformance level"
+      operationId: "upgradeAgent"
+      tags: ["Upgrade"]
+      security:
+        - api_key: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AgentUpgradeRequest"
+      responses:
+        '200':
+          description: "Agent upgrade successful"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AgentUpgradeResponse"
+        '400':
+          $ref: "#/components/responses/BadRequest"
+
+  /validate/{agentId}:
+    post:
+      summary: "Validate agent conformance"
+      description: "Validate agent against its declared conformance level"
+      operationId: "validateAgent"
+      tags: ["Validation"]
+      security:
+        - api_key: []
+      parameters:
+        - name: "agentId"
+          in: "path"
+          required: true
+          schema:
+            type: "string"
+            format: "uuid"
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ValidationRequest"
+      responses:
+        '200':
+          description: "Validation results"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ValidationResult"
+
+components:
+  schemas:
+    AgentType:
+      type: "string"
+      enum: ["minimal", "basic", "integration", "production", "enterprise"]
+      description: "OSSA agent conformance types"
+
+    AgentTypesList:
+      type: "object"
+      required: ["types"]
+      properties:
+        types:
+          type: "array"
+          items:
+            $ref: "#/components/schemas/AgentTypeInfo"
+
+    AgentTypeInfo:
+      type: "object"
+      required: ["type", "level", "description", "requirements"]
+      properties:
+        type:
+          $ref: "#/components/schemas/AgentType"
+        level:
+          type: "integer"
+          minimum: 0
+          maximum: 4
+        description:
+          type: "string"
+        requirements:
+          type: "array"
+          items:
+            type: "string"
+        capabilities:
+          type: "array"
+          items:
+            type: "string"
+        frameworks_supported:
+          type: "array"
+          items:
+            type: "string"
+
+    AgentTypeSpecification:
+      type: "object"
+      required: ["type", "version", "schema", "validation_rules"]
+      properties:
+        type:
+          $ref: "#/components/schemas/AgentType"
+        version:
+          type: "string"
+        schema:
+          type: "object"
+          description: "JSON Schema for this agent type"
+        validation_rules:
+          type: "array"
+          items:
+            type: "object"
+        upgrade_path:
+          type: "object"
+          properties:
+            next_level:
+              $ref: "#/components/schemas/AgentType"
+            requirements:
+              type: "array"
+              items:
+                type: "string"
+
+    # Minimal Agent Schemas (Level 0)
+    MinimalAgentRegistration:
+      type: "object"
+      required: ["name", "version", "expertise", "capabilities"]
+      properties:
+        name:
+          type: "string"
+          pattern: "^[a-z0-9-]+$"
+          minLength: 3
+          maxLength: 50
+        version:
+          type: "string"
+          pattern: "^[0-9]+\.[0-9]+\.[0-9]+$"
+        expertise:
+          type: "string"
+          maxLength: 200
+        capabilities:
+          type: "array"
+          minItems: 1
+          maxItems: 5
+          items:
+            type: "string"
+            maxLength: 100
+        description:
+          type: "string"
+          maxLength: 500
+
+    MinimalAgent:
+      allOf:
+        - $ref: "#/components/schemas/MinimalAgentRegistration"
+        - type: "object"
+          required: ["id", "type", "registered_at", "last_seen"]
+          properties:
+            id:
+              type: "string"
+              format: "uuid"
+            type:
+              type: "string"
+              enum: ["minimal"]
+            registered_at:
+              type: "string"
+              format: "date-time"
+            last_seen:
+              type: "string"
+              format: "date-time"
+
+    MinimalAgentList:
+      type: "object"
+      required: ["agents", "total"]
+      properties:
+        agents:
+          type: "array"
+          items:
+            $ref: "#/components/schemas/MinimalAgent"
+        total:
+          type: "integer"
+
+    # Basic Agent Schemas (Level 1)
+    BasicAgentRegistration:
+      type: "object"
+      required: ["ossa", "kind", "metadata", "spec"]
+      properties:
+        ossa:
+          type: "string"
+          enum: ["0.1.8"]
+        kind:
+          type: "string"
+          enum: ["Agent"]
+        metadata:
+          type: "object"
+          required: ["name", "version"]
+          properties:
+            name:
+              type: "string"
+              pattern: "^[a-z0-9-]+$"
+            version:
+              type: "string"
+            description:
+              type: "string"
+            labels:
+              type: "object"
+              additionalProperties:
+                type: "string"
+        spec:
+          type: "object"
+          required: ["agent", "capabilities", "mcp"]
+          properties:
+            agent:
+              type: "object"
+              required: ["name", "expertise"]
+              properties:
+                name:
+                  type: "string"
+                expertise:
+                  type: "string"
+            capabilities:
+              type: "array"
+              items:
+                type: "string"
+            mcp:
+              $ref: "#/components/schemas/McpConfiguration"
+
+    BasicAgent:
+      allOf:
+        - $ref: "#/components/schemas/BasicAgentRegistration"
+        - type: "object"
+          required: ["id", "type", "status", "registered_at"]
+          properties:
+            id:
+              type: "string"
+              format: "uuid"
+            type:
+              type: "string"
+              enum: ["basic"]
+            status:
+              type: "string"
+              enum: ["active", "inactive", "error"]
+            registered_at:
+              type: "string"
+              format: "date-time"
+            mcp_status:
+              type: "string"
+              enum: ["configured", "active", "error"]
+
+    BasicAgentList:
+      type: "object"
+      required: ["agents", "total"]
+      properties:
+        agents:
+          type: "array"
+          items:
+            $ref: "#/components/schemas/BasicAgent"
+        total:
+          type: "integer"
+
+    McpConfiguration:
+      type: "object"
+      required: ["enabled", "version"]
+      properties:
+        enabled:
+          type: "boolean"
+        version:
+          type: "string"
+          enum: ["1.0", "1.1"]
+        transport:
+          type: "string"
+          enum: ["stdio", "sse", "websocket"]
+        capabilities:
+          type: "object"
+          properties:
+            tools:
+              type: "boolean"
+            resources:
+              type: "boolean"
+            prompts:
+              type: "boolean"
+            sampling:
+              type: "boolean"
+
+    # Integration Agent Schemas (Level 2)
+    IntegrationAgentRegistration:
+      type: "object"
+      required: ["ossa", "kind", "metadata", "spec"]
+      properties:
+        ossa:
+          type: "string"
+          enum: ["0.1.8"]
+        kind:
+          type: "string"
+          enum: ["Agent"]
+        metadata:
+          type: "object"
+          required: ["name", "version"]
+          properties:
+            name:
+              type: "string"
+            version:
+              type: "string"
+            description:
+              type: "string"
+        spec:
+          type: "object"
+          required: ["agent", "capabilities", "integration", "api"]
+          properties:
+            agent:
+              type: "object"
+            capabilities:
+              type: "array"
+              items:
+                type: "string"
+            integration:
+              type: "object"
+              required: ["frameworks", "protocols"]
+              properties:
+                frameworks:
+                  type: "array"
+                  items:
+                    type: "string"
+                protocols:
+                  type: "array"
+                  items:
+                    type: "string"
+            api:
+              type: "object"
+              required: ["openapi", "endpoints"]
+              properties:
+                openapi:
+                  type: "string"
+                endpoints:
+                  type: "object"
+
+    IntegrationAgent:
+      allOf:
+        - $ref: "#/components/schemas/IntegrationAgentRegistration"
+        - type: "object"
+          required: ["id", "type", "status"]
+          properties:
+            id:
+              type: "string"
+              format: "uuid"
+            type:
+              type: "string"
+              enum: ["integration"]
+            status:
+              type: "string"
+              enum: ["active", "inactive", "error"]
+
+    IntegrationAgentList:
+      type: "object"
+      required: ["agents", "total"]
+      properties:
+        agents:
+          type: "array"
+          items:
+            $ref: "#/components/schemas/IntegrationAgent"
+        total:
+          type: "integer"
+
+    SupportedFrameworks:
+      type: "object"
+      required: ["frameworks"]
+      properties:
+        frameworks:
+          type: "array"
+          items:
+            type: "object"
+            properties:
+              name:
+                type: "string"
+              version:
+                type: "string"
+              status:
+                type: "string"
+                enum: ["supported", "deprecated", "experimental"]
+
+    # Production Agent Schemas (Level 3)
+    ProductionAgentDeployment:
+      type: "object"
+      required: ["ossa", "kind", "metadata", "spec"]
+      properties:
+        ossa:
+          type: "string"
+          enum: ["0.1.8"]
+        kind:
+          type: "string"
+          enum: ["Agent"]
+        metadata:
+          type: "object"
+          required: ["name", "version", "environment"]
+          properties:
+            name:
+              type: "string"
+            version:
+              type: "string"
+            environment:
+              type: "string"
+              enum: ["development", "staging", "production"]
+        spec:
+          type: "object"
+          required: ["agent", "deployment", "monitoring", "lifecycle"]
+          properties:
+            agent:
+              type: "object"
+            deployment:
+              type: "object"
+              required: ["replicas", "resources"]
+              properties:
+                replicas:
+                  type: "integer"
+                  minimum: 1
+                resources:
+                  type: "object"
+            monitoring:
+              type: "object"
+              required: ["enabled", "metrics", "logging"]
+              properties:
+                enabled:
+                  type: "boolean"
+                metrics:
+                  type: "object"
+                logging:
+                  type: "object"
+            lifecycle:
+              type: "object"
+
+    ProductionAgent:
+      allOf:
+        - $ref: "#/components/schemas/ProductionAgentDeployment"
+        - type: "object"
+          required: ["id", "type", "status", "health"]
+          properties:
+            id:
+              type: "string"
+              format: "uuid"
+            type:
+              type: "string"
+              enum: ["production"]
+            status:
+              type: "string"
+              enum: ["deployed", "running", "stopped", "error"]
+            health:
+              type: "string"
+              enum: ["healthy", "degraded", "unhealthy"]
+
+    ProductionAgentList:
+      type: "object"
+      required: ["agents", "total"]
+      properties:
+        agents:
+          type: "array"
+          items:
+            $ref: "#/components/schemas/ProductionAgent"
+        total:
+          type: "integer"
+
+    ProductionAgentHealth:
+      type: "object"
+      required: ["status", "checks", "timestamp"]
+      properties:
+        status:
+          type: "string"
+          enum: ["healthy", "degraded", "unhealthy"]
+        checks:
+          type: "array"
+          items:
+            type: "object"
+            properties:
+              name:
+                type: "string"
+              status:
+                type: "string"
+              message:
+                type: "string"
+        timestamp:
+          type: "string"
+          format: "date-time"
+        uptime:
+          type: "number"
+
+    ProductionAgentMetrics:
+      type: "object"
+      required: ["timeframe", "performance", "resources", "errors"]
+      properties:
+        timeframe:
+          type: "string"
+        performance:
+          type: "object"
+          properties:
+            requests_per_minute:
+              type: "number"
+            average_response_time_ms:
+              type: "number"
+            success_rate:
+              type: "number"
+        resources:
+          type: "object"
+          properties:
+            cpu_usage_percent:
+              type: "number"
+            memory_usage_mb:
+              type: "number"
+        errors:
+          type: "array"
+          items:
+            type: "object"
+
+    # Enterprise Agent Schemas (Level 4)
+    EnterpriseAgentDeployment:
+      type: "object"
+      required: ["ossa", "kind", "metadata", "spec"]
+      properties:
+        ossa:
+          type: "string"
+          enum: ["0.1.8"]
+        kind:
+          type: "string"
+          enum: ["Agent"]
+        metadata:
+          type: "object"
+          required: ["name", "version", "compliance_level"]
+          properties:
+            name:
+              type: "string"
+            version:
+              type: "string"
+            compliance_level:
+              type: "string"
+              enum: ["basic", "enhanced", "premium", "platinum"]
+        spec:
+          type: "object"
+          required: ["agent", "governance", "compliance", "security"]
+          properties:
+            agent:
+              type: "object"
+            governance:
+              $ref: "#/components/schemas/GovernanceConfiguration"
+            compliance:
+              type: "object"
+              required: ["frameworks", "policies"]
+              properties:
+                frameworks:
+                  type: "array"
+                  items:
+                    type: "string"
+                policies:
+                  type: "array"
+                  items:
+                    type: "object"
+            security:
+              type: "object"
+
+    EnterpriseAgent:
+      allOf:
+        - $ref: "#/components/schemas/EnterpriseAgentDeployment"
+        - type: "object"
+          required: ["id", "type", "status", "compliance_status"]
+          properties:
+            id:
+              type: "string"
+              format: "uuid"
+            type:
+              type: "string"
+              enum: ["enterprise"]
+            status:
+              type: "string"
+              enum: ["deployed", "running", "compliant", "non_compliant"]
+            compliance_status:
+              type: "string"
+              enum: ["compliant", "partial", "non_compliant"]
+
+    EnterpriseAgentList:
+      type: "object"
+      required: ["agents", "total"]
+      properties:
+        agents:
+          type: "array"
+          items:
+            $ref: "#/components/schemas/EnterpriseAgent"
+        total:
+          type: "integer"
+
+    ComplianceStatus:
+      type: "object"
+      required: ["overall", "frameworks", "policies", "audit_trail"]
+      properties:
+        overall:
+          type: "string"
+          enum: ["compliant", "partial", "non_compliant"]
+        frameworks:
+          type: "array"
+          items:
+            type: "object"
+            properties:
+              name:
+                type: "string"
+              status:
+                type: "string"
+              last_checked:
+                type: "string"
+                format: "date-time"
+        policies:
+          type: "array"
+          items:
+            type: "object"
+        audit_trail:
+          type: "array"
+          items:
+            type: "object"
+
+    GovernanceConfiguration:
+      type: "object"
+      required: ["enabled", "policies", "enforcement"]
+      properties:
+        enabled:
+          type: "boolean"
+        policies:
+          type: "array"
+          items:
+            type: "object"
+            properties:
+              name:
+                type: "string"
+              type:
+                type: "string"
+              enabled:
+                type: "boolean"
+              config:
+                type: "object"
+        enforcement:
+          type: "object"
+          properties:
+            mode:
+              type: "string"
+              enum: ["advisory", "enforcing", "blocking"]
+            violations:
+              type: "object"
+
+    # Cross-Type Operations
+    AgentUpgradeRequest:
+      type: "object"
+      required: ["agentId", "currentType", "targetType"]
+      properties:
+        agentId:
+          type: "string"
+          format: "uuid"
+        currentType:
+          $ref: "#/components/schemas/AgentType"
+        targetType:
+          $ref: "#/components/schemas/AgentType"
+        preserveData:
+          type: "boolean"
+          default: true
+        validationLevel:
+          type: "string"
+          enum: ["basic", "comprehensive"]
+          default: "comprehensive"
+
+    AgentUpgradeResponse:
+      type: "object"
+      required: ["success", "upgradedAgent", "validationResults"]
+      properties:
+        success:
+          type: "boolean"
+        upgradedAgent:
+          type: "object"
+        validationResults:
+          $ref: "#/components/schemas/ValidationResult"
+        warnings:
+          type: "array"
+          items:
+            type: "string"
+
+    ValidationRequest:
+      type: "object"
+      properties:
+        targetType:
+          $ref: "#/components/schemas/AgentType"
+        strict:
+          type: "boolean"
+          default: false
+        includePerformance:
+          type: "boolean"
+          default: false
+
+    ValidationResult:
+      type: "object"
+      required: ["valid", "conformanceLevel", "checks"]
+      properties:
+        valid:
+          type: "boolean"
+        conformanceLevel:
+          $ref: "#/components/schemas/AgentType"
+        checks:
+          type: "array"
+          items:
+            type: "object"
+            properties:
+              category:
+                type: "string"
+              name:
+                type: "string"
+              passed:
+                type: "boolean"
+              message:
+                type: "string"
+        score:
+          type: "number"
+          minimum: 0
+          maximum: 100
+        recommendations:
+          type: "array"
+          items:
+            type: "string"
+
+  responses:
+    BadRequest:
+      description: "Bad request"
+      content:
+        application/json:
+          schema:
+            type: "object"
+            properties:
+              error:
+                type: "string"
+              details:
+                type: "object"
+
+    NotFound:
+      description: "Resource not found"
+      content:
+        application/json:
+          schema:
+            type: "object"
+            properties:
+              error:
+                type: "string"
+              resource_type:
+                type: "string"
+
+  securitySchemes:
+    api_key:
+      type: "apiKey"
+      in: "header"
+      name: "X-OSSA-AGENT-API-Key"
+      description: "OSSA Agent Types API key"
+
+    bearer:
+      type: "http"
+      scheme: "bearer"
+      bearerFormat: "JWT"
+
+security:
+  - api_key: []
+  - bearer: []
+
+tags:
+  - name: "Types"
+    description: "Agent type specifications and discovery"
+  - name: "Minimal"
+    description: "Level 0 - Minimal agents with basic discovery"
+  - name: "Basic"
+    description: "Level 1 - Basic agents with MCP support"
+  - name: "Integration"
+    description: "Level 2 - Integration agents with multi-framework support"
+  - name: "Production"
+    description: "Level 3 - Production agents with full lifecycle management"
+  - name: "Enterprise"
+    description: "Level 4 - Enterprise agents with governance and compliance"
+  - name: "Upgrade"
+    description: "Agent type upgrade operations"
+  - name: "Validation"
+    description: "Agent conformance validation"
+
+x-ossa-agent-conformance:
+  levels:
+    0: "Minimal - Basic discovery only"
+    1: "Basic - MCP support, Claude Desktop ready"
+    2: "Integration - Multi-framework APIs"
+    3: "Production - Full lifecycle management"
+    4: "Enterprise - Governance and compliance"
+  upgrade_paths:
+    minimal: ["basic"]
+    basic: ["integration"]
+    integration: ["production"]
+    production: ["enterprise"]
+    enterprise: []
+  validation_frameworks:
+    - "schema_validation"
+    - "capability_testing"
+    - "performance_benchmarking"
+    - "security_scanning"
+    - "compliance_auditing"

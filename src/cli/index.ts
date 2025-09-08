@@ -23,6 +23,20 @@ import { createAgentManagementCommands } from './commands/agent-management.js';
 import { createWorkspaceManagementCommands } from './commands/workspace-management.js';
 import { generateCommand } from './src/commands/generate.js';
 import { createOpenAIAgentCommandsTS } from './commands/openai-agents-ts.js';
+// Migration tools
+import { createMigrationCommands } from './src/commands/migrate.js';
+import { createSchemaMigrationCommands } from './src/commands/schema-migration.js';
+import { createLegacyConverterCommands } from './src/commands/legacy-converter.js';
+import { createMigrationValidatorCommands } from './src/commands/migration-validator.js';
+import { createAdvancedMigrationCommands } from './src/commands/advanced-migration.js';
+
+// New comprehensive command modules
+import { createAgentManagementCommands as createEnhancedAgentCommands } from './src/commands/agent-management.js';
+import { createOrchestrationCommands } from './src/commands/orchestration.js';
+import { createMonitoringCommands } from './src/commands/monitoring.js';
+import { createComplianceCommands } from './src/commands/compliance.js';
+import { createDiscoveryCommands } from './src/commands/discovery.js';
+import { createApiIntegrationCommands } from './src/commands/api-integration.js';
 
 // Configure program
 program
@@ -100,6 +114,21 @@ program.addCommand(generateCommand);
 
 // Add OpenAI agents commands
 program.addCommand(createOpenAIAgentCommandsTS());
+
+// Add migration tools
+program.addCommand(createMigrationCommands());
+program.addCommand(createSchemaMigrationCommands());
+program.addCommand(createLegacyConverterCommands());
+program.addCommand(createMigrationValidatorCommands());
+program.addCommand(createAdvancedMigrationCommands()); // Advanced migration tools
+
+// Add comprehensive new command modules
+program.addCommand(createEnhancedAgentCommands()); // Enhanced agent management
+program.addCommand(createOrchestrationCommands()); // Agent orchestration
+program.addCommand(createMonitoringCommands()); // Monitoring and observability
+program.addCommand(createComplianceCommands()); // Compliance and audit
+program.addCommand(createDiscoveryCommands()); // UADP discovery
+program.addCommand(createApiIntegrationCommands()); // API gateway and integrations
 // Implementation functions
 
 function createAgent(name: string, options: any) {

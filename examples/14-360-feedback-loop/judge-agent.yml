@@ -1,0 +1,348 @@
+ossa: "0.1.8"
+metadata:
+  name: feedback-judge
+  version: "1.0.0"
+  description: "360° Feedback Loop decision agent - makes binary decisions through pairwise comparisons"
+  author: "OSSA Framework"
+  tags: ["evaluation", "judge", "decision-making", "consensus"]
+  category: evaluation
+  subtype: judge
+
+spec:
+  conformance_tier: gold
+  class: evaluation
+  
+  # Core capabilities for decision making
+  capabilities:
+    primary:
+      - binary_decision_making: "Make clear go/no-go decisions based on evidence"
+      - pairwise_comparison: "Compare alternatives using structured criteria"
+      - consensus_building: "Synthesize multiple perspectives into decisions"
+      - conflict_resolution: "Resolve disagreements between reviewers"
+      - decision_justification: "Provide clear reasoning for all decisions"
+    
+    secondary:
+      - evidence_evaluation: "Assess quality and relevance of supporting evidence"
+      - stakeholder_balancing: "Consider impacts on different stakeholder groups"
+      - risk_tolerance_assessment: "Apply appropriate risk thresholds"
+      - precedent_analysis: "Consider historical decisions and patterns"
+
+  # Budget constraints for judgment phase
+  budget:
+    default_limit: 2500  # tokens per decision
+    max_comparison_items: 10  # maximum items in pairwise comparison
+    max_deliberation_time: 450  # 7.5 minutes maximum per decision
+    consensus_rounds: 3  # maximum rounds to reach consensus
+
+  # Communication protocols
+  protocols:
+    - name: rest_api
+      version: "1.0"
+      endpoint: "/api/v1/judge"
+      required: true
+    - name: grpc
+      version: "1.0"
+      service: "JudgeService"
+      required: false
+    - name: websocket
+      version: "1.0"
+      channel: "/stream/decisions"
+      required: false
+
+  # Integration with other feedback loop agents
+  integrations:
+    critic_agents:
+      - type: evaluation
+        communication: async
+        receives: "review_reports"
+    
+    trainer_agents:
+      - type: learning
+        communication: async
+        provides: "decision_outcomes"
+    
+    governor_agents:
+      - type: governance
+        communication: sync
+        reports: "compliance_decisions"
+
+  # Performance metrics
+  metrics:
+    success_criteria:
+      - decision_consistency: ">= 90%"
+      - justification_quality: ">= 85%"
+      - conflict_resolution_rate: ">= 80%"
+    
+    performance_targets:
+      - decision_speed: "< 300s"
+      - evidence_utilization: "> 90%"
+      - stakeholder_satisfaction: "> 75%"
+
+  # Decision frameworks and criteria
+  decision_frameworks:
+    binary_decisions:
+      criteria:
+        - quality_threshold: "Meets minimum quality standards"
+        - risk_acceptable: "Risks within acceptable tolerance"
+        - compliance_met: "All compliance requirements satisfied"
+        - stakeholder_impact: "Positive or neutral impact on stakeholders"
+      
+      weighting:
+        quality: 40
+        risk: 25
+        compliance: 20
+        stakeholder_impact: 15
+    
+    pairwise_comparison:
+      methodology: "analytical_hierarchy_process"
+      consistency_check: true
+      confidence_threshold: 0.8
+      
+    consensus_building:
+      voting_mechanism: "weighted_scoring"
+      quorum_requirements: "majority_agreement"
+      tie_breaking: "escalation_to_human"
+
+  # Input/Output specifications
+  interfaces:
+    input:
+      decision_request:
+        type: object
+        required: true
+        properties:
+          decision_id: "Unique decision identifier"
+          decision_type: "Type of decision required"
+          alternatives: "Options to choose between"
+          criteria: "Decision criteria and weights"
+          evidence: "Supporting evidence and data"
+          constraints: "Decision constraints and requirements"
+          stakeholders: "Affected stakeholder groups"
+          urgency: "Decision urgency level"
+    
+    output:
+      decision_outcome:
+        type: object
+        properties:
+          decision_id: "Decision identifier"
+          recommendation: "Primary recommendation (approve/reject/defer)"
+          confidence: "Confidence level in decision (0-100)"
+          alternatives_ranking: "Ranked list of all alternatives"
+          justification: "Detailed reasoning for the decision"
+          risk_assessment: "Analysis of decision risks"
+          stakeholder_impact: "Impact analysis on stakeholders"
+          conditions: "Conditions or requirements for approval"
+          dissenting_views: "Alternative perspectives considered"
+          review_trigger: "Conditions that would trigger re-evaluation"
+
+  # Framework integrations
+  frameworks:
+    langchain:
+      enabled: true
+      integration: native
+      tools: ["decision_analyzer", "evidence_evaluator", "consensus_builder"]
+    
+    crewai:
+      enabled: true
+      role: "Chief Decision Officer"
+      goal: "Make fair, well-reasoned decisions that balance multiple perspectives"
+      backstory: "Experienced decision maker with strong analytical skills and commitment to fairness"
+    
+    autogen:
+      enabled: true
+      agent_type: "AssistantAgent"
+      system_message: "You are an impartial judge who makes fair decisions based on evidence, considering all stakeholders while maintaining high standards."
+
+# OpenAPI specification for REST endpoints
+openapi: "3.1.0"
+info:
+  title: "Feedback Loop Judge API"
+  version: "1.0.0"
+  description: "API for decision making and consensus building"
+
+paths:
+  /judge:
+    post:
+      summary: "Request a decision"
+      operationId: requestDecision
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [decision_id, decision_type, alternatives]
+              properties:
+                decision_id:
+                  type: string
+                  description: "Unique identifier for this decision"
+                decision_type:
+                  type: string
+                  enum: ["approval", "selection", "prioritization", "conflict_resolution"]
+                alternatives:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      id: { type: string }
+                      name: { type: string }
+                      description: { type: string }
+                      supporting_evidence: { type: array, items: { type: object } }
+                criteria:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      name: { type: string }
+                      weight: { type: number, minimum: 0, maximum: 100 }
+                      description: { type: string }
+                evidence:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      source: { type: string }
+                      type: { type: string }
+                      content: { type: object }
+                      reliability: { type: number, minimum: 0, maximum: 100 }
+                constraints:
+                  type: object
+                  properties:
+                    budget_limits: { type: array, items: { type: object } }
+                    time_constraints: { type: string, format: date-time }
+                    regulatory_requirements: { type: array, items: { type: string } }
+                    technical_constraints: { type: array, items: { type: string } }
+                stakeholders:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      name: { type: string }
+                      influence: { type: string, enum: ["low", "medium", "high"] }
+                      impact: { type: string, enum: ["low", "medium", "high"] }
+                      preferences: { type: array, items: { type: string } }
+                urgency:
+                  type: string
+                  enum: ["low", "medium", "high", "critical"]
+                  default: "medium"
+      responses:
+        "200":
+          description: "Decision request accepted"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  decision_id: { type: string }
+                  status: { type: string, enum: ["queued", "in_progress"] }
+                  estimated_completion: { type: string, format: date-time }
+        "400":
+          description: "Invalid decision request"
+        "429":
+          description: "Decision queue full or budget exceeded"
+
+  /decisions/{decisionId}:
+    get:
+      summary: "Get decision outcome"
+      parameters:
+        - name: decisionId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: "Decision outcome retrieved"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  decision_id: { type: string }
+                  status: { type: string, enum: ["completed", "in_progress", "deferred", "escalated"] }
+                  recommendation:
+                    type: object
+                    properties:
+                      primary: { type: string, enum: ["approve", "reject", "defer", "conditional_approve"] }
+                      alternative_id: { type: string }
+                      conditions: { type: array, items: { type: string } }
+                  confidence: { type: number, minimum: 0, maximum: 100 }
+                  alternatives_ranking:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        rank: { type: integer }
+                        alternative_id: { type: string }
+                        score: { type: number }
+                        pros: { type: array, items: { type: string } }
+                        cons: { type: array, items: { type: string } }
+                  justification:
+                    type: object
+                    properties:
+                      summary: { type: string }
+                      key_factors: { type: array, items: { type: string } }
+                      evidence_analysis: { type: string }
+                      trade_offs: { type: string }
+                      decision_logic: { type: string }
+                  risk_assessment:
+                    type: object
+                    properties:
+                      overall_risk: { type: string, enum: ["low", "medium", "high"] }
+                      specific_risks: { type: array, items: { type: object } }
+                      mitigation_strategies: { type: array, items: { type: string } }
+                  stakeholder_impact:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        stakeholder: { type: string }
+                        impact_level: { type: string, enum: ["negative", "neutral", "positive"] }
+                        impact_description: { type: string }
+                        mitigation_actions: { type: array, items: { type: string } }
+                  dissenting_views:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        perspective: { type: string }
+                        reasoning: { type: string }
+                        consideration: { type: string }
+                  review_trigger:
+                    type: object
+                    properties:
+                      conditions: { type: array, items: { type: string } }
+                      timeline: { type: string }
+                      responsible_party: { type: string }
+                  decision_timestamp: { type: string, format: date-time }
+                  judge_metadata:
+                    type: object
+                    properties:
+                      agent_version: { type: string }
+                      decision_methodology: { type: string }
+                      evidence_sources: { type: array, items: { type: string } }
+                      consistency_checks: { type: array, items: { type: string } }
+
+# Agent behavior configuration
+behavior:
+  decision_approach: "evidence_based_analytical"
+  bias_mitigation: "structured_comparison"
+  stakeholder_consideration: "balanced_representation"
+  risk_assessment: "comprehensive"
+  
+  judgment_principles:
+    fairness: true
+    transparency: true
+    consistency: true
+    evidence_based: true
+    stakeholder_inclusive: true
+  
+  conflict_resolution:
+    mediation_first: true
+    structured_dialogue: true
+    win_win_seeking: true
+    escalation_protocols: true
+  
+  learning:
+    decision_outcome_tracking: true
+    pattern_analysis: true
+    methodology_improvement: true
+    bias_detection: true

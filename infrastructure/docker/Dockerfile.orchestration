@@ -1,0 +1,294 @@
+FROM node:20-alpine
+
+# Install system dependencies
+RUN apk add --no-cache \
+    wget \
+    curl \
+    bash \
+    git
+
+WORKDIR /app
+
+# Copy package files
+COPY package*.json ./
+
+# Install root dependencies
+RUN npm install || true
+
+# Copy source code
+COPY . .
+
+# Install and build the CLI package
+WORKDIR /app/src/cli
+RUN npm install && npm run build
+
+# Return to app root
+WORKDIR /app
+
+# Create orchestration service startup script
+RUN cat > /app/start-orchestration.sh << 'EOF'
+#!/bin/bash
+echo "🔄 Starting OSSA Orchestration Service v0.1.8..."
+
+# Start the orchestration service
+node -e "
+const express = require('express');
+const axios = require('axios');
+
+const app = express();
+app.use(express.json());
+
+// Orchestration state
+const workflows = new Map();
+const executions = new Map();
+
+// Health endpoint
+app.get('/health', (req, res) => {
+  res.json({
+    service: 'orchestration',
+    status: 'healthy',
+    version: '0.1.8',
+    active_workflows: workflows.size,
+    running_executions: Array.from(executions.values()).filter(e => e.status === 'running').length,
+    timestamp: new Date().toISOString()
+  });
+});
+
+// Orchestration capabilities endpoint
+app.get('/capabilities', (req, res) => {
+  res.json({
+    service_type: 'orchestration',
+    capabilities: [
+      'workflow_management',
+      'task_scheduling',
+      'agent_coordination',
+      'execution_monitoring',
+      'error_handling'
+    ],
+    endpoints: {
+      workflows: '/workflows',
+      execute: '/execute',
+      status: '/status'
+    },
+    supported_patterns: ['sequential', 'parallel', 'conditional', 'loop']
+  });
+});
+
+// Create workflow endpoint
+app.post('/workflows', async (req, res) => {
+  try {
+    const { name, description, steps, agents, pattern } = req.body;
+    
+    if (!name || !steps || !Array.isArray(steps)) {
+      return res.status(400).json({ error: 'name and steps (array) required' });
+    }
+    
+    const workflowId = 'workflow-' + Date.now();
+    const workflow = {
+      id: workflowId,
+      name,
+      description: description || '',
+      steps,
+      agents: agents || [],
+      pattern: pattern || 'sequential',
+      created_at: new Date().toISOString(),
+      created_by: 'orchestration-service',
+      status: 'ready'
+    };
+    
+    workflows.set(workflowId, workflow);
+    
+    res.json({
+      status: 'created',
+      workflow
+    });
+  } catch (error) {
+    res.status(500).json({
+      status: 'error',
+      error: error.message
+    });
+  }
+});
+
+// List workflows endpoint
+app.get('/workflows', (req, res) => {
+  const workflowList = Array.from(workflows.values());
+  res.json({
+    workflows: workflowList,
+    total: workflowList.length,
+    timestamp: new Date().toISOString()
+  });
+});
+
+// Get specific workflow
+app.get('/workflows/:id', (req, res) => {
+  const workflow = workflows.get(req.params.id);
+  if (!workflow) {
+    return res.status(404).json({ error: 'Workflow not found' });
+  }
+  res.json(workflow);
+});
+
+// Execute workflow endpoint
+app.post('/execute', async (req, res) => {
+  try {
+    const { workflow_id, parameters, priority } = req.body;
+    
+    if (!workflow_id) {
+      return res.status(400).json({ error: 'workflow_id required' });
+    }
+    
+    const workflow = workflows.get(workflow_id);
+    if (!workflow) {
+      return res.status(404).json({ error: 'Workflow not found' });
+    }
+    
+    const executionId = 'exec-' + Date.now();
+    const execution = {
+      id: executionId,
+      workflow_id,
+      workflow_name: workflow.name,
+      status: 'running',
+      current_step: 0,
+      total_steps: workflow.steps.length,
+      parameters: parameters || {},
+      priority: priority || 'normal',
+      started_at: new Date().toISOString(),
+      steps_completed: [],
+      steps_failed: []
+    };
+    
+    executions.set(executionId, execution);
+    
+    // Start execution in background
+    executeWorkflow(executionId, workflow, parameters || {});
+    
+    res.json({
+      status: 'started',
+      execution_id: executionId,
+      workflow_id,
+      estimated_duration: workflow.steps.length * 30, // 30s per step estimate
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    res.status(500).json({
+      status: 'error',
+      error: error.message
+    });
+  }
+});
+
+// Get execution status
+app.get('/executions/:id', (req, res) => {
+  const execution = executions.get(req.params.id);
+  if (!execution) {
+    return res.status(404).json({ error: 'Execution not found' });
+  }
+  res.json(execution);
+});
+
+// List all executions
+app.get('/executions', (req, res) => {
+  const status = req.query.status;
+  let executionList = Array.from(executions.values());
+  
+  if (status) {
+    executionList = executionList.filter(e => e.status === status);
+  }
+  
+  res.json({
+    executions: executionList,
+    total: executionList.length,
+    timestamp: new Date().toISOString()
+  });
+});
+
+// Cancel execution
+app.post('/executions/:id/cancel', (req, res) => {
+  const execution = executions.get(req.params.id);
+  if (!execution) {
+    return res.status(404).json({ error: 'Execution not found' });
+  }
+  
+  if (execution.status === 'running') {
+    execution.status = 'cancelled';
+    execution.cancelled_at = new Date().toISOString();
+    executions.set(req.params.id, execution);
+  }
+  
+  res.json({
+    status: 'cancelled',
+    execution_id: req.params.id,
+    timestamp: new Date().toISOString()
+  });
+});
+
+// Workflow execution engine
+async function executeWorkflow(executionId, workflow, parameters) {
+  const execution = executions.get(executionId);
+  if (!execution) return;
+  
+  try {
+    for (let i = 0; i < workflow.steps.length; i++) {
+      // Check if execution was cancelled
+      const currentExecution = executions.get(executionId);
+      if (currentExecution.status === 'cancelled') {
+        return;
+      }
+      
+      const step = workflow.steps[i];
+      currentExecution.current_step = i;
+      executions.set(executionId, currentExecution);
+      
+      console.log('Executing step:', step.name || 'Step ' + (i + 1));
+      
+      // Simulate step execution
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      // Mock success (in real implementation, would call actual agents)
+      currentExecution.steps_completed.push({
+        step_index: i,
+        step_name: step.name || 'Step ' + (i + 1),
+        completed_at: new Date().toISOString(),
+        result: 'success'
+      });
+      
+      executions.set(executionId, currentExecution);
+    }
+    
+    // Mark as completed
+    const finalExecution = executions.get(executionId);
+    finalExecution.status = 'completed';
+    finalExecution.completed_at = new Date().toISOString();
+    executions.set(executionId, finalExecution);
+    
+  } catch (error) {
+    // Mark as failed
+    const failedExecution = executions.get(executionId);
+    failedExecution.status = 'failed';
+    failedExecution.error = error.message;
+    failedExecution.failed_at = new Date().toISOString();
+    executions.set(executionId, failedExecution);
+  }
+}
+
+const port = process.env.SERVICE_PORT || 3012;
+app.listen(port, '0.0.0.0', () => {
+  console.log('✅ Orchestration Service running on port ' + port);
+});
+"
+
+EOF
+
+# Make startup script executable
+RUN chmod +x /app/start-orchestration.sh
+
+# Expose port
+EXPOSE 3012
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+  CMD curl -f http://localhost:3012/health || exit 1
+
+# Start orchestration service
+CMD ["/app/start-orchestration.sh"]

@@ -1,0 +1,1466 @@
+openapi: 3.1.0
+info:
+  title: OSSA Agent API Template
+  version: 0.1.8
+  description: |
+    OpenAPI template for OSSA-compliant agents with 360° Feedback Loop and ACTA token optimization.
+    
+    **OSSA Compliance**: v0.1.8
+    **360° Feedback Loop**: Plan → Execute → Review → Judge → Learn → Govern
+    **ACTA Integration**: Token optimization with vector-semantic compression
+    
+    ## Agent Taxonomy
+    - **Orchestrators**: Goal decomposition, task planning, workflow management
+    - **Workers**: Task execution with self-reporting capabilities  
+    - **Critics**: Multi-dimensional reviews and feedback generation
+    - **Judges**: Binary decisions through pairwise comparisons
+    - **Trainers**: Synthesize feedback into learning signals
+    - **Governors**: Budget enforcement and compliance monitoring
+    - **Monitors**: Telemetry collection and system health tracking
+    - **Integrators**: Cross-system adapters and protocol bridges
+    
+    ## ACTA Token Optimization
+    - Vector-semantic compression (60-75% token reduction)
+    - Dynamic model switching based on complexity
+    - Persistent context graphs with Qdrant
+    - 50-70% token reduction vs naive implementations
+  contact:
+    name: OSSA Support
+    url: https://ossa.bluefly.io/support
+    email: ossa-support@bluefly.io
+  license:
+    name: Apache 2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0.html
+  x-ossa-version: "0.1.8"
+  x-agent-taxonomy:
+    - orchestrator
+    - worker
+    - critic
+    - judge
+    - trainer
+    - governor
+    - monitor
+    - integrator
+  x-acta-enabled: true
+  x-feedback-loop: true
+
+servers:
+  - url: https://api.{agent-name}.ossa.bluefly.io/v1
+    description: Production OSSA Agent API
+    variables:
+      agent-name:
+        description: Agent identifier
+        default: agent
+  - url: https://staging-api.{agent-name}.ossa.bluefly.io/v1
+    description: Staging OSSA Agent API
+    variables:
+      agent-name:
+        description: Agent identifier
+        default: agent
+  - url: http://localhost:8080/v1
+    description: Local development server
+
+security:
+  - ApiKeyAuth: []
+  - BearerAuth: []
+  - OAuth2: []
+
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+      description: API key for agent authentication
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT token for authenticated requests
+    OAuth2:
+      type: oauth2
+      flows:
+        authorizationCode:
+          authorizationUrl: https://auth.ossa.bluefly.io/authorize
+          tokenUrl: https://auth.ossa.bluefly.io/token
+          scopes:
+            agent:read: Read agent capabilities and status
+            agent:execute: Execute agent tasks
+            agent:admin: Administrative access to agent
+
+  schemas:
+    # Core OSSA Agent Schema
+    Agent:
+      type: object
+      required:
+        - id
+        - name
+        - version
+        - taxonomy
+        - capabilities
+        - protocols
+      properties:
+        id:
+          type: string
+          pattern: '^[a-z0-9-]+$'
+          minLength: 3
+          maxLength: 50
+          description: Unique agent identifier
+          example: "api-orchestrator-v1"
+        name:
+          type: string
+          description: Human-readable agent name
+          example: "API Orchestrator Agent"
+        version:
+          type: string
+          pattern: '^[0-9]+\.[0-9]+\.[0-9]+$'
+          description: Semantic version
+          example: "1.0.0"
+        taxonomy:
+          $ref: '#/components/schemas/AgentTaxonomy'
+        capabilities:
+          type: array
+          items:
+            $ref: '#/components/schemas/AgentCapability'
+          description: Agent capabilities
+        protocols:
+          $ref: '#/components/schemas/ProtocolSupport'
+        metadata:
+          $ref: '#/components/schemas/AgentMetadata'
+        status:
+          $ref: '#/components/schemas/AgentStatus'
+        acta_config:
+          $ref: '#/components/schemas/ACTAConfig'
+
+    # Agent Taxonomy
+    AgentTaxonomy:
+      type: object
+      required:
+        - primary_type
+      properties:
+        primary_type:
+          type: string
+          enum: 
+            - orchestrator
+            - worker
+            - critic
+            - judge
+            - trainer
+            - governor
+            - monitor
+            - integrator
+          description: Primary agent type
+        secondary_types:
+          type: array
+          items:
+            type: string
+            enum: 
+              - orchestrator
+              - worker
+              - critic
+              - judge
+              - trainer
+              - governor
+              - monitor
+              - integrator
+          description: Secondary agent capabilities
+        specialization:
+          type: string
+          description: Domain-specific specialization
+          example: "openapi-validation"
+        compliance_level:
+          type: string
+          enum: ["bronze", "silver", "gold"]
+          default: "bronze"
+          description: OSSA compliance level
+
+    # Agent Capabilities
+    AgentCapability:
+      type: object
+      required:
+        - name
+        - description
+        - input_schema
+        - output_schema
+      properties:
+        name:
+          type: string
+          pattern: '^[a-z0-9_]+$'
+          description: Capability identifier
+          example: "validate_openapi"
+        description:
+          type: string
+          maxLength: 200
+          description: Capability description
+          example: "Validates OpenAPI specifications against OSSA standards"
+        input_schema:
+          type: object
+          description: JSON Schema for input validation
+        output_schema:
+          type: object
+          description: JSON Schema for output validation
+        frameworks:
+          type: array
+          items:
+            type: string
+            enum: ["langchain", "crewai", "openai", "anthropic", "google", "autogen", "mcp"]
+          description: Compatible frameworks
+        token_cost:
+          type: object
+          properties:
+            estimated_tokens:
+              type: integer
+              minimum: 1
+              description: Estimated token usage
+            cost_per_request:
+              type: number
+              minimum: 0
+              description: Estimated cost per request (USD)
+        acta_optimized:
+          type: boolean
+          default: false
+          description: Whether capability uses ACTA optimization
+
+    # Protocol Support
+    ProtocolSupport:
+      type: object
+      properties:
+        rest:
+          type: object
+          properties:
+            enabled:
+              type: boolean
+              default: true
+            base_url:
+              type: string
+              format: uri
+            version:
+              type: string
+              default: "v1"
+        grpc:
+          type: object
+          properties:
+            enabled:
+              type: boolean
+              default: false
+            endpoint:
+              type: string
+              format: uri
+              example: "grpc://agent.ossa.bluefly.io:50051"
+        websocket:
+          type: object
+          properties:
+            enabled:
+              type: boolean
+              default: false
+            endpoint:
+              type: string
+              format: uri
+              example: "wss://ws.agent.ossa.bluefly.io/stream"
+        mcp:
+          type: object
+          properties:
+            enabled:
+              type: boolean
+              default: false
+            server_config:
+              type: object
+              properties:
+                name:
+                  type: string
+                version:
+                  type: string
+                tools:
+                  type: array
+                  items:
+                    type: object
+
+    # Agent Metadata
+    AgentMetadata:
+      type: object
+      properties:
+        created:
+          type: string
+          format: date-time
+          description: Agent creation timestamp
+        updated:
+          type: string
+          format: date-time
+          description: Last update timestamp
+        author:
+          type: string
+          description: Agent author/maintainer
+        tags:
+          type: array
+          items:
+            type: string
+          description: Classification tags
+        annotations:
+          type: object
+          additionalProperties:
+            type: string
+          description: OSSA and framework annotations
+
+    # Agent Status
+    AgentStatus:
+      type: object
+      required:
+        - health
+        - availability
+      properties:
+        health:
+          type: string
+          enum: ["healthy", "degraded", "unhealthy"]
+          description: Agent health status
+        availability:
+          type: string
+          enum: ["available", "busy", "maintenance", "offline"]
+          description: Agent availability status
+        last_heartbeat:
+          type: string
+          format: date-time
+          description: Last heartbeat timestamp
+        active_tasks:
+          type: integer
+          minimum: 0
+          description: Number of active tasks
+        performance_metrics:
+          $ref: '#/components/schemas/PerformanceMetrics'
+
+    # ACTA Configuration
+    ACTAConfig:
+      type: object
+      properties:
+        enabled:
+          type: boolean
+          default: true
+          description: Whether ACTA optimization is enabled
+        compression_strategy:
+          type: string
+          enum: ["vector_semantic", "hierarchical", "adaptive", "hybrid"]
+          default: "vector_semantic"
+          description: Token compression strategy
+        model_switching:
+          type: object
+          properties:
+            enabled:
+              type: boolean
+              default: true
+            strategy:
+              type: string
+              enum: ["complexity_based", "cost_optimized", "latency_optimized"]
+              default: "complexity_based"
+            models:
+              type: array
+              items:
+                type: object
+                properties:
+                  tier:
+                    type: string
+                    enum: ["lightweight", "standard", "premium", "specialized"]
+                  model_id:
+                    type: string
+                  max_tokens:
+                    type: integer
+                  cost_per_token:
+                    type: number
+        context_management:
+          type: object
+          properties:
+            persistent_graph:
+              type: boolean
+              default: true
+            vector_storage:
+              type: string
+              enum: ["qdrant", "pinecone", "weaviate", "chroma"]
+              default: "qdrant"
+            retention_policy:
+              type: string
+              pattern: '^[0-9]+[dhm]$'
+              default: "30d"
+
+    # Performance Metrics
+    PerformanceMetrics:
+      type: object
+      properties:
+        response_time_ms:
+          type: number
+          minimum: 0
+          description: Average response time in milliseconds
+        throughput_rps:
+          type: number
+          minimum: 0
+          description: Requests per second throughput
+        success_rate:
+          type: number
+          minimum: 0
+          maximum: 1
+          description: Success rate (0-1)
+        token_efficiency:
+          type: object
+          properties:
+            compression_ratio:
+              type: number
+              minimum: 0
+              maximum: 1
+              description: Token compression ratio (0-1)
+            cost_reduction:
+              type: number
+              minimum: 0
+              maximum: 1
+              description: Cost reduction percentage (0-1)
+
+    # 360° Feedback Loop Components
+    FeedbackLoop:
+      type: object
+      properties:
+        plan:
+          $ref: '#/components/schemas/ExecutionPlan'
+        execution:
+          $ref: '#/components/schemas/ExecutionResult'
+        review:
+          $ref: '#/components/schemas/ReviewResult'
+        judgment:
+          $ref: '#/components/schemas/JudgmentResult'
+        learning:
+          $ref: '#/components/schemas/LearningSignal'
+        governance:
+          $ref: '#/components/schemas/GovernanceReport'
+
+    # Execution Plan
+    ExecutionPlan:
+      type: object
+      required:
+        - id
+        - tasks
+        - budget
+      properties:
+        id:
+          type: string
+          description: Unique plan identifier
+        tasks:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+              description:
+                type: string
+              agent_type:
+                type: string
+              estimated_tokens:
+                type: integer
+              dependencies:
+                type: array
+                items:
+                  type: string
+        budget:
+          $ref: '#/components/schemas/TokenBudget'
+        timeline:
+          type: object
+          properties:
+            estimated_duration:
+              type: integer
+              description: Estimated duration in minutes
+            deadline:
+              type: string
+              format: date-time
+
+    # Token Budget
+    TokenBudget:
+      type: object
+      required:
+        - total_tokens
+        - allocated_tokens
+        - remaining_tokens
+      properties:
+        total_tokens:
+          type: integer
+          minimum: 100
+          description: Total token budget
+        allocated_tokens:
+          type: integer
+          minimum: 0
+          description: Tokens allocated to tasks
+        remaining_tokens:
+          type: integer
+          minimum: 0
+          description: Remaining token budget
+        enforcement_policy:
+          type: string
+          enum: ["block", "queue", "delegate", "escalate"]
+          default: "block"
+          description: Budget enforcement policy
+
+    # Execution Result
+    ExecutionResult:
+      type: object
+      required:
+        - plan_id
+        - status
+        - tasks_completed
+        - tokens_used
+      properties:
+        plan_id:
+          type: string
+          description: Reference to execution plan
+        status:
+          type: string
+          enum: ["completed", "failed", "partial", "timeout"]
+        tasks_completed:
+          type: array
+          items:
+            type: object
+            properties:
+              task_id:
+                type: string
+              status:
+                type: string
+                enum: ["completed", "failed", "skipped"]
+              output:
+                type: object
+              tokens_used:
+                type: integer
+              duration_ms:
+                type: integer
+        tokens_used:
+          type: integer
+          description: Total tokens consumed
+        performance_data:
+          $ref: '#/components/schemas/PerformanceMetrics'
+
+    # Review Result
+    ReviewResult:
+      type: object
+      required:
+        - execution_id
+        - reviews
+        - overall_score
+      properties:
+        execution_id:
+          type: string
+          description: Reference to execution result
+        reviews:
+          type: array
+          items:
+            type: object
+            properties:
+              reviewer_id:
+                type: string
+              dimensions:
+                type: object
+                properties:
+                  quality:
+                    type: number
+                    minimum: 0
+                    maximum: 10
+                  completeness:
+                    type: number
+                    minimum: 0
+                    maximum: 10
+                  efficiency:
+                    type: number
+                    minimum: 0
+                    maximum: 10
+                  compliance:
+                    type: number
+                    minimum: 0
+                    maximum: 10
+              feedback:
+                type: string
+                maxLength: 1000
+              recommendations:
+                type: array
+                items:
+                  type: string
+        overall_score:
+          type: number
+          minimum: 0
+          maximum: 10
+          description: Aggregated review score
+
+    # Judgment Result
+    JudgmentResult:
+      type: object
+      required:
+        - review_id
+        - decision
+        - confidence
+      properties:
+        review_id:
+          type: string
+          description: Reference to review result
+        decision:
+          type: string
+          enum: ["accept", "reject", "revise"]
+          description: Binary judgment decision
+        confidence:
+          type: number
+          minimum: 0
+          maximum: 1
+          description: Confidence level (0-1)
+        justification:
+          type: string
+          maxLength: 500
+          description: Decision justification
+        alternative_suggestions:
+          type: array
+          items:
+            type: string
+          description: Alternative approaches
+
+    # Learning Signal
+    LearningSignal:
+      type: object
+      required:
+        - judgment_id
+        - patterns
+        - updates
+      properties:
+        judgment_id:
+          type: string
+          description: Reference to judgment result
+        patterns:
+          type: array
+          items:
+            type: object
+            properties:
+              pattern_type:
+                type: string
+                enum: ["success", "failure", "optimization", "antipattern"]
+              description:
+                type: string
+              frequency:
+                type: integer
+              confidence:
+                type: number
+                minimum: 0
+                maximum: 1
+        updates:
+          type: object
+          properties:
+            capability_improvements:
+              type: array
+              items:
+                type: object
+                properties:
+                  capability_id:
+                    type: string
+                  improvement_type:
+                    type: string
+                  description:
+                    type: string
+            knowledge_updates:
+              type: array
+              items:
+                type: object
+                properties:
+                  domain:
+                    type: string
+                  knowledge_item:
+                    type: string
+                  confidence:
+                    type: number
+
+    # Governance Report
+    GovernanceReport:
+      type: object
+      required:
+        - learning_id
+        - compliance_status
+        - budget_status
+      properties:
+        learning_id:
+          type: string
+          description: Reference to learning signal
+        compliance_status:
+          type: object
+          properties:
+            frameworks:
+              type: array
+              items:
+                type: object
+                properties:
+                  framework:
+                    type: string
+                  status:
+                    type: string
+                    enum: ["compliant", "non_compliant", "partial"]
+                  violations:
+                    type: array
+                    items:
+                      type: string
+        budget_status:
+          $ref: '#/components/schemas/TokenBudget'
+        audit_trail:
+          type: array
+          items:
+            type: object
+            properties:
+              timestamp:
+                type: string
+                format: date-time
+              event_type:
+                type: string
+              description:
+                type: string
+              metadata:
+                type: object
+
+    # Error Response
+    Error:
+      type: object
+      required:
+        - error
+        - message
+      properties:
+        error:
+          type: string
+          description: Error code
+          example: "VALIDATION_ERROR"
+        message:
+          type: string
+          description: Human-readable error message
+          example: "Input validation failed"
+        details:
+          type: object
+          description: Additional error details
+        trace_id:
+          type: string
+          description: Request trace identifier
+        acta_context:
+          type: object
+          properties:
+            tokens_used:
+              type: integer
+            compression_applied:
+              type: boolean
+            model_used:
+              type: string
+
+paths:
+  # Agent Discovery and Registration
+  /agents:
+    get:
+      summary: List available agents
+      description: Retrieve list of all registered OSSA agents
+      operationId: listAgents
+      tags:
+        - Discovery
+      parameters:
+        - name: type
+          in: query
+          description: Filter by agent taxonomy type
+          schema:
+            type: string
+            enum: 
+              - orchestrator
+              - worker
+              - critic
+              - judge
+              - trainer
+              - governor
+              - monitor
+              - integrator
+        - name: compliance_level
+          in: query
+          description: Filter by compliance level
+          schema:
+            type: string
+            enum: ["bronze", "silver", "gold"]
+        - name: acta_enabled
+          in: query
+          description: Filter by ACTA optimization support
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: List of agents
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  agents:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Agent'
+                  total:
+                    type: integer
+                  acta_stats:
+                    type: object
+                    properties:
+                      total_optimized:
+                        type: integer
+                      avg_compression_ratio:
+                        type: number
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    post:
+      summary: Register new agent
+      description: Register a new OSSA-compliant agent
+      operationId: registerAgent
+      tags:
+        - Discovery
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Agent'
+      responses:
+        '201':
+          description: Agent registered successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  agent_id:
+                    type: string
+                  registration_status:
+                    type: string
+                    enum: ["registered", "pending_validation"]
+                  compliance_check:
+                    type: object
+                    properties:
+                      level:
+                        type: string
+                        enum: ["bronze", "silver", "gold"]
+                      validations:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            check:
+                              type: string
+                            status:
+                              type: string
+                              enum: ["passed", "failed", "warning"]
+        '400':
+          description: Invalid agent configuration
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /agents/{agentId}:
+    get:
+      summary: Get agent details
+      description: Retrieve detailed information about a specific agent
+      operationId: getAgent
+      tags:
+        - Discovery
+      parameters:
+        - name: agentId
+          in: path
+          required: true
+          description: Agent identifier
+          schema:
+            type: string
+            pattern: '^[a-z0-9-]+$'
+      responses:
+        '200':
+          description: Agent details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Agent'
+        '404':
+          description: Agent not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    put:
+      summary: Update agent configuration
+      description: Update an existing agent's configuration
+      operationId: updateAgent
+      tags:
+        - Discovery
+      parameters:
+        - name: agentId
+          in: path
+          required: true
+          description: Agent identifier
+          schema:
+            type: string
+            pattern: '^[a-z0-9-]+$'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Agent'
+      responses:
+        '200':
+          description: Agent updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Agent'
+        '404':
+          description: Agent not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    delete:
+      summary: Deregister agent
+      description: Remove an agent from the registry
+      operationId: deregisterAgent
+      tags:
+        - Discovery
+      parameters:
+        - name: agentId
+          in: path
+          required: true
+          description: Agent identifier
+          schema:
+            type: string
+            pattern: '^[a-z0-9-]+$'
+      responses:
+        '204':
+          description: Agent deregistered successfully
+        '404':
+          description: Agent not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  # 360° Feedback Loop Endpoints
+  /feedback/plan:
+    post:
+      summary: Create execution plan
+      description: Create a new execution plan with ACTA token optimization
+      operationId: createExecutionPlan
+      tags:
+        - Feedback Loop
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                goal:
+                  type: string
+                  description: Overall execution goal
+                requirements:
+                  type: array
+                  items:
+                    type: string
+                  description: Specific requirements
+                constraints:
+                  type: object
+                  properties:
+                    max_tokens:
+                      type: integer
+                    deadline:
+                      type: string
+                      format: date-time
+                    compliance_required:
+                      type: array
+                      items:
+                        type: string
+                acta_preferences:
+                  type: object
+                  properties:
+                    compression_level:
+                      type: string
+                      enum: ["conservative", "balanced", "aggressive"]
+                    model_preference:
+                      type: string
+                      enum: ["cost_optimized", "quality_optimized", "speed_optimized"]
+      responses:
+        '201':
+          description: Execution plan created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExecutionPlan'
+        '400':
+          description: Invalid plan request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /feedback/execute/{planId}:
+    post:
+      summary: Execute plan
+      description: Execute a previously created plan
+      operationId: executePlan
+      tags:
+        - Feedback Loop
+      parameters:
+        - name: planId
+          in: path
+          required: true
+          description: Execution plan identifier
+          schema:
+            type: string
+      responses:
+        '202':
+          description: Execution started
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  execution_id:
+                    type: string
+                  status:
+                    type: string
+                    enum: ["started", "queued"]
+                  estimated_completion:
+                    type: string
+                    format: date-time
+        '404':
+          description: Plan not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /feedback/execution/{executionId}:
+    get:
+      summary: Get execution status
+      description: Retrieve status and results of an execution
+      operationId: getExecutionStatus
+      tags:
+        - Feedback Loop
+      parameters:
+        - name: executionId
+          in: path
+          required: true
+          description: Execution identifier
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Execution status and results
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExecutionResult'
+        '404':
+          description: Execution not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /feedback/review/{executionId}:
+    post:
+      summary: Submit execution review
+      description: Submit a review for completed execution
+      operationId: submitReview
+      tags:
+        - Feedback Loop
+      parameters:
+        - name: executionId
+          in: path
+          required: true
+          description: Execution identifier
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                reviewer_id:
+                  type: string
+                dimensions:
+                  type: object
+                  properties:
+                    quality:
+                      type: number
+                      minimum: 0
+                      maximum: 10
+                    completeness:
+                      type: number
+                      minimum: 0
+                      maximum: 10
+                    efficiency:
+                      type: number
+                      minimum: 0
+                      maximum: 10
+                    compliance:
+                      type: number
+                      minimum: 0
+                      maximum: 10
+                feedback:
+                  type: string
+                  maxLength: 1000
+                recommendations:
+                  type: array
+                  items:
+                    type: string
+      responses:
+        '201':
+          description: Review submitted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  review_id:
+                    type: string
+                  status:
+                    type: string
+        '404':
+          description: Execution not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /feedback/judge/{reviewId}:
+    post:
+      summary: Submit judgment
+      description: Submit a binary judgment on a review
+      operationId: submitJudgment
+      tags:
+        - Feedback Loop
+      parameters:
+        - name: reviewId
+          in: path
+          required: true
+          description: Review identifier
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                judge_id:
+                  type: string
+                decision:
+                  type: string
+                  enum: ["accept", "reject", "revise"]
+                confidence:
+                  type: number
+                  minimum: 0
+                  maximum: 1
+                justification:
+                  type: string
+                  maxLength: 500
+                alternative_suggestions:
+                  type: array
+                  items:
+                    type: string
+      responses:
+        '201':
+          description: Judgment submitted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JudgmentResult'
+        '404':
+          description: Review not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  # ACTA Token Optimization Endpoints
+  /acta/compress:
+    post:
+      summary: Compress context using ACTA
+      description: Apply ACTA token compression to reduce context size
+      operationId: compressContext
+      tags:
+        - ACTA Optimization
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                context:
+                  type: string
+                  description: Context to compress
+                strategy:
+                  type: string
+                  enum: ["vector_semantic", "hierarchical", "adaptive", "hybrid"]
+                  default: "vector_semantic"
+                target_reduction:
+                  type: number
+                  minimum: 0.1
+                  maximum: 0.9
+                  description: Target compression ratio (0.1-0.9)
+                preserve_semantics:
+                  type: boolean
+                  default: true
+      responses:
+        '200':
+          description: Context compressed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  compressed_context:
+                    type: string
+                  compression_ratio:
+                    type: number
+                  semantic_fidelity:
+                    type: number
+                  tokens_saved:
+                    type: integer
+                  expansion_reference:
+                    type: string
+                    description: Reference for context expansion
+        '400':
+          description: Invalid compression request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /acta/expand/{reference}:
+    get:
+      summary: Expand compressed context
+      description: Expand previously compressed context using reference
+      operationId: expandContext
+      tags:
+        - ACTA Optimization
+      parameters:
+        - name: reference
+          in: path
+          required: true
+          description: Compression reference identifier
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Context expanded successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  expanded_context:
+                    type: string
+                  original_tokens:
+                    type: integer
+                  expansion_fidelity:
+                    type: number
+        '404':
+          description: Reference not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /acta/model-switch:
+    post:
+      summary: Get optimal model recommendation
+      description: Get model switching recommendation based on task complexity
+      operationId: getModelRecommendation
+      tags:
+        - ACTA Optimization
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                task_description:
+                  type: string
+                complexity_indicators:
+                  type: object
+                  properties:
+                    input_length:
+                      type: integer
+                    output_requirements:
+                      type: string
+                      enum: ["simple", "moderate", "complex", "creative"]
+                    domain_expertise:
+                      type: array
+                      items:
+                        type: string
+                constraints:
+                  type: object
+                  properties:
+                    max_cost:
+                      type: number
+                    max_latency_ms:
+                      type: integer
+                    quality_threshold:
+                      type: number
+                      minimum: 0
+                      maximum: 1
+      responses:
+        '200':
+          description: Model recommendation provided
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  recommended_model:
+                    type: object
+                    properties:
+                      tier:
+                        type: string
+                        enum: ["lightweight", "standard", "premium", "specialized"]
+                      model_id:
+                        type: string
+                      estimated_cost:
+                        type: number
+                      estimated_latency_ms:
+                        type: integer
+                      confidence:
+                        type: number
+                  alternatives:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        model_id:
+                          type: string
+                        tier:
+                          type: string
+                        trade_offs:
+                          type: string
+
+  # Health and Monitoring
+  /health:
+    get:
+      summary: Health check
+      description: Check agent health status
+      operationId: healthCheck
+      tags:
+        - Health
+      responses:
+        '200':
+          description: Agent is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum: ["healthy", "degraded", "unhealthy"]
+                  timestamp:
+                    type: string
+                    format: date-time
+                  version:
+                    type: string
+                  ossa_compliance:
+                    type: string
+                    enum: ["bronze", "silver", "gold"]
+                  acta_status:
+                    type: object
+                    properties:
+                      enabled:
+                        type: boolean
+                      compression_ready:
+                        type: boolean
+                      model_switching_ready:
+                        type: boolean
+                      vector_store_connected:
+                        type: boolean
+                  dependencies:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        name:
+                          type: string
+                        status:
+                          type: string
+                          enum: ["up", "down", "degraded"]
+                        response_time_ms:
+                          type: number
+
+  /metrics:
+    get:
+      summary: Get performance metrics
+      description: Retrieve agent performance metrics
+      operationId: getMetrics
+      tags:
+        - Monitoring
+      responses:
+        '200':
+          description: Performance metrics
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  performance:
+                    $ref: '#/components/schemas/PerformanceMetrics'
+                  acta_metrics:
+                    type: object
+                    properties:
+                      total_compressions:
+                        type: integer
+                      avg_compression_ratio:
+                        type: number
+                      total_tokens_saved:
+                        type: integer
+                      cost_savings_usd:
+                        type: number
+                      model_switches:
+                        type: integer
+                  feedback_loop_metrics:
+                    type: object
+                    properties:
+                      plans_created:
+                        type: integer
+                      executions_completed:
+                        type: integer
+                      reviews_submitted:
+                        type: integer
+                      judgments_made:
+                        type: integer
+                      learning_signals_generated:
+                        type: integer
+                      avg_cycle_time_minutes:
+                        type: number
+
+tags:
+  - name: Discovery
+    description: Agent discovery and registration
+  - name: Feedback Loop
+    description: 360° Feedback Loop operations (Plan → Execute → Review → Judge → Learn → Govern)
+  - name: ACTA Optimization
+    description: Adaptive Contextual Token Architecture operations
+  - name: Health
+    description: Health and status monitoring
+  - name: Monitoring
+    description: Performance monitoring and metrics
+
+x-ossa-extensions:
+  feedback-loop:
+    phases: ["plan", "execute", "review", "judge", "learn", "govern"]
+    agent-types: ["orchestrator", "worker", "critic", "judge", "trainer", "governor", "monitor", "integrator"]
+  acta-integration:
+    compression-strategies: ["vector_semantic", "hierarchical", "adaptive", "hybrid"]
+    model-tiers: ["lightweight", "standard", "premium", "specialized"]
+    vector-storage: ["qdrant", "pinecone", "weaviate", "chroma"]
+  compliance-levels:
+    bronze: "Basic object support, core endpoints, JSON validation"
+    silver: "Full feedback loop, budget enforcement, audit logging, ACDL registration"
+    gold: "Multi-protocol support, Props tokens, learning signals, workspace management"

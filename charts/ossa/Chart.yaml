@@ -1,0 +1,54 @@
+apiVersion: v2
+name: ossa
+description: Open Standards for Scalable Agents (OSSA) - Research-enhanced specification for universal AI agent interoperability
+type: application
+version: 0.1.8
+appVersion: "0.1.8+rev2"
+
+keywords:
+  - ossa
+  - open-standards
+  - ai-agents
+  - agent-interoperability
+  - vendor-neutral
+  - conformance
+  - governance
+  - mcp
+  - langchain
+  - crewai
+  - openai
+  - anthropic
+  - agent-orchestration
+  - kubernetes-for-ai
+
+home: https://gitlab.com/bluefly-ai/ossa-standard
+sources:
+  - https://gitlab.com/bluefly-ai/ossa-standard
+
+maintainers:
+  - name: Open Standards for Scalable Agents Community
+    email: community@ossa-standard.org
+
+dependencies:
+  - name: postgresql
+    version: 12.x.x
+    repository: https://charts.bitnami.com/bitnami
+    condition: postgresql.enabled
+  - name: redis
+    version: 17.x.x
+    repository: https://charts.bitnami.com/bitnami
+    condition: redis.enabled
+  - name: qdrant
+    version: 0.7.x
+    repository: https://qdrant.github.io/qdrant-helm
+    condition: qdrant.enabled
+
+annotations:
+  category: AI/ML
+  licenses: Apache-2.0
+  # High-availability and performance annotations
+  ossa.io/uptime-target: "99.97%"
+  ossa.io/min-replicas: "3"
+  ossa.io/max-replicas: "250"
+  ossa.io/phase: "phase4"
+  ossa.io/scale: "enterprise"

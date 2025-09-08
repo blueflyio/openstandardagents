@@ -1,0 +1,861 @@
+# OSSA GraphQL Schema Template v0.1.8
+# GraphQL schema for OSSA-compliant agents with 360° Feedback Loop and ACTA token optimization
+# Compatible with Apollo Federation and supports real-time subscriptions
+
+# Scalar types for OSSA
+scalar DateTime
+scalar JSON
+scalar UUID
+scalar URI
+
+# OSSA Core Directives
+directive @ossaCompliant(level: ComplianceLevel!) on OBJECT | FIELD_DEFINITION
+directive @actaOptimized(strategy: CompressionStrategy = VECTOR_SEMANTIC) on FIELD_DEFINITION
+directive @feedbackLoop(phase: FeedbackPhase!) on FIELD_DEFINITION
+directive @tokenBudget(cost: Int!) on FIELD_DEFINITION
+directive @agentType(taxonomy: AgentTaxonomy!) on OBJECT
+
+# Enums for OSSA Compliance
+enum ComplianceLevel {
+  BRONZE
+  SILVER
+  GOLD
+}
+
+enum AgentTaxonomy {
+  ORCHESTRATOR
+  WORKER
+  CRITIC
+  JUDGE
+  TRAINER
+  GOVERNOR
+  MONITOR
+  INTEGRATOR
+}
+
+enum FeedbackPhase {
+  PLAN
+  EXECUTE
+  REVIEW
+  JUDGE
+  LEARN
+  GOVERN
+}
+
+enum CompressionStrategy {
+  VECTOR_SEMANTIC
+  HIERARCHICAL
+  ADAPTIVE
+  HYBRID
+}
+
+enum AgentStatus {
+  HEALTHY
+  DEGRADED
+  UNHEALTHY
+}
+
+enum AgentAvailability {
+  AVAILABLE
+  BUSY
+  MAINTENANCE
+  OFFLINE
+}
+
+enum ModelTier {
+  LIGHTWEIGHT
+  STANDARD
+  PREMIUM
+  SPECIALIZED
+}
+
+enum ExecutionStatus {
+  PENDING
+  RUNNING
+  COMPLETED
+  FAILED
+  TIMEOUT
+  CANCELLED
+}
+
+enum JudgmentDecision {
+  ACCEPT
+  REJECT
+  REVISE
+}
+
+enum BudgetEnforcementPolicy {
+  BLOCK
+  QUEUE
+  DELEGATE
+  ESCALATE
+}
+
+enum Framework {
+  LANGCHAIN
+  CREWAI
+  OPENAI
+  ANTHROPIC
+  GOOGLE
+  AUTOGEN
+  MCP
+}
+
+# Core OSSA Agent Type
+type Agent @ossaCompliant(level: BRONZE) @agentType(taxonomy: WORKER) {
+  id: ID!
+  name: String!
+  version: String!
+  description: String
+  taxonomy: AgentTaxonomyInfo!
+  capabilities: [AgentCapability!]!
+  protocols: ProtocolSupport!
+  metadata: AgentMetadata!
+  status: AgentStatusInfo!
+  actaConfig: ACTAConfiguration
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+# Agent Taxonomy Information
+type AgentTaxonomyInfo {
+  primaryType: AgentTaxonomy!
+  secondaryTypes: [AgentTaxonomy!]
+  specialization: String
+  complianceLevel: ComplianceLevel!
+}
+
+# Agent Capabilities
+type AgentCapability @actaOptimized @tokenBudget(cost: 100) {
+  name: String!
+  description: String!
+  inputSchema: JSON!
+  outputSchema: JSON!
+  frameworks: [Framework!]
+  tokenCost: TokenCostInfo
+  actaOptimized: Boolean!
+  slaGuarantee: String
+}
+
+# Token Cost Information
+type TokenCostInfo {
+  estimatedTokens: Int!
+  costPerRequest: Float!
+  compressionRatio: Float
+}
+
+# Protocol Support Configuration
+type ProtocolSupport {
+  rest: RESTProtocol
+  grpc: GRPCProtocol
+  websocket: WebSocketProtocol
+  mcp: MCPProtocol
+}
+
+type RESTProtocol {
+  enabled: Boolean!
+  baseUrl: URI
+  version: String!
+  authentication: AuthenticationConfig
+}
+
+type GRPCProtocol {
+  enabled: Boolean!
+  endpoint: URI
+  tlsEnabled: Boolean!
+}
+
+type WebSocketProtocol {
+  enabled: Boolean!
+  endpoint: URI
+  subscriptionSupport: Boolean!
+}
+
+type MCPProtocol {
+  enabled: Boolean!
+  serverConfig: MCPServerConfig
+}
+
+type MCPServerConfig {
+  name: String!
+  version: String!
+  tools: [JSON!]
+}
+
+type AuthenticationConfig {
+  type: String!
+  header: String
+  scheme: String
+}
+
+# Agent Metadata
+type AgentMetadata {
+  author: String
+  tags: [String!]
+  annotations: JSON
+  environment: String
+  tier: String
+  domain: String
+  team: String
+}
+
+# Agent Status Information
+type AgentStatusInfo @feedbackLoop(phase: GOVERN) {
+  health: AgentStatus!
+  availability: AgentAvailability!
+  lastHeartbeat: DateTime!
+  activeTasks: Int!
+  performanceMetrics: PerformanceMetrics!
+  actaMetrics: ACTAMetrics
+}
+
+# Performance Metrics
+type PerformanceMetrics {
+  responseTimeMs: Float!
+  throughputRps: Float!
+  successRate: Float!
+  tokenEfficiency: TokenEfficiency
+}
+
+type TokenEfficiency {
+  compressionRatio: Float
+  costReduction: Float
+  totalTokensSaved: Int
+}
+
+# ACTA Configuration
+type ACTAConfiguration @ossaCompliant(level: SILVER) {
+  enabled: Boolean!
+  compressionStrategy: CompressionStrategy!
+  modelSwitching: ModelSwitchingConfig!
+  contextManagement: ContextManagementConfig!
+  vectorStorage: VectorStorageConfig!
+}
+
+type ModelSwitchingConfig {
+  enabled: Boolean!
+  strategy: String!
+  models: [ModelConfiguration!]!
+}
+
+type ModelConfiguration {
+  tier: ModelTier!
+  modelId: String!
+  maxTokens: Int!
+  costPerToken: Float!
+}
+
+type ContextManagementConfig {
+  persistentGraph: Boolean!
+  retentionPolicy: String!
+  compressionThreshold: Int!
+}
+
+type VectorStorageConfig {
+  provider: String!
+  collection: String
+  dimensions: Int
+  connected: Boolean!
+}
+
+# ACTA Metrics
+type ACTAMetrics {
+  totalCompressions: Int!
+  avgCompressionRatio: Float!
+  totalTokensSaved: Int!
+  costSavingsUsd: Float!
+  modelSwitches: Int!
+  vectorOperations: Int!
+}
+
+# 360° Feedback Loop Types
+type FeedbackLoop @ossaCompliant(level: GOLD) {
+  id: ID!
+  planId: ID!
+  currentPhase: FeedbackPhase!
+  plan: ExecutionPlan
+  execution: ExecutionResult
+  review: ReviewResult
+  judgment: JudgmentResult
+  learning: LearningSignal
+  governance: GovernanceReport
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+# Execution Plan
+type ExecutionPlan @feedbackLoop(phase: PLAN) @tokenBudget(cost: 2000) {
+  id: ID!
+  goal: String!
+  tasks: [PlannedTask!]!
+  budget: TokenBudget!
+  timeline: ExecutionTimeline!
+  constraints: PlanConstraints
+  actaPreferences: ACTAPreferences
+  createdAt: DateTime!
+}
+
+type PlannedTask {
+  id: ID!
+  description: String!
+  agentType: AgentTaxonomy!
+  estimatedTokens: Int!
+  dependencies: [ID!]
+  priority: Int!
+}
+
+type TokenBudget {
+  totalTokens: Int!
+  allocatedTokens: Int!
+  remainingTokens: Int!
+  enforcementPolicy: BudgetEnforcementPolicy!
+}
+
+type ExecutionTimeline {
+  estimatedDurationMinutes: Int!
+  deadline: DateTime
+  milestones: [Milestone!]
+}
+
+type Milestone {
+  id: ID!
+  name: String!
+  targetDate: DateTime!
+  dependencies: [ID!]
+}
+
+type PlanConstraints {
+  maxTokens: Int
+  deadline: DateTime
+  complianceRequired: [String!]
+  qualityThreshold: Float
+}
+
+type ACTAPreferences {
+  compressionLevel: String!
+  modelPreference: String!
+  vectorStorageHint: String
+}
+
+# Execution Result
+type ExecutionResult @feedbackLoop(phase: EXECUTE) {
+  id: ID!
+  planId: ID!
+  status: ExecutionStatus!
+  tasksCompleted: [CompletedTask!]!
+  tokensUsed: Int!
+  performanceData: PerformanceMetrics!
+  actaOptimizations: ACTAOptimizationResult
+  startedAt: DateTime!
+  completedAt: DateTime
+  duration: Int
+}
+
+type CompletedTask {
+  taskId: ID!
+  status: ExecutionStatus!
+  output: JSON
+  tokensUsed: Int!
+  durationMs: Int!
+  errors: [String!]
+}
+
+type ACTAOptimizationResult {
+  compressionApplied: Boolean!
+  compressionRatio: Float
+  modelSwitches: Int!
+  tokensSaved: Int!
+  optimizationDetails: JSON
+}
+
+# Review Result
+type ReviewResult @feedbackLoop(phase: REVIEW) {
+  id: ID!
+  executionId: ID!
+  reviews: [IndividualReview!]!
+  overallScore: Float!
+  consensus: ReviewConsensus
+  createdAt: DateTime!
+}
+
+type IndividualReview {
+  reviewerId: ID!
+  dimensions: ReviewDimensions!
+  feedback: String!
+  recommendations: [String!]
+  timestamp: DateTime!
+}
+
+type ReviewDimensions {
+  quality: Float!
+  completeness: Float!
+  efficiency: Float!
+  compliance: Float!
+  innovation: Float
+}
+
+type ReviewConsensus {
+  agreementLevel: Float!
+  conflictingAspects: [String!]
+  consolidatedFeedback: String!
+}
+
+# Judgment Result
+type JudgmentResult @feedbackLoop(phase: JUDGE) {
+  id: ID!
+  reviewId: ID!
+  decision: JudgmentDecision!
+  confidence: Float!
+  justification: String!
+  alternativeSuggestions: [String!]
+  judgeId: ID!
+  timestamp: DateTime!
+}
+
+# Learning Signal
+type LearningSignal @feedbackLoop(phase: LEARN) {
+  id: ID!
+  judgmentId: ID!
+  patterns: [IdentifiedPattern!]!
+  updates: LearningUpdates!
+  confidence: Float!
+  applicability: [String!]
+  timestamp: DateTime!
+}
+
+type IdentifiedPattern {
+  patternType: String!
+  description: String!
+  frequency: Int!
+  confidence: Float!
+  examples: [JSON!]
+}
+
+type LearningUpdates {
+  capabilityImprovements: [CapabilityImprovement!]
+  knowledgeUpdates: [KnowledgeUpdate!]
+  behavioralAdjustments: [BehavioralAdjustment!]
+}
+
+type CapabilityImprovement {
+  capabilityId: ID!
+  improvementType: String!
+  description: String!
+  expectedImpact: Float!
+}
+
+type KnowledgeUpdate {
+  domain: String!
+  knowledgeItem: String!
+  confidence: Float!
+  sourceReferences: [String!]
+}
+
+type BehavioralAdjustment {
+  behavior: String!
+  adjustment: String!
+  context: [String!]
+  priority: Int!
+}
+
+# Governance Report
+type GovernanceReport @feedbackLoop(phase: GOVERN) {
+  id: ID!
+  learningId: ID!
+  complianceStatus: ComplianceStatus!
+  budgetStatus: TokenBudget!
+  auditTrail: [AuditEvent!]!
+  recommendations: [GovernanceRecommendation!]
+  timestamp: DateTime!
+}
+
+type ComplianceStatus {
+  frameworks: [FrameworkCompliance!]!
+  overallStatus: String!
+  violations: [ComplianceViolation!]
+}
+
+type FrameworkCompliance {
+  framework: String!
+  status: String!
+  lastChecked: DateTime!
+  certificateId: String
+}
+
+type ComplianceViolation {
+  framework: String!
+  violation: String!
+  severity: String!
+  remediationSteps: [String!]
+}
+
+type AuditEvent {
+  id: ID!
+  timestamp: DateTime!
+  eventType: String!
+  description: String!
+  metadata: JSON
+  agentId: ID
+}
+
+type GovernanceRecommendation {
+  type: String!
+  priority: Int!
+  description: String!
+  actionItems: [String!]
+  expectedBenefit: String
+}
+
+# ACTA-specific types
+type CompressionResult @actaOptimized {
+  compressedContext: String!
+  compressionRatio: Float!
+  semanticFidelity: Float!
+  tokensSaved: Int!
+  expansionReference: String!
+}
+
+type ModelRecommendation @actaOptimized {
+  recommendedModel: ModelConfiguration!
+  alternatives: [ModelConfiguration!]
+  confidence: Float!
+  reasoning: String!
+}
+
+# Input types for mutations
+input AgentInput {
+  name: String!
+  version: String!
+  description: String
+  taxonomy: AgentTaxonomyInput!
+  capabilities: [AgentCapabilityInput!]!
+  protocols: ProtocolSupportInput!
+  metadata: AgentMetadataInput
+  actaConfig: ACTAConfigurationInput
+}
+
+input AgentTaxonomyInput {
+  primaryType: AgentTaxonomy!
+  secondaryTypes: [AgentTaxonomy!]
+  specialization: String
+  complianceLevel: ComplianceLevel!
+}
+
+input AgentCapabilityInput {
+  name: String!
+  description: String!
+  inputSchema: JSON!
+  outputSchema: JSON!
+  frameworks: [Framework!]
+  tokenCost: TokenCostInfoInput
+  actaOptimized: Boolean = false
+}
+
+input TokenCostInfoInput {
+  estimatedTokens: Int!
+  costPerRequest: Float!
+}
+
+input ProtocolSupportInput {
+  rest: RESTProtocolInput
+  grpc: GRPCProtocolInput
+  websocket: WebSocketProtocolInput
+  mcp: MCPProtocolInput
+}
+
+input RESTProtocolInput {
+  enabled: Boolean!
+  baseUrl: URI
+  version: String = "v1"
+}
+
+input GRPCProtocolInput {
+  enabled: Boolean!
+  endpoint: URI
+  tlsEnabled: Boolean = true
+}
+
+input WebSocketProtocolInput {
+  enabled: Boolean!
+  endpoint: URI
+  subscriptionSupport: Boolean = true
+}
+
+input MCPProtocolInput {
+  enabled: Boolean!
+  serverConfig: MCPServerConfigInput
+}
+
+input MCPServerConfigInput {
+  name: String!
+  version: String!
+  tools: [JSON!]
+}
+
+input AgentMetadataInput {
+  author: String
+  tags: [String!]
+  annotations: JSON
+  environment: String
+  tier: String
+  domain: String
+  team: String
+}
+
+input ACTAConfigurationInput {
+  enabled: Boolean = true
+  compressionStrategy: CompressionStrategy = VECTOR_SEMANTIC
+  modelSwitching: ModelSwitchingConfigInput
+  contextManagement: ContextManagementConfigInput
+  vectorStorage: VectorStorageConfigInput
+}
+
+input ModelSwitchingConfigInput {
+  enabled: Boolean = true
+  strategy: String = "complexity_based"
+  models: [ModelConfigurationInput!]!
+}
+
+input ModelConfigurationInput {
+  tier: ModelTier!
+  modelId: String!
+  maxTokens: Int!
+  costPerToken: Float!
+}
+
+input ContextManagementConfigInput {
+  persistentGraph: Boolean = true
+  retentionPolicy: String = "30d"
+  compressionThreshold: Int = 4000
+}
+
+input VectorStorageConfigInput {
+  provider: String = "qdrant"
+  collection: String
+  dimensions: Int = 1536
+}
+
+input ExecutionPlanInput @tokenBudget(cost: 2000) {
+  goal: String!
+  requirements: [String!]!
+  constraints: PlanConstraintsInput
+  actaPreferences: ACTAPreferencesInput
+}
+
+input PlanConstraintsInput {
+  maxTokens: Int
+  deadline: DateTime
+  complianceRequired: [String!]
+  qualityThreshold: Float
+}
+
+input ACTAPreferencesInput {
+  compressionLevel: String = "balanced"
+  modelPreference: String = "cost_optimized"
+  vectorStorageHint: String
+}
+
+input ReviewInput {
+  reviewerId: ID!
+  dimensions: ReviewDimensionsInput!
+  feedback: String!
+  recommendations: [String!]
+}
+
+input ReviewDimensionsInput {
+  quality: Float!
+  completeness: Float!
+  efficiency: Float!
+  compliance: Float!
+  innovation: Float
+}
+
+input JudgmentInput {
+  judgeId: ID!
+  decision: JudgmentDecision!
+  confidence: Float!
+  justification: String!
+  alternativeSuggestions: [String!]
+}
+
+input CompressionInput @actaOptimized {
+  context: String!
+  strategy: CompressionStrategy = VECTOR_SEMANTIC
+  targetReduction: Float!
+  preserveSemantics: Boolean = true
+}
+
+input ModelSelectionInput @actaOptimized {
+  taskDescription: String!
+  complexityIndicators: JSON!
+  constraints: JSON!
+}
+
+# Queries
+type Query {
+  # Agent Discovery
+  agents(
+    type: AgentTaxonomy
+    complianceLevel: ComplianceLevel
+    actaEnabled: Boolean
+    limit: Int = 50
+    offset: Int = 0
+  ): [Agent!]! @ossaCompliant(level: BRONZE)
+  
+  agent(id: ID!): Agent @ossaCompliant(level: BRONZE)
+  
+  agentCapabilities(agentId: ID!): [AgentCapability!]! @actaOptimized
+  
+  # Feedback Loop Queries
+  feedbackLoop(id: ID!): FeedbackLoop @ossaCompliant(level: GOLD)
+  
+  feedbackLoops(
+    agentId: ID
+    phase: FeedbackPhase
+    status: ExecutionStatus
+    limit: Int = 20
+    offset: Int = 0
+  ): [FeedbackLoop!]! @feedbackLoop(phase: GOVERN)
+  
+  executionPlan(id: ID!): ExecutionPlan @feedbackLoop(phase: PLAN)
+  
+  executionResult(id: ID!): ExecutionResult @feedbackLoop(phase: EXECUTE)
+  
+  reviewResult(id: ID!): ReviewResult @feedbackLoop(phase: REVIEW)
+  
+  judgmentResult(id: ID!): JudgmentResult @feedbackLoop(phase: JUDGE)
+  
+  learningSignal(id: ID!): LearningSignal @feedbackLoop(phase: LEARN)
+  
+  governanceReport(id: ID!): GovernanceReport @feedbackLoop(phase: GOVERN)
+  
+  # ACTA Queries
+  compressionHistory(
+    agentId: ID
+    timeRange: String
+    limit: Int = 50
+  ): [CompressionResult!]! @actaOptimized
+  
+  modelRecommendations(
+    input: ModelSelectionInput!
+  ): [ModelRecommendation!]! @actaOptimized
+  
+  vectorStorageStatus: VectorStorageConfig! @actaOptimized
+  
+  # Analytics and Monitoring
+  agentMetrics(
+    agentId: ID!
+    timeRange: String = "24h"
+  ): PerformanceMetrics! @feedbackLoop(phase: GOVERN)
+  
+  actaMetrics(
+    agentId: ID
+    timeRange: String = "24h"
+  ): ACTAMetrics! @actaOptimized
+  
+  systemHealth: [AgentStatusInfo!]! @ossaCompliant(level: BRONZE)
+  
+  # Compliance and Audit
+  complianceReport(
+    framework: String
+    timeRange: String = "30d"
+  ): ComplianceStatus! @feedbackLoop(phase: GOVERN)
+  
+  auditTrail(
+    agentId: ID
+    eventType: String
+    timeRange: String = "7d"
+    limit: Int = 100
+  ): [AuditEvent!]! @feedbackLoop(phase: GOVERN)
+}
+
+# Mutations
+type Mutation {
+  # Agent Management
+  registerAgent(input: AgentInput!): Agent! @ossaCompliant(level: BRONZE)
+  
+  updateAgent(id: ID!, input: AgentInput!): Agent! @ossaCompliant(level: BRONZE)
+  
+  deregisterAgent(id: ID!): Boolean! @ossaCompliant(level: BRONZE)
+  
+  # 360° Feedback Loop Operations
+  createExecutionPlan(input: ExecutionPlanInput!): ExecutionPlan! @feedbackLoop(phase: PLAN) @tokenBudget(cost: 2000)
+  
+  executePlan(planId: ID!): ExecutionResult! @feedbackLoop(phase: EXECUTE)
+  
+  submitReview(executionId: ID!, input: ReviewInput!): ReviewResult! @feedbackLoop(phase: REVIEW)
+  
+  submitJudgment(reviewId: ID!, input: JudgmentInput!): JudgmentResult! @feedbackLoop(phase: JUDGE)
+  
+  generateLearningSignal(judgmentId: ID!): LearningSignal! @feedbackLoop(phase: LEARN)
+  
+  applyLearning(learningId: ID!): Boolean! @feedbackLoop(phase: LEARN)
+  
+  generateGovernanceReport(learningId: ID!): GovernanceReport! @feedbackLoop(phase: GOVERN)
+  
+  # ACTA Operations
+  compressContext(input: CompressionInput!): CompressionResult! @actaOptimized @tokenBudget(cost: 50)
+  
+  expandContext(reference: String!): String! @actaOptimized @tokenBudget(cost: 10)
+  
+  optimizeModelSelection(input: ModelSelectionInput!): ModelRecommendation! @actaOptimized @tokenBudget(cost: 25)
+  
+  updateACTAConfig(agentId: ID!, config: ACTAConfigurationInput!): ACTAConfiguration! @actaOptimized
+  
+  # Budget Management
+  allocateTokens(agentId: ID!, tokens: Int!): TokenBudget! @feedbackLoop(phase: GOVERN)
+  
+  enforcebudget(agentId: ID!, policy: BudgetEnforcementPolicy!): Boolean! @feedbackLoop(phase: GOVERN)
+  
+  # System Operations
+  refreshAgentStatus(agentId: ID!): AgentStatusInfo! @ossaCompliant(level: BRONZE)
+  
+  validateCompliance(agentId: ID!, framework: String!): ComplianceStatus! @feedbackLoop(phase: GOVERN)
+}
+
+# Subscriptions for real-time updates
+type Subscription {
+  # Agent Status Updates
+  agentStatusChanged(agentId: ID!): AgentStatusInfo! @ossaCompliant(level: SILVER)
+  
+  # Feedback Loop Updates
+  feedbackLoopPhaseChanged(feedbackLoopId: ID!): FeedbackLoop! @feedbackLoop(phase: GOVERN)
+  
+  executionStatusChanged(executionId: ID!): ExecutionResult! @feedbackLoop(phase: EXECUTE)
+  
+  # ACTA Optimization Events
+  compressionCompleted(agentId: ID!): CompressionResult! @actaOptimized
+  
+  modelSwitchRecommended(agentId: ID!): ModelRecommendation! @actaOptimized
+  
+  # Budget and Compliance Alerts
+  budgetThresholdReached(agentId: ID!, threshold: Float!): TokenBudget! @feedbackLoop(phase: GOVERN)
+  
+  complianceViolationDetected(framework: String!): ComplianceViolation! @feedbackLoop(phase: GOVERN)
+  
+  # System Alerts
+  systemHealthChanged: [AgentStatusInfo!]! @ossaCompliant(level: BRONZE)
+  
+  auditEventOccurred(agentId: ID): AuditEvent! @feedbackLoop(phase: GOVERN)
+}
+
+# Federation support (if using Apollo Federation)
+extend type Agent @key(fields: "id") {
+  id: ID! @external
+}
+
+# OSSA Schema Extensions
+extend type Query {
+  _ossaVersion: String!
+  _actaCapabilities: [String!]!
+  _feedbackLoopPhases: [FeedbackPhase!]!
+  _supportedFrameworks: [Framework!]!
+  _complianceLevels: [ComplianceLevel!]!
+}
+
+# Schema metadata
+schema @ossaCompliant(level: GOLD) {
+  query: Query
+  mutation: Mutation
+  subscription: Subscription
+}

@@ -1,0 +1,69 @@
+{{- if and .Values.highAvailability.enabled .Values.highAvailability.podDisruptionBudgets.enabled }}
+{{- if .Values.services.gateway.enabled }}
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ include "ossa.fullname" . }}-gateway
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "ossa.serviceLabels" (dict "component" "gateway" "Chart" .Chart "Release" .Release "Values" .Values) | nindent 4 }}
+spec:
+  minAvailable: {{ .Values.highAvailability.podDisruptionBudgets.gateway.minAvailable | default 1 }}
+  selector:
+    matchLabels:
+      {{- include "ossa.selectorLabels" . | nindent 6 }}
+      ossa.io/component: "gateway"
+{{- end }}
+
+{{- if .Values.services.coordination.enabled }}
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ include "ossa.fullname" . }}-coordination
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "ossa.serviceLabels" (dict "component" "coordination" "Chart" .Chart "Release" .Release "Values" .Values) | nindent 4 }}
+spec:
+  minAvailable: {{ .Values.highAvailability.podDisruptionBudgets.coordination.minAvailable | default 2 }}
+  selector:
+    matchLabels:
+      {{- include "ossa.selectorLabels" . | nindent 6 }}
+      ossa.io/component: "coordination"
+{{- end }}
+
+{{- if .Values.services.orchestration.enabled }}
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ include "ossa.fullname" . }}-orchestration
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "ossa.serviceLabels" (dict "component" "orchestration" "Chart" .Chart "Release" .Release "Values" .Values) | nindent 4 }}
+spec:
+  minAvailable: {{ .Values.highAvailability.podDisruptionBudgets.orchestration.minAvailable | default 2 }}
+  selector:
+    matchLabels:
+      {{- include "ossa.selectorLabels" . | nindent 6 }}
+      ossa.io/component: "orchestration"
+{{- end }}
+
+{{- if .Values.services.discovery.enabled }}
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ include "ossa.fullname" . }}-discovery
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "ossa.serviceLabels" (dict "component" "discovery" "Chart" .Chart "Release" .Release "Values" .Values) | nindent 4 }}
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      {{- include "ossa.selectorLabels" . | nindent 6 }}
+      ossa.io/component: "discovery"
+{{- end }}
+{{- end }}

@@ -1,0 +1,381 @@
+ossa: "0.1.8"
+metadata:
+  name: feedback-governor
+  version: "1.0.0"
+  description: "360° Feedback Loop governance agent - enforces budgets and compliance policies"
+  author: "OSSA Framework"
+  tags: ["governance", "governor", "budget-enforcement", "compliance", "audit"]
+  category: governance
+  subtype: governor
+
+spec:
+  conformance_tier: gold
+  class: governance
+  
+  # Core capabilities for governance and enforcement
+  capabilities:
+    primary:
+      - budget_enforcement: "Monitor and enforce token budget limits at all levels"
+      - policy_compliance: "Ensure adherence to organizational policies and standards"
+      - audit_trail_management: "Maintain immutable audit logs of all activities"
+      - risk_monitoring: "Continuously monitor for policy violations and risks"
+      - escalation_management: "Handle policy violations and budget overruns"
+    
+    secondary:
+      - resource_optimization: "Recommend resource allocation improvements"
+      - compliance_reporting: "Generate compliance reports for stakeholders"
+      - policy_updates: "Suggest policy improvements based on observed patterns"
+      - exception_handling: "Manage approved exceptions to standard policies"
+
+  # Budget management configuration
+  budget:
+    # Governor agent operates with higher limits for oversight
+    default_limit: 5000  # tokens per governance session
+    monitoring_frequency: 30  # check budgets every 30 seconds
+    enforcement_delay: 5  # 5 second grace period before enforcement
+    escalation_threshold: 3  # escalate after 3 violations
+    
+    # Budget levels and limits
+    budget_levels:
+      global: 1000000  # organization-wide daily limit
+      project: 100000  # per-project daily limit
+      task: 12000      # per-task limit
+      subtask: 4000    # per-subtask limit
+      planning: 2000   # planning phase limit
+
+  # Communication protocols
+  protocols:
+    - name: rest_api
+      version: "1.0"
+      endpoint: "/api/v1/govern"
+      required: true
+    - name: grpc
+      version: "1.0"
+      service: "GovernorService"
+      required: false
+    - name: websocket
+      version: "1.0"
+      channel: "/stream/governance"
+      required: true  # Required for real-time monitoring
+
+  # Integration with other feedback loop agents
+  integrations:
+    all_agent_types:
+      - type: all
+        communication: async
+        monitors: "budget_usage"
+        enforces: "compliance_policies"
+    
+    audit_systems:
+      - type: telemetry
+        communication: sync
+        provides: "audit_events"
+
+  # Performance metrics
+  metrics:
+    success_criteria:
+      - budget_adherence: ">= 95%"
+      - policy_compliance: ">= 98%"
+      - audit_completeness: "100%"
+    
+    performance_targets:
+      - violation_detection_time: "< 10s"
+      - enforcement_response_time: "< 30s"
+      - compliance_reporting_accuracy: "> 99%"
+
+  # Enforcement policies and actions
+  enforcement_policies:
+    budget_overrun:
+      block: "Stop execution immediately when budget exceeded"
+      queue: "Defer execution until budget becomes available"
+      delegate: "Transfer to lower-cost agent or method"
+      escalate: "Request budget increase from appropriate authority"
+    
+    policy_violation:
+      warn: "Issue warning and log violation"
+      block: "Prevent action from proceeding"
+      audit: "Create audit event and notify stakeholders"
+      escalate: "Escalate to human oversight"
+    
+    compliance_failure:
+      immediate_stop: "Critical violations halt all operations"
+      quarantine: "Isolate non-compliant processes"
+      remediation: "Require corrective action before proceeding"
+      reporting: "Generate compliance incident report"
+
+  # Input/Output specifications
+  interfaces:
+    input:
+      governance_request:
+        type: object
+        required: true
+        properties:
+          request_id: "Unique governance request identifier"
+          agent_id: "ID of agent being governed"
+          action_type: "Type of action requiring governance"
+          resource_requirements: "Resources requested"
+          compliance_context: "Relevant compliance requirements"
+          urgency: "Request urgency level"
+    
+    output:
+      governance_response:
+        type: object
+        properties:
+          request_id: "Governance request identifier"
+          decision: "Governance decision (allow/block/conditional)"
+          conditions: "Conditions for conditional approval"
+          budget_allocation: "Approved budget allocation"
+          compliance_notes: "Compliance-related guidance"
+          audit_event_id: "Reference to created audit event"
+          next_review: "When next review is required"
+
+  # Framework integrations
+  frameworks:
+    langchain:
+      enabled: true
+      integration: native
+      tools: ["budget_monitor", "policy_enforcer", "audit_logger"]
+    
+    crewai:
+      enabled: true
+      role: "Governance & Compliance Officer"
+      goal: "Ensure all operations comply with policies while maintaining efficiency"
+      backstory: "Expert in governance and compliance with deep understanding of organizational policies"
+    
+    autogen:
+      enabled: true
+      agent_type: "AssistantAgent"
+      system_message: "You are a governance agent responsible for enforcing budgets and compliance policies fairly and consistently."
+
+# OpenAPI specification for REST endpoints
+openapi: "3.1.0"
+info:
+  title: "Feedback Loop Governor API"
+  version: "1.0.0"
+  description: "API for governance, budget enforcement, and compliance monitoring"
+
+paths:
+  /govern:
+    post:
+      summary: "Request governance approval"
+      operationId: requestGovernanceApproval
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [request_id, agent_id, action_type]
+              properties:
+                request_id:
+                  type: string
+                  description: "Unique identifier for this governance request"
+                agent_id:
+                  type: string
+                  description: "ID of the requesting agent"
+                action_type:
+                  type: string
+                  enum: ["execute_task", "allocate_budget", "access_resource", "policy_exception"]
+                resource_requirements:
+                  type: object
+                  properties:
+                    tokens: { type: integer, description: "Token budget requested" }
+                    time: { type: integer, description: "Time allocation requested (seconds)" }
+                    compute: { type: string, description: "Compute resources needed" }
+                    data_access: { type: array, items: { type: string } }
+                compliance_context:
+                  type: object
+                  properties:
+                    applicable_policies: { type: array, items: { type: string } }
+                    regulatory_requirements: { type: array, items: { type: string } }
+                    risk_factors: { type: array, items: { type: string } }
+                    stakeholder_impacts: { type: array, items: { type: string } }
+                urgency:
+                  type: string
+                  enum: ["low", "medium", "high", "critical"]
+                  default: "medium"
+                justification:
+                  type: string
+                  description: "Business justification for the request"
+      responses:
+        "200":
+          description: "Governance decision made"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  request_id: { type: string }
+                  decision: { type: string, enum: ["approved", "rejected", "conditional", "escalated"] }
+                  conditions:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        condition: { type: string }
+                        rationale: { type: string }
+                        compliance_requirement: { type: boolean }
+                  budget_allocation:
+                    type: object
+                    properties:
+                      tokens_approved: { type: integer }
+                      time_limit: { type: integer }
+                      restrictions: { type: array, items: { type: string } }
+                  compliance_notes:
+                    type: array
+                    items: { type: string }
+                  audit_event_id: { type: string }
+                  next_review: { type: string, format: date-time }
+                  escalation_path: { type: string }
+        "400":
+          description: "Invalid governance request"
+        "403":
+          description: "Policy violation detected"
+        "429":
+          description: "Governance system overloaded"
+
+  /budgets/status:
+    get:
+      summary: "Get budget status across all levels"
+      responses:
+        "200":
+          description: "Budget status retrieved"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  global_budget:
+                    type: object
+                    properties:
+                      limit: { type: integer }
+                      used: { type: integer }
+                      remaining: { type: integer }
+                      utilization_percentage: { type: number }
+                      reset_time: { type: string, format: date-time }
+                  project_budgets:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        project_id: { type: string }
+                        limit: { type: integer }
+                        used: { type: integer }
+                        remaining: { type: integer }
+                        active_tasks: { type: integer }
+                  active_tasks:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        task_id: { type: string }
+                        agent_id: { type: string }
+                        budget_used: { type: integer }
+                        budget_remaining: { type: integer }
+                        estimated_completion: { type: string, format: date-time }
+                  violations:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        violation_id: { type: string }
+                        type: { type: string }
+                        severity: { type: string, enum: ["low", "medium", "high", "critical"] }
+                        timestamp: { type: string, format: date-time }
+                        status: { type: string, enum: ["active", "resolved", "escalated"] }
+
+  /compliance/report:
+    get:
+      summary: "Generate compliance report"
+      parameters:
+        - name: period
+          in: query
+          schema: { type: string, enum: ["daily", "weekly", "monthly"] }
+          default: "daily"
+        - name: format
+          in: query
+          schema: { type: string, enum: ["json", "pdf", "csv"] }
+          default: "json"
+      responses:
+        "200":
+          description: "Compliance report generated"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  report_id: { type: string }
+                  period: { type: string }
+                  generation_timestamp: { type: string, format: date-time }
+                  compliance_summary:
+                    type: object
+                    properties:
+                      overall_compliance_score: { type: number, minimum: 0, maximum: 100 }
+                      policy_violations: { type: integer }
+                      budget_overruns: { type: integer }
+                      successful_enforcements: { type: integer }
+                  policy_compliance:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        policy_name: { type: string }
+                        compliance_rate: { type: number, minimum: 0, maximum: 100 }
+                        violations: { type: integer }
+                        trend: { type: string, enum: ["improving", "stable", "declining"] }
+                  budget_performance:
+                    type: object
+                    properties:
+                      total_budget_utilized: { type: number, minimum: 0, maximum: 100 }
+                      projects_within_budget: { type: integer }
+                      projects_over_budget: { type: integer }
+                      cost_optimization_opportunities: { type: array, items: { type: string } }
+                  risk_assessment:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        risk_category: { type: string }
+                        current_level: { type: string, enum: ["low", "medium", "high", "critical"] }
+                        trend: { type: string, enum: ["decreasing", "stable", "increasing"] }
+                        mitigation_status: { type: string }
+                  recommendations:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        priority: { type: string, enum: ["low", "medium", "high", "critical"] }
+                        category: { type: string }
+                        recommendation: { type: string }
+                        expected_impact: { type: string }
+
+# Agent behavior configuration
+behavior:
+  governance_approach: "fair_but_firm_enforcement"
+  compliance_philosophy: "prevention_over_punishment"
+  budget_management: "proactive_monitoring"
+  risk_tolerance: "conservative"
+  
+  enforcement_principles:
+    consistency: true
+    fairness: true
+    transparency: true
+    proportionality: true
+    accountability: true
+  
+  monitoring_strategy:
+    continuous_monitoring: true
+    predictive_alerts: true
+    pattern_recognition: true
+    trend_analysis: true
+  
+  escalation_protocols:
+    graduated_response: true
+    human_oversight: true
+    stakeholder_notification: true
+    audit_documentation: true
+  
+  learning:
+    policy_effectiveness_analysis: true
+    enforcement_optimization: true
+    compliance_trend_tracking: true

@@ -1,0 +1,373 @@
+ossa: "0.1.8"
+metadata:
+  name: feedback-trainer
+  version: "1.0.0"
+  description: "360° Feedback Loop learning agent - synthesizes feedback into learning signals"
+  author: "OSSA Framework"
+  tags: ["learning", "trainer", "synthesis", "optimization"]
+  category: learning
+  subtype: trainer
+
+spec:
+  conformance_tier: gold
+  class: learning
+  
+  # Core capabilities for learning and improvement
+  capabilities:
+    primary:
+      - feedback_synthesis: "Combine multiple feedback sources into learning signals"
+      - pattern_recognition: "Identify patterns and trends in performance data"
+      - knowledge_extraction: "Extract actionable insights from execution history"
+      - model_optimization: "Optimize agent behaviors based on outcomes"
+      - capability_enhancement: "Suggest improvements to agent capabilities"
+    
+    secondary:
+      - anomaly_detection: "Identify unusual patterns requiring attention"
+      - performance_prediction: "Predict future performance based on trends"
+      - best_practice_identification: "Identify and codify successful approaches"
+      - failure_analysis: "Analyze failures to prevent recurrence"
+
+  # Budget constraints for learning phase
+  budget:
+    default_limit: 3500  # tokens per learning session
+    max_data_points: 1000  # maximum feedback items to analyze
+    max_learning_time: 900  # 15 minutes maximum per session
+    pattern_analysis_depth: 5  # levels of pattern analysis
+
+  # Communication protocols
+  protocols:
+    - name: rest_api
+      version: "1.0"
+      endpoint: "/api/v1/learn"
+      required: true
+    - name: grpc
+      version: "1.0"
+      service: "TrainerService"
+      required: false
+    - name: websocket
+      version: "1.0"
+      channel: "/stream/learning"
+      required: false
+
+  # Integration with other feedback loop agents
+  integrations:
+    critic_agents:
+      - type: evaluation
+        communication: async
+        receives: "review_reports"
+    
+    judge_agents:
+      - type: evaluation
+        communication: async
+        receives: "decision_outcomes"
+    
+    all_agent_types:
+      - type: all
+        communication: async
+        provides: "learning_updates"
+
+  # Performance metrics
+  metrics:
+    success_criteria:
+      - pattern_detection_accuracy: ">= 85%"
+      - improvement_suggestion_adoption: ">= 70%"
+      - learning_signal_quality: ">= 80%"
+    
+    performance_targets:
+      - synthesis_time: "< 600s"
+      - insight_actionability: "> 85%"
+      - knowledge_retention: "> 90%"
+
+  # Learning methodologies and approaches
+  learning_methodologies:
+    pattern_analysis:
+      - temporal_patterns: "Analyze trends over time"
+      - performance_correlations: "Identify factors affecting performance"
+      - error_clustering: "Group similar errors for targeted improvement"
+      - success_factors: "Identify elements of successful executions"
+    
+    synthesis_techniques:
+      - weighted_aggregation: "Weight feedback by source reliability"
+      - consensus_extraction: "Find common themes across reviewers"
+      - outlier_analysis: "Identify and investigate anomalous feedback"
+      - trend_analysis: "Track improvement/degradation over time"
+    
+    optimization_strategies:
+      - capability_tuning: "Adjust agent capabilities based on performance"
+      - workflow_optimization: "Improve process flows and dependencies"
+      - resource_allocation: "Optimize resource usage patterns"
+      - error_prevention: "Implement preventive measures for common issues"
+
+  # Input/Output specifications
+  interfaces:
+    input:
+      learning_request:
+        type: object
+        required: true
+        properties:
+          session_id: "Unique learning session identifier"
+          data_sources: "Feedback and performance data to analyze"
+          learning_objectives: "Specific areas to focus improvement on"
+          scope: "Scope of analysis (agent, team, system-wide)"
+          time_window: "Time period for data analysis"
+          priority_areas: "High-priority areas for improvement"
+    
+    output:
+      learning_signals:
+        type: object
+        properties:
+          session_id: "Learning session identifier"
+          insights: "Key insights discovered from analysis"
+          patterns: "Identified patterns and trends"
+          recommendations: "Specific improvement recommendations"
+          capability_updates: "Suggested capability enhancements"
+          process_improvements: "Workflow and process optimizations"
+          risk_alerts: "Identified risks requiring attention"
+          success_factors: "Factors contributing to success"
+          knowledge_updates: "Updates to organizational knowledge base"
+
+  # Framework integrations
+  frameworks:
+    langchain:
+      enabled: true
+      integration: native
+      tools: ["pattern_analyzer", "insight_extractor", "knowledge_synthesizer"]
+    
+    crewai:
+      enabled: true
+      role: "Learning & Development Specialist"
+      goal: "Extract actionable insights to continuously improve system performance"
+      backstory: "Expert in machine learning and organizational development with focus on continuous improvement"
+    
+    autogen:
+      enabled: true
+      agent_type: "AssistantAgent"
+      system_message: "You are a learning specialist who analyzes feedback to identify patterns and generate actionable improvement recommendations."
+
+# OpenAPI specification for REST endpoints
+openapi: "3.1.0"
+info:
+  title: "Feedback Loop Trainer API"
+  version: "1.0.0"
+  description: "API for learning synthesis and improvement recommendations"
+
+paths:
+  /learn:
+    post:
+      summary: "Initiate learning session"
+      operationId: initiateLearning
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [session_id, data_sources]
+              properties:
+                session_id:
+                  type: string
+                  description: "Unique identifier for this learning session"
+                data_sources:
+                  type: object
+                  properties:
+                    execution_reports: { type: array, items: { type: object } }
+                    review_reports: { type: array, items: { type: object } }
+                    decision_outcomes: { type: array, items: { type: object } }
+                    performance_metrics: { type: array, items: { type: object } }
+                    user_feedback: { type: array, items: { type: object } }
+                learning_objectives:
+                  type: array
+                  items:
+                    type: string
+                    enum: ["performance_improvement", "error_reduction", "efficiency_optimization", "quality_enhancement"]
+                scope:
+                  type: string
+                  enum: ["agent_specific", "team_level", "system_wide"]
+                  default: "system_wide"
+                time_window:
+                  type: object
+                  properties:
+                    start_date: { type: string, format: date-time }
+                    end_date: { type: string, format: date-time }
+                priority_areas:
+                  type: array
+                  items:
+                    type: string
+                    enum: ["quality", "performance", "compliance", "user_satisfaction", "cost_optimization"]
+      responses:
+        "200":
+          description: "Learning session initiated"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  session_id: { type: string }
+                  status: { type: string, enum: ["started", "analyzing"] }
+                  estimated_completion: { type: string, format: date-time }
+        "400":
+          description: "Invalid learning request"
+        "429":
+          description: "Learning queue full or budget exceeded"
+
+  /learning/{sessionId}:
+    get:
+      summary: "Get learning results"
+      parameters:
+        - name: sessionId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: "Learning results retrieved"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  session_id: { type: string }
+                  status: { type: string, enum: ["completed", "in_progress", "failed"] }
+                  analysis_summary:
+                    type: object
+                    properties:
+                      data_points_analyzed: { type: integer }
+                      time_period_covered: { type: string }
+                      analysis_depth: { type: string }
+                      confidence_level: { type: number, minimum: 0, maximum: 100 }
+                  key_insights:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        category: { type: string }
+                        insight: { type: string }
+                        confidence: { type: number, minimum: 0, maximum: 100 }
+                        supporting_evidence: { type: array, items: { type: string } }
+                        impact_level: { type: string, enum: ["low", "medium", "high"] }
+                  patterns_identified:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        pattern_type: { type: string }
+                        description: { type: string }
+                        frequency: { type: integer }
+                        trend: { type: string, enum: ["improving", "stable", "declining"] }
+                        affected_areas: { type: array, items: { type: string } }
+                  recommendations:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        priority: { type: string, enum: ["low", "medium", "high", "critical"] }
+                        category: { type: string }
+                        recommendation: { type: string }
+                        implementation_effort: { type: string, enum: ["low", "medium", "high"] }
+                        expected_impact: { type: string, enum: ["low", "medium", "high"] }
+                        success_metrics: { type: array, items: { type: string } }
+                        implementation_steps: { type: array, items: { type: string } }
+                  capability_updates:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        agent_type: { type: string }
+                        capability: { type: string }
+                        update_type: { type: string, enum: ["enhancement", "new", "modification", "removal"] }
+                        description: { type: string }
+                        rationale: { type: string }
+                  process_improvements:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        process_area: { type: string }
+                        current_state: { type: string }
+                        proposed_improvement: { type: string }
+                        benefits: { type: array, items: { type: string } }
+                        implementation_complexity: { type: string, enum: ["low", "medium", "high"] }
+                  risk_alerts:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        risk_type: { type: string }
+                        description: { type: string }
+                        severity: { type: string, enum: ["low", "medium", "high", "critical"] }
+                        recommended_actions: { type: array, items: { type: string } }
+                        timeline: { type: string }
+                  success_factors:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        factor: { type: string }
+                        impact_on_success: { type: number, minimum: 0, maximum: 100 }
+                        how_to_replicate: { type: string }
+                        conditions_required: { type: array, items: { type: string } }
+                  learning_timestamp: { type: string, format: date-time }
+                  trainer_metadata:
+                    type: object
+                    properties:
+                      agent_version: { type: string }
+                      analysis_methods: { type: array, items: { type: string } }
+                      data_quality_score: { type: number, minimum: 0, maximum: 100 }
+                      bias_checks: { type: array, items: { type: string } }
+
+  /learning/{sessionId}/apply:
+    post:
+      summary: "Apply learning recommendations"
+      parameters:
+        - name: sessionId
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                recommendations_to_apply:
+                  type: array
+                  items: { type: string }
+                application_scope:
+                  type: string
+                  enum: ["immediate", "scheduled", "staged"]
+                approval_required:
+                  type: boolean
+                  default: true
+      responses:
+        "200":
+          description: "Learning application initiated"
+        "403":
+          description: "Insufficient permissions"
+
+# Agent behavior configuration
+behavior:
+  learning_approach: "evidence_based_synthesis"
+  pattern_recognition: "multi_dimensional_analysis"
+  insight_generation: "actionable_recommendations"
+  knowledge_integration: "cumulative_learning"
+  
+  analysis_principles:
+    objectivity: true
+    comprehensiveness: true
+    actionability: true
+    evidence_based: true
+    bias_aware: true
+  
+  synthesis_methodology:
+    weighted_feedback: true
+    temporal_analysis: true
+    cross_correlation: true
+    outlier_investigation: true
+    trend_extrapolation: true
+  
+  learning:
+    meta_learning: true  # Learn how to learn better
+    methodology_evolution: true
+    bias_correction: true
+    knowledge_validation: true

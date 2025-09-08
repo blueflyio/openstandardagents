@@ -1,0 +1,177 @@
+{{- if and .Values.monitoring.prometheus.enabled (or (.Capabilities.APIVersions.Has "monitoring.coreos.com/v1") (.Capabilities.APIVersions.Has "monitoring.coreos.com/v1/PrometheusRule")) }}
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: {{ include "ossa.fullname" . }}-alerts
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "ossa.labels" . | nindent 4 }}
+    ossa.io/component: "monitoring"
+    monitoring: "prometheus"
+spec:
+  groups:
+  - name: ossa.uptime.rules
+    interval: 30s
+    rules:
+    # OSSA Uptime SLA Rules for 99.97% target
+    - alert: OSSAServiceDown
+      expr: up{job=~"{{ include "ossa.fullname" . }}.*"} == 0
+      for: 1m
+      labels:
+        severity: critical
+        component: "{{ "{{ $labels.ossa_io_component }}" }}"
+        sla_impact: "high"
+      annotations:
+        summary: "OSSA service {{ "{{ $labels.ossa_io_component }}" }} is down"
+        description: "OSSA service {{ "{{ $labels.ossa_io_component }}" }} has been down for more than 1 minute. This impacts our 99.97% uptime SLA."
+        runbook_url: "https://docs.ossa.example.com/runbooks/service-down"
+
+    - alert: OSSAHighAvailabilityBreach
+      expr: (count(up{job=~"{{ include "ossa.fullname" . }}.*"} == 1) by (ossa_io_component) / count(up{job=~"{{ include "ossa.fullname" . }}.*"}) by (ossa_io_component)) < 0.67
+      for: 2m
+      labels:
+        severity: critical
+        sla_impact: "high"
+      annotations:
+        summary: "OSSA service {{ "{{ $labels.ossa_io_component }}" }} availability below threshold"
+        description: "Less than 67% of {{ "{{ $labels.ossa_io_component }}" }} instances are available. This threatens our 99.97% uptime target."
+        runbook_url: "https://docs.ossa.example.com/runbooks/high-availability-breach"
+
+  - name: ossa.performance.rules
+    interval: 30s
+    rules:
+    # Performance and resource utilization rules
+    - alert: OSSAHighCPUUsage
+      expr: rate(container_cpu_usage_seconds_total{pod=~"{{ include "ossa.fullname" . }}.*"}[5m]) > 0.8
+      for: 5m
+      labels:
+        severity: warning
+        component: "{{ "{{ $labels.ossa_io_component }}" }}"
+      annotations:
+        summary: "High CPU usage on OSSA service {{ "{{ $labels.ossa_io_component }}" }}"
+        description: "CPU usage is above 80% for {{ "{{ $labels.ossa_io_component }}" }} for more than 5 minutes."
+        runbook_url: "https://docs.ossa.example.com/runbooks/high-cpu-usage"
+
+    - alert: OSSAHighMemoryUsage
+      expr: container_memory_usage_bytes{pod=~"{{ include "ossa.fullname" . }}.*"} / container_spec_memory_limit_bytes > 0.85
+      for: 5m
+      labels:
+        severity: warning
+        component: "{{ "{{ $labels.ossa_io_component }}" }}"
+      annotations:
+        summary: "High memory usage on OSSA service {{ "{{ $labels.ossa_io_component }}" }}"
+        description: "Memory usage is above 85% for {{ "{{ $labels.ossa_io_component }}" }} for more than 5 minutes."
+        runbook_url: "https://docs.ossa.example.com/runbooks/high-memory-usage"
+
+    - alert: OSSASlowResponseTime
+      expr: histogram_quantile(0.95, rate(http_request_duration_seconds_bucket{job=~"{{ include "ossa.fullname" . }}.*"}[5m])) > 2
+      for: 3m
+      labels:
+        severity: warning
+        component: "{{ "{{ $labels.ossa_io_component }}" }}"
+      annotations:
+        summary: "Slow response time on OSSA service {{ "{{ $labels.ossa_io_component }}" }}"
+        description: "95th percentile response time is above 2 seconds for {{ "{{ $labels.ossa_io_component }}" }}."
+        runbook_url: "https://docs.ossa.example.com/runbooks/slow-response-time"
+
+  - name: ossa.agent.rules
+    interval: 30s
+    rules:
+    # Agent-specific monitoring rules
+    - alert: OSSAAgentDiscoveryFailure
+      expr: increase(ossa_agent_discovery_failures_total[5m]) > 10
+      for: 2m
+      labels:
+        severity: warning
+        component: "discovery"
+      annotations:
+        summary: "OSSA agent discovery failures"
+        description: "More than 10 agent discovery failures in the last 5 minutes."
+        runbook_url: "https://docs.ossa.example.com/runbooks/agent-discovery-failure"
+
+    - alert: OSSAOrchestrationLatency
+      expr: histogram_quantile(0.95, rate(ossa_orchestration_duration_seconds_bucket[5m])) > 5
+      for: 3m
+      labels:
+        severity: warning
+        component: "orchestration"
+      annotations:
+        summary: "High OSSA orchestration latency"
+        description: "95th percentile orchestration latency is above 5 seconds."
+        runbook_url: "https://docs.ossa.example.com/runbooks/high-orchestration-latency"
+
+    - alert: OSSATokenReductionBelowTarget
+      expr: ossa_vortex_token_reduction_ratio < 0.85
+      for: 5m
+      labels:
+        severity: warning
+        component: "orchestration"
+      annotations:
+        summary: "OSSA token reduction below target"
+        description: "Vortex token reduction ratio is below the 85% target."
+        runbook_url: "https://docs.ossa.example.com/runbooks/token-reduction-below-target"
+
+  - name: ossa.infrastructure.rules
+    interval: 30s
+    rules:
+    # Infrastructure dependency monitoring
+    - alert: OSSAPostgreSQLDown
+      expr: up{job=~".*postgresql.*"} == 0
+      for: 1m
+      labels:
+        severity: critical
+        component: "postgresql"
+        sla_impact: "high"
+      annotations:
+        summary: "OSSA PostgreSQL database is down"
+        description: "PostgreSQL database is unreachable. This will cause OSSA service degradation."
+        runbook_url: "https://docs.ossa.example.com/runbooks/postgresql-down"
+
+    - alert: OSSARedisDown
+      expr: up{job=~".*redis.*"} == 0
+      for: 1m
+      labels:
+        severity: critical
+        component: "redis"
+        sla_impact: "high"
+      annotations:
+        summary: "OSSA Redis is down"
+        description: "Redis cache is unreachable. This will impact OSSA coordination and caching."
+        runbook_url: "https://docs.ossa.example.com/runbooks/redis-down"
+
+    - alert: OSSAQdrantDown
+      expr: up{job=~".*qdrant.*"} == 0
+      for: 1m
+      labels:
+        severity: critical
+        component: "qdrant"
+        sla_impact: "high"
+      annotations:
+        summary: "OSSA Qdrant vector database is down"
+        description: "Qdrant vector database is unreachable. This will impact agent discovery and matching."
+        runbook_url: "https://docs.ossa.example.com/runbooks/qdrant-down"
+
+  - name: ossa.sla.rules
+    interval: 60s
+    rules:
+    # SLA monitoring and calculation
+    - record: ossa:uptime_percentage_5m
+      expr: 100 * (1 - (increase(up{job=~"{{ include "ossa.fullname" . }}.*"}[5m] == 0) / 5))
+
+    - record: ossa:uptime_percentage_1h
+      expr: 100 * (1 - (increase(up{job=~"{{ include "ossa.fullname" . }}.*"}[1h] == 0) / 60))
+
+    - record: ossa:uptime_percentage_24h
+      expr: 100 * (1 - (increase(up{job=~"{{ include "ossa.fullname" . }}.*"}[24h] == 0) / 1440))
+
+    - alert: OSSAUptimeSLABreach
+      expr: ossa:uptime_percentage_1h < 99.97
+      for: 0m
+      labels:
+        severity: critical
+        sla_impact: "critical"
+      annotations:
+        summary: "OSSA uptime SLA breach"
+        description: "OSSA uptime in the last hour ({{ "{{ $value }}" }}%) is below our 99.97% SLA target."
+        runbook_url: "https://docs.ossa.example.com/runbooks/sla-breach"
+{{- end }}

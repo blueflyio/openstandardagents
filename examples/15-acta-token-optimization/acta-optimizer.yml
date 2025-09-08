@@ -1,0 +1,365 @@
+ossa: "0.1.8"
+metadata:
+  name: acta-optimizer
+  version: "1.0.0"
+  description: "Adaptive Contextual Token Architecture optimization agent"
+  author: "OSSA Framework"
+  tags: ["optimization", "tokens", "acta", "efficiency", "compression"]
+  category: optimization
+  subtype: token_optimizer
+
+spec:
+  conformance_tier: gold
+  class: optimization
+  
+  # Core ACTA optimization capabilities
+  capabilities:
+    primary:
+      - context_compression: "Intelligently compress context without losing meaning"
+      - delta_prompting: "Send only changes between iterations to reduce redundancy"
+      - tiered_depth_analysis: "Start shallow and expand depth as needed"
+      - props_token_resolution: "Resolve URI-based references for efficient context passing"
+      - cacheable_capsule_management: "Manage version-controlled reusable components"
+    
+    secondary:
+      - vector_prefiltering: "Pre-filter contexts using vector similarity"
+      - early_exit_detection: "Identify when to terminate unproductive paths"
+      - checkpoint_memo_creation: "Create compressed summaries of execution state"
+      - pre_llm_validation: "Validate inputs before expensive LLM calls"
+      - compression_optimization: "Apply optimal compression algorithms"
+
+  # ACTA optimization strategies
+  optimization_strategies:
+    key_based_context:
+      enabled: true
+      reference_format: "@{namespace}:{project}:{version}:{id}"
+      cache_ttl: 3600  # 1 hour
+      compression_ratio: 0.85  # 85% reduction target
+    
+    delta_prompting:
+      enabled: true
+      diff_algorithm: "myers"
+      similarity_threshold: 0.8
+      max_delta_size: 500  # tokens
+    
+    tiered_depth:
+      enabled: true
+      initial_depth: "shallow"
+      expansion_triggers:
+        - "insufficient_detail"
+        - "quality_threshold_not_met"
+        - "user_request_detail"
+      max_depth: 5
+    
+    output_only_critique:
+      enabled: true
+      review_artifacts: false
+      focus_areas: ["accuracy", "completeness", "relevance"]
+    
+    vector_prefilters:
+      enabled: true
+      top_k: 10
+      similarity_threshold: 0.75
+      late_expansion: true
+
+  # Budget constraints and limits
+  budget:
+    optimization_overhead: 200  # tokens for optimization processing
+    max_context_size: 8000  # maximum context window
+    compression_target: 0.6  # 40% reduction target
+    cache_budget: 10000  # tokens allocated for caching
+
+  # Performance targets
+  performance_targets:
+    token_reduction: "50-70%"
+    quality_retention: ">= 95%"
+    processing_time: "< 100ms overhead"
+    cache_hit_rate: "> 80%"
+
+  # Communication protocols
+  protocols:
+    - name: rest_api
+      version: "1.0"
+      endpoint: "/api/v1/optimize"
+      required: true
+    - name: grpc
+      version: "1.0"
+      service: "ACTAOptimizerService"
+      required: false
+
+  # Integration with other systems
+  integrations:
+    budget_manager:
+      - type: governance
+        communication: sync
+        provides: "token_usage_predictions"
+    
+    props_resolver:
+      - type: utility
+        communication: async  
+        resolves: "context_references"
+    
+    all_agents:
+      - type: all
+        communication: transparent
+        optimizes: "token_usage"
+
+  # Input/Output specifications
+  interfaces:
+    input:
+      optimization_request:
+        type: object
+        required: true
+        properties:
+          content: "Content to optimize"
+          optimization_goals: "Specific optimization targets"
+          constraints: "Constraints and requirements"
+          context_references: "Props tokens and references"
+          quality_threshold: "Minimum quality requirements"
+    
+    output:
+      optimized_content:
+        type: object
+        properties:
+          optimized_payload: "Token-optimized content"
+          compression_ratio: "Achieved compression ratio"
+          optimization_metadata: "Applied optimization techniques"
+          quality_metrics: "Quality retention measurements"
+          cache_references: "Generated cache references"
+          estimated_savings: "Projected token savings"
+
+  # Framework integrations
+  frameworks:
+    langchain:
+      enabled: true
+      integration: native
+      tools: ["context_compressor", "delta_analyzer", "cache_manager"]
+    
+    crewai:
+      enabled: true
+      role: "Token Optimization Specialist"
+      goal: "Maximize token efficiency while maintaining output quality"
+      backstory: "Expert in natural language processing and optimization algorithms"
+    
+    autogen:
+      enabled: true
+      agent_type: "AssistantAgent"
+      system_message: "You are a token optimization expert focused on reducing token consumption through intelligent compression and context management."
+
+# OpenAPI specification for REST endpoints
+openapi: "3.1.0"
+info:
+  title: "ACTA Token Optimizer API"
+  version: "1.0.0"
+  description: "API for Adaptive Contextual Token Architecture optimization"
+
+paths:
+  /optimize:
+    post:
+      summary: "Optimize content for token efficiency"
+      operationId: optimizeContent
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [content, optimization_goals]
+              properties:
+                content:
+                  oneOf:
+                    - type: string
+                      description: "Text content to optimize"
+                    - type: object
+                      description: "Structured content to optimize"
+                optimization_goals:
+                  type: array
+                  items:
+                    type: string
+                    enum: ["compress", "delta", "cache", "reference", "validate", "early_exit"]
+                constraints:
+                  type: object
+                  properties:
+                    max_tokens: { type: integer }
+                    quality_threshold: { type: number, minimum: 0, maximum: 1 }
+                    compression_ratio: { type: number, minimum: 0, maximum: 1 }
+                    preserve_semantics: { type: boolean, default: true }
+                context_references:
+                  type: array
+                  items:
+                    type: string
+                    pattern: "^@[a-zA-Z0-9]+:[a-zA-Z0-9_-]+:[0-9]+\\.[0-9]+\\.[0-9]+:[a-zA-Z0-9_-]+$"
+                cache_policy:
+                  type: object
+                  properties:
+                    enable_caching: { type: boolean, default: true }
+                    cache_ttl: { type: integer, default: 3600 }
+                    cache_key_strategy: { type: string, enum: ["content_hash", "semantic_hash"], default: "content_hash" }
+      responses:
+        "200":
+          description: "Content optimized successfully"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  optimization_id: { type: string }
+                  optimized_content:
+                    oneOf:
+                      - type: string
+                      - type: object
+                  optimization_summary:
+                    type: object
+                    properties:
+                      original_tokens: { type: integer }
+                      optimized_tokens: { type: integer }
+                      compression_ratio: { type: number }
+                      techniques_applied: { type: array, items: { type: string } }
+                      quality_retention: { type: number, minimum: 0, maximum: 1 }
+                  performance_metrics:
+                    type: object
+                    properties:
+                      processing_time_ms: { type: integer }
+                      cache_hits: { type: integer }
+                      cache_misses: { type: integer }
+                      bytes_saved: { type: integer }
+                  cache_references:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        reference_id: { type: string }
+                        content_hash: { type: string }
+                        expiry: { type: string, format: date-time }
+                  recommendations:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        type: { type: string }
+                        description: { type: string }
+                        potential_savings: { type: integer }
+        "400":
+          description: "Invalid optimization request"
+        "422":
+          description: "Content cannot be optimized to meet constraints"
+
+  /cache/{reference}:
+    get:
+      summary: "Retrieve cached content by reference"
+      parameters:
+        - name: reference
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: "Cached content retrieved"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  reference_id: { type: string }
+                  content: { oneOf: [{ type: string }, { type: object }] }
+                  metadata:
+                    type: object
+                    properties:
+                      created_at: { type: string, format: date-time }
+                      last_accessed: { type: string, format: date-time }
+                      access_count: { type: integer }
+                      content_type: { type: string }
+        "404":
+          description: "Cache reference not found"
+        "410":
+          description: "Cached content expired"
+
+  /analytics/usage:
+    get:
+      summary: "Get token usage analytics"
+      parameters:
+        - name: period
+          in: query
+          schema: { type: string, enum: ["hour", "day", "week", "month"] }
+          default: "day"
+        - name: agent_id
+          in: query
+          schema: { type: string }
+      responses:
+        "200":
+          description: "Usage analytics retrieved"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  period: { type: string }
+                  total_optimizations: { type: integer }
+                  total_tokens_saved: { type: integer }
+                  average_compression_ratio: { type: number }
+                  optimization_techniques:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        technique: { type: string }
+                        usage_count: { type: integer }
+                        average_savings: { type: number }
+                  agent_performance:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        agent_id: { type: string }
+                        optimizations: { type: integer }
+                        tokens_saved: { type: integer }
+                        efficiency_score: { type: number }
+
+# Agent behavior configuration
+behavior:
+  optimization_approach: "adaptive_multi_strategy"
+  quality_preservation: "semantic_integrity"
+  performance_focus: "latency_minimization"
+  caching_strategy: "intelligent_hierarchical"
+  
+  decision_making:
+    technique_selection: "context_aware"
+    quality_tradeoffs: "user_defined_thresholds"
+    fallback_strategy: "graceful_degradation"
+  
+  learning:
+    pattern_recognition: true
+    technique_effectiveness_tracking: true
+    user_preference_learning: true
+    adaptive_threshold_adjustment: true
+
+# ACTA-specific configuration
+acta:
+  compression_algorithms:
+    - name: "zstd"
+      level: 3
+      use_case: "large_payloads"
+    - name: "lz4"
+      level: 1
+      use_case: "real_time_compression"
+  
+  vector_operations:
+    embedding_model: "text-embedding-3-small"
+    dimension: 1536
+    similarity_metric: "cosine"
+  
+  props_resolution:
+    namespace_mappings:
+      RM: "requirements_management"
+      ARCH: "architecture"
+      TEST: "test_cases"
+    
+    default_versions:
+      ossa: "0.1.8"
+      api: "1.0.0"
+  
+  early_exit_conditions:
+    - "quality_threshold_met"
+    - "token_budget_exhausted" 
+    - "diminishing_returns_detected"
+    - "user_satisfaction_achieved"

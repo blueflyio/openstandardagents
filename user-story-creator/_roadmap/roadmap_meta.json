@@ -1,0 +1,17 @@
+{
+  "agent": "user-story-creator",
+  "domain": "requirements",
+  "tier": "specialist",
+  "versions": [
+    "1.0.0",
+    "1.0.1",
+    "1.0.2"
+  ],
+  "created": "2025-09-08T15:41:05.956Z",
+  "ossa_version": "0.1.8",
+  "roadmap_files": [
+    "user-story-creator_1.0.0.dita",
+    "user-story-creator_1.0.1.dita",
+    "user-story-creator_1.0.2.dita"
+  ]
+}

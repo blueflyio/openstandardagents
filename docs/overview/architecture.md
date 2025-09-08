@@ -1,243 +1,445 @@
-# OAAS Architecture Overview
+# OSSA Platform Architecture v0.1.8
 
-## Component Map and Data Flows
+## Overview
 
-The OpenAPI AI Agents Standard (OAAS) defines a comprehensive ecosystem for agent interoperability built on OpenAPI 3.1 foundations with enterprise-grade governance.
+The Open Standards for Scalable Agents (OSSA) v0.1.8 platform provides a comprehensive microservices architecture for universal AI agent interoperability, discovery, orchestration, and management. Built with enterprise-grade compliance, security, and scalability.
 
-### Core Architecture Components
+## Platform Component Architecture
 
 ```mermaid
 graph TB
-    subgraph "Agent Definition Layer"
-        A[Agent Manifest<br/>agent.yml] --> B[OpenAPI Spec<br/>openapi.yaml]
-        A --> C[Training Data<br/>data/]
-        A --> D[Documentation<br/>README.md]
+    subgraph "Client Layer"
+        CLI[OSSA CLI v0.1.8<br/>Workspace Management]
+        WEB[Web Dashboard<br/>Platform Monitor]
+        API[API Clients<br/>Generated SDKs]
     end
     
-    subgraph "Discovery Layer"
-        E[UADP Engine<br/>Universal Discovery] --> F[Agent Registry<br/>Capability Index]
-        F --> G[Context Aggregation<br/>Workspace Intelligence]
-        G --> H[Real-time Updates<br/>File System Monitor]
+    subgraph "API Gateway Layer"
+        GW[API Gateway<br/>Load Balancer]
+        AUTH[Auth Service<br/>JWT + API Keys]
+        RATE[Rate Limiter<br/>DDoS Protection]
     end
     
-    subgraph "Protocol Bridges"
-        I[MCP Bridge<br/>Model Context Protocol] 
-        J[A2A Bridge<br/>Agent-to-Agent]
-        K[LangChain Bridge<br/>Tool Integration]
-        L[CrewAI Bridge<br/>Role Mapping]
-        M[OpenAI Bridge<br/>Function Calling]
+    subgraph "Core Platform Services"
+        REG[Agent Registry<br/>PostgreSQL]
+        DISC[Discovery Engine<br/>UADP Compatible]
+        ORCH[Orchestration<br/>Multi-Agent Tasks]
+        GRAPH[GraphQL API<br/>Subscriptions]
+        MON[Monitoring<br/>Metrics & Health]
     end
     
-    subgraph "Runtime Translation"
-        N[Protocol Negotiation<br/>Auto-Selection]
-        O[Request Translation<br/>Multi-Framework]
-        P[Response Normalization<br/>Standard Format]
+    subgraph "Agent Runtime Services"
+        CORE[Agent Core<br/>Base Implementation]
+        COORD[Coordination<br/>Inter-Agent Comm]
+        BRIDGE[Protocol Bridges<br/>MCP/LangChain/CrewAI]
+        TRANS[Translation Engine<br/>Multi-Framework]
     end
     
-    subgraph "Governance & Compliance"
-        Q[Compliance Engine<br/>ISO 42001, NIST AI RMF]
-        R[Audit Trail<br/>Tamper-Proof Logging]
-        S[Policy Enforcement<br/>Risk Assessment]
-        T[Regulatory Reporting<br/>Automated]
+    subgraph "Enterprise Services"
+        COMP[Compliance Engine<br/>ISO 42001, NIST AI RMF]
+        AUDIT[Audit Trail<br/>Immutable Logs]
+        SEC[Security<br/>Zero-Trust Model]
+        GOV[Governance<br/>Policy Enforcement]
     end
     
-    subgraph "Performance & Monitoring"
-        U[Performance Analytics<br/>Real-time Metrics]
-        V[Token Optimization<br/>Cost Reduction]
-        W[Health Monitoring<br/>Agent Status]
-        X[Load Balancing<br/>Request Distribution]
+    subgraph "Data Layer"
+        PGSQL[(PostgreSQL<br/>Registry & Config)]
+        REDIS[(Redis<br/>Cache & Sessions)]
+        QDRANT[(Qdrant<br/>Vector Search)]
+        FILES[(File Storage<br/>Agent Assets)]
     end
     
-    A --> E
-    B --> I
-    B --> J
-    B --> K
-    B --> L
-    B --> M
+    CLI --> GW
+    WEB --> GW
+    API --> GW
     
-    I --> N
-    J --> N
-    K --> N
-    L --> N
-    M --> N
+    GW --> AUTH
+    GW --> RATE
+    AUTH --> REG
+    RATE --> REG
     
-    N --> O
-    O --> P
+    REG --> DISC
+    DISC --> ORCH
+    ORCH --> GRAPH
+    GRAPH --> MON
     
-    E --> Q
-    Q --> R
-    R --> S
-    S --> T
+    ORCH --> CORE
+    CORE --> COORD
+    COORD --> BRIDGE
+    BRIDGE --> TRANS
     
-    F --> U
-    U --> V
-    V --> W
-    W --> X
+    REG --> COMP
+    COMP --> AUDIT
+    AUDIT --> SEC
+    SEC --> GOV
+    
+    REG --> PGSQL
+    DISC --> REDIS
+    MON --> QDRANT
+    CORE --> FILES
 ```
 
-### Data Flow Architecture
+## Microservices Breakdown
+
+### Core Platform Services
+
+#### 1. Agent Registry (`/services/registry`)
+- **Purpose**: Central repository for agent definitions and metadata
+- **Database**: PostgreSQL with JSON columns for spec storage
+- **Features**: 
+  - CRUD operations for agent lifecycle
+  - Version management and rollback
+  - Health status tracking
+  - Capability indexing
+- **Port**: 3001
+- **Health**: `/health`, `/metrics`
+
+#### 2. Discovery Engine (`/services/discovery`)  
+- **Purpose**: UADP-compatible agent discovery and capability matching
+- **Features**:
+  - Sub-50ms discovery for 1000+ agents
+  - Hierarchical capability matching
+  - Real-time registry updates
+  - Semantic search with vector embeddings
+- **Port**: 3002
+- **Integration**: Qdrant vector database
+
+#### 3. Orchestration Service (`/services/orchestration`)
+- **Purpose**: Multi-agent task coordination and workflow management
+- **Features**:
+  - DAG-based workflow execution
+  - Agent delegation and load balancing
+  - State management and recovery
+  - Performance optimization
+- **Port**: 3003
+- **Dependencies**: Registry, Discovery, Coordination
+
+#### 4. GraphQL API (`/services/graphql`)
+- **Purpose**: Unified query interface with real-time subscriptions
+- **Features**:
+  - Schema federation across services
+  - Real-time agent status updates
+  - Complex query optimization
+  - Apollo Server integration
+- **Port**: 3004
+- **Schema**: Auto-generated from OpenAPI specs
+
+#### 5. Monitoring Service (`/services/monitoring`)
+- **Purpose**: Platform-wide observability and metrics collection
+- **Features**:
+  - Real-time performance metrics
+  - Health check aggregation  
+  - Alert management
+  - SLA tracking and reporting
+- **Port**: 3005
+- **Storage**: InfluxDB for time-series data
+
+### Agent Runtime Services
+
+#### 6. Agent Core (`/services/agent-core`)
+- **Purpose**: Base agent implementation and lifecycle management
+- **Features**:
+  - Standard OSSA agent interface
+  - Protocol-agnostic communication
+  - State persistence and recovery
+  - Security context management
+- **Integration**: All protocol bridges
+
+#### 7. Coordination Service (`/services/coordination`)
+- **Purpose**: Inter-agent communication and message routing
+- **Features**:
+  - Pub/sub messaging patterns
+  - Request/response routing
+  - Message queuing and reliability
+  - Circuit breaker patterns
+- **Transport**: Redis for message bus
+
+#### 8. Protocol Bridges (`/services/bridges`)
+- **Purpose**: Universal translation between AI frameworks
+- **Supported Protocols**:
+  - Model Context Protocol (MCP) v2024-11-05
+  - LangChain Tools and Agents
+  - CrewAI Agent and Task definitions
+  - OpenAI Assistant API
+  - Anthropic Tools API
+- **Features**: Zero-code framework integration
+
+### Enterprise Services
+
+#### 9. Compliance Engine (`/services/compliance`)
+- **Purpose**: Automated compliance validation and reporting
+- **Frameworks**:
+  - ISO 42001:2023 (AI Management Systems)
+  - NIST AI RMF 1.0 (Risk Management)
+  - EU AI Act 2024 (European regulation)
+  - SOC 2 Type II (Security controls)
+- **Features**: Continuous compliance monitoring
+
+#### 10. Security Service (`/services/security`)
+- **Purpose**: Zero-trust security model implementation  
+- **Features**:
+  - JWT token validation
+  - API key management
+  - Rate limiting and DDoS protection
+  - Encryption key management
+- **Integration**: All platform services
+
+## CLI Workspace Architecture
+
+### OSSA CLI v0.1.8 Structure
+
+```
+/Users/flux423/Sites/LLM/OSSA/
+├── src/cli/                         # CLI workspace
+│   ├── bin/ossa                    # Main CLI entry point
+│   ├── src/                        # TypeScript source
+│   │   ├── commands/               # Command implementations
+│   │   │   ├── agent-management.ts
+│   │   │   ├── discovery.ts
+│   │   │   ├── orchestration.ts
+│   │   │   ├── services.ts
+│   │   │   └── validation.ts
+│   │   ├── api/                    # Generated API clients
+│   │   │   ├── types.ts           # OpenAPI types
+│   │   │   └── generated/         # Generated clients
+│   │   ├── services/              # Service implementations
+│   │   └── utils/                 # Utility functions
+│   ├── package.json               # CLI dependencies
+│   └── tsconfig.json              # TypeScript config
+├── src/services/                  # Microservices
+│   ├── agent-core/
+│   ├── coordination/
+│   ├── discovery/
+│   ├── orchestration/
+│   └── monitoring/
+├── infrastructure/                # Deployment configs
+│   ├── docker/
+│   │   ├── docker-compose.yml
+│   │   ├── Dockerfile.platform
+│   │   └── Dockerfile.gateway
+│   └── kubernetes/               # K8s manifests
+└── examples/                     # 13 comprehensive examples
+    ├── 00-minimal-agent/
+    ├── 01-basic-validation/
+    ├── ...
+    └── 13-enterprise-deployment/
+```
+
+### CLI Command Structure
+
+The OSSA CLI provides comprehensive platform management:
+
+```bash
+# Core Agent Operations
+ossa create <name>              # Create new agent
+ossa validate [path]            # Validate agent spec
+ossa list [--format=table|json] # List agents
+ossa upgrade [path]             # Upgrade to v0.1.8
+
+# Discovery Operations (UADP)
+ossa discovery init             # Initialize discovery
+ossa discovery register <path> # Register agent
+ossa discovery find --capabilities=X,Y
+ossa discovery health           # Check discovery status
+
+# Platform Services
+ossa services start             # Start all services
+ossa services stop              # Stop all services  
+ossa services status            # Service health
+ossa services logs [service]    # Service logs
+
+# Orchestration
+ossa orchestrate create <workflow>
+ossa orchestrate run <id>
+ossa orchestrate status <id>
+
+# API Operations
+ossa api agents list
+ossa api agents create <spec>
+ossa api discover --capabilities=X
+ossa api metrics --timeframe=1h
+
+# Migration & Validation
+ossa migrate from-v1 <path>     # Migrate from v0.1.1
+ossa validate compliance        # Check compliance
+ossa generate openapi <path>    # Generate API specs
+```
+
+## Data Flow Architecture
 
 ```mermaid
 sequenceDiagram
     participant Dev as Developer
-    participant UADP as UADP Discovery
-    participant Registry as Agent Registry
-    participant Bridge as Protocol Bridge
-    participant Agent as Target Agent
-    participant Compliance as Compliance Engine
-    participant Monitor as Performance Monitor
+    participant CLI as OSSA CLI
+    participant GW as API Gateway
+    participant REG as Registry
+    participant DISC as Discovery
+    participant ORCH as Orchestration
+    participant AGENT as Target Agent
+    participant COMP as Compliance
     
-    Dev->>UADP: Create agent.yml + openapi.yaml
-    UADP->>Registry: Scan & Index Capabilities
-    Registry->>Compliance: Validate Compliance Requirements
-    Compliance->>Registry: Return Validation Status
+    Note over Dev,COMP: Agent Creation Flow
+    Dev->>CLI: ossa create my-agent --tier=advanced
+    CLI->>CLI: Generate agent.yml + openapi.yaml
+    CLI->>GW: POST /agents (register)
+    GW->>REG: Store agent definition
+    REG->>DISC: Index capabilities
+    DISC->>COMP: Validate compliance
+    COMP->>REG: Update compliance status
+    REG->>CLI: Return agent ID
+    CLI->>Dev: Agent created successfully
     
-    Note over Dev,Monitor: Agent Discovery Complete
+    Note over Dev,COMP: Agent Discovery Flow
+    Dev->>CLI: ossa discovery find --capabilities=analysis
+    CLI->>GW: GET /discover?capabilities=analysis
+    GW->>DISC: Query capability index
+    DISC->>REG: Lookup matching agents
+    REG->>DISC: Return agent list
+    DISC->>GW: Filtered results
+    GW->>CLI: Discovery response
+    CLI->>Dev: Display matching agents
     
-    Dev->>Bridge: Request Agent Capability
-    Bridge->>Registry: Query Available Agents
-    Registry->>Bridge: Return Matching Agents
-    Bridge->>Agent: Translate & Execute Request
-    Agent->>Bridge: Return Response
-    Bridge->>Monitor: Log Performance Metrics
-    Bridge->>Compliance: Record Audit Trail
-    Bridge->>Dev: Return Normalized Response
+    Note over Dev,COMP: Orchestration Flow
+    Dev->>CLI: ossa orchestrate run workflow-id
+    CLI->>GW: POST /orchestrate/run
+    GW->>ORCH: Execute workflow
+    ORCH->>DISC: Find required agents
+    ORCH->>AGENT: Delegate tasks
+    AGENT->>ORCH: Return results
+    ORCH->>COMP: Log audit trail
+    ORCH->>GW: Workflow complete
+    GW->>CLI: Execution results
+    CLI->>Dev: Show workflow status
 ```
 
-## Core Concepts Glossary
+## Directory Structure Standards
 
-### Agent Manifest (`agent.yml`)
-- **Purpose**: Structured metadata defining agent capabilities, compliance level, and framework compatibility
-- **Levels**: Bronze (Basic), Silver (Production), Gold (Enterprise)
-- **Requirements**: Name, version, capabilities, framework compatibility
+### OSSA v0.1.8 Agent Structure
 
-### OpenAPI Specification (`openapi.yaml`)  
-- **Purpose**: Complete API contract following OpenAPI 3.1 standard
-- **Extensions**: `x-openapi-ai-agents-standard` extension for OAAS metadata
-- **Requirements**: Health endpoint, capability endpoints, security schemes
-
-### Universal Agent Discovery Protocol (UADP)
-- **Purpose**: Automatic agent discovery across workspaces without configuration
-- **Mechanism**: Recursive scanning of `.agents/` directories
-- **Features**: Capability indexing, context aggregation, real-time updates
-
-### Protocol Bridges
-- **Purpose**: Enable seamless integration across AI frameworks
-- **Supported**: MCP, A2A, LangChain, CrewAI, OpenAI, Anthropic
-- **Features**: Zero-modification integration, protocol negotiation
-
-### Capability Registry
-- **Purpose**: Centralized index of agent capabilities and compatibility
-- **Structure**: Hierarchical capability taxonomy with versioning
-- **Features**: Semantic search, performance metrics, compliance status
-
-### Task Contract System
-- **Purpose**: Standardized input/output definitions for capabilities
-- **Components**: Input schema, output schema, state transitions
-- **Requirements**: JSON Schema validation, error handling
-
-### Runtime Handoff Protocol
-- **Purpose**: Seamless agent-to-agent communication and delegation
-- **Features**: Capability matching, constraint validation, provenance tracking
-- **Security**: Authentication, authorization, audit logging
-
-### Governance Framework
-- **Purpose**: Enterprise compliance automation and audit trails
-- **Standards**: ISO 42001:2023, NIST AI RMF 1.0, EU AI Act
-- **Features**: Risk assessment, policy enforcement, regulatory reporting
-
-### Policy Manifest System
-- **Purpose**: Declarative policy definitions for agent behavior
-- **Hooks**: Pre-task, in-task, post-task evaluation points
-- **Outcomes**: Allow, deny, redact, warn with detailed reasoning
-
-### Provenance Tracking
-- **Purpose**: Complete lineage and audit trail for agent operations
-- **Components**: Agent IDs, input hashes, output signatures, citations
-- **Requirements**: Immutable logging, cryptographic verification
-
-## Hierarchical Organization
-
-### Workspace Level
 ```
-workspace-root/
-├── .agents-workspace/           # Workspace-level configuration
-│   ├── registry.yml            # Master agent registry
-│   ├── discovery.yml           # Discovery configuration  
-│   ├── context.yml             # Workspace context
-│   └── governance.yml          # Compliance policies
-```
-
-### Project Level
-```
-project/
-├── .agents/                    # Project-specific agents
-│   ├── agent-name/
-│   │   ├── agent.yml          # Agent manifest
-│   │   ├── openapi.yaml       # API specification
-│   │   ├── README.md          # Documentation
-│   │   └── data/              # Training data, examples
-│   └── another-agent/
-```
-
-### Agent Structure
-```
-.agents/agent-name/
-├── agent.yml                  # Core agent definition
-├── openapi.yaml              # OpenAPI 3.1 specification
-├── README.md                 # Human-readable documentation
+agent-name/
+├── agent.yml                  # OSSA v0.1.8 agent manifest
+├── openapi.yaml              # OpenAPI 3.1+ specification
+├── README.md                 # Documentation
+├── behaviors/                # Agent behavior definitions
+│   ├── core-behaviors.yml
+│   └── custom-behaviors.yml
 ├── config/                   # Configuration files
-│   ├── frameworks.yml        # Framework-specific settings
+│   ├── frameworks.yml        # Framework integrations
 │   ├── security.yml          # Security policies
-│   └── monitoring.yml        # Observability configuration
-├── data/                     # Agent data
-│   ├── training-data.json    # Training examples
-│   ├── knowledge-base.json   # Domain knowledge
-│   ├── examples.json         # Usage examples
-│   └── benchmarks.json       # Performance baselines
-└── tests/                    # Testing artifacts
-    ├── unit/                 # Unit tests
-    ├── integration/          # Integration tests
-    └── performance/          # Performance tests
+│   └── compliance.yml        # Compliance settings
+├── data/                     # Agent data and state
+│   ├── knowledge-base.json
+│   ├── training-data.json
+│   └── examples.json
+├── handlers/                 # Event and message handlers
+│   ├── http-handlers.ts
+│   ├── mcp-handlers.ts
+│   └── event-handlers.ts
+├── integrations/             # Framework integrations
+│   ├── langchain/
+│   ├── crewai/
+│   ├── openai/
+│   └── mcp/
+├── schemas/                  # Validation schemas
+│   ├── input-schema.json
+│   ├── output-schema.json
+│   └── state-schema.json  
+├── training-modules/         # Training and learning
+│   ├── supervised/
+│   ├── reinforcement/
+│   └── evaluation/
+└── _roadmap/                # Versioned roadmaps (DITA format)
+    ├── roadmap_meta.json
+    ├── agent-name_1.0.0.dita
+    ├── agent-name_1.0.1.dita
+    └── agent-name_1.0.2.dita
 ```
 
-## Progressive Complexity Model
+## Conformance Tiers
 
-### Level 1: Bronze (Basic)
-- **Requirements**: Valid OAAS structure, health endpoint, basic capabilities
-- **Validation**: Schema compliance, basic functionality
-- **Use Cases**: Internal tools, prototypes, learning environments
+### Core Tier
+- **Requirements**: Basic OSSA compliance, health endpoint
+- **Validation**: Schema validation, basic functionality tests
+- **Use Cases**: Development, prototyping, learning
+- **SLA**: Best effort, community support
 
-### Level 2: Silver (Production)
-- **Requirements**: All Bronze + token optimization, protocol bridges, security
-- **Validation**: Performance benchmarks, integration tests, security scans
+### Governed Tier  
+- **Requirements**: Core + security, monitoring, framework integration
+- **Validation**: Performance tests, security scans, integration tests
 - **Use Cases**: Production systems, commercial applications
+- **SLA**: 99.5% uptime, business hour support
 
-### Level 3: Gold (Enterprise)
-- **Requirements**: All Silver + full governance, audit trails, compliance
-- **Validation**: Regulatory compliance, enterprise security, scalability
-- **Use Cases**: Regulated industries, government, high-risk AI systems
+### Advanced Tier
+- **Requirements**: Governed + enterprise compliance, audit trails
+- **Validation**: Regulatory compliance, scalability tests, enterprise security
+- **Use Cases**: Regulated industries, government, high-risk AI
+- **SLA**: 99.9% uptime, 24/7 enterprise support
 
-## Extension Points
+## Performance Characteristics
 
-### Custom Capabilities
-- **Namespace**: Capability IDs with versioning (e.g., `custom/capability/v1`)
-- **Requirements**: Schema definition, compatibility matrix
-- **Discovery**: Automatic registration in capability registry
+### Discovery Engine
+- **Target**: <50ms discovery time for 1000+ agents
+- **Scaling**: Horizontal with Redis clustering
+- **Caching**: Multi-level caching with TTL
+- **Optimization**: Vector embeddings for semantic search
 
-### Policy Packs
-- **Purpose**: Reusable policy definitions for common compliance scenarios
-- **Structure**: YAML-based policy manifests with evaluation hooks
-- **Examples**: GDPR pack, HIPAA pack, financial services pack
+### API Gateway
+- **Throughput**: 10K+ requests/second per instance
+- **Latency**: <100ms P95 response time
+- **Rate Limiting**: Per-user and global limits
+- **Load Balancing**: Round-robin with health checks
 
-### Transport Adapters
-- **Purpose**: Support for additional transport protocols beyond HTTP/REST
-- **Interface**: Pluggable adapter architecture
-- **Examples**: gRPC, WebSocket, message queue integration
+### Agent Registry  
+- **Storage**: PostgreSQL with JSONB for flexible schemas
+- **Indexing**: B-tree and GIN indexes for fast queries
+- **Backup**: Continuous replication with point-in-time recovery
+- **Scaling**: Read replicas for query distribution
 
-### Framework Connectors
-- **Purpose**: Integration with new AI frameworks
-- **Requirements**: Bridge implementation following standard interface
-- **Discovery**: Automatic registration and capability mapping
+### Message Bus (Redis)
+- **Pattern**: Pub/sub with message persistence  
+- **Reliability**: At-least-once delivery guarantees
+- **Scaling**: Cluster mode with automatic sharding
+- **Monitoring**: Real-time metrics and alerting
 
-This architecture provides a comprehensive foundation for universal AI agent interoperability while maintaining enterprise-grade security, compliance, and performance characteristics.
+## Security Architecture
+
+### Zero-Trust Model
+- **Principle**: Never trust, always verify
+- **Implementation**: Mutual TLS, certificate-based auth
+- **Network**: Micro-segmentation, encrypted communication
+- **Access Control**: RBAC with principle of least privilege
+
+### Authentication & Authorization
+- **Methods**: JWT tokens, API keys, OAuth2/OIDC
+- **Token Management**: Automatic rotation, revocation lists  
+- **Session Management**: Stateless with Redis backing
+- **Audit**: Complete authentication audit trails
+
+### Data Protection
+- **Encryption at Rest**: AES-256 for sensitive data
+- **Encryption in Transit**: TLS 1.3 for all communication
+- **Key Management**: Hardware security modules (HSM)
+- **Data Classification**: Automatic PII detection and protection
+
+## Compliance Integration
+
+### Automated Compliance Monitoring
+- **Frameworks**: ISO 42001, NIST AI RMF, EU AI Act, SOC 2
+- **Validation**: Continuous compliance checking
+- **Reporting**: Automated regulatory reports
+- **Alerts**: Real-time compliance violations
+
+### Audit Trail System
+- **Storage**: Immutable audit logs with cryptographic signatures
+- **Retention**: Configurable retention policies by regulation
+- **Search**: Full-text search with role-based access
+- **Export**: Standard formats for regulatory submissions
+
+### Risk Management
+- **Assessment**: Automated AI risk scoring
+- **Mitigation**: Policy-based risk controls
+- **Monitoring**: Continuous risk posture monitoring
+- **Reporting**: Executive dashboards and KPIs
+
+This architecture provides enterprise-grade scalability, security, and compliance while maintaining the flexibility needed for universal AI agent interoperability across multiple frameworks and use cases.

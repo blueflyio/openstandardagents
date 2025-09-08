@@ -1,0 +1,17 @@
+{
+  "agent": "project-research",
+  "domain": "research",
+  "tier": "specialist",
+  "versions": [
+    "1.0.0",
+    "1.0.1",
+    "1.0.2"
+  ],
+  "created": "2025-09-08T15:40:40.226Z",
+  "ossa_version": "0.1.8",
+  "roadmap_files": [
+    "project-research_1.0.0.dita",
+    "project-research_1.0.1.dita",
+    "project-research_1.0.2.dita"
+  ]
+}

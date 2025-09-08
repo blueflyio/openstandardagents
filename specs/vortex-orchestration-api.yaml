@@ -1,0 +1,1236 @@
+openapi: 3.1.0
+info:
+  title: "OSSA VORTEX Orchestration API v0.1.8"
+  version: "0.1.8"
+  description: |
+    OSSA VORTEX (Vector-Optimized Real-Time eXecution) Orchestration API v0.1.8
+    
+    VORTEX provides advanced multi-agent orchestration, workflow management,
+    and real-time coordination for OSSA-compliant agent systems. The system
+    enables complex agent interactions, distributed task execution, and
+    intelligent resource allocation.
+    
+    Core Features:
+    - Multi-Agent Orchestration (parallel and sequential execution)
+    - Dynamic Workflow Management (adaptive task routing)
+    - Real-Time Coordination (event-driven synchronization)
+    - Resource Optimization (intelligent load balancing)
+    - Fault Tolerance (automatic failover and recovery)
+    - Performance Monitoring (comprehensive metrics and analytics)
+    
+  contact:
+    name: "VORTEX Orchestration Team"
+    url: "https://ossa.ai/vortex"
+    
+  license:
+    name: "Apache 2.0"
+    url: "https://www.apache.org/licenses/LICENSE-2.0.html"
+    
+  x-vortex-orchestration:
+    version: "0.1.8"
+    execution_model: "hybrid"
+    supported_patterns: ["pipeline", "scatter_gather", "fan_out", "choreography", "saga"]
+    scalability: "horizontal"
+    fault_tolerance: "automatic"
+    
+servers:
+  - url: "https://api.ossa.ai/vortex/v1"
+    description: "Production VORTEX Orchestration API"
+  - url: "http://localhost:4000/api/vortex/v1"
+    description: "Local development server"
+
+paths:
+  # Workflow Management
+  /workflows:
+    get:
+      summary: "List orchestration workflows"
+      description: "Get all registered workflows with filtering and pagination"
+      operationId: "listWorkflows"
+      tags: ["Workflows"]
+      security:
+        - api_key: []
+      parameters:
+        - name: "status"
+          in: "query"
+          schema:
+            type: "string"
+            enum: ["active", "paused", "completed", "failed", "cancelled"]
+        - name: "pattern"
+          in: "query"
+          schema:
+            type: "string"
+            enum: ["pipeline", "scatter_gather", "fan_out", "choreography", "saga"]
+        - name: "limit"
+          in: "query"
+          schema:
+            type: "integer"
+            minimum: 1
+            maximum: 100
+            default: 20
+        - name: "offset"
+          in: "query"
+          schema:
+            type: "integer"
+            minimum: 0
+            default: 0
+      responses:
+        '200':
+          description: "List of workflows"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WorkflowList"
+
+    post:
+      summary: "Create new workflow"
+      description: "Define a new orchestration workflow"
+      operationId: "createWorkflow"
+      tags: ["Workflows"]
+      security:
+        - api_key: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WorkflowDefinition"
+      responses:
+        '201':
+          description: "Workflow created successfully"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Workflow"
+        '400':
+          $ref: "#/components/responses/BadRequest"
+
+  /workflows/{workflowId}:
+    get:
+      summary: "Get workflow details"
+      operationId: "getWorkflow"
+      tags: ["Workflows"]
+      security:
+        - api_key: []
+      parameters:
+        - name: "workflowId"
+          in: "path"
+          required: true
+          schema:
+            type: "string"
+            format: "uuid"
+      responses:
+        '200':
+          description: "Workflow details"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Workflow"
+        '404':
+          $ref: "#/components/responses/NotFound"
+
+    put:
+      summary: "Update workflow"
+      operationId: "updateWorkflow"
+      tags: ["Workflows"]
+      security:
+        - api_key: []
+      parameters:
+        - name: "workflowId"
+          in: "path"
+          required: true
+          schema:
+            type: "string"
+            format: "uuid"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WorkflowUpdate"
+      responses:
+        '200':
+          description: "Workflow updated"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Workflow"
+        '404':
+          $ref: "#/components/responses/NotFound"
+
+    delete:
+      summary: "Delete workflow"
+      operationId: "deleteWorkflow"
+      tags: ["Workflows"]
+      security:
+        - api_key: []
+      parameters:
+        - name: "workflowId"
+          in: "path"
+          required: true
+          schema:
+            type: "string"
+            format: "uuid"
+      responses:
+        '204':
+          description: "Workflow deleted"
+        '404':
+          $ref: "#/components/responses/NotFound"
+
+  # Execution Management
+  /executions:
+    get:
+      summary: "List workflow executions"
+      description: "Get all workflow executions with filtering"
+      operationId: "listExecutions"
+      tags: ["Executions"]
+      security:
+        - api_key: []
+      parameters:
+        - name: "workflowId"
+          in: "query"
+          schema:
+            type: "string"
+            format: "uuid"
+        - name: "status"
+          in: "query"
+          schema:
+            type: "string"
+            enum: ["running", "completed", "failed", "paused", "cancelled"]
+        - name: "timeframe"
+          in: "query"
+          schema:
+            type: "string"
+            enum: ["1h", "6h", "24h", "7d", "30d"]
+            default: "24h"
+      responses:
+        '200':
+          description: "List of executions"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ExecutionList"
+
+    post:
+      summary: "Execute workflow"
+      description: "Start execution of a workflow"
+      operationId: "executeWorkflow"
+      tags: ["Executions"]
+      security:
+        - api_key: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ExecutionRequest"
+      responses:
+        '202':
+          description: "Execution started"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ExecutionResponse"
+        '400':
+          $ref: "#/components/responses/BadRequest"
+
+  /executions/{executionId}:
+    get:
+      summary: "Get execution details"
+      operationId: "getExecution"
+      tags: ["Executions"]
+      security:
+        - api_key: []
+      parameters:
+        - name: "executionId"
+          in: "path"
+          required: true
+          schema:
+            type: "string"
+            format: "uuid"
+      responses:
+        '200':
+          description: "Execution details"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Execution"
+        '404':
+          $ref: "#/components/responses/NotFound"
+
+    post:
+      summary: "Control execution"
+      description: "Pause, resume, or cancel workflow execution"
+      operationId: "controlExecution"
+      tags: ["Executions"]
+      security:
+        - api_key: []
+      parameters:
+        - name: "executionId"
+          in: "path"
+          required: true
+          schema:
+            type: "string"
+            format: "uuid"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ExecutionControlRequest"
+      responses:
+        '200':
+          description: "Execution control applied"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ExecutionControlResponse"
+
+  /executions/{executionId}/logs:
+    get:
+      summary: "Get execution logs"
+      operationId: "getExecutionLogs"
+      tags: ["Executions"]
+      security:
+        - api_key: []
+      parameters:
+        - name: "executionId"
+          in: "path"
+          required: true
+          schema:
+            type: "string"
+            format: "uuid"
+        - name: "level"
+          in: "query"
+          schema:
+            type: "string"
+            enum: ["debug", "info", "warn", "error"]
+        - name: "limit"
+          in: "query"
+          schema:
+            type: "integer"
+            minimum: 1
+            maximum: 1000
+            default: 100
+      responses:
+        '200':
+          description: "Execution logs"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ExecutionLogs"
+
+  # Agent Coordination
+  /coordination/agents:
+    get:
+      summary: "List coordinated agents"
+      description: "Get all agents participating in orchestration"
+      operationId: "listCoordinatedAgents"
+      tags: ["Coordination"]
+      security:
+        - api_key: []
+      parameters:
+        - name: "status"
+          in: "query"
+          schema:
+            type: "string"
+            enum: ["available", "busy", "offline", "error"]
+        - name: "capability"
+          in: "query"
+          schema:
+            type: "string"
+      responses:
+        '200':
+          description: "List of coordinated agents"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CoordinatedAgentList"
+
+  /coordination/agents/{agentId}/assign:
+    post:
+      summary: "Assign task to agent"
+      description: "Assign a specific task to an agent in the orchestration"
+      operationId: "assignTaskToAgent"
+      tags: ["Coordination"]
+      security:
+        - api_key: []
+      parameters:
+        - name: "agentId"
+          in: "path"
+          required: true
+          schema:
+            type: "string"
+            format: "uuid"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TaskAssignment"
+      responses:
+        '200':
+          description: "Task assigned"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TaskAssignmentResponse"
+        '409':
+          description: "Agent unavailable"
+
+  /coordination/load-balance:
+    post:
+      summary: "Request load balancing"
+      description: "Request optimal load distribution across available agents"
+      operationId: "requestLoadBalance"
+      tags: ["Coordination"]
+      security:
+        - api_key: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoadBalanceRequest"
+      responses:
+        '200':
+          description: "Load balancing recommendations"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LoadBalanceResponse"
+
+  # Real-time Events and Monitoring
+  /events/stream:
+    get:
+      summary: "Subscribe to orchestration events"
+      description: "Server-sent events stream for real-time orchestration updates"
+      operationId: "subscribeToOrchestrationEvents"
+      tags: ["Events"]
+      security:
+        - api_key: []
+      parameters:
+        - name: "eventTypes"
+          in: "query"
+          schema:
+            type: "array"
+            items:
+              type: "string"
+              enum: ["workflow_start", "workflow_complete", "task_start", "task_complete", "agent_join", "agent_leave", "error"]
+          style: "form"
+          explode: false
+        - name: "workflowIds"
+          in: "query"
+          schema:
+            type: "array"
+            items:
+              type: "string"
+              format: "uuid"
+          style: "form"
+          explode: false
+      responses:
+        '200':
+          description: "Event stream"
+          content:
+            text/event-stream:
+              schema:
+                type: "string"
+
+  /events/publish:
+    post:
+      summary: "Publish orchestration event"
+      description: "Publish an event to the orchestration system"
+      operationId: "publishOrchestrationEvent"
+      tags: ["Events"]
+      security:
+        - api_key: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OrchestrationEvent"
+      responses:
+        '202':
+          description: "Event published"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EventPublishResponse"
+
+  # Performance Analytics
+  /analytics/performance:
+    get:
+      summary: "Get orchestration performance metrics"
+      description: "Retrieve comprehensive performance analytics"
+      operationId: "getOrchestrationPerformance"
+      tags: ["Analytics"]
+      security:
+        - api_key: []
+      parameters:
+        - name: "timeframe"
+          in: "query"
+          schema:
+            type: "string"
+            enum: ["1h", "6h", "24h", "7d", "30d"]
+            default: "24h"
+        - name: "workflowId"
+          in: "query"
+          schema:
+            type: "string"
+            format: "uuid"
+      responses:
+        '200':
+          description: "Performance metrics"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OrchestrationPerformance"
+
+  /analytics/resource-utilization:
+    get:
+      summary: "Get resource utilization metrics"
+      description: "Analyze resource usage across orchestrated agents"
+      operationId: "getResourceUtilization"
+      tags: ["Analytics"]
+      security:
+        - api_key: []
+      parameters:
+        - name: "timeframe"
+          in: "query"
+          schema:
+            type: "string"
+            enum: ["1h", "6h", "24h", "7d", "30d"]
+            default: "24h"
+      responses:
+        '200':
+          description: "Resource utilization metrics"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResourceUtilization"
+
+  # Health and Status
+  /health:
+    get:
+      summary: "VORTEX orchestration health check"
+      operationId: "getVortexHealth"
+      tags: ["Health"]
+      responses:
+        '200':
+          description: "VORTEX orchestration health"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VortexHealth"
+
+components:
+  schemas:
+    WorkflowDefinition:
+      type: "object"
+      required: ["name", "pattern", "steps"]
+      properties:
+        name:
+          type: "string"
+          maxLength: 100
+        description:
+          type: "string"
+          maxLength: 500
+        pattern:
+          type: "string"
+          enum: ["pipeline", "scatter_gather", "fan_out", "choreography", "saga"]
+        steps:
+          type: "array"
+          items:
+            $ref: "#/components/schemas/WorkflowStep"
+        config:
+          type: "object"
+          properties:
+            timeout_seconds:
+              type: "integer"
+              minimum: 1
+              maximum: 86400
+              default: 300
+            retry_policy:
+              $ref: "#/components/schemas/RetryPolicy"
+            error_handling:
+              type: "string"
+              enum: ["fail_fast", "continue", "compensate"]
+              default: "fail_fast"
+        metadata:
+          type: "object"
+          additionalProperties: true
+
+    WorkflowStep:
+      type: "object"
+      required: ["id", "type", "agent_requirements"]
+      properties:
+        id:
+          type: "string"
+        name:
+          type: "string"
+        type:
+          type: "string"
+          enum: ["task", "condition", "parallel", "loop", "compensation"]
+        agent_requirements:
+          type: "object"
+          properties:
+            capabilities:
+              type: "array"
+              items:
+                type: "string"
+            min_agents:
+              type: "integer"
+              minimum: 1
+            max_agents:
+              type: "integer"
+              minimum: 1
+            preferred_agents:
+              type: "array"
+              items:
+                type: "string"
+                format: "uuid"
+        inputs:
+          type: "object"
+          additionalProperties: true
+        outputs:
+          type: "object"
+          additionalProperties: true
+        dependencies:
+          type: "array"
+          items:
+            type: "string"
+        conditions:
+          type: "object"
+          properties:
+            skip_if:
+              type: "string"
+            retry_if:
+              type: "string"
+        timeout_seconds:
+          type: "integer"
+          minimum: 1
+
+    Workflow:
+      allOf:
+        - $ref: "#/components/schemas/WorkflowDefinition"
+        - type: "object"
+          required: ["id", "status", "created_at", "updated_at"]
+          properties:
+            id:
+              type: "string"
+              format: "uuid"
+            status:
+              type: "string"
+              enum: ["active", "paused", "completed", "failed", "cancelled"]
+            created_at:
+              type: "string"
+              format: "date-time"
+            updated_at:
+              type: "string"
+              format: "date-time"
+            version:
+              type: "integer"
+            stats:
+              type: "object"
+              properties:
+                total_executions:
+                  type: "integer"
+                successful_executions:
+                  type: "integer"
+                average_duration_seconds:
+                  type: "number"
+                last_execution:
+                  type: "string"
+                  format: "date-time"
+
+    WorkflowUpdate:
+      type: "object"
+      properties:
+        name:
+          type: "string"
+          maxLength: 100
+        description:
+          type: "string"
+          maxLength: 500
+        steps:
+          type: "array"
+          items:
+            $ref: "#/components/schemas/WorkflowStep"
+        config:
+          type: "object"
+        status:
+          type: "string"
+          enum: ["active", "paused"]
+
+    WorkflowList:
+      type: "object"
+      required: ["workflows", "total", "limit", "offset"]
+      properties:
+        workflows:
+          type: "array"
+          items:
+            $ref: "#/components/schemas/Workflow"
+        total:
+          type: "integer"
+        limit:
+          type: "integer"
+        offset:
+          type: "integer"
+
+    ExecutionRequest:
+      type: "object"
+      required: ["workflowId"]
+      properties:
+        workflowId:
+          type: "string"
+          format: "uuid"
+        inputs:
+          type: "object"
+          additionalProperties: true
+        priority:
+          type: "string"
+          enum: ["low", "normal", "high", "urgent"]
+          default: "normal"
+        context:
+          type: "object"
+          properties:
+            user_id:
+              type: "string"
+            session_id:
+              type: "string"
+            trace_id:
+              type: "string"
+        options:
+          type: "object"
+          properties:
+            async_mode:
+              type: "boolean"
+              default: true
+            callback_url:
+              type: "string"
+              format: "uri"
+
+    ExecutionResponse:
+      type: "object"
+      required: ["executionId", "status", "startTime"]
+      properties:
+        executionId:
+          type: "string"
+          format: "uuid"
+        status:
+          type: "string"
+          enum: ["queued", "running", "completed", "failed", "cancelled"]
+        startTime:
+          type: "string"
+          format: "date-time"
+        estimatedDuration:
+          type: "string"
+          example: "PT5M"
+
+    Execution:
+      allOf:
+        - $ref: "#/components/schemas/ExecutionRequest"
+        - type: "object"
+          required: ["id", "status", "createdAt"]
+          properties:
+            id:
+              type: "string"
+              format: "uuid"
+            status:
+              type: "string"
+              enum: ["queued", "running", "completed", "failed", "paused", "cancelled"]
+            createdAt:
+              type: "string"
+              format: "date-time"
+            startedAt:
+              type: "string"
+              format: "date-time"
+            completedAt:
+              type: "string"
+              format: "date-time"
+            duration:
+              type: "string"
+              example: "PT5M30S"
+            progress:
+              type: "object"
+              properties:
+                completed_steps:
+                  type: "integer"
+                total_steps:
+                  type: "integer"
+                current_step:
+                  type: "string"
+                percentage:
+                  type: "number"
+                  minimum: 0
+                  maximum: 100
+            results:
+              type: "object"
+              additionalProperties: true
+            error:
+              type: "object"
+              properties:
+                code:
+                  type: "string"
+                message:
+                  type: "string"
+                step_id:
+                  type: "string"
+
+    ExecutionList:
+      type: "object"
+      required: ["executions", "total", "limit", "offset"]
+      properties:
+        executions:
+          type: "array"
+          items:
+            $ref: "#/components/schemas/Execution"
+        total:
+          type: "integer"
+        limit:
+          type: "integer"
+        offset:
+          type: "integer"
+
+    ExecutionControlRequest:
+      type: "object"
+      required: ["action"]
+      properties:
+        action:
+          type: "string"
+          enum: ["pause", "resume", "cancel", "retry"]
+        reason:
+          type: "string"
+        force:
+          type: "boolean"
+          default: false
+
+    ExecutionControlResponse:
+      type: "object"
+      required: ["success", "action", "timestamp"]
+      properties:
+        success:
+          type: "boolean"
+        action:
+          type: "string"
+        timestamp:
+          type: "string"
+          format: "date-time"
+        newStatus:
+          type: "string"
+
+    ExecutionLogs:
+      type: "object"
+      required: ["logs", "total"]
+      properties:
+        logs:
+          type: "array"
+          items:
+            type: "object"
+            properties:
+              timestamp:
+                type: "string"
+                format: "date-time"
+              level:
+                type: "string"
+                enum: ["debug", "info", "warn", "error"]
+              message:
+                type: "string"
+              step_id:
+                type: "string"
+              agent_id:
+                type: "string"
+              context:
+                type: "object"
+        total:
+          type: "integer"
+
+    RetryPolicy:
+      type: "object"
+      properties:
+        max_attempts:
+          type: "integer"
+          minimum: 1
+          maximum: 10
+          default: 3
+        backoff_strategy:
+          type: "string"
+          enum: ["fixed", "exponential", "linear"]
+          default: "exponential"
+        initial_delay_seconds:
+          type: "integer"
+          minimum: 1
+          default: 1
+        max_delay_seconds:
+          type: "integer"
+          minimum: 1
+          default: 60
+
+    CoordinatedAgentList:
+      type: "object"
+      required: ["agents", "total"]
+      properties:
+        agents:
+          type: "array"
+          items:
+            $ref: "#/components/schemas/CoordinatedAgent"
+        total:
+          type: "integer"
+
+    CoordinatedAgent:
+      type: "object"
+      required: ["id", "status", "capabilities", "load"]
+      properties:
+        id:
+          type: "string"
+          format: "uuid"
+        name:
+          type: "string"
+        status:
+          type: "string"
+          enum: ["available", "busy", "offline", "error"]
+        capabilities:
+          type: "array"
+          items:
+            type: "string"
+        load:
+          type: "object"
+          properties:
+            current_tasks:
+              type: "integer"
+            max_concurrent:
+              type: "integer"
+            utilization_percent:
+              type: "number"
+        performance:
+          type: "object"
+          properties:
+            average_response_time_ms:
+              type: "number"
+            success_rate:
+              type: "number"
+            tasks_completed:
+              type: "integer"
+        lastHeartbeat:
+          type: "string"
+          format: "date-time"
+
+    TaskAssignment:
+      type: "object"
+      required: ["stepId", "workflowId", "executionId"]
+      properties:
+        stepId:
+          type: "string"
+        workflowId:
+          type: "string"
+          format: "uuid"
+        executionId:
+          type: "string"
+          format: "uuid"
+        inputs:
+          type: "object"
+          additionalProperties: true
+        priority:
+          type: "string"
+          enum: ["low", "normal", "high", "urgent"]
+        timeout_seconds:
+          type: "integer"
+
+    TaskAssignmentResponse:
+      type: "object"
+      required: ["taskId", "accepted", "estimatedDuration"]
+      properties:
+        taskId:
+          type: "string"
+          format: "uuid"
+        accepted:
+          type: "boolean"
+        estimatedDuration:
+          type: "string"
+          example: "PT2M"
+        queuePosition:
+          type: "integer"
+
+    LoadBalanceRequest:
+      type: "object"
+      required: ["capabilities", "taskCount"]
+      properties:
+        capabilities:
+          type: "array"
+          items:
+            type: "string"
+        taskCount:
+          type: "integer"
+          minimum: 1
+        priority:
+          type: "string"
+          enum: ["low", "normal", "high", "urgent"]
+        constraints:
+          type: "object"
+          properties:
+            max_agents:
+              type: "integer"
+            preferred_agents:
+              type: "array"
+              items:
+                type: "string"
+                format: "uuid"
+            avoid_agents:
+              type: "array"
+              items:
+                type: "string"
+                format: "uuid"
+
+    LoadBalanceResponse:
+      type: "object"
+      required: ["recommendations", "totalCapacity"]
+      properties:
+        recommendations:
+          type: "array"
+          items:
+            type: "object"
+            properties:
+              agentId:
+                type: "string"
+                format: "uuid"
+              recommendedTasks:
+                type: "integer"
+              confidence:
+                type: "number"
+              estimatedCompletionTime:
+                type: "string"
+        totalCapacity:
+          type: "integer"
+        loadDistribution:
+          type: "object"
+          additionalProperties:
+            type: "number"
+
+    OrchestrationEvent:
+      type: "object"
+      required: ["type", "source", "data"]
+      properties:
+        type:
+          type: "string"
+          enum: ["workflow_start", "workflow_complete", "task_start", "task_complete", "agent_join", "agent_leave", "error", "custom"]
+        source:
+          type: "string"
+        workflowId:
+          type: "string"
+          format: "uuid"
+        executionId:
+          type: "string"
+          format: "uuid"
+        agentId:
+          type: "string"
+          format: "uuid"
+        data:
+          type: "object"
+          additionalProperties: true
+        timestamp:
+          type: "string"
+          format: "date-time"
+
+    EventPublishResponse:
+      type: "object"
+      required: ["eventId", "published"]
+      properties:
+        eventId:
+          type: "string"
+          format: "uuid"
+        published:
+          type: "boolean"
+        subscribers:
+          type: "integer"
+
+    OrchestrationPerformance:
+      type: "object"
+      required: ["timeframe", "timestamp", "workflows", "executions", "agents"]
+      properties:
+        timeframe:
+          type: "string"
+        timestamp:
+          type: "string"
+          format: "date-time"
+        workflows:
+          type: "object"
+          properties:
+            total:
+              type: "integer"
+            active:
+              type: "integer"
+            success_rate:
+              type: "number"
+        executions:
+          type: "object"
+          properties:
+            total:
+              type: "integer"
+            completed:
+              type: "integer"
+            failed:
+              type: "integer"
+            average_duration_seconds:
+              type: "number"
+            throughput_per_hour:
+              type: "number"
+        agents:
+          type: "object"
+          properties:
+            total_coordinated:
+              type: "integer"
+            average_utilization:
+              type: "number"
+            response_time_p95_ms:
+              type: "number"
+
+    ResourceUtilization:
+      type: "object"
+      required: ["timestamp", "cpu", "memory", "agents"]
+      properties:
+        timestamp:
+          type: "string"
+          format: "date-time"
+        cpu:
+          type: "object"
+          properties:
+            average_percent:
+              type: "number"
+            peak_percent:
+              type: "number"
+            by_agent:
+              type: "object"
+              additionalProperties:
+                type: "number"
+        memory:
+          type: "object"
+          properties:
+            average_mb:
+              type: "number"
+            peak_mb:
+              type: "number"
+            by_agent:
+              type: "object"
+              additionalProperties:
+                type: "number"
+        agents:
+          type: "object"
+          properties:
+            active_count:
+              type: "integer"
+            task_distribution:
+              type: "object"
+              additionalProperties:
+                type: "integer"
+
+    VortexHealth:
+      type: "object"
+      required: ["status", "version", "components", "timestamp"]
+      properties:
+        status:
+          type: "string"
+          enum: ["healthy", "degraded", "unhealthy"]
+        version:
+          type: "string"
+        components:
+          type: "object"
+          properties:
+            orchestrator:
+              type: "string"
+              enum: ["healthy", "degraded", "unhealthy"]
+            coordinator:
+              type: "string"
+              enum: ["healthy", "degraded", "unhealthy"]
+            event_system:
+              type: "string"
+              enum: ["healthy", "degraded", "unhealthy"]
+            load_balancer:
+              type: "string"
+              enum: ["healthy", "degraded", "unhealthy"]
+        timestamp:
+          type: "string"
+          format: "date-time"
+        metrics:
+          type: "object"
+          properties:
+            active_workflows:
+              type: "integer"
+            active_executions:
+              type: "integer"
+            coordinated_agents:
+              type: "integer"
+
+  responses:
+    BadRequest:
+      description: "Bad request"
+      content:
+        application/json:
+          schema:
+            type: "object"
+            properties:
+              error:
+                type: "string"
+              details:
+                type: "object"
+
+    NotFound:
+      description: "Resource not found"
+      content:
+        application/json:
+          schema:
+            type: "object"
+            properties:
+              error:
+                type: "string"
+              resource_type:
+                type: "string"
+
+  securitySchemes:
+    api_key:
+      type: "apiKey"
+      in: "header"
+      name: "X-VORTEX-API-Key"
+      description: "VORTEX Orchestration API key"
+
+    bearer:
+      type: "http"
+      scheme: "bearer"
+      bearerFormat: "JWT"
+
+security:
+  - api_key: []
+  - bearer: []
+
+tags:
+  - name: "Workflows"
+    description: "Workflow definition and management"
+  - name: "Executions"
+    description: "Workflow execution and control"
+  - name: "Coordination"
+    description: "Agent coordination and task assignment"
+  - name: "Events"
+    description: "Real-time events and messaging"
+  - name: "Analytics"
+    description: "Performance analytics and monitoring"
+  - name: "Health"
+    description: "System health and status"
+
+x-vortex-orchestration-extensions:
+  execution_patterns:
+    - "pipeline"
+    - "scatter_gather"
+    - "fan_out"
+    - "choreography"
+    - "saga"
+  fault_tolerance:
+    automatic_retry: true
+    circuit_breaker: true
+    bulkhead_isolation: true
+  scalability:
+    horizontal_scaling: true
+    auto_scaling: true
+    load_balancing: "intelligent"
+  monitoring:
+    real_time_metrics: true
+    distributed_tracing: true
+    performance_analytics: true

@@ -1,0 +1,1010 @@
+// OSSA gRPC Service Definition v0.1.8
+// Protocol Buffers definition for OSSA-compliant agents with 360° Feedback Loop and ACTA token optimization
+// Supports streaming operations and high-performance agent communication
+
+syntax = "proto3";
+
+package ossa.v1;
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/duration.proto";
+import "google/protobuf/struct.proto";
+import "google/protobuf/empty.proto";
+import "google/api/annotations.proto";
+
+option go_package = "github.com/ossa/proto/v1";
+option java_package = "io.ossa.v1";
+option java_multiple_files = true;
+option csharp_namespace = "Ossa.V1";
+option php_namespace = "Ossa\\V1";
+
+// Core OSSA Agent Service
+service OSSAAgentService {
+  // Agent Discovery and Registration
+  rpc ListAgents(ListAgentsRequest) returns (ListAgentsResponse) {
+    option (google.api.http) = {
+      get: "/v1/agents"
+    };
+  }
+  
+  rpc GetAgent(GetAgentRequest) returns (Agent) {
+    option (google.api.http) = {
+      get: "/v1/agents/{agent_id}"
+    };
+  }
+  
+  rpc RegisterAgent(RegisterAgentRequest) returns (Agent) {
+    option (google.api.http) = {
+      post: "/v1/agents"
+      body: "agent"
+    };
+  }
+  
+  rpc UpdateAgent(UpdateAgentRequest) returns (Agent) {
+    option (google.api.http) = {
+      put: "/v1/agents/{agent_id}"
+      body: "agent"
+    };
+  }
+  
+  rpc DeregisterAgent(DeregisterAgentRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      delete: "/v1/agents/{agent_id}"
+    };
+  }
+  
+  // Agent Status Monitoring (Streaming)
+  rpc StreamAgentStatus(StreamAgentStatusRequest) returns (stream AgentStatus);
+  
+  rpc GetAgentMetrics(GetAgentMetricsRequest) returns (AgentMetrics) {
+    option (google.api.http) = {
+      get: "/v1/agents/{agent_id}/metrics"
+    };
+  }
+}
+
+// 360° Feedback Loop Service
+service OSSAFeedbackService {
+  // Plan Phase
+  rpc CreateExecutionPlan(CreateExecutionPlanRequest) returns (ExecutionPlan) {
+    option (google.api.http) = {
+      post: "/v1/feedback/plans"
+      body: "plan_input"
+    };
+  }
+  
+  rpc GetExecutionPlan(GetExecutionPlanRequest) returns (ExecutionPlan) {
+    option (google.api.http) = {
+      get: "/v1/feedback/plans/{plan_id}"
+    };
+  }
+  
+  // Execute Phase
+  rpc ExecutePlan(ExecutePlanRequest) returns (stream ExecutionUpdate);
+  
+  rpc GetExecutionResult(GetExecutionResultRequest) returns (ExecutionResult) {
+    option (google.api.http) = {
+      get: "/v1/feedback/executions/{execution_id}"
+    };
+  }
+  
+  // Review Phase
+  rpc SubmitReview(SubmitReviewRequest) returns (ReviewResult) {
+    option (google.api.http) = {
+      post: "/v1/feedback/reviews"
+      body: "review"
+    };
+  }
+  
+  rpc GetReviewResult(GetReviewResultRequest) returns (ReviewResult) {
+    option (google.api.http) = {
+      get: "/v1/feedback/reviews/{review_id}"
+    };
+  }
+  
+  // Judge Phase
+  rpc SubmitJudgment(SubmitJudgmentRequest) returns (JudgmentResult) {
+    option (google.api.http) = {
+      post: "/v1/feedback/judgments"
+      body: "judgment"
+    };
+  }
+  
+  // Learn Phase
+  rpc GenerateLearningSignal(GenerateLearningSignalRequest) returns (LearningSignal) {
+    option (google.api.http) = {
+      post: "/v1/feedback/learning/{judgment_id}"
+    };
+  }
+  
+  rpc ApplyLearning(ApplyLearningRequest) returns (LearningApplication) {
+    option (google.api.http) = {
+      post: "/v1/feedback/learning/{learning_id}/apply"
+    };
+  }
+  
+  // Govern Phase
+  rpc GenerateGovernanceReport(GenerateGovernanceReportRequest) returns (GovernanceReport) {
+    option (google.api.http) = {
+      post: "/v1/feedback/governance/{learning_id}"
+    };
+  }
+  
+  // Feedback Loop Streaming
+  rpc StreamFeedbackLoop(StreamFeedbackLoopRequest) returns (stream FeedbackLoopEvent);
+}
+
+// ACTA Token Optimization Service
+service OSSAACTAService {
+  // Context Compression
+  rpc CompressContext(CompressContextRequest) returns (CompressionResult) {
+    option (google.api.http) = {
+      post: "/v1/acta/compress"
+      body: "*"
+    };
+  }
+  
+  rpc ExpandContext(ExpandContextRequest) returns (ExpandContextResponse) {
+    option (google.api.http) = {
+      get: "/v1/acta/expand/{reference}"
+    };
+  }
+  
+  // Model Selection Optimization
+  rpc GetModelRecommendation(ModelRecommendationRequest) returns (ModelRecommendation) {
+    option (google.api.http) = {
+      post: "/v1/acta/model-recommendation"
+      body: "*"
+    };
+  }
+  
+  // Vector Operations
+  rpc StoreVector(StoreVectorRequest) returns (VectorStoreResult);
+  rpc QueryVectors(QueryVectorsRequest) returns (VectorQueryResult);
+  
+  // ACTA Configuration
+  rpc UpdateACTAConfig(UpdateACTAConfigRequest) returns (ACTAConfiguration) {
+    option (google.api.http) = {
+      put: "/v1/acta/config/{agent_id}"
+      body: "config"
+    };
+  }
+  
+  // Streaming Optimizations
+  rpc StreamOptimizations(StreamOptimizationsRequest) returns (stream OptimizationEvent);
+}
+
+// Budget and Governance Service
+service OSSAGovernanceService {
+  // Budget Management
+  rpc AllocateTokens(AllocateTokensRequest) returns (TokenBudget) {
+    option (google.api.http) = {
+      post: "/v1/governance/budget/allocate"
+      body: "*"
+    };
+  }
+  
+  rpc GetTokenBudget(GetTokenBudgetRequest) returns (TokenBudget) {
+    option (google.api.http) = {
+      get: "/v1/governance/budget/{agent_id}"
+    };
+  }
+  
+  rpc EnforceBudgetPolicy(EnforceBudgetPolicyRequest) returns (BudgetEnforcementResult);
+  
+  // Compliance Management
+  rpc ValidateCompliance(ValidateComplianceRequest) returns (ComplianceStatus) {
+    option (google.api.http) = {
+      post: "/v1/governance/compliance/validate"
+      body: "*"
+    };
+  }
+  
+  rpc GetAuditTrail(GetAuditTrailRequest) returns (AuditTrailResponse) {
+    option (google.api.http) = {
+      get: "/v1/governance/audit/{agent_id}"
+    };
+  }
+  
+  // Streaming Governance Events
+  rpc StreamGovernanceEvents(StreamGovernanceEventsRequest) returns (stream GovernanceEvent);
+}
+
+// Enums
+enum AgentTaxonomy {
+  AGENT_TAXONOMY_UNSPECIFIED = 0;
+  AGENT_TAXONOMY_ORCHESTRATOR = 1;
+  AGENT_TAXONOMY_WORKER = 2;
+  AGENT_TAXONOMY_CRITIC = 3;
+  AGENT_TAXONOMY_JUDGE = 4;
+  AGENT_TAXONOMY_TRAINER = 5;
+  AGENT_TAXONOMY_GOVERNOR = 6;
+  AGENT_TAXONOMY_MONITOR = 7;
+  AGENT_TAXONOMY_INTEGRATOR = 8;
+}
+
+enum ComplianceLevel {
+  COMPLIANCE_LEVEL_UNSPECIFIED = 0;
+  COMPLIANCE_LEVEL_BRONZE = 1;
+  COMPLIANCE_LEVEL_SILVER = 2;
+  COMPLIANCE_LEVEL_GOLD = 3;
+}
+
+enum FeedbackPhase {
+  FEEDBACK_PHASE_UNSPECIFIED = 0;
+  FEEDBACK_PHASE_PLAN = 1;
+  FEEDBACK_PHASE_EXECUTE = 2;
+  FEEDBACK_PHASE_REVIEW = 3;
+  FEEDBACK_PHASE_JUDGE = 4;
+  FEEDBACK_PHASE_LEARN = 5;
+  FEEDBACK_PHASE_GOVERN = 6;
+}
+
+enum CompressionStrategy {
+  COMPRESSION_STRATEGY_UNSPECIFIED = 0;
+  COMPRESSION_STRATEGY_VECTOR_SEMANTIC = 1;
+  COMPRESSION_STRATEGY_HIERARCHICAL = 2;
+  COMPRESSION_STRATEGY_ADAPTIVE = 3;
+  COMPRESSION_STRATEGY_HYBRID = 4;
+}
+
+enum ModelTier {
+  MODEL_TIER_UNSPECIFIED = 0;
+  MODEL_TIER_LIGHTWEIGHT = 1;
+  MODEL_TIER_STANDARD = 2;
+  MODEL_TIER_PREMIUM = 3;
+  MODEL_TIER_SPECIALIZED = 4;
+}
+
+enum ExecutionStatus {
+  EXECUTION_STATUS_UNSPECIFIED = 0;
+  EXECUTION_STATUS_PENDING = 1;
+  EXECUTION_STATUS_RUNNING = 2;
+  EXECUTION_STATUS_COMPLETED = 3;
+  EXECUTION_STATUS_FAILED = 4;
+  EXECUTION_STATUS_TIMEOUT = 5;
+  EXECUTION_STATUS_CANCELLED = 6;
+}
+
+enum JudgmentDecision {
+  JUDGMENT_DECISION_UNSPECIFIED = 0;
+  JUDGMENT_DECISION_ACCEPT = 1;
+  JUDGMENT_DECISION_REJECT = 2;
+  JUDGMENT_DECISION_REVISE = 3;
+}
+
+enum BudgetEnforcementPolicy {
+  BUDGET_ENFORCEMENT_POLICY_UNSPECIFIED = 0;
+  BUDGET_ENFORCEMENT_POLICY_BLOCK = 1;
+  BUDGET_ENFORCEMENT_POLICY_QUEUE = 2;
+  BUDGET_ENFORCEMENT_POLICY_DELEGATE = 3;
+  BUDGET_ENFORCEMENT_POLICY_ESCALATE = 4;
+}
+
+enum AgentHealthStatus {
+  AGENT_HEALTH_STATUS_UNSPECIFIED = 0;
+  AGENT_HEALTH_STATUS_HEALTHY = 1;
+  AGENT_HEALTH_STATUS_DEGRADED = 2;
+  AGENT_HEALTH_STATUS_UNHEALTHY = 3;
+}
+
+enum AgentAvailabilityStatus {
+  AGENT_AVAILABILITY_STATUS_UNSPECIFIED = 0;
+  AGENT_AVAILABILITY_STATUS_AVAILABLE = 1;
+  AGENT_AVAILABILITY_STATUS_BUSY = 2;
+  AGENT_AVAILABILITY_STATUS_MAINTENANCE = 3;
+  AGENT_AVAILABILITY_STATUS_OFFLINE = 4;
+}
+
+// Core Messages
+
+// Agent Definition
+message Agent {
+  string id = 1;
+  string name = 2;
+  string version = 3;
+  string description = 4;
+  AgentTaxonomyInfo taxonomy = 5;
+  repeated AgentCapability capabilities = 6;
+  ProtocolSupport protocols = 7;
+  AgentMetadata metadata = 8;
+  AgentStatus status = 9;
+  ACTAConfiguration acta_config = 10;
+  google.protobuf.Timestamp created_at = 11;
+  google.protobuf.Timestamp updated_at = 12;
+}
+
+message AgentTaxonomyInfo {
+  AgentTaxonomy primary_type = 1;
+  repeated AgentTaxonomy secondary_types = 2;
+  string specialization = 3;
+  ComplianceLevel compliance_level = 4;
+}
+
+message AgentCapability {
+  string name = 1;
+  string description = 2;
+  google.protobuf.Struct input_schema = 3;
+  google.protobuf.Struct output_schema = 4;
+  repeated string frameworks = 5;
+  TokenCostInfo token_cost = 6;
+  bool acta_optimized = 7;
+  string sla_guarantee = 8;
+}
+
+message TokenCostInfo {
+  int32 estimated_tokens = 1;
+  double cost_per_request = 2;
+  double compression_ratio = 3;
+}
+
+message ProtocolSupport {
+  RESTProtocol rest = 1;
+  GRPCProtocol grpc = 2;
+  WebSocketProtocol websocket = 3;
+  MCPProtocol mcp = 4;
+}
+
+message RESTProtocol {
+  bool enabled = 1;
+  string base_url = 2;
+  string version = 3;
+  AuthenticationConfig authentication = 4;
+}
+
+message GRPCProtocol {
+  bool enabled = 1;
+  string endpoint = 2;
+  bool tls_enabled = 3;
+}
+
+message WebSocketProtocol {
+  bool enabled = 1;
+  string endpoint = 2;
+  bool subscription_support = 3;
+}
+
+message MCPProtocol {
+  bool enabled = 1;
+  MCPServerConfig server_config = 2;
+}
+
+message MCPServerConfig {
+  string name = 1;
+  string version = 2;
+  repeated google.protobuf.Struct tools = 3;
+}
+
+message AuthenticationConfig {
+  string type = 1;
+  string header = 2;
+  string scheme = 3;
+}
+
+message AgentMetadata {
+  string author = 1;
+  repeated string tags = 2;
+  map<string, string> annotations = 3;
+  string environment = 4;
+  string tier = 5;
+  string domain = 6;
+  string team = 7;
+}
+
+message AgentStatus {
+  AgentHealthStatus health = 1;
+  AgentAvailabilityStatus availability = 2;
+  google.protobuf.Timestamp last_heartbeat = 3;
+  int32 active_tasks = 4;
+  PerformanceMetrics performance_metrics = 5;
+  ACTAMetrics acta_metrics = 6;
+}
+
+message PerformanceMetrics {
+  double response_time_ms = 1;
+  double throughput_rps = 2;
+  double success_rate = 3;
+  TokenEfficiency token_efficiency = 4;
+}
+
+message TokenEfficiency {
+  double compression_ratio = 1;
+  double cost_reduction = 2;
+  int64 total_tokens_saved = 3;
+}
+
+message ACTAConfiguration {
+  bool enabled = 1;
+  CompressionStrategy compression_strategy = 2;
+  ModelSwitchingConfig model_switching = 3;
+  ContextManagementConfig context_management = 4;
+  VectorStorageConfig vector_storage = 5;
+}
+
+message ModelSwitchingConfig {
+  bool enabled = 1;
+  string strategy = 2;
+  repeated ModelConfiguration models = 3;
+}
+
+message ModelConfiguration {
+  ModelTier tier = 1;
+  string model_id = 2;
+  int32 max_tokens = 3;
+  double cost_per_token = 4;
+}
+
+message ContextManagementConfig {
+  bool persistent_graph = 1;
+  string retention_policy = 2;
+  int32 compression_threshold = 3;
+}
+
+message VectorStorageConfig {
+  string provider = 1;
+  string collection = 2;
+  int32 dimensions = 3;
+  bool connected = 4;
+}
+
+message ACTAMetrics {
+  int64 total_compressions = 1;
+  double avg_compression_ratio = 2;
+  int64 total_tokens_saved = 3;
+  double cost_savings_usd = 4;
+  int64 model_switches = 5;
+  int64 vector_operations = 6;
+}
+
+// 360° Feedback Loop Messages
+
+message ExecutionPlan {
+  string id = 1;
+  string goal = 2;
+  repeated PlannedTask tasks = 3;
+  TokenBudget budget = 4;
+  ExecutionTimeline timeline = 5;
+  PlanConstraints constraints = 6;
+  ACTAPreferences acta_preferences = 7;
+  google.protobuf.Timestamp created_at = 8;
+}
+
+message PlannedTask {
+  string id = 1;
+  string description = 2;
+  AgentTaxonomy agent_type = 3;
+  int32 estimated_tokens = 4;
+  repeated string dependencies = 5;
+  int32 priority = 6;
+}
+
+message TokenBudget {
+  int32 total_tokens = 1;
+  int32 allocated_tokens = 2;
+  int32 remaining_tokens = 3;
+  BudgetEnforcementPolicy enforcement_policy = 4;
+}
+
+message ExecutionTimeline {
+  int32 estimated_duration_minutes = 1;
+  google.protobuf.Timestamp deadline = 2;
+  repeated Milestone milestones = 3;
+}
+
+message Milestone {
+  string id = 1;
+  string name = 2;
+  google.protobuf.Timestamp target_date = 3;
+  repeated string dependencies = 4;
+}
+
+message PlanConstraints {
+  int32 max_tokens = 1;
+  google.protobuf.Timestamp deadline = 2;
+  repeated string compliance_required = 3;
+  double quality_threshold = 4;
+}
+
+message ACTAPreferences {
+  string compression_level = 1;
+  string model_preference = 2;
+  string vector_storage_hint = 3;
+}
+
+message ExecutionResult {
+  string id = 1;
+  string plan_id = 2;
+  ExecutionStatus status = 3;
+  repeated CompletedTask tasks_completed = 4;
+  int32 tokens_used = 5;
+  PerformanceMetrics performance_data = 6;
+  ACTAOptimizationResult acta_optimizations = 7;
+  google.protobuf.Timestamp started_at = 8;
+  google.protobuf.Timestamp completed_at = 9;
+  google.protobuf.Duration duration = 10;
+}
+
+message CompletedTask {
+  string task_id = 1;
+  ExecutionStatus status = 2;
+  google.protobuf.Struct output = 3;
+  int32 tokens_used = 4;
+  int64 duration_ms = 5;
+  repeated string errors = 6;
+}
+
+message ACTAOptimizationResult {
+  bool compression_applied = 1;
+  double compression_ratio = 2;
+  int32 model_switches = 3;
+  int32 tokens_saved = 4;
+  google.protobuf.Struct optimization_details = 5;
+}
+
+message ReviewResult {
+  string id = 1;
+  string execution_id = 2;
+  repeated IndividualReview reviews = 3;
+  double overall_score = 4;
+  ReviewConsensus consensus = 5;
+  google.protobuf.Timestamp created_at = 6;
+}
+
+message IndividualReview {
+  string reviewer_id = 1;
+  ReviewDimensions dimensions = 2;
+  string feedback = 3;
+  repeated string recommendations = 4;
+  google.protobuf.Timestamp timestamp = 5;
+}
+
+message ReviewDimensions {
+  double quality = 1;
+  double completeness = 2;
+  double efficiency = 3;
+  double compliance = 4;
+  double innovation = 5;
+}
+
+message ReviewConsensus {
+  double agreement_level = 1;
+  repeated string conflicting_aspects = 2;
+  string consolidated_feedback = 3;
+}
+
+message JudgmentResult {
+  string id = 1;
+  string review_id = 2;
+  JudgmentDecision decision = 3;
+  double confidence = 4;
+  string justification = 5;
+  repeated string alternative_suggestions = 6;
+  string judge_id = 7;
+  google.protobuf.Timestamp timestamp = 8;
+}
+
+message LearningSignal {
+  string id = 1;
+  string judgment_id = 2;
+  repeated IdentifiedPattern patterns = 3;
+  LearningUpdates updates = 4;
+  double confidence = 5;
+  repeated string applicability = 6;
+  google.protobuf.Timestamp timestamp = 7;
+}
+
+message IdentifiedPattern {
+  string pattern_type = 1;
+  string description = 2;
+  int32 frequency = 3;
+  double confidence = 4;
+  repeated google.protobuf.Struct examples = 5;
+}
+
+message LearningUpdates {
+  repeated CapabilityImprovement capability_improvements = 1;
+  repeated KnowledgeUpdate knowledge_updates = 2;
+  repeated BehavioralAdjustment behavioral_adjustments = 3;
+}
+
+message CapabilityImprovement {
+  string capability_id = 1;
+  string improvement_type = 2;
+  string description = 3;
+  double expected_impact = 4;
+}
+
+message KnowledgeUpdate {
+  string domain = 1;
+  string knowledge_item = 2;
+  double confidence = 3;
+  repeated string source_references = 4;
+}
+
+message BehavioralAdjustment {
+  string behavior = 1;
+  string adjustment = 2;
+  repeated string context = 3;
+  int32 priority = 4;
+}
+
+message GovernanceReport {
+  string id = 1;
+  string learning_id = 2;
+  ComplianceStatus compliance_status = 3;
+  TokenBudget budget_status = 4;
+  repeated AuditEvent audit_trail = 5;
+  repeated GovernanceRecommendation recommendations = 6;
+  google.protobuf.Timestamp timestamp = 7;
+}
+
+message ComplianceStatus {
+  repeated FrameworkCompliance frameworks = 1;
+  string overall_status = 2;
+  repeated ComplianceViolation violations = 3;
+}
+
+message FrameworkCompliance {
+  string framework = 1;
+  string status = 2;
+  google.protobuf.Timestamp last_checked = 3;
+  string certificate_id = 4;
+}
+
+message ComplianceViolation {
+  string framework = 1;
+  string violation = 2;
+  string severity = 3;
+  repeated string remediation_steps = 4;
+}
+
+message AuditEvent {
+  string id = 1;
+  google.protobuf.Timestamp timestamp = 2;
+  string event_type = 3;
+  string description = 4;
+  google.protobuf.Struct metadata = 5;
+  string agent_id = 6;
+}
+
+message GovernanceRecommendation {
+  string type = 1;
+  int32 priority = 2;
+  string description = 3;
+  repeated string action_items = 4;
+  string expected_benefit = 5;
+}
+
+// ACTA-specific Messages
+
+message CompressionResult {
+  string compressed_context = 1;
+  double compression_ratio = 2;
+  double semantic_fidelity = 3;
+  int32 tokens_saved = 4;
+  string expansion_reference = 5;
+  google.protobuf.Timestamp compressed_at = 6;
+  google.protobuf.Duration compression_time = 7;
+}
+
+message ModelRecommendation {
+  ModelConfiguration recommended_model = 1;
+  repeated ModelConfiguration alternatives = 2;
+  double confidence = 3;
+  string reasoning = 4;
+  google.protobuf.Timestamp recommended_at = 5;
+}
+
+message VectorStoreResult {
+  string vector_id = 1;
+  bool success = 2;
+  string error_message = 3;
+  google.protobuf.Timestamp stored_at = 4;
+}
+
+message VectorQueryResult {
+  repeated VectorMatch matches = 1;
+  double query_time_ms = 2;
+  int32 total_results = 3;
+}
+
+message VectorMatch {
+  string vector_id = 1;
+  double score = 2;
+  google.protobuf.Struct metadata = 3;
+  string content = 4;
+}
+
+// Request Messages
+
+message ListAgentsRequest {
+  AgentTaxonomy type = 1;
+  ComplianceLevel compliance_level = 2;
+  bool acta_enabled = 3;
+  int32 page_size = 4;
+  string page_token = 5;
+}
+
+message ListAgentsResponse {
+  repeated Agent agents = 1;
+  string next_page_token = 2;
+  int32 total_count = 3;
+  ACTAStats acta_stats = 4;
+}
+
+message ACTAStats {
+  int32 total_optimized = 1;
+  double avg_compression_ratio = 2;
+}
+
+message GetAgentRequest {
+  string agent_id = 1;
+}
+
+message RegisterAgentRequest {
+  Agent agent = 1;
+}
+
+message UpdateAgentRequest {
+  string agent_id = 1;
+  Agent agent = 2;
+}
+
+message DeregisterAgentRequest {
+  string agent_id = 1;
+}
+
+message StreamAgentStatusRequest {
+  string agent_id = 1;
+  google.protobuf.Duration interval = 2;
+}
+
+message GetAgentMetricsRequest {
+  string agent_id = 1;
+  string time_range = 2;
+}
+
+message AgentMetrics {
+  PerformanceMetrics performance = 1;
+  ACTAMetrics acta = 2;
+  FeedbackLoopMetrics feedback_loop = 3;
+}
+
+message FeedbackLoopMetrics {
+  int64 plans_created = 1;
+  int64 executions_completed = 2;
+  int64 reviews_submitted = 3;
+  int64 judgments_made = 4;
+  int64 learning_signals_generated = 5;
+  double avg_cycle_time_minutes = 6;
+}
+
+// Feedback Loop Requests
+
+message CreateExecutionPlanRequest {
+  ExecutionPlanInput plan_input = 1;
+}
+
+message ExecutionPlanInput {
+  string goal = 1;
+  repeated string requirements = 2;
+  PlanConstraints constraints = 3;
+  ACTAPreferences acta_preferences = 4;
+}
+
+message GetExecutionPlanRequest {
+  string plan_id = 1;
+}
+
+message ExecutePlanRequest {
+  string plan_id = 1;
+}
+
+message ExecutionUpdate {
+  string execution_id = 1;
+  ExecutionStatus status = 2;
+  string current_task_id = 3;
+  int32 progress_percentage = 4;
+  string message = 5;
+  google.protobuf.Timestamp timestamp = 6;
+}
+
+message GetExecutionResultRequest {
+  string execution_id = 1;
+}
+
+message SubmitReviewRequest {
+  string execution_id = 1;
+  IndividualReview review = 2;
+}
+
+message GetReviewResultRequest {
+  string review_id = 1;
+}
+
+message SubmitJudgmentRequest {
+  string review_id = 1;
+  JudgmentInput judgment = 2;
+}
+
+message JudgmentInput {
+  string judge_id = 1;
+  JudgmentDecision decision = 2;
+  double confidence = 3;
+  string justification = 4;
+  repeated string alternative_suggestions = 5;
+}
+
+message GenerateLearningSignalRequest {
+  string judgment_id = 1;
+}
+
+message ApplyLearningRequest {
+  string learning_id = 1;
+}
+
+message LearningApplication {
+  bool success = 1;
+  repeated string applied_improvements = 2;
+  repeated string failed_improvements = 3;
+  google.protobuf.Timestamp applied_at = 4;
+}
+
+message GenerateGovernanceReportRequest {
+  string learning_id = 1;
+}
+
+message StreamFeedbackLoopRequest {
+  string feedback_loop_id = 1;
+}
+
+message FeedbackLoopEvent {
+  string feedback_loop_id = 1;
+  FeedbackPhase phase = 2;
+  string event_type = 3;
+  google.protobuf.Struct data = 4;
+  google.protobuf.Timestamp timestamp = 5;
+}
+
+// ACTA Requests
+
+message CompressContextRequest {
+  string context = 1;
+  CompressionStrategy strategy = 2;
+  double target_reduction = 3;
+  bool preserve_semantics = 4;
+}
+
+message ExpandContextRequest {
+  string reference = 1;
+}
+
+message ExpandContextResponse {
+  string expanded_context = 1;
+  int32 original_tokens = 2;
+  double expansion_fidelity = 3;
+}
+
+message ModelRecommendationRequest {
+  string task_description = 1;
+  google.protobuf.Struct complexity_indicators = 2;
+  google.protobuf.Struct constraints = 3;
+}
+
+message StoreVectorRequest {
+  string collection = 1;
+  repeated float vector = 2;
+  google.protobuf.Struct metadata = 3;
+  string content = 4;
+}
+
+message QueryVectorsRequest {
+  string collection = 1;
+  repeated float query_vector = 2;
+  int32 limit = 3;
+  double score_threshold = 4;
+  google.protobuf.Struct filter = 5;
+}
+
+message UpdateACTAConfigRequest {
+  string agent_id = 1;
+  ACTAConfiguration config = 2;
+}
+
+message StreamOptimizationsRequest {
+  string agent_id = 1;
+}
+
+message OptimizationEvent {
+  string agent_id = 1;
+  string optimization_type = 2;
+  google.protobuf.Struct details = 3;
+  double impact_score = 4;
+  google.protobuf.Timestamp timestamp = 5;
+}
+
+// Governance Requests
+
+message AllocateTokensRequest {
+  string agent_id = 1;
+  int32 tokens = 2;
+  string allocation_reason = 3;
+}
+
+message GetTokenBudgetRequest {
+  string agent_id = 1;
+}
+
+message EnforceBudgetPolicyRequest {
+  string agent_id = 1;
+  BudgetEnforcementPolicy policy = 2;
+}
+
+message BudgetEnforcementResult {
+  bool enforced = 1;
+  string action_taken = 2;
+  TokenBudget updated_budget = 3;
+  google.protobuf.Timestamp enforced_at = 4;
+}
+
+message ValidateComplianceRequest {
+  string agent_id = 1;
+  string framework = 2;
+}
+
+message GetAuditTrailRequest {
+  string agent_id = 1;
+  string event_type = 2;
+  string time_range = 3;
+  int32 page_size = 4;
+  string page_token = 5;
+}
+
+message AuditTrailResponse {
+  repeated AuditEvent events = 1;
+  string next_page_token = 2;
+  int32 total_count = 3;
+}
+
+message StreamGovernanceEventsRequest {
+  string agent_id = 1;
+  repeated string event_types = 2;
+}
+
+message GovernanceEvent {
+  string event_id = 1;
+  string agent_id = 2;
+  string event_type = 3;
+  string severity = 4;
+  string message = 5;
+  google.protobuf.Struct data = 6;
+  google.protobuf.Timestamp timestamp = 7;
+}
+
+// Health and System Messages
+
+message HealthCheckRequest {
+  string agent_id = 1;
+}
+
+message HealthCheckResponse {
+  AgentHealthStatus status = 1;
+  google.protobuf.Timestamp timestamp = 2;
+  string version = 3;
+  ComplianceLevel ossa_compliance = 4;
+  ACTAStatus acta_status = 5;
+  repeated DependencyStatus dependencies = 6;
+}
+
+message ACTAStatus {
+  bool enabled = 1;
+  bool compression_ready = 2;
+  bool model_switching_ready = 3;
+  bool vector_store_connected = 4;
+}
+
+message DependencyStatus {
+  string name = 1;
+  string status = 2;
+  double response_time_ms = 3;
+}

@@ -1,0 +1,530 @@
+ossa: "0.1.8"
+metadata:
+  name: workspace-manager
+  version: "1.0.0"
+  description: "OSSA workspace structure manager - organizes and manages .agents-workspace directory"
+  author: "OSSA Framework"
+  tags: ["workspace", "organization", "structure", "management", "audit", "roadmap"]
+  category: utility
+  subtype: workspace_coordinator
+
+spec:
+  conformance_tier: gold
+  class: utility
+  
+  # Core workspace management capabilities
+  capabilities:
+    primary:
+      - workspace_initialization: "Create and initialize .agents-workspace directory structure"
+      - artifact_management: "Manage lifecycle of workflow artifacts and deliverables"
+      - audit_trail_maintenance: "Maintain immutable audit trails with hash-chaining"
+      - roadmap_management: "Manage machine-readable project roadmaps"
+      - compliance_monitoring: "Monitor and report on compliance requirements"
+    
+    secondary:
+      - structure_validation: "Validate workspace structure integrity"
+      - cleanup_management: "Manage workspace cleanup and archival"
+      - migration_support: "Support workspace migration and upgrades"
+      - backup_coordination: "Coordinate workspace backup and recovery"
+      - analytics_generation: "Generate workspace usage analytics"
+
+  # Workspace directory structure specification
+  workspace_structure:
+    root_directory: ".agents-workspace"
+    
+    subdirectories:
+      plans:
+        description: "Execution plans and task decomposition"
+        subdirs: ["templates", "dependencies"]
+        file_patterns: ["plan-*.json", "template-*.yaml"]
+        retention_policy: "90_days"
+      
+      executions:
+        description: "Execution reports and outputs"
+        subdirs: ["checkpoints", "artifacts"]
+        file_patterns: ["execution-*.json", "checkpoint-*.json"]
+        retention_policy: "180_days"
+      
+      feedback:
+        description: "Reviews, judgments, and assessments"
+        subdirs: ["reviews", "decisions", "consensus"]
+        file_patterns: ["review-*.json", "decision-*.json"]
+        retention_policy: "365_days"
+      
+      learning:
+        description: "Learning signals and improvements"
+        subdirs: ["insights", "models", "optimizations"]
+        file_patterns: ["insight-*.json", "model-*.json"]
+        retention_policy: "permanent"
+      
+      audit:
+        description: "Immutable event logs and compliance"
+        subdirs: ["events", "compliance", "security"]
+        file_patterns: ["event-*.jsonl", "compliance-*.json"]
+        retention_policy: "permanent"
+        immutable: true
+      
+      roadmap:
+        description: "Machine-readable project roadmaps"
+        subdirs: ["versions", "tracking"]
+        file_patterns: ["roadmap-*.json", "milestone-*.json"]
+        retention_policy: "permanent"
+
+  # File management policies
+  file_management:
+    naming_conventions:
+      timestamp_format: "YYYY-MM-DD_HH-mm-ss"
+      id_format: "uuid_v4"
+      version_format: "semantic_versioning"
+    
+    validation_rules:
+      json_schema_validation: true
+      file_size_limits:
+        plans: "10MB"
+        executions: "50MB"
+        feedback: "5MB"
+        learning: "25MB"
+        audit: "unlimited"
+        roadmap: "1MB"
+    
+    integrity_checking:
+      checksum_validation: true
+      hash_algorithm: "sha256"
+      signature_verification: false  # Can be enabled for high-security environments
+
+  # Audit trail configuration
+  audit_system:
+    event_types: ["execution", "review", "judgment", "learning", "budget", "audit"]
+    log_format: "jsonl"
+    hash_chaining: true
+    hash_algorithm: "sha256"
+    
+    event_schema:
+      required_fields: ["timestamp", "event_type", "actor", "action", "resource"]
+      optional_fields: ["outcome", "metadata", "context", "correlation_id"]
+    
+    retention:
+      minimum_retention: "7_years"
+      archival_strategy: "compressed_cold_storage"
+      deletion_policy: "never_delete_audit_events"
+
+  # Compliance frameworks support
+  compliance_frameworks:
+    iso_42001:
+      enabled: true
+      requirements: ["ai_lifecycle_documentation", "risk_management", "performance_monitoring"]
+      reporting_frequency: "monthly"
+    
+    nist_ai_rmf:
+      enabled: true
+      requirements: ["govern", "map", "measure", "manage"]
+      reporting_frequency: "quarterly"
+    
+    eu_ai_act:
+      enabled: false  # Enable based on jurisdiction
+      requirements: ["high_risk_system_documentation", "conformity_assessment"]
+      reporting_frequency: "annual"
+    
+    sox:
+      enabled: false  # Enable for financial reporting
+      requirements: ["internal_controls", "financial_reporting_accuracy"]
+      reporting_frequency: "quarterly"
+
+  # Performance targets
+  performance_targets:
+    workspace_initialization_time: "< 5s"
+    file_operation_latency: "< 100ms"
+    audit_log_write_latency: "< 50ms"
+    compliance_check_time: "< 30s"
+    backup_completion_time: "< 300s"
+
+  # Communication protocols
+  protocols:
+    - name: rest_api
+      version: "1.0"
+      endpoint: "/api/v1/workspace"
+      required: true
+    - name: file_system
+      version: "1.0"
+      required: true
+
+  # Integration with OSSA ecosystem
+  integrations:
+    all_agents:
+      - type: all
+        communication: file_system
+        provides: "workspace_services"
+    
+    audit_systems:
+      - type: compliance
+        communication: event_streaming
+        provides: "audit_events"
+
+  # Input/Output specifications
+  interfaces:
+    input:
+      workspace_operation:
+        type: object
+        required: true
+        properties:
+          operation_type: "Type of workspace operation"
+          target_path: "Target file or directory path"
+          data: "Operation data payload"
+          metadata: "Operation metadata"
+          compliance_context: "Compliance requirements"
+    
+    output:
+      operation_result:
+        type: object
+        properties:
+          success: "Operation success status"
+          result_data: "Operation result information"
+          file_references: "Created or modified file references"
+          audit_event_id: "Associated audit event identifier"
+          compliance_status: "Compliance validation status"
+
+  # Framework integrations
+  frameworks:
+    langchain:
+      enabled: true
+      integration: native
+      tools: ["file_manager", "audit_logger", "compliance_checker"]
+    
+    crewai:
+      enabled: true
+      role: "Workspace Administrator"
+      goal: "Maintain organized, compliant, and efficient workspace structure"
+      backstory: "Expert in file system organization, compliance management, and audit trail maintenance"
+    
+    autogen:
+      enabled: true
+      agent_type: "AssistantAgent"
+      system_message: "You are a workspace manager responsible for maintaining organized, secure, and compliant workspace structures."
+
+# OpenAPI specification for REST endpoints
+openapi: "3.1.0"
+info:
+  title: "Workspace Manager API"
+  version: "1.0.0"
+  description: "API for managing OSSA workspace structure and operations"
+
+paths:
+  /workspace/initialize:
+    post:
+      summary: "Initialize workspace structure"
+      operationId: initializeWorkspace
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [workspace_path]
+              properties:
+                workspace_path:
+                  type: string
+                  description: "Path where workspace should be created"
+                configuration:
+                  type: object
+                  properties:
+                    compliance_frameworks: { type: array, items: { type: string } }
+                    retention_policies: { type: object }
+                    custom_directories: { type: array, items: { type: object } }
+                force_recreate:
+                  type: boolean
+                  default: false
+                  description: "Force recreation if workspace already exists"
+      responses:
+        "201":
+          description: "Workspace initialized successfully"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  workspace_path: { type: string }
+                  structure_created: { type: array, items: { type: string } }
+                  configuration_applied: { type: object }
+                  audit_event_id: { type: string }
+        "409":
+          description: "Workspace already exists"
+        "400":
+          description: "Invalid workspace configuration"
+
+  /workspace/structure/validate:
+    post:
+      summary: "Validate workspace structure integrity"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [workspace_path]
+              properties:
+                workspace_path: { type: string }
+                deep_validation: { type: boolean, default: false }
+      responses:
+        "200":
+          description: "Validation results"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  valid: { type: boolean }
+                  structure_issues:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        path: { type: string }
+                        issue_type: { type: string }
+                        severity: { type: string, enum: ["low", "medium", "high", "critical"] }
+                        description: { type: string }
+                        remediation: { type: string }
+                  integrity_status:
+                    type: object
+                    properties:
+                      checksum_valid: { type: boolean }
+                      audit_chain_valid: { type: boolean }
+                      permissions_correct: { type: boolean }
+
+  /workspace/artifacts:
+    post:
+      summary: "Store artifact in workspace"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [artifact_type, content]
+              properties:
+                artifact_type:
+                  type: string
+                  enum: ["plan", "execution", "review", "decision", "insight", "model"]
+                content: { type: object }
+                metadata:
+                  type: object
+                  properties:
+                    source_agent: { type: string }
+                    workflow_id: { type: string }
+                    tags: { type: array, items: { type: string } }
+                    retention_override: { type: string }
+      responses:
+        "201":
+          description: "Artifact stored successfully"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  artifact_id: { type: string }
+                  storage_path: { type: string }
+                  checksum: { type: string }
+                  audit_event_id: { type: string }
+
+    get:
+      summary: "List artifacts in workspace"
+      parameters:
+        - name: artifact_type
+          in: query
+          schema: { type: string }
+        - name: workflow_id
+          in: query
+          schema: { type: string }
+        - name: date_range
+          in: query
+          schema: { type: string }
+        - name: limit
+          in: query
+          schema: { type: integer, default: 50 }
+      responses:
+        "200":
+          description: "Artifact list retrieved"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  artifacts:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        artifact_id: { type: string }
+                        artifact_type: { type: string }
+                        created_at: { type: string, format: date-time }
+                        size: { type: integer }
+                        checksum: { type: string }
+                        metadata: { type: object }
+
+  /workspace/audit/events:
+    post:
+      summary: "Log audit event"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [event_type, actor, action, resource]
+              properties:
+                event_type:
+                  type: string
+                  enum: ["execution", "review", "judgment", "learning", "budget", "audit"]
+                actor: { type: string }
+                action: { type: string }
+                resource: { type: string }
+                outcome: { type: string }
+                metadata: { type: object }
+                correlation_id: { type: string }
+      responses:
+        "201":
+          description: "Audit event logged"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  event_id: { type: string }
+                  hash: { type: string }
+                  previous_hash: { type: string }
+                  chain_valid: { type: boolean }
+
+    get:
+      summary: "Query audit events"
+      parameters:
+        - name: event_type
+          in: query
+          schema: { type: string }
+        - name: actor
+          in: query
+          schema: { type: string }
+        - name: start_date
+          in: query
+          schema: { type: string, format: date-time }
+        - name: end_date
+          in: query
+          schema: { type: string, format: date-time }
+        - name: limit
+          in: query
+          schema: { type: integer, default: 100 }
+      responses:
+        "200":
+          description: "Audit events retrieved"
+
+  /workspace/compliance/report:
+    get:
+      summary: "Generate compliance report"
+      parameters:
+        - name: framework
+          in: query
+          schema: { type: string, enum: ["iso_42001", "nist_ai_rmf", "eu_ai_act", "sox"] }
+        - name: period
+          in: query
+          schema: { type: string, enum: ["weekly", "monthly", "quarterly", "annual"] }
+      responses:
+        "200":
+          description: "Compliance report generated"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  framework: { type: string }
+                  period: { type: string }
+                  compliance_score: { type: number, minimum: 0, maximum: 100 }
+                  requirements_status:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        requirement: { type: string }
+                        status: { type: string, enum: ["compliant", "partial", "non_compliant"] }
+                        evidence: { type: array, items: { type: string } }
+                        gaps: { type: array, items: { type: string } }
+                  recommendations: { type: array, items: { type: string } }
+
+  /workspace/roadmap:
+    get:
+      summary: "Get current roadmap"
+      responses:
+        "200":
+          description: "Current roadmap retrieved"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  version: { type: string }
+                  last_updated: { type: string, format: date-time }
+                  milestones: { type: array, items: { type: object } }
+                  dependencies: { type: array, items: { type: object } }
+                  metrics: { type: object }
+
+    put:
+      summary: "Update roadmap"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                milestones: { type: array, items: { type: object } }
+                dependencies: { type: array, items: { type: object } }
+                metadata: { type: object }
+      responses:
+        "200":
+          description: "Roadmap updated successfully"
+
+# Agent behavior configuration
+behavior:
+  workspace_management_approach: "structured_hierarchical_with_compliance"
+  file_operation_strategy: "atomic_with_validation"
+  audit_logging_policy: "comprehensive_immutable"
+  compliance_monitoring: "continuous_automated"
+  
+  organization_principles:
+    hierarchy: "logical_functional_separation"
+    naming: "consistent_descriptive_timestamped"
+    retention: "policy_driven_with_archival"
+    access_control: "role_based_with_audit"
+  
+  integrity_maintenance:
+    checksum_verification: "on_write_and_read"
+    hash_chaining: "cryptographic_audit_trail"
+    backup_strategy: "incremental_with_validation"
+    recovery_procedures: "automated_with_human_oversight"
+  
+  learning:
+    usage_pattern_analysis: true
+    optimization_recommendations: true
+    capacity_planning: true
+    performance_monitoring: true
+
+# Workspace-specific configuration
+workspace:
+  default_permissions:
+    plans: "rw-r--r--"
+    executions: "rw-r--r--"
+    feedback: "rw-r--r--"
+    learning: "rw-rw-r--"
+    audit: "r--r--r--"  # Read-only after creation
+    roadmap: "rw-rw-r--"
+  
+  monitoring:
+    disk_usage_alerts: "80%"
+    file_count_limits: 10000
+    performance_thresholds:
+      read_latency: "100ms"
+      write_latency: "200ms"
+      search_latency: "500ms"
+  
+  automation:
+    cleanup_schedules: "weekly"
+    backup_schedules: "daily"
+    compliance_checks: "daily"
+    integrity_verification: "weekly"

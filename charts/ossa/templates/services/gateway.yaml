@@ -1,0 +1,23 @@
+{{- if .Values.services.gateway.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "ossa.fullname" . }}-gateway
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "ossa.serviceLabels" (dict "component" "gateway" "Chart" .Chart "Release" .Release "Values" .Values) | nindent 4 }}
+  {{- with .Values.services.gateway.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  type: {{ .Values.services.gateway.type }}
+  ports:
+  - port: {{ .Values.services.gateway.port }}
+    targetPort: {{ .Values.services.gateway.targetPort }}
+    protocol: TCP
+    name: http
+  selector:
+    {{- include "ossa.selectorLabels" . | nindent 4 }}
+    ossa.io/component: "gateway"
+{{- end }}

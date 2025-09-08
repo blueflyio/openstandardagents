@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import request from 'supertest';
-import { app } from '../../services/gateway/src/app';
+import { app } from '../../src/services/gateway/src/app';
 import { validAgentSpec, invalidAgentSpec } from '../fixtures/agent-specs';
 
 describe('Agents API', () => {

@@ -1,0 +1,100 @@
+# OSSA v0.1.8 GraphQL Scalars and Directives
+# Custom scalar types and directives for OSSA-compliant agents
+
+# Custom scalar types
+scalar DateTime
+scalar JSON
+scalar UUID
+scalar URI
+scalar Uint64
+
+# OSSA compliance directives
+directive @ossaCompliant(
+  version: String! = "0.1.8"
+  level: ComplianceLevel!
+) on OBJECT | FIELD_DEFINITION | SCHEMA
+
+directive @agentTaxonomy(
+  type: AgentTaxonomy!
+  specialization: String
+) on OBJECT | FIELD_DEFINITION
+
+directive @federalCompliance(
+  frameworks: [String!]! = ["FedRAMP", "NIST-800-53"]
+  auditRequired: Boolean = true
+) on OBJECT | FIELD_DEFINITION
+
+# Performance and optimization directives
+directive @tokenBudget(
+  cost: Int!
+  enforcement: BudgetEnforcementPolicy = BLOCK
+) on FIELD_DEFINITION | MUTATION | QUERY
+
+directive @actaOptimized(
+  strategy: CompressionStrategy = SEMANTIC_VECTOR
+  compressionRatio: Float
+) on FIELD_DEFINITION | OBJECT
+
+directive @performanceMetrics(
+  slaRequired: Boolean = true
+  maxResponseTimeMs: Int = 5000
+) on FIELD_DEFINITION | MUTATION | QUERY
+
+# Real-time and caching directives
+directive @realtime(
+  subscriptionRequired: Boolean = true
+  bufferSize: Int = 100
+) on FIELD_DEFINITION | SUBSCRIPTION
+
+directive @cached(
+  maxAge: Int!
+  scope: CacheScope = PUBLIC
+  staleWhileRevalidate: Int
+) on FIELD_DEFINITION | QUERY
+
+# Security and authorization directives
+directive @auth(
+  requires: AuthRequirement!
+  scopes: [String!]
+  roles: [String!]
+) on FIELD_DEFINITION | OBJECT | MUTATION | QUERY | SUBSCRIPTION
+
+directive @rateLimit(
+  max: Int!
+  window: String! = "1m"
+  message: String = "Rate limit exceeded"
+) on FIELD_DEFINITION | MUTATION | QUERY
+
+# Audit and governance directives
+directive @auditLog(
+  level: AuditLevel = INFO
+  sensitive: Boolean = false
+  retention: String = "7y"
+) on FIELD_DEFINITION | MUTATION | QUERY
+
+directive @deprecated(
+  reason: String!
+  replacedBy: String
+  removalDate: DateTime
+) on FIELD_DEFINITION | ENUM_VALUE | INPUT_FIELD_DEFINITION
+
+# Protocol and integration directives
+directive @protocolSupport(
+  protocols: [ProtocolType!]!
+  required: Boolean = false
+) on FIELD_DEFINITION | OBJECT
+
+directive @mcp(
+  version: String! = "1.0"
+  toolRequired: Boolean = false
+  serverConfig: String
+) on FIELD_DEFINITION | OBJECT
+
+# Federation directives (Apollo Federation v2)
+directive @key(fields: String!, resolvable: Boolean = true) on OBJECT | INTERFACE
+directive @external on FIELD_DEFINITION | OBJECT
+directive @requires(fields: String!) on FIELD_DEFINITION  
+directive @provides(fields: String!) on FIELD_DEFINITION
+directive @override(from: String!) on FIELD_DEFINITION
+directive @shareable on FIELD_DEFINITION | OBJECT
+directive @inaccessible on FIELD_DEFINITION | OBJECT | INTERFACE | UNION | ARGUMENT_DEFINITION | SCALAR | ENUM | ENUM_VALUE | INPUT_OBJECT | INPUT_FIELD_DEFINITION

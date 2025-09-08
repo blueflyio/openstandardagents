@@ -1,6 +1,6 @@
 {
   "name": "@bluefly/ossa-cli",
-  "version": "0.1.9",
+  "version": "0.1.8+rev2",
   "description": "Multi-Agent Orchestration System - OSSA v0.1.8 CLI with 93-Agent Deployment Pipeline",
   "main": "dist/index.js",
   "type": "module",
@@ -37,13 +37,14 @@
     "inquirer": "^9.2.12",
     "js-yaml": "^4.1.0",
     "ora": "^7.0.1",
+    "redoc-cli": "^0.13.21",
     "semver": "^7.5.4",
     "simple-git": "^3.20.0",
-    "redoc-cli": "^0.13.21",
     "table": "^6.8.1",
     "yaml": "^2.3.4"
   },
   "devDependencies": {
+    "@types/cors": "^2.8.19",
     "@types/fs-extra": "^11.0.4",
     "@types/inquirer": "^9.0.7",
     "@types/js-yaml": "^4.0.9",
@@ -51,6 +52,7 @@
     "@types/semver": "^7.5.6",
     "@typescript-eslint/eslint-plugin": "^6.15.0",
     "@typescript-eslint/parser": "^6.15.0",
+    "cors": "^2.8.5",
     "eslint": "^8.56.0",
     "tsx": "^4.6.2",
     "typescript": "^5.3.2",

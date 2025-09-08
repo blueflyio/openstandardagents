@@ -1,0 +1,350 @@
+ossa: "0.1.8"
+metadata:
+  name: vortex-hub
+  version: "1.0.0"
+  description: "Vector-Optimized Real-Time Exchange Hub - semantic message routing and orchestration"
+  author: "OSSA Framework"
+  tags: ["vortex", "vector", "routing", "real-time", "orchestration", "mesh"]
+  category: orchestration
+  subtype: communication_hub
+
+spec:
+  conformance_tier: gold
+  class: orchestration
+  
+  # Core VORTEX capabilities
+  capabilities:
+    primary:
+      - semantic_message_routing: "Route messages based on semantic similarity and intent"
+      - real_time_orchestration: "Coordinate complex workflows with sub-millisecond latency"
+      - vector_based_communication: "Convert all communications to high-dimensional vectors"
+      - context_aware_load_balancing: "Distribute work based on agent capabilities and context"
+      - adaptive_agent_selection: "Dynamically select optimal agents for tasks"
+    
+    secondary:
+      - intent_recognition: "Automatically understand and classify agent intentions"
+      - priority_queue_management: "Smart queuing based on urgency and semantic importance"
+      - failure_recovery: "Automatic recovery from agent and communication failures"
+      - performance_optimization: "Continuous optimization of routing and task assignments"
+      - mesh_network_coordination: "Coordinate peer-to-peer agent communications"
+
+  # VORTEX system configuration
+  vortex_config:
+    vector_dimensions: 1536  # Dimension for semantic vectors
+    embedding_model: "text-embedding-3-small"
+    similarity_threshold: 0.75  # Minimum similarity for routing
+    routing_algorithm: "cosine_similarity"
+    
+    real_time_settings:
+      max_latency_ms: 1  # Sub-millisecond target
+      batch_size: 100
+      processing_frequency: 1000  # Hz
+      queue_depth: 10000
+    
+    load_balancing:
+      strategy: "semantic_weighted"
+      capability_weight: 0.4
+      load_weight: 0.3
+      context_weight: 0.3
+    
+    mesh_network:
+      peer_discovery: true
+      direct_routing: true
+      redundancy_factor: 3
+      heartbeat_interval: 1000  # ms
+
+  # Performance targets
+  performance_targets:
+    message_routing_latency: "< 1ms"
+    throughput: "> 10,000 messages/second"
+    semantic_accuracy: "> 95%"
+    load_balancing_efficiency: "> 90%"
+    failure_recovery_time: "< 100ms"
+
+  # Communication protocols
+  protocols:
+    - name: websocket
+      version: "1.0"
+      endpoint: "wss://vortex.ossa.local:8080/mesh"
+      required: true
+    - name: grpc
+      version: "1.0"
+      service: "VortexHubService"
+      required: true
+    - name: rest_api
+      version: "1.0"
+      endpoint: "/api/v1/vortex"
+      required: false
+
+  # Integration with OSSA ecosystem
+  integrations:
+    all_agents:
+      - type: all
+        communication: real_time
+        provides: "vector_routing"
+    
+    feedback_loop:
+      - type: orchestration
+        communication: async
+        coordinates: "workflow_phases"
+    
+    acta_optimizer:
+      - type: optimization
+        communication: sync
+        optimizes: "message_routing"
+
+  # Message types and routing rules
+  message_types:
+    task_request:
+      vector_fields: ["description", "requirements", "context"]
+      routing_priority: "high"
+      semantic_categories: ["execution", "analysis", "generation"]
+    
+    status_update:
+      vector_fields: ["status", "progress", "issues"]
+      routing_priority: "medium"
+      semantic_categories: ["reporting", "monitoring"]
+    
+    feedback:
+      vector_fields: ["content", "recommendations", "assessment"]
+      routing_priority: "high"
+      semantic_categories: ["evaluation", "improvement"]
+    
+    coordination:
+      vector_fields: ["action", "participants", "timeline"]
+      routing_priority: "critical"
+      semantic_categories: ["orchestration", "planning"]
+
+  # Input/Output specifications
+  interfaces:
+    input:
+      message_routing_request:
+        type: object
+        required: true
+        properties:
+          message_id: "Unique message identifier"
+          sender_agent: "Source agent information"
+          message_content: "Message payload and metadata"
+          routing_preferences: "Preferred routing behavior"
+          priority: "Message priority level"
+          context: "Current conversation context"
+    
+    output:
+      routing_decision:
+        type: object
+        properties:
+          target_agents: "Selected agents for message delivery"
+          routing_confidence: "Confidence in routing decision"
+          semantic_analysis: "Analysis of message semantics"
+          load_balancing_info: "Load distribution information"
+          fallback_options: "Alternative routing options"
+
+  # Framework integrations
+  frameworks:
+    langchain:
+      enabled: true
+      integration: native
+      tools: ["vector_embedder", "semantic_router", "intent_classifier"]
+    
+    crewai:
+      enabled: true
+      role: "Communication Orchestrator"
+      goal: "Enable seamless, intelligent communication between agents"
+      backstory: "Advanced communication system with deep understanding of agent capabilities and semantic relationships"
+    
+    autogen:
+      enabled: true
+      agent_type: "AssistantAgent"
+      system_message: "You are VORTEX, an intelligent communication hub that routes messages based on semantic understanding and real-time optimization."
+
+# OpenAPI specification for REST endpoints
+openapi: "3.1.0"
+info:
+  title: "VORTEX Hub API"
+  version: "1.0.0"
+  description: "Vector-Optimized Real-Time Exchange communication hub API"
+
+paths:
+  /vortex/route:
+    post:
+      summary: "Route message through VORTEX system"
+      operationId: routeMessage
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [message_id, sender_agent, content]
+              properties:
+                message_id:
+                  type: string
+                  description: "Unique message identifier"
+                sender_agent:
+                  type: object
+                  properties:
+                    agent_id: { type: string }
+                    agent_type: { type: string }
+                    capabilities: { type: array, items: { type: string } }
+                    current_load: { type: number, minimum: 0, maximum: 1 }
+                content:
+                  type: object
+                  properties:
+                    message_type: { type: string, enum: ["task_request", "status_update", "feedback", "coordination"] }
+                    payload: { type: object }
+                    context: { type: object }
+                    metadata: { type: object }
+                routing_preferences:
+                  type: object
+                  properties:
+                    preferred_agents: { type: array, items: { type: string } }
+                    avoid_agents: { type: array, items: { type: string } }
+                    load_balancing: { type: boolean, default: true }
+                    semantic_matching: { type: boolean, default: true }
+                priority:
+                  type: string
+                  enum: ["low", "medium", "high", "critical"]
+                  default: "medium"
+      responses:
+        "200":
+          description: "Message routed successfully"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  routing_id: { type: string }
+                  target_agents:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        agent_id: { type: string }
+                        confidence_score: { type: number, minimum: 0, maximum: 1 }
+                        semantic_similarity: { type: number, minimum: 0, maximum: 1 }
+                        current_load: { type: number, minimum: 0, maximum: 1 }
+                        estimated_response_time: { type: integer }
+                  routing_metadata:
+                    type: object
+                    properties:
+                      semantic_vector: { type: array, items: { type: number } }
+                      intent_classification: { type: string }
+                      routing_strategy: { type: string }
+                      alternatives_considered: { type: integer }
+                  performance_metrics:
+                    type: object
+                    properties:
+                      routing_latency_ms: { type: number }
+                      vector_computation_time: { type: number }
+                      semantic_analysis_time: { type: number }
+        "400":
+          description: "Invalid routing request"
+        "503":
+          description: "No suitable agents available"
+
+  /vortex/mesh/status:
+    get:
+      summary: "Get mesh network status"
+      responses:
+        "200":
+          description: "Mesh network status retrieved"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  mesh_health: { type: string, enum: ["healthy", "degraded", "critical"] }
+                  active_agents: { type: integer }
+                  total_connections: { type: integer }
+                  message_throughput: { type: number }
+                  average_latency: { type: number }
+                  peer_connectivity:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        agent_id: { type: string }
+                        connected_peers: { type: integer }
+                        last_heartbeat: { type: string, format: date-time }
+                        network_quality: { type: string }
+
+  /vortex/analytics:
+    get:
+      summary: "Get VORTEX performance analytics"
+      parameters:
+        - name: timeframe
+          in: query
+          schema: { type: string, enum: ["hour", "day", "week"], default: "hour" }
+      responses:
+        "200":
+          description: "Analytics data retrieved"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  routing_stats:
+                    type: object
+                    properties:
+                      total_messages: { type: integer }
+                      successful_routes: { type: integer }
+                      failed_routes: { type: integer }
+                      average_latency: { type: number }
+                      peak_throughput: { type: number }
+                  semantic_analysis:
+                    type: object
+                    properties:
+                      accuracy_rate: { type: number, minimum: 0, maximum: 1 }
+                      top_intent_categories: { type: array, items: { type: string } }
+                      classification_confidence: { type: number }
+                  load_balancing:
+                    type: object
+                    properties:
+                      distribution_efficiency: { type: number }
+                      agent_utilization: { type: array, items: { type: object } }
+                      optimization_suggestions: { type: array, items: { type: string } }
+
+# Agent behavior configuration
+behavior:
+  routing_approach: "semantic_intent_based"
+  load_balancing_strategy: "context_aware_weighted"
+  failure_handling: "automatic_recovery_with_fallback"
+  optimization_focus: "latency_and_accuracy"
+  
+  real_time_processing:
+    batch_optimization: true
+    priority_preemption: true
+    adaptive_queueing: true
+    predictive_routing: true
+  
+  mesh_coordination:
+    peer_discovery: "capability_based"
+    connection_management: "adaptive_pooling"
+    redundancy_strategy: "intelligent_replication"
+    fault_tolerance: "graceful_degradation"
+  
+  learning:
+    routing_pattern_analysis: true
+    performance_optimization: true
+    semantic_model_improvement: true
+    load_prediction: true
+
+# VORTEX-specific configuration
+vortex:
+  semantic_processing:
+    embedding_cache_size: 10000
+    similarity_computation: "optimized_cosine"
+    intent_classification_model: "fine_tuned_bert"
+    context_window_size: 2048
+  
+  performance_optimization:
+    connection_pooling: true
+    message_batching: true
+    vector_compression: true
+    intelligent_caching: true
+  
+  monitoring:
+    metrics_collection_interval: 1000  # ms
+    performance_alerting: true
+    anomaly_detection: true
+    capacity_planning: true

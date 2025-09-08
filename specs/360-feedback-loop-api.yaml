@@ -1,0 +1,948 @@
+openapi: 3.1.0
+info:
+  title: "OSSA 360° Feedback Loop API v0.1.8"
+  version: "0.1.8"
+  description: |
+    OSSA 360° Feedback Loop API v0.1.8
+    
+    This API provides comprehensive management of the 8-phase agent lifecycle:
+    Plan → Execute → Critique → Judge → Integrate → Learn → Govern → Signal
+    
+    The 360° Feedback Loop ensures continuous improvement and learning across
+    all agent interactions with real-time phase transitions and feedback integration.
+    
+    Features:
+    - 8-Phase lifecycle management (Plan, Execute, Critique, Judge, Integrate, Learn, Govern, Signal)
+    - Agent role classification and capability mapping
+    - Phase compliance validation and enforcement
+    - Real-time feedback aggregation and analysis
+    - Cross-phase learning and optimization
+    - Multi-agent coordination and synchronization
+    
+  contact:
+    name: "OSSA Standards Committee"
+    url: "https://ossa.ai"
+    
+  license:
+    name: "Apache 2.0"
+    url: "https://www.apache.org/licenses/LICENSE-2.0.html"
+    
+  x-ossa-feedback-loop:
+    version: "0.1.8"
+    phases: ["plan", "execute", "critique", "judge", "integrate", "learn", "govern", "signal"]
+    lifecycle_model: "continuous"
+    learning_enabled: true
+    governance_level: "advanced"
+    
+servers:
+  - url: "https://api.ossa.ai/feedback/v1"
+    description: "Production 360° Feedback Loop API"
+  - url: "http://localhost:4000/api/feedback/v1"
+    description: "Local development server"
+
+paths:
+  # Lifecycle Management
+  /lifecycle/phases:
+    get:
+      summary: "Get all lifecycle phases"
+      description: "Returns the 8-phase lifecycle structure with metadata"
+      operationId: "getLifecyclePhases"
+      tags: ["Lifecycle"]
+      responses:
+        '200':
+          description: "Lifecycle phases"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LifecyclePhases"
+
+  /lifecycle/phases/{phase}:
+    get:
+      summary: "Get phase details"
+      description: "Get detailed information about a specific lifecycle phase"
+      operationId: "getPhase"
+      tags: ["Lifecycle"]
+      parameters:
+        - name: "phase"
+          in: "path"
+          required: true
+          schema:
+            $ref: "#/components/schemas/PhaseType"
+      responses:
+        '200':
+          description: "Phase details"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LifecyclePhase"
+        '404':
+          $ref: "#/components/responses/NotFound"
+
+  /lifecycle/{agentId}/current:
+    get:
+      summary: "Get agent's current lifecycle state"
+      description: "Returns the current phase and state for a specific agent"
+      operationId: "getAgentLifecycleState"
+      tags: ["Lifecycle", "Agents"]
+      parameters:
+        - name: "agentId"
+          in: "path"
+          required: true
+          schema:
+            type: "string"
+            format: "uuid"
+      responses:
+        '200':
+          description: "Current lifecycle state"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AgentLifecycleState"
+        '404':
+          $ref: "#/components/responses/NotFound"
+
+    post:
+      summary: "Transition agent to next phase"
+      description: "Initiate phase transition for an agent in the feedback loop"
+      operationId: "transitionAgentPhase"
+      tags: ["Lifecycle", "Agents"]
+      security:
+        - api_key: []
+      parameters:
+        - name: "agentId"
+          in: "path"
+          required: true
+          schema:
+            type: "string"
+            format: "uuid"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PhaseTransitionRequest"
+      responses:
+        '200':
+          description: "Phase transition successful"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PhaseTransitionResponse"
+        '400':
+          $ref: "#/components/responses/BadRequest"
+        '404':
+          $ref: "#/components/responses/NotFound"
+
+  # Feedback Collection and Analysis
+  /feedback:
+    get:
+      summary: "Get all feedback entries"
+      description: "Retrieve feedback across all phases and agents with filtering"
+      operationId: "getFeedback"
+      tags: ["Feedback"]
+      parameters:
+        - name: "phase"
+          in: "query"
+          schema:
+            $ref: "#/components/schemas/PhaseType"
+        - name: "agentId"
+          in: "query"
+          schema:
+            type: "string"
+            format: "uuid"
+        - name: "timeframe"
+          in: "query"
+          schema:
+            type: "string"
+            enum: ["1h", "6h", "24h", "7d", "30d"]
+            default: "24h"
+        - name: "limit"
+          in: "query"
+          schema:
+            type: "integer"
+            minimum: 1
+            maximum: 1000
+            default: 100
+        - name: "offset"
+          in: "query"
+          schema:
+            type: "integer"
+            minimum: 0
+            default: 0
+      responses:
+        '200':
+          description: "Feedback entries"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FeedbackList"
+
+    post:
+      summary: "Submit feedback"
+      description: "Submit feedback for a specific phase and agent"
+      operationId: "submitFeedback"
+      tags: ["Feedback"]
+      security:
+        - api_key: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FeedbackSubmission"
+      responses:
+        '201':
+          description: "Feedback submitted successfully"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FeedbackEntry"
+        '400':
+          $ref: "#/components/responses/BadRequest"
+
+  /feedback/{feedbackId}:
+    get:
+      summary: "Get specific feedback"
+      operationId: "getFeedbackById"
+      tags: ["Feedback"]
+      parameters:
+        - name: "feedbackId"
+          in: "path"
+          required: true
+          schema:
+            type: "string"
+            format: "uuid"
+      responses:
+        '200':
+          description: "Feedback entry"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FeedbackEntry"
+        '404':
+          $ref: "#/components/responses/NotFound"
+
+  # Learning and Optimization
+  /learning/insights:
+    get:
+      summary: "Get learning insights"
+      description: "Retrieve cross-phase learning insights and optimization recommendations"
+      operationId: "getLearningInsights"
+      tags: ["Learning"]
+      security:
+        - api_key: []
+      parameters:
+        - name: "phase"
+          in: "query"
+          schema:
+            $ref: "#/components/schemas/PhaseType"
+        - name: "agentId"
+          in: "query"
+          schema:
+            type: "string"
+            format: "uuid"
+        - name: "category"
+          in: "query"
+          schema:
+            type: "string"
+            enum: ["performance", "quality", "efficiency", "collaboration"]
+      responses:
+        '200':
+          description: "Learning insights"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LearningInsights"
+
+  /learning/patterns:
+    get:
+      summary: "Get behavioral patterns"
+      description: "Analyze patterns across the feedback loop for optimization"
+      operationId: "getBehavioralPatterns"
+      tags: ["Learning"]
+      security:
+        - api_key: []
+      parameters:
+        - name: "timeframe"
+          in: "query"
+          schema:
+            type: "string"
+            enum: ["24h", "7d", "30d", "90d"]
+            default: "7d"
+        - name: "patternType"
+          in: "query"
+          schema:
+            type: "string"
+            enum: ["phase_transitions", "agent_interactions", "feedback_loops"]
+      responses:
+        '200':
+          description: "Behavioral patterns"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BehavioralPatterns"
+
+  # Governance and Compliance
+  /governance/compliance:
+    get:
+      summary: "Get compliance status"
+      description: "Check compliance across all phases and agents"
+      operationId: "getComplianceStatus"
+      tags: ["Governance"]
+      security:
+        - api_key: []
+      parameters:
+        - name: "phase"
+          in: "query"
+          schema:
+            $ref: "#/components/schemas/PhaseType"
+        - name: "complianceType"
+          in: "query"
+          schema:
+            type: "string"
+            enum: ["phase_completion", "feedback_quality", "learning_effectiveness"]
+      responses:
+        '200':
+          description: "Compliance status"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ComplianceStatus"
+
+  /governance/violations:
+    get:
+      summary: "Get compliance violations"
+      description: "Retrieve any violations of the feedback loop governance"
+      operationId: "getComplianceViolations"
+      tags: ["Governance"]
+      security:
+        - api_key: []
+      parameters:
+        - name: "severity"
+          in: "query"
+          schema:
+            type: "string"
+            enum: ["low", "medium", "high", "critical"]
+        - name: "status"
+          in: "query"
+          schema:
+            type: "string"
+            enum: ["open", "resolved", "in_progress"]
+      responses:
+        '200':
+          description: "Compliance violations"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ComplianceViolations"
+
+  # Real-time Events and Signaling
+  /events/stream:
+    get:
+      summary: "Subscribe to real-time feedback events"
+      description: "Server-sent events stream for real-time feedback loop updates"
+      operationId: "subscribeToEvents"
+      tags: ["Events"]
+      security:
+        - api_key: []
+      parameters:
+        - name: "phases"
+          in: "query"
+          schema:
+            type: "array"
+            items:
+              $ref: "#/components/schemas/PhaseType"
+          style: "form"
+          explode: false
+        - name: "agentIds"
+          in: "query"
+          schema:
+            type: "array"
+            items:
+              type: "string"
+              format: "uuid"
+          style: "form"
+          explode: false
+      responses:
+        '200':
+          description: "Event stream"
+          content:
+            text/event-stream:
+              schema:
+                type: "string"
+
+  /events/signals:
+    post:
+      summary: "Send signal to feedback loop"
+      description: "Send a signal that can trigger phase transitions or updates"
+      operationId: "sendSignal"
+      tags: ["Events"]
+      security:
+        - api_key: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SignalMessage"
+      responses:
+        '202':
+          description: "Signal accepted for processing"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SignalResponse"
+
+components:
+  schemas:
+    PhaseType:
+      type: "string"
+      enum: ["plan", "execute", "critique", "judge", "integrate", "learn", "govern", "signal"]
+      description: "The 8 phases of the 360° feedback loop"
+
+    LifecyclePhases:
+      type: "object"
+      required: ["phases", "total", "description"]
+      properties:
+        phases:
+          type: "array"
+          items:
+            $ref: "#/components/schemas/LifecyclePhase"
+        total:
+          type: "integer"
+          example: 8
+        description:
+          type: "string"
+          example: "8-phase continuous feedback loop for agent optimization"
+        version:
+          type: "string"
+          example: "0.1.8"
+
+    LifecyclePhase:
+      type: "object"
+      required: ["name", "ordinal", "description", "inputs", "outputs"]
+      properties:
+        name:
+          $ref: "#/components/schemas/PhaseType"
+        ordinal:
+          type: "integer"
+          minimum: 1
+          maximum: 8
+        description:
+          type: "string"
+        inputs:
+          type: "array"
+          items:
+            type: "string"
+        outputs:
+          type: "array"
+          items:
+            type: "string"
+        dependencies:
+          type: "array"
+          items:
+            $ref: "#/components/schemas/PhaseType"
+        success_criteria:
+          type: "array"
+          items:
+            type: "string"
+        typical_duration:
+          type: "string"
+          example: "PT5M"
+          description: "ISO 8601 duration format"
+
+    AgentLifecycleState:
+      type: "object"
+      required: ["agentId", "currentPhase", "timestamp", "phaseHistory"]
+      properties:
+        agentId:
+          type: "string"
+          format: "uuid"
+        currentPhase:
+          $ref: "#/components/schemas/PhaseType"
+        phaseStartTime:
+          type: "string"
+          format: "date-time"
+        timestamp:
+          type: "string"
+          format: "date-time"
+        phaseHistory:
+          type: "array"
+          items:
+            $ref: "#/components/schemas/PhaseHistoryEntry"
+        nextPhase:
+          $ref: "#/components/schemas/PhaseType"
+        canTransition:
+          type: "boolean"
+        transitionBlockers:
+          type: "array"
+          items:
+            type: "string"
+
+    PhaseHistoryEntry:
+      type: "object"
+      required: ["phase", "startTime", "endTime", "duration", "outcome"]
+      properties:
+        phase:
+          $ref: "#/components/schemas/PhaseType"
+        startTime:
+          type: "string"
+          format: "date-time"
+        endTime:
+          type: "string"
+          format: "date-time"
+        duration:
+          type: "string"
+          example: "PT5M30S"
+        outcome:
+          type: "string"
+          enum: ["success", "partial", "failure", "skipped"]
+        feedback_summary:
+          type: "object"
+          properties:
+            positive_count:
+              type: "integer"
+            negative_count:
+              type: "integer"
+            average_rating:
+              type: "number"
+              minimum: 1
+              maximum: 5
+
+    PhaseTransitionRequest:
+      type: "object"
+      required: ["targetPhase"]
+      properties:
+        targetPhase:
+          $ref: "#/components/schemas/PhaseType"
+        reason:
+          type: "string"
+        metadata:
+          type: "object"
+          additionalProperties: true
+        skipValidation:
+          type: "boolean"
+          default: false
+
+    PhaseTransitionResponse:
+      type: "object"
+      required: ["success", "fromPhase", "toPhase", "timestamp"]
+      properties:
+        success:
+          type: "boolean"
+        fromPhase:
+          $ref: "#/components/schemas/PhaseType"
+        toPhase:
+          $ref: "#/components/schemas/PhaseType"
+        timestamp:
+          type: "string"
+          format: "date-time"
+        transitionId:
+          type: "string"
+          format: "uuid"
+        warnings:
+          type: "array"
+          items:
+            type: "string"
+
+    FeedbackSubmission:
+      type: "object"
+      required: ["agentId", "phase", "rating", "type"]
+      properties:
+        agentId:
+          type: "string"
+          format: "uuid"
+        phase:
+          $ref: "#/components/schemas/PhaseType"
+        rating:
+          type: "number"
+          minimum: 1
+          maximum: 5
+        type:
+          type: "string"
+          enum: ["performance", "quality", "efficiency", "collaboration", "learning"]
+        comment:
+          type: "string"
+          maxLength: 1000
+        tags:
+          type: "array"
+          items:
+            type: "string"
+        metadata:
+          type: "object"
+          additionalProperties: true
+        submittedBy:
+          type: "string"
+          description: "Agent or system that submitted the feedback"
+
+    FeedbackEntry:
+      allOf:
+        - $ref: "#/components/schemas/FeedbackSubmission"
+        - type: "object"
+          required: ["id", "timestamp", "processed"]
+          properties:
+            id:
+              type: "string"
+              format: "uuid"
+            timestamp:
+              type: "string"
+              format: "date-time"
+            processed:
+              type: "boolean"
+            processingResult:
+              type: "object"
+              properties:
+                impact_score:
+                  type: "number"
+                  minimum: 0
+                  maximum: 1
+                learning_value:
+                  type: "number"
+                  minimum: 0
+                  maximum: 1
+                actionable:
+                  type: "boolean"
+
+    FeedbackList:
+      type: "object"
+      required: ["entries", "total", "limit", "offset"]
+      properties:
+        entries:
+          type: "array"
+          items:
+            $ref: "#/components/schemas/FeedbackEntry"
+        total:
+          type: "integer"
+        limit:
+          type: "integer"
+        offset:
+          type: "integer"
+        aggregates:
+          type: "object"
+          properties:
+            average_rating:
+              type: "number"
+            by_phase:
+              type: "object"
+              additionalProperties:
+                type: "number"
+            by_type:
+              type: "object"
+              additionalProperties:
+                type: "number"
+
+    LearningInsights:
+      type: "object"
+      required: ["insights", "recommendations", "confidence", "timestamp"]
+      properties:
+        insights:
+          type: "array"
+          items:
+            $ref: "#/components/schemas/LearningInsight"
+        recommendations:
+          type: "array"
+          items:
+            $ref: "#/components/schemas/Recommendation"
+        confidence:
+          type: "number"
+          minimum: 0
+          maximum: 1
+        timestamp:
+          type: "string"
+          format: "date-time"
+        basedOnSamples:
+          type: "integer"
+          description: "Number of feedback samples used"
+
+    LearningInsight:
+      type: "object"
+      required: ["category", "description", "impact", "evidence"]
+      properties:
+        category:
+          type: "string"
+          enum: ["performance_trend", "quality_improvement", "efficiency_gain", "collaboration_pattern"]
+        description:
+          type: "string"
+        impact:
+          type: "string"
+          enum: ["low", "medium", "high", "critical"]
+        evidence:
+          type: "object"
+          properties:
+            sample_size:
+              type: "integer"
+            confidence_level:
+              type: "number"
+            supporting_data:
+              type: "array"
+              items:
+                type: "object"
+
+    Recommendation:
+      type: "object"
+      required: ["action", "priority", "estimatedImpact", "targetPhase"]
+      properties:
+        action:
+          type: "string"
+        priority:
+          type: "string"
+          enum: ["low", "medium", "high", "urgent"]
+        estimatedImpact:
+          type: "number"
+          minimum: 0
+          maximum: 1
+        targetPhase:
+          $ref: "#/components/schemas/PhaseType"
+        implementationCost:
+          type: "string"
+          enum: ["low", "medium", "high"]
+        expectedBenefit:
+          type: "string"
+
+    BehavioralPatterns:
+      type: "object"
+      required: ["patterns", "analysisWindow", "confidence", "timestamp"]
+      properties:
+        patterns:
+          type: "array"
+          items:
+            $ref: "#/components/schemas/BehavioralPattern"
+        analysisWindow:
+          type: "string"
+          example: "7d"
+        confidence:
+          type: "number"
+          minimum: 0
+          maximum: 1
+        timestamp:
+          type: "string"
+          format: "date-time"
+
+    BehavioralPattern:
+      type: "object"
+      required: ["type", "description", "frequency", "phases"]
+      properties:
+        type:
+          type: "string"
+          enum: ["phase_transition", "feedback_clustering", "learning_cycle", "collaboration_chain"]
+        description:
+          type: "string"
+        frequency:
+          type: "number"
+          description: "Occurrences per analysis window"
+        phases:
+          type: "array"
+          items:
+            $ref: "#/components/schemas/PhaseType"
+        agents:
+          type: "array"
+          items:
+            type: "string"
+            format: "uuid"
+        impact:
+          type: "string"
+          enum: ["positive", "neutral", "negative"]
+
+    ComplianceStatus:
+      type: "object"
+      required: ["overall", "byPhase", "timestamp", "checkedItems"]
+      properties:
+        overall:
+          type: "string"
+          enum: ["compliant", "partial", "non_compliant"]
+        byPhase:
+          type: "object"
+          additionalProperties:
+            type: "object"
+            properties:
+              status:
+                type: "string"
+                enum: ["compliant", "partial", "non_compliant"]
+              score:
+                type: "number"
+                minimum: 0
+                maximum: 100
+        timestamp:
+          type: "string"
+          format: "date-time"
+        checkedItems:
+          type: "integer"
+        violations:
+          type: "integer"
+
+    ComplianceViolations:
+      type: "object"
+      required: ["violations", "total", "summary"]
+      properties:
+        violations:
+          type: "array"
+          items:
+            $ref: "#/components/schemas/ComplianceViolation"
+        total:
+          type: "integer"
+        summary:
+          type: "object"
+          properties:
+            by_severity:
+              type: "object"
+              additionalProperties:
+                type: "integer"
+            by_phase:
+              type: "object"
+              additionalProperties:
+                type: "integer"
+            by_status:
+              type: "object"
+              additionalProperties:
+                type: "integer"
+
+    ComplianceViolation:
+      type: "object"
+      required: ["id", "type", "severity", "phase", "description", "detectedAt"]
+      properties:
+        id:
+          type: "string"
+          format: "uuid"
+        type:
+          type: "string"
+          enum: ["phase_skip", "incomplete_feedback", "invalid_transition", "missing_learning"]
+        severity:
+          type: "string"
+          enum: ["low", "medium", "high", "critical"]
+        phase:
+          $ref: "#/components/schemas/PhaseType"
+        agentId:
+          type: "string"
+          format: "uuid"
+        description:
+          type: "string"
+        detectedAt:
+          type: "string"
+          format: "date-time"
+        status:
+          type: "string"
+          enum: ["open", "resolved", "in_progress", "false_positive"]
+        resolution:
+          type: "string"
+        resolvedAt:
+          type: "string"
+          format: "date-time"
+
+    SignalMessage:
+      type: "object"
+      required: ["type", "source", "payload"]
+      properties:
+        type:
+          type: "string"
+          enum: ["phase_trigger", "emergency_stop", "learning_update", "governance_alert"]
+        source:
+          type: "string"
+          description: "Agent or system sending the signal"
+        targetAgents:
+          type: "array"
+          items:
+            type: "string"
+            format: "uuid"
+        targetPhases:
+          type: "array"
+          items:
+            $ref: "#/components/schemas/PhaseType"
+        payload:
+          type: "object"
+          additionalProperties: true
+        priority:
+          type: "string"
+          enum: ["low", "normal", "high", "urgent"]
+          default: "normal"
+
+    SignalResponse:
+      type: "object"
+      required: ["signalId", "accepted", "timestamp"]
+      properties:
+        signalId:
+          type: "string"
+          format: "uuid"
+        accepted:
+          type: "boolean"
+        timestamp:
+          type: "string"
+          format: "date-time"
+        estimatedProcessingTime:
+          type: "string"
+          example: "PT30S"
+        affectedAgents:
+          type: "array"
+          items:
+            type: "string"
+            format: "uuid"
+
+  responses:
+    BadRequest:
+      description: "Bad request"
+      content:
+        application/json:
+          schema:
+            type: "object"
+            properties:
+              error:
+                type: "string"
+              details:
+                type: "object"
+              phase:
+                $ref: "#/components/schemas/PhaseType"
+
+    NotFound:
+      description: "Resource not found"
+      content:
+        application/json:
+          schema:
+            type: "object"
+            properties:
+              error:
+                type: "string"
+              resource:
+                type: "string"
+
+  securitySchemes:
+    api_key:
+      type: "apiKey"
+      in: "header"
+      name: "X-OSSA-API-Key"
+      description: "API key for authenticated endpoints"
+
+    bearer:
+      type: "http"
+      scheme: "bearer"
+      bearerFormat: "JWT"
+
+security:
+  - api_key: []
+  - bearer: []
+
+tags:
+  - name: "Lifecycle"
+    description: "8-phase lifecycle management"
+  - name: "Agents"
+    description: "Agent lifecycle state management"
+  - name: "Feedback"
+    description: "Feedback collection and analysis"
+  - name: "Learning"
+    description: "Cross-phase learning and optimization"
+  - name: "Governance"
+    description: "Compliance and governance monitoring"
+  - name: "Events"
+    description: "Real-time events and signaling"
+
+x-ossa-feedback-loop-extensions:
+  phase_validation:
+    enabled: true
+    strict_mode: false
+    auto_transition: true
+  learning_algorithms:
+    - "pattern_recognition"
+    - "trend_analysis"
+    - "behavioral_clustering"
+  governance_policies:
+    - "phase_completion_required"
+    - "feedback_quality_threshold"
+    - "learning_effectiveness_minimum"

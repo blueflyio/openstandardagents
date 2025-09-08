@@ -1,28 +1,25 @@
 version: '3.8'
 
 services:
-  # OSSA All-in-One Service
-  ossa:
-    container_name: ossa
-    image: ossa:latest
+  # OSSA Gateway Service - Main API Gateway
+  ossa-gateway:
+    container_name: ossa-gateway
+    image: ossa:gateway
     build:
       context: ../..
-      dockerfile: infrastructure/docker/Dockerfile.ossa
+      dockerfile: infrastructure/docker/Dockerfile.gateway
     environment:
       - NODE_ENV=development
       - SERVICE_PORT=3000
       - REDIS_URL=redis://redis:6379
       - POSTGRES_URL=postgresql://ossa:ossa_dev_password@postgres:5432/ossa
+      - QDRANT_URL=http://qdrant:6333
     ports:
-      - "3000:3000"   # Gateway
-      - "3010:3010"   # Coordination
-      - "3011:3011"   # Discovery
-      - "3012:3012"   # Orchestration
-      - "3013:3013"   # Monitoring
-      - "9090:9090"   # Prometheus metrics
+      - "3000:3000"   # Main Gateway API
     depends_on:
       - redis
       - postgres
+      - qdrant
     networks:
       - ossa-network
     healthcheck:
@@ -32,7 +29,108 @@ services:
       retries: 3
       start_period: 40s
 
-  # Redis for coordination service
+  # OSSA Task Agent Service
+  ossa-task-agent:
+    container_name: ossa-task-agent
+    image: ossa:task-agent
+    build:
+      context: ../..
+      dockerfile: infrastructure/docker/Dockerfile.task-agent
+    environment:
+      - NODE_ENV=development
+      - SERVICE_PORT=3001
+      - AGENT_TYPE=task
+      - REDIS_URL=redis://redis:6379
+      - POSTGRES_URL=postgresql://ossa:ossa_dev_password@postgres:5432/ossa
+      - GATEWAY_URL=http://ossa-gateway:3000
+    ports:
+      - "3001:3001"
+    depends_on:
+      - ossa-gateway
+      - redis
+    networks:
+      - ossa-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # OSSA Communication Agent Service
+  ossa-comm-agent:
+    container_name: ossa-comm-agent
+    image: ossa:comm-agent
+    build:
+      context: ../..
+      dockerfile: infrastructure/docker/Dockerfile.comm-agent
+    environment:
+      - NODE_ENV=development
+      - SERVICE_PORT=3002
+      - AGENT_TYPE=communication
+      - REDIS_URL=redis://redis:6379
+      - POSTGRES_URL=postgresql://ossa:ossa_dev_password@postgres:5432/ossa
+      - GATEWAY_URL=http://ossa-gateway:3000
+    ports:
+      - "3002:3002"
+    depends_on:
+      - ossa-gateway
+      - redis
+    networks:
+      - ossa-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3002/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # OSSA MCP Bridge Agent Service
+  ossa-mcp-agent:
+    container_name: ossa-mcp-agent
+    image: ossa:mcp-agent
+    build:
+      context: ../..
+      dockerfile: infrastructure/docker/Dockerfile.mcp-agent
+    environment:
+      - NODE_ENV=development
+      - SERVICE_PORT=3003
+      - AGENT_TYPE=mcp
+      - REDIS_URL=redis://redis:6379
+      - POSTGRES_URL=postgresql://ossa:ossa_dev_password@postgres:5432/ossa
+      - GATEWAY_URL=http://ossa-gateway:3000
+    ports:
+      - "3003:3003"
+    depends_on:
+      - ossa-gateway
+      - redis
+    networks:
+      - ossa-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3003/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Qdrant Vector Database
+  qdrant:
+    container_name: ossa-qdrant
+    image: qdrant/qdrant:latest
+    environment:
+      - QDRANT__SERVICE__HTTP_PORT=6333
+      - QDRANT__SERVICE__GRPC_PORT=6334
+    ports:
+      - "6333:6333"   # HTTP API
+      - "6334:6334"   # gRPC API
+    volumes:
+      - qdrant-data:/qdrant/storage
+    networks:
+      - ossa-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:6333/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Redis for coordination service and caching
   redis:
     container_name: ossa-redis
     image: redis:7-alpine
@@ -42,6 +140,11 @@ services:
       - redis-data:/data
     networks:
       - ossa-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
   # PostgreSQL for persistent storage
   postgres:
@@ -55,8 +158,121 @@ services:
       - "5432:5432"
     volumes:
       - postgres-data:/var/lib/postgresql/data
+      - ../../sql:/docker-entrypoint-initdb.d
     networks:
       - ossa-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ossa"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # OSSA Coordination Service
+  ossa-coordination:
+    container_name: ossa-coordination
+    image: ossa:coordination
+    build:
+      context: ../..
+      dockerfile: infrastructure/docker/Dockerfile.coordination
+    environment:
+      - NODE_ENV=development
+      - SERVICE_PORT=3010
+      - REDIS_URL=redis://redis:6379
+      - POSTGRES_URL=postgresql://ossa:ossa_dev_password@postgres:5432/ossa
+      - GATEWAY_URL=http://ossa-gateway:3000
+    ports:
+      - "3010:3010"
+    depends_on:
+      - ossa-gateway
+      - redis
+    networks:
+      - ossa-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3010/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # OSSA Discovery Service
+  ossa-discovery:
+    container_name: ossa-discovery
+    image: ossa:discovery
+    build:
+      context: ../..
+      dockerfile: infrastructure/docker/Dockerfile.discovery
+    environment:
+      - NODE_ENV=development
+      - SERVICE_PORT=3011
+      - REDIS_URL=redis://redis:6379
+      - POSTGRES_URL=postgresql://ossa:ossa_dev_password@postgres:5432/ossa
+      - GATEWAY_URL=http://ossa-gateway:3000
+      - QDRANT_URL=http://qdrant:6333
+    ports:
+      - "3011:3011"
+    depends_on:
+      - ossa-gateway
+      - redis
+      - qdrant
+    networks:
+      - ossa-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3011/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # OSSA Orchestration Service
+  ossa-orchestration:
+    container_name: ossa-orchestration
+    image: ossa:orchestration
+    build:
+      context: ../..
+      dockerfile: infrastructure/docker/Dockerfile.orchestration
+    environment:
+      - NODE_ENV=development
+      - SERVICE_PORT=3012
+      - REDIS_URL=redis://redis:6379
+      - POSTGRES_URL=postgresql://ossa:ossa_dev_password@postgres:5432/ossa
+      - GATEWAY_URL=http://ossa-gateway:3000
+    ports:
+      - "3012:3012"
+    depends_on:
+      - ossa-gateway
+      - redis
+    networks:
+      - ossa-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3012/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # OSSA Monitoring Service
+  ossa-monitoring:
+    container_name: ossa-monitoring
+    image: ossa:monitoring
+    build:
+      context: ../..
+      dockerfile: infrastructure/docker/Dockerfile.monitoring
+    environment:
+      - NODE_ENV=development
+      - SERVICE_PORT=3013
+      - REDIS_URL=redis://redis:6379
+      - POSTGRES_URL=postgresql://ossa:ossa_dev_password@postgres:5432/ossa
+      - GATEWAY_URL=http://ossa-gateway:3000
+    ports:
+      - "3013:3013"
+      - "9090:9090"   # Prometheus metrics
+    depends_on:
+      - ossa-gateway
+      - redis
+    networks:
+      - ossa-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3013/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
   # Monitoring Stack - Prometheus, Grafana, AlertManager
   prometheus:
@@ -140,6 +356,7 @@ networks:
     driver: bridge
 
 volumes:
+  qdrant-data:
   redis-data:
   postgres-data:
   prometheus-data:

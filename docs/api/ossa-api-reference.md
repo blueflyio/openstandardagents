@@ -1,201 +1,425 @@
-# OpenAPI AI Agents Standard - API Reference
+# OSSA Platform API Reference v0.1.8
 
 ## Overview
 
-The OpenAPI AI Agents Standard (OAAS) provides a comprehensive API for agent validation, compliance checking, and token estimation. This API integrates with TDDAI for enhanced development workflows.
+The Open Standards for Scalable Agents (OSSA) v0.1.8 provides a comprehensive platform API for agent registration, discovery, orchestration, and management. This API includes GraphQL endpoints, UADP-compatible discovery, and enterprise features with ISO 42001 and NIST AI RMF compliance.
 
-## Base URL
+## Base URLs
 
 ```
-http://localhost:3003/api/v1
+# Production
+https://api.llm.bluefly.io/ossa/v1
+
+# Development  
+http://localhost:4000/api/v1
+
+# Docker Gateway
+http://localhost:3000/api
 ```
 
 ## Authentication
 
-All API requests require an API key in the header:
+The OSSA Platform API supports multiple authentication methods:
 
+### API Key Authentication
 ```bash
 X-API-Key: your-api-key
 ```
 
-For development, use: `dev-key`
+### Bearer Token Authentication
+```bash
+Authorization: Bearer <jwt-token>
+```
 
-## Endpoints
+### Development Keys
+- **Development**: `dev-key`
+- **Testing**: `test-key`
+- **Local Gateway**: No authentication required
 
-### Health Check
+## Core Platform Endpoints
+
+### Platform Health
 
 **GET** `/health`
 
-Check the health status of the OAAS validation API.
+OSSA v0.1.8 compliant health check with detailed service status.
 
 **Response:**
 ```json
 {
   "status": "healthy",
-  "timestamp": "2025-08-26T06:00:00Z",
-  "version": "0.1.0",
-  "uptime": 3600,
+  "version": "0.1.8",
+  "ossa_version": "0.1.8",
+  "uptime": 99.95,
   "services": {
-    "database": "connected",
-    "storage": "available",
-    "validation": "operational"
+    "agent_registry": "healthy",
+    "discovery_engine": "healthy",
+    "graphql_api": "healthy",
+    "orchestration": "healthy",
+    "monitoring": "healthy"
   },
-  "metrics": {
-    "requests_total": 150,
-    "requests_successful": 145,
-    "requests_failed": 5,
-    "average_response_time_ms": 25
-  }
+  "timestamp": "2025-01-26T10:00:00Z"
 }
 ```
 
-### OpenAPI Validation
+### Version Information
 
-**POST** `/validate/openapi`
+**GET** `/version`
 
-Validate an OpenAPI specification against the AI Agents Standard.
+Get detailed platform version information.
+
+**Response:**
+```json
+{
+  "api": "0.1.8",
+  "ossa": "0.1.8", 
+  "platform": "0.1.8+rev2",
+  "build": "20250126-1000",
+  "commit": "a1b2c3d"
+}
+```
+
+## Agent Registry API
+
+### List Agents
+
+**GET** `/agents`
+
+Get all registered agents with filtering and pagination.
+
+**Query Parameters:**
+- `limit` (integer, 1-100, default: 20) - Results per page
+- `offset` (integer, default: 0) - Pagination offset  
+- `class` (string) - Filter by agent class: general, specialist, workflow, integration
+- `tier` (string) - Filter by conformance tier: core, governed, advanced
+
+**Response:**
+```json
+{
+  "agents": [
+    {
+      "id": "550e8400-e29b-41d4-a716-446655440000",
+      "name": "example-agent",
+      "version": "1.0.0",
+      "description": "Example OSSA v0.1.8 agent",
+      "spec": {
+        "conformance_tier": "advanced",
+        "class": "specialist",
+        "category": "assistant",
+        "capabilities": {
+          "primary": ["analysis", "reporting"],
+          "secondary": ["optimization"]
+        },
+        "protocols": [
+          {
+            "name": "openapi",
+            "version": "3.1.0",
+            "required": true,
+            "extensions": ["x-ossa-advanced"]
+          }
+        ],
+        "endpoints": {
+          "health": "/health",
+          "capabilities": "/capabilities",
+          "discover": "/discover"
+        }
+      },
+      "status": {
+        "health": "healthy",
+        "last_seen": "2025-01-26T10:00:00Z",
+        "metrics": {
+          "requests_per_minute": 45.2,
+          "average_response_time": 120.5,
+          "error_rate": 0.01
+        }
+      },
+      "registered_at": "2025-01-26T09:00:00Z",
+      "updated_at": "2025-01-26T09:30:00Z"
+    }
+  ],
+  "total": 1,
+  "limit": 20,
+  "offset": 0
+}
+```
+
+### Register Agent
+
+**POST** `/agents`
+
+Register a new OSSA v0.1.8 compliant agent.
 
 **Request Body:**
 ```json
 {
+  "name": "my-agent",
+  "version": "1.0.0",
+  "description": "My OSSA agent",
+  "endpoint": "http://localhost:3000",
   "spec": {
-    "openapi": "3.1.0",
-    "info": {
-      "title": "My API",
-      "version": "1.0.0"
+    "conformance_tier": "advanced",
+    "class": "specialist", 
+    "category": "assistant",
+    "capabilities": {
+      "primary": ["analysis", "reporting"],
+      "secondary": ["optimization"]
     },
-    "paths": {
-      "/health": {
-        "get": {
-          "responses": {
-            "200": {
-              "description": "OK"
-            }
-          }
-        }
+    "protocols": [
+      {
+        "name": "openapi",
+        "version": "3.1.0",
+        "required": true
+      }
+    ],
+    "endpoints": {
+      "health": "/health",
+      "capabilities": "/capabilities"
+    }
+  }
+}
+```
+
+**Response (201 Created):**
+```json
+{
+  "id": "550e8400-e29b-41d4-a716-446655440000",
+  "name": "my-agent",
+  "version": "1.0.0",
+  "status": {
+    "health": "unknown",
+    "last_seen": null
+  },
+  "registered_at": "2025-01-26T10:00:00Z"
+}
+```
+
+### Get Agent Details
+
+**GET** `/agents/{agentId}`
+
+Get detailed information about a specific agent.
+
+**Response:**
+```json
+{
+  "id": "550e8400-e29b-41d4-a716-446655440000",
+  "name": "example-agent",
+  "version": "1.0.0",
+  "spec": {
+    "conformance_tier": "advanced",
+    "class": "specialist"
+  },
+  "status": {
+    "health": "healthy",
+    "last_seen": "2025-01-26T10:00:00Z"
+  }
+}
+```
+
+### Update Agent
+
+**PUT** `/agents/{agentId}`
+
+Update an existing agent registration.
+
+**Request Body:**
+```json
+{
+  "version": "1.0.1",
+  "description": "Updated description",
+  "endpoint": "http://localhost:3001"
+}
+```
+
+### Unregister Agent
+
+**DELETE** `/agents/{agentId}`
+
+Remove an agent from the registry.
+
+**Response:** `204 No Content`
+
+## Universal Agent Discovery Protocol (UADP)
+
+### Discover Agents
+
+**GET** `/discover`
+
+UADP-compatible agent discovery by capabilities.
+
+**Query Parameters:**
+- `capabilities` (array) - Required capabilities
+- `domain` (string) - Target domain
+- `tier` (string) - Conformance tier filter
+
+**Example:**
+```
+GET /discover?capabilities=analysis,reporting&domain=finance&tier=advanced
+```
+
+**Response:**
+```json
+{
+  "agents": [
+    {
+      "id": "550e8400-e29b-41d4-a716-446655440000",
+      "name": "finance-analyst",
+      "capabilities": ["analysis", "reporting", "risk_assessment"],
+      "endpoints": {
+        "health": "http://localhost:3000/health",
+        "capabilities": "http://localhost:3000/capabilities"
       }
     }
-  }
-}
-```
-
-**Response:**
-```json
-{
-  "valid": true,
-  "errors": [],
-  "warnings": [
-    "API should have a description"
   ],
-  "compliance": {
-    "oaas_level": "bronze",
-    "missing_features": [
-      "schemas",
-      "security_schemes"
-    ],
-    "recommendations": [
-      "Add schemas to components for silver level",
-      "Define security schemes for better compliance"
-    ]
+  "query": {
+    "capabilities": ["analysis", "reporting"],
+    "domain": "finance",
+    "tier": "advanced"
   },
-  "metrics": {
-    "endpoints_count": 1,
-    "schemas_count": 0,
-    "security_schemes_count": 0,
-    "complexity_score": 2
-  }
+  "total": 1
 }
 ```
 
-### Compliance Validation
+## GraphQL API
 
-**POST** `/validate/compliance`
+### GraphQL Endpoint
 
-Validate agent compliance with governance frameworks.
+**POST** `/graphql`
+
+Execute GraphQL queries, mutations, and subscriptions.
 
 **Request Body:**
 ```json
 {
-  "agent": {
-    "name": "my-agent",
-    "version": "1.0.0",
-    "governance": true,
-    "monitoring": true,
-    "risk_management": true,
-    "documentation": true
-  },
-  "frameworks": ["iso-42001", "nist-ai-rmf", "eu-ai-act"]
+  "query": "query GetAgents { agents { id name version status { health } } }",
+  "variables": {},
+  "operationName": "GetAgents"
 }
 ```
 
 **Response:**
 ```json
 {
-  "compliant": true,
-  "frameworks": {
-    "iso-42001": {
-      "compliant": true,
-      "score": 100,
-      "issues": [],
-      "recommendations": []
-    },
-    "nist-ai-rmf": {
-      "compliant": true,
-      "score": 100,
-      "issues": [],
-      "recommendations": []
-    },
-    "eu-ai-act": {
-      "compliant": true,
-      "score": 100,
-      "issues": [],
-      "recommendations": []
+  "data": {
+    "agents": [
+      {
+        "id": "550e8400-e29b-41d4-a716-446655440000",
+        "name": "example-agent", 
+        "version": "1.0.0",
+        "status": {
+          "health": "healthy"
+        }
+      }
+    ]
+  }
+}
+```
+
+### GraphQL Schema Example
+
+```graphql
+type Agent {
+  id: ID!
+  name: String!
+  version: String!
+  spec: AgentSpec!
+  status: AgentStatus!
+  registeredAt: DateTime!
+}
+
+type AgentSpec {
+  conformanceTier: ConformanceTier!
+  class: AgentClass!
+  capabilities: Capabilities!
+  protocols: [Protocol!]!
+}
+
+type Query {
+  agents(limit: Int, offset: Int): [Agent!]!
+  agent(id: ID!): Agent
+  discoverAgents(capabilities: [String!]): [Agent!]!
+}
+
+type Mutation {
+  registerAgent(input: AgentRegistrationInput!): Agent!
+  updateAgent(id: ID!, input: AgentUpdateInput!): Agent!
+  unregisterAgent(id: ID!): Boolean!
+}
+
+type Subscription {
+  agentStatusChanged(id: ID): Agent!
+  agentRegistered: Agent!
+}
+```
+
+## Platform Analytics
+
+### Get Metrics
+
+**GET** `/metrics`
+
+Get comprehensive platform analytics and metrics.
+
+**Query Parameters:**
+- `timeframe` (string) - Time period: 1h, 6h, 24h, 7d, 30d (default: 24h)
+
+**Response:**
+```json
+{
+  "timestamp": "2025-01-26T10:00:00Z",
+  "timeframe": "24h",
+  "agents": {
+    "total": 150,
+    "active": 142,
+    "by_tier": {
+      "core": 45,
+      "governed": 67,
+      "advanced": 38
     }
   },
-  "overall_score": 100,
-  "recommendations": [
-    "Implement comprehensive AI governance framework",
-    "Establish regular compliance monitoring and auditing"
+  "requests": {
+    "total": 12500,
+    "success_rate": 99.2,
+    "average_response_time": 125.4
+  },
+  "errors": [
+    {
+      "code": "AGENT_UNREACHABLE",
+      "message": "Agent health check failed",
+      "count": 23
+    }
   ]
 }
 ```
 
-### Token Estimation
+## CLI Integration
 
-**POST** `/estimate/tokens`
+### OSSA CLI Commands
 
-Estimate token usage and costs for text processing.
+The OSSA v0.1.8 CLI provides comprehensive API integration:
 
-**Request Body:**
-```json
-{
-  "text": "This is a sample text for token estimation.",
-  "model": "gpt-4"
-}
-```
+```bash
+# Agent Management
+ossa create my-agent --tier=advanced --domain=finance
+ossa validate ./my-agent
+ossa list --format=table
+ossa upgrade ./my-agent
 
-**Response:**
-```json
-{
-  "text": "This is a sample text for token estimation.",
-  "model": "gpt-4",
-  "estimated_tokens": 12,
-  "estimated_cost_usd": 0.00036,
-  "breakdown": {
-    "input_tokens": 10,
-    "output_tokens": 2,
-    "total_tokens": 12
-  },
-  "pricing": {
-    "input_cost_per_1k": 0.03,
-    "output_cost_per_1k": 0.06,
-    "currency": "USD"
-  },
-  "recommendations": [
-    "Low token count - you may be able to batch multiple requests",
-    "Monitor token usage regularly to optimize costs"
-  ]
-}
+# Discovery
+ossa discovery init
+ossa discovery register ./my-agent  
+ossa discovery find --capabilities=analysis
+ossa discovery health
+
+# Services
+ossa services start
+ossa services status
+ossa services stop
+
+# API Operations
+ossa api agents list
+ossa api agents create my-agent
+ossa api discover --capabilities=analysis,reporting
 ```
 
 ## Error Responses
@@ -204,145 +428,157 @@ All endpoints return consistent error responses:
 
 ```json
 {
-  "error": "Error type",
-  "message": "Detailed error message",
-  "code": "ERROR_CODE"
+  "error": "Bad Request",
+  "details": {
+    "field": "capabilities",
+    "message": "At least one capability is required"
+  }
 }
 ```
 
-**Common Error Codes:**
-- `400` - Bad Request (missing required fields)
-- `401` - Unauthorized (invalid API key)
-- `404` - Not Found (endpoint not found)
+**HTTP Status Codes:**
+- `200` - Success
+- `201` - Created
+- `204` - No Content
+- `400` - Bad Request
+- `401` - Unauthorized
+- `404` - Not Found
+- `409` - Conflict (agent already exists)
 - `500` - Internal Server Error
 
-## TDDAI Integration
+## Rate Limiting
 
-### Using TDDAI CLI
+- **Default**: 1000 requests per hour
+- **Burst**: 100 requests per minute
+- **GraphQL**: 50 queries per minute
+- **Discovery**: 200 requests per hour
 
-```bash
-# Health check
-tddai agents health --api-url=http://localhost:3003/api/v1
-
-# OpenAPI validation
-tddai agents validate-openapi --api-url=http://localhost:3003/api/v1 openapi.yaml
-
-# Compliance validation
-tddai agents validate-compliance --api-url=http://localhost:3003/api/v1 --frameworks=iso-42001,nist-ai-rmf
-
-# Token estimation
-tddai agents estimate-tokens --api-url=http://localhost:3003/api/v1 "Sample text for estimation"
+**Rate limit headers:**
+```
+X-RateLimit-Limit: 1000
+X-RateLimit-Remaining: 999
+X-RateLimit-Reset: 1640995200
 ```
 
-### API Gateway Management
+## Compliance Features
 
-```bash
-# Create and configure API gateway
-tddai integration api-gateway --create oaas-validation-api
-tddai integration api-gateway --configure oaas-validation-api
-tddai integration api-gateway --monitor
-```
+### Enterprise Compliance
 
-## Compliance Frameworks
+OSSA v0.1.8 includes enterprise-grade compliance features:
 
-### ISO 42001: AI Management System
-- Risk management framework
-- Governance policies
-- Monitoring capabilities
-- Documentation requirements
+- **ISO 42001:2023** - AI Management Systems
+- **NIST AI RMF 1.0** - AI Risk Management Framework
+- **EU AI Act 2024** - European AI regulation compliance
+- **SOC 2 Type II** - Security compliance controls
 
-### NIST AI Risk Management Framework
-- Governance implementation
-- AI system mapping
-- Performance measurement
-- Risk management processes
-- Continuous improvement
+### Audit Trail
 
-### EU AI Act
-- Risk assessment
-- Transparency measures
-- Human oversight
-- Data governance
+All API operations are logged with:
+- Request/response details
+- User authentication context  
+- Timestamp and duration
+- Compliance framework validation
 
-## Rate Limits
+## Performance Targets
 
-- **Default**: 100 requests per hour
-- **Burst**: 10 requests per minute
-- **Headers**: Rate limit information included in response headers
+- **Agent Discovery**: <50ms for 1000+ agents
+- **API Response Time**: <100ms (95th percentile)
+- **Availability**: 99.9% uptime SLA
+- **Error Rate**: <0.1% threshold
 
-## Monitoring
+## Docker Deployment
 
-### Health Checks
-- **Endpoint**: `/health`
-- **Interval**: 30 seconds
-- **Timeout**: 10 seconds
-- **Retries**: 3
+### Docker Compose Configuration
 
-### Metrics
-- Request count and success rate
-- Average response time
-- Error rates by endpoint
-- Compliance validation statistics
-
-## Deployment
-
-### Docker
-```bash
-# Build and run
-docker build -t oaas-validation-api .
-docker run -p 3003:3003 oaas-validation-api
-```
-
-### Docker Compose
 ```yaml
+version: '3.8'
+
 services:
-  oaas-validation-api:
-    build: ./services/validation-api
+  ossa-platform:
+    image: ossa/platform:0.1.8
     ports:
-      - "3003:3003"
+      - "4000:4000"
     environment:
       - NODE_ENV=production
-      - PORT=3003
+      - OSSA_VERSION=0.1.8
+      - DATABASE_URL=postgresql://user:pass@db:5432/ossa
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:3003/api/v1/health || exit 1"]
+      test: ["CMD-SHELL", "curl -f http://localhost:4000/api/v1/health || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 3
+      start_period: 60s
+
+  ossa-gateway:
+    image: ossa/gateway:0.1.8  
+    ports:
+      - "3000:3000"
+    environment:
+      - OSSA_PLATFORM_URL=http://ossa-platform:4000
+    depends_on:
+      - ossa-platform
 ```
+
+## OpenAPI Specification
+
+The complete OpenAPI 3.1 specification is available at:
+- **Production**: https://api.llm.bluefly.io/ossa/v1/openapi.json
+- **Development**: http://localhost:4000/api/v1/openapi.json
+- **Repository**: [src/api/openapi.yaml](../../src/api/openapi.yaml)
 
 ## Examples
 
-### Complete Workflow Example
+### Complete Agent Registration Flow
 
 ```bash
-# 1. Check API health
-curl -H "X-API-Key: dev-key" http://localhost:3003/api/v1/health
+# 1. Check platform health
+curl -H "X-API-Key: dev-key" http://localhost:4000/api/v1/health
 
-# 2. Validate OpenAPI spec
+# 2. Register new agent
 curl -X POST \
   -H "Content-Type: application/json" \
   -H "X-API-Key: dev-key" \
-  -d '{"spec": {"openapi": "3.1.0", "info": {"title": "Test API", "version": "1.0.0"}, "paths": {}}}' \
-  http://localhost:3003/api/v1/validate/openapi
+  -d '{
+    "name": "analytics-agent",
+    "version": "1.0.0",
+    "endpoint": "http://localhost:3001",
+    "spec": {
+      "conformance_tier": "advanced",
+      "class": "specialist",
+      "capabilities": {
+        "primary": ["data_analysis", "reporting"]
+      },
+      "protocols": [
+        {"name": "openapi", "version": "3.1.0", "required": true}
+      ]
+    }
+  }' \
+  http://localhost:4000/api/v1/agents
 
-# 3. Check compliance
+# 3. Discover similar agents  
+curl -H "X-API-Key: dev-key" \
+  "http://localhost:4000/api/v1/discover?capabilities=data_analysis,reporting"
+
+# 4. Get agent metrics
+curl -H "X-API-Key: dev-key" \
+  http://localhost:4000/api/v1/metrics?timeframe=1h
+```
+
+### GraphQL Query Example
+
+```bash
 curl -X POST \
   -H "Content-Type: application/json" \
   -H "X-API-Key: dev-key" \
-  -d '{"agent": {"governance": true, "monitoring": true}, "frameworks": ["iso-42001"]}' \
-  http://localhost:3003/api/v1/validate/compliance
-
-# 4. Estimate tokens
-curl -X POST \
-  -H "Content-Type: application/json" \
-  -H "X-API-Key: dev-key" \
-  -d '{"text": "Sample text", "model": "gpt-4"}' \
-  http://localhost:3003/api/v1/estimate/tokens
+  -d '{
+    "query": "query { agents(limit: 5) { id name version spec { conformanceTier class } status { health } } }"
+  }' \
+  http://localhost:4000/api/v1/graphql
 ```
 
 ## Support
 
-For issues and questions:
-- **Documentation**: [TDDAI Integration](tddai-integration.md)
-- **ROADMAP**: [Implementation Plan](ROADMAP.md)
-- **Workspace Discovery**: [Discovery Script](../scripts/workspace-discovery.js)
+- **Documentation**: [OSSA Documentation](../README.md)
+- **CLI Reference**: [CLI Usage Guide](../reference/cli/CLI_USAGE.md)
+- **Migration Guide**: [v0.1.1 to v0.1.8 Migration](../MIGRATION_GUIDE.md)
+- **GitHub Issues**: [OSSA Issues](https://github.com/bluefly-ai/ossa-standard/issues)

@@ -1,0 +1,100 @@
+{{- if .Values.services.gateway.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "ossa.fullname" . }}-gateway
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "ossa.serviceLabels" (dict "component" "gateway" "Chart" .Chart "Release" .Release "Values" .Values) | nindent 4 }}
+  annotations:
+    ossa.io/uptime-target: {{ .Values.ossa.uptime.target | quote }}
+spec:
+  {{- $replicaCount := .Values.services.gateway.replicaCount }}
+  {{- if eq .Values.global.environment "production" }}
+  {{- $replicaCount = .Values.environments.production.replicaCount }}
+  {{- else if eq .Values.global.environment "staging" }}
+  {{- $replicaCount = .Values.environments.staging.replicaCount }}
+  {{- else if eq .Values.global.environment "dev" }}
+  {{- $replicaCount = .Values.environments.dev.replicaCount }}
+  {{- end }}
+  replicas: {{ $replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "ossa.selectorLabels" . | nindent 6 }}
+      ossa.io/component: "gateway"
+  template:
+    metadata:
+      labels:
+        {{- include "ossa.serviceLabels" (dict "component" "gateway" "Chart" .Chart "Release" .Release "Values" .Values) | nindent 8 }}
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/configmaps/ossa-config.yaml") . | sha256sum }}
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "3000"
+        prometheus.io/path: "/metrics"
+    spec:
+      {{- include "ossa.imagePullSecrets" . | nindent 6 }}
+      serviceAccountName: {{ include "ossa.serviceAccountName" . }}
+      {{- include "ossa.podSecurityContext" . | nindent 6 }}
+      {{- if .Values.highAvailability.enabled }}
+      affinity:
+        {{- include "ossa.antiAffinity" (dict "component" "gateway" "Values" .Values "Chart" .Chart "Release" .Release) | nindent 8 }}
+        {{- include "ossa.multiZoneAffinity" . | nindent 8 }}
+      {{- end }}
+      containers:
+      - name: gateway
+        image: "{{ .Values.images.gateway.repository }}:{{ .Values.images.gateway.tag }}"
+        imagePullPolicy: {{ .Values.images.pullPolicy }}
+        {{- include "ossa.securityContext" . | nindent 8 }}
+        ports:
+        - name: http
+          containerPort: 3000
+          protocol: TCP
+        - name: metrics
+          containerPort: 9090
+          protocol: TCP
+        env:
+        {{- include "ossa.commonEnv" . | nindent 8 }}
+        - name: SERVICE_PORT
+          value: "3000"
+        {{- with .Values.services.gateway.env }}
+        {{- range $key, $value := . }}
+        - name: {{ $key }}
+          value: {{ $value | quote }}
+        {{- end }}
+        {{- end }}
+        envFrom:
+        - configMapRef:
+            name: {{ include "ossa.fullname" . }}-config
+        livenessProbe:
+          {{- toYaml .Values.services.gateway.livenessProbe | nindent 10 }}
+        readinessProbe:
+          {{- toYaml .Values.services.gateway.readinessProbe | nindent 10 }}
+        resources:
+          {{- $resources := .Values.services.gateway.resources }}
+          {{- if eq .Values.global.environment "production" }}
+          {{- $resources = .Values.environments.production.resources }}
+          {{- else if eq .Values.global.environment "staging" }}
+          {{- $resources = .Values.environments.staging.resources }}
+          {{- else if eq .Values.global.environment "dev" }}
+          {{- $resources = .Values.environments.dev.resources }}
+          {{- end }}
+          {{- toYaml $resources | nindent 10 }}
+        volumeMounts:
+        - name: tmp
+          mountPath: /tmp
+        - name: cache
+          mountPath: /app/cache
+      volumes:
+      - name: tmp
+        emptyDir: {}
+      - name: cache
+        emptyDir: {}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+{{- end }}

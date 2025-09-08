@@ -1,0 +1,1056 @@
+# OSSA v0.1.8 GraphQL Input Types
+# Input type definitions for mutations and complex queries
+
+# Generic Input Types
+input TimeRangeInput {
+  start: DateTime!
+  end: DateTime!
+}
+
+input FilterInput {
+  field: String!
+  operator: FilterOperator!
+  value: JSON!
+  caseSensitive: Boolean = false
+}
+
+input SortCriteriaInput {
+  field: String!
+  order: SortOrder! = ASC
+  priority: Int = 1
+}
+
+input PaginationInput {
+  limit: Int = 50
+  offset: Int = 0
+  cursor: String
+}
+
+# User Management Input Types
+input UserInput {
+  username: String!
+  email: String!
+  password: String!
+  
+  # Profile Information
+  profile: UserProfileInput!
+  
+  # Role Assignment
+  roles: [UUID!]
+  groups: [UUID!]
+  
+  # Preferences
+  preferences: UserPreferencesInput
+  
+  # Status
+  active: Boolean = true
+  verified: Boolean = false
+}
+
+input UserProfileInput {
+  displayName: String!
+  firstName: String
+  lastName: String
+  avatar: URI
+  
+  phone: String
+  timezone: String = "UTC"
+  locale: String = "en"
+  
+  title: String
+  department: String
+  organization: String
+  managerId: UUID
+  
+  bio: String
+  website: URI
+  socialLinks: JSON
+}
+
+input UserPreferencesInput {
+  notifications: NotificationPreferencesInput!
+  
+  theme: String = "system"
+  language: String = "en"
+  dateFormat: String = "ISO"
+  timezone: String = "UTC"
+  
+  defaultDashboard: UUID
+  dashboardLayout: JSON
+  
+  profileVisibility: String = "internal"
+  activityVisibility: String = "private"
+  
+  features: JSON
+  experiments: JSON
+}
+
+input NotificationPreferencesInput {
+  email: Boolean = true
+  sms: Boolean = false
+  push: Boolean = true
+  slack: Boolean = false
+  
+  security: Boolean = true
+  performance: Boolean = true
+  compliance: Boolean = true
+  business: Boolean = false
+  
+  frequency: String = "immediate"
+  quietHours: QuietHoursInput
+  
+  severityThreshold: AlertSeverity = WARNING
+  customFilters: [NotificationFilterInput!]
+}
+
+input QuietHoursInput {
+  enabled: Boolean!
+  startTime: String!
+  endTime: String!
+  timezone: String!
+  days: [Int!]!
+}
+
+input NotificationFilterInput {
+  name: String!
+  enabled: Boolean = true
+  conditions: JSON!
+  action: String!
+}
+
+input UserUpdateInput {
+  username: String
+  email: String
+  password: String
+  
+  profile: UserProfileInput
+  preferences: UserPreferencesInput
+  
+  roles: [UUID!]
+  groups: [UUID!]
+  
+  active: Boolean
+  verified: Boolean
+}
+
+# Role and Permission Input Types
+input RoleInput {
+  name: String!
+  description: String
+  permissions: [UUID!]!
+  
+  parentId: UUID
+  
+  system: Boolean = false
+  builtin: Boolean = false
+}
+
+input RoleUpdateInput {
+  name: String
+  description: String
+  permissions: [UUID!]
+  parentId: UUID
+}
+
+input PermissionInput {
+  name: String!
+  description: String!
+  resource: String!
+  action: String!
+  
+  conditions: JSON
+  
+  system: Boolean = false
+}
+
+input PermissionUpdateInput {
+  name: String
+  description: String
+  resource: String
+  action: String
+  conditions: JSON
+}
+
+# Group Management Input Types
+input GroupInput {
+  name: String!
+  description: String
+  
+  members: [UUID!]
+  roles: [UUID!]
+  
+  parentId: UUID
+  
+  type: String!
+}
+
+input GroupUpdateInput {
+  name: String
+  description: String
+  
+  members: [UUID!]
+  roles: [UUID!]
+  
+  parentId: UUID
+  
+  type: String
+}
+
+# Tenant Management Input Types
+input TenantInput {
+  name: String!
+  slug: String!
+  description: String
+  
+  configuration: TenantConfigurationInput!
+  subscription: TenantSubscriptionInput!
+  
+  organizationId: UUID!
+  
+  status: TenantStatus = ACTIVE
+}
+
+input TenantConfigurationInput {
+  domains: [String!]!
+  customDomain: String
+  
+  branding: TenantBrandingInput!
+  
+  features: JSON!
+  
+  integrations: [TenantIntegrationInput!]
+  
+  security: TenantSecurityInput!
+  compliance: TenantComplianceInput!
+}
+
+input TenantBrandingInput {
+  logo: URI
+  favicon: URI
+  primaryColor: String
+  secondaryColor: String
+  theme: JSON
+  customCSS: String
+}
+
+input TenantIntegrationInput {
+  type: IntegrationType!
+  name: String!
+  enabled: Boolean = true
+  configuration: JSON!
+}
+
+input TenantSecurityInput {
+  ssoEnabled: Boolean = false
+  ssoProvider: String
+  mfaRequired: Boolean = false
+  
+  sessionTimeout: Int = 3600
+  maxSessions: Int = 5
+  
+  passwordPolicy: PasswordPolicyInput!
+  
+  ipWhitelist: [String!]
+  geoRestrictions: [String!]
+}
+
+input PasswordPolicyInput {
+  minLength: Int = 8
+  requireUppercase: Boolean = true
+  requireLowercase: Boolean = true
+  requireNumbers: Boolean = true
+  requireSpecialChars: Boolean = true
+  maxAge: Int
+  historySize: Int = 5
+}
+
+input TenantComplianceInput {
+  frameworks: [ComplianceFramework!]!
+  dataRetention: String!
+  dataLocation: [String!]!
+  auditLogRetention: String!
+  encryptionRequired: Boolean = true
+}
+
+input TenantSubscriptionInput {
+  planId: UUID!
+  billingCycle: String!
+  paymentMethodId: UUID
+}
+
+input TenantUpdateInput {
+  name: String
+  slug: String
+  description: String
+  
+  configuration: TenantConfigurationInput
+  
+  status: TenantStatus
+}
+
+# Organization Input Types
+input OrganizationInput {
+  name: String!
+  description: String
+  
+  website: URI
+  email: String!
+  phone: String
+  
+  address: AddressInput
+  
+  industry: String
+  size: String
+  
+  foundedYear: Int
+}
+
+input AddressInput {
+  street: String!
+  city: String!
+  state: String!
+  postalCode: String!
+  country: String!
+  
+  building: String
+  suite: String
+  
+  latitude: Float
+  longitude: Float
+}
+
+input OrganizationUpdateInput {
+  name: String
+  description: String
+  
+  website: URI
+  email: String
+  phone: String
+  
+  address: AddressInput
+  
+  industry: String
+  size: String
+  
+  foundedYear: Int
+}
+
+# System Configuration Input Types
+input SystemConfigurationInput {
+  general: GeneralSettingsInput
+  security: SecuritySettingsInput
+  performance: PerformanceSettingsInput
+  features: FeatureFlagsInput
+  integrations: IntegrationSettingsInput
+  notifications: NotificationSettingsInput
+  monitoring: MonitoringSettingsInput
+}
+
+input GeneralSettingsInput {
+  siteName: String
+  siteDescription: String
+  siteUrl: URI
+  
+  defaultLanguage: String
+  defaultTimezone: String
+  supportedLanguages: [String!]
+  supportedTimezones: [String!]
+  
+  logo: URI
+  favicon: URI
+  theme: String
+  
+  maintenanceMode: Boolean
+  maintenanceMessage: String
+}
+
+input SecuritySettingsInput {
+  requireMfa: Boolean
+  allowSelfRegistration: Boolean
+  emailVerificationRequired: Boolean
+  
+  sessionTimeout: Int
+  maxConcurrentSessions: Int
+  rememberMeEnabled: Boolean
+  
+  passwordPolicy: PasswordPolicyInput
+  
+  rateLimiting: RateLimitingSettingsInput
+  corsSettings: CorsSettingsInput
+  
+  contentSecurityPolicy: String
+  xFrameOptions: String
+}
+
+input RateLimitingSettingsInput {
+  enabled: Boolean
+  requestsPerMinute: Int
+  burstSize: Int
+  
+  endpointLimits: JSON
+  perIpLimits: JSON
+}
+
+input CorsSettingsInput {
+  enabled: Boolean
+  allowedOrigins: [String!]
+  allowedMethods: [String!]
+  allowedHeaders: [String!]
+  allowCredentials: Boolean
+  maxAge: Int
+}
+
+input PerformanceSettingsInput {
+  caching: CachingSettingsInput
+  connectionPooling: ConnectionPoolingSettingsInput
+  resourceLimits: SystemResourceLimitsInput
+  optimization: OptimizationSettingsInput
+}
+
+input CachingSettingsInput {
+  enabled: Boolean
+  defaultTtl: Int
+  
+  redis: RedisCacheSettingsInput
+  memory: MemoryCacheSettingsInput
+  
+  strategies: JSON
+}
+
+input RedisCacheSettingsInput {
+  enabled: Boolean
+  url: String
+  keyPrefix: String
+  maxConnections: Int
+}
+
+input MemoryCacheSettingsInput {
+  enabled: Boolean
+  maxSize: String
+  evictionPolicy: String
+}
+
+input ConnectionPoolingSettingsInput {
+  database: DatabasePoolSettingsInput
+  http: HttpPoolSettingsInput
+  customPools: JSON
+}
+
+input DatabasePoolSettingsInput {
+  minConnections: Int
+  maxConnections: Int
+  acquireTimeoutMs: Int
+  idleTimeoutMs: Int
+}
+
+input HttpPoolSettingsInput {
+  maxConnections: Int
+  maxConnectionsPerHost: Int
+  timeoutMs: Int
+  keepAliveMs: Int
+}
+
+input SystemResourceLimitsInput {
+  maxCpuCores: Int
+  cpuQuota: Float
+  
+  maxMemory: String
+  heapSize: String
+  
+  maxDiskSpace: String
+  tempDiskSpace: String
+  
+  maxBandwidth: String
+  maxConnections: Int
+}
+
+input OptimizationSettingsInput {
+  compression: CompressionSettingsInput
+  asyncProcessing: AsyncProcessingSettingsInput
+  batching: BatchingSettingsInput
+}
+
+input CompressionSettingsInput {
+  enabled: Boolean
+  algorithms: [String!]
+  minSize: Int
+  level: Int
+}
+
+input AsyncProcessingSettingsInput {
+  enabled: Boolean
+  queueSize: Int
+  workerThreads: Int
+  batchSize: Int
+}
+
+input BatchingSettingsInput {
+  enabled: Boolean
+  batchSize: Int
+  flushInterval: Int
+  maxWaitTime: Int
+}
+
+input FeatureFlagsInput {
+  agentDiscovery: Boolean
+  workflowOrchestration: Boolean
+  realTimeMonitoring: Boolean
+  
+  predictiveAnalytics: Boolean
+  aiAssistant: Boolean
+  advancedCompliance: Boolean
+  
+  betaFeatures: JSON
+  experiments: JSON
+}
+
+input IntegrationSettingsInput {
+  externalServices: [ExternalServiceConfigInput!]
+  webhooks: WebhookSettingsInput
+  api: ApiSettingsInput
+  authProviders: [AuthProviderConfigInput!]
+}
+
+input ExternalServiceConfigInput {
+  name: String!
+  type: String!
+  enabled: Boolean = true
+  configuration: JSON!
+  healthCheck: ExternalServiceHealthCheckInput
+}
+
+input ExternalServiceHealthCheckInput {
+  enabled: Boolean = true
+  endpoint: URI!
+  interval: Int = 60
+  timeout: Int = 10
+  retries: Int = 3
+}
+
+input WebhookSettingsInput {
+  enabled: Boolean
+  maxRetries: Int
+  retryBackoff: String
+  timeout: Int
+  
+  signatureVerification: Boolean
+  signatureAlgorithm: String
+}
+
+input ApiSettingsInput {
+  defaultVersion: String
+  supportedVersions: [String!]
+  
+  documentationEnabled: Boolean
+  playgroundEnabled: Boolean
+  
+  globalRateLimit: Int
+  
+  prettyPrint: Boolean
+  includeMetadata: Boolean
+}
+
+input AuthProviderConfigInput {
+  name: String!
+  type: String!
+  enabled: Boolean = true
+  configuration: JSON!
+  
+  displayName: String!
+  icon: URI
+  buttonColor: String
+  
+  userMapping: UserMappingConfigInput!
+}
+
+input UserMappingConfigInput {
+  email: String!
+  name: String!
+  groups: String
+  roles: String
+  
+  customAttributes: JSON
+}
+
+input NotificationSettingsInput {
+  defaultChannels: [NotificationType!]
+  
+  email: EmailNotificationSettingsInput
+  sms: SmsNotificationSettingsInput
+  slack: SlackNotificationSettingsInput
+  webhook: WebhookNotificationSettingsInput
+  
+  delivery: NotificationDeliverySettingsInput
+}
+
+input EmailNotificationSettingsInput {
+  enabled: Boolean
+  smtpConfig: SmtpConfigurationInput
+  
+  fromAddress: String
+  fromName: String
+  replyTo: String
+  
+  htmlTemplate: String
+  textTemplate: String
+}
+
+input SmtpConfigurationInput {
+  host: String!
+  port: Int = 587
+  security: String = "STARTTLS"
+  
+  username: String!
+  password: String!
+  
+  timeout: Int = 30
+  maxConnections: Int = 10
+}
+
+input SmsNotificationSettingsInput {
+  enabled: Boolean
+  provider: String
+  configuration: JSON
+  
+  fromNumber: String
+  defaultCountryCode: String = "+1"
+}
+
+input SlackNotificationSettingsInput {
+  enabled: Boolean
+  botToken: String
+  
+  defaultChannel: String
+  mentionUsers: Boolean = false
+  
+  messageFormat: String = "markdown"
+  includeAttachments: Boolean = true
+}
+
+input WebhookNotificationSettingsInput {
+  enabled: Boolean
+  defaultTimeout: Int = 30
+  maxRetries: Int = 3
+  
+  signatureEnabled: Boolean = true
+  signatureHeader: String = "X-Signature"
+}
+
+input NotificationDeliverySettingsInput {
+  retryPolicy: NotificationRetryPolicyInput
+  
+  batchingEnabled: Boolean = false
+  batchSize: Int = 10
+  batchWindow: Int = 60
+  
+  rateLimitingEnabled: Boolean = true
+  rateLimitPerMinute: Int = 100
+}
+
+input NotificationRetryPolicyInput {
+  maxRetries: Int = 3
+  backoffStrategy: String = "exponential"
+  initialDelay: Int = 1000
+  maxDelay: Int = 60000
+  backoffMultiplier: Float = 2.0
+}
+
+input MonitoringSettingsInput {
+  metricsEnabled: Boolean
+  metricsInterval: Int
+  metricsRetention: String
+  
+  loggingEnabled: Boolean
+  logLevel: String
+  logRetention: String
+  
+  tracingEnabled: Boolean
+  tracingSampleRate: Float
+  
+  healthChecksEnabled: Boolean
+  healthCheckInterval: Int
+  
+  alertingEnabled: Boolean
+  alertEvaluationInterval: Int
+}
+
+# Dashboard Input Types
+input DashboardInput {
+  name: String!
+  description: String
+  
+  layout: DashboardLayoutInput!
+  widgets: [DashboardWidgetInput!]!
+  
+  visibility: String = "private"
+  permissions: [DashboardPermissionInput!]
+}
+
+input DashboardLayoutInput {
+  columns: Int = 12
+  rows: Int = 12
+  responsive: Boolean = true
+  theme: String = "default"
+}
+
+input DashboardWidgetInput {
+  type: String!
+  title: String!
+  
+  position: WidgetPositionInput!
+  size: WidgetSizeInput!
+  
+  config: WidgetConfigInput!
+  dataSource: DataSourceConfigInput!
+}
+
+input WidgetPositionInput {
+  x: Int!
+  y: Int!
+}
+
+input WidgetSizeInput {
+  width: Int!
+  height: Int!
+}
+
+input WidgetConfigInput {
+  chartType: String
+  xAxis: String
+  yAxis: String
+  
+  showLegend: Boolean = false
+  showGrid: Boolean = true
+  colors: [String!]
+  
+  aggregation: AggregationType
+  timeRange: String = "1h"
+  refreshInterval: Int = 60
+}
+
+input DataSourceConfigInput {
+  type: String!
+  query: String!
+  parameters: JSON
+}
+
+input DashboardPermissionInput {
+  user: String!
+  permission: String!
+}
+
+input DashboardUpdateInput {
+  name: String
+  description: String
+  
+  layout: DashboardLayoutInput
+  widgets: [DashboardWidgetInput!]
+  
+  visibility: String
+  permissions: [DashboardPermissionInput!]
+}
+
+# Search and Query Input Types
+input SearchInput {
+  query: String!
+  
+  # Search Configuration
+  fields: [String!]
+  fuzzy: Boolean = false
+  highlight: Boolean = false
+  
+  # Filtering
+  filters: [FilterInput!]
+  
+  # Sorting
+  sort: [SortCriteriaInput!]
+  
+  # Pagination
+  pagination: PaginationInput
+  
+  # Aggregation
+  aggregations: [AggregationInput!]
+  
+  # Search Options
+  options: SearchOptionsInput
+}
+
+input AggregationInput {
+  name: String!
+  type: AggregationType!
+  field: String!
+  
+  # Aggregation Configuration
+  size: Int = 10
+  ranges: [RangeInput!]
+  interval: String
+  
+  # Nested Aggregations
+  aggregations: [AggregationInput!]
+}
+
+input RangeInput {
+  from: Float
+  to: Float
+  key: String
+}
+
+input SearchOptionsInput {
+  # Result Options
+  includeScore: Boolean = false
+  includeHighlight: Boolean = false
+  includeExplanation: Boolean = false
+  
+  # Performance Options
+  timeout: Int = 30000 # milliseconds
+  trackTotalHits: Boolean = false
+  
+  # Analysis Options
+  analyzer: String
+  defaultOperator: String = "OR"
+  
+  # Advanced Options
+  preferences: String
+  routing: String
+  
+  # Source Filtering
+  includeSource: Boolean = true
+  sourceIncludes: [String!]
+  sourceExcludes: [String!]
+}
+
+# Bulk Operation Input Types
+input BulkOperationInput {
+  operations: [BulkOperationItemInput!]!
+  
+  # Bulk Options
+  refresh: String = "wait_for" # "wait_for" | "true" | "false"
+  routing: String
+  timeout: String = "1m"
+  
+  # Error Handling
+  continueOnError: Boolean = true
+  maxErrors: Int = 100
+}
+
+input BulkOperationItemInput {
+  operation: BulkOperationType!
+  id: UUID
+  data: JSON
+  
+  # Operation Options
+  routing: String
+  version: Int
+  versionType: String
+  
+  # Conditional Operations
+  ifSeqNo: Int
+  ifPrimaryTerm: Int
+}
+
+enum BulkOperationType {
+  INDEX
+  CREATE
+  UPDATE
+  DELETE
+}
+
+# Import/Export Input Types
+input ExportInput {
+  # Export Configuration
+  format: ExportFormat!
+  compression: Boolean = false
+  
+  # Data Selection
+  entities: [String!]!
+  filters: [FilterInput!]
+  
+  # Export Options
+  includeMetadata: Boolean = true
+  includeRelations: Boolean = false
+  batchSize: Int = 1000
+  
+  # Output Configuration
+  destination: ExportDestinationInput
+}
+
+enum ExportFormat {
+  JSON
+  CSV
+  XLSX
+  XML
+  YAML
+}
+
+input ExportDestinationInput {
+  type: ExportDestinationType!
+  configuration: JSON!
+}
+
+enum ExportDestinationType {
+  DOWNLOAD
+  S3
+  GCS
+  AZURE_BLOB
+  FTP
+  EMAIL
+}
+
+input ImportInput {
+  # Import Configuration
+  format: ImportFormat!
+  
+  # Source Configuration
+  source: ImportSourceInput!
+  
+  # Import Options
+  mode: ImportMode = UPSERT
+  batchSize: Int = 1000
+  skipErrors: Boolean = true
+  
+  # Validation
+  validateOnly: Boolean = false
+  strictMode: Boolean = false
+  
+  # Mapping
+  fieldMapping: JSON
+  transformations: [DataTransformationInput!]
+}
+
+enum ImportFormat {
+  JSON
+  CSV
+  XLSX
+  XML
+  YAML
+}
+
+input ImportSourceInput {
+  type: ImportSourceType!
+  configuration: JSON!
+}
+
+enum ImportSourceType {
+  FILE_UPLOAD
+  URL
+  S3
+  GCS
+  AZURE_BLOB
+  FTP
+  DATABASE
+}
+
+enum ImportMode {
+  INSERT
+  UPDATE
+  UPSERT
+  REPLACE
+}
+
+input DataTransformationInput {
+  field: String!
+  transformation: String!
+  parameters: JSON
+}
+
+# Validation Input Types
+input ValidationRuleInput {
+  name: String!
+  description: String
+  
+  # Rule Configuration
+  type: ValidationRuleType!
+  field: String!
+  
+  # Rule Parameters
+  parameters: JSON!
+  
+  # Rule Options
+  required: Boolean = false
+  severity: ValidationSeverity = ERROR
+  
+  # Conditions
+  conditions: [ValidationConditionInput!]
+  
+  # Custom Logic
+  customLogic: String
+}
+
+enum ValidationRuleType {
+  REQUIRED
+  TYPE
+  FORMAT
+  RANGE
+  LENGTH
+  PATTERN
+  UNIQUE
+  FOREIGN_KEY
+  CUSTOM
+}
+
+enum ValidationSeverity {
+  ERROR
+  WARNING
+  INFO
+}
+
+input ValidationConditionInput {
+  field: String!
+  operator: FilterOperator!
+  value: JSON!
+}
+
+# Audit Input Types
+input AuditLogQueryInput {
+  # Time Range
+  timeRange: TimeRangeInput!
+  
+  # Filtering
+  entityType: String
+  entityId: UUID
+  userId: String
+  action: String
+  
+  # Advanced Filtering
+  filters: [FilterInput!]
+  
+  # Sorting and Pagination
+  sort: [SortCriteriaInput!]
+  pagination: PaginationInput
+  
+  # Output Options
+  includeMetadata: Boolean = true
+  includeChanges: Boolean = true
+}
+
+input AuditLogEntryInput {
+  # Entity Information
+  entityType: String!
+  entityId: UUID!
+  
+  # Action Information
+  action: String!
+  description: String
+  
+  # User Context
+  userId: String
+  sessionId: UUID
+  ipAddress: String
+  userAgent: String
+  
+  # Change Information
+  beforeState: JSON
+  afterState: JSON
+  changes: [ChangeRecordInput!]
+  
+  # Additional Context
+  context: JSON
+  metadata: JSON
+}
+
+input ChangeRecordInput {
+  field: String!
+  oldValue: JSON
+  newValue: JSON
+  operation: String! # "create" | "update" | "delete"
+}

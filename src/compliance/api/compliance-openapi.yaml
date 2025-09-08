@@ -1,0 +1,1217 @@
+openapi: 3.1.0
+info:
+  title: "OSSA v0.1.8 Compliance API"
+  version: "0.1.8"
+  description: |
+    OSSA v0.1.8 Compliance Validation and Reporting API
+    
+    This API provides comprehensive compliance validation against major frameworks
+    including FedRAMP and NIST 800-53. Features include:
+    
+    - Multi-framework validation (FedRAMP, NIST 800-53)
+    - Weighted compliance scoring algorithms
+    - Automated report generation (JSON, PDF, HTML)
+    - Real-time compliance monitoring
+    - Trend analysis and benchmarking
+    - Executive summary generation
+    
+  contact:
+    name: "OSSA Compliance Team"
+    url: "https://ossa.agents/compliance"
+    
+  license:
+    name: "Apache 2.0"
+    url: "https://www.apache.org/licenses/LICENSE-2.0.html"
+    
+  x-ossa-compliance:
+    version: "0.1.8"
+    supported_frameworks: ["FedRAMP", "NIST-800-53"]
+    scoring_algorithms: ["weighted", "critical_path", "trend_based"]
+    report_formats: ["json", "pdf", "html", "csv", "xlsx"]
+    
+servers:
+  - url: "https://api.llm.bluefly.io/ossa/v1"
+    description: "Production compliance API"
+  - url: "http://localhost:4000/api/v1"
+    description: "Local development server"
+
+paths:
+  # Core Validation Endpoints
+  /compliance/validate:
+    post:
+      summary: "Validate workspace compliance"
+      description: "Perform comprehensive compliance validation against specified framework"
+      operationId: "validateCompliance"
+      tags: ["Validation"]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ComplianceValidationRequest"
+            example:
+              framework: "FEDRAMP"
+              workspacePath: "/path/to/workspace"
+              options:
+                includeEvidence: true
+                detailedAnalysis: true
+                generateReport: true
+                reportFormat: "json"
+      responses:
+        '200':
+          description: "Validation completed successfully"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ComplianceValidationResponse"
+        '400':
+          $ref: "#/components/responses/BadRequest"
+        '500':
+          $ref: "#/components/responses/InternalError"
+
+  /compliance/validate/bulk:
+    post:
+      summary: "Bulk compliance validation"
+      description: "Validate workspace against multiple compliance frameworks simultaneously"
+      operationId: "bulkValidateCompliance"
+      tags: ["Validation"]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BulkComplianceRequest"
+      responses:
+        '200':
+          description: "Bulk validation completed"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BulkComplianceResponse"
+
+  /compliance/validate/schedule:
+    post:
+      summary: "Schedule automated validation"
+      description: "Schedule recurring compliance validation"
+      operationId: "scheduleValidation"
+      tags: ["Validation"]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ComplianceScheduleRequest"
+      responses:
+        '200':
+          description: "Validation scheduled successfully"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ComplianceScheduleResponse"
+
+  # Reporting Endpoints
+  /compliance/reports/generate:
+    post:
+      summary: "Generate compliance report"
+      description: "Generate detailed compliance report in specified format"
+      operationId: "generateComplianceReport"
+      tags: ["Reporting"]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ComplianceReportRequest"
+      responses:
+        '200':
+          description: "Report generated successfully"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ComplianceReportResponse"
+
+  /compliance/reports:
+    get:
+      summary: "List compliance reports"
+      description: "Get list of all generated compliance reports"
+      operationId: "listComplianceReports"
+      tags: ["Reporting"]
+      responses:
+        '200':
+          description: "Reports listed successfully"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ComplianceReportList"
+
+  /compliance/reports/{reportId}:
+    get:
+      summary: "Get compliance report"
+      description: "Retrieve specific compliance report by ID"
+      operationId: "getComplianceReport"
+      tags: ["Reporting"]
+      parameters:
+        - name: reportId
+          in: path
+          required: true
+          schema:
+            type: string
+            example: "report-1735125600-abc123"
+      responses:
+        '200':
+          description: "Report retrieved successfully"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ComplianceReport"
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+            text/html:
+              schema:
+                type: string
+        '404':
+          description: "Report not found"
+    delete:
+      summary: "Delete compliance report"
+      description: "Delete a compliance report by ID"
+      operationId: "deleteComplianceReport"
+      tags: ["Reporting"]
+      parameters:
+        - name: reportId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: "Report deleted successfully"
+        '404':
+          description: "Report not found"
+
+  # Scoring and Metrics Endpoints
+  /compliance/score:
+    post:
+      summary: "Calculate compliance score"
+      description: "Calculate weighted compliance scores with comprehensive metrics"
+      operationId: "calculateComplianceScore"
+      tags: ["Scoring"]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ComplianceScoreRequest"
+      responses:
+        '200':
+          description: "Score calculated successfully"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ComplianceMetrics"
+
+  /compliance/benchmark:
+    post:
+      summary: "Benchmark compliance"
+      description: "Compare compliance scores against industry benchmarks"
+      operationId: "benchmarkCompliance"
+      tags: ["Scoring"]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ComplianceBenchmarkRequest"
+      responses:
+        '200':
+          description: "Benchmark comparison completed"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ComplianceBenchmark"
+
+  /compliance/metrics/{framework}:
+    get:
+      summary: "Get framework metrics"
+      description: "Retrieve historical metrics for specific framework"
+      operationId: "getFrameworkMetrics"
+      tags: ["Scoring"]
+      parameters:
+        - name: framework
+          in: path
+          required: true
+          schema:
+            $ref: "#/components/schemas/SupportedFramework"
+      responses:
+        '200':
+          description: "Metrics retrieved successfully"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FrameworkMetrics"
+
+  # Configuration and Discovery Endpoints
+  /compliance/frameworks:
+    get:
+      summary: "List supported frameworks"
+      description: "Get comprehensive list of supported compliance frameworks"
+      operationId: "getSupportedFrameworks"
+      tags: ["Configuration"]
+      responses:
+        '200':
+          description: "Frameworks listed successfully"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SupportedFrameworks"
+
+  /compliance/frameworks/{framework}/controls:
+    get:
+      summary: "Get framework controls"
+      description: "List all controls for specific compliance framework"
+      operationId: "getFrameworkControls"
+      tags: ["Configuration"]
+      parameters:
+        - name: framework
+          in: path
+          required: true
+          schema:
+            $ref: "#/components/schemas/SupportedFramework"
+        - name: filter
+          in: query
+          schema:
+            type: string
+            enum: ["implemented", "not_implemented", "partial"]
+          description: "Filter controls by implementation status"
+      responses:
+        '200':
+          description: "Controls retrieved successfully"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FrameworkControls"
+
+  /compliance/configuration:
+    get:
+      summary: "Get compliance configuration"
+      description: "Retrieve current compliance system configuration"
+      operationId: "getComplianceConfiguration"
+      tags: ["Configuration"]
+      responses:
+        '200':
+          description: "Configuration retrieved successfully"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ComplianceConfiguration"
+    post:
+      summary: "Update compliance configuration"
+      description: "Update compliance system configuration"
+      operationId: "updateComplianceConfiguration"
+      tags: ["Configuration"]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ComplianceConfiguration"
+      responses:
+        '200':
+          description: "Configuration updated successfully"
+
+  # Analytics and Dashboard Endpoints
+  /compliance/dashboard/{workspacePath}:
+    get:
+      summary: "Get compliance dashboard"
+      description: "Retrieve comprehensive compliance dashboard data"
+      operationId: "getComplianceDashboard"
+      tags: ["Analytics"]
+      parameters:
+        - name: workspacePath
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: refresh
+          in: query
+          schema:
+            type: boolean
+            default: false
+          description: "Force refresh of dashboard data"
+      responses:
+        '200':
+          description: "Dashboard data retrieved"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ComplianceDashboard"
+
+  /compliance/trends/{framework}:
+    get:
+      summary: "Get compliance trends"
+      description: "Analyze compliance trends over time"
+      operationId: "getComplianceTrends"
+      tags: ["Analytics"]
+      parameters:
+        - name: framework
+          in: path
+          required: true
+          schema:
+            $ref: "#/components/schemas/SupportedFramework"
+        - name: timeframe
+          in: query
+          schema:
+            type: string
+            enum: ["30d", "90d", "1y"]
+            default: "90d"
+      responses:
+        '200':
+          description: "Trends retrieved successfully"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ComplianceTrends"
+
+  /compliance/recommendations:
+    post:
+      summary: "Get compliance recommendations"
+      description: "Generate personalized compliance recommendations"
+      operationId: "getComplianceRecommendations"
+      tags: ["Analytics"]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ComplianceRecommendationRequest"
+      responses:
+        '200':
+          description: "Recommendations generated successfully"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ComplianceRecommendations"
+
+  # Health and Status
+  /compliance/health:
+    get:
+      summary: "Compliance system health check"
+      description: "Check health status of compliance validation services"
+      operationId: "getComplianceHealth"
+      tags: ["Health"]
+      responses:
+        '200':
+          description: "Health status retrieved"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ComplianceHealthStatus"
+
+  /compliance/status:
+    get:
+      summary: "Get compliance system status"
+      description: "Detailed system status and feature availability"
+      operationId: "getComplianceStatus"
+      tags: ["Health"]
+      responses:
+        '200':
+          description: "System status retrieved"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ComplianceSystemStatus"
+
+components:
+  schemas:
+    # Core Request/Response Types
+    ComplianceValidationRequest:
+      type: object
+      required:
+        - framework
+        - workspacePath
+      properties:
+        framework:
+          $ref: "#/components/schemas/SupportedFramework"
+        workspacePath:
+          type: string
+          description: "Path to OSSA workspace"
+        options:
+          type: object
+          properties:
+            includeEvidence:
+              type: boolean
+              default: false
+            detailedAnalysis:
+              type: boolean
+              default: true
+            generateReport:
+              type: boolean
+              default: false
+            reportFormat:
+              type: string
+              enum: ["json", "pdf", "html"]
+              default: "json"
+
+    ComplianceValidationResponse:
+      type: object
+      required:
+        - validationResult
+        - timestamp
+        - requestId
+      properties:
+        validationResult:
+          $ref: "#/components/schemas/ComplianceValidationResult"
+        metrics:
+          $ref: "#/components/schemas/ComplianceMetrics"
+        reportPath:
+          type: string
+          description: "Path to generated report (if requested)"
+        timestamp:
+          type: string
+          format: date-time
+        requestId:
+          type: string
+
+    BulkComplianceRequest:
+      type: object
+      required:
+        - frameworks
+        - workspacePath
+      properties:
+        frameworks:
+          type: array
+          items:
+            $ref: "#/components/schemas/SupportedFramework"
+        workspacePath:
+          type: string
+        comparison:
+          type: boolean
+          default: false
+        consolidatedReport:
+          type: boolean
+          default: false
+
+    BulkComplianceResponse:
+      type: object
+      required:
+        - results
+        - timestamp
+        - requestId
+      properties:
+        results:
+          type: object
+          additionalProperties:
+            $ref: "#/components/schemas/ComplianceValidationResponse"
+        comparison:
+          $ref: "#/components/schemas/FrameworkComparison"
+        consolidatedReport:
+          type: string
+          description: "Path to consolidated report"
+        timestamp:
+          type: string
+          format: date-time
+        requestId:
+          type: string
+
+    # Core Compliance Types
+    ComplianceValidationResult:
+      type: object
+      required:
+        - framework
+        - version
+        - timestamp
+        - overallScore
+        - controlResults
+        - recommendations
+        - criticalFindings
+        - summary
+      properties:
+        framework:
+          type: string
+        version:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+        overallScore:
+          type: number
+          minimum: 0
+          maximum: 100
+        controlResults:
+          type: array
+          items:
+            $ref: "#/components/schemas/ControlValidationResult"
+        recommendations:
+          type: array
+          items:
+            type: string
+        criticalFindings:
+          type: array
+          items:
+            type: string
+        summary:
+          $ref: "#/components/schemas/ComplianceSummary"
+
+    ControlValidationResult:
+      type: object
+      required:
+        - controlId
+        - status
+        - score
+        - findings
+        - evidence
+        - recommendations
+      properties:
+        controlId:
+          type: string
+          example: "AC-3"
+        status:
+          type: string
+          enum: ["compliant", "non_compliant", "partially_compliant", "not_applicable"]
+        score:
+          type: number
+          minimum: 0
+          maximum: 100
+        findings:
+          type: array
+          items:
+            type: string
+        evidence:
+          type: array
+          items:
+            $ref: "#/components/schemas/ComplianceEvidence"
+        recommendations:
+          type: array
+          items:
+            type: string
+
+    ComplianceEvidence:
+      type: object
+      required:
+        - type
+        - description
+        - lastVerified
+      properties:
+        type:
+          type: string
+          enum: ["documentation", "configuration", "log", "test_result", "audit_trail"]
+        path:
+          type: string
+        url:
+          type: string
+        description:
+          type: string
+        lastVerified:
+          type: string
+          format: date-time
+
+    ComplianceSummary:
+      type: object
+      required:
+        - totalControls
+        - compliantControls
+        - partiallyCompliantControls
+        - nonCompliantControls
+        - notApplicableControls
+        - compliancePercentage
+        - riskScore
+        - maturityLevel
+      properties:
+        totalControls:
+          type: integer
+        compliantControls:
+          type: integer
+        partiallyCompliantControls:
+          type: integer
+        nonCompliantControls:
+          type: integer
+        notApplicableControls:
+          type: integer
+        compliancePercentage:
+          type: number
+        riskScore:
+          type: number
+        maturityLevel:
+          type: string
+          enum: ["Initial", "Developing", "Defined", "Managed", "Optimizing"]
+
+    ComplianceMetrics:
+      type: object
+      required:
+        - overallScore
+        - weightedScore
+        - riskScore
+        - maturityScore
+      properties:
+        overallScore:
+          type: number
+        weightedScore:
+          type: number
+        riskScore:
+          type: number
+        maturityScore:
+          type: number
+        trendAnalysis:
+          $ref: "#/components/schemas/TrendAnalysis"
+        benchmarkComparison:
+          $ref: "#/components/schemas/BenchmarkComparison"
+        controlFamilyScores:
+          type: object
+          additionalProperties:
+            type: number
+        criticalityBasedScore:
+          type: number
+        implementationMaturity:
+          type: number
+
+    TrendAnalysis:
+      type: object
+      properties:
+        trend:
+          type: string
+          enum: ["improving", "stable", "declining"]
+        changePercentage:
+          type: number
+        projectedCompliance:
+          type: number
+        timeToFullCompliance:
+          type: number
+          description: "Estimated months to full compliance"
+
+    BenchmarkComparison:
+      type: object
+      properties:
+        industryAverage:
+          type: number
+        percentile:
+          type: number
+        peerComparison:
+          type: string
+          enum: ["above_average", "average", "below_average"]
+        recommendedTargets:
+          type: object
+          properties:
+            shortTerm:
+              type: number
+            longTerm:
+              type: number
+
+    # Configuration Types
+    SupportedFramework:
+      type: string
+      enum: ["FEDRAMP", "NIST_800_53"]
+
+    SupportedFrameworks:
+      type: object
+      properties:
+        frameworks:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+              name:
+                type: string
+              version:
+                type: string
+              description:
+                type: string
+              authority:
+                type: string
+
+    FrameworkControls:
+      type: object
+      properties:
+        framework:
+          type: string
+        controls:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+              title:
+                type: string
+              family:
+                type: string
+              implemented:
+                type: boolean
+        total:
+          type: integer
+
+    ComplianceConfiguration:
+      type: object
+      properties:
+        enabledFrameworks:
+          type: array
+          items:
+            type: string
+        assessmentFrequency:
+          type: string
+        automatedScanning:
+          type: boolean
+        thresholds:
+          type: object
+          properties:
+            minimumCompliance:
+              type: number
+            criticalControlFailureThreshold:
+              type: number
+            riskScoreThreshold:
+              type: number
+        notifications:
+          type: object
+          properties:
+            enabled:
+              type: boolean
+            channels:
+              type: array
+              items:
+                type: string
+            criticalOnly:
+              type: boolean
+
+    # Reporting Types
+    ComplianceReportRequest:
+      type: object
+      required:
+        - validationResult
+      properties:
+        validationResult:
+          $ref: "#/components/schemas/ComplianceValidationResult"
+        metrics:
+          $ref: "#/components/schemas/ComplianceMetrics"
+        options:
+          type: object
+          properties:
+            format:
+              type: string
+              enum: ["json", "pdf", "html", "csv", "xlsx"]
+            includeExecutiveSummary:
+              type: boolean
+            includeDetailedFindings:
+              type: boolean
+            includeActionPlan:
+              type: boolean
+            includeMetrics:
+              type: boolean
+            includeEvidence:
+              type: boolean
+            customBranding:
+              type: object
+              properties:
+                organizationName:
+                  type: string
+                logo:
+                  type: string
+                primaryColor:
+                  type: string
+
+    ComplianceReportResponse:
+      type: object
+      properties:
+        reportPath:
+          type: string
+        format:
+          type: string
+        generated:
+          type: string
+          format: date-time
+        size:
+          type: integer
+
+    ComplianceReport:
+      type: object
+      properties:
+        id:
+          type: string
+        framework:
+          type: string
+        version:
+          type: string
+        generatedAt:
+          type: string
+          format: date-time
+        generatedBy:
+          type: string
+        scope:
+          type: string
+        validationResult:
+          $ref: "#/components/schemas/ComplianceValidationResult"
+        executiveSummary:
+          type: string
+        actionPlan:
+          type: array
+          items:
+            $ref: "#/components/schemas/ActionPlanItem"
+
+    ActionPlanItem:
+      type: object
+      properties:
+        id:
+          type: string
+        priority:
+          type: string
+          enum: ["critical", "high", "medium", "low"]
+        title:
+          type: string
+        description:
+          type: string
+        assignee:
+          type: string
+        dueDate:
+          type: string
+          format: date-time
+        status:
+          type: string
+          enum: ["planned", "in_progress", "completed", "overdue"]
+        controls:
+          type: array
+          items:
+            type: string
+        estimatedEffort:
+          type: string
+
+    # Analytics Types
+    ComplianceDashboard:
+      type: object
+      properties:
+        overview:
+          type: object
+        compliance:
+          type: object
+        alerts:
+          type: array
+          items:
+            type: object
+        recommendations:
+          type: array
+          items:
+            type: string
+
+    ComplianceTrends:
+      type: object
+      properties:
+        framework:
+          type: string
+        timeframe:
+          type: string
+        dataPoints:
+          type: array
+          items:
+            type: object
+            properties:
+              date:
+                type: string
+                format: date
+              score:
+                type: number
+        trend:
+          type: string
+        projectedScore:
+          type: number
+        insights:
+          type: array
+          items:
+            type: string
+
+    # Health and Status Types
+    ComplianceHealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: ["healthy", "degraded", "unhealthy"]
+        version:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+        services:
+          type: object
+          properties:
+            fedramp:
+              type: string
+            nist:
+              type: string
+            reporting:
+              type: string
+            scoring:
+              type: string
+
+    ComplianceSystemStatus:
+      type: object
+      properties:
+        uptime:
+          type: number
+        memory:
+          type: object
+        version:
+          type: string
+        environment:
+          type: string
+        features:
+          type: object
+          properties:
+            fedrampValidation:
+              type: boolean
+            nistValidation:
+              type: boolean
+            reporting:
+              type: boolean
+            scoring:
+              type: boolean
+            scheduling:
+              type: boolean
+
+    # Additional Helper Types
+    ComplianceScoreRequest:
+      type: object
+      required:
+        - validationResult
+        - framework
+      properties:
+        validationResult:
+          $ref: "#/components/schemas/ComplianceValidationResult"
+        framework:
+          $ref: "#/components/schemas/SupportedFramework"
+        previousResults:
+          type: array
+          items:
+            $ref: "#/components/schemas/ComplianceValidationResult"
+
+    ComplianceBenchmarkRequest:
+      type: object
+      properties:
+        validationResult:
+          $ref: "#/components/schemas/ComplianceValidationResult"
+        framework:
+          $ref: "#/components/schemas/SupportedFramework"
+        industry:
+          type: string
+
+    ComplianceBenchmark:
+      type: object
+      properties:
+        industry:
+          type: string
+        framework:
+          type: string
+        yourScore:
+          type: number
+        industryAverage:
+          type: number
+        topPercentile:
+          type: number
+        ranking:
+          type: string
+        percentile:
+          type: number
+        recommendations:
+          type: array
+          items:
+            type: string
+
+    ComplianceScheduleRequest:
+      type: object
+      properties:
+        framework:
+          $ref: "#/components/schemas/SupportedFramework"
+        workspacePath:
+          type: string
+        schedule:
+          type: object
+          properties:
+            frequency:
+              type: string
+              enum: ["daily", "weekly", "monthly", "quarterly"]
+            time:
+              type: string
+            notifications:
+              type: array
+              items:
+                type: string
+
+    ComplianceScheduleResponse:
+      type: object
+      properties:
+        scheduleId:
+          type: string
+        framework:
+          type: string
+        workspacePath:
+          type: string
+        schedule:
+          type: object
+        status:
+          type: string
+        nextRun:
+          type: string
+          format: date-time
+        created:
+          type: string
+          format: date-time
+
+    ComplianceRecommendationRequest:
+      type: object
+      properties:
+        validationResult:
+          $ref: "#/components/schemas/ComplianceValidationResult"
+        priority:
+          type: string
+          enum: ["all", "critical", "high", "medium", "low"]
+          default: "all"
+
+    ComplianceRecommendations:
+      type: object
+      properties:
+        recommendations:
+          type: array
+          items:
+            type: string
+        priority:
+          type: string
+        total:
+          type: integer
+        generated:
+          type: string
+          format: date-time
+
+    FrameworkComparison:
+      type: object
+      properties:
+        summary:
+          type: object
+        crossFrameworkGaps:
+          type: array
+          items:
+            type: string
+        commonFindings:
+          type: array
+          items:
+            type: string
+        recommendedPriority:
+          type: array
+          items:
+            type: string
+
+    ComplianceReportList:
+      type: object
+      properties:
+        reports:
+          type: array
+          items:
+            type: object
+            properties:
+              filename:
+                type: string
+              size:
+                type: integer
+              created:
+                type: string
+                format: date-time
+              modified:
+                type: string
+                format: date-time
+              format:
+                type: string
+        total:
+          type: integer
+
+    FrameworkMetrics:
+      type: object
+      properties:
+        framework:
+          type: string
+        averageScore:
+          type: number
+        trend:
+          type: string
+        lastAssessment:
+          type: string
+          format: date-time
+        totalAssessments:
+          type: integer
+        benchmarkPercentile:
+          type: number
+
+  responses:
+    BadRequest:
+      description: "Bad request"
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+              code:
+                type: string
+              timestamp:
+                type: string
+                format: date-time
+
+    InternalError:
+      description: "Internal server error"
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+              code:
+                type: string
+              timestamp:
+                type: string
+                format: date-time
+
+  securitySchemes:
+    api_key:
+      type: apiKey
+      in: header
+      name: X-API-Key
+      description: "API key for authenticated endpoints"
+      
+    bearer:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: "JWT bearer token"
+
+security:
+  - api_key: []
+  - bearer: []
+
+tags:
+  - name: "Validation"
+    description: "Compliance validation and assessment endpoints"
+  - name: "Reporting"
+    description: "Report generation and management"
+  - name: "Scoring"
+    description: "Compliance scoring and metrics"
+  - name: "Configuration"
+    description: "Framework and system configuration"
+  - name: "Analytics"
+    description: "Compliance analytics and trends"
+  - name: "Health"
+    description: "System health and status"
+
+x-ossa-compliance-features:
+  frameworks_supported: ["FedRAMP", "NIST-800-53"]
+  scoring_algorithms: ["weighted", "critical_path", "trend_based"]
+  report_formats: ["json", "pdf", "html", "csv", "xlsx"]
+  real_time_monitoring: true
+  automated_scheduling: true
+  benchmark_comparison: true
+  trend_analysis: true
+  executive_reporting: true
+  
+x-ossa-api-extensions:
+  version: "0.1.8"
+  compliance_tier: "enterprise"
+  certification_level: "gold"
+  api_maturity: "stable"

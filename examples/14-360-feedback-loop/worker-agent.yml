@@ -1,0 +1,294 @@
+ossa: "0.1.8"
+metadata:
+  name: feedback-worker
+  version: "1.0.0"
+  description: "360° Feedback Loop execution agent - executes tasks with self-reporting"
+  author: "OSSA Framework"
+  tags: ["execution", "worker", "task-execution", "self-reporting"]
+  category: execution
+  subtype: worker
+
+spec:
+  conformance_tier: gold
+  class: execution
+  
+  # Core capabilities for task execution
+  capabilities:
+    primary:
+      - task_execution: "Execute assigned tasks with progress tracking"
+      - self_reporting: "Provide detailed progress and performance reports"
+      - error_handling: "Handle errors gracefully with recovery strategies"
+      - quality_control: "Perform self-validation of work outputs"
+      - progress_monitoring: "Track and report execution metrics"
+    
+    secondary:
+      - resource_optimization: "Optimize resource usage during execution"
+      - checkpoint_creation: "Create execution checkpoints for recovery"
+      - dependency_validation: "Verify task dependencies are met"
+      - output_verification: "Validate output quality before completion"
+
+  # Budget constraints for execution phase  
+  budget:
+    default_limit: 4000  # tokens per subtask
+    max_execution_time: 1800  # 30 minutes maximum per task
+    checkpoint_interval: 300  # checkpoint every 5 minutes
+    progress_reporting_frequency: 60  # report progress every minute
+
+  # Communication protocols
+  protocols:
+    - name: rest_api
+      version: "1.0"
+      endpoint: "/api/v1/execute"
+      required: true
+    - name: grpc
+      version: "1.0"
+      service: "WorkerService" 
+      required: false
+    - name: websocket
+      version: "1.0"
+      channel: "/stream/execution"
+      required: true  # Required for real-time progress updates
+
+  # Integration with other feedback loop agents
+  integrations:
+    orchestrator_agents:
+      - type: orchestration
+        communication: async
+        receives: "execution_plans"
+    
+    critic_agents:
+      - type: evaluation
+        communication: async
+        provides: "execution_results"
+    
+    governor_agents:
+      - type: governance
+        communication: sync
+        reports: "budget_usage"
+
+  # Performance metrics
+  metrics:
+    success_criteria:
+      - task_completion_rate: ">= 95%"
+      - quality_score: ">= 85%"
+      - budget_adherence: ">= 90%"
+    
+    performance_targets:
+      - execution_efficiency: "> 80%"
+      - error_recovery_rate: "> 90%"
+      - reporting_accuracy: "> 95%"
+
+  # Input/Output specifications
+  interfaces:
+    input:
+      task_specification:
+        type: object
+        required: true
+        properties:
+          task_id: "Unique task identifier"
+          description: "Task description and requirements"
+          dependencies: "Prerequisites that must be completed"
+          resources: "Required resources and tools"
+          success_criteria: "Measurable completion criteria"
+          budget_limit: "Token budget allocation"
+          deadline: "Task completion deadline"
+    
+    output:
+      execution_report:
+        type: object
+        properties:
+          task_id: "Task identifier"
+          status: "Execution status (completed/failed/in_progress)"
+          results: "Task outputs and deliverables"
+          performance_metrics: "Execution performance data"
+          resource_usage: "Actual resource consumption"
+          issues_encountered: "Problems and resolutions"
+          recommendations: "Suggestions for future executions"
+          quality_assessment: "Self-evaluation of output quality"
+
+  # Framework integrations
+  frameworks:
+    langchain:
+      enabled: true
+      integration: native
+      tools: ["task_executor", "progress_reporter", "quality_checker"]
+    
+    crewai:
+      enabled: true
+      role: "Task Specialist"
+      goal: "Execute assigned tasks efficiently and effectively"
+      backstory: "Experienced executor with strong self-monitoring and reporting capabilities"
+    
+    autogen:
+      enabled: true
+      agent_type: "AssistantAgent"
+      system_message: "You are a reliable task executor that provides detailed progress reports and handles errors gracefully."
+
+# OpenAPI specification for REST endpoints
+openapi: "3.1.0"
+info:
+  title: "Feedback Loop Worker API"
+  version: "1.0.0"
+  description: "API for task execution and progress reporting"
+
+paths:
+  /execute:
+    post:
+      summary: "Execute a task"
+      operationId: executeTask
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [task_id, description]
+              properties:
+                task_id:
+                  type: string
+                  description: "Unique task identifier"
+                description:
+                  type: string
+                  description: "Task requirements and specifications"
+                dependencies:
+                  type: array
+                  items: { type: string }
+                  description: "Prerequisites for this task"
+                resources:
+                  type: object
+                  properties:
+                    tools: { type: array, items: { type: string } }
+                    data_sources: { type: array, items: { type: string } }
+                    apis: { type: array, items: { type: string } }
+                success_criteria:
+                  type: array
+                  items: { type: string }
+                budget_limit:
+                  type: integer
+                  description: "Maximum tokens allowed for this task"
+                deadline:
+                  type: string
+                  format: date-time
+      responses:
+        "200":
+          description: "Task execution started"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  execution_id: { type: string }
+                  task_id: { type: string }
+                  status: { type: string, enum: ["started", "in_progress"] }
+                  estimated_completion: { type: string, format: date-time }
+                  websocket_channel: { type: string }
+        "400":
+          description: "Invalid task specification"
+        "409":
+          description: "Task dependencies not met"
+        "429":
+          description: "Budget limit exceeded"
+
+  /tasks/{taskId}/status:
+    get:
+      summary: "Get task execution status"
+      parameters:
+        - name: taskId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: "Task status retrieved"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  task_id: { type: string }
+                  status: { type: string, enum: ["in_progress", "completed", "failed", "paused"] }
+                  progress: { type: number, minimum: 0, maximum: 100 }
+                  current_step: { type: string }
+                  tokens_used: { type: integer }
+                  tokens_remaining: { type: integer }
+                  estimated_completion: { type: string, format: date-time }
+                  issues: { type: array, items: { type: string } }
+
+  /tasks/{taskId}/report:
+    get:
+      summary: "Get detailed execution report"
+      parameters:
+        - name: taskId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: "Execution report retrieved"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  task_id: { type: string }
+                  execution_summary:
+                    type: object
+                    properties:
+                      start_time: { type: string, format: date-time }
+                      end_time: { type: string, format: date-time }
+                      duration: { type: integer, description: "Execution time in seconds" }
+                      status: { type: string }
+                  results:
+                    type: object
+                    properties:
+                      outputs: { type: array, items: { type: object } }
+                      deliverables: { type: array, items: { type: string } }
+                      quality_score: { type: number, minimum: 0, maximum: 100 }
+                  performance_metrics:
+                    type: object
+                    properties:
+                      tokens_used: { type: integer }
+                      efficiency_score: { type: number }
+                      error_count: { type: integer }
+                      recovery_count: { type: integer }
+                  issues_encountered:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        issue: { type: string }
+                        severity: { type: string, enum: ["low", "medium", "high"] }
+                        resolution: { type: string }
+                        impact: { type: string }
+                  recommendations:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        category: { type: string }
+                        suggestion: { type: string }
+                        priority: { type: string, enum: ["low", "medium", "high"] }
+
+# Agent behavior configuration
+behavior:
+  execution_approach: "methodical_with_checkpoints"
+  error_tolerance: "low"
+  reporting_style: "detailed_with_metrics"
+  quality_focus: "high"
+  
+  self_monitoring:
+    progress_tracking: true
+    quality_validation: true
+    resource_monitoring: true
+    error_detection: true
+  
+  recovery_strategies:
+    checkpoint_rollback: true
+    alternative_approaches: true
+    resource_optimization: true
+    escalation_protocols: true
+  
+  learning:
+    execution_optimization: true
+    pattern_recognition: true
+    performance_improvement: true

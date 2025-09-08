@@ -1,0 +1,237 @@
+ossa: "0.1.8"
+metadata:
+  name: feedback-orchestrator
+  version: "1.0.0"
+  description: "360° Feedback Loop orchestration agent - decomposes goals into executable plans"
+  author: "OSSA Framework"
+  tags: ["orchestration", "planning", "task-decomposition"]
+  category: orchestration
+  subtype: orchestrator
+
+spec:
+  conformance_tier: gold
+  class: orchestration
+  
+  # Core capabilities for orchestration
+  capabilities:
+    primary:
+      - goal_decomposition: "Break down complex goals into executable subtasks"
+      - dependency_mapping: "Identify and map task dependencies and prerequisites"
+      - resource_allocation: "Assign appropriate agents and resources to tasks"
+      - timeline_planning: "Create realistic timelines with milestones"
+      - risk_assessment: "Identify potential risks and mitigation strategies"
+    
+    secondary:
+      - budget_estimation: "Estimate token and resource costs for execution"
+      - agent_selection: "Choose optimal agents for specific task types"
+      - contingency_planning: "Create fallback plans for high-risk scenarios"
+
+  # Budget constraints for orchestration phase
+  budget:
+    default_limit: 2000  # tokens per planning session
+    max_planning_depth: 5  # maximum levels of task decomposition
+    max_subtasks: 20  # maximum subtasks per goal
+    planning_timeout: 300  # 5 minutes maximum planning time
+
+  # Communication protocols
+  protocols:
+    - name: rest_api
+      version: "1.0"
+      endpoint: "/api/v1/orchestrate"
+      required: true
+    - name: grpc
+      version: "1.0" 
+      service: "OrchestratorService"
+      required: false
+    - name: websocket
+      version: "1.0"
+      channel: "/stream/orchestration"
+      required: false
+
+  # Integration with other feedback loop agents
+  integrations:
+    worker_agents:
+      - type: execution
+        communication: async
+        reporting_frequency: "on_milestone"
+    
+    critic_agents:
+      - type: evaluation  
+        communication: sync
+        review_phase: "post_planning"
+    
+    governor_agents:
+      - type: governance
+        communication: sync
+        enforcement: "real_time"
+
+  # Performance metrics
+  metrics:
+    success_criteria:
+      - plan_completeness: ">= 95%"
+      - dependency_accuracy: ">= 90%"
+      - timeline_adherence: ">= 85%"
+    
+    performance_targets:
+      - planning_time: "< 180s"
+      - token_efficiency: "> 80%"
+      - subtask_granularity: "optimal"
+
+  # Input/Output specifications
+  interfaces:
+    input:
+      goal_specification:
+        type: object
+        required: true
+        properties:
+          objective: "High-level goal description"
+          constraints: "Resource and time constraints"
+          success_criteria: "Measurable success metrics"
+          priority: "Goal priority level (1-5)"
+    
+    output:
+      execution_plan:
+        type: object
+        properties:
+          plan_id: "Unique plan identifier"
+          subtasks: "Array of executable subtasks"
+          dependencies: "Task dependency graph"
+          timeline: "Execution timeline with milestones"
+          resource_requirements: "Required agents and resources"
+          risk_analysis: "Identified risks and mitigations"
+          budget_estimate: "Estimated token consumption"
+
+  # Framework integrations
+  frameworks:
+    langchain:
+      enabled: true
+      integration: native
+      tools: ["plan_decomposer", "dependency_analyzer"]
+    
+    crewai:
+      enabled: true
+      role: "Project Manager"
+      goal: "Create comprehensive execution plans"
+      backstory: "Expert in breaking down complex goals into manageable tasks"
+    
+    autogen:
+      enabled: true
+      agent_type: "AssistantAgent"
+      system_message: "You are an expert orchestrator specializing in goal decomposition and project planning."
+
+# OpenAPI specification for REST endpoints
+openapi: "3.1.0"
+info:
+  title: "Feedback Loop Orchestrator API"
+  version: "1.0.0"
+  description: "API for goal decomposition and execution planning"
+
+paths:
+  /orchestrate:
+    post:
+      summary: "Create execution plan from goal"
+      operationId: createExecutionPlan
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [objective, constraints]
+              properties:
+                objective:
+                  type: string
+                  description: "High-level goal to decompose"
+                constraints:
+                  type: object
+                  properties:
+                    budget: { type: integer }
+                    timeline: { type: string }
+                    resources: { type: array, items: { type: string } }
+                success_criteria:
+                  type: array
+                  items: { type: string }
+                priority:
+                  type: integer
+                  minimum: 1
+                  maximum: 5
+                  default: 3
+      responses:
+        "200":
+          description: "Execution plan created successfully"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  plan_id: { type: string }
+                  subtasks:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        task_id: { type: string }
+                        description: { type: string }
+                        agent_type: { type: string }
+                        dependencies: { type: array, items: { type: string } }
+                        estimated_tokens: { type: integer }
+                        priority: { type: integer }
+                  timeline:
+                    type: object
+                    properties:
+                      start_time: { type: string, format: date-time }
+                      milestones: { type: array }
+                      estimated_completion: { type: string, format: date-time }
+                  risk_analysis:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        risk: { type: string }
+                        probability: { type: number }
+                        impact: { type: string }
+                        mitigation: { type: string }
+        "400":
+          description: "Invalid goal specification"
+        "429":
+          description: "Rate limit or budget exceeded"
+
+  /plans/{planId}/status:
+    get:
+      summary: "Get execution plan status"
+      parameters:
+        - name: planId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: "Plan status retrieved"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  plan_id: { type: string }
+                  status: { type: string, enum: ["active", "completed", "failed", "paused"] }
+                  progress: { type: number, minimum: 0, maximum: 100 }
+                  active_tasks: { type: integer }
+                  completed_tasks: { type: integer }
+                  issues: { type: array, items: { type: string } }
+
+# Agent behavior configuration
+behavior:
+  planning_approach: "top_down_decomposition"
+  risk_tolerance: "moderate"
+  optimization_focus: "token_efficiency"
+  collaboration_style: "consultative"
+  
+  decision_making:
+    consensus_required: false
+    escalation_threshold: 3  # escalate after 3 planning failures
+    fallback_strategy: "simplified_planning"
+  
+  learning:
+    feedback_integration: true
+    plan_optimization: true
+    historical_analysis: true

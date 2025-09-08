@@ -1,0 +1,17 @@
+{
+  "agent": "security-review",
+  "domain": "security",
+  "tier": "advanced",
+  "versions": [
+    "1.0.0",
+    "1.0.1",
+    "1.0.2"
+  ],
+  "created": "2025-09-08T15:40:44.772Z",
+  "ossa_version": "0.1.8",
+  "roadmap_files": [
+    "security-review_1.0.0.dita",
+    "security-review_1.0.1.dita",
+    "security-review_1.0.2.dita"
+  ]
+}

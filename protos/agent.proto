@@ -1,0 +1,475 @@
+syntax = "proto3";
+
+package ossa.v1;
+
+import "common.proto";
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/duration.proto";
+import "google/protobuf/struct.proto";
+
+option go_package = "github.com/ossa/proto/v1;ossav1";
+option java_package = "io.ossa.proto.v1";
+option java_multiple_files = true;
+option csharp_namespace = "Ossa.Proto.V1";
+
+// Core agent definition and management service
+service AgentService {
+  // Register a new agent with the system
+  rpc RegisterAgent(RegisterAgentRequest) returns (RegisterAgentResponse);
+  
+  // Update an existing agent's configuration
+  rpc UpdateAgent(UpdateAgentRequest) returns (UpdateAgentResponse);
+  
+  // Unregister an agent from the system
+  rpc UnregisterAgent(UnregisterAgentRequest) returns (UnregisterAgentResponse);
+  
+  // Get agent information
+  rpc GetAgent(GetAgentRequest) returns (GetAgentResponse);
+  
+  // List all registered agents
+  rpc ListAgents(ListAgentsRequest) returns (ListAgentsResponse);
+  
+  // Stream agent status updates
+  rpc StreamAgentStatus(StreamAgentStatusRequest) returns (stream StreamAgentStatusResponse);
+  
+  // Validate agent compliance with OSSA specification
+  rpc ValidateAgent(ValidateAgentRequest) returns (ValidateAgentResponse);
+  
+  // Get agent capabilities
+  rpc GetCapabilities(GetCapabilitiesRequest) returns (GetCapabilitiesResponse);
+}
+
+// Agent definition following OSSA v0.1.8 specification
+message Agent {
+  OSSAIdentifier id = 1;                    // Unique agent identifier
+  AgentMetadata metadata = 2;               // Agent metadata
+  AgentSpec spec = 3;                       // Agent specification
+  AgentStatus status = 4;                   // Current agent status
+  repeated FrameworkMetadata frameworks = 5; // Framework integrations
+  SecurityContext security = 6;             // Security configuration
+}
+
+message AgentMetadata {
+  string name = 1;                          // Human-readable name
+  string description = 2;                   // Agent description
+  string author = 3;                        // Author/organization
+  string license = 4;                       // License (e.g., Apache-2.0)
+  google.protobuf.Timestamp created = 5;    // Creation timestamp
+  google.protobuf.Timestamp updated = 6;    // Last update timestamp
+  map<string, string> labels = 7;           // Classification labels
+  repeated string tags = 8;                 // Searchable tags
+}
+
+message AgentSpec {
+  ConformanceTier conformance_tier = 1;     // OSSA conformance tier
+  AgentClass class = 2;                     // Agent class
+  AgentCategory category = 3;               // Agent category
+  repeated Capability capabilities = 4;      // Agent capabilities
+  repeated Protocol protocols = 5;           // Supported protocols
+  SecurityConfiguration security = 6;        // Security settings
+  PerformanceMetrics performance = 7;        // Performance characteristics
+  DeploymentConfiguration deployment = 8;    // Deployment configuration
+}
+
+enum ConformanceTier {
+  CONFORMANCE_TIER_UNSPECIFIED = 0;
+  CONFORMANCE_TIER_CORE = 1;               // Basic OSSA compliance
+  CONFORMANCE_TIER_ENHANCED = 2;           // Extended capabilities
+  CONFORMANCE_TIER_ADVANCED = 3;           // Advanced features
+  CONFORMANCE_TIER_ENTERPRISE = 4;         // Enterprise compliance
+}
+
+enum AgentClass {
+  AGENT_CLASS_UNSPECIFIED = 0;
+  AGENT_CLASS_GENERAL = 1;                 // General purpose agent
+  AGENT_CLASS_SPECIALIST = 2;              // Domain specialist
+  AGENT_CLASS_ORCHESTRATOR = 3;            // Workflow orchestrator
+  AGENT_CLASS_COORDINATOR = 4;             // Multi-agent coordinator
+  AGENT_CLASS_MONITOR = 5;                 // System monitor
+  AGENT_CLASS_GATEWAY = 6;                 // API gateway
+  AGENT_CLASS_PROXY = 7;                   // Proxy/adapter
+}
+
+enum AgentCategory {
+  AGENT_CATEGORY_UNSPECIFIED = 0;
+  AGENT_CATEGORY_REASONING = 1;            // Reasoning and analysis
+  AGENT_CATEGORY_COMMUNICATION = 2;        // Communication and chat
+  AGENT_CATEGORY_COORDINATION = 3;         // Multi-agent coordination
+  AGENT_CATEGORY_INTEGRATION = 4;          // System integration
+  AGENT_CATEGORY_MONITORING = 5;           // System monitoring
+  AGENT_CATEGORY_SECURITY = 6;             // Security and compliance
+  AGENT_CATEGORY_DATA = 7;                 // Data processing
+  AGENT_CATEGORY_WORKFLOW = 8;             // Workflow management
+}
+
+message Protocol {
+  string name = 1;                         // Protocol name (openapi, mcp, etc.)
+  string version = 2;                      // Protocol version
+  bool required = 3;                       // Whether protocol is required
+  string spec_file = 4;                    // Protocol specification file
+  google.protobuf.Struct configuration = 5; // Protocol-specific config
+  repeated string operations = 6;           // Supported operations
+}
+
+message SecurityConfiguration {
+  repeated AuthenticationMethod auth_methods = 1; // Authentication methods
+  AuthorizationModel authorization = 2;           // Authorization model
+  EncryptionSettings encryption = 3;              // Encryption settings
+  AuditConfiguration audit = 4;                   // Audit configuration
+  PrivacySettings privacy = 5;                    // Privacy settings
+}
+
+enum AuthenticationMethod {
+  AUTH_METHOD_UNSPECIFIED = 0;
+  AUTH_METHOD_API_KEY = 1;
+  AUTH_METHOD_OAUTH2 = 2;
+  AUTH_METHOD_JWT = 3;
+  AUTH_METHOD_MTLS = 4;
+  AUTH_METHOD_SAML = 5;
+  AUTH_METHOD_ZERO_TRUST = 6;
+}
+
+message AuthorizationModel {
+  AuthorizationMethod method = 1;
+  bool fine_grained_permissions = 2;
+  bool context_aware = 3;
+  bool runtime_evaluation = 4;
+}
+
+enum AuthorizationMethod {
+  AUTHORIZATION_METHOD_UNSPECIFIED = 0;
+  AUTHORIZATION_METHOD_RBAC = 1;           // Role-based access control
+  AUTHORIZATION_METHOD_ABAC = 2;           // Attribute-based access control
+  AUTHORIZATION_METHOD_PBAC = 3;           // Policy-based access control
+  AUTHORIZATION_METHOD_DYNAMIC = 4;        // Dynamic authorization
+}
+
+message EncryptionSettings {
+  EncryptionMethod at_rest = 1;
+  EncryptionMethod in_transit = 2;
+  KeyManagement key_management = 3;
+  bool inter_agent_encryption = 4;
+}
+
+enum EncryptionMethod {
+  ENCRYPTION_METHOD_UNSPECIFIED = 0;
+  ENCRYPTION_METHOD_AES_256 = 1;
+  ENCRYPTION_METHOD_RSA_4096 = 2;
+  ENCRYPTION_METHOD_TLS_1_3 = 3;
+  ENCRYPTION_METHOD_E2E = 4;
+}
+
+message KeyManagement {
+  KeyManagementMethod method = 1;
+  google.protobuf.Duration rotation_period = 2;
+  bool hardware_security_module = 3;
+}
+
+enum KeyManagementMethod {
+  KEY_MANAGEMENT_METHOD_UNSPECIFIED = 0;
+  KEY_MANAGEMENT_METHOD_SOFTWARE = 1;
+  KEY_MANAGEMENT_METHOD_HSM = 2;
+  KEY_MANAGEMENT_METHOD_CLOUD_KMS = 3;
+}
+
+message AuditConfiguration {
+  bool comprehensive_logging = 1;
+  bool immutable_trail = 2;
+  bool real_time_monitoring = 3;
+  string retention_policy = 4;
+  bool distributed_tracing = 5;
+}
+
+message PrivacySettings {
+  bool data_minimization = 1;
+  PrivacyMethod anonymization = 2;
+  bool cross_border_compliance = 3;
+  bool right_to_erasure = 4;
+}
+
+enum PrivacyMethod {
+  PRIVACY_METHOD_UNSPECIFIED = 0;
+  PRIVACY_METHOD_ANONYMIZATION = 1;
+  PRIVACY_METHOD_PSEUDONYMIZATION = 2;
+  PRIVACY_METHOD_DIFFERENTIAL_PRIVACY = 3;
+  PRIVACY_METHOD_HOMOMORPHIC_ENCRYPTION = 4;
+}
+
+message DeploymentConfiguration {
+  ContainerConfiguration container = 1;
+  KubernetesConfiguration kubernetes = 2;
+  ScalingConfiguration scaling = 3;
+  NetworkConfiguration network = 4;
+}
+
+message ContainerConfiguration {
+  string image = 1;
+  string registry = 2;
+  repeated string architectures = 3;
+  bool security_scanning = 4;
+  map<string, string> environment = 5;
+}
+
+message KubernetesConfiguration {
+  string namespace = 1;
+  string service_account = 2;
+  bool network_policies = 3;
+  string security_standards = 4;
+  ResourceQuota resource_quota = 5;
+}
+
+message ResourceQuota {
+  string cpu_limit = 1;
+  string memory_limit = 2;
+  string storage_limit = 3;
+  int32 pod_limit = 4;
+}
+
+message ScalingConfiguration {
+  bool horizontal_scaling = 1;
+  bool auto_scaling = 2;
+  int32 min_instances = 3;
+  int32 max_instances = 4;
+  repeated string scale_metrics = 5;
+  ScalingStrategy strategy = 6;
+}
+
+enum ScalingStrategy {
+  SCALING_STRATEGY_UNSPECIFIED = 0;
+  SCALING_STRATEGY_CPU_BASED = 1;
+  SCALING_STRATEGY_MEMORY_BASED = 2;
+  SCALING_STRATEGY_CUSTOM_METRICS = 3;
+  SCALING_STRATEGY_PREDICTIVE = 4;
+}
+
+message NetworkConfiguration {
+  repeated NetworkEndpoint endpoints = 1;
+  bool service_mesh_enabled = 2;
+  TrafficPolicy traffic_policy = 3;
+  SecurityPolicy security_policy = 4;
+}
+
+message NetworkEndpoint {
+  string name = 1;
+  string path = 2;
+  HTTPMethod method = 3;
+  bool auth_required = 4;
+  RateLimitPolicy rate_limit = 5;
+}
+
+enum HTTPMethod {
+  HTTP_METHOD_UNSPECIFIED = 0;
+  HTTP_METHOD_GET = 1;
+  HTTP_METHOD_POST = 2;
+  HTTP_METHOD_PUT = 3;
+  HTTP_METHOD_DELETE = 4;
+  HTTP_METHOD_PATCH = 5;
+  HTTP_METHOD_HEAD = 6;
+  HTTP_METHOD_OPTIONS = 7;
+}
+
+message RateLimitPolicy {
+  int32 requests_per_minute = 1;
+  int32 burst_limit = 2;
+  bool per_user = 3;
+}
+
+message TrafficPolicy {
+  LoadBalancing load_balancing = 1;
+  CircuitBreaker circuit_breaker = 2;
+  RetryPolicy retry_policy = 3;
+  TimeoutPolicy timeout_policy = 4;
+}
+
+enum LoadBalancing {
+  LOAD_BALANCING_UNSPECIFIED = 0;
+  LOAD_BALANCING_ROUND_ROBIN = 1;
+  LOAD_BALANCING_LEAST_CONNECTIONS = 2;
+  LOAD_BALANCING_WEIGHTED = 3;
+  LOAD_BALANCING_IP_HASH = 4;
+}
+
+message CircuitBreaker {
+  double failure_threshold = 1;
+  google.protobuf.Duration timeout = 2;
+  int32 max_requests = 3;
+}
+
+message RetryPolicy {
+  int32 max_attempts = 1;
+  google.protobuf.Duration base_interval = 2;
+  double backoff_multiplier = 3;
+  google.protobuf.Duration max_interval = 4;
+}
+
+message TimeoutPolicy {
+  google.protobuf.Duration request_timeout = 1;
+  google.protobuf.Duration connection_timeout = 2;
+  google.protobuf.Duration idle_timeout = 3;
+}
+
+message SecurityPolicy {
+  bool mtls_enabled = 1;
+  repeated string allowed_origins = 2;
+  repeated string blocked_ips = 3;
+  bool ddos_protection = 4;
+}
+
+message AgentStatus {
+  AgentState state = 1;
+  HealthStatus health = 2;
+  google.protobuf.Timestamp last_heartbeat = 3;
+  string endpoint = 4;
+  map<string, string> runtime_info = 5;
+  repeated string active_workflows = 6;
+}
+
+enum AgentState {
+  AGENT_STATE_UNSPECIFIED = 0;
+  AGENT_STATE_REGISTERING = 1;
+  AGENT_STATE_ACTIVE = 2;
+  AGENT_STATE_INACTIVE = 3;
+  AGENT_STATE_DEGRADED = 4;
+  AGENT_STATE_ERROR = 5;
+  AGENT_STATE_TERMINATING = 6;
+}
+
+// Request/Response messages for AgentService
+
+message RegisterAgentRequest {
+  Agent agent = 1;
+  bool validate_only = 2;                  // Only validate, don't register
+  string registration_token = 3;           // Optional registration token
+}
+
+message RegisterAgentResponse {
+  OSSAIdentifier agent_id = 1;
+  AgentState state = 2;
+  string endpoint = 3;
+  repeated ValidationIssue validation_issues = 4;
+  google.protobuf.Timestamp registered_at = 5;
+}
+
+message UpdateAgentRequest {
+  OSSAIdentifier agent_id = 1;
+  Agent agent = 2;
+  repeated string update_mask = 3;         // Fields to update
+  bool validate_only = 4;
+}
+
+message UpdateAgentResponse {
+  Agent agent = 1;
+  repeated ValidationIssue validation_issues = 2;
+  google.protobuf.Timestamp updated_at = 3;
+}
+
+message UnregisterAgentRequest {
+  OSSAIdentifier agent_id = 1;
+  bool graceful_shutdown = 2;
+  google.protobuf.Duration timeout = 3;
+}
+
+message UnregisterAgentResponse {
+  AgentState final_state = 1;
+  google.protobuf.Timestamp unregistered_at = 2;
+  repeated string cleanup_actions = 3;
+}
+
+message GetAgentRequest {
+  OSSAIdentifier agent_id = 1;
+  bool include_status = 2;
+  bool include_runtime_info = 3;
+}
+
+message GetAgentResponse {
+  Agent agent = 1;
+  Error error = 2;
+}
+
+message ListAgentsRequest {
+  PageInfo page_info = 1;
+  AgentFilter filter = 2;
+  repeated string sort_by = 3;
+  bool include_status = 4;
+}
+
+message AgentFilter {
+  repeated ConformanceTier conformance_tiers = 1;
+  repeated AgentClass classes = 2;
+  repeated AgentCategory categories = 3;
+  repeated AgentState states = 4;
+  map<string, string> label_selector = 5;
+  repeated string capabilities = 6;
+  string name_pattern = 7;
+}
+
+message ListAgentsResponse {
+  repeated Agent agents = 1;
+  PageInfo page_info = 2;
+  int64 total_count = 3;
+  Error error = 4;
+}
+
+message StreamAgentStatusRequest {
+  repeated OSSAIdentifier agent_ids = 1;   // Specific agents or empty for all
+  bool include_health_details = 2;
+  google.protobuf.Duration heartbeat_interval = 3;
+}
+
+message StreamAgentStatusResponse {
+  OSSAIdentifier agent_id = 1;
+  AgentStatus status = 2;
+  google.protobuf.Timestamp timestamp = 3;
+  Error error = 4;
+}
+
+message ValidateAgentRequest {
+  Agent agent = 1;
+  ConformanceTier target_tier = 2;         // Target compliance tier
+  bool strict_validation = 3;              // Enforce strict compliance
+}
+
+message ValidateAgentResponse {
+  bool valid = 1;
+  ConformanceTier achieved_tier = 2;
+  repeated ValidationIssue issues = 3;
+  ValidationSummary summary = 4;
+}
+
+message ValidationIssue {
+  ValidationSeverity severity = 1;
+  string category = 2;
+  string message = 3;
+  string field_path = 4;
+  repeated string suggestions = 5;
+}
+
+enum ValidationSeverity {
+  VALIDATION_SEVERITY_UNSPECIFIED = 0;
+  VALIDATION_SEVERITY_INFO = 1;
+  VALIDATION_SEVERITY_WARNING = 2;
+  VALIDATION_SEVERITY_ERROR = 3;
+  VALIDATION_SEVERITY_CRITICAL = 4;
+}
+
+message ValidationSummary {
+  int32 total_issues = 1;
+  int32 errors = 2;
+  int32 warnings = 3;
+  double compliance_score = 4;             // 0.0-1.0
+  repeated string passed_checks = 5;
+  repeated string failed_checks = 6;
+}
+
+message GetCapabilitiesRequest {
+  OSSAIdentifier agent_id = 1;
+  bool include_performance = 2;
+  bool include_protocols = 3;
+}
+
+message GetCapabilitiesResponse {
+  repeated Capability capabilities = 1;
+  repeated Protocol protocols = 2;
+  PerformanceMetrics performance = 3;
+  Error error = 4;
+}

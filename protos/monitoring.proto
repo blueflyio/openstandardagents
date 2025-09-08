@@ -1,0 +1,1554 @@
+syntax = "proto3";
+
+package ossa.v1;
+
+import "common.proto";
+import "agent.proto";
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/duration.proto";
+import "google/protobuf/struct.proto";
+import "google/protobuf/any.proto";
+
+option go_package = "github.com/ossa/proto/v1;ossav1";
+option java_package = "io.ossa.proto.v1";
+option java_multiple_files = true;
+option csharp_namespace = "Ossa.Proto.V1";
+
+// Monitoring service for comprehensive agent and system health tracking
+service MonitoringService {
+  // Register agent for monitoring
+  rpc RegisterForMonitoring(RegisterForMonitoringRequest) returns (RegisterForMonitoringResponse);
+  
+  // Unregister agent from monitoring
+  rpc UnregisterFromMonitoring(UnregisterFromMonitoringRequest) returns (UnregisterFromMonitoringResponse);
+  
+  // Get agent health status
+  rpc GetHealthStatus(GetHealthStatusRequest) returns (GetHealthStatusResponse);
+  
+  // Stream health status updates
+  rpc StreamHealthUpdates(StreamHealthUpdatesRequest) returns (stream HealthStatusUpdate);
+  
+  // Report metrics
+  rpc ReportMetrics(ReportMetricsRequest) returns (ReportMetricsResponse);
+  
+  // Query metrics
+  rpc QueryMetrics(QueryMetricsRequest) returns (QueryMetricsResponse);
+  
+  // Stream metrics
+  rpc StreamMetrics(StreamMetricsRequest) returns (stream MetricUpdate);
+  
+  // Send alert
+  rpc SendAlert(SendAlertRequest) returns (SendAlertResponse);
+  
+  // Get alerts
+  rpc GetAlerts(GetAlertsRequest) returns (GetAlertsResponse);
+  
+  // Acknowledge alert
+  rpc AcknowledgeAlert(AcknowledgeAlertRequest) returns (AcknowledgeAlertResponse);
+  
+  // Create monitoring dashboard
+  rpc CreateDashboard(CreateDashboardRequest) returns (CreateDashboardResponse);
+  
+  // Get monitoring dashboard
+  rpc GetDashboard(GetDashboardRequest) returns (GetDashboardResponse);
+  
+  // List monitoring dashboards
+  rpc ListDashboards(ListDashboardsRequest) returns (ListDashboardsResponse);
+  
+  // Create monitoring rule
+  rpc CreateMonitoringRule(CreateMonitoringRuleRequest) returns (CreateMonitoringRuleResponse);
+  
+  // List monitoring rules
+  rpc ListMonitoringRules(ListMonitoringRulesRequest) returns (ListMonitoringRulesResponse);
+  
+  // Get system status
+  rpc GetSystemStatus(GetSystemStatusRequest) returns (GetSystemStatusResponse);
+  
+  // Get performance analytics
+  rpc GetPerformanceAnalytics(GetPerformanceAnalyticsRequest) returns (GetPerformanceAnalyticsResponse);
+  
+  // Stream system events
+  rpc StreamSystemEvents(StreamSystemEventsRequest) returns (stream SystemEvent);
+  
+  // Perform health check
+  rpc PerformHealthCheck(PerformHealthCheckRequest) returns (PerformHealthCheckResponse);
+  
+  // Get trace data
+  rpc GetTraceData(GetTraceDataRequest) returns (GetTraceDataResponse);
+}
+
+// Comprehensive health monitoring for agents
+message AgentHealthMonitor {
+  OSSAIdentifier agent_id = 1;            // Agent identifier
+  MonitoringConfiguration config = 2;     // Monitoring configuration
+  HealthProfile profile = 3;              // Agent health profile
+  repeated HealthCheck checks = 4;        // Health check definitions
+  AlertConfiguration alerts = 5;          // Alert configuration
+  google.protobuf.Timestamp registered = 6; // Registration timestamp
+  MonitoringStatus status = 7;            // Current monitoring status
+}
+
+message MonitoringConfiguration {
+  google.protobuf.Duration check_interval = 1; // Health check interval
+  google.protobuf.Duration timeout = 2;       // Check timeout
+  int32 max_retries = 3;                      // Maximum retry attempts
+  bool detailed_checks = 4;                   // Enable detailed health checks
+  repeated string custom_metrics = 5;         // Custom metrics to collect
+  MetricsCollection metrics_config = 6;       // Metrics collection configuration
+  TracingConfiguration tracing_config = 7;    // Tracing configuration
+  LoggingConfiguration logging_config = 8;    // Logging configuration
+}
+
+message HealthProfile {
+  repeated HealthDimension dimensions = 1; // Health dimensions to monitor
+  HealthThresholds thresholds = 2;        // Health thresholds
+  BaselineMetrics baseline = 3;           // Baseline performance metrics
+  HealthSLO slo = 4;                      // Service Level Objectives
+}
+
+message HealthDimension {
+  DimensionType type = 1;                 // Dimension type
+  string name = 2;                        // Dimension name
+  double weight = 3;                      // Dimension weight (0.0-1.0)
+  HealthThresholds thresholds = 4;        // Dimension-specific thresholds
+  bool enabled = 5;                       // Whether dimension is enabled
+}
+
+enum DimensionType {
+  DIMENSION_TYPE_UNSPECIFIED = 0;
+  DIMENSION_TYPE_AVAILABILITY = 1;        // Service availability
+  DIMENSION_TYPE_PERFORMANCE = 2;         // Performance metrics
+  DIMENSION_TYPE_RELIABILITY = 3;         // System reliability
+  DIMENSION_TYPE_CAPACITY = 4;            // Resource capacity
+  DIMENSION_TYPE_SECURITY = 5;            // Security posture
+  DIMENSION_TYPE_COMPLIANCE = 6;          // Compliance status
+  DIMENSION_TYPE_FUNCTIONALITY = 7;       // Functional correctness
+  DIMENSION_TYPE_CONNECTIVITY = 8;        // Network connectivity
+}
+
+message HealthThresholds {
+  ThresholdLevel critical = 1;            // Critical threshold
+  ThresholdLevel warning = 2;             // Warning threshold
+  ThresholdLevel healthy = 3;             // Healthy threshold
+  ThresholdLevel degraded = 4;            // Degraded threshold
+}
+
+message ThresholdLevel {
+  double min_value = 1;                   // Minimum threshold value
+  double max_value = 2;                   // Maximum threshold value
+  ThresholdOperator operator = 3;         // Threshold operator
+  google.protobuf.Duration duration = 4;  // Threshold duration
+}
+
+enum ThresholdOperator {
+  THRESHOLD_OPERATOR_UNSPECIFIED = 0;
+  THRESHOLD_OPERATOR_GREATER_THAN = 1;    // Greater than
+  THRESHOLD_OPERATOR_LESS_THAN = 2;       // Less than
+  THRESHOLD_OPERATOR_EQUAL = 3;           // Equal to
+  THRESHOLD_OPERATOR_BETWEEN = 4;         // Between values
+  THRESHOLD_OPERATOR_OUTSIDE = 5;         // Outside range
+}
+
+message BaselineMetrics {
+  double avg_response_time_ms = 1;        // Average response time
+  double avg_throughput = 2;              // Average throughput
+  double avg_cpu_usage = 3;               // Average CPU usage
+  double avg_memory_usage = 4;            // Average memory usage
+  double avg_error_rate = 5;              // Average error rate
+  google.protobuf.Timestamp measured_at = 6; // Baseline measurement time
+  google.protobuf.Duration measurement_period = 7; // Measurement period
+}
+
+message HealthSLO {
+  repeated ServiceLevelObjective objectives = 1; // SLO definitions
+  SLOBudget error_budget = 2;                    // Error budget
+  AlertPolicy alert_policy = 3;                 // SLO alerting policy
+}
+
+message ServiceLevelObjective {
+  string name = 1;                        // SLO name
+  SLOType type = 2;                       // SLO type
+  double target_percentage = 3;           // Target percentage (0.0-1.0)
+  google.protobuf.Duration measurement_window = 4; // Measurement window
+  SLOCondition condition = 5;             // SLO condition
+  bool enabled = 6;                       // Whether SLO is enabled
+}
+
+enum SLOType {
+  SLO_TYPE_UNSPECIFIED = 0;
+  SLO_TYPE_AVAILABILITY = 1;              // Availability SLO
+  SLO_TYPE_LATENCY = 2;                   // Latency SLO
+  SLO_TYPE_THROUGHPUT = 3;                // Throughput SLO
+  SLO_TYPE_ERROR_RATE = 4;                // Error rate SLO
+  SLO_TYPE_CUSTOM = 5;                    // Custom SLO
+}
+
+message SLOCondition {
+  string metric = 1;                      // Metric name
+  ComparisonOperator operator = 2;        // Comparison operator
+  double threshold = 3;                   // Threshold value
+  string query = 4;                       // Custom query
+}
+
+message SLOBudget {
+  double remaining_budget = 1;            // Remaining error budget (0.0-1.0)
+  double consumed_budget = 2;             // Consumed error budget (0.0-1.0)
+  google.protobuf.Duration burn_rate_window = 3; // Burn rate calculation window
+  double current_burn_rate = 4;           // Current burn rate
+  BudgetAlert budget_alerts = 5;          // Budget alerting configuration
+}
+
+message BudgetAlert {
+  repeated double alert_thresholds = 1;   // Budget consumption alert thresholds
+  bool fast_burn_alert = 2;               // Enable fast burn alerts
+  bool slow_burn_alert = 3;               // Enable slow burn alerts
+}
+
+message AlertPolicy {
+  repeated AlertCondition conditions = 1;  // Alert conditions
+  AlertNotification notification = 2;      // Notification configuration
+  AlertSeverity default_severity = 3;      // Default alert severity
+}
+
+message AlertCondition {
+  string name = 1;                        // Condition name
+  string description = 2;                 // Condition description
+  ConditionType type = 3;                 // Condition type
+  string expression = 4;                  // Alert expression
+  google.protobuf.Duration evaluation_window = 5; // Evaluation window
+  AlertSeverity severity = 6;             // Alert severity
+}
+
+enum ConditionType {
+  CONDITION_TYPE_UNSPECIFIED = 0;
+  CONDITION_TYPE_THRESHOLD = 1;           // Threshold condition
+  CONDITION_TYPE_ANOMALY = 2;             // Anomaly detection
+  CONDITION_TYPE_FORECAST = 3;            // Forecast-based condition
+  CONDITION_TYPE_CORRELATION = 4;         // Cross-metric correlation
+  CONDITION_TYPE_PATTERN = 5;             // Pattern-based condition
+}
+
+message AlertNotification {
+  repeated NotificationChannel channels = 1; // Notification channels
+  NotificationPolicy policy = 2;             // Notification policy
+  EscalationPolicy escalation = 3;           // Escalation policy
+}
+
+message NotificationPolicy {
+  google.protobuf.Duration retry_interval = 1; // Retry interval
+  int32 max_retries = 2;                       // Maximum retries
+  bool group_notifications = 3;                // Group similar notifications
+  google.protobuf.Duration grouping_window = 4; // Grouping time window
+}
+
+enum AlertSeverity {
+  ALERT_SEVERITY_UNSPECIFIED = 0;
+  ALERT_SEVERITY_INFO = 1;                // Informational alert
+  ALERT_SEVERITY_LOW = 2;                 // Low severity
+  ALERT_SEVERITY_MEDIUM = 3;              // Medium severity
+  ALERT_SEVERITY_HIGH = 4;                // High severity
+  ALERT_SEVERITY_CRITICAL = 5;            // Critical severity
+  ALERT_SEVERITY_EMERGENCY = 6;           // Emergency severity
+}
+
+message MonitoringStatus {
+  MonitoringState state = 1;              // Current monitoring state
+  google.protobuf.Timestamp last_check = 2; // Last health check time
+  int32 consecutive_failures = 3;         // Consecutive failure count
+  repeated MonitoringIssue issues = 4;    // Current monitoring issues
+  MonitoringStatistics statistics = 5;    // Monitoring statistics
+}
+
+enum MonitoringState {
+  MONITORING_STATE_UNSPECIFIED = 0;
+  MONITORING_STATE_ACTIVE = 1;            // Monitoring is active
+  MONITORING_STATE_PAUSED = 2;            // Monitoring is paused
+  MONITORING_STATE_ERROR = 3;             // Monitoring has errors
+  MONITORING_STATE_DEGRADED = 4;          // Monitoring is degraded
+  MONITORING_STATE_INACTIVE = 5;          // Monitoring is inactive
+}
+
+message MonitoringIssue {
+  string issue_id = 1;                    // Issue identifier
+  IssueType type = 2;                     // Issue type
+  IssueSeverity severity = 3;             // Issue severity
+  string description = 4;                 // Issue description
+  google.protobuf.Timestamp detected = 5; // Detection timestamp
+  google.protobuf.Timestamp resolved = 6; // Resolution timestamp
+  bool active = 7;                        // Whether issue is active
+}
+
+message MonitoringStatistics {
+  int64 total_checks = 1;                 // Total health checks performed
+  int64 successful_checks = 2;            // Successful checks
+  int64 failed_checks = 3;                // Failed checks
+  double uptime_percentage = 4;           // Uptime percentage
+  google.protobuf.Duration avg_response_time = 5; // Average response time
+  int64 alerts_sent = 6;                  // Total alerts sent
+}
+
+// Comprehensive metrics collection and reporting
+message MetricDefinition {
+  string name = 1;                        // Metric name
+  MetricType type = 2;                    // Metric type
+  string description = 3;                 // Metric description
+  string unit = 4;                        // Metric unit
+  repeated MetricLabel labels = 5;        // Metric labels
+  MetricAggregation aggregation = 6;      // Default aggregation
+  MetricRetention retention = 7;          // Retention policy
+}
+
+enum MetricType {
+  METRIC_TYPE_UNSPECIFIED = 0;
+  METRIC_TYPE_COUNTER = 1;                // Counter metric (monotonically increasing)
+  METRIC_TYPE_GAUGE = 2;                  // Gauge metric (current value)
+  METRIC_TYPE_HISTOGRAM = 3;              // Histogram metric (distribution)
+  METRIC_TYPE_SUMMARY = 4;                // Summary metric (quantiles)
+  METRIC_TYPE_SET = 5;                    // Set metric (unique values)
+}
+
+message MetricLabel {
+  string key = 1;                         // Label key
+  LabelType type = 2;                     // Label type
+  bool required = 3;                      // Whether label is required
+  repeated string allowed_values = 4;     // Allowed label values
+}
+
+enum LabelType {
+  LABEL_TYPE_UNSPECIFIED = 0;
+  LABEL_TYPE_STRING = 1;                  // String label
+  LABEL_TYPE_NUMERIC = 2;                 // Numeric label
+  LABEL_TYPE_BOOLEAN = 3;                 // Boolean label
+  LABEL_TYPE_CATEGORICAL = 4;             // Categorical label
+}
+
+message MetricAggregation {
+  AggregationType type = 1;               // Aggregation type
+  google.protobuf.Duration window = 2;    // Aggregation window
+  repeated double percentiles = 3;        // Percentiles for summary metrics
+}
+
+enum AggregationType {
+  AGGREGATION_TYPE_UNSPECIFIED = 0;
+  AGGREGATION_TYPE_SUM = 1;               // Sum aggregation
+  AGGREGATION_TYPE_AVERAGE = 2;           // Average aggregation
+  AGGREGATION_TYPE_MIN = 3;               // Minimum aggregation
+  AGGREGATION_TYPE_MAX = 4;               // Maximum aggregation
+  AGGREGATION_TYPE_COUNT = 5;             // Count aggregation
+  AGGREGATION_TYPE_PERCENTILE = 6;        // Percentile aggregation
+}
+
+message MetricRetention {
+  google.protobuf.Duration raw_retention = 1;    // Raw data retention
+  google.protobuf.Duration aggregated_retention = 2; // Aggregated data retention
+  repeated DownsamplingRule downsampling = 3;    // Downsampling rules
+}
+
+message DownsamplingRule {
+  google.protobuf.Duration after = 1;     // Apply rule after this duration
+  google.protobuf.Duration resolution = 2; // New resolution
+  AggregationType aggregation = 3;        // Aggregation method
+}
+
+message MetricValue {
+  string name = 1;                        // Metric name
+  MetricType type = 2;                    // Metric type
+  google.protobuf.Timestamp timestamp = 3; // Metric timestamp
+  map<string, string> labels = 4;        // Metric labels
+  oneof value {
+    double gauge_value = 5;               // Gauge value
+    int64 counter_value = 6;              // Counter value
+    HistogramValue histogram_value = 7;   // Histogram value
+    SummaryValue summary_value = 8;       // Summary value
+    SetValue set_value = 9;               // Set value
+  }
+}
+
+message HistogramValue {
+  int64 count = 1;                        // Total count
+  double sum = 2;                         // Sum of values
+  repeated HistogramBucket buckets = 3;   // Histogram buckets
+}
+
+message HistogramBucket {
+  double upper_bound = 1;                 // Bucket upper bound
+  int64 cumulative_count = 2;             // Cumulative count
+}
+
+message SummaryValue {
+  int64 count = 1;                        // Total count
+  double sum = 2;                         // Sum of values
+  repeated SummaryQuantile quantiles = 3; // Summary quantiles
+}
+
+message SummaryQuantile {
+  double quantile = 1;                    // Quantile (0.0-1.0)
+  double value = 2;                       // Quantile value
+}
+
+message SetValue {
+  repeated string values = 1;             // Set values
+  int64 cardinality = 2;                  // Set cardinality
+}
+
+// Alert management system
+message Alert {
+  OSSAIdentifier alert_id = 1;            // Alert identifier
+  AlertMetadata metadata = 2;             // Alert metadata
+  AlertSpec spec = 3;                     // Alert specification
+  AlertStatus status = 4;                 // Alert status
+  repeated AlertAnnotation annotations = 5; // Alert annotations
+}
+
+message AlertMetadata {
+  string name = 1;                        // Alert name
+  string description = 2;                 // Alert description
+  AlertSeverity severity = 3;             // Alert severity
+  google.protobuf.Timestamp created = 4;  // Creation timestamp
+  google.protobuf.Timestamp updated = 5;  // Last update timestamp
+  map<string, string> labels = 6;        // Alert labels
+  OSSAIdentifier source_agent = 7;        // Source agent identifier
+}
+
+message AlertSpec {
+  AlertRule rule = 1;                     // Alert rule
+  AlertActions actions = 2;               // Alert actions
+  AlertDependencies dependencies = 3;     // Alert dependencies
+  AlertSchedule schedule = 4;             // Alert schedule
+}
+
+message AlertRule {
+  string expression = 1;                  // Alert expression
+  google.protobuf.Duration evaluation_interval = 2; // Evaluation interval
+  google.protobuf.Duration for_duration = 3;        // Alert firing duration
+  repeated RuleCondition conditions = 4;            // Rule conditions
+  string query_language = 5;                        // Query language (PromQL, etc.)
+}
+
+message RuleCondition {
+  string metric = 1;                      // Metric name
+  ComparisonOperator operator = 2;        // Comparison operator
+  double threshold = 3;                   // Threshold value
+  google.protobuf.Duration window = 4;    // Time window
+}
+
+message AlertActions {
+  repeated AlertAction actions = 1;       // Actions to execute
+  bool auto_resolve = 2;                  // Auto-resolve when condition clears
+  google.protobuf.Duration resolve_timeout = 3; // Auto-resolve timeout
+}
+
+message AlertAction {
+  ActionType type = 1;                    // Action type
+  ActionTarget target = 2;                // Action target
+  google.protobuf.Struct parameters = 3;  // Action parameters
+  bool enabled = 4;                       // Whether action is enabled
+}
+
+enum ActionType {
+  ACTION_TYPE_UNSPECIFIED = 0;
+  ACTION_TYPE_NOTIFY = 1;                 // Send notification
+  ACTION_TYPE_WEBHOOK = 2;                // Call webhook
+  ACTION_TYPE_SCRIPT = 3;                 // Execute script
+  ACTION_TYPE_API_CALL = 4;               // Make API call
+  ACTION_TYPE_ESCALATE = 5;               // Escalate alert
+  ACTION_TYPE_AUTO_REMEDIATE = 6;         // Auto-remediation
+}
+
+message ActionTarget {
+  string endpoint = 1;                    // Target endpoint
+  map<string, string> headers = 2;       // Request headers
+  google.protobuf.Duration timeout = 3;   // Action timeout
+  int32 max_retries = 4;                  // Maximum retries
+}
+
+message AlertDependencies {
+  repeated OSSAIdentifier depends_on = 1;  // Alert dependencies
+  DependencyMode mode = 2;                 // Dependency mode
+  bool suppress_dependent = 3;             // Suppress dependent alerts
+}
+
+enum DependencyMode {
+  DEPENDENCY_MODE_UNSPECIFIED = 0;
+  DEPENDENCY_MODE_AND = 1;                // All dependencies must be active
+  DEPENDENCY_MODE_OR = 2;                 // Any dependency must be active
+  DEPENDENCY_MODE_SUPPRESS = 3;           // Suppress if any dependency is active
+}
+
+message AlertSchedule {
+  repeated TimeWindow active_windows = 1;  // Active time windows
+  repeated TimeWindow mute_windows = 2;    // Mute time windows
+  TimeZone timezone = 3;                   // Schedule timezone
+  bool always_active = 4;                  // Whether alert is always active
+}
+
+message TimeWindow {
+  DayOfWeek start_day = 1;                // Start day
+  TimeOfDay start_time = 2;               // Start time
+  DayOfWeek end_day = 3;                  // End day
+  TimeOfDay end_time = 4;                 // End time
+  bool enabled = 5;                       // Whether window is enabled
+}
+
+message TimeOfDay {
+  int32 hour = 1;                         // Hour (0-23)
+  int32 minute = 2;                       // Minute (0-59)
+  int32 second = 3;                       // Second (0-59)
+}
+
+message AlertStatus {
+  AlertState state = 1;                   // Current alert state
+  google.protobuf.Timestamp fired_at = 2; // When alert fired
+  google.protobuf.Timestamp resolved_at = 3; // When alert resolved
+  google.protobuf.Timestamp acknowledged_at = 4; // When alert was acknowledged
+  string acknowledged_by = 5;             // Who acknowledged the alert
+  int32 fire_count = 6;                   // Number of times alert has fired
+  google.protobuf.Timestamp last_evaluation = 7; // Last evaluation time
+  double current_value = 8;               // Current metric value
+}
+
+enum AlertState {
+  ALERT_STATE_UNSPECIFIED = 0;
+  ALERT_STATE_PENDING = 1;                // Alert condition met but not yet firing
+  ALERT_STATE_FIRING = 2;                 // Alert is actively firing
+  ALERT_STATE_RESOLVED = 3;               // Alert condition cleared
+  ALERT_STATE_ACKNOWLEDGED = 4;           // Alert has been acknowledged
+  ALERT_STATE_SUPPRESSED = 5;             // Alert is suppressed
+  ALERT_STATE_SILENCED = 6;               // Alert is silenced
+}
+
+message AlertAnnotation {
+  string key = 1;                         // Annotation key
+  string value = 2;                       // Annotation value
+  google.protobuf.Timestamp timestamp = 3; // Annotation timestamp
+  string author = 4;                      // Annotation author
+}
+
+// Monitoring dashboards
+message MonitoringDashboard {
+  OSSAIdentifier dashboard_id = 1;        // Dashboard identifier
+  DashboardMetadata metadata = 2;         // Dashboard metadata
+  DashboardSpec spec = 3;                 // Dashboard specification
+  DashboardStatus status = 4;             // Dashboard status
+}
+
+message DashboardMetadata {
+  string name = 1;                        // Dashboard name
+  string description = 2;                 // Dashboard description
+  string author = 3;                      // Dashboard author
+  google.protobuf.Timestamp created = 4;  // Creation timestamp
+  google.protobuf.Timestamp updated = 5;  // Last update timestamp
+  repeated string tags = 6;               // Dashboard tags
+  DashboardCategory category = 7;         // Dashboard category
+  bool public = 8;                        // Whether dashboard is public
+}
+
+enum DashboardCategory {
+  DASHBOARD_CATEGORY_UNSPECIFIED = 0;
+  DASHBOARD_CATEGORY_SYSTEM = 1;          // System monitoring
+  DASHBOARD_CATEGORY_APPLICATION = 2;     // Application monitoring
+  DASHBOARD_CATEGORY_BUSINESS = 3;        // Business metrics
+  DASHBOARD_CATEGORY_SECURITY = 4;        // Security monitoring
+  DASHBOARD_CATEGORY_CUSTOM = 5;          // Custom dashboard
+}
+
+message DashboardSpec {
+  DashboardLayout layout = 1;             // Dashboard layout
+  repeated DashboardPanel panels = 2;     // Dashboard panels
+  DashboardSettings settings = 3;         // Dashboard settings
+  repeated DashboardVariable variables = 4; // Dashboard variables
+}
+
+message DashboardLayout {
+  LayoutType type = 1;                    // Layout type
+  int32 columns = 2;                      // Number of columns
+  int32 rows = 3;                         // Number of rows
+  bool responsive = 4;                    // Whether layout is responsive
+}
+
+enum LayoutType {
+  LAYOUT_TYPE_UNSPECIFIED = 0;
+  LAYOUT_TYPE_GRID = 1;                   // Grid layout
+  LAYOUT_TYPE_FLOW = 2;                   // Flow layout
+  LAYOUT_TYPE_TABS = 3;                   // Tabbed layout
+  LAYOUT_TYPE_ACCORDION = 4;              // Accordion layout
+}
+
+message DashboardPanel {
+  OSSAIdentifier panel_id = 1;            // Panel identifier
+  PanelMetadata metadata = 2;             // Panel metadata
+  PanelSpec spec = 3;                     // Panel specification
+  PanelPosition position = 4;             // Panel position
+}
+
+message PanelMetadata {
+  string title = 1;                       // Panel title
+  string description = 2;                 // Panel description
+  PanelType type = 3;                     // Panel type
+  repeated string tags = 4;               // Panel tags
+}
+
+enum PanelType {
+  PANEL_TYPE_UNSPECIFIED = 0;
+  PANEL_TYPE_GRAPH = 1;                   // Graph panel
+  PANEL_TYPE_SINGLE_STAT = 2;             // Single stat panel
+  PANEL_TYPE_TABLE = 3;                   // Table panel
+  PANEL_TYPE_HEATMAP = 4;                 // Heatmap panel
+  PANEL_TYPE_ALERT_LIST = 5;              // Alert list panel
+  PANEL_TYPE_TEXT = 6;                    // Text panel
+  PANEL_TYPE_GAUGE = 7;                   // Gauge panel
+  PANEL_TYPE_BAR_GAUGE = 8;               // Bar gauge panel
+  PANEL_TYPE_PIE_CHART = 9;               // Pie chart panel
+}
+
+message PanelSpec {
+  repeated PanelQuery queries = 1;        // Panel queries
+  PanelVisualization visualization = 2;   // Visualization settings
+  PanelThresholds thresholds = 3;         // Panel thresholds
+  PanelAlerts alerts = 4;                 // Panel alerts
+  google.protobuf.Duration refresh_interval = 5; // Refresh interval
+}
+
+message PanelQuery {
+  string query = 1;                       // Query expression
+  string datasource = 2;                  // Data source
+  string legend = 3;                      // Legend template
+  bool enabled = 4;                       // Whether query is enabled
+  QueryOptions options = 5;               // Query options
+}
+
+message QueryOptions {
+  google.protobuf.Duration interval = 1;  // Query interval
+  int32 max_data_points = 2;              // Maximum data points
+  string format = 3;                      // Result format
+  bool instant = 4;                       // Whether query is instant
+}
+
+message PanelVisualization {
+  repeated VisualizationOption options = 1; // Visualization options
+  ColorScheme colors = 2;                   // Color scheme
+  AxisConfiguration axes = 3;               // Axis configuration
+  LegendConfiguration legend = 4;           // Legend configuration
+}
+
+message VisualizationOption {
+  string key = 1;                         // Option key
+  google.protobuf.Any value = 2;          // Option value
+}
+
+message ColorScheme {
+  SchemeType type = 1;                    // Color scheme type
+  repeated string colors = 2;             // Custom colors
+  string palette = 3;                     // Color palette name
+}
+
+enum SchemeType {
+  SCHEME_TYPE_UNSPECIFIED = 0;
+  SCHEME_TYPE_DEFAULT = 1;                // Default colors
+  SCHEME_TYPE_CUSTOM = 2;                 // Custom colors
+  SCHEME_TYPE_GRADIENT = 3;               // Gradient colors
+  SCHEME_TYPE_CATEGORICAL = 4;            // Categorical colors
+}
+
+message AxisConfiguration {
+  AxisSettings x_axis = 1;                // X-axis settings
+  AxisSettings y_axis = 2;                // Y-axis settings
+  AxisSettings y2_axis = 3;               // Secondary Y-axis settings
+}
+
+message AxisSettings {
+  string label = 1;                       // Axis label
+  string unit = 2;                        // Unit of measurement
+  double min_value = 3;                   // Minimum value
+  double max_value = 4;                   // Maximum value
+  bool logarithmic = 5;                   // Whether axis is logarithmic
+  bool show_grid = 6;                     // Whether to show grid lines
+}
+
+message LegendConfiguration {
+  LegendPosition position = 1;            // Legend position
+  bool show_legend = 2;                   // Whether to show legend
+  bool show_values = 3;                   // Whether to show values
+  int32 max_width = 4;                    // Maximum legend width
+}
+
+enum LegendPosition {
+  LEGEND_POSITION_UNSPECIFIED = 0;
+  LEGEND_POSITION_BOTTOM = 1;             // Bottom position
+  LEGEND_POSITION_RIGHT = 2;              // Right position
+  LEGEND_POSITION_TOP = 3;                // Top position
+  LEGEND_POSITION_LEFT = 4;               // Left position
+}
+
+message PanelThresholds {
+  repeated Threshold thresholds = 1;      // Threshold definitions
+  ThresholdMode mode = 2;                 // Threshold mode
+}
+
+message Threshold {
+  double value = 1;                       // Threshold value
+  string color = 2;                       // Threshold color
+  ComparisonOperator operator = 3;        // Comparison operator
+  string label = 4;                       // Threshold label
+}
+
+enum ThresholdMode {
+  THRESHOLD_MODE_UNSPECIFIED = 0;
+  THRESHOLD_MODE_ABSOLUTE = 1;            // Absolute thresholds
+  THRESHOLD_MODE_PERCENTAGE = 2;          // Percentage thresholds
+}
+
+message PanelAlerts {
+  repeated PanelAlert alerts = 1;         // Panel-specific alerts
+  bool alerts_enabled = 2;                // Whether alerts are enabled
+}
+
+message PanelAlert {
+  string name = 1;                        // Alert name
+  string condition = 2;                   // Alert condition
+  AlertSeverity severity = 3;             // Alert severity
+  google.protobuf.Duration evaluation_interval = 4; // Evaluation interval
+}
+
+message PanelPosition {
+  int32 x = 1;                           // X coordinate
+  int32 y = 2;                           // Y coordinate
+  int32 width = 3;                       // Panel width
+  int32 height = 4;                      // Panel height
+}
+
+message DashboardSettings {
+  google.protobuf.Duration auto_refresh = 1; // Auto-refresh interval
+  TimeRange time_range = 2;                  // Default time range
+  repeated string shared_crossfilter = 3;    // Shared crossfilter variables
+  bool editable = 4;                         // Whether dashboard is editable
+}
+
+message TimeRange {
+  TimeRangeType type = 1;                 // Time range type
+  google.protobuf.Timestamp from = 2;     // Start time (absolute)
+  google.protobuf.Timestamp to = 3;       // End time (absolute)
+  google.protobuf.Duration duration = 4;  // Duration (relative)
+}
+
+enum TimeRangeType {
+  TIME_RANGE_TYPE_UNSPECIFIED = 0;
+  TIME_RANGE_TYPE_RELATIVE = 1;           // Relative time range
+  TIME_RANGE_TYPE_ABSOLUTE = 2;           // Absolute time range
+}
+
+message DashboardVariable {
+  string name = 1;                        // Variable name
+  VariableType type = 2;                  // Variable type
+  string query = 3;                       // Variable query
+  string datasource = 4;                  // Data source
+  repeated string options = 5;            // Variable options
+  string current_value = 6;               // Current value
+  bool multi_value = 7;                   // Whether multiple values allowed
+  bool include_all = 8;                   // Whether to include "All" option
+}
+
+enum VariableType {
+  VARIABLE_TYPE_UNSPECIFIED = 0;
+  VARIABLE_TYPE_QUERY = 1;                // Query-based variable
+  VARIABLE_TYPE_CUSTOM = 2;               // Custom variable
+  VARIABLE_TYPE_CONSTANT = 3;             // Constant variable
+  VARIABLE_TYPE_DATASOURCE = 4;           // Data source variable
+}
+
+message DashboardStatus {
+  DashboardState state = 1;               // Dashboard state
+  google.protobuf.Timestamp last_updated = 2; // Last update time
+  int32 view_count = 3;                   // Number of views
+  repeated DashboardIssue issues = 4;     // Dashboard issues
+}
+
+enum DashboardState {
+  DASHBOARD_STATE_UNSPECIFIED = 0;
+  DASHBOARD_STATE_ACTIVE = 1;             // Dashboard is active
+  DASHBOARD_STATE_INACTIVE = 2;           // Dashboard is inactive
+  DASHBOARD_STATE_ERROR = 3;              // Dashboard has errors
+  DASHBOARD_STATE_DRAFT = 4;              // Dashboard is in draft state
+}
+
+message DashboardIssue {
+  IssueType type = 1;                     // Issue type
+  IssueSeverity severity = 2;             // Issue severity
+  string description = 3;                 // Issue description
+  OSSAIdentifier panel_id = 4;            // Affected panel ID
+  google.protobuf.Timestamp occurred = 5; // When issue occurred
+}
+
+// System monitoring and analytics
+message SystemStatus {
+  SystemHealth health = 1;                // Overall system health
+  SystemMetrics metrics = 2;              // System-level metrics
+  repeated ComponentStatus components = 3; // Component statuses
+  SystemCapacity capacity = 4;            // System capacity information
+  repeated SystemAlert active_alerts = 5; // Active system alerts
+}
+
+message SystemHealth {
+  HealthState overall_state = 1;          // Overall health state
+  double health_score = 2;                // Health score (0.0-1.0)
+  repeated HealthIndicator indicators = 3; // Health indicators
+  google.protobuf.Timestamp last_assessment = 4; // Last health assessment
+}
+
+message HealthIndicator {
+  string name = 1;                        // Indicator name
+  HealthState state = 2;                  // Indicator state
+  double value = 3;                       // Indicator value
+  string unit = 4;                        // Value unit
+  string description = 5;                 // Indicator description
+}
+
+message SystemMetrics {
+  double cpu_utilization = 1;             // System CPU utilization
+  double memory_utilization = 2;          // System memory utilization
+  double disk_utilization = 3;            // System disk utilization
+  double network_utilization = 4;         // System network utilization
+  int64 active_agents = 5;                // Number of active agents
+  int64 total_requests = 6;               // Total requests processed
+  double request_rate = 7;                // Current request rate
+  double error_rate = 8;                  // Current error rate
+  google.protobuf.Duration avg_latency = 9; // Average latency
+}
+
+message ComponentStatus {
+  string component = 1;                   // Component name
+  HealthState state = 2;                  // Component health state
+  string version = 3;                     // Component version
+  google.protobuf.Timestamp last_check = 4; // Last health check
+  map<string, string> details = 5;       // Component details
+  repeated ComponentMetric metrics = 6;   // Component metrics
+}
+
+message ComponentMetric {
+  string name = 1;                        // Metric name
+  double value = 2;                       // Metric value
+  string unit = 3;                        // Metric unit
+  google.protobuf.Timestamp timestamp = 4; // Metric timestamp
+}
+
+message SystemCapacity {
+  ResourceCapacity compute = 1;           // Compute capacity
+  ResourceCapacity storage = 2;           // Storage capacity
+  ResourceCapacity network = 3;           // Network capacity
+  CapacityPrediction prediction = 4;      // Capacity prediction
+}
+
+message ResourceCapacity {
+  double total = 1;                       // Total capacity
+  double used = 2;                        // Used capacity
+  double available = 3;                   // Available capacity
+  double utilization = 4;                 // Utilization percentage
+  repeated CapacityTrend trends = 5;      // Capacity trends
+}
+
+message CapacityTrend {
+  google.protobuf.Duration period = 1;    // Trend period
+  double growth_rate = 2;                 // Growth rate
+  TrendDirection direction = 3;           // Trend direction
+}
+
+enum TrendDirection {
+  TREND_DIRECTION_UNSPECIFIED = 0;
+  TREND_DIRECTION_INCREASING = 1;         // Increasing trend
+  TREND_DIRECTION_DECREASING = 2;         // Decreasing trend
+  TREND_DIRECTION_STABLE = 3;             // Stable trend
+  TREND_DIRECTION_VOLATILE = 4;           // Volatile trend
+}
+
+message CapacityPrediction {
+  google.protobuf.Duration time_to_exhaustion = 1; // Time to capacity exhaustion
+  double confidence = 2;                  // Prediction confidence (0.0-1.0)
+  PredictionModel model = 3;              // Prediction model used
+  google.protobuf.Timestamp predicted_at = 4; // Prediction timestamp
+}
+
+enum PredictionModel {
+  PREDICTION_MODEL_UNSPECIFIED = 0;
+  PREDICTION_MODEL_LINEAR = 1;            // Linear regression
+  PREDICTION_MODEL_EXPONENTIAL = 2;       // Exponential smoothing
+  PREDICTION_MODEL_ARIMA = 3;             // ARIMA model
+  PREDICTION_MODEL_LSTM = 4;              // LSTM neural network
+}
+
+message SystemAlert {
+  OSSAIdentifier alert_id = 1;            // Alert identifier
+  AlertSeverity severity = 2;             // Alert severity
+  string title = 3;                       // Alert title
+  string description = 4;                 // Alert description
+  google.protobuf.Timestamp fired_at = 5; // When alert fired
+  string source = 6;                      // Alert source
+  map<string, string> labels = 7;        // Alert labels
+}
+
+// Performance analytics and insights
+message PerformanceAnalytics {
+  AnalyticsPeriod period = 1;             // Analytics period
+  PerformanceSummary summary = 2;         // Performance summary
+  repeated PerformanceTrend trends = 3;   // Performance trends
+  repeated PerformanceAnomaly anomalies = 4; // Performance anomalies
+  PerformancePrediction predictions = 5;  // Performance predictions
+  repeated PerformanceRecommendation recommendations = 6; // Recommendations
+}
+
+message AnalyticsPeriod {
+  google.protobuf.Timestamp start = 1;    // Period start time
+  google.protobuf.Timestamp end = 2;      // Period end time
+  google.protobuf.Duration duration = 3;  // Period duration
+  string granularity = 4;                 // Data granularity
+}
+
+message PerformanceSummary {
+  double avg_latency_ms = 1;              // Average latency in milliseconds
+  double p95_latency_ms = 2;              // 95th percentile latency
+  double p99_latency_ms = 3;              // 99th percentile latency
+  double throughput_rps = 4;              // Throughput in requests per second
+  double error_rate = 5;                  // Error rate percentage
+  double availability = 6;                // Availability percentage
+  int64 total_requests = 7;               // Total requests in period
+  int64 error_count = 8;                  // Total errors in period
+}
+
+message PerformanceTrend {
+  string metric = 1;                      // Metric name
+  TrendDirection direction = 2;           // Trend direction
+  double slope = 3;                       // Trend slope
+  double correlation = 4;                 // Correlation coefficient
+  repeated TrendDataPoint data_points = 5; // Trend data points
+}
+
+message TrendDataPoint {
+  google.protobuf.Timestamp timestamp = 1; // Data point timestamp
+  double value = 2;                       // Data point value
+}
+
+message PerformanceAnomaly {
+  OSSAIdentifier anomaly_id = 1;          // Anomaly identifier
+  AnomalyType type = 2;                   // Anomaly type
+  string metric = 3;                      // Affected metric
+  double severity_score = 4;              // Severity score (0.0-1.0)
+  google.protobuf.Timestamp detected_at = 5; // Detection time
+  google.protobuf.Timestamp resolved_at = 6; // Resolution time
+  AnomalyDescription description = 7;     // Anomaly description
+  repeated string potential_causes = 8;   // Potential causes
+}
+
+enum AnomalyType {
+  ANOMALY_TYPE_UNSPECIFIED = 0;
+  ANOMALY_TYPE_SPIKE = 1;                 // Sudden spike
+  ANOMALY_TYPE_DIP = 2;                   // Sudden dip
+  ANOMALY_TYPE_DRIFT = 3;                 // Gradual drift
+  ANOMALY_TYPE_OSCILLATION = 4;           // Oscillating behavior
+  ANOMALY_TYPE_PLATEAU = 5;               // Plateau formation
+}
+
+message AnomalyDescription {
+  string summary = 1;                     // Anomaly summary
+  double expected_value = 2;              // Expected value
+  double actual_value = 3;                // Actual value
+  double deviation = 4;                   // Deviation from expected
+  string impact = 5;                      // Impact description
+}
+
+message PerformancePrediction {
+  string metric = 1;                      // Predicted metric
+  google.protobuf.Duration forecast_horizon = 2; // Prediction horizon
+  repeated PredictionPoint predictions = 3; // Prediction points
+  double confidence_interval = 4;         // Confidence interval
+  PredictionModel model = 5;              // Model used for prediction
+}
+
+message PredictionPoint {
+  google.protobuf.Timestamp timestamp = 1; // Prediction timestamp
+  double value = 2;                       // Predicted value
+  double upper_bound = 3;                 // Upper confidence bound
+  double lower_bound = 4;                 // Lower confidence bound
+}
+
+message PerformanceRecommendation {
+  OSSAIdentifier recommendation_id = 1;   // Recommendation identifier
+  RecommendationType type = 2;            // Recommendation type
+  string title = 3;                       // Recommendation title
+  string description = 4;                 // Recommendation description
+  RecommendationPriority priority = 5;    // Recommendation priority
+  double impact_score = 6;                // Expected impact score
+  repeated RecommendationAction actions = 7; // Recommended actions
+  RecommendationEvidence evidence = 8;    // Supporting evidence
+}
+
+enum RecommendationType {
+  RECOMMENDATION_TYPE_UNSPECIFIED = 0;
+  RECOMMENDATION_TYPE_SCALING = 1;        // Resource scaling
+  RECOMMENDATION_TYPE_OPTIMIZATION = 2;   // Performance optimization
+  RECOMMENDATION_TYPE_CONFIGURATION = 3;  // Configuration change
+  RECOMMENDATION_TYPE_ARCHITECTURE = 4;   // Architecture improvement
+  RECOMMENDATION_TYPE_MAINTENANCE = 5;    // Maintenance task
+}
+
+enum RecommendationPriority {
+  RECOMMENDATION_PRIORITY_UNSPECIFIED = 0;
+  RECOMMENDATION_PRIORITY_LOW = 1;        // Low priority
+  RECOMMENDATION_PRIORITY_MEDIUM = 2;     // Medium priority
+  RECOMMENDATION_PRIORITY_HIGH = 3;       // High priority
+  RECOMMENDATION_PRIORITY_CRITICAL = 4;   // Critical priority
+}
+
+message RecommendationAction {
+  string action = 1;                      // Action description
+  ActionCategory category = 2;            // Action category
+  double effort_estimate = 3;             // Effort estimate (hours)
+  repeated string prerequisites = 4;      // Action prerequisites
+}
+
+enum ActionCategory {
+  ACTION_CATEGORY_UNSPECIFIED = 0;
+  ACTION_CATEGORY_IMMEDIATE = 1;          // Immediate action
+  ACTION_CATEGORY_SHORT_TERM = 2;         // Short-term action
+  ACTION_CATEGORY_LONG_TERM = 3;          // Long-term action
+  ACTION_CATEGORY_STRATEGIC = 4;          // Strategic action
+}
+
+message RecommendationEvidence {
+  repeated string metrics = 1;            // Supporting metrics
+  repeated string observations = 2;       // Supporting observations
+  double confidence = 3;                  // Evidence confidence (0.0-1.0)
+  repeated string references = 4;         // Reference materials
+}
+
+// System events for monitoring
+message SystemEvent {
+  OSSAIdentifier event_id = 1;            // Event identifier
+  EventCategory category = 2;             // Event category
+  EventSeverity severity = 3;             // Event severity
+  string title = 4;                       // Event title
+  string description = 5;                 // Event description
+  google.protobuf.Timestamp timestamp = 6; // Event timestamp
+  OSSAIdentifier source = 7;              // Event source
+  map<string, string> labels = 8;        // Event labels
+  google.protobuf.Any event_data = 9;     // Event-specific data
+}
+
+enum EventCategory {
+  EVENT_CATEGORY_UNSPECIFIED = 0;
+  EVENT_CATEGORY_SYSTEM = 1;              // System events
+  EVENT_CATEGORY_AGENT = 2;               // Agent events
+  EVENT_CATEGORY_WORKFLOW = 3;            // Workflow events
+  EVENT_CATEGORY_SECURITY = 4;            // Security events
+  EVENT_CATEGORY_PERFORMANCE = 5;         // Performance events
+  EVENT_CATEGORY_CONFIGURATION = 6;       // Configuration events
+}
+
+enum EventSeverity {
+  EVENT_SEVERITY_UNSPECIFIED = 0;
+  EVENT_SEVERITY_DEBUG = 1;               // Debug event
+  EVENT_SEVERITY_INFO = 2;                // Informational event
+  EVENT_SEVERITY_NOTICE = 3;              // Notice event
+  EVENT_SEVERITY_WARNING = 4;             // Warning event
+  EVENT_SEVERITY_ERROR = 5;               // Error event
+  EVENT_SEVERITY_CRITICAL = 6;            // Critical event
+  EVENT_SEVERITY_ALERT = 7;               // Alert event
+  EVENT_SEVERITY_EMERGENCY = 8;           // Emergency event
+}
+
+// Health status update for streaming
+message HealthStatusUpdate {
+  OSSAIdentifier agent_id = 1;            // Agent identifier
+  HealthStatus health = 2;                // Updated health status
+  google.protobuf.Timestamp timestamp = 3; // Update timestamp
+  UpdateType update_type = 4;             // Type of update
+  map<string, string> metadata = 5;       // Update metadata
+}
+
+// Metric update for streaming
+message MetricUpdate {
+  string metric_name = 1;                 // Metric name
+  MetricValue value = 2;                  // Updated metric value
+  OSSAIdentifier source_agent = 3;        // Source agent
+  google.protobuf.Timestamp timestamp = 4; // Update timestamp
+  UpdateType update_type = 5;             // Type of update
+}
+
+// Distributed tracing data
+message TraceData {
+  OSSAIdentifier trace_id = 1;            // Trace identifier
+  repeated TraceSpan spans = 2;           // Trace spans
+  TraceSummary summary = 3;               // Trace summary
+  TraceMetadata metadata = 4;             // Trace metadata
+}
+
+message TraceSpan {
+  OSSAIdentifier span_id = 1;             // Span identifier
+  OSSAIdentifier parent_id = 2;           // Parent span identifier
+  string operation_name = 3;              // Operation name
+  google.protobuf.Timestamp start_time = 4; // Span start time
+  google.protobuf.Timestamp end_time = 5;   // Span end time
+  google.protobuf.Duration duration = 6;   // Span duration
+  map<string, string> tags = 7;          // Span tags
+  repeated SpanLog logs = 8;              // Span logs
+  SpanStatus status = 9;                  // Span status
+}
+
+message SpanLog {
+  google.protobuf.Timestamp timestamp = 1; // Log timestamp
+  map<string, string> fields = 2;        // Log fields
+}
+
+message SpanStatus {
+  StatusCode code = 1;                    // Status code
+  string message = 2;                     // Status message
+}
+
+enum StatusCode {
+  STATUS_CODE_UNSPECIFIED = 0;
+  STATUS_CODE_OK = 1;                     // Success
+  STATUS_CODE_CANCELLED = 2;              // Cancelled
+  STATUS_CODE_UNKNOWN = 3;                // Unknown error
+  STATUS_CODE_INVALID_ARGUMENT = 4;       // Invalid argument
+  STATUS_CODE_DEADLINE_EXCEEDED = 5;      // Deadline exceeded
+  STATUS_CODE_NOT_FOUND = 6;              // Not found
+  STATUS_CODE_ALREADY_EXISTS = 7;         // Already exists
+  STATUS_CODE_PERMISSION_DENIED = 8;      // Permission denied
+  STATUS_CODE_RESOURCE_EXHAUSTED = 9;     // Resource exhausted
+  STATUS_CODE_FAILED_PRECONDITION = 10;   // Failed precondition
+  STATUS_CODE_ABORTED = 11;               // Aborted
+  STATUS_CODE_OUT_OF_RANGE = 12;          // Out of range
+  STATUS_CODE_UNIMPLEMENTED = 13;         // Unimplemented
+  STATUS_CODE_INTERNAL = 14;              // Internal error
+  STATUS_CODE_UNAVAILABLE = 15;           // Unavailable
+  STATUS_CODE_DATA_LOSS = 16;             // Data loss
+  STATUS_CODE_UNAUTHENTICATED = 17;       // Unauthenticated
+}
+
+message TraceSummary {
+  google.protobuf.Duration total_duration = 1; // Total trace duration
+  int32 span_count = 2;                        // Number of spans
+  int32 error_count = 3;                       // Number of errors
+  repeated string services = 4;                // Services involved
+  repeated string operations = 5;              // Operations performed
+}
+
+message TraceMetadata {
+  map<string, string> tags = 1;          // Trace tags
+  string service_name = 2;                // Primary service name
+  string service_version = 3;             // Service version
+  google.protobuf.Timestamp timestamp = 4; // Trace timestamp
+}
+
+// Request/Response messages for MonitoringService
+
+message RegisterForMonitoringRequest {
+  AgentHealthMonitor monitor = 1;         // Monitoring configuration
+  bool start_immediately = 2;             // Start monitoring immediately
+  google.protobuf.Duration initial_grace_period = 3; // Initial grace period
+}
+
+message RegisterForMonitoringResponse {
+  OSSAIdentifier monitor_id = 1;          // Monitor identifier
+  MonitoringState initial_state = 2;      // Initial monitoring state
+  repeated ValidationIssue validation_issues = 3; // Configuration issues
+  Error error = 4;                        // Registration error
+}
+
+message UnregisterFromMonitoringRequest {
+  OSSAIdentifier agent_id = 1;            // Agent to unregister
+  bool graceful = 2;                      // Graceful shutdown
+  google.protobuf.Duration timeout = 3;   // Unregistration timeout
+}
+
+message UnregisterFromMonitoringResponse {
+  bool success = 1;                       // Unregistration success
+  google.protobuf.Timestamp unregistered_at = 2; // Unregistration time
+  Error error = 3;                        // Unregistration error
+}
+
+message GetHealthStatusRequest {
+  repeated OSSAIdentifier agent_ids = 1;  // Agents to check (empty for all)
+  bool include_details = 2;               // Include detailed information
+  bool include_history = 3;               // Include health history
+}
+
+message GetHealthStatusResponse {
+  repeated AgentHealthStatus statuses = 1; // Agent health statuses
+  Error error = 2;                        // Query error
+}
+
+message AgentHealthStatus {
+  OSSAIdentifier agent_id = 1;            // Agent identifier
+  HealthStatus health = 2;                // Current health status
+  repeated HealthHistoryEntry history = 3; // Health history
+}
+
+message HealthHistoryEntry {
+  google.protobuf.Timestamp timestamp = 1; // History entry timestamp
+  HealthState state = 2;                   // Health state at time
+  string reason = 3;                       // Reason for state change
+}
+
+message StreamHealthUpdatesRequest {
+  repeated OSSAIdentifier agent_ids = 1;  // Agents to monitor (empty for all)
+  bool include_initial_state = 2;         // Include initial state
+  google.protobuf.Duration heartbeat_interval = 3; // Heartbeat interval
+}
+
+message ReportMetricsRequest {
+  OSSAIdentifier agent_id = 1;            // Reporting agent
+  repeated MetricValue metrics = 2;       // Metrics to report
+  google.protobuf.Timestamp timestamp = 3; // Report timestamp
+}
+
+message ReportMetricsResponse {
+  int32 accepted_metrics = 1;             // Number of accepted metrics
+  repeated MetricError errors = 2;        // Metric errors
+  Error error = 3;                        // General error
+}
+
+message MetricError {
+  string metric_name = 1;                 // Metric name
+  string error_message = 2;               // Error message
+  ErrorCode error_code = 3;               // Error code
+}
+
+message QueryMetricsRequest {
+  MetricQuery query = 1;                  // Metric query
+  PageInfo page_info = 2;                 // Pagination information
+  google.protobuf.Duration timeout = 3;   // Query timeout
+}
+
+message MetricQuery {
+  string expression = 1;                  // Query expression
+  google.protobuf.Timestamp start_time = 2; // Query start time
+  google.protobuf.Timestamp end_time = 3;   // Query end time
+  google.protobuf.Duration step = 4;       // Query step size
+  repeated string metrics = 5;            // Specific metrics to query
+  map<string, string> labels = 6;        // Label filters
+}
+
+message QueryMetricsResponse {
+  repeated MetricSeries series = 1;       // Metric time series
+  QueryStatistics statistics = 2;        // Query statistics
+  Error error = 3;                        // Query error
+}
+
+message MetricSeries {
+  map<string, string> labels = 1;        // Series labels
+  repeated MetricDataPoint points = 2;   // Data points
+}
+
+message MetricDataPoint {
+  google.protobuf.Timestamp timestamp = 1; // Data point timestamp
+  double value = 2;                       // Data point value
+}
+
+message QueryStatistics {
+  google.protobuf.Duration execution_time = 1; // Query execution time
+  int64 series_count = 2;                     // Number of series returned
+  int64 data_points_scanned = 3;              // Data points scanned
+  bool from_cache = 4;                        // Whether result was cached
+}
+
+message StreamMetricsRequest {
+  MetricQuery query = 1;                  // Metric query
+  google.protobuf.Duration interval = 2;  // Stream interval
+  bool include_metadata = 3;              // Include metric metadata
+}
+
+message SendAlertRequest {
+  Alert alert = 1;                        // Alert to send
+  repeated string channels = 2;           // Notification channels
+  bool force_send = 3;                    // Force send even if suppressed
+}
+
+message SendAlertResponse {
+  OSSAIdentifier alert_id = 1;            // Alert identifier
+  AlertState initial_state = 2;           // Initial alert state
+  int32 notifications_sent = 3;           // Number of notifications sent
+  Error error = 4;                        // Send error
+}
+
+message GetAlertsRequest {
+  AlertFilter filter = 1;                 // Alert filter
+  PageInfo page_info = 2;                 // Pagination information
+  bool include_resolved = 3;              // Include resolved alerts
+}
+
+message AlertFilter {
+  repeated AlertState states = 1;         // Filter by states
+  repeated AlertSeverity severities = 2;  // Filter by severities
+  google.protobuf.Timestamp start_time = 3; // Filter start time
+  google.protobuf.Timestamp end_time = 4;   // Filter end time
+  map<string, string> labels = 5;        // Label filters
+  repeated OSSAIdentifier agent_ids = 6;  // Filter by agents
+}
+
+message GetAlertsResponse {
+  repeated Alert alerts = 1;              // Matching alerts
+  PageInfo page_info = 2;                 // Pagination information
+  Error error = 3;                        // Query error
+}
+
+message AcknowledgeAlertRequest {
+  OSSAIdentifier alert_id = 1;            // Alert to acknowledge
+  string acknowledged_by = 2;             // Who is acknowledging
+  string note = 3;                        // Acknowledgment note
+}
+
+message AcknowledgeAlertResponse {
+  bool success = 1;                       // Acknowledgment success
+  google.protobuf.Timestamp acknowledged_at = 2; // Acknowledgment time
+  Error error = 3;                        // Acknowledgment error
+}
+
+message CreateDashboardRequest {
+  MonitoringDashboard dashboard = 1;      // Dashboard to create
+  bool validate_only = 2;                 // Only validate, don't create
+}
+
+message CreateDashboardResponse {
+  OSSAIdentifier dashboard_id = 1;        // Created dashboard ID
+  repeated ValidationIssue validation_issues = 2; // Validation issues
+  Error error = 3;                        // Creation error
+}
+
+message GetDashboardRequest {
+  OSSAIdentifier dashboard_id = 1;        // Dashboard to retrieve
+  bool include_data = 2;                  // Include panel data
+  TimeRange time_range = 3;               // Time range for data
+}
+
+message GetDashboardResponse {
+  MonitoringDashboard dashboard = 1;      // Retrieved dashboard
+  repeated PanelData panel_data = 2;      // Panel data
+  Error error = 3;                        // Retrieval error
+}
+
+message PanelData {
+  OSSAIdentifier panel_id = 1;            // Panel identifier
+  repeated MetricSeries series = 2;       // Panel time series data
+  google.protobuf.Timestamp last_updated = 3; // Last data update
+}
+
+message ListDashboardsRequest {
+  PageInfo page_info = 1;                 // Pagination information
+  DashboardFilter filter = 2;             // Dashboard filter
+  repeated string sort_by = 3;            // Sort fields
+}
+
+message DashboardFilter {
+  repeated DashboardCategory categories = 1; // Filter by categories
+  repeated string tags = 2;               // Filter by tags
+  string author = 3;                      // Filter by author
+  bool public_only = 4;                   // Only public dashboards
+}
+
+message ListDashboardsResponse {
+  repeated MonitoringDashboard dashboards = 1; // Matching dashboards
+  PageInfo page_info = 2;                     // Pagination information
+  Error error = 3;                            // List error
+}
+
+message CreateMonitoringRuleRequest {
+  MonitoringRule rule = 1;                // Monitoring rule to create
+  bool validate_only = 2;                 // Only validate, don't create
+  bool enable_immediately = 3;            // Enable rule immediately
+}
+
+message MonitoringRule {
+  OSSAIdentifier rule_id = 1;             // Rule identifier
+  RuleMetadata metadata = 2;              // Rule metadata
+  RuleSpec spec = 3;                      // Rule specification
+  RuleStatus status = 4;                  // Rule status
+}
+
+message RuleMetadata {
+  string name = 1;                        // Rule name
+  string description = 2;                 // Rule description
+  string group = 3;                       // Rule group
+  repeated string tags = 4;               // Rule tags
+  google.protobuf.Timestamp created = 5;  // Creation timestamp
+  google.protobuf.Timestamp updated = 6;  // Last update timestamp
+}
+
+message RuleSpec {
+  RuleType type = 1;                      // Rule type
+  string expression = 2;                  // Rule expression
+  google.protobuf.Duration evaluation_interval = 3; // Evaluation interval
+  google.protobuf.Duration for_duration = 4;        // Alert duration
+  repeated RuleLabel labels = 5;          // Rule labels
+  repeated RuleAnnotation annotations = 6; // Rule annotations
+  AlertActions actions = 7;               // Rule actions
+}
+
+enum RuleType {
+  RULE_TYPE_UNSPECIFIED = 0;
+  RULE_TYPE_ALERTING = 1;                 // Alerting rule
+  RULE_TYPE_RECORDING = 2;                // Recording rule
+}
+
+message RuleLabel {
+  string key = 1;                         // Label key
+  string value = 2;                       // Label value
+}
+
+message RuleAnnotation {
+  string key = 1;                         // Annotation key
+  string value = 2;                       // Annotation value
+}
+
+message RuleStatus {
+  RuleState state = 1;                    // Rule state
+  google.protobuf.Timestamp last_evaluation = 2; // Last evaluation time
+  google.protobuf.Timestamp last_fired = 3;      // Last fired time
+  int32 evaluation_count = 4;                    // Total evaluations
+  int32 fire_count = 5;                          // Total fires
+  repeated RuleIssue issues = 6;                 // Rule issues
+}
+
+enum RuleState {
+  RULE_STATE_UNSPECIFIED = 0;
+  RULE_STATE_INACTIVE = 1;                // Rule is inactive
+  RULE_STATE_PENDING = 2;                 // Rule is pending
+  RULE_STATE_FIRING = 3;                  // Rule is firing
+  RULE_STATE_DISABLED = 4;                // Rule is disabled
+}
+
+message RuleIssue {
+  IssueType type = 1;                     // Issue type
+  IssueSeverity severity = 2;             // Issue severity
+  string description = 3;                 // Issue description
+  google.protobuf.Timestamp occurred = 4; // Issue occurrence time
+  bool resolved = 5;                      // Whether issue is resolved
+}
+
+message CreateMonitoringRuleResponse {
+  OSSAIdentifier rule_id = 1;             // Created rule ID
+  RuleState initial_state = 2;            // Initial rule state
+  repeated ValidationIssue validation_issues = 3; // Validation issues
+  Error error = 4;                        // Creation error
+}
+
+message ListMonitoringRulesRequest {
+  PageInfo page_info = 1;                 // Pagination information
+  MonitoringRuleFilter filter = 2;        // Rule filter
+  repeated string sort_by = 3;            // Sort fields
+}
+
+message MonitoringRuleFilter {
+  repeated RuleType types = 1;            // Filter by rule types
+  repeated RuleState states = 2;          // Filter by rule states
+  repeated string groups = 3;             // Filter by rule groups
+  repeated string tags = 4;               // Filter by tags
+}
+
+message ListMonitoringRulesResponse {
+  repeated MonitoringRule rules = 1;      // Matching rules
+  PageInfo page_info = 2;                 // Pagination information
+  Error error = 3;                        // List error
+}
+
+message GetSystemStatusRequest {
+  bool include_components = 1;            // Include component status
+  bool include_capacity = 2;              // Include capacity information
+  bool include_predictions = 3;           // Include capacity predictions
+}
+
+message GetSystemStatusResponse {
+  SystemStatus status = 1;                // System status
+  Error error = 2;                        // Status error
+}
+
+message GetPerformanceAnalyticsRequest {
+  AnalyticsPeriod period = 1;             // Analytics period
+  repeated string metrics = 2;            // Specific metrics to analyze
+  bool include_predictions = 3;           // Include predictions
+  bool include_recommendations = 4;       // Include recommendations
+}
+
+message GetPerformanceAnalyticsResponse {
+  PerformanceAnalytics analytics = 1;     // Performance analytics
+  Error error = 2;                        // Analytics error
+}
+
+message StreamSystemEventsRequest {
+  repeated EventCategory categories = 1;  // Event categories to stream
+  repeated EventSeverity min_severity = 2; // Minimum severity levels
+  EventFilter filter = 3;                 // Event filter
+  bool include_historical = 4;            // Include historical events
+}
+
+message EventFilter {
+  repeated OSSAIdentifier source_agents = 1; // Filter by source agents
+  map<string, string> labels = 2;           // Filter by labels
+  google.protobuf.Timestamp start_time = 3; // Filter start time
+  google.protobuf.Timestamp end_time = 4;   // Filter end time
+}
+
+message PerformHealthCheckRequest {
+  repeated OSSAIdentifier agent_ids = 1;  // Agents to check (empty for all)
+  HealthCheckType check_type = 2;         // Type of health check
+  google.protobuf.Duration timeout = 3;   // Check timeout
+  bool detailed_check = 4;                // Perform detailed check
+}
+
+enum HealthCheckType {
+  HEALTH_CHECK_TYPE_UNSPECIFIED = 0;
+  HEALTH_CHECK_TYPE_BASIC = 1;            // Basic health check
+  HEALTH_CHECK_TYPE_DETAILED = 2;         // Detailed health check
+  HEALTH_CHECK_TYPE_COMPREHENSIVE = 3;    // Comprehensive health check
+}
+
+message PerformHealthCheckResponse {
+  repeated HealthCheckResult results = 1; // Health check results
+  HealthCheckSummary summary = 2;         // Check summary
+  Error error = 3;                        // Check error
+}
+
+message HealthCheckResult {
+  OSSAIdentifier agent_id = 1;            // Agent identifier
+  HealthState state = 2;                  // Health state
+  google.protobuf.Duration response_time = 3; // Response time
+  repeated HealthCheck checks = 4;        // Individual check results
+  string details = 5;                     // Additional details
+}
+
+message HealthCheckSummary {
+  int32 total_agents = 1;                 // Total agents checked
+  int32 healthy_agents = 2;               // Number of healthy agents
+  int32 unhealthy_agents = 3;             // Number of unhealthy agents
+  int32 unreachable_agents = 4;           // Number of unreachable agents
+  google.protobuf.Duration avg_response_time = 5; // Average response time
+}
+
+message GetTraceDataRequest {
+  OSSAIdentifier trace_id = 1;            // Trace identifier
+  TraceQuery query = 2;                   // Trace query
+  bool include_logs = 3;                  // Include span logs
+  bool include_metrics = 4;               // Include trace metrics
+}
+
+message TraceQuery {
+  google.protobuf.Timestamp start_time = 1; // Query start time
+  google.protobuf.Timestamp end_time = 2;   // Query end time
+  repeated string services = 3;             // Filter by services
+  repeated string operations = 4;           // Filter by operations
+  map<string, string> tags = 5;            // Filter by tags
+  google.protobuf.Duration min_duration = 6; // Minimum trace duration
+  google.protobuf.Duration max_duration = 7; // Maximum trace duration
+}
+
+message GetTraceDataResponse {
+  repeated TraceData traces = 1;          // Trace data
+  TracingStatistics statistics = 2;      // Tracing statistics
+  Error error = 3;                        // Query error
+}
+
+message TracingStatistics {
+  int64 total_traces = 1;                 // Total traces found
+  int64 total_spans = 2;                  // Total spans found
+  google.protobuf.Duration query_time = 3; // Query execution time
+  repeated string services = 4;           // Services involved
+  repeated string operations = 5;         // Operations found
+}

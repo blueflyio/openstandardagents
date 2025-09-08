@@ -1,0 +1,1190 @@
+# OSSA v0.1.8 Agent Discovery Schema
+# Agent discovery, registration, and capability matching
+
+# Agent Discovery Types
+type Agent @key(fields: "id") @ossaCompliant(version: "0.1.8", level: GOVERNED) {
+  id: UUID!
+  name: String!
+  version: String!
+  description: String
+  
+  # Taxonomy and Classification
+  taxonomy: AgentTaxonomyInfo!
+  capabilities: AgentCapabilities!
+  protocols: ProtocolSupport!
+  
+  # Status and Health
+  status: AgentStatusInfo! @realtime
+  health: HealthInfo! @realtime
+  availability: AgentAvailability!
+  
+  # Metadata and Configuration
+  metadata: AgentMetadata!
+  endpoints: AgentEndpoints!
+  configuration: AgentConfiguration
+  
+  # Performance and SLA
+  performance: PerformanceMetrics! @performanceMetrics
+  sla: ServiceLevelAgreement
+  
+  # Compliance and Security
+  compliance: ComplianceInfo @federalCompliance
+  security: SecurityConfiguration
+  
+  # Temporal Information
+  registeredAt: DateTime!
+  lastSeen: DateTime!
+  lastHealthCheck: DateTime!
+  updatedAt: DateTime!
+}
+
+type AgentTaxonomyInfo @agentTaxonomy(type: WORKER) {
+  primaryType: AgentTaxonomy!
+  secondaryTypes: [AgentTaxonomy!]
+  specialization: String
+  class: AgentClass!
+  category: AgentCategory!
+  conformanceTier: ConformanceTier!
+  certificationLevel: CertificationLevel
+}
+
+type AgentCapabilities @actaOptimized {
+  # Core Capabilities
+  primary: [CapabilityDefinition!]!
+  secondary: [CapabilityDefinition!]
+  
+  # Domain and Context
+  domains: [String!]!
+  contexts: [String!]
+  languages: [String!]
+  
+  # Technical Capabilities
+  models: [ModelConfiguration!]
+  frameworks: [FrameworkSupport!]
+  integrations: [IntegrationCapability!]
+  
+  # Computational Limits
+  maxConcurrentTasks: Int
+  maxTokensPerRequest: Int
+  supportedDataFormats: [DataFormat!]
+}
+
+type CapabilityDefinition {
+  id: UUID!
+  name: String!
+  description: String!
+  version: String!
+  
+  # Schema Definitions
+  inputSchema: JSON!
+  outputSchema: JSON!
+  errorSchema: JSON
+  
+  # Operational Constraints
+  tokenCost: TokenCostEstimate
+  latencyProfile: LatencyProfile
+  reliability: ReliabilityMetrics
+  
+  # Dependencies and Requirements
+  dependencies: [UUID!]
+  prerequisites: [String!]
+  
+  # Compliance and Certification
+  complianceLevel: ComplianceLevel!
+  certifications: [String!]
+}
+
+type TokenCostEstimate @tokenBudget(cost: 100) {
+  estimatedTokens: Int!
+  costPerRequest: Float!
+  currency: String! = "USD"
+  compressionRatio: Float
+  optimizationApplied: Boolean!
+}
+
+type LatencyProfile {
+  averageMs: Float!
+  p50Ms: Float!
+  p95Ms: Float!
+  p99Ms: Float!
+  maxMs: Float!
+}
+
+type ReliabilityMetrics {
+  successRate: Float! # 0.0 to 1.0
+  uptime: Float! # 0.0 to 1.0
+  mtbf: Float # Mean Time Between Failures in hours
+  mttr: Float # Mean Time To Recovery in minutes
+}
+
+type ProtocolSupport @protocolSupport(protocols: [REST, GRAPHQL]) {
+  rest: RESTProtocolConfig
+  graphql: GraphQLProtocolConfig
+  grpc: GRPCProtocolConfig
+  websocket: WebSocketProtocolConfig
+  mcp: MCPProtocolConfig @mcp
+  custom: [CustomProtocolConfig!]
+}
+
+type RESTProtocolConfig {
+  enabled: Boolean!
+  version: String! = "1.0"
+  baseUrl: URI
+  openApiSpec: URI
+  authentication: AuthenticationConfig
+  rateLimit: RateLimitConfig
+  compression: CompressionConfig
+}
+
+type GraphQLProtocolConfig {
+  enabled: Boolean!
+  endpoint: URI
+  introspectionEnabled: Boolean!
+  subscriptionsEnabled: Boolean!
+  federationSupported: Boolean!
+  schema: URI
+  playgroundEnabled: Boolean
+}
+
+type GRPCProtocolConfig {
+  enabled: Boolean!
+  endpoint: URI
+  tlsEnabled: Boolean! = true
+  reflectionEnabled: Boolean!
+  protoFiles: [URI!]
+  services: [String!]
+}
+
+type WebSocketProtocolConfig {
+  enabled: Boolean!
+  endpoint: URI
+  protocols: [String!]
+  maxConnections: Int
+  heartbeatInterval: Int = 30
+}
+
+type MCPProtocolConfig @mcp {
+  enabled: Boolean!
+  version: String! = "1.0"
+  serverName: String!
+  tools: [MCPTool!]
+  transport: MCPTransport!
+  manifest: URI
+}
+
+type MCPTool {
+  name: String!
+  description: String!
+  inputSchema: JSON!
+  outputSchema: JSON
+}
+
+type MCPTransport {
+  type: String! # "stdio" | "sse" | "websocket"
+  endpoint: URI
+  config: JSON
+}
+
+type CustomProtocolConfig {
+  name: String!
+  version: String!
+  endpoint: URI
+  specification: URI
+  configuration: JSON
+}
+
+type AuthenticationConfig @auth(requires: API_KEY) {
+  methods: [AuthRequirement!]!
+  apiKeyConfig: ApiKeyConfig
+  oauthConfig: OAuth2Config
+  jwtConfig: JWTConfig
+  mtlsConfig: MTLSConfig
+}
+
+type ApiKeyConfig {
+  headerName: String! = "X-API-Key"
+  queryParam: String
+  prefix: String
+}
+
+type OAuth2Config {
+  authUrl: URI!
+  tokenUrl: URI!
+  scopes: [String!]
+  clientId: String!
+}
+
+type JWTConfig {
+  issuer: URI!
+  audience: String!
+  algorithm: String! = "RS256"
+  publicKeyUrl: URI
+}
+
+type MTLSConfig {
+  certificateUrl: URI!
+  caCertUrl: URI!
+  verifyClient: Boolean! = true
+}
+
+type RateLimitConfig @rateLimit(max: 1000, window: "1h") {
+  requests: Int!
+  window: String!
+  burstAllowed: Boolean! = false
+  burstSize: Int
+}
+
+type CompressionConfig {
+  enabled: Boolean!
+  algorithms: [String!]! = ["gzip", "deflate"]
+  minSize: Int = 1024
+}
+
+type AgentStatusInfo @realtime {
+  status: AgentStatus!
+  availability: AgentAvailability!
+  lastHeartbeat: DateTime!
+  nextMaintenance: DateTime
+  
+  # Resource Utilization
+  cpuUsage: Float # 0.0 to 1.0
+  memoryUsage: Float # 0.0 to 1.0
+  networkUtilization: Float # 0.0 to 1.0
+  
+  # Task Information
+  activeTasks: Int!
+  queuedTasks: Int!
+  maxConcurrentTasks: Int!
+  
+  # Health Indicators
+  healthScore: Float! # 0.0 to 1.0
+  healthChecks: [HealthCheck!]
+}
+
+type HealthInfo @performanceMetrics {
+  overall: HealthStatus!
+  components: [ComponentHealth!]!
+  lastChecked: DateTime!
+  checkFrequency: Int! # seconds
+  
+  # Diagnostic Information
+  diagnostics: HealthDiagnostics
+  recommendations: [HealthRecommendation!]
+}
+
+type ComponentHealth {
+  component: String!
+  status: HealthStatus!
+  responseTime: Float
+  errorRate: Float
+  lastError: String
+  lastChecked: DateTime!
+}
+
+type HealthDiagnostics {
+  diskSpace: DiskSpaceInfo
+  connectivity: [ConnectivityTest!]
+  dependencies: [DependencyStatus!]
+  certificates: [CertificateStatus!]
+}
+
+type DiskSpaceInfo {
+  total: Uint64!
+  used: Uint64!
+  available: Uint64!
+  percentage: Float!
+  critical: Boolean!
+}
+
+type ConnectivityTest {
+  target: String!
+  status: String!
+  responseTime: Float
+  error: String
+}
+
+type DependencyStatus {
+  service: String!
+  version: String
+  status: HealthStatus!
+  lastChecked: DateTime!
+}
+
+type CertificateStatus {
+  name: String!
+  expiresAt: DateTime!
+  daysUntilExpiry: Int!
+  valid: Boolean!
+}
+
+type HealthRecommendation {
+  severity: AlertSeverity!
+  message: String!
+  action: String!
+  automated: Boolean!
+}
+
+type HealthCheck {
+  name: String!
+  status: HealthStatus!
+  responseTime: Float
+  message: String
+  timestamp: DateTime!
+}
+
+type AgentMetadata {
+  # Organizational
+  owner: String
+  team: String
+  department: String
+  environment: String! # "development" | "staging" | "production"
+  
+  # Classification
+  tier: String
+  criticality: String
+  dataClassification: DataClassification
+  
+  # Descriptive
+  tags: [String!]
+  labels: JSON
+  annotations: JSON
+  
+  # Documentation
+  documentation: URI
+  changelog: URI
+  supportContact: String
+}
+
+type AgentEndpoints {
+  # Required Endpoints
+  health: URI!
+  capabilities: URI!
+  api: URI!
+  
+  # Optional Endpoints
+  metrics: URI
+  openapi: URI
+  graphql: URI
+  websocket: URI
+  
+  # Management Endpoints
+  admin: URI
+  config: URI
+  logs: URI
+}
+
+type AgentConfiguration {
+  # Runtime Configuration
+  maxConcurrentTasks: Int!
+  timeout: Int! # seconds
+  retryPolicy: RetryPolicy
+  
+  # Resource Limits
+  memoryLimit: String
+  cpuLimit: String
+  diskLimit: String
+  
+  # Feature Flags
+  features: JSON
+  experiments: JSON
+}
+
+type RetryPolicy {
+  maxAttempts: Int!
+  backoffStrategy: String! # "exponential" | "linear" | "fixed"
+  initialDelay: Int! # milliseconds
+  maxDelay: Int! # milliseconds
+  jitter: Boolean!
+}
+
+type PerformanceMetrics @cached(maxAge: 300) {
+  # Response Time Metrics
+  avgResponseTimeMs: Float!
+  p50ResponseTimeMs: Float!
+  p95ResponseTimeMs: Float!
+  p99ResponseTimeMs: Float!
+  maxResponseTimeMs: Float!
+  
+  # Throughput Metrics
+  requestsPerSecond: Float!
+  tasksPerHour: Float!
+  
+  # Reliability Metrics
+  successRate: Float! # 0.0 to 1.0
+  errorRate: Float! # 0.0 to 1.0
+  uptimePercentage: Float! # 0.0 to 1.0
+  
+  # Resource Metrics
+  averageCpuUsage: Float!
+  averageMemoryUsage: Float!
+  peakResourceUsage: ResourceUsage
+  
+  # Business Metrics
+  totalRequestsHandled: Uint64!
+  totalTasksCompleted: Uint64!
+  totalErrorsEncountered: Uint64!
+  
+  # Time Window
+  measurementWindow: String!
+  lastUpdated: DateTime!
+}
+
+type ResourceUsage {
+  cpu: Float!
+  memory: Float!
+  network: Float!
+  disk: Float!
+  timestamp: DateTime!
+}
+
+type ServiceLevelAgreement {
+  # Availability SLA
+  availabilityTarget: Float! # 0.0 to 1.0 (e.g., 0.999 for 99.9%)
+  downtimeAllowanceMs: Uint64!
+  
+  # Performance SLA
+  responseTimeTarget: Float! # milliseconds
+  throughputTarget: Float! # requests per second
+  
+  # Reliability SLA
+  errorRateTarget: Float! # 0.0 to 1.0
+  
+  # Recovery SLA
+  recoveryTimeObjective: Int! # minutes
+  recoveryPointObjective: Int! # minutes
+  
+  # Support SLA
+  supportResponseTime: Int! # hours
+  escalationPath: [String!]
+}
+
+type ComplianceInfo @federalCompliance {
+  # Certification Status
+  certifications: [ComplianceCertification!]!
+  overallStatus: ComplianceLevel!
+  
+  # Framework Compliance
+  frameworks: [FrameworkCompliance!]!
+  
+  # Audit Information
+  lastAuditDate: DateTime
+  nextAuditDate: DateTime
+  auditHistory: [AuditRecord!]
+  
+  # Violations and Remediation
+  activeViolations: [ComplianceViolation!]
+  remediationPlan: [RemediationAction!]
+}
+
+type ComplianceCertification {
+  framework: ComplianceFramework!
+  level: String!
+  certificateId: String!
+  issuedDate: DateTime!
+  expiryDate: DateTime!
+  issuingAuthority: String!
+  status: String! # "valid" | "expired" | "suspended" | "revoked"
+}
+
+type FrameworkCompliance {
+  framework: ComplianceFramework!
+  version: String!
+  status: String! # "compliant" | "non-compliant" | "partial" | "pending"
+  lastAssessed: DateTime!
+  score: Float # 0.0 to 1.0
+  controls: [ControlCompliance!]
+}
+
+type ControlCompliance {
+  controlId: String!
+  name: String!
+  status: String! # "implemented" | "not-implemented" | "partially-implemented"
+  evidence: [String!]
+  lastReviewed: DateTime!
+}
+
+type AuditRecord @auditLog {
+  id: UUID!
+  date: DateTime!
+  auditor: String!
+  scope: String!
+  findings: [AuditFinding!]!
+  recommendations: [String!]
+  status: String! # "passed" | "failed" | "conditional"
+}
+
+type AuditFinding {
+  severity: ViolationSeverity!
+  category: String!
+  description: String!
+  evidence: String!
+  recommendation: String!
+}
+
+type ComplianceViolation {
+  id: UUID!
+  framework: ComplianceFramework!
+  controlId: String!
+  severity: ViolationSeverity!
+  description: String!
+  detectedDate: DateTime!
+  status: String! # "open" | "in-progress" | "resolved" | "accepted"
+  assignee: String
+  dueDate: DateTime
+}
+
+type RemediationAction {
+  id: UUID!
+  violationId: UUID!
+  action: String!
+  assignee: String!
+  dueDate: DateTime!
+  status: String! # "planned" | "in-progress" | "completed" | "overdue"
+  priority: PriorityLevel!
+}
+
+type SecurityConfiguration {
+  # Encryption
+  encryption: EncryptionConfig!
+  
+  # Access Control
+  accessControl: AccessControlConfig!
+  
+  # Network Security
+  networkSecurity: NetworkSecurityConfig!
+  
+  # Monitoring
+  securityMonitoring: SecurityMonitoringConfig!
+}
+
+type EncryptionConfig {
+  atRest: EncryptionDetails!
+  inTransit: EncryptionDetails!
+  keyManagement: KeyManagementConfig!
+}
+
+type EncryptionDetails {
+  enabled: Boolean!
+  algorithm: String!
+  keySize: Int!
+  mode: String
+}
+
+type KeyManagementConfig {
+  provider: String!
+  keyRotationEnabled: Boolean!
+  keyRotationInterval: String!
+}
+
+type AccessControlConfig {
+  authentication: AuthenticationConfig!
+  authorization: AuthorizationConfig!
+  sessionManagement: SessionConfig!
+}
+
+type AuthorizationConfig {
+  model: String! # "RBAC" | "ABAC" | "ACL"
+  roles: [String!]
+  permissions: [String!]
+  policies: JSON
+}
+
+type SessionConfig {
+  timeout: Int! # seconds
+  renewalEnabled: Boolean!
+  maxSessions: Int
+}
+
+type NetworkSecurityConfig {
+  tlsVersion: String!
+  certificateValidation: Boolean!
+  firewallEnabled: Boolean!
+  allowedHosts: [String!]
+  blockedHosts: [String!]
+}
+
+type SecurityMonitoringConfig {
+  loggingEnabled: Boolean!
+  auditTrailEnabled: Boolean!
+  intrusionDetection: Boolean!
+  anomalyDetection: Boolean!
+}
+
+type ModelConfiguration {
+  id: String!
+  name: String!
+  version: String!
+  provider: String!
+  tier: ModelTier!
+  
+  # Capabilities
+  capabilities: [String!]!
+  languages: [String!]!
+  domains: [String!]
+  
+  # Limits and Costs
+  maxTokens: Int!
+  contextWindow: Int!
+  costPerToken: Float!
+  currency: String! = "USD"
+  
+  # Performance
+  averageLatency: Float!
+  throughput: Float!
+  reliability: Float!
+}
+
+type FrameworkSupport {
+  framework: String!
+  version: String!
+  features: [String!]!
+  configuration: JSON
+  documentation: URI
+}
+
+type IntegrationCapability {
+  type: IntegrationType!
+  name: String!
+  version: String!
+  protocols: [ProtocolType!]!
+  configuration: JSON
+}
+
+# Discovery Queries and Results
+type DiscoveryResult @cached(maxAge: 60) {
+  # Results
+  agents: [Agent!]!
+  totalFound: Int!
+  
+  # Query Context
+  query: DiscoveryQuery!
+  queryId: UUID!
+  executionTime: Float!
+  
+  # Ranking and Scoring
+  ranking: RankingStrategy
+  scores: [AgentScore!]
+  
+  # Caching
+  cached: Boolean!
+  cacheAge: Int
+  
+  # Pagination
+  pagination: PaginationInfo
+}
+
+type DiscoveryQuery {
+  # Capability Filtering
+  requiredCapabilities: [String!]
+  optionalCapabilities: [String!]
+  excludeCapabilities: [String!]
+  
+  # Domain and Context
+  domains: [String!]
+  contexts: [String!]
+  languages: [String!]
+  
+  # Technical Requirements
+  protocols: [ProtocolType!]
+  frameworks: [String!]
+  models: [String!]
+  
+  # Performance Requirements
+  maxResponseTime: Float
+  minThroughput: Float
+  minReliability: Float
+  
+  # Compliance Requirements
+  complianceLevel: ComplianceLevel
+  certifications: [String!]
+  frameworks: [ComplianceFramework!]
+  
+  # Availability Requirements
+  availability: AgentAvailability
+  healthStatus: AgentStatus
+  
+  # Filtering
+  includeInactive: Boolean! = false
+  excludeExperimental: Boolean! = true
+  
+  # Result Configuration
+  limit: Int = 50
+  offset: Int = 0
+  sortBy: [SortCriteria!]
+  includeMetadata: Boolean! = true
+  includeMetrics: Boolean! = false
+}
+
+type SortCriteria {
+  field: SortField!
+  order: SortOrder! = ASC
+  priority: Int = 1
+}
+
+type RankingStrategy {
+  algorithm: String!
+  factors: [RankingFactor!]!
+  weights: JSON
+  version: String!
+}
+
+type RankingFactor {
+  name: String!
+  weight: Float!
+  description: String!
+}
+
+type AgentScore {
+  agentId: UUID!
+  totalScore: Float!
+  componentScores: JSON!
+  explanation: String
+}
+
+type PaginationInfo {
+  limit: Int!
+  offset: Int!
+  total: Int!
+  hasNext: Boolean!
+  hasPrevious: Boolean!
+}
+
+# Input Types for Discovery
+input DiscoveryInput {
+  requiredCapabilities: [String!]
+  optionalCapabilities: [String!]
+  excludeCapabilities: [String!]
+  
+  domains: [String!]
+  contexts: [String!]
+  languages: [String!]
+  
+  protocols: [ProtocolType!]
+  frameworks: [String!]
+  models: [String!]
+  
+  maxResponseTime: Float
+  minThroughput: Float
+  minReliability: Float
+  
+  complianceLevel: ComplianceLevel
+  certifications: [String!]
+  complianceFrameworks: [ComplianceFramework!]
+  
+  availability: AgentAvailability
+  healthStatus: AgentStatus
+  
+  includeInactive: Boolean = false
+  excludeExperimental: Boolean = true
+  
+  limit: Int = 50
+  offset: Int = 0
+  sortBy: [SortCriteriaInput!]
+  includeMetadata: Boolean = true
+  includeMetrics: Boolean = false
+  
+  # Advanced Options
+  ranking: RankingStrategyInput
+  filters: [FilterInput!]
+  preferences: DiscoveryPreferences
+}
+
+input SortCriteriaInput {
+  field: SortField!
+  order: SortOrder! = ASC
+  priority: Int = 1
+}
+
+input RankingStrategyInput {
+  algorithm: String = "default"
+  factors: [String!]
+  weights: JSON
+}
+
+input FilterInput {
+  field: String!
+  operator: FilterOperator!
+  value: JSON!
+}
+
+input DiscoveryPreferences {
+  favorNewAgents: Boolean = false
+  favorHighPerformance: Boolean = true
+  favorLowCost: Boolean = false
+  favorCompliance: Boolean = true
+  customWeights: JSON
+}
+
+# Agent Registration Input Types
+input AgentRegistrationInput {
+  name: String!
+  version: String!
+  description: String
+  
+  taxonomy: AgentTaxonomyInput!
+  capabilities: AgentCapabilitiesInput!
+  protocols: ProtocolSupportInput!
+  
+  metadata: AgentMetadataInput!
+  endpoints: AgentEndpointsInput!
+  configuration: AgentConfigurationInput
+  
+  sla: ServiceLevelAgreementInput
+  compliance: ComplianceInfoInput
+  security: SecurityConfigurationInput
+}
+
+input AgentTaxonomyInput {
+  primaryType: AgentTaxonomy!
+  secondaryTypes: [AgentTaxonomy!]
+  specialization: String
+  class: AgentClass!
+  category: AgentCategory!
+  conformanceTier: ConformanceTier!
+  certificationLevel: CertificationLevel
+}
+
+input AgentCapabilitiesInput {
+  primary: [CapabilityDefinitionInput!]!
+  secondary: [CapabilityDefinitionInput!]
+  domains: [String!]!
+  contexts: [String!]
+  languages: [String!]
+  models: [ModelConfigurationInput!]
+  frameworks: [FrameworkSupportInput!]
+  integrations: [IntegrationCapabilityInput!]
+  maxConcurrentTasks: Int
+  maxTokensPerRequest: Int
+  supportedDataFormats: [DataFormat!]
+}
+
+input CapabilityDefinitionInput {
+  name: String!
+  description: String!
+  version: String!
+  inputSchema: JSON!
+  outputSchema: JSON!
+  errorSchema: JSON
+  tokenCost: TokenCostEstimateInput
+  dependencies: [UUID!]
+  prerequisites: [String!]
+  complianceLevel: ComplianceLevel!
+  certifications: [String!]
+}
+
+input TokenCostEstimateInput {
+  estimatedTokens: Int!
+  costPerRequest: Float!
+  currency: String = "USD"
+  compressionRatio: Float
+  optimizationApplied: Boolean = false
+}
+
+input ProtocolSupportInput {
+  rest: RESTProtocolConfigInput
+  graphql: GraphQLProtocolConfigInput
+  grpc: GRPCProtocolConfigInput
+  websocket: WebSocketProtocolConfigInput
+  mcp: MCPProtocolConfigInput
+  custom: [CustomProtocolConfigInput!]
+}
+
+input RESTProtocolConfigInput {
+  enabled: Boolean!
+  version: String = "1.0"
+  baseUrl: URI
+  openApiSpec: URI
+  authentication: AuthenticationConfigInput
+  rateLimit: RateLimitConfigInput
+  compression: CompressionConfigInput
+}
+
+input GraphQLProtocolConfigInput {
+  enabled: Boolean!
+  endpoint: URI
+  introspectionEnabled: Boolean = true
+  subscriptionsEnabled: Boolean = false
+  federationSupported: Boolean = false
+  schema: URI
+  playgroundEnabled: Boolean = false
+}
+
+input GRPCProtocolConfigInput {
+  enabled: Boolean!
+  endpoint: URI
+  tlsEnabled: Boolean = true
+  reflectionEnabled: Boolean = false
+  protoFiles: [URI!]
+  services: [String!]
+}
+
+input WebSocketProtocolConfigInput {
+  enabled: Boolean!
+  endpoint: URI
+  protocols: [String!]
+  maxConnections: Int
+  heartbeatInterval: Int = 30
+}
+
+input MCPProtocolConfigInput {
+  enabled: Boolean!
+  version: String = "1.0"
+  serverName: String!
+  tools: [MCPToolInput!]
+  transport: MCPTransportInput!
+  manifest: URI
+}
+
+input MCPToolInput {
+  name: String!
+  description: String!
+  inputSchema: JSON!
+  outputSchema: JSON
+}
+
+input MCPTransportInput {
+  type: String!
+  endpoint: URI
+  config: JSON
+}
+
+input CustomProtocolConfigInput {
+  name: String!
+  version: String!
+  endpoint: URI
+  specification: URI
+  configuration: JSON
+}
+
+input AuthenticationConfigInput {
+  methods: [AuthRequirement!]!
+  apiKeyConfig: ApiKeyConfigInput
+  oauthConfig: OAuth2ConfigInput
+  jwtConfig: JWTConfigInput
+  mtlsConfig: MTLSConfigInput
+}
+
+input ApiKeyConfigInput {
+  headerName: String = "X-API-Key"
+  queryParam: String
+  prefix: String
+}
+
+input OAuth2ConfigInput {
+  authUrl: URI!
+  tokenUrl: URI!
+  scopes: [String!]
+  clientId: String!
+}
+
+input JWTConfigInput {
+  issuer: URI!
+  audience: String!
+  algorithm: String = "RS256"
+  publicKeyUrl: URI
+}
+
+input MTLSConfigInput {
+  certificateUrl: URI!
+  caCertUrl: URI!
+  verifyClient: Boolean = true
+}
+
+input RateLimitConfigInput {
+  requests: Int!
+  window: String!
+  burstAllowed: Boolean = false
+  burstSize: Int
+}
+
+input CompressionConfigInput {
+  enabled: Boolean!
+  algorithms: [String!] = ["gzip", "deflate"]
+  minSize: Int = 1024
+}
+
+input AgentMetadataInput {
+  owner: String
+  team: String
+  department: String
+  environment: String!
+  tier: String
+  criticality: String
+  dataClassification: DataClassification
+  tags: [String!]
+  labels: JSON
+  annotations: JSON
+  documentation: URI
+  changelog: URI
+  supportContact: String
+}
+
+input AgentEndpointsInput {
+  health: URI!
+  capabilities: URI!
+  api: URI!
+  metrics: URI
+  openapi: URI
+  graphql: URI
+  websocket: URI
+  admin: URI
+  config: URI
+  logs: URI
+}
+
+input AgentConfigurationInput {
+  maxConcurrentTasks: Int!
+  timeout: Int!
+  retryPolicy: RetryPolicyInput
+  memoryLimit: String
+  cpuLimit: String
+  diskLimit: String
+  features: JSON
+  experiments: JSON
+}
+
+input RetryPolicyInput {
+  maxAttempts: Int!
+  backoffStrategy: String!
+  initialDelay: Int!
+  maxDelay: Int!
+  jitter: Boolean!
+}
+
+input ServiceLevelAgreementInput {
+  availabilityTarget: Float!
+  downtimeAllowanceMs: Uint64!
+  responseTimeTarget: Float!
+  throughputTarget: Float!
+  errorRateTarget: Float!
+  recoveryTimeObjective: Int!
+  recoveryPointObjective: Int!
+  supportResponseTime: Int!
+  escalationPath: [String!]
+}
+
+input ComplianceInfoInput {
+  certifications: [ComplianceCertificationInput!]!
+  overallStatus: ComplianceLevel!
+  frameworks: [FrameworkComplianceInput!]!
+  lastAuditDate: DateTime
+  nextAuditDate: DateTime
+}
+
+input ComplianceCertificationInput {
+  framework: ComplianceFramework!
+  level: String!
+  certificateId: String!
+  issuedDate: DateTime!
+  expiryDate: DateTime!
+  issuingAuthority: String!
+  status: String!
+}
+
+input FrameworkComplianceInput {
+  framework: ComplianceFramework!
+  version: String!
+  status: String!
+  lastAssessed: DateTime!
+  score: Float
+  controls: [ControlComplianceInput!]
+}
+
+input ControlComplianceInput {
+  controlId: String!
+  name: String!
+  status: String!
+  evidence: [String!]
+  lastReviewed: DateTime!
+}
+
+input SecurityConfigurationInput {
+  encryption: EncryptionConfigInput!
+  accessControl: AccessControlConfigInput!
+  networkSecurity: NetworkSecurityConfigInput!
+  securityMonitoring: SecurityMonitoringConfigInput!
+}
+
+input EncryptionConfigInput {
+  atRest: EncryptionDetailsInput!
+  inTransit: EncryptionDetailsInput!
+  keyManagement: KeyManagementConfigInput!
+}
+
+input EncryptionDetailsInput {
+  enabled: Boolean!
+  algorithm: String!
+  keySize: Int!
+  mode: String
+}
+
+input KeyManagementConfigInput {
+  provider: String!
+  keyRotationEnabled: Boolean!
+  keyRotationInterval: String!
+}
+
+input AccessControlConfigInput {
+  authentication: AuthenticationConfigInput!
+  authorization: AuthorizationConfigInput!
+  sessionManagement: SessionConfigInput!
+}
+
+input AuthorizationConfigInput {
+  model: String!
+  roles: [String!]
+  permissions: [String!]
+  policies: JSON
+}
+
+input SessionConfigInput {
+  timeout: Int!
+  renewalEnabled: Boolean!
+  maxSessions: Int
+}
+
+input NetworkSecurityConfigInput {
+  tlsVersion: String!
+  certificateValidation: Boolean!
+  firewallEnabled: Boolean!
+  allowedHosts: [String!]
+  blockedHosts: [String!]
+}
+
+input SecurityMonitoringConfigInput {
+  loggingEnabled: Boolean!
+  auditTrailEnabled: Boolean!
+  intrusionDetection: Boolean!
+  anomalyDetection: Boolean!
+}
+
+input ModelConfigurationInput {
+  id: String!
+  name: String!
+  version: String!
+  provider: String!
+  tier: ModelTier!
+  capabilities: [String!]!
+  languages: [String!]!
+  domains: [String!]
+  maxTokens: Int!
+  contextWindow: Int!
+  costPerToken: Float!
+  currency: String = "USD"
+}
+
+input FrameworkSupportInput {
+  framework: String!
+  version: String!
+  features: [String!]!
+  configuration: JSON
+  documentation: URI
+}
+
+input IntegrationCapabilityInput {
+  type: IntegrationType!
+  name: String!
+  version: String!
+  protocols: [ProtocolType!]!
+  configuration: JSON
+}

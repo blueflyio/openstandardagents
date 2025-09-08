@@ -1,0 +1,164 @@
+{{- $services := dict 
+  "taskAgent" (dict "port" 3001 "agentType" "task")
+  "commAgent" (dict "port" 3002 "agentType" "communication")
+  "mcpAgent" (dict "port" 3003 "agentType" "mcp")
+  "coordination" (dict "port" 3010)
+  "discovery" (dict "port" 3011)
+  "orchestration" (dict "port" 3012)
+  "monitoring" (dict "port" 3013)
+}}
+{{- range $serviceName, $serviceConfig := $services }}
+{{- $service := index $.Values.services $serviceName }}
+{{- if $service.enabled }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "ossa.fullname" $ }}-{{ $serviceName | kebabcase }}
+  namespace: {{ $.Release.Namespace }}
+  labels:
+    {{- include "ossa.serviceLabels" (dict "component" ($serviceName | kebabcase) "agentType" $serviceConfig.agentType "Chart" $.Chart "Release" $.Release "Values" $.Values) | nindent 4 }}
+  annotations:
+    ossa.io/uptime-target: {{ $.Values.ossa.uptime.target | quote }}
+spec:
+  {{- $replicaCount := $service.replicaCount }}
+  {{- if eq $.Values.global.environment "production" }}
+  {{- $replicaCount = $.Values.environments.production.replicaCount }}
+  {{- else if eq $.Values.global.environment "staging" }}
+  {{- $replicaCount = $.Values.environments.staging.replicaCount }}
+  {{- else if eq $.Values.global.environment "dev" }}
+  {{- $replicaCount = $.Values.environments.dev.replicaCount }}
+  {{- end }}
+  replicas: {{ $replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "ossa.selectorLabels" $ | nindent 6 }}
+      ossa.io/component: {{ $serviceName | kebabcase | quote }}
+  template:
+    metadata:
+      labels:
+        {{- include "ossa.serviceLabels" (dict "component" ($serviceName | kebabcase) "agentType" $serviceConfig.agentType "Chart" $.Chart "Release" $.Release "Values" $.Values) | nindent 8 }}
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/configmaps/ossa-config.yaml") $ | sha256sum }}
+        prometheus.io/scrape: "true"
+        prometheus.io/port: {{ $serviceConfig.port | quote }}
+        prometheus.io/path: "/metrics"
+    spec:
+      {{- include "ossa.imagePullSecrets" $ | nindent 6 }}
+      serviceAccountName: {{ include "ossa.serviceAccountName" $ }}
+      {{- include "ossa.podSecurityContext" $ | nindent 6 }}
+      {{- if $.Values.highAvailability.enabled }}
+      affinity:
+        {{- include "ossa.antiAffinity" (dict "component" ($serviceName | kebabcase) "Values" $.Values "Chart" $.Chart "Release" $.Release) | nindent 8 }}
+        {{- include "ossa.multiZoneAffinity" $ | nindent 8 }}
+      {{- end }}
+      containers:
+      - name: {{ $serviceName | kebabcase }}
+        image: "{{ (index $.Values.images $serviceName).repository }}:{{ (index $.Values.images $serviceName).tag }}"
+        imagePullPolicy: {{ $.Values.images.pullPolicy }}
+        {{- include "ossa.securityContext" $ | nindent 8 }}
+        ports:
+        - name: http
+          containerPort: {{ $serviceConfig.port }}
+          protocol: TCP
+        - name: metrics
+          containerPort: 9090
+          protocol: TCP
+        env:
+        {{- include "ossa.commonEnv" $ | nindent 8 }}
+        - name: SERVICE_PORT
+          value: {{ $serviceConfig.port | quote }}
+        {{- if $serviceConfig.agentType }}
+        - name: AGENT_TYPE
+          value: {{ $serviceConfig.agentType | quote }}
+        {{- end }}
+        {{- with $service.env }}
+        {{- range $key, $value := . }}
+        - name: {{ $key }}
+          value: {{ $value | quote }}
+        {{- end }}
+        {{- end }}
+        envFrom:
+        - configMapRef:
+            name: {{ include "ossa.fullname" $ }}-config
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: {{ $serviceConfig.port }}
+          initialDelaySeconds: 30
+          periodSeconds: 30
+          timeoutSeconds: 10
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: {{ $serviceConfig.port }}
+          initialDelaySeconds: 5
+          periodSeconds: 5
+          timeoutSeconds: 5
+          failureThreshold: 3
+        resources:
+          {{- $resources := $service.resources }}
+          {{- if eq $.Values.global.environment "production" }}
+          {{- $resources = $.Values.environments.production.resources }}
+          {{- else if eq $.Values.global.environment "staging" }}
+          {{- $resources = $.Values.environments.staging.resources }}
+          {{- else if eq $.Values.global.environment "dev" }}
+          {{- $resources = $.Values.environments.dev.resources }}
+          {{- end }}
+          {{- toYaml $resources | nindent 10 }}
+        volumeMounts:
+        - name: tmp
+          mountPath: /tmp
+        - name: cache
+          mountPath: /app/cache
+        {{- if eq $serviceName "monitoring" }}
+        - name: config
+          mountPath: /app/config
+        {{- end }}
+      volumes:
+      - name: tmp
+        emptyDir: {}
+      - name: cache
+        emptyDir: {}
+      {{- if eq $serviceName "monitoring" }}
+      - name: config
+        configMap:
+          name: {{ include "ossa.fullname" $ }}-config
+      {{- end }}
+      {{- with $.Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with $.Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "ossa.fullname" $ }}-{{ $serviceName | kebabcase }}
+  namespace: {{ $.Release.Namespace }}
+  labels:
+    {{- include "ossa.serviceLabels" (dict "component" ($serviceName | kebabcase) "agentType" $serviceConfig.agentType "Chart" $.Chart "Release" $.Release "Values" $.Values) | nindent 4 }}
+  {{- with $service.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  type: {{ $service.type | default "ClusterIP" }}
+  ports:
+  - port: {{ $serviceConfig.port }}
+    targetPort: {{ $serviceConfig.port }}
+    protocol: TCP
+    name: http
+  - port: 9090
+    targetPort: 9090
+    protocol: TCP
+    name: metrics
+  selector:
+    {{- include "ossa.selectorLabels" $ | nindent 4 }}
+    ossa.io/component: {{ $serviceName | kebabcase | quote }}
+{{- end }}
+{{- end }}

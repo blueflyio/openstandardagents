@@ -5,6 +5,11 @@
  */
 
 import { EventEmitter } from 'events';
+import { MessageOrderingService, CausalMessage, MessageType, MessagePriority, DeliveryGuarantee } from './message-ordering';
+import { EnhancedRaftConsensusEngine, EnhancedPBFTConsensusEngine } from './consensus-engines';
+import { AdvancedConflictResolver } from './conflict-resolution';
+import { ReliableMessageTransport } from './message-transport';
+import { DistributedDecisionEngine, DecisionRequest } from './distributed-decision';
 
 export enum ConsensusAlgorithm {
   RAFT = 'raft',

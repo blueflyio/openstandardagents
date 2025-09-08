@@ -1,0 +1,1348 @@
+# OSSA v0.1.8 Agent Orchestration Schema
+# Multi-agent workflow orchestration, task management, and coordination
+
+# Orchestration Core Types
+type Workflow @key(fields: "id") @ossaCompliant(version: "0.1.8", level: ADVANCED) {
+  id: UUID!
+  name: String!
+  version: String!
+  description: String
+  
+  # Workflow Definition
+  definition: WorkflowDefinition!
+  configuration: WorkflowConfiguration!
+  
+  # Current State
+  status: WorkflowStatus!
+  currentPhase: String
+  progress: WorkflowProgress!
+  
+  # Execution Context
+  executions: [WorkflowExecution!]! @cached(maxAge: 60)
+  activeExecution: WorkflowExecution
+  
+  # Resource Management
+  resources: ResourceAllocation!
+  budget: WorkflowBudget! @tokenBudget(cost: 10000)
+  
+  # Compliance and Governance
+  compliance: WorkflowCompliance! @federalCompliance
+  governance: WorkflowGovernance!
+  
+  # Temporal Information
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  scheduledAt: DateTime
+  lastExecutedAt: DateTime
+}
+
+type WorkflowDefinition {
+  # Structure
+  tasks: [TaskDefinition!]!
+  dependencies: [TaskDependency!]!
+  patterns: [OrchestrationPattern!]!
+  
+  # Flow Control
+  entryPoints: [UUID!]!
+  exitPoints: [UUID!]!
+  errorHandling: ErrorHandlingStrategy!
+  
+  # Validation
+  schema: JSON!
+  constraints: WorkflowConstraints!
+  
+  # Metadata
+  tags: [String!]
+  annotations: JSON
+  documentation: URI
+}
+
+type TaskDefinition @agentTaxonomy(type: WORKER) {
+  id: UUID!
+  name: String!
+  description: String!
+  type: TaskType!
+  
+  # Agent Requirements
+  agentRequirements: AgentRequirements!
+  capabilities: [String!]!
+  
+  # Execution Configuration
+  configuration: TaskConfiguration!
+  timeout: Int! # seconds
+  retryPolicy: RetryPolicy!
+  
+  # Input/Output Specifications
+  inputSchema: JSON!
+  outputSchema: JSON!
+  errorSchema: JSON
+  
+  # Resource Requirements
+  resources: TaskResourceRequirements!
+  budget: TaskBudget! @tokenBudget(cost: 1000)
+  
+  # Compliance
+  complianceLevel: ComplianceLevel!
+  certifications: [String!]
+}
+
+enum TaskType {
+  COMPUTATION
+  COMMUNICATION
+  COORDINATION
+  VALIDATION
+  TRANSFORMATION
+  DECISION
+  APPROVAL
+  NOTIFICATION
+  INTEGRATION
+  CUSTOM
+}
+
+type AgentRequirements {
+  # Agent Selection Criteria
+  taxonomy: [AgentTaxonomy!]
+  capabilities: [String!]!
+  domains: [String!]
+  
+  # Performance Requirements
+  minPerformance: PerformanceRequirements
+  maxLatency: Float # milliseconds
+  minReliability: Float # 0.0 to 1.0
+  
+  # Compliance Requirements
+  complianceLevel: ComplianceLevel
+  certifications: [String!]
+  
+  # Availability Requirements
+  availability: AgentAvailability
+  concurrency: Int # max concurrent instances
+  
+  # Preference Hints
+  preferred: [UUID!] # preferred agent IDs
+  excluded: [UUID!] # excluded agent IDs
+  affinityRules: [AffinityRule!]
+}
+
+type PerformanceRequirements {
+  minThroughput: Float
+  maxResponseTime: Float
+  minSuccessRate: Float
+  minUptime: Float
+}
+
+type AffinityRule {
+  type: String! # "nodeAffinity" | "agentAffinity" | "antiAffinity"
+  selector: JSON!
+  weight: Int = 1
+}
+
+type TaskConfiguration {
+  # Execution Parameters
+  parameters: JSON!
+  environment: JSON
+  
+  # Behavior Configuration
+  idempotent: Boolean! = false
+  cacheable: Boolean! = true
+  parallel: Boolean! = false
+  
+  # Monitoring
+  metricsEnabled: Boolean! = true
+  loggingLevel: String! = "INFO"
+  tracingEnabled: Boolean! = true
+}
+
+type TaskResourceRequirements {
+  # Computational Resources
+  cpu: ResourceSpec
+  memory: ResourceSpec
+  storage: ResourceSpec
+  network: ResourceSpec
+  
+  # Specialized Resources
+  gpu: ResourceSpec
+  customResources: JSON
+  
+  # Quality of Service
+  qosClass: String = "BestEffort" # "Guaranteed" | "Burstable" | "BestEffort"
+  priority: PriorityLevel = NORMAL
+}
+
+type ResourceSpec {
+  request: String! # e.g., "100m", "256Mi"
+  limit: String! # e.g., "500m", "1Gi"
+  burst: String # allowed burst limit
+}
+
+type TaskBudget @tokenBudget(cost: 1000) {
+  # Token Budget
+  maxTokens: Int!
+  estimatedTokens: Int!
+  tokenCost: Float!
+  
+  # Execution Budget
+  maxDuration: Int! # seconds
+  maxRetries: Int!
+  
+  # Resource Budget
+  maxCost: Float # monetary cost
+  currency: String = "USD"
+  
+  # Enforcement
+  enforcement: BudgetEnforcementPolicy!
+  overage: OveragePolicy
+}
+
+type OveragePolicy {
+  allowed: Boolean!
+  maxOverage: Float # percentage
+  approval: ApprovalRequirement
+}
+
+type ApprovalRequirement {
+  required: Boolean!
+  approvers: [String!]
+  timeout: Int # seconds
+}
+
+type TaskDependency {
+  id: UUID!
+  from: UUID! # predecessor task
+  to: UUID! # successor task
+  type: DependencyType!
+  
+  # Conditions
+  condition: DependencyCondition
+  timeout: Int # seconds
+  
+  # Data Flow
+  dataMapping: DataMapping
+  
+  # Failure Handling
+  onFailure: FailureAction!
+}
+
+type DependencyCondition {
+  # Simple Conditions
+  status: [ExecutionStatus!]
+  output: JSON # expected output pattern
+  
+  # Complex Conditions
+  expression: String # boolean expression
+  validator: String # custom validator function
+}
+
+type DataMapping {
+  # Direct Mapping
+  inputMapping: JSON # map predecessor output to successor input
+  transformations: [DataTransformation!]
+  
+  # Context Passing
+  contextKeys: [String!]
+  mergeStrategy: String = "override" # "override" | "merge" | "append"
+}
+
+type DataTransformation {
+  type: String! # "map" | "filter" | "reduce" | "custom"
+  expression: String!
+  parameters: JSON
+}
+
+enum FailureAction {
+  FAIL_WORKFLOW
+  SKIP_TASK
+  RETRY_TASK
+  CONTINUE
+  ESCALATE
+  CUSTOM
+}
+
+type WorkflowConfiguration {
+  # Execution Settings
+  maxConcurrentTasks: Int! = 10
+  globalTimeout: Int! = 3600 # seconds
+  
+  # Resource Management
+  resourceQuota: ResourceQuota
+  scheduling: SchedulingPolicy!
+  
+  # Error Handling
+  errorHandling: ErrorHandlingStrategy!
+  
+  # Monitoring and Observability
+  monitoring: MonitoringConfiguration!
+  notifications: NotificationConfiguration!
+  
+  # Features
+  features: WorkflowFeatures!
+}
+
+type ResourceQuota {
+  cpu: String
+  memory: String
+  storage: String
+  maxPods: Int
+  customQuotas: JSON
+}
+
+type SchedulingPolicy {
+  strategy: String! = "default" # "default" | "balanced" | "performance" | "cost"
+  nodeSelector: JSON
+  tolerations: [Toleration!]
+  affinity: WorkflowAffinity
+  
+  # Priority and Preemption
+  priorityClass: String
+  preemptionPolicy: String = "PreemptLowerPriority"
+}
+
+type Toleration {
+  key: String!
+  operator: String! = "Equal"
+  value: String
+  effect: String!
+  tolerationSeconds: Int
+}
+
+type WorkflowAffinity {
+  nodeAffinity: JSON
+  podAffinity: JSON
+  podAntiAffinity: JSON
+}
+
+type ErrorHandlingStrategy {
+  # Global Strategy
+  defaultAction: FailureAction! = FAIL_WORKFLOW
+  maxRetries: Int! = 3
+  retryBackoff: String! = "exponential"
+  
+  # Task-Specific Overrides
+  taskOverrides: JSON
+  
+  # Escalation
+  escalation: EscalationPolicy
+  
+  # Recovery
+  recovery: RecoveryPolicy
+}
+
+type EscalationPolicy {
+  enabled: Boolean!
+  triggers: [EscalationTrigger!]!
+  contacts: [String!]!
+  channels: [String!]! # email, slack, pagerduty, etc.
+}
+
+type EscalationTrigger {
+  condition: String!
+  threshold: Int!
+  window: String!
+}
+
+type RecoveryPolicy {
+  autoRecovery: Boolean!
+  checkpointingEnabled: Boolean!
+  rollbackEnabled: Boolean!
+  manualIntervention: Boolean!
+}
+
+type MonitoringConfiguration {
+  # Metrics Collection
+  metricsEnabled: Boolean! = true
+  metricsInterval: Int! = 30 # seconds
+  customMetrics: [MetricDefinition!]
+  
+  # Logging
+  loggingLevel: String! = "INFO"
+  logAggregation: Boolean! = true
+  
+  # Tracing
+  tracingEnabled: Boolean! = true
+  tracingSampleRate: Float! = 0.1
+  
+  # Health Checks
+  healthChecks: [HealthCheckDefinition!]
+}
+
+type MetricDefinition {
+  name: String!
+  type: MetricType!
+  description: String!
+  labels: [String!]
+  aggregation: AggregationType
+}
+
+type HealthCheckDefinition {
+  name: String!
+  type: String!
+  endpoint: URI
+  interval: Int! = 30
+  timeout: Int! = 5
+  failureThreshold: Int! = 3
+}
+
+type NotificationConfiguration {
+  # Channels
+  channels: [NotificationChannel!]!
+  
+  # Events
+  events: [NotificationEvent!]!
+  
+  # Templates
+  templates: JSON
+}
+
+type NotificationChannel {
+  id: String!
+  type: String! # "email" | "slack" | "webhook" | "sms"
+  configuration: JSON!
+  enabled: Boolean! = true
+}
+
+type NotificationEvent {
+  event: String!
+  channels: [String!]!
+  condition: String
+  template: String
+}
+
+type WorkflowFeatures {
+  # Execution Features
+  parallelExecution: Boolean! = true
+  checkpointing: Boolean! = true
+  rollback: Boolean! = true
+  
+  # Optimization Features
+  caching: Boolean! = true
+  compression: Boolean! = true
+  batchProcessing: Boolean! = false
+  
+  # Advanced Features
+  conditionalExecution: Boolean! = true
+  dynamicTaskGeneration: Boolean! = false
+  humanInTheLoop: Boolean! = false
+  
+  # Integration Features
+  webhooks: Boolean! = true
+  eventDriven: Boolean! = true
+  streaming: Boolean! = false
+}
+
+type WorkflowProgress @realtime {
+  # Overall Progress
+  totalTasks: Int!
+  completedTasks: Int!
+  failedTasks: Int!
+  runningTasks: Int!
+  pendingTasks: Int!
+  
+  # Progress Metrics
+  progressPercentage: Float! # 0.0 to 1.0
+  estimatedCompletion: DateTime
+  elapsedTime: Int! # seconds
+  
+  # Phase Progress
+  phases: [PhaseProgress!]
+  currentPhase: String
+  
+  # Milestone Tracking
+  milestones: [MilestoneProgress!]
+  completedMilestones: Int!
+}
+
+type PhaseProgress {
+  phase: String!
+  status: ExecutionStatus!
+  tasksInPhase: Int!
+  completedTasks: Int!
+  progress: Float! # 0.0 to 1.0
+  startedAt: DateTime
+  completedAt: DateTime
+}
+
+type MilestoneProgress {
+  id: UUID!
+  name: String!
+  status: String! # "pending" | "in-progress" | "completed" | "failed"
+  dependencies: [UUID!]
+  completedAt: DateTime
+  dueDate: DateTime
+}
+
+type WorkflowExecution @performanceMetrics {
+  id: UUID!
+  workflowId: UUID!
+  
+  # Execution Context
+  status: ExecutionStatus!
+  trigger: ExecutionTrigger!
+  input: JSON
+  output: JSON
+  context: ExecutionContext!
+  
+  # Task Executions
+  taskExecutions: [TaskExecution!]!
+  
+  # Performance
+  performance: ExecutionPerformance!
+  
+  # Resource Usage
+  resourceUsage: ResourceUsage!
+  costs: ExecutionCosts!
+  
+  # Audit Trail
+  auditTrail: [ExecutionEvent!]! @auditLog
+  
+  # Temporal Information
+  startedAt: DateTime!
+  completedAt: DateTime
+  duration: Int # seconds
+}
+
+type ExecutionTrigger {
+  type: String! # "manual" | "scheduled" | "event" | "api" | "webhook"
+  source: String!
+  triggeredBy: String
+  triggerData: JSON
+  timestamp: DateTime!
+}
+
+type ExecutionContext {
+  # Environment
+  environment: String!
+  namespace: String!
+  
+  # Identity and Authorization
+  user: String
+  serviceAccount: String
+  permissions: [String!]
+  
+  # Tracing and Correlation
+  traceId: String!
+  parentTraceId: String
+  correlationId: String!
+  
+  # Configuration
+  configuration: JSON
+  secrets: [String!] # secret references, not values
+}
+
+type TaskExecution @performanceMetrics {
+  id: UUID!
+  taskId: UUID!
+  workflowExecutionId: UUID!
+  
+  # Assignment
+  assignedAgent: UUID
+  agentMetadata: JSON
+  
+  # Execution State
+  status: ExecutionStatus!
+  phase: String
+  attempts: Int!
+  
+  # Input/Output
+  input: JSON
+  output: JSON
+  error: ExecutionError
+  
+  # Performance
+  performance: TaskPerformance!
+  
+  # Resource Usage
+  resourceUsage: TaskResourceUsage!
+  
+  # Audit
+  events: [TaskExecutionEvent!]!
+  
+  # Temporal Information
+  startedAt: DateTime!
+  completedAt: DateTime
+  duration: Int # seconds
+}
+
+type ExecutionError {
+  code: ErrorCode!
+  message: String!
+  details: JSON
+  stackTrace: String
+  retryable: Boolean!
+  
+  # Classification
+  category: String! # "system" | "business" | "validation" | "timeout"
+  severity: ErrorSeverity!
+  
+  # Context
+  agentId: UUID
+  taskId: UUID
+  timestamp: DateTime!
+}
+
+type TaskPerformance {
+  # Response Time
+  responseTime: Float! # milliseconds
+  queueTime: Float! # time spent in queue
+  executionTime: Float! # actual processing time
+  
+  # Throughput
+  throughput: Float # items per second
+  
+  # Reliability
+  successRate: Float! # for this task type
+  errorRate: Float!
+}
+
+type TaskResourceUsage {
+  # Computational Resources
+  cpu: ResourceConsumption!
+  memory: ResourceConsumption!
+  network: ResourceConsumption!
+  storage: ResourceConsumption!
+  
+  # Specialized Resources
+  gpu: ResourceConsumption
+  customResources: JSON
+  
+  # Cost
+  cost: Float
+  currency: String = "USD"
+}
+
+type ResourceConsumption {
+  requested: Float!
+  used: Float!
+  peak: Float!
+  average: Float!
+  unit: String!
+}
+
+type ExecutionPerformance {
+  # Overall Metrics
+  totalDuration: Int! # seconds
+  taskExecutionTime: Int! # sum of all task execution times
+  queueTime: Int! # time spent waiting
+  
+  # Throughput
+  tasksPerSecond: Float!
+  
+  # Efficiency
+  parallelismUtilization: Float! # 0.0 to 1.0
+  resourceEfficiency: Float! # 0.0 to 1.0
+  
+  # Quality Metrics
+  successRate: Float!
+  errorRate: Float!
+  
+  # SLA Metrics
+  slaCompliance: Float! # 0.0 to 1.0
+  slaViolations: [SLAViolation!]
+}
+
+type SLAViolation {
+  metric: String!
+  threshold: Float!
+  actualValue: Float!
+  timestamp: DateTime!
+}
+
+type ExecutionCosts @tokenBudget(cost: 0) {
+  # Token Costs
+  totalTokensUsed: Int!
+  tokenCosts: Float!
+  
+  # Resource Costs
+  computeCosts: Float!
+  storageCosts: Float!
+  networkCosts: Float!
+  
+  # Total Cost
+  totalCost: Float!
+  currency: String! = "USD"
+  
+  # Budget Tracking
+  budgetUsed: Float! # percentage
+  budgetRemaining: Float!
+  overBudget: Boolean!
+}
+
+type ExecutionEvent @auditLog {
+  id: UUID!
+  type: EventType!
+  timestamp: DateTime!
+  
+  # Context
+  source: String!
+  actor: String
+  
+  # Event Data
+  message: String!
+  data: JSON
+  level: String! = "INFO"
+  
+  # Correlation
+  traceId: String
+  parentEventId: UUID
+}
+
+type TaskExecutionEvent @auditLog {
+  id: UUID!
+  taskExecutionId: UUID!
+  type: String!
+  timestamp: DateTime!
+  
+  # Event Details
+  message: String!
+  data: JSON
+  level: String!
+  
+  # Agent Context
+  agentId: UUID
+  agentName: String
+}
+
+type ResourceAllocation {
+  # Allocated Resources
+  cpu: AllocatedResource!
+  memory: AllocatedResource!
+  storage: AllocatedResource!
+  
+  # Specialized Resources
+  gpu: AllocatedResource
+  customResources: JSON
+  
+  # Allocation Strategy
+  strategy: ResourceAllocation!
+  constraints: [AllocationConstraint!]
+  
+  # Quality of Service
+  qosClass: String!
+  priority: PriorityLevel!
+}
+
+type AllocatedResource {
+  requested: String!
+  allocated: String!
+  used: String!
+  available: String!
+  unit: String!
+}
+
+type AllocationConstraint {
+  type: String!
+  constraint: String!
+  value: JSON!
+}
+
+type WorkflowBudget @tokenBudget(cost: 10000) {
+  # Overall Budget
+  totalBudget: Float!
+  usedBudget: Float!
+  remainingBudget: Float!
+  currency: String! = "USD"
+  
+  # Token Budget
+  maxTokens: Int!
+  usedTokens: Int!
+  remainingTokens: Int!
+  tokenCost: Float!
+  
+  # Time Budget
+  maxDuration: Int! # seconds
+  usedDuration: Int!
+  
+  # Resource Budget
+  resourceBudgets: JSON
+  
+  # Enforcement
+  enforcement: BudgetEnforcementPolicy!
+  alerts: [BudgetAlert!]
+}
+
+type BudgetAlert {
+  type: String! # "warning" | "critical" | "exceeded"
+  threshold: Float!
+  currentValue: Float!
+  message: String!
+  timestamp: DateTime!
+}
+
+type WorkflowCompliance @federalCompliance {
+  # Overall Compliance
+  level: ComplianceLevel!
+  frameworks: [WorkflowFrameworkCompliance!]!
+  
+  # Data Compliance
+  dataClassification: DataClassification!
+  dataRetention: DataRetentionPolicy!
+  dataPrivacy: DataPrivacyPolicy!
+  
+  # Execution Compliance
+  auditTrail: Boolean!
+  approvals: [ApprovalRequirement!]
+  
+  # Security Compliance
+  encryption: Boolean!
+  accessControl: Boolean!
+  networkSecurity: Boolean!
+}
+
+type WorkflowFrameworkCompliance {
+  framework: ComplianceFramework!
+  status: String!
+  controls: [String!]!
+  lastAssessed: DateTime!
+  evidence: [String!]
+}
+
+type DataRetentionPolicy {
+  retentionPeriod: String!
+  archivalPolicy: String!
+  deletionPolicy: String!
+  legalHolds: [String!]
+}
+
+type DataPrivacyPolicy {
+  piiHandling: String!
+  encryptionRequired: Boolean!
+  accessLogging: Boolean!
+  dataMinimization: Boolean!
+}
+
+type WorkflowGovernance {
+  # Approval Workflows
+  approvals: [ApprovalStage!]
+  
+  # Risk Assessment
+  riskLevel: String!
+  riskFactors: [String!]!
+  mitigations: [String!]!
+  
+  # Change Control
+  changeControl: ChangeControlPolicy!
+  
+  # Monitoring and Alerts
+  monitoring: GovernanceMonitoring!
+}
+
+type ApprovalStage {
+  id: UUID!
+  name: String!
+  required: Boolean!
+  approvers: [String!]!
+  criteria: ApprovalCriteria!
+  timeout: Int # seconds
+  status: String # "pending" | "approved" | "rejected" | "expired"
+}
+
+type ApprovalCriteria {
+  minApprovers: Int!
+  unanimousRequired: Boolean!
+  conditions: [String!]
+}
+
+type ChangeControlPolicy {
+  versionControl: Boolean!
+  approvalRequired: Boolean!
+  testingRequired: Boolean!
+  rollbackEnabled: Boolean!
+}
+
+type GovernanceMonitoring {
+  continuousMonitoring: Boolean!
+  alerts: [GovernanceAlert!]!
+  reporting: ReportingConfiguration!
+}
+
+type GovernanceAlert {
+  type: String!
+  condition: String!
+  severity: AlertSeverity!
+  recipients: [String!]!
+}
+
+type ReportingConfiguration {
+  frequency: ScheduleFrequency!
+  recipients: [String!]!
+  templates: [String!]!
+}
+
+# Input Types for Orchestration
+input WorkflowInput {
+  name: String!
+  version: String!
+  description: String
+  
+  definition: WorkflowDefinitionInput!
+  configuration: WorkflowConfigurationInput!
+  
+  budget: WorkflowBudgetInput!
+  compliance: WorkflowComplianceInput
+  governance: WorkflowGovernanceInput
+  
+  scheduledAt: DateTime
+}
+
+input WorkflowDefinitionInput {
+  tasks: [TaskDefinitionInput!]!
+  dependencies: [TaskDependencyInput!]!
+  patterns: [OrchestrationPattern!]!
+  
+  entryPoints: [UUID!]!
+  exitPoints: [UUID!]!
+  errorHandling: ErrorHandlingStrategyInput!
+  
+  schema: JSON!
+  constraints: WorkflowConstraintsInput!
+  
+  tags: [String!]
+  annotations: JSON
+  documentation: URI
+}
+
+input TaskDefinitionInput {
+  name: String!
+  description: String!
+  type: TaskType!
+  
+  agentRequirements: AgentRequirementsInput!
+  capabilities: [String!]!
+  
+  configuration: TaskConfigurationInput!
+  timeout: Int!
+  retryPolicy: RetryPolicyInput!
+  
+  inputSchema: JSON!
+  outputSchema: JSON!
+  errorSchema: JSON
+  
+  resources: TaskResourceRequirementsInput!
+  budget: TaskBudgetInput!
+  
+  complianceLevel: ComplianceLevel!
+  certifications: [String!]
+}
+
+input AgentRequirementsInput {
+  taxonomy: [AgentTaxonomy!]
+  capabilities: [String!]!
+  domains: [String!]
+  
+  minPerformance: PerformanceRequirementsInput
+  maxLatency: Float
+  minReliability: Float
+  
+  complianceLevel: ComplianceLevel
+  certifications: [String!]
+  
+  availability: AgentAvailability
+  concurrency: Int
+  
+  preferred: [UUID!]
+  excluded: [UUID!]
+  affinityRules: [AffinityRuleInput!]
+}
+
+input PerformanceRequirementsInput {
+  minThroughput: Float
+  maxResponseTime: Float
+  minSuccessRate: Float
+  minUptime: Float
+}
+
+input AffinityRuleInput {
+  type: String!
+  selector: JSON!
+  weight: Int = 1
+}
+
+input TaskConfigurationInput {
+  parameters: JSON!
+  environment: JSON
+  
+  idempotent: Boolean = false
+  cacheable: Boolean = true
+  parallel: Boolean = false
+  
+  metricsEnabled: Boolean = true
+  loggingLevel: String = "INFO"
+  tracingEnabled: Boolean = true
+}
+
+input TaskResourceRequirementsInput {
+  cpu: ResourceSpecInput
+  memory: ResourceSpecInput
+  storage: ResourceSpecInput
+  network: ResourceSpecInput
+  gpu: ResourceSpecInput
+  customResources: JSON
+  
+  qosClass: String = "BestEffort"
+  priority: PriorityLevel = NORMAL
+}
+
+input ResourceSpecInput {
+  request: String!
+  limit: String!
+  burst: String
+}
+
+input TaskBudgetInput {
+  maxTokens: Int!
+  estimatedTokens: Int!
+  tokenCost: Float!
+  
+  maxDuration: Int!
+  maxRetries: Int!
+  
+  maxCost: Float
+  currency: String = "USD"
+  
+  enforcement: BudgetEnforcementPolicy!
+  overage: OveragePolicyInput
+}
+
+input OveragePolicyInput {
+  allowed: Boolean!
+  maxOverage: Float
+  approval: ApprovalRequirementInput
+}
+
+input ApprovalRequirementInput {
+  required: Boolean!
+  approvers: [String!]
+  timeout: Int
+}
+
+input TaskDependencyInput {
+  from: UUID!
+  to: UUID!
+  type: DependencyType!
+  
+  condition: DependencyConditionInput
+  timeout: Int
+  
+  dataMapping: DataMappingInput
+  
+  onFailure: FailureAction!
+}
+
+input DependencyConditionInput {
+  status: [ExecutionStatus!]
+  output: JSON
+  
+  expression: String
+  validator: String
+}
+
+input DataMappingInput {
+  inputMapping: JSON
+  transformations: [DataTransformationInput!]
+  
+  contextKeys: [String!]
+  mergeStrategy: String = "override"
+}
+
+input DataTransformationInput {
+  type: String!
+  expression: String!
+  parameters: JSON
+}
+
+input WorkflowConfigurationInput {
+  maxConcurrentTasks: Int = 10
+  globalTimeout: Int = 3600
+  
+  resourceQuota: ResourceQuotaInput
+  scheduling: SchedulingPolicyInput!
+  
+  errorHandling: ErrorHandlingStrategyInput!
+  
+  monitoring: MonitoringConfigurationInput!
+  notifications: NotificationConfigurationInput!
+  
+  features: WorkflowFeaturesInput!
+}
+
+input ResourceQuotaInput {
+  cpu: String
+  memory: String
+  storage: String
+  maxPods: Int
+  customQuotas: JSON
+}
+
+input SchedulingPolicyInput {
+  strategy: String = "default"
+  nodeSelector: JSON
+  tolerations: [TolerationInput!]
+  affinity: WorkflowAffinityInput
+  
+  priorityClass: String
+  preemptionPolicy: String = "PreemptLowerPriority"
+}
+
+input TolerationInput {
+  key: String!
+  operator: String = "Equal"
+  value: String
+  effect: String!
+  tolerationSeconds: Int
+}
+
+input WorkflowAffinityInput {
+  nodeAffinity: JSON
+  podAffinity: JSON
+  podAntiAffinity: JSON
+}
+
+input ErrorHandlingStrategyInput {
+  defaultAction: FailureAction = FAIL_WORKFLOW
+  maxRetries: Int = 3
+  retryBackoff: String = "exponential"
+  
+  taskOverrides: JSON
+  
+  escalation: EscalationPolicyInput
+  recovery: RecoveryPolicyInput
+}
+
+input EscalationPolicyInput {
+  enabled: Boolean!
+  triggers: [EscalationTriggerInput!]!
+  contacts: [String!]!
+  channels: [String!]!
+}
+
+input EscalationTriggerInput {
+  condition: String!
+  threshold: Int!
+  window: String!
+}
+
+input RecoveryPolicyInput {
+  autoRecovery: Boolean!
+  checkpointingEnabled: Boolean!
+  rollbackEnabled: Boolean!
+  manualIntervention: Boolean!
+}
+
+input MonitoringConfigurationInput {
+  metricsEnabled: Boolean = true
+  metricsInterval: Int = 30
+  customMetrics: [MetricDefinitionInput!]
+  
+  loggingLevel: String = "INFO"
+  logAggregation: Boolean = true
+  
+  tracingEnabled: Boolean = true
+  tracingSampleRate: Float = 0.1
+  
+  healthChecks: [HealthCheckDefinitionInput!]
+}
+
+input MetricDefinitionInput {
+  name: String!
+  type: MetricType!
+  description: String!
+  labels: [String!]
+  aggregation: AggregationType
+}
+
+input HealthCheckDefinitionInput {
+  name: String!
+  type: String!
+  endpoint: URI
+  interval: Int = 30
+  timeout: Int = 5
+  failureThreshold: Int = 3
+}
+
+input NotificationConfigurationInput {
+  channels: [NotificationChannelInput!]!
+  events: [NotificationEventInput!]!
+  templates: JSON
+}
+
+input NotificationChannelInput {
+  id: String!
+  type: String!
+  configuration: JSON!
+  enabled: Boolean = true
+}
+
+input NotificationEventInput {
+  event: String!
+  channels: [String!]!
+  condition: String
+  template: String
+}
+
+input WorkflowFeaturesInput {
+  parallelExecution: Boolean = true
+  checkpointing: Boolean = true
+  rollback: Boolean = true
+  
+  caching: Boolean = true
+  compression: Boolean = true
+  batchProcessing: Boolean = false
+  
+  conditionalExecution: Boolean = true
+  dynamicTaskGeneration: Boolean = false
+  humanInTheLoop: Boolean = false
+  
+  webhooks: Boolean = true
+  eventDriven: Boolean = true
+  streaming: Boolean = false
+}
+
+input WorkflowBudgetInput {
+  totalBudget: Float!
+  currency: String = "USD"
+  
+  maxTokens: Int!
+  tokenCost: Float!
+  
+  maxDuration: Int!
+  
+  resourceBudgets: JSON
+  
+  enforcement: BudgetEnforcementPolicy!
+}
+
+input WorkflowComplianceInput {
+  level: ComplianceLevel!
+  frameworks: [WorkflowFrameworkComplianceInput!]!
+  
+  dataClassification: DataClassification!
+  dataRetention: DataRetentionPolicyInput!
+  dataPrivacy: DataPrivacyPolicyInput!
+  
+  auditTrail: Boolean = true
+  approvals: [ApprovalRequirementInput!]
+  
+  encryption: Boolean = true
+  accessControl: Boolean = true
+  networkSecurity: Boolean = true
+}
+
+input WorkflowFrameworkComplianceInput {
+  framework: ComplianceFramework!
+  status: String!
+  controls: [String!]!
+  evidence: [String!]
+}
+
+input DataRetentionPolicyInput {
+  retentionPeriod: String!
+  archivalPolicy: String!
+  deletionPolicy: String!
+  legalHolds: [String!]
+}
+
+input DataPrivacyPolicyInput {
+  piiHandling: String!
+  encryptionRequired: Boolean!
+  accessLogging: Boolean!
+  dataMinimization: Boolean!
+}
+
+input WorkflowGovernanceInput {
+  approvals: [ApprovalStageInput!]
+  
+  riskLevel: String!
+  riskFactors: [String!]!
+  mitigations: [String!]!
+  
+  changeControl: ChangeControlPolicyInput!
+  
+  monitoring: GovernanceMonitoringInput!
+}
+
+input ApprovalStageInput {
+  name: String!
+  required: Boolean!
+  approvers: [String!]!
+  criteria: ApprovalCriteriaInput!
+  timeout: Int
+}
+
+input ApprovalCriteriaInput {
+  minApprovers: Int!
+  unanimousRequired: Boolean!
+  conditions: [String!]
+}
+
+input ChangeControlPolicyInput {
+  versionControl: Boolean!
+  approvalRequired: Boolean!
+  testingRequired: Boolean!
+  rollbackEnabled: Boolean!
+}
+
+input GovernanceMonitoringInput {
+  continuousMonitoring: Boolean!
+  alerts: [GovernanceAlertInput!]!
+  reporting: ReportingConfigurationInput!
+}
+
+input GovernanceAlertInput {
+  type: String!
+  condition: String!
+  severity: AlertSeverity!
+  recipients: [String!]!
+}
+
+input ReportingConfigurationInput {
+  frequency: ScheduleFrequency!
+  recipients: [String!]!
+  templates: [String!]!
+}
+
+input WorkflowConstraintsInput {
+  maxDuration: Int
+  maxTasks: Int
+  maxConcurrency: Int
+  requiredApprovals: Int
+  complianceLevel: ComplianceLevel
+}
+
+input ExecutionTriggerInput {
+  type: String!
+  source: String!
+  triggeredBy: String
+  triggerData: JSON
+}
+
+# Execution Input Types
+input WorkflowExecutionInput {
+  workflowId: UUID!
+  trigger: ExecutionTriggerInput!
+  input: JSON
+  context: ExecutionContextInput
+  overrides: ExecutionOverridesInput
+}
+
+input ExecutionContextInput {
+  environment: String!
+  namespace: String!
+  
+  user: String
+  serviceAccount: String
+  permissions: [String!]
+  
+  traceId: String
+  parentTraceId: String
+  correlationId: String
+  
+  configuration: JSON
+  secrets: [String!]
+}
+
+input ExecutionOverridesInput {
+  timeout: Int
+  budget: WorkflowBudgetInput
+  resources: ResourceQuotaInput
+  priority: PriorityLevel
+  notifications: NotificationConfigurationInput
+}

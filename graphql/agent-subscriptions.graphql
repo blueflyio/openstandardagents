@@ -1,0 +1,1024 @@
+# OSSA v0.1.8 Agent Subscriptions Schema
+# Real-time events, notifications, and streaming updates for agent systems
+
+# Real-time Event Types
+type AgentEvent @realtime @ossaCompliant(version: "0.1.8", level: GOVERNED) {
+  id: UUID!
+  agentId: UUID!
+  type: EventType!
+  timestamp: DateTime!
+  
+  # Event Data
+  payload: JSON!
+  metadata: EventMetadata!
+  
+  # Context
+  context: EventContext!
+  
+  # Correlation
+  correlationId: UUID!
+  causationId: UUID
+  traceId: String!
+}
+
+type EventMetadata {
+  # Source Information
+  source: String!
+  version: String!
+  publisher: String!
+  
+  # Classification
+  category: String!
+  severity: AlertSeverity!
+  priority: PriorityLevel!
+  
+  # Content Information
+  schema: String!
+  contentType: String!
+  encoding: String
+  
+  # Quality Metrics
+  reliability: Float! # 0.0 to 1.0
+  freshness: Float! # age in seconds
+  
+  # Delivery Information
+  deliveryMode: DeliveryMode!
+  retryCount: Int!
+  maxRetries: Int!
+}
+
+enum DeliveryMode {
+  AT_MOST_ONCE
+  AT_LEAST_ONCE
+  EXACTLY_ONCE
+  BEST_EFFORT
+}
+
+type EventContext {
+  # Execution Context
+  executionId: UUID
+  workflowId: UUID
+  taskId: UUID
+  
+  # User Context
+  userId: String
+  sessionId: UUID
+  tenantId: String
+  
+  # System Context
+  environment: String!
+  region: String!
+  zone: String
+  nodeId: String
+  
+  # Request Context
+  requestId: UUID
+  apiVersion: String!
+  userAgent: String
+  
+  # Additional Context
+  tags: [String!]
+  labels: JSON
+  annotations: JSON
+}
+
+# Specialized Event Types
+type WorkflowEvent @realtime {
+  id: UUID!
+  workflowId: UUID!
+  executionId: UUID!
+  type: WorkflowEventType!
+  timestamp: DateTime!
+  
+  # Workflow Context
+  workflowName: String!
+  workflowVersion: String!
+  status: WorkflowStatus!
+  
+  # Event Details
+  payload: JSON!
+  affectedTasks: [UUID!]
+  
+  # Progress Information
+  progress: WorkflowProgress
+  
+  # Metadata
+  metadata: EventMetadata!
+  context: EventContext!
+}
+
+enum WorkflowEventType {
+  WORKFLOW_STARTED
+  WORKFLOW_COMPLETED
+  WORKFLOW_FAILED
+  WORKFLOW_PAUSED
+  WORKFLOW_RESUMED
+  WORKFLOW_CANCELLED
+  WORKFLOW_TIMEOUT
+  TASK_ASSIGNED
+  TASK_STARTED
+  TASK_COMPLETED
+  TASK_FAILED
+  TASK_RETRIED
+  TASK_SKIPPED
+  MILESTONE_REACHED
+  DEPENDENCY_RESOLVED
+  RESOURCE_ALLOCATED
+  BUDGET_THRESHOLD_REACHED
+  APPROVAL_REQUESTED
+  APPROVAL_GRANTED
+  APPROVAL_DENIED
+}
+
+type PerformanceEvent @realtime @performanceMetrics {
+  id: UUID!
+  agentId: UUID!
+  type: PerformanceEventType!
+  timestamp: DateTime!
+  
+  # Performance Data
+  metrics: PerformanceMetrics!
+  thresholds: [MetricThreshold!]
+  violations: [ThresholdViolation!]
+  
+  # Trend Information
+  trend: TrendData!
+  
+  # Metadata
+  metadata: EventMetadata!
+  context: EventContext!
+}
+
+enum PerformanceEventType {
+  PERFORMANCE_DEGRADED
+  PERFORMANCE_IMPROVED
+  SLA_VIOLATION
+  SLA_RESTORED
+  THRESHOLD_EXCEEDED
+  THRESHOLD_RESTORED
+  ANOMALY_DETECTED
+  CAPACITY_WARNING
+  CAPACITY_CRITICAL
+  RESOURCE_EXHAUSTED
+  RESOURCE_AVAILABLE
+}
+
+type ThresholdViolation {
+  metric: String!
+  threshold: MetricThreshold!
+  currentValue: Float!
+  severity: ViolationSeverity!
+  duration: Int! # seconds
+  firstViolation: DateTime!
+}
+
+type TrendData {
+  direction: String!
+  magnitude: Float!
+  confidence: Float!
+  prediction: PredictionData
+  anomalies: [AnomalyPoint!]
+}
+
+type AnomalyPoint {
+  timestamp: DateTime!
+  value: Float!
+  expectedValue: Float!
+  score: Float! # anomaly score
+  type: String! # "spike" | "dip" | "trend_change"
+}
+
+type HealthEvent @realtime {
+  id: UUID!
+  agentId: UUID!
+  type: HealthEventType!
+  timestamp: DateTime!
+  
+  # Health Information
+  healthStatus: HealthInfo!
+  previousStatus: HealthStatus
+  
+  # Component Health
+  componentHealth: [ComponentHealthChange!]
+  
+  # Diagnostic Information
+  diagnostics: HealthDiagnostics
+  
+  # Recovery Information
+  recovery: RecoveryInfo
+  
+  # Metadata
+  metadata: EventMetadata!
+  context: EventContext!
+}
+
+enum HealthEventType {
+  HEALTH_CHECK_PASSED
+  HEALTH_CHECK_FAILED
+  HEALTH_DEGRADED
+  HEALTH_RECOVERED
+  COMPONENT_UNHEALTHY
+  COMPONENT_RECOVERED
+  DEPENDENCY_UNAVAILABLE
+  DEPENDENCY_RESTORED
+  MAINTENANCE_STARTED
+  MAINTENANCE_COMPLETED
+  HEARTBEAT_MISSED
+  HEARTBEAT_RESTORED
+}
+
+type ComponentHealthChange {
+  component: String!
+  previousStatus: HealthStatus!
+  currentStatus: HealthStatus!
+  reason: String!
+  timestamp: DateTime!
+}
+
+type RecoveryInfo {
+  recoveryStarted: DateTime
+  estimatedRecoveryTime: DateTime
+  recoveryActions: [String!]
+  autoRecovery: Boolean!
+  manualIntervention: Boolean!
+}
+
+type ComplianceEvent @realtime @federalCompliance {
+  id: UUID!
+  agentId: UUID!
+  type: ComplianceEventType!
+  timestamp: DateTime!
+  
+  # Compliance Information
+  framework: ComplianceFramework!
+  control: String
+  violation: ComplianceViolation
+  
+  # Assessment Information
+  assessment: ComplianceAssessment
+  
+  # Remediation Information
+  remediation: RemediationInfo
+  
+  # Metadata
+  metadata: EventMetadata!
+  context: EventContext!
+}
+
+enum ComplianceEventType {
+  COMPLIANCE_CHECK_PASSED
+  COMPLIANCE_CHECK_FAILED
+  VIOLATION_DETECTED
+  VIOLATION_RESOLVED
+  AUDIT_STARTED
+  AUDIT_COMPLETED
+  CERTIFICATION_ISSUED
+  CERTIFICATION_EXPIRED
+  CONTROL_IMPLEMENTED
+  CONTROL_DISABLED
+  POLICY_UPDATED
+  POLICY_VIOLATED
+}
+
+type ComplianceAssessment {
+  assessor: String!
+  score: Float! # 0.0 to 1.0
+  findings: [AssessmentFinding!]!
+  recommendations: [String!]!
+  nextAssessment: DateTime
+}
+
+type AssessmentFinding {
+  severity: ViolationSeverity!
+  description: String!
+  control: String!
+  evidence: [String!]!
+  remediation: String!
+}
+
+type RemediationInfo {
+  required: Boolean!
+  actions: [RemediationAction!]!
+  deadline: DateTime
+  priority: PriorityLevel!
+  assignee: String
+  status: String! # "planned" | "in-progress" | "completed" | "overdue"
+}
+
+type SecurityEvent @realtime @auditLog(level: INFO, sensitive: true) {
+  id: UUID!
+  agentId: UUID!
+  type: SecurityEventType!
+  timestamp: DateTime!
+  
+  # Security Context
+  securityContext: SecurityEventContext!
+  
+  # Threat Information
+  threatInfo: ThreatInfo
+  
+  # Action Taken
+  actionTaken: SecurityAction
+  
+  # Risk Assessment
+  riskAssessment: RiskAssessment!
+  
+  # Metadata
+  metadata: EventMetadata!
+  context: EventContext!
+}
+
+enum SecurityEventType {
+  AUTHENTICATION_SUCCESS
+  AUTHENTICATION_FAILURE
+  AUTHORIZATION_GRANTED
+  AUTHORIZATION_DENIED
+  ACCESS_VIOLATION
+  SUSPICIOUS_ACTIVITY
+  MALICIOUS_REQUEST
+  DATA_BREACH_DETECTED
+  ENCRYPTION_FAILURE
+  CERTIFICATE_EXPIRED
+  INTRUSION_DETECTED
+  VULNERABILITY_DETECTED
+  SECURITY_SCAN_COMPLETED
+  INCIDENT_CREATED
+  INCIDENT_RESOLVED
+}
+
+type SecurityEventContext {
+  # User Information
+  userId: String
+  userRole: String
+  userLocation: String
+  
+  # Request Information
+  sourceIP: String!
+  userAgent: String
+  requestPath: String
+  requestMethod: String
+  
+  # Resource Information
+  resourceType: String!
+  resourceId: String!
+  action: String!
+  
+  # Authentication Information
+  authMethod: String
+  sessionId: UUID
+  tokenId: String
+}
+
+type ThreatInfo {
+  # Threat Classification
+  category: String! # "malware" | "phishing" | "dos" | "privilege_escalation"
+  severity: AlertSeverity!
+  confidence: Float! # 0.0 to 1.0
+  
+  # Threat Details
+  indicators: [ThreatIndicator!]!
+  signature: String
+  
+  # Attribution
+  source: String
+  campaign: String
+  actor: String
+}
+
+type ThreatIndicator {
+  type: String! # "ip" | "domain" | "hash" | "pattern"
+  value: String!
+  confidence: Float!
+  source: String!
+}
+
+type SecurityAction {
+  action: String! # "block" | "quarantine" | "monitor" | "alert"
+  reason: String!
+  automatic: Boolean!
+  effectiveness: Float # 0.0 to 1.0
+  timestamp: DateTime!
+}
+
+type RiskAssessment {
+  riskLevel: String! # "low" | "medium" | "high" | "critical"
+  riskScore: Float! # 0.0 to 1.0
+  factors: [RiskFactor!]!
+  impact: String! # potential impact description
+  likelihood: Float! # 0.0 to 1.0
+}
+
+type RiskFactor {
+  factor: String!
+  weight: Float!
+  contribution: Float!
+  description: String!
+}
+
+type BusinessEvent @realtime {
+  id: UUID!
+  agentId: UUID!
+  type: BusinessEventType!
+  timestamp: DateTime!
+  
+  # Business Context
+  businessContext: BusinessEventContext!
+  
+  # Metrics
+  businessMetrics: BusinessEventMetrics!
+  
+  # Impact Assessment
+  impact: BusinessImpact!
+  
+  # Metadata
+  metadata: EventMetadata!
+  context: EventContext!
+}
+
+enum BusinessEventType {
+  REVENUE_THRESHOLD_REACHED
+  COST_THRESHOLD_EXCEEDED
+  BUDGET_DEPLETED
+  SLA_CREDIT_ISSUED
+  USER_MILESTONE_REACHED
+  USAGE_SPIKE_DETECTED
+  CAPACITY_PLANNING_ALERT
+  MARKET_CONDITION_CHANGED
+  COMPETITOR_ACTIVITY
+  CUSTOMER_FEEDBACK_RECEIVED
+  CONTRACT_MILESTONE
+  BILLING_EVENT
+}
+
+type BusinessEventContext {
+  # Financial Context
+  costCenter: String
+  businessUnit: String
+  product: String
+  customer: String
+  
+  # Operational Context
+  service: String!
+  region: String!
+  market: String
+  
+  # Contract Context
+  contractId: String
+  slaId: String
+  billingPeriod: String
+}
+
+type BusinessEventMetrics {
+  # Financial Metrics
+  revenue: Float
+  cost: Float!
+  margin: Float
+  
+  # Usage Metrics
+  usage: Float!
+  capacity: Float!
+  utilization: Float!
+  
+  # Performance Metrics
+  slaCompliance: Float!
+  customerSatisfaction: Float
+  
+  # Growth Metrics
+  growthRate: Float
+  marketShare: Float
+}
+
+type BusinessImpact {
+  # Impact Classification
+  severity: String! # "low" | "medium" | "high" | "critical"
+  category: String! # "financial" | "operational" | "strategic" | "compliance"
+  
+  # Quantified Impact
+  financialImpact: Float
+  operationalImpact: String
+  strategicImpact: String
+  
+  # Stakeholders Affected
+  stakeholders: [String!]!
+  
+  # Recommended Actions
+  recommendations: [BusinessRecommendation!]!
+}
+
+type BusinessRecommendation {
+  action: String!
+  priority: PriorityLevel!
+  expectedImpact: String!
+  effort: String! # "low" | "medium" | "high"
+  timeline: String!
+}
+
+# Event Streaming and Subscription Types
+type EventStream @realtime {
+  id: UUID!
+  name: String!
+  description: String
+  
+  # Stream Configuration
+  configuration: StreamConfiguration!
+  
+  # Event Filtering
+  filters: [EventFilter!]!
+  
+  # Delivery Configuration
+  delivery: DeliveryConfiguration!
+  
+  # Stream Statistics
+  statistics: StreamStatistics!
+  
+  # Access Control
+  permissions: [StreamPermission!]!
+  
+  # Temporal Information
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type StreamConfiguration {
+  # Buffer Configuration
+  bufferSize: Int!
+  bufferStrategy: String! # "circular" | "drop_oldest" | "drop_newest" | "block"
+  
+  # Batch Configuration
+  batchSize: Int!
+  batchTimeout: Int! # milliseconds
+  
+  # Compression
+  compression: Boolean!
+  compressionAlgorithm: String
+  
+  # Ordering
+  ordering: Boolean!
+  orderingKey: String
+  
+  # Persistence
+  persistent: Boolean!
+  retentionPeriod: String
+}
+
+type EventFilter {
+  id: UUID!
+  name: String!
+  type: FilterType!
+  
+  # Filter Criteria
+  criteria: FilterCriteria!
+  
+  # Filter Logic
+  logic: FilterLogic
+  
+  # Filter Status
+  enabled: Boolean!
+  priority: Int!
+}
+
+enum FilterType {
+  INCLUDE
+  EXCLUDE
+  TRANSFORM
+  ENRICH
+  ROUTE
+}
+
+type FilterCriteria {
+  # Event Properties
+  eventTypes: [EventType!]
+  agentIds: [UUID!]
+  severities: [AlertSeverity!]
+  
+  # Content Filtering
+  payloadFilter: JSON
+  
+  # Time-based Filtering
+  timeRange: TimeRangeInput
+  
+  # Custom Filtering
+  customExpression: String
+}
+
+type FilterLogic {
+  operator: String! # "AND" | "OR" | "NOT"
+  conditions: [FilterCondition!]!
+}
+
+type FilterCondition {
+  field: String!
+  operator: FilterOperator!
+  value: JSON!
+  caseSensitive: Boolean!
+}
+
+type DeliveryConfiguration {
+  # Delivery Method
+  method: DeliveryMethod!
+  
+  # Reliability
+  reliability: DeliveryReliability!
+  
+  # Retry Policy
+  retryPolicy: DeliveryRetryPolicy!
+  
+  # Rate Limiting
+  rateLimit: DeliveryRateLimit
+  
+  # Dead Letter Queue
+  deadLetterQueue: DeadLetterConfiguration
+}
+
+enum DeliveryMethod {
+  PUSH
+  PULL
+  WEBHOOK
+  MESSAGE_QUEUE
+  STREAMING
+}
+
+type DeliveryReliability {
+  guarantees: DeliveryMode!
+  acknowledgment: Boolean!
+  timeout: Int! # milliseconds
+  maxRetries: Int!
+}
+
+type DeliveryRetryPolicy {
+  strategy: String! # "exponential" | "linear" | "fixed"
+  initialDelay: Int! # milliseconds
+  maxDelay: Int! # milliseconds
+  backoffMultiplier: Float!
+  jitter: Boolean!
+}
+
+type DeliveryRateLimit {
+  maxEventsPerSecond: Int!
+  burstSize: Int!
+  windowSize: Int! # seconds
+}
+
+type DeadLetterConfiguration {
+  enabled: Boolean!
+  maxRetries: Int!
+  retentionPeriod: String!
+  alerting: Boolean!
+}
+
+type StreamStatistics @cached(maxAge: 60) {
+  # Event Statistics
+  totalEvents: Uint64!
+  eventsPerSecond: Float!
+  
+  # Size Statistics
+  avgEventSize: Float!
+  totalBytes: Uint64!
+  
+  # Delivery Statistics
+  deliveredEvents: Uint64!
+  failedDeliveries: Uint64!
+  retries: Uint64!
+  
+  # Consumer Statistics
+  activeConsumers: Int!
+  consumerLag: [ConsumerLag!]!
+  
+  # Performance Statistics
+  avgDeliveryLatency: Float!
+  p95DeliveryLatency: Float!
+  p99DeliveryLatency: Float!
+  
+  # Error Statistics
+  errorRate: Float!
+  deadLetterEvents: Uint64!
+}
+
+type ConsumerLag {
+  consumerId: String!
+  lag: Uint64!
+  lastActivity: DateTime!
+}
+
+type StreamPermission {
+  principal: String! # user or service account
+  permission: StreamPermissionType!
+  conditions: [PermissionCondition!]
+}
+
+enum StreamPermissionType {
+  SUBSCRIBE
+  PUBLISH
+  CONFIGURE
+  ADMIN
+}
+
+type PermissionCondition {
+  type: String!
+  value: String!
+}
+
+# Notification Types
+type NotificationTemplate {
+  id: UUID!
+  name: String!
+  description: String
+  
+  # Template Configuration
+  type: NotificationType!
+  format: NotificationFormat!
+  
+  # Template Content
+  subject: String
+  body: String!
+  
+  # Template Variables
+  variables: [TemplateVariable!]!
+  
+  # Rendering
+  renderer: String! # "mustache" | "jinja2" | "handlebars"
+  
+  # Metadata
+  tags: [String!]
+  version: String!
+  
+  # Temporal Information
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+enum NotificationType {
+  EMAIL
+  SMS
+  SLACK
+  WEBHOOK
+  PUSH_NOTIFICATION
+  MICROSOFT_TEAMS
+  PAGERDUTY
+  CUSTOM
+}
+
+enum NotificationFormat {
+  TEXT
+  HTML
+  JSON
+  MARKDOWN
+}
+
+type TemplateVariable {
+  name: String!
+  description: String!
+  type: String! # "string" | "number" | "boolean" | "object"
+  required: Boolean!
+  defaultValue: String
+}
+
+type NotificationDelivery @realtime {
+  id: UUID!
+  notificationId: UUID!
+  templateId: UUID!
+  
+  # Delivery Information
+  recipient: String!
+  channel: NotificationChannel!
+  
+  # Status
+  status: DeliveryStatus!
+  attempts: Int!
+  
+  # Timing
+  scheduledAt: DateTime!
+  deliveredAt: DateTime
+  
+  # Result
+  result: DeliveryResult
+  
+  # Metadata
+  metadata: JSON
+}
+
+enum DeliveryStatus {
+  SCHEDULED
+  PENDING
+  DELIVERED
+  FAILED
+  CANCELLED
+  EXPIRED
+}
+
+type DeliveryResult {
+  success: Boolean!
+  statusCode: Int
+  message: String
+  responseTime: Float
+  error: String
+}
+
+# Webhook Types
+type WebhookEndpoint {
+  id: UUID!
+  name: String!
+  url: URI!
+  
+  # Configuration
+  method: String! = "POST"
+  headers: JSON
+  authentication: WebhookAuth
+  
+  # Event Filtering
+  eventTypes: [EventType!]!
+  filters: [EventFilter!]
+  
+  # Delivery Configuration
+  delivery: WebhookDelivery!
+  
+  # Status
+  enabled: Boolean!
+  lastDelivery: DateTime
+  
+  # Statistics
+  statistics: WebhookStatistics!
+  
+  # Metadata
+  metadata: JSON
+  
+  # Temporal Information
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type WebhookAuth {
+  type: String! # "none" | "basic" | "bearer" | "api_key" | "oauth2"
+  credentials: JSON! # encrypted credentials
+}
+
+type WebhookDelivery {
+  timeout: Int! # seconds
+  retries: Int!
+  retryBackoff: String! # "exponential" | "linear"
+  
+  # Content Configuration
+  contentType: String! = "application/json"
+  includeHeaders: Boolean!
+  signPayload: Boolean!
+  signatureHeader: String
+}
+
+type WebhookStatistics @cached(maxAge: 300) {
+  # Delivery Statistics
+  totalDeliveries: Int!
+  successfulDeliveries: Int!
+  failedDeliveries: Int!
+  
+  # Performance
+  avgResponseTime: Float!
+  p95ResponseTime: Float!
+  
+  # Reliability
+  successRate: Float!
+  uptime: Float!
+  
+  # Recent Activity
+  lastSuccess: DateTime
+  lastFailure: DateTime
+  consecutiveFailures: Int!
+}
+
+# Input Types for Subscriptions
+input EventSubscriptionInput {
+  # Subscription Configuration
+  name: String!
+  description: String
+  
+  # Event Filtering
+  eventTypes: [EventType!]
+  agentIds: [UUID!]
+  workflowIds: [UUID!]
+  severities: [AlertSeverity!]
+  
+  # Advanced Filtering
+  filters: [EventFilterInput!]
+  
+  # Delivery Configuration
+  delivery: DeliveryConfigurationInput!
+  
+  # Buffer Configuration
+  bufferSize: Int = 1000
+  batchSize: Int = 1
+  
+  # Quality of Service
+  qos: DeliveryMode = AT_LEAST_ONCE
+}
+
+input EventFilterInput {
+  name: String!
+  type: FilterType!
+  criteria: FilterCriteriaInput!
+  enabled: Boolean = true
+  priority: Int = 1
+}
+
+input FilterCriteriaInput {
+  eventTypes: [EventType!]
+  agentIds: [UUID!]
+  severities: [AlertSeverity!]
+  
+  payloadFilter: JSON
+  timeRange: TimeRangeInput
+  customExpression: String
+}
+
+input DeliveryConfigurationInput {
+  method: DeliveryMethod!
+  reliability: DeliveryReliabilityInput!
+  retryPolicy: DeliveryRetryPolicyInput
+  rateLimit: DeliveryRateLimitInput
+  deadLetterQueue: DeadLetterConfigurationInput
+}
+
+input DeliveryReliabilityInput {
+  guarantees: DeliveryMode!
+  acknowledgment: Boolean = false
+  timeout: Int = 30000
+  maxRetries: Int = 3
+}
+
+input DeliveryRetryPolicyInput {
+  strategy: String = "exponential"
+  initialDelay: Int = 1000
+  maxDelay: Int = 60000
+  backoffMultiplier: Float = 2.0
+  jitter: Boolean = true
+}
+
+input DeliveryRateLimitInput {
+  maxEventsPerSecond: Int!
+  burstSize: Int!
+  windowSize: Int = 60
+}
+
+input DeadLetterConfigurationInput {
+  enabled: Boolean = true
+  maxRetries: Int = 5
+  retentionPeriod: String = "7d"
+  alerting: Boolean = true
+}
+
+input WebhookEndpointInput {
+  name: String!
+  url: URI!
+  
+  method: String = "POST"
+  headers: JSON
+  authentication: WebhookAuthInput
+  
+  eventTypes: [EventType!]!
+  filters: [EventFilterInput!]
+  
+  delivery: WebhookDeliveryInput!
+  
+  enabled: Boolean = true
+  metadata: JSON
+}
+
+input WebhookAuthInput {
+  type: String!
+  credentials: JSON!
+}
+
+input WebhookDeliveryInput {
+  timeout: Int = 30
+  retries: Int = 3
+  retryBackoff: String = "exponential"
+  
+  contentType: String = "application/json"
+  includeHeaders: Boolean = false
+  signPayload: Boolean = false
+  signatureHeader: String = "X-Signature"
+}
+
+input NotificationTemplateInput {
+  name: String!
+  description: String
+  
+  type: NotificationType!
+  format: NotificationFormat!
+  
+  subject: String
+  body: String!
+  
+  variables: [TemplateVariableInput!]!
+  
+  renderer: String = "mustache"
+  
+  tags: [String!]
+  version: String = "1.0"
+}
+
+input TemplateVariableInput {
+  name: String!
+  description: String!
+  type: String!
+  required: Boolean!
+  defaultValue: String
+}

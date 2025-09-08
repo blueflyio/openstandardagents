@@ -1,0 +1,1431 @@
+openapi: 3.1.0
+info:
+  title: "OSSA Master API v0.1.8"
+  version: "0.1.8"
+  description: |
+    Open Standards for Scalable Agents (OSSA) Master API v0.1.8
+    
+    This comprehensive API specification combines all OSSA components into a
+    unified interface for multi-agent systems. It provides complete coverage
+    of the OSSA ecosystem with integrated support for all major frameworks,
+    protocols, and operational patterns.
+    
+    ## Core Components Integrated:
+    
+    ### 360° Feedback Loop System
+    - 8-phase continuous improvement lifecycle
+    - Cross-phase learning and optimization
+    - Real-time feedback aggregation and analysis
+    - Behavioral pattern recognition
+    
+    ### ACTA Framework (Adaptive Contextual Token Architecture)
+    - Vector-semantic token compression (60-75% reduction)
+    - Intelligent model switching (40% cost savings)
+    - Persistent context graphs (5.5x better retention)
+    - Real-time performance optimization
+    
+    ### VORTEX Orchestration (Vector-Optimized Real-Time eXecution)
+    - Multi-agent workflow orchestration
+    - Dynamic task routing and load balancing
+    - Fault-tolerant execution patterns
+    - Real-time coordination and synchronization
+    
+    ### Agent Type Management
+    - 5-level conformance hierarchy (Minimal → Enterprise)
+    - Progressive enhancement pathways
+    - Type-specific capabilities and validation
+    - Cross-type communication and interoperability
+    
+    ## Key Features:
+    - **Universal Agent Discovery Protocol (UADP)** compatible
+    - **Multi-framework support** (LangChain, CrewAI, OpenAI, MCP)
+    - **Enterprise governance** and compliance frameworks
+    - **Real-time monitoring** and analytics
+    - **Horizontal scaling** and fault tolerance
+    - **GraphQL and REST** API support
+    
+  contact:
+    name: "OSSA Standards Committee"
+    url: "https://ossa.ai"
+    email: "standards@ossa.ai"
+    
+  license:
+    name: "Apache 2.0"
+    url: "https://www.apache.org/licenses/LICENSE-2.0.html"
+    
+  x-ossa-master:
+    version: "0.1.8"
+    specification_date: "2025-01-26"
+    conformance_levels: ["minimal", "basic", "integration", "production", "enterprise"]
+    supported_frameworks: ["langchain", "crewai", "openai", "anthropic", "mcp", "custom"]
+    compliance_frameworks: ["ISO_42001", "NIST_AI_RMF", "EU_AI_ACT", "SOC2", "GDPR"]
+    
+  x-components:
+    feedback_loop: "360° continuous improvement system"
+    acta_framework: "Adaptive contextual token architecture"
+    vortex_orchestration: "Vector-optimized execution engine"
+    agent_types: "5-level conformance hierarchy"
+    
+servers:
+  - url: "https://api.ossa.ai/v1"
+    description: "Production OSSA Master API"
+  - url: "https://staging-api.ossa.ai/v1"  
+    description: "Staging environment"
+  - url: "http://localhost:4000/api/v1"
+    description: "Local development server"
+
+paths:
+  # System Health and Discovery
+  /health:
+    get:
+      summary: "Complete system health check"
+      description: "Comprehensive health check across all OSSA components"
+      operationId: "getSystemHealth"
+      tags: ["System"]
+      responses:
+        '200':
+          description: "System health status"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SystemHealth"
+
+  /version:
+    get:
+      summary: "Get system version information"
+      description: "Version information for all OSSA components and APIs"
+      operationId: "getSystemVersion"
+      tags: ["System"]
+      responses:
+        '200':
+          description: "System version information"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SystemVersion"
+
+  /discovery:
+    get:
+      summary: "Universal Agent Discovery Protocol endpoint"
+      description: "UADP-compatible agent discovery with advanced filtering"
+      operationId: "discoverAgents"
+      tags: ["Discovery"]
+      parameters:
+        - name: "capabilities"
+          in: "query"
+          schema:
+            type: "array"
+            items:
+              type: "string"
+        - name: "domain"
+          in: "query"
+          schema:
+            type: "string"
+        - name: "conformance_level"
+          in: "query"
+          schema:
+            type: "string"
+            enum: ["minimal", "basic", "integration", "production", "enterprise"]
+        - name: "framework"
+          in: "query"
+          schema:
+            type: "string"
+        - name: "region"
+          in: "query"
+          schema:
+            type: "string"
+      responses:
+        '200':
+          description: "Discovered agents"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UniversalDiscoveryResult"
+
+  # Integrated Agent Management
+  /agents:
+    get:
+      summary: "List all agents across all types"
+      description: "Unified listing of agents across all conformance levels"
+      operationId: "listAllAgents"
+      tags: ["Agents"]
+      parameters:
+        - name: "type"
+          in: "query"
+          schema:
+            type: "string"
+            enum: ["minimal", "basic", "integration", "production", "enterprise"]
+        - name: "status"
+          in: "query"
+          schema:
+            type: "string"
+            enum: ["active", "inactive", "error", "upgrading"]
+        - name: "health"
+          in: "query"
+          schema:
+            type: "string"
+            enum: ["healthy", "degraded", "unhealthy"]
+        - name: "limit"
+          in: "query"
+          schema:
+            type: "integer"
+            minimum: 1
+            maximum: 1000
+            default: 50
+        - name: "offset"
+          in: "query"
+          schema:
+            type: "integer"
+            minimum: 0
+            default: 0
+      responses:
+        '200':
+          description: "Unified agent listing"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnifiedAgentList"
+
+    post:
+      summary: "Register agent (auto-detect type)"
+      description: "Intelligent agent registration with automatic type detection"
+      operationId: "registerAgent"
+      tags: ["Agents"]
+      security:
+        - api_key: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UniversalAgentRegistration"
+      responses:
+        '201':
+          description: "Agent registered successfully"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UniversalAgent"
+        '400':
+          $ref: "#/components/responses/BadRequest"
+
+  /agents/{agentId}:
+    get:
+      summary: "Get agent details (all types)"
+      description: "Unified agent details endpoint supporting all conformance levels"
+      operationId: "getAgent"
+      tags: ["Agents"]
+      parameters:
+        - name: "agentId"
+          in: "path"
+          required: true
+          schema:
+            type: "string"
+            format: "uuid"
+        - name: "include"
+          in: "query"
+          schema:
+            type: "array"
+            items:
+              type: "string"
+              enum: ["health", "metrics", "compliance", "feedback", "context"]
+      responses:
+        '200':
+          description: "Unified agent details"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UniversalAgent"
+        '404':
+          $ref: "#/components/responses/NotFound"
+
+    delete:
+      summary: "Unregister agent"
+      operationId: "unregisterAgent"
+      tags: ["Agents"]
+      security:
+        - api_key: []
+      parameters:
+        - name: "agentId"
+          in: "path"
+          required: true
+          schema:
+            type: "string"
+            format: "uuid"
+      responses:
+        '204':
+          description: "Agent unregistered successfully"
+        '404':
+          $ref: "#/components/responses/NotFound"
+
+  # 360° Feedback Loop Integration
+  /feedback:
+    $ref: "360-feedback-loop-api.yaml#/paths/~1feedback"
+
+  /feedback/analytics:
+    get:
+      summary: "Get comprehensive feedback analytics"
+      description: "Cross-agent feedback analytics with ACTA optimization insights"
+      operationId: "getFeedbackAnalytics"
+      tags: ["Feedback", "Analytics"]
+      security:
+        - api_key: []
+      parameters:
+        - name: "timeframe"
+          in: "query"
+          schema:
+            type: "string"
+            enum: ["1h", "6h", "24h", "7d", "30d"]
+            default: "24h"
+        - name: "include_acta_metrics"
+          in: "query"
+          schema:
+            type: "boolean"
+            default: true
+      responses:
+        '200':
+          description: "Comprehensive feedback analytics"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ComprehensiveFeedbackAnalytics"
+
+  # ACTA Framework Integration  
+  /acta:
+    get:
+      summary: "Get ACTA framework status"
+      description: "Current status and capabilities of the ACTA framework"
+      operationId: "getActaStatus"
+      tags: ["ACTA"]
+      security:
+        - api_key: []
+      responses:
+        '200':
+          description: "ACTA framework status"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ActaFrameworkStatus"
+
+  /acta/optimize:
+    post:
+      summary: "Intelligent system optimization"
+      description: "Apply ACTA optimization across agents and workflows"
+      operationId: "optimizeSystem"
+      tags: ["ACTA", "Optimization"]
+      security:
+        - api_key: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SystemOptimizationRequest"
+      responses:
+        '200':
+          description: "Optimization applied successfully"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SystemOptimizationResult"
+
+  # VORTEX Orchestration Integration
+  /orchestration:
+    get:
+      summary: "Get orchestration overview"
+      description: "Current orchestration status and active workflows"
+      operationId: "getOrchestrationOverview"
+      tags: ["Orchestration"]
+      security:
+        - api_key: []
+      responses:
+        '200':
+          description: "Orchestration overview"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OrchestrationOverview"
+
+  /orchestration/execute:
+    post:
+      summary: "Execute multi-component workflow"
+      description: "Execute complex workflows spanning multiple OSSA components"
+      operationId: "executeIntegratedWorkflow"
+      tags: ["Orchestration"]
+      security:
+        - api_key: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/IntegratedWorkflowRequest"
+      responses:
+        '202':
+          description: "Workflow execution started"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/IntegratedWorkflowResponse"
+
+  # Comprehensive Analytics
+  /analytics/dashboard:
+    get:
+      summary: "Get unified analytics dashboard"
+      description: "Comprehensive analytics across all OSSA components"
+      operationId: "getUnifiedDashboard"
+      tags: ["Analytics"]
+      security:
+        - api_key: []
+      parameters:
+        - name: "timeframe"
+          in: "query"
+          schema:
+            type: "string"
+            enum: ["real_time", "1h", "6h", "24h", "7d", "30d"]
+            default: "24h"
+        - name: "components"
+          in: "query"
+          schema:
+            type: "array"
+            items:
+              type: "string"
+              enum: ["feedback", "acta", "vortex", "agents", "compliance"]
+      responses:
+        '200':
+          description: "Unified analytics dashboard"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnifiedAnalyticsDashboard"
+
+  /analytics/predictions:
+    get:
+      summary: "Get AI-powered system predictions"
+      description: "Predictive analytics for system performance and optimization"
+      operationId: "getSystemPredictions"
+      tags: ["Analytics", "AI"]
+      security:
+        - api_key: []
+      parameters:
+        - name: "horizon"
+          in: "query"
+          schema:
+            type: "string"
+            enum: ["1h", "6h", "24h", "7d"]
+            default: "24h"
+        - name: "confidence_threshold"
+          in: "query"
+          schema:
+            type: "number"
+            minimum: 0.5
+            maximum: 1.0
+            default: 0.8
+      responses:
+        '200':
+          description: "System predictions"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SystemPredictions"
+
+  # Enterprise Governance
+  /governance:
+    get:
+      summary: "Get governance overview"
+      description: "Enterprise governance status across all components"
+      operationId: "getGovernanceOverview"
+      tags: ["Governance"]
+      security:
+        - api_key: []
+      responses:
+        '200':
+          description: "Governance overview"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GovernanceOverview"
+
+  /governance/policies:
+    get:
+      summary: "List governance policies"
+      description: "All active governance policies and their enforcement status"
+      operationId: "getGovernancePolicies"
+      tags: ["Governance"]
+      security:
+        - api_key: []
+      parameters:
+        - name: "category"
+          in: "query"
+          schema:
+            type: "string"
+            enum: ["security", "compliance", "performance", "data", "operational"]
+        - name: "status"
+          in: "query"
+          schema:
+            type: "string"
+            enum: ["active", "inactive", "draft", "deprecated"]
+      responses:
+        '200':
+          description: "Governance policies"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GovernancePolicies"
+
+    post:
+      summary: "Create governance policy"
+      description: "Create a new enterprise governance policy"
+      operationId: "createGovernancePolicy"
+      tags: ["Governance"]
+      security:
+        - api_key: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GovernancePolicyCreate"
+      responses:
+        '201':
+          description: "Policy created successfully"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GovernancePolicy"
+
+  # Compliance and Auditing
+  /compliance:
+    get:
+      summary: "Get compliance status"
+      description: "Overall compliance status across all frameworks"
+      operationId: "getComplianceStatus"
+      tags: ["Compliance"]
+      security:
+        - api_key: []
+      parameters:
+        - name: "framework"
+          in: "query"
+          schema:
+            type: "string"
+            enum: ["ISO_42001", "NIST_AI_RMF", "EU_AI_ACT", "SOC2", "GDPR"]
+        - name: "severity"
+          in: "query"
+          schema:
+            type: "string"
+            enum: ["low", "medium", "high", "critical"]
+      responses:
+        '200':
+          description: "Compliance status"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ComplianceOverview"
+
+  /compliance/audit:
+    post:
+      summary: "Trigger compliance audit"
+      description: "Initiate comprehensive compliance audit across all components"
+      operationId: "triggerComplianceAudit"
+      tags: ["Compliance"]
+      security:
+        - api_key: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ComplianceAuditRequest"
+      responses:
+        '202':
+          description: "Audit initiated successfully"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ComplianceAuditResponse"
+
+  # Real-time Events and Notifications
+  /events/stream:
+    get:
+      summary: "Subscribe to system-wide events"
+      description: "Server-sent events stream for all OSSA components"
+      operationId: "subscribeToSystemEvents"
+      tags: ["Events"]
+      security:
+        - api_key: []
+      parameters:
+        - name: "components"
+          in: "query"
+          schema:
+            type: "array"
+            items:
+              type: "string"
+              enum: ["feedback", "acta", "vortex", "agents", "governance", "compliance"]
+        - name: "severity"
+          in: "query"
+          schema:
+            type: "string"
+            enum: ["info", "warn", "error", "critical"]
+      responses:
+        '200':
+          description: "Event stream"
+          content:
+            text/event-stream:
+              schema:
+                type: "string"
+
+  # GraphQL Endpoint
+  /graphql:
+    post:
+      summary: "Unified GraphQL API"
+      description: "GraphQL endpoint for all OSSA components with subscriptions"
+      operationId: "graphqlUnified"
+      tags: ["GraphQL"]
+      security:
+        - api_key: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: "object"
+              required: ["query"]
+              properties:
+                query:
+                  type: "string"
+                variables:
+                  type: "object"
+                operationName:
+                  type: "string"
+      responses:
+        '200':
+          description: "GraphQL response"
+          content:
+            application/json:
+              schema:
+                type: "object"
+
+components:
+  schemas:
+    # System-wide schemas
+    SystemHealth:
+      type: "object"
+      required: ["status", "version", "components", "timestamp"]
+      properties:
+        status:
+          type: "string"
+          enum: ["healthy", "degraded", "unhealthy"]
+        version:
+          type: "string"
+        components:
+          type: "object"
+          properties:
+            feedback_loop:
+              type: "string"
+              enum: ["healthy", "degraded", "unhealthy"]
+            acta_framework:
+              type: "string"
+              enum: ["healthy", "degraded", "unhealthy"]
+            vortex_orchestration:
+              type: "string"
+              enum: ["healthy", "degraded", "unhealthy"]
+            agent_registry:
+              type: "string"
+              enum: ["healthy", "degraded", "unhealthy"]
+            governance_engine:
+              type: "string"
+              enum: ["healthy", "degraded", "unhealthy"]
+        timestamp:
+          type: "string"
+          format: "date-time"
+        uptime:
+          type: "number"
+        metrics:
+          type: "object"
+          properties:
+            total_agents:
+              type: "integer"
+            active_workflows:
+              type: "integer"
+            feedback_loops:
+              type: "integer"
+            compression_savings:
+              type: "number"
+
+    SystemVersion:
+      type: "object"
+      required: ["ossa", "components", "build"]
+      properties:
+        ossa:
+          type: "string"
+          example: "0.1.8"
+        components:
+          type: "object"
+          properties:
+            feedback_loop:
+              type: "string"
+            acta_framework:
+              type: "string"
+            vortex_orchestration:
+              type: "string"
+            agent_types:
+              type: "string"
+            governance:
+              type: "string"
+        build:
+          type: "object"
+          properties:
+            commit:
+              type: "string"
+            timestamp:
+              type: "string"
+              format: "date-time"
+            environment:
+              type: "string"
+
+    UniversalDiscoveryResult:
+      type: "object"
+      required: ["agents", "total", "query_performance"]
+      properties:
+        agents:
+          type: "array"
+          items:
+            $ref: "#/components/schemas/UniversalAgent"
+        total:
+          type: "integer"
+        query_performance:
+          type: "object"
+          properties:
+            query_time_ms:
+              type: "number"
+            cache_hit:
+              type: "boolean"
+            agents_scanned:
+              type: "integer"
+        aggregates:
+          type: "object"
+          properties:
+            by_type:
+              type: "object"
+              additionalProperties:
+                type: "integer"
+            by_framework:
+              type: "object"
+              additionalProperties:
+                type: "integer"
+            by_region:
+              type: "object"
+              additionalProperties:
+                type: "integer"
+
+    # Unified Agent Management
+    UniversalAgentRegistration:
+      type: "object"
+      required: ["name", "version", "capabilities"]
+      properties:
+        name:
+          type: "string"
+        version:
+          type: "string"
+        description:
+          type: "string"
+        capabilities:
+          type: "array"
+          items:
+            type: "string"
+        preferred_type:
+          type: "string"
+          enum: ["minimal", "basic", "integration", "production", "enterprise"]
+        frameworks:
+          type: "array"
+          items:
+            type: "string"
+        endpoints:
+          type: "object"
+        metadata:
+          type: "object"
+          additionalProperties: true
+
+    UniversalAgent:
+      allOf:
+        - $ref: "#/components/schemas/UniversalAgentRegistration"
+        - type: "object"
+          required: ["id", "type", "status", "registered_at"]
+          properties:
+            id:
+              type: "string"
+              format: "uuid"
+            type:
+              type: "string"
+              enum: ["minimal", "basic", "integration", "production", "enterprise"]
+            status:
+              type: "string"
+              enum: ["active", "inactive", "error", "upgrading"]
+            registered_at:
+              type: "string"
+              format: "date-time"
+            last_seen:
+              type: "string"
+              format: "date-time"
+            health:
+              type: "object"
+              properties:
+                status:
+                  type: "string"
+                  enum: ["healthy", "degraded", "unhealthy"]
+                checks:
+                  type: "array"
+                  items:
+                    type: "object"
+            performance:
+              type: "object"
+              properties:
+                uptime:
+                  type: "number"
+                requests_per_minute:
+                  type: "number"
+                average_response_time_ms:
+                  type: "number"
+                success_rate:
+                  type: "number"
+            feedback_summary:
+              type: "object"
+              properties:
+                average_rating:
+                  type: "number"
+                total_feedback:
+                  type: "integer"
+                recent_trends:
+                  type: "array"
+                  items:
+                    type: "object"
+            acta_optimization:
+              type: "object"
+              properties:
+                compression_ratio:
+                  type: "number"
+                cost_savings:
+                  type: "number"
+                context_efficiency:
+                  type: "number"
+
+    UnifiedAgentList:
+      type: "object"
+      required: ["agents", "total", "summary"]
+      properties:
+        agents:
+          type: "array"
+          items:
+            $ref: "#/components/schemas/UniversalAgent"
+        total:
+          type: "integer"
+        limit:
+          type: "integer"
+        offset:
+          type: "integer"
+        summary:
+          type: "object"
+          properties:
+            by_type:
+              type: "object"
+              additionalProperties:
+                type: "integer"
+            by_status:
+              type: "object"
+              additionalProperties:
+                type: "integer"
+            by_health:
+              type: "object"
+              additionalProperties:
+                type: "integer"
+            total_capabilities:
+              type: "integer"
+            average_performance:
+              type: "object"
+
+    # Comprehensive Analytics
+    ComprehensiveFeedbackAnalytics:
+      type: "object"
+      required: ["timeframe", "overview", "by_component", "predictions"]
+      properties:
+        timeframe:
+          type: "string"
+        overview:
+          type: "object"
+          properties:
+            total_feedback:
+              type: "integer"
+            average_rating:
+              type: "number"
+            improvement_trend:
+              type: "number"
+            learning_effectiveness:
+              type: "number"
+        by_component:
+          type: "object"
+          properties:
+            feedback_loop:
+              type: "object"
+            acta_optimization:
+              type: "object"
+            vortex_orchestration:
+              type: "object"
+        predictions:
+          type: "object"
+          properties:
+            projected_improvement:
+              type: "number"
+            optimal_changes:
+              type: "array"
+              items:
+                type: "string"
+
+    ActaFrameworkStatus:
+      type: "object"
+      required: ["enabled", "performance", "optimization_active"]
+      properties:
+        enabled:
+          type: "boolean"
+        performance:
+          type: "object"
+          properties:
+            compression_ratio:
+              type: "number"
+            cost_savings:
+              type: "number"
+            response_improvement:
+              type: "number"
+        optimization_active:
+          type: "boolean"
+        context_graphs:
+          type: "integer"
+        model_switching:
+          type: "object"
+          properties:
+            switches_per_hour:
+              type: "number"
+            success_rate:
+              type: "number"
+
+    # Orchestration
+    OrchestrationOverview:
+      type: "object"
+      required: ["active_workflows", "total_executions", "performance"]
+      properties:
+        active_workflows:
+          type: "integer"
+        total_executions:
+          type: "integer"
+        performance:
+          type: "object"
+          properties:
+            success_rate:
+              type: "number"
+            average_duration:
+              type: "string"
+            throughput_per_hour:
+              type: "number"
+        coordinated_agents:
+          type: "integer"
+        resource_utilization:
+          type: "object"
+
+    IntegratedWorkflowRequest:
+      type: "object"
+      required: ["name", "components", "steps"]
+      properties:
+        name:
+          type: "string"
+        description:
+          type: "string"
+        components:
+          type: "array"
+          items:
+            type: "string"
+            enum: ["feedback", "acta", "vortex", "agents", "governance"]
+        steps:
+          type: "array"
+          items:
+            type: "object"
+        inputs:
+          type: "object"
+        options:
+          type: "object"
+
+    IntegratedWorkflowResponse:
+      type: "object"
+      required: ["workflow_id", "execution_id", "status"]
+      properties:
+        workflow_id:
+          type: "string"
+          format: "uuid"
+        execution_id:
+          type: "string"
+          format: "uuid"
+        status:
+          type: "string"
+          enum: ["queued", "running", "completed", "failed"]
+        estimated_completion:
+          type: "string"
+          format: "date-time"
+        components_involved:
+          type: "array"
+          items:
+            type: "string"
+
+    # Advanced Analytics
+    UnifiedAnalyticsDashboard:
+      type: "object"
+      required: ["timestamp", "timeframe", "components", "kpis"]
+      properties:
+        timestamp:
+          type: "string"
+          format: "date-time"
+        timeframe:
+          type: "string"
+        components:
+          type: "object"
+          properties:
+            feedback_loop:
+              type: "object"
+            acta_framework:
+              type: "object"
+            vortex_orchestration:
+              type: "object"
+            agent_management:
+              type: "object"
+            governance:
+              type: "object"
+        kpis:
+          type: "object"
+          properties:
+            system_efficiency:
+              type: "number"
+            cost_optimization:
+              type: "number"
+            user_satisfaction:
+              type: "number"
+            compliance_score:
+              type: "number"
+        trends:
+          type: "array"
+          items:
+            type: "object"
+
+    SystemPredictions:
+      type: "object"
+      required: ["horizon", "predictions", "confidence"]
+      properties:
+        horizon:
+          type: "string"
+        predictions:
+          type: "array"
+          items:
+            type: "object"
+            properties:
+              category:
+                type: "string"
+              prediction:
+                type: "string"
+              confidence:
+                type: "number"
+              impact:
+                type: "string"
+                enum: ["low", "medium", "high", "critical"]
+              recommended_actions:
+                type: "array"
+                items:
+                  type: "string"
+        confidence:
+          type: "number"
+        based_on_data_points:
+          type: "integer"
+
+    # Governance and Compliance
+    GovernanceOverview:
+      type: "object"
+      required: ["status", "active_policies", "compliance_level", "violations"]
+      properties:
+        status:
+          type: "string"
+          enum: ["compliant", "partial", "non_compliant"]
+        active_policies:
+          type: "integer"
+        compliance_level:
+          type: "number"
+          minimum: 0
+          maximum: 100
+        violations:
+          type: "object"
+          properties:
+            total:
+              type: "integer"
+            by_severity:
+              type: "object"
+            recent:
+              type: "array"
+              items:
+                type: "object"
+        frameworks:
+          type: "array"
+          items:
+            type: "object"
+            properties:
+              name:
+                type: "string"
+              status:
+                type: "string"
+              last_audit:
+                type: "string"
+                format: "date-time"
+
+    GovernancePolicies:
+      type: "object"
+      required: ["policies", "total", "enforcement_summary"]
+      properties:
+        policies:
+          type: "array"
+          items:
+            $ref: "#/components/schemas/GovernancePolicy"
+        total:
+          type: "integer"
+        enforcement_summary:
+          type: "object"
+          properties:
+            active:
+              type: "integer"
+            violations:
+              type: "integer"
+            effectiveness:
+              type: "number"
+
+    GovernancePolicy:
+      type: "object"
+      required: ["id", "name", "category", "status", "enforcement"]
+      properties:
+        id:
+          type: "string"
+          format: "uuid"
+        name:
+          type: "string"
+        description:
+          type: "string"
+        category:
+          type: "string"
+          enum: ["security", "compliance", "performance", "data", "operational"]
+        status:
+          type: "string"
+          enum: ["active", "inactive", "draft", "deprecated"]
+        enforcement:
+          type: "object"
+          properties:
+            mode:
+              type: "string"
+              enum: ["advisory", "enforcing", "blocking"]
+            violations:
+              type: "integer"
+        created_at:
+          type: "string"
+          format: "date-time"
+        updated_at:
+          type: "string"
+          format: "date-time"
+
+    GovernancePolicyCreate:
+      type: "object"
+      required: ["name", "category", "rules"]
+      properties:
+        name:
+          type: "string"
+        description:
+          type: "string"
+        category:
+          type: "string"
+          enum: ["security", "compliance", "performance", "data", "operational"]
+        rules:
+          type: "array"
+          items:
+            type: "object"
+        enforcement:
+          type: "object"
+        applicable_to:
+          type: "array"
+          items:
+            type: "string"
+
+    ComplianceOverview:
+      type: "object"
+      required: ["overall_status", "frameworks", "violations", "audit_schedule"]
+      properties:
+        overall_status:
+          type: "string"
+          enum: ["compliant", "partial", "non_compliant"]
+        frameworks:
+          type: "array"
+          items:
+            type: "object"
+            properties:
+              name:
+                type: "string"
+              status:
+                type: "string"
+              compliance_percentage:
+                type: "number"
+              last_audit:
+                type: "string"
+                format: "date-time"
+              next_audit:
+                type: "string"
+                format: "date-time"
+        violations:
+          type: "object"
+          properties:
+            critical:
+              type: "integer"
+            high:
+              type: "integer"
+            medium:
+              type: "integer"
+            low:
+              type: "integer"
+        audit_schedule:
+          type: "array"
+          items:
+            type: "object"
+
+    ComplianceAuditRequest:
+      type: "object"
+      required: ["scope", "frameworks"]
+      properties:
+        scope:
+          type: "string"
+          enum: ["full_system", "component_specific", "agent_specific"]
+        frameworks:
+          type: "array"
+          items:
+            type: "string"
+            enum: ["ISO_42001", "NIST_AI_RMF", "EU_AI_ACT", "SOC2", "GDPR"]
+        components:
+          type: "array"
+          items:
+            type: "string"
+        priority:
+          type: "string"
+          enum: ["low", "normal", "high", "urgent"]
+        notify_on_completion:
+          type: "boolean"
+          default: true
+
+    ComplianceAuditResponse:
+      type: "object"
+      required: ["audit_id", "status", "estimated_completion"]
+      properties:
+        audit_id:
+          type: "string"
+          format: "uuid"
+        status:
+          type: "string"
+          enum: ["initiated", "in_progress", "completed", "failed"]
+        estimated_completion:
+          type: "string"
+          format: "date-time"
+        scope_summary:
+          type: "object"
+        tracking_url:
+          type: "string"
+          format: "uri"
+
+    # System Optimization
+    SystemOptimizationRequest:
+      type: "object"
+      required: ["scope", "objectives"]
+      properties:
+        scope:
+          type: "array"
+          items:
+            type: "string"
+            enum: ["performance", "cost", "quality", "compliance", "security"]
+        objectives:
+          type: "array"
+          items:
+            type: "string"
+        constraints:
+          type: "object"
+          properties:
+            budget:
+              type: "number"
+            timeframe:
+              type: "string"
+            risk_tolerance:
+              type: "string"
+              enum: ["low", "medium", "high"]
+        include_predictions:
+          type: "boolean"
+          default: true
+
+    SystemOptimizationResult:
+      type: "object"
+      required: ["optimization_id", "applied_changes", "expected_impact"]
+      properties:
+        optimization_id:
+          type: "string"
+          format: "uuid"
+        applied_changes:
+          type: "array"
+          items:
+            type: "object"
+            properties:
+              component:
+                type: "string"
+              change_type:
+                type: "string"
+              description:
+                type: "string"
+              impact:
+                type: "string"
+        expected_impact:
+          type: "object"
+          properties:
+            performance_improvement:
+              type: "number"
+            cost_reduction:
+              type: "number"
+            quality_enhancement:
+              type: "number"
+        monitoring:
+          type: "object"
+          properties:
+            tracking_id:
+              type: "string"
+            metrics:
+              type: "array"
+              items:
+                type: "string"
+
+  responses:
+    BadRequest:
+      description: "Bad request"
+      content:
+        application/json:
+          schema:
+            type: "object"
+            properties:
+              error:
+                type: "string"
+              details:
+                type: "object"
+              component:
+                type: "string"
+
+    NotFound:
+      description: "Resource not found"
+      content:
+        application/json:
+          schema:
+            type: "object"
+            properties:
+              error:
+                type: "string"
+              resource_type:
+                type: "string"
+              resource_id:
+                type: "string"
+
+    ServiceUnavailable:
+      description: "Service temporarily unavailable"
+      content:
+        application/json:
+          schema:
+            type: "object"
+            properties:
+              error:
+                type: "string"
+              retry_after:
+                type: "integer"
+              affected_components:
+                type: "array"
+                items:
+                  type: "string"
+
+  securitySchemes:
+    api_key:
+      type: "apiKey"
+      in: "header"
+      name: "X-OSSA-API-Key"
+      description: "OSSA Master API key"
+
+    bearer:
+      type: "http"
+      scheme: "bearer"
+      bearerFormat: "JWT"
+      description: "JWT bearer token for authenticated access"
+
+    oauth2:
+      type: "oauth2"
+      description: "OAuth2 authentication for enterprise integrations"
+      flows:
+        clientCredentials:
+          tokenUrl: "https://auth.ossa.ai/oauth/token"
+          scopes:
+            read: "Read access to OSSA resources"
+            write: "Write access to OSSA resources"
+            admin: "Administrative access"
+
+security:
+  - api_key: []
+  - bearer: []
+  - oauth2: ["read", "write"]
+
+tags:
+  - name: "System"
+    description: "System-wide health, version, and status"
+  - name: "Discovery"
+    description: "Universal Agent Discovery Protocol (UADP)"
+  - name: "Agents"
+    description: "Unified agent management across all types"
+  - name: "Feedback"
+    description: "360° Feedback Loop system integration"
+  - name: "ACTA"
+    description: "Adaptive Contextual Token Architecture"
+  - name: "Orchestration"
+    description: "VORTEX orchestration system"
+  - name: "Analytics"
+    description: "Comprehensive system analytics"
+  - name: "Governance"
+    description: "Enterprise governance and policy management"
+  - name: "Compliance"
+    description: "Compliance monitoring and auditing"
+  - name: "Events"
+    description: "Real-time events and notifications"
+  - name: "GraphQL"
+    description: "Unified GraphQL API endpoint"
+  - name: "Optimization"
+    description: "AI-powered system optimization"
+  - name: "AI"
+    description: "AI-powered features and predictions"
+
+x-ossa-master-extensions:
+  integration_matrix:
+    feedback_acta: "Cross-optimized learning and token efficiency"
+    acta_vortex: "Optimized orchestration with context awareness" 
+    vortex_feedback: "Performance-driven workflow improvements"
+    agents_all: "Universal agent management across components"
+  
+  performance_targets:
+    system_response_time: "< 100ms"
+    agent_discovery_time: "< 50ms"
+    workflow_execution_efficiency: "> 95%"
+    overall_cost_reduction: "> 40%"
+    compliance_score: "> 95%"
+    
+  scalability:
+    horizontal: true
+    auto_scaling: true
+    load_balancing: "intelligent"
+    fault_tolerance: "automatic"
+    
+  monitoring:
+    real_time_metrics: true
+    predictive_analytics: true
+    anomaly_detection: true
+    automated_optimization: true

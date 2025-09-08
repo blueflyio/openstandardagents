@@ -1,0 +1,102 @@
+1. Get the application URL by running these commands:
+{{- if .Values.ingress.enabled }}
+{{- range $host := .Values.ingress.hosts }}
+  {{- range .paths }}
+  http{{ if $.Values.ingress.tls }}s{{ end }}://{{ $host.host }}{{ .path }}
+  {{- end }}
+{{- end }}
+{{- else if contains "NodePort" .Values.services.gateway.type }}
+  export NODE_PORT=$(kubectl get --namespace {{ .Release.Namespace }} -o jsonpath="{.spec.ports[0].nodePort}" services {{ include "ossa.fullname" . }}-gateway)
+  export NODE_IP=$(kubectl get nodes --namespace {{ .Release.Namespace }} -o jsonpath="{.items[0].status.addresses[0].address}")
+  echo http://$NODE_IP:$NODE_PORT
+{{- else if contains "LoadBalancer" .Values.services.gateway.type }}
+     NOTE: It may take a few minutes for the LoadBalancer IP to be available.
+           You can watch the status of by running 'kubectl get --namespace {{ .Release.Namespace }} svc -w {{ include "ossa.fullname" . }}-gateway'
+  export SERVICE_IP=$(kubectl get svc --namespace {{ .Release.Namespace }} {{ include "ossa.fullname" . }}-gateway --template "{{"{{ range (index .status.loadBalancer.ingress 0) }}{{.}}{{ end }}"}}")
+  echo http://$SERVICE_IP:{{ .Values.services.gateway.port }}
+{{- else if contains "ClusterIP" .Values.services.gateway.type }}
+  export POD_NAME=$(kubectl get pods --namespace {{ .Release.Namespace }} -l "app.kubernetes.io/name={{ include "ossa.name" . }},app.kubernetes.io/instance={{ .Release.Name }},ossa.io/component=gateway" -o jsonpath="{.items[0].metadata.name}")
+  export CONTAINER_PORT=$(kubectl get pod --namespace {{ .Release.Namespace }} $POD_NAME -o jsonpath="{.spec.containers[0].ports[0].containerPort}")
+  echo "Visit http://127.0.0.1:8080 to use your application"
+  kubectl --namespace {{ .Release.Namespace }} port-forward $POD_NAME 8080:$CONTAINER_PORT
+{{- end }}
+
+2. Monitor your OSSA deployment:
+{{- if .Values.monitoring.grafana.enabled }}
+   Grafana Dashboard:
+   {{- if .Values.ingress.enabled }}
+   {{- range .Values.ingress.hosts }}
+   {{- if contains "monitoring" .host }}
+   https://{{ .host }}
+   {{- end }}
+   {{- end }}
+   {{- else }}
+   kubectl --namespace {{ .Release.Namespace }} port-forward svc/{{ include "ossa.fullname" . }}-grafana 3080:3000
+   Access at: http://localhost:3080
+   {{- end }}
+   Username: admin
+   Password: {{ .Values.monitoring.grafana.adminPassword | quote }}
+{{- end }}
+
+3. Check the health of your OSSA services:
+   kubectl get pods --namespace {{ .Release.Namespace }} -l app.kubernetes.io/name={{ include "ossa.name" . }}
+
+4. View service logs:
+   kubectl logs --namespace {{ .Release.Namespace }} -l ossa.io/component=gateway -f
+
+5. OSSA Configuration Summary:
+   - Version: {{ .Values.ossa.version }}
+   - Environment: {{ .Values.global.environment }}
+   - Phase: {{ .Values.ossa.phase }}
+   - Scale: {{ .Values.ossa.scale }}
+   - Uptime Target: {{ .Values.ossa.uptime.target }}
+   {{- if .Values.highAvailability.enabled }}
+   - High Availability: Enabled
+   {{- end }}
+
+6. Service Endpoints (internal):
+   - Gateway: http://{{ include "ossa.fullname" . }}-gateway:3000
+   - Coordination: http://{{ include "ossa.fullname" . }}-coordination:3010
+   - Discovery: http://{{ include "ossa.fullname" . }}-discovery:3011
+   - Orchestration: http://{{ include "ossa.fullname" . }}-orchestration:3012
+   - Monitoring: http://{{ include "ossa.fullname" . }}-monitoring:3013
+
+{{- if eq .Values.global.environment "production" }}
+
+⚠️  PRODUCTION DEPLOYMENT NOTES:
+
+1. Verify SLA monitoring is working:
+   kubectl get prometheusrule --namespace {{ .Release.Namespace }} {{ include "ossa.fullname" . }}-alerts
+
+2. Check Pod Disruption Budgets:
+   kubectl get pdb --namespace {{ .Release.Namespace }}
+
+3. Verify anti-affinity rules:
+   kubectl get pods --namespace {{ .Release.Namespace }} -o wide
+
+4. Monitor uptime metrics:
+   Access Prometheus at your configured ingress and check:
+   - ossa:uptime_percentage_5m
+   - ossa:uptime_percentage_1h
+   - ossa:uptime_percentage_24h
+
+5. Backup recommendations:
+   - Set up automated backups for PostgreSQL, Redis, and Qdrant
+   - Test disaster recovery procedures
+   - Monitor backup success rates
+
+{{- end }}
+
+{{- if not .Values.postgresql.enabled }}
+
+⚠️  External Database Configuration Required:
+You have disabled the included PostgreSQL. Ensure your external database is configured and accessible.
+{{- end }}
+
+{{- if not .Values.redis.enabled }}
+
+⚠️  External Redis Configuration Required:
+You have disabled the included Redis. Ensure your external Redis is configured and accessible.
+{{- end }}
+
+For more information, visit: https://docs.ossa-standard.org

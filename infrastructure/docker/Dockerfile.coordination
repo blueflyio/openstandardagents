@@ -1,0 +1,224 @@
+FROM node:20-alpine
+
+# Install system dependencies
+RUN apk add --no-cache \
+    wget \
+    curl \
+    bash \
+    git
+
+WORKDIR /app
+
+# Copy package files
+COPY package*.json ./
+
+# Install root dependencies
+RUN npm install || true
+
+# Copy source code
+COPY . .
+
+# Install and build the CLI package
+WORKDIR /app/src/cli
+RUN npm install && npm run build
+
+# Return to app root
+WORKDIR /app
+
+# Create coordination service startup script
+RUN cat > /app/start-coordination.sh << 'EOF'
+#!/bin/bash
+echo "🤝 Starting OSSA Coordination Service v0.1.8..."
+
+# Start the coordination service
+node -e "
+const express = require('express');
+const Redis = require('ioredis');
+
+const app = express();
+app.use(express.json());
+
+// Redis client for coordination
+const redis = new Redis(process.env.REDIS_URL || 'redis://localhost:6379');
+
+// Agent coordination state
+const agents = new Map();
+const workflows = new Map();
+
+// Health endpoint
+app.get('/health', (req, res) => {
+  res.json({
+    service: 'coordination',
+    status: 'healthy',
+    version: '0.1.8',
+    active_agents: agents.size,
+    active_workflows: workflows.size,
+    timestamp: new Date().toISOString()
+  });
+});
+
+// Register agent endpoint
+app.post('/agents/register', async (req, res) => {
+  try {
+    const { agent_id, name, capabilities, endpoint } = req.body;
+    
+    if (!agent_id || !name) {
+      return res.status(400).json({ error: 'agent_id and name required' });
+    }
+    
+    const agent = {
+      id: agent_id,
+      name,
+      capabilities: capabilities || [],
+      endpoint,
+      status: 'active',
+      registered_at: new Date().toISOString(),
+      last_heartbeat: new Date().toISOString()
+    };
+    
+    agents.set(agent_id, agent);
+    
+    // Store in Redis
+    await redis.hset('ossa:agents', agent_id, JSON.stringify(agent));
+    
+    res.json({
+      status: 'registered',
+      agent
+    });
+  } catch (error) {
+    res.status(500).json({
+      status: 'error',
+      error: error.message
+    });
+  }
+});
+
+// List agents endpoint
+app.get('/agents', async (req, res) => {
+  try {
+    const agentList = Array.from(agents.values());
+    res.json({
+      agents: agentList,
+      total: agentList.length,
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    res.status(500).json({
+      status: 'error',
+      error: error.message
+    });
+  }
+});
+
+// Agent heartbeat endpoint
+app.post('/agents/:id/heartbeat', async (req, res) => {
+  try {
+    const agentId = req.params.id;
+    const agent = agents.get(agentId);
+    
+    if (!agent) {
+      return res.status(404).json({ error: 'Agent not found' });
+    }
+    
+    agent.last_heartbeat = new Date().toISOString();
+    agent.status = 'active';
+    
+    agents.set(agentId, agent);
+    await redis.hset('ossa:agents', agentId, JSON.stringify(agent));
+    
+    res.json({
+      status: 'heartbeat_received',
+      agent_id: agentId,
+      timestamp: agent.last_heartbeat
+    });
+  } catch (error) {
+    res.status(500).json({
+      status: 'error',
+      error: error.message
+    });
+  }
+});
+
+// Create workflow endpoint
+app.post('/workflows', async (req, res) => {
+  try {
+    const { name, steps, agents: workflowAgents } = req.body;
+    
+    const workflowId = 'workflow-' + Date.now();
+    const workflow = {
+      id: workflowId,
+      name,
+      steps: steps || [],
+      agents: workflowAgents || [],
+      status: 'created',
+      created_at: new Date().toISOString(),
+      current_step: 0
+    };
+    
+    workflows.set(workflowId, workflow);
+    await redis.hset('ossa:workflows', workflowId, JSON.stringify(workflow));
+    
+    res.json({
+      status: 'created',
+      workflow
+    });
+  } catch (error) {
+    res.status(500).json({
+      status: 'error',
+      error: error.message
+    });
+  }
+});
+
+// List workflows endpoint
+app.get('/workflows', async (req, res) => {
+  try {
+    const workflowList = Array.from(workflows.values());
+    res.json({
+      workflows: workflowList,
+      total: workflowList.length,
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    res.status(500).json({
+      status: 'error',
+      error: error.message
+    });
+  }
+});
+
+// Periodic cleanup of inactive agents
+setInterval(async () => {
+  const now = Date.now();
+  const inactiveThreshold = 5 * 60 * 1000; // 5 minutes
+  
+  for (const [agentId, agent] of agents) {
+    const lastHeartbeat = new Date(agent.last_heartbeat).getTime();
+    if (now - lastHeartbeat > inactiveThreshold) {
+      agent.status = 'inactive';
+      agents.set(agentId, agent);
+      await redis.hset('ossa:agents', agentId, JSON.stringify(agent));
+    }
+  }
+}, 60000); // Check every minute
+
+const port = process.env.SERVICE_PORT || 3010;
+app.listen(port, '0.0.0.0', () => {
+  console.log('✅ Coordination Service running on port ' + port);
+});
+"
+
+EOF
+
+# Make startup script executable
+RUN chmod +x /app/start-coordination.sh
+
+# Expose port
+EXPOSE 3010
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+  CMD curl -f http://localhost:3010/health || exit 1
+
+# Start coordination service
+CMD ["/app/start-coordination.sh"]

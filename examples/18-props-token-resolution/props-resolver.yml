@@ -1,0 +1,476 @@
+ossa: "0.1.8"
+metadata:
+  name: props-resolver
+  version: "1.0.0"
+  description: "Props Token Resolution Service - URI-based reference system for efficient context passing"
+  author: "OSSA Framework"
+  tags: ["props", "resolution", "tokens", "caching", "references", "optimization"]
+  category: utility
+  subtype: token_resolver
+
+spec:
+  conformance_tier: gold
+  class: utility
+  
+  # Core Props resolution capabilities
+  capabilities:
+    primary:
+      - props_token_resolution: "Resolve Props tokens to their underlying content"
+      - namespace_management: "Manage and validate Props token namespaces"
+      - multi_tier_caching: "Implement hierarchical caching for optimal performance"
+      - version_resolution: "Handle semantic versioning and compatibility"
+      - content_validation: "Validate resolved content integrity and format"
+    
+    secondary:
+      - fallback_resolution: "Handle resolution failures gracefully with fallbacks"
+      - batch_resolution: "Efficiently resolve multiple Props tokens in batches"
+      - cache_optimization: "Optimize caching strategies based on usage patterns"
+      - resolution_analytics: "Track and analyze resolution performance metrics"
+      - namespace_discovery: "Automatically discover and register available namespaces"
+
+  # Props token format specification
+  props_format:
+    pattern: "@{namespace}:{project}:{version}:{id}"
+    components:
+      namespace:
+        description: "Domain or category identifier"
+        format: "[A-Z][A-Z0-9_]*"
+        examples: ["RM", "ARCH", "TEST", "POLICY"]
+      project:
+        description: "Project or system identifier"
+        format: "[A-Za-z0-9][A-Za-z0-9_-]*"
+        examples: ["OSSA", "ENTERPRISE", "COMMON"]
+      version:
+        description: "Semantic version identifier"
+        format: "\\d+\\.\\d+\\.\\d+"
+        examples: ["0.1.8", "1.0.0", "2.1.3"]
+      id:
+        description: "Unique resource identifier within project"
+        format: "[A-Z0-9][A-Z0-9_-]*"
+        examples: ["E-018-STD", "FEEDBACK-LOOP", "SECURITY-FRAMEWORK"]
+
+  # Resolution strategies
+  resolution_strategies:
+    local_cache:
+      priority: 1
+      description: "Resolve from local multi-tier cache"
+      timeout: 10  # ms
+      fallback: "remote_resolution"
+    
+    remote_resolution:
+      priority: 2
+      description: "Resolve from remote repositories"
+      timeout: 5000  # ms
+      fallback: "artifact_resolution"
+      
+    artifact_resolution:
+      priority: 3
+      description: "Resolve from versioned artifact repositories"
+      timeout: 10000  # ms
+      fallback: "default_content"
+      
+    default_content:
+      priority: 4
+      description: "Use default or placeholder content"
+      timeout: 0  # immediate
+      fallback: null
+
+  # Multi-tier caching configuration
+  caching:
+    l1_memory:
+      type: "in_memory"
+      capacity: 1000  # tokens
+      ttl: 300  # 5 minutes
+      eviction: "lru"
+      preload_common: true
+    
+    l2_redis:
+      type: "redis"
+      capacity: 10000  # tokens
+      ttl: 3600  # 1 hour
+      host: "localhost"
+      port: 6379
+      db: 1
+    
+    l3_disk:
+      type: "file_system"
+      capacity: 100000  # tokens
+      ttl: 86400  # 24 hours
+      path: "./props-cache"
+      compression: true
+
+  # Namespace registry
+  namespaces:
+    RM:
+      description: "Requirements Management"
+      maintainer: "OSSA Core Team"
+      repository: "https://github.com/ossa/requirements"
+      version_schema: "semver"
+      cache_ttl: 3600
+      content_types: ["template", "standard", "guideline"]
+    
+    ARCH:
+      description: "Architecture Specifications"
+      maintainer: "OSSA Architecture Team"
+      repository: "https://github.com/ossa/architecture"
+      version_schema: "semver"
+      cache_ttl: 7200
+      content_types: ["specification", "pattern", "diagram"]
+    
+    TEST:
+      description: "Testing and Validation"
+      maintainer: "OSSA QA Team"
+      repository: "https://github.com/ossa/testing"
+      version_schema: "semver"
+      cache_ttl: 1800
+      content_types: ["test_suite", "validation", "benchmark"]
+    
+    POLICY:
+      description: "Organizational Policies"
+      maintainer: "OSSA Governance"
+      repository: "https://github.com/ossa/policies"
+      version_schema: "semver"
+      cache_ttl: 14400
+      content_types: ["policy", "procedure", "guideline"]
+
+  # Performance targets
+  performance_targets:
+    cache_hit_rate: "> 95%"
+    resolution_latency: "< 50ms (cached), < 2s (remote)"
+    batch_resolution_throughput: "> 1000 tokens/second"
+    cache_efficiency: "> 90%"
+    error_rate: "< 1%"
+
+  # Communication protocols
+  protocols:
+    - name: rest_api
+      version: "1.0"
+      endpoint: "/api/v1/props"
+      required: true
+    - name: grpc
+      version: "1.0"
+      service: "PropsResolverService"
+      required: false
+
+  # Integration with OSSA ecosystem
+  integrations:
+    acta_optimizer:
+      - type: optimization
+        communication: sync
+        optimizes: "token_references"
+    
+    all_agents:
+      - type: all
+        communication: transparent
+        resolves: "props_tokens"
+
+  # Input/Output specifications
+  interfaces:
+    input:
+      resolution_request:
+        type: object
+        required: true
+        properties:
+          props_tokens: "Array of Props tokens to resolve"
+          resolution_options: "Resolution strategy preferences"
+          cache_policy: "Caching behavior preferences"
+          validation_level: "Content validation requirements"
+    
+    output:
+      resolution_response:
+        type: object
+        properties:
+          resolved_content: "Map of Props tokens to resolved content"
+          resolution_metadata: "Metadata about resolution process"
+          cache_status: "Cache hit/miss information"
+          performance_metrics: "Resolution performance data"
+          validation_results: "Content validation outcomes"
+
+  # Framework integrations
+  frameworks:
+    langchain:
+      enabled: true
+      integration: native
+      tools: ["props_resolver", "content_validator", "cache_manager"]
+    
+    crewai:
+      enabled: true
+      role: "Content Resolution Specialist"
+      goal: "Efficiently resolve Props tokens while maintaining high performance and reliability"
+      backstory: "Expert in content management and distributed systems with focus on performance optimization"
+    
+    autogen:
+      enabled: true
+      agent_type: "AssistantAgent"
+      system_message: "You are a Props token resolver that efficiently retrieves and validates content references with optimal caching strategies."
+
+# OpenAPI specification for REST endpoints
+openapi: "3.1.0"
+info:
+  title: "Props Token Resolver API"
+  version: "1.0.0"
+  description: "API for resolving Props tokens to their underlying content"
+
+paths:
+  /props/resolve:
+    post:
+      summary: "Resolve Props tokens"
+      operationId: resolvePropsTokens
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [tokens]
+              properties:
+                tokens:
+                  type: array
+                  items:
+                    type: string
+                    pattern: "^@[A-Z][A-Z0-9_]*:[A-Za-z0-9][A-Za-z0-9_-]*:\\d+\\.\\d+\\.\\d+:[A-Z0-9][A-Z0-9_-]*$"
+                  description: "Array of Props tokens to resolve"
+                options:
+                  type: object
+                  properties:
+                    resolution_strategy:
+                      type: string
+                      enum: ["local_cache", "remote_resolution", "artifact_resolution"]
+                      default: "local_cache"
+                    cache_behavior:
+                      type: string
+                      enum: ["use_cache", "bypass_cache", "refresh_cache"]
+                      default: "use_cache"
+                    validation_level:
+                      type: string
+                      enum: ["none", "basic", "full"]
+                      default: "basic"
+                    timeout:
+                      type: integer
+                      minimum: 100
+                      maximum: 30000
+                      default: 5000
+                batch_options:
+                  type: object
+                  properties:
+                    parallel_resolution: { type: boolean, default: true }
+                    batch_size: { type: integer, minimum: 1, maximum: 100, default: 10 }
+                    fail_fast: { type: boolean, default: false }
+      responses:
+        "200":
+          description: "Props tokens resolved successfully"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  resolution_id: { type: string }
+                  resolved_tokens:
+                    type: object
+                    additionalProperties:
+                      type: object
+                      properties:
+                        content: { oneOf: [{ type: string }, { type: object }] }
+                        metadata:
+                          type: object
+                          properties:
+                            namespace: { type: string }
+                            project: { type: string }
+                            version: { type: string }
+                            id: { type: string }
+                            content_type: { type: string }
+                            last_modified: { type: string, format: date-time }
+                            checksum: { type: string }
+                        resolution_info:
+                          type: object
+                          properties:
+                            strategy_used: { type: string }
+                            cache_status: { type: string, enum: ["hit", "miss", "stale"] }
+                            resolution_time: { type: integer }
+                            source: { type: string }
+                  failed_tokens:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        token: { type: string }
+                        error_code: { type: string }
+                        error_message: { type: string }
+                        attempted_strategies: { type: array, items: { type: string } }
+                  performance_metrics:
+                    type: object
+                    properties:
+                      total_resolution_time: { type: integer }
+                      cache_hit_rate: { type: number, minimum: 0, maximum: 1 }
+                      average_token_size: { type: integer }
+                      bandwidth_saved: { type: integer }
+        "400":
+          description: "Invalid Props token format or request"
+        "404":
+          description: "One or more Props tokens could not be resolved"
+        "429":
+          description: "Rate limit exceeded"
+
+  /props/cache/status:
+    get:
+      summary: "Get cache status and statistics"
+      responses:
+        "200":
+          description: "Cache status retrieved"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  cache_tiers:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        tier: { type: string, enum: ["l1_memory", "l2_redis", "l3_disk"] }
+                        status: { type: string, enum: ["healthy", "degraded", "unavailable"] }
+                        capacity: { type: integer }
+                        used: { type: integer }
+                        hit_rate: { type: number, minimum: 0, maximum: 1 }
+                        entries: { type: integer }
+                  overall_statistics:
+                    type: object
+                    properties:
+                      total_requests: { type: integer }
+                      cache_hits: { type: integer }
+                      cache_misses: { type: integer }
+                      error_rate: { type: number }
+                      average_resolution_time: { type: number }
+
+  /props/namespaces:
+    get:
+      summary: "Get available namespaces"
+      responses:
+        "200":
+          description: "Namespaces retrieved"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  namespaces:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        namespace: { type: string }
+                        description: { type: string }
+                        maintainer: { type: string }
+                        repository: { type: string }
+                        version_schema: { type: string }
+                        content_types: { type: array, items: { type: string } }
+                        status: { type: string, enum: ["active", "deprecated", "archived"] }
+
+    post:
+      summary: "Register new namespace"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [namespace, description, maintainer]
+              properties:
+                namespace:
+                  type: string
+                  pattern: "^[A-Z][A-Z0-9_]*$"
+                description: { type: string }
+                maintainer: { type: string }
+                repository: { type: string, format: uri }
+                version_schema: { type: string, enum: ["semver", "date", "sequential"], default: "semver" }
+                cache_ttl: { type: integer, minimum: 60, default: 3600 }
+                content_types: { type: array, items: { type: string } }
+      responses:
+        "201":
+          description: "Namespace registered successfully"
+        "409":
+          description: "Namespace already exists"
+
+  /props/validate:
+    post:
+      summary: "Validate Props token format and resolvability"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [tokens]
+              properties:
+                tokens: { type: array, items: { type: string } }
+                check_resolvability: { type: boolean, default: false }
+      responses:
+        "200":
+          description: "Validation results"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  validation_results:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        token: { type: string }
+                        format_valid: { type: boolean }
+                        namespace_valid: { type: boolean }
+                        resolvable: { type: boolean }
+                        errors: { type: array, items: { type: string } }
+                        suggestions: { type: array, items: { type: string } }
+
+# Agent behavior configuration
+behavior:
+  resolution_approach: "multi_strategy_with_fallbacks"
+  caching_strategy: "aggressive_with_intelligent_eviction"
+  performance_optimization: "latency_focused"
+  error_handling: "graceful_degradation"
+  
+  cache_management:
+    preloading: "common_tokens_on_startup"
+    eviction: "lru_with_usage_prediction"
+    warming: "predictive_based_on_patterns"
+    invalidation: "version_aware_with_cascading"
+  
+  resolution_priorities:
+    accuracy: "high"
+    performance: "high"
+    availability: "medium"
+    consistency: "medium"
+  
+  learning:
+    usage_pattern_analysis: true
+    performance_optimization: true
+    cache_strategy_adaptation: true
+    error_pattern_recognition: true
+
+# Props-specific configuration
+props:
+  resolution_engine:
+    concurrent_resolutions: 50
+    batch_processing: true
+    circuit_breaker: true
+    retry_logic: "exponential_backoff"
+  
+  content_validation:
+    checksum_verification: true
+    schema_validation: true
+    content_type_checking: true
+    virus_scanning: false
+  
+  version_management:
+    compatibility_checking: true
+    automatic_migration: false
+    version_pinning: true
+    deprecation_warnings: true
+  
+  monitoring:
+    performance_metrics: true
+    usage_analytics: true
+    error_tracking: true
+    health_checks: true

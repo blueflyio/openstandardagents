@@ -1,0 +1,419 @@
+# Production Environment Values for OSSA v0.1.8
+# Optimized for 99.97% uptime target and enterprise scale
+
+global:
+  environment: production
+
+# Production-grade resource allocation for 99.97% uptime
+services:
+  gateway:
+    replicaCount: 3
+    minReplicas: 3
+    maxReplicas: 10
+    resources:
+      requests:
+        memory: "512Mi"
+        cpu: "500m"
+      limits:
+        memory: "1Gi"
+        cpu: "1000m"
+
+  taskAgent:
+    replicaCount: 3
+    minReplicas: 3
+    maxReplicas: 20
+    resources:
+      requests:
+        memory: "256Mi"
+        cpu: "250m"
+      limits:
+        memory: "512Mi"
+        cpu: "500m"
+
+  commAgent:
+    replicaCount: 3
+    minReplicas: 3
+    maxReplicas: 15
+    resources:
+      requests:
+        memory: "256Mi"
+        cpu: "250m"
+      limits:
+        memory: "512Mi"
+        cpu: "500m"
+
+  mcpAgent:
+    replicaCount: 3
+    minReplicas: 3
+    maxReplicas: 10
+    resources:
+      requests:
+        memory: "256Mi"
+        cpu: "250m"
+      limits:
+        memory: "512Mi"
+        cpu: "500m"
+
+  coordination:
+    replicaCount: 3
+    minReplicas: 3
+    maxReplicas: 6
+    resources:
+      requests:
+        memory: "512Mi"
+        cpu: "500m"
+      limits:
+        memory: "1Gi"
+        cpu: "1000m"
+
+  discovery:
+    replicaCount: 3
+    minReplicas: 3
+    maxReplicas: 8
+    resources:
+      requests:
+        memory: "512Mi"
+        cpu: "500m"
+      limits:
+        memory: "1Gi"
+        cpu: "1000m"
+
+  orchestration:
+    replicaCount: 3
+    minReplicas: 3
+    maxReplicas: 12
+    resources:
+      requests:
+        memory: "1Gi"
+        cpu: "1000m"
+      limits:
+        memory: "2Gi"
+        cpu: "2000m"
+
+  monitoring:
+    replicaCount: 3
+    minReplicas: 3
+    maxReplicas: 4
+    resources:
+      requests:
+        memory: "512Mi"
+        cpu: "500m"
+      limits:
+        memory: "1Gi"
+        cpu: "1000m"
+
+# Full high availability for 99.97% uptime target
+highAvailability:
+  enabled: true
+  podDisruptionBudgets:
+    enabled: true
+    gateway:
+      minAvailable: 2
+    coordination:
+      minAvailable: 2
+    orchestration:
+      minAvailable: 2
+  antiAffinity:
+    enabled: true
+    type: "hard"  # Hard anti-affinity for production
+  multiZone:
+    enabled: true
+    zones:
+      - us-west-2a
+      - us-west-2b
+      - us-west-2c
+
+# Production database with high availability
+postgresql:
+  enabled: true
+  auth:
+    database: ossa_production
+    username: ossa_production
+    existingSecret: "ossa-postgresql-secret"
+    secretKeys:
+      adminPasswordKey: "postgres-password"
+      userPasswordKey: "password"
+  architecture: replication
+  primary:
+    resources:
+      requests:
+        memory: "1Gi"
+        cpu: "1000m"
+      limits:
+        memory: "2Gi"
+        cpu: "2000m"
+    persistence:
+      enabled: true
+      size: "100Gi"
+      storageClass: "fast-ssd"
+  readReplicas:
+    replicaCount: 2
+    resources:
+      requests:
+        memory: "1Gi"
+        cpu: "1000m"
+      limits:
+        memory: "2Gi"
+        cpu: "2000m"
+    persistence:
+      enabled: true
+      size: "100Gi"
+      storageClass: "fast-ssd"
+  metrics:
+    enabled: true
+    resources:
+      requests:
+        memory: "64Mi"
+        cpu: "50m"
+      limits:
+        memory: "128Mi"
+        cpu: "100m"
+
+# Production Redis cluster
+redis:
+  enabled: true
+  architecture: replication
+  master:
+    resources:
+      requests:
+        memory: "512Mi"
+        cpu: "500m"
+      limits:
+        memory: "1Gi"
+        cpu: "1000m"
+    persistence:
+      enabled: true
+      size: "20Gi"
+      storageClass: "fast-ssd"
+  replica:
+    replicaCount: 2
+    resources:
+      requests:
+        memory: "512Mi"
+        cpu: "500m"
+      limits:
+        memory: "1Gi"
+        cpu: "1000m"
+    persistence:
+      enabled: true
+      size: "20Gi"
+      storageClass: "fast-ssd"
+  metrics:
+    enabled: true
+    resources:
+      requests:
+        memory: "64Mi"
+        cpu: "50m"
+      limits:
+        memory: "128Mi"
+        cpu: "100m"
+
+# Production Qdrant cluster
+qdrant:
+  enabled: true
+  replicaCount: 3
+  resources:
+    requests:
+      memory: "2Gi"
+      cpu: "1000m"
+    limits:
+      memory: "4Gi"
+      cpu: "2000m"
+  persistence:
+    enabled: true
+    size: "200Gi"
+    storageClass: "fast-ssd"
+  metrics:
+    enabled: true
+
+# Comprehensive monitoring for production
+monitoring:
+  prometheus:
+    enabled: true
+    retention: "30d"
+    resources:
+      requests:
+        memory: "1Gi"
+        cpu: "1000m"
+      limits:
+        memory: "2Gi"
+        cpu: "2000m"
+    storage:
+      enabled: true
+      size: "100Gi"
+      storageClass: "fast-ssd"
+    alertmanager:
+      enabled: true
+      resources:
+        requests:
+          memory: "128Mi"
+          cpu: "100m"
+        limits:
+          memory: "256Mi"
+          cpu: "200m"
+  
+  grafana:
+    enabled: true
+    existingSecret: "ossa-grafana-secret"
+    secretKey: "admin-password"
+    resources:
+      requests:
+        memory: "256Mi"
+        cpu: "250m"
+      limits:
+        memory: "512Mi"
+        cpu: "500m"
+    persistence:
+      enabled: true
+      size: "10Gi"
+      storageClass: "fast-ssd"
+  
+  alertmanager:
+    enabled: true
+    config:
+      global:
+        smtp_smarthost: 'smtp.example.com:587'
+        smtp_from: 'ossa-alerts@example.com'
+      route:
+        group_by: ['alertname']
+        group_wait: 10s
+        group_interval: 10s
+        repeat_interval: 1h
+        receiver: 'web.hook'
+      receivers:
+      - name: 'web.hook'
+        webhook_configs:
+        - url: 'http://slack-webhook-url'
+    resources:
+      requests:
+        memory: "128Mi"
+        cpu: "100m"
+      limits:
+        memory: "256Mi"
+        cpu: "200m"
+
+# Production ingress with SSL
+ingress:
+  enabled: true
+  className: "nginx"
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    nginx.ingress.kubernetes.io/rate-limit: "1000"
+    nginx.ingress.kubernetes.io/rate-limit-rps: "100"
+  hosts:
+    - host: ossa-api.example.com
+      paths:
+        - path: /
+          pathType: Prefix
+          backend:
+            service:
+              name: gateway
+              port: 3000
+    - host: ossa-monitoring.example.com
+      paths:
+        - path: /
+          pathType: Prefix
+          backend:
+            service:
+              name: monitoring
+              port: 3013
+  tls:
+    - secretName: ossa-production-tls
+      hosts:
+        - ossa-api.example.com
+        - ossa-monitoring.example.com
+
+# Maximum security for production
+security:
+  podSecurityContext:
+    runAsNonRoot: true
+    runAsUser: 1000
+    fsGroup: 1000
+    fsGroupChangePolicy: "OnRootMismatch"
+    seccompProfile:
+      type: RuntimeDefault
+  securityContext:
+    allowPrivilegeEscalation: false
+    readOnlyRootFilesystem: true
+    runAsNonRoot: true
+    runAsUser: 1000
+    capabilities:
+      drop:
+        - ALL
+    seccompProfile:
+      type: RuntimeDefault
+
+# Network policies strictly enforced
+networkPolicy:
+  enabled: true
+  ingress:
+    enabled: true
+    allowedNamespaces:
+      - monitoring
+      - ingress-nginx
+      - cert-manager
+  egress:
+    enabled: true
+    allowedDestinations:
+      - namespaceSelector:
+          matchLabels:
+            name: kube-system
+      - namespaceSelector:
+          matchLabels:
+            name: monitoring
+
+# Resource quotas and limits
+resourceQuota:
+  enabled: true
+  hard:
+    requests.cpu: "50"
+    requests.memory: "100Gi"
+    limits.cpu: "100"
+    limits.memory: "200Gi"
+    persistentvolumeclaims: "50"
+
+# Additional production settings
+ossa:
+  uptime:
+    target: "99.97%"
+    enableHighAvailability: true
+    enableDisruptionBudgets: true
+    enableAntiAffinity: true
+
+# Custom metrics and alerting thresholds
+hpa:
+  enabled: true
+  metrics:
+    cpu:
+      targetAverageUtilization: 60  # Lower threshold for faster scaling
+    memory:
+      targetAverageUtilization: 60
+  customMetrics:
+    enabled: true
+    requests:
+      targetAverageValue: "500m"  # Scale at 500 requests per second
+
+# Node affinity for dedicated nodes
+nodeSelector:
+  node-type: "ossa-production"
+
+# Tolerations for dedicated nodes
+tolerations:
+  - key: "ossa-production"
+    operator: "Equal"
+    value: "true"
+    effect: "NoSchedule"
+
+# Additional storage for backups
+persistence:
+  enabled: true
+  storageClass: "fast-ssd"
+  accessMode: ReadWriteOnce
+  size: "50Gi"
+  backup:
+    enabled: true
+    storageClass: "standard"
+    size: "100Gi"
+    schedule: "0 2 * * *"  # Daily backups at 2 AM

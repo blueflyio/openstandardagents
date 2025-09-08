@@ -1,0 +1,152 @@
+# OSSA v0.1.8 - Development Environment Override
+# Use: docker-compose -f docker-compose.yml -f docker-compose.development.yml up
+
+services:
+  ossa-gateway:
+    environment:
+      - NODE_ENV=development
+      - DEBUG=ossa:*
+      - HOT_RELOAD=true
+    volumes:
+      - ../../src:/app/src:ro
+      - ../../package.json:/app/package.json:ro
+    command: ["/bin/bash", "-c", "npm run dev"]
+    
+  ossa-task-agent:
+    environment:
+      - NODE_ENV=development
+      - DEBUG=ossa:task:*
+    volumes:
+      - ../../src:/app/src:ro
+    ports:
+      - "9229:9229"  # Node.js debugger
+
+  ossa-comm-agent:
+    environment:
+      - NODE_ENV=development
+      - DEBUG=ossa:comm:*
+    volumes:
+      - ../../src:/app/src:ro
+    ports:
+      - "9230:9229"  # Node.js debugger
+
+  ossa-mcp-agent:
+    environment:
+      - NODE_ENV=development
+      - DEBUG=ossa:mcp:*
+    volumes:
+      - ../../src:/app/src:ro
+      - ../../examples:/app/examples:ro
+    ports:
+      - "9231:9229"  # Node.js debugger
+
+  ossa-coordination:
+    environment:
+      - NODE_ENV=development
+      - DEBUG=ossa:coordination:*
+    volumes:
+      - ../../src:/app/src:ro
+    ports:
+      - "9232:9229"  # Node.js debugger
+
+  ossa-discovery:
+    environment:
+      - NODE_ENV=development
+      - DEBUG=ossa:discovery:*
+      - AUTO_DISCOVERY=true
+      - DISCOVERY_INTERVAL=30000
+    volumes:
+      - ../../src:/app/src:ro
+      - ../../examples:/app/examples:ro
+    ports:
+      - "9233:9229"  # Node.js debugger
+
+  ossa-orchestration:
+    environment:
+      - NODE_ENV=development
+      - DEBUG=ossa:orchestration:*
+    volumes:
+      - ../../src:/app/src:ro
+    ports:
+      - "9234:9229"  # Node.js debugger
+
+  ossa-monitoring:
+    environment:
+      - NODE_ENV=development
+      - DEBUG=ossa:monitoring:*
+      - METRICS_COLLECTION_INTERVAL=10000
+    volumes:
+      - ../../src:/app/src:ro
+    ports:
+      - "9235:9229"  # Node.js debugger
+
+  # Development Database with exposed ports
+  postgres:
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_LOG_STATEMENT=all
+    volumes:
+      - postgres-dev-data:/var/lib/postgresql/data
+      - ../../sql/dev-schema.sql:/docker-entrypoint-initdb.d/01-dev-schema.sql:ro
+      - ../../sql/dev-data.sql:/docker-entrypoint-initdb.d/02-dev-data.sql:ro
+
+  # Development Redis with exposed port
+  redis:
+    ports:
+      - "6379:6379"
+    command: redis-server --appendonly yes --appendfsync everysec
+
+  # Development Qdrant with web UI
+  qdrant:
+    ports:
+      - "6333:6333"
+      - "6334:6334"
+    environment:
+      - QDRANT__SERVICE__HTTP_PORT=6333
+      - QDRANT__SERVICE__GRPC_PORT=6334
+      - QDRANT__LOG_LEVEL=DEBUG
+
+  # Development tools
+  redis-commander:
+    container_name: ossa-redis-commander
+    image: rediscommander/redis-commander:latest
+    environment:
+      - REDIS_HOSTS=local:redis:6379
+    ports:
+      - "8081:8081"
+    depends_on:
+      - redis
+    networks:
+      - ossa-network
+
+  pgadmin:
+    container_name: ossa-pgadmin
+    image: dpage/pgadmin4:latest
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=admin@ossa.dev
+      - PGADMIN_DEFAULT_PASSWORD=ossa-dev-2025
+      - PGADMIN_CONFIG_SERVER_MODE=False
+    ports:
+      - "5050:80"
+    depends_on:
+      - postgres
+    networks:
+      - ossa-network
+    volumes:
+      - pgadmin-dev-data:/var/lib/pgadmin
+
+  # API Documentation Server
+  swagger-ui:
+    container_name: ossa-swagger-ui
+    image: swaggerapi/swagger-ui:latest
+    environment:
+      - SWAGGER_JSON_URL=http://localhost:3000/openapi.json
+    ports:
+      - "8080:8080"
+    networks:
+      - ossa-network
+
+volumes:
+  postgres-dev-data:
+  pgadmin-dev-data:

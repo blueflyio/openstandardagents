@@ -1,0 +1,1678 @@
+# OSSA v0.1.8 GraphQL Query and Mutation Examples
+# Example queries and mutations demonstrating OSSA GraphQL usage
+
+# =============================================================================
+# AGENT DISCOVERY EXAMPLES
+# =============================================================================
+
+# Basic agent discovery
+query DiscoverBasicAgents {
+  agents(
+    filter: {
+      requiredCapabilities: ["text-generation", "reasoning"]
+      complianceLevel: GOVERNED
+      healthStatus: HEALTHY
+      limit: 10
+    }
+  ) {
+    agents {
+      id
+      name
+      version
+      description
+      taxonomy {
+        primaryType
+        complianceLevel
+      }
+      capabilities {
+        primary {
+          name
+          description
+          tokenCost {
+            estimatedTokens
+            costPerRequest
+          }
+        }
+      }
+      status {
+        health
+        availability
+        lastHeartbeat
+      }
+      performance {
+        avgResponseTimeMs
+        successRate
+        throughputRps
+      }
+    }
+    totalFound
+    executionTime
+  }
+}
+
+# Advanced agent discovery with complex filtering
+query AdvancedAgentDiscovery {
+  discoverAgents(
+    query: {
+      requiredCapabilities: ["natural-language-processing", "document-analysis"]
+      optionalCapabilities: ["image-processing", "pdf-parsing"]
+      domains: ["finance", "legal", "healthcare"]
+      protocols: [REST, GRAPHQL]
+      maxResponseTime: 2000.0
+      minReliability: 0.99
+      complianceLevel: ADVANCED
+      certifications: ["SOC2", "HIPAA"]
+      includeInactive: false
+      limit: 20
+      sortBy: [
+        { field: PERFORMANCE, order: DESC, priority: 1 }
+        { field: CAPABILITY_MATCH, order: DESC, priority: 2 }
+      ]
+      ranking: {
+        algorithm: "performance_weighted"
+        factors: ["performance", "compliance", "capability_match"]
+      }
+    }
+  ) {
+    agents {
+      id
+      name
+      version
+      taxonomy {
+        primaryType
+        secondaryTypes
+        specialization
+        complianceLevel
+      }
+      capabilities {
+        primary {
+          name
+          description
+          tokenCost {
+            estimatedTokens
+            costPerRequest
+            compressionRatio
+          }
+          latencyProfile {
+            averageMs
+            p95Ms
+            p99Ms
+          }
+          reliability {
+            successRate
+            uptime
+            mtbf
+            mttr
+          }
+        }
+        domains
+        languages
+        models {
+          name
+          provider
+          tier
+          maxTokens
+          costPerToken
+        }
+      }
+      protocols {
+        rest {
+          enabled
+          baseUrl
+          version
+          authentication {
+            methods
+          }
+        }
+        graphql {
+          enabled
+          endpoint
+          subscriptionsEnabled
+        }
+      }
+      performance {
+        avgResponseTimeMs
+        p95ResponseTimeMs
+        successRate
+        throughputRps
+        uptimePercentage
+      }
+      compliance {
+        certifications {
+          framework
+          status
+          certificateId
+          expiryDate
+        }
+        overallStatus
+      }
+      security {
+        encryption {
+          atRest {
+            enabled
+            algorithm
+          }
+          inTransit {
+            enabled
+            algorithm
+          }
+        }
+        accessControl {
+          authentication {
+            methods
+          }
+        }
+      }
+    }
+    totalFound
+    queryId
+    executionTime
+    ranking {
+      algorithm
+      factors {
+        name
+        weight
+      }
+    }
+    scores {
+      agentId
+      totalScore
+      componentScores
+    }
+  }
+}
+
+# Register a new agent
+mutation RegisterAgent {
+  registerAgent(
+    input: {
+      name: "Legal Document Analyzer"
+      version: "2.1.0"
+      description: "Advanced AI agent for legal document analysis and compliance checking"
+      taxonomy: {
+        primaryType: ANALYST
+        secondaryTypes: [CRITIC, JUDGE]
+        specialization: "Legal Document Processing"
+        class: SPECIALIST
+        category: TOOL
+        conformanceTier: GOLD
+        certificationLevel: PREMIUM
+      }
+      capabilities: {
+        primary: [
+          {
+            name: "legal-document-analysis"
+            description: "Analyze legal documents for compliance and risk assessment"
+            version: "2.1.0"
+            inputSchema: {
+              type: "object"
+              properties: {
+                document: { type: "string", format: "base64" }
+                analysisType: { 
+                  type: "string", 
+                  enum: ["compliance", "risk", "summary", "extraction"] 
+                }
+                jurisdiction: { type: "string" }
+              }
+              required: ["document", "analysisType"]
+            }
+            outputSchema: {
+              type: "object"
+              properties: {
+                analysis: { type: "object" }
+                confidence: { type: "number", minimum: 0, maximum: 1 }
+                recommendations: { type: "array", items: { type: "string" } }
+                riskLevel: { 
+                  type: "string", 
+                  enum: ["low", "medium", "high", "critical"] 
+                }
+              }
+              required: ["analysis", "confidence"]
+            }
+            tokenCost: {
+              estimatedTokens: 5000
+              costPerRequest: 0.25
+              currency: "USD"
+              optimizationApplied: true
+            }
+            complianceLevel: ADVANCED
+            certifications: ["SOC2", "GDPR", "HIPAA"]
+          }
+        ]
+        domains: ["legal", "compliance", "risk-management"]
+        contexts: ["contract-analysis", "regulatory-compliance", "due-diligence"]
+        languages: ["en", "es", "fr", "de"]
+        models: [
+          {
+            id: "legal-bert-large"
+            name: "LegalBERT Large"
+            version: "1.0"
+            provider: "CustomLegal"
+            tier: PREMIUM
+            capabilities: ["text-analysis", "named-entity-recognition"]
+            languages: ["en"]
+            domains: ["legal"]
+            maxTokens: 4096
+            contextWindow: 4096
+            costPerToken: 0.00005
+          }
+        ]
+        frameworks: [
+          {
+            framework: "LangChain"
+            version: "0.1.0"
+            features: ["chains", "agents", "memory"]
+          }
+        ]
+        maxConcurrentTasks: 5
+        maxTokensPerRequest: 8192
+        supportedDataFormats: [JSON, PDF, XML, YAML]
+      }
+      protocols: {
+        rest: {
+          enabled: true
+          version: "v2"
+          baseUrl: "https://legal-analyzer.example.com/api/v2"
+          openApiSpec: "https://legal-analyzer.example.com/openapi.yaml"
+          authentication: {
+            methods: [API_KEY, BEARER_TOKEN]
+            apiKeyConfig: {
+              headerName: "X-API-Key"
+            }
+            jwtConfig: {
+              issuer: "https://auth.example.com"
+              audience: "legal-analyzer"
+              algorithm: "RS256"
+            }
+          }
+          rateLimit: {
+            requests: 1000
+            window: "1h"
+            burstAllowed: true
+            burstSize: 100
+          }
+          compression: {
+            enabled: true
+            algorithms: ["gzip", "deflate"]
+            minSize: 1024
+          }
+        }
+        graphql: {
+          enabled: true
+          endpoint: "https://legal-analyzer.example.com/graphql"
+          introspectionEnabled: true
+          subscriptionsEnabled: false
+          federationSupported: true
+        }
+        mcp: {
+          enabled: true
+          version: "1.0"
+          serverName: "legal-analyzer-mcp"
+          tools: [
+            {
+              name: "analyze_contract"
+              description: "Analyze legal contracts for compliance and risks"
+              inputSchema: {
+                type: "object"
+                properties: {
+                  contract_text: { type: "string" }
+                  jurisdiction: { type: "string" }
+                }
+              }
+            }
+          ]
+          transport: {
+            type: "sse"
+            endpoint: "https://legal-analyzer.example.com/mcp"
+          }
+        }
+      }
+      metadata: {
+        owner: "LegalTech Team"
+        team: "AI Services"
+        department: "Technology"
+        environment: "production"
+        tier: "enterprise"
+        criticality: "high"
+        dataClassification: CONFIDENTIAL
+        tags: ["legal", "compliance", "document-analysis", "ai"]
+        documentation: "https://docs.example.com/legal-analyzer"
+        supportContact: "legal-ai-support@example.com"
+      }
+      endpoints: {
+        health: "https://legal-analyzer.example.com/health"
+        capabilities: "https://legal-analyzer.example.com/capabilities"
+        api: "https://legal-analyzer.example.com/api/v2"
+        metrics: "https://legal-analyzer.example.com/metrics"
+        openapi: "https://legal-analyzer.example.com/openapi.yaml"
+        graphql: "https://legal-analyzer.example.com/graphql"
+      }
+      sla: {
+        availabilityTarget: 0.999
+        downtimeAllowanceMs: 86400000
+        responseTimeTarget: 2000.0
+        throughputTarget: 100.0
+        errorRateTarget: 0.001
+        recoveryTimeObjective: 15
+        recoveryPointObjective: 5
+        supportResponseTime: 4
+        escalationPath: ["legal-ai-support@example.com", "legal-ai-manager@example.com"]
+      }
+      compliance: {
+        certifications: [
+          {
+            framework: GDPR
+            level: "Full Compliance"
+            certificateId: "GDPR-2024-001"
+            issuedDate: "2024-01-15T00:00:00Z"
+            expiryDate: "2025-01-15T00:00:00Z"
+            issuingAuthority: "EU Privacy Authority"
+            status: "valid"
+          }
+        ]
+        overallStatus: ADVANCED
+        frameworks: [
+          {
+            framework: SOC2
+            version: "2017"
+            status: "compliant"
+            lastAssessed: "2024-01-01T00:00:00Z"
+            score: 0.98
+          }
+        ]
+      }
+      security: {
+        encryption: {
+          atRest: {
+            enabled: true
+            algorithm: "AES-256-GCM"
+            keySize: 256
+          }
+          inTransit: {
+            enabled: true
+            algorithm: "TLS"
+            keySize: 2048
+          }
+          keyManagement: {
+            provider: "AWS KMS"
+            keyRotationEnabled: true
+            keyRotationInterval: "90d"
+          }
+        }
+        accessControl: {
+          authentication: {
+            methods: [API_KEY, BEARER_TOKEN]
+          }
+          authorization: {
+            model: "RBAC"
+            roles: ["user", "admin", "analyst"]
+            permissions: ["read", "write", "execute", "admin"]
+          }
+          sessionManagement: {
+            timeout: 3600
+            renewalEnabled: true
+            maxSessions: 5
+          }
+        }
+        networkSecurity: {
+          tlsVersion: "1.3"
+          certificateValidation: true
+          firewallEnabled: true
+          allowedHosts: ["*.example.com", "api.trusted-partner.com"]
+        }
+        securityMonitoring: {
+          loggingEnabled: true
+          auditTrailEnabled: true
+          intrusionDetection: true
+          anomalyDetection: true
+        }
+      }
+    }
+  ) {
+    id
+    name
+    version
+    registeredAt
+    status {
+      health
+      availability
+    }
+  }
+}
+
+# =============================================================================
+# WORKFLOW ORCHESTRATION EXAMPLES
+# =============================================================================
+
+# Create a complex workflow
+mutation CreateDocumentProcessingWorkflow {
+  createWorkflow(
+    input: {
+      name: "Legal Document Processing Pipeline"
+      version: "1.0.0"
+      description: "Multi-stage pipeline for processing legal documents with AI agents"
+      definition: {
+        tasks: [
+          {
+            name: "Document Ingestion"
+            description: "Ingest and validate document format"
+            type: COMPUTATION
+            agentRequirements: {
+              taxonomy: [WORKER]
+              capabilities: ["document-processing", "format-validation"]
+              domains: ["legal"]
+              minPerformance: {
+                maxResponseTime: 5000.0
+                minReliability: 0.95
+              }
+              complianceLevel: GOVERNED
+              availability: AVAILABLE
+            }
+            configuration: {
+              parameters: {
+                supported_formats: ["pdf", "docx", "txt"]
+                max_file_size: "50MB"
+                virus_scan: true
+              }
+              idempotent: true
+              cacheable: false
+              metricsEnabled: true
+            }
+            timeout: 30
+            retryPolicy: {
+              maxAttempts: 3
+              backoffStrategy: "exponential"
+              initialDelay: 1000
+              maxDelay: 10000
+              jitter: true
+            }
+            inputSchema: {
+              type: "object"
+              properties: {
+                document: { type: "string", format: "base64" }
+                filename: { type: "string" }
+                metadata: { type: "object" }
+              }
+              required: ["document", "filename"]
+            }
+            outputSchema: {
+              type: "object"
+              properties: {
+                document_id: { type: "string" }
+                format: { type: "string" }
+                size: { type: "integer" }
+                validated: { type: "boolean" }
+              }
+              required: ["document_id", "format", "validated"]
+            }
+            resources: {
+              cpu: { request: "500m", limit: "1000m" }
+              memory: { request: "1Gi", limit: "2Gi" }
+              priority: NORMAL
+            }
+            budget: {
+              maxTokens: 1000
+              estimatedTokens: 500
+              tokenCost: 0.01
+              maxDuration: 30
+              maxRetries: 3
+              enforcement: BLOCK
+            }
+            complianceLevel: GOVERNED
+            certifications: ["SOC2"]
+          }
+          {
+            name: "Legal Analysis"
+            description: "Analyze document for legal compliance and risks"
+            type: COMPUTATION
+            agentRequirements: {
+              taxonomy: [ANALYST, CRITIC]
+              capabilities: ["legal-analysis", "risk-assessment", "compliance-checking"]
+              domains: ["legal", "compliance"]
+              minPerformance: {
+                maxResponseTime: 10000.0
+                minReliability: 0.99
+                minSuccessRate: 0.98
+              }
+              complianceLevel: ADVANCED
+              certifications: ["SOC2", "GDPR"]
+            }
+            configuration: {
+              parameters: {
+                analysis_depth: "comprehensive"
+                include_recommendations: true
+                risk_threshold: "medium"
+              }
+              parallel: false
+              tracingEnabled: true
+            }
+            timeout: 120
+            retryPolicy: {
+              maxAttempts: 2
+              backoffStrategy: "linear"
+              initialDelay: 2000
+              maxDelay: 10000
+              jitter: false
+            }
+            inputSchema: {
+              type: "object"
+              properties: {
+                document_id: { type: "string" }
+                analysis_type: { type: "string", enum: ["compliance", "risk", "full"] }
+                jurisdiction: { type: "string" }
+              }
+              required: ["document_id"]
+            }
+            outputSchema: {
+              type: "object"
+              properties: {
+                analysis_id: { type: "string" }
+                compliance_score: { type: "number", minimum: 0, maximum: 1 }
+                risk_level: { type: "string", enum: ["low", "medium", "high", "critical"] }
+                recommendations: { type: "array", items: { type: "string" } }
+                issues: { type: "array" }
+              }
+              required: ["analysis_id", "compliance_score", "risk_level"]
+            }
+            resources: {
+              cpu: { request: "1000m", limit: "2000m" }
+              memory: { request: "2Gi", limit: "4Gi" }
+              gpu: { request: "1", limit: "1" }
+              priority: HIGH
+            }
+            budget: {
+              maxTokens: 10000
+              estimatedTokens: 7500
+              tokenCost: 0.50
+              maxDuration: 120
+              enforcement: QUEUE
+            }
+            complianceLevel: ADVANCED
+            certifications: ["SOC2", "GDPR", "HIPAA"]
+          }
+          {
+            name: "Quality Review"
+            description: "Human-in-the-loop quality review of analysis results"
+            type: APPROVAL
+            agentRequirements: {
+              taxonomy: [JUDGE, CRITIC]
+              capabilities: ["quality-review", "human-interaction"]
+              domains: ["legal", "quality-assurance"]
+              complianceLevel: ADVANCED
+            }
+            configuration: {
+              parameters: {
+                require_human_approval: true
+                approval_timeout: 86400
+                escalation_enabled: true
+              }
+              metricsEnabled: true
+            }
+            timeout: 86400
+            inputSchema: {
+              type: "object"
+              properties: {
+                analysis_id: { type: "string" }
+                analysis_results: { type: "object" }
+                reviewer_notes: { type: "string" }
+              }
+              required: ["analysis_id", "analysis_results"]
+            }
+            outputSchema: {
+              type: "object"
+              properties: {
+                review_id: { type: "string" }
+                approved: { type: "boolean" }
+                reviewer: { type: "string" }
+                comments: { type: "string" }
+                timestamp: { type: "string", format: "date-time" }
+              }
+              required: ["review_id", "approved"]
+            }
+            budget: {
+              maxTokens: 500
+              estimatedTokens: 200
+              tokenCost: 0.02
+              maxDuration: 86400
+              enforcement: ALLOW
+            }
+            complianceLevel: ADVANCED
+          }
+          {
+            name: "Report Generation"
+            description: "Generate final compliance and risk report"
+            type: TRANSFORMATION
+            agentRequirements: {
+              taxonomy: [WORKER]
+              capabilities: ["report-generation", "document-formatting"]
+              domains: ["reporting", "legal"]
+              minPerformance: {
+                maxResponseTime: 15000.0
+                minReliability: 0.98
+              }
+            }
+            configuration: {
+              parameters: {
+                output_format: "pdf"
+                include_executive_summary: true
+                branding: true
+              }
+              cacheable: true
+            }
+            timeout: 60
+            inputSchema: {
+              type: "object"
+              properties: {
+                analysis_id: { type: "string" }
+                review_id: { type: "string" }
+                template: { type: "string" }
+              }
+              required: ["analysis_id", "review_id"]
+            }
+            outputSchema: {
+              type: "object"
+              properties: {
+                report_id: { type: "string" }
+                report_url: { type: "string", format: "uri" }
+                format: { type: "string" }
+                size: { type: "integer" }
+              }
+              required: ["report_id", "report_url"]
+            }
+            budget: {
+              maxTokens: 2000
+              estimatedTokens: 1500
+              tokenCost: 0.10
+              maxDuration: 60
+              enforcement: BLOCK
+            }
+            complianceLevel: GOVERNED
+          }
+        ]
+        dependencies: [
+          {
+            from: "ingestion-task-id"
+            to: "analysis-task-id"
+            type: SEQUENTIAL
+            dataMapping: {
+              inputMapping: {
+                document_id: "$.document_id"
+              }
+            }
+            onFailure: FAIL_WORKFLOW
+          }
+          {
+            from: "analysis-task-id"
+            to: "review-task-id"
+            type: SEQUENTIAL
+            condition: {
+              expression: "$.risk_level != 'low'"
+            }
+            dataMapping: {
+              inputMapping: {
+                analysis_id: "$.analysis_id"
+                analysis_results: "$"
+              }
+            }
+            onFailure: ESCALATE
+          }
+          {
+            from: "review-task-id"
+            to: "report-task-id"
+            type: SEQUENTIAL
+            condition: {
+              status: [COMPLETED]
+              output: { approved: true }
+            }
+            dataMapping: {
+              inputMapping: {
+                analysis_id: "$.analysis_id"
+                review_id: "$.review_id"
+              }
+            }
+            onFailure: RETRY_TASK
+          }
+        ]
+        patterns: [PIPELINE, CONDITIONAL]
+        entryPoints: ["ingestion-task-id"]
+        exitPoints: ["report-task-id"]
+        errorHandling: {
+          defaultAction: FAIL_WORKFLOW
+          maxRetries: 2
+          retryBackoff: "exponential"
+          escalation: {
+            enabled: true
+            triggers: [
+              {
+                condition: "task_failure"
+                threshold: 2
+                window: "1h"
+              }
+            ]
+            contacts: ["legal-team@example.com"]
+            channels: ["email", "slack"]
+          }
+          recovery: {
+            autoRecovery: true
+            checkpointingEnabled: true
+            rollbackEnabled: true
+            manualIntervention: false
+          }
+        }
+        schema: {
+          input: {
+            type: "object"
+            properties: {
+              document: { type: "string", format: "base64" }
+              filename: { type: "string" }
+              jurisdiction: { type: "string" }
+              priority: { type: "string", enum: ["low", "medium", "high"] }
+            }
+            required: ["document", "filename"]
+          }
+          output: {
+            type: "object"
+            properties: {
+              report_id: { type: "string" }
+              report_url: { type: "string", format: "uri" }
+              compliance_score: { type: "number" }
+              risk_level: { type: "string" }
+            }
+          }
+        }
+        constraints: {
+          maxDuration: 7200
+          maxTasks: 10
+          maxConcurrency: 3
+          complianceLevel: ADVANCED
+        }
+        tags: ["legal", "compliance", "document-processing"]
+        documentation: "https://docs.example.com/workflows/legal-processing"
+      }
+      configuration: {
+        maxConcurrentTasks: 3
+        globalTimeout: 7200
+        resourceQuota: {
+          cpu: "4000m"
+          memory: "8Gi"
+          maxPods: 5
+        }
+        scheduling: {
+          strategy: "balanced"
+          priorityClass: "high-priority"
+        }
+        errorHandling: {
+          defaultAction: FAIL_WORKFLOW
+          maxRetries: 2
+          retryBackoff: "exponential"
+        }
+        monitoring: {
+          metricsEnabled: true
+          metricsInterval: 30
+          loggingLevel: "INFO"
+          tracingEnabled: true
+          tracingSampleRate: 1.0
+          healthChecks: [
+            {
+              name: "workflow-health"
+              type: "http"
+              endpoint: "http://workflow-service/health"
+              interval: 30
+              timeout: 5
+              failureThreshold: 3
+            }
+          ]
+        }
+        notifications: {
+          channels: [
+            {
+              id: "legal-team-email"
+              type: "email"
+              configuration: {
+                recipients: ["legal-team@example.com"]
+              }
+              enabled: true
+            }
+            {
+              id: "legal-team-slack"
+              type: "slack"
+              configuration: {
+                channel: "#legal-ai"
+                webhook_url: "https://hooks.slack.com/..."
+              }
+              enabled: true
+            }
+          ]
+          events: [
+            {
+              event: "workflow_started"
+              channels: ["legal-team-slack"]
+              template: "workflow_started"
+            }
+            {
+              event: "workflow_failed"
+              channels: ["legal-team-email", "legal-team-slack"]
+              template: "workflow_failed"
+            }
+            {
+              event: "human_approval_required"
+              channels: ["legal-team-email"]
+              template: "approval_required"
+            }
+          ]
+        }
+        features: {
+          parallelExecution: true
+          checkpointing: true
+          rollback: true
+          caching: true
+          conditionalExecution: true
+          humanInTheLoop: true
+          webhooks: true
+          eventDriven: true
+        }
+      }
+      budget: {
+        totalBudget: 100.00
+        currency: "USD"
+        maxTokens: 50000
+        tokenCost: 2.50
+        maxDuration: 7200
+        enforcement: QUEUE
+      }
+      compliance: {
+        level: ADVANCED
+        frameworks: [
+          {
+            framework: GDPR
+            status: "compliant"
+            controls: ["data-protection", "consent-management", "data-retention"]
+            evidence: ["privacy-impact-assessment.pdf", "gdpr-compliance-audit.pdf"]
+          }
+          {
+            framework: SOC2
+            status: "compliant"
+            controls: ["access-control", "system-monitoring", "data-integrity"]
+            evidence: ["soc2-report-2024.pdf"]
+          }
+        ]
+        dataClassification: CONFIDENTIAL
+        dataRetention: {
+          retentionPeriod: "7y"
+          archivalPolicy: "cold-storage"
+          deletionPolicy: "secure-deletion"
+          legalHolds: []
+        }
+        dataPrivacy: {
+          piiHandling: "strict"
+          encryptionRequired: true
+          accessLogging: true
+          dataMinimization: true
+        }
+        auditTrail: true
+        approvals: [
+          {
+            required: true
+            approvers: ["legal-manager@example.com"]
+            timeout: 3600
+          }
+        ]
+        encryption: true
+        accessControl: true
+        networkSecurity: true
+      }
+      governance: {
+        approvals: [
+          {
+            name: "Legal Manager Approval"
+            required: true
+            approvers: ["legal-manager@example.com", "compliance-officer@example.com"]
+            criteria: {
+              minApprovers: 1
+              unanimousRequired: false
+              conditions: ["budget_under_limit", "compliance_verified"]
+            }
+            timeout: 86400
+          }
+        ]
+        riskLevel: "medium"
+        riskFactors: ["data-privacy", "regulatory-compliance", "business-impact"]
+        mitigations: [
+          "Multi-stage approval process",
+          "Comprehensive audit logging",
+          "Data encryption at rest and in transit",
+          "Regular compliance assessments"
+        ]
+        changeControl: {
+          versionControl: true
+          approvalRequired: true
+          testingRequired: true
+          rollbackEnabled: true
+        }
+        monitoring: {
+          continuousMonitoring: true
+          alerts: [
+            {
+              type: "compliance_violation"
+              condition: "compliance_score < 0.9"
+              severity: CRITICAL
+              recipients: ["compliance-officer@example.com"]
+            }
+            {
+              type: "budget_exceeded"
+              condition: "budget_usage > 0.9"
+              severity: WARNING
+              recipients: ["legal-manager@example.com"]
+            }
+          ]
+          reporting: {
+            frequency: WEEKLY
+            recipients: ["legal-team@example.com", "compliance-officer@example.com"]
+            templates: ["workflow-performance", "compliance-summary"]
+          }
+        }
+      }
+    }
+  ) {
+    id
+    name
+    version
+    status
+    createdAt
+    definition {
+      tasks {
+        name
+        type
+        complianceLevel
+      }
+      dependencies {
+        from
+        to
+        type
+      }
+    }
+    budget {
+      totalBudget
+      maxTokens
+      enforcement
+    }
+    compliance {
+      level
+      frameworks {
+        framework
+        status
+      }
+    }
+  }
+}
+
+# Execute a workflow
+mutation ExecuteWorkflow {
+  executeWorkflow(
+    input: {
+      workflowId: "550e8400-e29b-41d4-a716-446655440000"
+      trigger: {
+        type: "api"
+        source: "legal-portal"
+        triggeredBy: "john.doe@example.com"
+        triggerData: {
+          request_id: "req-12345"
+          priority: "high"
+          client: "Acme Corp"
+        }
+      }
+      input: {
+        document: "JVBERi0xLjQKJdPr6eEKMSAwIG9iago8PAovVHlwZSAvQ2F0YWxvZwov..."
+        filename: "merger-agreement.pdf"
+        jurisdiction: "US-CA"
+        priority: "high"
+        metadata: {
+          client: "Acme Corp"
+          matter: "Corporate Merger"
+          attorney: "jane.smith@example.com"
+          confidentiality: "attorney-client-privilege"
+        }
+      }
+      context: {
+        environment: "production"
+        namespace: "legal-workflows"
+        user: "john.doe@example.com"
+        tenantId: "tenant-legal-001"
+        traceId: "trace-12345"
+        correlationId: "corr-67890"
+        configuration: {
+          priority: "high"
+          deadline: "2024-12-31T23:59:59Z"
+        }
+      }
+      overrides: {
+        timeout: 10800
+        priority: HIGH
+        budget: {
+          totalBudget: 150.00
+          maxTokens: 75000
+        }
+        notifications: {
+          channels: [
+            {
+              id: "urgent-email"
+              type: "email"
+              configuration: {
+                recipients: ["john.doe@example.com", "legal-manager@example.com"]
+              }
+              enabled: true
+            }
+          ]
+          events: [
+            {
+              event: "workflow_completed"
+              channels: ["urgent-email"]
+              template: "urgent_completion"
+            }
+          ]
+        }
+      }
+    }
+  ) {
+    id
+    workflowId
+    status
+    startedAt
+    input
+    context {
+      environment
+      user
+      traceId
+      correlationId
+    }
+    progress {
+      totalTasks
+      completedTasks
+      progressPercentage
+      estimatedCompletion
+    }
+  }
+}
+
+# Query workflow execution status
+query WorkflowExecutionStatus($executionId: UUID!) {
+  workflowExecution(id: $executionId) {
+    id
+    workflowId
+    status
+    trigger {
+      type
+      source
+      triggeredBy
+    }
+    input
+    output
+    context {
+      environment
+      user
+      traceId
+    }
+    performance {
+      totalDuration
+      tasksPerSecond
+      parallelismUtilization
+      successRate
+      slaCompliance
+      slaViolations {
+        metric
+        threshold
+        actualValue
+        timestamp
+      }
+    }
+    resourceUsage {
+      cpu {
+        requested
+        used
+        peak
+        average
+        unit
+      }
+      memory {
+        requested
+        used
+        peak
+        average
+        unit
+      }
+      cost
+    }
+    costs {
+      totalTokensUsed
+      tokenCosts
+      computeCosts
+      totalCost
+      budgetUsed
+      overBudget
+    }
+    taskExecutions {
+      id
+      taskId
+      assignedAgent
+      status
+      attempts
+      input
+      output
+      error {
+        code
+        message
+        category
+        severity
+        retryable
+      }
+      performance {
+        responseTime
+        queueTime
+        executionTime
+      }
+      resourceUsage {
+        cpu {
+          used
+          peak
+          unit
+        }
+        memory {
+          used
+          peak
+          unit
+        }
+        cost
+      }
+      startedAt
+      completedAt
+      duration
+    }
+    auditTrail {
+      id
+      type
+      timestamp
+      source
+      message
+      data
+    }
+    startedAt
+    completedAt
+    duration
+  }
+}
+
+# =============================================================================
+# TELEMETRY AND MONITORING EXAMPLES
+# =============================================================================
+
+# Query agent performance metrics
+query AgentPerformanceMetrics($agentId: UUID!, $timeRange: TimeRangeInput!) {
+  agentMetrics(
+    agentId: $agentId
+    timeRange: $timeRange
+    metrics: [
+      "response_time",
+      "throughput",
+      "error_rate",
+      "cpu_utilization",
+      "memory_utilization",
+      "token_usage"
+    ]
+  ) {
+    metric
+    labels
+    dataPoints {
+      timestamp
+      value
+    }
+    unit
+    aggregationType
+    resolution
+    dataQuality
+  }
+}
+
+# Query system-wide metrics with aggregation
+query SystemMetrics {
+  systemMetrics(
+    timeRange: {
+      start: "2024-12-01T00:00:00Z"
+      end: "2024-12-31T23:59:59Z"
+    }
+    aggregation: {
+      type: AVG
+      window: "1h"
+      groupBy: ["agent_type", "environment"]
+    }
+  ) {
+    performance {
+      avgResponseTime
+      maxResponseTime
+      p95ResponseTime
+      totalRequests
+      avgThroughput
+      totalErrors
+      avgErrorRate
+    }
+    resources {
+      avgCpuUtilization
+      maxCpuUtilization
+      avgMemoryUtilization
+      totalNetworkBytes
+    }
+    business {
+      totalCost
+      avgCostPerRequest
+      totalUsers
+      totalRevenue
+      totalSavings
+    }
+    quality {
+      avgAccuracy
+      avgPrecision
+      avgRecall
+      validationSuccessRate
+      avgRating
+    }
+  }
+}
+
+# Create performance alert
+mutation CreatePerformanceAlert {
+  createAlert(
+    input: {
+      name: "High Response Time Alert"
+      description: "Alert when agent response time exceeds 5 seconds"
+      agentId: "550e8400-e29b-41d4-a716-446655440000"
+      metric: "response_time_p95"
+      condition: {
+        operator: "gt"
+        value: 5000.0
+        window: "5m"
+        consecutiveViolations: 2
+      }
+      notifications: [
+        {
+          id: "ops-team-email"
+          type: "email"
+          configuration: {
+            recipients: ["ops-team@example.com"]
+          }
+          enabled: true
+        }
+        {
+          id: "ops-team-slack"
+          type: "slack"
+          configuration: {
+            channel: "#alerts"
+            webhook_url: "https://hooks.slack.com/services/..."
+          }
+          enabled: true
+        }
+      ]
+      escalation: {
+        enabled: true
+        triggers: [
+          {
+            condition: "consecutive_failures >= 5"
+            threshold: 5
+            window: "15m"
+          }
+        ]
+        contacts: ["ops-manager@example.com"]
+        channels: ["email", "pagerduty"]
+      }
+      tags: ["performance", "response-time", "critical"]
+      severity: CRITICAL
+    }
+  ) {
+    id
+    name
+    status
+    metric
+    condition {
+      operator
+      value
+      window
+    }
+    notifications {
+      type
+      enabled
+    }
+    createdAt
+  }
+}
+
+# =============================================================================
+# SUBSCRIPTION EXAMPLES
+# =============================================================================
+
+# Subscribe to real-time agent events
+subscription AgentEventStream {
+  agentEvents(
+    agentIds: ["550e8400-e29b-41d4-a716-446655440000"]
+    eventTypes: [AGENT_HEALTH_CHANGED, PERFORMANCE_DEGRADED, COMPLIANCE_VIOLATION]
+  ) {
+    id
+    agentId
+    type
+    timestamp
+    payload
+    metadata {
+      source
+      severity
+      priority
+    }
+    context {
+      environment
+      region
+      traceId
+    }
+    correlationId
+  }
+}
+
+# Subscribe to workflow execution updates
+subscription WorkflowExecutionUpdates($executionId: UUID!) {
+  workflowExecutionUpdated(executionId: $executionId) {
+    id
+    status
+    progress {
+      totalTasks
+      completedTasks
+      failedTasks
+      progressPercentage
+      estimatedCompletion
+    }
+    performance {
+      totalDuration
+      successRate
+    }
+    costs {
+      totalTokensUsed
+      totalCost
+      budgetUsed
+    }
+  }
+}
+
+# Subscribe to performance alerts
+subscription PerformanceAlerts {
+  performanceAlert(severity: CRITICAL) {
+    id
+    name
+    metric
+    condition {
+      operator
+      value
+    }
+    status
+    triggered
+    lastTriggered
+    agentId
+  }
+}
+
+# Subscribe to security events
+subscription SecurityEventStream {
+  securityEvents(
+    eventTypes: [
+      ACCESS_VIOLATION,
+      SUSPICIOUS_ACTIVITY,
+      MALICIOUS_REQUEST,
+      INTRUSION_DETECTED
+    ]
+    severities: [HIGH, CRITICAL]
+  ) {
+    id
+    agentId
+    type
+    timestamp
+    securityContext {
+      userId
+      sourceIP
+      userAgent
+      resourceType
+      action
+    }
+    threatInfo {
+      category
+      severity
+      confidence
+      indicators {
+        type
+        value
+        confidence
+      }
+    }
+    riskAssessment {
+      riskLevel
+      riskScore
+      impact
+      likelihood
+    }
+    actionTaken {
+      action
+      reason
+      automatic
+      effectiveness
+    }
+  }
+}
+
+# =============================================================================
+# COMPLIANCE AND GOVERNANCE EXAMPLES
+# =============================================================================
+
+# Query compliance status
+query ComplianceStatus($entityType: String, $entityId: UUID) {
+  complianceStatus(
+    entityType: $entityType
+    entityId: $entityId
+    framework: GDPR
+  ) {
+    frameworks {
+      framework
+      status
+      lastChecked
+      score
+      certificateId
+    }
+    overallStatus
+    violations {
+      framework
+      violation
+      severity
+      remediationSteps
+    }
+  }
+}
+
+# Generate compliance report
+query ComplianceReport {
+  complianceReports(
+    timeRange: {
+      start: "2024-01-01T00:00:00Z"
+      end: "2024-12-31T23:59:59Z"
+    }
+    frameworks: [GDPR, SOC2, HIPAA]
+  ) {
+    framework
+    timeRange {
+      start
+      end
+    }
+    overallScore
+    status
+    assessments {
+      assessor
+      score
+      findings {
+        severity
+        description
+        control
+        evidence
+        remediation
+      }
+      nextAssessment
+    }
+    violations {
+      id
+      controlId
+      severity
+      description
+      status
+      assignee
+      dueDate
+    }
+    remediations {
+      id
+      action
+      assignee
+      dueDate
+      status
+      priority
+    }
+    generatedAt
+  }
+}
+
+# =============================================================================
+# USER MANAGEMENT EXAMPLES
+# =============================================================================
+
+# Create user with roles and permissions
+mutation CreateUser {
+  createUser(
+    input: {
+      username: "jane.doe"
+      email: "jane.doe@example.com"
+      password: "SecurePassword123!"
+      profile: {
+        displayName: "Jane Doe"
+        firstName: "Jane"
+        lastName: "Doe"
+        title: "Senior Legal Analyst"
+        department: "Legal"
+        organization: "Example Corp"
+        timezone: "America/New_York"
+        locale: "en-US"
+      }
+      roles: ["550e8400-e29b-41d4-a716-446655440001"] # legal-analyst role ID
+      groups: ["550e8400-e29b-41d4-a716-446655440002"] # legal-team group ID
+      preferences: {
+        notifications: {
+          email: true
+          slack: true
+          security: true
+          compliance: true
+          frequency: "immediate"
+          severityThreshold: WARNING
+        }
+        theme: "light"
+        language: "en"
+        timezone: "America/New_York"
+      }
+      active: true
+      verified: false
+    }
+  ) {
+    id
+    username
+    email
+    profile {
+      displayName
+      title
+      department
+    }
+    roles {
+      id
+      name
+      permissions {
+        name
+        resource
+        action
+      }
+    }
+    groups {
+      id
+      name
+      type
+    }
+    active
+    verified
+    createdAt
+  }
+}
+
+# Query current user with all details
+query CurrentUser {
+  currentUser {
+    id
+    username
+    email
+    profile {
+      displayName
+      firstName
+      lastName
+      avatar
+      title
+      department
+      organization
+      timezone
+      locale
+    }
+    roles {
+      id
+      name
+      description
+      permissions {
+        id
+        name
+        description
+        resource
+        action
+        conditions
+      }
+    }
+    groups {
+      id
+      name
+      description
+      type
+      roles {
+        name
+        permissions {
+          name
+          resource
+        }
+      }
+    }
+    preferences {
+      notifications {
+        email
+        slack
+        security
+        compliance
+        frequency
+        severityThreshold
+        quietHours {
+          enabled
+          startTime
+          endTime
+          timezone
+        }
+      }
+      theme
+      language
+      timezone
+      defaultDashboard
+    }
+    lastLogin
+    loginCount
+    active
+    verified
+    createdAt
+    updatedAt
+  }
+}

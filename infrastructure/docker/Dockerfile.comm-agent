@@ -1,0 +1,181 @@
+FROM node:20-alpine
+
+# Install system dependencies
+RUN apk add --no-cache \
+    wget \
+    curl \
+    bash \
+    git
+
+WORKDIR /app
+
+# Copy package files
+COPY package*.json ./
+
+# Install root dependencies
+RUN npm install || true
+
+# Copy source code
+COPY . .
+
+# Install and build the CLI package
+WORKDIR /app/src/cli
+RUN npm install && npm run build
+
+# Return to app root
+WORKDIR /app
+
+# Create communication agent startup script
+RUN cat > /app/start-comm-agent.sh << 'EOF'
+#!/bin/bash
+echo "💬 Starting OSSA Communication Agent v0.1.8..."
+
+# Start the communication agent service
+node -e "
+const express = require('express');
+const WebSocket = require('ws');
+
+const app = express();
+app.use(express.json());
+
+// WebSocket server for real-time communication
+const wss = new WebSocket.Server({ port: 3102 });
+
+// Store active connections
+const connections = new Map();
+
+wss.on('connection', (ws) => {
+  const connectionId = 'conn-' + Date.now();
+  connections.set(connectionId, ws);
+  
+  ws.on('message', (message) => {
+    try {
+      const data = JSON.parse(message);
+      // Broadcast to other agents
+      connections.forEach((conn, id) => {
+        if (id !== connectionId && conn.readyState === WebSocket.OPEN) {
+          conn.send(JSON.stringify({
+            from: connectionId,
+            ...data,
+            timestamp: new Date().toISOString()
+          }));
+        }
+      });
+    } catch (error) {
+      console.error('WebSocket message error:', error);
+    }
+  });
+  
+  ws.on('close', () => {
+    connections.delete(connectionId);
+  });
+});
+
+// Health endpoint
+app.get('/health', (req, res) => {
+  res.json({
+    service: 'communication-agent',
+    status: 'healthy',
+    version: '0.1.8',
+    agent_type: 'communication',
+    active_connections: connections.size,
+    timestamp: new Date().toISOString()
+  });
+});
+
+// Agent capabilities endpoint
+app.get('/capabilities', (req, res) => {
+  res.json({
+    agent_type: 'communication',
+    capabilities: [
+      'inter_agent_messaging',
+      'protocol_translation',
+      'message_routing',
+      'real_time_communication'
+    ],
+    endpoints: {
+      send: '/send',
+      broadcast: '/broadcast',
+      connections: '/connections'
+    },
+    websocket_port: 3102
+  });
+});
+
+// Send message endpoint
+app.post('/send', async (req, res) => {
+  try {
+    const { target, message, type } = req.body;
+    
+    // Mock message sending
+    const messageId = 'msg-' + Date.now();
+    
+    res.json({
+      status: 'sent',
+      message_id: messageId,
+      target,
+      type: type || 'direct',
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    res.status(500).json({
+      status: 'error',
+      error: error.message,
+      timestamp: new Date().toISOString()
+    });
+  }
+});
+
+// Broadcast message endpoint
+app.post('/broadcast', async (req, res) => {
+  try {
+    const { message, filter } = req.body;
+    
+    const broadcastData = {
+      type: 'broadcast',
+      message,
+      filter,
+      timestamp: new Date().toISOString()
+    };
+    
+    connections.forEach((conn) => {
+      if (conn.readyState === WebSocket.OPEN) {
+        conn.send(JSON.stringify(broadcastData));
+      }
+    });
+    
+    res.json({
+      status: 'broadcast',
+      recipients: connections.size,
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    res.status(500).json({
+      status: 'error',
+      error: error.message,
+      timestamp: new Date().toISOString()
+    });
+  }
+});
+
+const port = process.env.SERVICE_PORT || 3002;
+app.listen(port, '0.0.0.0', () => {
+  console.log('✅ Communication Agent running on port ' + port);
+  console.log('✅ WebSocket server running on port 3102');
+});
+"
+
+EOF
+
+# Make startup script executable
+RUN chmod +x /app/start-comm-agent.sh
+
+# Expose ports
+EXPOSE 3002 3102
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+  CMD curl -f http://localhost:3002/health || exit 1
+
+# Start communication agent service
+CMD ["/app/start-comm-agent.sh"]

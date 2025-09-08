@@ -1,0 +1,320 @@
+ossa: "0.1.8"
+metadata:
+  name: feedback-critic
+  version: "1.0.0"
+  description: "360° Feedback Loop review agent - provides multi-dimensional reviews and feedback"
+  author: "OSSA Framework"
+  tags: ["evaluation", "critic", "review", "quality-assessment"]
+  category: evaluation
+  subtype: critic
+
+spec:
+  conformance_tier: gold
+  class: evaluation
+  
+  # Core capabilities for critical review
+  capabilities:
+    primary:
+      - quality_assessment: "Evaluate output quality across multiple dimensions"
+      - risk_analysis: "Identify potential risks and vulnerabilities"
+      - improvement_suggestions: "Provide actionable recommendations for enhancement"
+      - comparative_analysis: "Compare against standards and best practices"
+      - bias_detection: "Identify potential biases and fairness issues"
+    
+    secondary:
+      - performance_evaluation: "Assess execution efficiency and effectiveness"
+      - compliance_checking: "Verify adherence to policies and standards"
+      - stakeholder_impact: "Analyze impact on different stakeholder groups"
+      - trend_analysis: "Identify patterns and trends in performance"
+
+  # Budget constraints for review phase
+  budget:
+    default_limit: 3000  # tokens per review session
+    max_review_depth: 4  # maximum levels of analysis
+    max_review_time: 600  # 10 minutes maximum review time
+    multi_perspective_limit: 5  # maximum different review perspectives
+
+  # Communication protocols
+  protocols:
+    - name: rest_api
+      version: "1.0"
+      endpoint: "/api/v1/review"
+      required: true
+    - name: grpc
+      version: "1.0"
+      service: "CriticService"
+      required: false
+    - name: websocket
+      version: "1.0"
+      channel: "/stream/feedback"
+      required: false
+
+  # Integration with other feedback loop agents
+  integrations:
+    worker_agents:
+      - type: execution
+        communication: async
+        receives: "execution_reports"
+    
+    judge_agents:
+      - type: evaluation
+        communication: async
+        provides: "review_analysis"
+    
+    trainer_agents:
+      - type: learning
+        communication: async
+        provides: "improvement_signals"
+
+  # Performance metrics
+  metrics:
+    success_criteria:
+      - review_completeness: ">= 90%"
+      - feedback_actionability: ">= 85%"
+      - analysis_depth: ">= 80%"
+    
+    performance_targets:
+      - review_accuracy: "> 90%"
+      - suggestion_adoption_rate: "> 70%"
+      - bias_detection_rate: "> 85%"
+
+  # Review dimensions and criteria
+  review_dimensions:
+    quality:
+      - correctness: "Accuracy and factual correctness of outputs"
+      - completeness: "Coverage of all required aspects"
+      - clarity: "Clarity and understandability of outputs"
+      - consistency: "Internal consistency and coherence"
+    
+    performance:
+      - efficiency: "Resource utilization and optimization"
+      - effectiveness: "Achievement of intended outcomes"
+      - timeliness: "Adherence to deadlines and schedules"
+      - scalability: "Ability to handle increased load"
+    
+    compliance:
+      - policy_adherence: "Compliance with organizational policies"
+      - standard_conformance: "Adherence to industry standards"
+      - regulatory_compliance: "Meeting regulatory requirements"
+      - ethical_considerations: "Ethical implications and considerations"
+    
+    risk:
+      - security_risks: "Potential security vulnerabilities"
+      - operational_risks: "Risks to ongoing operations"
+      - reputational_risks: "Potential impact on reputation"
+      - financial_risks: "Financial implications and costs"
+
+  # Input/Output specifications
+  interfaces:
+    input:
+      review_request:
+        type: object
+        required: true
+        properties:
+          item_id: "Identifier of item to review"
+          item_type: "Type of item (plan, execution, output)"
+          content: "Content to be reviewed"
+          context: "Relevant context and background"
+          review_criteria: "Specific criteria to focus on"
+          urgency: "Review urgency level"
+    
+    output:
+      review_report:
+        type: object
+        properties:
+          review_id: "Unique review identifier"
+          item_id: "Reviewed item identifier"
+          overall_score: "Overall quality score (0-100)"
+          dimension_scores: "Scores for each review dimension"
+          strengths: "Identified strengths and positive aspects"
+          weaknesses: "Identified weaknesses and issues"
+          risks: "Potential risks and concerns"
+          recommendations: "Specific improvement suggestions"
+          compliance_status: "Compliance check results"
+          confidence_level: "Confidence in the review assessment"
+
+  # Framework integrations
+  frameworks:
+    langchain:
+      enabled: true
+      integration: native
+      tools: ["quality_evaluator", "risk_analyzer", "bias_detector"]
+    
+    crewai:
+      enabled: true
+      role: "Quality Assurance Specialist"
+      goal: "Provide comprehensive and constructive feedback on work outputs"
+      backstory: "Expert reviewer with deep knowledge of quality standards and best practices"
+    
+    autogen:
+      enabled: true
+      agent_type: "AssistantAgent"
+      system_message: "You are a thorough and fair critic who provides constructive feedback focused on improvement and quality enhancement."
+
+# OpenAPI specification for REST endpoints
+openapi: "3.1.0"
+info:
+  title: "Feedback Loop Critic API"
+  version: "1.0.0"
+  description: "API for multi-dimensional review and quality assessment"
+
+paths:
+  /review:
+    post:
+      summary: "Submit item for review"
+      operationId: submitForReview
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [item_id, item_type, content]
+              properties:
+                item_id:
+                  type: string
+                  description: "Unique identifier for the item being reviewed"
+                item_type:
+                  type: string
+                  enum: ["execution_plan", "task_output", "agent_response", "system_design"]
+                content:
+                  type: object
+                  description: "The content to be reviewed"
+                context:
+                  type: object
+                  properties:
+                    background: { type: string }
+                    requirements: { type: array, items: { type: string } }
+                    constraints: { type: array, items: { type: string } }
+                    stakeholders: { type: array, items: { type: string } }
+                review_criteria:
+                  type: array
+                  items:
+                    type: string
+                    enum: ["quality", "performance", "compliance", "risk", "all"]
+                urgency:
+                  type: string
+                  enum: ["low", "medium", "high", "critical"]
+                  default: "medium"
+      responses:
+        "200":
+          description: "Review submitted successfully"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  review_id: { type: string }
+                  status: { type: string, enum: ["queued", "in_progress"] }
+                  estimated_completion: { type: string, format: date-time }
+        "400":
+          description: "Invalid review request"
+        "429":
+          description: "Review queue full or budget exceeded"
+
+  /reviews/{reviewId}:
+    get:
+      summary: "Get review report"
+      parameters:
+        - name: reviewId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: "Review report retrieved"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  review_id: { type: string }
+                  item_id: { type: string }
+                  status: { type: string, enum: ["completed", "in_progress", "failed"] }
+                  overall_score: { type: number, minimum: 0, maximum: 100 }
+                  dimension_scores:
+                    type: object
+                    properties:
+                      quality: { type: number, minimum: 0, maximum: 100 }
+                      performance: { type: number, minimum: 0, maximum: 100 }
+                      compliance: { type: number, minimum: 0, maximum: 100 }
+                      risk: { type: number, minimum: 0, maximum: 100 }
+                  detailed_analysis:
+                    type: object
+                    properties:
+                      strengths:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            category: { type: string }
+                            description: { type: string }
+                            impact: { type: string, enum: ["low", "medium", "high"] }
+                      weaknesses:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            category: { type: string }
+                            description: { type: string }
+                            severity: { type: string, enum: ["low", "medium", "high", "critical"] }
+                            suggested_fix: { type: string }
+                      risks:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            risk_type: { type: string }
+                            description: { type: string }
+                            probability: { type: string, enum: ["low", "medium", "high"] }
+                            impact: { type: string, enum: ["low", "medium", "high", "critical"] }
+                            mitigation: { type: string }
+                  recommendations:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        priority: { type: string, enum: ["low", "medium", "high", "critical"] }
+                        category: { type: string }
+                        recommendation: { type: string }
+                        effort_estimate: { type: string }
+                        expected_impact: { type: string }
+                  compliance_status:
+                    type: object
+                    properties:
+                      overall_status: { type: string, enum: ["compliant", "partial", "non_compliant"] }
+                      violations: { type: array, items: { type: string } }
+                      recommendations: { type: array, items: { type: string } }
+                  confidence_level: { type: number, minimum: 0, maximum: 100 }
+                  review_timestamp: { type: string, format: date-time }
+                  reviewer_metadata:
+                    type: object
+                    properties:
+                      agent_version: { type: string }
+                      review_methodology: { type: string }
+                      data_sources: { type: array, items: { type: string } }
+
+# Agent behavior configuration
+behavior:
+  review_approach: "comprehensive_multi_dimensional"
+  criticism_style: "constructive_balanced"
+  bias_awareness: "high"
+  stakeholder_consideration: "inclusive"
+  
+  analysis_depth:
+    surface_level: false
+    detailed_analysis: true
+    root_cause_analysis: true
+    systemic_impact_assessment: true
+  
+  feedback_principles:
+    actionable_recommendations: true
+    specific_examples: true
+    balanced_perspective: true
+    improvement_focused: true
+    evidence_based: true
+  
+  learning:
+    pattern_recognition: true
+    quality_standard_evolution: true
+    review_methodology_improvement: true

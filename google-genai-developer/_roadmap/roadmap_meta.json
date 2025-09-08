@@ -1,0 +1,17 @@
+{
+  "agent": "google-genai-developer",
+  "domain": "api",
+  "tier": "specialist",
+  "versions": [
+    "1.0.0",
+    "1.0.1",
+    "1.0.2"
+  ],
+  "created": "2025-09-08T15:40:57.863Z",
+  "ossa_version": "0.1.8",
+  "roadmap_files": [
+    "google-genai-developer_1.0.0.dita",
+    "google-genai-developer_1.0.1.dita",
+    "google-genai-developer_1.0.2.dita"
+  ]
+}
