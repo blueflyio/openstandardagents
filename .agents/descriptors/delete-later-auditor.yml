@@ -1,0 +1,128 @@
+ossa: "0.1.8"
+kind: Agent
+metadata:
+  name: delete-later-auditor
+  version: "1.0.0"
+  description: |
+    Comprehensive auditing agent for __DELETE_LATER directories that analyzes
+    files for security risks, credential exposure, duplicates, and provides
+    safe cleanup recommendations without deleting anything by default.
+  created: '2025-09-08T16:35:00.000Z'
+  labels:
+    tier: security
+    domain: auditing
+    category: file-management
+  annotations:
+    ossa.io/conformance-level: "enterprise"
+    ossa.io/security-clearance: "confidential"
+    ossa.io/audit-enabled: "true"
+spec:
+  agent:
+    name: delete-later-auditor
+    expertise: Security-focused file auditing with credential scanning and deduplication
+  capabilities:
+    - name: scan_credentials
+      description: Scans files for exposed API keys, tokens, and secrets
+    - name: detect_duplicates
+      description: Identifies duplicate files across __DELETE_LATER directories
+    - name: analyze_content
+      description: Categorizes files by type and potential risk level
+    - name: generate_reports
+      description: Creates comprehensive audit reports with recommendations
+    - name: dry_run_cleanup
+      description: Simulates cleanup operations without deleting files
+    - name: security_classification
+      description: Classifies files by security risk level
+  frameworks:
+    mcp:
+      enabled: true
+    ossa:
+      enabled: true
+  security:
+    authentication: api_key
+    authorization: rbac
+    audit_logging: true
+    data_classification: confidential
+    credential_scanning: true
+    quarantine_support: true
+  discovery:
+    uadp:
+      enabled: true
+      tags: ["security", "auditing", "credentials", "cleanup", "deduplication"]
+      priority: 95
+  protocols:
+    - openapi
+    - mcp
+  api:
+    specification: ./delete-later-auditor-openapi.yaml
+    base_url: http://localhost:8080/api/v1/auditor
+    endpoints:
+      audit:
+        path: /audit
+        method: POST
+        description: Perform comprehensive audit of __DELETE_LATER directories
+      scan-credentials:
+        path: /scan/credentials
+        method: POST
+        description: Scan for exposed credentials and secrets
+      detect-duplicates:
+        path: /scan/duplicates
+        method: POST
+        description: Identify duplicate files
+      generate-report:
+        path: /report
+        method: POST
+        description: Generate audit report
+      dry-run:
+        path: /cleanup/dry-run
+        method: POST
+        description: Simulate cleanup without deleting files
+  configuration:
+    environment:
+      AUDIT_LOG_LEVEL: info
+      CREDENTIAL_PATTERNS_FILE: /etc/ossa/credential-patterns.yaml
+      QUARANTINE_DIR: __QUARANTINE
+      DRY_RUN_DEFAULT: true
+    policies:
+      - name: never_delete_by_default
+        description: All operations are dry-run by default
+        enforced: true
+      - name: quarantine_credentials
+        description: Move files with exposed credentials to quarantine
+        enforced: true
+      - name: audit_trail_required
+        description: All operations must be logged
+        enforced: true
+  inputs:
+    - name: target_directories
+      type: array
+      required: true
+      description: List of __DELETE_LATER directories to audit
+    - name: scan_depth
+      type: integer
+      default: 10
+      description: Maximum directory depth to scan
+    - name: file_size_limit
+      type: integer
+      default: 104857600  # 100MB
+      description: Maximum file size to analyze in bytes
+    - name: credential_patterns
+      type: array
+      description: Custom patterns to scan for credentials
+    - name: exclude_patterns
+      type: array
+      default: ["*.log", "*.tmp", "node_modules/**"]
+      description: File patterns to exclude from scanning
+  outputs:
+    - name: audit_report
+      type: object
+      description: Comprehensive audit report with findings and recommendations
+    - name: credential_findings
+      type: array
+      description: List of files containing potential credentials
+    - name: duplicate_files
+      type: array
+      description: Groups of duplicate files with metadata
+    - name: cleanup_plan
+      type: object
+      description: Recommended cleanup actions with safety checks

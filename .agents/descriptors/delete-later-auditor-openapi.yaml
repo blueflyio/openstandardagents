@@ -1,0 +1,449 @@
+openapi: 3.1.0
+info:
+  title: Delete Later Auditor Agent API
+  version: 1.0.0
+  description: |
+    Comprehensive auditing API for __DELETE_LATER directories that scans for
+    security risks, exposed credentials, duplicate files, and provides safe
+    cleanup recommendations.
+  contact:
+    name: OSSA Security Team
+    url: https://ossa.ai
+servers:
+  - url: http://localhost:8080/api/v1/auditor
+    description: Local development server
+  - url: https://api.ossa.ai/v1/auditor
+    description: Production OSSA API server
+
+components:
+  schemas:
+    AuditRequest:
+      type: object
+      required:
+        - target_directories
+      properties:
+        target_directories:
+          type: array
+          items:
+            type: string
+          description: List of __DELETE_LATER directories to audit
+          example: ["/path/to/__DELETE_LATER", "/path/to/__DELETE_LATER_LATER"]
+        scan_depth:
+          type: integer
+          minimum: 1
+          maximum: 20
+          default: 10
+          description: Maximum directory depth to scan
+        file_size_limit:
+          type: integer
+          minimum: 1024
+          maximum: 1073741824  # 1GB
+          default: 104857600   # 100MB
+          description: Maximum file size to analyze in bytes
+        credential_patterns:
+          type: array
+          items:
+            type: string
+          description: Custom regex patterns to scan for credentials
+          example: ["sk-[a-zA-Z0-9]{48}", "ghp_[a-zA-Z0-9]{36}"]
+        exclude_patterns:
+          type: array
+          items:
+            type: string
+          default: ["*.log", "*.tmp", "node_modules/**"]
+          description: File patterns to exclude from scanning
+        dry_run:
+          type: boolean
+          default: true
+          description: Whether to perform actual operations or just simulate
+
+    CredentialFinding:
+      type: object
+      properties:
+        file_path:
+          type: string
+          description: Absolute path to the file containing credentials
+        line_number:
+          type: integer
+          description: Line number where credential was found
+        pattern_matched:
+          type: string
+          description: The regex pattern that matched
+        risk_level:
+          type: string
+          enum: [low, medium, high, critical]
+          description: Risk level of the exposed credential
+        context:
+          type: string
+          description: Surrounding text context (sanitized)
+        recommendations:
+          type: array
+          items:
+            type: string
+          description: Recommended actions to secure the credential
+
+    DuplicateGroup:
+      type: object
+      properties:
+        hash:
+          type: string
+          description: SHA256 hash of the file content
+        size:
+          type: integer
+          description: File size in bytes
+        files:
+          type: array
+          items:
+            $ref: '#/components/schemas/FileMetadata'
+          description: List of files with identical content
+        potential_savings:
+          type: integer
+          description: Bytes that could be saved by keeping only one copy
+
+    FileMetadata:
+      type: object
+      properties:
+        path:
+          type: string
+          description: Absolute path to the file
+        size:
+          type: integer
+          description: File size in bytes
+        last_modified:
+          type: string
+          format: date-time
+          description: Last modification timestamp
+        permissions:
+          type: string
+          description: File permissions (e.g., "644", "755")
+        mime_type:
+          type: string
+          description: Detected MIME type
+        is_binary:
+          type: boolean
+          description: Whether the file is binary
+
+    AuditReport:
+      type: object
+      properties:
+        summary:
+          type: object
+          properties:
+            total_files:
+              type: integer
+              description: Total number of files scanned
+            total_size:
+              type: integer
+              description: Total size of all files in bytes
+            credential_files:
+              type: integer
+              description: Number of files with potential credentials
+            duplicate_groups:
+              type: integer
+              description: Number of duplicate file groups found
+            potential_cleanup_size:
+              type: integer
+              description: Total bytes that could be safely removed
+        credentials:
+          type: array
+          items:
+            $ref: '#/components/schemas/CredentialFinding'
+          description: List of files containing potential credentials
+        duplicates:
+          type: array
+          items:
+            $ref: '#/components/schemas/DuplicateGroup'
+          description: Groups of duplicate files
+        risk_assessment:
+          type: object
+          properties:
+            critical:
+              type: integer
+              description: Number of critical security risks
+            high:
+              type: integer
+              description: Number of high security risks
+            medium:
+              type: integer
+              description: Number of medium security risks
+            low:
+              type: integer
+              description: Number of low security risks
+        recommendations:
+          type: array
+          items:
+            type: string
+          description: Overall recommendations for cleanup
+        execution_time:
+          type: number
+          description: Time taken to complete audit in seconds
+
+    CleanupPlan:
+      type: object
+      properties:
+        safe_to_delete:
+          type: array
+          items:
+            type: string
+          description: Files that are safe to delete (duplicates, temp files)
+        quarantine:
+          type: array
+          items:
+            type: string
+          description: Files that should be moved to quarantine
+        manual_review:
+          type: array
+          items:
+            type: string
+          description: Files that require manual review before deletion
+        total_savings:
+          type: integer
+          description: Total bytes that would be freed by cleanup
+        estimated_time:
+          type: number
+          description: Estimated time to execute cleanup in seconds
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+          description: Error message
+        code:
+          type: string
+          description: Error code
+        details:
+          type: object
+          description: Additional error details
+
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+security:
+  - ApiKeyAuth: []
+  - BearerAuth: []
+
+paths:
+  /audit:
+    post:
+      summary: Perform comprehensive audit
+      description: |
+        Performs a comprehensive audit of specified __DELETE_LATER directories,
+        scanning for credentials, duplicates, and generating cleanup recommendations.
+      operationId: performAudit
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AuditRequest'
+      responses:
+        '200':
+          description: Audit completed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuditReport'
+        '400':
+          description: Invalid request parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /scan/credentials:
+    post:
+      summary: Scan for exposed credentials
+      description: |
+        Scans specified directories for exposed API keys, tokens, secrets,
+        and other sensitive information.
+      operationId: scanCredentials
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - target_directories
+              properties:
+                target_directories:
+                  type: array
+                  items:
+                    type: string
+                credential_patterns:
+                  type: array
+                  items:
+                    type: string
+                exclude_patterns:
+                  type: array
+                  items:
+                    type: string
+      responses:
+        '200':
+          description: Credential scan completed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  findings:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/CredentialFinding'
+                  summary:
+                    type: object
+                    properties:
+                      total_files_scanned:
+                        type: integer
+                      files_with_credentials:
+                        type: integer
+                      critical_findings:
+                        type: integer
+
+  /scan/duplicates:
+    post:
+      summary: Detect duplicate files
+      description: |
+        Identifies duplicate files across directories by comparing file hashes
+        and provides deduplication recommendations.
+      operationId: detectDuplicates
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - target_directories
+              properties:
+                target_directories:
+                  type: array
+                  items:
+                    type: string
+                minimum_size:
+                  type: integer
+                  default: 1024
+                  description: Minimum file size to consider for deduplication
+      responses:
+        '200':
+          description: Duplicate detection completed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  duplicate_groups:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/DuplicateGroup'
+                  summary:
+                    type: object
+                    properties:
+                      total_files:
+                        type: integer
+                      duplicate_files:
+                        type: integer
+                      potential_savings:
+                        type: integer
+
+  /report:
+    post:
+      summary: Generate audit report
+      description: |
+        Generates a comprehensive audit report based on previous scans or
+        performs a new audit and generates the report.
+      operationId: generateReport
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '#/components/schemas/AuditRequest'
+                - type: object
+                  properties:
+                    format:
+                      type: string
+                      enum: [json, html, pdf, markdown]
+                      default: json
+                      description: Report output format
+      responses:
+        '200':
+          description: Report generated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuditReport'
+            text/html:
+              schema:
+                type: string
+                description: HTML formatted report
+            text/markdown:
+              schema:
+                type: string
+                description: Markdown formatted report
+
+  /cleanup/dry-run:
+    post:
+      summary: Simulate cleanup operations
+      description: |
+        Simulates cleanup operations without actually deleting or moving files,
+        providing a detailed plan of what would be done.
+      operationId: dryRunCleanup
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '#/components/schemas/AuditRequest'
+                - type: object
+                  properties:
+                    aggressive:
+                      type: boolean
+                      default: false
+                      description: Whether to include potentially risky cleanup operations
+      responses:
+        '200':
+          description: Dry run completed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CleanupPlan'
+
+  /health:
+    get:
+      summary: Health check
+      description: Check if the auditor agent is healthy and operational
+      operationId: healthCheck
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: healthy
+                  version:
+                    type: string
+                    example: 1.0.0
+                  uptime:
+                    type: number
+                    description: Service uptime in seconds
