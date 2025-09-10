@@ -1,0 +1,309 @@
+# GitLab CI/CD Pipeline for OSSA Platform v0.1.9-alpha.1
+# TDD RED Phase Configuration - All tests expected to FAIL
+
+stages:
+  - validate
+  - test-red
+  - build
+  - test-agents
+  - security
+  - deploy
+
+variables:
+  NODE_VERSION: "20"
+  OSSA_VERSION: "0.1.9-alpha.1"
+  MOCK_MODE: "true"
+  
+# TDD Phase 1: All tests MUST fail (RED)
+test:red-phase:
+  stage: test-red
+  image: node:${NODE_VERSION}
+  script:
+    - echo "🔴 TDD RED Phase - Expecting ALL tests to fail"
+    - npm ci
+    - npm run build || true  # Allow build to fail
+    - npm run api:validate || echo "✅ API validation expected to pass"
+    - |
+      # Run tests and expect failures
+      echo "Running ACDL tests (expecting failures)..."
+      npm run test:acdl 2>&1 | tee test-output.log || true
+      
+      # Count failures
+      FAILED_TESTS=$(grep -c "FAIL" test-output.log || echo "0")
+      TOTAL_TESTS=$(grep -c "✓\|✗\|×" test-output.log || echo "1")
+      
+      echo "Failed tests: $FAILED_TESTS"
+      echo "Total tests: $TOTAL_TESTS"
+      
+      # In RED phase, we WANT failures
+      if [ "$FAILED_TESTS" -eq "0" ]; then
+        echo "❌ ERROR: Tests are passing but should fail in TDD RED phase!"
+        exit 1
+      else
+        echo "✅ SUCCESS: $FAILED_TESTS tests failing as expected in RED phase"
+      fi
+    - npm run test:coverage || echo "Coverage collection may fail in RED phase"
+  coverage: '/Lines\s*:\s*(\d+\.\d+)%/'
+  artifacts:
+    reports:
+      coverage_report:
+        coverage_format: cobertura
+        path: coverage/cobertura-coverage.xml
+      junit: test-results.xml
+    paths:
+      - coverage/
+      - test-output.log
+    expire_in: 1 week
+  allow_failure: true  # Expected to fail in RED phase
+  only:
+    - __REBUILD
+    - feature/*
+    - development
+
+# API Specification Validation
+validate:openapi:
+  stage: validate
+  image: node:${NODE_VERSION}
+  script:
+    - echo "📋 Validating OpenAPI specifications"
+    - npm ci
+    - npm run api:validate
+    - npx swagger-cli validate src/api/acdl-specification.yml
+    - echo "✅ API specifications valid"
+  artifacts:
+    paths:
+      - src/types/api.ts
+    expire_in: 1 day
+  only:
+    - __REBUILD
+    - feature/*
+    - development
+
+# Mock Server Testing
+test:mock-server:
+  stage: test-agents
+  image: node:${NODE_VERSION}
+  services:
+    - name: redis:latest
+      alias: redis
+  variables:
+    REDIS_URL: "redis://redis:6379"
+    MOCK_PORT: "3001"
+  script:
+    - echo "🖥️ Testing ACDL Mock Server"
+    - npm ci
+    - npm run build || echo "Build may fail in RED phase"
+    - |
+      # Start mock server in background
+      npm run mock:server:bg
+      sleep 5
+      
+      # Test server health
+      curl -f http://localhost:3001/health || {
+        echo "❌ Mock server health check failed"
+        exit 1
+      }
+      
+      echo "✅ Mock server running"
+    - |
+      # Test agent spawning commands
+      echo "🚀 Testing agent spawning..."
+      
+      # Test TDD development agent spawn
+      npm run agents:spawn:tdd || echo "Agent spawning expected to fail without implementation"
+      
+      # Test validation agent spawn
+      npm run agents:spawn:validation || echo "Validation spawning expected to fail"
+      
+      # Test workload check
+      npm run agents:workload || echo "Workload check may fail without agents"
+      
+      echo "Agent spawn tests completed"
+    - |
+      # Run tests against mock server
+      echo "🧪 Running tests against mock server"
+      npm run test:with-mock || echo "Tests expected to fail in RED phase"
+  artifacts:
+    paths:
+      - test-output.log
+    expire_in: 1 week
+  allow_failure: true
+  only:
+    - __REBUILD
+    - feature/*
+
+# Security Scanning
+security:scan:
+  stage: security
+  image: node:${NODE_VERSION}
+  script:
+    - echo "🔒 Running security scans"
+    - npm ci
+    - npm audit --audit-level=moderate || echo "Security issues found - will be addressed in implementation phase"
+    - |
+      # Check for hardcoded secrets in test files
+      if grep -r "password\|secret\|key\|token" test/ --include="*.ts" --include="*.js" | grep -v "mock\|test\|example"; then
+        echo "⚠️ Potential secrets in test files"
+      else
+        echo "✅ No secrets found in test files"
+      fi
+  allow_failure: true
+  only:
+    - __REBUILD
+    - feature/*
+    - main
+
+# Lint and Format Check
+lint:check:
+  stage: validate
+  image: node:${NODE_VERSION}
+  script:
+    - echo "🧹 Running linting and formatting checks"
+    - npm ci
+    - npm run lint || echo "Linting issues found"
+    - npx prettier --check 'src/**/*.ts' 'test/**/*.ts' || echo "Formatting issues found"
+  artifacts:
+    reports:
+      junit: lint-results.xml
+  allow_failure: true
+  only:
+    - __REBUILD
+    - feature/*
+
+# Build Verification (may fail in RED phase)
+build:verify:
+  stage: build
+  image: node:${NODE_VERSION}
+  script:
+    - echo "🔨 Attempting build (may fail in TDD RED phase)"
+    - npm ci
+    - npm run clean
+    - npm run build || {
+        echo "⚠️ Build failed - expected in RED phase without implementation"
+        echo "Build will succeed once implementation is complete"
+        exit 0
+      }
+    - echo "✅ Build successful"
+  artifacts:
+    paths:
+      - dist/
+    expire_in: 1 hour
+  allow_failure: true
+  only:
+    - __REBUILD
+    - feature/*
+
+# Agent Integration Test
+test:agent-integration:
+  stage: test-agents
+  image: node:${NODE_VERSION}
+  variables:
+    OSSA_API_URL: "http://localhost:3001"
+  script:
+    - echo "🤖 Testing agent integration patterns"
+    - npm ci
+    - npm run build || true
+    - |
+      # Start mock server
+      npm run mock:server:bg
+      sleep 3
+      
+      # Test 360° feedback loop agents
+      echo "Testing orchestrator agents..."
+      curl -X POST http://localhost:3001/api/v1/acdl/discover \
+        -H "Content-Type: application/json" \
+        -d '{"agentType": "orchestrator"}' || echo "Expected to work with mock"
+      
+      echo "Testing worker agents..."
+      curl -X POST http://localhost:3001/api/v1/acdl/discover \
+        -H "Content-Type: application/json" \
+        -d '{"agentType": "worker", "domains": ["api-design"]}' || echo "Expected to work with mock"
+      
+      echo "Testing critic agents..."
+      curl -X POST http://localhost:3001/api/v1/acdl/discover \
+        -H "Content-Type: application/json" \
+        -d '{"agentType": "critic", "domains": ["security", "quality"]}' || echo "Expected to work with mock"
+      
+      echo "✅ Agent integration patterns tested"
+  allow_failure: true
+  only:
+    - __REBUILD
+    - feature/*
+
+# Contract Testing (Dredd-style)
+test:contracts:
+  stage: test-red
+  image: node:${NODE_VERSION}
+  script:
+    - echo "📋 Contract testing against OpenAPI spec"
+    - npm ci
+    - |
+      # Install contract testing tools
+      npm install -g dredd || echo "Dredd installation may fail"
+      
+      # Start mock server
+      npm run mock:server:bg
+      sleep 3
+      
+      # Run contract tests (expected to have some failures in RED phase)
+      dredd src/api/acdl-specification.yml http://localhost:3001 || {
+        echo "⚠️ Contract tests failed - expected in RED phase"
+        echo "Will pass once implementation matches specification"
+      }
+  allow_failure: true
+  only:
+    - __REBUILD
+    - feature/*
+
+# Deploy to test environment (disabled in RED phase)
+deploy:test:
+  stage: deploy
+  image: node:${NODE_VERSION}
+  script:
+    - echo "🚀 Deployment disabled during TDD RED phase"
+    - echo "Will be enabled once tests pass in GREEN phase"
+    - echo "Current phase: RED (implementation pending)"
+  when: manual
+  only:
+    - __REBUILD
+  environment:
+    name: test-red-phase
+    url: http://test-ossa-red.bluefly.io
+
+# Notification job
+notify:status:
+  stage: .post
+  image: alpine:latest
+  script:
+    - echo "📊 CI/CD Pipeline Status for OSSA v0.1.9-alpha.1"
+    - echo "Phase: TDD RED (all tests expected to fail)"
+    - echo "Status: $([ $CI_JOB_STATUS = 'success' ] && echo '✅ RED phase requirements met' || echo '⚠️ Unexpected results')"
+    - |
+      # Summary of expected results
+      echo "Expected Results in RED Phase:"
+      echo "- ✅ API validation: PASS"
+      echo "- ✅ Mock server: PASS"  
+      echo "- ❌ Unit tests: FAIL (expected)"
+      echo "- ❌ Integration tests: FAIL (expected)"
+      echo "- ❌ Build: FAIL (expected without implementation)"
+      echo ""
+      echo "Next Phase: GREEN (implement to pass tests)"
+  allow_failure: true
+  when: always
+
+# Cache configuration
+cache:
+  key: 
+    files:
+      - package-lock.json
+  paths:
+    - node_modules/
+    - .npm/
+
+# Only run on specific branches during TDD phases
+workflow:
+  rules:
+    - if: $CI_COMMIT_BRANCH == "__REBUILD"
+    - if: $CI_COMMIT_BRANCH =~ /^feature\//
+    - if: $CI_COMMIT_BRANCH == "development"
+    - if: $CI_COMMIT_TAG

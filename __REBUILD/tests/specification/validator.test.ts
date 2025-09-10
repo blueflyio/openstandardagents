@@ -2,9 +2,49 @@ import { describe, it, expect, beforeEach } from '@jest/globals';
 import { SpecificationValidator } from '../../src/specification/validator';
 import { components } from '../../src/types/api';
 
-type AgentManifest = components['schemas']['AgentManifest'];
 type ValidationResult = components['schemas']['ValidationResult'];
 type ValidationError = components['schemas']['ValidationError'];
+
+// OSSA v0.1.9-alpha.1 compliant agent manifest
+interface OSSAAgentManifest {
+  apiVersion: string;
+  kind: string;
+  metadata: {
+    name: string;
+    version: string;
+    description?: string;
+    author?: string;
+  };
+  spec: {
+    type: string;
+    subtype?: string;
+    capabilities: {
+      domains: string[];
+      operations?: any[];
+      inputFormats?: string[];
+      outputFormats?: string[];
+    };
+    protocols?: {
+      supported: Array<{
+        name: string;
+        version: string;
+        endpoint: string;
+        authentication?: any;
+        tls?: boolean;
+      }>;
+      preferred?: string;
+    };
+    conformance?: {
+      level: string;
+      auditLogging?: boolean;
+      feedbackLoop?: boolean;
+      propsTokens?: boolean;
+      learningSignals?: boolean;
+    };
+    performance?: any;
+    budgets?: any;
+  };
+}
 
 describe('SpecificationValidator', () => {
   let validator: SpecificationValidator;
@@ -15,15 +55,36 @@ describe('SpecificationValidator', () => {
 
   describe('validate()', () => {
     it('should validate a correct agent manifest', async () => {
-      const manifest: AgentManifest = {
-        agentId: 'worker-openapi-v1-2-0',
-        agentType: 'worker',
-        agentSubType: 'worker.openapi',
-        version: '1.2.0',
-        capabilities: {
-          supportedDomains: ['documentation', 'api-design'],
-          inputFormats: ['json', 'yaml'],
-          outputFormats: ['json', 'markdown']
+      const manifest: OSSAAgentManifest = {
+        apiVersion: 'ossa.io/v0.1.9-alpha.1',
+        kind: 'Agent',
+        metadata: {
+          name: 'worker-openapi',
+          version: '1.2.0',
+          description: 'OpenAPI specification worker agent',
+          author: 'OSSA Platform'
+        },
+        spec: {
+          type: 'worker',
+          subtype: 'worker.openapi',
+          capabilities: {
+            domains: ['documentation', 'api-design'],
+            inputFormats: ['json', 'yaml'],
+            outputFormats: ['json', 'markdown']
+          },
+          protocols: {
+            supported: [{
+              name: 'rest',
+              version: '1.0',
+              endpoint: 'http://localhost:3000/api/v1',
+              tls: true
+            }]
+          },
+          conformance: {
+            level: 'bronze',
+            auditLogging: false,
+            feedbackLoop: false
+          }
         }
       };
 
@@ -31,20 +92,34 @@ describe('SpecificationValidator', () => {
       
       expect(result.valid).toBe(true);
       if (result.valid) {
-        expect((result as ValidationResult).version).toBe('0.2.0');
-        expect((result as ValidationResult).compliance?.ossaVersion).toBe('0.2.0');
+        expect((result as ValidationResult).version).toBe('0.1.9-alpha.1');
+        expect((result as ValidationResult).compliance?.ossaVersion).toBe('0.1.9-alpha.1');
       }
     });
 
-    it('should reject manifest with invalid agentId format', async () => {
-      const manifest: AgentManifest = {
-        agentId: 'Invalid_Agent_ID', // Should be lowercase with hyphens
-        agentType: 'worker',
-        version: '1.0.0',
-        capabilities: {
-          supportedDomains: ['test'],
-          inputFormats: ['json'],
-          outputFormats: ['json']
+    it('should reject manifest with invalid name format', async () => {
+      const manifest: OSSAAgentManifest = {
+        apiVersion: 'ossa.io/v0.1.9-alpha.1',
+        kind: 'Agent',
+        metadata: {
+          name: 'Invalid_Agent_Name_With_Underscores', // Should be lowercase with hyphens
+          version: '1.0.0'
+        },
+        spec: {
+          type: 'worker',
+          capabilities: {
+            domains: ['api-design']
+          },
+          protocols: {
+            supported: [{
+              name: 'rest',
+              version: '1.0',
+              endpoint: 'http://localhost:3000/api/v1'
+            }]
+          },
+          conformance: {
+            level: 'bronze'
+          }
         }
       };
 
@@ -54,22 +129,36 @@ describe('SpecificationValidator', () => {
       if (!result.valid) {
         expect((result as ValidationError).errors).toContainEqual(
           expect.objectContaining({
-            field: 'agentId',
-            code: 'INVALID_FORMAT'
+            field: expect.stringContaining('name'),
+            code: 'PATTERN'
           })
         );
       }
     });
 
     it('should reject manifest with invalid agent type', async () => {
-      const manifest: AgentManifest = {
-        agentId: 'test-agent',
-        agentType: 'invalid-type' as any,
-        version: '1.0.0',
-        capabilities: {
-          supportedDomains: ['test'],
-          inputFormats: ['json'],
-          outputFormats: ['json']
+      const manifest: OSSAAgentManifest = {
+        apiVersion: 'ossa.io/v0.1.9-alpha.1',
+        kind: 'Agent',
+        metadata: {
+          name: 'test-agent',
+          version: '1.0.0'
+        },
+        spec: {
+          type: 'invalid-type' as any,
+          capabilities: {
+            domains: ['api-design']
+          },
+          protocols: {
+            supported: [{
+              name: 'rest',
+              version: '1.0',
+              endpoint: 'http://localhost:3000/api/v1'
+            }]
+          },
+          conformance: {
+            level: 'bronze'
+          }
         }
       };
 
@@ -79,22 +168,36 @@ describe('SpecificationValidator', () => {
       if (!result.valid) {
         expect((result as ValidationError).errors).toContainEqual(
           expect.objectContaining({
-            field: 'agentType',
-            code: 'INVALID_TYPE'
+            field: 'spec.type',
+            code: 'INVALID_AGENT_TYPE'
           })
         );
       }
     });
 
     it('should reject manifest with invalid version format', async () => {
-      const manifest: AgentManifest = {
-        agentId: 'test-agent',
-        agentType: 'worker',
-        version: '1.0', // Should be semver format
-        capabilities: {
-          supportedDomains: ['test'],
-          inputFormats: ['json'],
-          outputFormats: ['json']
+      const manifest: OSSAAgentManifest = {
+        apiVersion: 'ossa.io/v0.1.9-alpha.1',
+        kind: 'Agent',
+        metadata: {
+          name: 'test-agent',
+          version: '1.0' // Should be semver format
+        },
+        spec: {
+          type: 'worker',
+          capabilities: {
+            domains: ['api-design']
+          },
+          protocols: {
+            supported: [{
+              name: 'rest',
+              version: '1.0',
+              endpoint: 'http://localhost:3000/api/v1'
+            }]
+          },
+          conformance: {
+            level: 'bronze'
+          }
         }
       };
 
@@ -104,22 +207,36 @@ describe('SpecificationValidator', () => {
       if (!result.valid) {
         expect((result as ValidationError).errors).toContainEqual(
           expect.objectContaining({
-            field: 'version',
-            code: 'INVALID_VERSION'
+            field: expect.stringContaining('version'),
+            code: 'PATTERN'
           })
         );
       }
     });
 
     it('should validate capabilities requirements', async () => {
-      const manifest: AgentManifest = {
-        agentId: 'worker-test',
-        agentType: 'worker',
-        version: '1.0.0',
-        capabilities: {
-          supportedDomains: [],  // Empty domains should fail
-          inputFormats: ['json'],
-          outputFormats: ['json']
+      const manifest: OSSAAgentManifest = {
+        apiVersion: 'ossa.io/v0.1.9-alpha.1',
+        kind: 'Agent',
+        metadata: {
+          name: 'worker-test',
+          version: '1.0.0'
+        },
+        spec: {
+          type: 'worker',
+          capabilities: {
+            domains: []  // Empty domains should fail
+          },
+          protocols: {
+            supported: [{
+              name: 'rest',
+              version: '1.0',
+              endpoint: 'http://localhost:3000/api/v1'
+            }]
+          },
+          conformance: {
+            level: 'bronze'
+          }
         }
       };
 
@@ -129,22 +246,36 @@ describe('SpecificationValidator', () => {
       if (!result.valid) {
         expect((result as ValidationError).errors).toContainEqual(
           expect.objectContaining({
-            field: 'capabilities.supportedDomains',
-            code: 'EMPTY_ARRAY'
+            field: expect.stringContaining('domains'),
+            code: 'MINITEMS'
           })
         );
       }
     });
 
     it('should add warnings for deprecated features', async () => {
-      const manifest: AgentManifest = {
-        agentId: 'worker-legacy',
-        agentType: 'worker',
-        version: '0.1.0', // Old version format
-        capabilities: {
-          supportedDomains: ['legacy-domain'],
-          inputFormats: ['json'],
-          outputFormats: ['json']
+      const manifest: OSSAAgentManifest = {
+        apiVersion: 'ossa.io/v0.1.9-alpha.1',
+        kind: 'Agent',
+        metadata: {
+          name: 'worker-legacy',
+          version: '0.1.0' // Old version format
+        },
+        spec: {
+          type: 'worker',
+          capabilities: {
+            domains: ['documentation']
+          },
+          protocols: {
+            supported: [{
+              name: 'rest',
+              version: '1.0',
+              endpoint: 'http://localhost:3000/api/v1'
+            }]
+          },
+          conformance: {
+            level: 'bronze'
+          }
         }
       };
 
@@ -152,7 +283,7 @@ describe('SpecificationValidator', () => {
       
       expect(result.valid).toBe(true);
       if (result.valid) {
-        expect((result as ValidationResult).warnings).toContain('Version 0.1.0 uses legacy format');
+        expect((result as ValidationResult).warnings).toContain('Version 0.1.0 uses legacy 0.1.x format');
       }
     });
   });
@@ -161,7 +292,7 @@ describe('SpecificationValidator', () => {
     it('should return the complete agent taxonomy', () => {
       const taxonomy = validator.getTaxonomy();
       
-      expect(taxonomy.version).toBe('0.2.0');
+      expect(taxonomy.version).toBe('0.1.9-alpha.1');
       expect(taxonomy.feedbackLoop?.phases).toEqual([
         'plan', 'execute', 'review', 'judge', 'learn', 'govern'
       ]);
@@ -185,8 +316,10 @@ describe('SpecificationValidator', () => {
       
       expect(schema).toBeDefined();
       expect(schema.type).toBe('object');
-      expect(schema.properties).toHaveProperty('agentId');
-      expect(schema.properties).toHaveProperty('capabilities');
+      expect(schema.properties).toHaveProperty('apiVersion');
+      expect(schema.properties).toHaveProperty('kind');
+      expect(schema.properties).toHaveProperty('metadata');
+      expect(schema.properties).toHaveProperty('spec');
     });
 
     it('should throw error for invalid agent type', () => {

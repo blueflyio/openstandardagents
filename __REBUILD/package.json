@@ -10,6 +10,9 @@
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
     "test:red": "jest || echo 'Good! Tests failing as expected in TDD Red phase'",
+    "test:acdl": "jest test/api/acdl-*.spec.ts",
+    "test:acdl:watch": "jest --watch test/api/acdl-*.spec.ts",
+    "test:failing": "npm run test:red",
     "build": "tsc",
     "dev": "tsx watch src/index.ts",
     "lint": "eslint src/**/*.ts",
@@ -17,7 +20,30 @@
     "api:generate": "openapi-typescript src/api/specification.openapi.yml -o src/types/api.ts",
     "api:validate": "swagger-cli validate src/api/specification.openapi.yml",
     "precommit": "npm run lint && npm run test",
-    "clean": "rm -rf dist coverage"
+    "clean": "rm -rf dist coverage",
+    "mock:server": "tsx test/mocks/acdl-mock-server.ts",
+    "mock:server:bg": "tsx test/mocks/acdl-mock-server.ts &",
+    "agents:spawn:tdd": "node dist/cli/commands/agents.js spawn --type development --phase implementation --tdd --api-first --priority high",
+    "agents:spawn:validation": "node dist/cli/commands/agents.js spawn --type validation --phase review --priority critical --ossa",
+    "agents:spawn:orchestration": "node dist/cli/commands/agents.js spawn --type orchestration --phase planning --priority high --ossa",
+    "agents:workload": "node dist/cli/commands/agents.js workload",
+    "agents:list": "node dist/cli/commands/agents.js list",
+    "dev:with-agents": "npm run mock:server:bg && npm run dev",
+    "test:with-mock": "OSSA_API_URL=http://localhost:3001 npm run test:acdl",
+    "orchestrator:start": "tsx src/cli/orchestrator-platform.ts start --mock-agents",
+    "orchestrator:status": "tsx src/cli/orchestrator-platform.ts status",
+    "orchestrator:test": "tsx src/cli/orchestrator-platform.ts test-workflow",
+    "orchestrator:health": "tsx src/cli/orchestrator-platform.ts health",
+    "registry:start": "tsx src/cli/registry-core.ts start",
+    "registry:status": "tsx src/cli/registry-core.ts status",
+    "registry:test": "tsx src/cli/registry-core.ts test-register",
+    "registry:metrics": "tsx src/cli/registry-core.ts metrics",
+    "platform:start": "tsx src/index.ts",
+    "platform:production": "NODE_ENV=production tsx src/index.ts"
+  },
+  "bin": {
+    "ossa-orchestrator": "./dist/cli/orchestrator-platform.js",
+    "ossa-registry": "./dist/cli/registry-core.js"
   },
   "keywords": [
     "ossa",
@@ -30,9 +56,12 @@
   "author": "Bluefly.io",
   "license": "MIT",
   "dependencies": {
-    "ajv": "^8.12.0",
+    "ajv": "^8.17.1",
+    "ajv-formats": "^3.0.1",
+    "commander": "^14.0.0",
     "express": "^4.18.2",
     "js-yaml": "^4.1.0",
+    "node-fetch": "^2.6.7",
     "uuid": "^9.0.1"
   },
   "devDependencies": {
@@ -40,6 +69,7 @@
     "@types/jest": "^29.5.11",
     "@types/js-yaml": "^4.0.9",
     "@types/node": "^20.10.5",
+    "@types/node-fetch": "^2.6.6",
     "@types/uuid": "^9.0.7",
     "@typescript-eslint/eslint-plugin": "^6.15.0",
     "@typescript-eslint/parser": "^6.15.0",

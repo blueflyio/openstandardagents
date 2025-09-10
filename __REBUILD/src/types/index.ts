@@ -290,6 +290,6 @@ export interface EncryptionConfig {
 }
 
 // Export all types
-export * from './agents';
-export * from './workflows';
-export * from './policies';
+export * from './agents/index.js';
+export * from './workflows/index.js';
+export * from './policies/index.js';

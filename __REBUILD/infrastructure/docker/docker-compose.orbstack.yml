@@ -1,0 +1,101 @@
+# OSSA v0.1.9-alpha.1 - OrbStack Isolated Configuration
+# This configuration avoids port conflicts with existing K8s deployments
+# Use: docker-compose -f docker-compose.orbstack.yml up
+
+version: "3.8"
+
+services:
+  # Isolated Redis on non-conflicting port
+  redis:
+    image: redis:7-alpine
+    container_name: ossa_redis_isolated
+    ports:
+      - "6382:6379"  # Avoids conflict with K8s redis on 6379
+    volumes:
+      - redis-isolated-data:/data
+    networks:
+      - ossa-isolated-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Isolated PostgreSQL on non-conflicting port  
+  postgres:
+    image: postgres:15-alpine
+    container_name: ossa_postgres_isolated
+    environment:
+      POSTGRES_DB: ossa_isolated
+      POSTGRES_USER: ossa
+      POSTGRES_PASSWORD: ossa_isolated_password
+    ports:
+      - "5433:5432"  # Avoids conflict with K8s postgres on 5432
+    volumes:
+      - postgres-isolated-data:/var/lib/postgresql/data
+    networks:
+      - ossa-isolated-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ossa"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Isolated Qdrant on non-conflicting port
+  qdrant:
+    image: qdrant/qdrant:latest
+    container_name: ossa_qdrant_isolated
+    environment:
+      - QDRANT__SERVICE__HTTP_PORT=6333
+      - QDRANT__SERVICE__GRPC_PORT=6334
+    ports:
+      - "6335:6333"  # Avoids conflict with K8s qdrant on 6333
+      - "6336:6334"  # Avoids conflict with K8s qdrant on 6334
+    volumes:
+      - qdrant-isolated-data:/qdrant/storage
+    networks:
+      - ossa-isolated-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:6333/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Isolated Gateway Service
+  ossa-gateway:
+    container_name: ossa_gateway_isolated
+    image: ossa:gateway-isolated
+    build:
+      context: ../..
+      dockerfile: infrastructure/docker/Dockerfile.gateway
+    environment:
+      - NODE_ENV=development
+      - SERVICE_PORT=3100  # Internal port changed to match external
+      - REDIS_URL=redis://redis:6379
+      - POSTGRES_URL=postgresql://ossa:ossa_isolated_password@postgres:5432/ossa_isolated
+      - QDRANT_URL=http://qdrant:6333
+    ports:
+      - "3100:3100"  # Port consistency avoids mapping issues
+    depends_on:
+      - redis
+      - postgres
+      - qdrant
+    networks:
+      - ossa-isolated-network
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3100/health", "||", "exit", "1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+networks:
+  ossa-isolated-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.31.0.0/16  # Different subnet from complete config
+
+volumes:
+  redis-isolated-data:
+  postgres-isolated-data:
+  qdrant-isolated-data:

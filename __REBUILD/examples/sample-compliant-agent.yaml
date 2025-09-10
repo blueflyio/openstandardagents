@@ -1,0 +1,147 @@
+apiVersion: ossa.io/v0.1.9-alpha.1
+kind: Agent
+metadata:
+  name: financial-data-processor
+  version: v1.2.3
+  description: "Enterprise-grade financial data processing agent with full OSSA Gold compliance"
+  author: "enterprise-financial-corp"
+  labels:
+    environment: production
+    classification: confidential
+    industry: financial-services
+    compliance: gold-level
+spec:
+  type: worker
+  subtype: data-processor
+  capabilities:
+    domains:
+      - data-processing
+      - financial-analysis
+      - compliance-validation
+      - audit-trail-generation
+    operations:
+      - process-transactions
+      - validate-compliance
+      - generate-reports
+      - audit-logging
+    inputFormats:
+      - application/json
+      - text/csv
+      - application/xml
+    outputFormats:
+      - application/json
+      - application/pdf
+      - text/csv
+  protocols:
+    supported:
+      - name: rest
+        version: "1.1"
+        endpoint: "https://api.enterprise.com/agents/financial-processor"
+        authentication:
+          type: oauth2
+          scopes: ["agent.execute", "data.read", "audit.write"]
+        tls: true
+        timeout: 30000
+      - name: grpc
+        version: "1.0"
+        endpoint: "grpc://secure.enterprise.com:9443/FinancialProcessor"
+        authentication:
+          type: mutual-tls
+        tls: true
+        timeout: 30000
+      - name: mcp
+        version: "0.1.0"
+        endpoint: "mcp://internal.enterprise.com:8080/financial-processor"
+        authentication:
+          type: api-key
+        tls: true
+        timeout: 15000
+    preferred: rest
+  conformance:
+    level: gold
+    auditLogging: true
+    feedbackLoop: true
+    propsTokens: true
+    learningSignals: true
+    features:
+      - continuous-monitoring
+      - automated-compliance
+      - real-time-audit
+      - human-oversight-integration
+  performance:
+    throughput:
+      requestsPerSecond: 100
+      concurrentRequests: 50
+      batchSize: 1000
+    latency:
+      p50: 150
+      p95: 500
+      p99: 1000
+      timeout: 30000
+    reliability:
+      availability: 99.95
+      errorRate: 0.01
+      mttr: 300
+  budgets:
+    tokens:
+      default: 5000
+      maximum: 50000
+      emergency: 100000
+    cost:
+      hourly: 10.50
+      daily: 252.00
+      monthly: 7560.00
+    resources:
+      cpu: "2000m"
+      memory: "4Gi"
+      storage: "10Gi"
+  security:
+    encryption:
+      atRest: true
+      inTransit: true
+      algorithms: ["AES-256-GCM", "RSA-4096"]
+    access:
+      authentication: required
+      authorization: rbac
+      auditLevel: comprehensive
+    compliance:
+      frameworks:
+        - iso-42001
+        - nist-ai-rmf
+        - eu-ai-act
+        - pci-dss
+        - sox
+      certifications:
+        - iso-27001
+        - soc2-type2
+      dataProtection:
+        - gdpr
+        - ccpa
+        - pii-handling
+  monitoring:
+    healthCheck:
+      endpoint: "/health"
+      interval: 30
+      timeout: 5
+    metrics:
+      endpoint: "/metrics"
+      format: prometheus
+      retention: "7d"
+    logging:
+      level: info
+      format: structured
+      destination: enterprise-audit-log
+      retention: "2y"
+  governance:
+    approvals:
+      deployment: ["security-officer", "compliance-manager"]
+      updates: ["technical-lead", "compliance-manager"]
+      retirement: ["security-officer", "data-officer", "compliance-manager"]
+    policies:
+      - financial-data-policy-v2.1
+      - enterprise-security-policy-v3.0
+      - ai-governance-policy-v1.5
+    documentation:
+      - https://docs.enterprise.com/agents/financial-processor
+      - https://compliance.enterprise.com/agent-certifications/fp-v1.2.3
+      - https://security.enterprise.com/risk-assessments/fp-2024-q1
