@@ -1,0 +1,8 @@
+@startuml
+actor User
+User -> Web: Request with JWT
+Web -> API: Verify token
+API -> IdP: Introspect (optional)
+API --> Web: 200 OK
+Web --> User: Content
+@enduml

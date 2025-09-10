@@ -1,0 +1,13 @@
+{
+  "agent": "openapi-expert",
+  "version": "1.0.0",
+  "roadmap_version": "0.1.8",
+  "last_updated": "2025-09-08T21:40:42Z",
+  "milestones": [
+    {
+      "version": "1.0.0",
+      "status": "completed",
+      "description": "Initial OSSA v0.1.8 compliant implementation"
+    }
+  ]
+}

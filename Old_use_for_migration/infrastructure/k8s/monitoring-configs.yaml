@@ -1,0 +1,476 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-config
+  namespace: ossa-monitoring
+  labels:
+    app.kubernetes.io/name: grafana
+    app.kubernetes.io/component: configuration
+    app.kubernetes.io/part-of: ossa-platform
+data:
+  datasources.yaml: |
+    apiVersion: 1
+    datasources:
+    - name: Prometheus
+      type: prometheus
+      access: proxy
+      url: http://prometheus.ossa-monitoring.svc.cluster.local:9090
+      isDefault: true
+      editable: true
+    - name: Jaeger
+      type: jaeger
+      access: proxy
+      url: http://jaeger.ossa-monitoring.svc.cluster.local:16686
+      editable: true
+    - name: Loki
+      type: loki
+      access: proxy
+      url: http://loki.ossa-monitoring.svc.cluster.local:3100
+      editable: true
+
+  dashboards.yaml: |
+    apiVersion: 1
+    providers:
+    - name: 'OSSA Platform'
+      orgId: 1
+      folder: 'OSSA'
+      type: file
+      disableDeletion: false
+      updateIntervalSeconds: 10
+      allowUiUpdates: true
+      options:
+        path: /etc/grafana/dashboards
+
+  grafana.ini: |
+    [server]
+    root_url = https://ossa.llm.bluefly.io/grafana
+    serve_from_sub_path = true
+
+    [security]
+    admin_user = admin
+    admin_password = ${GF_SECURITY_ADMIN_PASSWORD}
+    cookie_secure = true
+    cookie_samesite = strict
+
+    [auth]
+    disable_login_form = false
+    disable_signout_menu = false
+
+    [auth.anonymous]
+    enabled = false
+
+    [analytics]
+    reporting_enabled = false
+    check_for_updates = false
+
+    [log]
+    level = info
+    mode = console
+
+    [paths]
+    data = /var/lib/grafana
+    logs = /var/log/grafana
+    plugins = /var/lib/grafana/plugins
+    provisioning = /etc/grafana/provisioning
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: alertmanager-config
+  namespace: ossa-monitoring
+  labels:
+    app.kubernetes.io/name: alertmanager
+    app.kubernetes.io/component: configuration
+    app.kubernetes.io/part-of: ossa-platform
+data:
+  alertmanager.yml: |
+    global:
+      smtp_smarthost: 'smtp.llm.bluefly.io:587'
+      smtp_from: 'alerts@llm.bluefly.io'
+      slack_api_url: 'https://hooks.slack.com/services/YOUR/SLACK/WEBHOOK'
+
+    templates:
+    - '/etc/alertmanager/templates/*.tmpl'
+
+    route:
+      group_by: ['alertname', 'service']
+      group_wait: 10s
+      group_interval: 10s
+      repeat_interval: 1h
+      receiver: 'ossa-alerts'
+      routes:
+      - match:
+          severity: critical
+        receiver: 'ossa-critical'
+        group_wait: 0s
+        group_interval: 5s
+        repeat_interval: 10m
+      - match:
+          service: ossa-gateway
+        receiver: 'ossa-gateway-alerts'
+
+    receivers:
+    - name: 'ossa-alerts'
+      email_configs:
+      - to: 'ossa-team@llm.bluefly.io'
+        subject: 'OSSA Alert: {{ range .Alerts }}{{ .Annotations.summary }}{{ end }}'
+        body: |
+          {{ range .Alerts }}
+          Alert: {{ .Annotations.summary }}
+          Description: {{ .Annotations.description }}
+          Service: {{ .Labels.service }}
+          Severity: {{ .Labels.severity }}
+          {{ end }}
+      slack_configs:
+      - channel: '#ossa-alerts'
+        title: 'OSSA Platform Alert'
+        text: '{{ range .Alerts }}{{ .Annotations.summary }}{{ end }}'
+
+    - name: 'ossa-critical'
+      email_configs:
+      - to: 'ossa-oncall@llm.bluefly.io'
+        subject: 'CRITICAL OSSA Alert: {{ range .Alerts }}{{ .Annotations.summary }}{{ end }}'
+        body: |
+          CRITICAL ALERT - Immediate attention required!
+          
+          {{ range .Alerts }}
+          Alert: {{ .Annotations.summary }}
+          Description: {{ .Annotations.description }}
+          Service: {{ .Labels.service }}
+          Time: {{ .StartsAt }}
+          {{ end }}
+      slack_configs:
+      - channel: '#ossa-critical'
+        title: '🚨 CRITICAL OSSA Alert'
+        text: '{{ range .Alerts }}{{ .Annotations.summary }}{{ end }}'
+        send_resolved: true
+
+    - name: 'ossa-gateway-alerts'
+      email_configs:
+      - to: 'ossa-gateway-team@llm.bluefly.io'
+        subject: 'OSSA Gateway Alert: {{ range .Alerts }}{{ .Annotations.summary }}{{ end }}'
+
+    inhibit_rules:
+    - source_match:
+        severity: 'critical'
+      target_match:
+        severity: 'warning'
+      equal: ['alertname', 'service']
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-dashboards
+  namespace: ossa-monitoring
+  labels:
+    app.kubernetes.io/name: grafana
+    app.kubernetes.io/component: dashboards
+    app.kubernetes.io/part-of: ossa-platform
+data:
+  ossa-overview.json: |
+    {
+      "dashboard": {
+        "id": null,
+        "title": "OSSA Platform Overview",
+        "tags": ["ossa", "platform"],
+        "timezone": "browser",
+        "panels": [
+          {
+            "id": 1,
+            "title": "Gateway Requests per Second",
+            "type": "stat",
+            "targets": [
+              {
+                "expr": "rate(http_requests_total{job=\"ossa-gateway\"}[5m])",
+                "legendFormat": "RPS"
+              }
+            ],
+            "gridPos": {"h": 8, "w": 12, "x": 0, "y": 0}
+          },
+          {
+            "id": 2,
+            "title": "Active Agents",
+            "type": "stat",
+            "targets": [
+              {
+                "expr": "count(up{job=~\"ossa-.*-agent\"} == 1)",
+                "legendFormat": "Active Agents"
+              }
+            ],
+            "gridPos": {"h": 8, "w": 12, "x": 12, "y": 0}
+          },
+          {
+            "id": 3,
+            "title": "Response Time Percentiles",
+            "type": "graph",
+            "targets": [
+              {
+                "expr": "histogram_quantile(0.50, rate(http_request_duration_seconds_bucket{job=~\"ossa-.*\"}[5m]))",
+                "legendFormat": "50th percentile"
+              },
+              {
+                "expr": "histogram_quantile(0.95, rate(http_request_duration_seconds_bucket{job=~\"ossa-.*\"}[5m]))",
+                "legendFormat": "95th percentile"
+              }
+            ],
+            "gridPos": {"h": 8, "w": 24, "x": 0, "y": 8}
+          }
+        ],
+        "time": {"from": "now-1h", "to": "now"},
+        "refresh": "5s"
+      }
+    }
+
+  ossa-agents.json: |
+    {
+      "dashboard": {
+        "id": null,
+        "title": "OSSA Agents Dashboard",
+        "tags": ["ossa", "agents"],
+        "timezone": "browser",
+        "panels": [
+          {
+            "id": 1,
+            "title": "Agent Status",
+            "type": "table",
+            "targets": [
+              {
+                "expr": "up{job=~\"ossa-.*-agent\"}",
+                "legendFormat": "{{ job }} - {{ instance }}"
+              }
+            ],
+            "gridPos": {"h": 12, "w": 24, "x": 0, "y": 0}
+          },
+          {
+            "id": 2,
+            "title": "Agent Queue Depth",
+            "type": "graph",
+            "targets": [
+              {
+                "expr": "ossa_agent_queue_depth",
+                "legendFormat": "{{ job }} Queue Depth"
+              }
+            ],
+            "gridPos": {"h": 8, "w": 12, "x": 0, "y": 12}
+          },
+          {
+            "id": 3,
+            "title": "Agent Processing Time",
+            "type": "graph",
+            "targets": [
+              {
+                "expr": "ossa_agent_processing_duration_seconds",
+                "legendFormat": "{{ job }} Processing Time"
+              }
+            ],
+            "gridPos": {"h": 8, "w": 12, "x": 12, "y": 12}
+          }
+        ],
+        "time": {"from": "now-1h", "to": "now"},
+        "refresh": "10s"
+      }
+    }
+
+  ossa-infrastructure.json: |
+    {
+      "dashboard": {
+        "id": null,
+        "title": "OSSA Infrastructure",
+        "tags": ["ossa", "infrastructure"],
+        "timezone": "browser",
+        "panels": [
+          {
+            "id": 1,
+            "title": "Pod CPU Usage",
+            "type": "graph",
+            "targets": [
+              {
+                "expr": "rate(container_cpu_usage_seconds_total{pod=~\"ossa-.*\"}[5m])",
+                "legendFormat": "{{ pod }}"
+              }
+            ],
+            "gridPos": {"h": 8, "w": 12, "x": 0, "y": 0}
+          },
+          {
+            "id": 2,
+            "title": "Pod Memory Usage",
+            "type": "graph",
+            "targets": [
+              {
+                "expr": "container_memory_working_set_bytes{pod=~\"ossa-.*\"} / 1024 / 1024",
+                "legendFormat": "{{ pod }}"
+              }
+            ],
+            "gridPos": {"h": 8, "w": 12, "x": 12, "y": 0}
+          },
+          {
+            "id": 3,
+            "title": "Network I/O",
+            "type": "graph",
+            "targets": [
+              {
+                "expr": "rate(container_network_receive_bytes_total{pod=~\"ossa-.*\"}[5m])",
+                "legendFormat": "{{ pod }} Receive"
+              },
+              {
+                "expr": "rate(container_network_transmit_bytes_total{pod=~\"ossa-.*\"}[5m])",
+                "legendFormat": "{{ pod }} Transmit"
+              }
+            ],
+            "gridPos": {"h": 8, "w": 24, "x": 0, "y": 8}
+          }
+        ],
+        "time": {"from": "now-1h", "to": "now"},
+        "refresh": "10s"
+      }
+    }
+
+---
+# Loki for log aggregation
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: loki-config
+  namespace: ossa-monitoring
+  labels:
+    app.kubernetes.io/name: loki
+    app.kubernetes.io/component: configuration
+    app.kubernetes.io/part-of: ossa-platform
+data:
+  loki.yaml: |
+    auth_enabled: false
+    
+    server:
+      http_listen_port: 3100
+    
+    ingester:
+      lifecycler:
+        address: 127.0.0.1
+        ring:
+          kvstore:
+            store: inmemory
+          replication_factor: 1
+        final_sleep: 0s
+      chunk_idle_period: 1h
+      max_chunk_age: 1h
+      chunk_target_size: 1048576
+      chunk_retain_period: 30s
+    
+    schema_config:
+      configs:
+        - from: 2020-10-24
+          store: boltdb-shipper
+          object_store: filesystem
+          schema: v11
+          index:
+            prefix: index_
+            period: 24h
+    
+    storage_config:
+      boltdb_shipper:
+        active_index_directory: /loki/boltdb-shipper-active
+        cache_location: /loki/boltdb-shipper-cache
+        cache_ttl: 24h
+        shared_store: filesystem
+      filesystem:
+        directory: /loki/chunks
+    
+    limits_config:
+      reject_old_samples: true
+      reject_old_samples_max_age: 168h
+    
+    chunk_store_config:
+      max_look_back_period: 0s
+    
+    table_manager:
+      retention_deletes_enabled: true
+      retention_period: 168h
+
+---
+# Promtail for log collection
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: promtail-config
+  namespace: ossa-monitoring
+  labels:
+    app.kubernetes.io/name: promtail
+    app.kubernetes.io/component: configuration
+    app.kubernetes.io/part-of: ossa-platform
+data:
+  promtail.yaml: |
+    server:
+      http_listen_port: 9080
+      grpc_listen_port: 0
+    
+    positions:
+      filename: /tmp/positions.yaml
+    
+    clients:
+      - url: http://loki.ossa-monitoring.svc.cluster.local:3100/loki/api/v1/push
+    
+    scrape_configs:
+    - job_name: kubernetes-pods
+      kubernetes_sd_configs:
+      - role: pod
+      relabel_configs:
+      - source_labels:
+        - __meta_kubernetes_pod_controller_name
+        regex: ([0-9a-z-.]+?)(-[0-9a-f]{8,10})?
+        action: replace
+        target_label: __tmp_controller_name
+      - source_labels:
+        - __meta_kubernetes_pod_label_app_kubernetes_io_name
+        - __meta_kubernetes_pod_label_app
+        - __tmp_controller_name
+        - __meta_kubernetes_pod_name
+        regex: ^;*([^;]+)(;.*)?$
+        action: replace
+        target_label: app
+      - source_labels:
+        - __meta_kubernetes_pod_label_app_kubernetes_io_component
+        - __meta_kubernetes_pod_label_component
+        regex: ^;*([^;]+)(;.*)?$
+        action: replace
+        target_label: component
+      - action: replace
+        source_labels:
+        - __meta_kubernetes_pod_node_name
+        target_label: node_name
+      - action: replace
+        source_labels:
+        - __meta_kubernetes_namespace
+        target_label: namespace
+      - action: replace
+        replacement: $1
+        separator: /
+        source_labels:
+        - namespace
+        - app
+        target_label: job
+      - action: replace
+        source_labels:
+        - __meta_kubernetes_pod_name
+        target_label: pod
+      - action: replace
+        source_labels:
+        - __meta_kubernetes_pod_container_name
+        target_label: container
+      - action: replace
+        replacement: /var/log/pods/*$1/*.log
+        separator: /
+        source_labels:
+        - __meta_kubernetes_pod_uid
+        - __meta_kubernetes_pod_container_name
+        target_label: __path__
+      - action: replace
+        regex: true/(.*)
+        replacement: /var/log/pods/*$1/*.log
+        separator: /
+        source_labels:
+        - __meta_kubernetes_pod_annotationpresent_kubernetes_io_config_hash
+        - __meta_kubernetes_pod_annotation_kubernetes_io_config_hash
+        - __meta_kubernetes_pod_container_name
+        target_label: __path__

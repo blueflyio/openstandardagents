@@ -1,0 +1,278 @@
+# OSSA Enterprise Alerting Rules
+# Version: 0.1.8 - Production SLA Monitoring
+
+groups:
+  - name: ossa.sla.critical
+    rules:
+      # Critical SLA Violations - Page immediately
+      - alert: OSSAAvailabilityBelowSLA
+        expr: ossa:availability:5m < 99.9
+        for: 1m
+        labels:
+          severity: critical
+          service: ossa-core
+          sla: availability
+        annotations:
+          summary: "OSSA availability below 99.9% SLA"
+          description: "OSSA availability has been {{ $value }}% for more than 1 minute (SLA: 99.9%)"
+          runbook_url: "https://docs.ossa.ai/runbooks/availability-sla"
+
+      - alert: OSSAResponseTimeAboveSLA
+        expr: ossa:response_time:p99:5m > 0.5
+        for: 2m
+        labels:
+          severity: critical
+          service: ossa-core
+          sla: response_time
+        annotations:
+          summary: "OSSA response time above 500ms SLA"
+          description: "OSSA P99 response time has been {{ $value }}s for more than 2 minutes (SLA: <500ms)"
+          runbook_url: "https://docs.ossa.ai/runbooks/response-time-sla"
+
+      - alert: OSSAThroughputBelowSLA
+        expr: ossa:throughput:5m < 1000
+        for: 5m
+        labels:
+          severity: critical
+          service: ossa-core
+          sla: throughput
+        annotations:
+          summary: "OSSA throughput below 1000 requests/min SLA"
+          description: "OSSA throughput has been {{ $value }} req/min for more than 5 minutes (SLA: >1000 req/min)"
+          runbook_url: "https://docs.ossa.ai/runbooks/throughput-sla"
+
+  - name: ossa.agents.health
+    rules:
+      # Agent Fleet Health Monitoring
+      - alert: OSSAAgentFleetDown
+        expr: up{job="ossa-agents"} == 0
+        for: 30s
+        labels:
+          severity: critical
+          service: ossa-agents
+        annotations:
+          summary: "OSSA Agent Registry is down"
+          description: "The OSSA Agent Registry has been unreachable for 30 seconds"
+          runbook_url: "https://docs.ossa.ai/runbooks/agent-registry-down"
+
+      - alert: OSSAAgentDeploymentFailure
+        expr: increase(ossa_agent_deployment_failures_total[5m]) > 5
+        for: 1m
+        labels:
+          severity: warning
+          service: ossa-agents
+        annotations:
+          summary: "High agent deployment failure rate"
+          description: "{{ $value }} agent deployments have failed in the last 5 minutes"
+          runbook_url: "https://docs.ossa.ai/runbooks/agent-deployment-failures"
+
+      - alert: OSSAAgentMemoryHigh
+        expr: (ossa_agent_memory_usage_bytes / ossa_agent_memory_limit_bytes) * 100 > 85
+        for: 5m
+        labels:
+          severity: warning
+          service: ossa-agents
+        annotations:
+          summary: "Agent memory usage high"
+          description: "Agent {{ $labels.agent_id }} memory usage is {{ $value }}%"
+
+  - name: ossa.performance.quality
+    rules:
+      # Research and Generation Quality Metrics
+      - alert: OSSAResearchAccuracyLow
+        expr: ossa_research_accuracy_percent < 95
+        for: 10m
+        labels:
+          severity: warning
+          service: ossa-research
+          quality: accuracy
+        annotations:
+          summary: "OSSA research accuracy below 95% target"
+          description: "Research accuracy has been {{ $value }}% for 10 minutes (target: >95%)"
+          runbook_url: "https://docs.ossa.ai/runbooks/research-accuracy"
+
+      - alert: OSSASpecificationComplianceLow
+        expr: ossa_specification_compliance_percent < 100
+        for: 5m
+        labels:
+          severity: critical
+          service: ossa-validation
+          quality: compliance
+        annotations:
+          summary: "OSSA specification compliance below 100%"
+          description: "Specification compliance is {{ $value }}% (target: 100%)"
+          runbook_url: "https://docs.ossa.ai/runbooks/spec-compliance"
+
+      - alert: OSSACodeGenerationQualityLow
+        expr: ossa_code_generation_quality_percent < 90
+        for: 15m
+        labels:
+          severity: warning
+          service: ossa-generator
+          quality: code_quality
+        annotations:
+          summary: "Code generation quality below 90% target"
+          description: "Code generation quality has been {{ $value }}% for 15 minutes (target: >90%)"
+
+  - name: ossa.security.compliance
+    rules:
+      # Security and Compliance Monitoring
+      - alert: OSSASecurityVulnerabilityDetected
+        expr: increase(ossa_security_vulnerabilities_total[1h]) > 0
+        for: 0s
+        labels:
+          severity: critical
+          service: ossa-security
+        annotations:
+          summary: "New security vulnerability detected"
+          description: "{{ $value }} new security vulnerabilities detected in the last hour"
+          runbook_url: "https://docs.ossa.ai/runbooks/security-vulnerabilities"
+
+      - alert: OSSATrustScoreLow
+        expr: ossa_trust_score < 90
+        for: 5m
+        labels:
+          severity: warning
+          service: ossa-security
+        annotations:
+          summary: "OSSA trust score below threshold"
+          description: "Trust score is {{ $value }} (threshold: 90)"
+
+      - alert: OSSAComplianceViolation
+        expr: ossa_compliance_violations_total > 0
+        for: 1m
+        labels:
+          severity: critical
+          service: ossa-compliance
+        annotations:
+          summary: "Compliance violation detected"
+          description: "{{ $value }} compliance violations detected"
+          runbook_url: "https://docs.ossa.ai/runbooks/compliance-violations"
+
+  - name: ossa.token.optimization
+    rules:
+      # Token Usage and Cost Optimization
+      - alert: OSSATokenOptimizationLow
+        expr: ossa:token_optimization:5m < 35
+        for: 10m
+        labels:
+          severity: warning
+          service: ossa-vortex
+          optimization: token_usage
+        annotations:
+          summary: "Token optimization below 35% target"
+          description: "Token optimization has been {{ $value }}% for 10 minutes (target: 35-45%)"
+          runbook_url: "https://docs.ossa.ai/runbooks/token-optimization"
+
+      - alert: OSSATokenCostSpike
+        expr: increase(ossa_token_cost_usd[1h]) > 100
+        for: 0s
+        labels:
+          severity: warning
+          service: ossa-billing
+        annotations:
+          summary: "Unusual spike in token costs"
+          description: "Token costs increased by ${{ $value }} in the last hour"
+
+  - name: ossa.orchestration.workflow
+    rules:
+      # Orchestration and Workflow Health
+      - alert: OSSAWorkflowFailureRate
+        expr: (rate(ossa_workflow_failures_total[5m]) / rate(ossa_workflow_executions_total[5m])) * 100 > 5
+        for: 3m
+        labels:
+          severity: warning
+          service: ossa-orchestration
+        annotations:
+          summary: "High workflow failure rate"
+          description: "Workflow failure rate is {{ $value }}% (threshold: 5%)"
+
+      - alert: OSSACircuitBreakerOpen
+        expr: ossa_circuit_breaker_state{state="open"} == 1
+        for: 1m
+        labels:
+          severity: critical
+          service: ossa-resilience
+        annotations:
+          summary: "Circuit breaker opened for {{ $labels.service_name }}"
+          description: "Circuit breaker has been open for 1 minute"
+          runbook_url: "https://docs.ossa.ai/runbooks/circuit-breaker"
+
+  - name: ossa.infrastructure.resources
+    rules:
+      # Infrastructure Resource Monitoring
+      - alert: OSSAHighMemoryUsage
+        expr: (ossa_memory_usage_bytes / ossa_memory_limit_bytes) * 100 > 85
+        for: 5m
+        labels:
+          severity: warning
+          service: ossa-infrastructure
+        annotations:
+          summary: "High memory usage detected"
+          description: "Memory usage is {{ $value }}% (threshold: 85%)"
+
+      - alert: OSSAHighCPUUsage
+        expr: ossa_cpu_usage_percent > 80
+        for: 10m
+        labels:
+          severity: warning
+          service: ossa-infrastructure
+        annotations:
+          summary: "High CPU usage detected"
+          description: "CPU usage is {{ $value }}% (threshold: 80%)"
+
+      - alert: OSSADiskSpaceLow
+        expr: (ossa_disk_free_bytes / ossa_disk_total_bytes) * 100 < 20
+        for: 1m
+        labels:
+          severity: critical
+          service: ossa-infrastructure
+        annotations:
+          summary: "Low disk space"
+          description: "Disk space is {{ $value }}% full (threshold: 80%)"
+
+  - name: ossa.industrial.protocols
+    rules:
+      # Industrial Protocol Monitoring (OPC UA/UADP)
+      - alert: OSSAIndustrialProtocolDown
+        expr: up{job="ossa-industrial"} == 0
+        for: 30s
+        labels:
+          severity: critical
+          service: ossa-industrial
+        annotations:
+          summary: "Industrial protocol service down"
+          description: "OPC UA/UADP protocol service has been down for 30 seconds"
+
+      - alert: OSSAIndustrialLatencyHigh
+        expr: ossa_industrial_protocol_latency_ms > 100
+        for: 2m
+        labels:
+          severity: warning
+          service: ossa-industrial
+        annotations:
+          summary: "High industrial protocol latency"
+          description: "Protocol latency is {{ $value }}ms (threshold: 100ms)"
+
+  - name: ossa.business.metrics
+    rules:
+      # Business and Operational Metrics
+      - alert: OSSAUserSatisfactionLow
+        expr: ossa_user_satisfaction_score < 4.5
+        for: 30m
+        labels:
+          severity: warning
+          service: ossa-feedback
+        annotations:
+          summary: "User satisfaction score below target"
+          description: "User satisfaction score is {{ $value }} (target: >4.5/5)"
+
+      - alert: OSSADeploymentFrequencyLow
+        expr: rate(ossa_deployments_total[24h]) < 4
+        for: 1h
+        labels:
+          severity: info
+          service: ossa-cicd
+        annotations:
+          summary: "Low deployment frequency"
+          description: "Only {{ $value }} deployments in the last 24 hours"

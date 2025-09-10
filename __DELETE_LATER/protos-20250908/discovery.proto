@@ -1,0 +1,934 @@
+syntax = "proto3";
+
+package ossa.v1;
+
+import "common.proto";
+import "agent.proto";
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/duration.proto";
+import "google/protobuf/struct.proto";
+import "google/protobuf/any.proto";
+
+option go_package = "github.com/ossa/proto/v1;ossav1";
+option java_package = "io.ossa.proto.v1";
+option java_multiple_files = true;
+option csharp_namespace = "Ossa.Proto.V1";
+
+// Universal Agent Discovery Protocol (UADP) service for high-performance agent discovery
+service DiscoveryService {
+  // Register agent for discovery
+  rpc RegisterForDiscovery(RegisterForDiscoveryRequest) returns (RegisterForDiscoveryResponse);
+  
+  // Unregister agent from discovery
+  rpc UnregisterFromDiscovery(UnregisterFromDiscoveryRequest) returns (UnregisterFromDiscoveryResponse);
+  
+  // Discover agents by capabilities
+  rpc DiscoverAgents(DiscoverAgentsRequest) returns (DiscoverAgentsResponse);
+  
+  // Stream agent discovery updates
+  rpc StreamDiscoveryUpdates(StreamDiscoveryUpdatesRequest) returns (stream DiscoveryUpdate);
+  
+  // Perform semantic search for agents
+  rpc SemanticSearch(SemanticSearchRequest) returns (SemanticSearchResponse);
+  
+  // Query agent capabilities
+  rpc QueryCapabilities(QueryCapabilitiesRequest) returns (QueryCapabilitiesResponse);
+  
+  // Get agent topology and relationships
+  rpc GetTopology(GetTopologyRequest) returns (GetTopologyResponse);
+  
+  // Announce agent availability
+  rpc AnnounceAvailability(AnnounceAvailabilityRequest) returns (AnnounceAvailabilityResponse);
+  
+  // Subscribe to agent announcements
+  rpc SubscribeToAnnouncements(SubscribeToAnnouncementsRequest) returns (stream AgentAnnouncement);
+  
+  // Perform agent health probing
+  rpc ProbeHealth(ProbeHealthRequest) returns (ProbeHealthResponse);
+  
+  // Get discovery statistics
+  rpc GetDiscoveryStatistics(GetDiscoveryStatisticsRequest) returns (GetDiscoveryStatisticsResponse);
+  
+  // Update agent discovery information
+  rpc UpdateDiscoveryInfo(UpdateDiscoveryInfoRequest) returns (UpdateDiscoveryInfoResponse);
+}
+
+// Discovery registry entry for agents
+message DiscoveryEntry {
+  OSSAIdentifier agent_id = 1;             // Agent identifier
+  DiscoveryMetadata metadata = 2;          // Discovery metadata
+  AgentDiscoveryInfo discovery_info = 3;   // Discovery-specific information
+  AvailabilityInfo availability = 4;       // Agent availability information
+  PerformanceProfile performance = 5;      // Performance characteristics
+  NetworkInfo network = 6;                 // Network connectivity info
+  google.protobuf.Timestamp registered = 7; // Registration timestamp
+  google.protobuf.Timestamp last_seen = 8; // Last activity timestamp
+  TrustScore trust = 9;                    // Trust and reputation score
+}
+
+message DiscoveryMetadata {
+  string name = 1;                         // Agent name
+  string description = 2;                  // Agent description
+  string version = 3;                      // Agent version
+  repeated string tags = 4;                // Searchable tags
+  map<string, string> labels = 5;          // Classification labels
+  DiscoveryVisibility visibility = 6;      // Discovery visibility level
+  DiscoveryScope scope = 7;                // Discovery scope
+}
+
+enum DiscoveryVisibility {
+  DISCOVERY_VISIBILITY_UNSPECIFIED = 0;
+  DISCOVERY_VISIBILITY_PUBLIC = 1;        // Publicly discoverable
+  DISCOVERY_VISIBILITY_PRIVATE = 2;       // Private (authenticated only)
+  DISCOVERY_VISIBILITY_RESTRICTED = 3;    // Restricted access
+  DISCOVERY_VISIBILITY_INTERNAL = 4;      // Internal to organization
+}
+
+enum DiscoveryScope {
+  DISCOVERY_SCOPE_UNSPECIFIED = 0;
+  DISCOVERY_SCOPE_LOCAL = 1;              // Local network/cluster
+  DISCOVERY_SCOPE_REGIONAL = 2;           // Regional scope
+  DISCOVERY_SCOPE_GLOBAL = 3;             // Global scope
+  DISCOVERY_SCOPE_FEDERATED = 4;          // Cross-federation scope
+}
+
+message AgentDiscoveryInfo {
+  repeated Capability capabilities = 1;     // Agent capabilities
+  repeated Protocol protocols = 2;          // Supported protocols
+  repeated FrameworkMetadata frameworks = 3; // Framework integrations
+  ServiceEndpoints endpoints = 4;           // Service endpoints
+  ResourceProfile resources = 5;           // Resource profile
+  QualityAttributes quality = 6;           // Quality attributes
+  ComplianceInfo compliance = 7;           // Compliance information
+}
+
+message ServiceEndpoints {
+  string primary_endpoint = 1;            // Primary service endpoint
+  repeated Endpoint additional_endpoints = 2; // Additional endpoints
+  HealthEndpoint health_check = 3;        // Health check endpoint
+  MetricsEndpoint metrics = 4;            // Metrics endpoint
+  APIEndpoint api = 5;                    // API endpoint
+}
+
+message Endpoint {
+  string name = 1;                        // Endpoint name
+  string url = 2;                         // Endpoint URL
+  EndpointType type = 3;                  // Endpoint type
+  ProtocolScheme scheme = 4;              // Protocol scheme
+  bool secure = 5;                        // Whether endpoint is secure
+  map<string, string> metadata = 6;       // Additional metadata
+}
+
+enum EndpointType {
+  ENDPOINT_TYPE_UNSPECIFIED = 0;
+  ENDPOINT_TYPE_REST = 1;                 // REST API endpoint
+  ENDPOINT_TYPE_GRPC = 2;                 // gRPC endpoint
+  ENDPOINT_TYPE_WEBSOCKET = 3;            // WebSocket endpoint
+  ENDPOINT_TYPE_GRAPHQL = 4;              // GraphQL endpoint
+  ENDPOINT_TYPE_MCP = 5;                  // Model Context Protocol endpoint
+}
+
+enum ProtocolScheme {
+  PROTOCOL_SCHEME_UNSPECIFIED = 0;
+  PROTOCOL_SCHEME_HTTP = 1;
+  PROTOCOL_SCHEME_HTTPS = 2;
+  PROTOCOL_SCHEME_GRPC = 3;
+  PROTOCOL_SCHEME_GRPCS = 4;
+  PROTOCOL_SCHEME_WS = 5;
+  PROTOCOL_SCHEME_WSS = 6;
+  PROTOCOL_SCHEME_TCP = 7;
+  PROTOCOL_SCHEME_TLS = 8;
+}
+
+message HealthEndpoint {
+  string url = 1;                         // Health check URL
+  HTTPMethod method = 2;                  // HTTP method
+  google.protobuf.Duration timeout = 3;   // Timeout for health check
+  map<string, string> headers = 4;        // Required headers
+  string expected_response = 5;           // Expected response content
+}
+
+message MetricsEndpoint {
+  string url = 1;                         // Metrics endpoint URL
+  MetricsFormat format = 2;               // Metrics format
+  bool authentication_required = 3;       // Whether auth is required
+}
+
+enum MetricsFormat {
+  METRICS_FORMAT_UNSPECIFIED = 0;
+  METRICS_FORMAT_PROMETHEUS = 1;
+  METRICS_FORMAT_OPENMETRICS = 2;
+  METRICS_FORMAT_JSON = 3;
+  METRICS_FORMAT_INFLUXDB = 4;
+}
+
+message APIEndpoint {
+  string url = 1;                         // API endpoint URL
+  APIType type = 2;                       // API type
+  string specification_url = 3;           // API specification URL
+  string version = 4;                     // API version
+}
+
+enum APIType {
+  API_TYPE_UNSPECIFIED = 0;
+  API_TYPE_OPENAPI = 1;                   // OpenAPI/Swagger
+  API_TYPE_GRAPHQL = 2;                   // GraphQL
+  API_TYPE_GRPC = 3;                      // gRPC
+  API_TYPE_MCP = 4;                       // Model Context Protocol
+}
+
+message ResourceProfile {
+  ComputeResources compute = 1;           // Compute resource profile
+  StorageResources storage = 2;           // Storage resource profile
+  NetworkResources network = 3;          // Network resource profile
+  SpecializedResources specialized = 4;   // Specialized resources (GPU, etc.)
+}
+
+message ComputeResources {
+  double cpu_cores = 1;                   // Available CPU cores
+  int64 memory_mb = 2;                    // Available memory in MB
+  CPUArchitecture architecture = 3;       // CPU architecture
+  double cpu_utilization = 4;             // Current CPU utilization (0.0-1.0)
+  double memory_utilization = 5;          // Current memory utilization (0.0-1.0)
+}
+
+enum CPUArchitecture {
+  CPU_ARCHITECTURE_UNSPECIFIED = 0;
+  CPU_ARCHITECTURE_X86_64 = 1;
+  CPU_ARCHITECTURE_ARM64 = 2;
+  CPU_ARCHITECTURE_X86 = 3;
+  CPU_ARCHITECTURE_ARM = 4;
+}
+
+message StorageResources {
+  int64 available_gb = 1;                 // Available storage in GB
+  int64 used_gb = 2;                      // Used storage in GB
+  StorageType type = 3;                   // Storage type
+  double iops = 4;                        // Input/Output operations per second
+}
+
+enum StorageType {
+  STORAGE_TYPE_UNSPECIFIED = 0;
+  STORAGE_TYPE_SSD = 1;                   // Solid State Drive
+  STORAGE_TYPE_HDD = 2;                   // Hard Disk Drive
+  STORAGE_TYPE_NVME = 3;                  // NVMe storage
+  STORAGE_TYPE_NETWORK = 4;               // Network storage
+}
+
+message NetworkResources {
+  double bandwidth_mbps = 1;              // Available bandwidth in Mbps
+  google.protobuf.Duration latency = 2;   // Network latency
+  double packet_loss_rate = 3;            // Packet loss rate (0.0-1.0)
+  repeated string supported_protocols = 4; // Supported network protocols
+}
+
+message SpecializedResources {
+  repeated GPUResource gpus = 1;          // GPU resources
+  repeated TPUResource tpus = 2;          // TPU resources
+  repeated FPGAResource fpgas = 3;        // FPGA resources
+}
+
+message GPUResource {
+  string model = 1;                       // GPU model
+  int64 memory_mb = 2;                    // GPU memory in MB
+  double utilization = 3;                 // Current GPU utilization (0.0-1.0)
+  bool available = 4;                     // Whether GPU is available
+}
+
+message TPUResource {
+  string version = 1;                     // TPU version
+  int32 cores = 2;                        // Number of TPU cores
+  double utilization = 3;                 // Current TPU utilization (0.0-1.0)
+  bool available = 4;                     // Whether TPU is available
+}
+
+message FPGAResource {
+  string model = 1;                       // FPGA model
+  string configuration = 2;               // FPGA configuration
+  bool available = 3;                     // Whether FPGA is available
+}
+
+message QualityAttributes {
+  ReliabilityMetrics reliability = 1;     // Reliability metrics
+  PerformanceMetrics performance = 2;     // Performance metrics
+  SecurityMetrics security = 3;           // Security metrics
+  AvailabilityMetrics availability = 4;   // Availability metrics
+}
+
+message ReliabilityMetrics {
+  double success_rate = 1;                // Success rate (0.0-1.0)
+  google.protobuf.Duration mtbf = 2;      // Mean Time Between Failures
+  google.protobuf.Duration mttr = 3;      // Mean Time To Recovery
+  int64 total_requests = 4;               // Total requests handled
+  int64 failed_requests = 5;              // Failed requests
+}
+
+message SecurityMetrics {
+  SecurityLevel level = 1;                // Overall security level
+  google.protobuf.Timestamp last_audit = 2; // Last security audit
+  bool vulnerability_scanning = 3;        // Whether vulnerability scanning is enabled
+  int32 open_vulnerabilities = 4;         // Number of open vulnerabilities
+}
+
+enum SecurityLevel {
+  SECURITY_LEVEL_UNSPECIFIED = 0;
+  SECURITY_LEVEL_BASIC = 1;               // Basic security
+  SECURITY_LEVEL_STANDARD = 2;            // Standard security
+  SECURITY_LEVEL_ENHANCED = 3;            // Enhanced security
+  SECURITY_LEVEL_MAXIMUM = 4;             // Maximum security
+}
+
+message AvailabilityMetrics {
+  double uptime_percentage = 1;           // Uptime percentage (0.0-1.0)
+  google.protobuf.Duration total_downtime = 2; // Total downtime
+  int32 outage_count = 3;                 // Number of outages
+  MaintenanceWindow maintenance = 4;      // Maintenance window info
+}
+
+message MaintenanceWindow {
+  bool scheduled = 1;                     // Whether maintenance is scheduled
+  google.protobuf.Timestamp next_maintenance = 2; // Next maintenance time
+  google.protobuf.Duration duration = 3;  // Expected maintenance duration
+}
+
+message ComplianceInfo {
+  repeated ComplianceFramework frameworks = 1; // Compliance frameworks
+  CertificationLevel certification = 2;   // Certification level
+  google.protobuf.Timestamp last_assessment = 3; // Last compliance assessment
+  repeated string compliance_tags = 4;     // Compliance-related tags
+}
+
+message ComplianceFramework {
+  string name = 1;                        // Framework name (ISO 42001, NIST AI RMF, etc.)
+  string version = 2;                     // Framework version
+  ComplianceStatus status = 3;            // Compliance status
+  double score = 4;                       // Compliance score (0.0-1.0)
+}
+
+enum ComplianceStatus {
+  COMPLIANCE_STATUS_UNSPECIFIED = 0;
+  COMPLIANCE_STATUS_COMPLIANT = 1;        // Fully compliant
+  COMPLIANCE_STATUS_PARTIALLY_COMPLIANT = 2; // Partially compliant
+  COMPLIANCE_STATUS_NON_COMPLIANT = 3;    // Non-compliant
+  COMPLIANCE_STATUS_UNDER_REVIEW = 4;     // Under review
+}
+
+enum CertificationLevel {
+  CERTIFICATION_LEVEL_UNSPECIFIED = 0;
+  CERTIFICATION_LEVEL_NONE = 1;           // No certification
+  CERTIFICATION_LEVEL_BASIC = 2;          // Basic certification
+  CERTIFICATION_LEVEL_STANDARD = 3;       // Standard certification
+  CERTIFICATION_LEVEL_ADVANCED = 4;       // Advanced certification
+  CERTIFICATION_LEVEL_PREMIUM = 5;        // Premium certification
+}
+
+message AvailabilityInfo {
+  AvailabilityStatus status = 1;          // Current availability status
+  LoadInfo load = 2;                      // Current load information
+  ScheduleInfo schedule = 3;              // Availability schedule
+  CapacityInfo capacity = 4;              // Capacity information
+}
+
+enum AvailabilityStatus {
+  AVAILABILITY_STATUS_UNSPECIFIED = 0;
+  AVAILABILITY_STATUS_AVAILABLE = 1;      // Available for work
+  AVAILABILITY_STATUS_BUSY = 2;           // Currently busy
+  AVAILABILITY_STATUS_OVERLOADED = 3;     // Overloaded
+  AVAILABILITY_STATUS_MAINTENANCE = 4;    // In maintenance mode
+  AVAILABILITY_STATUS_OFFLINE = 5;        // Offline
+}
+
+message LoadInfo {
+  double current_load = 1;                // Current load percentage (0.0-1.0)
+  int32 active_tasks = 2;                 // Number of active tasks
+  int32 queued_tasks = 3;                 // Number of queued tasks
+  google.protobuf.Duration estimated_wait_time = 4; // Estimated wait time
+}
+
+message ScheduleInfo {
+  repeated AvailabilityWindow windows = 1; // Availability windows
+  repeated MaintenanceWindow maintenance_windows = 2; // Maintenance windows
+  TimeZone timezone = 3;                  // Timezone information
+}
+
+message AvailabilityWindow {
+  DayOfWeek day = 1;                      // Day of the week
+  TimeRange time_range = 2;               // Time range
+  AvailabilityLevel level = 3;            // Availability level during window
+}
+
+enum DayOfWeek {
+  DAY_OF_WEEK_UNSPECIFIED = 0;
+  DAY_OF_WEEK_MONDAY = 1;
+  DAY_OF_WEEK_TUESDAY = 2;
+  DAY_OF_WEEK_WEDNESDAY = 3;
+  DAY_OF_WEEK_THURSDAY = 4;
+  DAY_OF_WEEK_FRIDAY = 5;
+  DAY_OF_WEEK_SATURDAY = 6;
+  DAY_OF_WEEK_SUNDAY = 7;
+}
+
+message TimeRange {
+  int32 start_hour = 1;                   // Start hour (0-23)
+  int32 start_minute = 2;                 // Start minute (0-59)
+  int32 end_hour = 3;                     // End hour (0-23)
+  int32 end_minute = 4;                   // End minute (0-59)
+}
+
+enum AvailabilityLevel {
+  AVAILABILITY_LEVEL_UNSPECIFIED = 0;
+  AVAILABILITY_LEVEL_FULL = 1;            // Full availability
+  AVAILABILITY_LEVEL_LIMITED = 2;         // Limited availability
+  AVAILABILITY_LEVEL_EMERGENCY_ONLY = 3;  // Emergency only
+  AVAILABILITY_LEVEL_UNAVAILABLE = 4;     // Unavailable
+}
+
+message TimeZone {
+  string id = 1;                          // Timezone ID (e.g., "UTC", "America/New_York")
+  int32 offset_minutes = 2;               // UTC offset in minutes
+}
+
+message CapacityInfo {
+  int32 max_concurrent_tasks = 1;         // Maximum concurrent tasks
+  int32 current_concurrent_tasks = 2;     // Current concurrent tasks
+  double capacity_utilization = 3;        // Capacity utilization (0.0-1.0)
+  ResourceReservation reservations = 4;   // Resource reservations
+}
+
+message ResourceReservation {
+  repeated Reservation active_reservations = 1; // Active reservations
+  int32 available_slots = 2;              // Available reservation slots
+}
+
+message Reservation {
+  OSSAIdentifier reservation_id = 1;      // Reservation identifier
+  OSSAIdentifier requester = 2;           // Requester agent
+  google.protobuf.Timestamp start_time = 3; // Reservation start time
+  google.protobuf.Timestamp end_time = 4; // Reservation end time
+  ResourceRequirements resources = 5;     // Reserved resources
+}
+
+message PerformanceProfile {
+  ThroughputMetrics throughput = 1;       // Throughput metrics
+  LatencyMetrics latency = 2;             // Latency metrics
+  ResourceUsageMetrics resource_usage = 3; // Resource usage metrics
+  BenchmarkResults benchmarks = 4;        // Benchmark results
+}
+
+message ThroughputMetrics {
+  double requests_per_second = 1;         // Current requests per second
+  double max_requests_per_second = 2;     // Maximum requests per second
+  double avg_requests_per_second = 3;     // Average requests per second
+}
+
+message LatencyMetrics {
+  google.protobuf.Duration p50_latency = 1; // 50th percentile latency
+  google.protobuf.Duration p90_latency = 2; // 90th percentile latency
+  google.protobuf.Duration p99_latency = 3; // 99th percentile latency
+  google.protobuf.Duration max_latency = 4; // Maximum latency
+}
+
+message ResourceUsageMetrics {
+  double cpu_usage = 1;                   // CPU usage (0.0-1.0)
+  double memory_usage = 2;                // Memory usage (0.0-1.0)
+  double network_usage = 3;               // Network usage (0.0-1.0)
+  double storage_usage = 4;               // Storage usage (0.0-1.0)
+}
+
+message BenchmarkResults {
+  repeated Benchmark results = 1;         // Benchmark results
+  google.protobuf.Timestamp last_run = 2; // Last benchmark run
+}
+
+message Benchmark {
+  string name = 1;                        // Benchmark name
+  double score = 2;                       // Benchmark score
+  string unit = 3;                        // Score unit
+  map<string, string> parameters = 4;     // Benchmark parameters
+}
+
+message NetworkInfo {
+  string ip_address = 1;                  // IP address
+  int32 port = 2;                         // Port number
+  NetworkType network_type = 3;           // Network type
+  repeated NetworkInterface interfaces = 4; // Network interfaces
+  ConnectivityInfo connectivity = 5;      // Connectivity information
+}
+
+enum NetworkType {
+  NETWORK_TYPE_UNSPECIFIED = 0;
+  NETWORK_TYPE_IPV4 = 1;                  // IPv4 network
+  NETWORK_TYPE_IPV6 = 2;                  // IPv6 network
+  NETWORK_TYPE_DUAL_STACK = 3;            // Dual stack (IPv4 + IPv6)
+}
+
+message NetworkInterface {
+  string name = 1;                        // Interface name
+  string address = 2;                     // Interface address
+  bool public = 3;                        // Whether interface is public
+  double bandwidth_mbps = 4;              // Interface bandwidth
+}
+
+message ConnectivityInfo {
+  bool internet_access = 1;               // Whether internet access is available
+  bool intranet_access = 2;               // Whether intranet access is available
+  repeated string reachable_networks = 3; // Reachable network segments
+  NAT nat_configuration = 4;              // NAT configuration
+}
+
+message NAT {
+  bool behind_nat = 1;                    // Whether behind NAT
+  string public_ip = 2;                   // Public IP address
+  repeated PortMapping port_mappings = 3; // Port mappings
+}
+
+message PortMapping {
+  int32 internal_port = 1;                // Internal port
+  int32 external_port = 2;                // External port
+  string protocol = 3;                    // Protocol (TCP, UDP)
+}
+
+message TrustScore {
+  double overall_score = 1;               // Overall trust score (0.0-1.0)
+  ReputationMetrics reputation = 2;       // Reputation metrics
+  CredibilityMetrics credibility = 3;     // Credibility metrics
+  VerificationInfo verification = 4;      // Verification information
+}
+
+message ReputationMetrics {
+  int32 successful_interactions = 1;      // Number of successful interactions
+  int32 failed_interactions = 2;          // Number of failed interactions
+  double success_rate = 3;                // Success rate (0.0-1.0)
+  int32 positive_reviews = 4;             // Number of positive reviews
+  int32 negative_reviews = 5;             // Number of negative reviews
+}
+
+message CredibilityMetrics {
+  bool identity_verified = 1;             // Whether identity is verified
+  bool certificate_valid = 2;             // Whether certificate is valid
+  google.protobuf.Timestamp last_verification = 3; // Last verification timestamp
+  repeated string credentials = 4;         // List of credentials
+}
+
+message VerificationInfo {
+  VerificationStatus status = 1;          // Verification status
+  string verification_authority = 2;      // Verification authority
+  google.protobuf.Timestamp verified_at = 3; // Verification timestamp
+  repeated string verification_methods = 4; // Verification methods used
+}
+
+enum VerificationStatus {
+  VERIFICATION_STATUS_UNSPECIFIED = 0;
+  VERIFICATION_STATUS_UNVERIFIED = 1;     // Not verified
+  VERIFICATION_STATUS_PENDING = 2;        // Verification pending
+  VERIFICATION_STATUS_VERIFIED = 3;       // Verified
+  VERIFICATION_STATUS_EXPIRED = 4;        // Verification expired
+}
+
+// Discovery query and search structures
+message DiscoveryQuery {
+  QueryType type = 1;                     // Query type
+  repeated string capabilities = 2;        // Required capabilities
+  repeated Constraint constraints = 3;     // Query constraints
+  SortOptions sort = 4;                   // Sort options
+  FilterOptions filters = 5;              // Filter options
+  SemanticSearch semantic = 6;            // Semantic search parameters
+}
+
+enum QueryType {
+  QUERY_TYPE_UNSPECIFIED = 0;
+  QUERY_TYPE_CAPABILITY = 1;              // Query by capability
+  QUERY_TYPE_SEMANTIC = 2;                // Semantic search
+  QUERY_TYPE_PROXIMITY = 3;               // Proximity-based search
+  QUERY_TYPE_PERFORMANCE = 4;             // Performance-based search
+  QUERY_TYPE_AVAILABILITY = 5;            // Availability-based search
+  QUERY_TYPE_COMPLIANCE = 6;              // Compliance-based search
+}
+
+message Constraint {
+  string field = 1;                       // Field name
+  ConstraintOperator operator = 2;        // Constraint operator
+  google.protobuf.Any value = 3;          // Constraint value
+}
+
+enum ConstraintOperator {
+  CONSTRAINT_OPERATOR_UNSPECIFIED = 0;
+  CONSTRAINT_OPERATOR_EQUALS = 1;         // Equals
+  CONSTRAINT_OPERATOR_NOT_EQUALS = 2;     // Not equals
+  CONSTRAINT_OPERATOR_GREATER_THAN = 3;   // Greater than
+  CONSTRAINT_OPERATOR_LESS_THAN = 4;      // Less than
+  CONSTRAINT_OPERATOR_GREATER_EQUAL = 5;  // Greater than or equal
+  CONSTRAINT_OPERATOR_LESS_EQUAL = 6;     // Less than or equal
+  CONSTRAINT_OPERATOR_CONTAINS = 7;       // Contains
+  CONSTRAINT_OPERATOR_STARTS_WITH = 8;    // Starts with
+  CONSTRAINT_OPERATOR_ENDS_WITH = 9;      // Ends with
+  CONSTRAINT_OPERATOR_REGEX = 10;         // Regular expression
+  CONSTRAINT_OPERATOR_IN = 11;            // In list
+  CONSTRAINT_OPERATOR_NOT_IN = 12;        // Not in list
+}
+
+message SortOptions {
+  repeated SortField fields = 1;          // Sort fields
+  SortOrder order = 2;                    // Sort order
+}
+
+message SortField {
+  string field = 1;                       // Field name
+  SortDirection direction = 2;            // Sort direction
+}
+
+enum SortDirection {
+  SORT_DIRECTION_UNSPECIFIED = 0;
+  SORT_DIRECTION_ASC = 1;                 // Ascending
+  SORT_DIRECTION_DESC = 2;                // Descending
+}
+
+enum SortOrder {
+  SORT_ORDER_UNSPECIFIED = 0;
+  SORT_ORDER_RELEVANCE = 1;               // Relevance-based
+  SORT_ORDER_PERFORMANCE = 2;             // Performance-based
+  SORT_ORDER_AVAILABILITY = 3;            // Availability-based
+  SORT_ORDER_PROXIMITY = 4;               // Proximity-based
+  SORT_ORDER_TRUST = 5;                   // Trust-based
+}
+
+message FilterOptions {
+  repeated AgentClass classes = 1;         // Filter by agent classes
+  repeated AgentCategory categories = 2;   // Filter by categories
+  repeated ConformanceTier tiers = 3;      // Filter by conformance tiers
+  AvailabilityFilter availability = 4;    // Availability filter
+  PerformanceFilter performance = 5;      // Performance filter
+  LocationFilter location = 6;            // Location filter
+  ComplianceFilter compliance = 7;        // Compliance filter
+}
+
+message AvailabilityFilter {
+  AvailabilityStatus min_status = 1;      // Minimum availability status
+  double max_load = 2;                    // Maximum load (0.0-1.0)
+  google.protobuf.Duration max_wait_time = 3; // Maximum wait time
+}
+
+message PerformanceFilter {
+  google.protobuf.Duration max_latency = 1; // Maximum latency
+  double min_throughput = 2;              // Minimum throughput
+  double min_success_rate = 3;            // Minimum success rate
+}
+
+message LocationFilter {
+  repeated string regions = 1;            // Allowed regions
+  repeated string zones = 2;              // Allowed zones
+  double max_distance_km = 3;             // Maximum distance in km
+  GeographicConstraint geographic = 4;    // Geographic constraints
+}
+
+message GeographicConstraint {
+  Coordinate center = 1;                  // Center coordinate
+  double radius_km = 2;                   // Radius in kilometers
+  BoundingBox bbox = 3;                   // Bounding box
+}
+
+message Coordinate {
+  double latitude = 1;                    // Latitude
+  double longitude = 2;                   // Longitude
+}
+
+message BoundingBox {
+  Coordinate north_east = 1;              // North-east corner
+  Coordinate south_west = 2;              // South-west corner
+}
+
+message ComplianceFilter {
+  repeated string required_frameworks = 1; // Required compliance frameworks
+  CertificationLevel min_certification = 2; // Minimum certification level
+  double min_score = 3;                   // Minimum compliance score
+}
+
+message SemanticSearch {
+  string query_text = 1;                  // Natural language query
+  repeated string embeddings = 2;         // Query embeddings
+  double similarity_threshold = 3;        // Similarity threshold (0.0-1.0)
+  int32 max_results = 4;                  // Maximum number of results
+  bool include_scores = 5;                // Whether to include similarity scores
+}
+
+// Discovery events and updates
+message DiscoveryUpdate {
+  UpdateType type = 1;                    // Update type
+  OSSAIdentifier agent_id = 2;            // Agent identifier
+  DiscoveryEntry entry = 3;               // Discovery entry (for additions/updates)
+  google.protobuf.Timestamp timestamp = 4; // Update timestamp
+  map<string, string> metadata = 5;       // Update metadata
+}
+
+enum UpdateType {
+  UPDATE_TYPE_UNSPECIFIED = 0;
+  UPDATE_TYPE_AGENT_REGISTERED = 1;       // Agent registered
+  UPDATE_TYPE_AGENT_UNREGISTERED = 2;     // Agent unregistered
+  UPDATE_TYPE_AGENT_UPDATED = 3;          // Agent information updated
+  UPDATE_TYPE_STATUS_CHANGED = 4;         // Agent status changed
+  UPDATE_TYPE_CAPABILITY_ADDED = 5;       // Capability added
+  UPDATE_TYPE_CAPABILITY_REMOVED = 6;     // Capability removed
+  UPDATE_TYPE_ENDPOINT_CHANGED = 7;       // Endpoint changed
+}
+
+message AgentAnnouncement {
+  OSSAIdentifier agent_id = 1;            // Agent identifier
+  AnnouncementType type = 2;              // Announcement type
+  string message = 3;                     // Announcement message
+  google.protobuf.Any payload = 4;        // Additional payload
+  google.protobuf.Timestamp timestamp = 5; // Announcement timestamp
+  google.protobuf.Duration ttl = 6;       // Time to live
+}
+
+enum AnnouncementType {
+  ANNOUNCEMENT_TYPE_UNSPECIFIED = 0;
+  ANNOUNCEMENT_TYPE_AVAILABILITY = 1;     // Availability announcement
+  ANNOUNCEMENT_TYPE_CAPABILITY = 2;       // Capability announcement
+  ANNOUNCEMENT_TYPE_MAINTENANCE = 3;      // Maintenance announcement
+  ANNOUNCEMENT_TYPE_UPDATE = 4;           // Update announcement
+  ANNOUNCEMENT_TYPE_SHUTDOWN = 5;         // Shutdown announcement
+}
+
+// Agent topology and relationships
+message AgentTopology {
+  repeated TopologyNode nodes = 1;        // Topology nodes
+  repeated TopologyEdge edges = 2;        // Topology edges
+  TopologyMetadata metadata = 3;          // Topology metadata
+}
+
+message TopologyNode {
+  OSSAIdentifier agent_id = 1;            // Agent identifier
+  NodeType type = 2;                      // Node type
+  map<string, string> attributes = 3;     // Node attributes
+  Coordinate location = 4;                // Physical/logical location
+}
+
+enum NodeType {
+  NODE_TYPE_UNSPECIFIED = 0;
+  NODE_TYPE_AGENT = 1;                    // Regular agent
+  NODE_TYPE_COORDINATOR = 2;              // Coordinator agent
+  NODE_TYPE_GATEWAY = 3;                  // Gateway agent
+  NODE_TYPE_CLUSTER = 4;                  // Agent cluster
+}
+
+message TopologyEdge {
+  OSSAIdentifier source = 1;              // Source agent
+  OSSAIdentifier target = 2;              // Target agent
+  EdgeType type = 3;                      // Edge type
+  double weight = 4;                      // Edge weight
+  map<string, string> attributes = 5;     // Edge attributes
+}
+
+enum EdgeType {
+  EDGE_TYPE_UNSPECIFIED = 0;
+  EDGE_TYPE_COMMUNICATION = 1;            // Communication relationship
+  EDGE_TYPE_DEPENDENCY = 2;               // Dependency relationship
+  EDGE_TYPE_COORDINATION = 3;             // Coordination relationship
+  EDGE_TYPE_HIERARCHY = 4;                // Hierarchical relationship
+}
+
+message TopologyMetadata {
+  int32 node_count = 1;                   // Number of nodes
+  int32 edge_count = 2;                   // Number of edges
+  google.protobuf.Timestamp last_updated = 3; // Last update timestamp
+  repeated string clusters = 4;           // Identified clusters
+}
+
+// Discovery statistics and metrics
+message DiscoveryStatistics {
+  int64 total_agents = 1;                 // Total number of registered agents
+  int64 active_agents = 2;                // Number of active agents
+  int64 queries_per_second = 3;           // Discovery queries per second
+  google.protobuf.Duration average_query_latency = 4; // Average query latency
+  CapabilityDistribution capability_dist = 5; // Capability distribution
+  TopologyStats topology_stats = 6;       // Topology statistics
+  PerformanceStats performance_stats = 7; // Performance statistics
+}
+
+message CapabilityDistribution {
+  map<string, int32> capability_counts = 1; // Count by capability
+  map<string, int32> class_counts = 2;    // Count by agent class
+  map<string, int32> category_counts = 3; // Count by category
+}
+
+message TopologyStats {
+  int32 connected_components = 1;         // Number of connected components
+  double clustering_coefficient = 2;      // Average clustering coefficient
+  int32 diameter = 3;                     // Network diameter
+  double density = 4;                     // Network density
+}
+
+message PerformanceStats {
+  google.protobuf.Duration p50_discovery_latency = 1; // 50th percentile discovery latency
+  google.protobuf.Duration p90_discovery_latency = 2; // 90th percentile discovery latency
+  google.protobuf.Duration p99_discovery_latency = 3; // 99th percentile discovery latency
+  double cache_hit_rate = 4;              // Cache hit rate (0.0-1.0)
+  int64 cache_size = 5;                   // Current cache size
+}
+
+// Request/Response messages for DiscoveryService
+
+message RegisterForDiscoveryRequest {
+  DiscoveryEntry entry = 1;               // Discovery entry to register
+  bool update_if_exists = 2;              // Whether to update if already exists
+  google.protobuf.Duration ttl = 3;       // Time to live for registration
+}
+
+message RegisterForDiscoveryResponse {
+  bool success = 1;                       // Registration success
+  OSSAIdentifier registration_id = 2;     // Registration identifier
+  google.protobuf.Timestamp expires_at = 3; // Registration expiration
+  Error error = 4;                        // Error if registration failed
+}
+
+message UnregisterFromDiscoveryRequest {
+  OSSAIdentifier agent_id = 1;            // Agent to unregister
+  bool graceful = 2;                      // Whether to perform graceful unregistration
+}
+
+message UnregisterFromDiscoveryResponse {
+  bool success = 1;                       // Unregistration success
+  google.protobuf.Timestamp unregistered_at = 2; // Unregistration timestamp
+  Error error = 3;                        // Error if unregistration failed
+}
+
+message DiscoverAgentsRequest {
+  DiscoveryQuery query = 1;               // Discovery query
+  PageInfo page_info = 2;                 // Pagination information
+  bool include_unavailable = 3;           // Whether to include unavailable agents
+  google.protobuf.Duration timeout = 4;   // Query timeout
+}
+
+message DiscoverAgentsResponse {
+  repeated DiscoveryEntry agents = 1;      // Discovered agents
+  PageInfo page_info = 2;                 // Pagination information
+  QueryStats stats = 3;                   // Query statistics
+  Error error = 4;                        // Error if query failed
+}
+
+message QueryStats {
+  int64 total_matches = 1;                // Total number of matches
+  google.protobuf.Duration query_time = 2; // Query execution time
+  bool from_cache = 3;                    // Whether result was cached
+  map<string, int32> source_counts = 4;   // Count by data source
+}
+
+message StreamDiscoveryUpdatesRequest {
+  repeated UpdateType update_types = 1;   // Types of updates to stream
+  DiscoveryQuery filter = 2;              // Filter for updates
+  bool include_initial_snapshot = 3;      // Whether to include initial snapshot
+}
+
+message SemanticSearchRequest {
+  SemanticSearch search = 1;              // Semantic search parameters
+  PageInfo page_info = 2;                 // Pagination information
+  repeated string fields = 3;             // Fields to search in
+}
+
+message SemanticSearchResponse {
+  repeated SemanticSearchResult results = 1; // Search results
+  PageInfo page_info = 2;                 // Pagination information
+  QueryStats stats = 3;                   // Query statistics
+  Error error = 4;                        // Error if search failed
+}
+
+message SemanticSearchResult {
+  DiscoveryEntry agent = 1;               // Matching agent
+  double similarity_score = 2;            // Similarity score (0.0-1.0)
+  repeated string matching_fields = 3;    // Fields that matched
+  string explanation = 4;                 // Explanation of match
+}
+
+message QueryCapabilitiesRequest {
+  repeated OSSAIdentifier agent_ids = 1;  // Agents to query (empty for all)
+  repeated string capability_names = 2;   // Specific capabilities to query
+  bool include_performance = 3;           // Whether to include performance metrics
+}
+
+message QueryCapabilitiesResponse {
+  repeated AgentCapabilities capabilities = 1; // Agent capabilities
+  Error error = 2;                        // Error if query failed
+}
+
+message AgentCapabilities {
+  OSSAIdentifier agent_id = 1;            // Agent identifier
+  repeated Capability capabilities = 2;   // Agent capabilities
+  PerformanceProfile performance = 3;     // Performance profile
+}
+
+message GetTopologyRequest {
+  TopologyScope scope = 1;                // Topology scope
+  int32 max_depth = 2;                    // Maximum traversal depth
+  repeated OSSAIdentifier root_agents = 3; // Root agents (empty for all)
+}
+
+enum TopologyScope {
+  TOPOLOGY_SCOPE_UNSPECIFIED = 0;
+  TOPOLOGY_SCOPE_LOCAL = 1;              // Local topology
+  TOPOLOGY_SCOPE_REGIONAL = 2;           // Regional topology
+  TOPOLOGY_SCOPE_GLOBAL = 3;             // Global topology
+}
+
+message GetTopologyResponse {
+  AgentTopology topology = 1;             // Agent topology
+  Error error = 2;                        // Error if topology retrieval failed
+}
+
+message AnnounceAvailabilityRequest {
+  OSSAIdentifier agent_id = 1;            // Agent identifier
+  AvailabilityInfo availability = 2;      // Availability information
+  google.protobuf.Duration announcement_ttl = 3; // Announcement TTL
+}
+
+message AnnounceAvailabilityResponse {
+  bool success = 1;                       // Announcement success
+  google.protobuf.Timestamp announced_at = 2; // Announcement timestamp
+  Error error = 3;                        // Error if announcement failed
+}
+
+message SubscribeToAnnouncementsRequest {
+  repeated AnnouncementType types = 1;    // Types of announcements to subscribe to
+  repeated OSSAIdentifier agent_ids = 2;  // Specific agents (empty for all)
+  DiscoveryQuery filter = 3;              // Filter for announcements
+}
+
+message ProbeHealthRequest {
+  repeated OSSAIdentifier agent_ids = 1;  // Agents to probe
+  google.protobuf.Duration timeout = 2;   // Probe timeout
+  bool detailed_check = 3;                // Whether to perform detailed check
+}
+
+message ProbeHealthResponse {
+  repeated AgentHealthResult results = 1; // Health check results
+  Error error = 2;                        // Error if probe failed
+}
+
+message AgentHealthResult {
+  OSSAIdentifier agent_id = 1;            // Agent identifier
+  HealthStatus health = 2;                // Health status
+  google.protobuf.Duration response_time = 3; // Response time
+  bool reachable = 4;                     // Whether agent is reachable
+}
+
+message GetDiscoveryStatisticsRequest {
+  bool include_topology = 1;              // Whether to include topology stats
+  bool include_performance = 2;           // Whether to include performance stats
+  google.protobuf.Duration time_window = 3; // Time window for statistics
+}
+
+message GetDiscoveryStatisticsResponse {
+  DiscoveryStatistics statistics = 1;     // Discovery statistics
+  Error error = 2;                        // Error if statistics retrieval failed
+}
+
+message UpdateDiscoveryInfoRequest {
+  OSSAIdentifier agent_id = 1;            // Agent identifier
+  AgentDiscoveryInfo discovery_info = 2;  // Updated discovery information
+  repeated string update_mask = 3;        // Fields to update
+}
+
+message UpdateDiscoveryInfoResponse {
+  bool success = 1;                       // Update success
+  google.protobuf.Timestamp updated_at = 2; // Update timestamp
+  Error error = 3;                        // Error if update failed
+}

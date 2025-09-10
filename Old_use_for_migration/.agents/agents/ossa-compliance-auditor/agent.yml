@@ -1,0 +1,287 @@
+apiVersion: open-standards-scalable-agents/v0.1.8
+kind: Agent
+metadata:
+  name: "compliance-auditor"
+  version: "1.1.0"
+  description: "Enterprise compliance auditor with OSSA v0.1.8 universal framework compatibility"
+  author: "Open Standards for Scalable Agents Community"
+  license: "Apache-2.0"
+  created: "2025-01-28"
+  updated: "2025-01-29"
+  labels:
+    tier: "advanced"
+    category: "compliance"
+    framework-compatibility: "universal"
+
+spec:
+  # Three-Tier Conformance System
+  conformance:
+    tier: "advanced"  # Core, Governed, Advanced
+    level: "enterprise"
+    certification:
+      iso_42001: "certified"
+      nist_ai_rmf: "level_4"
+      eu_ai_act: "compliant"
+  
+  # Universal Framework Compatibility (OSSA v0.1.8 requirement)
+  framework_adapters:
+    mcp:
+      enabled: true
+      version: "2024-11-05"
+      endpoint: "/mcp"
+      tools:
+        - "compliance_check"
+        - "audit_report"
+        - "risk_assessment"
+      integration_type: "server"
+    langchain:
+      enabled: true
+      version: "0.2.x"
+      adapter_class: "ComplianceAuditorTool"
+      chain_integration: true
+      memory_integration: true
+    crewai:
+      enabled: true  
+      version: "0.67.x"
+      role: "compliance_auditor"
+      goal: "Ensure comprehensive regulatory compliance across AI systems"
+      backstory: "Expert auditor specializing in AI governance frameworks"
+    autogen:
+      enabled: true
+      version: "0.2.x"
+      agent_type: "AssistantAgent"
+      human_input_mode: "NEVER"
+      system_message: "You are a specialized compliance auditor"
+    openai:
+      enabled: true
+      assistant_type: "compliance_specialist"
+      tools: ["audit_framework", "compliance_check"]
+
+  # Core Agent Definition
+  class: "auditor"
+  category: "compliance"
+  
+  capabilities:
+    primary:
+      - "compliance_auditing"
+      - "risk_assessment"
+      - "control_validation"
+      - "audit_reporting"
+      - "framework_adaptation"  # New in v0.1.8
+    secondary:
+      - "evidence_collection"
+      - "gap_analysis"
+      - "remediation_tracking"
+      - "continuous_monitoring"
+      - "cross_framework_orchestration"  # New in v0.1.8
+  
+  # Enhanced Protocol Support (v0.1.8)
+  protocols:
+    - name: "openapi"
+      version: "3.1.0"
+      required: true
+      spec_file: "./openapi.yaml"
+    - name: "mcp"
+      version: "2024-11-05"
+      required: true  # Mandatory in v0.1.8
+      tools_manifest: "./mcp-tools.json"
+    - name: "agent2agent"
+      version: "0.1.8"
+      required: true  # New requirement
+      discovery_endpoint: "/a2a/discover"
+    - name: "jsonrpc"
+      version: "2.0"
+      required: false
+      transport: "websocket"
+
+  # Enhanced Security Architecture (v0.1.8)
+  security:
+    authentication:
+      methods: ["api_key", "oauth2_pkce", "saml_2_0", "mTLS"]
+      default: "oauth2_pkce"
+      mfa_required: true
+    authorization:
+      model: "rbac_abac_hybrid"
+      fine_grained_permissions: true
+      context_aware: true
+    encryption:
+      at_rest: "aes_256_gcm"
+      in_transit: "tls_1_3"
+      key_management: "hsm_backed"
+    audit:
+      comprehensive_logging: true
+      immutable_audit_trail: true
+      compliance_reporting: "automated"
+      retention_policy: "7_years"
+    privacy:
+      data_minimization: true
+      anonymization: "differential_privacy"
+      right_to_erasure: "supported"
+  
+  # Performance & Resource Management (v0.1.8)
+  performance:
+    sla:
+      availability: "99.99%"
+      latency:
+        health_check: "<50ms"
+        capability_query: "<100ms" 
+        compliance_check: "<500ms"
+        full_audit: "<15m"
+      throughput:
+        concurrent_requests: 100
+        audits_per_hour: 200
+    resources:
+      cpu_cores: 4
+      memory_gb: 16
+      storage_gb: 500
+      gpu_required: false
+    scaling:
+      horizontal: true
+      auto_scale: true
+      max_instances: 10
+      scale_metric: "cpu_utilization"
+  
+  # Enterprise Compliance Features
+  compliance_frameworks:
+    iso_42001:
+      status: "certified"
+      controls_implemented: 47
+      automation_coverage: "95%"
+      last_audit: "2025-01-15"
+      next_audit: "2025-07-15"
+      auditor: "BSI"
+      certificate_id: "AI-ISO42001-2025-001"
+    nist_ai_rmf:
+      status: "implemented"
+      maturity_level: 4
+      functions: ["GOVERN", "MAP", "MEASURE", "MANAGE"] 
+      subcategories_covered: 42
+      last_assessment: "2025-01-10"
+      next_assessment: "2025-04-10"
+    eu_ai_act:
+      status: "compliant"
+      risk_classification: "limited_risk"
+      conformity_assessment: "completed"
+      ce_marking: "not_required"
+      transparency_requirements: "fully_met"
+      human_oversight: "meaningful_human_control"
+
+  # API Endpoints (OpenAPI 3.1.0 compliant)
+  endpoints:
+    health: 
+      path: "/health"
+      method: "GET"
+      auth_required: false
+    capabilities:
+      path: "/capabilities" 
+      method: "GET"
+      auth_required: true
+    audit:
+      path: "/audit"
+      methods: ["POST", "GET"]
+      auth_required: true
+      rate_limit: "100/hour"
+    compliance_check:
+      path: "/compliance/check"
+      method: "POST" 
+      auth_required: true
+      validation_schema: "compliance-request-v1.json"
+    risk_assessment:
+      path: "/risk/assess"
+      method: "POST"
+      auth_required: true
+      async: true
+    reports:
+      path: "/reports"
+      methods: ["GET", "POST"]
+      auth_required: true
+      formats: ["json", "pdf", "xml"]
+
+# OSSA v0.1.8 Extensions
+x-ossa-token-optimization:
+  enabled: true
+  total_budget: 12000  # Increased for v0.1.8
+  allocation:
+    validation: 4000      # 33.3%
+    compliance: 3500      # 29.2%
+    reporting: 2500       # 20.8%
+    orchestration: 1500   # 12.5%
+    emergency: 500        # 4.2%
+  optimization:
+    target_reduction: 0.80  # 80% token efficiency
+    strategy: "semantic_compression"
+    context_window_management: true
+
+x-ossa-memory-integration:
+  vector_storage:
+    provider: "qdrant"
+    endpoint: "http://localhost:6333" 
+    collection: "compliance_knowledge_v0_1_7"
+    dimensions: 1536
+    index_type: "hnsw"
+  knowledge_graphs:
+    enabled: true
+    provider: "neo4j"
+    endpoint: "bolt://localhost:7687"
+    database: "compliance_ontology"
+  semantic_search:
+    enabled: true
+    similarity_threshold: 0.85
+    max_results: 100
+    reranking: true
+
+x-ossa-orchestration:
+  discovery:
+    enabled: true
+    protocols: ["dns_sd", "consul", "kubernetes"]
+    heartbeat_interval: "30s"
+    health_check_timeout: "5s"
+  coordination:
+    leader_election: true
+    consensus_protocol: "raft"
+    distributed_locking: true
+  messaging:
+    broker: "apache_kafka"
+    topics: ["compliance_events", "audit_results"]
+    serialization: "avro"
+
+x-ossa-monitoring:
+  metrics:
+    prometheus_endpoint: "/metrics"
+    custom_metrics:
+      - "compliance_checks_total"
+      - "audit_duration_seconds"
+      - "risk_score_distribution"
+  logging:
+    level: "info"
+    format: "json"
+    correlation_ids: true
+    sensitive_data_filtering: true
+  tracing:
+    enabled: true
+    provider: "jaeger"
+    sampling_rate: 0.1
+  alerts:
+    channels: ["slack", "email", "webhook"]
+    rules:
+      - name: "high_risk_detected"
+        condition: "risk_score > 0.8"
+        severity: "critical"
+      - name: "compliance_failure"
+        condition: "compliance_check == false"
+        severity: "high"
+
+x-ossa-deployment:
+  container:
+    image: "ossa/compliance-auditor:v0.1.8"
+    registry: "docker.io"
+    security_scanning: true
+  kubernetes:
+    namespace: "ossa-compliance"
+    service_account: "compliance-auditor-sa"
+    network_policies: true
+    pod_security_standards: "restricted"
+  helm:
+    chart_version: "0.1.8"
+    values_schema: "./helm/values.schema.json"
+    upgrade_strategy: "rolling_update"

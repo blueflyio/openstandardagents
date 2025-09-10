@@ -1,0 +1,535 @@
+# OSSA v0.1.8 Helm Chart Values
+# Open Standards for Scalable Agents
+
+# Global configuration
+global:
+  # Environment: dev, staging, production
+  environment: dev
+  # Image registry settings
+  imageRegistry: ""
+  imagePullSecrets: []
+  # Storage class for persistent volumes
+  storageClass: ""
+  # Namespace to deploy into (if not using release namespace)
+  namespace: ""
+
+# OSSA core configuration
+ossa:
+  version: "0.1.8+rev2"
+  phase: "phase4"
+  scale: "enterprise"
+  # Uptime configuration for 99.97% target
+  uptime:
+    target: "99.97%"
+    enableHighAvailability: true
+    enableDisruptionBudgets: true
+    enableAntiAffinity: true
+
+# Image configurations for all services
+images:
+  registry: ossa
+  pullPolicy: IfNotPresent
+  pullSecrets: []
+  
+  gateway:
+    repository: ossa
+    tag: "gateway-0.1.8"
+  
+  taskAgent:
+    repository: ossa
+    tag: "task-agent-0.1.8"
+  
+  commAgent:
+    repository: ossa
+    tag: "comm-agent-0.1.8"
+  
+  mcpAgent:
+    repository: ossa
+    tag: "mcp-agent-0.1.8"
+  
+  coordination:
+    repository: ossa
+    tag: "coordination-0.1.8"
+  
+  discovery:
+    repository: ossa
+    tag: "discovery-0.1.8"
+  
+  orchestration:
+    repository: ossa
+    tag: "orchestration-0.1.8"
+  
+  monitoring:
+    repository: ossa
+    tag: "monitoring-0.1.8"
+
+# Service configurations
+services:
+  # OSSA Gateway Service - Main API Gateway
+  gateway:
+    enabled: true
+    replicaCount: 3
+    minReplicas: 3
+    maxReplicas: 10
+    type: ClusterIP
+    port: 3000
+    targetPort: 3000
+    annotations: {}
+    
+    resources:
+      requests:
+        memory: "512Mi"
+        cpu: "500m"
+      limits:
+        memory: "1Gi"
+        cpu: "1000m"
+    
+    env:
+      NODE_ENV: "development"
+      SERVICE_PORT: "3000"
+    
+    livenessProbe:
+      httpGet:
+        path: /health
+        port: 3000
+      initialDelaySeconds: 40
+      periodSeconds: 30
+      timeoutSeconds: 10
+      failureThreshold: 3
+    
+    readinessProbe:
+      httpGet:
+        path: /health
+        port: 3000
+      initialDelaySeconds: 10
+      periodSeconds: 5
+      timeoutSeconds: 5
+      failureThreshold: 3
+
+  # OSSA Task Agent Service
+  taskAgent:
+    enabled: true
+    replicaCount: 2
+    minReplicas: 2
+    maxReplicas: 20
+    type: ClusterIP
+    port: 3001
+    targetPort: 3001
+    
+    resources:
+      requests:
+        memory: "256Mi"
+        cpu: "250m"
+      limits:
+        memory: "512Mi"
+        cpu: "500m"
+    
+    env:
+      NODE_ENV: "development"
+      SERVICE_PORT: "3001"
+      AGENT_TYPE: "task"
+
+  # OSSA Communication Agent Service
+  commAgent:
+    enabled: true
+    replicaCount: 2
+    minReplicas: 2
+    maxReplicas: 15
+    type: ClusterIP
+    port: 3002
+    targetPort: 3002
+    
+    resources:
+      requests:
+        memory: "256Mi"
+        cpu: "250m"
+      limits:
+        memory: "512Mi"
+        cpu: "500m"
+    
+    env:
+      NODE_ENV: "development"
+      SERVICE_PORT: "3002"
+      AGENT_TYPE: "communication"
+
+  # OSSA MCP Bridge Agent Service
+  mcpAgent:
+    enabled: true
+    replicaCount: 2
+    minReplicas: 2
+    maxReplicas: 10
+    type: ClusterIP
+    port: 3003
+    targetPort: 3003
+    
+    resources:
+      requests:
+        memory: "256Mi"
+        cpu: "250m"
+      limits:
+        memory: "512Mi"
+        cpu: "500m"
+    
+    env:
+      NODE_ENV: "development"
+      SERVICE_PORT: "3003"
+      AGENT_TYPE: "mcp"
+
+  # OSSA Coordination Service
+  coordination:
+    enabled: true
+    replicaCount: 3
+    minReplicas: 3
+    maxReplicas: 6
+    type: ClusterIP
+    port: 3010
+    targetPort: 3010
+    
+    resources:
+      requests:
+        memory: "512Mi"
+        cpu: "500m"
+      limits:
+        memory: "1Gi"
+        cpu: "1000m"
+    
+    env:
+      NODE_ENV: "development"
+      SERVICE_PORT: "3010"
+
+  # OSSA Discovery Service
+  discovery:
+    enabled: true
+    replicaCount: 2
+    minReplicas: 2
+    maxReplicas: 8
+    type: ClusterIP
+    port: 3011
+    targetPort: 3011
+    
+    resources:
+      requests:
+        memory: "512Mi"
+        cpu: "500m"
+      limits:
+        memory: "1Gi"
+        cpu: "1000m"
+    
+    env:
+      NODE_ENV: "development"
+      SERVICE_PORT: "3011"
+
+  # OSSA Orchestration Service
+  orchestration:
+    enabled: true
+    replicaCount: 3
+    minReplicas: 3
+    maxReplicas: 12
+    type: ClusterIP
+    port: 3012
+    targetPort: 3012
+    
+    resources:
+      requests:
+        memory: "1Gi"
+        cpu: "1000m"
+      limits:
+        memory: "2Gi"
+        cpu: "2000m"
+    
+    env:
+      NODE_ENV: "development"
+      SERVICE_PORT: "3012"
+
+  # OSSA Monitoring Service
+  monitoring:
+    enabled: true
+    replicaCount: 2
+    minReplicas: 2
+    maxReplicas: 4
+    type: ClusterIP
+    port: 3013
+    targetPort: 3013
+    
+    resources:
+      requests:
+        memory: "512Mi"
+        cpu: "500m"
+      limits:
+        memory: "1Gi"
+        cpu: "1000m"
+    
+    env:
+      NODE_ENV: "development"
+      SERVICE_PORT: "3013"
+
+# High Availability Configuration for 99.97% uptime
+highAvailability:
+  enabled: true
+  
+  # Pod Disruption Budgets
+  podDisruptionBudgets:
+    enabled: true
+    gateway:
+      minAvailable: 2
+    coordination:
+      minAvailable: 2
+    orchestration:
+      minAvailable: 2
+    
+  # Anti-affinity rules
+  antiAffinity:
+    enabled: true
+    type: "soft" # or "hard"
+    
+  # Multi-zone deployment
+  multiZone:
+    enabled: true
+    zones:
+      - us-west-2a
+      - us-west-2b
+      - us-west-2c
+
+# Horizontal Pod Autoscaler configuration
+hpa:
+  enabled: true
+  
+  # CPU and memory thresholds for scaling
+  metrics:
+    cpu:
+      targetAverageUtilization: 70
+    memory:
+      targetAverageUtilization: 70
+      
+  # Custom metrics (if available)
+  customMetrics:
+    enabled: false
+    requests:
+      targetAverageValue: "1000m"
+
+# Network Policies
+networkPolicy:
+  enabled: false
+  ingress:
+    enabled: true
+    allowedNamespaces: []
+  egress:
+    enabled: true
+    allowedDestinations: []
+
+# Ingress configuration
+ingress:
+  enabled: true
+  className: "nginx"
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    
+  hosts:
+    - host: ossa-api.example.com
+      paths:
+        - path: /
+          pathType: Prefix
+          backend:
+            service:
+              name: ossa-gateway
+              port: 3000
+    - host: ossa-monitoring.example.com
+      paths:
+        - path: /
+          pathType: Prefix
+          backend:
+            service:
+              name: ossa-monitoring
+              port: 3013
+  
+  tls:
+    - secretName: ossa-tls
+      hosts:
+        - ossa-api.example.com
+        - ossa-monitoring.example.com
+
+# Database configurations
+postgresql:
+  enabled: true
+  auth:
+    database: ossa
+    username: ossa
+    password: "ossa_password"
+  architecture: replication
+  primary:
+    resources:
+      requests:
+        memory: 256Mi
+        cpu: 250m
+      limits:
+        memory: 512Mi
+        cpu: 500m
+  readReplicas:
+    replicaCount: 2
+    resources:
+      requests:
+        memory: 256Mi
+        cpu: 250m
+      limits:
+        memory: 512Mi
+        cpu: 500m
+
+# Redis configuration
+redis:
+  enabled: true
+  architecture: replication
+  master:
+    resources:
+      requests:
+        memory: 256Mi
+        cpu: 250m
+      limits:
+        memory: 512Mi
+        cpu: 500m
+  replica:
+    replicaCount: 2
+    resources:
+      requests:
+        memory: 256Mi
+        cpu: 250m
+      limits:
+        memory: 512Mi
+        cpu: 500m
+
+# Qdrant Vector Database
+qdrant:
+  enabled: true
+  replicaCount: 3
+  persistence:
+    enabled: true
+    size: 10Gi
+  resources:
+    requests:
+      memory: "1Gi"
+      cpu: "500m"
+    limits:
+      memory: "2Gi"
+      cpu: "1000m"
+
+# Monitoring stack
+monitoring:
+  # Prometheus monitoring
+  prometheus:
+    enabled: true
+    retention: "15d"
+    resources:
+      requests:
+        memory: "512Mi"
+        cpu: "500m"
+      limits:
+        memory: "1Gi"
+        cpu: "1000m"
+    storage:
+      size: "20Gi"
+  
+  # Grafana dashboards
+  grafana:
+    enabled: true
+    adminPassword: "ossa-monitor-2025"
+    resources:
+      requests:
+        memory: "256Mi"
+        cpu: "250m"
+      limits:
+        memory: "512Mi"
+        cpu: "500m"
+  
+  # Alert manager
+  alertmanager:
+    enabled: true
+    resources:
+      requests:
+        memory: "128Mi"
+        cpu: "100m"
+      limits:
+        memory: "256Mi"
+        cpu: "200m"
+
+# Security configurations
+security:
+  # Pod Security Context
+  podSecurityContext:
+    runAsNonRoot: true
+    runAsUser: 1000
+    fsGroup: 1000
+  
+  # Container Security Context
+  securityContext:
+    allowPrivilegeEscalation: false
+    readOnlyRootFilesystem: true
+    runAsNonRoot: true
+    runAsUser: 1000
+    capabilities:
+      drop:
+        - ALL
+
+# Service Account
+serviceAccount:
+  create: true
+  annotations: {}
+  name: ""
+
+# RBAC configuration
+rbac:
+  create: true
+  rules: []
+
+# Node selector and tolerations
+nodeSelector: {}
+tolerations: []
+affinity: {}
+
+# Persistent Volume configurations
+persistence:
+  enabled: true
+  storageClass: ""
+  accessMode: ReadWriteOnce
+  size: 10Gi
+
+# Environment-specific overrides
+environments:
+  # Development environment
+  dev:
+    replicaCount: 1
+    minReplicas: 1
+    maxReplicas: 3
+    resources:
+      requests:
+        memory: "128Mi"
+        cpu: "100m"
+      limits:
+        memory: "256Mi"
+        cpu: "200m"
+  
+  # Staging environment
+  staging:
+    replicaCount: 2
+    minReplicas: 2
+    maxReplicas: 6
+    resources:
+      requests:
+        memory: "256Mi"
+        cpu: "250m"
+      limits:
+        memory: "512Mi"
+        cpu: "500m"
+  
+  # Production environment (for 99.97% uptime)
+  production:
+    replicaCount: 3
+    minReplicas: 3
+    maxReplicas: 20
+    resources:
+      requests:
+        memory: "512Mi"
+        cpu: "500m"
+      limits:
+        memory: "1Gi"
+        cpu: "1000m"

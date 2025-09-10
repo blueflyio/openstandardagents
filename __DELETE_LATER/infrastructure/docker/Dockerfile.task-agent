@@ -1,0 +1,124 @@
+FROM node:20-alpine
+
+# Install system dependencies
+RUN apk add --no-cache \
+    wget \
+    curl \
+    bash \
+    git
+
+WORKDIR /app
+
+# Copy package files
+COPY package*.json ./
+
+# Install root dependencies
+RUN npm install || true
+
+# Copy source code
+COPY . .
+
+# Install and build the CLI package
+WORKDIR /app/src/cli
+RUN npm install && npm run build
+
+# Return to app root
+WORKDIR /app
+
+# Create task agent startup script
+RUN cat > /app/start-task-agent.sh << 'EOF'
+#!/bin/bash
+echo "🤖 Starting OSSA Task Agent v0.1.8..."
+
+# Start the task agent service
+node -e "
+const express = require('express');
+const { TaskAgent } = require('./src/services/agent-core/dist/index.js');
+
+const app = express();
+app.use(express.json());
+
+// Initialize task agent
+const taskAgent = new TaskAgent({
+  id: 'task-agent-' + Date.now(),
+  name: 'OSSA Task Agent',
+  version: '0.1.8',
+  port: process.env.SERVICE_PORT || 3001
+});
+
+// Health endpoint
+app.get('/health', (req, res) => {
+  res.json({
+    service: 'task-agent',
+    status: 'healthy',
+    version: '0.1.8',
+    agent_type: 'task',
+    timestamp: new Date().toISOString()
+  });
+});
+
+// Agent capabilities endpoint
+app.get('/capabilities', (req, res) => {
+  res.json({
+    agent_type: 'task',
+    capabilities: [
+      'task_execution',
+      'workflow_coordination',
+      'state_management',
+      'result_processing'
+    ],
+    endpoints: {
+      execute: '/execute',
+      status: '/status',
+      results: '/results'
+    }
+  });
+});
+
+// Task execution endpoint
+app.post('/execute', async (req, res) => {
+  try {
+    const { task, parameters } = req.body;
+    
+    // Mock task execution
+    const result = await taskAgent.execute({
+      task,
+      parameters: parameters || {},
+      timeout: 30000
+    });
+    
+    res.json({
+      status: 'completed',
+      task_id: 'task-' + Date.now(),
+      result,
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    res.status(500).json({
+      status: 'error',
+      error: error.message,
+      timestamp: new Date().toISOString()
+    });
+  }
+});
+
+const port = process.env.SERVICE_PORT || 3001;
+app.listen(port, '0.0.0.0', () => {
+  console.log('✅ Task Agent running on port ' + port);
+});
+"
+
+EOF
+
+# Make startup script executable
+RUN chmod +x /app/start-task-agent.sh
+
+# Expose port
+EXPOSE 3001
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+  CMD curl -f http://localhost:3001/health || exit 1
+
+# Start task agent service
+CMD ["/app/start-task-agent.sh"]

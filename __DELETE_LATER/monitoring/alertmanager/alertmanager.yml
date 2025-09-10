@@ -1,0 +1,297 @@
+# OSSA AlertManager Configuration
+# Version: 0.1.8 - Enterprise Alert Management
+
+global:
+  # Global configuration
+  smtp_smarthost: 'smtp.gmail.com:587'
+  smtp_from: 'alerts@ossa.ai'
+  smtp_auth_username: 'alerts@ossa.ai'
+  smtp_auth_password: 'your-smtp-password'
+  
+  # Slack webhook URL for team notifications
+  slack_api_url: 'https://hooks.slack.com/services/YOUR/SLACK/WEBHOOK'
+  
+  # PagerDuty integration key
+  pagerduty_url: 'https://events.pagerduty.com/v2/enqueue'
+  
+  # Microsoft Teams webhook
+  teams_webhook_url: 'https://outlook.office.com/webhook/YOUR-TEAMS-WEBHOOK'
+
+# Template files for custom alert formatting
+templates:
+  - '/etc/alertmanager/templates/*.tmpl'
+
+# Alert routing configuration
+route:
+  group_by: ['alertname', 'cluster', 'service']
+  group_wait: 10s
+  group_interval: 10s
+  repeat_interval: 12h
+  receiver: 'default-receiver'
+  routes:
+    # Critical SLA violations - immediate escalation
+    - match:
+        severity: critical
+      receiver: 'critical-escalation'
+      group_wait: 0s
+      group_interval: 5m
+      repeat_interval: 1h
+      routes:
+        # SLA-specific critical alerts
+        - match:
+            sla: availability
+          receiver: 'sla-critical-team'
+          continue: true
+        - match:
+            sla: response_time
+          receiver: 'performance-critical-team'
+          continue: true
+        - match:
+            service: ossa-security
+          receiver: 'security-critical-team'
+          continue: true
+
+    # Warning level alerts
+    - match:
+        severity: warning
+      receiver: 'warning-team'
+      group_wait: 5m
+      group_interval: 15m
+      repeat_interval: 4h
+
+    # Agent-specific alerts
+    - match:
+        service: ossa-agents
+      receiver: 'agent-team'
+      group_wait: 2m
+      group_interval: 10m
+      repeat_interval: 2h
+
+    # Business metrics alerts
+    - match_re:
+        service: ossa-(token|vortex|feedback)
+      receiver: 'business-team'
+      group_wait: 5m
+      group_interval: 20m
+      repeat_interval: 6h
+
+    # Security and compliance alerts
+    - match_re:
+        service: ossa-(security|compliance)
+      receiver: 'security-team'
+      group_wait: 1m
+      group_interval: 5m
+      repeat_interval: 1h
+
+    # Infrastructure alerts
+    - match:
+        service: ossa-infrastructure
+      receiver: 'infrastructure-team'
+      group_wait: 3m
+      group_interval: 15m
+      repeat_interval: 4h
+
+    # Industrial protocol alerts (OPC UA/UADP)
+    - match:
+        service: ossa-industrial
+      receiver: 'industrial-team'
+      group_wait: 30s
+      group_interval: 5m
+      repeat_interval: 30m
+
+# Alert receivers and notification channels
+receivers:
+  # Default receiver for unmatched alerts
+  - name: 'default-receiver'
+    slack_configs:
+      - api_url: 'https://hooks.slack.com/services/YOUR/DEFAULT/WEBHOOK'
+        channel: '#ossa-alerts'
+        title: 'OSSA Alert - {{ .GroupLabels.alertname }}'
+        text: |
+          {{ range .Alerts }}
+          *Alert:* {{ .Annotations.summary }}
+          *Description:* {{ .Annotations.description }}
+          *Severity:* {{ .Labels.severity }}
+          *Service:* {{ .Labels.service }}
+          {{ end }}
+
+  # Critical escalation receiver
+  - name: 'critical-escalation'
+    pagerduty_configs:
+      - service_key: 'YOUR-PAGERDUTY-CRITICAL-SERVICE-KEY'
+        description: 'OSSA Critical: {{ .GroupLabels.alertname }}'
+        severity: 'critical'
+        custom_details:
+          environment: 'production'
+          cluster: 'ossa-main'
+    slack_configs:
+      - api_url: 'https://hooks.slack.com/services/YOUR/CRITICAL/WEBHOOK'
+        channel: '#ossa-critical'
+        title: '🚨 OSSA CRITICAL ALERT 🚨'
+        text: |
+          <!channel>
+          {{ range .Alerts }}
+          *CRITICAL ALERT:* {{ .Annotations.summary }}
+          *Description:* {{ .Annotations.description }}
+          *Service:* {{ .Labels.service }}
+          *Runbook:* {{ .Annotations.runbook_url }}
+          {{ end }}
+        send_resolved: true
+    email_configs:
+      - to: 'oncall@ossa.ai'
+        from: 'alerts@ossa.ai'
+        subject: 'CRITICAL: OSSA {{ .GroupLabels.alertname }}'
+        body: |
+          CRITICAL ALERT TRIGGERED
+          
+          {{ range .Alerts }}
+          Alert: {{ .Annotations.summary }}
+          Description: {{ .Annotations.description }}
+          Service: {{ .Labels.service }}
+          Severity: {{ .Labels.severity }}
+          Runbook: {{ .Annotations.runbook_url }}
+          
+          Firing time: {{ .StartsAt }}
+          {{ end }}
+
+  # SLA Critical Team
+  - name: 'sla-critical-team'
+    slack_configs:
+      - api_url: 'https://hooks.slack.com/services/YOUR/SLA/WEBHOOK'
+        channel: '#ossa-sla-alerts'
+        title: '📊 SLA VIOLATION - {{ .GroupLabels.alertname }}'
+        text: |
+          <!here> SLA Violation Detected!
+          {{ range .Alerts }}
+          *Alert:* {{ .Annotations.summary }}
+          *Current Value:* {{ .Annotations.description }}
+          *SLA Type:* {{ .Labels.sla }}
+          {{ end }}
+
+  # Performance Critical Team
+  - name: 'performance-critical-team'
+    teams_configs:
+      - webhook_url: 'https://outlook.office.com/webhook/YOUR-PERFORMANCE-WEBHOOK'
+        title: 'OSSA Performance Critical Alert'
+        summary: '{{ .GroupLabels.alertname }}'
+        text: |
+          {{ range .Alerts }}
+          **Performance Issue Detected**
+          
+          Alert: {{ .Annotations.summary }}
+          Description: {{ .Annotations.description }}
+          Service: {{ .Labels.service }}
+          {{ end }}
+
+  # Security Critical Team
+  - name: 'security-critical-team'
+    slack_configs:
+      - api_url: 'https://hooks.slack.com/services/YOUR/SECURITY/WEBHOOK'
+        channel: '#ossa-security-alerts'
+        title: '🔒 SECURITY ALERT - {{ .GroupLabels.alertname }}'
+        text: |
+          <!here> Security Alert!
+          {{ range .Alerts }}
+          *Alert:* {{ .Annotations.summary }}
+          *Description:* {{ .Annotations.description }}
+          *Service:* {{ .Labels.service }}
+          {{ end }}
+    pagerduty_configs:
+      - service_key: 'YOUR-PAGERDUTY-SECURITY-SERVICE-KEY'
+        description: 'OSSA Security: {{ .GroupLabels.alertname }}'
+        severity: 'critical'
+
+  # Warning Team
+  - name: 'warning-team'
+    slack_configs:
+      - api_url: 'https://hooks.slack.com/services/YOUR/WARNING/WEBHOOK'
+        channel: '#ossa-warnings'
+        title: '⚠️ OSSA Warning - {{ .GroupLabels.alertname }}'
+        text: |
+          {{ range .Alerts }}
+          *Warning:* {{ .Annotations.summary }}
+          *Description:* {{ .Annotations.description }}
+          *Service:* {{ .Labels.service }}
+          {{ end }}
+
+  # Agent Team
+  - name: 'agent-team'
+    slack_configs:
+      - api_url: 'https://hooks.slack.com/services/YOUR/AGENT/WEBHOOK'
+        channel: '#ossa-agent-alerts'
+        title: '🤖 Agent Alert - {{ .GroupLabels.alertname }}'
+        text: |
+          {{ range .Alerts }}
+          *Agent Alert:* {{ .Annotations.summary }}
+          *Description:* {{ .Annotations.description }}
+          *Agent Service:* {{ .Labels.service }}
+          {{ end }}
+
+  # Business Team
+  - name: 'business-team'
+    email_configs:
+      - to: 'business@ossa.ai'
+        from: 'alerts@ossa.ai'
+        subject: 'OSSA Business Metrics Alert: {{ .GroupLabels.alertname }}'
+        body: |
+          Business Metrics Alert
+          
+          {{ range .Alerts }}
+          Alert: {{ .Annotations.summary }}
+          Description: {{ .Annotations.description }}
+          Service: {{ .Labels.service }}
+          {{ end }}
+    slack_configs:
+      - api_url: 'https://hooks.slack.com/services/YOUR/BUSINESS/WEBHOOK'
+        channel: '#ossa-business-metrics'
+        title: '💼 Business Metrics - {{ .GroupLabels.alertname }}'
+
+  # Security Team
+  - name: 'security-team'
+    slack_configs:
+      - api_url: 'https://hooks.slack.com/services/YOUR/SECURITY/WEBHOOK'
+        channel: '#ossa-security'
+        title: '🔐 Security Alert - {{ .GroupLabels.alertname }}'
+
+  # Infrastructure Team  
+  - name: 'infrastructure-team'
+    slack_configs:
+      - api_url: 'https://hooks.slack.com/services/YOUR/INFRA/WEBHOOK'
+        channel: '#ossa-infrastructure'
+        title: '🏗️ Infrastructure Alert - {{ .GroupLabels.alertname }}'
+
+  # Industrial Team (OPC UA/UADP)
+  - name: 'industrial-team'
+    slack_configs:
+      - api_url: 'https://hooks.slack.com/services/YOUR/INDUSTRIAL/WEBHOOK'
+        channel: '#ossa-industrial'
+        title: '🏭 Industrial Protocol Alert - {{ .GroupLabels.alertname }}'
+        text: |
+          {{ range .Alerts }}
+          *Protocol Alert:* {{ .Annotations.summary }}
+          *Description:* {{ .Annotations.description }}
+          *Service:* {{ .Labels.service }}
+          {{ end }}
+
+# Inhibition rules to suppress redundant alerts
+inhibit_rules:
+  # Suppress non-critical alerts when critical alerts are firing for the same service
+  - source_match:
+      severity: 'critical'
+    target_match:
+      severity: 'warning'
+    equal: ['alertname', 'service']
+
+  # Suppress individual component alerts when service is down
+  - source_match:
+      alertname: 'OSSAServiceDown'
+    target_match_re:
+      alertname: 'OSSA.*'
+    equal: ['service']
+
+  # Suppress specific SLA alerts when overall availability is down
+  - source_match:
+      alertname: 'OSSAAvailabilityBelowSLA'
+    target_match_re:
+      alertname: 'OSSA(ResponseTime|Throughput).*'
+    equal: ['service']

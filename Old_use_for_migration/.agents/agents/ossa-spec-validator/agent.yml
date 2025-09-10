@@ -1,0 +1,51 @@
+apiVersion: open-standards-scalable-agents/v0.1.8
+kind: Agent
+metadata:
+  name: ossa-validator-agent
+  description: "OSSA v0.1.8 compliance validation agent"
+  version: 0.1.8
+  tags:
+    - validation
+    - compliance
+    - ossa
+spec:
+  capabilities:
+    - schema_validation
+    - compliance_checking
+    - ossa_enforcement
+  model:
+    provider: anthropic
+    model: claude-sonnet
+    temperature: 0.1
+  
+# OSSA v0.1.8 Extensions
+x-ossa-token-budget:
+  total_budget: 8000
+  allocation:
+    validation: 3000      # 37.5%
+    compliance: 2500      # 31.25%
+    reporting: 1500       # 18.75%
+    emergency: 1000       # 12.5%
+
+x-ossa-acta:
+  tokenOptimization:
+    enabled: true
+    targetReduction: 0.75  # 75% reduction
+    strategy: "hierarchical"
+  vectorStorage:
+    provider: "qdrant"
+    endpoint: "http://localhost:6333"
+    collection: "ossa_validation_contexts"
+    dimensions: 1536
+  semanticFidelity:
+    threshold: 0.95
+
+x-ossa-acdl:
+  capabilityTaxonomy: "ai-capabilities/validation/ossa-compliance"
+  hierarchicalDiscovery: true
+  semanticMatching: enabled
+  discoveryOptimization:
+    latency: 50  # <50ms discovery
+    caching:
+      ttl: 300  # 5 minutes
+      strategy: "adaptive"

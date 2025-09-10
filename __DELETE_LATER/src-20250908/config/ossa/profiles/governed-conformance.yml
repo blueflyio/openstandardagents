@@ -1,0 +1,173 @@
+apiVersion: open-standards-scalable-agents/v0.1.2
+kind: ConformanceProfile
+metadata:
+  name: governed-conformance-profile
+  version: "1.0.0"
+  description: "Governed level conformance requirements for enterprise OSSA deployment"
+  labels:
+    level: governed
+    domain: enterprise
+spec:
+  level: governed
+  requirements:
+    mandatory:
+      # Inherit all Core requirements
+      - id: "GOV-001"
+        description: "Agent MUST pass all Core level requirements"
+        validation:
+          type: "custom"
+          validator: "validate_core_conformance"
+        severity: "critical"
+      
+      # Enterprise Security Requirements
+      - id: "GOV-002"
+        description: "Agent MUST implement authentication"
+        validation:
+          type: "schema"
+          schema_path: "../schemas/ossa/v0.1.2/governed/agent-governed.json#/properties/spec/properties/security/properties/authentication"
+        severity: "critical"
+      
+      - id: "GOV-003"
+        description: "Agent MUST define SLA for capabilities"
+        validation:
+          type: "custom"
+          validator: "validate_sla_defined"
+        severity: "major"
+      
+      - id: "GOV-004"
+        description: "Agent MUST support orchestration patterns"
+        validation:
+          type: "schema"
+          schema_path: "../schemas/ossa/v0.1.2/governed/agent-governed.json#/properties/spec/properties/orchestration"
+        severity: "major"
+      
+      - id: "GOV-005"
+        description: "Agent MUST enable monitoring"
+        validation:
+          type: "custom"
+          validator: "validate_monitoring_enabled"
+        severity: "major"
+      
+      - id: "GOV-006"
+        description: "Agent MUST provide OpenAPI specification"
+        validation:
+          type: "custom"
+          validator: "validate_openapi_spec"
+        severity: "major"
+      
+      - id: "GOV-007"
+        description: "Agent MUST implement proper error handling"
+        validation:
+          type: "behavioral"
+          test_suite: "error_handling_tests"
+        severity: "major"
+      
+      - id: "GOV-008"
+        description: "Agent MUST support timeout configuration"
+        validation:
+          type: "custom"
+          validator: "validate_timeout_support"
+        severity: "major"
+      
+      # Performance Requirements
+      - id: "GOV-009"
+        description: "Agent MUST meet response time SLA"
+        validation:
+          type: "behavioral"
+          test_suite: "performance_tests"
+        severity: "major"
+      
+      - id: "GOV-010"
+        description: "Agent MUST handle concurrent requests"
+        validation:
+          type: "behavioral"
+          test_suite: "concurrency_tests"
+        severity: "major"
+    
+    optional:
+      - id: "GOV-OPT-001"
+        description: "Agent SHOULD implement authorization"
+        points: 20
+      
+      - id: "GOV-OPT-002"
+        description: "Agent SHOULD support encryption at rest"
+        points: 15
+      
+      - id: "GOV-OPT-003"
+        description: "Agent SHOULD implement circuit breaker pattern"
+        points: 10
+      
+      - id: "GOV-OPT-004"
+        description: "Agent SHOULD provide detailed metrics"
+        points: 12
+      
+      - id: "GOV-OPT-005"
+        description: "Agent SHOULD support multiple orchestration patterns"
+        points: 8
+      
+      - id: "GOV-OPT-006"
+        description: "Agent SHOULD implement rate limiting"
+        points: 10
+      
+      - id: "GOV-OPT-007"
+        description: "Agent SHOULD provide health check endpoints"
+        points: 8
+      
+      - id: "GOV-OPT-008"
+        description: "Agent SHOULD support input/output schema validation"
+        points: 15
+      
+      - id: "GOV-OPT-009"
+        description: "Agent SHOULD implement retry mechanisms"
+        points: 8
+      
+      - id: "GOV-OPT-010"
+        description: "Agent SHOULD support alert configuration"
+        points: 6
+  
+  scoring:
+    pass_threshold: 80
+    weights:
+      mandatory: 0.75
+      optional: 0.25
+  
+  framework_compatibility:
+    required: ["mcp", "langchain"]
+    recommended: ["crewai", "openai"]
+    tests:
+      - framework: "mcp"
+        test_type: "integration"
+        test_suite: "mcp_enterprise_integration_tests"
+      
+      - framework: "langchain"
+        test_type: "integration"
+        test_suite: "langchain_enterprise_agent_tests"
+      
+      - framework: "crewai"
+        test_type: "integration"
+        test_suite: "crewai_enterprise_workflow_tests"
+      
+      - framework: "openai"
+        test_type: "compatibility"
+        test_suite: "openai_assistant_compatibility_tests"
+      
+      - framework: "mcp"
+        test_type: "performance"
+        test_suite: "mcp_performance_tests"
+  
+  compliance_frameworks: []  # No regulatory compliance required at Governed level
+  
+  validation:
+    automated: true
+    continuous: true
+    schedule: "0 2 * * *"  # Daily at 2 AM
+    timeout: "10m"
+    retry:
+      max_attempts: 3
+      delay: "30s"
+  
+  certification:
+    authority: "OSSA Conformance Board"
+    validity_period: "1y"
+    renewal_threshold: "60d"
+    evidence_retention: "5y"

@@ -1,0 +1,225 @@
+# Development Environment Values for OSSA v0.1.8
+# Optimized for local development and testing
+
+global:
+  environment: dev
+
+# Reduced resource requirements for development
+services:
+  gateway:
+    replicaCount: 1
+    minReplicas: 1
+    maxReplicas: 2
+    resources:
+      requests:
+        memory: "128Mi"
+        cpu: "100m"
+      limits:
+        memory: "256Mi"
+        cpu: "200m"
+
+  taskAgent:
+    replicaCount: 1
+    minReplicas: 1
+    maxReplicas: 2
+    resources:
+      requests:
+        memory: "64Mi"
+        cpu: "50m"
+      limits:
+        memory: "128Mi"
+        cpu: "100m"
+
+  commAgent:
+    replicaCount: 1
+    minReplicas: 1
+    maxReplicas: 2
+    resources:
+      requests:
+        memory: "64Mi"
+        cpu: "50m"
+      limits:
+        memory: "128Mi"
+        cpu: "100m"
+
+  mcpAgent:
+    replicaCount: 1
+    minReplicas: 1
+    maxReplicas: 2
+    resources:
+      requests:
+        memory: "64Mi"
+        cpu: "50m"
+      limits:
+        memory: "128Mi"
+        cpu: "100m"
+
+  coordination:
+    replicaCount: 1
+    minReplicas: 1
+    maxReplicas: 2
+    resources:
+      requests:
+        memory: "128Mi"
+        cpu: "100m"
+      limits:
+        memory: "256Mi"
+        cpu: "200m"
+
+  discovery:
+    replicaCount: 1
+    minReplicas: 1
+    maxReplicas: 2
+    resources:
+      requests:
+        memory: "128Mi"
+        cpu: "100m"
+      limits:
+        memory: "256Mi"
+        cpu: "200m"
+
+  orchestration:
+    replicaCount: 1
+    minReplicas: 1
+    maxReplicas: 2
+    resources:
+      requests:
+        memory: "256Mi"
+        cpu: "200m"
+      limits:
+        memory: "512Mi"
+        cpu: "400m"
+
+  monitoring:
+    replicaCount: 1
+    minReplicas: 1
+    maxReplicas: 2
+    resources:
+      requests:
+        memory: "128Mi"
+        cpu: "100m"
+      limits:
+        memory: "256Mi"
+        cpu: "200m"
+
+# Disable high availability features for dev
+highAvailability:
+  enabled: false
+  podDisruptionBudgets:
+    enabled: false
+  antiAffinity:
+    enabled: false
+  multiZone:
+    enabled: false
+
+# Development database settings
+postgresql:
+  enabled: true
+  auth:
+    database: ossa_dev
+    username: ossa_dev
+    password: "ossa_dev_password"
+  architecture: standalone
+  primary:
+    resources:
+      requests:
+        memory: "128Mi"
+        cpu: "100m"
+      limits:
+        memory: "256Mi"
+        cpu: "200m"
+  persistence:
+    enabled: false  # Use emptyDir for dev
+
+# Development Redis settings
+redis:
+  enabled: true
+  architecture: standalone
+  master:
+    resources:
+      requests:
+        memory: "64Mi"
+        cpu: "50m"
+      limits:
+        memory: "128Mi"
+        cpu: "100m"
+  persistence:
+    enabled: false  # Use emptyDir for dev
+
+# Development Qdrant settings
+qdrant:
+  enabled: true
+  replicaCount: 1
+  resources:
+    requests:
+      memory: "256Mi"
+      cpu: "200m"
+    limits:
+      memory: "512Mi"
+      cpu: "400m"
+  persistence:
+    enabled: false  # Use emptyDir for dev
+
+# Simplified monitoring for dev
+monitoring:
+  prometheus:
+    enabled: true
+    retention: "1d"
+    resources:
+      requests:
+        memory: "128Mi"
+        cpu: "100m"
+      limits:
+        memory: "256Mi"
+        cpu: "200m"
+    storage:
+      size: "2Gi"
+  
+  grafana:
+    enabled: true
+    adminPassword: "dev-password"
+    resources:
+      requests:
+        memory: "64Mi"
+        cpu: "50m"
+      limits:
+        memory: "128Mi"
+        cpu: "100m"
+  
+  alertmanager:
+    enabled: false  # Disable alerts in dev
+
+# Local ingress configuration
+ingress:
+  enabled: true
+  className: "nginx"
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  hosts:
+    - host: ossa-dev.local
+      paths:
+        - path: /
+          pathType: Prefix
+          backend:
+            service:
+              name: gateway
+              port: 3000
+    - host: ossa-monitoring-dev.local
+      paths:
+        - path: /
+          pathType: Prefix
+          backend:
+            service:
+              name: monitoring
+              port: 3013
+  tls: []  # No TLS for dev
+
+# Security context relaxed for dev
+security:
+  podSecurityContext:
+    runAsNonRoot: false
+    runAsUser: 0
+  securityContext:
+    allowPrivilegeEscalation: true
+    readOnlyRootFilesystem: false
+    runAsNonRoot: false

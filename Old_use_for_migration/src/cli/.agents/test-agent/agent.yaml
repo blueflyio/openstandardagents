@@ -1,0 +1,13 @@
+apiVersion: ossa.ai/v0.1.8
+kind: Agent
+metadata:
+  name: test-agent
+  version: "0.1.0"
+spec:
+  runtime: node
+  capabilities: []
+  networking:
+    ports:
+      - containerPort: 33221
+  health:
+    endpoint: /health

@@ -1,0 +1,1500 @@
+syntax = "proto3";
+
+package ossa.v1;
+
+import "common.proto";
+import "agent.proto";
+import "coordination.proto";
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/duration.proto";
+import "google/protobuf/struct.proto";
+import "google/protobuf/any.proto";
+
+option go_package = "github.com/ossa/proto/v1;ossav1";
+option java_package = "io.ossa.proto.v1";
+option java_multiple_files = true;
+option csharp_namespace = "Ossa.Proto.V1";
+
+// Orchestration service for multi-agent workflow management and execution
+service OrchestrationService {
+  // Create a new workflow
+  rpc CreateWorkflow(CreateWorkflowRequest) returns (CreateWorkflowResponse);
+  
+  // Update an existing workflow
+  rpc UpdateWorkflow(UpdateWorkflowRequest) returns (UpdateWorkflowResponse);
+  
+  // Delete a workflow
+  rpc DeleteWorkflow(DeleteWorkflowRequest) returns (DeleteWorkflowResponse);
+  
+  // Get workflow information
+  rpc GetWorkflow(GetWorkflowRequest) returns (GetWorkflowResponse);
+  
+  // List workflows
+  rpc ListWorkflows(ListWorkflowsRequest) returns (ListWorkflowsResponse);
+  
+  // Execute a workflow
+  rpc ExecuteWorkflow(ExecuteWorkflowRequest) returns (ExecuteWorkflowResponse);
+  
+  // Stream workflow execution status
+  rpc StreamWorkflowExecution(StreamWorkflowExecutionRequest) returns (stream WorkflowExecutionEvent);
+  
+  // Pause workflow execution
+  rpc PauseWorkflow(PauseWorkflowRequest) returns (PauseWorkflowResponse);
+  
+  // Resume workflow execution
+  rpc ResumeWorkflow(ResumeWorkflowRequest) returns (ResumeWorkflowResponse);
+  
+  // Cancel workflow execution
+  rpc CancelWorkflow(CancelWorkflowRequest) returns (CancelWorkflowResponse);
+  
+  // Retry failed workflow steps
+  rpc RetryWorkflow(RetryWorkflowRequest) returns (RetryWorkflowResponse);
+  
+  // Get workflow execution history
+  rpc GetWorkflowHistory(GetWorkflowHistoryRequest) returns (GetWorkflowHistoryResponse);
+  
+  // Get workflow metrics
+  rpc GetWorkflowMetrics(GetWorkflowMetricsRequest) returns (GetWorkflowMetricsResponse);
+  
+  // Validate workflow definition
+  rpc ValidateWorkflow(ValidateWorkflowRequest) returns (ValidateWorkflowResponse);
+  
+  // Create workflow template
+  rpc CreateTemplate(CreateTemplateRequest) returns (CreateTemplateResponse);
+  
+  // List workflow templates
+  rpc ListTemplates(ListTemplatesRequest) returns (ListTemplatesResponse);
+  
+  // Schedule workflow execution
+  rpc ScheduleWorkflow(ScheduleWorkflowRequest) returns (ScheduleWorkflowResponse);
+}
+
+// Workflow definition following OSSA orchestration patterns
+message Workflow {
+  OSSAIdentifier id = 1;                  // Workflow identifier
+  WorkflowMetadata metadata = 2;          // Workflow metadata
+  WorkflowSpec spec = 3;                  // Workflow specification
+  WorkflowStatus status = 4;              // Current workflow status
+  repeated WorkflowExecution executions = 5; // Execution history
+}
+
+message WorkflowMetadata {
+  string name = 1;                        // Human-readable workflow name
+  string description = 2;                 // Workflow description
+  string version = 3;                     // Workflow version
+  string author = 4;                      // Workflow author
+  google.protobuf.Timestamp created = 5;  // Creation timestamp
+  google.protobuf.Timestamp updated = 6;  // Last update timestamp
+  map<string, string> labels = 7;         // Classification labels
+  repeated string tags = 8;               // Searchable tags
+  WorkflowCategory category = 9;          // Workflow category
+  WorkflowPriority priority = 10;         // Workflow priority
+}
+
+enum WorkflowCategory {
+  WORKFLOW_CATEGORY_UNSPECIFIED = 0;
+  WORKFLOW_CATEGORY_DATA_PROCESSING = 1;  // Data processing workflows
+  WORKFLOW_CATEGORY_ANALYSIS = 2;         // Analysis workflows
+  WORKFLOW_CATEGORY_AUTOMATION = 3;       // Automation workflows
+  WORKFLOW_CATEGORY_INTEGRATION = 4;      // Integration workflows
+  WORKFLOW_CATEGORY_MONITORING = 5;       // Monitoring workflows
+  WORKFLOW_CATEGORY_TESTING = 6;          // Testing workflows
+  WORKFLOW_CATEGORY_DEPLOYMENT = 7;       // Deployment workflows
+  WORKFLOW_CATEGORY_RESEARCH = 8;         // Research workflows
+}
+
+enum WorkflowPriority {
+  WORKFLOW_PRIORITY_UNSPECIFIED = 0;
+  WORKFLOW_PRIORITY_LOW = 1;
+  WORKFLOW_PRIORITY_NORMAL = 2;
+  WORKFLOW_PRIORITY_HIGH = 3;
+  WORKFLOW_PRIORITY_CRITICAL = 4;
+  WORKFLOW_PRIORITY_EMERGENCY = 5;
+}
+
+message WorkflowSpec {
+  WorkflowPattern pattern = 1;            // Orchestration pattern
+  repeated WorkflowStep steps = 2;        // Workflow steps
+  repeated WorkflowEdge edges = 3;        // Step dependencies
+  WorkflowConfiguration config = 4;       // Workflow configuration
+  ErrorHandling error_handling = 5;      // Error handling strategy
+  ResourceRequirements resources = 6;     // Resource requirements
+  SecurityPolicy security = 7;           // Security policy
+  MonitoringConfiguration monitoring = 8; // Monitoring configuration
+}
+
+enum WorkflowPattern {
+  WORKFLOW_PATTERN_UNSPECIFIED = 0;
+  WORKFLOW_PATTERN_SEQUENTIAL = 1;        // Sequential execution
+  WORKFLOW_PATTERN_PARALLEL = 2;          // Parallel execution
+  WORKFLOW_PATTERN_PIPELINE = 3;          // Pipeline processing
+  WORKFLOW_PATTERN_MAP_REDUCE = 4;        // Map-reduce pattern
+  WORKFLOW_PATTERN_SCATTER_GATHER = 5;    // Scatter-gather pattern
+  WORKFLOW_PATTERN_CONDITIONAL = 6;       // Conditional branching
+  WORKFLOW_PATTERN_LOOP = 7;              // Loop execution
+  WORKFLOW_PATTERN_STATE_MACHINE = 8;     // State machine
+  WORKFLOW_PATTERN_EVENT_DRIVEN = 9;      // Event-driven execution
+  WORKFLOW_PATTERN_HYBRID = 10;           // Hybrid pattern
+}
+
+message WorkflowStep {
+  OSSAIdentifier id = 1;                  // Step identifier
+  StepMetadata metadata = 2;              // Step metadata
+  StepSpec spec = 3;                      // Step specification
+  StepStatus status = 4;                  // Step status
+  repeated StepDependency dependencies = 5; // Step dependencies
+}
+
+message StepMetadata {
+  string name = 1;                        // Step name
+  string description = 2;                 // Step description
+  StepType type = 3;                      // Step type
+  map<string, string> labels = 4;         // Step labels
+  google.protobuf.Duration timeout = 5;   // Step timeout
+  int32 retry_count = 6;                  // Maximum retry attempts
+}
+
+enum StepType {
+  STEP_TYPE_UNSPECIFIED = 0;
+  STEP_TYPE_AGENT_TASK = 1;               // Agent task execution
+  STEP_TYPE_COORDINATION = 2;             // Agent coordination
+  STEP_TYPE_CONDITION = 3;                // Conditional logic
+  STEP_TYPE_LOOP = 4;                     // Loop control
+  STEP_TYPE_FORK = 5;                     // Parallel fork
+  STEP_TYPE_JOIN = 6;                     // Parallel join
+  STEP_TYPE_WAIT = 7;                     // Wait/delay
+  STEP_TYPE_SCRIPT = 8;                   // Script execution
+  STEP_TYPE_API_CALL = 9;                 // API call
+  STEP_TYPE_NOTIFICATION = 10;            // Notification
+  STEP_TYPE_DATA_TRANSFORM = 11;          // Data transformation
+  STEP_TYPE_VALIDATION = 12;              // Validation step
+}
+
+message StepSpec {
+  AgentAssignment agent = 1;              // Agent assignment
+  TaskDefinition task = 2;                // Task definition
+  InputMapping inputs = 3;                // Input mapping
+  OutputMapping outputs = 4;              // Output mapping
+  ConditionExpression condition = 5;      // Execution condition
+  RetryPolicy retry_policy = 6;           // Retry policy
+  ResourceAllocation resources = 7;       // Resource allocation
+  google.protobuf.Struct parameters = 8;  // Step parameters
+}
+
+message AgentAssignment {
+  AssignmentStrategy strategy = 1;        // Assignment strategy
+  AgentSelector selector = 2;             // Agent selector
+  LoadBalancing load_balancing = 3;       // Load balancing policy
+  FailoverPolicy failover = 4;            // Failover policy
+}
+
+enum AssignmentStrategy {
+  ASSIGNMENT_STRATEGY_UNSPECIFIED = 0;
+  ASSIGNMENT_STRATEGY_SPECIFIC = 1;       // Specific agent assignment
+  ASSIGNMENT_STRATEGY_CAPABILITY = 2;     // Capability-based assignment
+  ASSIGNMENT_STRATEGY_PERFORMANCE = 3;    // Performance-based assignment
+  ASSIGNMENT_STRATEGY_LOAD = 4;           // Load-based assignment
+  ASSIGNMENT_STRATEGY_PROXIMITY = 5;      // Proximity-based assignment
+  ASSIGNMENT_STRATEGY_ROUND_ROBIN = 6;    // Round-robin assignment
+  ASSIGNMENT_STRATEGY_RANDOM = 7;         // Random assignment
+}
+
+message AgentSelector {
+  repeated OSSAIdentifier agent_ids = 1;  // Specific agent IDs
+  repeated string capabilities = 2;       // Required capabilities
+  repeated Constraint constraints = 3;    // Agent constraints
+  PreferenceExpression preferences = 4;   // Agent preferences
+}
+
+message FailoverPolicy {
+  bool enabled = 1;                       // Whether failover is enabled
+  int32 max_attempts = 2;                 // Maximum failover attempts
+  google.protobuf.Duration retry_delay = 3; // Delay between attempts
+  FailoverStrategy strategy = 4;          // Failover strategy
+}
+
+enum FailoverStrategy {
+  FAILOVER_STRATEGY_UNSPECIFIED = 0;
+  FAILOVER_STRATEGY_IMMEDIATE = 1;        // Immediate failover
+  FAILOVER_STRATEGY_GRADUAL = 2;          // Gradual failover
+  FAILOVER_STRATEGY_MANUAL = 3;           // Manual failover
+}
+
+message TaskDefinition {
+  TaskType type = 1;                      // Task type
+  google.protobuf.Any task_data = 2;      // Task-specific data
+  repeated TaskParameter parameters = 3;   // Task parameters
+  QualityRequirements quality = 4;        // Quality requirements
+  ComplianceRequirements compliance = 5;   // Compliance requirements
+}
+
+enum TaskType {
+  TASK_TYPE_UNSPECIFIED = 0;
+  TASK_TYPE_COMPUTATION = 1;              // Computational task
+  TASK_TYPE_ANALYSIS = 2;                 // Analysis task
+  TASK_TYPE_TRANSFORMATION = 3;           // Data transformation
+  TASK_TYPE_VALIDATION = 4;               // Validation task
+  TASK_TYPE_COMMUNICATION = 5;            // Communication task
+  TASK_TYPE_MONITORING = 6;               // Monitoring task
+  TASK_TYPE_COORDINATION = 7;             // Coordination task
+  TASK_TYPE_DECISION = 8;                 // Decision-making task
+}
+
+message TaskParameter {
+  string name = 1;                        // Parameter name
+  ParameterType type = 2;                 // Parameter type
+  google.protobuf.Any value = 3;          // Parameter value
+  bool required = 4;                      // Whether parameter is required
+  string description = 5;                 // Parameter description
+}
+
+enum ParameterType {
+  PARAMETER_TYPE_UNSPECIFIED = 0;
+  PARAMETER_TYPE_STRING = 1;
+  PARAMETER_TYPE_INTEGER = 2;
+  PARAMETER_TYPE_FLOAT = 3;
+  PARAMETER_TYPE_BOOLEAN = 4;
+  PARAMETER_TYPE_OBJECT = 5;
+  PARAMETER_TYPE_ARRAY = 6;
+  PARAMETER_TYPE_FILE = 7;
+  PARAMETER_TYPE_REFERENCE = 8;
+}
+
+message QualityRequirements {
+  double min_accuracy = 1;                // Minimum accuracy (0.0-1.0)
+  google.protobuf.Duration max_latency = 2; // Maximum latency
+  double min_reliability = 3;             // Minimum reliability (0.0-1.0)
+  SecurityLevel security_level = 4;       // Required security level
+}
+
+message ComplianceRequirements {
+  repeated string frameworks = 1;         // Required compliance frameworks
+  CertificationLevel min_certification = 2; // Minimum certification level
+  bool audit_trail_required = 3;          // Whether audit trail is required
+  DataGovernance data_governance = 4;     // Data governance requirements
+}
+
+message DataGovernance {
+  bool data_residency_required = 1;       // Whether data residency is required
+  repeated string allowed_regions = 2;    // Allowed data regions
+  DataClassification classification = 3;   // Data classification level
+  RetentionPolicy retention = 4;          // Data retention policy
+}
+
+enum DataClassification {
+  DATA_CLASSIFICATION_UNSPECIFIED = 0;
+  DATA_CLASSIFICATION_PUBLIC = 1;         // Public data
+  DATA_CLASSIFICATION_INTERNAL = 2;       // Internal data
+  DATA_CLASSIFICATION_CONFIDENTIAL = 3;   // Confidential data
+  DATA_CLASSIFICATION_RESTRICTED = 4;     // Restricted data
+}
+
+message RetentionPolicy {
+  google.protobuf.Duration retention_period = 1; // Retention period
+  RetentionAction action = 2;             // Action after retention period
+  bool legal_hold_exempt = 3;             // Whether exempt from legal hold
+}
+
+enum RetentionAction {
+  RETENTION_ACTION_UNSPECIFIED = 0;
+  RETENTION_ACTION_DELETE = 1;            // Delete after retention period
+  RETENTION_ACTION_ARCHIVE = 2;           // Archive after retention period
+  RETENTION_ACTION_ANONYMIZE = 3;         // Anonymize after retention period
+}
+
+message InputMapping {
+  repeated DataMapping mappings = 1;      // Input data mappings
+  DataValidation validation = 2;          // Input validation rules
+  DataTransformation transformation = 3;   // Input transformation rules
+}
+
+message OutputMapping {
+  repeated DataMapping mappings = 1;      // Output data mappings
+  DataValidation validation = 2;          // Output validation rules
+  DataTransformation transformation = 3;   // Output transformation rules
+}
+
+message DataMapping {
+  string source = 1;                      // Source data path
+  string target = 2;                      // Target data path
+  MappingType type = 3;                   // Mapping type
+  google.protobuf.Any default_value = 4;  // Default value if source is missing
+  bool required = 5;                      // Whether mapping is required
+}
+
+enum MappingType {
+  MAPPING_TYPE_UNSPECIFIED = 0;
+  MAPPING_TYPE_DIRECT = 1;                // Direct mapping
+  MAPPING_TYPE_TRANSFORM = 2;             // Transform mapping
+  MAPPING_TYPE_AGGREGATE = 3;             // Aggregate mapping
+  MAPPING_TYPE_CONDITIONAL = 4;           // Conditional mapping
+  MAPPING_TYPE_REFERENCE = 5;             // Reference mapping
+}
+
+message DataValidation {
+  repeated ValidationRule rules = 1;      // Validation rules
+  ValidationMode mode = 2;                // Validation mode
+  bool fail_on_error = 3;                 // Whether to fail on validation error
+}
+
+enum ValidationMode {
+  VALIDATION_MODE_UNSPECIFIED = 0;
+  VALIDATION_MODE_STRICT = 1;             // Strict validation
+  VALIDATION_MODE_LENIENT = 2;            // Lenient validation
+  VALIDATION_MODE_BEST_EFFORT = 3;        // Best effort validation
+}
+
+message ValidationRule {
+  string field = 1;                       // Field to validate
+  RuleType type = 2;                      // Rule type
+  google.protobuf.Any constraint = 3;     // Rule constraint
+  string error_message = 4;               // Error message
+}
+
+enum RuleType {
+  RULE_TYPE_UNSPECIFIED = 0;
+  RULE_TYPE_REQUIRED = 1;                 // Field is required
+  RULE_TYPE_TYPE = 2;                     // Type validation
+  RULE_TYPE_RANGE = 3;                    // Range validation
+  RULE_TYPE_PATTERN = 4;                  // Pattern validation
+  RULE_TYPE_CUSTOM = 5;                   // Custom validation
+}
+
+message DataTransformation {
+  repeated TransformationRule rules = 1;  // Transformation rules
+  TransformationMode mode = 2;            // Transformation mode
+}
+
+enum TransformationMode {
+  TRANSFORMATION_MODE_UNSPECIFIED = 0;
+  TRANSFORMATION_MODE_PIPELINE = 1;       // Pipeline transformation
+  TRANSFORMATION_MODE_BATCH = 2;          // Batch transformation
+  TRANSFORMATION_MODE_STREAMING = 3;      // Streaming transformation
+}
+
+message TransformationRule {
+  string field = 1;                       // Field to transform
+  TransformationType type = 2;            // Transformation type
+  google.protobuf.Any configuration = 3;  // Transformation configuration
+  string expression = 4;                  // Transformation expression
+}
+
+enum TransformationType {
+  TRANSFORMATION_TYPE_UNSPECIFIED = 0;
+  TRANSFORMATION_TYPE_MAP = 1;            // Map transformation
+  TRANSFORMATION_TYPE_FILTER = 2;         // Filter transformation
+  TRANSFORMATION_TYPE_AGGREGATE = 3;      // Aggregate transformation
+  TRANSFORMATION_TYPE_JOIN = 4;           // Join transformation
+  TRANSFORMATION_TYPE_SPLIT = 5;          // Split transformation
+  TRANSFORMATION_TYPE_MERGE = 6;          // Merge transformation
+}
+
+message ConditionExpression {
+  ExpressionType type = 1;                // Expression type
+  string expression = 2;                  // Condition expression
+  repeated ConditionExpression operands = 3; // Sub-expressions
+  ComparisonOperator operator = 4;        // Comparison operator
+}
+
+enum ExpressionType {
+  EXPRESSION_TYPE_UNSPECIFIED = 0;
+  EXPRESSION_TYPE_BOOLEAN = 1;            // Boolean expression
+  EXPRESSION_TYPE_COMPARISON = 2;         // Comparison expression
+  EXPRESSION_TYPE_LOGICAL = 3;            // Logical expression
+  EXPRESSION_TYPE_ARITHMETIC = 4;         // Arithmetic expression
+  EXPRESSION_TYPE_STRING = 5;             // String expression
+}
+
+enum ComparisonOperator {
+  COMPARISON_OPERATOR_UNSPECIFIED = 0;
+  COMPARISON_OPERATOR_EQUAL = 1;          // Equal
+  COMPARISON_OPERATOR_NOT_EQUAL = 2;      // Not equal
+  COMPARISON_OPERATOR_GREATER = 3;        // Greater than
+  COMPARISON_OPERATOR_LESS = 4;           // Less than
+  COMPARISON_OPERATOR_GREATER_EQUAL = 5;  // Greater than or equal
+  COMPARISON_OPERATOR_LESS_EQUAL = 6;     // Less than or equal
+  COMPARISON_OPERATOR_CONTAINS = 7;       // Contains
+  COMPARISON_OPERATOR_MATCHES = 8;        // Matches pattern
+}
+
+message RetryPolicy {
+  bool enabled = 1;                       // Whether retry is enabled
+  int32 max_attempts = 2;                 // Maximum retry attempts
+  BackoffStrategy backoff = 3;            // Backoff strategy
+  repeated ErrorCode retry_on_errors = 4; // Error codes to retry on
+  google.protobuf.Duration max_duration = 5; // Maximum total retry duration
+}
+
+message BackoffStrategy {
+  BackoffType type = 1;                   // Backoff type
+  google.protobuf.Duration initial_delay = 2; // Initial delay
+  double multiplier = 3;                  // Backoff multiplier
+  google.protobuf.Duration max_delay = 4; // Maximum delay
+  double jitter = 5;                      // Jitter factor (0.0-1.0)
+}
+
+enum BackoffType {
+  BACKOFF_TYPE_UNSPECIFIED = 0;
+  BACKOFF_TYPE_FIXED = 1;                 // Fixed delay
+  BACKOFF_TYPE_LINEAR = 2;                // Linear backoff
+  BACKOFF_TYPE_EXPONENTIAL = 3;           // Exponential backoff
+  BACKOFF_TYPE_POLYNOMIAL = 4;            // Polynomial backoff
+}
+
+message ResourceAllocation {
+  ComputeAllocation compute = 1;          // Compute resource allocation
+  StorageAllocation storage = 2;          // Storage resource allocation
+  NetworkAllocation network = 3;          // Network resource allocation
+  AllocationPolicy policy = 4;           // Allocation policy
+}
+
+message ComputeAllocation {
+  double cpu_cores = 1;                   // CPU cores allocation
+  int64 memory_mb = 2;                    // Memory allocation in MB
+  repeated GPUAllocation gpus = 3;        // GPU allocation
+  AllocationMode mode = 4;                // Allocation mode
+}
+
+message GPUAllocation {
+  string gpu_type = 1;                    // GPU type
+  int32 count = 2;                        // Number of GPUs
+  int64 memory_mb = 3;                    // GPU memory in MB
+}
+
+enum AllocationMode {
+  ALLOCATION_MODE_UNSPECIFIED = 0;
+  ALLOCATION_MODE_RESERVED = 1;           // Reserved allocation
+  ALLOCATION_MODE_BURSTABLE = 2;          // Burstable allocation
+  ALLOCATION_MODE_BEST_EFFORT = 3;        // Best effort allocation
+}
+
+message StorageAllocation {
+  int64 size_gb = 1;                      // Storage size in GB
+  StorageType type = 2;                   // Storage type
+  IOPSRequirement iops = 3;               // IOPS requirements
+  bool persistent = 4;                    // Whether storage is persistent
+}
+
+message IOPSRequirement {
+  int64 min_iops = 1;                     // Minimum IOPS
+  int64 max_iops = 2;                     // Maximum IOPS
+  int64 burst_iops = 3;                   // Burst IOPS
+}
+
+message NetworkAllocation {
+  double bandwidth_mbps = 1;              // Bandwidth allocation in Mbps
+  google.protobuf.Duration max_latency = 2; // Maximum latency requirement
+  QualityOfService qos = 3;               // Quality of service
+  bool dedicated = 4;                     // Whether network is dedicated
+}
+
+message AllocationPolicy {
+  AllocationStrategy strategy = 1;        // Allocation strategy
+  PreemptionPolicy preemption = 2;        // Preemption policy
+  SchedulingConstraints constraints = 3;   // Scheduling constraints
+}
+
+enum AllocationStrategy {
+  ALLOCATION_STRATEGY_UNSPECIFIED = 0;
+  ALLOCATION_STRATEGY_IMMEDIATE = 1;      // Immediate allocation
+  ALLOCATION_STRATEGY_SCHEDULED = 2;      // Scheduled allocation
+  ALLOCATION_STRATEGY_OPPORTUNISTIC = 3;  // Opportunistic allocation
+  ALLOCATION_STRATEGY_RESERVED = 4;       // Reserved allocation
+}
+
+message PreemptionPolicy {
+  bool allowed = 1;                       // Whether preemption is allowed
+  PreemptionPriority priority = 2;        // Preemption priority
+  google.protobuf.Duration grace_period = 3; // Grace period before preemption
+}
+
+enum PreemptionPriority {
+  PREEMPTION_PRIORITY_UNSPECIFIED = 0;
+  PREEMPTION_PRIORITY_LOW = 1;            // Low priority (can be preempted)
+  PREEMPTION_PRIORITY_NORMAL = 2;         // Normal priority
+  PREEMPTION_PRIORITY_HIGH = 3;           // High priority (preempts others)
+  PREEMPTION_PRIORITY_CRITICAL = 4;       // Critical priority (never preempted)
+}
+
+message SchedulingConstraints {
+  repeated NodeSelector node_selectors = 1; // Node selection constraints
+  repeated Affinity affinities = 2;       // Affinity constraints
+  repeated Toleration tolerations = 3;    // Toleration constraints
+}
+
+message NodeSelector {
+  string key = 1;                         // Selector key
+  NodeSelectorOperator operator = 2;      // Selector operator
+  repeated string values = 3;             // Selector values
+}
+
+enum NodeSelectorOperator {
+  NODE_SELECTOR_OPERATOR_UNSPECIFIED = 0;
+  NODE_SELECTOR_OPERATOR_IN = 1;          // In values
+  NODE_SELECTOR_OPERATOR_NOT_IN = 2;      // Not in values
+  NODE_SELECTOR_OPERATOR_EXISTS = 3;      // Key exists
+  NODE_SELECTOR_OPERATOR_DOES_NOT_EXIST = 4; // Key does not exist
+  NODE_SELECTOR_OPERATOR_GREATER_THAN = 5; // Greater than
+  NODE_SELECTOR_OPERATOR_LESS_THAN = 6;   // Less than
+}
+
+message Affinity {
+  AffinityType type = 1;                  // Affinity type
+  string key = 2;                         // Affinity key
+  repeated string values = 3;             // Affinity values
+  AffinityWeight weight = 4;              // Affinity weight
+}
+
+enum AffinityType {
+  AFFINITY_TYPE_UNSPECIFIED = 0;
+  AFFINITY_TYPE_REQUIRED = 1;             // Required affinity
+  AFFINITY_TYPE_PREFERRED = 2;            // Preferred affinity
+  AFFINITY_TYPE_ANTI_AFFINITY = 3;        // Anti-affinity
+}
+
+enum AffinityWeight {
+  AFFINITY_WEIGHT_UNSPECIFIED = 0;
+  AFFINITY_WEIGHT_LOW = 1;                // Low weight (1-25)
+  AFFINITY_WEIGHT_MEDIUM = 2;             // Medium weight (26-75)
+  AFFINITY_WEIGHT_HIGH = 3;               // High weight (76-100)
+}
+
+message Toleration {
+  string key = 1;                         // Toleration key
+  TolerationOperator operator = 2;        // Toleration operator
+  string value = 3;                       // Toleration value
+  TolerationEffect effect = 4;            // Toleration effect
+  google.protobuf.Duration toleration_seconds = 5; // Toleration duration
+}
+
+enum TolerationOperator {
+  TOLERATION_OPERATOR_UNSPECIFIED = 0;
+  TOLERATION_OPERATOR_EQUAL = 1;          // Equal
+  TOLERATION_OPERATOR_EXISTS = 2;         // Exists
+}
+
+enum TolerationEffect {
+  TOLERATION_EFFECT_UNSPECIFIED = 0;
+  TOLERATION_EFFECT_NO_SCHEDULE = 1;      // No schedule
+  TOLERATION_EFFECT_PREFER_NO_SCHEDULE = 2; // Prefer no schedule
+  TOLERATION_EFFECT_NO_EXECUTE = 3;       // No execute
+}
+
+message StepDependency {
+  OSSAIdentifier step_id = 1;             // Dependent step ID
+  DependencyType type = 2;                // Dependency type
+  ConditionExpression condition = 3;      // Dependency condition
+  bool optional = 4;                      // Whether dependency is optional
+}
+
+enum DependencyType {
+  DEPENDENCY_TYPE_UNSPECIFIED = 0;
+  DEPENDENCY_TYPE_SUCCESS = 1;            // Depends on successful completion
+  DEPENDENCY_TYPE_FAILURE = 2;            // Depends on failure
+  DEPENDENCY_TYPE_COMPLETION = 3;         // Depends on completion (any outcome)
+  DEPENDENCY_TYPE_DATA = 4;               // Data dependency
+  DEPENDENCY_TYPE_RESOURCE = 5;           // Resource dependency
+}
+
+message StepStatus {
+  StepState state = 1;                    // Current step state
+  google.protobuf.Timestamp started = 2; // Start timestamp
+  google.protobuf.Timestamp completed = 3; // Completion timestamp
+  OSSAIdentifier assigned_agent = 4;      // Assigned agent
+  google.protobuf.Any result = 5;         // Step result
+  repeated Error errors = 6;              // Step errors
+  StepMetrics metrics = 7;                // Step metrics
+}
+
+enum StepState {
+  STEP_STATE_UNSPECIFIED = 0;
+  STEP_STATE_PENDING = 1;                 // Waiting to be scheduled
+  STEP_STATE_SCHEDULED = 2;               // Scheduled for execution
+  STEP_STATE_RUNNING = 3;                 // Currently executing
+  STEP_STATE_SUCCEEDED = 4;               // Completed successfully
+  STEP_STATE_FAILED = 5;                  // Failed to complete
+  STEP_STATE_SKIPPED = 6;                 // Skipped due to conditions
+  STEP_STATE_CANCELLED = 7;               // Cancelled by user
+  STEP_STATE_TIMEOUT = 8;                 // Timed out
+  STEP_STATE_RETRYING = 9;                // Retrying after failure
+}
+
+message StepMetrics {
+  google.protobuf.Duration execution_time = 1; // Total execution time
+  google.protobuf.Duration queue_time = 2;     // Time spent in queue
+  ResourceUsage resource_usage = 3;            // Resource usage metrics
+  int32 retry_count = 4;                       // Number of retries
+  double success_rate = 5;                     // Success rate (0.0-1.0)
+}
+
+message ResourceUsage {
+  double peak_cpu_usage = 1;              // Peak CPU usage
+  int64 peak_memory_mb = 2;               // Peak memory usage in MB
+  int64 network_bytes_sent = 3;           // Network bytes sent
+  int64 network_bytes_received = 4;       // Network bytes received
+  int64 storage_bytes_read = 5;           // Storage bytes read
+  int64 storage_bytes_written = 6;        // Storage bytes written
+}
+
+message WorkflowEdge {
+  OSSAIdentifier from_step = 1;           // Source step
+  OSSAIdentifier to_step = 2;             // Target step
+  EdgeType type = 3;                      // Edge type
+  ConditionExpression condition = 4;      // Edge condition
+  map<string, string> metadata = 5;       // Edge metadata
+}
+
+message WorkflowConfiguration {
+  ExecutionMode execution_mode = 1;       // Execution mode
+  ConcurrencyControl concurrency = 2;     // Concurrency control
+  TimeoutConfiguration timeouts = 3;      // Timeout configuration
+  CheckpointConfiguration checkpoints = 4; // Checkpoint configuration
+  NotificationConfiguration notifications = 5; // Notification configuration
+  ComplianceConfiguration compliance = 6;  // Compliance configuration
+}
+
+enum ExecutionMode {
+  EXECUTION_MODE_UNSPECIFIED = 0;
+  EXECUTION_MODE_SYNCHRONOUS = 1;         // Synchronous execution
+  EXECUTION_MODE_ASYNCHRONOUS = 2;        // Asynchronous execution
+  EXECUTION_MODE_BATCH = 3;               // Batch execution
+  EXECUTION_MODE_STREAMING = 4;           // Streaming execution
+}
+
+message ConcurrencyControl {
+  int32 max_concurrent_steps = 1;         // Maximum concurrent steps
+  int32 max_concurrent_agents = 2;        // Maximum concurrent agents
+  ConcurrencyStrategy strategy = 3;       // Concurrency strategy
+  ResourceLimits limits = 4;              // Resource limits
+}
+
+enum ConcurrencyStrategy {
+  CONCURRENCY_STRATEGY_UNSPECIFIED = 0;
+  CONCURRENCY_STRATEGY_UNLIMITED = 1;     // No concurrency limits
+  CONCURRENCY_STRATEGY_BOUNDED = 2;       // Bounded concurrency
+  CONCURRENCY_STRATEGY_ADAPTIVE = 3;      // Adaptive concurrency
+  CONCURRENCY_STRATEGY_FAIR_SHARE = 4;    // Fair share concurrency
+}
+
+message TimeoutConfiguration {
+  google.protobuf.Duration workflow_timeout = 1; // Overall workflow timeout
+  google.protobuf.Duration step_timeout = 2;     // Default step timeout
+  google.protobuf.Duration agent_timeout = 3;    // Agent communication timeout
+  TimeoutAction timeout_action = 4;              // Action on timeout
+}
+
+enum TimeoutAction {
+  TIMEOUT_ACTION_UNSPECIFIED = 0;
+  TIMEOUT_ACTION_FAIL = 1;                // Fail workflow on timeout
+  TIMEOUT_ACTION_RETRY = 2;               // Retry on timeout
+  TIMEOUT_ACTION_SKIP = 3;                // Skip step on timeout
+  TIMEOUT_ACTION_CONTINUE = 4;            // Continue with next step
+}
+
+message CheckpointConfiguration {
+  bool enabled = 1;                       // Whether checkpointing is enabled
+  CheckpointStrategy strategy = 2;        // Checkpoint strategy
+  google.protobuf.Duration interval = 3;  // Checkpoint interval
+  string storage_location = 4;            // Checkpoint storage location
+  int32 max_checkpoints = 5;              // Maximum number of checkpoints
+}
+
+enum CheckpointStrategy {
+  CHECKPOINT_STRATEGY_UNSPECIFIED = 0;
+  CHECKPOINT_STRATEGY_NEVER = 1;          // Never checkpoint
+  CHECKPOINT_STRATEGY_ON_STEP = 2;        // Checkpoint after each step
+  CHECKPOINT_STRATEGY_PERIODIC = 3;       // Periodic checkpointing
+  CHECKPOINT_STRATEGY_ON_ERROR = 4;       // Checkpoint on error
+  CHECKPOINT_STRATEGY_ADAPTIVE = 5;       // Adaptive checkpointing
+}
+
+message NotificationConfiguration {
+  repeated NotificationRule rules = 1;    // Notification rules
+  repeated NotificationChannel channels = 2; // Notification channels
+  bool aggregate_notifications = 3;       // Whether to aggregate notifications
+}
+
+message NotificationRule {
+  NotificationTrigger trigger = 1;        // Notification trigger
+  NotificationLevel level = 2;            // Notification level
+  repeated string recipients = 3;         // Notification recipients
+  string template = 4;                    // Notification template
+}
+
+enum NotificationTrigger {
+  NOTIFICATION_TRIGGER_UNSPECIFIED = 0;
+  NOTIFICATION_TRIGGER_WORKFLOW_START = 1;     // Workflow started
+  NOTIFICATION_TRIGGER_WORKFLOW_COMPLETE = 2;  // Workflow completed
+  NOTIFICATION_TRIGGER_WORKFLOW_FAIL = 3;      // Workflow failed
+  NOTIFICATION_TRIGGER_STEP_FAIL = 4;          // Step failed
+  NOTIFICATION_TRIGGER_AGENT_ERROR = 5;        // Agent error
+  NOTIFICATION_TRIGGER_RESOURCE_EXHAUSTED = 6; // Resource exhausted
+}
+
+enum NotificationLevel {
+  NOTIFICATION_LEVEL_UNSPECIFIED = 0;
+  NOTIFICATION_LEVEL_INFO = 1;            // Informational
+  NOTIFICATION_LEVEL_WARNING = 2;         // Warning
+  NOTIFICATION_LEVEL_ERROR = 3;           // Error
+  NOTIFICATION_LEVEL_CRITICAL = 4;        // Critical
+}
+
+message NotificationChannel {
+  string name = 1;                        // Channel name
+  ChannelType type = 2;                   // Channel type
+  google.protobuf.Struct configuration = 3; // Channel configuration
+  bool enabled = 4;                       // Whether channel is enabled
+}
+
+enum ChannelType {
+  CHANNEL_TYPE_UNSPECIFIED = 0;
+  CHANNEL_TYPE_EMAIL = 1;                 // Email notifications
+  CHANNEL_TYPE_SLACK = 2;                 // Slack notifications
+  CHANNEL_TYPE_WEBHOOK = 3;               // Webhook notifications
+  CHANNEL_TYPE_SMS = 4;                   // SMS notifications
+  CHANNEL_TYPE_PUSH = 5;                  // Push notifications
+}
+
+message ComplianceConfiguration {
+  bool audit_enabled = 1;                 // Whether audit is enabled
+  repeated string required_frameworks = 2; // Required compliance frameworks
+  DataClassification data_classification = 3; // Data classification
+  RetentionPolicy retention = 4;          // Data retention policy
+  bool encryption_required = 5;           // Whether encryption is required
+}
+
+message ErrorHandling {
+  ErrorStrategy strategy = 1;             // Error handling strategy
+  repeated ErrorRule rules = 2;           // Error handling rules
+  FallbackConfiguration fallback = 3;     // Fallback configuration
+  EscalationPolicy escalation = 4;        // Error escalation policy
+}
+
+enum ErrorStrategy {
+  ERROR_STRATEGY_UNSPECIFIED = 0;
+  ERROR_STRATEGY_FAIL_FAST = 1;           // Fail immediately on error
+  ERROR_STRATEGY_CONTINUE = 2;            // Continue on error
+  ERROR_STRATEGY_RETRY = 3;               // Retry on error
+  ERROR_STRATEGY_FALLBACK = 4;            // Use fallback on error
+  ERROR_STRATEGY_ESCALATE = 5;            // Escalate error
+}
+
+message ErrorRule {
+  ErrorMatcher matcher = 1;               // Error matcher
+  ErrorAction action = 2;                 // Error action
+  int32 max_occurrences = 3;              // Maximum error occurrences
+  google.protobuf.Duration window = 4;    // Time window for error counting
+}
+
+message ErrorMatcher {
+  repeated ErrorCode error_codes = 1;     // Error codes to match
+  repeated string error_patterns = 2;     // Error message patterns
+  repeated OSSAIdentifier agent_ids = 3;  // Specific agents
+  repeated string step_types = 4;         // Step types
+}
+
+enum ErrorAction {
+  ERROR_ACTION_UNSPECIFIED = 0;
+  ERROR_ACTION_IGNORE = 1;                // Ignore error
+  ERROR_ACTION_LOG = 2;                   // Log error
+  ERROR_ACTION_RETRY = 3;                 // Retry operation
+  ERROR_ACTION_SKIP = 4;                  // Skip step
+  ERROR_ACTION_FALLBACK = 5;              // Use fallback
+  ERROR_ACTION_ESCALATE = 6;              // Escalate error
+  ERROR_ACTION_TERMINATE = 7;             // Terminate workflow
+}
+
+message FallbackConfiguration {
+  FallbackStrategy strategy = 1;          // Fallback strategy
+  repeated FallbackOption options = 2;    // Fallback options
+  int32 max_fallback_depth = 3;           // Maximum fallback depth
+}
+
+enum FallbackStrategy {
+  FALLBACK_STRATEGY_UNSPECIFIED = 0;
+  FALLBACK_STRATEGY_NONE = 1;             // No fallback
+  FALLBACK_STRATEGY_ALTERNATIVE_AGENT = 2; // Use alternative agent
+  FALLBACK_STRATEGY_ALTERNATIVE_STEP = 3;  // Use alternative step
+  FALLBACK_STRATEGY_DEGRADED_MODE = 4;    // Use degraded mode
+  FALLBACK_STRATEGY_MANUAL_INTERVENTION = 5; // Manual intervention
+}
+
+message FallbackOption {
+  string name = 1;                        // Fallback option name
+  FallbackType type = 2;                  // Fallback type
+  google.protobuf.Any configuration = 3;  // Fallback configuration
+  int32 priority = 4;                     // Fallback priority
+}
+
+enum FallbackType {
+  FALLBACK_TYPE_UNSPECIFIED = 0;
+  FALLBACK_TYPE_AGENT = 1;                // Alternative agent
+  FALLBACK_TYPE_STEP = 2;                 // Alternative step
+  FALLBACK_TYPE_WORKFLOW = 3;             // Alternative workflow
+  FALLBACK_TYPE_SERVICE = 4;              // Alternative service
+}
+
+message EscalationPolicy {
+  repeated EscalationLevel levels = 1;    // Escalation levels
+  google.protobuf.Duration level_duration = 2; // Duration per level
+  bool auto_escalation = 3;               // Automatic escalation
+}
+
+message EscalationLevel {
+  int32 level = 1;                        // Escalation level
+  repeated string contacts = 2;           // Escalation contacts
+  repeated NotificationChannel channels = 3; // Notification channels
+  EscalationAction action = 4;            // Escalation action
+}
+
+enum EscalationAction {
+  ESCALATION_ACTION_UNSPECIFIED = 0;
+  ESCALATION_ACTION_NOTIFY = 1;           // Notify contacts
+  ESCALATION_ACTION_ASSIGN = 2;           // Assign to human
+  ESCALATION_ACTION_PAUSE = 3;            // Pause workflow
+  ESCALATION_ACTION_TERMINATE = 4;        // Terminate workflow
+}
+
+message MonitoringConfiguration {
+  MetricsCollection metrics = 1;          // Metrics collection
+  LoggingConfiguration logging = 2;       // Logging configuration
+  AlertingConfiguration alerting = 3;     // Alerting configuration
+  TracingConfiguration tracing = 4;       // Distributed tracing
+}
+
+message MetricsCollection {
+  bool enabled = 1;                       // Whether metrics collection is enabled
+  google.protobuf.Duration collection_interval = 2; // Collection interval
+  repeated string custom_metrics = 3;     // Custom metrics to collect
+  string storage_backend = 4;             // Metrics storage backend
+}
+
+message LoggingConfiguration {
+  LogLevel level = 1;                     // Log level
+  LogFormat format = 2;                   // Log format
+  repeated string log_destinations = 3;   // Log destinations
+  bool structured_logging = 4;            // Whether to use structured logging
+}
+
+enum LogLevel {
+  LOG_LEVEL_UNSPECIFIED = 0;
+  LOG_LEVEL_DEBUG = 1;                    // Debug level
+  LOG_LEVEL_INFO = 2;                     // Info level
+  LOG_LEVEL_WARN = 3;                     // Warning level
+  LOG_LEVEL_ERROR = 4;                    // Error level
+  LOG_LEVEL_FATAL = 5;                    // Fatal level
+}
+
+enum LogFormat {
+  LOG_FORMAT_UNSPECIFIED = 0;
+  LOG_FORMAT_TEXT = 1;                    // Plain text format
+  LOG_FORMAT_JSON = 2;                    // JSON format
+  LOG_FORMAT_STRUCTURED = 3;              // Structured format
+}
+
+message AlertingConfiguration {
+  repeated AlertRule rules = 1;           // Alert rules
+  repeated NotificationChannel channels = 2; // Alert channels
+  bool alert_aggregation = 3;             // Whether to aggregate alerts
+}
+
+message AlertRule {
+  string name = 1;                        // Alert rule name
+  string condition = 2;                   // Alert condition
+  AlertSeverity severity = 3;             // Alert severity
+  google.protobuf.Duration duration = 4;  // Alert duration threshold
+  map<string, string> labels = 5;        // Alert labels
+}
+
+enum AlertSeverity {
+  ALERT_SEVERITY_UNSPECIFIED = 0;
+  ALERT_SEVERITY_INFO = 1;                // Informational alert
+  ALERT_SEVERITY_WARNING = 2;             // Warning alert
+  ALERT_SEVERITY_CRITICAL = 3;            // Critical alert
+  ALERT_SEVERITY_EMERGENCY = 4;           // Emergency alert
+}
+
+message TracingConfiguration {
+  bool enabled = 1;                       // Whether tracing is enabled
+  TracingProvider provider = 2;           // Tracing provider
+  double sampling_rate = 3;               // Sampling rate (0.0-1.0)
+  map<string, string> attributes = 4;     // Additional trace attributes
+}
+
+enum TracingProvider {
+  TRACING_PROVIDER_UNSPECIFIED = 0;
+  TRACING_PROVIDER_JAEGER = 1;            // Jaeger tracing
+  TRACING_PROVIDER_ZIPKIN = 2;            // Zipkin tracing
+  TRACING_PROVIDER_OTEL = 3;              // OpenTelemetry
+}
+
+message SecurityPolicy {
+  AuthenticationPolicy authentication = 1; // Authentication policy
+  AuthorizationPolicy authorization = 2;   // Authorization policy
+  EncryptionPolicy encryption = 3;         // Encryption policy
+  AuditPolicy audit = 4;                  // Audit policy
+  NetworkPolicy network = 5;             // Network security policy
+}
+
+message AuthenticationPolicy {
+  repeated AuthenticationMethod methods = 1; // Allowed authentication methods
+  bool multi_factor_required = 2;          // Whether MFA is required
+  google.protobuf.Duration session_timeout = 3; // Session timeout
+  bool single_sign_on = 4;                  // Whether SSO is enabled
+}
+
+message AuthorizationPolicy {
+  AuthorizationModel model = 1;            // Authorization model
+  repeated Permission permissions = 2;      // Required permissions
+  bool context_aware = 3;                  // Whether authorization is context-aware
+}
+
+message Permission {
+  string resource = 1;                     // Resource identifier
+  repeated string actions = 2;             // Allowed actions
+  repeated Constraint constraints = 3;     // Permission constraints
+}
+
+message EncryptionPolicy {
+  bool data_at_rest = 1;                  // Encrypt data at rest
+  bool data_in_transit = 2;               // Encrypt data in transit
+  bool inter_step_encryption = 3;         // Encrypt inter-step communication
+  EncryptionAlgorithm algorithm = 4;       // Encryption algorithm
+}
+
+enum EncryptionAlgorithm {
+  ENCRYPTION_ALGORITHM_UNSPECIFIED = 0;
+  ENCRYPTION_ALGORITHM_AES_256 = 1;        // AES-256 encryption
+  ENCRYPTION_ALGORITHM_RSA_4096 = 2;       // RSA-4096 encryption
+  ENCRYPTION_ALGORITHM_ECDSA = 3;          // ECDSA encryption
+}
+
+message AuditPolicy {
+  bool enabled = 1;                       // Whether auditing is enabled
+  repeated AuditEvent events = 2;         // Events to audit
+  AuditRetention retention = 3;           // Audit retention policy
+  bool tamper_evident = 4;                // Whether audit trail is tamper-evident
+}
+
+enum AuditEvent {
+  AUDIT_EVENT_UNSPECIFIED = 0;
+  AUDIT_EVENT_WORKFLOW_START = 1;         // Workflow started
+  AUDIT_EVENT_WORKFLOW_END = 2;           // Workflow ended
+  AUDIT_EVENT_STEP_EXECUTION = 3;         // Step executed
+  AUDIT_EVENT_AGENT_ASSIGNMENT = 4;       // Agent assigned
+  AUDIT_EVENT_DATA_ACCESS = 5;            // Data accessed
+  AUDIT_EVENT_PERMISSION_CHECK = 6;       // Permission checked
+}
+
+message AuditRetention {
+  google.protobuf.Duration retention_period = 1; // Audit retention period
+  string archive_location = 2;            // Archive location
+  bool immutable_storage = 3;              // Whether storage is immutable
+}
+
+message NetworkPolicy {
+  repeated NetworkRule ingress_rules = 1; // Ingress network rules
+  repeated NetworkRule egress_rules = 2;  // Egress network rules
+  bool default_deny = 3;                  // Default deny policy
+}
+
+message NetworkRule {
+  repeated string sources = 1;            // Source addresses/networks
+  repeated string destinations = 2;       // Destination addresses/networks
+  repeated int32 ports = 3;               // Allowed ports
+  repeated string protocols = 4;          // Allowed protocols
+}
+
+message WorkflowStatus {
+  WorkflowState state = 1;                // Current workflow state
+  google.protobuf.Timestamp started = 2; // Workflow start time
+  google.protobuf.Timestamp completed = 3; // Workflow completion time
+  WorkflowProgress progress = 4;          // Workflow progress
+  WorkflowMetrics metrics = 5;            // Workflow metrics
+  repeated WorkflowIssue issues = 6;      // Workflow issues
+  repeated OSSAIdentifier active_agents = 7; // Currently active agents
+}
+
+enum WorkflowState {
+  WORKFLOW_STATE_UNSPECIFIED = 0;
+  WORKFLOW_STATE_PENDING = 1;             // Waiting to be scheduled
+  WORKFLOW_STATE_RUNNING = 2;             // Currently executing
+  WORKFLOW_STATE_PAUSED = 3;              // Paused by user
+  WORKFLOW_STATE_SUCCEEDED = 4;           // Completed successfully
+  WORKFLOW_STATE_FAILED = 5;              // Failed to complete
+  WORKFLOW_STATE_CANCELLED = 6;           // Cancelled by user
+  WORKFLOW_STATE_TIMEOUT = 7;             // Timed out
+}
+
+message WorkflowProgress {
+  int32 total_steps = 1;                  // Total number of steps
+  int32 completed_steps = 2;              // Number of completed steps
+  int32 failed_steps = 3;                 // Number of failed steps
+  int32 running_steps = 4;                // Number of currently running steps
+  double completion_percentage = 5;        // Completion percentage (0.0-1.0)
+  google.protobuf.Duration estimated_remaining = 6; // Estimated remaining time
+}
+
+message WorkflowMetrics {
+  google.protobuf.Duration total_execution_time = 1; // Total execution time
+  google.protobuf.Duration queue_time = 2;           // Time spent in queue
+  ResourceUsage total_resource_usage = 3;            // Total resource usage
+  int32 agent_switches = 4;                          // Number of agent switches
+  double success_rate = 5;                           // Overall success rate
+  ThroughputMetrics throughput = 6;                  // Throughput metrics
+}
+
+message WorkflowIssue {
+  IssueType type = 1;                     // Issue type
+  IssueSeverity severity = 2;             // Issue severity
+  string description = 3;                 // Issue description
+  google.protobuf.Timestamp occurred = 4; // When issue occurred
+  OSSAIdentifier affected_step = 5;       // Affected step
+  OSSAIdentifier affected_agent = 6;      // Affected agent
+  bool resolved = 7;                      // Whether issue is resolved
+}
+
+message WorkflowExecution {
+  OSSAIdentifier execution_id = 1;        // Execution identifier
+  google.protobuf.Timestamp started = 2; // Execution start time
+  google.protobuf.Timestamp completed = 3; // Execution completion time
+  WorkflowState final_state = 4;          // Final execution state
+  google.protobuf.Any input_data = 5;     // Execution input data
+  google.protobuf.Any output_data = 6;    // Execution output data
+  WorkflowMetrics metrics = 7;            // Execution metrics
+  repeated StepExecution step_executions = 8; // Step execution details
+}
+
+message StepExecution {
+  OSSAIdentifier step_id = 1;             // Step identifier
+  OSSAIdentifier execution_id = 2;        // Step execution identifier
+  OSSAIdentifier agent_id = 3;            // Executing agent
+  google.protobuf.Timestamp started = 4; // Step start time
+  google.protobuf.Timestamp completed = 5; // Step completion time
+  StepState final_state = 6;              // Final step state
+  google.protobuf.Any input_data = 7;     // Step input data
+  google.protobuf.Any output_data = 8;    // Step output data
+  StepMetrics metrics = 9;                // Step metrics
+  repeated Error errors = 10;             // Step errors
+}
+
+// Workflow execution events for streaming
+message WorkflowExecutionEvent {
+  EventType type = 1;                     // Event type
+  OSSAIdentifier workflow_id = 2;         // Workflow identifier
+  OSSAIdentifier execution_id = 3;        // Execution identifier
+  google.protobuf.Timestamp timestamp = 4; // Event timestamp
+  google.protobuf.Any event_data = 5;     // Event-specific data
+  map<string, string> metadata = 6;       // Event metadata
+}
+
+enum EventType {
+  EVENT_TYPE_UNSPECIFIED = 0;
+  EVENT_TYPE_WORKFLOW_STARTED = 1;        // Workflow started
+  EVENT_TYPE_WORKFLOW_COMPLETED = 2;      // Workflow completed
+  EVENT_TYPE_WORKFLOW_FAILED = 3;         // Workflow failed
+  EVENT_TYPE_WORKFLOW_PAUSED = 4;         // Workflow paused
+  EVENT_TYPE_WORKFLOW_RESUMED = 5;        // Workflow resumed
+  EVENT_TYPE_WORKFLOW_CANCELLED = 6;      // Workflow cancelled
+  EVENT_TYPE_STEP_STARTED = 7;            // Step started
+  EVENT_TYPE_STEP_COMPLETED = 8;          // Step completed
+  EVENT_TYPE_STEP_FAILED = 9;             // Step failed
+  EVENT_TYPE_AGENT_ASSIGNED = 10;         // Agent assigned to step
+  EVENT_TYPE_AGENT_RELEASED = 11;         // Agent released from step
+  EVENT_TYPE_ERROR_OCCURRED = 12;         // Error occurred
+  EVENT_TYPE_METRIC_UPDATED = 13;         // Metrics updated
+}
+
+// Workflow templates for reusable workflows
+message WorkflowTemplate {
+  OSSAIdentifier id = 1;                  // Template identifier
+  TemplateMetadata metadata = 2;          // Template metadata
+  WorkflowSpec template_spec = 3;         // Template specification
+  repeated TemplateParameter parameters = 4; // Template parameters
+  TemplateValidation validation = 5;       // Template validation rules
+}
+
+message TemplateMetadata {
+  string name = 1;                        // Template name
+  string description = 2;                 // Template description
+  string version = 3;                     // Template version
+  string author = 4;                      // Template author
+  google.protobuf.Timestamp created = 5;  // Creation timestamp
+  google.protobuf.Timestamp updated = 6;  // Last update timestamp
+  repeated string tags = 7;               // Template tags
+  WorkflowCategory category = 8;          // Template category
+}
+
+message TemplateParameter {
+  string name = 1;                        // Parameter name
+  ParameterType type = 2;                 // Parameter type
+  google.protobuf.Any default_value = 3;  // Default value
+  bool required = 4;                      // Whether parameter is required
+  string description = 5;                 // Parameter description
+  repeated google.protobuf.Any allowed_values = 6; // Allowed values
+}
+
+message TemplateValidation {
+  repeated ValidationConstraint constraints = 1; // Validation constraints
+  bool strict_validation = 2;             // Whether to enforce strict validation
+}
+
+message ValidationConstraint {
+  string field = 1;                       // Field to validate
+  ConstraintType type = 2;                // Constraint type
+  google.protobuf.Any constraint_value = 3; // Constraint value
+  string error_message = 4;               // Error message
+}
+
+enum ConstraintType {
+  CONSTRAINT_TYPE_UNSPECIFIED = 0;
+  CONSTRAINT_TYPE_REQUIRED = 1;           // Field is required
+  CONSTRAINT_TYPE_TYPE = 2;               // Type constraint
+  CONSTRAINT_TYPE_RANGE = 3;              // Range constraint
+  CONSTRAINT_TYPE_PATTERN = 4;            // Pattern constraint
+  CONSTRAINT_TYPE_DEPENDENCY = 5;         // Dependency constraint
+}
+
+// Workflow scheduling
+message WorkflowSchedule {
+  OSSAIdentifier id = 1;                  // Schedule identifier
+  ScheduleMetadata metadata = 2;          // Schedule metadata
+  ScheduleSpec spec = 3;                  // Schedule specification
+  ScheduleStatus status = 4;              // Schedule status
+}
+
+message ScheduleMetadata {
+  string name = 1;                        // Schedule name
+  string description = 2;                 // Schedule description
+  google.protobuf.Timestamp created = 3;  // Creation timestamp
+  google.protobuf.Timestamp updated = 4;  // Last update timestamp
+  map<string, string> labels = 5;         // Schedule labels
+}
+
+message ScheduleSpec {
+  OSSAIdentifier workflow_id = 1;         // Workflow to schedule
+  ScheduleTrigger trigger = 2;            // Schedule trigger
+  SchedulePolicy policy = 3;              // Schedule policy
+  google.protobuf.Struct parameters = 4;  // Workflow parameters
+}
+
+message ScheduleTrigger {
+  TriggerType type = 1;                   // Trigger type
+  google.protobuf.Any trigger_config = 2; // Trigger configuration
+  TimeZone timezone = 3;                  // Trigger timezone
+}
+
+enum TriggerType {
+  TRIGGER_TYPE_UNSPECIFIED = 0;
+  TRIGGER_TYPE_CRON = 1;                  // Cron-based trigger
+  TRIGGER_TYPE_INTERVAL = 2;              // Interval-based trigger
+  TRIGGER_TYPE_EVENT = 3;                 // Event-based trigger
+  TRIGGER_TYPE_MANUAL = 4;                // Manual trigger
+}
+
+message SchedulePolicy {
+  ConcurrencyPolicy concurrency = 1;      // Concurrency policy
+  MissedRunPolicy missed_runs = 2;        // Missed run policy
+  RetryPolicy retry_policy = 3;           // Retry policy
+  google.protobuf.Duration max_runtime = 4; // Maximum runtime
+}
+
+enum ConcurrencyPolicy {
+  CONCURRENCY_POLICY_UNSPECIFIED = 0;
+  CONCURRENCY_POLICY_ALLOW = 1;           // Allow concurrent runs
+  CONCURRENCY_POLICY_FORBID = 2;          // Forbid concurrent runs
+  CONCURRENCY_POLICY_REPLACE = 3;         // Replace running instance
+}
+
+enum MissedRunPolicy {
+  MISSED_RUN_POLICY_UNSPECIFIED = 0;
+  MISSED_RUN_POLICY_RUN_ALL = 1;          // Run all missed instances
+  MISSED_RUN_POLICY_RUN_LATEST = 2;       // Run only latest missed instance
+  MISSED_RUN_POLICY_SKIP = 3;             // Skip missed runs
+}
+
+message ScheduleStatus {
+  ScheduleState state = 1;                // Schedule state
+  google.protobuf.Timestamp last_run = 2; // Last execution time
+  google.protobuf.Timestamp next_run = 3; // Next execution time
+  int32 successful_runs = 4;              // Number of successful runs
+  int32 failed_runs = 5;                  // Number of failed runs
+  repeated ScheduleIssue issues = 6;      // Schedule issues
+}
+
+enum ScheduleState {
+  SCHEDULE_STATE_UNSPECIFIED = 0;
+  SCHEDULE_STATE_ACTIVE = 1;              // Schedule is active
+  SCHEDULE_STATE_INACTIVE = 2;            // Schedule is inactive
+  SCHEDULE_STATE_SUSPENDED = 3;           // Schedule is suspended
+  SCHEDULE_STATE_ERROR = 4;               // Schedule has errors
+}
+
+message ScheduleIssue {
+  string description = 1;                 // Issue description
+  google.protobuf.Timestamp occurred = 2; // When issue occurred
+  IssueSeverity severity = 3;             // Issue severity
+  bool resolved = 4;                      // Whether issue is resolved
+}
+
+message PreferenceExpression {
+  string expression = 1;                  // Preference expression
+  double weight = 2;                      // Preference weight (0.0-1.0)
+  PreferenceType type = 3;                // Preference type
+}
+
+enum PreferenceType {
+  PREFERENCE_TYPE_UNSPECIFIED = 0;
+  PREFERENCE_TYPE_PERFORMANCE = 1;        // Performance preference
+  PREFERENCE_TYPE_COST = 2;               // Cost preference
+  PREFERENCE_TYPE_RELIABILITY = 3;        // Reliability preference
+  PREFERENCE_TYPE_LOCATION = 4;           // Location preference
+  PREFERENCE_TYPE_COMPATIBILITY = 5;      // Compatibility preference
+}
+
+// Request/Response messages for OrchestrationService
+
+message CreateWorkflowRequest {
+  Workflow workflow = 1;                  // Workflow to create
+  bool validate_only = 2;                 // Only validate, don't create
+  bool auto_start = 3;                    // Automatically start workflow
+}
+
+message CreateWorkflowResponse {
+  OSSAIdentifier workflow_id = 1;         // Created workflow ID
+  WorkflowState initial_state = 2;        // Initial workflow state
+  repeated ValidationIssue validation_issues = 3; // Validation issues
+  Error error = 4;                        // Error if creation failed
+}
+
+message UpdateWorkflowRequest {
+  OSSAIdentifier workflow_id = 1;         // Workflow to update
+  Workflow workflow = 2;                  // Updated workflow
+  repeated string update_mask = 3;        // Fields to update
+  bool validate_only = 4;                 // Only validate, don't update
+}
+
+message UpdateWorkflowResponse {
+  Workflow workflow = 1;                  // Updated workflow
+  repeated ValidationIssue validation_issues = 2; // Validation issues
+  Error error = 3;                        // Error if update failed
+}
+
+message DeleteWorkflowRequest {
+  OSSAIdentifier workflow_id = 1;         // Workflow to delete
+  bool force = 2;                         // Force deletion even if running
+  bool cleanup_executions = 3;            // Whether to cleanup executions
+}
+
+message DeleteWorkflowResponse {
+  bool success = 1;                       // Deletion success
+  google.protobuf.Timestamp deleted_at = 2; // Deletion timestamp
+  Error error = 3;                        // Error if deletion failed
+}
+
+message GetWorkflowRequest {
+  OSSAIdentifier workflow_id = 1;         // Workflow to retrieve
+  bool include_status = 2;                // Whether to include status
+  bool include_executions = 3;            // Whether to include execution history
+}
+
+message GetWorkflowResponse {
+  Workflow workflow = 1;                  // Retrieved workflow
+  Error error = 2;                        // Error if retrieval failed
+}
+
+message ListWorkflowsRequest {
+  PageInfo page_info = 1;                 // Pagination information
+  WorkflowFilter filter = 2;              // Workflow filter
+  repeated string sort_by = 3;            // Sort fields
+  bool include_status = 4;                // Whether to include status
+}
+
+message WorkflowFilter {
+  repeated WorkflowState states = 1;      // Filter by states
+  repeated WorkflowCategory categories = 2; // Filter by categories
+  repeated WorkflowPriority priorities = 3; // Filter by priorities
+  map<string, string> label_selector = 4; // Label selector
+  string name_pattern = 5;                // Name pattern
+  google.protobuf.Timestamp created_after = 6; // Created after timestamp
+  google.protobuf.Timestamp created_before = 7; // Created before timestamp
+}
+
+message ListWorkflowsResponse {
+  repeated Workflow workflows = 1;        // List of workflows
+  PageInfo page_info = 2;                 // Pagination information
+  Error error = 3;                        // Error if listing failed
+}
+
+message ExecuteWorkflowRequest {
+  OSSAIdentifier workflow_id = 1;         // Workflow to execute
+  google.protobuf.Struct input_data = 2;  // Input data for execution
+  ExecutionOptions options = 3;           // Execution options
+  bool async_execution = 4;               // Whether to execute asynchronously
+}
+
+message ExecutionOptions {
+  WorkflowPriority priority = 1;          // Execution priority
+  google.protobuf.Duration timeout = 2;   // Execution timeout
+  map<string, string> labels = 3;         // Execution labels
+  bool dry_run = 4;                       // Whether this is a dry run
+  repeated string step_overrides = 5;     // Step configuration overrides
+}
+
+message ExecuteWorkflowResponse {
+  OSSAIdentifier execution_id = 1;        // Execution identifier
+  WorkflowState initial_state = 2;        // Initial execution state
+  google.protobuf.Timestamp started = 3; // Execution start time
+  Error error = 4;                        // Error if execution failed to start
+}
+
+message StreamWorkflowExecutionRequest {
+  OSSAIdentifier workflow_id = 1;         // Workflow to stream
+  OSSAIdentifier execution_id = 2;        // Specific execution (optional)
+  repeated EventType event_types = 3;     // Event types to stream
+  bool include_step_events = 4;           // Whether to include step events
+}
+
+message PauseWorkflowRequest {
+  OSSAIdentifier workflow_id = 1;         // Workflow to pause
+  OSSAIdentifier execution_id = 2;        // Execution to pause (optional)
+  string reason = 3;                      // Reason for pausing
+}
+
+message PauseWorkflowResponse {
+  bool success = 1;                       // Pause success
+  WorkflowState current_state = 2;        // Current workflow state
+  Error error = 3;                        // Error if pause failed
+}
+
+message ResumeWorkflowRequest {
+  OSSAIdentifier workflow_id = 1;         // Workflow to resume
+  OSSAIdentifier execution_id = 2;        // Execution to resume (optional)
+  string reason = 3;                      // Reason for resuming
+}
+
+message ResumeWorkflowResponse {
+  bool success = 1;                       // Resume success
+  WorkflowState current_state = 2;        // Current workflow state
+  Error error = 3;                        // Error if resume failed
+}
+
+message CancelWorkflowRequest {
+  OSSAIdentifier workflow_id = 1;         // Workflow to cancel
+  OSSAIdentifier execution_id = 2;        // Execution to cancel (optional)
+  string reason = 3;                      // Reason for cancellation
+  bool force = 4;                         // Force cancellation
+}
+
+message CancelWorkflowResponse {
+  bool success = 1;                       // Cancellation success
+  WorkflowState final_state = 2;          // Final workflow state
+  Error error = 3;                        // Error if cancellation failed
+}
+
+message RetryWorkflowRequest {
+  OSSAIdentifier workflow_id = 1;         // Workflow to retry
+  OSSAIdentifier execution_id = 2;        // Execution to retry (optional)
+  repeated OSSAIdentifier step_ids = 3;   // Specific steps to retry (optional)
+  RetryOptions options = 4;               // Retry options
+}
+
+message RetryOptions {
+  bool reset_state = 1;                   // Whether to reset state
+  bool use_checkpoints = 2;               // Whether to use checkpoints
+  google.protobuf.Struct parameter_overrides = 3; // Parameter overrides
+}
+
+message RetryWorkflowResponse {
+  bool success = 1;                       // Retry success
+  OSSAIdentifier new_execution_id = 2;    // New execution identifier
+  Error error = 3;                        // Error if retry failed
+}
+
+message GetWorkflowHistoryRequest {
+  OSSAIdentifier workflow_id = 1;         // Workflow identifier
+  PageInfo page_info = 2;                 // Pagination information
+  HistoryFilter filter = 3;               // History filter
+}
+
+message HistoryFilter {
+  google.protobuf.Timestamp start_time = 1; // Start time filter
+  google.protobuf.Timestamp end_time = 2;   // End time filter
+  repeated WorkflowState states = 3;        // State filter
+  bool include_step_details = 4;           // Whether to include step details
+}
+
+message GetWorkflowHistoryResponse {
+  repeated WorkflowExecution executions = 1; // Execution history
+  PageInfo page_info = 2;                    // Pagination information
+  Error error = 3;                           // Error if retrieval failed
+}
+
+message GetWorkflowMetricsRequest {
+  OSSAIdentifier workflow_id = 1;         // Workflow identifier
+  google.protobuf.Duration time_window = 2; // Time window for metrics
+  repeated string metric_names = 3;       // Specific metrics to retrieve
+  bool include_step_metrics = 4;          // Whether to include step metrics
+}
+
+message GetWorkflowMetricsResponse {
+  WorkflowMetrics metrics = 1;            // Workflow metrics
+  repeated StepMetrics step_metrics = 2;  // Step metrics
+  Error error = 3;                        // Error if retrieval failed
+}
+
+message ValidateWorkflowRequest {
+  Workflow workflow = 1;                  // Workflow to validate
+  bool strict_validation = 2;             // Whether to enforce strict validation
+  repeated string validation_rules = 3;   // Specific validation rules
+}
+
+message ValidateWorkflowResponse {
+  bool valid = 1;                         // Whether workflow is valid
+  repeated ValidationIssue issues = 2;    // Validation issues
+  ValidationSummary summary = 3;          // Validation summary
+  Error error = 4;                        // Error if validation failed
+}
+
+message CreateTemplateRequest {
+  WorkflowTemplate template = 1;          // Template to create
+  bool validate_only = 2;                 // Only validate, don't create
+}
+
+message CreateTemplateResponse {
+  OSSAIdentifier template_id = 1;         // Created template ID
+  repeated ValidationIssue validation_issues = 2; // Validation issues
+  Error error = 3;                        // Error if creation failed
+}
+
+message ListTemplatesRequest {
+  PageInfo page_info = 1;                 // Pagination information
+  TemplateFilter filter = 2;              // Template filter
+  repeated string sort_by = 3;            // Sort fields
+}
+
+message TemplateFilter {
+  repeated WorkflowCategory categories = 1; // Filter by categories
+  repeated string tags = 2;               // Filter by tags
+  string name_pattern = 3;                // Name pattern
+  string author = 4;                      // Author filter
+}
+
+message ListTemplatesResponse {
+  repeated WorkflowTemplate templates = 1; // List of templates
+  PageInfo page_info = 2;                 // Pagination information
+  Error error = 3;                        // Error if listing failed
+}
+
+message ScheduleWorkflowRequest {
+  WorkflowSchedule schedule = 1;          // Workflow schedule
+  bool validate_only = 2;                 // Only validate, don't schedule
+  bool start_immediately = 3;             // Whether to start immediately
+}
+
+message ScheduleWorkflowResponse {
+  OSSAIdentifier schedule_id = 1;         // Created schedule ID
+  google.protobuf.Timestamp next_run = 2; // Next scheduled run
+  repeated ValidationIssue validation_issues = 3; // Validation issues
+  Error error = 4;                        // Error if scheduling failed
+}

@@ -1,0 +1,113 @@
+ossa: 0.1.8
+metadata:
+  name: cognitive-intent-interpreter
+  version: 1.0.0
+  description: The Missing Brain - Cognitive Intent Interpreter for translating human business problems into executable agent workflows with semantic understanding
+  author: OSSA CLI
+  license: Apache-2.0
+  created: '2025-09-06'
+  updated: '2025-09-06'
+  tags:
+    - cognitive
+    - advanced
+    - critical
+    - intent-parsing
+    - workflow-orchestration
+    - semantic-understanding
+    - business-logic
+    - natural-language
+    - problem-solving
+spec:
+  conformance_tier: advanced
+  class: orchestration
+  category: coordinator
+  capabilities:
+    primary:
+      - intent_parsing_natural_language
+      - workflow_composition_generation
+      - semantic_understanding_business_logic
+      - agent_capability_mapping
+      - execution_plan_optimization
+      - context_aware_routing
+    secondary:
+      - business_requirement_analysis
+      - stakeholder_intent_disambiguation
+      - multi_agent_coordination
+      - workflow_validation_testing
+      - performance_prediction_modeling
+      - automated_escalation_handling
+    cognitive:
+      - natural_language_to_structured_workflow
+      - business_problem_decomposition
+      - agent_selection_optimization
+      - execution_context_inference
+      - success_criteria_definition
+      - failure_mode_prediction
+  protocols:
+    - name: openapi
+      version: 3.1.0
+      required: true
+      extensions:
+        - x-ossa-advanced
+        - x-enterprise-features
+    - name: mcp
+      version: '2024-11-05'
+      required: true
+      advanced_features:
+        - resource_streaming
+        - progress_tracking
+    - name: uadp
+      version: 0.1.8
+      required: true
+      discovery_modes:
+        - active
+        - passive
+  framework_support:
+    langchain:
+      enabled: true
+      integration_type: structured_tool
+      async_execution: true
+    crewai:
+      enabled: true
+      integration_type: specialist
+      role: cognitive_expert
+    openai:
+      enabled: true
+      integration_type: assistant
+      function_calling: true
+    mcp:
+      enabled: true
+      integration_type: protocol_bridge
+      server_mode: true
+      client_mode: true
+  compliance_frameworks:
+    - name: ISO_42001
+      level: implemented
+      audit_ready: true
+    - name: NIST_AI_RMF
+      level: implemented
+      maturity_level: 3
+  discovery:
+    uadp_enabled: true
+    hierarchical_discovery: true
+    capability_inference: true
+  performance:
+    latency:
+      health_check: <50ms
+      capabilities: <100ms
+    throughput:
+      requests_per_second: 100
+    availability:
+      uptime_target: 99.5
+  security:
+    authentication:
+      - api_key
+      - oauth2
+    authorization: rbac
+    encryption:
+      at_rest: aes_256
+      in_transit: tls_1_3
+  endpoints:
+    health: /health
+    capabilities: /capabilities
+    discover: /discover

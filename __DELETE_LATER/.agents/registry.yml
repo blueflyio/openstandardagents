@@ -1,0 +1,80 @@
+apiVersion: open-standards-scalable-agents/v0.1.8
+kind: AgentRegistry
+metadata:
+  name: ossa-project-registry
+  description: "OSSA v0.1.8 compliant agent registry"
+  version: 0.1.8
+
+spec:
+  agents:
+    - name: ossa-validator-agent
+      file: ossa-validator-agent.yml
+      status: active
+      compliance: gold
+      capabilities:
+        - schema_validation
+        - compliance_checking
+        - ossa_enforcement
+      
+    - name: orchestration-agent  
+      file: orchestration-agent.yml
+      status: active
+      compliance: gold
+      capabilities:
+        - agent_coordination
+        - task_distribution
+        - workflow_management
+        - conflict_resolution
+        
+    - name: ossa-documentation-agent
+      file: ../.claude/agents/ossa-documentation-agent.yml
+      status: active
+      compliance: gold
+      capabilities:
+        - documentation_generation
+        - spec_maintenance
+        - example_creation
+        - tutorial_writing
+        
+    - name: ci-validation-agent
+      file: ../.gitlab/agents/ci-validation-agent.yml  
+      status: active
+      compliance: gold
+      capabilities:
+        - ci_pipeline_validation
+        - ossa_compliance_checking
+        - automated_testing
+        - deployment_orchestration
+        
+    - name: gitlab-pipeline-monitor
+      file: ../.gitlab/agents/gitlab-pipeline-monitor.yml
+      status: active
+      compliance: gold
+      capabilities:
+        - gitlab_api_authentication
+        - pipeline_status_monitoring
+        - failed_job_analysis
+        - contextual_troubleshooting
+        - ci_cd_optimization_recommendations
+        - bluefly_ecosystem_integration
+
+  configuration:
+    ossa_version: "0.1.8"
+    compliance_level: "gold"
+    token_optimization: 75
+    discovery_latency: 50  # ms
+    
+  extensions:
+    acta:
+      enabled: true
+      vectorProvider: "qdrant"
+      endpoint: "http://localhost:6333"
+      
+    acdl:
+      enabled: true
+      taxonomyBase: "ai-capabilities"
+      
+    coordination:
+      enabled: true
+      maxAgents: 20
+      loadBalancing: "capability-based"

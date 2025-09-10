@@ -1,0 +1,17 @@
+{
+  "agent": "devops",
+  "domain": "infrastructure",
+  "tier": "advanced",
+  "versions": [
+    "1.0.0",
+    "1.0.1",
+    "1.0.2"
+  ],
+  "created": "2025-09-08T15:40:48.627Z",
+  "ossa_version": "0.1.8",
+  "roadmap_files": [
+    "devops_1.0.0.dita",
+    "devops_1.0.1.dita",
+    "devops_1.0.2.dita"
+  ]
+}

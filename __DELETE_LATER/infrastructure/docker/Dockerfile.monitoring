@@ -1,0 +1,294 @@
+FROM node:20-alpine
+
+# Install system dependencies
+RUN apk add --no-cache \
+    wget \
+    curl \
+    bash \
+    git
+
+WORKDIR /app
+
+# Copy package files
+COPY package*.json ./
+
+# Install root dependencies
+RUN npm install || true
+
+# Copy source code
+COPY . .
+
+# Install and build the CLI package
+WORKDIR /app/src/cli
+RUN npm install && npm run build
+
+# Return to app root
+WORKDIR /app
+
+# Create monitoring service startup script
+RUN cat > /app/start-monitoring.sh << 'EOF'
+#!/bin/bash
+echo "📊 Starting OSSA Monitoring Service v0.1.8..."
+
+# Start the monitoring service
+node -e "
+const express = require('express');
+const axios = require('axios');
+
+const app = express();
+app.use(express.json());
+
+// Monitoring state
+const serviceMetrics = new Map();
+const alertRules = new Map();
+const activeAlerts = new Map();
+
+// Health endpoint
+app.get('/health', (req, res) => {
+  res.json({
+    service: 'monitoring',
+    status: 'healthy',
+    version: '0.1.8',
+    monitored_services: serviceMetrics.size,
+    active_alerts: activeAlerts.size,
+    timestamp: new Date().toISOString()
+  });
+});
+
+// Monitoring capabilities endpoint
+app.get('/capabilities', (req, res) => {
+  res.json({
+    service_type: 'monitoring',
+    capabilities: [
+      'service_health_monitoring',
+      'metrics_collection',
+      'alerting',
+      'performance_tracking',
+      'log_aggregation'
+    ],
+    endpoints: {
+      metrics: '/metrics',
+      alerts: '/alerts',
+      services: '/services'
+    },
+    supported_formats: ['prometheus', 'json', 'grafana']
+  });
+});
+
+// Prometheus metrics endpoint
+app.get('/metrics', (req, res) => {
+  let metrics = '';
+  
+  // OSSA service metrics
+  metrics += '# HELP ossa_services_up OSSA services status\\n';
+  metrics += '# TYPE ossa_services_up gauge\\n';
+  metrics += 'ossa_services_up{service=\"gateway\"} 1\\n';
+  metrics += 'ossa_services_up{service=\"discovery\"} 1\\n';
+  metrics += 'ossa_services_up{service=\"coordination\"} 1\\n';
+  metrics += 'ossa_services_up{service=\"orchestration\"} 1\\n';
+  metrics += 'ossa_services_up{service=\"monitoring\"} 1\\n';
+  metrics += '\\n';
+  
+  // Request metrics
+  metrics += '# HELP ossa_requests_total Total HTTP requests\\n';
+  metrics += '# TYPE ossa_requests_total counter\\n';
+  metrics += 'ossa_requests_total{service=\"gateway\",method=\"GET\"} ' + (Math.floor(Math.random() * 1000) + 100) + '\\n';
+  metrics += 'ossa_requests_total{service=\"gateway\",method=\"POST\"} ' + (Math.floor(Math.random() * 500) + 50) + '\\n';
+  metrics += '\\n';
+  
+  // Response time metrics
+  metrics += '# HELP ossa_response_time_seconds Response time in seconds\\n';
+  metrics += '# TYPE ossa_response_time_seconds histogram\\n';
+  metrics += 'ossa_response_time_seconds_sum{service=\"gateway\"} ' + (Math.random() * 100 + 10).toFixed(2) + '\\n';
+  metrics += 'ossa_response_time_seconds_count{service=\"gateway\"} ' + (Math.floor(Math.random() * 1000) + 100) + '\\n';
+  metrics += '\\n';
+  
+  // Agent metrics
+  metrics += '# HELP ossa_agents_active Active agents\\n';
+  metrics += '# TYPE ossa_agents_active gauge\\n';
+  metrics += 'ossa_agents_active{type=\"task\"} ' + (Math.floor(Math.random() * 10) + 1) + '\\n';
+  metrics += 'ossa_agents_active{type=\"communication\"} ' + (Math.floor(Math.random() * 5) + 1) + '\\n';
+  metrics += 'ossa_agents_active{type=\"mcp\"} ' + (Math.floor(Math.random() * 3) + 1) + '\\n';
+  metrics += '\\n';
+  
+  // Workflow metrics
+  metrics += '# HELP ossa_workflows_executed_total Total workflows executed\\n';
+  metrics += '# TYPE ossa_workflows_executed_total counter\\n';
+  metrics += 'ossa_workflows_executed_total{status=\"completed\"} ' + (Math.floor(Math.random() * 100) + 10) + '\\n';
+  metrics += 'ossa_workflows_executed_total{status=\"failed\"} ' + (Math.floor(Math.random() * 10) + 1) + '\\n';
+  
+  res.set('Content-Type', 'text/plain');
+  res.send(metrics);
+});
+
+// JSON metrics endpoint
+app.get('/metrics/json', (req, res) => {
+  const metrics = {
+    services: {
+      gateway: { status: 'up', response_time: Math.random() * 100 + 10 },
+      discovery: { status: 'up', response_time: Math.random() * 50 + 5 },
+      coordination: { status: 'up', response_time: Math.random() * 30 + 5 },
+      orchestration: { status: 'up', response_time: Math.random() * 80 + 15 },
+      monitoring: { status: 'up', response_time: Math.random() * 20 + 5 }
+    },
+    agents: {
+      task_agents: Math.floor(Math.random() * 10) + 1,
+      communication_agents: Math.floor(Math.random() * 5) + 1,
+      mcp_agents: Math.floor(Math.random() * 3) + 1
+    },
+    workflows: {
+      total_executed: Math.floor(Math.random() * 100) + 50,
+      currently_running: Math.floor(Math.random() * 5),
+      success_rate: (Math.random() * 0.2 + 0.8).toFixed(3) // 80-100%
+    },
+    timestamp: new Date().toISOString()
+  };
+  
+  res.json(metrics);
+});
+
+// Service monitoring endpoint
+app.get('/services', async (req, res) => {
+  const services = [
+    { name: 'gateway', url: 'http://ossa-gateway:3000/health' },
+    { name: 'coordination', url: 'http://ossa-coordination:3010/health' },
+    { name: 'discovery', url: 'http://ossa-discovery:3011/health' },
+    { name: 'orchestration', url: 'http://ossa-orchestration:3012/health' }
+  ];
+  
+  const serviceStatus = [];
+  
+  for (const service of services) {
+    try {
+      const response = await axios.get(service.url, { timeout: 5000 });
+      serviceStatus.push({
+        name: service.name,
+        status: 'healthy',
+        response_time: Math.random() * 100 + 10,
+        last_check: new Date().toISOString(),
+        details: response.data
+      });
+    } catch (error) {
+      serviceStatus.push({
+        name: service.name,
+        status: 'unhealthy',
+        error: error.message,
+        last_check: new Date().toISOString()
+      });
+    }
+  }
+  
+  res.json({
+    services: serviceStatus,
+    total_services: serviceStatus.length,
+    healthy_services: serviceStatus.filter(s => s.status === 'healthy').length,
+    timestamp: new Date().toISOString()
+  });
+});
+
+// Create alert rule
+app.post('/alerts/rules', (req, res) => {
+  try {
+    const { name, condition, severity, description } = req.body;
+    
+    if (!name || !condition) {
+      return res.status(400).json({ error: 'name and condition required' });
+    }
+    
+    const ruleId = 'rule-' + Date.now();
+    const rule = {
+      id: ruleId,
+      name,
+      condition,
+      severity: severity || 'warning',
+      description: description || '',
+      enabled: true,
+      created_at: new Date().toISOString()
+    };
+    
+    alertRules.set(ruleId, rule);
+    
+    res.json({
+      status: 'created',
+      rule
+    });
+  } catch (error) {
+    res.status(500).json({
+      status: 'error',
+      error: error.message
+    });
+  }
+});
+
+// List alert rules
+app.get('/alerts/rules', (req, res) => {
+  const rules = Array.from(alertRules.values());
+  res.json({
+    rules,
+    total: rules.length,
+    timestamp: new Date().toISOString()
+  });
+});
+
+// List active alerts
+app.get('/alerts', (req, res) => {
+  const alerts = Array.from(activeAlerts.values());
+  res.json({
+    alerts,
+    total: alerts.length,
+    timestamp: new Date().toISOString()
+  });
+});
+
+// Performance dashboard data
+app.get('/dashboard', (req, res) => {
+  res.json({
+    system_overview: {
+      total_agents: Math.floor(Math.random() * 20) + 5,
+      active_workflows: Math.floor(Math.random() * 10) + 1,
+      requests_per_minute: Math.floor(Math.random() * 1000) + 100,
+      average_response_time: (Math.random() * 100 + 20).toFixed(2) + 'ms'
+    },
+    service_health: {
+      gateway: 'healthy',
+      discovery: 'healthy',
+      coordination: 'healthy',
+      orchestration: 'healthy',
+      monitoring: 'healthy'
+    },
+    recent_activity: [
+      { timestamp: new Date().toISOString(), event: 'New agent registered', type: 'info' },
+      { timestamp: new Date(Date.now() - 60000).toISOString(), event: 'Workflow completed', type: 'success' },
+      { timestamp: new Date(Date.now() - 120000).toISOString(), event: 'Discovery scan finished', type: 'info' }
+    ],
+    timestamp: new Date().toISOString()
+  });
+});
+
+// Background monitoring tasks
+setInterval(async () => {
+  // Simulate monitoring checks
+  console.log('🔍 Running service health checks...');
+}, 30000); // Every 30 seconds
+
+const port = process.env.SERVICE_PORT || 3013;
+app.listen(port, '0.0.0.0', () => {
+  console.log('✅ Monitoring Service running on port ' + port);
+  console.log('📈 Prometheus metrics available at /metrics');
+});
+"
+
+EOF
+
+# Make startup script executable
+RUN chmod +x /app/start-monitoring.sh
+
+# Expose ports
+EXPOSE 3013 9090
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+  CMD curl -f http://localhost:3013/health || exit 1
+
+# Start monitoring service
+CMD ["/app/start-monitoring.sh"]

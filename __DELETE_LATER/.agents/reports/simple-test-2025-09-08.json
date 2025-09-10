@@ -1,0 +1,14 @@
+{
+  "test_type": "simple_validation",
+  "timestamp": "2025-09-08T20:43:19.642Z",
+  "execution_time": 0.17,
+  "directories": [
+    "/Users/flux423/Sites/LLM/__DELETE_LATER",
+    "/Users/flux423/Sites/LLM/__DELETE_LATER_LATER"
+  ],
+  "summary": {
+    "total_files": 100,
+    "total_size": 4523969
+  },
+  "credentials": []
+}

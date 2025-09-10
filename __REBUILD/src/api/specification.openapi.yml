@@ -1,0 +1,281 @@
+openapi: 3.1.0
+info:
+  title: OSSA Specification Engine API
+  version: 0.2.0
+  description: |
+    OSSA Platform Specification Engine - Defines and validates agent specifications,
+    taxonomies, and capability descriptions according to OSSA v0.2.0 standards.
+  contact:
+    name: OSSA Platform Team
+    url: https://ossa.bluefly.io
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: http://localhost:3000/api/v1
+    description: Local development server
+  - url: https://ossa.bluefly.io/api/v1
+    description: Production server
+
+paths:
+  /specification/validate:
+    post:
+      summary: Validate agent specification
+      description: Validates an agent manifest against OSSA specification standards
+      operationId: validateSpecification
+      tags:
+        - Specification
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AgentManifest'
+      responses:
+        '200':
+          description: Validation successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationResult'
+        '400':
+          description: Validation failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+
+  /specification/taxonomy:
+    get:
+      summary: Get agent taxonomy
+      description: Returns the complete OSSA agent taxonomy with all types and categories
+      operationId: getTaxonomy
+      tags:
+        - Specification
+      responses:
+        '200':
+          description: Agent taxonomy retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentTaxonomy'
+
+  /specification/capabilities:
+    post:
+      summary: Register agent capabilities
+      description: Registers agent capabilities using ACDL (Agent Capability Description Language)
+      operationId: registerCapabilities
+      tags:
+        - Specification
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AgentCapabilities'
+      responses:
+        '201':
+          description: Capabilities registered
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RegistrationResult'
+
+  /specification/schema/{agentType}:
+    get:
+      summary: Get agent type schema
+      description: Returns the JSON schema for a specific agent type
+      operationId: getAgentSchema
+      tags:
+        - Specification
+      parameters:
+        - name: agentType
+          in: path
+          required: true
+          schema:
+            type: string
+            enum:
+              - orchestrator
+              - worker
+              - critic
+              - judge
+              - trainer
+              - governor
+              - monitor
+              - integrator
+      responses:
+        '200':
+          description: Schema retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+
+components:
+  schemas:
+    AgentManifest:
+      type: object
+      required:
+        - agentId
+        - agentType
+        - version
+        - capabilities
+      properties:
+        agentId:
+          type: string
+          pattern: '^[a-z0-9-]+$'
+          example: 'worker-openapi-v1-2-0'
+        agentType:
+          type: string
+          enum:
+            - orchestrator
+            - worker
+            - critic
+            - judge
+            - trainer
+            - governor
+            - monitor
+            - integrator
+        agentSubType:
+          type: string
+          example: 'worker.openapi'
+        version:
+          type: string
+          pattern: '^\d+\.\d+\.\d+$'
+          example: '1.2.0'
+        capabilities:
+          $ref: '#/components/schemas/AgentCapabilities'
+        metadata:
+          type: object
+          properties:
+            author:
+              type: string
+            description:
+              type: string
+            created:
+              type: string
+              format: date-time
+            updated:
+              type: string
+              format: date-time
+
+    AgentCapabilities:
+      type: object
+      required:
+        - supportedDomains
+        - inputFormats
+        - outputFormats
+      properties:
+        supportedDomains:
+          type: array
+          items:
+            type: string
+          example: ['documentation', 'api-design', 'validation']
+        inputFormats:
+          type: array
+          items:
+            type: string
+          example: ['json', 'yaml', 'text']
+        outputFormats:
+          type: array
+          items:
+            type: string
+          example: ['json', 'yaml', 'markdown']
+        requirements:
+          type: array
+          items:
+            type: string
+        constraints:
+          type: object
+          properties:
+            maxTokens:
+              type: integer
+            timeout:
+              type: integer
+            memoryLimit:
+              type: string
+
+    ValidationResult:
+      type: object
+      required:
+        - valid
+        - version
+      properties:
+        valid:
+          type: boolean
+        version:
+          type: string
+        warnings:
+          type: array
+          items:
+            type: string
+        compliance:
+          type: object
+          properties:
+            ossaVersion:
+              type: string
+            level:
+              type: string
+              enum: [basic, standard, enterprise]
+
+    ValidationError:
+      type: object
+      required:
+        - valid
+        - errors
+      properties:
+        valid:
+          type: boolean
+          default: false
+        errors:
+          type: array
+          items:
+            type: object
+            properties:
+              field:
+                type: string
+              message:
+                type: string
+              code:
+                type: string
+
+    AgentTaxonomy:
+      type: object
+      properties:
+        version:
+          type: string
+        feedbackLoop:
+          type: object
+          properties:
+            phases:
+              type: array
+              items:
+                type: string
+              example: ['plan', 'execute', 'review', 'judge', 'learn', 'govern']
+        types:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+              description:
+                type: string
+              capabilities:
+                type: array
+                items:
+                  type: string
+
+    RegistrationResult:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum: [registered, pending, failed]
+        timestamp:
+          type: string
+          format: date-time

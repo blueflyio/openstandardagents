@@ -1,0 +1,598 @@
+# Comprehensive Health Check and Readiness Probe Configuration for OSSA v0.1.8
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ossa-health-check-config
+  namespace: ossa-platform
+  labels:
+    app.kubernetes.io/name: ossa-platform
+    app.kubernetes.io/component: health-checks
+    ossa.bluefly.io/version: "0.1.8"
+data:
+  # Health check intervals and timeouts
+  HEALTH_CHECK_INTERVAL: "30"
+  HEALTH_CHECK_TIMEOUT: "10"
+  READINESS_CHECK_INTERVAL: "5"
+  READINESS_CHECK_TIMEOUT: "3"
+  STARTUP_PROBE_TIMEOUT: "60"
+  
+  # Service-specific health endpoints
+  GATEWAY_HEALTH_ENDPOINT: "/health"
+  GATEWAY_READINESS_ENDPOINT: "/ready"
+  AGENT_HEALTH_ENDPOINT: "/health"
+  AGENT_READINESS_ENDPOINT: "/ready"
+  
+  # Health check thresholds
+  CPU_THRESHOLD: "80"
+  MEMORY_THRESHOLD: "85"
+  DISK_THRESHOLD: "90"
+  RESPONSE_TIME_THRESHOLD: "5000"
+
+---
+# Health Check Service for Advanced Monitoring
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ossa-health-monitor
+  namespace: ossa-platform
+  labels:
+    app.kubernetes.io/name: ossa-health-monitor
+    app.kubernetes.io/component: health-monitoring
+    app.kubernetes.io/part-of: ossa-platform
+    ossa.bluefly.io/version: "0.1.8"
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: ossa-health-monitor
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: ossa-health-monitor
+        app.kubernetes.io/component: health-monitoring
+        app.kubernetes.io/part-of: ossa-platform
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8080"
+        prometheus.io/path: "/metrics"
+    spec:
+      serviceAccountName: ossa-service-account
+      containers:
+      - name: health-monitor
+        image: gitlab.bluefly.io/ossa/platform:0.1.8-health-monitor
+        ports:
+        - containerPort: 8080
+          name: http
+        - containerPort: 8090
+          name: metrics
+        env:
+        - name: MONITOR_NAMESPACE
+          value: "ossa-platform"
+        - name: CHECK_INTERVAL
+          valueFrom:
+            configMapKeyRef:
+              name: ossa-health-check-config
+              key: HEALTH_CHECK_INTERVAL
+        - name: KUBERNETES_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "100m"
+          limits:
+            memory: "512Mi"
+            cpu: "200m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: 8080
+          initialDelaySeconds: 5
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 3
+        startupProbe:
+          httpGet:
+            path: /startup
+            port: 8080
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 10
+
+---
+# Enhanced Gateway Deployment with Comprehensive Health Checks
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ossa-gateway-enhanced
+  namespace: ossa-platform
+  labels:
+    app.kubernetes.io/name: ossa-gateway-enhanced
+    app.kubernetes.io/component: gateway-enhanced
+    app.kubernetes.io/part-of: ossa-platform
+    ossa.bluefly.io/version: "0.1.8"
+spec:
+  replicas: 5
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: ossa-gateway-enhanced
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: ossa-gateway-enhanced
+        app.kubernetes.io/component: gateway-enhanced
+        app.kubernetes.io/part-of: ossa-platform
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "3000"
+    spec:
+      serviceAccountName: ossa-service-account
+      initContainers:
+      # Pre-flight health check
+      - name: preflight-check
+        image: curlimages/curl:latest
+        command:
+        - /bin/sh
+        - -c
+        - |
+          echo "Performing pre-flight checks..."
+          # Check Redis connectivity
+          timeout 30 sh -c 'until nc -z ossa-redis.ossa-system.svc.cluster.local 6379; do sleep 1; done'
+          echo "Redis is available"
+          # Check PostgreSQL connectivity
+          timeout 30 sh -c 'until nc -z ossa-postgres.ossa-system.svc.cluster.local 5432; do sleep 1; done'
+          echo "PostgreSQL is available"
+          # Check Qdrant connectivity
+          timeout 30 sh -c 'until nc -z ossa-qdrant.ossa-system.svc.cluster.local 6333; do sleep 1; done'
+          echo "Qdrant is available"
+          echo "Pre-flight checks completed successfully"
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "50m"
+          limits:
+            memory: "128Mi"
+            cpu: "100m"
+      containers:
+      - name: gateway
+        image: gitlab.bluefly.io/ossa/platform:0.1.8-gateway
+        ports:
+        - containerPort: 3000
+          name: http
+        - containerPort: 9090
+          name: metrics
+        env:
+        - name: SERVICE_PORT
+          value: "3000"
+        - name: HEALTH_CHECK_ENABLED
+          value: "true"
+        - name: DEEP_HEALTH_CHECK
+          value: "true"
+        - name: REDIS_URL
+          valueFrom:
+            configMapKeyRef:
+              name: ossa-platform-config
+              key: REDIS_URL
+        - name: POSTGRES_URL
+          valueFrom:
+            configMapKeyRef:
+              name: ossa-platform-config
+              key: POSTGRES_URL
+        - name: QDRANT_URL
+          valueFrom:
+            configMapKeyRef:
+              name: ossa-platform-config
+              key: QDRANT_URL
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "250m"
+          limits:
+            memory: "1Gi"
+            cpu: "500m"
+        # Startup probe for slow-starting containers
+        startupProbe:
+          httpGet:
+            path: /startup
+            port: 3000
+          initialDelaySeconds: 10
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 30  # Allow up to 150 seconds for startup
+          successThreshold: 1
+        # Liveness probe to restart unhealthy containers
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 3000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+          successThreshold: 1
+        # Readiness probe to control traffic routing
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: 3000
+          initialDelaySeconds: 5
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 3
+          successThreshold: 1
+        # Additional health check via exec
+        lifecycle:
+          preStop:
+            exec:
+              command:
+              - /bin/sh
+              - -c
+              - |
+                echo "Graceful shutdown initiated..."
+                sleep 15  # Allow time for connections to drain
+                echo "Shutdown complete"
+
+---
+# Health Check Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: ossa-health-monitor
+  namespace: ossa-platform
+  labels:
+    app.kubernetes.io/name: ossa-health-monitor
+    app.kubernetes.io/component: health-monitoring
+spec:
+  selector:
+    app.kubernetes.io/name: ossa-health-monitor
+  ports:
+  - port: 8080
+    targetPort: 8080
+    name: http
+  - port: 8090
+    targetPort: 8090
+    name: metrics
+
+---
+# External Health Check Service (for load balancer health checks)
+apiVersion: v1
+kind: Service
+metadata:
+  name: ossa-external-health
+  namespace: ossa-platform
+  labels:
+    app.kubernetes.io/name: ossa-external-health
+    app.kubernetes.io/component: external-health
+  annotations:
+    service.beta.kubernetes.io/aws-load-balancer-healthcheck-path: "/health"
+    service.beta.kubernetes.io/aws-load-balancer-healthcheck-interval: "30"
+    service.beta.kubernetes.io/aws-load-balancer-healthcheck-timeout: "10"
+    service.beta.kubernetes.io/aws-load-balancer-healthcheck-healthy-threshold: "2"
+    service.beta.kubernetes.io/aws-load-balancer-healthcheck-unhealthy-threshold: "3"
+spec:
+  type: LoadBalancer
+  selector:
+    app.kubernetes.io/name: ossa-gateway-enhanced
+  ports:
+  - port: 80
+    targetPort: 3000
+    name: http
+
+---
+# Comprehensive Agent Health Check Configuration
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ossa-task-agent-enhanced
+  namespace: ossa-platform
+  labels:
+    app.kubernetes.io/name: ossa-task-agent-enhanced
+    app.kubernetes.io/component: agent-enhanced
+    app.kubernetes.io/part-of: ossa-platform
+spec:
+  replicas: 10
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: ossa-task-agent-enhanced
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: ossa-task-agent-enhanced
+        app.kubernetes.io/component: agent-enhanced
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "3001"
+    spec:
+      serviceAccountName: ossa-service-account
+      containers:
+      - name: task-agent
+        image: gitlab.bluefly.io/ossa/platform:0.1.8-task-agent
+        ports:
+        - containerPort: 3001
+          name: http
+        env:
+        - name: AGENT_TYPE
+          value: "task"
+        - name: HEALTH_CHECK_DEEP_SCAN
+          value: "true"
+        - name: AGENT_QUEUE_HEALTH_CHECK
+          value: "true"
+        - name: AI_MODEL_HEALTH_CHECK
+          value: "true"
+        resources:
+          requests:
+            memory: "1Gi"
+            cpu: "500m"
+          limits:
+            memory: "2Gi"
+            cpu: "1"
+        # Multi-layered health checks for agents
+        startupProbe:
+          httpGet:
+            path: /startup
+            port: 3001
+          initialDelaySeconds: 15
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 20
+        livenessProbe:
+          httpGet:
+            path: /health/deep
+            port: 3001
+          initialDelaySeconds: 60
+          periodSeconds: 30
+          timeoutSeconds: 10
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /ready/full
+            port: 3001
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        # Custom health check via TCP socket
+        lifecycle:
+          postStart:
+            exec:
+              command:
+              - /bin/sh
+              - -c
+              - |
+                echo "Agent starting health monitoring..."
+                # Initialize health check endpoints
+                # Set up monitoring for queue depth, AI model availability, etc.
+
+---
+# Database Health Monitoring
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: ossa-database-health-check
+  namespace: ossa-system
+  labels:
+    app.kubernetes.io/name: ossa-database-health
+    app.kubernetes.io/component: database-monitoring
+spec:
+  schedule: "*/5 * * * *"  # Every 5 minutes
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          restartPolicy: OnFailure
+          containers:
+          - name: db-health-checker
+            image: postgres:15-alpine
+            command:
+            - /bin/sh
+            - -c
+            - |
+              echo "Checking database health..."
+              
+              # PostgreSQL Health Check
+              export PGPASSWORD=$POSTGRES_PASSWORD
+              pg_isready -h ossa-postgres.ossa-system.svc.cluster.local -p 5432 -U ossa
+              if [ $? -eq 0 ]; then
+                echo "PostgreSQL is healthy"
+              else
+                echo "PostgreSQL health check failed"
+                exit 1
+              fi
+              
+              # Check database connections
+              CONN_COUNT=$(psql -h ossa-postgres.ossa-system.svc.cluster.local -U ossa -d ossa -t -c "SELECT count(*) FROM pg_stat_activity;")
+              echo "Active connections: $CONN_COUNT"
+              
+              # Check for long-running queries
+              LONG_QUERIES=$(psql -h ossa-postgres.ossa-system.svc.cluster.local -U ossa -d ossa -t -c "SELECT count(*) FROM pg_stat_activity WHERE state = 'active' AND query_start < now() - interval '5 minutes';")
+              echo "Long-running queries: $LONG_QUERIES"
+              
+              if [ "$LONG_QUERIES" -gt 5 ]; then
+                echo "WARNING: Too many long-running queries detected"
+              fi
+            env:
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: ossa-platform-secrets
+                  key: POSTGRES_PASSWORD
+            resources:
+              requests:
+                memory: "128Mi"
+                cpu: "100m"
+              limits:
+                memory: "256Mi"
+                cpu: "200m"
+
+---
+# Redis Health Monitoring
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: ossa-redis-health-check
+  namespace: ossa-system
+  labels:
+    app.kubernetes.io/name: ossa-redis-health
+    app.kubernetes.io/component: cache-monitoring
+spec:
+  schedule: "*/2 * * * *"  # Every 2 minutes
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          restartPolicy: OnFailure
+          containers:
+          - name: redis-health-checker
+            image: redis:7-alpine
+            command:
+            - /bin/sh
+            - -c
+            - |
+              echo "Checking Redis health..."
+              
+              # Basic Redis ping
+              redis-cli -h ossa-redis.ossa-system.svc.cluster.local -p 6379 ping
+              if [ $? -eq 0 ]; then
+                echo "Redis is responding to ping"
+              else
+                echo "Redis ping failed"
+                exit 1
+              fi
+              
+              # Check Redis memory usage
+              MEMORY_USAGE=$(redis-cli -h ossa-redis.ossa-system.svc.cluster.local -p 6379 INFO memory | grep used_memory_human | cut -d: -f2 | tr -d '\r')
+              echo "Redis memory usage: $MEMORY_USAGE"
+              
+              # Check connected clients
+              CLIENTS=$(redis-cli -h ossa-redis.ossa-system.svc.cluster.local -p 6379 INFO clients | grep connected_clients | cut -d: -f2 | tr -d '\r')
+              echo "Connected clients: $CLIENTS"
+              
+              # Performance test
+              redis-cli -h ossa-redis.ossa-system.svc.cluster.local -p 6379 --latency-history -i 1 > /tmp/latency.log 2>&1 &
+              LATENCY_PID=$!
+              sleep 5
+              kill $LATENCY_PID 2>/dev/null || true
+              echo "Redis latency test completed"
+            resources:
+              requests:
+                memory: "128Mi"
+                cpu: "100m"
+              limits:
+                memory: "256Mi"
+                cpu: "200m"
+
+---
+# Vector Database Health Monitoring
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: ossa-qdrant-health-check
+  namespace: ossa-system
+  labels:
+    app.kubernetes.io/name: ossa-qdrant-health
+    app.kubernetes.io/component: vectordb-monitoring
+spec:
+  schedule: "*/3 * * * *"  # Every 3 minutes
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          restartPolicy: OnFailure
+          containers:
+          - name: qdrant-health-checker
+            image: curlimages/curl:latest
+            command:
+            - /bin/sh
+            - -c
+            - |
+              echo "Checking Qdrant health..."
+              
+              # Basic health check
+              HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://ossa-qdrant.ossa-system.svc.cluster.local:6333/health)
+              if [ "$HTTP_STATUS" = "200" ]; then
+                echo "Qdrant health endpoint returned 200"
+              else
+                echo "Qdrant health check failed with status: $HTTP_STATUS"
+                exit 1
+              fi
+              
+              # Check cluster info
+              curl -s http://ossa-qdrant.ossa-system.svc.cluster.local:6333/cluster
+              
+              # Check collections
+              COLLECTIONS=$(curl -s http://ossa-qdrant.ossa-system.svc.cluster.local:6333/collections | jq -r '.result.collections | length')
+              echo "Number of collections: $COLLECTIONS"
+              
+              echo "Qdrant health check completed successfully"
+            resources:
+              requests:
+                memory: "64Mi"
+                cpu: "50m"
+              limits:
+                memory: "128Mi"
+                cpu: "100m"
+
+---
+# Health Check Alerts Configuration
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: ossa-health-check-alerts
+  namespace: ossa-monitoring
+  labels:
+    app.kubernetes.io/name: ossa-health-alerts
+    app.kubernetes.io/component: prometheus-rules
+spec:
+  groups:
+  - name: ossa-health-checks
+    rules:
+    - alert: OSSAServiceUnhealthy
+      expr: up{job=~"ossa-.*"} == 0
+      for: 1m
+      labels:
+        severity: critical
+        component: "{{ $labels.job }}"
+      annotations:
+        summary: "OSSA service is unhealthy"
+        description: "Service {{ $labels.job }} on {{ $labels.instance }} has been down for more than 1 minute."
+    
+    - alert: OSSAHighResponseTime
+      expr: probe_duration_seconds{job=~"ossa-.*"} > 5
+      for: 2m
+      labels:
+        severity: warning
+        component: "{{ $labels.job }}"
+      annotations:
+        summary: "OSSA service has high response time"
+        description: "Service {{ $labels.job }} response time is {{ $value }}s, exceeding 5s threshold."
+    
+    - alert: OSSADatabaseConnectionFailed
+      expr: probe_success{instance=~".*postgres.*"} == 0
+      for: 30s
+      labels:
+        severity: critical
+        component: database
+      annotations:
+        summary: "Database connection failed"
+        description: "Cannot connect to PostgreSQL database {{ $labels.instance }}"
+    
+    - alert: OSSARedisConnectionFailed
+      expr: probe_success{instance=~".*redis.*"} == 0
+      for: 30s
+      labels:
+        severity: critical
+        component: cache
+      annotations:
+        summary: "Redis connection failed"
+        description: "Cannot connect to Redis instance {{ $labels.instance }}"

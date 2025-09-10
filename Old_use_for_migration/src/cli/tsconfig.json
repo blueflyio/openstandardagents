@@ -1,0 +1,44 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "ESNext",
+    "moduleResolution": "node",
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "allowJs": false,
+    "outDir": "./dist",
+    "rootDir": ".",
+    "strict": true,
+    "declaration": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "types": ["node"]
+  },
+  "include": [
+    "index.ts",
+    "api/**/*.ts",
+    "commands/**/*.ts",
+    "validation/**/*.ts",
+    "services/**/*.ts",
+    "uadp-commands.ts",
+    "standardizer.ts",
+    "uadp-discovery.ts",
+    "orchestrator.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "templates/**",
+    "__tests__/**",
+    "test/**",
+    "schemas/**",
+    "bin/**",
+    "tools/**",
+    "src/**"
+  ],
+  "ts-node": {
+    "esm": true,
+    "experimentalSpecifierResolution": "node"
+  }
+}

@@ -1,0 +1,88 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: ossa-phase4-enterprise
+  labels:
+    ossa.phase: "phase4"
+    ossa.scale: "enterprise"
+    ossa.agents: "200+"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ossa-enterprise-analytics-pool
+  namespace: ossa-phase4-enterprise
+spec:
+  replicas: 50
+  selector:
+    matchLabels:
+      app: ossa-enterprise-analytics
+      pool: intelligence
+  template:
+    metadata:
+      labels:
+        app: ossa-enterprise-analytics
+        pool: intelligence
+        ossa.agent-type: "analytics"
+    spec:
+      containers:
+      - name: enterprise-analytics-agent
+        image: ossa/agent-analytics:0.1.8-phase4
+        ports:
+        - containerPort: 8080
+        env:
+        - name: OSSA_PHASE
+          value: "phase4"
+        - name: AGENT_POOL
+          value: "intelligence"
+        - name: SPECIALIZATION
+          value: "ml-routing,predictive-analytics,cost-optimization"
+        - name: VORTEX_TOKEN_REDUCTION_TARGET
+          value: "85"
+        resources:
+          requests:
+            memory: "2Gi"
+            cpu: "1"
+          limits:
+            memory: "4Gi"
+            cpu: "2"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ossa-enterprise-analytics-service
+  namespace: ossa-phase4-enterprise
+spec:
+  selector:
+    app: ossa-enterprise-analytics
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 8080
+  type: ClusterIP
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: ossa-enterprise-analytics-hpa
+  namespace: ossa-phase4-enterprise
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: ossa-enterprise-analytics-pool
+  minReplicas: 50
+  maxReplicas: 250
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 70

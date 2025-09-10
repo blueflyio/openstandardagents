@@ -1,0 +1,283 @@
+FROM node:20-alpine
+
+# Install system dependencies
+RUN apk add --no-cache \
+    wget \
+    curl \
+    bash \
+    git
+
+WORKDIR /app
+
+# Copy package files
+COPY package*.json ./
+
+# Install root dependencies
+RUN npm install || true
+
+# Copy source code
+COPY . .
+
+# Install and build the CLI package
+WORKDIR /app/src/cli
+RUN npm install && npm run build
+
+# Return to app root
+WORKDIR /app
+
+# Create discovery service startup script
+RUN cat > /app/start-discovery.sh << 'EOF'
+#!/bin/bash
+echo "📡 Starting OSSA Discovery Service v0.1.8..."
+
+# Start the discovery service
+node -e "
+const express = require('express');
+const axios = require('axios');
+
+const app = express();
+app.use(express.json());
+
+// Discovery engine state
+const discoveredAgents = new Map();
+const discoveryPaths = process.env.DISCOVERY_PATHS ? 
+  process.env.DISCOVERY_PATHS.split(',') : 
+  ['./src', './agents', './modules'];
+
+// Health endpoint
+app.get('/health', (req, res) => {
+  res.json({
+    service: 'discovery',
+    status: 'healthy',
+    version: '0.1.8',
+    discovered_agents: discoveredAgents.size,
+    discovery_paths: discoveryPaths.length,
+    timestamp: new Date().toISOString()
+  });
+});
+
+// Discovery capabilities endpoint
+app.get('/capabilities', (req, res) => {
+  res.json({
+    service_type: 'discovery',
+    capabilities: [
+      'agent_discovery',
+      'capability_scanning',
+      'endpoint_validation',
+      'semantic_search',
+      'auto_registration'
+    ],
+    endpoints: {
+      discover: '/discover',
+      search: '/search',
+      validate: '/validate'
+    },
+    supported_formats: ['ossa', 'mcp', 'openapi', 'langchain']
+  });
+});
+
+// Main discovery endpoint
+app.post('/discover', async (req, res) => {
+  try {
+    const { paths, filters, format } = req.body;
+    
+    const searchPaths = paths || discoveryPaths;
+    const discoveryResults = [];
+    
+    // Mock discovery simulation
+    for (const path of searchPaths) {
+      // Simulate finding agents in different formats
+      const mockAgents = [
+        {
+          id: 'agent-' + Date.now(),
+          name: 'Mock Task Agent',
+          version: '0.1.8',
+          format: 'ossa',
+          source_path: path + '/task-agent.json',
+          capabilities: ['task_execution', 'workflow_management'],
+          endpoint: 'http://localhost:3001',
+          confidence: 0.95,
+          discovered_at: new Date().toISOString()
+        },
+        {
+          id: 'agent-' + (Date.now() + 1),
+          name: 'Mock Communication Agent', 
+          version: '0.1.8',
+          format: 'ossa',
+          source_path: path + '/comm-agent.json',
+          capabilities: ['messaging', 'protocol_translation'],
+          endpoint: 'http://localhost:3002',
+          confidence: 0.92,
+          discovered_at: new Date().toISOString()
+        }
+      ];
+      
+      // Apply filters if provided
+      let filteredAgents = mockAgents;
+      if (filters) {
+        if (filters.capabilities) {
+          filteredAgents = filteredAgents.filter(agent =>
+            filters.capabilities.some(cap => agent.capabilities.includes(cap))
+          );
+        }
+        if (filters.format) {
+          filteredAgents = filteredAgents.filter(agent => agent.format === filters.format);
+        }
+      }
+      
+      discoveryResults.push(...filteredAgents);
+      
+      // Store discovered agents
+      filteredAgents.forEach(agent => {
+        discoveredAgents.set(agent.id, agent);
+      });
+    }
+    
+    res.json({
+      status: 'discovery_complete',
+      agents: discoveryResults,
+      total_discovered: discoveryResults.length,
+      search_paths: searchPaths,
+      filters: filters || null,
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    res.status(500).json({
+      status: 'error',
+      error: error.message,
+      timestamp: new Date().toISOString()
+    });
+  }
+});
+
+// Search agents endpoint
+app.get('/search', async (req, res) => {
+  try {
+    const { query, capabilities, format, limit } = req.query;
+    
+    let results = Array.from(discoveredAgents.values());
+    
+    // Filter by capabilities
+    if (capabilities) {
+      const capList = capabilities.split(',');
+      results = results.filter(agent =>
+        capList.some(cap => agent.capabilities.includes(cap))
+      );
+    }
+    
+    // Filter by format
+    if (format) {
+      results = results.filter(agent => agent.format === format);
+    }
+    
+    // Simple text search in name and capabilities
+    if (query) {
+      const queryLower = query.toLowerCase();
+      results = results.filter(agent =>
+        agent.name.toLowerCase().includes(queryLower) ||
+        agent.capabilities.some(cap => cap.toLowerCase().includes(queryLower))
+      );
+    }
+    
+    // Apply limit
+    const limitNum = parseInt(limit) || 20;
+    results = results.slice(0, limitNum);
+    
+    res.json({
+      agents: results,
+      total: results.length,
+      query: {
+        text: query,
+        capabilities,
+        format,
+        limit: limitNum
+      },
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    res.status(500).json({
+      status: 'error',
+      error: error.message,
+      timestamp: new Date().toISOString()
+    });
+  }
+});
+
+// Validate agent endpoint
+app.post('/validate', async (req, res) => {
+  try {
+    const { endpoint, expected_format } = req.body;
+    
+    if (!endpoint) {
+      return res.status(400).json({ error: 'endpoint required' });
+    }
+    
+    // Try to validate the agent endpoint
+    try {
+      const response = await axios.get(endpoint + '/health', { timeout: 5000 });
+      
+      res.json({
+        status: 'valid',
+        endpoint,
+        response_status: response.status,
+        agent_info: response.data,
+        validated_at: new Date().toISOString()
+      });
+    } catch (validateError) {
+      res.json({
+        status: 'invalid',
+        endpoint,
+        error: validateError.message,
+        validated_at: new Date().toISOString()
+      });
+    }
+  } catch (error) {
+    res.status(500).json({
+      status: 'error',
+      error: error.message,
+      timestamp: new Date().toISOString()
+    });
+  }
+});
+
+// Get all discovered agents
+app.get('/agents', (req, res) => {
+  const agents = Array.from(discoveredAgents.values());
+  res.json({
+    agents,
+    total: agents.length,
+    timestamp: new Date().toISOString()
+  });
+});
+
+// Auto-discovery background task
+setInterval(async () => {
+  try {
+    console.log('🔍 Running periodic agent discovery...');
+    // In a real implementation, this would scan configured paths
+    // For now, it's a placeholder for the auto-discovery feature
+  } catch (error) {
+    console.error('Auto-discovery error:', error);
+  }
+}, 60000); // Every minute
+
+const port = process.env.SERVICE_PORT || 3011;
+app.listen(port, '0.0.0.0', () => {
+  console.log('✅ Discovery Service running on port ' + port);
+});
+"
+
+EOF
+
+# Make startup script executable
+RUN chmod +x /app/start-discovery.sh
+
+# Expose port
+EXPOSE 3011
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+  CMD curl -f http://localhost:3011/health || exit 1
+
+# Start discovery service
+CMD ["/app/start-discovery.sh"]

@@ -1,0 +1,550 @@
+{
+  "protocol_version": "2024-11-05",
+  "server_name": "orchestration-manager-mcp",
+  "server_version": "1.1.0",
+  "description": "MCP tools for OSSA v0.1.8 orchestration manager with universal agent discovery and workflow coordination",
+  "tools": [
+    {
+      "name": "discover_agents",
+      "description": "Discover available agents using Universal Agent Discovery Protocol (UADP) with semantic capability matching and ML-based performance ranking",
+      "inputSchema": {
+        "type": "object",
+        "required": ["query"],
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "Natural language description of required capabilities",
+            "examples": [
+              "Find agents that can perform compliance auditing with ISO 42001",
+              "Discover validation specialists with OpenAPI schema expertise",
+              "Locate orchestration agents with Kubernetes deployment capabilities"
+            ]
+          },
+          "frameworks": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": ["mcp", "langchain", "crewai", "autogen", "openai"]
+            },
+            "description": "Filter by supported AI frameworks"
+          },
+          "tiers": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": ["core", "governed", "advanced"]
+            },
+            "description": "Filter by OSSA conformance tiers"
+          },
+          "semantic_search": {
+            "type": "boolean",
+            "default": true,
+            "description": "Enable semantic capability matching"
+          },
+          "performance_ranking": {
+            "type": "boolean",
+            "default": true,
+            "description": "Enable ML-based performance ranking"
+          },
+          "max_results": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 1000,
+            "default": 50,
+            "description": "Maximum number of agents to return"
+          }
+        }
+      }
+    },
+    {
+      "name": "orchestrate_workflow",
+      "description": "Start a multi-agent workflow with specified orchestration patterns and real-time coordination",
+      "inputSchema": {
+        "type": "object",
+        "required": ["workflow_name", "pattern", "agents"],
+        "properties": {
+          "workflow_name": {
+            "type": "string",
+            "description": "Human-readable workflow identifier",
+            "examples": ["compliance-audit-pipeline", "validation-workflow", "rfp-processing-chain"]
+          },
+          "pattern": {
+            "type": "string",
+            "enum": [
+              "sequential_pipeline",
+              "parallel_execution",
+              "conditional_branching", 
+              "hybrid_workflows",
+              "event_driven",
+              "reactive_streams",
+              "map_reduce",
+              "pipeline_parallelism"
+            ],
+            "description": "Orchestration pattern to use for agent coordination"
+          },
+          "agents": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["agent_id", "role"],
+              "properties": {
+                "agent_id": {
+                  "type": "string",
+                  "description": "Unique identifier of the agent (from discovery)"
+                },
+                "role": {
+                  "type": "string",
+                  "description": "Role of the agent in the workflow",
+                  "examples": ["primary_auditor", "validator", "reporter", "coordinator"]
+                },
+                "parameters": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "description": "Agent-specific configuration parameters"
+                },
+                "dependencies": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "description": "Agent IDs this agent depends on"
+                }
+              }
+            },
+            "minItems": 1,
+            "description": "List of agents to include in the workflow"
+          },
+          "configuration": {
+            "type": "object",
+            "properties": {
+              "timeout_seconds": {
+                "type": "integer",
+                "minimum": 60,
+                "maximum": 86400,
+                "default": 3600,
+                "description": "Overall workflow timeout"
+              },
+              "retry_policy": {
+                "type": "object",
+                "properties": {
+                  "max_retries": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 10,
+                    "default": 3
+                  },
+                  "backoff_strategy": {
+                    "type": "string",
+                    "enum": ["fixed", "exponential", "linear"],
+                    "default": "exponential"
+                  }
+                }
+              },
+              "resource_constraints": {
+                "type": "object",
+                "properties": {
+                  "max_concurrent_agents": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 1000,
+                    "default": 100
+                  },
+                  "cpu_cores": {
+                    "type": "number",
+                    "minimum": 0.1
+                  },
+                  "memory_gb": {
+                    "type": "number",
+                    "minimum": 0.5
+                  }
+                }
+              }
+            }
+          },
+          "callback_url": {
+            "type": "string",
+            "format": "uri",
+            "description": "Webhook URL for workflow status updates"
+          }
+        }
+      }
+    },
+    {
+      "name": "monitor_workflow",
+      "description": "Monitor workflow execution with real-time status updates and performance metrics",
+      "inputSchema": {
+        "type": "object",
+        "required": ["workflow_id"],
+        "properties": {
+          "workflow_id": {
+            "type": "string",
+            "description": "Unique workflow identifier to monitor"
+          },
+          "include_metrics": {
+            "type": "boolean",
+            "default": true,
+            "description": "Include detailed performance metrics"
+          },
+          "include_agent_status": {
+            "type": "boolean",
+            "default": true,
+            "description": "Include individual agent status information"
+          },
+          "include_logs": {
+            "type": "boolean",
+            "default": false,
+            "description": "Include execution logs (can be verbose)"
+          }
+        }
+      }
+    },
+    {
+      "name": "manage_resources",
+      "description": "Dynamic resource allocation and load balancing across agent workflows with intelligent scaling",
+      "inputSchema": {
+        "type": "object",
+        "required": ["action"],
+        "properties": {
+          "action": {
+            "type": "string",
+            "enum": ["allocate", "deallocate", "rebalance", "scale_up", "scale_down", "optimize"],
+            "description": "Resource management action to perform"
+          },
+          "workflow_id": {
+            "type": "string",
+            "description": "Specific workflow to manage (optional for global actions)"
+          },
+          "resources": {
+            "type": "object",
+            "properties": {
+              "cpu_cores": {
+                "type": "number",
+                "minimum": 0.1,
+                "description": "CPU cores to allocate/deallocate"
+              },
+              "memory_gb": {
+                "type": "number",
+                "minimum": 0.1,
+                "description": "Memory in GB to allocate/deallocate"
+              },
+              "agent_slots": {
+                "type": "integer",
+                "minimum": 1,
+                "description": "Number of agent slots to manage"
+              }
+            }
+          },
+          "optimization_strategy": {
+            "type": "string",
+            "enum": ["performance", "cost", "balanced", "ml_guided"],
+            "default": "ml_guided",
+            "description": "Resource optimization strategy"
+          },
+          "auto_scaling": {
+            "type": "object",
+            "properties": {
+              "enabled": {
+                "type": "boolean",
+                "default": true
+              },
+              "min_agents": {
+                "type": "integer",
+                "minimum": 1,
+                "default": 1
+              },
+              "max_agents": {
+                "type": "integer",
+                "maximum": 1000,
+                "default": 50
+              },
+              "scale_triggers": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "enum": ["cpu_utilization", "memory_pressure", "queue_depth", "response_time"]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "coordinate_consensus",
+      "description": "Manage distributed consensus and coordination between agents using RAFT protocol and leader election",
+      "inputSchema": {
+        "type": "object",
+        "required": ["operation"],
+        "properties": {
+          "operation": {
+            "type": "string",
+            "enum": ["elect_leader", "achieve_consensus", "sync_state", "resolve_conflict", "partition_recovery"],
+            "description": "Coordination operation to perform"
+          },
+          "workflow_id": {
+            "type": "string",
+            "description": "Workflow context for coordination"
+          },
+          "agents": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Specific agent IDs to coordinate (optional)"
+          },
+          "consensus_data": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "Data requiring consensus among agents"
+          },
+          "timeout_seconds": {
+            "type": "integer",
+            "minimum": 5,
+            "maximum": 300,
+            "default": 30,
+            "description": "Timeout for consensus operations"
+          },
+          "quorum_size": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "Required number of agents for quorum (defaults to majority)"
+          }
+        }
+      }
+    },
+    {
+      "name": "generate_workflow_template",
+      "description": "Generate reusable workflow templates with parameterization and best practices integration",
+      "inputSchema": {
+        "type": "object",
+        "required": ["template_name", "description"],
+        "properties": {
+          "template_name": {
+            "type": "string",
+            "description": "Name for the workflow template",
+            "examples": ["compliance-audit-standard", "validation-pipeline", "rfp-processing-template"]
+          },
+          "description": {
+            "type": "string",
+            "description": "Human-readable description of the template's purpose"
+          },
+          "base_pattern": {
+            "type": "string",
+            "enum": [
+              "sequential_pipeline",
+              "parallel_execution",
+              "conditional_branching",
+              "hybrid_workflows",
+              "event_driven"
+            ],
+            "description": "Base orchestration pattern for the template"
+          },
+          "agent_roles": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["role", "required_capabilities"],
+              "properties": {
+                "role": {
+                  "type": "string",
+                  "description": "Agent role in the workflow"
+                },
+                "required_capabilities": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "description": "Capabilities required for this role"
+                },
+                "optional_capabilities": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "frameworks": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "description": "Preferred AI frameworks"
+                }
+              }
+            },
+            "description": "Define agent roles and their requirements"
+          },
+          "parameters": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["name", "type"],
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "description": "Parameter name"
+                },
+                "type": {
+                  "type": "string",
+                  "enum": ["string", "number", "boolean", "object", "array"]
+                },
+                "required": {
+                  "type": "boolean",
+                  "default": false
+                },
+                "default": {
+                  "description": "Default value for the parameter"
+                },
+                "description": {
+                  "type": "string",
+                  "description": "Parameter description"
+                },
+                "validation": {
+                  "type": "object",
+                  "description": "JSON Schema validation rules"
+                }
+              }
+            },
+            "description": "Template parameters for customization"
+          },
+          "compliance_requirements": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": ["ISO_42001", "NIST_AI_RMF", "EU_AI_Act", "SOC2", "HIPAA", "GDPR"]
+            },
+            "description": "Compliance frameworks this template supports"
+          }
+        }
+      }
+    }
+  ],
+  "resources": [
+    {
+      "uri": "ossa://agents/registry",
+      "name": "Agent Registry",
+      "description": "OSSA agent registry with discovery capabilities",
+      "mimeType": "application/json"
+    },
+    {
+      "uri": "ossa://workflows/templates",
+      "name": "Workflow Templates",
+      "description": "Reusable workflow templates",
+      "mimeType": "application/yaml"
+    },
+    {
+      "uri": "ossa://metrics/performance",
+      "name": "Performance Metrics",
+      "description": "Real-time orchestration performance metrics",
+      "mimeType": "application/json"
+    }
+  ],
+  "prompts": [
+    {
+      "name": "workflow_optimization",
+      "description": "Optimize workflow configuration for performance and resource efficiency",
+      "arguments": [
+        {
+          "name": "current_workflow",
+          "description": "Current workflow configuration",
+          "required": true
+        },
+        {
+          "name": "performance_goals", 
+          "description": "Performance optimization goals",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "agent_selection",
+      "description": "Recommend optimal agents for specific capabilities and constraints",
+      "arguments": [
+        {
+          "name": "requirements",
+          "description": "Required capabilities and constraints",
+          "required": true
+        },
+        {
+          "name": "context",
+          "description": "Workflow context and environment",
+          "required": false
+        }
+      ]
+    }
+  ],
+  "capabilities": {
+    "uadp_discovery": {
+      "enabled": true,
+      "version": "0.1.8",
+      "hierarchical": true,
+      "semantic_matching": true,
+      "ml_ranking": true
+    },
+    "orchestration_patterns": [
+      "sequential_pipeline",
+      "parallel_execution", 
+      "conditional_branching",
+      "hybrid_workflows",
+      "event_driven",
+      "reactive_streams",
+      "map_reduce",
+      "pipeline_parallelism"
+    ],
+    "consensus_protocols": ["raft", "pbft", "tendermint"],
+    "scaling": {
+      "horizontal": true,
+      "auto_scale": true,
+      "max_agents": 1000,
+      "load_balancing": "ml_guided"
+    },
+    "monitoring": {
+      "real_time": true,
+      "prometheus_metrics": true,
+      "distributed_tracing": true,
+      "custom_dashboards": true
+    }
+  },
+  "integration": {
+    "frameworks": {
+      "mcp": {
+        "version": "2024-11-05",
+        "features": ["tools", "resources", "prompts", "sampling"]
+      },
+      "langchain": {
+        "version": "0.2.x",
+        "integration_type": "orchestrator_tool"
+      },
+      "crewai": {
+        "version": "0.67.x", 
+        "integration_type": "crew_manager"
+      },
+      "autogen": {
+        "version": "0.2.x",
+        "integration_type": "group_chat_manager"
+      },
+      "openai": {
+        "version": "latest",
+        "integration_type": "assistant_coordinator"
+      }
+    },
+    "protocols": {
+      "openapi": "3.1.0",
+      "agent2agent": "0.1.8",
+      "jsonrpc": "2.0",
+      "websocket": "RFC 6455"
+    }
+  },
+  "security": {
+    "authentication": ["oauth2_pkce", "api_key", "mTLS"],
+    "authorization": "rbac_abac_dynamic",
+    "encryption": {
+      "at_rest": "aes_256_gcm",
+      "in_transit": "tls_1_3_mutual"
+    },
+    "audit": {
+      "comprehensive_logging": true,
+      "immutable_trail": true,
+      "compliance_reporting": true
+    }
+  }
+}

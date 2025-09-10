@@ -1,0 +1,37 @@
+{{- if and .Values.monitoring.prometheus.enabled (or (.Capabilities.APIVersions.Has "monitoring.coreos.com/v1") (.Capabilities.APIVersions.Has "monitoring.coreos.com/v1/ServiceMonitor")) }}
+{{- $services := list "gateway" "taskAgent" "commAgent" "mcpAgent" "coordination" "discovery" "orchestration" "monitoring" }}
+{{- range $serviceName := $services }}
+{{- $service := index $.Values.services $serviceName }}
+{{- if $service.enabled }}
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ include "ossa.fullname" $ }}-{{ $serviceName | kebabcase }}
+  namespace: {{ $.Release.Namespace }}
+  labels:
+    {{- include "ossa.serviceLabels" (dict "component" ($serviceName | kebabcase) "Chart" $.Chart "Release" $.Release "Values" $.Values) | nindent 4 }}
+    monitoring: "prometheus"
+spec:
+  selector:
+    matchLabels:
+      {{- include "ossa.selectorLabels" $ | nindent 6 }}
+      ossa.io/component: {{ $serviceName | kebabcase | quote }}
+  endpoints:
+  - port: http
+    path: /metrics
+    interval: 30s
+    scrapeTimeout: 10s
+    honorLabels: true
+  - port: metrics
+    path: /metrics
+    interval: 30s
+    scrapeTimeout: 10s
+    honorLabels: true
+  targetLabels:
+    - ossa.io/component
+    - ossa.io/version
+    - ossa.io/phase
+{{- end }}
+{{- end }}
+{{- end }}

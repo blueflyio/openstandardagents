@@ -1,0 +1,113 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: ossa-platform
+  labels:
+    app.kubernetes.io/name: ossa-platform
+    app.kubernetes.io/version: "0.1.8"
+    app.kubernetes.io/component: platform
+    ossa.bluefly.io/version: "0.1.8"
+    ossa.bluefly.io/tier: production
+    istio-injection: enabled
+  annotations:
+    ossa.bluefly.io/description: "Open Standards for Scalable Agents Platform v0.1.8"
+    ossa.bluefly.io/maintainer: "LLM Platform Team"
+    ossa.bluefly.io/support: "https://llm.bluefly.io"
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: ossa-system
+  labels:
+    app.kubernetes.io/name: ossa-system
+    app.kubernetes.io/version: "0.1.8"
+    app.kubernetes.io/component: system
+    ossa.bluefly.io/version: "0.1.8"
+    ossa.bluefly.io/tier: system
+    istio-injection: enabled
+  annotations:
+    ossa.bluefly.io/description: "OSSA System Services and Infrastructure"
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: ossa-monitoring
+  labels:
+    app.kubernetes.io/name: ossa-monitoring
+    app.kubernetes.io/version: "0.1.8"
+    app.kubernetes.io/component: monitoring
+    ossa.bluefly.io/version: "0.1.8"
+    ossa.bluefly.io/tier: observability
+    istio-injection: enabled
+  annotations:
+    ossa.bluefly.io/description: "OSSA Monitoring and Observability Stack"
+---
+# Resource Quotas for Production Safety
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: ossa-platform-quota
+  namespace: ossa-platform
+spec:
+  hard:
+    requests.cpu: "50"
+    requests.memory: 100Gi
+    limits.cpu: "100"
+    limits.memory: 200Gi
+    persistentvolumeclaims: "20"
+    services: "50"
+    secrets: "100"
+    configmaps: "100"
+---
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: ossa-system-quota
+  namespace: ossa-system
+spec:
+  hard:
+    requests.cpu: "20"
+    requests.memory: 40Gi
+    limits.cpu: "40"
+    limits.memory: 80Gi
+    persistentvolumeclaims: "10"
+---
+# Network Policies for Security
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: ossa-platform-network-policy
+  namespace: ossa-platform
+spec:
+  podSelector: {}
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          name: ossa-platform
+    - namespaceSelector:
+        matchLabels:
+          name: ossa-system
+    - namespaceSelector:
+        matchLabels:
+          name: istio-system
+  egress:
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          name: ossa-platform
+    - namespaceSelector:
+        matchLabels:
+          name: ossa-system
+    - namespaceSelector:
+        matchLabels:
+          name: kube-system
+  - to: []  # Allow external traffic for AI providers
+    ports:
+    - protocol: TCP
+      port: 443
+    - protocol: TCP
+      port: 80

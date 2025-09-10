@@ -1,0 +1,463 @@
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: ossa-fast-ssd
+  labels:
+    app.kubernetes.io/name: ossa-platform
+    app.kubernetes.io/component: storage
+    ossa.bluefly.io/version: "0.1.8"
+provisioner: kubernetes.io/aws-ebs  # Adjust for your cloud provider
+parameters:
+  type: gp3
+  fsType: ext4
+  encrypted: "true"
+volumeBindingMode: WaitForFirstConsumer
+allowVolumeExpansion: true
+reclaimPolicy: Retain
+
+---
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: ossa-high-iops
+  labels:
+    app.kubernetes.io/name: ossa-platform
+    app.kubernetes.io/component: storage
+    ossa.bluefly.io/version: "0.1.8"
+provisioner: kubernetes.io/aws-ebs
+parameters:
+  type: io2
+  iopsPerGB: "50"
+  fsType: ext4
+  encrypted: "true"
+volumeBindingMode: WaitForFirstConsumer
+allowVolumeExpansion: true
+reclaimPolicy: Retain
+
+---
+# PostgreSQL StatefulSet
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: ossa-postgres
+  namespace: ossa-system
+  labels:
+    app.kubernetes.io/name: ossa-postgres
+    app.kubernetes.io/component: database
+    app.kubernetes.io/part-of: ossa-platform
+    ossa.bluefly.io/version: "0.1.8"
+spec:
+  serviceName: ossa-postgres
+  replicas: 3
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: ossa-postgres
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: ossa-postgres
+        app.kubernetes.io/component: database
+        app.kubernetes.io/part-of: ossa-platform
+    spec:
+      serviceAccountName: ossa-service-account
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 999
+        fsGroup: 999
+      initContainers:
+      - name: postgres-init
+        image: postgres:15-alpine
+        command:
+          - /bin/bash
+          - -c
+          - |
+            if [ ! -f /var/lib/postgresql/data/postgresql.conf ]; then
+              echo "Initializing PostgreSQL data directory..."
+              initdb -D /var/lib/postgresql/data --auth-host=scram-sha-256 --encoding=UTF-8
+            fi
+        env:
+        - name: PGDATA
+          value: /var/lib/postgresql/data
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: ossa-platform-secrets
+              key: POSTGRES_PASSWORD
+        volumeMounts:
+        - name: postgres-data
+          mountPath: /var/lib/postgresql/data
+      containers:
+      - name: postgres
+        image: postgres:15-alpine
+        ports:
+        - containerPort: 5432
+          name: postgres
+        env:
+        - name: POSTGRES_DB
+          value: ossa
+        - name: POSTGRES_USER
+          value: ossa
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: ossa-platform-secrets
+              key: POSTGRES_PASSWORD
+        - name: PGDATA
+          value: /var/lib/postgresql/data
+        resources:
+          requests:
+            memory: "2Gi"
+            cpu: "1"
+          limits:
+            memory: "4Gi"
+            cpu: "2"
+        volumeMounts:
+        - name: postgres-data
+          mountPath: /var/lib/postgresql/data
+        - name: postgres-config
+          mountPath: /etc/postgresql
+        livenessProbe:
+          exec:
+            command:
+            - pg_isready
+            - -U
+            - ossa
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          exec:
+            command:
+            - pg_isready
+            - -U
+            - ossa
+          initialDelaySeconds: 5
+          periodSeconds: 5
+      volumes:
+      - name: postgres-config
+        configMap:
+          name: postgres-config
+  volumeClaimTemplates:
+  - metadata:
+      name: postgres-data
+      labels:
+        app.kubernetes.io/name: ossa-postgres
+        app.kubernetes.io/component: database
+    spec:
+      accessModes: ["ReadWriteOnce"]
+      storageClassName: ossa-fast-ssd
+      resources:
+        requests:
+          storage: 100Gi
+
+---
+# PostgreSQL Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: ossa-postgres
+  namespace: ossa-system
+  labels:
+    app.kubernetes.io/name: ossa-postgres
+    app.kubernetes.io/component: database
+    app.kubernetes.io/part-of: ossa-platform
+    ossa.bluefly.io/version: "0.1.8"
+spec:
+  selector:
+    app.kubernetes.io/name: ossa-postgres
+  ports:
+  - port: 5432
+    targetPort: 5432
+    name: postgres
+  clusterIP: None
+
+---
+# Redis StatefulSet
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: ossa-redis
+  namespace: ossa-system
+  labels:
+    app.kubernetes.io/name: ossa-redis
+    app.kubernetes.io/component: cache
+    app.kubernetes.io/part-of: ossa-platform
+    ossa.bluefly.io/version: "0.1.8"
+spec:
+  serviceName: ossa-redis
+  replicas: 3
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: ossa-redis
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: ossa-redis
+        app.kubernetes.io/component: cache
+        app.kubernetes.io/part-of: ossa-platform
+    spec:
+      serviceAccountName: ossa-service-account
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 999
+        fsGroup: 999
+      containers:
+      - name: redis
+        image: redis:7-alpine
+        ports:
+        - containerPort: 6379
+          name: redis
+        command:
+          - redis-server
+          - /etc/redis/redis.conf
+        env:
+        - name: REDIS_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: ossa-platform-secrets
+              key: REDIS_PASSWORD
+        resources:
+          requests:
+            memory: "1Gi"
+            cpu: "500m"
+          limits:
+            memory: "2Gi"
+            cpu: "1"
+        volumeMounts:
+        - name: redis-data
+          mountPath: /data
+        - name: redis-config
+          mountPath: /etc/redis
+        livenessProbe:
+          exec:
+            command:
+            - redis-cli
+            - ping
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          exec:
+            command:
+            - redis-cli
+            - ping
+          initialDelaySeconds: 5
+          periodSeconds: 5
+      volumes:
+      - name: redis-config
+        configMap:
+          name: redis-config
+  volumeClaimTemplates:
+  - metadata:
+      name: redis-data
+      labels:
+        app.kubernetes.io/name: ossa-redis
+        app.kubernetes.io/component: cache
+    spec:
+      accessModes: ["ReadWriteOnce"]
+      storageClassName: ossa-fast-ssd
+      resources:
+        requests:
+          storage: 20Gi
+
+---
+# Redis Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: ossa-redis
+  namespace: ossa-system
+  labels:
+    app.kubernetes.io/name: ossa-redis
+    app.kubernetes.io/component: cache
+    app.kubernetes.io/part-of: ossa-platform
+    ossa.bluefly.io/version: "0.1.8"
+spec:
+  selector:
+    app.kubernetes.io/name: ossa-redis
+  ports:
+  - port: 6379
+    targetPort: 6379
+    name: redis
+  clusterIP: None
+
+---
+# Qdrant Vector Database StatefulSet
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: ossa-qdrant
+  namespace: ossa-system
+  labels:
+    app.kubernetes.io/name: ossa-qdrant
+    app.kubernetes.io/component: vectordb
+    app.kubernetes.io/part-of: ossa-platform
+    ossa.bluefly.io/version: "0.1.8"
+spec:
+  serviceName: ossa-qdrant
+  replicas: 3
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: ossa-qdrant
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: ossa-qdrant
+        app.kubernetes.io/component: vectordb
+        app.kubernetes.io/part-of: ossa-platform
+    spec:
+      serviceAccountName: ossa-service-account
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        fsGroup: 1000
+      containers:
+      - name: qdrant
+        image: qdrant/qdrant:v1.7.4
+        ports:
+        - containerPort: 6333
+          name: http
+        - containerPort: 6334
+          name: grpc
+        env:
+        - name: QDRANT__SERVICE__HTTP_PORT
+          value: "6333"
+        - name: QDRANT__SERVICE__GRPC_PORT
+          value: "6334"
+        - name: QDRANT__CLUSTER__ENABLED
+          value: "true"
+        - name: QDRANT__CLUSTER__P2P__PORT
+          value: "6335"
+        - name: QDRANT__STORAGE__PERFORMANCE__MAX_SEARCH_THREADS
+          value: "4"
+        resources:
+          requests:
+            memory: "2Gi"
+            cpu: "1"
+          limits:
+            memory: "4Gi"
+            cpu: "2"
+        volumeMounts:
+        - name: qdrant-data
+          mountPath: /qdrant/storage
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 6333
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /readyz
+            port: 6333
+          initialDelaySeconds: 5
+          periodSeconds: 5
+  volumeClaimTemplates:
+  - metadata:
+      name: qdrant-data
+      labels:
+        app.kubernetes.io/name: ossa-qdrant
+        app.kubernetes.io/component: vectordb
+    spec:
+      accessModes: ["ReadWriteOnce"]
+      storageClassName: ossa-high-iops
+      resources:
+        requests:
+          storage: 200Gi
+
+---
+# Qdrant Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: ossa-qdrant
+  namespace: ossa-system
+  labels:
+    app.kubernetes.io/name: ossa-qdrant
+    app.kubernetes.io/component: vectordb
+    app.kubernetes.io/part-of: ossa-platform
+    ossa.bluefly.io/version: "0.1.8"
+spec:
+  selector:
+    app.kubernetes.io/name: ossa-qdrant
+  ports:
+  - port: 6333
+    targetPort: 6333
+    name: http
+  - port: 6334
+    targetPort: 6334
+    name: grpc
+  clusterIP: None
+
+---
+# PostgreSQL Configuration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgres-config
+  namespace: ossa-system
+  labels:
+    app.kubernetes.io/name: ossa-postgres
+    app.kubernetes.io/component: database-config
+    ossa.bluefly.io/version: "0.1.8"
+data:
+  postgresql.conf: |
+    # PostgreSQL configuration for OSSA
+    listen_addresses = '*'
+    port = 5432
+    max_connections = 200
+    shared_buffers = 1GB
+    effective_cache_size = 3GB
+    maintenance_work_mem = 256MB
+    checkpoint_completion_target = 0.9
+    wal_buffers = 16MB
+    default_statistics_target = 100
+    random_page_cost = 1.1
+    effective_io_concurrency = 200
+    work_mem = 4MB
+    min_wal_size = 1GB
+    max_wal_size = 4GB
+    
+    # Logging
+    logging_collector = on
+    log_directory = 'log'
+    log_filename = 'postgresql-%Y-%m-%d_%H%M%S.log'
+    log_statement = 'all'
+    log_min_duration_statement = 1000
+
+---
+# Redis Configuration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: redis-config
+  namespace: ossa-system
+  labels:
+    app.kubernetes.io/name: ossa-redis
+    app.kubernetes.io/component: cache-config
+    ossa.bluefly.io/version: "0.1.8"
+data:
+  redis.conf: |
+    # Redis configuration for OSSA
+    bind 0.0.0.0
+    port 6379
+    timeout 0
+    tcp-keepalive 300
+    
+    # Memory management
+    maxmemory 1gb
+    maxmemory-policy allkeys-lru
+    
+    # Persistence
+    save 900 1
+    save 300 10
+    save 60 10000
+    
+    # Security
+    requirepass ${REDIS_PASSWORD}
+    
+    # Performance
+    tcp-backlog 511
+    databases 16
+    
+    # Logging
+    loglevel notice
+    logfile ""

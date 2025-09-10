@@ -1,0 +1,677 @@
+openapi: 3.1.0
+info:
+  title: OSSA Agent API
+  version: 1.0.0
+  description: |
+    OSSA v0.1.8 compliant AI Agent API specification with x-openapi-ai-agents-standard extensions.
+    This agent provides enterprise-grade AI capabilities with full governance and compliance support.
+  contact:
+    name: Bluefly AI Team
+    email: ai@bluefly.io
+    url: https://bluefly.io
+  license:
+    name: Apache 2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0.html
+  
+  # OSSA x-openapi-ai-agents-standard extensions
+  x-openapi-ai-agents-standard:
+    version: "0.1.8"
+    conformance: "governed"
+    agent:
+      id: "agent-unique-id"
+      type: "assistant"
+      capabilities:
+        - "task-processing"
+        - "decision-making"
+        - "data-analysis"
+      frameworks:
+        - "mcp"
+        - "langchain"
+        - "crewai"
+        - "autogen"
+    discovery:
+      uadp:
+        enabled: true
+        registry: "https://registry.bluefly.io/agents"
+      local:
+        enabled: true
+        broadcast: true
+    governance:
+      compliance:
+        - "ISO-42001"
+        - "NIST-AI-RMF"
+        - "EU-AI-Act"
+      risk_level: "limited"
+      audit_required: true
+
+servers:
+  - url: http://localhost:4021
+    description: Local development server
+  - url: https://agent.bluefly.io
+    description: Production server
+    
+security:
+  - BearerAuth: []
+  - ApiKeyAuth: []
+  - OAuth2:
+      - read
+      - write
+      - admin
+
+tags:
+  - name: Core
+    description: Core agent operations
+    x-openapi-ai-agents-standard:
+      capability: "core"
+      stability: "stable"
+  - name: Tasks
+    description: Task management endpoints
+    x-openapi-ai-agents-standard:
+      capability: "task-processing"
+      stability: "stable"
+  - name: Analysis
+    description: Data analysis endpoints
+    x-openapi-ai-agents-standard:
+      capability: "data-analysis"
+      stability: "stable"
+  - name: Governance
+    description: Compliance and governance endpoints
+    x-openapi-ai-agents-standard:
+      capability: "governance"
+      stability: "stable"
+  - name: Monitoring
+    description: Health and metrics endpoints
+    x-openapi-ai-agents-standard:
+      capability: "monitoring"
+      stability: "stable"
+
+paths:
+  /health:
+    get:
+      operationId: getHealth
+      summary: Agent health check
+      description: Returns the current health status of the agent
+      tags:
+        - Monitoring
+      x-openapi-ai-agents-standard:
+        capability: "monitoring"
+        sla:
+          response_time_ms: 100
+          availability: 99.9
+      responses:
+        '200':
+          description: Agent is healthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+        '503':
+          description: Agent is unhealthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+                
+  /ready:
+    get:
+      operationId: getReadiness
+      summary: Agent readiness check
+      description: Checks if the agent is ready to accept requests
+      tags:
+        - Monitoring
+      responses:
+        '200':
+          description: Agent is ready
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReadinessResponse'
+                
+  /metrics:
+    get:
+      operationId: getMetrics
+      summary: Agent metrics
+      description: Returns Prometheus-formatted metrics
+      tags:
+        - Monitoring
+      responses:
+        '200':
+          description: Metrics retrieved successfully
+          content:
+            text/plain:
+              schema:
+                type: string
+                
+  /capabilities:
+    get:
+      operationId: getCapabilities
+      summary: List agent capabilities
+      description: Returns all available capabilities of this agent
+      tags:
+        - Core
+      x-openapi-ai-agents-standard:
+        discovery:
+          cacheable: true
+          ttl: 3600
+      responses:
+        '200':
+          description: Capabilities retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CapabilitiesResponse'
+                
+  /execute:
+    post:
+      operationId: executeTask
+      summary: Execute a task
+      description: Submit a task for the agent to execute
+      tags:
+        - Tasks
+      x-openapi-ai-agents-standard:
+        capability: "task-processing"
+        async: true
+        timeout: 300000
+        rate_limit:
+          requests_per_minute: 100
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TaskRequest'
+      responses:
+        '202':
+          description: Task accepted for processing
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskResponse'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '429':
+          description: Rate limit exceeded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+                
+  /tasks/{taskId}:
+    get:
+      operationId: getTaskStatus
+      summary: Get task status
+      description: Retrieve the status and results of a submitted task
+      tags:
+        - Tasks
+      parameters:
+        - name: taskId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Task status retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskStatusResponse'
+        '404':
+          description: Task not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+                
+  /analyze:
+    post:
+      operationId: analyzeData
+      summary: Analyze data
+      description: Submit data for analysis
+      tags:
+        - Analysis
+      x-openapi-ai-agents-standard:
+        capability: "data-analysis"
+        processing:
+          max_size_mb: 100
+          supported_formats:
+            - "json"
+            - "csv"
+            - "text"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AnalysisRequest'
+      responses:
+        '200':
+          description: Analysis completed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AnalysisResponse'
+                
+  /compliance/audit:
+    get:
+      operationId: getAuditLog
+      summary: Get audit log
+      description: Retrieve audit log entries for compliance
+      tags:
+        - Governance
+      x-openapi-ai-agents-standard:
+        compliance:
+          required_for:
+            - "ISO-42001"
+            - "NIST-AI-RMF"
+        security:
+          role_required: "admin"
+      parameters:
+        - name: start_date
+          in: query
+          schema:
+            type: string
+            format: date-time
+        - name: end_date
+          in: query
+          schema:
+            type: string
+            format: date-time
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 100
+            maximum: 1000
+      responses:
+        '200':
+          description: Audit log retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuditLogResponse'
+                
+  /compliance/risk-assessment:
+    get:
+      operationId: getRiskAssessment
+      summary: Get risk assessment
+      description: Retrieve current risk assessment for the agent
+      tags:
+        - Governance
+      x-openapi-ai-agents-standard:
+        compliance:
+          required_for:
+            - "EU-AI-Act"
+            - "NIST-AI-RMF"
+      responses:
+        '200':
+          description: Risk assessment retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RiskAssessmentResponse'
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+    OAuth2:
+      type: oauth2
+      flows:
+        authorizationCode:
+          authorizationUrl: https://auth.bluefly.io/authorize
+          tokenUrl: https://auth.bluefly.io/token
+          scopes:
+            read: Read access
+            write: Write access
+            admin: Admin access
+            
+  schemas:
+    HealthResponse:
+      type: object
+      required:
+        - status
+        - timestamp
+      properties:
+        status:
+          type: string
+          enum: [healthy, degraded, unhealthy]
+        timestamp:
+          type: string
+          format: date-time
+        version:
+          type: string
+        uptime:
+          type: integer
+          description: Uptime in seconds
+        checks:
+          type: object
+          additionalProperties:
+            type: boolean
+            
+    ReadinessResponse:
+      type: object
+      required:
+        - ready
+      properties:
+        ready:
+          type: boolean
+        dependencies:
+          type: object
+          additionalProperties:
+            type: boolean
+            
+    CapabilitiesResponse:
+      type: object
+      required:
+        - capabilities
+      properties:
+        capabilities:
+          type: array
+          items:
+            type: object
+            required:
+              - id
+              - name
+              - description
+            properties:
+              id:
+                type: string
+              name:
+                type: string
+              description:
+                type: string
+              version:
+                type: string
+              stability:
+                type: string
+                enum: [stable, beta, experimental]
+              parameters:
+                type: object
+                
+    TaskRequest:
+      type: object
+      required:
+        - type
+        - payload
+      properties:
+        type:
+          type: string
+          description: Task type identifier
+        payload:
+          type: object
+          description: Task-specific payload
+        priority:
+          type: string
+          enum: [low, normal, high, critical]
+          default: normal
+        timeout:
+          type: integer
+          description: Timeout in milliseconds
+          default: 60000
+        callback_url:
+          type: string
+          format: uri
+          description: Optional webhook for task completion
+        metadata:
+          type: object
+          additionalProperties: true
+          
+    TaskResponse:
+      type: object
+      required:
+        - task_id
+        - status
+      properties:
+        task_id:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum: [accepted, queued, processing, completed, failed]
+        estimated_completion:
+          type: string
+          format: date-time
+        links:
+          type: object
+          properties:
+            self:
+              type: string
+              format: uri
+            status:
+              type: string
+              format: uri
+              
+    TaskStatusResponse:
+      type: object
+      required:
+        - task_id
+        - status
+      properties:
+        task_id:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum: [queued, processing, completed, failed, cancelled]
+        progress:
+          type: integer
+          minimum: 0
+          maximum: 100
+        result:
+          type: object
+          description: Task result (when completed)
+        error:
+          type: object
+          description: Error details (when failed)
+          properties:
+            code:
+              type: string
+            message:
+              type: string
+            details:
+              type: object
+        started_at:
+          type: string
+          format: date-time
+        completed_at:
+          type: string
+          format: date-time
+          
+    AnalysisRequest:
+      type: object
+      required:
+        - data
+        - analysis_type
+      properties:
+        data:
+          oneOf:
+            - type: string
+            - type: object
+            - type: array
+        analysis_type:
+          type: string
+          enum: [sentiment, classification, extraction, summary, prediction]
+        options:
+          type: object
+          properties:
+            model:
+              type: string
+            temperature:
+              type: number
+              minimum: 0
+              maximum: 1
+            max_tokens:
+              type: integer
+            custom_prompts:
+              type: array
+              items:
+                type: string
+                
+    AnalysisResponse:
+      type: object
+      required:
+        - analysis_id
+        - results
+      properties:
+        analysis_id:
+          type: string
+          format: uuid
+        results:
+          type: object
+        confidence:
+          type: number
+          minimum: 0
+          maximum: 1
+        metadata:
+          type: object
+          properties:
+            model_used:
+              type: string
+            processing_time_ms:
+              type: integer
+            tokens_used:
+              type: integer
+              
+    AuditLogResponse:
+      type: object
+      required:
+        - entries
+      properties:
+        entries:
+          type: array
+          items:
+            type: object
+            required:
+              - timestamp
+              - event_type
+              - user
+              - action
+            properties:
+              timestamp:
+                type: string
+                format: date-time
+              event_type:
+                type: string
+              user:
+                type: string
+              action:
+                type: string
+              resource:
+                type: string
+              result:
+                type: string
+                enum: [success, failure]
+              metadata:
+                type: object
+        pagination:
+          type: object
+          properties:
+            total:
+              type: integer
+            page:
+              type: integer
+            per_page:
+              type: integer
+              
+    RiskAssessmentResponse:
+      type: object
+      required:
+        - risk_level
+        - assessment_date
+      properties:
+        risk_level:
+          type: string
+          enum: [minimal, limited, high, unacceptable]
+        assessment_date:
+          type: string
+          format: date-time
+        risks:
+          type: array
+          items:
+            type: object
+            properties:
+              category:
+                type: string
+              severity:
+                type: string
+                enum: [low, medium, high, critical]
+              likelihood:
+                type: string
+                enum: [rare, unlikely, possible, likely, certain]
+              mitigation:
+                type: string
+              status:
+                type: string
+                enum: [identified, mitigated, accepted, transferred]
+        compliance:
+          type: object
+          additionalProperties:
+            type: object
+            properties:
+              compliant:
+                type: boolean
+              last_audit:
+                type: string
+                format: date-time
+              next_audit:
+                type: string
+                format: date-time
+                
+    ErrorResponse:
+      type: object
+      required:
+        - error
+      properties:
+        error:
+          type: object
+          required:
+            - code
+            - message
+          properties:
+            code:
+              type: string
+            message:
+              type: string
+            details:
+              type: object
+            trace_id:
+              type: string
+              format: uuid
+            timestamp:
+              type: string
+              format: date-time
+              
+# Webhooks for async operations
+webhooks:
+  taskCompleted:
+    post:
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                task_id:
+                  type: string
+                  format: uuid
+                status:
+                  type: string
+                  enum: [completed, failed]
+                result:
+                  type: object
+                timestamp:
+                  type: string
+                  format: date-time

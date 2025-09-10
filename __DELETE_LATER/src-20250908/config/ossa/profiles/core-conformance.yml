@@ -1,0 +1,117 @@
+apiVersion: open-standards-scalable-agents/v0.1.2
+kind: ConformanceProfile
+metadata:
+  name: core-conformance-profile
+  version: "1.0.0"
+  description: "Core level conformance requirements for basic OSSA interoperability"
+  labels:
+    level: core
+    domain: universal
+spec:
+  level: core
+  requirements:
+    mandatory:
+      - id: "CORE-001"
+        description: "Agent MUST use canonical resource model structure"
+        validation:
+          type: "schema"
+          schema_path: "../schemas/ossa/v0.1.2/core/agent-core.json"
+        severity: "critical"
+      
+      - id: "CORE-002"
+        description: "Agent MUST have valid metadata with name and version"
+        validation:
+          type: "schema"
+          schema_path: "../schemas/ossa/v0.1.2/core/agent-core.json#/properties/metadata"
+        severity: "critical"
+      
+      - id: "CORE-003"
+        description: "Agent MUST define at least one capability"
+        validation:
+          type: "custom"
+          validator: "validate_capabilities_exist"
+        severity: "critical"
+      
+      - id: "CORE-004"
+        description: "Agent MUST enable UADP discovery"
+        validation:
+          type: "custom"
+          validator: "validate_uadp_enabled"
+        severity: "major"
+      
+      - id: "CORE-005"
+        description: "Agent MUST specify at least one compatible framework"
+        validation:
+          type: "custom"
+          validator: "validate_framework_support"
+        severity: "major"
+      
+      - id: "CORE-006"
+        description: "Agent name MUST be DNS-1123 compliant"
+        validation:
+          type: "custom"
+          validator: "validate_dns_compliance"
+        severity: "major"
+      
+      - id: "CORE-007"
+        description: "Agent version MUST follow semantic versioning"
+        validation:
+          type: "custom"
+          validator: "validate_semver"
+        severity: "major"
+    
+    optional:
+      - id: "CORE-OPT-001"
+        description: "Agent SHOULD provide capability descriptions"
+        points: 10
+      
+      - id: "CORE-OPT-002"
+        description: "Agent SHOULD specify discovery tags"
+        points: 5
+      
+      - id: "CORE-OPT-003"
+        description: "Agent SHOULD define context paths"
+        points: 8
+      
+      - id: "CORE-OPT-004"
+        description: "Agent SHOULD support multiple frameworks"
+        points: 15
+      
+      - id: "CORE-OPT-005"
+        description: "Agent SHOULD have meaningful expertise description"
+        points: 5
+  
+  scoring:
+    pass_threshold: 85
+    weights:
+      mandatory: 0.7
+      optional: 0.3
+  
+  framework_compatibility:
+    required: ["mcp"]
+    recommended: ["langchain", "crewai"]
+    tests:
+      - framework: "mcp"
+        test_type: "integration"
+        test_suite: "mcp_basic_integration_tests"
+      
+      - framework: "langchain"
+        test_type: "compatibility"
+        test_suite: "langchain_tool_compatibility_tests"
+      
+      - framework: "crewai"
+        test_type: "compatibility"
+        test_suite: "crewai_role_compatibility_tests"
+  
+  validation:
+    automated: true
+    continuous: false
+    timeout: "2m"
+    retry:
+      max_attempts: 2
+      delay: "10s"
+  
+  certification:
+    validity_period: "1y"
+    renewal_threshold: "30d"
+    evidence_retention: "3y"

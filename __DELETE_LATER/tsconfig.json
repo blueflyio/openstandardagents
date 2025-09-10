@@ -1,0 +1,66 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "Node",
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "allowJs": true,
+    "checkJs": false,
+    "strict": true,
+    "noImplicitAny": true,
+    "strictNullChecks": true,
+    "noImplicitReturns": true,
+    "noImplicitThis": true,
+    "alwaysStrict": true,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    "exactOptionalPropertyTypes": false,
+    "noImplicitOverride": true,
+    "noPropertyAccessFromIndexSignature": false,
+    "noUncheckedIndexedAccess": false,
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "outDir": "./dist",
+    "rootDir": "./",
+    "composite": true,
+    "incremental": true,
+    "tsBuildInfoFile": "./dist/.tsbuildinfo",
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "verbatimModuleSyntax": false,
+    "lib": ["ES2022", "DOM"],
+    "types": ["node", "vitest"],
+    "baseUrl": ".",
+    "paths": {
+      "@ossa/core": ["./packages/core/ossa-core/src"],
+      "@ossa/runtime": ["./packages/core/ossa-runtime/src"],
+      "@ossa/adapters/*": ["./packages/adapters/*/src"],
+      "@ossa/tools/*": ["./packages/tools/*/src"],
+      "@ossa/examples/*": ["./packages/examples/*/src"],
+      "@/*": ["./src/*"]
+    }
+  },
+  "include": [
+    "src/**/*",
+    "packages/**/*",
+    "tests/**/*",
+    "schemas/**/*",
+    "examples/**/*"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "**/*.test.ts",
+    "**/*.spec.ts",
+    "__DELETE_LATER/**/*"
+  ],
+  "references": [
+    { "path": "./packages/core/ossa-core" },
+    { "path": "./packages/core/ossa-runtime" },
+    { "path": "./src/cli" }
+  ]
+}

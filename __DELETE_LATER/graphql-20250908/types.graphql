@@ -1,0 +1,1060 @@
+# OSSA v0.1.8 GraphQL Core Types
+# Shared type definitions used across all OSSA schemas
+
+# Import custom scalars and enums
+# scalar DateTime
+# scalar JSON
+# scalar UUID
+# scalar URI
+# scalar Uint64
+
+# Core OSSA Types
+interface OSSAEntity {
+  id: UUID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  version: String!
+  metadata: EntityMetadata
+}
+
+type EntityMetadata {
+  tags: [String!]
+  labels: JSON
+  annotations: JSON
+  namespace: String
+  owner: String
+  description: String
+}
+
+# Generic Types
+type PageInfo {
+  hasNextPage: Boolean!
+  hasPreviousPage: Boolean!
+  startCursor: String
+  endCursor: String
+  totalCount: Int
+}
+
+interface Connection {
+  pageInfo: PageInfo!
+  totalCount: Int!
+}
+
+interface Node {
+  id: UUID!
+}
+
+interface Edge {
+  cursor: String!
+  node: Node!
+}
+
+# Error and Result Types
+interface Result {
+  success: Boolean!
+  message: String
+  errors: [Error!]
+}
+
+type Error {
+  code: ErrorCode!
+  message: String!
+  field: String
+  details: JSON
+  timestamp: DateTime!
+  traceId: String
+}
+
+type MutationResult implements Result {
+  success: Boolean!
+  message: String
+  errors: [Error!]
+  data: JSON
+}
+
+# Authentication and Authorization Types
+type User {
+  id: UUID!
+  username: String!
+  email: String!
+  roles: [Role!]!
+  permissions: [Permission!]!
+  groups: [Group!]!
+  
+  # Profile Information
+  profile: UserProfile!
+  
+  # Preferences
+  preferences: UserPreferences!
+  
+  # Activity
+  lastLogin: DateTime
+  loginCount: Int!
+  
+  # Status
+  active: Boolean!
+  verified: Boolean!
+  
+  # Temporal Information
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type Role {
+  id: UUID!
+  name: String!
+  description: String
+  permissions: [Permission!]!
+  
+  # Hierarchy
+  parent: Role
+  children: [Role!]
+  
+  # Metadata
+  system: Boolean!
+  builtin: Boolean!
+  
+  # Temporal Information
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type Permission {
+  id: UUID!
+  name: String!
+  description: String!
+  resource: String!
+  action: String!
+  
+  # Conditions
+  conditions: JSON
+  
+  # Metadata
+  system: Boolean!
+  
+  # Temporal Information
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type Group {
+  id: UUID!
+  name: String!
+  description: String
+  members: [User!]!
+  roles: [Role!]!
+  
+  # Hierarchy
+  parent: Group
+  children: [Group!]
+  
+  # Metadata
+  type: String! # "team" | "department" | "organization"
+  
+  # Temporal Information
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type UserProfile {
+  displayName: String!
+  firstName: String
+  lastName: String
+  avatar: URI
+  
+  # Contact Information
+  phone: String
+  timezone: String
+  locale: String
+  
+  # Organization
+  title: String
+  department: String
+  organization: String
+  manager: User
+  
+  # Additional Information
+  bio: String
+  website: URI
+  socialLinks: JSON
+}
+
+type UserPreferences {
+  # Notification Preferences
+  notifications: NotificationPreferences!
+  
+  # UI Preferences
+  theme: String! = "system"
+  language: String! = "en"
+  dateFormat: String! = "ISO"
+  timezone: String
+  
+  # Dashboard Preferences
+  defaultDashboard: UUID
+  dashboardLayout: JSON
+  
+  # Privacy Preferences
+  profileVisibility: String! = "internal"
+  activityVisibility: String! = "private"
+  
+  # Feature Preferences
+  features: JSON
+  experiments: JSON
+}
+
+type NotificationPreferences {
+  # Channels
+  email: Boolean! = true
+  sms: Boolean! = false
+  push: Boolean! = true
+  slack: Boolean! = false
+  
+  # Categories
+  security: Boolean! = true
+  performance: Boolean! = true
+  compliance: Boolean! = true
+  business: Boolean! = false
+  
+  # Frequency
+  frequency: String! = "immediate" # "immediate" | "hourly" | "daily" | "weekly"
+  quietHours: QuietHours
+  
+  # Filtering
+  severityThreshold: AlertSeverity! = WARNING
+  customFilters: [NotificationFilter!]
+}
+
+type QuietHours {
+  enabled: Boolean!
+  startTime: String! # "HH:MM" format
+  endTime: String! # "HH:MM" format
+  timezone: String!
+  days: [Int!]! # 0-6, where 0 is Sunday
+}
+
+type NotificationFilter {
+  id: UUID!
+  name: String!
+  enabled: Boolean!
+  conditions: JSON!
+  action: String! # "allow" | "block" | "modify"
+}
+
+# Tenant and Multi-tenancy Types
+type Tenant {
+  id: UUID!
+  name: String!
+  slug: String!
+  description: String
+  
+  # Configuration
+  configuration: TenantConfiguration!
+  
+  # Subscription and Billing
+  subscription: TenantSubscription!
+  
+  # Limits and Quotas
+  limits: TenantLimits!
+  usage: TenantUsage!
+  
+  # Organization
+  organization: Organization!
+  
+  # Status
+  status: TenantStatus!
+  
+  # Temporal Information
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  suspendedAt: DateTime
+  deletedAt: DateTime
+}
+
+type TenantConfiguration {
+  # Domain Configuration
+  domains: [String!]!
+  customDomain: String
+  
+  # Branding
+  branding: TenantBranding!
+  
+  # Feature Flags
+  features: JSON!
+  
+  # Integrations
+  integrations: [TenantIntegration!]!
+  
+  # Security Settings
+  security: TenantSecurity!
+  
+  # Compliance Settings
+  compliance: TenantCompliance!
+}
+
+type TenantBranding {
+  logo: URI
+  favicon: URI
+  primaryColor: String
+  secondaryColor: String
+  theme: JSON
+  customCSS: String
+}
+
+type TenantIntegration {
+  type: IntegrationType!
+  name: String!
+  enabled: Boolean!
+  configuration: JSON!
+  lastSync: DateTime
+}
+
+type TenantSecurity {
+  # Authentication
+  ssoEnabled: Boolean!
+  ssoProvider: String
+  mfaRequired: Boolean!
+  
+  # Session Management
+  sessionTimeout: Int! # minutes
+  maxSessions: Int!
+  
+  # Password Policy
+  passwordPolicy: PasswordPolicy!
+  
+  # Access Control
+  ipWhitelist: [String!]
+  geoRestrictions: [String!]
+}
+
+type PasswordPolicy {
+  minLength: Int! = 8
+  requireUppercase: Boolean! = true
+  requireLowercase: Boolean! = true
+  requireNumbers: Boolean! = true
+  requireSpecialChars: Boolean! = true
+  maxAge: Int # days
+  historySize: Int = 5
+}
+
+type TenantCompliance {
+  frameworks: [ComplianceFramework!]!
+  dataRetention: String!
+  dataLocation: [String!]!
+  auditLogRetention: String!
+  encryptionRequired: Boolean!
+}
+
+type TenantSubscription {
+  plan: SubscriptionPlan!
+  status: SubscriptionStatus!
+  
+  # Billing
+  billingCycle: String! # "monthly" | "annual"
+  nextBilling: DateTime!
+  
+  # Usage
+  currentUsage: SubscriptionUsage!
+  
+  # Payment
+  paymentMethod: PaymentMethod
+  
+  # History
+  history: [SubscriptionEvent!]!
+}
+
+type SubscriptionPlan {
+  id: UUID!
+  name: String!
+  description: String!
+  
+  # Pricing
+  price: Float!
+  currency: String! = "USD"
+  billingInterval: String!
+  
+  # Limits
+  limits: PlanLimits!
+  
+  # Features
+  features: [String!]!
+  
+  # Metadata
+  popular: Boolean!
+  trial: Boolean!
+  trialDuration: Int # days
+}
+
+type PlanLimits {
+  agents: Int!
+  workflows: Int!
+  requests: Int!
+  storage: String!
+  users: Int!
+  
+  # Custom Limits
+  customLimits: JSON
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  TRIAL
+  SUSPENDED
+  CANCELLED
+  EXPIRED
+  PAST_DUE
+}
+
+type SubscriptionUsage {
+  agents: Int!
+  workflows: Int!
+  requests: Int!
+  storage: Uint64!
+  users: Int!
+  
+  # Usage Percentages
+  agentUsage: Float!
+  workflowUsage: Float!
+  requestUsage: Float!
+  storageUsage: Float!
+  userUsage: Float!
+  
+  # Period
+  period: String!
+  lastCalculated: DateTime!
+}
+
+type PaymentMethod {
+  id: UUID!
+  type: String! # "card" | "bank" | "paypal" | "wire"
+  last4: String
+  brand: String
+  expiryMonth: Int
+  expiryYear: Int
+  
+  # Status
+  default: Boolean!
+  verified: Boolean!
+  
+  # Temporal Information
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type SubscriptionEvent {
+  id: UUID!
+  type: String!
+  timestamp: DateTime!
+  data: JSON!
+  description: String!
+}
+
+type TenantLimits {
+  # Resource Limits
+  maxAgents: Int!
+  maxWorkflows: Int!
+  maxRequests: Int!
+  maxStorage: Uint64!
+  maxUsers: Int!
+  
+  # Rate Limits
+  requestsPerMinute: Int!
+  requestsPerHour: Int!
+  requestsPerDay: Int!
+  
+  # Feature Limits
+  customLimits: JSON
+}
+
+type TenantUsage {
+  # Current Usage
+  currentAgents: Int!
+  currentWorkflows: Int!
+  currentRequests: Int!
+  currentStorage: Uint64!
+  currentUsers: Int!
+  
+  # Historical Usage
+  usage: [UsageDataPoint!]!
+  
+  # Trends
+  trends: TenantUsageTrends!
+}
+
+type UsageDataPoint {
+  timestamp: DateTime!
+  metric: String!
+  value: Float!
+  unit: String!
+}
+
+type TenantUsageTrends {
+  agentTrend: TrendMetrics!
+  workflowTrend: TrendMetrics!
+  requestTrend: TrendMetrics!
+  storageTrend: TrendMetrics!
+  userTrend: TrendMetrics!
+}
+
+enum TenantStatus {
+  ACTIVE
+  SUSPENDED
+  DELETED
+  PROVISIONING
+  MAINTENANCE
+}
+
+type Organization {
+  id: UUID!
+  name: String!
+  description: String
+  
+  # Contact Information
+  website: URI
+  email: String!
+  phone: String
+  
+  # Address
+  address: Address
+  
+  # Industry and Size
+  industry: String
+  size: String # "startup" | "small" | "medium" | "large" | "enterprise"
+  
+  # Temporal Information
+  foundedYear: Int
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type Address {
+  street: String!
+  city: String!
+  state: String!
+  postalCode: String!
+  country: String!
+  
+  # Optional fields
+  building: String
+  suite: String
+  
+  # Coordinates
+  latitude: Float
+  longitude: Float
+}
+
+# Configuration and Settings Types
+type SystemConfiguration {
+  # General Settings
+  general: GeneralSettings!
+  
+  # Security Settings
+  security: SecuritySettings!
+  
+  # Performance Settings
+  performance: PerformanceSettings!
+  
+  # Feature Flags
+  features: FeatureFlags!
+  
+  # Integration Settings
+  integrations: IntegrationSettings!
+  
+  # Notification Settings
+  notifications: NotificationSettings!
+  
+  # Monitoring Settings
+  monitoring: MonitoringSettings!
+}
+
+type GeneralSettings {
+  siteName: String!
+  siteDescription: String!
+  siteUrl: URI!
+  
+  # Localization
+  defaultLanguage: String! = "en"
+  defaultTimezone: String! = "UTC"
+  supportedLanguages: [String!]!
+  supportedTimezones: [String!]!
+  
+  # Branding
+  logo: URI
+  favicon: URI
+  theme: String! = "default"
+  
+  # Maintenance
+  maintenanceMode: Boolean!
+  maintenanceMessage: String
+}
+
+type SecuritySettings {
+  # Authentication
+  requireMfa: Boolean!
+  allowSelfRegistration: Boolean!
+  emailVerificationRequired: Boolean!
+  
+  # Session Management
+  sessionTimeout: Int! = 3600 # seconds
+  maxConcurrentSessions: Int! = 5
+  rememberMeEnabled: Boolean! = true
+  
+  # Password Policy
+  passwordPolicy: PasswordPolicy!
+  
+  # Rate Limiting
+  rateLimiting: RateLimitingSettings!
+  
+  # CORS
+  corsSettings: CorsSettings!
+  
+  # Content Security
+  contentSecurityPolicy: String
+  xFrameOptions: String! = "DENY"
+}
+
+type RateLimitingSettings {
+  enabled: Boolean! = true
+  requestsPerMinute: Int! = 100
+  burstSize: Int! = 200
+  
+  # Per-endpoint limits
+  endpointLimits: JSON
+  
+  # IP-based limits
+  perIpLimits: JSON
+}
+
+type CorsSettings {
+  enabled: Boolean! = true
+  allowedOrigins: [String!]!
+  allowedMethods: [String!]!
+  allowedHeaders: [String!]!
+  allowCredentials: Boolean! = true
+  maxAge: Int! = 86400 # seconds
+}
+
+type PerformanceSettings {
+  # Caching
+  caching: CachingSettings!
+  
+  # Connection Pooling
+  connectionPooling: ConnectionPoolingSettings!
+  
+  # Resource Limits
+  resourceLimits: SystemResourceLimits!
+  
+  # Optimization
+  optimization: OptimizationSettings!
+}
+
+type CachingSettings {
+  enabled: Boolean! = true
+  defaultTtl: Int! = 3600 # seconds
+  
+  # Cache Configuration
+  redis: RedisCacheSettings
+  memory: MemoryCacheSettings
+  
+  # Cache Strategies
+  strategies: JSON
+}
+
+type RedisCacheSettings {
+  enabled: Boolean!
+  url: String!
+  keyPrefix: String!
+  maxConnections: Int!
+}
+
+type MemoryCacheSettings {
+  enabled: Boolean!
+  maxSize: String! # "100MB"
+  evictionPolicy: String! # "LRU" | "LFU" | "FIFO"
+}
+
+type ConnectionPoolingSettings {
+  database: DatabasePoolSettings!
+  http: HttpPoolSettings!
+  
+  # Custom Pools
+  customPools: JSON
+}
+
+type DatabasePoolSettings {
+  minConnections: Int! = 5
+  maxConnections: Int! = 100
+  acquireTimeoutMs: Int! = 60000
+  idleTimeoutMs: Int! = 600000
+}
+
+type HttpPoolSettings {
+  maxConnections: Int! = 100
+  maxConnectionsPerHost: Int! = 20
+  timeoutMs: Int! = 30000
+  keepAliveMs: Int! = 60000
+}
+
+type SystemResourceLimits {
+  # CPU Limits
+  maxCpuCores: Int
+  cpuQuota: Float # 0.0 to 1.0
+  
+  # Memory Limits
+  maxMemory: String # "1GB"
+  heapSize: String
+  
+  # Disk Limits
+  maxDiskSpace: String
+  tempDiskSpace: String
+  
+  # Network Limits
+  maxBandwidth: String
+  maxConnections: Int
+}
+
+type OptimizationSettings {
+  # Compression
+  compression: CompressionSettings!
+  
+  # Async Processing
+  asyncProcessing: AsyncProcessingSettings!
+  
+  # Batching
+  batching: BatchingSettings!
+}
+
+type CompressionSettings {
+  enabled: Boolean! = true
+  algorithms: [String!]! = ["gzip", "deflate"]
+  minSize: Int! = 1024
+  level: Int! = 6
+}
+
+type AsyncProcessingSettings {
+  enabled: Boolean! = true
+  queueSize: Int! = 10000
+  workerThreads: Int! = 10
+  batchSize: Int! = 100
+}
+
+type BatchingSettings {
+  enabled: Boolean! = true
+  batchSize: Int! = 100
+  flushInterval: Int! = 1000 # milliseconds
+  maxWaitTime: Int! = 5000 # milliseconds
+}
+
+type FeatureFlags {
+  # Core Features
+  agentDiscovery: Boolean! = true
+  workflowOrchestration: Boolean! = true
+  realTimeMonitoring: Boolean! = true
+  
+  # Advanced Features
+  predictiveAnalytics: Boolean! = false
+  aiAssistant: Boolean! = false
+  advancedCompliance: Boolean! = false
+  
+  # Beta Features
+  betaFeatures: JSON
+  
+  # Experimental Features
+  experiments: JSON
+}
+
+type IntegrationSettings {
+  # External Services
+  externalServices: [ExternalServiceConfig!]!
+  
+  # Webhooks
+  webhooks: WebhookSettings!
+  
+  # API Settings
+  api: ApiSettings!
+  
+  # Authentication Providers
+  authProviders: [AuthProviderConfig!]!
+}
+
+type ExternalServiceConfig {
+  name: String!
+  type: String!
+  enabled: Boolean!
+  configuration: JSON!
+  healthCheck: ExternalServiceHealthCheck
+}
+
+type ExternalServiceHealthCheck {
+  enabled: Boolean! = true
+  endpoint: URI!
+  interval: Int! = 60 # seconds
+  timeout: Int! = 10 # seconds
+  retries: Int! = 3
+}
+
+type WebhookSettings {
+  enabled: Boolean! = true
+  maxRetries: Int! = 3
+  retryBackoff: String! = "exponential"
+  timeout: Int! = 30 # seconds
+  
+  # Signature Verification
+  signatureVerification: Boolean! = true
+  signatureAlgorithm: String! = "HMAC-SHA256"
+}
+
+type ApiSettings {
+  # Versioning
+  defaultVersion: String! = "v1"
+  supportedVersions: [String!]!
+  
+  # Documentation
+  documentationEnabled: Boolean! = true
+  playgroundEnabled: Boolean! = false
+  
+  # Rate Limiting
+  globalRateLimit: Int! = 10000 # requests per hour
+  
+  # Response Format
+  prettyPrint: Boolean! = false
+  includeMetadata: Boolean! = true
+}
+
+type AuthProviderConfig {
+  name: String!
+  type: String! # "oauth2" | "saml" | "ldap" | "openid"
+  enabled: Boolean!
+  configuration: JSON!
+  
+  # Provider Metadata
+  displayName: String!
+  icon: URI
+  buttonColor: String
+  
+  # Mapping
+  userMapping: UserMappingConfig!
+}
+
+type UserMappingConfig {
+  email: String!
+  name: String!
+  groups: String
+  roles: String
+  
+  # Custom Attributes
+  customAttributes: JSON
+}
+
+type NotificationSettings {
+  # Default Channels
+  defaultChannels: [NotificationType!]!
+  
+  # Channel Configuration
+  email: EmailNotificationSettings!
+  sms: SmsNotificationSettings!
+  slack: SlackNotificationSettings!
+  webhook: WebhookNotificationSettings!
+  
+  # Delivery Settings
+  delivery: NotificationDeliverySettings!
+  
+  # Templates
+  templates: [NotificationTemplate!]!
+}
+
+type EmailNotificationSettings {
+  enabled: Boolean! = true
+  smtpConfig: SmtpConfiguration!
+  
+  # Email Settings
+  fromAddress: String!
+  fromName: String!
+  replyTo: String
+  
+  # Templates
+  htmlTemplate: String
+  textTemplate: String
+}
+
+type SmtpConfiguration {
+  host: String!
+  port: Int! = 587
+  security: String! = "STARTTLS" # "NONE" | "SSL" | "STARTTLS"
+  
+  # Authentication
+  username: String!
+  password: String! # encrypted
+  
+  # Connection Settings
+  timeout: Int! = 30 # seconds
+  maxConnections: Int! = 10
+}
+
+type SmsNotificationSettings {
+  enabled: Boolean! = false
+  provider: String!
+  configuration: JSON!
+  
+  # SMS Settings
+  fromNumber: String
+  defaultCountryCode: String! = "+1"
+}
+
+type SlackNotificationSettings {
+  enabled: Boolean! = false
+  botToken: String! # encrypted
+  
+  # Default Settings
+  defaultChannel: String!
+  mentionUsers: Boolean! = false
+  
+  # Message Format
+  messageFormat: String! = "markdown"
+  includeAttachments: Boolean! = true
+}
+
+type WebhookNotificationSettings {
+  enabled: Boolean! = true
+  defaultTimeout: Int! = 30 # seconds
+  maxRetries: Int! = 3
+  
+  # Security
+  signatureEnabled: Boolean! = true
+  signatureHeader: String! = "X-Signature"
+}
+
+type NotificationDeliverySettings {
+  # Retry Policy
+  retryPolicy: NotificationRetryPolicy!
+  
+  # Batching
+  batchingEnabled: Boolean! = false
+  batchSize: Int! = 10
+  batchWindow: Int! = 60 # seconds
+  
+  # Rate Limiting
+  rateLimitingEnabled: Boolean! = true
+  rateLimitPerMinute: Int! = 100
+}
+
+type NotificationRetryPolicy {
+  maxRetries: Int! = 3
+  backoffStrategy: String! = "exponential"
+  initialDelay: Int! = 1000 # milliseconds
+  maxDelay: Int! = 60000 # milliseconds
+  backoffMultiplier: Float! = 2.0
+}
+
+type MonitoringSettings {
+  # Metrics Collection
+  metricsEnabled: Boolean! = true
+  metricsInterval: Int! = 30 # seconds
+  metricsRetention: String! = "30d"
+  
+  # Logging
+  loggingEnabled: Boolean! = true
+  logLevel: String! = "INFO"
+  logRetention: String! = "90d"
+  
+  # Tracing
+  tracingEnabled: Boolean! = true
+  tracingSampleRate: Float! = 0.1
+  
+  # Health Checks
+  healthChecksEnabled: Boolean! = true
+  healthCheckInterval: Int! = 30 # seconds
+  
+  # Alerting
+  alertingEnabled: Boolean! = true
+  alertEvaluationInterval: Int! = 60 # seconds
+}
+
+# Utility Types
+union SearchResult = Agent | Workflow | User | Organization
+
+type ValidationResult {
+  valid: Boolean!
+  errors: [ValidationError!]!
+  warnings: [ValidationWarning!]
+}
+
+type ValidationError {
+  field: String!
+  message: String!
+  code: String!
+  value: JSON
+}
+
+type ValidationWarning {
+  field: String!
+  message: String!
+  code: String!
+  suggestion: String
+}
+
+# Generic Input Types
+input PaginationInput {
+  first: Int
+  after: String
+  last: Int
+  before: String
+  limit: Int = 50
+  offset: Int = 0
+}
+
+input SortInput {
+  field: String!
+  direction: SortOrder! = ASC
+}
+
+input SearchInput {
+  query: String!
+  fields: [String!]
+  fuzzy: Boolean = false
+  filters: [SearchFilterInput!]
+  sort: [SortInput!]
+  pagination: PaginationInput
+}
+
+input SearchFilterInput {
+  field: String!
+  operator: FilterOperator!
+  value: JSON!
+}
+
+# Connection Types
+type AgentConnection implements Connection {
+  edges: [AgentEdge!]!
+  nodes: [Agent!]!
+  pageInfo: PageInfo!
+  totalCount: Int!
+}
+
+type AgentEdge implements Edge {
+  cursor: String!
+  node: Agent!
+}
+
+type WorkflowConnection implements Connection {
+  edges: [WorkflowEdge!]!
+  nodes: [Workflow!]!
+  pageInfo: PageInfo!
+  totalCount: Int!
+}
+
+type WorkflowEdge implements Edge {
+  cursor: String!
+  node: Workflow!
+}
+
+type UserConnection implements Connection {
+  edges: [UserEdge!]!
+  nodes: [User!]!
+  pageInfo: PageInfo!
+  totalCount: Int!
+}
+
+type UserEdge implements Edge {
+  cursor: String!
+  node: User!
+}

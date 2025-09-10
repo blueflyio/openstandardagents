@@ -1,0 +1,406 @@
+FROM node:20-alpine
+
+# Install system dependencies including Python for analytics
+RUN apk add --no-cache \
+    wget \
+    curl \
+    bash \
+    git \
+    python3 \
+    py3-pip \
+    py3-pandas \
+    py3-numpy \
+    py3-matplotlib \
+    py3-scipy
+
+WORKDIR /app
+
+# Copy package files
+COPY package*.json ./
+
+# Install root dependencies
+RUN npm install || true
+
+# Copy source code
+COPY . .
+
+# Install and build the CLI package
+WORKDIR /app/src/cli
+RUN npm install && npm run build
+
+# Return to app root
+WORKDIR /app
+
+# Create analytics agent startup script
+RUN cat > /app/start-analytics-agent.sh << 'EOF'
+#!/bin/bash
+echo "📈 Starting OSSA Analytics Agent v0.1.8..."
+
+# Start the analytics agent service
+node -e "
+const express = require('express');
+const fs = require('fs');
+
+const app = express();
+app.use(express.json({ limit: '100mb' }));
+
+// Analytics state
+const analyticsJobs = new Map();
+const reports = new Map();
+
+// Health endpoint
+app.get('/health', (req, res) => {
+  res.json({
+    service: 'analytics-agent',
+    status: 'healthy',
+    version: '0.1.8',
+    agent_type: 'analytics',
+    active_jobs: analyticsJobs.size,
+    generated_reports: reports.size,
+    timestamp: new Date().toISOString()
+  });
+});
+
+// Agent capabilities endpoint
+app.get('/capabilities', (req, res) => {
+  res.json({
+    agent_type: 'analytics',
+    capabilities: [
+      'statistical_analysis',
+      'data_visualization',
+      'predictive_modeling',
+      'report_generation',
+      'trend_analysis',
+      'correlation_analysis'
+    ],
+    analytics_engines: ['pandas', 'numpy', 'scipy', 'matplotlib'],
+    supported_formats: ['json', 'csv', 'excel'],
+    report_formats: ['pdf', 'html', 'json', 'csv'],
+    endpoints: {
+      analyze: '/analyze',
+      visualize: '/visualize',
+      report: '/report',
+      predict: '/predict'
+    }
+  });
+});
+
+// Statistical analysis endpoint
+app.post('/analyze', async (req, res) => {
+  try {
+    const { data, analysis_type, parameters } = req.body;
+    
+    if (!data || !analysis_type) {
+      return res.status(400).json({ error: 'data and analysis_type required' });
+    }
+    
+    const jobId = 'analytics-' + Date.now();
+    const job = {
+      id: jobId,
+      type: 'analysis',
+      analysis_type,
+      status: 'processing',
+      started_at: new Date().toISOString(),
+      parameters: parameters || {}
+    };
+    
+    analyticsJobs.set(jobId, job);
+    
+    // Simulate analytics processing
+    setTimeout(() => {
+      let result = {};
+      
+      switch (analysis_type) {
+        case 'descriptive':
+          result = {
+            mean: Math.random() * 100,
+            median: Math.random() * 100,
+            std_dev: Math.random() * 20,
+            min: Math.random() * 10,
+            max: Math.random() * 100 + 100,
+            count: Array.isArray(data) ? data.length : 1,
+            quartiles: [25, 50, 75].map(q => Math.random() * 100)
+          };
+          break;
+        case 'correlation':
+          result = {
+            correlation_matrix: [[1, 0.7], [0.7, 1]],
+            strong_correlations: ['var1-var2: 0.7'],
+            weak_correlations: []
+          };
+          break;
+        case 'trend':
+          result = {
+            trend_direction: 'upward',
+            trend_strength: 0.8,
+            seasonal_pattern: 'monthly',
+            forecast_confidence: 0.85
+          };
+          break;
+        default:
+          result = {
+            analysis_completed: true,
+            summary: 'Custom analysis performed'
+          };
+      }
+      
+      job.status = 'completed';
+      job.completed_at = new Date().toISOString();
+      job.result = result;
+      analyticsJobs.set(jobId, job);
+    }, 3000);
+    
+    res.json({
+      status: 'accepted',
+      job_id: jobId,
+      analysis_type,
+      estimated_duration: '3-10 seconds',
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    res.status(500).json({
+      status: 'error',
+      error: error.message,
+      timestamp: new Date().toISOString()
+    });
+  }
+});
+
+// Data visualization endpoint
+app.post('/visualize', async (req, res) => {
+  try {
+    const { data, chart_type, options } = req.body;
+    
+    if (!data || !chart_type) {
+      return res.status(400).json({ error: 'data and chart_type required' });
+    }
+    
+    const jobId = 'viz-' + Date.now();
+    const job = {
+      id: jobId,
+      type: 'visualization',
+      chart_type,
+      status: 'processing',
+      started_at: new Date().toISOString(),
+      options: options || {}
+    };
+    
+    analyticsJobs.set(jobId, job);
+    
+    // Simulate visualization generation
+    setTimeout(() => {
+      const result = {
+        chart_type,
+        format: 'base64_image',
+        width: options?.width || 800,
+        height: options?.height || 600,
+        data_points: Array.isArray(data) ? data.length : 1,
+        generated_at: new Date().toISOString(),
+        chart_url: '/charts/' + jobId + '.png'
+      };
+      
+      job.status = 'completed';
+      job.completed_at = new Date().toISOString();
+      job.result = result;
+      analyticsJobs.set(jobId, job);
+    }, 2000);
+    
+    res.json({
+      status: 'accepted',
+      job_id: jobId,
+      chart_type,
+      estimated_duration: '2-5 seconds',
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    res.status(500).json({
+      status: 'error',
+      error: error.message,
+      timestamp: new Date().toISOString()
+    });
+  }
+});
+
+// Report generation endpoint
+app.post('/report', async (req, res) => {
+  try {
+    const { data, report_type, format, options } = req.body;
+    
+    if (!data || !report_type) {
+      return res.status(400).json({ error: 'data and report_type required' });
+    }
+    
+    const reportId = 'report-' + Date.now();
+    const report = {
+      id: reportId,
+      type: report_type,
+      format: format || 'json',
+      status: 'generating',
+      started_at: new Date().toISOString(),
+      options: options || {}
+    };
+    
+    reports.set(reportId, report);
+    
+    // Simulate report generation
+    setTimeout(() => {
+      const result = {
+        report_id: reportId,
+        title: 'Analytics Report - ' + report_type,
+        sections: [
+          { name: 'Summary', content: 'Data analysis summary' },
+          { name: 'Findings', content: 'Key findings and insights' },
+          { name: 'Recommendations', content: 'Actionable recommendations' }
+        ],
+        data_points_analyzed: Array.isArray(data) ? data.length : 1,
+        confidence_score: 0.9,
+        generated_at: new Date().toISOString(),
+        download_url: '/reports/' + reportId + '.' + (format || 'json')
+      };
+      
+      report.status = 'completed';
+      report.completed_at = new Date().toISOString();
+      report.result = result;
+      reports.set(reportId, report);
+    }, 4000);
+    
+    res.json({
+      status: 'accepted',
+      report_id: reportId,
+      report_type,
+      format: format || 'json',
+      estimated_duration: '4-10 seconds',
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    res.status(500).json({
+      status: 'error',
+      error: error.message,
+      timestamp: new Date().toISOString()
+    });
+  }
+});
+
+// Predictive modeling endpoint
+app.post('/predict', async (req, res) => {
+  try {
+    const { data, model_type, target_variable, features } = req.body;
+    
+    if (!data || !model_type) {
+      return res.status(400).json({ error: 'data and model_type required' });
+    }
+    
+    const jobId = 'predict-' + Date.now();
+    const job = {
+      id: jobId,
+      type: 'prediction',
+      model_type,
+      status: 'training',
+      started_at: new Date().toISOString(),
+      target_variable,
+      features: features || []
+    };
+    
+    analyticsJobs.set(jobId, job);
+    
+    // Simulate model training and prediction
+    setTimeout(() => {
+      const result = {
+        model_type,
+        accuracy: Math.random() * 0.3 + 0.7, // 70-100%
+        predictions: Array.from({ length: 10 }, () => Math.random() * 100),
+        feature_importance: features ? features.map(f => ({ 
+          feature: f, 
+          importance: Math.random() 
+        })) : [],
+        confidence_intervals: Array.from({ length: 10 }, () => ({
+          lower: Math.random() * 50,
+          upper: Math.random() * 50 + 50
+        })),
+        model_metrics: {
+          mae: Math.random() * 10,
+          rmse: Math.random() * 15,
+          r_squared: Math.random() * 0.5 + 0.5
+        }
+      };
+      
+      job.status = 'completed';
+      job.completed_at = new Date().toISOString();
+      job.result = result;
+      analyticsJobs.set(jobId, job);
+    }, 5000);
+    
+    res.json({
+      status: 'accepted',
+      job_id: jobId,
+      model_type,
+      estimated_duration: '5-15 seconds',
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    res.status(500).json({
+      status: 'error',
+      error: error.message,
+      timestamp: new Date().toISOString()
+    });
+  }
+});
+
+// Get job status
+app.get('/jobs/:id', (req, res) => {
+  const job = analyticsJobs.get(req.params.id);
+  if (!job) {
+    return res.status(404).json({ error: 'Job not found' });
+  }
+  res.json(job);
+});
+
+// Get report status
+app.get('/reports/:id', (req, res) => {
+  const report = reports.get(req.params.id);
+  if (!report) {
+    return res.status(404).json({ error: 'Report not found' });
+  }
+  res.json(report);
+});
+
+// List jobs
+app.get('/jobs', (req, res) => {
+  const jobs = Array.from(analyticsJobs.values());
+  res.json({
+    jobs,
+    total: jobs.length,
+    timestamp: new Date().toISOString()
+  });
+});
+
+// List reports
+app.get('/reports', (req, res) => {
+  const reportList = Array.from(reports.values());
+  res.json({
+    reports: reportList,
+    total: reportList.length,
+    timestamp: new Date().toISOString()
+  });
+});
+
+const port = process.env.SERVICE_PORT || 3008;
+app.listen(port, '0.0.0.0', () => {
+  console.log('✅ Analytics Agent running on port ' + port);
+});
+"
+
+EOF
+
+# Make startup script executable
+RUN chmod +x /app/start-analytics-agent.sh
+
+# Expose port
+EXPOSE 3008
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+  CMD curl -f http://localhost:3008/health || exit 1
+
+# Start analytics agent service
+CMD ["/app/start-analytics-agent.sh"]

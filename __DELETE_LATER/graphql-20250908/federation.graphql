@@ -1,0 +1,459 @@
+# OSSA v0.1.8 Apollo Federation Schema
+# Federation configuration for distributed GraphQL architecture
+
+# Import all base schemas
+# extend schema
+#   @link(url: "https://specs.apollo.dev/federation/v2.3", import: ["@key", "@requires", "@provides", "@external", "@tag", "@shareable"])
+
+# Federation-enabled Agent type
+type Agent @key(fields: "id") @key(fields: "name version") {
+  id: UUID!
+  name: String!
+  version: String!
+  
+  # Basic Information (local fields)
+  description: String
+  
+  # Taxonomy and Classification
+  taxonomy: AgentTaxonomyInfo!
+  capabilities: AgentCapabilities!
+  protocols: ProtocolSupport!
+  
+  # Status and Health (frequently updated, cached)
+  status: AgentStatusInfo! @shareable
+  health: HealthInfo! @shareable
+  availability: AgentAvailability!
+  
+  # Metadata and Configuration
+  metadata: AgentMetadata!
+  endpoints: AgentEndpoints!
+  
+  # Performance Metrics (from telemetry service)
+  performance: PerformanceMetrics! @requires(fields: "id") @external
+  
+  # Compliance Information (from compliance service)
+  compliance: ComplianceInfo @requires(fields: "id taxonomy { complianceLevel }") @external
+  
+  # Security Configuration (from security service)
+  security: SecurityConfiguration @requires(fields: "id") @external
+  
+  # Temporal Information
+  registeredAt: DateTime!
+  lastSeen: DateTime! @shareable
+  lastHealthCheck: DateTime! @shareable
+  updatedAt: DateTime!
+}
+
+# Federation-enabled Workflow type
+type Workflow @key(fields: "id") @key(fields: "name version") {
+  id: UUID!
+  name: String!
+  version: String!
+  description: String
+  
+  # Workflow Definition (local)
+  definition: WorkflowDefinition!
+  configuration: WorkflowConfiguration!
+  
+  # Current State (shared across services)
+  status: WorkflowStatus! @shareable
+  currentPhase: String @shareable
+  progress: WorkflowProgress! @shareable
+  
+  # Executions (from orchestration service)
+  executions: [WorkflowExecution!]! @requires(fields: "id") @external
+  activeExecution: WorkflowExecution @requires(fields: "id status") @external
+  
+  # Resource Management (from resource service)
+  resources: ResourceAllocation! @requires(fields: "id") @external
+  budget: WorkflowBudget! @requires(fields: "id") @external
+  
+  # Compliance (from compliance service)
+  compliance: WorkflowCompliance! @requires(fields: "id definition { schema }") @external
+  
+  # Governance (from governance service)
+  governance: WorkflowGovernance! @requires(fields: "id") @external
+  
+  # Temporal Information
+  createdAt: DateTime!
+  updatedAt: DateTime! @shareable
+  scheduledAt: DateTime
+  lastExecutedAt: DateTime @shareable
+}
+
+# Federation-enabled TelemetryData type
+type TelemetryData @key(fields: "id") @key(fields: "agentId timestamp") {
+  id: UUID!
+  agentId: UUID!
+  timestamp: DateTime!
+  
+  # Local telemetry metrics
+  performance: PerformanceMetrics!
+  resources: ResourceMetrics!
+  quality: QualityMetrics!
+  
+  # Business metrics (from business service)
+  business: BusinessMetrics! @requires(fields: "agentId timestamp") @external
+  
+  # Context
+  context: TelemetryContext!
+  metadata: TelemetryMetadata!
+}
+
+# Federation-enabled User type
+type User @key(fields: "id") @key(fields: "username") {
+  id: UUID!
+  username: String!
+  email: String!
+  
+  # Local user data
+  profile: UserProfile!
+  preferences: UserPreferences!
+  
+  # Role information (from auth service)
+  roles: [Role!]! @requires(fields: "id") @external
+  permissions: [Permission!]! @requires(fields: "id") @external
+  groups: [Group!]! @requires(fields: "id") @external
+  
+  # Activity (from activity service)
+  lastLogin: DateTime @external
+  loginCount: Int! @external
+  
+  # Status
+  active: Boolean!
+  verified: Boolean!
+  
+  # Temporal Information
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+# Federation-enabled Organization type
+type Organization @key(fields: "id") @key(fields: "name") {
+  id: UUID!
+  name: String!
+  description: String
+  
+  # Contact and Address Information
+  website: URI
+  email: String!
+  phone: String
+  address: Address
+  
+  # Industry and Size
+  industry: String
+  size: String
+  foundedYear: Int
+  
+  # Tenants (from tenant service)
+  tenants: [Tenant!]! @requires(fields: "id") @external
+  
+  # Users (from user service)
+  users: [User!]! @requires(fields: "id") @external
+  
+  # Temporal Information
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+# Subgraph-specific types for federation
+extend type Query {
+  # Agent Discovery Subgraph
+  _agents(ids: [UUID!]!): [Agent!]! @tag(name: "internal")
+  _agentByNameVersion(name: String!, version: String!): Agent @tag(name: "internal")
+  
+  # Workflow Orchestration Subgraph
+  _workflows(ids: [UUID!]!): [Workflow!]! @tag(name: "internal")
+  _workflowByNameVersion(name: String!, version: String!): Workflow @tag(name: "internal")
+  
+  # Telemetry Subgraph
+  _telemetryData(ids: [UUID!]!): [TelemetryData!]! @tag(name: "internal")
+  _telemetryByAgentTime(agentId: UUID!, timestamp: DateTime!): TelemetryData @tag(name: "internal")
+  
+  # User Management Subgraph
+  _users(ids: [UUID!]!): [User!]! @tag(name: "internal")
+  _userByUsername(username: String!): User @tag(name: "internal")
+  
+  # Organization Subgraph
+  _organizations(ids: [UUID!]!): [Organization!]! @tag(name: "internal")
+  _organizationByName(name: String!): Organization @tag(name: "internal")
+}
+
+# Service-specific type extensions
+extend type Agent {
+  # From Telemetry Service
+  currentMetrics: TelemetryData @requires(fields: "id")
+  metricsHistory(timeRange: TimeRangeInput!): [TelemetryData!]! @requires(fields: "id")
+  
+  # From Orchestration Service
+  workflows: [Workflow!]! @requires(fields: "id capabilities { primary }")
+  activeWorkflows: [Workflow!]! @requires(fields: "id status")
+  
+  # From Compliance Service
+  complianceHistory: [ComplianceAssessment!]! @requires(fields: "id")
+  complianceScore: Float @requires(fields: "id taxonomy { complianceLevel }")
+  
+  # From Security Service
+  securityEvents: [SecurityEvent!]! @requires(fields: "id")
+  riskAssessment: RiskAssessment @requires(fields: "id security")
+}
+
+extend type Workflow {
+  # From Agent Discovery Service
+  requiredAgents: [Agent!]! @requires(fields: "definition { tasks { agentRequirements } }")
+  assignedAgents: [Agent!]! @requires(fields: "id activeExecution { taskExecutions { assignedAgent } }")
+  
+  # From Telemetry Service
+  performanceMetrics: [TelemetryData!]! @requires(fields: "id")
+  resourceUtilization: ResourceMetrics @requires(fields: "id")
+  
+  # From Notification Service
+  notifications: [NotificationDelivery!]! @requires(fields: "id")
+  alerts: [MetricAlert!]! @requires(fields: "id status")
+}
+
+extend type User {
+  # From Agent Discovery Service
+  ownedAgents: [Agent!]! @requires(fields: "id")
+  
+  # From Workflow Orchestration Service
+  workflows: [Workflow!]! @requires(fields: "id")
+  recentExecutions: [WorkflowExecution!]! @requires(fields: "id")
+  
+  # From Audit Service
+  auditTrail: [AuditLogEntry!]! @requires(fields: "id")
+  
+  # From Notification Service
+  notifications: [NotificationDelivery!]! @requires(fields: "id")
+}
+
+# Federated subscription types
+extend type Subscription {
+  # Agent events across all services
+  agentEvents(agentIds: [UUID!]): AgentEvent! @requires(fields: "agentIds")
+  
+  # Workflow events across orchestration and telemetry
+  workflowEvents(workflowIds: [UUID!]): WorkflowEvent! @requires(fields: "workflowIds")
+  
+  # Performance events from telemetry service
+  performanceEvents(agentIds: [UUID!]): PerformanceEvent! @requires(fields: "agentIds")
+  
+  # Health events from multiple services
+  healthEvents(agentIds: [UUID!]): HealthEvent! @requires(fields: "agentIds")
+  
+  # Compliance events from compliance service
+  complianceEvents(frameworks: [ComplianceFramework!]): ComplianceEvent! @requires(fields: "frameworks")
+  
+  # Security events from security service
+  securityEvents(agentIds: [UUID!]): SecurityEvent! @requires(fields: "agentIds")
+  
+  # Business events from business metrics service
+  businessEvents(tenantId: UUID): BusinessEvent! @requires(fields: "tenantId")
+}
+
+# Federation-specific types for cross-service operations
+type FederatedDiscoveryResult {
+  # Results from Agent Discovery Service
+  agents: [Agent!]!
+  
+  # Enhanced with data from other services
+  agentPerformance: [TelemetryData!]! @requires(fields: "agents { id }")
+  agentCompliance: [ComplianceInfo!]! @requires(fields: "agents { id }")
+  agentSecurity: [SecurityConfiguration!]! @requires(fields: "agents { id }")
+  
+  # Discovery metadata
+  query: DiscoveryQuery!
+  executionTime: Float!
+  totalFound: Int!
+}
+
+type FederatedWorkflowExecution {
+  # Core execution from Orchestration Service
+  execution: WorkflowExecution!
+  
+  # Enhanced with data from other services
+  agentPerformance: [TelemetryData!]! @requires(fields: "execution { taskExecutions { assignedAgent } }")
+  resourceMetrics: [ResourceMetrics!]! @requires(fields: "execution { id }")
+  complianceValidation: [ComplianceAssessment!]! @requires(fields: "execution { workflowId }")
+  auditTrail: [AuditLogEntry!]! @requires(fields: "execution { id }")
+}
+
+# Federation resolver hints for the gateway
+type _Service {
+  sdl: String!
+}
+
+type _Entity {
+  __typename: String!
+}
+
+# Federation directives for service coordination
+directive @federation__requires(fields: String!) on FIELD_DEFINITION
+directive @federation__provides(fields: String!) on FIELD_DEFINITION
+directive @federation__key(fields: String!) on OBJECT | INTERFACE
+directive @federation__external on FIELD_DEFINITION
+directive @federation__extends on OBJECT | INTERFACE
+
+# Service composition metadata
+type FederationMetadata {
+  services: [ServiceInfo!]!
+  version: String!
+  lastUpdated: DateTime!
+  healthStatus: FederationHealthStatus!
+}
+
+type ServiceInfo {
+  name: String!
+  url: String!
+  version: String!
+  status: ServiceStatus!
+  lastHealthCheck: DateTime!
+  capabilities: [String!]!
+}
+
+enum ServiceStatus {
+  HEALTHY
+  DEGRADED
+  UNHEALTHY
+  UNREACHABLE
+}
+
+type FederationHealthStatus {
+  overall: ServiceStatus!
+  services: [ServiceHealthInfo!]!
+  lastCheck: DateTime!
+}
+
+type ServiceHealthInfo {
+  service: String!
+  status: ServiceStatus!
+  responseTime: Float!
+  errorRate: Float!
+  lastError: String
+}
+
+# Federated query planning types
+type QueryPlan {
+  nodes: [QueryPlanNode!]!
+  estimatedCost: Int!
+  estimatedTime: Float!
+}
+
+type QueryPlanNode {
+  service: String!
+  query: String!
+  variables: JSON
+  dependencies: [String!]!
+}
+
+# Cross-service data consistency types
+type DataConsistencyCheck {
+  entity: String!
+  entityId: UUID!
+  services: [String!]!
+  consistent: Boolean!
+  discrepancies: [DataDiscrepancy!]!
+  lastCheck: DateTime!
+}
+
+type DataDiscrepancy {
+  field: String!
+  service1: String!
+  value1: JSON
+  service2: String!
+  value2: JSON
+  severity: String! # "low" | "medium" | "high"
+}
+
+# Federation-specific error types
+type FederationError {
+  service: String!
+  message: String!
+  code: String!
+  details: JSON
+  timestamp: DateTime!
+}
+
+# Service discovery and routing
+type ServiceRegistry {
+  services: [RegisteredService!]!
+  lastUpdated: DateTime!
+}
+
+type RegisteredService {
+  name: String!
+  version: String!
+  endpoint: URI!
+  schema: String!
+  capabilities: [String!]!
+  healthEndpoint: URI!
+  metricsEndpoint: URI!
+  
+  # Service metadata
+  maintainer: String!
+  documentation: URI
+  tags: [String!]!
+  
+  # Deployment information
+  environment: String!
+  region: String!
+  zone: String
+  
+  # Status
+  status: ServiceStatus!
+  registeredAt: DateTime!
+  lastSeen: DateTime!
+}
+
+# Federation performance monitoring
+type FederationMetrics {
+  # Query Performance
+  totalQueries: Int!
+  averageQueryTime: Float!
+  p95QueryTime: Float!
+  p99QueryTime: Float!
+  
+  # Service Performance
+  serviceMetrics: [ServiceMetrics!]!
+  
+  # Error Rates
+  totalErrors: Int!
+  errorRate: Float!
+  errorsByService: [ServiceErrorMetrics!]!
+  
+  # Cache Performance
+  cacheHitRate: Float!
+  cacheSize: Int!
+  
+  # Federation-specific metrics
+  planningTime: Float!
+  executionTime: Float!
+  parallelism: Float!
+  
+  # Time window
+  timeWindow: String!
+  lastUpdated: DateTime!
+}
+
+type ServiceMetrics {
+  service: String!
+  requestCount: Int!
+  averageResponseTime: Float!
+  errorCount: Int!
+  errorRate: Float!
+  availability: Float!
+}
+
+type ServiceErrorMetrics {
+  service: String!
+  errorCount: Int!
+  errorRate: Float!
+  commonErrors: [ErrorSummary!]!
+}
+
+type ErrorSummary {
+  message: String!
+  count: Int!
+  percentage: Float!
+  lastOccurrence: DateTime!
+}

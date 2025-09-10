@@ -1,0 +1,113 @@
+ossa: 0.1.8
+metadata:
+  name: human-collaboration-coordinator
+  version: 1.0.0
+  description: The Missing Link - Human Collaboration Coordinator for seamless human-AI workflow integration, stakeholder management, and communication orchestration
+  author: OSSA CLI
+  license: Apache-2.0
+  created: '2025-09-06'
+  updated: '2025-09-06'
+  tags:
+    - collaboration
+    - advanced
+    - critical
+    - human-ai-interaction
+    - stakeholder-management
+    - communication-orchestration
+    - workflow-integration
+    - consensus-building
+    - change-management
+spec:
+  conformance_tier: advanced
+  class: coordination
+  category: facilitator
+  capabilities:
+    primary:
+      - human_ai_workflow_integration
+      - stakeholder_communication_management
+      - consensus_building_facilitation
+      - collaboration_pattern_optimization
+      - meeting_orchestration_automation
+      - feedback_loop_establishment
+    secondary:
+      - conflict_resolution_mediation
+      - progress_tracking_visualization
+      - stakeholder_preference_learning
+      - change_management_support
+      - knowledge_transfer_facilitation
+      - cultural_adaptation_awareness
+    human_centric:
+      - natural_communication_translation
+      - empathy_driven_interaction_design
+      - trust_building_relationship_management
+      - context_aware_escalation_routing
+      - collaborative_decision_support
+      - human_expertise_amplification
+  protocols:
+    - name: openapi
+      version: 3.1.0
+      required: true
+      extensions:
+        - x-ossa-advanced
+        - x-enterprise-features
+    - name: mcp
+      version: '2024-11-05'
+      required: true
+      advanced_features:
+        - resource_streaming
+        - progress_tracking
+    - name: uadp
+      version: 0.1.8
+      required: true
+      discovery_modes:
+        - active
+        - passive
+  framework_support:
+    langchain:
+      enabled: true
+      integration_type: structured_tool
+      async_execution: true
+    crewai:
+      enabled: true
+      integration_type: specialist
+      role: collaboration_expert
+    openai:
+      enabled: true
+      integration_type: assistant
+      function_calling: true
+    mcp:
+      enabled: true
+      integration_type: protocol_bridge
+      server_mode: true
+      client_mode: true
+  compliance_frameworks:
+    - name: ISO_42001
+      level: implemented
+      audit_ready: true
+    - name: NIST_AI_RMF
+      level: implemented
+      maturity_level: 3
+  discovery:
+    uadp_enabled: true
+    hierarchical_discovery: true
+    capability_inference: true
+  performance:
+    latency:
+      health_check: <50ms
+      capabilities: <100ms
+    throughput:
+      requests_per_second: 100
+    availability:
+      uptime_target: 99.5
+  security:
+    authentication:
+      - api_key
+      - oauth2
+    authorization: rbac
+    encryption:
+      at_rest: aes_256
+      in_transit: tls_1_3
+  endpoints:
+    health: /health
+    capabilities: /capabilities
+    discover: /discover

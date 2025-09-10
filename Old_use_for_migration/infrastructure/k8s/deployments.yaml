@@ -1,0 +1,658 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ossa-gateway
+  namespace: ossa-platform
+  labels:
+    app.kubernetes.io/name: ossa-gateway
+    app.kubernetes.io/component: gateway
+    app.kubernetes.io/part-of: ossa-platform
+    ossa.bluefly.io/version: "0.1.8"
+spec:
+  replicas: 5
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 25%
+      maxSurge: 25%
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: ossa-gateway
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: ossa-gateway
+        app.kubernetes.io/component: gateway
+        app.kubernetes.io/part-of: ossa-platform
+        ossa.bluefly.io/version: "0.1.8"
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "3000"
+        prometheus.io/path: "/metrics"
+    spec:
+      serviceAccountName: ossa-service-account
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1001
+        fsGroup: 1001
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: app.kubernetes.io/name
+                  operator: In
+                  values:
+                  - ossa-gateway
+              topologyKey: kubernetes.io/hostname
+      containers:
+      - name: gateway
+        image: gitlab.bluefly.io/ossa/platform:0.1.8-gateway
+        ports:
+        - containerPort: 3000
+          name: http
+        - containerPort: 9090
+          name: metrics
+        env:
+        - name: SERVICE_PORT
+          value: "3000"
+        - name: NODE_ENV
+          valueFrom:
+            configMapKeyRef:
+              name: ossa-platform-config
+              key: NODE_ENV
+        - name: REDIS_URL
+          valueFrom:
+            configMapKeyRef:
+              name: ossa-platform-config
+              key: REDIS_URL
+        - name: POSTGRES_URL
+          valueFrom:
+            configMapKeyRef:
+              name: ossa-platform-config
+              key: POSTGRES_URL
+        - name: QDRANT_URL
+          valueFrom:
+            configMapKeyRef:
+              name: ossa-platform-config
+              key: QDRANT_URL
+        - name: JWT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: ossa-platform-secrets
+              key: JWT_SECRET
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "250m"
+          limits:
+            memory: "1Gi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 3000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: 3000
+          initialDelaySeconds: 5
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 3
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ossa-task-agent
+  namespace: ossa-platform
+  labels:
+    app.kubernetes.io/name: ossa-task-agent
+    app.kubernetes.io/component: agent
+    app.kubernetes.io/part-of: ossa-platform
+    ossa.bluefly.io/version: "0.1.8"
+spec:
+  replicas: 10
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 25%
+      maxSurge: 50%
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: ossa-task-agent
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: ossa-task-agent
+        app.kubernetes.io/component: agent
+        app.kubernetes.io/part-of: ossa-platform
+        ossa.bluefly.io/version: "0.1.8"
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "3001"
+        prometheus.io/path: "/metrics"
+    spec:
+      serviceAccountName: ossa-service-account
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1001
+        fsGroup: 1001
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: app.kubernetes.io/name
+                  operator: In
+                  values:
+                  - ossa-task-agent
+              topologyKey: kubernetes.io/hostname
+      containers:
+      - name: task-agent
+        image: gitlab.bluefly.io/ossa/platform:0.1.8-task-agent
+        ports:
+        - containerPort: 3001
+          name: http
+        env:
+        - name: SERVICE_PORT
+          value: "3001"
+        - name: AGENT_TYPE
+          value: "task"
+        - name: NODE_ENV
+          valueFrom:
+            configMapKeyRef:
+              name: ossa-platform-config
+              key: NODE_ENV
+        - name: REDIS_URL
+          valueFrom:
+            configMapKeyRef:
+              name: ossa-platform-config
+              key: REDIS_URL
+        - name: GATEWAY_URL
+          valueFrom:
+            configMapKeyRef:
+              name: ossa-platform-config
+              key: GATEWAY_URL
+        - name: OPENAI_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: ossa-platform-secrets
+              key: OPENAI_API_KEY
+        - name: ANTHROPIC_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: ossa-platform-secrets
+              key: ANTHROPIC_API_KEY
+        resources:
+          requests:
+            memory: "1Gi"
+            cpu: "500m"
+          limits:
+            memory: "2Gi"
+            cpu: "1"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 3001
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: 3001
+          initialDelaySeconds: 5
+          periodSeconds: 5
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ossa-comm-agent
+  namespace: ossa-platform
+  labels:
+    app.kubernetes.io/name: ossa-comm-agent
+    app.kubernetes.io/component: agent
+    app.kubernetes.io/part-of: ossa-platform
+    ossa.bluefly.io/version: "0.1.8"
+spec:
+  replicas: 8
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 25%
+      maxSurge: 50%
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: ossa-comm-agent
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: ossa-comm-agent
+        app.kubernetes.io/component: agent
+        app.kubernetes.io/part-of: ossa-platform
+        ossa.bluefly.io/version: "0.1.8"
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "3002"
+        prometheus.io/path: "/metrics"
+    spec:
+      serviceAccountName: ossa-service-account
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1001
+        fsGroup: 1001
+      containers:
+      - name: comm-agent
+        image: gitlab.bluefly.io/ossa/platform:0.1.8-comm-agent
+        ports:
+        - containerPort: 3002
+          name: http
+        env:
+        - name: SERVICE_PORT
+          value: "3002"
+        - name: AGENT_TYPE
+          value: "communication"
+        - name: NODE_ENV
+          valueFrom:
+            configMapKeyRef:
+              name: ossa-platform-config
+              key: NODE_ENV
+        - name: REDIS_URL
+          valueFrom:
+            configMapKeyRef:
+              name: ossa-platform-config
+              key: REDIS_URL
+        - name: GATEWAY_URL
+          valueFrom:
+            configMapKeyRef:
+              name: ossa-platform-config
+              key: GATEWAY_URL
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "250m"
+          limits:
+            memory: "1Gi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 3002
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: 3002
+          initialDelaySeconds: 5
+          periodSeconds: 5
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ossa-mcp-agent
+  namespace: ossa-platform
+  labels:
+    app.kubernetes.io/name: ossa-mcp-agent
+    app.kubernetes.io/component: agent
+    app.kubernetes.io/part-of: ossa-platform
+    ossa.bluefly.io/version: "0.1.8"
+spec:
+  replicas: 6
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 25%
+      maxSurge: 50%
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: ossa-mcp-agent
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: ossa-mcp-agent
+        app.kubernetes.io/component: agent
+        app.kubernetes.io/part-of: ossa-platform
+        ossa.bluefly.io/version: "0.1.8"
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "3003"
+        prometheus.io/path: "/metrics"
+    spec:
+      serviceAccountName: ossa-service-account
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1001
+        fsGroup: 1001
+      containers:
+      - name: mcp-agent
+        image: gitlab.bluefly.io/ossa/platform:0.1.8-mcp-agent
+        ports:
+        - containerPort: 3003
+          name: http
+        env:
+        - name: SERVICE_PORT
+          value: "3003"
+        - name: AGENT_TYPE
+          value: "mcp"
+        - name: NODE_ENV
+          valueFrom:
+            configMapKeyRef:
+              name: ossa-platform-config
+              key: NODE_ENV
+        - name: REDIS_URL
+          valueFrom:
+            configMapKeyRef:
+              name: ossa-platform-config
+              key: REDIS_URL
+        - name: GATEWAY_URL
+          valueFrom:
+            configMapKeyRef:
+              name: ossa-platform-config
+              key: GATEWAY_URL
+        resources:
+          requests:
+            memory: "768Mi"
+            cpu: "375m"
+          limits:
+            memory: "1.5Gi"
+            cpu: "750m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 3003
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: 3003
+          initialDelaySeconds: 5
+          periodSeconds: 5
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ossa-coordination
+  namespace: ossa-platform
+  labels:
+    app.kubernetes.io/name: ossa-coordination
+    app.kubernetes.io/component: coordination
+    app.kubernetes.io/part-of: ossa-platform
+    ossa.bluefly.io/version: "0.1.8"
+spec:
+  replicas: 3
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: ossa-coordination
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: ossa-coordination
+        app.kubernetes.io/component: coordination
+        app.kubernetes.io/part-of: ossa-platform
+        ossa.bluefly.io/version: "0.1.8"
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "3010"
+        prometheus.io/path: "/metrics"
+    spec:
+      serviceAccountName: ossa-service-account
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1001
+        fsGroup: 1001
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+              - key: app.kubernetes.io/name
+                operator: In
+                values:
+                - ossa-coordination
+            topologyKey: kubernetes.io/hostname
+      containers:
+      - name: coordination
+        image: gitlab.bluefly.io/ossa/platform:0.1.8-coordination
+        ports:
+        - containerPort: 3010
+          name: http
+        env:
+        - name: SERVICE_PORT
+          value: "3010"
+        - name: NODE_ENV
+          valueFrom:
+            configMapKeyRef:
+              name: ossa-platform-config
+              key: NODE_ENV
+        - name: REDIS_URL
+          valueFrom:
+            configMapKeyRef:
+              name: ossa-platform-config
+              key: REDIS_URL
+        - name: POSTGRES_URL
+          valueFrom:
+            configMapKeyRef:
+              name: ossa-platform-config
+              key: POSTGRES_URL
+        - name: GATEWAY_URL
+          valueFrom:
+            configMapKeyRef:
+              name: ossa-platform-config
+              key: GATEWAY_URL
+        resources:
+          requests:
+            memory: "1Gi"
+            cpu: "500m"
+          limits:
+            memory: "2Gi"
+            cpu: "1"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 3010
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: 3010
+          initialDelaySeconds: 5
+          periodSeconds: 5
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ossa-discovery
+  namespace: ossa-platform
+  labels:
+    app.kubernetes.io/name: ossa-discovery
+    app.kubernetes.io/component: discovery
+    app.kubernetes.io/part-of: ossa-platform
+    ossa.bluefly.io/version: "0.1.8"
+spec:
+  replicas: 5
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 25%
+      maxSurge: 25%
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: ossa-discovery
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: ossa-discovery
+        app.kubernetes.io/component: discovery
+        app.kubernetes.io/part-of: ossa-platform
+        ossa.bluefly.io/version: "0.1.8"
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "3011"
+        prometheus.io/path: "/metrics"
+    spec:
+      serviceAccountName: ossa-service-account
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1001
+        fsGroup: 1001
+      containers:
+      - name: discovery
+        image: gitlab.bluefly.io/ossa/platform:0.1.8-discovery
+        ports:
+        - containerPort: 3011
+          name: http
+        env:
+        - name: SERVICE_PORT
+          value: "3011"
+        - name: NODE_ENV
+          valueFrom:
+            configMapKeyRef:
+              name: ossa-platform-config
+              key: NODE_ENV
+        - name: REDIS_URL
+          valueFrom:
+            configMapKeyRef:
+              name: ossa-platform-config
+              key: REDIS_URL
+        - name: POSTGRES_URL
+          valueFrom:
+            configMapKeyRef:
+              name: ossa-platform-config
+              key: POSTGRES_URL
+        - name: QDRANT_URL
+          valueFrom:
+            configMapKeyRef:
+              name: ossa-platform-config
+              key: QDRANT_URL
+        - name: GATEWAY_URL
+          valueFrom:
+            configMapKeyRef:
+              name: ossa-platform-config
+              key: GATEWAY_URL
+        resources:
+          requests:
+            memory: "1Gi"
+            cpu: "500m"
+          limits:
+            memory: "2Gi"
+            cpu: "1"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 3011
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: 3011
+          initialDelaySeconds: 5
+          periodSeconds: 5
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ossa-orchestration
+  namespace: ossa-platform
+  labels:
+    app.kubernetes.io/name: ossa-orchestration
+    app.kubernetes.io/component: orchestration
+    app.kubernetes.io/part-of: ossa-platform
+    ossa.bluefly.io/version: "0.1.8"
+spec:
+  replicas: 4
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 25%
+      maxSurge: 25%
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: ossa-orchestration
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: ossa-orchestration
+        app.kubernetes.io/component: orchestration
+        app.kubernetes.io/part-of: ossa-platform
+        ossa.bluefly.io/version: "0.1.8"
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "3012"
+        prometheus.io/path: "/metrics"
+    spec:
+      serviceAccountName: ossa-service-account
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1001
+        fsGroup: 1001
+      containers:
+      - name: orchestration
+        image: gitlab.bluefly.io/ossa/platform:0.1.8-orchestration
+        ports:
+        - containerPort: 3012
+          name: http
+        env:
+        - name: SERVICE_PORT
+          value: "3012"
+        - name: NODE_ENV
+          valueFrom:
+            configMapKeyRef:
+              name: ossa-platform-config
+              key: NODE_ENV
+        - name: REDIS_URL
+          valueFrom:
+            configMapKeyRef:
+              name: ossa-platform-config
+              key: REDIS_URL
+        - name: POSTGRES_URL
+          valueFrom:
+            configMapKeyRef:
+              name: ossa-platform-config
+              key: POSTGRES_URL
+        - name: GATEWAY_URL
+          valueFrom:
+            configMapKeyRef:
+              name: ossa-platform-config
+              key: GATEWAY_URL
+        resources:
+          requests:
+            memory: "1.5Gi"
+            cpu: "750m"
+          limits:
+            memory: "3Gi"
+            cpu: "1.5"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 3012
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: 3012
+          initialDelaySeconds: 5
+          periodSeconds: 5

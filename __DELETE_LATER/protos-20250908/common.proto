@@ -1,0 +1,170 @@
+syntax = "proto3";
+
+package ossa.v1;
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/duration.proto";
+import "google/protobuf/any.proto";
+import "google/protobuf/struct.proto";
+
+option go_package = "github.com/ossa/proto/v1;ossav1";
+option java_package = "io.ossa.proto.v1";
+option java_multiple_files = true;
+option csharp_namespace = "Ossa.Proto.V1";
+
+// Common message types used across all OSSA protocols
+
+// Universal identifier for agents, workflows, and resources
+message OSSAIdentifier {
+  string id = 1;                    // Unique identifier
+  string version = 2;               // Semantic version (0.1.8)
+  string namespace = 3;             // Optional namespace/scope
+  google.protobuf.Timestamp created = 4;   // Creation timestamp
+  map<string, string> labels = 5;   // Key-value labels for categorization
+}
+
+// Capability definition for agents
+message Capability {
+  string name = 1;                  // Capability name (e.g., "chat", "reasoning")
+  CapabilityType type = 2;          // Primary or secondary
+  CapabilityClass class = 3;        // Class of capability
+  repeated string protocols = 4;     // Supported protocols
+  map<string, string> parameters = 5; // Capability-specific parameters
+  PerformanceMetrics performance = 6; // Performance characteristics
+}
+
+enum CapabilityType {
+  CAPABILITY_TYPE_UNSPECIFIED = 0;
+  CAPABILITY_TYPE_PRIMARY = 1;
+  CAPABILITY_TYPE_SECONDARY = 2;
+  CAPABILITY_TYPE_AUXILIARY = 3;
+}
+
+enum CapabilityClass {
+  CAPABILITY_CLASS_UNSPECIFIED = 0;
+  CAPABILITY_CLASS_REASONING = 1;
+  CAPABILITY_CLASS_COMMUNICATION = 2;
+  CAPABILITY_CLASS_ANALYSIS = 3;
+  CAPABILITY_CLASS_ORCHESTRATION = 4;
+  CAPABILITY_CLASS_MONITORING = 5;
+  CAPABILITY_CLASS_SECURITY = 6;
+  CAPABILITY_CLASS_INTEGRATION = 7;
+}
+
+// Performance metrics and SLA information
+message PerformanceMetrics {
+  google.protobuf.Duration latency = 1;       // Expected response latency
+  double availability = 2;                    // Availability percentage (0.0-1.0)
+  int32 throughput_per_second = 3;           // Maximum requests per second
+  ResourceRequirements resources = 4;         // Resource requirements
+  QualityOfService qos = 5;                  // Quality of service level
+}
+
+message ResourceRequirements {
+  double cpu_cores = 1;           // Required CPU cores
+  int64 memory_mb = 2;            // Required memory in MB
+  int64 storage_gb = 3;           // Required storage in GB
+  double network_mbps = 4;        // Network bandwidth requirements
+  bool gpu_required = 5;          // Whether GPU is required
+}
+
+enum QualityOfService {
+  QOS_UNSPECIFIED = 0;
+  QOS_BEST_EFFORT = 1;
+  QOS_GUARANTEED = 2;
+  QOS_BURSTABLE = 3;
+}
+
+// Health status information
+message HealthStatus {
+  HealthState state = 1;
+  google.protobuf.Timestamp last_check = 2;
+  string message = 3;
+  map<string, string> details = 4;
+  repeated HealthCheck checks = 5;
+}
+
+enum HealthState {
+  HEALTH_STATE_UNSPECIFIED = 0;
+  HEALTH_STATE_HEALTHY = 1;
+  HEALTH_STATE_DEGRADED = 2;
+  HEALTH_STATE_UNHEALTHY = 3;
+  HEALTH_STATE_UNKNOWN = 4;
+}
+
+message HealthCheck {
+  string name = 1;
+  HealthState state = 2;
+  google.protobuf.Duration response_time = 3;
+  string error_message = 4;
+}
+
+// Error handling structures
+message Error {
+  ErrorCode code = 1;
+  string message = 2;
+  string details = 3;
+  google.protobuf.Timestamp timestamp = 4;
+  string trace_id = 5;
+  repeated Error nested = 6;
+}
+
+enum ErrorCode {
+  ERROR_CODE_UNSPECIFIED = 0;
+  ERROR_CODE_INTERNAL = 1;
+  ERROR_CODE_INVALID_REQUEST = 2;
+  ERROR_CODE_UNAUTHORIZED = 3;
+  ERROR_CODE_FORBIDDEN = 4;
+  ERROR_CODE_NOT_FOUND = 5;
+  ERROR_CODE_TIMEOUT = 6;
+  ERROR_CODE_RATE_LIMITED = 7;
+  ERROR_CODE_SERVICE_UNAVAILABLE = 8;
+  ERROR_CODE_CAPABILITY_NOT_SUPPORTED = 9;
+  ERROR_CODE_RESOURCE_EXHAUSTED = 10;
+}
+
+// Authentication and authorization context
+message SecurityContext {
+  string principal_id = 1;        // Authenticated principal
+  repeated string roles = 2;       // Assigned roles
+  repeated string permissions = 3; // Granted permissions
+  google.protobuf.Timestamp expires_at = 4;  // Token expiration
+  string session_id = 5;          // Session identifier
+  map<string, string> attributes = 6; // Additional security attributes
+}
+
+// Framework integration metadata
+message FrameworkMetadata {
+  string framework = 1;           // Framework name (mcp, langchain, crewai, etc.)
+  string version = 2;             // Framework version
+  bool enabled = 3;               // Whether integration is enabled
+  google.protobuf.Struct configuration = 4; // Framework-specific config
+  repeated string supported_operations = 5;  // Supported operations
+}
+
+// Generic response wrapper for streaming operations
+message StreamResponse {
+  oneof response {
+    google.protobuf.Any data = 1;
+    Error error = 2;
+    bool end_of_stream = 3;
+  }
+  string request_id = 4;
+  google.protobuf.Timestamp timestamp = 5;
+}
+
+// Pagination support for list operations
+message PageInfo {
+  int32 page_size = 1;
+  string page_token = 2;
+  string next_page_token = 3;
+  int64 total_count = 4;
+}
+
+// Metadata for API versioning and compatibility
+message APIVersion {
+  string version = 1;             // API version (e.g., "v1")
+  string ossa_version = 2;        // OSSA specification version
+  repeated string supported_versions = 3; // Backward compatible versions
+  google.protobuf.Timestamp deprecated_at = 4; // Deprecation timestamp
+}

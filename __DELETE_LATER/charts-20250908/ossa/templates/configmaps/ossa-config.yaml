@@ -1,0 +1,48 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "ossa.fullname" . }}-config
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "ossa.labels" . | nindent 4 }}
+    ossa.io/component: "config"
+data:
+  # OSSA Configuration
+  ossa-version: {{ .Values.ossa.version | quote }}
+  ossa-phase: {{ .Values.ossa.phase | quote }}
+  ossa-scale: {{ .Values.ossa.scale | quote }}
+  environment: {{ .Values.global.environment | quote }}
+  
+  # High Availability Configuration
+  uptime-target: {{ .Values.ossa.uptime.target | quote }}
+  ha-enabled: {{ .Values.ossa.uptime.enableHighAvailability | quote }}
+  
+  # Service Discovery Configuration
+  gateway-url: {{ include "ossa.gatewayUrl" . | quote }}
+  coordination-url: "http://{{ include "ossa.fullname" . }}-coordination:3010"
+  discovery-url: "http://{{ include "ossa.fullname" . }}-discovery:3011"
+  orchestration-url: "http://{{ include "ossa.fullname" . }}-orchestration:3012"
+  monitoring-url: "http://{{ include "ossa.fullname" . }}-monitoring:3013"
+  
+  # Agent Configuration
+  task-agent-url: "http://{{ include "ossa.fullname" . }}-task-agent:3001"
+  comm-agent-url: "http://{{ include "ossa.fullname" . }}-comm-agent:3002"
+  mcp-agent-url: "http://{{ include "ossa.fullname" . }}-mcp-agent:3003"
+  
+  # External Services
+  redis-url: {{ include "ossa.redisUrl" . | quote }}
+  postgres-url: {{ include "ossa.databaseUrl" . | quote }}
+  qdrant-url: {{ include "ossa.qdrantUrl" . | quote }}
+  
+  # Performance Configuration
+  vortex-token-reduction-target: "85"
+  agent-pool-intelligence: "ml-routing,predictive-analytics,cost-optimization"
+  
+  # Logging Configuration
+  log-level: "info"
+  log-format: "json"
+  
+  # Health Check Configuration
+  health-check-interval: "30s"
+  health-check-timeout: "10s"
+  health-check-retries: "3"

@@ -1,0 +1,702 @@
+# OSSA Research Agent Output Schema v1.0
+# Standardized format for research agent output data
+# Framework-agnostic research results with validation and provenance
+
+$schema: "https://json-schema.org/draft/2020-12/schema"
+$id: "https://openapi-ai-agents.org/schemas/research-output/v1.0"
+title: "OSSA Research Agent Output Schema"
+description: "Standardized research agent output format for structured research data"
+
+type: object
+required:
+  - agent
+  - source
+  - summary
+  - findings
+  - confidence
+  - tags
+  - timestamp
+
+properties:
+  agent:
+    type: object
+    required:
+      - id
+      - name
+      - type
+    properties:
+      id:
+        type: string
+        format: uuid
+        description: "Unique agent identifier"
+      name:
+        type: string
+        minLength: 1
+        maxLength: 100
+        description: "Agent display name"
+      type:
+        type: string
+        enum: ["research", "analysis", "synthesis", "validation", "monitoring", "specialized"]
+        description: "Agent type classification"
+      version:
+        type: string
+        pattern: '^[0-9]+\.[0-9]+\.[0-9]+$'
+        description: "Agent version (semantic versioning)"
+      framework:
+        type: string
+        enum: ["langchain", "crewai", "autogen", "openai", "anthropic", "mcp", "custom"]
+        description: "Framework the agent is implemented in"
+      capabilities:
+        type: array
+        items:
+          type: string
+        description: "Agent capabilities used in this research"
+      specialization:
+        type: string
+        description: "Agent domain specialization"
+    additionalProperties: false
+    
+  source:
+    type: object
+    required:
+      - type
+      - location
+    properties:
+      type:
+        type: string
+        enum: ["document", "database", "api", "web", "file", "stream", "internal", "hybrid"]
+        description: "Source type classification"
+      location:
+        type: string
+        format: uri
+        description: "Source location or identifier"
+      metadata:
+        type: object
+        properties:
+          title:
+            type: string
+          author:
+            type: string
+          publication_date:
+            type: string
+            format: date-time
+          version:
+            type: string
+          size:
+            type: integer
+            description: "Source size in bytes"
+          format:
+            type: string
+            enum: ["text", "json", "xml", "html", "pdf", "docx", "csv", "binary"]
+          language:
+            type: string
+            pattern: '^[a-z]{2}(-[A-Z]{2})?$'
+            description: "Language code (ISO 639-1 with optional country code)"
+        additionalProperties: true
+      access_info:
+        type: object
+        properties:
+          access_method:
+            type: string
+            enum: ["public", "authenticated", "private", "restricted"]
+          credentials_required:
+            type: boolean
+            default: false
+          rate_limits:
+            type: object
+            properties:
+              requests_per_minute:
+                type: integer
+              daily_limit:
+                type: integer
+          cost:
+            type: number
+            minimum: 0
+            description: "Access cost in USD"
+        additionalProperties: false
+      quality_indicators:
+        type: object
+        properties:
+          authority_score:
+            type: number
+            minimum: 0
+            maximum: 1
+            description: "Source authority/credibility score"
+          freshness_score:
+            type: number
+            minimum: 0
+            maximum: 1
+            description: "Source freshness/recency score"
+          completeness_score:
+            type: number
+            minimum: 0
+            maximum: 1
+            description: "Source completeness score"
+          relevance_score:
+            type: number
+            minimum: 0
+            maximum: 1
+            description: "Source relevance to research query"
+        additionalProperties: false
+    additionalProperties: false
+    
+  summary:
+    type: object
+    required:
+      - text
+      - key_points
+    properties:
+      text:
+        type: string
+        minLength: 10
+        maxLength: 5000
+        description: "Comprehensive summary text"
+      key_points:
+        type: array
+        minItems: 1
+        maxItems: 20
+        items:
+          type: object
+          required:
+            - point
+            - importance
+          properties:
+            point:
+              type: string
+              minLength: 5
+              maxLength: 500
+              description: "Key point description"
+            importance:
+              type: number
+              minimum: 0
+              maximum: 1
+              description: "Importance score for this key point"
+            evidence:
+              type: array
+              items:
+                type: string
+              description: "Supporting evidence for this key point"
+            confidence:
+              type: number
+              minimum: 0
+              maximum: 1
+              description: "Confidence in this key point"
+          additionalProperties: false
+      abstract:
+        type: string
+        maxLength: 1000
+        description: "Brief abstract or executive summary"
+      keywords:
+        type: array
+        items:
+          type: string
+          pattern: '^[a-zA-Z0-9_\\s-]+$'
+        description: "Extracted keywords from the research"
+      topic_classification:
+        type: array
+        items:
+          type: object
+          properties:
+            topic:
+              type: string
+            confidence:
+              type: number
+              minimum: 0
+              maximum: 1
+            hierarchy:
+              type: array
+              items:
+                type: string
+              description: "Topic hierarchy path"
+        description: "Classified research topics"
+    additionalProperties: false
+    
+  findings:
+    type: array
+    minItems: 1
+    items:
+      type: object
+      required:
+        - type
+        - content
+        - confidence
+      properties:
+        type:
+          type: string
+          enum: ["fact", "insight", "pattern", "trend", "anomaly", "conclusion", "hypothesis", "recommendation"]
+          description: "Type of research finding"
+        content:
+          type: string
+          minLength: 5
+          maxLength: 2000
+          description: "Finding content description"
+        confidence:
+          type: number
+          minimum: 0
+          maximum: 1
+          description: "Confidence score for this finding"
+        evidence:
+          type: array
+          items:
+            type: object
+            properties:
+              type:
+                type: string
+                enum: ["quote", "statistic", "reference", "observation", "calculation"]
+              content:
+                type: string
+              source_location:
+                type: string
+              confidence:
+                type: number
+                minimum: 0
+                maximum: 1
+          description: "Supporting evidence for this finding"
+        context:
+          type: object
+          properties:
+            scope:
+              type: string
+              enum: ["local", "regional", "national", "global", "temporal", "domain_specific"]
+            timeframe:
+              type: object
+              properties:
+                start:
+                  type: string
+                  format: date-time
+                end:
+                  type: string
+                  format: date-time
+                period:
+                  type: string
+            limitations:
+              type: array
+              items:
+                type: string
+              description: "Known limitations or constraints on this finding"
+          additionalProperties: false
+        related_findings:
+          type: array
+          items:
+            type: string
+          description: "References to related findings by ID"
+        validation_status:
+          type: string
+          enum: ["unvalidated", "partially_validated", "validated", "disputed", "invalidated"]
+          default: "unvalidated"
+        quality_indicators:
+          type: object
+          properties:
+            reliability:
+              type: number
+              minimum: 0
+              maximum: 1
+            completeness:
+              type: number
+              minimum: 0
+              maximum: 1
+            precision:
+              type: number
+              minimum: 0
+              maximum: 1
+            bias_assessment:
+              type: object
+              properties:
+                bias_detected:
+                  type: boolean
+                bias_type:
+                  type: array
+                  items:
+                    type: string
+                    enum: ["selection", "confirmation", "anchoring", "availability", "cultural", "temporal"]
+                mitigation_applied:
+                  type: boolean
+        id:
+          type: string
+          description: "Unique finding identifier within this research output"
+      additionalProperties: false
+    description: "Structured research findings"
+    
+  confidence:
+    type: object
+    required:
+      - overall_score
+      - factors
+    properties:
+      overall_score:
+        type: number
+        minimum: 0
+        maximum: 1
+        description: "Overall confidence score for the research output"
+      factors:
+        type: object
+        properties:
+          source_quality:
+            type: number
+            minimum: 0
+            maximum: 1
+            description: "Confidence factor based on source quality"
+          methodology:
+            type: number
+            minimum: 0
+            maximum: 1
+            description: "Confidence factor based on research methodology"
+          evidence_strength:
+            type: number
+            minimum: 0
+            maximum: 1
+            description: "Confidence factor based on evidence strength"
+          consistency:
+            type: number
+            minimum: 0
+            maximum: 1
+            description: "Confidence factor based on finding consistency"
+          completeness:
+            type: number
+            minimum: 0
+            maximum: 1
+            description: "Confidence factor based on research completeness"
+        additionalProperties: false
+      uncertainty_factors:
+        type: array
+        items:
+          type: object
+          properties:
+            factor:
+              type: string
+            description:
+              type: string
+            impact:
+              type: string
+              enum: ["low", "medium", "high"]
+        description: "Factors that introduce uncertainty"
+      validation_methods:
+        type: array
+        items:
+          type: string
+          enum: ["cross_referencing", "fact_checking", "peer_review", "statistical_analysis", "expert_validation"]
+        description: "Methods used to validate findings"
+    additionalProperties: false
+    
+  tags:
+    type: array
+    minItems: 1
+    items:
+      type: string
+      pattern: '^[a-zA-Z0-9_-]+$'
+      minLength: 1
+      maxLength: 50
+    description: "Classification tags for the research output"
+    
+  timestamp:
+    type: string
+    format: date-time
+    description: "Research completion timestamp (ISO 8601)"
+    
+  # Optional extended properties
+  methodology:
+    type: object
+    properties:
+      approach:
+        type: string
+        enum: ["systematic", "exploratory", "comparative", "longitudinal", "cross_sectional", "mixed_methods"]
+      techniques:
+        type: array
+        items:
+          type: string
+          enum: ["literature_review", "data_analysis", "statistical_analysis", "content_analysis", "sentiment_analysis", "trend_analysis", "pattern_recognition"]
+      tools_used:
+        type: array
+        items:
+          type: string
+        description: "Research tools and technologies used"
+      limitations:
+        type: array
+        items:
+          type: string
+        description: "Methodological limitations"
+      quality_assurance:
+        type: array
+        items:
+          type: string
+        description: "Quality assurance measures applied"
+    additionalProperties: false
+    
+  provenance:
+    type: object
+    properties:
+      research_id:
+        type: string
+        format: uuid
+        description: "Unique research session identifier"
+      parent_task_id:
+        type: string
+        description: "ID of the task that initiated this research"
+      execution_trace:
+        type: array
+        items:
+          type: object
+          properties:
+            step:
+              type: integer
+            action:
+              type: string
+            timestamp:
+              type: string
+              format: date-time
+            duration_ms:
+              type: integer
+            resources_used:
+              type: object
+        description: "Execution trace for audit purposes"
+      input_hash:
+        type: string
+        pattern: '^sha256:[a-f0-9]{64}$'
+        description: "SHA-256 hash of research input"
+      output_hash:
+        type: string
+        pattern: '^sha256:[a-f0-9]{64}$'
+        description: "SHA-256 hash of research output"
+      lineage:
+        type: array
+        items:
+          type: string
+        description: "Chain of agent operations that led to this output"
+    additionalProperties: false
+    
+  performance_metrics:
+    type: object
+    properties:
+      execution_time_ms:
+        type: integer
+        minimum: 0
+        description: "Total execution time in milliseconds"
+      sources_processed:
+        type: integer
+        minimum: 0
+        description: "Number of sources processed"
+      data_volume_bytes:
+        type: integer
+        minimum: 0
+        description: "Volume of data processed in bytes"
+      api_calls_made:
+        type: integer
+        minimum: 0
+        description: "Number of API calls made during research"
+      cost_incurred:
+        type: number
+        minimum: 0
+        description: "Total cost incurred in USD"
+      tokens_used:
+        type: object
+        properties:
+          input_tokens:
+            type: integer
+            minimum: 0
+          output_tokens:
+            type: integer
+            minimum: 0
+          total_tokens:
+            type: integer
+            minimum: 0
+        description: "Token usage for LLM-based agents"
+      cache_metrics:
+        type: object
+        properties:
+          cache_hits:
+            type: integer
+            minimum: 0
+          cache_misses:
+            type: integer
+            minimum: 0
+          cache_efficiency:
+            type: number
+            minimum: 0
+            maximum: 1
+    additionalProperties: false
+    
+  quality_assessment:
+    type: object
+    properties:
+      completeness:
+        type: number
+        minimum: 0
+        maximum: 1
+        description: "Research completeness score"
+      accuracy:
+        type: number
+        minimum: 0
+        maximum: 1
+        description: "Research accuracy score"
+      relevance:
+        type: number
+        minimum: 0
+        maximum: 1
+        description: "Research relevance score"
+      timeliness:
+        type: number
+        minimum: 0
+        maximum: 1
+        description: "Research timeliness score"
+      objectivity:
+        type: number
+        minimum: 0
+        maximum: 1
+        description: "Research objectivity score"
+      depth:
+        type: number
+        minimum: 0
+        maximum: 1
+        description: "Research depth score"
+      breadth:
+        type: number
+        minimum: 0
+        maximum: 1
+        description: "Research breadth score"
+      overall_quality:
+        type: number
+        minimum: 0
+        maximum: 1
+        description: "Overall quality score"
+      reviewer_notes:
+        type: array
+        items:
+          type: string
+        description: "Quality reviewer notes and comments"
+    additionalProperties: false
+    
+  framework_specific:
+    type: object
+    properties:
+      langchain:
+        type: object
+        properties:
+          chain_type:
+            type: string
+          memory_used:
+            type: boolean
+          tools_invoked:
+            type: array
+            items:
+              type: string
+          callbacks_triggered:
+            type: array
+            items:
+              type: string
+        additionalProperties: false
+      crewai:
+        type: object
+        properties:
+          role:
+            type: string
+          backstory:
+            type: string
+          goal:
+            type: string
+          delegation_used:
+            type: boolean
+          collaboration_metrics:
+            type: object
+        additionalProperties: false
+      autogen:
+        type: object
+        properties:
+          conversation_id:
+            type: string
+          speaker_transitions:
+            type: integer
+          code_executed:
+            type: boolean
+          human_input_required:
+            type: boolean
+        additionalProperties: false
+      openai:
+        type: object
+        properties:
+          model_used:
+            type: string
+          assistant_id:
+            type: string
+          thread_id:
+            type: string
+          tools_used:
+            type: array
+            items:
+              type: string
+          file_attachments:
+            type: array
+            items:
+              type: string
+        additionalProperties: false
+      anthropic:
+        type: object
+        properties:
+          model_used:
+            type: string
+          tool_use:
+            type: array
+            items:
+              type: object
+          message_count:
+            type: integer
+          context_window_used:
+            type: integer
+        additionalProperties: false
+      custom:
+        type: object
+        additionalProperties: true
+        description: "Custom framework-specific data"
+    additionalProperties: false
+    
+  relationships:
+    type: object
+    properties:
+      related_research:
+        type: array
+        items:
+          type: object
+          properties:
+            research_id:
+              type: string
+            relationship_type:
+              type: string
+              enum: ["builds_upon", "contradicts", "supports", "extends", "summarizes", "validates"]
+            confidence:
+              type: number
+              minimum: 0
+              maximum: 1
+        description: "Relationships to other research outputs"
+      citations:
+        type: array
+        items:
+          type: object
+          properties:
+            type:
+              type: string
+              enum: ["academic", "web", "book", "report", "data", "software"]
+            citation:
+              type: string
+            url:
+              type: string
+              format: uri
+            accessed_date:
+              type: string
+              format: date-time
+        description: "Formal citations for sources used"
+      follow_up_suggestions:
+        type: array
+        items:
+          type: object
+          properties:
+            suggestion:
+              type: string
+            priority:
+              type: string
+              enum: ["low", "medium", "high", "critical"]
+            estimated_effort:
+              type: string
+              enum: ["minimal", "moderate", "substantial", "extensive"]
+        description: "Suggested follow-up research directions"
+    additionalProperties: false
+
+additionalProperties: false

@@ -1,0 +1,576 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://open-standards-scalable-agents.org/schemas/v0.1.8/extensions/x-ossa-observability.json",
+  "title": "OSSA Observability Extension Schema v0.1.8",
+  "description": "Extension schema for comprehensive observability integration including OpenLLMetry, Traceloop, and Langfuse support",
+  "type": "object",
+  "properties": {
+    "x-ossa-observability": {
+      "type": "object",
+      "description": "OSSA observability configuration for comprehensive agent monitoring and analytics",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable observability features"
+        },
+        "version": {
+          "type": "string",
+          "default": "0.1.8",
+          "description": "Observability schema version"
+        },
+        
+        "tracing": {
+          "type": "object",
+          "description": "Distributed tracing configuration",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": true,
+              "description": "Enable distributed tracing"
+            },
+            "serviceName": {
+              "type": ["string", "null"],
+              "description": "Service name for tracing (defaults to agent name)"
+            },
+            "environment": {
+              "type": "string",
+              "enum": ["development", "staging", "production", "test"],
+              "default": "development",
+              "description": "Deployment environment"
+            },
+            "sampleRate": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1,
+              "default": 1.0,
+              "description": "Trace sampling rate (0.0 - 1.0)"
+            },
+            
+            "openTelemetry": {
+              "type": "object",
+              "description": "OpenTelemetry configuration",
+              "properties": {
+                "enabled": {
+                  "type": "boolean",
+                  "default": true,
+                  "description": "Enable OpenTelemetry tracing"
+                },
+                "exporters": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "enum": ["console", "otlp", "jaeger", "zipkin"]
+                  },
+                  "default": ["console"],
+                  "description": "List of trace exporters"
+                },
+                "endpoint": {
+                  "type": ["string", "null"],
+                  "format": "uri",
+                  "description": "OTLP exporter endpoint URL"
+                },
+                "headers": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "description": "Custom headers for trace export"
+                }
+              }
+            },
+            
+            "traceloop": {
+              "type": "object",
+              "description": "Traceloop/OpenLLMetry configuration",
+              "properties": {
+                "enabled": {
+                  "type": "boolean",
+                  "default": true,
+                  "description": "Enable Traceloop integration"
+                },
+                "apiKey": {
+                  "type": ["string", "null"],
+                  "description": "Traceloop API key (use environment variable)"
+                },
+                "endpoint": {
+                  "type": "string",
+                  "format": "uri",
+                  "default": "https://api.traceloop.com",
+                  "description": "Traceloop API endpoint"
+                },
+                "batchSize": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 1000,
+                  "default": 100,
+                  "description": "Batch size for trace export"
+                },
+                "flushInterval": {
+                  "type": "integer",
+                  "minimum": 1000,
+                  "maximum": 300000,
+                  "default": 5000,
+                  "description": "Flush interval in milliseconds"
+                }
+              }
+            },
+            
+            "langfuse": {
+              "type": "object",
+              "description": "Langfuse analytics configuration",
+              "properties": {
+                "enabled": {
+                  "type": "boolean",
+                  "default": true,
+                  "description": "Enable Langfuse integration"
+                },
+                "publicKey": {
+                  "type": ["string", "null"],
+                  "description": "Langfuse public key (use environment variable)"
+                },
+                "secretKey": {
+                  "type": ["string", "null"],
+                  "description": "Langfuse secret key (use environment variable)"
+                },
+                "baseUrl": {
+                  "type": "string",
+                  "format": "uri",
+                  "default": "https://cloud.langfuse.com",
+                  "description": "Langfuse base URL"
+                },
+                "flushInterval": {
+                  "type": "integer",
+                  "minimum": 5000,
+                  "maximum": 300000,
+                  "default": 10000,
+                  "description": "Flush interval in milliseconds"
+                }
+              }
+            }
+          }
+        },
+        
+        "metrics": {
+          "type": "object",
+          "description": "Metrics collection and export configuration",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": true,
+              "description": "Enable metrics collection"
+            },
+            "collectors": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": ["prometheus", "custom", "opentelemetry"]
+              },
+              "default": ["prometheus", "custom"],
+              "description": "List of metrics collectors"
+            },
+            
+            "builtInMetrics": {
+              "type": "object",
+              "description": "Built-in metrics configuration",
+              "properties": {
+                "agentInvocations": {
+                  "type": "boolean",
+                  "default": true,
+                  "description": "Track agent invocation count"
+                },
+                "agentLatency": {
+                  "type": "boolean",
+                  "default": true,
+                  "description": "Track agent response latency"
+                },
+                "agentErrors": {
+                  "type": "boolean",
+                  "default": true,
+                  "description": "Track agent error count and rate"
+                },
+                "llmTokenUsage": {
+                  "type": "boolean",
+                  "default": true,
+                  "description": "Track LLM token consumption"
+                },
+                "llmLatency": {
+                  "type": "boolean",
+                  "default": true,
+                  "description": "Track LLM response latency"
+                },
+                "mcpOperations": {
+                  "type": "boolean",
+                  "default": true,
+                  "description": "Track MCP operation metrics"
+                }
+              }
+            },
+            
+            "customMetrics": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": ["name", "type"],
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "description": "Metric name"
+                  },
+                  "type": {
+                    "type": "string",
+                    "enum": ["counter", "gauge", "histogram", "summary"],
+                    "description": "Metric type"
+                  },
+                  "description": {
+                    "type": "string",
+                    "description": "Metric description"
+                  },
+                  "labels": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "description": "Metric label names"
+                  }
+                }
+              },
+              "description": "Custom metrics definitions"
+            },
+            
+            "export": {
+              "type": "object",
+              "description": "Metrics export configuration",
+              "properties": {
+                "prometheus": {
+                  "type": "object",
+                  "properties": {
+                    "enabled": {
+                      "type": "boolean",
+                      "default": false,
+                      "description": "Enable Prometheus metrics export"
+                    },
+                    "port": {
+                      "type": "integer",
+                      "minimum": 1,
+                      "maximum": 65535,
+                      "default": 9090,
+                      "description": "Prometheus metrics server port"
+                    },
+                    "endpoint": {
+                      "type": "string",
+                      "default": "/metrics",
+                      "description": "Prometheus metrics endpoint path"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        
+        "logging": {
+          "type": "object",
+          "description": "Structured logging configuration",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": true,
+              "description": "Enable structured logging"
+            },
+            "level": {
+              "type": "string",
+              "enum": ["error", "warn", "info", "debug", "trace"],
+              "default": "info",
+              "description": "Minimum log level"
+            },
+            "format": {
+              "type": "string",
+              "enum": ["json", "text"],
+              "default": "json",
+              "description": "Log format"
+            },
+            
+            "targets": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": ["console", "file", "elasticsearch", "splunk"]
+              },
+              "default": ["console"],
+              "description": "Log output targets"
+            },
+            
+            "file": {
+              "type": "object",
+              "description": "File logging configuration",
+              "properties": {
+                "enabled": {
+                  "type": "boolean",
+                  "default": false,
+                  "description": "Enable file logging"
+                },
+                "path": {
+                  "type": "string",
+                  "default": "./logs/ossa-agent.log",
+                  "description": "Log file path"
+                },
+                "maxSize": {
+                  "type": "string",
+                  "pattern": "^[0-9]+(KB|MB|GB)$",
+                  "default": "10MB",
+                  "description": "Maximum log file size"
+                },
+                "maxFiles": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 100,
+                  "default": 5,
+                  "description": "Maximum number of log files to retain"
+                },
+                "rotate": {
+                  "type": "boolean",
+                  "default": true,
+                  "description": "Enable log rotation"
+                }
+              }
+            },
+            
+            "includeFields": {
+              "type": "object",
+              "description": "Fields to include in log entries",
+              "properties": {
+                "agentId": {
+                  "type": "boolean",
+                  "default": true,
+                  "description": "Include agent ID"
+                },
+                "agentType": {
+                  "type": "boolean",
+                  "default": true,
+                  "description": "Include agent type"
+                },
+                "capability": {
+                  "type": "boolean",
+                  "default": true,
+                  "description": "Include capability name"
+                },
+                "traceId": {
+                  "type": "boolean",
+                  "default": true,
+                  "description": "Include trace ID"
+                },
+                "spanId": {
+                  "type": "boolean",
+                  "default": true,
+                  "description": "Include span ID"
+                },
+                "timestamp": {
+                  "type": "boolean",
+                  "default": true,
+                  "description": "Include timestamp"
+                },
+                "duration": {
+                  "type": "boolean",
+                  "default": true,
+                  "description": "Include operation duration"
+                },
+                "success": {
+                  "type": "boolean",
+                  "default": true,
+                  "description": "Include success/failure status"
+                },
+                "error": {
+                  "type": "boolean",
+                  "default": true,
+                  "description": "Include error information"
+                },
+                "metadata": {
+                  "type": "boolean",
+                  "default": true,
+                  "description": "Include operation metadata"
+                }
+              }
+            }
+          }
+        },
+        
+        "dashboard": {
+          "type": "object",
+          "description": "Observability dashboard configuration",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": false,
+              "description": "Enable observability dashboard"
+            },
+            "port": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 65535,
+              "default": 3001,
+              "description": "Dashboard server port"
+            },
+            "auth": {
+              "type": "object",
+              "description": "Dashboard authentication",
+              "properties": {
+                "enabled": {
+                  "type": "boolean",
+                  "default": false,
+                  "description": "Enable dashboard authentication"
+                },
+                "username": {
+                  "type": "string",
+                  "default": "admin",
+                  "description": "Dashboard username"
+                },
+                "password": {
+                  "type": "string",
+                  "description": "Dashboard password"
+                }
+              }
+            },
+            "refreshInterval": {
+              "type": "integer",
+              "minimum": 5000,
+              "maximum": 300000,
+              "default": 30000,
+              "description": "Dashboard refresh interval in milliseconds"
+            },
+            "retentionPeriod": {
+              "type": "string",
+              "pattern": "^[0-9]+(m|h|d|w)$",
+              "default": "7d",
+              "description": "Data retention period (e.g., '7d', '24h', '30m')"
+            }
+          }
+        },
+        
+        "privacy": {
+          "type": "object",
+          "description": "Privacy and compliance configuration",
+          "properties": {
+            "redactPII": {
+              "type": "boolean",
+              "default": true,
+              "description": "Redact personally identifiable information"
+            },
+            "redactSecrets": {
+              "type": "boolean",
+              "default": true,
+              "description": "Redact secrets and credentials"
+            },
+            "allowedFields": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "default": [
+                "agentId", "agentType", "capability", "timestamp",
+                "duration", "success", "error", "tokenCount"
+              ],
+              "description": "Fields allowed to be logged/traced"
+            },
+            "redactedFields": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "default": [
+                "apiKey", "password", "token", "secret",
+                "email", "phone", "ssn", "creditCard"
+              ],
+              "description": "Fields to be automatically redacted"
+            }
+          }
+        },
+        
+        "alerting": {
+          "type": "object",
+          "description": "Alerting and monitoring configuration",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": false,
+              "description": "Enable alerting"
+            },
+            "rules": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": ["name", "condition"],
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "description": "Alert rule name"
+                  },
+                  "condition": {
+                    "type": "string",
+                    "description": "Alert condition expression"
+                  },
+                  "severity": {
+                    "type": "string",
+                    "enum": ["low", "medium", "high", "critical"],
+                    "default": "medium",
+                    "description": "Alert severity level"
+                  },
+                  "actions": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "enum": ["log", "email", "webhook", "slack"]
+                    },
+                    "description": "Actions to take when alert fires"
+                  }
+                }
+              },
+              "description": "Alert rules configuration"
+            },
+            "channels": {
+              "type": "object",
+              "description": "Alert notification channels",
+              "properties": {
+                "email": {
+                  "type": "object",
+                  "properties": {
+                    "enabled": {
+                      "type": "boolean",
+                      "default": false
+                    },
+                    "recipients": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "format": "email"
+                      }
+                    }
+                  }
+                },
+                "webhook": {
+                  "type": "object",
+                  "properties": {
+                    "enabled": {
+                      "type": "boolean",
+                      "default": false
+                    },
+                    "url": {
+                      "type": "string",
+                      "format": "uri"
+                    },
+                    "headers": {
+                      "type": "object",
+                      "additionalProperties": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

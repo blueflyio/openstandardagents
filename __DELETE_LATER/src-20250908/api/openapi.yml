@@ -1,0 +1,963 @@
+openapi: 3.1.0
+info:
+  title: OSSA Standards API
+  version: 0.1.8
+  description: |
+    Open Standards for Scalable Agents (OSSA) compliance and validation API.
+    
+    This API provides programmatic access to OSSA agent validation, creation,
+    discovery, and specification generation capabilities.
+  contact:
+    name: OSSA Project
+    url: https://github.com/ossa-project/ossa
+  license:
+    name: Apache 2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0.html
+    
+  x-openapi-ai-agents-standard:
+    version: "0.1.8"
+    conformance_tier: "advanced"
+    certification_level: "platinum"
+    compliance_frameworks: ["ISO_42001", "NIST_AI_RMF", "EU_AI_ACT"]
+    enterprise_features: true
+    api_versioning:
+      strategy: "path"
+      current: "v1"
+      supported: ["v1"]
+      
+  x-agent-metadata:
+    class: "integration"
+    category: "service"
+    protocols: ["openapi", "graphql", "uadp", "mcp"]
+    capabilities: ["agent_registry", "discovery", "orchestration", "monitoring"]
+    domains: ["platform", "management", "integration"]
+    frameworks: ["langchain", "crewai", "openai", "anthropic", "mcp"]
+
+servers:
+  - url: http://localhost:8080/api/v1
+    description: Local development server
+  - url: https://api.ossa.dev/v1
+    description: Production server
+
+security:
+  - ApiKeyAuth: []
+  - BearerAuth: []
+
+paths:
+  # Health and status endpoints
+  /health:
+    get:
+      summary: Health check
+      tags: [System]
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+
+  /version:
+    get:
+      summary: Get API version
+      tags: [System]
+      responses:
+        '200':
+          description: Version information
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VersionResponse'
+
+  # Agent validation endpoints
+  /agents/validate:
+    post:
+      summary: Validate agent compliance
+      description: |
+        Validates an OSSA agent against compliance requirements for the specified tier.
+        Returns detailed validation results including errors and warnings.
+      tags: [Validation]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ValidationRequest'
+      responses:
+        '200':
+          description: Validation completed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /agents/validate/batch:
+    post:
+      summary: Validate multiple agents
+      description: Batch validation of multiple OSSA agents
+      tags: [Validation]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BatchValidationRequest'
+      responses:
+        '200':
+          description: Batch validation completed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BatchValidationResponse'
+
+  # Agent creation endpoints
+  /agents/create:
+    post:
+      summary: Create OSSA-compliant agent structure
+      description: |
+        Creates a new OSSA-compliant agent with the required directory structure,
+        configuration files, and metadata.
+      tags: [Creation]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateAgentRequest'
+      responses:
+        '201':
+          description: Agent created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateAgentResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '409':
+          description: Agent already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /agents/templates:
+    get:
+      summary: List available agent templates
+      tags: [Creation]
+      responses:
+        '200':
+          description: Available templates
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TemplatesResponse'
+
+  # Discovery endpoints
+  /agents/discover:
+    get:
+      summary: UADP discovery of available agents
+      description: |
+        Discovers OSSA agents using the Universal Agent Discovery Protocol (UADP).
+        Supports both active and passive discovery modes.
+      tags: [Discovery]
+      parameters:
+        - name: mode
+          in: query
+          description: Discovery mode
+          schema:
+            type: string
+            enum: [active, passive, both]
+            default: both
+        - name: tier
+          in: query
+          description: Filter by compliance tier
+          schema:
+            type: string
+            enum: [basic, advanced, enterprise]
+        - name: capability
+          in: query
+          description: Filter by capability
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Discovery results
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DiscoveryResponse'
+
+  /agents/discover/{agentId}/capabilities:
+    get:
+      summary: Get agent capabilities
+      tags: [Discovery]
+      parameters:
+        - name: agentId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Agent capabilities
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CapabilitiesResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # Specification generation endpoints
+  /specs/generate:
+    post:
+      summary: Generate OpenAPI specifications for agents
+      description: |
+        Generates OpenAPI 3.1 specifications based on agent metadata and capabilities.
+        Supports multiple output formats and customization options.
+      tags: [Specification]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SpecGenerationRequest'
+      responses:
+        '200':
+          description: Specification generated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GeneratedSpecResponse'
+            application/yaml:
+              schema:
+                type: string
+
+  /specs/validate:
+    post:
+      summary: Validate agent specification
+      tags: [Specification]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SpecValidationRequest'
+      responses:
+        '200':
+          description: Specification validation results
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SpecValidationResponse'
+
+  # Roadmap endpoints
+  /roadmap/validate:
+    post:
+      summary: Validate roadmap metadata
+      tags: [Roadmap]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RoadmapValidationRequest'
+      responses:
+        '200':
+          description: Roadmap validation results
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RoadmapValidationResponse'
+
+  /roadmap/generate:
+    post:
+      summary: Generate roadmap template
+      tags: [Roadmap]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RoadmapGenerationRequest'
+      responses:
+        '200':
+          description: Generated roadmap
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RoadmapResponse'
+
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    # System schemas
+    HealthResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [healthy, degraded, unhealthy]
+        timestamp:
+          type: string
+          format: date-time
+        services:
+          type: object
+          additionalProperties:
+            type: string
+
+    VersionResponse:
+      type: object
+      properties:
+        version:
+          type: string
+          example: "0.1.8"
+        api_version:
+          type: string
+          example: "v1"
+        build:
+          type: string
+        commit:
+          type: string
+
+    # Validation schemas
+    ValidationRequest:
+      type: object
+      required: [agentPath]
+      properties:
+        agentPath:
+          type: string
+          description: Path to agent directory
+          example: "./agents/my-agent"
+        tier:
+          type: string
+          enum: [basic, advanced, enterprise]
+          default: basic
+          description: Target compliance tier
+        strict:
+          type: boolean
+          default: false
+          description: Enable strict validation mode
+        format:
+          type: string
+          enum: [json, yaml, text]
+          default: json
+
+    ValidationResponse:
+      type: object
+      properties:
+        valid:
+          type: boolean
+          description: Overall validation status
+        tier:
+          type: string
+          description: Validated compliance tier
+        score:
+          type: number
+          minimum: 0
+          maximum: 100
+          description: Compliance score percentage
+        timestamp:
+          type: string
+          format: date-time
+        duration_ms:
+          type: number
+          description: Validation duration in milliseconds
+        agent:
+          $ref: '#/components/schemas/AgentInfo'
+        structure:
+          $ref: '#/components/schemas/StructureValidation'
+        metadata:
+          $ref: '#/components/schemas/MetadataValidation'
+        errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/ValidationError'
+        warnings:
+          type: array
+          items:
+            $ref: '#/components/schemas/ValidationWarning'
+
+    BatchValidationRequest:
+      type: object
+      required: [agents]
+      properties:
+        agents:
+          type: array
+          items:
+            $ref: '#/components/schemas/ValidationRequest'
+        parallel:
+          type: boolean
+          default: true
+
+    BatchValidationResponse:
+      type: object
+      properties:
+        results:
+          type: array
+          items:
+            allOf:
+              - $ref: '#/components/schemas/ValidationResponse'
+              - type: object
+                properties:
+                  agentPath:
+                    type: string
+        summary:
+          type: object
+          properties:
+            total:
+              type: integer
+            valid:
+              type: integer
+            invalid:
+              type: integer
+            duration_ms:
+              type: number
+
+    # Creation schemas
+    CreateAgentRequest:
+      type: object
+      required: [name, tier]
+      properties:
+        name:
+          type: string
+          pattern: '^[a-z][a-z0-9-]*[a-z0-9]$'
+          description: Agent name (kebab-case)
+          example: "my-new-agent"
+        tier:
+          type: string
+          enum: [basic, advanced, enterprise]
+          description: Compliance tier
+        template:
+          type: string
+          description: Template to use for creation
+          example: "api-integration"
+        path:
+          type: string
+          description: Target directory path
+          example: "./agents"
+        metadata:
+          $ref: '#/components/schemas/AgentMetadataInput'
+        overwrite:
+          type: boolean
+          default: false
+          description: Overwrite if agent exists
+
+    CreateAgentResponse:
+      type: object
+      properties:
+        created:
+          type: boolean
+        path:
+          type: string
+          description: Created agent path
+        agent:
+          $ref: '#/components/schemas/AgentMetadata'
+        structure:
+          type: array
+          items:
+            type: string
+          description: Created files and directories
+
+    TemplatesResponse:
+      type: object
+      properties:
+        templates:
+          type: array
+          items:
+            $ref: '#/components/schemas/AgentTemplate'
+
+    AgentTemplate:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        tier:
+          type: string
+          enum: [basic, advanced, enterprise]
+        capabilities:
+          type: array
+          items:
+            type: string
+        files:
+          type: array
+          items:
+            type: string
+
+    # Discovery schemas
+    DiscoveryResponse:
+      type: object
+      properties:
+        agents:
+          type: array
+          items:
+            $ref: '#/components/schemas/DiscoveredAgent'
+        mode:
+          type: string
+          enum: [active, passive, both]
+        timestamp:
+          type: string
+          format: date-time
+        total:
+          type: integer
+
+    DiscoveredAgent:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        version:
+          type: string
+        tier:
+          type: string
+        endpoint:
+          type: string
+          format: uri
+        capabilities:
+          type: array
+          items:
+            type: string
+        metadata:
+          $ref: '#/components/schemas/AgentMetadata'
+
+    CapabilitiesResponse:
+      type: object
+      properties:
+        agent_id:
+          type: string
+        capabilities:
+          $ref: '#/components/schemas/AgentCapabilities'
+        protocols:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProtocolSupport'
+
+    # Core data schemas
+    AgentMetadata:
+      type: object
+      properties:
+        ossa:
+          type: string
+          const: "0.1.8"
+        metadata:
+          type: object
+          required: [name, version, description]
+          properties:
+            name:
+              type: string
+            version:
+              type: string
+              pattern: '^\d+\.\d+\.\d+(-[a-zA-Z0-9.-]+)?$'
+            description:
+              type: string
+            author:
+              type: string
+            license:
+              type: string
+            created:
+              type: string
+              format: date
+            updated:
+              type: string
+              format: date
+            tags:
+              type: array
+              items:
+                type: string
+        spec:
+          $ref: '#/components/schemas/AgentSpec'
+
+    AgentMetadataInput:
+      type: object
+      properties:
+        description:
+          type: string
+        author:
+          type: string
+        license:
+          type: string
+          default: "Apache-2.0"
+        tags:
+          type: array
+          items:
+            type: string
+
+    AgentSpec:
+      type: object
+      properties:
+        conformance_tier:
+          type: string
+          enum: [basic, advanced, enterprise]
+        class:
+          type: string
+          enum: [integration, workflow, cognitive, system]
+        category:
+          type: string
+          enum: [assistant, tool, service, orchestrator]
+        capabilities:
+          $ref: '#/components/schemas/AgentCapabilities'
+        protocols:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProtocolSupport'
+        framework_support:
+          type: object
+          additionalProperties: true
+        performance:
+          $ref: '#/components/schemas/PerformanceSpec'
+        security:
+          $ref: '#/components/schemas/SecuritySpec'
+
+    AgentCapabilities:
+      type: object
+      properties:
+        primary:
+          type: array
+          items:
+            type: string
+        secondary:
+          type: array
+          items:
+            type: string
+        research:
+          type: array
+          items:
+            type: string
+
+    ProtocolSupport:
+      type: object
+      required: [name, version, required]
+      properties:
+        name:
+          type: string
+        version:
+          type: string
+        required:
+          type: boolean
+        extensions:
+          type: array
+          items:
+            type: string
+        advanced_features:
+          type: array
+          items:
+            type: string
+
+    PerformanceSpec:
+      type: object
+      properties:
+        latency:
+          type: object
+          properties:
+            health_check:
+              type: string
+            capabilities:
+              type: string
+        throughput:
+          type: object
+          properties:
+            requests_per_second:
+              type: number
+        availability:
+          type: object
+          properties:
+            uptime_target:
+              type: number
+
+    SecuritySpec:
+      type: object
+      properties:
+        authentication:
+          type: array
+          items:
+            type: string
+            enum: [api_key, oauth2, basic, jwt]
+        authorization:
+          type: string
+          enum: [none, rbac, abac, custom]
+        encryption:
+          type: object
+          properties:
+            at_rest:
+              type: string
+            in_transit:
+              type: string
+
+    # Validation detail schemas
+    AgentInfo:
+      type: object
+      properties:
+        name:
+          type: string
+        path:
+          type: string
+        tier:
+          type: string
+
+    StructureValidation:
+      type: object
+      properties:
+        valid:
+          type: boolean
+        required_directories:
+          type: array
+          items:
+            $ref: '#/components/schemas/DirectoryCheck'
+        required_files:
+          type: array
+          items:
+            $ref: '#/components/schemas/FileCheck'
+
+    MetadataValidation:
+      type: object
+      properties:
+        valid:
+          type: boolean
+        schema_version:
+          type: string
+        fields:
+          type: array
+          items:
+            $ref: '#/components/schemas/FieldCheck'
+
+    DirectoryCheck:
+      type: object
+      properties:
+        name:
+          type: string
+        path:
+          type: string
+        exists:
+          type: boolean
+        required:
+          type: boolean
+
+    FileCheck:
+      type: object
+      properties:
+        name:
+          type: string
+        path:
+          type: string
+        exists:
+          type: boolean
+        valid:
+          type: boolean
+        required:
+          type: boolean
+
+    FieldCheck:
+      type: object
+      properties:
+        field:
+          type: string
+        valid:
+          type: boolean
+        required:
+          type: boolean
+        value:
+          type: string
+
+    ValidationError:
+      type: object
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+        path:
+          type: string
+        severity:
+          type: string
+          enum: [error, warning, info]
+        details:
+          type: object
+
+    ValidationWarning:
+      type: object
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+        path:
+          type: string
+        suggestion:
+          type: string
+
+    # Specification schemas
+    SpecGenerationRequest:
+      type: object
+      required: [agentPath]
+      properties:
+        agentPath:
+          type: string
+        format:
+          type: string
+          enum: [json, yaml]
+          default: yaml
+        includeExamples:
+          type: boolean
+          default: true
+        includeSchemas:
+          type: boolean
+          default: true
+
+    GeneratedSpecResponse:
+      type: object
+      properties:
+        spec:
+          type: object
+        format:
+          type: string
+        agent:
+          type: string
+        generated_at:
+          type: string
+          format: date-time
+
+    SpecValidationRequest:
+      type: object
+      required: [spec]
+      properties:
+        spec:
+          type: object
+          description: OpenAPI specification to validate
+        strict:
+          type: boolean
+          default: false
+
+    SpecValidationResponse:
+      type: object
+      properties:
+        valid:
+          type: boolean
+        version:
+          type: string
+        errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/ValidationError'
+        warnings:
+          type: array
+          items:
+            $ref: '#/components/schemas/ValidationWarning'
+
+    # Roadmap schemas
+    RoadmapValidationRequest:
+      type: object
+      required: [roadmapPath]
+      properties:
+        roadmapPath:
+          type: string
+        version:
+          type: string
+
+    RoadmapValidationResponse:
+      type: object
+      properties:
+        valid:
+          type: boolean
+        version:
+          type: string
+        metadata:
+          type: object
+        errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/ValidationError'
+
+    RoadmapGenerationRequest:
+      type: object
+      required: [agentName, version]
+      properties:
+        agentName:
+          type: string
+        version:
+          type: string
+        features:
+          type: array
+          items:
+            type: string
+        template:
+          type: string
+          default: "basic"
+
+    RoadmapResponse:
+      type: object
+      properties:
+        roadmap:
+          type: object
+        metadata:
+          type: object
+        generated_at:
+          type: string
+          format: date-time
+
+    # Error schemas
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+        message:
+          type: string
+        code:
+          type: integer
+        timestamp:
+          type: string
+          format: date-time
+        path:
+          type: string
+
+  responses:
+    BadRequest:
+      description: Bad request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+
+    InternalError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+
+tags:
+  - name: System
+    description: Health and system information
+  - name: Validation
+    description: Agent compliance validation
+  - name: Creation
+    description: Agent structure creation
+  - name: Discovery
+    description: UADP agent discovery
+  - name: Specification
+    description: OpenAPI specification generation
+  - name: Roadmap
+    description: Roadmap validation and generation

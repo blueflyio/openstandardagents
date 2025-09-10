@@ -1,0 +1,113 @@
+FROM node:20-alpine
+
+# Install system dependencies
+RUN apk add --no-cache \
+    wget \
+    curl \
+    bash
+
+WORKDIR /app
+
+# Copy package files
+COPY package*.json ./
+
+# Install root dependencies
+RUN npm install || true
+
+# Copy source code
+COPY . .
+
+# Install and build the CLI package located at src/cli
+WORKDIR /app/src/cli
+RUN npm install && npm run build
+
+# Return to app root
+WORKDIR /app
+
+# Create startup script that runs all OSSA services
+RUN cat > /app/start-ossa.sh << 'EOF'
+#!/bin/bash
+
+echo "🚀 Starting OSSA All-in-One Services..."
+
+# Start the OSSA serve command in the background
+echo "Starting OSSA Gateway on port 3000..."
+./src/cli/bin/ossa serve --port 3000 --host 0.0.0.0 &
+
+# Create mock services on other ports for development
+echo "Starting mock services..."
+
+# Discovery Service mock
+node -e "
+const express = require('express');
+const app = express();
+app.get('/health', (req, res) => res.json({service: 'discovery', status: 'ok', port: 3011}));
+app.get('/discover', (req, res) => res.json({agents: [], total: 0}));
+app.listen(3011, '0.0.0.0', () => console.log('📡 Discovery Service running on port 3011'));
+" &
+
+# Coordination Service mock  
+node -e "
+const express = require('express');
+const app = express();
+app.get('/health', (req, res) => res.json({service: 'coordination', status: 'ok', port: 3010}));
+app.get('/agents', (req, res) => res.json({agents: [], total: 0}));
+app.listen(3010, '0.0.0.0', () => console.log('🤝 Coordination Service running on port 3010'));
+" &
+
+# Orchestration Service mock
+node -e "
+const express = require('express');
+const app = express();
+app.get('/health', (req, res) => res.json({service: 'orchestration', status: 'ok', port: 3012}));
+app.get('/workflows', (req, res) => res.json({workflows: [], total: 0}));
+app.listen(3012, '0.0.0.0', () => console.log('🔄 Orchestration Service running on port 3012'));
+" &
+
+# Monitoring Service mock with Prometheus metrics
+node -e "
+const express = require('express');
+const app = express();
+app.get('/health', (req, res) => res.json({service: 'monitoring', status: 'ok', port: 3013}));
+app.get('/metrics', (req, res) => {
+  res.set('Content-Type', 'text/plain');
+  res.send('# HELP ossa_services_up OSSA services status\n# TYPE ossa_services_up gauge\nossa_services_up{service=\"gateway\"} 1\nossa_services_up{service=\"discovery\"} 1\nossa_services_up{service=\"coordination\"} 1\nossa_services_up{service=\"orchestration\"} 1\nossa_services_up{service=\"monitoring\"} 1\n');
+});
+app.listen(3013, '0.0.0.0', () => console.log('📊 Monitoring Service running on port 3013'));
+" &
+
+# Prometheus metrics endpoint
+node -e "
+const express = require('express');
+const app = express();
+app.get('/metrics', (req, res) => {
+  res.set('Content-Type', 'text/plain');
+  res.send('# HELP ossa_gateway_requests_total Total HTTP requests\n# TYPE ossa_gateway_requests_total counter\nossa_gateway_requests_total 42\n# HELP ossa_gateway_response_time Response time in milliseconds\n# TYPE ossa_gateway_response_time histogram\nossa_gateway_response_time_sum 1500\nossa_gateway_response_time_count 100\n');
+});
+app.listen(9090, '0.0.0.0', () => console.log('📈 Prometheus metrics on port 9090'));
+" &
+
+echo "✅ All OSSA services started!"
+echo "   Gateway:       http://localhost:3000"
+echo "   Discovery:     http://localhost:3011"  
+echo "   Coordination:  http://localhost:3010"
+echo "   Orchestration: http://localhost:3012"
+echo "   Monitoring:    http://localhost:3013"
+echo "   Metrics:       http://localhost:9090/metrics"
+
+# Wait for all background processes
+wait
+EOF
+
+# Make startup script executable
+RUN chmod +x /app/start-ossa.sh
+
+# Expose all service ports
+EXPOSE 3000 3010 3011 3012 3013 9090
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+  CMD wget -qO- http://localhost:3000/health || exit 1
+
+# Start all OSSA services
+CMD ["/app/start-ossa.sh"]

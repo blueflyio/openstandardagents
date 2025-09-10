@@ -1,0 +1,531 @@
+openapi: 3.1.0
+info:
+  title: Agent Architect Agent API
+  version: 1.0.0
+  description: OSSA v0.1.8 advanced tier agent for integration operations, API specifications, industrial protocols, and GitLab DevOps integration
+  summary: Comprehensive API research, protocol analysis, and CI/CD automation services
+  contact:
+    name: OSSA Support
+    url: https://ossa.example.com
+    email: support@ossa.example.com
+  license:
+    name: Apache 2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0
+  x-openapi-ai-agents-standard:
+    version: 0.1.8
+    conformance_tier: advanced
+    certification_level: gold
+    compliance_frameworks:
+      - ISO_42001
+      - NIST_AI_RMF
+    enterprise_features: true
+  x-agent-metadata:
+    class: integration
+    category: assistant
+    protocols:
+      - openapi
+      - mcp
+      - uadp
+    capabilities:
+      - integration_analysis
+      - multi_framework_integration
+      - compliance_monitoring
+    domains:
+      - integration
+
+servers:
+  - url: http://localhost:3000/api
+    description: Local development server
+  - url: https://api.ossa.example.com/v1
+    description: Production server
+  - url: https://staging-api.ossa.example.com/v1
+    description: Staging server
+
+tags:
+  - name: Health
+    description: Health and system status
+  - name: Discovery
+    description: Agent discovery and capabilities
+  - name: research
+    description: Automated research capabilities
+  - name: protocols
+    description: Industrial protocol analysis
+  - name: api-specs
+    description: OpenAPI specification generation
+  - name: gitlab
+    description: GitLab CI/CD integration
+  - name: training
+    description: Training data generation
+  - name: system
+    description: System operations
+
+paths:
+  /health:
+    get:
+      summary: Health check endpoint
+      description: OSSA v0.1.8 compliant health check
+      operationId: getHealth
+      tags:
+        - Health
+        - system
+      responses:
+        '200':
+          description: Agent is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum:
+                      - healthy
+                      - degraded
+                      - unhealthy
+                  version:
+                    type: string
+                  ossa_version:
+                    type: string
+                  uptime:
+                    type: number
+                  timestamp:
+                    type: string
+                    format: date-time
+
+  /capabilities:
+    get:
+      summary: Get agent capabilities
+      description: Returns comprehensive agent capabilities per OSSA v0.1.8
+      operationId: getCapabilities
+      tags:
+        - Discovery
+        - system
+      responses:
+        '200':
+          description: Agent capabilities
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - type: object
+                    properties:
+                      agent_name:
+                        type: string
+                      conformance_tier:
+                        type: string
+                      capabilities:
+                        type: array
+                        items:
+                          type: string
+                      protocols:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            name:
+                              type: string
+                            version:
+                              type: string
+                            required:
+                              type: boolean
+                      framework_support:
+                        type: object
+                  - $ref: '#/components/schemas/CapabilitiesResponse'
+
+  /research/project:
+    post:
+      tags: [research]
+      summary: Analyze project repository
+      operationId: analyzeProject
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProjectAnalysisRequest'
+      responses:
+        '200':
+          description: Project analysis completed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProjectAnalysisResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /api-specs/generate:
+    post:
+      tags: [api-specs]
+      summary: Generate OpenAPI 3.1 specification
+      operationId: generateAPISpec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/APISpecRequest'
+      responses:
+        '200':
+          description: OpenAPI specification generated
+          content:
+            application/yaml:
+              schema:
+                type: string
+            application/json:
+              schema:
+                type: object
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /protocols/analyze:
+    post:
+      tags: [protocols]
+      summary: Analyze industrial protocol implementation
+      operationId: analyzeProtocol
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProtocolAnalysisRequest'
+      responses:
+        '200':
+          description: Protocol analysis completed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProtocolAnalysisResponse'
+
+  /gitlab/pipeline:
+    post:
+      tags: [gitlab]
+      summary: Generate GitLab CI/CD pipeline
+      operationId: generatePipeline
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PipelineRequest'
+      responses:
+        '200':
+          description: Pipeline configuration generated
+          content:
+            application/yaml:
+              schema:
+                type: string
+
+  /training/convert:
+    post:
+      tags: [training]
+      summary: Convert training data to JSON
+      operationId: convertTrainingData
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TrainingDataRequest'
+      responses:
+        '200':
+          description: Training data converted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TrainingDataResponse'
+
+components:
+  schemas:
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+        version:
+          type: string
+        timestamp:
+          type: string
+          
+    HealthResponse:
+      type: object
+      required: [status, timestamp]
+      properties:
+        status:
+          type: string
+          enum: [healthy, unhealthy]
+        timestamp:
+          type: string
+          format: date-time
+        version:
+          type: string
+        uptime:
+          type: number
+
+    CapabilitiesResponse:
+      type: object
+      required: [primary, secondary, research]
+      properties:
+        primary:
+          type: array
+          items:
+            type: string
+        secondary:
+          type: array
+          items:
+            type: string
+        research:
+          type: array
+          items:
+            type: string
+        protocols:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProtocolSupport'
+
+    ProtocolSupport:
+      type: object
+      required: [name, version]
+      properties:
+        name:
+          type: string
+        version:
+          type: string
+        required:
+          type: boolean
+        features:
+          type: array
+          items:
+            type: string
+
+    ProjectAnalysisRequest:
+      type: object
+      required: [project_url]
+      properties:
+        project_url:
+          type: string
+          format: uri
+          example: "https://github.com/example/api-project"
+        analysis_scope:
+          type: array
+          items:
+            type: string
+            enum: [api-specs, protocols, ci-cd, documentation]
+        branch:
+          type: string
+          default: main
+
+    ProjectAnalysisResponse:
+      type: object
+      properties:
+        task_id:
+          type: string
+        status:
+          type: string
+          enum: [completed, failed, in_progress]
+        repository_info:
+          $ref: '#/components/schemas/RepositoryInfo'
+        api_specs:
+          type: array
+          items:
+            type: string
+        protocols:
+          type: array
+          items:
+            type: string
+        ci_cd_configs:
+          type: array
+          items:
+            type: string
+        documentation:
+          type: array
+          items:
+            type: string
+
+    RepositoryInfo:
+      type: object
+      properties:
+        name:
+          type: string
+        url:
+          type: string
+          format: uri
+        branch:
+          type: string
+        commit_count:
+          type: integer
+
+    APISpecRequest:
+      type: object
+      required: [topic]
+      properties:
+        topic:
+          type: string
+          example: "User Management API"
+        requirements:
+          type: object
+          properties:
+            entities:
+              type: array
+              items:
+                type: string
+            operations:
+              type: array
+              items:
+                type: string
+                enum: [create, read, update, delete, search, filter]
+        security_schemes:
+          type: array
+          items:
+            type: string
+            enum: [api_key, oauth2, openid_connect, mutual_tls]
+
+    ProtocolAnalysisRequest:
+      type: object
+      required: [protocol_type, use_case]
+      properties:
+        protocol_type:
+          type: string
+          enum: [opcua, uadp, mqtt, modbus]
+        use_case:
+          type: object
+          properties:
+            name:
+              type: string
+            real_time_requirements:
+              type: boolean
+            security_level:
+              type: string
+              enum: [none, basic, advanced]
+            transport_preference:
+              type: string
+              enum: [tcp, udp, ethernet]
+
+    ProtocolAnalysisResponse:
+      type: object
+      properties:
+        task_id:
+          type: string
+        protocol:
+          type: string
+        transport_layer:
+          type: string
+        security_level:
+          type: string
+        real_time_capable:
+          type: boolean
+        configuration:
+          type: object
+        config_files:
+          type: array
+          items:
+            type: string
+
+    PipelineRequest:
+      type: object
+      required: [project_name]
+      properties:
+        project_name:
+          type: string
+        project_type:
+          type: string
+          enum: [api, protocol, full-stack]
+        target_environments:
+          type: array
+          items:
+            type: string
+        security_scanning:
+          type: boolean
+          default: true
+        api_validation:
+          type: boolean
+          default: true
+
+    TrainingDataRequest:
+      type: object
+      required: [source_directory]
+      properties:
+        source_directory:
+          type: string
+        output_format:
+          type: string
+          enum: [json, yaml]
+          default: json
+        generate_schema:
+          type: boolean
+          default: true
+
+    TrainingDataResponse:
+      type: object
+      properties:
+        files_processed:
+          type: integer
+        json_files:
+          type: array
+          items:
+            type: string
+        schemas:
+          type: array
+          items:
+            type: string
+        errors:
+          type: array
+          items:
+            type: object
+
+    Error:
+      type: object
+      required: [code, message]
+      properties:
+        code:
+          type: integer
+          format: int32
+        message:
+          type: string
+        details:
+          type: string
+
+  responses:
+    BadRequest:
+      description: Bad request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            code: 400
+            message: "Invalid request parameters"
+
+    InternalServerError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            code: 500
+            message: "Internal server error"
+
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+      description: API key for authentication
+    
+    OAuth2:
+      type: oauth2
+      description: OAuth2 with authorization code flow
+      flows:
+        authorizationCode:
+          authorizationUrl: https://auth.ossa.example.com/oauth/authorize
+          tokenUrl: https://auth.ossa.example.com/oauth/token
+          scopes:
+            read: Read access to agent capabilities
+            write: Write access for task execution
+            admin: Administrative access
+
+security:
+  - ApiKeyAuth: []
+  - OAuth2: [read, write]

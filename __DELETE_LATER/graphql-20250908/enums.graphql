@@ -1,0 +1,495 @@
+# OSSA v0.1.8 GraphQL Enumerations
+# Standard enumeration types for OSSA-compliant systems
+
+# OSSA Core Enums
+enum OSSAVersion {
+  V0_1_0
+  V0_1_2
+  V0_1_8
+}
+
+enum ComplianceLevel {
+  CORE
+  GOVERNED  
+  ADVANCED
+  ENTERPRISE
+}
+
+enum AgentTaxonomy {
+  ORCHESTRATOR
+  WORKER
+  CRITIC
+  JUDGE
+  TRAINER
+  GOVERNOR
+  MONITOR
+  INTEGRATOR
+  ANALYST
+  COORDINATOR
+}
+
+enum AgentClass {
+  GENERAL
+  SPECIALIST
+  WORKFLOW
+  INTEGRATION
+  GOVERNANCE
+  ANALYTICS
+}
+
+enum AgentCategory {
+  ASSISTANT
+  TOOL
+  SERVICE
+  COORDINATOR
+  ANALYZER
+  VALIDATOR
+}
+
+enum ConformanceTier {
+  BRONZE
+  SILVER
+  GOLD
+  PLATINUM
+}
+
+enum CertificationLevel {
+  BASIC
+  STANDARD
+  PREMIUM
+  ENTERPRISE
+}
+
+# Status and Health Enums
+enum AgentStatus {
+  HEALTHY
+  DEGRADED
+  UNHEALTHY
+  MAINTENANCE
+  OFFLINE
+}
+
+enum AgentAvailability {
+  AVAILABLE
+  BUSY
+  RESERVED
+  MAINTENANCE
+  OFFLINE
+  OVERLOADED
+}
+
+enum HealthStatus {
+  HEALTHY
+  DEGRADED
+  UNHEALTHY
+  CRITICAL
+  UNKNOWN
+}
+
+enum ExecutionStatus {
+  PENDING
+  INITIALIZING
+  RUNNING
+  PAUSED
+  COMPLETED
+  FAILED
+  TIMEOUT
+  CANCELLED
+  ABORTED
+}
+
+# Protocol and Communication Enums
+enum ProtocolType {
+  REST
+  GRAPHQL
+  GRPC
+  WEBSOCKET
+  MCP
+  OPENAI
+  ANTHROPIC
+  LANGCHAIN
+  CREWAI
+}
+
+enum AuthRequirement {
+  NONE
+  API_KEY
+  BEARER_TOKEN
+  OAUTH2
+  MUTUAL_TLS
+  SAML
+  OIDC
+}
+
+enum TransportSecurity {
+  NONE
+  TLS
+  MTLS
+  VPN
+  ZERO_TRUST
+}
+
+# Performance and Optimization Enums
+enum ModelTier {
+  LIGHTWEIGHT
+  STANDARD
+  PREMIUM
+  SPECIALIZED
+  ENTERPRISE
+}
+
+enum CompressionStrategy {
+  NONE
+  GZIP
+  SEMANTIC_VECTOR
+  HIERARCHICAL
+  ADAPTIVE
+  HYBRID
+  ACTA_OPTIMIZED
+}
+
+enum CacheScope {
+  PRIVATE
+  PUBLIC
+  SHARED
+  TENANT
+}
+
+enum TokenOptimization {
+  NONE
+  COMPRESSION
+  SUMMARIZATION
+  SELECTIVE_CONTEXT
+  ACTA_PROTOCOL
+}
+
+# Budget and Resource Management Enums
+enum BudgetEnforcementPolicy {
+  ALLOW
+  WARN
+  THROTTLE
+  BLOCK
+  QUEUE
+  DELEGATE
+  ESCALATE
+}
+
+enum ResourceAllocation {
+  SHARED
+  RESERVED
+  DEDICATED
+  ELASTIC
+  BURST
+}
+
+enum PriorityLevel {
+  LOW
+  NORMAL
+  HIGH
+  CRITICAL
+  EMERGENCY
+}
+
+# Workflow and Orchestration Enums
+enum WorkflowStatus {
+  DRAFT
+  ACTIVE
+  PAUSED
+  COMPLETED
+  FAILED
+  CANCELLED
+  ARCHIVED
+}
+
+enum TaskPriority {
+  LOWEST
+  LOW
+  NORMAL
+  HIGH
+  HIGHEST
+  CRITICAL
+}
+
+enum DependencyType {
+  SEQUENTIAL
+  PARALLEL
+  CONDITIONAL
+  BARRIER
+  JOIN
+}
+
+enum OrchestrationPattern {
+  SEQUENTIAL
+  PARALLEL
+  PIPELINE
+  FAN_OUT
+  FAN_IN
+  SCATTER_GATHER
+  SAGA
+  CHOREOGRAPHY
+}
+
+# Feedback Loop and Learning Enums
+enum FeedbackPhase {
+  PLAN
+  EXECUTE
+  REVIEW
+  JUDGE
+  LEARN
+  GOVERN
+  OPTIMIZE
+}
+
+enum JudgmentDecision {
+  ACCEPT
+  REJECT
+  REVISE
+  ESCALATE
+  DEFER
+}
+
+enum LearningType {
+  PERFORMANCE
+  BEHAVIORAL
+  CONTEXTUAL
+  STRATEGIC
+  OPERATIONAL
+}
+
+enum ReviewDimension {
+  QUALITY
+  COMPLETENESS
+  EFFICIENCY
+  COMPLIANCE
+  INNOVATION
+  SECURITY
+  RELIABILITY
+}
+
+# Monitoring and Observability Enums
+enum MetricType {
+  COUNTER
+  GAUGE
+  HISTOGRAM
+  SUMMARY
+  RATE
+  LATENCY
+}
+
+enum AlertSeverity {
+  INFO
+  WARNING
+  ERROR
+  CRITICAL
+  FATAL
+}
+
+enum EventType {
+  AGENT_REGISTERED
+  AGENT_UPDATED
+  AGENT_REMOVED
+  AGENT_HEALTH_CHANGED
+  WORKFLOW_STARTED
+  WORKFLOW_COMPLETED
+  WORKFLOW_FAILED
+  TASK_ASSIGNED
+  TASK_COMPLETED
+  BUDGET_THRESHOLD_REACHED
+  COMPLIANCE_VIOLATION
+  PERFORMANCE_DEGRADED
+  SECURITY_ALERT
+}
+
+# Compliance and Governance Enums
+enum ComplianceFramework {
+  FEDRAMP
+  NIST_800_53
+  SOC2
+  GDPR
+  HIPAA
+  PCI_DSS
+  ISO_27001
+  FIPS_140_2
+}
+
+enum AuditLevel {
+  NONE
+  BASIC
+  STANDARD
+  DETAILED
+  COMPREHENSIVE
+}
+
+enum GovernanceAction {
+  MONITOR
+  ALERT
+  THROTTLE
+  BLOCK
+  ESCALATE
+  REMEDIATE
+  AUDIT
+}
+
+enum ViolationSeverity {
+  INFORMATIONAL
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+# Data and Storage Enums
+enum DataClassification {
+  PUBLIC
+  INTERNAL
+  CONFIDENTIAL
+  RESTRICTED
+  TOP_SECRET
+}
+
+enum StorageType {
+  MEMORY
+  DISK
+  DATABASE
+  OBJECT_STORE
+  VECTOR_DB
+  CACHE
+  ARCHIVE
+}
+
+enum BackupStrategy {
+  NONE
+  DAILY
+  REALTIME
+  SNAPSHOT
+  CONTINUOUS
+  FEDERATED
+}
+
+# Integration and Interoperability Enums
+enum IntegrationType {
+  API
+  WEBHOOK
+  MESSAGE_QUEUE
+  EVENT_STREAM
+  DATABASE
+  FILE_SYSTEM
+  CUSTOM
+}
+
+enum DataFormat {
+  JSON
+  XML
+  YAML
+  CSV
+  PARQUET
+  AVRO
+  PROTOBUF
+  MSGPACK
+}
+
+enum SerializationFormat {
+  JSON
+  PROTOBUF
+  AVRO
+  MSGPACK
+  CBOR
+  YAML
+}
+
+# Query and Result Enums
+enum SortOrder {
+  ASC
+  DESC
+}
+
+enum SortField {
+  NAME
+  CREATED_AT
+  UPDATED_AT
+  PERFORMANCE
+  CAPABILITY_MATCH
+  LAST_SEEN
+  PRIORITY
+  STATUS
+}
+
+enum FilterOperator {
+  EQ
+  NE
+  GT
+  GTE
+  LT
+  LTE
+  IN
+  NOT_IN
+  CONTAINS
+  STARTS_WITH
+  ENDS_WITH
+  REGEX
+}
+
+enum AggregationType {
+  COUNT
+  SUM
+  AVG
+  MIN
+  MAX
+  PERCENTILE
+  HISTOGRAM
+}
+
+# Time and Scheduling Enums
+enum TimeUnit {
+  SECOND
+  MINUTE
+  HOUR
+  DAY
+  WEEK
+  MONTH
+  QUARTER
+  YEAR
+}
+
+enum ScheduleFrequency {
+  ONCE
+  DAILY
+  WEEKLY
+  MONTHLY
+  QUARTERLY
+  YEARLY
+  CUSTOM
+}
+
+enum TimezoneHandling {
+  UTC
+  LOCAL
+  AGENT_TIMEZONE
+  USER_TIMEZONE
+}
+
+# Error and Exception Enums
+enum ErrorCode {
+  UNKNOWN
+  VALIDATION_ERROR
+  AUTHENTICATION_ERROR
+  AUTHORIZATION_ERROR
+  NOT_FOUND
+  CONFLICT
+  RATE_LIMITED
+  SERVICE_UNAVAILABLE
+  TIMEOUT
+  INTERNAL_ERROR
+  EXTERNAL_SERVICE_ERROR
+  COMPLIANCE_VIOLATION
+  BUDGET_EXCEEDED
+  CAPACITY_EXCEEDED
+}
+
+enum ErrorSeverity {
+  INFO
+  WARNING
+  ERROR
+  CRITICAL
+  FATAL
+}

@@ -1,0 +1,104 @@
+{
+  "name": "@bluefly/ossa-mcp-server",
+  "version": "0.1.8",
+  "description": "OSSA MCP Server - Provides OSSA validation and analysis tools via Model Context Protocol",
+  "main": "lib/mcp/servers/ossa-validator.js",
+  "type": "module",
+  "mcp": {
+    "server": {
+      "name": "ossa-validator",
+      "version": "0.1.8",
+      "description": "Open Standards for Scalable Agents (OSSA) validation and analysis server",
+      "transport": "stdio",
+      "capabilities": [
+        "tools"
+      ],
+      "tools": [
+        {
+          "name": "validate-ossa-config",
+          "description": "Validates an OSSA agent configuration file against the specification",
+          "parameters": {
+            "type": "object",
+            "properties": {
+              "filePath": {
+                "type": "string",
+                "description": "Path to the OSSA configuration file (.yml or .yaml)"
+              }
+            },
+            "required": ["filePath"]
+          }
+        },
+        {
+          "name": "list-ossa-examples",
+          "description": "Lists available OSSA example configurations",
+          "parameters": {
+            "type": "object",
+            "properties": {
+              "examplesDir": {
+                "type": "string",
+                "description": "Directory containing OSSA examples (defaults to ./examples)"
+              }
+            }
+          }
+        },
+        {
+          "name": "analyze-ossa-capabilities",
+          "description": "Analyzes the capabilities and framework compatibility of an OSSA agent",
+          "parameters": {
+            "type": "object",
+            "properties": {
+              "filePath": {
+                "type": "string",
+                "description": "Path to the OSSA configuration file"
+              }
+            },
+            "required": ["filePath"]
+          }
+        }
+      ]
+    }
+  },
+  "ossa": {
+    "conformance": {
+      "version": "v0.1.8",
+      "level": "advanced",
+      "features": [
+        "mcp-integration",
+        "stdio-transport",
+        "yaml-validation",
+        "capability-analysis",
+        "framework-compatibility"
+      ]
+    },
+    "frameworks": {
+      "mcp": {
+        "enabled": true,
+        "transport": "stdio",
+        "version": "0.2.6"
+      }
+    }
+  },
+  "bin": {
+    "ossa-mcp-server": "lib/mcp/servers/ossa-validator.js"
+  },
+  "scripts": {
+    "mcp-server": "node lib/mcp/servers/ossa-validator.js",
+    "test-mcp": "node -e \"import('./lib/mcp/servers/ossa-validator.js').then(() => console.log('MCP server loaded successfully'))\"",
+    "validate-mcp": "node lib/mcp/servers/ossa-validator.js --test"
+  },
+  "keywords": [
+    "ossa",
+    "mcp",
+    "model-context-protocol",
+    "anthropic",
+    "ai-agents",
+    "validation",
+    "open-standards"
+  ],
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "peerDependencies": {
+    "@anthropic-ai/dxt": "^0.2.6"
+  }
+}

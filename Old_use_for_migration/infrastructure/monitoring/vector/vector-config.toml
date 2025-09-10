@@ -1,0 +1,249 @@
+# OSSA Vector Configuration
+# Version: 0.1.8 - Advanced Log Processing and Routing
+
+# Data directory for Vector state
+data_dir = "/var/lib/vector"
+
+# Log schema for structured logging
+[log_schema]
+host_key = "host"
+message_key = "message"
+source_type_key = "source_type"
+timestamp_key = "@timestamp"
+
+# Sources - Input data sources
+[sources.ossa_application_logs]
+type = "file"
+include = ["/var/log/ossa/*.log"]
+read_from = "beginning"
+fingerprint_strategy = "device_and_inode"
+ignore_older_secs = 86400  # 24 hours
+
+[sources.ossa_api_logs]
+type = "file"
+include = ["/var/log/ossa/api/*.log"]
+read_from = "beginning"
+fingerprint_strategy = "device_and_inode"
+
+[sources.ossa_agent_logs]
+type = "file"
+include = ["/var/log/ossa/agents/*.log"]
+read_from = "beginning"
+fingerprint_strategy = "device_and_inode"
+
+[sources.docker_logs]
+type = "docker_logs"
+include_containers = ["ossa*"]
+include_labels = ["ossa.monitoring=true"]
+
+[sources.syslog]
+type = "syslog"
+address = "0.0.0.0:5140"
+mode = "tcp"
+
+[sources.http_logs]
+type = "http"
+address = "0.0.0.0:8080"
+encoding = "json"
+headers = ["user-agent", "x-forwarded-for"]
+
+# Transforms - Data processing and enrichment
+[transforms.parse_ossa_logs]
+type = "remap"
+inputs = ["ossa_application_logs", "ossa_api_logs", "ossa_agent_logs"]
+source = '''
+# Parse structured logs
+if exists(.message) {
+  parsed = parse_json(.message) ?? {}
+  
+  # Extract common fields
+  .level = parsed.level ?? "info"
+  .service = parsed.service ?? "ossa-unknown"
+  .timestamp = parsed.timestamp ?? now()
+  .agent_id = parsed.agent_id ?? ""
+  .request_id = parsed.request_id ?? ""
+  .user_id = parsed.user_id ?? ""
+  
+  # Extract metrics
+  if exists(parsed.metrics) {
+    .token_count = parsed.metrics.token_count ?? 0
+    .response_time_ms = parsed.metrics.response_time_ms ?? 0
+    .cost_usd = parsed.metrics.cost_usd ?? 0.0
+  }
+  
+  # Extract OSSA-specific fields
+  if exists(parsed.ossa) {
+    .workflow_id = parsed.ossa.workflow_id ?? ""
+    .orchestration_id = parsed.ossa.orchestration_id ?? ""
+    .validation_result = parsed.ossa.validation_result ?? ""
+    .compliance_score = parsed.ossa.compliance_score ?? 0
+    .trust_score = parsed.ossa.trust_score ?? 0
+  }
+  
+  # Clean up the message
+  .message = parsed.message ?? .message
+}
+
+# Add host information
+.host = get_hostname() ?? "unknown"
+.environment = "production"
+.cluster = "ossa-main"
+'''
+
+[transforms.filter_sensitive_data]
+type = "remap" 
+inputs = ["parse_ossa_logs"]
+source = '''
+# Remove sensitive information
+if exists(.message) {
+  .message = replace(.message, r"password[=\":]\s*[^,\s}]+", "password=REDACTED")
+  .message = replace(.message, r"token[=\":]\s*[^,\s}]+", "token=REDACTED")
+  .message = replace(.message, r"secret[=\":]\s*[^,\s}]+", "secret=REDACTED")
+  .message = replace(.message, r"key[=\":]\s*[^,\s}]+", "key=REDACTED")
+}
+
+# Remove sensitive headers
+if exists(.headers) {
+  del(.headers.authorization)
+  del(.headers.x-api-key)
+  del(.headers.cookie)
+}
+'''
+
+[transforms.enrich_logs]
+type = "remap"
+inputs = ["filter_sensitive_data"]
+source = '''
+# Add enrichment data
+.pipeline = "ossa-vector-processing"
+.version = "0.1.8"
+
+# Categorize log levels
+.severity_number = match(.level) {
+  "debug" => 1
+  "info" => 2
+  "warn" => 3
+  "error" => 4
+  "fatal" => 5
+  default => 2
+}
+
+# Add business context
+if .service == "ossa-agents" {
+  .business_unit = "agent_operations"
+} else if .service == "ossa-vortex" {
+  .business_unit = "cost_optimization"
+} else if .service == "ossa-security" {
+  .business_unit = "security_compliance"
+} else {
+  .business_unit = "platform"
+}
+
+# Calculate derived metrics
+if exists(.response_time_ms) && .response_time_ms > 500 {
+  .performance_alert = true
+}
+
+if exists(.cost_usd) && .cost_usd > 1.0 {
+  .cost_alert = true
+}
+'''
+
+[transforms.route_logs]
+type = "route"
+inputs = ["enrich_logs"]
+
+[transforms.route_logs.route.critical_errors]
+type = "vrl"
+source = '.level == "error" || .level == "fatal" || .performance_alert == true'
+
+[transforms.route_logs.route.security_events]
+type = "vrl"
+source = '.service == "ossa-security" || contains(.message, "security") || contains(.message, "auth")'
+
+[transforms.route_logs.route.business_metrics]
+type = "vrl"
+source = 'exists(.token_count) || exists(.cost_usd) || .business_unit == "cost_optimization"'
+
+[transforms.route_logs.route.agent_operations]
+type = "vrl"
+source = '.service == "ossa-agents" || .business_unit == "agent_operations"'
+
+[transforms.route_logs.route.general_logs]
+type = "vrl"
+source = 'true'  # Catch-all
+
+# Sinks - Output destinations
+[sinks.loki_general]
+type = "loki"
+inputs = ["route_logs.general_logs"]
+endpoint = "http://loki:3100"
+encoding.codec = "json"
+labels.service = "{{ service }}"
+labels.level = "{{ level }}"
+labels.host = "{{ host }}"
+labels.environment = "{{ environment }}"
+
+[sinks.loki_critical]
+type = "loki"
+inputs = ["route_logs.critical_errors"]
+endpoint = "http://loki:3100"
+encoding.codec = "json"
+labels.service = "{{ service }}"
+labels.level = "{{ level }}"
+labels.host = "{{ host }}"
+labels.environment = "{{ environment }}"
+labels.alert_type = "critical"
+
+[sinks.prometheus_metrics]
+type = "prometheus_exporter"
+inputs = ["enrich_logs"]
+address = "0.0.0.0:9598"
+
+# Business intelligence sink to ClickHouse or similar
+[sinks.business_metrics]
+type = "http"
+inputs = ["route_logs.business_metrics"]
+uri = "http://business-analytics:8080/api/v1/ingest"
+method = "post"
+encoding.codec = "json"
+headers.Content-Type = "application/json"
+headers.X-API-Key = "your-business-analytics-api-key"
+
+# Security events to SIEM
+[sinks.security_siem]
+type = "http" 
+inputs = ["route_logs.security_events"]
+uri = "http://security-siem:8080/api/v1/events"
+method = "post"
+encoding.codec = "json"
+headers.Content-Type = "application/json"
+headers.Authorization = "Bearer your-siem-token"
+
+# Agent operations dashboard
+[sinks.agent_dashboard]
+type = "elasticsearch"
+inputs = ["route_logs.agent_operations"]
+endpoints = ["http://elasticsearch:9200"]
+index = "ossa-agents-%Y.%m.%d"
+doc_type = "_doc"
+
+# File backup sink
+[sinks.file_backup]
+type = "file"
+inputs = ["enrich_logs"]
+path = "/var/log/vector/ossa-processed-%Y%m%d.log"
+encoding.codec = "json"
+
+# Debug console sink for development
+[sinks.console_debug]
+type = "console"
+inputs = ["enrich_logs"]
+encoding.codec = "json"
+target = "stdout"
+
+# Health check endpoint
+[api]
+enabled = true
+address = "0.0.0.0:8686"
+playground = true

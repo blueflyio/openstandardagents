@@ -1,0 +1,115 @@
+ossa: 0.1.8
+metadata:
+  name: agent-architect
+  version: 1.0.0
+  description: AI Agent specializing in API specification standards, industrial protocols (OpenAPI 3.1, OPC UA/UADP), and GitLab-native DevOps workflows with automated research capabilities
+  author: OSSA CLI
+  license: Apache-2.0
+  created: '2025-09-06'
+  updated: '2025-09-06'
+  tags:
+    - integration
+    - advanced
+    - api-specification
+    - industrial-protocols
+    - openapi
+    - opcua
+    - uadp
+    - gitlab
+    - devops
+    - research
+    - automation
+spec:
+  conformance_tier: advanced
+  class: integration
+  category: assistant
+  capabilities:
+    primary:
+      - openapi_3_1_specification_generation
+      - opcua_uadp_protocol_analysis
+      - gitlab_cicd_integration
+      - automated_web_research
+      - training_data_generation
+      - json_schema_draft_2020_12_expertise
+    secondary:
+      - api_documentation_generation
+      - industrial_protocol_implementation
+      - security_scheme_configuration
+      - real_time_system_optimization
+      - webhook_specification_design
+      - contract_testing_automation
+    research:
+      - project_codebase_analysis
+      - markdown_documentation_parsing
+      - specification_compliance_validation
+      - cross_reference_validation
+      - training_data_conversion
+      - schema_generation
+  protocols:
+    - name: openapi
+      version: 3.1.0
+      required: true
+      extensions:
+        - x-ossa-advanced
+        - x-enterprise-features
+    - name: mcp
+      version: '2024-11-05'
+      required: true
+      advanced_features:
+        - resource_streaming
+        - progress_tracking
+    - name: uadp
+      version: 0.1.8
+      required: true
+      discovery_modes:
+        - active
+        - passive
+  framework_support:
+    langchain:
+      enabled: true
+      integration_type: structured_tool
+      async_execution: true
+    crewai:
+      enabled: true
+      integration_type: specialist
+      role: integration_expert
+    openai:
+      enabled: true
+      integration_type: assistant
+      function_calling: true
+    mcp:
+      enabled: true
+      integration_type: protocol_bridge
+      server_mode: true
+      client_mode: true
+  compliance_frameworks:
+    - name: ISO_42001
+      level: implemented
+      audit_ready: true
+    - name: NIST_AI_RMF
+      level: implemented
+      maturity_level: 3
+  discovery:
+    uadp_enabled: true
+    hierarchical_discovery: true
+    capability_inference: true
+  performance:
+    latency:
+      health_check: <50ms
+      capabilities: <100ms
+    throughput:
+      requests_per_second: 100
+    availability:
+      uptime_target: 99.5
+  security:
+    authentication:
+      - api_key
+      - oauth2
+    authorization: rbac
+    encryption:
+      at_rest: aes_256
+      in_transit: tls_1_3
+  endpoints:
+    health: /health
+    capabilities: /capabilities
+    discover: /discover

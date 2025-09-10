@@ -1,0 +1,285 @@
+# Staging Environment Values for OSSA v0.1.8
+# Optimized for pre-production testing and validation
+
+global:
+  environment: staging
+
+# Moderate resource requirements for staging
+services:
+  gateway:
+    replicaCount: 2
+    minReplicas: 2
+    maxReplicas: 4
+    resources:
+      requests:
+        memory: "256Mi"
+        cpu: "250m"
+      limits:
+        memory: "512Mi"
+        cpu: "500m"
+
+  taskAgent:
+    replicaCount: 2
+    minReplicas: 2
+    maxReplicas: 6
+    resources:
+      requests:
+        memory: "128Mi"
+        cpu: "125m"
+      limits:
+        memory: "256Mi"
+        cpu: "250m"
+
+  commAgent:
+    replicaCount: 2
+    minReplicas: 2
+    maxReplicas: 6
+    resources:
+      requests:
+        memory: "128Mi"
+        cpu: "125m"
+      limits:
+        memory: "256Mi"
+        cpu: "250m"
+
+  mcpAgent:
+    replicaCount: 2
+    minReplicas: 2
+    maxReplicas: 4
+    resources:
+      requests:
+        memory: "128Mi"
+        cpu: "125m"
+      limits:
+        memory: "256Mi"
+        cpu: "250m"
+
+  coordination:
+    replicaCount: 2
+    minReplicas: 2
+    maxReplicas: 4
+    resources:
+      requests:
+        memory: "256Mi"
+        cpu: "250m"
+      limits:
+        memory: "512Mi"
+        cpu: "500m"
+
+  discovery:
+    replicaCount: 2
+    minReplicas: 2
+    maxReplicas: 4
+    resources:
+      requests:
+        memory: "256Mi"
+        cpu: "250m"
+      limits:
+        memory: "512Mi"
+        cpu: "500m"
+
+  orchestration:
+    replicaCount: 2
+    minReplicas: 2
+    maxReplicas: 6
+    resources:
+      requests:
+        memory: "512Mi"
+        cpu: "500m"
+      limits:
+        memory: "1Gi"
+        cpu: "1000m"
+
+  monitoring:
+    replicaCount: 2
+    minReplicas: 2
+    maxReplicas: 3
+    resources:
+      requests:
+        memory: "256Mi"
+        cpu: "250m"
+      limits:
+        memory: "512Mi"
+        cpu: "500m"
+
+# Enable high availability features for staging testing
+highAvailability:
+  enabled: true
+  podDisruptionBudgets:
+    enabled: true
+    gateway:
+      minAvailable: 1
+    coordination:
+      minAvailable: 1
+    orchestration:
+      minAvailable: 1
+  antiAffinity:
+    enabled: true
+    type: "soft"  # Soft anti-affinity for staging
+  multiZone:
+    enabled: true
+    zones:
+      - us-west-2a
+      - us-west-2b
+
+# Staging database settings with replication
+postgresql:
+  enabled: true
+  auth:
+    database: ossa_staging
+    username: ossa_staging
+    password: "ossa_staging_password_change_me"
+  architecture: replication
+  primary:
+    resources:
+      requests:
+        memory: "256Mi"
+        cpu: "250m"
+      limits:
+        memory: "512Mi"
+        cpu: "500m"
+  readReplicas:
+    replicaCount: 1
+    resources:
+      requests:
+        memory: "256Mi"
+        cpu: "250m"
+      limits:
+        memory: "512Mi"
+        cpu: "500m"
+  persistence:
+    enabled: true
+    size: "10Gi"
+
+# Staging Redis with replication
+redis:
+  enabled: true
+  architecture: replication
+  master:
+    resources:
+      requests:
+        memory: "128Mi"
+        cpu: "125m"
+      limits:
+        memory: "256Mi"
+        cpu: "250m"
+  replica:
+    replicaCount: 1
+    resources:
+      requests:
+        memory: "128Mi"
+        cpu: "125m"
+      limits:
+        memory: "256Mi"
+        cpu: "250m"
+  persistence:
+    enabled: true
+    size: "5Gi"
+
+# Staging Qdrant settings
+qdrant:
+  enabled: true
+  replicaCount: 2
+  resources:
+    requests:
+      memory: "512Mi"
+      cpu: "500m"
+    limits:
+      memory: "1Gi"
+      cpu: "1000m"
+  persistence:
+    enabled: true
+    size: "20Gi"
+
+# Full monitoring stack for staging
+monitoring:
+  prometheus:
+    enabled: true
+    retention: "7d"
+    resources:
+      requests:
+        memory: "256Mi"
+        cpu: "250m"
+      limits:
+        memory: "512Mi"
+        cpu: "500m"
+    storage:
+      size: "10Gi"
+  
+  grafana:
+    enabled: true
+    adminPassword: "staging-password-change-me"
+    resources:
+      requests:
+        memory: "128Mi"
+        cpu: "125m"
+      limits:
+        memory: "256Mi"
+        cpu: "250m"
+  
+  alertmanager:
+    enabled: true
+    resources:
+      requests:
+        memory: "64Mi"
+        cpu: "50m"
+      limits:
+        memory: "128Mi"
+        cpu: "100m"
+
+# Staging ingress with TLS
+ingress:
+  enabled: true
+  className: "nginx"
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    cert-manager.io/cluster-issuer: "letsencrypt-staging"
+  hosts:
+    - host: ossa-staging.example.com
+      paths:
+        - path: /
+          pathType: Prefix
+          backend:
+            service:
+              name: gateway
+              port: 3000
+    - host: ossa-monitoring-staging.example.com
+      paths:
+        - path: /
+          pathType: Prefix
+          backend:
+            service:
+              name: monitoring
+              port: 3013
+  tls:
+    - secretName: ossa-staging-tls
+      hosts:
+        - ossa-staging.example.com
+        - ossa-monitoring-staging.example.com
+
+# Production-like security context
+security:
+  podSecurityContext:
+    runAsNonRoot: true
+    runAsUser: 1000
+    fsGroup: 1000
+  securityContext:
+    allowPrivilegeEscalation: false
+    readOnlyRootFilesystem: true
+    runAsNonRoot: true
+    runAsUser: 1000
+    capabilities:
+      drop:
+        - ALL
+
+# Network policies enabled
+networkPolicy:
+  enabled: true
+  ingress:
+    enabled: true
+    allowedNamespaces:
+      - monitoring
+      - ingress-nginx
+  egress:
+    enabled: true

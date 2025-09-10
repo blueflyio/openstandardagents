@@ -1,0 +1,1227 @@
+# OSSA v0.1.8 Complete GraphQL Schema
+# Combined schema file including all OSSA GraphQL components
+
+# Import all custom scalars and directives
+# scalar DateTime
+# scalar JSON
+# scalar UUID
+# scalar URI
+# scalar Uint64
+
+# OSSA Schema Root
+schema @ossaCompliant(version: "0.1.8", level: ENTERPRISE) {
+  query: Query
+  mutation: Mutation
+  subscription: Subscription
+}
+
+# Root Query Type
+type Query {
+  # Core Information
+  _ossaVersion: String!
+  _schemaVersion: String!
+  _capabilities: [String!]!
+  _supportedProtocols: [ProtocolType!]!
+  _complianceFrameworks: [ComplianceFramework!]!
+  
+  # System Health and Status
+  health: SystemHealth!
+  status: SystemStatus!
+  version: SystemVersion!
+  
+  # Agent Discovery and Management
+  agents(
+    filter: DiscoveryInput
+    pagination: PaginationInput
+  ): AgentConnection! @cached(maxAge: 60)
+  
+  agent(id: UUID!): Agent
+  
+  agentsByCapability(
+    capability: String!
+    limit: Int = 50
+  ): [Agent!]!
+  
+  agentsByDomain(
+    domain: String!
+    limit: Int = 50
+  ): [Agent!]!
+  
+  discoverAgents(
+    query: DiscoveryInput!
+  ): DiscoveryResult! @performanceMetrics(maxResponseTimeMs: 5000)
+  
+  searchAgents(
+    search: SearchInput!
+  ): AgentConnection!
+  
+  # Workflow Orchestration
+  workflows(
+    filter: WorkflowFilterInput
+    pagination: PaginationInput
+  ): WorkflowConnection! @cached(maxAge: 30)
+  
+  workflow(id: UUID!): Workflow
+  
+  workflowExecutions(
+    workflowId: UUID!
+    filter: ExecutionFilterInput
+    pagination: PaginationInput
+  ): WorkflowExecutionConnection!
+  
+  workflowExecution(id: UUID!): WorkflowExecution
+  
+  workflowTemplates(
+    category: String
+    pagination: PaginationInput
+  ): [WorkflowTemplate!]!
+  
+  # Telemetry and Monitoring
+  telemetryData(
+    query: MetricsQuery!
+  ): [TelemetryData!]! @cached(maxAge: 30)
+  
+  agentMetrics(
+    agentId: UUID!
+    timeRange: TimeRangeInput!
+    metrics: [String!]
+  ): [MetricSeries!]!
+  
+  workflowMetrics(
+    workflowId: UUID!
+    timeRange: TimeRangeInput!
+    metrics: [String!]
+  ): [MetricSeries!]!
+  
+  systemMetrics(
+    timeRange: TimeRangeInput!
+    aggregation: AggregationInput
+  ): AggregatedMetrics!
+  
+  performanceReport(
+    entityType: String!
+    entityId: UUID!
+    timeRange: TimeRangeInput!
+  ): PerformanceReport!
+  
+  # Alerts and Notifications
+  alerts(
+    filter: AlertFilterInput
+    pagination: PaginationInput
+  ): [MetricAlert!]!
+  
+  alert(id: UUID!): MetricAlert
+  
+  notifications(
+    userId: UUID
+    filter: NotificationFilterInput
+    pagination: PaginationInput
+  ): [NotificationDelivery!]!
+  
+  # Compliance and Governance
+  complianceStatus(
+    entityType: String
+    entityId: UUID
+    framework: ComplianceFramework
+  ): ComplianceStatus!
+  
+  complianceReports(
+    timeRange: TimeRangeInput!
+    frameworks: [ComplianceFramework!]
+  ): [ComplianceReport!]!
+  
+  auditTrail(
+    filter: AuditLogQueryInput!
+  ): [AuditLogEntry!]! @auditLog(level: STANDARD)
+  
+  governanceReports(
+    timeRange: TimeRangeInput!
+    entityType: String
+  ): [GovernanceReport!]!
+  
+  # User Management
+  users(
+    filter: UserFilterInput
+    pagination: PaginationInput
+  ): UserConnection! @auth(requires: BEARER_TOKEN, roles: ["admin", "user_manager"])
+  
+  user(id: UUID!): User @auth(requires: BEARER_TOKEN)
+  
+  currentUser: User @auth(requires: BEARER_TOKEN)
+  
+  roles: [Role!]! @auth(requires: BEARER_TOKEN, roles: ["admin"])
+  
+  role(id: UUID!): Role @auth(requires: BEARER_TOKEN, roles: ["admin"])
+  
+  permissions: [Permission!]! @auth(requires: BEARER_TOKEN, roles: ["admin"])
+  
+  groups: [Group!]! @auth(requires: BEARER_TOKEN, roles: ["admin", "group_manager"])
+  
+  group(id: UUID!): Group @auth(requires: BEARER_TOKEN)
+  
+  # Organization and Tenant Management
+  organizations(
+    pagination: PaginationInput
+  ): [Organization!]! @auth(requires: BEARER_TOKEN, roles: ["admin"])
+  
+  organization(id: UUID!): Organization @auth(requires: BEARER_TOKEN)
+  
+  tenants(
+    organizationId: UUID
+    pagination: PaginationInput
+  ): [Tenant!]! @auth(requires: BEARER_TOKEN, roles: ["admin", "org_admin"])
+  
+  tenant(id: UUID!): Tenant @auth(requires: BEARER_TOKEN)
+  
+  currentTenant: Tenant @auth(requires: BEARER_TOKEN)
+  
+  # Configuration and Settings
+  systemConfiguration: SystemConfiguration! @auth(requires: BEARER_TOKEN, roles: ["admin"])
+  
+  # Dashboards and Reporting
+  dashboards(
+    userId: UUID
+    pagination: PaginationInput
+  ): [Dashboard!]! @auth(requires: BEARER_TOKEN)
+  
+  dashboard(id: UUID!): Dashboard @auth(requires: BEARER_TOKEN)
+  
+  # Event Streams and Subscriptions
+  eventStreams(
+    pagination: PaginationInput
+  ): [EventStream!]! @auth(requires: BEARER_TOKEN)
+  
+  eventStream(id: UUID!): EventStream @auth(requires: BEARER_TOKEN)
+  
+  webhookEndpoints(
+    pagination: PaginationInput
+  ): [WebhookEndpoint!]! @auth(requires: BEARER_TOKEN)
+  
+  webhookEndpoint(id: UUID!): WebhookEndpoint @auth(requires: BEARER_TOKEN)
+  
+  # Search and Discovery
+  search(
+    input: SearchInput!
+  ): SearchResults! @performanceMetrics(maxResponseTimeMs: 3000)
+  
+  # Advanced Analytics
+  analytics(
+    query: AnalyticsQuery!
+  ): AnalyticsResult! @cached(maxAge: 300)
+  
+  predictions(
+    entityType: String!
+    entityId: UUID!
+    predictionType: String!
+    horizon: String!
+  ): PredictionResult!
+  
+  # Integration and External Services
+  integrations: [Integration!]! @auth(requires: BEARER_TOKEN, roles: ["admin"])
+  
+  integration(id: UUID!): Integration @auth(requires: BEARER_TOKEN, roles: ["admin"])
+  
+  externalServices: [ExternalService!]! @auth(requires: BEARER_TOKEN, roles: ["admin"])
+  
+  # Debugging and Troubleshooting
+  debugInfo(
+    entityType: String!
+    entityId: UUID!
+  ): DebugInfo! @auth(requires: BEARER_TOKEN, roles: ["admin", "developer"])
+  
+  logs(
+    filter: LogFilterInput!
+    pagination: PaginationInput
+  ): [LogEntry!]! @auth(requires: BEARER_TOKEN, roles: ["admin", "developer"])
+  
+  traces(
+    traceId: String!
+  ): [TraceSpan!]! @auth(requires: BEARER_TOKEN, roles: ["admin", "developer"])
+}
+
+# Root Mutation Type
+type Mutation {
+  # Agent Management
+  registerAgent(input: AgentRegistrationInput!): Agent! @ossaCompliant(level: GOVERNED)
+  
+  updateAgent(
+    id: UUID!
+    input: AgentUpdateInput!
+  ): Agent! @auth(requires: BEARER_TOKEN) @auditLog
+  
+  deregisterAgent(id: UUID!): Boolean! @auth(requires: BEARER_TOKEN) @auditLog
+  
+  # Agent Operations
+  healthCheckAgent(id: UUID!): Agent!
+  
+  healthCheckAllAgents: [Agent!]!
+  
+  restartAgent(id: UUID!): Agent! @auth(requires: BEARER_TOKEN, roles: ["admin"]) @auditLog
+  
+  # Workflow Management
+  createWorkflow(input: WorkflowInput!): Workflow! @tokenBudget(cost: 5000) @auditLog
+  
+  updateWorkflow(
+    id: UUID!
+    input: WorkflowUpdateInput!
+  ): Workflow! @auth(requires: BEARER_TOKEN) @auditLog
+  
+  deleteWorkflow(id: UUID!): Boolean! @auth(requires: BEARER_TOKEN) @auditLog
+  
+  # Workflow Execution
+  executeWorkflow(input: WorkflowExecutionInput!): WorkflowExecution! @tokenBudget(cost: 10000) @auditLog
+  
+  pauseWorkflowExecution(id: UUID!): WorkflowExecution! @auth(requires: BEARER_TOKEN) @auditLog
+  
+  resumeWorkflowExecution(id: UUID!): WorkflowExecution! @auth(requires: BEARER_TOKEN) @auditLog
+  
+  cancelWorkflowExecution(id: UUID!): WorkflowExecution! @auth(requires: BEARER_TOKEN) @auditLog
+  
+  # Task Management
+  assignTask(
+    taskId: UUID!
+    agentId: UUID!
+  ): TaskExecution! @auth(requires: BEARER_TOKEN) @auditLog
+  
+  retryTask(taskExecutionId: UUID!): TaskExecution! @auth(requires: BEARER_TOKEN) @auditLog
+  
+  # Alert Management
+  createAlert(input: AlertConfigInput!): MetricAlert! @auth(requires: BEARER_TOKEN) @auditLog
+  
+  updateAlert(
+    id: UUID!
+    input: AlertUpdateInput!
+  ): MetricAlert! @auth(requires: BEARER_TOKEN) @auditLog
+  
+  deleteAlert(id: UUID!): Boolean! @auth(requires: BEARER_TOKEN) @auditLog
+  
+  acknowledgeAlert(
+    id: UUID!
+    message: String
+  ): MetricAlert! @auth(requires: BEARER_TOKEN) @auditLog
+  
+  resolveAlert(
+    id: UUID!
+    resolution: String!
+  ): MetricAlert! @auth(requires: BEARER_TOKEN) @auditLog
+  
+  # Notification Management
+  createNotificationTemplate(input: NotificationTemplateInput!): NotificationTemplate! @auth(requires: BEARER_TOKEN) @auditLog
+  
+  updateNotificationTemplate(
+    id: UUID!
+    input: NotificationTemplateUpdateInput!
+  ): NotificationTemplate! @auth(requires: BEARER_TOKEN) @auditLog
+  
+  deleteNotificationTemplate(id: UUID!): Boolean! @auth(requires: BEARER_TOKEN) @auditLog
+  
+  sendNotification(input: NotificationSendInput!): NotificationDelivery! @auth(requires: BEARER_TOKEN) @auditLog
+  
+  # User Management
+  createUser(input: UserInput!): User! @auth(requires: BEARER_TOKEN, roles: ["admin", "user_manager"]) @auditLog
+  
+  updateUser(
+    id: UUID!
+    input: UserUpdateInput!
+  ): User! @auth(requires: BEARER_TOKEN) @auditLog
+  
+  deleteUser(id: UUID!): Boolean! @auth(requires: BEARER_TOKEN, roles: ["admin"]) @auditLog
+  
+  updateCurrentUser(input: UserUpdateInput!): User! @auth(requires: BEARER_TOKEN) @auditLog
+  
+  changePassword(
+    currentPassword: String!
+    newPassword: String!
+  ): Boolean! @auth(requires: BEARER_TOKEN) @auditLog(sensitive: true)
+  
+  # Role and Permission Management
+  createRole(input: RoleInput!): Role! @auth(requires: BEARER_TOKEN, roles: ["admin"]) @auditLog
+  
+  updateRole(
+    id: UUID!
+    input: RoleUpdateInput!
+  ): Role! @auth(requires: BEARER_TOKEN, roles: ["admin"]) @auditLog
+  
+  deleteRole(id: UUID!): Boolean! @auth(requires: BEARER_TOKEN, roles: ["admin"]) @auditLog
+  
+  assignRole(
+    userId: UUID!
+    roleId: UUID!
+  ): User! @auth(requires: BEARER_TOKEN, roles: ["admin"]) @auditLog
+  
+  revokeRole(
+    userId: UUID!
+    roleId: UUID!
+  ): User! @auth(requires: BEARER_TOKEN, roles: ["admin"]) @auditLog
+  
+  # Group Management
+  createGroup(input: GroupInput!): Group! @auth(requires: BEARER_TOKEN, roles: ["admin", "group_manager"]) @auditLog
+  
+  updateGroup(
+    id: UUID!
+    input: GroupUpdateInput!
+  ): Group! @auth(requires: BEARER_TOKEN) @auditLog
+  
+  deleteGroup(id: UUID!): Boolean! @auth(requires: BEARER_TOKEN, roles: ["admin"]) @auditLog
+  
+  addUserToGroup(
+    groupId: UUID!
+    userId: UUID!
+  ): Group! @auth(requires: BEARER_TOKEN) @auditLog
+  
+  removeUserFromGroup(
+    groupId: UUID!
+    userId: UUID!
+  ): Group! @auth(requires: BEARER_TOKEN) @auditLog
+  
+  # Organization Management
+  createOrganization(input: OrganizationInput!): Organization! @auth(requires: BEARER_TOKEN, roles: ["admin"]) @auditLog
+  
+  updateOrganization(
+    id: UUID!
+    input: OrganizationUpdateInput!
+  ): Organization! @auth(requires: BEARER_TOKEN) @auditLog
+  
+  deleteOrganization(id: UUID!): Boolean! @auth(requires: BEARER_TOKEN, roles: ["admin"]) @auditLog
+  
+  # Tenant Management
+  createTenant(input: TenantInput!): Tenant! @auth(requires: BEARER_TOKEN, roles: ["admin"]) @auditLog
+  
+  updateTenant(
+    id: UUID!
+    input: TenantUpdateInput!
+  ): Tenant! @auth(requires: BEARER_TOKEN) @auditLog
+  
+  deleteTenant(id: UUID!): Boolean! @auth(requires: BEARER_TOKEN, roles: ["admin"]) @auditLog
+  
+  suspendTenant(
+    id: UUID!
+    reason: String!
+  ): Tenant! @auth(requires: BEARER_TOKEN, roles: ["admin"]) @auditLog
+  
+  resumeTenant(id: UUID!): Tenant! @auth(requires: BEARER_TOKEN, roles: ["admin"]) @auditLog
+  
+  # Configuration Management
+  updateSystemConfiguration(input: SystemConfigurationInput!): SystemConfiguration! @auth(requires: BEARER_TOKEN, roles: ["admin"]) @auditLog
+  
+  updateTenantConfiguration(
+    tenantId: UUID!
+    input: TenantConfigurationInput!
+  ): TenantConfiguration! @auth(requires: BEARER_TOKEN) @auditLog
+  
+  # Dashboard Management
+  createDashboard(input: DashboardInput!): Dashboard! @auth(requires: BEARER_TOKEN) @auditLog
+  
+  updateDashboard(
+    id: UUID!
+    input: DashboardUpdateInput!
+  ): Dashboard! @auth(requires: BEARER_TOKEN) @auditLog
+  
+  deleteDashboard(id: UUID!): Boolean! @auth(requires: BEARER_TOKEN) @auditLog
+  
+  shareDashboard(
+    id: UUID!
+    permissions: [DashboardPermissionInput!]!
+  ): Dashboard! @auth(requires: BEARER_TOKEN) @auditLog
+  
+  # Event Stream Management
+  createEventStream(input: EventStreamInput!): EventStream! @auth(requires: BEARER_TOKEN) @auditLog
+  
+  updateEventStream(
+    id: UUID!
+    input: EventStreamUpdateInput!
+  ): EventStream! @auth(requires: BEARER_TOKEN) @auditLog
+  
+  deleteEventStream(id: UUID!): Boolean! @auth(requires: BEARER_TOKEN) @auditLog
+  
+  # Webhook Management
+  createWebhookEndpoint(input: WebhookEndpointInput!): WebhookEndpoint! @auth(requires: BEARER_TOKEN) @auditLog
+  
+  updateWebhookEndpoint(
+    id: UUID!
+    input: WebhookEndpointUpdateInput!
+  ): WebhookEndpoint! @auth(requires: BEARER_TOKEN) @auditLog
+  
+  deleteWebhookEndpoint(id: UUID!): Boolean! @auth(requires: BEARER_TOKEN) @auditLog
+  
+  testWebhookEndpoint(id: UUID!): WebhookTestResult! @auth(requires: BEARER_TOKEN)
+  
+  # Bulk Operations
+  bulkCreateAgents(input: [AgentRegistrationInput!]!): [Agent!]! @auth(requires: BEARER_TOKEN, roles: ["admin"]) @auditLog
+  
+  bulkUpdateAgents(input: [AgentBulkUpdateInput!]!): [Agent!]! @auth(requires: BEARER_TOKEN) @auditLog
+  
+  bulkDeleteAgents(ids: [UUID!]!): Boolean! @auth(requires: BEARER_TOKEN, roles: ["admin"]) @auditLog
+  
+  # Import/Export Operations
+  exportData(input: ExportInput!): ExportResult! @auth(requires: BEARER_TOKEN) @auditLog
+  
+  importData(input: ImportInput!): ImportResult! @auth(requires: BEARER_TOKEN) @auditLog
+  
+  # System Operations
+  performSystemMaintenance(
+    type: MaintenanceType!
+    scheduledAt: DateTime
+    message: String
+  ): MaintenanceResult! @auth(requires: BEARER_TOKEN, roles: ["admin"]) @auditLog
+  
+  clearCache(
+    type: CacheType
+    keys: [String!]
+  ): Boolean! @auth(requires: BEARER_TOKEN, roles: ["admin"]) @auditLog
+  
+  reloadConfiguration: Boolean! @auth(requires: BEARER_TOKEN, roles: ["admin"]) @auditLog
+}
+
+# Root Subscription Type
+type Subscription {
+  # Real-time Agent Events
+  agentEvents(
+    agentIds: [UUID!]
+    eventTypes: [EventType!]
+  ): AgentEvent! @realtime @auth(requires: BEARER_TOKEN)
+  
+  agentStatusChanged(agentId: UUID!): Agent! @realtime @auth(requires: BEARER_TOKEN)
+  
+  agentHealthChanged(agentId: UUID!): HealthEvent! @realtime @auth(requires: BEARER_TOKEN)
+  
+  # Real-time Workflow Events
+  workflowEvents(
+    workflowIds: [UUID!]
+    eventTypes: [WorkflowEventType!]
+  ): WorkflowEvent! @realtime @auth(requires: BEARER_TOKEN)
+  
+  workflowStatusChanged(workflowId: UUID!): Workflow! @realtime @auth(requires: BEARER_TOKEN)
+  
+  workflowExecutionUpdated(executionId: UUID!): WorkflowExecution! @realtime @auth(requires: BEARER_TOKEN)
+  
+  taskExecutionUpdated(taskExecutionId: UUID!): TaskExecution! @realtime @auth(requires: BEARER_TOKEN)
+  
+  # Real-time Performance Events
+  performanceEvents(
+    agentIds: [UUID!]
+    thresholds: [MetricThreshold!]
+  ): PerformanceEvent! @realtime @auth(requires: BEARER_TOKEN)
+  
+  performanceAlert(
+    agentId: UUID
+    severity: AlertSeverity
+  ): MetricAlert! @realtime @auth(requires: BEARER_TOKEN)
+  
+  # Real-time Telemetry Streams
+  telemetryStream(
+    agentIds: [UUID!]!
+    metrics: [String!]
+    sampleRate: Float = 1.0
+  ): TelemetryData! @realtime @auth(requires: BEARER_TOKEN)
+  
+  metricsUpdated(
+    entityType: String!
+    entityId: UUID!
+    metrics: [String!]
+  ): MetricUpdate! @realtime @auth(requires: BEARER_TOKEN)
+  
+  # Real-time Compliance Events
+  complianceEvents(
+    frameworks: [ComplianceFramework!]
+    severities: [ViolationSeverity!]
+  ): ComplianceEvent! @realtime @auth(requires: BEARER_TOKEN)
+  
+  complianceViolationDetected(
+    agentId: UUID
+    framework: ComplianceFramework
+  ): ComplianceViolation! @realtime @auth(requires: BEARER_TOKEN)
+  
+  # Real-time Security Events
+  securityEvents(
+    agentIds: [UUID!]
+    eventTypes: [SecurityEventType!]
+    severities: [AlertSeverity!]
+  ): SecurityEvent! @realtime @auth(requires: BEARER_TOKEN, roles: ["admin", "security"])
+  
+  securityAlert(
+    severity: AlertSeverity
+    category: String
+  ): SecurityEvent! @realtime @auth(requires: BEARER_TOKEN, roles: ["admin", "security"])
+  
+  # Real-time Business Events
+  businessEvents(
+    eventTypes: [BusinessEventType!]
+    tenantId: UUID
+  ): BusinessEvent! @realtime @auth(requires: BEARER_TOKEN)
+  
+  budgetAlert(
+    entityType: String
+    entityId: UUID
+    threshold: Float
+  ): BudgetAlert! @realtime @auth(requires: BEARER_TOKEN)
+  
+  # Real-time System Events
+  systemHealthChanged: SystemHealth! @realtime @auth(requires: BEARER_TOKEN, roles: ["admin"])
+  
+  systemAlert(severity: AlertSeverity): SystemAlert! @realtime @auth(requires: BEARER_TOKEN, roles: ["admin"])
+  
+  # Real-time User Events
+  userNotifications(userId: UUID!): NotificationDelivery! @realtime @auth(requires: BEARER_TOKEN)
+  
+  userSessionEvents(userId: UUID!): UserSessionEvent! @realtime @auth(requires: BEARER_TOKEN)
+  
+  # Real-time Audit Events
+  auditEvents(
+    entityTypes: [String!]
+    actions: [String!]
+    users: [String!]
+  ): AuditLogEntry! @realtime @auditLog @auth(requires: BEARER_TOKEN, roles: ["admin", "auditor"])
+  
+  # Custom Event Streams
+  customEventStream(
+    streamId: UUID!
+    filters: [EventFilterInput!]
+  ): JSON! @realtime @auth(requires: BEARER_TOKEN)
+}
+
+# Additional Types for Complete Schema
+
+type SystemHealth {
+  overall: HealthStatus!
+  components: [ComponentHealth!]!
+  uptime: Float!
+  version: String!
+  timestamp: DateTime!
+}
+
+type SystemStatus {
+  status: String!
+  maintenance: Boolean!
+  message: String
+  services: [ServiceStatus!]!
+  timestamp: DateTime!
+}
+
+type SystemVersion {
+  version: String!
+  buildNumber: String!
+  buildDate: DateTime!
+  gitCommit: String!
+  environment: String!
+}
+
+type ServiceStatus {
+  name: String!
+  status: HealthStatus!
+  version: String!
+  uptime: Float!
+  lastCheck: DateTime!
+}
+
+type PerformanceReport {
+  entityType: String!
+  entityId: UUID!
+  timeRange: TimeRange!
+  
+  summary: PerformanceMetrics!
+  trends: TrendAnalysis!
+  recommendations: [PerformanceRecommendation!]!
+  
+  generatedAt: DateTime!
+}
+
+type TrendAnalysis {
+  direction: String!
+  confidence: Float!
+  predictions: [PredictionDataPoint!]!
+}
+
+type PredictionDataPoint {
+  timestamp: DateTime!
+  value: Float!
+  confidence: Float!
+}
+
+type PerformanceRecommendation {
+  category: String!
+  priority: PriorityLevel!
+  description: String!
+  expectedImpact: String!
+  effort: String!
+}
+
+type ComplianceReport {
+  framework: ComplianceFramework!
+  timeRange: TimeRange!
+  
+  overallScore: Float!
+  status: String!
+  
+  assessments: [ComplianceAssessment!]!
+  violations: [ComplianceViolation!]!
+  remediations: [RemediationAction!]!
+  
+  generatedAt: DateTime!
+}
+
+type SearchResults {
+  query: String!
+  totalResults: Int!
+  
+  agents: [Agent!]!
+  workflows: [Workflow!]!
+  users: [User!]!
+  organizations: [Organization!]!
+  
+  facets: [SearchFacet!]!
+  suggestions: [String!]!
+  
+  executionTime: Float!
+}
+
+type SearchFacet {
+  field: String!
+  values: [FacetValue!]!
+}
+
+type FacetValue {
+  value: String!
+  count: Int!
+}
+
+type AnalyticsResult {
+  query: AnalyticsQuery!
+  data: [AnalyticsDataPoint!]!
+  aggregations: JSON
+  metadata: AnalyticsMetadata!
+}
+
+type AnalyticsQuery {
+  metrics: [String!]!
+  dimensions: [String!]!
+  filters: [FilterInput!]!
+  timeRange: TimeRange!
+}
+
+type AnalyticsDataPoint {
+  dimensions: JSON!
+  metrics: JSON!
+  timestamp: DateTime!
+}
+
+type AnalyticsMetadata {
+  executionTime: Float!
+  dataPoints: Int!
+  cached: Boolean!
+  cacheAge: Int
+}
+
+type PredictionResult {
+  entityType: String!
+  entityId: UUID!
+  predictionType: String!
+  horizon: String!
+  
+  predictions: [PredictionData!]!
+  confidence: Float!
+  model: PredictionModel!
+  
+  generatedAt: DateTime!
+}
+
+type Integration {
+  id: UUID!
+  name: String!
+  type: String!
+  enabled: Boolean!
+  configuration: JSON!
+  
+  status: String!
+  lastSync: DateTime
+  nextSync: DateTime
+  
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type ExternalService {
+  id: UUID!
+  name: String!
+  type: String!
+  endpoint: URI!
+  
+  status: ServiceStatus!
+  healthCheck: ExternalServiceHealthCheck
+  
+  configuration: JSON!
+  
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type DebugInfo {
+  entityType: String!
+  entityId: UUID!
+  
+  systemInfo: SystemDebugInfo!
+  processInfo: ProcessDebugInfo!
+  networkInfo: NetworkDebugInfo!
+  
+  logs: [LogEntry!]!
+  traces: [TraceSpan!]!
+  metrics: [MetricSeries!]!
+  
+  generatedAt: DateTime!
+}
+
+type SystemDebugInfo {
+  hostname: String!
+  platform: String!
+  architecture: String!
+  version: String!
+  uptime: Float!
+  
+  resources: ResourceUsage!
+}
+
+type ProcessDebugInfo {
+  pid: Int!
+  ppid: Int!
+  command: String!
+  arguments: [String!]!
+  
+  memory: ProcessMemoryInfo!
+  cpu: ProcessCpuInfo!
+  
+  startTime: DateTime!
+  threads: Int!
+}
+
+type ProcessMemoryInfo {
+  rss: Uint64!
+  vss: Uint64!
+  heap: Uint64!
+  external: Uint64!
+}
+
+type ProcessCpuInfo {
+  usage: Float!
+  userTime: Float!
+  systemTime: Float!
+}
+
+type NetworkDebugInfo {
+  interfaces: [NetworkInterface!]!
+  connections: [NetworkConnection!]!
+  routing: [NetworkRoute!]!
+}
+
+type NetworkInterface {
+  name: String!
+  type: String!
+  status: String!
+  
+  addresses: [NetworkAddress!]!
+  
+  statistics: NetworkInterfaceStats!
+}
+
+type NetworkAddress {
+  family: String!
+  address: String!
+  netmask: String!
+  broadcast: String
+}
+
+type NetworkInterfaceStats {
+  bytesIn: Uint64!
+  bytesOut: Uint64!
+  packetsIn: Uint64!
+  packetsOut: Uint64!
+  errorsIn: Uint64!
+  errorsOut: Uint64!
+}
+
+type NetworkConnection {
+  protocol: String!
+  localAddress: String!
+  localPort: Int!
+  remoteAddress: String!
+  remotePort: Int!
+  state: String!
+}
+
+type NetworkRoute {
+  destination: String!
+  gateway: String!
+  interface: String!
+  metric: Int!
+}
+
+type LogEntry {
+  id: UUID!
+  timestamp: DateTime!
+  level: String!
+  logger: String!
+  message: String!
+  
+  context: JSON
+  metadata: JSON
+  
+  traceId: String
+  spanId: String
+}
+
+type TraceSpan {
+  traceId: String!
+  spanId: String!
+  parentSpanId: String
+  
+  operationName: String!
+  startTime: DateTime!
+  endTime: DateTime
+  duration: Float
+  
+  tags: JSON!
+  logs: [TraceLog!]!
+  
+  service: String!
+  component: String!
+}
+
+type TraceLog {
+  timestamp: DateTime!
+  fields: JSON!
+}
+
+type MetricUpdate {
+  entityType: String!
+  entityId: UUID!
+  metric: String!
+  value: Float!
+  timestamp: DateTime!
+  
+  tags: JSON
+}
+
+type SystemAlert {
+  id: UUID!
+  type: String!
+  severity: AlertSeverity!
+  title: String!
+  message: String!
+  
+  source: String!
+  timestamp: DateTime!
+  
+  metadata: JSON
+}
+
+type UserSessionEvent {
+  type: String!
+  userId: UUID!
+  sessionId: UUID!
+  timestamp: DateTime!
+  
+  data: JSON
+  metadata: JSON
+}
+
+type WebhookTestResult {
+  success: Boolean!
+  statusCode: Int
+  responseTime: Float
+  response: String
+  error: String
+  timestamp: DateTime!
+}
+
+type ExportResult {
+  id: UUID!
+  status: String!
+  format: ExportFormat!
+  url: URI
+  error: String
+  
+  recordCount: Int
+  fileSize: Uint64
+  
+  startedAt: DateTime!
+  completedAt: DateTime
+}
+
+type ImportResult {
+  id: UUID!
+  status: String!
+  format: ImportFormat!
+  
+  recordsProcessed: Int!
+  recordsSuccessful: Int!
+  recordsFailed: Int!
+  
+  errors: [ImportError!]!
+  
+  startedAt: DateTime!
+  completedAt: DateTime
+}
+
+type ImportError {
+  record: Int!
+  field: String
+  message: String!
+  value: JSON
+}
+
+type MaintenanceResult {
+  type: MaintenanceType!
+  status: String!
+  message: String
+  
+  startedAt: DateTime!
+  completedAt: DateTime
+  
+  affectedServices: [String!]!
+}
+
+enum MaintenanceType {
+  PLANNED
+  EMERGENCY
+  ROUTINE
+  UPGRADE
+}
+
+enum CacheType {
+  MEMORY
+  REDIS
+  DATABASE
+  ALL
+}
+
+# Filter Input Types
+input WorkflowFilterInput {
+  status: [WorkflowStatus!]
+  createdAfter: DateTime
+  createdBefore: DateTime
+  owner: String
+  tags: [String!]
+}
+
+input ExecutionFilterInput {
+  status: [ExecutionStatus!]
+  startedAfter: DateTime
+  startedBefore: DateTime
+  completedAfter: DateTime
+  completedBefore: DateTime
+}
+
+input UserFilterInput {
+  active: Boolean
+  verified: Boolean
+  roles: [String!]
+  groups: [String!]
+  createdAfter: DateTime
+  createdBefore: DateTime
+}
+
+input AlertFilterInput {
+  status: [AlertStatus!]
+  severity: [AlertSeverity!]
+  agentIds: [UUID!]
+  triggeredAfter: DateTime
+  triggeredBefore: DateTime
+}
+
+input LogFilterInput {
+  level: [String!]
+  logger: [String!]
+  timeRange: TimeRangeInput!
+  search: String
+  traceId: String
+}
+
+# Update Input Types
+input AgentUpdateInput {
+  name: String
+  version: String
+  description: String
+  
+  taxonomy: AgentTaxonomyInput
+  capabilities: AgentCapabilitiesInput
+  protocols: ProtocolSupportInput
+  
+  metadata: AgentMetadataInput
+  configuration: AgentConfigurationInput
+  
+  sla: ServiceLevelAgreementInput
+  compliance: ComplianceInfoInput
+  security: SecurityConfigurationInput
+}
+
+input WorkflowUpdateInput {
+  name: String
+  version: String
+  description: String
+  
+  definition: WorkflowDefinitionInput
+  configuration: WorkflowConfigurationInput
+  
+  budget: WorkflowBudgetInput
+  compliance: WorkflowComplianceInput
+  governance: WorkflowGovernanceInput
+  
+  scheduledAt: DateTime
+}
+
+input AlertUpdateInput {
+  name: String
+  description: String
+  
+  condition: AlertConditionInput
+  
+  notifications: [NotificationChannelInput!]
+  escalation: EscalationPolicyInput
+  
+  tags: [String!]
+  severity: AlertSeverity
+}
+
+input NotificationTemplateUpdateInput {
+  name: String
+  description: String
+  
+  type: NotificationType
+  format: NotificationFormat
+  
+  subject: String
+  body: String
+  
+  variables: [TemplateVariableInput!]
+  
+  renderer: String
+  
+  tags: [String!]
+  version: String
+}
+
+input EventStreamInput {
+  name: String!
+  description: String
+  
+  configuration: StreamConfigurationInput!
+  
+  filters: [EventFilterInput!]!
+  
+  delivery: DeliveryConfigurationInput!
+  
+  permissions: [StreamPermissionInput!]!
+}
+
+input StreamConfigurationInput {
+  bufferSize: Int = 1000
+  bufferStrategy: String = "circular"
+  
+  batchSize: Int = 1
+  batchTimeout: Int = 1000
+  
+  compression: Boolean = false
+  compressionAlgorithm: String
+  
+  ordering: Boolean = false
+  orderingKey: String
+  
+  persistent: Boolean = false
+  retentionPeriod: String = "24h"
+}
+
+input StreamPermissionInput {
+  principal: String!
+  permission: StreamPermissionType!
+  conditions: [PermissionConditionInput!]
+}
+
+input PermissionConditionInput {
+  type: String!
+  value: String!
+}
+
+input EventStreamUpdateInput {
+  name: String
+  description: String
+  
+  configuration: StreamConfigurationInput
+  filters: [EventFilterInput!]
+  delivery: DeliveryConfigurationInput
+  permissions: [StreamPermissionInput!]
+}
+
+input WebhookEndpointUpdateInput {
+  name: String
+  url: URI
+  
+  method: String
+  headers: JSON
+  authentication: WebhookAuthInput
+  
+  eventTypes: [EventType!]
+  filters: [EventFilterInput!]
+  
+  delivery: WebhookDeliveryInput
+  
+  enabled: Boolean
+  metadata: JSON
+}
+
+input AgentBulkUpdateInput {
+  id: UUID!
+  input: AgentUpdateInput!
+}
+
+input NotificationSendInput {
+  templateId: UUID!
+  recipients: [String!]!
+  
+  variables: JSON
+  
+  priority: PriorityLevel = NORMAL
+  scheduledAt: DateTime
+  
+  channels: [NotificationType!]
+}
+
+# Schema Metadata and Extensions
+extend schema @tag(name: "ossa-v0.1.8") {
+  # Schema metadata
+  _ossaMetadata: OSSAMetadata!
+}
+
+type OSSAMetadata {
+  version: String!
+  buildNumber: String!
+  buildDate: DateTime!
+  features: [String!]!
+  capabilities: [String!]!
+  complianceLevel: ComplianceLevel!
+  supportedProtocols: [ProtocolType!]!
+  supportedFrameworks: [ComplianceFramework!]!
+}
+
+# Schema statistics and health
+type SchemaHealth {
+  valid: Boolean!
+  errors: [SchemaError!]!
+  warnings: [SchemaWarning!]!
+  lastValidated: DateTime!
+}
+
+type SchemaError {
+  type: String!
+  message: String!
+  location: String
+}
+
+type SchemaWarning {
+  type: String!
+  message: String!
+  recommendation: String
+}
+
+# Add schema health to Query
+extend type Query {
+  _schemaHealth: SchemaHealth! @tag(name: "internal")
+}

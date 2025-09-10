@@ -1,0 +1,1036 @@
+# OSSA v0.1.8 Agent Telemetry Schema
+# Performance monitoring, metrics collection, and observability
+
+# Telemetry Core Types
+type TelemetryData @key(fields: "id") @ossaCompliant(version: "0.1.8", level: ADVANCED) {
+  id: UUID!
+  agentId: UUID!
+  timestamp: DateTime!
+  
+  # Metric Categories
+  performance: PerformanceMetrics! @performanceMetrics
+  resources: ResourceMetrics!
+  business: BusinessMetrics!
+  quality: QualityMetrics!
+  
+  # Context
+  context: TelemetryContext!
+  
+  # Metadata
+  metadata: TelemetryMetadata!
+}
+
+type PerformanceMetrics @cached(maxAge: 30) {
+  # Response Time Metrics
+  responseTime: ResponseTimeMetrics!
+  
+  # Throughput Metrics
+  throughput: ThroughputMetrics!
+  
+  # Availability Metrics
+  availability: AvailabilityMetrics!
+  
+  # Error Metrics
+  errors: ErrorMetrics!
+  
+  # Latency Distribution
+  latency: LatencyDistribution!
+  
+  # SLA Compliance
+  slaCompliance: SLAComplianceMetrics!
+}
+
+type ResponseTimeMetrics {
+  # Basic Statistics
+  mean: Float!
+  median: Float!
+  mode: Float
+  stddev: Float!
+  
+  # Percentiles
+  p50: Float!
+  p75: Float!
+  p90: Float!
+  p95: Float!
+  p99: Float!
+  p99_9: Float!
+  
+  # Extremes
+  min: Float!
+  max: Float!
+  
+  # Time Window
+  sampleCount: Int!
+  window: String!
+  unit: String! = "milliseconds"
+}
+
+type ThroughputMetrics {
+  # Request Throughput
+  requestsPerSecond: Float!
+  requestsPerMinute: Float!
+  requestsPerHour: Float!
+  
+  # Task Throughput
+  tasksPerSecond: Float!
+  tasksPerMinute: Float!
+  tasksPerHour: Float!
+  
+  # Data Throughput
+  bytesPerSecond: Float
+  tokensPerSecond: Float
+  
+  # Peak Metrics
+  peakThroughput: Float!
+  peakTimestamp: DateTime!
+  
+  # Trend Analysis
+  trend: TrendMetrics!
+}
+
+type TrendMetrics {
+  direction: String! # "increasing" | "decreasing" | "stable"
+  slope: Float!
+  confidence: Float! # 0.0 to 1.0
+  prediction: Float # predicted next value
+}
+
+type AvailabilityMetrics {
+  # Uptime
+  uptime: Float! # percentage
+  uptimeMinutes: Int!
+  downtimeMinutes: Int!
+  
+  # MTBF/MTTR
+  mtbf: Float # Mean Time Between Failures (hours)
+  mttr: Float # Mean Time To Recovery (minutes)
+  
+  # Availability Zones
+  plannedDowntime: Float!
+  unplannedDowntime: Float!
+  
+  # Historical Data
+  uptimeTrend: TrendMetrics!
+  availabilityHistory: [AvailabilityDataPoint!]!
+}
+
+type AvailabilityDataPoint {
+  timestamp: DateTime!
+  available: Boolean!
+  responseTime: Float
+  reason: String
+}
+
+type ErrorMetrics {
+  # Error Rates
+  errorRate: Float! # percentage
+  errorCount: Int!
+  totalRequests: Int!
+  
+  # Error Categories
+  errorsByType: [ErrorTypeMetric!]!
+  errorsByCode: [ErrorCodeMetric!]!
+  errorsBySeverity: [ErrorSeverityMetric!]!
+  
+  # Error Trends
+  errorTrend: TrendMetrics!
+  
+  # Recovery Metrics
+  recoveryRate: Float!
+  averageRecoveryTime: Float!
+}
+
+type ErrorTypeMetric {
+  type: String!
+  count: Int!
+  rate: Float!
+  lastOccurrence: DateTime!
+}
+
+type ErrorCodeMetric {
+  code: ErrorCode!
+  count: Int!
+  rate: Float!
+  description: String!
+}
+
+type ErrorSeverityMetric {
+  severity: ErrorSeverity!
+  count: Int!
+  rate: Float!
+  averageRecoveryTime: Float!
+}
+
+type LatencyDistribution {
+  # Distribution Buckets
+  buckets: [LatencyBucket!]!
+  
+  # Statistical Measures
+  histogram: HistogramData!
+  
+  # Outlier Detection
+  outliers: [OutlierDataPoint!]!
+  outlierThreshold: Float!
+}
+
+type LatencyBucket {
+  lowerBound: Float!
+  upperBound: Float!
+  count: Int!
+  frequency: Float!
+}
+
+type HistogramData {
+  buckets: [Float!]!
+  counts: [Int!]!
+  totalSamples: Int!
+}
+
+type OutlierDataPoint {
+  value: Float!
+  timestamp: DateTime!
+  context: JSON
+  zscore: Float!
+}
+
+type SLAComplianceMetrics {
+  # Overall Compliance
+  overallCompliance: Float! # percentage
+  complianceScore: Float! # 0.0 to 1.0
+  
+  # Individual SLA Metrics
+  responseTimeCompliance: SLAMetric!
+  availabilityCompliance: SLAMetric!
+  throughputCompliance: SLAMetric!
+  errorRateCompliance: SLAMetric!
+  
+  # Violations
+  violations: [SLAViolation!]!
+  violationTrend: TrendMetrics!
+  
+  # Credits and Penalties
+  slaCredits: Float!
+  penalties: Float!
+  currency: String! = "USD"
+}
+
+type SLAMetric {
+  metric: String!
+  target: Float!
+  current: Float!
+  compliance: Float! # percentage
+  status: String! # "compliant" | "warning" | "violation"
+  buffer: Float # how close to violation
+}
+
+type ResourceMetrics {
+  # Computational Resources
+  cpu: CPUMetrics!
+  memory: MemoryMetrics!
+  storage: StorageMetrics!
+  network: NetworkMetrics!
+  
+  # Specialized Resources
+  gpu: GPUMetrics
+  customResources: JSON
+  
+  # Resource Efficiency
+  efficiency: ResourceEfficiency!
+  
+  # Resource Predictions
+  predictions: ResourcePredictions!
+}
+
+type CPUMetrics {
+  # Utilization
+  utilization: Float! # percentage
+  utilizationHistory: [DataPoint!]!
+  
+  # Load Metrics
+  loadAverage1m: Float!
+  loadAverage5m: Float!
+  loadAverage15m: Float!
+  
+  # Core Metrics
+  coreCount: Int!
+  coreUtilization: [Float!]!
+  
+  # Frequency and Temperature
+  frequency: Float # MHz
+  temperature: Float # Celsius
+  
+  # Throttling
+  throttleCount: Int!
+  throttleDuration: Float!
+}
+
+type MemoryMetrics {
+  # Usage
+  used: Uint64!
+  available: Uint64!
+  total: Uint64!
+  utilization: Float! # percentage
+  
+  # Memory Types
+  rss: Uint64! # Resident Set Size
+  vms: Uint64! # Virtual Memory Size
+  heap: Uint64!
+  stack: Uint64!
+  
+  # Cache and Buffers
+  cached: Uint64!
+  buffers: Uint64!
+  
+  # Memory Events
+  pageFaults: Int!
+  swapUsage: Uint64!
+  
+  # Pressure Metrics
+  pressure: PressureMetrics
+}
+
+type StorageMetrics {
+  # Disk Usage
+  used: Uint64!
+  available: Uint64!
+  total: Uint64!
+  utilization: Float! # percentage
+  
+  # I/O Metrics
+  readOps: Int!
+  writeOps: Int!
+  readBytes: Uint64!
+  writeBytes: Uint64!
+  
+  # Performance
+  readLatency: Float!
+  writeLatency: Float!
+  iops: Int!
+  
+  # Queue Metrics
+  queueDepth: Int!
+  waitTime: Float!
+}
+
+type NetworkMetrics {
+  # Throughput
+  inboundBytes: Uint64!
+  outboundBytes: Uint64!
+  inboundPackets: Int!
+  outboundPackets: Int!
+  
+  # Bandwidth Utilization
+  bandwidthUtilization: Float! # percentage
+  maxBandwidth: Uint64!
+  
+  # Connection Metrics
+  activeConnections: Int!
+  connectionRate: Float!
+  connectionErrors: Int!
+  
+  # Latency and Quality
+  rtt: Float! # Round Trip Time
+  packetLoss: Float! # percentage
+  jitter: Float!
+}
+
+type GPUMetrics {
+  # Utilization
+  utilization: Float! # percentage
+  memoryUtilization: Float! # percentage
+  
+  # Memory
+  memoryUsed: Uint64!
+  memoryTotal: Uint64!
+  
+  # Performance
+  frequency: Float! # MHz
+  temperature: Float! # Celsius
+  powerDraw: Float! # Watts
+  
+  # Compute Metrics
+  computeUnits: Int!
+  activeComputeUnits: Int!
+}
+
+type ResourceEfficiency {
+  # Overall Efficiency
+  overallEfficiency: Float! # 0.0 to 1.0
+  
+  # Individual Resource Efficiency
+  cpuEfficiency: Float!
+  memoryEfficiency: Float!
+  storageEfficiency: Float!
+  networkEfficiency: Float!
+  
+  # Waste Metrics
+  wastedCpu: Float!
+  wastedMemory: Float!
+  wastedStorage: Float!
+  
+  # Right-sizing Recommendations
+  recommendations: [ResourceRecommendation!]!
+}
+
+type ResourceRecommendation {
+  resource: String!
+  currentAllocation: String!
+  recommendedAllocation: String!
+  potentialSavings: Float!
+  confidence: Float! # 0.0 to 1.0
+  reason: String!
+}
+
+type ResourcePredictions {
+  # Prediction Horizon
+  horizon: String! # e.g., "24h", "7d", "30d"
+  
+  # CPU Predictions
+  cpuPrediction: PredictionData!
+  
+  # Memory Predictions
+  memoryPrediction: PredictionData!
+  
+  # Storage Predictions
+  storagePrediction: PredictionData!
+  
+  # Scaling Predictions
+  scalingPrediction: ScalingPrediction!
+}
+
+type PredictionData {
+  predicted: [DataPoint!]!
+  confidence: [Float!]!
+  upperBound: [Float!]!
+  lowerBound: [Float!]!
+  model: PredictionModel!
+}
+
+type ScalingPrediction {
+  scaleUp: Boolean!
+  scaleDown: Boolean!
+  recommendedReplicas: Int!
+  timeToScale: DateTime!
+  confidence: Float!
+}
+
+type PredictionModel {
+  algorithm: String!
+  accuracy: Float!
+  trainingData: String!
+  lastTrained: DateTime!
+}
+
+type BusinessMetrics {
+  # Cost Metrics
+  costs: CostMetrics!
+  
+  # Usage Metrics
+  usage: UsageMetrics!
+  
+  # Value Metrics
+  value: ValueMetrics!
+  
+  # Customer Metrics
+  customer: CustomerMetrics
+}
+
+type CostMetrics @tokenBudget(cost: 0) {
+  # Total Costs
+  totalCost: Float!
+  currency: String! = "USD"
+  
+  # Cost Breakdown
+  computeCosts: Float!
+  storageCosts: Float!
+  networkCosts: Float!
+  licensingCosts: Float!
+  operationalCosts: Float!
+  
+  # Token Costs
+  tokenCosts: Float!
+  totalTokens: Int!
+  averageCostPerToken: Float!
+  
+  # Cost Trends
+  costTrend: TrendMetrics!
+  costPerRequest: Float!
+  costPerTask: Float!
+  
+  # Budget Tracking
+  budgetUsed: Float! # percentage
+  budgetRemaining: Float!
+  forecastedSpend: Float!
+}
+
+type UsageMetrics {
+  # Request Metrics
+  totalRequests: Int!
+  uniqueUsers: Int!
+  sessionsCount: Int!
+  
+  # Feature Usage
+  featureUsage: [FeatureUsageMetric!]!
+  capabilityUsage: [CapabilityUsageMetric!]!
+  
+  # Geographic Usage
+  geographicUsage: [GeographicUsageMetric!]
+  
+  # Time-based Usage
+  usageByHour: [HourlyUsageMetric!]!
+  usageByDay: [DailyUsageMetric!]!
+}
+
+type FeatureUsageMetric {
+  feature: String!
+  usageCount: Int!
+  uniqueUsers: Int!
+  averageUsageTime: Float!
+  popularityScore: Float!
+}
+
+type CapabilityUsageMetric {
+  capability: String!
+  requestCount: Int!
+  successRate: Float!
+  averageResponseTime: Float!
+  userSatisfaction: Float
+}
+
+type GeographicUsageMetric {
+  region: String!
+  country: String!
+  requestCount: Int!
+  uniqueUsers: Int!
+  averageResponseTime: Float!
+}
+
+type HourlyUsageMetric {
+  hour: Int! # 0-23
+  requestCount: Int!
+  uniqueUsers: Int!
+  averageResponseTime: Float!
+}
+
+type DailyUsageMetric {
+  date: DateTime!
+  requestCount: Int!
+  uniqueUsers: Int!
+  averageResponseTime: Float!
+  revenue: Float
+}
+
+type ValueMetrics {
+  # Business Value
+  revenueGenerated: Float
+  costSavings: Float!
+  timesSaved: Float! # hours
+  
+  # Efficiency Gains
+  automationRate: Float! # percentage
+  processImprovement: Float! # percentage
+  qualityImprovement: Float! # percentage
+  
+  # ROI Metrics
+  roi: Float! # percentage
+  paybackPeriod: Float! # months
+  netPresentValue: Float!
+  
+  # User Value
+  userSatisfaction: Float # 0.0 to 1.0
+  taskCompletion: Float! # percentage
+  errorReduction: Float! # percentage
+}
+
+type CustomerMetrics {
+  # Satisfaction
+  satisfactionScore: Float # 0.0 to 1.0
+  nps: Float # Net Promoter Score (-100 to 100)
+  
+  # Engagement
+  activeUsers: Int!
+  sessionDuration: Float!
+  retentionRate: Float!
+  
+  # Support
+  ticketCount: Int!
+  resolutionTime: Float!
+  escalationRate: Float!
+}
+
+type QualityMetrics {
+  # Output Quality
+  accuracy: Float! # 0.0 to 1.0
+  precision: Float! # 0.0 to 1.0
+  recall: Float! # 0.0 to 1.0
+  f1Score: Float! # 0.0 to 1.0
+  
+  # Consistency
+  consistency: Float! # 0.0 to 1.0
+  reproducibility: Float! # 0.0 to 1.0
+  
+  # Validation Metrics
+  validationPassed: Int!
+  validationFailed: Int!
+  validationRate: Float! # percentage
+  
+  # Quality Trends
+  qualityTrend: TrendMetrics!
+  
+  # Feedback Metrics
+  feedback: FeedbackMetrics
+}
+
+type FeedbackMetrics {
+  # User Feedback
+  averageRating: Float! # 0.0 to 5.0
+  totalRatings: Int!
+  ratingDistribution: [RatingDistribution!]!
+  
+  # Qualitative Feedback
+  positiveComments: Int!
+  negativeComments: Int!
+  suggestions: Int!
+  
+  # Sentiment Analysis
+  sentiment: SentimentMetrics
+}
+
+type RatingDistribution {
+  rating: Int! # 1-5
+  count: Int!
+  percentage: Float!
+}
+
+type SentimentMetrics {
+  overallSentiment: Float! # -1.0 to 1.0
+  positivePercentage: Float!
+  neutralPercentage: Float!
+  negativePercentage: Float!
+  
+  # Sentiment Trends
+  sentimentTrend: TrendMetrics!
+  
+  # Topic Analysis
+  topicSentiments: [TopicSentiment!]
+}
+
+type TopicSentiment {
+  topic: String!
+  sentiment: Float! # -1.0 to 1.0
+  confidence: Float! # 0.0 to 1.0
+  mentions: Int!
+}
+
+type TelemetryContext {
+  # Execution Context
+  executionId: UUID
+  workflowId: UUID
+  taskId: UUID
+  
+  # Agent Context
+  agentVersion: String!
+  agentCapabilities: [String!]
+  
+  # Environment Context
+  environment: String! # "development" | "staging" | "production"
+  region: String!
+  zone: String
+  
+  # Request Context
+  requestId: UUID
+  sessionId: UUID
+  userId: String
+  
+  # Infrastructure Context
+  nodeId: String
+  podId: String
+  containerId: String
+  
+  # Temporal Context
+  timeOfDay: Int! # hour 0-23
+  dayOfWeek: Int! # 0-6
+  timezone: String!
+}
+
+type TelemetryMetadata {
+  # Collection Information
+  collectionMethod: String!
+  collectionVersion: String!
+  samplingRate: Float!
+  
+  # Quality Indicators
+  dataQuality: Float! # 0.0 to 1.0
+  completeness: Float! # 0.0 to 1.0
+  accuracy: Float! # 0.0 to 1.0
+  
+  # Aggregation Information
+  aggregationLevel: String! # "raw" | "minute" | "hour" | "day"
+  aggregationMethod: [String!]!
+  
+  # Schema Information
+  schemaVersion: String!
+  tags: [String!]
+  annotations: JSON
+}
+
+type DataPoint {
+  timestamp: DateTime!
+  value: Float!
+  tags: JSON
+}
+
+type PressureMetrics {
+  some: Float! # some pressure
+  full: Float! # full pressure
+  total: Uint64! # total pressure stall time
+}
+
+# Historical and Aggregated Data Types
+type MetricSeries {
+  metric: String!
+  labels: JSON!
+  dataPoints: [DataPoint!]!
+  
+  # Metadata
+  unit: String!
+  aggregationType: AggregationType!
+  resolution: String! # "1s", "1m", "1h", "1d"
+  
+  # Quality
+  dataQuality: Float!
+  gapCount: Int!
+}
+
+type AggregatedMetrics {
+  # Aggregation Context
+  agentId: UUID
+  workflowId: UUID
+  timeRange: TimeRange!
+  aggregationLevel: String!
+  
+  # Aggregated Performance
+  performance: AggregatedPerformanceMetrics!
+  
+  # Aggregated Resources
+  resources: AggregatedResourceMetrics!
+  
+  # Aggregated Business
+  business: AggregatedBusinessMetrics!
+  
+  # Aggregated Quality
+  quality: AggregatedQualityMetrics!
+}
+
+type TimeRange {
+  start: DateTime!
+  end: DateTime!
+  duration: String!
+}
+
+type AggregatedPerformanceMetrics {
+  # Response Time Aggregations
+  avgResponseTime: Float!
+  minResponseTime: Float!
+  maxResponseTime: Float!
+  p95ResponseTime: Float!
+  p99ResponseTime: Float!
+  
+  # Throughput Aggregations
+  totalRequests: Int!
+  avgThroughput: Float!
+  peakThroughput: Float!
+  
+  # Error Aggregations
+  totalErrors: Int!
+  avgErrorRate: Float!
+  maxErrorRate: Float!
+  
+  # Availability Aggregations
+  avgUptime: Float!
+  totalDowntime: Float!
+  incidentCount: Int!
+}
+
+type AggregatedResourceMetrics {
+  # CPU Aggregations
+  avgCpuUtilization: Float!
+  maxCpuUtilization: Float!
+  cpuHours: Float!
+  
+  # Memory Aggregations
+  avgMemoryUtilization: Float!
+  maxMemoryUtilization: Float!
+  memoryHours: Float!
+  
+  # Storage Aggregations
+  totalStorageUsed: Uint64!
+  storageIOPS: Int!
+  storageThroughput: Float!
+  
+  # Network Aggregations
+  totalNetworkBytes: Uint64!
+  avgNetworkUtilization: Float!
+  networkPackets: Int!
+}
+
+type AggregatedBusinessMetrics {
+  # Cost Aggregations
+  totalCost: Float!
+  avgCostPerRequest: Float!
+  avgCostPerHour: Float!
+  
+  # Usage Aggregations
+  totalUsers: Int!
+  totalSessions: Int!
+  totalFeatureUsage: Int!
+  
+  # Value Aggregations
+  totalRevenue: Float
+  totalSavings: Float!
+  totalTimesSaved: Float!
+}
+
+type AggregatedQualityMetrics {
+  # Quality Aggregations
+  avgAccuracy: Float!
+  avgPrecision: Float!
+  avgRecall: Float!
+  avgF1Score: Float!
+  
+  # Validation Aggregations
+  totalValidations: Int!
+  validationSuccessRate: Float!
+  
+  # Feedback Aggregations
+  avgRating: Float!
+  totalFeedback: Int!
+  avgSentiment: Float!
+}
+
+# Alert and Notification Types
+type MetricAlert @realtime {
+  id: UUID!
+  name: String!
+  description: String!
+  
+  # Alert Configuration
+  metric: String!
+  condition: AlertCondition!
+  threshold: Float!
+  
+  # Current State
+  status: AlertStatus!
+  triggered: Boolean!
+  lastTriggered: DateTime
+  
+  # Notification
+  notifications: [NotificationChannel!]!
+  escalation: EscalationPolicy
+  
+  # Context
+  agentId: UUID
+  workflowId: UUID
+  tags: [String!]
+  
+  # Temporal Information
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type AlertCondition {
+  operator: String! # "gt" | "gte" | "lt" | "lte" | "eq" | "ne"
+  value: Float!
+  window: String! # "1m", "5m", "1h"
+  consecutiveViolations: Int!
+}
+
+enum AlertStatus {
+  ACTIVE
+  RESOLVED
+  SUPPRESSED
+  ACKNOWLEDGED
+}
+
+type MetricThreshold {
+  metric: String!
+  warning: Float
+  critical: Float!
+  unit: String!
+  direction: String! # "above" | "below"
+}
+
+# Dashboard and Visualization Types
+type Dashboard {
+  id: UUID!
+  name: String!
+  description: String
+  
+  # Layout and Configuration
+  layout: DashboardLayout!
+  widgets: [DashboardWidget!]!
+  
+  # Access Control
+  visibility: String! # "public" | "private" | "shared"
+  owner: String!
+  permissions: [DashboardPermission!]
+  
+  # Temporal Information
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  lastViewed: DateTime
+}
+
+type DashboardLayout {
+  columns: Int!
+  rows: Int!
+  responsive: Boolean!
+  theme: String!
+}
+
+type DashboardWidget {
+  id: UUID!
+  type: String! # "chart" | "metric" | "table" | "text"
+  title: String!
+  
+  # Position and Size
+  position: WidgetPosition!
+  size: WidgetSize!
+  
+  # Configuration
+  config: WidgetConfig!
+  
+  # Data Source
+  dataSource: DataSourceConfig!
+}
+
+type WidgetPosition {
+  x: Int!
+  y: Int!
+}
+
+type WidgetSize {
+  width: Int!
+  height: Int!
+}
+
+type WidgetConfig {
+  # Chart Configuration
+  chartType: String
+  xAxis: String
+  yAxis: String
+  
+  # Display Options
+  showLegend: Boolean!
+  showGrid: Boolean!
+  colors: [String!]
+  
+  # Data Options
+  aggregation: AggregationType
+  timeRange: String!
+  refreshInterval: Int!
+}
+
+type DataSourceConfig {
+  type: String! # "prometheus" | "influxdb" | "elasticsearch"
+  query: String!
+  parameters: JSON
+}
+
+type DashboardPermission {
+  user: String!
+  permission: String! # "view" | "edit" | "admin"
+}
+
+# Query Input Types
+input MetricsQuery {
+  # Target Selection
+  agentIds: [UUID!]
+  workflowIds: [UUID!]
+  taskIds: [UUID!]
+  
+  # Metric Selection
+  metrics: [String!]!
+  
+  # Time Range
+  timeRange: TimeRangeInput!
+  
+  # Filtering
+  filters: [MetricFilterInput!]
+  
+  # Aggregation
+  aggregation: AggregationInput
+  
+  # Output Options
+  limit: Int = 1000
+  resolution: String = "1m"
+  fillGaps: Boolean = false
+}
+
+input TimeRangeInput {
+  start: DateTime!
+  end: DateTime!
+}
+
+input MetricFilterInput {
+  key: String!
+  operator: FilterOperator!
+  value: String!
+}
+
+input AggregationInput {
+  type: AggregationType!
+  window: String!
+  groupBy: [String!]
+}
+
+# Historical Data Query
+input HistoricalDataQuery {
+  # Target Selection
+  agentId: UUID!
+  
+  # Time Range
+  start: DateTime!
+  end: DateTime!
+  
+  # Metrics
+  metrics: [String!]!
+  
+  # Granularity
+  granularity: String! = "1h" # "1m", "5m", "1h", "1d"
+  
+  # Aggregation
+  aggregation: AggregationType = AVG
+  
+  # Options
+  includeGaps: Boolean = false
+  maxPoints: Int = 1000
+}
+
+# Alert Configuration Input
+input AlertConfigInput {
+  name: String!
+  description: String
+  
+  # Target
+  agentId: UUID
+  metric: String!
+  
+  # Condition
+  condition: AlertConditionInput!
+  
+  # Notification
+  notifications: [NotificationChannelInput!]!
+  escalation: EscalationPolicyInput
+  
+  # Metadata
+  tags: [String!]
+  severity: AlertSeverity!
+}
+
+input AlertConditionInput {
+  operator: String!
+  value: Float!
+  window: String!
+  consecutiveViolations: Int = 1
+}

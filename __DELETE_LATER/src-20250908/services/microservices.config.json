@@ -1,0 +1,51 @@
+{
+  "name": "ossa-microservices",
+  "version": "0.1.8",
+  "description": "OSSA Microservices Architecture Configuration",
+  "services": {
+    "coordination": {
+      "name": "Coordination Service",
+      "port": 3010,
+      "endpoint": "/api/v1/coordination",
+      "capabilities": ["agent-management", "task-scheduling", "workload-balancing"]
+    },
+    "discovery": {
+      "name": "Discovery Service (ACDL)",
+      "port": 3011,
+      "endpoint": "/api/v1/discovery",
+      "capabilities": ["agent-discovery", "capability-matching", "semantic-search"]
+    },
+    "orchestration": {
+      "name": "Orchestration Service",
+      "port": 3012,
+      "endpoint": "/api/v1/orchestration",
+      "capabilities": ["workflow-management", "multi-agent-coordination", "task-distribution"]
+    },
+    "monitoring": {
+      "name": "Monitoring Service",
+      "port": 3013,
+      "endpoint": "/api/v1/monitoring",
+      "capabilities": ["performance-tracking", "health-checks", "metrics-collection"]
+    },
+    "gateway": {
+      "name": "API Gateway Service",
+      "port": 3000,
+      "endpoint": "/api/v1",
+      "capabilities": ["routing", "authentication", "rate-limiting", "load-balancing"]
+    }
+  },
+  "orchestration": {
+    "strategy": "microservices",
+    "deployment": "kubernetes-ready",
+    "communication": "rest-api",
+    "service-mesh": "istio-compatible"
+  },
+  "ossa-compliance": {
+    "version": "0.1.8",
+    "extensions": ["x-ossa-acta", "x-ossa-acdl", "x-ossa-coordination"],
+    "token-optimization": {
+      "enabled": true,
+      "target-reduction": 0.75
+    }
+  }
+}

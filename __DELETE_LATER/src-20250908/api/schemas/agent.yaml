@@ -1,0 +1,1597 @@
+openapi: 3.1.0
+info:
+  title: OSSA - Open Standards for Scalable Agents
+  version: 0.1.8
+  description: |
+    Unified specification combining OSSA 360° Feedback Loop with Agent Capability Description Language (ACDL).
+    This comprehensive standard enables interoperable, self-improving agent systems with governance, 
+    multi-protocol support, and token-efficient communication.
+  
+    Key Features:
+    - 360° Feedback Loop (Plan → Execute → Review → Judge → Learn → Govern)
+    - Agent Capability Description Language (ACDL) for universal agent interoperability
+    - Multi-protocol support (REST, gRPC, WebSocket) with protocol-agnostic design
+    - Token-efficient architecture with Props tokens, delta patterns, and 10 optimization strategies
+    - Enterprise governance with immutable audit trails, budget enforcement, and compliance tracking
+    - DITA-native documentation with machine-lean JSON roadmap integration
+    - GitLab-native CI/CD components and ML experiment tracking
+    - Standardized .agents-workspace structure for project organization
+    - Tiered conformance levels (Bronze, Silver, Gold) for progressive adoption
+    - Agent taxonomy with 7 primary categories and 21+ specialized subtypes
+    - Budget management with task/subtask/role-based token allocation
+    - Checkpoint-based execution with early exit heuristics
+    - Vector store integration with pre-filter optimization
+    - Compression support (zstd/base64) for payload efficiency
+    - Hash-chained audit events for regulatory compliance
+  
+  contact:
+    name: Bluefly.io
+    email: thomas@bluefly.io
+    url: https://bluefly.io
+  
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+  
+  x-ossa-metadata:
+    specification: OSSA
+    acdl-version: "1.0.0"
+    roadmap-version: "0.1.8"
+    theme: "Foundations & Minimal Viable Standard"
+    principles:
+      - Interoperability-first (no framework rewrites required)
+      - Token-efficiency by design (budgets, deltas, IDs over blobs)
+      - Auditability and governance as first-class concepts
+      - Docs-native (DITA) with machine-lean JSON sitemap
+      - Portable agent taxonomy (roles, subtypes, capabilities)
+
+servers:
+  - url: https://api.ossa.bluefly.io/v1
+    description: Production OSSA API
+    x-protocols: [https]
+  - url: grpc://grpc.ossa.bluefly.io:50051
+    description: gRPC endpoint
+    x-protocols: [grpc]
+  - url: wss://ws.ossa.bluefly.io/realtime
+    description: WebSocket real-time endpoint
+    x-protocols: [websocket]
+  - url: http://localhost:8080/v1
+    description: Local development
+    x-protocols: [http]
+
+x-agent-capabilities:
+  taxonomy:
+    version: "1.0.0"
+    categories:
+      orchestration:
+        - orchestrator
+        - router
+        - scheduler
+      execution:
+        - worker
+        - executor
+        - processor
+      evaluation:
+        - critic
+        - verifier
+        - judge
+      learning:
+        - trainer
+        - synthesizer
+        - optimizer
+      governance:
+        - governor
+        - auditor
+        - enforcer
+      telemetry:
+        - monitor
+        - collector
+        - analyzer
+      integration:
+        - adapter
+        - translator
+        - bridge
+  
+  capability-domains:
+    nlp:
+      - text-generation
+      - summarization
+      - translation
+      - sentiment-analysis
+      - entity-extraction
+    vision:
+      - object-detection
+      - face-recognition
+      - ocr
+      - scene-understanding
+    reasoning:
+      - mathematical
+      - logical
+      - causal
+      - temporal
+    data:
+      - retrieval
+      - transformation
+      - validation
+      - persistence
+
+x-uri-conventions:
+  artifact: "artifact://{repo}/{path}@{commit}"
+  vector: "vec://{space}/{id}"
+  dita: "dita://{collection}/{topicId}"
+  props: "@{namespace}:{project}:{version}:{id}"
+  workspace: "workspace://{project}/.agents-workspace/{category}/{id}"
+
+x-token-efficiency:
+  strategies:
+    - Key-based context (pass IDs not docs)
+    - Delta-first prompts
+    - Tiered prompting (shallow→deep)
+    - Critic-on-outputs (lint/test) not full artifacts
+    - Cacheable policy/style capsules (versioned)
+    - Vector pre-filters (top-k IDs, expand late)
+    - Pre-LLM validators (rules/regex/schema)
+    - Payload compression allowed (zstd/base64)
+    - Checkpoint memos instead of full history
+    - Early-exit heuristics
+  
+  budget-defaults:
+    maxTokensTask: 12000
+    maxTokensSubtask: 4000
+    maxTokensPlanning: 2000
+
+x-grpc-service:
+  proto: ossa.proto
+  package: ossa.v1
+  services:
+    - name: AgentService
+      methods:
+        - Plan
+        - Execute
+        - Review
+        - Learn
+        - Govern
+    - name: RegistryService
+      methods:
+        - Register
+        - Discover
+        - Update
+        - Health
+
+x-websocket-channels:
+  /stream/execution:
+    subscribe:
+      message:
+        $ref: '#/components/schemas/ExecutionStatus'
+    publish:
+      message:
+        $ref: '#/components/schemas/ExecutionCommand'
+    heartbeat:
+      interval: 30000
+      timeout: 5000
+  
+  /stream/feedback:
+    subscribe:
+      message:
+        $ref: '#/components/schemas/FeedbackPacket'
+    publish:
+      message:
+        $ref: '#/components/schemas/FeedbackRequest'
+
+tags:
+  - name: Registry
+    description: Agent registration and discovery (ACDL)
+  - name: Planning
+    description: Task planning and strategy operations
+  - name: Execution
+    description: Task execution and monitoring
+  - name: Feedback
+    description: Multi-source critique and review
+  - name: Learning
+    description: Adaptation and improvement
+  - name: Governance
+    description: Budget, compliance, and audit
+  - name: Memory
+    description: Context and state management
+  - name: Props
+    description: Token resolution and expansion
+  - name: Workspace
+    description: .agents-workspace management
+
+paths:
+  # Registry & Discovery (ACDL)
+  /registry/agents:
+    post:
+      tags: [Registry]
+      summary: Register agent with capabilities
+      operationId: registerAgent
+      x-agent-operation:
+        capability: registry-management
+        complexity: low
+        cacheable: false
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AgentRegistration'
+      responses:
+        '201':
+          description: Agent registered
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RegisteredAgent'
+    
+    get:
+      tags: [Registry]
+      summary: Discover agents by capability
+      operationId: discoverAgents
+      x-agent-operation:
+        capability: registry-search
+        complexity: low
+        cacheable: true
+      parameters:
+        - name: capability
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Required capability
+        - name: version
+          in: query
+          schema:
+            type: string
+          description: Version constraint (e.g., ">=2.0.0")
+        - name: agentType
+          in: query
+          schema:
+            type: string
+            enum: [orchestrator, worker, critic, verifier, judge, integrator, trainer, governor, telemetry]
+        - name: maxLatency
+          in: query
+          schema:
+            type: integer
+          description: Maximum acceptable latency in ms
+      responses:
+        '200':
+          description: Compatible agents found
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AgentMatch'
+
+  /registry/agents/{agentId}:
+    get:
+      tags: [Registry]
+      summary: Get agent specification
+      operationId: getAgentSpec
+      parameters:
+        - name: agentId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Agent specification
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentSpecification'
+    
+    patch:
+      tags: [Registry]
+      summary: Update agent registration
+      operationId: updateAgentRegistration
+      parameters:
+        - name: agentId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AgentUpdate'
+      responses:
+        '200':
+          description: Registration updated
+
+  /registry/health/{agentId}:
+    post:
+      tags: [Registry]
+      summary: Report agent health
+      operationId: reportHealth
+      parameters:
+        - name: agentId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/HealthReport'
+      responses:
+        '204':
+          description: Health recorded
+
+  # Planning
+  /plan:
+    post:
+      tags: [Planning]
+      summary: Create execution plan
+      operationId: createPlan
+      x-agent-operation:
+        capability: planning
+        complexity: high
+        requiresBudget: true
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PlanRequest'
+      responses:
+        '200':
+          description: Execution plan created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Plan'
+        '402':
+          $ref: '#/components/responses/InsufficientBudget'
+
+  /plan/{planId}/validate:
+    post:
+      tags: [Planning]
+      summary: Validate plan feasibility
+      operationId: validatePlan
+      parameters:
+        - name: planId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ValidationRequest'
+      responses:
+        '200':
+          description: Validation results
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationResult'
+
+  # Execution
+  /execute:
+    post:
+      tags: [Execution]
+      summary: Execute plan or task
+      operationId: execute
+      x-agent-operation:
+        capability: execution
+        complexity: variable
+        requiresBudget: true
+        auditable: true
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExecutionRequest'
+      responses:
+        '200':
+          description: Execution started
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExecutionReport'
+        '402':
+          $ref: '#/components/responses/InsufficientBudget'
+
+  /execute/{executionId}/status:
+    get:
+      tags: [Execution]
+      summary: Get execution status
+      operationId: getExecutionStatus
+      parameters:
+        - name: executionId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Current execution status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExecutionStatus'
+
+  # Feedback & Review
+  /feedback:
+    post:
+      tags: [Feedback]
+      summary: Submit feedback
+      operationId: submitFeedback
+      x-agent-operation:
+        capability: feedback-collection
+        complexity: low
+        auditable: true
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FeedbackPacket'
+      responses:
+        '201':
+          description: Feedback recorded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FeedbackResponse'
+
+  /review:
+    post:
+      tags: [Feedback]
+      summary: Create execution review
+      operationId: createReview
+      x-agent-operation:
+        capability: review-generation
+        complexity: medium
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReviewRequest'
+      responses:
+        '200':
+          description: Review created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Review'
+
+  /judge:
+    post:
+      tags: [Feedback]
+      summary: Judge execution quality
+      operationId: judgeExecution
+      x-agent-operation:
+        capability: judgment
+        complexity: high
+        requiresEvidence: true
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/JudgmentRequest'
+      responses:
+        '200':
+          description: Judgment rendered
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JudgmentDecision'
+
+  # Learning
+  /learn:
+    post:
+      tags: [Learning]
+      summary: Trigger learning cycle
+      operationId: triggerLearning
+      x-agent-operation:
+        capability: learning
+        complexity: high
+        async: true
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LearningRequest'
+      responses:
+        '202':
+          description: Learning cycle initiated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LearningJob'
+
+  /learn/signals:
+    post:
+      tags: [Learning]
+      summary: Submit learning signals
+      operationId: submitLearningSignals
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                signals:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/LearningSignal'
+      responses:
+        '201':
+          description: Signals recorded
+
+  # Governance
+  /governance/budget:
+    get:
+      tags: [Governance]
+      summary: Get current budgets
+      operationId: getBudgets
+      parameters:
+        - name: agentId
+          in: query
+          schema:
+            type: string
+        - name: projectId
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Budget information
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Budget'
+    
+    post:
+      tags: [Governance]
+      summary: Create budget
+      operationId: createBudget
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BudgetRequest'
+      responses:
+        '201':
+          description: Budget created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Budget'
+
+  /governance/budget/enforce:
+    post:
+      tags: [Governance]
+      summary: Enforce budget limits
+      operationId: enforceBudget
+      x-agent-operation:
+        capability: budget-enforcement
+        complexity: low
+        critical: true
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BudgetEnforcement'
+      responses:
+        '200':
+          description: Enforcement result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EnforcementResult'
+
+  # Audit
+  /audit:
+    post:
+      tags: [Governance]
+      summary: Log audit event
+      operationId: logAudit
+      x-agent-operation:
+        capability: audit-logging
+        complexity: low
+        immutable: true
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AuditEvent'
+      responses:
+        '201':
+          description: Audit logged
+
+  /audit/emit:
+    post:
+      tags: [Governance]
+      summary: Emit audit trail
+      operationId: emitAuditTrail
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AuditEmitRequest'
+      responses:
+        '200':
+          description: Audit trail emitted
+          content:
+            application/jsonl:
+              schema:
+                type: string
+                description: JSONL format audit trail
+
+  # Props Token Resolution
+  /props/resolve:
+    post:
+      tags: [Props]
+      summary: Resolve Props tokens
+      operationId: resolveProps
+      x-agent-operation:
+        capability: token-resolution
+        complexity: low
+        cacheable: true
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                tokens:
+                  type: array
+                  items:
+                    type: string
+                  example: ["@RM:OSSA:0.1.8:E-018-STD", "@DITA:spec:agent-taxonomy"]
+      responses:
+        '200':
+          description: Resolved URIs
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  type: string
+
+  # Workspace Management
+  /workspace/init:
+    post:
+      tags: [Workspace]
+      summary: Initialize .agents-workspace
+      operationId: initWorkspace
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                projectId:
+                  type: string
+                template:
+                  type: string
+                  enum: [minimal, standard, enterprise]
+      responses:
+        '201':
+          description: Workspace initialized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkspaceInfo'
+
+  /workspace/{projectId}/roadmap:
+    get:
+      tags: [Workspace]
+      summary: Get project roadmap
+      operationId: getRoadmap
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Project roadmap
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Roadmap'
+
+components:
+  schemas:
+    # ACDL Agent Registration
+    AgentRegistration:
+      type: object
+      required: [agentId, name, type, capabilities, endpoints]
+      properties:
+        agentId:
+          type: string
+          pattern: '^[a-z0-9-]+$'
+        name:
+          type: string
+        type:
+          type: string
+          enum: [orchestrator, worker, critic, verifier, judge, integrator, trainer, governor, telemetry]
+        subtype:
+          type: string
+          example: "worker.drupal"
+        capabilities:
+          type: array
+          items:
+            $ref: '#/components/schemas/Capability'
+        endpoints:
+          type: array
+          items:
+            $ref: '#/components/schemas/Endpoint'
+        constraints:
+          $ref: '#/components/schemas/AgentConstraints'
+        performance:
+          $ref: '#/components/schemas/PerformanceMetrics'
+        compatibility:
+          $ref: '#/components/schemas/CompatibilitySpec'
+
+    AgentSpecification:
+      allOf:
+        - $ref: '#/components/schemas/AgentRegistration'
+        - type: object
+          properties:
+            acdlVersion:
+              type: string
+            registeredAt:
+              type: string
+              format: date-time
+            lastHealthCheck:
+              type: string
+              format: date-time
+            status:
+              type: string
+              enum: [active, inactive, unhealthy, maintenance]
+
+    Capability:
+      type: object
+      required: [domain, name]
+      properties:
+        domain:
+          type: string
+          example: "nlp"
+        name:
+          type: string
+          example: "text-generation"
+        version:
+          type: string
+          example: "2.1.0"
+        models:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+              version:
+                type: string
+              precision:
+                type: string
+
+    Endpoint:
+      type: object
+      required: [url, protocol]
+      properties:
+        url:
+          type: string
+        protocol:
+          type: string
+          enum: [https, http, grpc, websocket]
+        healthCheck:
+          type: string
+        authentication:
+          type: string
+          enum: [none, bearer, apikey, oauth2, mtls]
+
+    AgentConstraints:
+      type: object
+      properties:
+        maxConcurrency:
+          type: integer
+        maxPayloadSize:
+          type: integer
+        timeout:
+          type: integer
+        rateLimit:
+          type: object
+          properties:
+            requests:
+              type: integer
+            window:
+              type: integer
+
+    CompatibilitySpec:
+      type: object
+      properties:
+        requires:
+          type: array
+          items:
+            type: object
+            properties:
+              agent:
+                type: string
+              version:
+                type: string
+        provides:
+          type: array
+          items:
+            type: object
+            properties:
+              interface:
+                type: string
+              version:
+                type: string
+
+    AgentMatch:
+      type: object
+      properties:
+        agentId:
+          type: string
+        name:
+          type: string
+        score:
+          type: number
+          minimum: 0
+          maximum: 1
+        capabilities:
+          type: array
+          items:
+            $ref: '#/components/schemas/Capability'
+        endpoints:
+          type: array
+          items:
+            $ref: '#/components/schemas/Endpoint'
+
+    # Core OSSA Objects
+    PlanRequest:
+      type: object
+      required: [goal, context]
+      properties:
+        goal:
+          type: string
+        context:
+          type: object
+        propsTokens:
+          type: array
+          items:
+            type: string
+          description: Props tokens to expand for context
+        constraints:
+          type: array
+          items:
+            $ref: '#/components/schemas/Constraint'
+        budget:
+          $ref: '#/components/schemas/BudgetAllocation'
+        agentType:
+          type: string
+        priority:
+          type: string
+          enum: [low, medium, high, critical]
+
+    Plan:
+      type: object
+      required: [id, goal, steps, estimatedCost]
+      properties:
+        id:
+          type: string
+        goal:
+          type: string
+        steps:
+          type: array
+          items:
+            $ref: '#/components/schemas/PlanStep'
+        estimatedCost:
+          $ref: '#/components/schemas/Cost'
+        confidence:
+          type: number
+        alternatives:
+          type: array
+          items:
+            $ref: '#/components/schemas/AlternativePlan'
+        workspace:
+          type: string
+          description: Workspace URI for plan artifacts
+
+    PlanStep:
+      type: object
+      required: [id, action, agentType]
+      properties:
+        id:
+          type: string
+        action:
+          type: string
+        agentType:
+          type: string
+        requiredCapabilities:
+          type: array
+          items:
+            type: string
+        dependencies:
+          type: array
+          items:
+            type: string
+        estimatedTokens:
+          type: integer
+        checkpoint:
+          type: boolean
+
+    ExecutionRequest:
+      type: object
+      required: [planId]
+      properties:
+        planId:
+          type: string
+        agentId:
+          type: string
+        propsContext:
+          type: array
+          items:
+            type: string
+        parameters:
+          type: object
+        deltaOnly:
+          type: boolean
+          default: false
+        compressionEnabled:
+          type: boolean
+          default: true
+
+    ExecutionReport:
+      type: object
+      required: [id, planId, status, startedAt]
+      properties:
+        id:
+          type: string
+        planId:
+          type: string
+        status:
+          type: string
+          enum: [pending, running, completed, failed, cancelled]
+        startedAt:
+          type: string
+          format: date-time
+        completedAt:
+          type: string
+          format: date-time
+        actualCost:
+          $ref: '#/components/schemas/Cost'
+        outputs:
+          type: array
+          items:
+            $ref: '#/components/schemas/StepOutput'
+        checkpoints:
+          type: array
+          items:
+            $ref: '#/components/schemas/Checkpoint'
+        workspace:
+          type: string
+
+    FeedbackPacket:
+      type: object
+      required: [executionId, source, type, content]
+      properties:
+        executionId:
+          type: string
+        source:
+          type: string
+          enum: [human, agent, system, automated]
+        sourceAgent:
+          type: string
+          description: Agent ID if source is agent
+        type:
+          type: string
+          enum: [success, failure, quality, efficiency, improvement, security, accessibility]
+        content:
+          type: string
+        metrics:
+          type: object
+          additionalProperties:
+            type: number
+        evidence:
+          type: array
+          items:
+            type: string
+        severity:
+          type: string
+          enum: [low, medium, high, critical]
+
+    Review:
+      type: object
+      required: [executionId, overallScore, dimensions]
+      properties:
+        executionId:
+          type: string
+        overallScore:
+          type: number
+          minimum: 0
+          maximum: 1
+        dimensions:
+          type: object
+          properties:
+            quality:
+              type: number
+            efficiency:
+              type: number
+            security:
+              type: number
+            accessibility:
+              type: number
+            compliance:
+              type: number
+        feedback:
+          type: array
+          items:
+            $ref: '#/components/schemas/FeedbackPacket'
+        recommendations:
+          type: array
+          items:
+            type: string
+
+    JudgmentRequest:
+      type: object
+      required: [executionId, criteria]
+      properties:
+        executionId:
+          type: string
+        criteria:
+          type: array
+          items:
+            type: string
+        evidence:
+          type: array
+          items:
+            type: string
+        threshold:
+          type: number
+
+    JudgmentDecision:
+      type: object
+      required: [decision, confidence, rationale]
+      properties:
+        decision:
+          type: string
+          enum: [approve, reject, escalate]
+        confidence:
+          type: number
+        rationale:
+          type: string
+        evidence:
+          type: array
+          items:
+            type: string
+        dissenting:
+          type: array
+          items:
+            type: string
+
+    LearningSignal:
+      type: object
+      required: [executionId, signalType, value]
+      properties:
+        executionId:
+          type: string
+        signalType:
+          type: string
+          enum: [reward, penalty, correction, preference]
+        value:
+          type: number
+        context:
+          type: object
+        skillUpdates:
+          type: array
+          items:
+            type: string
+        vectorUpdates:
+          type: array
+          items:
+            type: string
+
+    Budget:
+      type: object
+      required: [id, name, total, used, period]
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        projectId:
+          type: string
+        agentId:
+          type: string
+        total:
+          $ref: '#/components/schemas/Cost'
+        used:
+          $ref: '#/components/schemas/Cost'
+        remaining:
+          $ref: '#/components/schemas/Cost'
+        period:
+          type: string
+          enum: [hourly, daily, weekly, monthly, per_execution]
+        handoffPolicy:
+          type: string
+          enum: [block, queue, delegate, escalate]
+        thresholds:
+          type: array
+          items:
+            type: object
+            properties:
+              percent:
+                type: number
+              action:
+                type: string
+
+    Cost:
+      type: object
+      required: [tokens, dollars]
+      properties:
+        tokens:
+          type: integer
+        dollars:
+          type: number
+        breakdown:
+          type: object
+          properties:
+            inputTokens:
+              type: integer
+            outputTokens:
+              type: integer
+            planningTokens:
+              type: integer
+            computeSeconds:
+              type: number
+
+    AuditEvent:
+      type: object
+      required: [eventType, actor, action, timestamp]
+      properties:
+        id:
+          type: string
+        eventType:
+          type: string
+          enum: [execution.reported, review.submitted, judge.decision, learning.persisted, budget.threshold.hit, audit.appended]
+        actor:
+          type: string
+        agentType:
+          type: string
+        action:
+          type: string
+        resource:
+          type: string
+        projectId:
+          type: string
+        outcome:
+          type: string
+        metadata:
+          type: object
+        hash:
+          type: string
+          description: Hash chain for immutability
+        timestamp:
+          type: string
+          format: date-time
+
+    WorkspaceInfo:
+      type: object
+      properties:
+        projectId:
+          type: string
+        path:
+          type: string
+        structure:
+          type: object
+          properties:
+            plans:
+              type: string
+            executions:
+              type: string
+            feedback:
+              type: string
+            learning:
+              type: string
+            audit:
+              type: string
+            roadmap:
+              type: string
+        initialized:
+          type: string
+          format: date-time
+
+    Roadmap:
+      type: object
+      properties:
+        project:
+          type: string
+        version:
+          type: string
+        theme:
+          type: string
+        epics:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+              title:
+                type: string
+              description:
+                type: string
+              deliverables:
+                type: array
+                items:
+                  type: string
+              dependencies:
+                type: array
+                items:
+                  type: string
+        sitemap:
+          type: object
+          additionalProperties:
+            type: string
+            description: DITA or vector URI
+
+    # Supporting schemas
+    ValidationRequest:
+      type: object
+      properties:
+        checkBudget:
+          type: boolean
+          default: true
+        checkCapabilities:
+          type: boolean
+          default: true
+        checkDependencies:
+          type: boolean
+          default: true
+
+    ValidationResult:
+      type: object
+      required: [valid, issues]
+      properties:
+        valid:
+          type: boolean
+        issues:
+          type: array
+          items:
+            type: object
+            properties:
+              type:
+                type: string
+              severity:
+                type: string
+              message:
+                type: string
+
+    BudgetAllocation:
+      type: object
+      properties:
+        budgetId:
+          type: string
+        maxCost:
+          $ref: '#/components/schemas/Cost'
+
+    BudgetEnforcement:
+      type: object
+      required: [budgetId, requestedCost]
+      properties:
+        budgetId:
+          type: string
+        requestedCost:
+          $ref: '#/components/schemas/Cost'
+        executionId:
+          type: string
+        overrideToken:
+          type: string
+
+    EnforcementResult:
+      type: object
+      required: [approved, remaining]
+      properties:
+        approved:
+          type: boolean
+        remaining:
+          $ref: '#/components/schemas/Cost'
+        reason:
+          type: string
+        alternativeAgent:
+          type: string
+        routingDecision:
+          type: string
+
+    StepOutput:
+      type: object
+      properties:
+        stepId:
+          type: string
+        status:
+          type: string
+        output:
+          type: object
+        tokenUsage:
+          type: integer
+
+    Checkpoint:
+      type: object
+      properties:
+        id:
+          type: string
+        stepId:
+          type: string
+        state:
+          type: object
+        memo:
+          type: string
+          description: Compressed summary instead of full history
+
+    Constraint:
+      type: object
+      properties:
+        type:
+          type: string
+        value:
+          type: string
+        priority:
+          type: string
+
+    AlternativePlan:
+      type: object
+      properties:
+        steps:
+          type: array
+          items:
+            $ref: '#/components/schemas/PlanStep'
+        estimatedCost:
+          $ref: '#/components/schemas/Cost'
+        tradeoffs:
+          type: array
+          items:
+            type: string
+
+    ExecutionStatus:
+      type: object
+      properties:
+        executionId:
+          type: string
+        status:
+          type: string
+        progress:
+          type: number
+        currentStep:
+          type: string
+
+    FeedbackResponse:
+      type: object
+      properties:
+        id:
+          type: string
+        receivedAt:
+          type: string
+          format: date-time
+
+    LearningRequest:
+      type: object
+      properties:
+        executionIds:
+          type: array
+          items:
+            type: string
+        learningType:
+          type: string
+        targetMetrics:
+          type: array
+          items:
+            type: string
+
+    LearningJob:
+      type: object
+      properties:
+        id:
+          type: string
+        status:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+
+    BudgetRequest:
+      type: object
+      required: [name, total, period]
+      properties:
+        name:
+          type: string
+        total:
+          $ref: '#/components/schemas/Cost'
+        period:
+          type: string
+
+    ReviewRequest:
+      type: object
+      required: [executionId]
+      properties:
+        executionId:
+          type: string
+        critics:
+          type: array
+          items:
+            type: string
+
+    AuditEmitRequest:
+      type: object
+      properties:
+        startTime:
+          type: string
+          format: date-time
+        endTime:
+          type: string
+          format: date-time
+        eventTypes:
+          type: array
+          items:
+            type: string
+        format:
+          type: string
+          enum: [jsonl, json, csv]
+
+    PerformanceMetrics:
+      type: object
+      properties:
+        throughput:
+          type: number
+        latencyP99:
+          type: number
+        availability:
+          type: number
+        errorRate:
+          type: number
+
+    HealthReport:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [healthy, degraded, unhealthy]
+        metrics:
+          $ref: '#/components/schemas/PerformanceMetrics'
+        timestamp:
+          type: string
+          format: date-time
+
+    AgentUpdate:
+      type: object
+      properties:
+        status:
+          type: string
+        capabilities:
+          type: array
+          items:
+            $ref: '#/components/schemas/Capability'
+        endpoints:
+          type: array
+          items:
+            $ref: '#/components/schemas/Endpoint'
+
+    RegisteredAgent:
+      type: object
+      properties:
+        agentId:
+          type: string
+        registrationId:
+          type: string
+        registeredAt:
+          type: string
+          format: date-time
+
+    ExecutionCommand:
+      type: object
+      properties:
+        command:
+          type: string
+          enum: [pause, resume, cancel, checkpoint]
+        executionId:
+          type: string
+
+    FeedbackRequest:
+      type: object
+      properties:
+        executionId:
+          type: string
+        requestedFrom:
+          type: array
+          items:
+            type: string
+
+  responses:
+    InsufficientBudget:
+      description: Insufficient budget
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+              budgetId:
+                type: string
+              requested:
+                $ref: '#/components/schemas/Cost'
+              available:
+                $ref: '#/components/schemas/Cost'
+              suggestions:
+                type: array
+                items:
+                  type: string
+
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+    
+    ApiKey:
+      type: apiKey
+      in: header
+      name: X-API-Key
+    
+    OAuth2:
+      type: oauth2
+      flows:
+        authorizationCode:
+          authorizationUrl: https://auth.ossa.bluefly.io/authorize
+          tokenUrl: https://auth.ossa.bluefly.io/token
+          scopes:
+            read: Read access
+            write: Write access
+            admin: Admin access
+
+security:
+  - BearerAuth: []
+  - ApiKey: []
+  - OAuth2: [read, write]
+
+x-conformance:
+  levels:
+    bronze:
+      requirements:
+        - Basic OSSA object support
+        - Plan/Execute/Review endpoints
+        - JSON schema validation
+    silver:
+      requirements:
+        - Full feedback loop
+        - Budget enforcement
+        - Audit logging
+        - ACDL registration
+    gold:
+      requirements:
+        - Multi-protocol support
+        - Props token resolution
+        - Learning signals
+        - Workspace management
+  
+  validation:
+    endpoint: https://conformance.ossa.bluefly.io/validate
+    badge: https://conformance.ossa.bluefly.io/badge/{level}/{agentId}
+	

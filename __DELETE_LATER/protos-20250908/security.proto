@@ -1,0 +1,2606 @@
+syntax = "proto3";
+
+package ossa.v1;
+
+import "common.proto";
+import "agent.proto";
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/duration.proto";
+import "google/protobuf/struct.proto";
+import "google/protobuf/any.proto";
+
+option go_package = "github.com/ossa/proto/v1;ossav1";
+option java_package = "io.ossa.proto.v1";
+option java_multiple_files = true;
+option csharp_namespace = "Ossa.Proto.V1";
+
+// Security service for comprehensive authentication, authorization, and security management
+service SecurityService {
+  // Authenticate user or agent
+  rpc Authenticate(AuthenticateRequest) returns (AuthenticateResponse);
+  
+  // Refresh authentication token
+  rpc RefreshToken(RefreshTokenRequest) returns (RefreshTokenResponse);
+  
+  // Revoke authentication token
+  rpc RevokeToken(RevokeTokenRequest) returns (RevokeTokenResponse);
+  
+  // Authorize operation
+  rpc Authorize(AuthorizeRequest) returns (AuthorizeResponse);
+  
+  // Create security policy
+  rpc CreateSecurityPolicy(CreateSecurityPolicyRequest) returns (CreateSecurityPolicyResponse);
+  
+  // Update security policy
+  rpc UpdateSecurityPolicy(UpdateSecurityPolicyRequest) returns (UpdateSecurityPolicyResponse);
+  
+  // List security policies
+  rpc ListSecurityPolicies(ListSecurityPoliciesRequest) returns (ListSecurityPoliciesResponse);
+  
+  // Create role
+  rpc CreateRole(CreateRoleRequest) returns (CreateRoleResponse);
+  
+  // Assign role to principal
+  rpc AssignRole(AssignRoleRequest) returns (AssignRoleResponse);
+  
+  // Revoke role from principal
+  rpc RevokeRole(RevokeRoleRequest) returns (RevokeRoleResponse);
+  
+  // Create permission
+  rpc CreatePermission(CreatePermissionRequest) returns (CreatePermissionResponse);
+  
+  // Grant permission
+  rpc GrantPermission(GrantPermissionRequest) returns (GrantPermissionResponse);
+  
+  // Revoke permission
+  rpc RevokePermission(RevokePermissionRequest) returns (RevokePermissionResponse);
+  
+  // Encrypt data
+  rpc EncryptData(EncryptDataRequest) returns (EncryptDataResponse);
+  
+  // Decrypt data
+  rpc DecryptData(DecryptDataRequest) returns (DecryptDataResponse);
+  
+  // Generate digital signature
+  rpc SignData(SignDataRequest) returns (SignDataResponse);
+  
+  // Verify digital signature
+  rpc VerifySignature(VerifySignatureRequest) returns (VerifySignatureResponse);
+  
+  // Perform security audit
+  rpc PerformSecurityAudit(PerformSecurityAuditRequest) returns (PerformSecurityAuditResponse);
+  
+  // Log security event
+  rpc LogSecurityEvent(LogSecurityEventRequest) returns (LogSecurityEventResponse);
+  
+  // Stream security events
+  rpc StreamSecurityEvents(StreamSecurityEventsRequest) returns (stream SecurityEvent);
+  
+  // Get security metrics
+  rpc GetSecurityMetrics(GetSecurityMetricsRequest) returns (GetSecurityMetricsResponse);
+  
+  // Perform vulnerability scan
+  rpc PerformVulnerabilityScan(PerformVulnerabilityScanRequest) returns (PerformVulnerabilityScanResponse);
+  
+  // Get compliance status
+  rpc GetComplianceStatus(GetComplianceStatusRequest) returns (GetComplianceStatusResponse);
+  
+  // Create security certificate
+  rpc CreateCertificate(CreateCertificateRequest) returns (CreateCertificateResponse);
+  
+  // Validate certificate
+  rpc ValidateCertificate(ValidateCertificateRequest) returns (ValidateCertificateResponse);
+  
+  // Manage security keys
+  rpc ManageSecurityKeys(ManageSecurityKeysRequest) returns (ManageSecurityKeysResponse);
+}
+
+// Comprehensive authentication and authorization system
+message AuthenticationCredentials {
+  CredentialType type = 1;                // Credential type
+  oneof credential {
+    UsernamePassword username_password = 2; // Username/password credentials
+    TokenCredential token = 3;             // Token-based credentials
+    CertificateCredential certificate = 4; // Certificate-based credentials
+    BiometricCredential biometric = 5;     // Biometric credentials
+    ApiKeyCredential api_key = 6;          // API key credentials
+    OAuthCredential oauth = 7;             // OAuth credentials
+  }
+  map<string, string> metadata = 8;       // Additional credential metadata
+}
+
+enum CredentialType {
+  CREDENTIAL_TYPE_UNSPECIFIED = 0;
+  CREDENTIAL_TYPE_USERNAME_PASSWORD = 1;  // Username and password
+  CREDENTIAL_TYPE_TOKEN = 2;              // Bearer token
+  CREDENTIAL_TYPE_CERTIFICATE = 3;        // X.509 certificate
+  CREDENTIAL_TYPE_BIOMETRIC = 4;          // Biometric data
+  CREDENTIAL_TYPE_API_KEY = 5;            // API key
+  CREDENTIAL_TYPE_OAUTH = 6;              // OAuth token
+  CREDENTIAL_TYPE_SAML = 7;               // SAML assertion
+  CREDENTIAL_TYPE_OPENID = 8;             // OpenID Connect
+  CREDENTIAL_TYPE_MULTI_FACTOR = 9;       // Multi-factor authentication
+}
+
+message UsernamePassword {
+  string username = 1;                    // Username
+  string password = 2;                    // Password (hashed)
+  string domain = 3;                      // Authentication domain
+  bool require_mfa = 4;                   // Require multi-factor authentication
+}
+
+message TokenCredential {
+  string token = 1;                       // Authentication token
+  TokenType type = 2;                     // Token type
+  google.protobuf.Timestamp expires_at = 3; // Token expiration
+  repeated string scopes = 4;             // Token scopes
+}
+
+enum TokenType {
+  TOKEN_TYPE_UNSPECIFIED = 0;
+  TOKEN_TYPE_BEARER = 1;                  // Bearer token
+  TOKEN_TYPE_JWT = 2;                     // JSON Web Token
+  TOKEN_TYPE_REFRESH = 3;                 // Refresh token
+  TOKEN_TYPE_ACCESS = 4;                  // Access token
+  TOKEN_TYPE_ID = 5;                      // ID token
+}
+
+message CertificateCredential {
+  bytes certificate = 1;                  // X.509 certificate
+  bytes private_key = 2;                  // Private key (encrypted)
+  string certificate_chain = 3;           // Certificate chain
+  CertificateFormat format = 4;           // Certificate format
+  string passphrase = 5;                  // Private key passphrase
+}
+
+enum CertificateFormat {
+  CERTIFICATE_FORMAT_UNSPECIFIED = 0;
+  CERTIFICATE_FORMAT_PEM = 1;             // PEM format
+  CERTIFICATE_FORMAT_DER = 2;             // DER format
+  CERTIFICATE_FORMAT_PKCS12 = 3;          // PKCS#12 format
+  CERTIFICATE_FORMAT_JKS = 4;             // Java KeyStore format
+}
+
+message BiometricCredential {
+  BiometricType type = 1;                 // Biometric type
+  bytes template = 2;                     // Biometric template
+  double confidence_threshold = 3;        // Confidence threshold
+  string algorithm = 4;                   // Matching algorithm
+}
+
+enum BiometricType {
+  BIOMETRIC_TYPE_UNSPECIFIED = 0;
+  BIOMETRIC_TYPE_FINGERPRINT = 1;         // Fingerprint
+  BIOMETRIC_TYPE_FACE = 2;                // Facial recognition
+  BIOMETRIC_TYPE_IRIS = 3;                // Iris scan
+  BIOMETRIC_TYPE_VOICE = 4;               // Voice recognition
+  BIOMETRIC_TYPE_PALM = 5;                // Palm print
+}
+
+message ApiKeyCredential {
+  string key = 1;                         // API key
+  string secret = 2;                      // API secret (optional)
+  repeated string permissions = 3;        // Key permissions
+  google.protobuf.Timestamp expires_at = 4; // Key expiration
+  ApiKeyType type = 5;                    // API key type
+}
+
+enum ApiKeyType {
+  API_KEY_TYPE_UNSPECIFIED = 0;
+  API_KEY_TYPE_SIMPLE = 1;                // Simple API key
+  API_KEY_TYPE_HMAC = 2;                  // HMAC-signed requests
+  API_KEY_TYPE_RSA = 3;                   // RSA-signed requests
+  API_KEY_TYPE_ECDSA = 4;                 // ECDSA-signed requests
+}
+
+message OAuthCredential {
+  string access_token = 1;                // OAuth access token
+  string refresh_token = 2;               // OAuth refresh token
+  string token_type = 3;                  // Token type (usually "Bearer")
+  int64 expires_in = 4;                   // Token expiration in seconds
+  repeated string scopes = 5;             // Granted scopes
+  string id_token = 6;                    // OpenID Connect ID token
+}
+
+message AuthenticationResult {
+  bool authenticated = 1;                 // Authentication success
+  SecurityPrincipal principal = 2;        // Authenticated principal
+  AuthenticationToken token = 3;          // Authentication token
+  repeated string granted_scopes = 4;     // Granted scopes
+  AuthenticationMetadata metadata = 5;    // Authentication metadata
+  repeated SecurityClaim claims = 6;      // Security claims
+  Error authentication_error = 7;         // Authentication error
+}
+
+message SecurityPrincipal {
+  OSSAIdentifier id = 1;                  // Principal identifier
+  PrincipalType type = 2;                 // Principal type
+  string name = 3;                        // Principal name
+  string domain = 4;                      // Principal domain
+  repeated SecurityRole roles = 5;        // Assigned roles
+  repeated SecurityPermission permissions = 6; // Direct permissions
+  PrincipalAttributes attributes = 7;     // Principal attributes
+  SecurityContext context = 8;            // Security context
+}
+
+enum PrincipalType {
+  PRINCIPAL_TYPE_UNSPECIFIED = 0;
+  PRINCIPAL_TYPE_USER = 1;                // Human user
+  PRINCIPAL_TYPE_AGENT = 2;               // AI agent
+  PRINCIPAL_TYPE_SERVICE = 3;             // Service account
+  PRINCIPAL_TYPE_SYSTEM = 4;              // System account
+  PRINCIPAL_TYPE_GROUP = 5;               // Group of principals
+  PRINCIPAL_TYPE_ROLE = 6;                // Role-based principal
+}
+
+message PrincipalAttributes {
+  string email = 1;                       // Email address
+  string display_name = 2;                // Display name
+  repeated string groups = 3;             // Group memberships
+  string organization = 4;                // Organization
+  string department = 5;                  // Department
+  TrustLevel trust_level = 6;             // Trust level
+  SecurityClearance clearance = 7;        // Security clearance
+  map<string, string> custom_attributes = 8; // Custom attributes
+}
+
+enum SecurityClearance {
+  SECURITY_CLEARANCE_UNSPECIFIED = 0;
+  SECURITY_CLEARANCE_PUBLIC = 1;          // Public information access
+  SECURITY_CLEARANCE_INTERNAL = 2;        // Internal information access
+  SECURITY_CLEARANCE_CONFIDENTIAL = 3;    // Confidential information access
+  SECURITY_CLEARANCE_SECRET = 4;          // Secret information access
+  SECURITY_CLEARANCE_TOP_SECRET = 5;      // Top secret information access
+}
+
+message AuthenticationToken {
+  string token = 1;                       // Token value
+  TokenType type = 2;                     // Token type
+  google.protobuf.Timestamp issued_at = 3; // Issue timestamp
+  google.protobuf.Timestamp expires_at = 4; // Expiration timestamp
+  string issuer = 5;                      // Token issuer
+  string audience = 6;                    // Token audience
+  repeated string scopes = 7;             // Token scopes
+  TokenClaims claims = 8;                 // Token claims
+  string refresh_token = 9;               // Associated refresh token
+}
+
+message TokenClaims {
+  string subject = 1;                     // Subject (principal ID)
+  string issuer = 2;                      // Issuer
+  string audience = 3;                    // Audience
+  google.protobuf.Timestamp not_before = 4; // Not valid before
+  google.protobuf.Timestamp expires_at = 5;  // Expires at
+  google.protobuf.Timestamp issued_at = 6;   // Issued at
+  string jti = 7;                         // JWT ID
+  map<string, google.protobuf.Any> custom_claims = 8; // Custom claims
+}
+
+message AuthenticationMetadata {
+  string client_ip = 1;                   // Client IP address
+  string user_agent = 2;                  // User agent string
+  string session_id = 3;                  // Session identifier
+  GeographicLocation location = 4;        // Geographic location
+  DeviceInfo device = 5;                  // Device information
+  AuthenticationMethod method = 6;        // Authentication method used
+  int32 attempt_count = 7;                // Authentication attempt count
+  google.protobuf.Duration session_duration = 8; // Session duration
+}
+
+message GeographicLocation {
+  double latitude = 1;                    // Latitude
+  double longitude = 2;                   // Longitude
+  string country = 3;                     // Country
+  string region = 4;                      // Region/state
+  string city = 5;                        // City
+  string timezone = 6;                    // Timezone
+  LocationAccuracy accuracy = 7;          // Location accuracy
+}
+
+enum LocationAccuracy {
+  LOCATION_ACCURACY_UNSPECIFIED = 0;
+  LOCATION_ACCURACY_COUNTRY = 1;          // Country-level accuracy
+  LOCATION_ACCURACY_REGION = 2;           // Region-level accuracy
+  LOCATION_ACCURACY_CITY = 3;             // City-level accuracy
+  LOCATION_ACCURACY_PRECISE = 4;          // Precise location
+}
+
+message DeviceInfo {
+  string device_id = 1;                   // Device identifier
+  DeviceType type = 2;                    // Device type
+  string operating_system = 3;            // Operating system
+  string browser = 4;                     // Browser (if applicable)
+  bool trusted_device = 5;                // Whether device is trusted
+  google.protobuf.Timestamp last_seen = 6; // Last seen timestamp
+}
+
+enum DeviceType {
+  DEVICE_TYPE_UNSPECIFIED = 0;
+  DEVICE_TYPE_DESKTOP = 1;                // Desktop computer
+  DEVICE_TYPE_LAPTOP = 2;                 // Laptop computer
+  DEVICE_TYPE_MOBILE = 3;                 // Mobile phone
+  DEVICE_TYPE_TABLET = 4;                 // Tablet
+  DEVICE_TYPE_SERVER = 5;                 // Server
+  DEVICE_TYPE_IOT = 6;                    // IoT device
+}
+
+message SecurityClaim {
+  string type = 1;                        // Claim type
+  google.protobuf.Any value = 2;          // Claim value
+  string issuer = 3;                      // Claim issuer
+  google.protobuf.Timestamp issued_at = 4; // Issue timestamp
+  google.protobuf.Timestamp expires_at = 5; // Expiration timestamp
+  ClaimSource source = 6;                 // Claim source
+}
+
+enum ClaimSource {
+  CLAIM_SOURCE_UNSPECIFIED = 0;
+  CLAIM_SOURCE_IDENTITY_PROVIDER = 1;     // Identity provider
+  CLAIM_SOURCE_ATTRIBUTE_STORE = 2;       // Attribute store
+  CLAIM_SOURCE_EXTERNAL_SYSTEM = 3;       // External system
+  CLAIM_SOURCE_MANUAL = 4;                // Manual assignment
+}
+
+// Role-Based Access Control (RBAC) and Attribute-Based Access Control (ABAC)
+message SecurityRole {
+  OSSAIdentifier id = 1;                  // Role identifier
+  RoleMetadata metadata = 2;              // Role metadata
+  repeated SecurityPermission permissions = 3; // Role permissions
+  repeated SecurityRole inherited_roles = 4;   // Inherited roles
+  RoleConstraints constraints = 5;        // Role constraints
+  RoleStatus status = 6;                  // Role status
+}
+
+message RoleMetadata {
+  string name = 1;                        // Role name
+  string description = 2;                 // Role description
+  RoleType type = 3;                      // Role type
+  string domain = 4;                      // Role domain
+  google.protobuf.Timestamp created = 5;  // Creation timestamp
+  google.protobuf.Timestamp updated = 6;  // Last update timestamp
+  string created_by = 7;                  // Role creator
+  repeated string tags = 8;               // Role tags
+}
+
+enum RoleType {
+  ROLE_TYPE_UNSPECIFIED = 0;
+  ROLE_TYPE_SYSTEM = 1;                   // System role
+  ROLE_TYPE_BUSINESS = 2;                 // Business role
+  ROLE_TYPE_TECHNICAL = 3;                // Technical role
+  ROLE_TYPE_ADMINISTRATIVE = 4;           // Administrative role
+  ROLE_TYPE_FUNCTIONAL = 5;               // Functional role
+}
+
+message RoleConstraints {
+  TimeConstraints time_constraints = 1;   // Time-based constraints
+  LocationConstraints location_constraints = 2; // Location-based constraints
+  ResourceConstraints resource_constraints = 3;  // Resource-based constraints
+  ContextConstraints context_constraints = 4;    // Context-based constraints
+}
+
+message TimeConstraints {
+  repeated TimeWindow allowed_times = 1;  // Allowed time windows
+  google.protobuf.Duration max_session = 2; // Maximum session duration
+  bool require_reauth = 3;                // Require re-authentication
+  google.protobuf.Duration reauth_interval = 4; // Re-authentication interval
+}
+
+message LocationConstraints {
+  repeated string allowed_locations = 1;  // Allowed locations
+  repeated string blocked_locations = 2;  // Blocked locations
+  LocationAccuracy required_accuracy = 3; // Required location accuracy
+  bool allow_unknown_location = 4;       // Allow unknown locations
+}
+
+message ResourceConstraints {
+  repeated string allowed_resources = 1;  // Allowed resources
+  repeated string blocked_resources = 2;  // Blocked resources
+  ResourceAccessPattern access_pattern = 3; // Access pattern constraints
+}
+
+enum ResourceAccessPattern {
+  RESOURCE_ACCESS_PATTERN_UNSPECIFIED = 0;
+  RESOURCE_ACCESS_PATTERN_READ_ONLY = 1;  // Read-only access
+  RESOURCE_ACCESS_PATTERN_WRITE_ONLY = 2; // Write-only access
+  RESOURCE_ACCESS_PATTERN_READ_WRITE = 3; // Read-write access
+  RESOURCE_ACCESS_PATTERN_EXECUTE = 4;    // Execute access
+  RESOURCE_ACCESS_PATTERN_ADMIN = 5;      // Administrative access
+}
+
+message ContextConstraints {
+  repeated string required_context = 1;   // Required context attributes
+  repeated string forbidden_context = 2;  // Forbidden context attributes
+  ContextEvaluationRule evaluation_rule = 3; // Context evaluation rule
+}
+
+enum ContextEvaluationRule {
+  CONTEXT_EVALUATION_RULE_UNSPECIFIED = 0;
+  CONTEXT_EVALUATION_RULE_AND = 1;        // All conditions must be met
+  CONTEXT_EVALUATION_RULE_OR = 2;         // Any condition must be met
+  CONTEXT_EVALUATION_RULE_CUSTOM = 3;     // Custom evaluation logic
+}
+
+message RoleStatus {
+  RoleState state = 1;                    // Role state
+  google.protobuf.Timestamp last_used = 2; // Last use timestamp
+  int32 assignment_count = 3;             // Number of assignments
+  repeated RoleIssue issues = 4;          // Role issues
+}
+
+enum RoleState {
+  ROLE_STATE_UNSPECIFIED = 0;
+  ROLE_STATE_ACTIVE = 1;                  // Role is active
+  ROLE_STATE_INACTIVE = 2;                // Role is inactive
+  ROLE_STATE_DEPRECATED = 3;              // Role is deprecated
+  ROLE_STATE_SUSPENDED = 4;               // Role is suspended
+}
+
+message RoleIssue {
+  IssueType type = 1;                     // Issue type
+  IssueSeverity severity = 2;             // Issue severity
+  string description = 3;                 // Issue description
+  google.protobuf.Timestamp detected = 4; // Detection timestamp
+  bool resolved = 5;                      // Whether issue is resolved
+}
+
+message SecurityPermission {
+  OSSAIdentifier id = 1;                  // Permission identifier
+  PermissionMetadata metadata = 2;        // Permission metadata
+  PermissionScope scope = 3;              // Permission scope
+  repeated PermissionAction actions = 4;  // Allowed actions
+  PermissionConstraints constraints = 5;  // Permission constraints
+  PermissionStatus status = 6;            // Permission status
+}
+
+message PermissionMetadata {
+  string name = 1;                        // Permission name
+  string description = 2;                 // Permission description
+  PermissionType type = 3;                // Permission type
+  string resource_type = 4;               // Resource type
+  google.protobuf.Timestamp created = 5;  // Creation timestamp
+  google.protobuf.Timestamp updated = 6;  // Last update timestamp
+  repeated string tags = 7;               // Permission tags
+}
+
+enum PermissionType {
+  PERMISSION_TYPE_UNSPECIFIED = 0;
+  PERMISSION_TYPE_RESOURCE = 1;           // Resource-based permission
+  PERMISSION_TYPE_OPERATION = 2;          // Operation-based permission
+  PERMISSION_TYPE_DATA = 3;               // Data-based permission
+  PERMISSION_TYPE_SYSTEM = 4;             // System-based permission
+  PERMISSION_TYPE_FUNCTIONAL = 5;         // Functional permission
+}
+
+message PermissionScope {
+  ScopeType type = 1;                     // Scope type
+  repeated string resources = 2;          // Scoped resources
+  repeated string namespaces = 3;         // Scoped namespaces
+  ScopeHierarchy hierarchy = 4;           // Scope hierarchy
+  bool inheritable = 5;                   // Whether scope is inheritable
+}
+
+enum ScopeType {
+  SCOPE_TYPE_UNSPECIFIED = 0;
+  SCOPE_TYPE_GLOBAL = 1;                  // Global scope
+  SCOPE_TYPE_TENANT = 2;                  // Tenant scope
+  SCOPE_TYPE_NAMESPACE = 3;               // Namespace scope
+  SCOPE_TYPE_RESOURCE = 4;                // Resource scope
+  SCOPE_TYPE_INSTANCE = 5;                // Instance scope
+}
+
+message ScopeHierarchy {
+  repeated string parent_scopes = 1;      // Parent scopes
+  repeated string child_scopes = 2;       // Child scopes
+  bool transitive = 3;                    // Whether hierarchy is transitive
+  int32 max_depth = 4;                    // Maximum hierarchy depth
+}
+
+message PermissionAction {
+  string name = 1;                        // Action name
+  ActionType type = 2;                    // Action type
+  string description = 3;                 // Action description
+  ActionSeverity severity = 4;            // Action severity
+  bool auditable = 5;                     // Whether action is auditable
+}
+
+enum ActionSeverity {
+  ACTION_SEVERITY_UNSPECIFIED = 0;
+  ACTION_SEVERITY_LOW = 1;                // Low impact action
+  ACTION_SEVERITY_MEDIUM = 2;             // Medium impact action
+  ACTION_SEVERITY_HIGH = 3;               // High impact action
+  ACTION_SEVERITY_CRITICAL = 4;           // Critical impact action
+}
+
+message PermissionConstraints {
+  ConditionalConstraints conditions = 1;   // Conditional constraints
+  TemporalConstraints temporal = 2;        // Time-based constraints
+  SpatialConstraints spatial = 3;          // Location-based constraints
+  DataConstraints data = 4;                // Data-based constraints
+  RateLimitConstraints rate_limit = 5;     // Rate limiting constraints
+}
+
+message ConditionalConstraints {
+  string condition_expression = 1;        // Condition expression
+  repeated ConstraintCondition conditions = 2; // Individual conditions
+  ConstraintLogic logic = 3;              // Constraint logic
+}
+
+message ConstraintCondition {
+  string attribute = 1;                   // Attribute name
+  ConstraintOperator operator = 2;        // Constraint operator
+  google.protobuf.Any value = 3;          // Constraint value
+  bool negated = 4;                       // Whether condition is negated
+}
+
+enum ConstraintLogic {
+  CONSTRAINT_LOGIC_UNSPECIFIED = 0;
+  CONSTRAINT_LOGIC_AND = 1;               // All conditions must be met
+  CONSTRAINT_LOGIC_OR = 2;                // Any condition must be met
+  CONSTRAINT_LOGIC_XOR = 3;               // Exactly one condition must be met
+  CONSTRAINT_LOGIC_CUSTOM = 4;            // Custom logic expression
+}
+
+message TemporalConstraints {
+  repeated TimeWindow allowed_windows = 1; // Allowed time windows
+  google.protobuf.Duration max_duration = 2; // Maximum access duration
+  bool require_continuous = 3;            // Require continuous access
+  TemporalPattern pattern = 4;            // Temporal access pattern
+}
+
+enum TemporalPattern {
+  TEMPORAL_PATTERN_UNSPECIFIED = 0;
+  TEMPORAL_PATTERN_ALWAYS = 1;            // Always allowed
+  TEMPORAL_PATTERN_NEVER = 2;             // Never allowed
+  TEMPORAL_PATTERN_BUSINESS_HOURS = 3;    // Business hours only
+  TEMPORAL_PATTERN_WEEKDAYS = 4;          // Weekdays only
+  TEMPORAL_PATTERN_WEEKENDS = 5;          // Weekends only
+  TEMPORAL_PATTERN_CUSTOM = 6;            // Custom pattern
+}
+
+message SpatialConstraints {
+  repeated GeographicRegion allowed_regions = 1; // Allowed regions
+  repeated GeographicRegion forbidden_regions = 2; // Forbidden regions
+  LocationVerification verification = 3;  // Location verification requirements
+}
+
+message GeographicRegion {
+  RegionType type = 1;                    // Region type
+  string identifier = 2;                  // Region identifier
+  GeographicBoundary boundary = 3;        // Region boundary
+  string description = 4;                 // Region description
+}
+
+enum RegionType {
+  REGION_TYPE_UNSPECIFIED = 0;
+  REGION_TYPE_COUNTRY = 1;                // Country
+  REGION_TYPE_STATE = 2;                  // State/province
+  REGION_TYPE_CITY = 3;                   // City
+  REGION_TYPE_POSTAL_CODE = 4;            // Postal/ZIP code
+  REGION_TYPE_CUSTOM = 5;                 // Custom region
+}
+
+message GeographicBoundary {
+  oneof boundary {
+    CircularBoundary circle = 1;          // Circular boundary
+    PolygonBoundary polygon = 2;          // Polygon boundary
+    RectangularBoundary rectangle = 3;    // Rectangular boundary
+  }
+}
+
+message CircularBoundary {
+  Coordinate center = 1;                  // Center coordinate
+  double radius_km = 2;                   // Radius in kilometers
+}
+
+message PolygonBoundary {
+  repeated Coordinate vertices = 1;       // Polygon vertices
+}
+
+message RectangularBoundary {
+  Coordinate northwest = 1;               // Northwest corner
+  Coordinate southeast = 2;               // Southeast corner
+}
+
+message LocationVerification {
+  VerificationMethod method = 1;          // Verification method
+  double accuracy_threshold = 2;          // Required accuracy threshold
+  bool continuous_verification = 3;       // Continuous verification required
+}
+
+enum VerificationMethod {
+  VERIFICATION_METHOD_UNSPECIFIED = 0;
+  VERIFICATION_METHOD_IP_GEOLOCATION = 1; // IP-based geolocation
+  VERIFICATION_METHOD_GPS = 2;            // GPS coordinates
+  VERIFICATION_METHOD_CELLULAR = 3;       // Cellular tower triangulation
+  VERIFICATION_METHOD_WIFI = 4;           // WiFi-based location
+  VERIFICATION_METHOD_MANUAL = 5;         // Manual verification
+}
+
+message DataConstraints {
+  DataClassification min_classification = 1; // Minimum data classification
+  DataClassification max_classification = 2; // Maximum data classification
+  repeated string allowed_data_types = 3;    // Allowed data types
+  repeated string forbidden_data_types = 4;  // Forbidden data types
+  DataMasking masking = 5;                   // Data masking requirements
+}
+
+message DataMasking {
+  bool required = 1;                      // Whether masking is required
+  MaskingLevel level = 2;                 // Masking level
+  repeated string masked_fields = 3;      // Fields to mask
+  MaskingMethod method = 4;               // Masking method
+}
+
+enum MaskingLevel {
+  MASKING_LEVEL_UNSPECIFIED = 0;
+  MASKING_LEVEL_PARTIAL = 1;              // Partial masking
+  MASKING_LEVEL_FULL = 2;                 // Full masking
+  MASKING_LEVEL_ANONYMIZATION = 3;        // Anonymization
+  MASKING_LEVEL_PSEUDONYMIZATION = 4;     // Pseudonymization
+}
+
+enum MaskingMethod {
+  MASKING_METHOD_UNSPECIFIED = 0;
+  MASKING_METHOD_REDACTION = 1;           // Redaction
+  MASKING_METHOD_HASHING = 2;             // Hashing
+  MASKING_METHOD_ENCRYPTION = 3;          // Encryption
+  MASKING_METHOD_TOKENIZATION = 4;        // Tokenization
+  MASKING_METHOD_SUBSTITUTION = 5;        // Substitution
+}
+
+message RateLimitConstraints {
+  int64 requests_per_second = 1;          // Requests per second limit
+  int64 requests_per_minute = 2;          // Requests per minute limit
+  int64 requests_per_hour = 3;            // Requests per hour limit
+  int64 requests_per_day = 4;             // Requests per day limit
+  int64 burst_limit = 5;                  // Burst limit
+  RateLimitScope scope = 6;               // Rate limit scope
+}
+
+enum RateLimitScope {
+  RATE_LIMIT_SCOPE_UNSPECIFIED = 0;
+  RATE_LIMIT_SCOPE_GLOBAL = 1;           // Global rate limit
+  RATE_LIMIT_SCOPE_PER_USER = 2;         // Per-user rate limit
+  RATE_LIMIT_SCOPE_PER_IP = 3;           // Per-IP rate limit
+  RATE_LIMIT_SCOPE_PER_RESOURCE = 4;     // Per-resource rate limit
+  RATE_LIMIT_SCOPE_PER_OPERATION = 5;    // Per-operation rate limit
+}
+
+message PermissionStatus {
+  PermissionState state = 1;              // Permission state
+  google.protobuf.Timestamp last_used = 2; // Last use timestamp
+  int64 usage_count = 3;                  // Usage count
+  repeated PermissionViolation violations = 4; // Permission violations
+}
+
+enum PermissionState {
+  PERMISSION_STATE_UNSPECIFIED = 0;
+  PERMISSION_STATE_ACTIVE = 1;            // Permission is active
+  PERMISSION_STATE_INACTIVE = 2;          // Permission is inactive
+  PERMISSION_STATE_SUSPENDED = 3;         // Permission is suspended
+  PERMISSION_STATE_REVOKED = 4;           // Permission is revoked
+}
+
+message PermissionViolation {
+  OSSAIdentifier violation_id = 1;        // Violation identifier
+  ViolationType type = 2;                 // Violation type
+  string description = 3;                 // Violation description
+  google.protobuf.Timestamp occurred = 4; // Violation timestamp
+  ViolationSeverity severity = 5;         // Violation severity
+  string remediation = 6;                 // Remediation action
+}
+
+enum ViolationType {
+  VIOLATION_TYPE_UNSPECIFIED = 0;
+  VIOLATION_TYPE_UNAUTHORIZED_ACCESS = 1; // Unauthorized access attempt
+  VIOLATION_TYPE_PRIVILEGE_ESCALATION = 2; // Privilege escalation attempt
+  VIOLATION_TYPE_CONSTRAINT_VIOLATION = 3; // Constraint violation
+  VIOLATION_TYPE_RATE_LIMIT_EXCEEDED = 4;  // Rate limit exceeded
+  VIOLATION_TYPE_DATA_BREACH = 5;          // Data breach
+}
+
+enum ViolationSeverity {
+  VIOLATION_SEVERITY_UNSPECIFIED = 0;
+  VIOLATION_SEVERITY_LOW = 1;             // Low severity
+  VIOLATION_SEVERITY_MEDIUM = 2;          // Medium severity
+  VIOLATION_SEVERITY_HIGH = 3;            // High severity
+  VIOLATION_SEVERITY_CRITICAL = 4;        // Critical severity
+}
+
+// Security policies and compliance
+message SecurityPolicy {
+  OSSAIdentifier id = 1;                  // Policy identifier
+  PolicyMetadata metadata = 2;            // Policy metadata
+  PolicySpec spec = 3;                    // Policy specification
+  PolicyStatus status = 4;                // Policy status
+  PolicyEnforcement enforcement = 5;      // Policy enforcement
+}
+
+message PolicyMetadata {
+  string name = 1;                        // Policy name
+  string description = 2;                 // Policy description
+  PolicyType type = 3;                    // Policy type
+  string version = 4;                     // Policy version
+  google.protobuf.Timestamp created = 5;  // Creation timestamp
+  google.protobuf.Timestamp updated = 6;  // Last update timestamp
+  string owner = 7;                       // Policy owner
+  repeated string tags = 8;               // Policy tags
+  ComplianceFramework framework = 9;      // Compliance framework
+}
+
+enum PolicyType {
+  POLICY_TYPE_UNSPECIFIED = 0;
+  POLICY_TYPE_ACCESS_CONTROL = 1;         // Access control policy
+  POLICY_TYPE_DATA_PROTECTION = 2;        // Data protection policy
+  POLICY_TYPE_ENCRYPTION = 3;             // Encryption policy
+  POLICY_TYPE_AUTHENTICATION = 4;         // Authentication policy
+  POLICY_TYPE_AUTHORIZATION = 5;          // Authorization policy
+  POLICY_TYPE_AUDIT = 6;                  // Audit policy
+  POLICY_TYPE_COMPLIANCE = 7;             // Compliance policy
+  POLICY_TYPE_PRIVACY = 8;                // Privacy policy
+}
+
+message ComplianceFramework {
+  FrameworkType type = 1;                 // Framework type
+  string version = 2;                     // Framework version
+  repeated string requirements = 3;       // Specific requirements
+  CertificationLevel certification = 4;   // Certification level
+}
+
+enum FrameworkType {
+  FRAMEWORK_TYPE_UNSPECIFIED = 0;
+  FRAMEWORK_TYPE_ISO_27001 = 1;           // ISO 27001
+  FRAMEWORK_TYPE_SOC_2 = 2;               // SOC 2
+  FRAMEWORK_TYPE_GDPR = 3;                // GDPR
+  FRAMEWORK_TYPE_HIPAA = 4;               // HIPAA
+  FRAMEWORK_TYPE_PCI_DSS = 5;             // PCI DSS
+  FRAMEWORK_TYPE_NIST = 6;                // NIST Framework
+  FRAMEWORK_TYPE_ISO_42001 = 7;           // ISO/IEC 42001 (AI Management)
+  FRAMEWORK_TYPE_EU_AI_ACT = 8;           // EU AI Act
+}
+
+message PolicySpec {
+  repeated PolicyRule rules = 1;          // Policy rules
+  PolicyTarget target = 2;                // Policy target
+  PolicyConditions conditions = 3;        // Policy conditions
+  PolicyActions actions = 4;              // Policy actions
+  PolicyExceptions exceptions = 5;        // Policy exceptions
+}
+
+message PolicyRule {
+  OSSAIdentifier rule_id = 1;             // Rule identifier
+  string name = 2;                        // Rule name
+  string description = 3;                 // Rule description
+  RuleEffect effect = 4;                  // Rule effect
+  RuleCondition condition = 5;            // Rule condition
+  RuleAction action = 6;                  // Rule action
+  int32 priority = 7;                     // Rule priority
+  bool enabled = 8;                       // Whether rule is enabled
+}
+
+enum RuleEffect {
+  RULE_EFFECT_UNSPECIFIED = 0;
+  RULE_EFFECT_ALLOW = 1;                  // Allow access
+  RULE_EFFECT_DENY = 2;                   // Deny access
+  RULE_EFFECT_AUDIT = 3;                  // Allow but audit
+  RULE_EFFECT_WARN = 4;                   // Allow but warn
+  RULE_EFFECT_DEFER = 5;                  // Defer to next rule
+}
+
+message RuleCondition {
+  string expression = 1;                  // Condition expression
+  repeated AttributeCondition attributes = 2; // Attribute conditions
+  ContextCondition context = 3;           // Context condition
+  ResourceCondition resource = 4;         // Resource condition
+}
+
+message AttributeCondition {
+  string attribute = 1;                   // Attribute name
+  ConstraintOperator operator = 2;        // Comparison operator
+  google.protobuf.Any value = 3;          // Expected value
+  bool case_sensitive = 4;                // Case sensitive comparison
+}
+
+message ContextCondition {
+  repeated string required_context = 1;   // Required context
+  map<string, string> context_values = 2; // Required context values
+  ContextEvaluationRule evaluation = 3;   // Evaluation rule
+}
+
+message ResourceCondition {
+  repeated string resource_types = 1;     // Resource types
+  repeated string resource_ids = 2;       // Specific resource IDs
+  ResourcePattern pattern = 3;            // Resource pattern
+}
+
+message ResourcePattern {
+  string pattern = 1;                     // Pattern expression
+  PatternType type = 2;                   // Pattern type
+  bool case_sensitive = 3;                // Case sensitive matching
+}
+
+enum PatternType {
+  PATTERN_TYPE_UNSPECIFIED = 0;
+  PATTERN_TYPE_EXACT = 1;                 // Exact match
+  PATTERN_TYPE_PREFIX = 2;                // Prefix match
+  PATTERN_TYPE_SUFFIX = 3;                // Suffix match
+  PATTERN_TYPE_CONTAINS = 4;              // Contains match
+  PATTERN_TYPE_REGEX = 5;                 // Regular expression
+  PATTERN_TYPE_GLOB = 6;                  // Glob pattern
+}
+
+message RuleAction {
+  ActionType type = 1;                    // Action type
+  map<string, google.protobuf.Any> parameters = 2; // Action parameters
+  bool blocking = 3;                      // Whether action is blocking
+  google.protobuf.Duration timeout = 4;   // Action timeout
+}
+
+message PolicyTarget {
+  repeated string principals = 1;         // Target principals
+  repeated string resources = 2;          // Target resources
+  repeated string actions = 3;            // Target actions
+  TargetScope scope = 4;                  // Target scope
+}
+
+message TargetScope {
+  ScopeType type = 1;                     // Scope type
+  repeated string namespaces = 2;         // Target namespaces
+  repeated string environments = 3;       // Target environments
+  bool include_children = 4;              // Include child resources
+}
+
+message PolicyConditions {
+  TimeConditions time = 1;                // Time-based conditions
+  LocationConditions location = 2;        // Location-based conditions
+  NetworkConditions network = 3;          // Network-based conditions
+  DeviceConditions device = 4;            // Device-based conditions
+  RiskConditions risk = 5;                // Risk-based conditions
+}
+
+message TimeConditions {
+  repeated TimeWindow active_periods = 1; // Active time periods
+  repeated TimeWindow blackout_periods = 2; // Blackout periods
+  TimeZone timezone = 3;                  // Timezone for evaluation
+  bool require_business_hours = 4;        // Require business hours
+}
+
+message LocationConditions {
+  repeated GeographicRegion allowed_locations = 1; // Allowed locations
+  repeated GeographicRegion blocked_locations = 2; // Blocked locations
+  bool allow_unknown_location = 3;       // Allow unknown locations
+  LocationVerification verification = 4;  // Location verification
+}
+
+message NetworkConditions {
+  repeated string allowed_networks = 1;   // Allowed networks (CIDR)
+  repeated string blocked_networks = 2;   // Blocked networks (CIDR)
+  bool require_secure_connection = 3;     // Require secure connection
+  NetworkTrustLevel min_trust_level = 4;  // Minimum network trust level
+}
+
+enum NetworkTrustLevel {
+  NETWORK_TRUST_LEVEL_UNSPECIFIED = 0;
+  NETWORK_TRUST_LEVEL_UNTRUSTED = 1;      // Untrusted network
+  NETWORK_TRUST_LEVEL_PUBLIC = 2;         // Public network
+  NETWORK_TRUST_LEVEL_PRIVATE = 3;        // Private network
+  NETWORK_TRUST_LEVEL_CORPORATE = 4;      // Corporate network
+  NETWORK_TRUST_LEVEL_SECURE = 5;         // Secure network
+}
+
+message DeviceConditions {
+  repeated DeviceType allowed_devices = 1; // Allowed device types
+  repeated DeviceType blocked_devices = 2; // Blocked device types
+  bool require_managed_device = 3;        // Require managed device
+  bool require_encrypted_device = 4;      // Require encrypted device
+  DeviceTrustLevel min_trust_level = 5;   // Minimum device trust level
+}
+
+enum DeviceTrustLevel {
+  DEVICE_TRUST_LEVEL_UNSPECIFIED = 0;
+  DEVICE_TRUST_LEVEL_UNTRUSTED = 1;       // Untrusted device
+  DEVICE_TRUST_LEVEL_BASIC = 2;           // Basic trust level
+  DEVICE_TRUST_LEVEL_MANAGED = 3;         // Managed device
+  DEVICE_TRUST_LEVEL_COMPLIANT = 4;       // Compliant device
+  DEVICE_TRUST_LEVEL_VERIFIED = 5;        // Verified device
+}
+
+message RiskConditions {
+  RiskLevel max_risk_level = 1;           // Maximum allowed risk level
+  repeated RiskFactor risk_factors = 2;   // Risk factors to evaluate
+  RiskEvaluationMode evaluation_mode = 3; // Risk evaluation mode
+  bool require_risk_assessment = 4;       // Require risk assessment
+}
+
+enum RiskLevel {
+  RISK_LEVEL_UNSPECIFIED = 0;
+  RISK_LEVEL_VERY_LOW = 1;                // Very low risk
+  RISK_LEVEL_LOW = 2;                     // Low risk
+  RISK_LEVEL_MEDIUM = 3;                  // Medium risk
+  RISK_LEVEL_HIGH = 4;                    // High risk
+  RISK_LEVEL_VERY_HIGH = 5;               // Very high risk
+}
+
+enum RiskFactor {
+  RISK_FACTOR_UNSPECIFIED = 0;
+  RISK_FACTOR_BEHAVIORAL = 1;             // Behavioral risk
+  RISK_FACTOR_DEVICE = 2;                 // Device-based risk
+  RISK_FACTOR_LOCATION = 3;               // Location-based risk
+  RISK_FACTOR_NETWORK = 4;                // Network-based risk
+  RISK_FACTOR_TIME = 5;                   // Time-based risk
+  RISK_FACTOR_DATA_SENSITIVITY = 6;       // Data sensitivity risk
+}
+
+enum RiskEvaluationMode {
+  RISK_EVALUATION_MODE_UNSPECIFIED = 0;
+  RISK_EVALUATION_MODE_STATIC = 1;        // Static risk evaluation
+  RISK_EVALUATION_MODE_DYNAMIC = 2;       // Dynamic risk evaluation
+  RISK_EVALUATION_MODE_ML_BASED = 3;      // ML-based risk evaluation
+  RISK_EVALUATION_MODE_ADAPTIVE = 4;      // Adaptive risk evaluation
+}
+
+message PolicyActions {
+  repeated PolicyAction actions = 1;      // Policy actions
+  ActionExecutionOrder order = 2;         // Execution order
+  bool continue_on_failure = 3;           // Continue on failure
+}
+
+enum ActionExecutionOrder {
+  ACTION_EXECUTION_ORDER_UNSPECIFIED = 0;
+  ACTION_EXECUTION_ORDER_PARALLEL = 1;    // Execute in parallel
+  ACTION_EXECUTION_ORDER_SEQUENTIAL = 2;  // Execute sequentially
+  ACTION_EXECUTION_ORDER_PRIORITY = 3;    // Execute by priority
+}
+
+message PolicyAction {
+  string name = 1;                        // Action name
+  ActionType type = 2;                    // Action type
+  map<string, google.protobuf.Any> config = 3; // Action configuration
+  ActionTrigger trigger = 4;              // Action trigger
+  int32 priority = 5;                     // Action priority
+  bool enabled = 6;                       // Whether action is enabled
+}
+
+message ActionTrigger {
+  TriggerType type = 1;                   // Trigger type
+  string condition = 2;                   // Trigger condition
+  google.protobuf.Duration delay = 3;     // Trigger delay
+  int32 retry_count = 4;                  // Retry count
+}
+
+message PolicyExceptions {
+  repeated PolicyException exceptions = 1; // Policy exceptions
+  ExceptionHandling handling = 2;         // Exception handling
+  bool audit_exceptions = 3;              // Audit exceptions
+}
+
+message PolicyException {
+  OSSAIdentifier exception_id = 1;        // Exception identifier
+  string name = 2;                        // Exception name
+  string description = 3;                 // Exception description
+  ExceptionType type = 4;                 // Exception type
+  ExceptionScope scope = 5;               // Exception scope
+  google.protobuf.Timestamp expires_at = 6; // Exception expiration
+  string justification = 7;               // Exception justification
+  bool approved = 8;                      // Whether exception is approved
+}
+
+enum ExceptionType {
+  EXCEPTION_TYPE_UNSPECIFIED = 0;
+  EXCEPTION_TYPE_TEMPORARY = 1;           // Temporary exception
+  EXCEPTION_TYPE_PERMANENT = 2;           // Permanent exception
+  EXCEPTION_TYPE_EMERGENCY = 3;           // Emergency exception
+  EXCEPTION_TYPE_MAINTENANCE = 4;         // Maintenance exception
+}
+
+message ExceptionScope {
+  repeated string principals = 1;         // Exception principals
+  repeated string resources = 2;          // Exception resources
+  repeated string actions = 3;            // Exception actions
+  google.protobuf.Timestamp valid_from = 4; // Valid from timestamp
+  google.protobuf.Timestamp valid_until = 5; // Valid until timestamp
+}
+
+enum ExceptionHandling {
+  EXCEPTION_HANDLING_UNSPECIFIED = 0;
+  EXCEPTION_HANDLING_ALLOW = 1;           // Allow with exception
+  EXCEPTION_HANDLING_LOG = 2;             // Allow but log
+  EXCEPTION_HANDLING_ESCALATE = 3;        // Escalate for approval
+  EXCEPTION_HANDLING_DENY = 4;            // Deny despite exception
+}
+
+message PolicyStatus {
+  PolicyState state = 1;                  // Policy state
+  google.protobuf.Timestamp last_evaluation = 2; // Last evaluation time
+  PolicyCompliance compliance = 3;        // Compliance status
+  repeated PolicyViolation violations = 4; // Policy violations
+  PolicyMetrics metrics = 5;              // Policy metrics
+}
+
+enum PolicyState {
+  POLICY_STATE_UNSPECIFIED = 0;
+  POLICY_STATE_DRAFT = 1;                 // Policy is in draft
+  POLICY_STATE_ACTIVE = 2;                // Policy is active
+  POLICY_STATE_INACTIVE = 3;              // Policy is inactive
+  POLICY_STATE_DEPRECATED = 4;            // Policy is deprecated
+  POLICY_STATE_SUSPENDED = 5;             // Policy is suspended
+}
+
+message PolicyCompliance {
+  double compliance_score = 1;            // Compliance score (0.0-1.0)
+  ComplianceStatus status = 2;            // Overall compliance status
+  repeated ComplianceRequirement requirements = 3; // Compliance requirements
+  google.protobuf.Timestamp last_assessment = 4;   // Last assessment time
+}
+
+message ComplianceRequirement {
+  string requirement_id = 1;              // Requirement identifier
+  string description = 2;                 // Requirement description
+  ComplianceStatus status = 3;            // Requirement status
+  double compliance_level = 4;            // Compliance level (0.0-1.0)
+  google.protobuf.Timestamp last_check = 5; // Last check time
+  string evidence = 6;                    // Compliance evidence
+}
+
+message PolicyViolation {
+  OSSAIdentifier violation_id = 1;        // Violation identifier
+  string policy_rule = 2;                 // Violated policy rule
+  ViolationType type = 3;                 // Violation type
+  ViolationSeverity severity = 4;         // Violation severity
+  string description = 5;                 // Violation description
+  google.protobuf.Timestamp occurred = 6; // Violation timestamp
+  string principal = 7;                   // Violating principal
+  string resource = 8;                    // Affected resource
+  string action = 9;                      // Attempted action
+  ViolationResponse response = 10;        // Violation response
+}
+
+message ViolationResponse {
+  ResponseType type = 1;                  // Response type
+  string description = 2;                 // Response description
+  google.protobuf.Timestamp responded_at = 3; // Response timestamp
+  bool automated = 4;                     // Whether response was automated
+  string responder = 5;                   // Who/what responded
+}
+
+enum ResponseType {
+  RESPONSE_TYPE_UNSPECIFIED = 0;
+  RESPONSE_TYPE_BLOCKED = 1;              // Access blocked
+  RESPONSE_TYPE_ALLOWED = 2;              // Access allowed
+  RESPONSE_TYPE_LOGGED = 3;               // Access logged
+  RESPONSE_TYPE_ESCALATED = 4;            // Incident escalated
+  RESPONSE_TYPE_REMEDIATED = 5;           // Automatically remediated
+}
+
+message PolicyMetrics {
+  int64 total_evaluations = 1;            // Total policy evaluations
+  int64 allow_decisions = 2;              // Allow decisions
+  int64 deny_decisions = 3;               // Deny decisions
+  int64 violation_count = 4;              // Total violations
+  double avg_evaluation_time = 5;         // Average evaluation time
+  PolicyEffectiveness effectiveness = 6;   // Policy effectiveness
+}
+
+message PolicyEffectiveness {
+  double effectiveness_score = 1;         // Effectiveness score (0.0-1.0)
+  double false_positive_rate = 2;         // False positive rate
+  double false_negative_rate = 3;         // False negative rate
+  double coverage = 4;                    // Policy coverage
+  repeated string recommendations = 5;    // Improvement recommendations
+}
+
+message PolicyEnforcement {
+  EnforcementMode mode = 1;               // Enforcement mode
+  EnforcementLevel level = 2;             // Enforcement level
+  EnforcementStrategy strategy = 3;       // Enforcement strategy
+  EnforcementMetrics metrics = 4;         // Enforcement metrics
+}
+
+enum EnforcementMode {
+  ENFORCEMENT_MODE_UNSPECIFIED = 0;
+  ENFORCEMENT_MODE_DISABLED = 1;          // Enforcement disabled
+  ENFORCEMENT_MODE_PERMISSIVE = 2;        // Permissive mode (log only)
+  ENFORCEMENT_MODE_ENFORCING = 3;         // Active enforcement
+  ENFORCEMENT_MODE_STRICT = 4;            // Strict enforcement
+}
+
+enum EnforcementLevel {
+  ENFORCEMENT_LEVEL_UNSPECIFIED = 0;
+  ENFORCEMENT_LEVEL_ADVISORY = 1;         // Advisory only
+  ENFORCEMENT_LEVEL_WARNING = 2;          // Warning level
+  ENFORCEMENT_LEVEL_BLOCKING = 3;         // Blocking level
+  ENFORCEMENT_LEVEL_PREVENTIVE = 4;       // Preventive level
+}
+
+enum EnforcementStrategy {
+  ENFORCEMENT_STRATEGY_UNSPECIFIED = 0;
+  ENFORCEMENT_STRATEGY_REACTIVE = 1;      // Reactive enforcement
+  ENFORCEMENT_STRATEGY_PROACTIVE = 2;     // Proactive enforcement
+  ENFORCEMENT_STRATEGY_ADAPTIVE = 3;      // Adaptive enforcement
+  ENFORCEMENT_STRATEGY_PREDICTIVE = 4;    // Predictive enforcement
+}
+
+message EnforcementMetrics {
+  int64 enforcement_actions = 1;          // Total enforcement actions
+  double success_rate = 2;                // Enforcement success rate
+  google.protobuf.Duration avg_response_time = 3; // Average response time
+  repeated EnforcementIssue issues = 4;   // Enforcement issues
+}
+
+message EnforcementIssue {
+  IssueType type = 1;                     // Issue type
+  IssueSeverity severity = 2;             // Issue severity
+  string description = 3;                 // Issue description
+  google.protobuf.Timestamp occurred = 4; // Issue occurrence time
+  string resolution = 5;                  // Issue resolution
+}
+
+// Cryptographic operations and key management
+message CryptographicKey {
+  OSSAIdentifier key_id = 1;              // Key identifier
+  KeyMetadata metadata = 2;               // Key metadata
+  KeyMaterial material = 3;               // Key material (encrypted)
+  KeyUsage usage = 4;                     // Key usage constraints
+  KeyLifecycle lifecycle = 5;             // Key lifecycle information
+}
+
+message KeyMetadata {
+  string name = 1;                        // Key name
+  KeyType type = 2;                       // Key type
+  KeyAlgorithm algorithm = 3;             // Cryptographic algorithm
+  int32 key_size = 4;                     // Key size in bits
+  string owner = 5;                       // Key owner
+  google.protobuf.Timestamp created = 6;  // Creation timestamp
+  google.protobuf.Timestamp expires = 7;  // Expiration timestamp
+  repeated string tags = 8;               // Key tags
+}
+
+enum KeyType {
+  KEY_TYPE_UNSPECIFIED = 0;
+  KEY_TYPE_SYMMETRIC = 1;                 // Symmetric key
+  KEY_TYPE_ASYMMETRIC_PRIVATE = 2;        // Private key
+  KEY_TYPE_ASYMMETRIC_PUBLIC = 3;         // Public key
+  KEY_TYPE_SIGNING = 4;                   // Signing key
+  KEY_TYPE_MASTER = 5;                    // Master key
+  KEY_TYPE_DERIVED = 6;                   // Derived key
+}
+
+enum KeyAlgorithm {
+  KEY_ALGORITHM_UNSPECIFIED = 0;
+  KEY_ALGORITHM_AES = 1;                  // AES encryption
+  KEY_ALGORITHM_RSA = 2;                  // RSA encryption/signing
+  KEY_ALGORITHM_ECDSA = 3;                // ECDSA signing
+  KEY_ALGORITHM_ECDH = 4;                 // ECDH key exchange
+  KEY_ALGORITHM_HMAC = 5;                 // HMAC authentication
+  KEY_ALGORITHM_CHACHA20 = 6;             // ChaCha20 encryption
+  KEY_ALGORITHM_ED25519 = 7;              // Ed25519 signing
+}
+
+message KeyMaterial {
+  bytes encrypted_key = 1;                // Encrypted key material
+  string encryption_algorithm = 2;        // Encryption algorithm used
+  bytes initialization_vector = 3;        // Initialization vector
+  KeyEncryptionKey kek = 4;               // Key encryption key info
+}
+
+message KeyEncryptionKey {
+  OSSAIdentifier kek_id = 1;              // KEK identifier
+  KeySource source = 2;                   // KEK source
+  string location = 3;                    // KEK location
+}
+
+enum KeySource {
+  KEY_SOURCE_UNSPECIFIED = 0;
+  KEY_SOURCE_HSM = 1;                     // Hardware Security Module
+  KEY_SOURCE_KMS = 2;                     // Key Management Service
+  KEY_SOURCE_SOFTWARE = 3;                // Software-based
+  KEY_SOURCE_CLOUD = 4;                   // Cloud provider
+  KEY_SOURCE_EXTERNAL = 5;                // External system
+}
+
+message KeyUsage {
+  repeated KeyOperation operations = 1;    // Allowed operations
+  KeyPurpose purpose = 2;                 // Key purpose
+  repeated string applications = 3;        // Allowed applications
+  UsageConstraints constraints = 4;       // Usage constraints
+}
+
+enum KeyOperation {
+  KEY_OPERATION_UNSPECIFIED = 0;
+  KEY_OPERATION_ENCRYPT = 1;              // Encryption
+  KEY_OPERATION_DECRYPT = 2;              // Decryption
+  KEY_OPERATION_SIGN = 3;                 // Digital signing
+  KEY_OPERATION_VERIFY = 4;               // Signature verification
+  KEY_OPERATION_KEY_WRAP = 5;             // Key wrapping
+  KEY_OPERATION_KEY_UNWRAP = 6;           // Key unwrapping
+  KEY_OPERATION_DERIVE = 7;               // Key derivation
+}
+
+enum KeyPurpose {
+  KEY_PURPOSE_UNSPECIFIED = 0;
+  KEY_PURPOSE_ENCRYPTION = 1;             // Data encryption
+  KEY_PURPOSE_SIGNING = 2;                // Digital signing
+  KEY_PURPOSE_AUTHENTICATION = 3;         // Authentication
+  KEY_PURPOSE_KEY_EXCHANGE = 4;           // Key exchange
+  KEY_PURPOSE_TRANSPORT = 5;              // Key transport
+  KEY_PURPOSE_STORAGE = 6;                // Data at rest encryption
+}
+
+message UsageConstraints {
+  int64 max_usage_count = 1;              // Maximum usage count
+  google.protobuf.Duration max_age = 2;   // Maximum key age
+  repeated string allowed_contexts = 3;   // Allowed usage contexts
+  DataSensitivityLevel min_data_level = 4; // Minimum data sensitivity
+  DataSensitivityLevel max_data_level = 5; // Maximum data sensitivity
+}
+
+enum DataSensitivityLevel {
+  DATA_SENSITIVITY_LEVEL_UNSPECIFIED = 0;
+  DATA_SENSITIVITY_LEVEL_PUBLIC = 1;      // Public data
+  DATA_SENSITIVITY_LEVEL_INTERNAL = 2;    // Internal data
+  DATA_SENSITIVITY_LEVEL_CONFIDENTIAL = 3; // Confidential data
+  DATA_SENSITIVITY_LEVEL_RESTRICTED = 4;  // Restricted data
+  DATA_SENSITIVITY_LEVEL_TOP_SECRET = 5;  // Top secret data
+}
+
+message KeyLifecycle {
+  KeyState state = 1;                     // Current key state
+  KeyRotationPolicy rotation = 2;         // Key rotation policy
+  KeyBackup backup = 3;                   // Key backup information
+  KeyAudit audit = 4;                     // Key audit trail
+}
+
+enum KeyState {
+  KEY_STATE_UNSPECIFIED = 0;
+  KEY_STATE_PRE_ACTIVE = 1;               // Key is pre-active
+  KEY_STATE_ACTIVE = 2;                   // Key is active
+  KEY_STATE_SUSPENDED = 3;                // Key is suspended
+  KEY_STATE_DEACTIVATED = 4;              // Key is deactivated
+  KEY_STATE_COMPROMISED = 5;              // Key is compromised
+  KEY_STATE_DESTROYED = 6;                // Key is destroyed
+}
+
+message KeyRotationPolicy {
+  bool auto_rotation = 1;                 // Automatic rotation enabled
+  google.protobuf.Duration rotation_interval = 2; // Rotation interval
+  int32 max_rotation_age = 3;             // Maximum age before rotation
+  RotationTrigger trigger = 4;            // Rotation trigger
+  int32 key_versions_to_keep = 5;         // Number of old versions to keep
+}
+
+enum RotationTrigger {
+  ROTATION_TRIGGER_UNSPECIFIED = 0;
+  ROTATION_TRIGGER_TIME = 1;              // Time-based rotation
+  ROTATION_TRIGGER_USAGE = 2;             // Usage-based rotation
+  ROTATION_TRIGGER_EVENT = 3;             // Event-based rotation
+  ROTATION_TRIGGER_MANUAL = 4;            // Manual rotation
+  ROTATION_TRIGGER_COMPROMISE = 5;        // Compromise-triggered rotation
+}
+
+message KeyBackup {
+  bool backup_enabled = 1;                // Whether backup is enabled
+  BackupLocation location = 2;            // Backup location
+  BackupMethod method = 3;                // Backup method
+  google.protobuf.Timestamp last_backup = 4; // Last backup time
+  BackupEncryption encryption = 5;        // Backup encryption
+}
+
+enum BackupLocation {
+  BACKUP_LOCATION_UNSPECIFIED = 0;
+  BACKUP_LOCATION_LOCAL = 1;              // Local backup
+  BACKUP_LOCATION_CLOUD = 2;              // Cloud backup
+  BACKUP_LOCATION_OFFLINE = 3;            // Offline backup
+  BACKUP_LOCATION_DISTRIBUTED = 4;        // Distributed backup
+}
+
+enum BackupMethod {
+  BACKUP_METHOD_UNSPECIFIED = 0;
+  BACKUP_METHOD_FULL = 1;                 // Full backup
+  BACKUP_METHOD_INCREMENTAL = 2;          // Incremental backup
+  BACKUP_METHOD_DIFFERENTIAL = 3;         // Differential backup
+  BACKUP_METHOD_THRESHOLD = 4;            // Threshold secret sharing
+}
+
+message BackupEncryption {
+  bool encrypted = 1;                     // Whether backup is encrypted
+  string algorithm = 2;                   // Encryption algorithm
+  OSSAIdentifier backup_key_id = 3;       // Backup encryption key ID
+}
+
+message KeyAudit {
+  repeated KeyAuditEvent events = 1;      // Audit events
+  AuditPolicy policy = 2;                 // Audit policy
+  google.protobuf.Timestamp last_audit = 3; // Last audit time
+}
+
+message KeyAuditEvent {
+  google.protobuf.Timestamp timestamp = 1; // Event timestamp
+  KeyOperation operation = 2;              // Key operation
+  string principal = 3;                    // Principal performing operation
+  string context = 4;                      // Operation context
+  bool successful = 5;                     // Whether operation was successful
+  string details = 6;                      // Additional details
+}
+
+// Security events and monitoring
+message SecurityEvent {
+  OSSAIdentifier event_id = 1;            // Event identifier
+  SecurityEventMetadata metadata = 2;     // Event metadata
+  EventCategory category = 3;             // Event category
+  EventSeverity severity = 4;             // Event severity
+  google.protobuf.Timestamp timestamp = 5; // Event timestamp
+  OSSAIdentifier source = 6;              // Event source
+  google.protobuf.Any event_data = 7;     // Event-specific data
+  EventContext context = 8;               // Event context
+}
+
+message SecurityEventMetadata {
+  string title = 1;                       // Event title
+  string description = 2;                 // Event description
+  EventType type = 3;                     // Event type
+  repeated string tags = 4;               // Event tags
+  string correlation_id = 5;              // Correlation identifier
+  EventClassification classification = 6;  // Event classification
+}
+
+enum EventType {
+  EVENT_TYPE_UNSPECIFIED = 0;
+  EVENT_TYPE_AUTHENTICATION = 1;          // Authentication event
+  EVENT_TYPE_AUTHORIZATION = 2;           // Authorization event
+  EVENT_TYPE_ACCESS_GRANTED = 3;          // Access granted
+  EVENT_TYPE_ACCESS_DENIED = 4;           // Access denied
+  EVENT_TYPE_PRIVILEGE_ESCALATION = 5;    // Privilege escalation
+  EVENT_TYPE_DATA_ACCESS = 6;             // Data access
+  EVENT_TYPE_DATA_MODIFICATION = 7;       // Data modification
+  EVENT_TYPE_SECURITY_VIOLATION = 8;      // Security violation
+  EVENT_TYPE_ANOMALY = 9;                 // Security anomaly
+  EVENT_TYPE_INCIDENT = 10;               // Security incident
+}
+
+enum EventClassification {
+  EVENT_CLASSIFICATION_UNSPECIFIED = 0;
+  EVENT_CLASSIFICATION_NORMAL = 1;        // Normal event
+  EVENT_CLASSIFICATION_SUSPICIOUS = 2;    // Suspicious event
+  EVENT_CLASSIFICATION_MALICIOUS = 3;     // Malicious event
+  EVENT_CLASSIFICATION_BENIGN = 4;        // Benign event
+  EVENT_CLASSIFICATION_UNKNOWN = 5;       // Unknown classification
+}
+
+message EventContext {
+  string session_id = 1;                  // Session identifier
+  string transaction_id = 2;              // Transaction identifier
+  map<string, string> environment = 3;    // Environment context
+  NetworkContext network = 4;             // Network context
+  DeviceContext device = 5;               // Device context
+  UserContext user = 6;                   // User context
+}
+
+message NetworkContext {
+  string source_ip = 1;                   // Source IP address
+  string destination_ip = 2;              // Destination IP address
+  int32 source_port = 3;                  // Source port
+  int32 destination_port = 4;             // Destination port
+  string protocol = 5;                    // Network protocol
+  string hostname = 6;                    // Hostname
+}
+
+message DeviceContext {
+  string device_id = 1;                   // Device identifier
+  DeviceType type = 2;                    // Device type
+  string operating_system = 3;            // Operating system
+  string browser = 4;                     // Browser information
+  bool managed = 5;                       // Whether device is managed
+}
+
+message UserContext {
+  string user_id = 1;                     // User identifier
+  string username = 2;                    // Username
+  string domain = 3;                      // User domain
+  repeated string roles = 4;              // User roles
+  string session_id = 5;                  // User session ID
+}
+
+// Security metrics and analytics
+message SecurityMetrics {
+  AuthenticationMetrics authentication = 1; // Authentication metrics
+  AuthorizationMetrics authorization = 2;   // Authorization metrics
+  ThreatMetrics threats = 3;               // Threat metrics
+  ComplianceMetrics compliance = 4;        // Compliance metrics
+  IncidentMetrics incidents = 5;           // Incident metrics
+  VulnerabilityMetrics vulnerabilities = 6; // Vulnerability metrics
+}
+
+message AuthenticationMetrics {
+  int64 total_attempts = 1;               // Total authentication attempts
+  int64 successful_attempts = 2;          // Successful attempts
+  int64 failed_attempts = 3;              // Failed attempts
+  double success_rate = 4;                // Success rate (0.0-1.0)
+  google.protobuf.Duration avg_duration = 5; // Average authentication duration
+  repeated AuthenticationMethodMetrics by_method = 6; // By authentication method
+}
+
+message AuthenticationMethodMetrics {
+  AuthenticationMethod method = 1;        // Authentication method
+  int64 attempts = 2;                     // Total attempts
+  int64 successes = 3;                    // Successful attempts
+  double success_rate = 4;                // Success rate
+}
+
+message AuthorizationMetrics {
+  int64 total_requests = 1;               // Total authorization requests
+  int64 allowed_requests = 2;             // Allowed requests
+  int64 denied_requests = 3;              // Denied requests
+  double allow_rate = 4;                  // Allow rate (0.0-1.0)
+  google.protobuf.Duration avg_evaluation_time = 5; // Average evaluation time
+  repeated AuthorizationByResource by_resource = 6; // By resource type
+}
+
+message AuthorizationByResource {
+  string resource_type = 1;               // Resource type
+  int64 requests = 2;                     // Total requests
+  int64 allowed = 3;                      // Allowed requests
+  double allow_rate = 4;                  // Allow rate
+}
+
+message ThreatMetrics {
+  int64 detected_threats = 1;             // Total detected threats
+  int64 blocked_threats = 2;              // Blocked threats
+  int64 mitigated_threats = 3;            // Mitigated threats
+  ThreatLevel average_threat_level = 4;   // Average threat level
+  repeated ThreatByType by_type = 5;      // Threats by type
+  TrendAnalysis trend = 6;                // Threat trend analysis
+}
+
+enum ThreatLevel {
+  THREAT_LEVEL_UNSPECIFIED = 0;
+  THREAT_LEVEL_LOW = 1;                   // Low threat level
+  THREAT_LEVEL_MEDIUM = 2;                // Medium threat level
+  THREAT_LEVEL_HIGH = 3;                  // High threat level
+  THREAT_LEVEL_CRITICAL = 4;              // Critical threat level
+}
+
+message ThreatByType {
+  ThreatType type = 1;                    // Threat type
+  int64 count = 2;                        // Threat count
+  double percentage = 3;                  // Percentage of total threats
+}
+
+enum ThreatType {
+  THREAT_TYPE_UNSPECIFIED = 0;
+  THREAT_TYPE_MALWARE = 1;                // Malware
+  THREAT_TYPE_PHISHING = 2;               // Phishing
+  THREAT_TYPE_BRUTE_FORCE = 3;            // Brute force attack
+  THREAT_TYPE_DDoS = 4;                   // DDoS attack
+  THREAT_TYPE_INSIDER = 5;                // Insider threat
+  THREAT_TYPE_APT = 6;                    // Advanced persistent threat
+}
+
+message TrendAnalysis {
+  TrendDirection direction = 1;           // Trend direction
+  double change_rate = 2;                 // Rate of change
+  google.protobuf.Duration period = 3;    // Analysis period
+  double confidence = 4;                  // Analysis confidence
+}
+
+message ComplianceMetrics {
+  double overall_compliance = 1;          // Overall compliance score
+  repeated FrameworkCompliance by_framework = 2; // By compliance framework
+  int64 policy_violations = 3;            // Total policy violations
+  int64 exceptions_granted = 4;           // Exceptions granted
+  ComplianceTrend trend = 5;              // Compliance trend
+}
+
+message FrameworkCompliance {
+  FrameworkType framework = 1;            // Compliance framework
+  double compliance_score = 2;            // Compliance score (0.0-1.0)
+  int32 requirements_met = 3;             // Requirements met
+  int32 total_requirements = 4;           // Total requirements
+  ComplianceStatus status = 5;            // Compliance status
+}
+
+message ComplianceTrend {
+  TrendDirection direction = 1;           // Trend direction
+  double improvement_rate = 2;            // Rate of improvement
+  repeated string problem_areas = 3;      // Areas needing improvement
+  repeated string recommendations = 4;    // Compliance recommendations
+}
+
+message IncidentMetrics {
+  int64 total_incidents = 1;              // Total security incidents
+  int64 resolved_incidents = 2;           // Resolved incidents
+  int64 open_incidents = 3;               // Open incidents
+  google.protobuf.Duration avg_resolution_time = 4; // Average resolution time
+  repeated IncidentBySeverity by_severity = 5;      // Incidents by severity
+  repeated IncidentByCategory by_category = 6;      // Incidents by category
+}
+
+message IncidentBySeverity {
+  IncidentSeverity severity = 1;          // Incident severity
+  int64 count = 2;                        // Incident count
+  google.protobuf.Duration avg_resolution = 3; // Average resolution time
+}
+
+enum IncidentSeverity {
+  INCIDENT_SEVERITY_UNSPECIFIED = 0;
+  INCIDENT_SEVERITY_LOW = 1;              // Low severity incident
+  INCIDENT_SEVERITY_MEDIUM = 2;           // Medium severity incident
+  INCIDENT_SEVERITY_HIGH = 3;             // High severity incident
+  INCIDENT_SEVERITY_CRITICAL = 4;         // Critical incident
+}
+
+message IncidentByCategory {
+  IncidentCategory category = 1;          // Incident category
+  int64 count = 2;                        // Incident count
+  double percentage = 3;                  // Percentage of total incidents
+}
+
+enum IncidentCategory {
+  INCIDENT_CATEGORY_UNSPECIFIED = 0;
+  INCIDENT_CATEGORY_BREACH = 1;           // Data breach
+  INCIDENT_CATEGORY_UNAUTHORIZED_ACCESS = 2; // Unauthorized access
+  INCIDENT_CATEGORY_MALWARE = 3;          // Malware infection
+  INCIDENT_CATEGORY_PHISHING = 4;         // Phishing attack
+  INCIDENT_CATEGORY_DENIAL_OF_SERVICE = 5; // Denial of service
+  INCIDENT_CATEGORY_INSIDER_THREAT = 6;   // Insider threat
+}
+
+message VulnerabilityMetrics {
+  int64 total_vulnerabilities = 1;        // Total vulnerabilities
+  int64 critical_vulnerabilities = 2;     // Critical vulnerabilities
+  int64 patched_vulnerabilities = 3;      // Patched vulnerabilities
+  google.protobuf.Duration avg_patch_time = 4; // Average patch time
+  repeated VulnerabilityBySeverity by_severity = 5; // By severity
+  VulnerabilityTrend trend = 6;           // Vulnerability trend
+}
+
+message VulnerabilityBySeverity {
+  VulnerabilitySeverity severity = 1;     // Vulnerability severity
+  int64 count = 2;                        // Count
+  int64 unpatched = 3;                    // Unpatched count
+}
+
+enum VulnerabilitySeverity {
+  VULNERABILITY_SEVERITY_UNSPECIFIED = 0;
+  VULNERABILITY_SEVERITY_LOW = 1;         // Low severity
+  VULNERABILITY_SEVERITY_MEDIUM = 2;      // Medium severity
+  VULNERABILITY_SEVERITY_HIGH = 3;        // High severity
+  VULNERABILITY_SEVERITY_CRITICAL = 4;    // Critical severity
+}
+
+message VulnerabilityTrend {
+  TrendDirection direction = 1;           // Trend direction
+  double discovery_rate = 2;              // Vulnerability discovery rate
+  double remediation_rate = 3;            // Vulnerability remediation rate
+  int64 security_debt = 4;                // Accumulated security debt
+}
+
+// Vulnerability scanning and assessment
+message VulnerabilityAssessment {
+  OSSAIdentifier assessment_id = 1;       // Assessment identifier
+  AssessmentMetadata metadata = 2;        // Assessment metadata
+  AssessmentScope scope = 3;              // Assessment scope
+  repeated Vulnerability vulnerabilities = 4; // Discovered vulnerabilities
+  AssessmentSummary summary = 5;          // Assessment summary
+  repeated Recommendation recommendations = 6; // Security recommendations
+}
+
+message AssessmentMetadata {
+  string name = 1;                        // Assessment name
+  AssessmentType type = 2;                // Assessment type
+  google.protobuf.Timestamp started = 3;  // Assessment start time
+  google.protobuf.Timestamp completed = 4; // Assessment completion time
+  string scanner = 5;                     // Scanner used
+  string version = 6;                     // Scanner version
+  repeated string tags = 7;               // Assessment tags
+}
+
+enum AssessmentType {
+  ASSESSMENT_TYPE_UNSPECIFIED = 0;
+  ASSESSMENT_TYPE_NETWORK = 1;            // Network scan
+  ASSESSMENT_TYPE_WEB_APPLICATION = 2;    // Web application scan
+  ASSESSMENT_TYPE_DATABASE = 3;           // Database scan
+  ASSESSMENT_TYPE_INFRASTRUCTURE = 4;     // Infrastructure scan
+  ASSESSMENT_TYPE_CONTAINER = 5;          // Container scan
+  ASSESSMENT_TYPE_CODE = 6;               // Code analysis
+}
+
+message AssessmentScope {
+  repeated string targets = 1;            // Scan targets
+  repeated string excluded_targets = 2;   // Excluded targets
+  repeated VulnerabilityCategory categories = 3; // Vulnerability categories
+  ScanDepth depth = 4;                    // Scan depth
+  ScanConfiguration configuration = 5;    // Scan configuration
+}
+
+enum VulnerabilityCategory {
+  VULNERABILITY_CATEGORY_UNSPECIFIED = 0;
+  VULNERABILITY_CATEGORY_NETWORK = 1;     // Network vulnerabilities
+  VULNERABILITY_CATEGORY_WEB_APP = 2;     // Web application vulnerabilities
+  VULNERABILITY_CATEGORY_OS = 3;          // Operating system vulnerabilities
+  VULNERABILITY_CATEGORY_DATABASE = 4;    // Database vulnerabilities
+  VULNERABILITY_CATEGORY_CRYPTO = 5;      // Cryptographic vulnerabilities
+  VULNERABILITY_CATEGORY_CONFIG = 6;      // Configuration vulnerabilities
+}
+
+enum ScanDepth {
+  SCAN_DEPTH_UNSPECIFIED = 0;
+  SCAN_DEPTH_BASIC = 1;                   // Basic scan
+  SCAN_DEPTH_STANDARD = 2;                // Standard scan
+  SCAN_DEPTH_THOROUGH = 3;                // Thorough scan
+  SCAN_DEPTH_COMPREHENSIVE = 4;           // Comprehensive scan
+}
+
+message ScanConfiguration {
+  bool authenticated_scan = 1;            // Use authentication
+  google.protobuf.Duration timeout = 2;   // Scan timeout
+  int32 max_threads = 3;                  // Maximum threads
+  bool safe_mode = 4;                     // Safe mode (avoid DoS)
+  repeated string plugins = 5;            // Enabled plugins
+}
+
+message Vulnerability {
+  OSSAIdentifier vulnerability_id = 1;    // Vulnerability identifier
+  VulnerabilityInfo info = 2;             // Vulnerability information
+  string title = 3;                       // Vulnerability title
+  string description = 4;                 // Vulnerability description
+  VulnerabilitySeverity severity = 5;     // Severity level
+  CVSSScore cvss = 6;                     // CVSS score
+  repeated string affected_assets = 7;    // Affected assets
+  VulnerabilityEvidence evidence = 8;     // Evidence
+  RemediationInfo remediation = 9;        // Remediation information
+}
+
+message VulnerabilityInfo {
+  string cve_id = 1;                      // CVE identifier
+  string cwe_id = 2;                      // CWE identifier
+  repeated string references = 3;         // External references
+  google.protobuf.Timestamp discovered = 4; // Discovery date
+  google.protobuf.Timestamp published = 5;  // Publication date
+  VulnerabilityStatus status = 6;         // Status
+  repeated string tags = 7;               // Vulnerability tags
+}
+
+enum VulnerabilityStatus {
+  VULNERABILITY_STATUS_UNSPECIFIED = 0;
+  VULNERABILITY_STATUS_OPEN = 1;          // Open/unresolved
+  VULNERABILITY_STATUS_CONFIRMED = 2;     // Confirmed
+  VULNERABILITY_STATUS_FALSE_POSITIVE = 3; // False positive
+  VULNERABILITY_STATUS_FIXED = 4;         // Fixed/resolved
+  VULNERABILITY_STATUS_IGNORED = 5;       // Ignored/accepted risk
+}
+
+message CVSSScore {
+  string vector = 1;                      // CVSS vector string
+  double base_score = 2;                  // Base score (0.0-10.0)
+  double temporal_score = 3;              // Temporal score
+  double environmental_score = 4;         // Environmental score
+  string version = 5;                     // CVSS version
+  CVSSMetrics metrics = 6;                // CVSS metrics
+}
+
+message CVSSMetrics {
+  string attack_vector = 1;               // Attack vector
+  string attack_complexity = 2;           // Attack complexity
+  string privileges_required = 3;         // Privileges required
+  string user_interaction = 4;            // User interaction
+  string scope = 5;                       // Scope
+  string confidentiality_impact = 6;      // Confidentiality impact
+  string integrity_impact = 7;            // Integrity impact
+  string availability_impact = 8;         // Availability impact
+}
+
+message VulnerabilityEvidence {
+  string proof_of_concept = 1;            // Proof of concept
+  repeated string screenshots = 2;        // Screenshots
+  repeated string log_entries = 3;        // Log entries
+  repeated string network_traces = 4;     // Network traces
+  TechnicalDetails technical = 5;         // Technical details
+}
+
+message TechnicalDetails {
+  string payload = 1;                     // Attack payload
+  string response = 2;                    // System response
+  map<string, string> headers = 3;        // HTTP headers
+  string method = 4;                      // HTTP method
+  string url = 5;                         // Vulnerable URL
+  string parameter = 6;                   // Vulnerable parameter
+}
+
+message RemediationInfo {
+  RemediationType type = 1;               // Remediation type
+  string description = 2;                 // Remediation description
+  RemediationPriority priority = 3;       // Priority
+  google.protobuf.Duration estimated_effort = 4; // Estimated effort
+  repeated RemediationStep steps = 5;     // Remediation steps
+  repeated string resources = 6;          // Additional resources
+}
+
+enum RemediationType {
+  REMEDIATION_TYPE_UNSPECIFIED = 0;
+  REMEDIATION_TYPE_PATCH = 1;             // Apply patch/update
+  REMEDIATION_TYPE_CONFIGURATION = 2;     // Configuration change
+  REMEDIATION_TYPE_WORKAROUND = 3;        // Implement workaround
+  REMEDIATION_TYPE_MITIGATION = 4;        // Implement mitigation
+  REMEDIATION_TYPE_REPLACEMENT = 5;       // Replace component
+}
+
+enum RemediationPriority {
+  REMEDIATION_PRIORITY_UNSPECIFIED = 0;
+  REMEDIATION_PRIORITY_LOW = 1;           // Low priority
+  REMEDIATION_PRIORITY_MEDIUM = 2;        // Medium priority
+  REMEDIATION_PRIORITY_HIGH = 3;          // High priority
+  REMEDIATION_PRIORITY_CRITICAL = 4;      // Critical priority
+  REMEDIATION_PRIORITY_EMERGENCY = 5;     // Emergency priority
+}
+
+message RemediationStep {
+  int32 step_number = 1;                  // Step number
+  string description = 2;                 // Step description
+  string command = 3;                     // Command to execute
+  bool automated = 4;                     // Whether step can be automated
+  repeated string prerequisites = 5;      // Prerequisites
+}
+
+message AssessmentSummary {
+  int64 total_vulnerabilities = 1;        // Total vulnerabilities found
+  repeated VulnerabilitySummaryByLevel by_severity = 2; // By severity level
+  repeated VulnerabilityByCategoryCount by_category = 3; // By category
+  double risk_score = 4;                  // Overall risk score (0.0-10.0)
+  RiskLevel risk_level = 5;               // Overall risk level
+  ComplianceImpact compliance_impact = 6; // Compliance impact
+}
+
+message VulnerabilitySummaryByLevel {
+  VulnerabilitySeverity severity = 1;     // Severity level
+  int64 count = 2;                        // Vulnerability count
+  double percentage = 3;                  // Percentage of total
+}
+
+message VulnerabilityByCategoryCount {
+  VulnerabilityCategory category = 1;     // Vulnerability category
+  int64 count = 2;                        // Count in category
+  double risk_contribution = 3;           // Risk contribution
+}
+
+message ComplianceImpact {
+  repeated FrameworkImpact frameworks = 1; // Impact by framework
+  repeated string violated_controls = 2;  // Violated controls
+  double compliance_reduction = 3;         // Compliance score reduction
+}
+
+message FrameworkImpact {
+  FrameworkType framework = 1;            // Compliance framework
+  int32 affected_controls = 2;            // Number of affected controls
+  double impact_score = 3;                // Impact score (0.0-1.0)
+}
+
+message Recommendation {
+  OSSAIdentifier recommendation_id = 1;   // Recommendation identifier
+  RecommendationType type = 2;            // Recommendation type
+  string title = 3;                       // Recommendation title
+  string description = 4;                 // Recommendation description
+  RecommendationPriority priority = 5;    // Priority level
+  double impact_score = 6;                // Expected impact score
+  google.protobuf.Duration implementation_time = 7; // Implementation time
+  double cost_estimate = 8;               // Cost estimate
+  repeated string benefits = 9;           // Expected benefits
+  repeated string risks = 10;             // Associated risks
+}
+
+// Digital certificates and PKI
+message DigitalCertificate {
+  OSSAIdentifier certificate_id = 1;      // Certificate identifier
+  CertificateMetadata metadata = 2;       // Certificate metadata
+  bytes certificate_data = 3;             // Certificate data (X.509)
+  CertificateChain chain = 4;             // Certificate chain
+  CertificateStatus status = 5;           // Certificate status
+  CertificateUsage usage = 6;             // Certificate usage
+  CertificateValidation validation = 7;   // Validation information
+}
+
+message CertificateMetadata {
+  string subject = 1;                     // Certificate subject
+  string issuer = 2;                      // Certificate issuer
+  string serial_number = 3;               // Serial number
+  google.protobuf.Timestamp not_before = 4; // Valid from
+  google.protobuf.Timestamp not_after = 5;  // Valid until
+  string algorithm = 6;                   // Signature algorithm
+  int32 key_size = 7;                     // Key size
+  repeated string key_usage = 8;          // Key usage extensions
+  repeated string extended_key_usage = 9; // Extended key usage
+  repeated string subject_alt_names = 10; // Subject alternative names
+}
+
+message CertificateChain {
+  bytes root_certificate = 1;            // Root CA certificate
+  repeated bytes intermediate_certificates = 2; // Intermediate certificates
+  ChainValidation validation = 3;         // Chain validation status
+}
+
+message ChainValidation {
+  bool valid = 1;                         // Whether chain is valid
+  repeated ChainValidationError errors = 2; // Validation errors
+  google.protobuf.Timestamp validated_at = 3; // Validation timestamp
+  string validator = 4;                   // Validator used
+}
+
+message ChainValidationError {
+  ChainErrorType type = 1;                // Error type
+  string description = 2;                 // Error description
+  string certificate = 3;                 // Affected certificate
+  ErrorSeverity severity = 4;             // Error severity
+}
+
+enum ChainErrorType {
+  CHAIN_ERROR_TYPE_UNSPECIFIED = 0;
+  CHAIN_ERROR_TYPE_EXPIRED = 1;           // Certificate expired
+  CHAIN_ERROR_TYPE_NOT_YET_VALID = 2;     // Certificate not yet valid
+  CHAIN_ERROR_TYPE_UNTRUSTED_ROOT = 3;    // Untrusted root CA
+  CHAIN_ERROR_TYPE_REVOKED = 4;           // Certificate revoked
+  CHAIN_ERROR_TYPE_INVALID_SIGNATURE = 5; // Invalid signature
+  CHAIN_ERROR_TYPE_INCOMPLETE_CHAIN = 6;  // Incomplete certificate chain
+}
+
+enum ErrorSeverity {
+  ERROR_SEVERITY_UNSPECIFIED = 0;
+  ERROR_SEVERITY_LOW = 1;                 // Low severity error
+  ERROR_SEVERITY_MEDIUM = 2;              // Medium severity error
+  ERROR_SEVERITY_HIGH = 3;                // High severity error
+  ERROR_SEVERITY_CRITICAL = 4;            // Critical error
+}
+
+message CertificateStatus {
+  CertificateState state = 1;             // Certificate state
+  RevocationStatus revocation = 2;        // Revocation status
+  google.protobuf.Timestamp last_checked = 3; // Last status check
+  StatusValidator validator = 4;          // Status validator
+}
+
+enum CertificateState {
+  CERTIFICATE_STATE_UNSPECIFIED = 0;
+  CERTIFICATE_STATE_VALID = 1;            // Certificate is valid
+  CERTIFICATE_STATE_EXPIRED = 2;          // Certificate expired
+  CERTIFICATE_STATE_REVOKED = 3;          // Certificate revoked
+  CERTIFICATE_STATE_SUSPENDED = 4;        // Certificate suspended
+  CERTIFICATE_STATE_INVALID = 5;          // Certificate invalid
+}
+
+message RevocationStatus {
+  bool revoked = 1;                       // Whether certificate is revoked
+  google.protobuf.Timestamp revoked_at = 2; // Revocation timestamp
+  RevocationReason reason = 3;            // Revocation reason
+  string revocation_authority = 4;        // Revocation authority
+}
+
+enum RevocationReason {
+  REVOCATION_REASON_UNSPECIFIED = 0;
+  REVOCATION_REASON_KEY_COMPROMISE = 1;   // Key compromise
+  REVOCATION_REASON_CA_COMPROMISE = 2;    // CA compromise
+  REVOCATION_REASON_AFFILIATION_CHANGED = 3; // Affiliation changed
+  REVOCATION_REASON_SUPERSEDED = 4;       // Certificate superseded
+  REVOCATION_REASON_CESSATION = 5;        // Cessation of operation
+  REVOCATION_REASON_CERTIFICATE_HOLD = 6; // Certificate on hold
+}
+
+message StatusValidator {
+  ValidatorType type = 1;                 // Validator type
+  string endpoint = 2;                    // Validation endpoint
+  google.protobuf.Duration cache_duration = 3; // Cache duration
+  bool online_validation = 4;             // Online validation enabled
+}
+
+enum ValidatorType {
+  VALIDATOR_TYPE_UNSPECIFIED = 0;
+  VALIDATOR_TYPE_CRL = 1;                 // Certificate Revocation List
+  VALIDATOR_TYPE_OCSP = 2;                // Online Certificate Status Protocol
+  VALIDATOR_TYPE_OCSP_STAPLING = 3;       // OCSP Stapling
+  VALIDATOR_TYPE_CUSTOM = 4;              // Custom validator
+}
+
+message CertificateUsage {
+  repeated CertificateApplication applications = 1; // Certificate applications
+  UsageConstraints constraints = 2;       // Usage constraints
+  UsageStatistics statistics = 3;         // Usage statistics
+}
+
+message CertificateApplication {
+  string name = 1;                        // Application name
+  ApplicationType type = 2;               // Application type
+  google.protobuf.Timestamp first_used = 3; // First use timestamp
+  google.protobuf.Timestamp last_used = 4;  // Last use timestamp
+  int64 usage_count = 5;                  // Usage count
+}
+
+enum ApplicationType {
+  APPLICATION_TYPE_UNSPECIFIED = 0;
+  APPLICATION_TYPE_TLS_SERVER = 1;        // TLS server authentication
+  APPLICATION_TYPE_TLS_CLIENT = 2;        // TLS client authentication
+  APPLICATION_TYPE_CODE_SIGNING = 3;      // Code signing
+  APPLICATION_TYPE_EMAIL = 4;             // Email signing/encryption
+  APPLICATION_TYPE_DOCUMENT = 5;          // Document signing
+  APPLICATION_TYPE_TIME_STAMPING = 6;     // Time stamping
+}
+
+message UsageStatistics {
+  int64 total_uses = 1;                   // Total usage count
+  google.protobuf.Timestamp peak_usage = 2; // Peak usage time
+  double average_daily_uses = 3;          // Average daily uses
+  repeated UsageByApplication by_application = 4; // Usage by application
+}
+
+message UsageByApplication {
+  ApplicationType type = 1;               // Application type
+  int64 count = 2;                        // Usage count
+  double percentage = 3;                  // Percentage of total usage
+}
+
+message CertificateValidation {
+  ValidationResult result = 1;            // Validation result
+  repeated ValidationCheck checks = 2;    // Individual validation checks
+  ValidationMetadata metadata = 3;        // Validation metadata
+}
+
+enum ValidationResult {
+  VALIDATION_RESULT_UNSPECIFIED = 0;
+  VALIDATION_RESULT_VALID = 1;            // Certificate is valid
+  VALIDATION_RESULT_INVALID = 2;          // Certificate is invalid
+  VALIDATION_RESULT_WARNING = 3;          // Certificate has warnings
+  VALIDATION_RESULT_UNKNOWN = 4;          // Validation result unknown
+}
+
+message ValidationCheck {
+  CheckType type = 1;                     // Check type
+  CheckResult result = 2;                 // Check result
+  string description = 3;                 // Check description
+  string details = 4;                     // Additional details
+}
+
+enum CheckType {
+  CHECK_TYPE_UNSPECIFIED = 0;
+  CHECK_TYPE_SIGNATURE = 1;               // Signature validation
+  CHECK_TYPE_EXPIRATION = 2;              // Expiration check
+  CHECK_TYPE_REVOCATION = 3;              // Revocation check
+  CHECK_TYPE_CHAIN = 4;                   // Chain validation
+  CHECK_TYPE_USAGE = 5;                   // Usage validation
+  CHECK_TYPE_HOSTNAME = 6;                // Hostname validation
+}
+
+enum CheckResult {
+  CHECK_RESULT_UNSPECIFIED = 0;
+  CHECK_RESULT_PASS = 1;                  // Check passed
+  CHECK_RESULT_FAIL = 2;                  // Check failed
+  CHECK_RESULT_WARNING = 3;               // Check produced warning
+  CHECK_RESULT_SKIP = 4;                  // Check was skipped
+}
+
+message ValidationMetadata {
+  google.protobuf.Timestamp validated_at = 1; // Validation timestamp
+  string validator = 2;                      // Validator identifier
+  string validator_version = 3;              // Validator version
+  ValidationPolicy policy = 4;               // Validation policy used
+}
+
+message ValidationPolicy {
+  string policy_name = 1;                 // Policy name
+  string version = 2;                     // Policy version
+  repeated CheckType required_checks = 3; // Required checks
+  repeated CheckType optional_checks = 4; // Optional checks
+  CheckConfiguration configuration = 5;   // Check configuration
+}
+
+message CheckConfiguration {
+  bool strict_mode = 1;                   // Strict validation mode
+  google.protobuf.Duration grace_period = 2; // Grace period for expired certificates
+  bool allow_self_signed = 3;             // Allow self-signed certificates
+  bool require_crl_check = 4;             // Require CRL checking
+  bool require_ocsp_check = 5;            // Require OCSP checking
+}
+
+// Request/Response messages for SecurityService
+
+message AuthenticateRequest {
+  AuthenticationCredentials credentials = 1; // Authentication credentials
+  string client_id = 2;                     // Client identifier
+  repeated string requested_scopes = 3;     // Requested scopes
+  AuthenticationOptions options = 4;        // Authentication options
+}
+
+message AuthenticationOptions {
+  bool remember_device = 1;               // Remember device
+  google.protobuf.Duration session_duration = 2; // Requested session duration
+  bool require_mfa = 3;                   // Require multi-factor authentication
+  string challenge_response = 4;          // Challenge response (if applicable)
+}
+
+message AuthenticateResponse {
+  AuthenticationResult result = 1;        // Authentication result
+  Error error = 2;                        // Authentication error
+}
+
+message RefreshTokenRequest {
+  string refresh_token = 1;               // Refresh token
+  repeated string scopes = 2;             // Requested scopes
+}
+
+message RefreshTokenResponse {
+  AuthenticationToken new_token = 1;      // New authentication token
+  string new_refresh_token = 2;           // New refresh token (if rotated)
+  Error error = 3;                        // Refresh error
+}
+
+message RevokeTokenRequest {
+  string token = 1;                       // Token to revoke
+  TokenType token_type = 2;               // Token type
+  bool revoke_all_sessions = 3;           // Revoke all user sessions
+}
+
+message RevokeTokenResponse {
+  bool success = 1;                       // Revocation success
+  google.protobuf.Timestamp revoked_at = 2; // Revocation timestamp
+  Error error = 3;                        // Revocation error
+}
+
+message AuthorizeRequest {
+  SecurityPrincipal principal = 1;        // Principal requesting access
+  string resource = 2;                    // Resource being accessed
+  string action = 3;                      // Action being performed
+  SecurityContext context = 4;            // Security context
+  map<string, google.protobuf.Any> attributes = 5; // Additional attributes
+}
+
+message AuthorizeResponse {
+  bool authorized = 1;                    // Authorization result
+  AuthorizationDecision decision = 2;     // Detailed decision information
+  Error error = 3;                        // Authorization error
+}
+
+message AuthorizationDecision {
+  AuthorizationResult result = 1;         // Authorization result
+  repeated PolicyEvaluation evaluations = 2; // Policy evaluations
+  string reason = 3;                      // Decision reason
+  repeated string applied_policies = 4;   // Applied policies
+  AuthorizationMetadata metadata = 5;     // Decision metadata
+}
+
+enum AuthorizationResult {
+  AUTHORIZATION_RESULT_UNSPECIFIED = 0;
+  AUTHORIZATION_RESULT_ALLOW = 1;         // Access allowed
+  AUTHORIZATION_RESULT_DENY = 2;          // Access denied
+  AUTHORIZATION_RESULT_CONDITIONAL = 3;   // Conditional access
+  AUTHORIZATION_RESULT_DEFERRED = 4;      // Decision deferred
+}
+
+message PolicyEvaluation {
+  OSSAIdentifier policy_id = 1;           // Policy identifier
+  string policy_name = 2;                 // Policy name
+  RuleEffect effect = 3;                  // Policy effect
+  bool matched = 4;                       // Whether policy matched
+  google.protobuf.Duration evaluation_time = 5; // Evaluation time
+}
+
+message AuthorizationMetadata {
+  google.protobuf.Timestamp evaluated_at = 1; // Evaluation timestamp
+  google.protobuf.Duration evaluation_time = 2; // Total evaluation time
+  int32 policies_evaluated = 3;                 // Number of policies evaluated
+  bool cached_result = 4;                       // Whether result was cached
+}
+
+message CreateSecurityPolicyRequest {
+  SecurityPolicy policy = 1;              // Security policy to create
+  bool validate_only = 2;                 // Only validate, don't create
+  bool enable_immediately = 3;            // Enable policy immediately
+}
+
+message CreateSecurityPolicyResponse {
+  OSSAIdentifier policy_id = 1;           // Created policy ID
+  PolicyState initial_state = 2;          // Initial policy state
+  repeated ValidationIssue validation_issues = 3; // Validation issues
+  Error error = 4;                        // Creation error
+}
+
+message UpdateSecurityPolicyRequest {
+  OSSAIdentifier policy_id = 1;           // Policy to update
+  SecurityPolicy policy = 2;              // Updated policy
+  repeated string update_mask = 3;        // Fields to update
+  bool validate_only = 4;                 // Only validate, don't update
+}
+
+message UpdateSecurityPolicyResponse {
+  SecurityPolicy policy = 1;              // Updated policy
+  repeated ValidationIssue validation_issues = 2; // Validation issues
+  Error error = 3;                        // Update error
+}
+
+message ListSecurityPoliciesRequest {
+  PageInfo page_info = 1;                 // Pagination information
+  SecurityPolicyFilter filter = 2;        // Policy filter
+  repeated string sort_by = 3;            // Sort fields
+  bool include_status = 4;                // Include policy status
+}
+
+message SecurityPolicyFilter {
+  repeated PolicyType types = 1;          // Filter by policy types
+  repeated PolicyState states = 2;        // Filter by policy states
+  repeated string tags = 3;               // Filter by tags
+  string owner = 4;                       // Filter by owner
+  repeated FrameworkType frameworks = 5;  // Filter by compliance frameworks
+}
+
+message ListSecurityPoliciesResponse {
+  repeated SecurityPolicy policies = 1;   // Matching policies
+  PageInfo page_info = 2;                 // Pagination information
+  Error error = 3;                        // List error
+}
+
+message CreateRoleRequest {
+  SecurityRole role = 1;                  // Role to create
+  bool validate_only = 2;                 // Only validate, don't create
+}
+
+message CreateRoleResponse {
+  OSSAIdentifier role_id = 1;             // Created role ID
+  repeated ValidationIssue validation_issues = 2; // Validation issues
+  Error error = 3;                        // Creation error
+}
+
+message AssignRoleRequest {
+  OSSAIdentifier principal_id = 1;        // Principal to assign role to
+  OSSAIdentifier role_id = 2;             // Role to assign
+  google.protobuf.Timestamp effective_from = 3; // Effective from timestamp
+  google.protobuf.Timestamp expires_at = 4;     // Assignment expiration
+}
+
+message AssignRoleResponse {
+  bool success = 1;                       // Assignment success
+  google.protobuf.Timestamp assigned_at = 2; // Assignment timestamp
+  Error error = 3;                        // Assignment error
+}
+
+message RevokeRoleRequest {
+  OSSAIdentifier principal_id = 1;        // Principal to revoke role from
+  OSSAIdentifier role_id = 2;             // Role to revoke
+  string reason = 3;                      // Revocation reason
+}
+
+message RevokeRoleResponse {
+  bool success = 1;                       // Revocation success
+  google.protobuf.Timestamp revoked_at = 2; // Revocation timestamp
+  Error error = 3;                        // Revocation error
+}
+
+message CreatePermissionRequest {
+  SecurityPermission permission = 1;      // Permission to create
+  bool validate_only = 2;                 // Only validate, don't create
+}
+
+message CreatePermissionResponse {
+  OSSAIdentifier permission_id = 1;       // Created permission ID
+  repeated ValidationIssue validation_issues = 2; // Validation issues
+  Error error = 3;                        // Creation error
+}
+
+message GrantPermissionRequest {
+  OSSAIdentifier principal_id = 1;        // Principal to grant permission to
+  OSSAIdentifier permission_id = 2;       // Permission to grant
+  google.protobuf.Timestamp effective_from = 3; // Effective from timestamp
+  google.protobuf.Timestamp expires_at = 4;     // Grant expiration
+}
+
+message GrantPermissionResponse {
+  bool success = 1;                       // Grant success
+  google.protobuf.Timestamp granted_at = 2; // Grant timestamp
+  Error error = 3;                        // Grant error
+}
+
+message RevokePermissionRequest {
+  OSSAIdentifier principal_id = 1;        // Principal to revoke permission from
+  OSSAIdentifier permission_id = 2;       // Permission to revoke
+  string reason = 3;                      // Revocation reason
+}
+
+message RevokePermissionResponse {
+  bool success = 1;                       // Revocation success
+  google.protobuf.Timestamp revoked_at = 2; // Revocation timestamp
+  Error error = 3;                        // Revocation error
+}
+
+message EncryptDataRequest {
+  bytes data = 1;                         // Data to encrypt
+  OSSAIdentifier key_id = 2;              // Encryption key ID
+  string algorithm = 3;                   // Encryption algorithm
+  map<string, string> context = 4;       // Encryption context
+}
+
+message EncryptDataResponse {
+  bytes encrypted_data = 1;               // Encrypted data
+  bytes initialization_vector = 2;        // Initialization vector
+  string algorithm = 3;                   // Algorithm used
+  OSSAIdentifier key_id = 4;              // Key used
+  Error error = 5;                        // Encryption error
+}
+
+message DecryptDataRequest {
+  bytes encrypted_data = 1;               // Data to decrypt
+  OSSAIdentifier key_id = 2;              // Decryption key ID
+  bytes initialization_vector = 3;        // Initialization vector
+  string algorithm = 4;                   // Encryption algorithm
+  map<string, string> context = 5;       // Decryption context
+}
+
+message DecryptDataResponse {
+  bytes decrypted_data = 1;               // Decrypted data
+  Error error = 2;                        // Decryption error
+}
+
+message SignDataRequest {
+  bytes data = 1;                         // Data to sign
+  OSSAIdentifier key_id = 2;              // Signing key ID
+  string algorithm = 3;                   // Signing algorithm
+  map<string, string> metadata = 4;      // Signing metadata
+}
+
+message SignDataResponse {
+  bytes signature = 1;                    // Digital signature
+  string algorithm = 2;                   // Algorithm used
+  OSSAIdentifier key_id = 3;              // Key used
+  google.protobuf.Timestamp signed_at = 4; // Signing timestamp
+  Error error = 5;                        // Signing error
+}
+
+message VerifySignatureRequest {
+  bytes data = 1;                         // Original data
+  bytes signature = 2;                    // Digital signature
+  OSSAIdentifier key_id = 3;              // Verification key ID
+  string algorithm = 4;                   // Signing algorithm
+}
+
+message VerifySignatureResponse {
+  bool valid = 1;                         // Signature validity
+  google.protobuf.Timestamp verified_at = 2; // Verification timestamp
+  SignatureInfo signature_info = 3;       // Signature information
+  Error error = 4;                        // Verification error
+}
+
+message SignatureInfo {
+  OSSAIdentifier signer = 1;              // Signer identifier
+  google.protobuf.Timestamp signed_at = 2; // Signing timestamp
+  string algorithm = 3;                   // Signing algorithm
+  map<string, string> metadata = 4;      // Signature metadata
+}
+
+message PerformSecurityAuditRequest {
+  AuditScope scope = 1;                   // Audit scope
+  AuditType type = 2;                     // Audit type
+  google.protobuf.Timestamp start_time = 3; // Audit start time
+  google.protobuf.Timestamp end_time = 4;   // Audit end time
+  AuditConfiguration config = 5;          // Audit configuration
+}
+
+enum AuditType {
+  AUDIT_TYPE_UNSPECIFIED = 0;
+  AUDIT_TYPE_ACCESS = 1;                  // Access audit
+  AUDIT_TYPE_PRIVILEGE = 2;               // Privilege audit
+  AUDIT_TYPE_COMPLIANCE = 3;              // Compliance audit
+  AUDIT_TYPE_SECURITY = 4;                // Security audit
+  AUDIT_TYPE_COMPREHENSIVE = 5;           // Comprehensive audit
+}
+
+message AuditScope {
+  repeated OSSAIdentifier principals = 1; // Principals to audit
+  repeated string resources = 2;          // Resources to audit
+  repeated string actions = 3;            // Actions to audit
+  repeated string systems = 4;            // Systems to audit
+}
+
+message AuditConfiguration {
+  bool include_successful = 1;            // Include successful operations
+  bool include_failed = 2;                // Include failed operations
+  bool deep_analysis = 3;                 // Perform deep analysis
+  repeated string focus_areas = 4;        // Areas of focus
+}
+
+message PerformSecurityAuditResponse {
+  AuditReport report = 1;                 // Audit report
+  Error error = 2;                        // Audit error
+}
+
+message AuditReport {
+  OSSAIdentifier audit_id = 1;            // Audit identifier
+  AuditMetadata metadata = 2;             // Audit metadata
+  AuditSummary summary = 3;               // Audit summary
+  repeated AuditFinding findings = 4;     // Audit findings
+  repeated AuditRecommendation recommendations = 5; // Recommendations
+}
+
+message AuditMetadata {
+  google.protobuf.Timestamp started = 1; // Audit start time
+  google.protobuf.Timestamp completed = 2; // Audit completion time
+  string auditor = 3;                     // Auditor identifier
+  AuditScope scope = 4;                   // Audit scope
+  string methodology = 5;                 // Audit methodology
+}
+
+message AuditSummary {
+  int64 total_events = 1;                 // Total events examined
+  int64 findings_count = 2;               // Number of findings
+  int64 critical_findings = 3;            // Critical findings
+  int64 high_findings = 4;                // High severity findings
+  int64 medium_findings = 5;              // Medium severity findings
+  int64 low_findings = 6;                 // Low severity findings
+  double compliance_score = 7;            // Compliance score (0.0-1.0)
+}
+
+message AuditFinding {
+  OSSAIdentifier finding_id = 1;          // Finding identifier
+  FindingSeverity severity = 2;           // Finding severity
+  string title = 3;                       // Finding title
+  string description = 4;                 // Finding description
+  repeated string affected_resources = 5; // Affected resources
+  FindingCategory category = 6;           // Finding category
+  google.protobuf.Timestamp discovered = 7; // Discovery timestamp
+  string evidence = 8;                    // Supporting evidence
+  FindingStatus status = 9;               // Finding status
+}
+
+enum FindingSeverity {
+  FINDING_SEVERITY_UNSPECIFIED = 0;
+  FINDING_SEVERITY_INFORMATIONAL = 1;     // Informational finding
+  FINDING_SEVERITY_LOW = 2;               // Low severity
+  FINDING_SEVERITY_MEDIUM = 3;            // Medium severity
+  FINDING_SEVERITY_HIGH = 4;              // High severity
+  FINDING_SEVERITY_CRITICAL = 5;          // Critical severity
+}
+
+enum FindingCategory {
+  FINDING_CATEGORY_UNSPECIFIED = 0;
+  FINDING_CATEGORY_ACCESS_CONTROL = 1;    // Access control issue
+  FINDING_CATEGORY_AUTHENTICATION = 2;    // Authentication issue
+  FINDING_CATEGORY_AUTHORIZATION = 3;     // Authorization issue
+  FINDING_CATEGORY_ENCRYPTION = 4;        // Encryption issue
+  FINDING_CATEGORY_POLICY = 5;            // Policy violation
+  FINDING_CATEGORY_COMPLIANCE = 6;        // Compliance issue
+  FINDING_CATEGORY_CONFIGURATION = 7;     // Configuration issue
+}
+
+enum FindingStatus {
+  FINDING_STATUS_UNSPECIFIED = 0;
+  FINDING_STATUS_OPEN = 1;                // Finding is open
+  FINDING_STATUS_IN_PROGRESS = 2;         // Remediation in progress
+  FINDING_STATUS_RESOLVED = 3;            // Finding resolved
+  FINDING_STATUS_ACCEPTED = 4;            // Risk accepted
+  FINDING_STATUS_FALSE_POSITIVE = 5;      // False positive
+}
+
+message AuditRecommendation {
+  OSSAIdentifier recommendation_id = 1;   // Recommendation identifier
+  string title = 2;                       // Recommendation title
+  string description = 3;                 // Recommendation description
+  RecommendationPriority priority = 4;    // Priority level
+  double risk_reduction = 5;              // Expected risk reduction
+  google.protobuf.Duration implementation_time = 6; // Implementation time
+  repeated string related_findings = 7;   // Related findings
+}
+
+message LogSecurityEventRequest {
+  SecurityEvent event = 1;                // Security event to log
+  bool immediate_alert = 2;                // Generate immediate alert
+  map<string, string> correlation = 3;    // Event correlation data
+}
+
+message LogSecurityEventResponse {
+  OSSAIdentifier event_id = 1;            // Logged event ID
+  google.protobuf.Timestamp logged_at = 2; // Log timestamp
+  bool alert_generated = 3;               // Whether alert was generated
+  Error error = 4;                        // Logging error
+}
+
+message StreamSecurityEventsRequest {
+  repeated EventCategory categories = 1;  // Event categories to stream
+  repeated EventSeverity severities = 2;  // Event severities to stream
+  SecurityEventFilter filter = 3;         // Event filter
+  bool include_historical = 4;            // Include historical events
+}
+
+message SecurityEventFilter {
+  repeated OSSAIdentifier sources = 1;    // Event sources
+  repeated string principals = 2;         // Principals
+  repeated string resources = 3;          // Resources
+  google.protobuf.Timestamp start_time = 4; // Filter start time
+  google.protobuf.Timestamp end_time = 5;   // Filter end time
+  map<string, string> labels = 6;        // Label filters
+}
+
+message GetSecurityMetricsRequest {
+  google.protobuf.Timestamp start_time = 1; // Metrics start time
+  google.protobuf.Timestamp end_time = 2;   // Metrics end time
+  repeated string metric_types = 3;         // Specific metric types
+  MetricsAggregation aggregation = 4;       // Aggregation settings
+}
+
+message MetricsAggregation {
+  google.protobuf.Duration granularity = 1; // Time granularity
+  AggregationType type = 2;                  // Aggregation type
+  repeated string group_by = 3;              // Group by fields
+}
+
+message GetSecurityMetricsResponse {
+  SecurityMetrics metrics = 1;            // Security metrics
+  MetricsMetadata metadata = 2;           // Metrics metadata
+  Error error = 3;                        // Metrics error
+}
+
+message MetricsMetadata {
+  google.protobuf.Timestamp collected_at = 1; // Collection timestamp
+  google.protobuf.Duration collection_time = 2; // Collection duration
+  int64 data_points = 3;                       // Number of data points
+  string aggregation_method = 4;               // Aggregation method used
+}
+
+message PerformVulnerabilityScanRequest {
+  AssessmentScope scope = 1;              // Scan scope
+  AssessmentType type = 2;                // Scan type
+  ScanConfiguration config = 3;           // Scan configuration
+  bool async_scan = 4;                    // Asynchronous scan
+}
+
+message PerformVulnerabilityScanResponse {
+  OSSAIdentifier scan_id = 1;             // Scan identifier
+  VulnerabilityAssessment assessment = 2; // Assessment results (if synchronous)
+  ScanStatus status = 3;                  // Scan status
+  Error error = 4;                        // Scan error
+}
+
+message ScanStatus {
+  ScanState state = 1;                    // Scan state
+  double progress = 2;                    // Scan progress (0.0-1.0)
+  google.protobuf.Timestamp started = 3; // Scan start time
+  google.protobuf.Timestamp estimated_completion = 4; // Estimated completion
+  string current_phase = 5;               // Current scan phase
+}
+
+enum ScanState {
+  SCAN_STATE_UNSPECIFIED = 0;
+  SCAN_STATE_QUEUED = 1;                  // Scan queued
+  SCAN_STATE_RUNNING = 2;                 // Scan running
+  SCAN_STATE_COMPLETED = 3;               // Scan completed
+  SCAN_STATE_FAILED = 4;                  // Scan failed
+  SCAN_STATE_CANCELLED = 5;               // Scan cancelled
+}
+
+message GetComplianceStatusRequest {
+  repeated FrameworkType frameworks = 1;  // Compliance frameworks
+  bool include_details = 2;               // Include detailed information
+  bool include_evidence = 3;              // Include compliance evidence
+}
+
+message GetComplianceStatusResponse {
+  ComplianceStatus status = 1;            // Compliance status
+  repeated FrameworkComplianceStatus framework_status = 2; // By framework
+  Error error = 3;                        // Status error
+}
+
+message FrameworkComplianceStatus {
+  FrameworkType framework = 1;            // Compliance framework
+  double compliance_score = 2;            // Compliance score (0.0-1.0)
+  ComplianceStatus overall_status = 3;    // Overall status
+  repeated ComplianceRequirement requirements = 4; // Requirement details
+  google.protobuf.Timestamp last_assessment = 5;   // Last assessment time
+  repeated string gaps = 6;               // Compliance gaps
+}
+
+message CreateCertificateRequest {
+  CertificateRequest request = 1;         // Certificate request
+  CertificateProfile profile = 2;         // Certificate profile
+  bool auto_approve = 3;                  // Auto-approve request
+}
+
+message CertificateRequest {
+  string subject = 1;                     // Certificate subject
+  repeated string subject_alt_names = 2;  // Subject alternative names
+  KeyType key_type = 3;                   // Key type
+  int32 key_size = 4;                     // Key size
+  google.protobuf.Duration validity_period = 5; // Validity period
+  repeated string key_usage = 6;          // Key usage
+  repeated string extended_key_usage = 7; // Extended key usage
+}
+
+message CertificateProfile {
+  string profile_name = 1;                // Profile name
+  string ca_certificate = 2;              // CA certificate
+  CertificatePolicy policy = 3;           // Certificate policy
+  bool require_approval = 4;              // Require manual approval
+}
+
+message CertificatePolicy {
+  google.protobuf.Duration max_validity = 1; // Maximum validity period
+  int32 min_key_size = 2;                    // Minimum key size
+  repeated string allowed_key_usage = 3;     // Allowed key usage
+  repeated string required_extensions = 4;   // Required extensions
+  SubjectConstraints subject_constraints = 5; // Subject constraints
+}
+
+message SubjectConstraints {
+  repeated string allowed_domains = 1;    // Allowed domains
+  repeated string blocked_domains = 2;    // Blocked domains
+  bool require_organization = 3;          // Require organization
+  string organization_unit = 4;           // Required organizational unit
+}
+
+message CreateCertificateResponse {
+  DigitalCertificate certificate = 1;     // Created certificate
+  CertificateRequestStatus request_status = 2; // Request status
+  Error error = 3;                        // Creation error
+}
+
+message CertificateRequestStatus {
+  RequestState state = 1;                 // Request state
+  string request_id = 2;                  // Request identifier
+  google.protobuf.Timestamp submitted = 3; // Submission timestamp
+  google.protobuf.Timestamp processed = 4;  // Processing timestamp
+  string approver = 5;                    // Approver (if applicable)
+}
+
+enum RequestState {
+  REQUEST_STATE_UNSPECIFIED = 0;
+  REQUEST_STATE_PENDING = 1;              // Request pending
+  REQUEST_STATE_APPROVED = 2;             // Request approved
+  REQUEST_STATE_REJECTED = 3;             // Request rejected
+  REQUEST_STATE_ISSUED = 4;               // Certificate issued
+  REQUEST_STATE_REVOKED = 5;              // Certificate revoked
+}
+
+message ValidateCertificateRequest {
+  DigitalCertificate certificate = 1;     // Certificate to validate
+  ValidationPolicy policy = 2;            // Validation policy
+  bool check_revocation = 3;              // Check revocation status
+  bool validate_chain = 4;                // Validate certificate chain
+}
+
+message ValidateCertificateResponse {
+  CertificateValidation validation = 1;   // Validation result
+  Error error = 2;                        // Validation error
+}
+
+message ManageSecurityKeysRequest {
+  KeyManagementOperation operation = 1;   // Key management operation
+  CryptographicKey key = 2;               // Key (for create/update operations)
+  OSSAIdentifier key_id = 3;              // Key ID (for other operations)
+  KeyManagementOptions options = 4;       // Operation options
+}
+
+enum KeyManagementOperation {
+  KEY_MANAGEMENT_OPERATION_UNSPECIFIED = 0;
+  KEY_MANAGEMENT_OPERATION_CREATE = 1;    // Create new key
+  KEY_MANAGEMENT_OPERATION_UPDATE = 2;    // Update existing key
+  KEY_MANAGEMENT_OPERATION_DELETE = 3;    // Delete key
+  KEY_MANAGEMENT_OPERATION_ROTATE = 4;    // Rotate key
+  KEY_MANAGEMENT_OPERATION_BACKUP = 5;    // Backup key
+  KEY_MANAGEMENT_OPERATION_RESTORE = 6;   // Restore key
+}
+
+message KeyManagementOptions {
+  bool force_operation = 1;               // Force operation
+  string backup_location = 2;             // Backup location
+  bool secure_delete = 3;                 // Secure deletion
+  KeyGenerationParameters generation = 4; // Key generation parameters
+}
+
+message KeyGenerationParameters {
+  KeyAlgorithm algorithm = 1;             // Key algorithm
+  int32 key_size = 2;                     // Key size
+  string entropy_source = 3;              // Entropy source
+  bool hardware_generated = 4;            // Hardware-generated key
+}
+
+message ManageSecurityKeysResponse {
+  CryptographicKey key = 1;               // Key (for create/update/rotate)
+  KeyManagementResult result = 2;         // Operation result
+  Error error = 3;                        // Management error
+}
+
+message KeyManagementResult {
+  bool success = 1;                       // Operation success
+  google.protobuf.Timestamp completed_at = 2; // Completion timestamp
+  string operation_id = 3;                // Operation identifier
+  map<string, string> metadata = 4;      // Operation metadata
+}

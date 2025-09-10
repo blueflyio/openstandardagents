@@ -1,0 +1,9 @@
+{
+  "enabled": true,
+  "branches": [
+    "main",
+    "development"
+  ],
+  "enforceHooks": true,
+  "installedAt": "2025-08-27T03:52:58.129Z"
+}

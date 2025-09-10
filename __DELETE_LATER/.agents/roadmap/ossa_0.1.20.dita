@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
+<topic id="ossa-0120">
+  <title>OSSA 0.1.20 – Enterprise Rollout: Drupal Recipe, Studio, Chat, Conformance</title>
+  <shortdesc>Enterprise deployment capabilities building on 0.1.8 foundation and 0.1.9 advanced features: Drupal recipe for company orchestration, IDE integrations, company chat, conformance badging, federation routing, ROI optimization, and human-in-the-loop governance.</shortdesc>
+  <body>
+    
+<section>
+  <title>Building on Advanced Foundation</title>
+  <p>Version 0.1.20 represents the enterprise rollout phase, building on the complete production infrastructure from 0.1.8 and advanced AI capabilities from 0.1.9. Delivers enterprise-grade deployment tools, multi-tenant management, and organizational-scale governance with complete auditability and compliance automation.</p>
+</section>
+
+<section>
+  <title>Objectives</title>
+  <p>Deploy enterprise-grade OSSA management through Drupal recipe for company-wide orchestration. Integrate with development environments via Agent Studio plugins for VS Code, macOS, and iOS. Enable organization-scale communication through LibreChat-based company chat with OSSA-aware tools. Provide vendor-neutral conformance certification with Bronze/Silver/Gold badging. Enable cross-project federation with dependency-aware routing. Implement ROI-based cost optimization with ≥25% measurable savings. Deploy human-in-the-loop governance with risk-based escalation and durable audit trails.</p>
+</section>
+
+<section>
+  <title>Key Artifacts</title>
+  <p>Drupal deployable AI control recipe (drupal/recipes/ai_control_ossa) with full ECA integration and multi-tenant scoping. Agent Studio plugins for major IDEs with workspace awareness and real-time budget monitoring. Company chat gateway with OSSA-aware tools and organization-level audit trails. Conformance CLI with automated validation and reproducible certification reports. Federation router with cross-project roadmap awareness and intelligent pre-warming. Cost-optimizer with explainable model switching and A/B testing framework. Review-gates UI with risk classification and approval workflows. Skills registry with learning curriculum management and adoption tracking.</p>
+</section>
+
+<section>
+  <title>Agent Structure Standards</title>
+  <p>Enforced agent-name-skill naming pattern with CLI validation and scaffolding. Required directory structure: behaviors, config, data, handlers, integrations, schemas, training-modules. Mandatory files: agent.yml (OSSA specification) and openapi.yaml (API specification). Compliance levels from Bronze (basic MCP) to Platinum (enterprise SLAs) with automated validation and certification workflows.</p>
+</section>
+
+<section>
+  <title>Enterprise Features</title>
+  <p>Multi-tenant deployments with complete organizational isolation and RBAC. On-premises and data-sovereign deployment options with K8s Helm charts. ECA blueprints for all OSSA event types (execution.reported, budget.threshold.hit, audit.appended). ROI-based auto-routing with cost/quality KPIs per agent/model combination. Human-in-the-loop controls with risk classification matrix and explainable approval workflows.</p>
+</section>
+
+<section>
+  <title>Implementation Notes</title>
+  <p>Support multi-tenant scoping with organization/project isolation and complete RBAC hierarchies. Log every action to immutable audit trails with cryptographic verification. Provide explainable routing decisions tied to real-time cost/quality KPIs with automated model switching and fallback policies. Enable intelligent pre-warming of vectors across dependent modules with cross-project roadmap federation. Implement token-efficiency playbook with key-based context, delta-first prompts, and tiered routing strategies.</p>
+</section>
+
+<section>
+  <title>Governance & Compliance</title>
+  <p>Define comprehensive risk classification matrix with automated escalation paths for high-risk changes. Require durable digital signatures for critical actions with complete identity traceability. Implement policy escalations with SLA-based approval workflows and automated timeout handling. Provide continuous compliance monitoring with real-time remediation and one-click regulatory reporting for major frameworks (GDPR, HIPAA, SOX, ISO).</p>
+</section>
+
+<section>
+  <title>Federation & Skills</title>
+  <p>Cross-repository roadmap awareness with upstream/downstream epic detection via sitemap federation. Intelligent routing between modules/projects with dependency planning and conflict resolution. Learning curriculum management with skill pack distribution (security/a11y/openapi/drupal domains). Adoption tracking via LearningSignal events with measurable skill improvement over time.</p>
+</section>
+
+<section>
+  <title>Acceptance Criteria</title>
+  <p>End-to-end orchestration from Drupal UI with complete multi-tenant scoping and ECA integration. Measurable cost reductions of ≥25% at equal quality through ROI-based routing with explainable model switching. Reproducible conformance reports with vendor-neutral certification and automated badge generation. Federation enables visible cross-project planning with intelligent vector pre-warming. Agent structure validation enforces agent-name-skill pattern with required directories and files. IDE integrations provide real-time workspace awareness with budget alerts and judge results. Company chat enables plan/exec/feedback workflows with complete audit trails. HITL governance prevents unauthorized actions with risk-based escalation and durable approvals.</p>
+</section>
+
+  </body>
+</topic>
