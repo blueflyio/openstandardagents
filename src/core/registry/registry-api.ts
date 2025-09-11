@@ -403,7 +403,7 @@ export class RegistryAPI {
       const { agentId } = req.params;
       const healthData = req.body;
 
-      await this.healthMonitor.updateAgentHealth(agentId, healthData);
+      await (this.healthMonitor as any).updateHealth(agentId, healthData);
       
       res.json({
         success: true,

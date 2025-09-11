@@ -327,7 +327,7 @@ export class OSSATools {
       const manifestPath = resolve(process.cwd(), '.agents', agent_id, 'agent.yml');
       const manifest = yaml.load(await fs.readFile(manifestPath, 'utf-8'));
       
-      introspection.capabilities = manifest.spec.capabilities || [];
+      introspection.capabilities = (manifest as any)?.spec?.capabilities || [];
       
       if (include_dependencies) {
         introspection.dependencies = await this.analyzeDependencies(agent_id);

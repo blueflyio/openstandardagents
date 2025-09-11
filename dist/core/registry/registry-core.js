@@ -597,7 +597,7 @@ export class RegistryCore extends EventEmitter {
      */
     async initialize() {
         console.log('[REGISTRY-CORE] Initializing...');
-        this.startPeriodicHealthChecks();
+        // Health checks will be started when needed
         console.log('[REGISTRY-CORE] Ready');
     }
     /**

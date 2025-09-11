@@ -37,9 +37,10 @@ export type {
  * with all components properly integrated.
  */
 export class RegistryService {
-  private readonly registryAPI: RegistryAPI;
+  private readonly registryAPI: any;
   
   constructor() {
+    const { RegistryAPI } = require('./registry-api.js');
     this.registryAPI = new RegistryAPI();
   }
 

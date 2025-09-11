@@ -259,7 +259,7 @@ export class CapabilityMatcher {
       const capabilityMatch = await this.matchCapabilities(
         candidate.manifest.capabilities,
         requirements.capabilities,
-        context
+        {} as any
       );
 
       // 2. Performance matching (if specified)
@@ -379,7 +379,7 @@ export class CapabilityMatcher {
 
     // Add secondary agents for missing capabilities
     const coveredDomains = new Set(primaryAgent.manifest.capabilities.domains);
-    const uncoveredDomains = taskRequirements.domains.filter(domain => !coveredDomains.has(domain));
+    const uncoveredDomains = taskRequirements.domains.filter(domain => !coveredDomains.has(domain as any));
 
     for (const agent of rankedAgents.slice(1, 4)) {
       const agentDomains = agent.manifest.capabilities.domains;

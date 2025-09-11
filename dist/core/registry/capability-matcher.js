@@ -137,7 +137,7 @@ export class CapabilityMatcher {
         const scoredCandidates = [];
         for (const candidate of candidates) {
             // 1. Capability matching
-            const capabilityMatch = await this.matchCapabilities(candidate.manifest.capabilities, requirements.capabilities, context);
+            const capabilityMatch = await this.matchCapabilities(candidate.manifest.capabilities, requirements.capabilities, {});
             // 2. Performance matching (if specified)
             let performanceMatch = null;
             if (requirements.performance && candidate.manifest.performance) {

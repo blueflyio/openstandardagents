@@ -24,6 +24,7 @@ export { RegistryAPI } from './registry-api.js';
 export class RegistryService {
     registryAPI;
     constructor() {
+        const { RegistryAPI } = require('./registry-api.js');
         this.registryAPI = new RegistryAPI();
     }
     /**
