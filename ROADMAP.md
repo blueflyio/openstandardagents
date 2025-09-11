@@ -45,6 +45,62 @@ Transform OSSA into the authoritative specification standard and production runt
 
 ---
 
+## 🔍 TECHNICAL AUDIT FINDINGS & MIGRATION PLAN
+
+### Current State Analysis (September 2024)
+
+**AUDIT SUMMARY**: OSSA contains **76 implementation files** that should move to agent-buildkit and **16 specification files** that should remain.
+
+#### 🔴 IMPLEMENTATION CODE (Move to agent-buildkit)
+- **CLI Tools**: 4 files (`src/cli/`) → `agent-buildkit/src/ossa-tools/cli/`
+- **MCP Server**: 7 files (`src/mcp-server/`) → `agent-buildkit/src/ossa-tools/mcp-server/`
+- **Core Runtime**: 11 files (`src/core/`) → `agent-buildkit/src/ossa-tools/runtime/`
+- **Infrastructure**: 53 files (`infrastructure/`) → `agent-buildkit/src/ossa-tools/infrastructure/`
+- **Demo Code**: 1 file (`demo-registry.ts`) → `agent-buildkit/examples/`
+
+#### 🟢 SPECIFICATION CODE (Keep in OSSA)
+- **OpenAPI Specs**: 4 files (`src/api/*.openapi.yml`)
+- **JSON Schemas**: 2 files (`src/api/*.schema.json`)
+- **Type Definitions**: 6 files (`src/types/`)
+- **Reference Validator**: 1 file (`src/specification/validator.ts`)
+- **Agent Examples**: 3 files (`examples/`, `src/agents/voice-assistant/`)
+
+#### 🟡 AGENT DIRECTORIES STRATEGY
+- **OSSA `.agents/`**: Specification examples and compliance templates
+- **OSSA `.agents-workspace/`**: NOT USED (development tool, belongs in agent-buildkit)
+- **Agent-BuildKit `.agents/`**: Production agent instances and runtime state
+- **Agent-BuildKit `.agents-workspace/`**: Development workspace, build artifacts, TDD workflow
+
+### Migration Execution Plan
+
+#### Week 1: Foundation Migration
+```bash
+# OSSA side (remove implementation)
+git checkout -b feature/migrate-cli-tools
+git checkout -b feature/migrate-mcp-server  
+git checkout -b feature/migrate-runtime
+
+# Agent-buildkit side (receive implementation)
+git checkout -b feature/receive-ossa-cli
+git checkout -b feature/receive-ossa-mcp
+git checkout -b feature/receive-ossa-runtime
+```
+
+#### Week 2-3: Infrastructure & Integration
+- Move infrastructure configs to agent-buildkit
+- Update import paths to use `@ossa/specification` package
+- Integration testing between repositories
+
+#### Week 4: Final Cleanup
+- OSSA becomes pure specification standard
+- Agent-buildkit integration complete
+- Version alignment and documentation
+
+### Branch Protection Strategy
+- **OSSA development**: Protected, CI/CD merge only
+- **Feature branches**: All migration work on feature branches
+- **Agent-buildkit integration**: Coordinated via shared branches
+
 ---
 
 ## 🎯 Claude Desktop Integration Roadmap (v0.2.0)
