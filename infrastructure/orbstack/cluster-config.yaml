@@ -1,0 +1,93 @@
+# OrbStack Kubernetes Cluster Configuration for OSSA
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: orbstack-cluster-config
+  namespace: kube-system
+data:
+  cluster.yaml: |
+    # OrbStack cluster configuration
+    cluster:
+      name: ossa-local
+      version: "1.28"
+      
+    # Resource limits for local development
+    resources:
+      cpu: "4"
+      memory: "8Gi"
+      storage: "50Gi"
+      
+    # Networking
+    networking:
+      serviceCIDR: "10.96.0.0/12"
+      podCIDR: "10.244.0.0/16"
+      
+    # Features
+    features:
+      - ingress-nginx
+      - local-storage
+      - metrics-server
+      
+    # Container runtime
+    runtime: containerd
+    
+    # Registry configuration
+    registries:
+      - url: "localhost:5000"
+        insecure: true
+        
+---
+# Local development namespace
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: ossa-dev
+  labels:
+    environment: development
+    project: ossa
+    
+---
+# Local registry for development
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: local-registry
+  namespace: ossa-dev
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: local-registry
+  template:
+    metadata:
+      labels:
+        app: local-registry
+    spec:
+      containers:
+      - name: registry
+        image: registry:2
+        ports:
+        - containerPort: 5000
+        env:
+        - name: REGISTRY_STORAGE_DELETE_ENABLED
+          value: "true"
+        volumeMounts:
+        - name: registry-data
+          mountPath: /var/lib/registry
+      volumes:
+      - name: registry-data
+        emptyDir: {}
+        
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: local-registry
+  namespace: ossa-dev
+spec:
+  selector:
+    app: local-registry
+  ports:
+  - port: 5000
+    targetPort: 5000
+  type: NodePort

@@ -59,11 +59,11 @@ export declare abstract class BaseAgent extends EventEmitter implements Agent {
     /**
      * Handle query messages
      */
-    protected handleQuery(_message: Message): Promise<void>;
+    protected handleQuery(message: Message): Promise<void>;
     /**
      * Handle event messages
      */
-    protected handleEvent(_message: Message): Promise<void>;
+    protected handleEvent(message: Message): Promise<void>;
     /**
      * Register with orchestrator
      */

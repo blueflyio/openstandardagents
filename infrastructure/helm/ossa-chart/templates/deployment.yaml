@@ -1,0 +1,74 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "ossa.fullname" . }}
+  labels:
+    {{- include "ossa.labels" . | nindent 4 }}
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.ossa.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "ossa.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "ossa.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.global.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "ossa.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.security.podSecurityContext | nindent 8 }}
+      containers:
+      - name: {{ .Chart.Name }}
+        securityContext:
+          {{- toYaml .Values.security.securityContext | nindent 12 }}
+        image: "{{ .Values.ossa.image.registry }}/{{ .Values.ossa.image.repository }}:{{ .Values.ossa.image.tag | default .Chart.AppVersion }}"
+        imagePullPolicy: {{ .Values.ossa.image.pullPolicy }}
+        ports:
+        - name: http
+          containerPort: {{ .Values.ossa.service.targetPort }}
+          protocol: TCP
+        env:
+        - name: NODE_ENV
+          value: {{ .Values.config.env.NODE_ENV }}
+        - name: LOG_LEVEL
+          value: {{ .Values.config.env.LOG_LEVEL }}
+        - name: API_VERSION
+          value: {{ .Values.config.env.API_VERSION }}
+        - name: OPENAPI_SPEC_PATH
+          value: {{ .Values.config.openapi.specPath }}
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: http
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: http
+          initialDelaySeconds: 5
+          periodSeconds: 5
+        resources:
+          {{- toYaml .Values.resources | nindent 12 }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

@@ -169,13 +169,13 @@ export class BaseAgent extends EventEmitter {
     /**
      * Handle query messages
      */
-    async handleQuery(_message) {
+    async handleQuery(message) {
         // Default query handling - can be overridden
     }
     /**
      * Handle event messages
      */
-    async handleEvent(_message) {
+    async handleEvent(message) {
         // Default event handling - can be overridden
     }
     /**

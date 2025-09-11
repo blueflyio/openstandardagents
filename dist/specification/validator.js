@@ -1,11 +1,7 @@
-import Ajv from 'ajv';
-import addFormats from 'ajv-formats';
+const Ajv = require('ajv');
+const addFormats = require('ajv-formats');
 import * as fs from 'fs';
 import * as path from 'path';
-import { fileURLToPath } from 'url';
-import { dirname } from 'path';
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
 /**
  * OSSA Specification Authority - ACDL Validator v0.1.9-alpha.1
  *
@@ -17,12 +13,13 @@ export class SpecificationValidator {
     ajv;
     validAgentTypes = [
         'orchestrator', 'worker', 'critic', 'judge',
-        'trainer', 'governor', 'monitor', 'integrator'
+        'trainer', 'governor', 'monitor', 'integrator', 'voice'
     ];
     validDomains = [
         'nlp', 'vision', 'reasoning', 'data', 'documentation',
         'api-design', 'validation', 'orchestration', 'monitoring',
-        'security', 'compliance', 'testing', 'deployment'
+        'security', 'compliance', 'testing', 'deployment',
+        'audio', 'speech', 'interaction'
     ];
     validProtocols = [
         'rest', 'grpc', 'websocket', 'mcp', 'graphql'
@@ -177,7 +174,7 @@ export class SpecificationValidator {
             });
         }
         // Validate agent name format (DNS-1123)
-        if (manifest.metadata?.name && !/^[a-z0-9](-[a-z0-9])*$/.test(manifest.metadata.name)) {
+        if (manifest.metadata?.name && !/^[a-z0-9]([a-z0-9-]*[a-z0-9])?$/.test(manifest.metadata.name)) {
             errors.push({
                 field: 'metadata.name',
                 message: 'Agent name must follow DNS-1123 naming convention (lowercase, hyphens only)',

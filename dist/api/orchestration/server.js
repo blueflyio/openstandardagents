@@ -24,7 +24,7 @@ export class OrchestrationAPIServer {
         this.app.use(express.urlencoded({ extended: true }));
         // CORS
         if (this.config.cors) {
-            this.app.use((_req, _res, _next) => {
+            this.app.use((req, res, next) => {
                 res.header('Access-Control-Allow-Origin', '*');
                 res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS');
                 res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
@@ -32,7 +32,7 @@ export class OrchestrationAPIServer {
             });
         }
         // Request logging
-        this.app.use((_req, _res, _next) => {
+        this.app.use((req, res, next) => {
             console.log(`[ORCHESTRATION-API] ${req.method} ${req.path}`);
             next();
         });
@@ -64,7 +64,7 @@ export class OrchestrationAPIServer {
     }
     setupErrorHandling() {
         // 404 handler
-        this.app.use('*', (_req, res) => {
+        this.app.use('*', (req, res) => {
             res.status(404).json({
                 error: 'Not Found',
                 message: `Route ${req.originalUrl} not found`,

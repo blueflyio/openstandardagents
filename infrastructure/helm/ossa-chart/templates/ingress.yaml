@@ -1,0 +1,41 @@
+{{- if .Values.ossa.ingress.enabled -}}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ include "ossa.fullname" . }}
+  labels:
+    {{- include "ossa.labels" . | nindent 4 }}
+  {{- with .Values.ossa.ingress.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  {{- if .Values.ossa.ingress.className }}
+  ingressClassName: {{ .Values.ossa.ingress.className }}
+  {{- end }}
+  {{- if .Values.ossa.ingress.tls }}
+  tls:
+    {{- range .Values.ossa.ingress.tls }}
+    - hosts:
+        {{- range .hosts }}
+        - {{ . | quote }}
+        {{- end }}
+      secretName: {{ .secretName }}
+    {{- end }}
+  {{- end }}
+  rules:
+    {{- range .Values.ossa.ingress.hosts }}
+    - host: {{ .host | quote }}
+      http:
+        paths:
+          {{- range .paths }}
+          - path: {{ .path }}
+            pathType: {{ .pathType }}
+            backend:
+              service:
+                name: {{ include "ossa.fullname" $ }}
+                port:
+                  number: {{ $.Values.ossa.service.port }}
+          {{- end }}
+    {{- end }}
+{{- end }}

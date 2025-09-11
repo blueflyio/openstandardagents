@@ -62,7 +62,7 @@ const complianceEngine = new ComplianceEngine();
 /**
  * Health check endpoint
  */
-app.get('/health', (_req, res) => {
+app.get('/health', (req, res) => {
     res.json({
         service: 'ossa-compliance-engine',
         version: '0.1.9-alpha.1',
@@ -80,7 +80,7 @@ app.get('/health', (_req, res) => {
  * Get supported compliance frameworks
  * GET /api/v1/compliance/frameworks
  */
-app.get('/api/v1/compliance/frameworks', (_req, res) => {
+app.get('/api/v1/compliance/frameworks', (req, res) => {
     try {
         const frameworks = complianceEngine.getSupportedFrameworks();
         res.json({
@@ -110,7 +110,7 @@ app.get('/api/v1/compliance/frameworks', (_req, res) => {
  * Get enterprise policies
  * GET /api/v1/compliance/policies
  */
-app.get('/api/v1/compliance/policies', (_req, res) => {
+app.get('/api/v1/compliance/policies', (req, res) => {
     try {
         const policies = complianceEngine.getEnterprisePolicies();
         res.json({
@@ -142,7 +142,7 @@ app.post('/api/v1/compliance/validate', async (req, res) => {
             return res.status(400).json({
                 success: false,
                 error: 'Invalid request body',
-                details: validation.error.issues
+                details: validation.error.errors
             });
         }
         const { agent, context, frameworks } = validation.data;
@@ -188,7 +188,7 @@ app.post('/api/v1/compliance/validate/batch', async (req, res) => {
             return res.status(400).json({
                 success: false,
                 error: 'Invalid request body',
-                details: validation.error.issues
+                details: validation.error.errors
             });
         }
         const { agents, context, frameworks } = validation.data;
@@ -224,7 +224,7 @@ app.post('/api/v1/compliance/validate/batch', async (req, res) => {
  * Get compliance audit trail
  * GET /api/v1/compliance/audit
  */
-app.get('/api/v1/compliance/audit', (_req, res) => {
+app.get('/api/v1/compliance/audit', (req, res) => {
     try {
         const since = req.query.since;
         const limit = parseInt(req.query.limit) || 100;
@@ -265,7 +265,7 @@ app.post('/api/v1/compliance/report', async (req, res) => {
             return res.status(400).json({
                 success: false,
                 error: 'Invalid request body',
-                details: validation.error.issues
+                details: validation.error.errors
             });
         }
         const { agents, context, frameworks } = validation.data;
@@ -317,7 +317,7 @@ app.post('/api/v1/compliance/report', async (req, res) => {
  * Get OSSA conformance levels and requirements
  * GET /api/v1/compliance/conformance-levels
  */
-app.get('/api/v1/compliance/conformance-levels', (_req, res) => {
+app.get('/api/v1/compliance/conformance-levels', (req, res) => {
     try {
         const levels = complianceEngine.getConformanceLevels();
         res.json({
@@ -352,7 +352,7 @@ app.get('/api/v1/compliance/conformance-levels', (_req, res) => {
  * Enterprise dashboard metrics
  * GET /api/v1/compliance/metrics
  */
-app.get('/api/v1/compliance/metrics', (_req, res) => {
+app.get('/api/v1/compliance/metrics', (req, res) => {
     try {
         const auditTrail = complianceEngine.getAuditTrail();
         const recentEntries = auditTrail.filter(entry => new Date(entry.timestamp) > new Date(Date.now() - 24 * 60 * 60 * 1000));
@@ -389,7 +389,7 @@ app.use((err, req, res, next) => {
     });
 });
 // 404 handler
-app.use((_req, res) => {
+app.use((req, res) => {
     res.status(404).json({
         success: false,
         error: 'Endpoint not found',

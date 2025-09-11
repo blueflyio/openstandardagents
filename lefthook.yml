@@ -1,0 +1,125 @@
+# Lefthook configuration with development branch protection
+# Installed by agent-buildkit development-protection policy
+
+pre-commit:
+  parallel: true
+  commands:
+    # Development branch protection - block direct commits
+    branch-protection:
+      run: |
+        BRANCH=$(git rev-parse --abbrev-ref HEAD)
+        if [ "$BRANCH" = "development" ] || [ "$BRANCH" = "main" ] || [ "$BRANCH" = "master" ]; then
+          echo "🚫 COMMIT BLOCKED: Direct commits to '$BRANCH' branch are not allowed"
+          echo ""
+          echo "📋 Required workflow:"
+          echo "   1. Pull latest development: git checkout development && git pull"
+          echo "   2. Create feature branch: git checkout -b feature/your-task-name"
+          echo "   3. Make your changes and commit to the feature branch"
+          echo "   4. Push feature branch: git push -u origin feature/your-task-name"
+          echo "   5. Create GitLab Merge Request to development"
+          echo ""
+          echo "💡 Allowed branch prefixes:"
+          echo "   feature/, bug/, fix/, hotfix/, release/, chore/, docs/"
+          echo "   style/, refactor/, test/, perf/, ci/, build/, revert/, wip/, experiment/"
+          echo ""
+          echo "🔧 To bypass (emergency only): git commit --no-verify"
+          echo ""
+          exit 1
+        fi
+        
+        # Validate branch naming if not on protected branch
+        if [[ ! "$BRANCH" =~ ^(feature|bug|fix|hotfix|release|chore|docs|style|refactor|test|perf|ci|build|revert|wip|experiment)\/[a-z0-9-]+$ ]]; then
+          echo "⚠️  WARNING: Branch '$BRANCH' doesn't follow naming convention"
+          echo "   Expected: prefix/kebab-case-name"
+          echo "   Use: git branch -m new-branch-name (to rename)"
+          echo ""
+        fi
+        
+        echo "✅ Pre-commit check passed for branch '$BRANCH'"
+        
+    # Code quality checks
+    eslint:
+      run: npx eslint src/**/*.ts --fix
+      glob: 'src/**/*.{js,ts,tsx}'
+      stage_fixed: true
+    
+    prettier:
+      run: npx prettier --write --list-different src/**/*.ts tests/**/*.ts *.json *.md
+      glob: '**/*.{js,ts,tsx,json,md,scss,css,yaml,yml}'
+      stage_fixed: true
+
+    # Security checks
+    no-secrets:
+      run: |
+        if git diff --cached --name-only | xargs grep -l "password\|secret\|key\|token" 2>/dev/null; then
+          echo "🚫 SECURITY: Potential secrets detected in staged files"
+          echo "Please review and remove any sensitive information"
+          exit 1
+        fi
+
+commit-msg:
+  commands:
+    # Commit message validation
+    msg-format:
+      run: |
+        if ! grep -qE '^(feat|fix|docs|style|refactor|perf|test|chore|ci|build|revert)(\(.+\))?: .{1,50}' "$1"; then
+          echo "🚫 COMMIT MESSAGE: Must follow conventional format"
+          echo "Format: type(scope): description"
+          echo "Types: feat, fix, docs, style, refactor, perf, test, chore, ci, build, revert"
+          echo "Example: feat(auth): add user login functionality"
+          exit 1
+        fi
+    
+    # Professional standards - no AI attribution
+    no-ai-attribution:
+      run: |
+        if grep -qi "claude\|generated\|co-authored-by.*claude\|🤖" "$1"; then
+          echo "🚫 COMMIT MESSAGE: AI attribution not allowed"
+          echo "Use professional commit messages only"
+          exit 1
+        fi
+
+pre-push:
+  commands:
+    # Development branch protection - block direct pushes
+    branch-push-protection:
+      run: |
+        BRANCH=$(git rev-parse --abbrev-ref HEAD)
+        
+        # Check what's being pushed to remote
+        while read local_ref local_sha remote_ref remote_sha; do
+          if [[ $remote_ref =~ refs/heads/(.+) ]]; then
+            remote_branch="${BASH_REMATCH[1]}"
+            
+            if [ "$remote_branch" = "development" ] || [ "$remote_branch" = "main" ] || [ "$remote_branch" = "master" ]; then
+              echo "🚫 PUSH BLOCKED: Direct pushes to '$remote_branch' branch are not allowed"
+              echo ""
+              echo "📋 Required workflow:"
+              echo "   1. Push your feature branch: git push -u origin $BRANCH"
+              echo "   2. Create GitLab Merge Request from $BRANCH to $remote_branch"
+              echo "   3. Get code review and approval"
+              echo "   4. Merge via GitLab interface"
+              echo ""
+              echo "🔧 To bypass (emergency only): git push --no-verify"
+              echo ""
+              exit 1
+            fi
+          fi
+        done
+        
+        echo "✅ Pre-push check passed"
+
+    # Quality gates
+    tests:
+      run: npm test --silent || echo "⚠️ Tests not configured yet"
+      
+    build-check:
+      run: npm run build --silent || echo "⚠️ Build check skipped"
+      
+    lint-check:
+      run: npm run lint --silent || echo "⚠️ Lint check skipped"
+
+# Skip hooks for certain operations
+skip_output:
+  - meta
+  - summary

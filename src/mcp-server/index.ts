@@ -5,8 +5,8 @@
  * Provides SSE transport and OSSA-specific tools for Claude Desktop
  */
 
-import { Server } from '@modelcontextprotocol/server';
-import { SSETransport } from '@modelcontextprotocol/transport-sse';
+import { Server } from '@modelcontextprotocol/sdk/server';
+import { SSEServerTransport } from '@modelcontextprotocol/sdk/server/sse';
 import { OSSATools } from './tools/ossa-tools.js';
 import { OSSAResources } from './resources/ossa-resources.js';
 import { OSSAPrompts } from './prompts/ossa-prompts.js';
@@ -16,7 +16,7 @@ const logger = new OSSALogger('ossa-mcp-server');
 
 class OSSAMCPServer {
   private server: Server;
-  private transport: SSETransport;
+  private transport: SSEServerTransport;
 
   constructor() {
     this.server = new Server({
@@ -102,7 +102,7 @@ class OSSAMCPServer {
 
   async start(port: number = 3000): Promise<void> {
     try {
-      this.transport = new SSETransport('/mcp', this.server);
+      this.transport = new SSEServerTransport('/mcp', this.server);
       await this.transport.start();
       
       logger.info(`🚀 OSSA MCP Server started on port ${port}`);
