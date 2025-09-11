@@ -5,7 +5,7 @@
  */
 
 import { Command } from 'commander';
-import { OrchestratorPlatform } from '../core/orchestrator';
+import { OrchestratorPlatform } from '../core/orchestrator/index';
 import { OrchestrationAPIServer } from '../api/orchestration/server';
 import { 
   OrchestratorConfig, 

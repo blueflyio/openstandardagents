@@ -39,9 +39,12 @@
     "registry:test": "tsx src/cli/registry-core.ts test-register",
     "registry:metrics": "tsx src/cli/registry-core.ts metrics",
     "platform:start": "tsx src/index.ts",
-    "platform:production": "NODE_ENV=production tsx src/index.ts"
+    "platform:production": "NODE_ENV=production tsx src/index.ts",
+    "cli": "tsx src/cli/index.ts",
+    "ossa": "tsx src/cli/index.ts"
   },
   "bin": {
+    "ossa": "./dist/cli/index.js",
     "ossa-orchestrator": "./dist/cli/orchestrator-platform.js",
     "ossa-registry": "./dist/cli/registry-core.js"
   },
@@ -59,6 +62,7 @@
     "@modelcontextprotocol/sdk": "^1.17.5",
     "ajv": "^8.17.1",
     "ajv-formats": "^3.0.1",
+    "chalk": "^5.6.0",
     "commander": "^14.0.0",
     "express": "^4.18.2",
     "js-yaml": "^4.1.0",
