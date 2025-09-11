@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm install:*)",
+      "Bash(npx openapi-typescript:*)",
+      "Bash(npx tsc:*)",
+      "Bash(git branch:*)",
+      "Bash(npm run build:*)",
+      "Bash(git fsck:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
