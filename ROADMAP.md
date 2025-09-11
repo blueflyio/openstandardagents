@@ -148,55 +148,53 @@ The OSSA v0.1.9 release focuses on **specification separation** - removing imple
 
 ---
 
-## Phase 1: Specification Separation (v0.1.9) - CRITICAL
+## Phase 1: v0.1.9 Release - Tomorrow (September 12, 2024)
 
-### Week 1: Implementation Migration to Agent-BuildKit
-**Deliverables**: Move all 76 implementation files to agent-buildkit
+### IMMEDIATE RELEASE (Specification + Reference Implementation)
+**Deliverables**: Release v0.1.9 as complete specification standard WITH reference implementation
 
-#### Milestones
-- [ ] **CLI Tools Migration**
-  - Move `src/cli/` (4 files) to `agent-buildkit/src/ossa-tools/cli/`
-  - Update import paths to use `@ossa/specification` package
-  - Test CLI integration from agent-buildkit
-  - Remove CLI implementation from OSSA
+#### Release Status (As of September 11, 2024, 11:45 PM)
+- ✅ **Version Updated**: package.json shows v0.1.9
+- ✅ **Dependencies Installed**: 549 packages installed
+- ✅ **Tests Status**: 7 of 9 tests passing (78% pass rate)
+- ⚠️ **Build Status**: TypeScript errors exist but dist/ folder present
+- ✅ **Git State**: Clean, no uncommitted files
 
-- [ ] **MCP Server Migration**  
-  - Move `src/mcp-server/` (7 files) to `agent-buildkit/src/ossa-tools/mcp-server/`
-  - Update dependencies and build configuration
-  - Test MCP server functionality from agent-buildkit
-  - Remove MCP server implementation from OSSA
+#### Actual File Inventory (CORRECTED)
+- **Specification Files**: 15 files (OpenAPI, JSON schemas, types)
+- **Implementation Files**: 24 files (NOT 76 as previously stated)
+  - CLI Tools: 4 files
+  - MCP Server: 6 files (not 7)
+  - Core/Runtime: 9 files (not 11)
+  - API Servers: 2 files
+  - Other: 3 files
+- **Total Project**: 271 files
 
-- [ ] **Runtime Migration**
-  - Move `src/core/` (11 files) to `agent-buildkit/src/ossa-tools/runtime/`
-  - Update runtime dependencies and configurations
-  - Test orchestration functionality from agent-buildkit
-  - Remove runtime implementation from OSSA
+**v0.1.9 Release Strategy:**
+- ✅ Release AS-IS with both specification AND reference implementation
+- ✅ Position as "OSSA Specification Standard v0.1.9 with Reference Implementation"
+- ✅ Defer migration to v0.2.0 (avoid release-day risk)
+- ✅ Document known issues in release notes
 
-**Success Criteria:**
-- ✅ All implementation code successfully moved to agent-buildkit
-- ✅ Agent-buildkit integration tests pass
-- ✅ OSSA maintains only specification files
-- ✅ No broken import paths or dependencies
+### v0.1.9 Release Checklist (4-6 Hours Remaining)
 
-### Week 2: Specification Cleanup and Standards
-**Deliverables**: Pure specification-only OSSA repository
+#### Hour 1-2: Fix Critical Issues
+- [ ] Fix 2 failing validator tests (version format issues)
+- [ ] Update TypeScript config to add `isolatedModules: true`
+- [ ] Install missing dependencies (zod, @modelcontextprotocol/*)
+- [ ] Quick fix for critical build errors
 
-#### Milestones
-- [ ] **Specification Files Refinement**
-  - Keep only OpenAPI specs (`src/api/*.openapi.yml`) - 4 files
-  - Keep only JSON schemas (`src/api/*.schema.json`) - 2 files  
-  - Keep only type definitions (`src/types/`) - 6 files
-  - Keep only specification validator (`src/specification/validator.ts`) - 1 file
+#### Hour 3-4: Documentation & Release Notes
+- [ ] Create CHANGELOG.md for v0.1.9
+- [ ] Document known issues and workarounds
+- [ ] Update README with v0.1.9 features
+- [ ] Create migration guide for future v0.2.0
 
-- [ ] **Agent Examples Cleanup**
-  - Keep specification examples only (`examples/`, `src/agents/voice-assistant/`)
-  - Remove development artifacts and build tools
-  - Update examples to reference agent-buildkit for implementation
-  - Create clear specification vs implementation documentation
-
-- [ ] **Integration Testing**
-  - Test extension installation in Claude Desktop
-  - Validate MCP server communication
+#### Hour 5-6: Tag and Publish
+- [ ] Final test run (aim for 80%+ pass rate)
+- [ ] Git tag v0.1.9
+- [ ] NPM publish as @ossa/platform@0.1.9
+- [ ] Create GitLab release with notes
   - Test all OSSA tools functionality
   - Verify error handling and edge cases
 
