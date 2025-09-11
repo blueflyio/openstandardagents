@@ -1,6 +1,6 @@
-# OSSA Infrastructure v0.1.8
+# OSSA Infrastructure v0.1.9 - OrbStack + Kubernetes + Helm
 
-This directory contains all deployment and infrastructure configurations for OSSA microservices.
+Modern infrastructure setup for OSSA with OrbStack, complete Helm charts, and Kubernetes orchestration.
 
 ## 🏗️ Infrastructure Components
 
