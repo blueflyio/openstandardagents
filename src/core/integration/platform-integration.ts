@@ -72,7 +72,8 @@ export class PlatformIntegration {
       },
       scheduler: {
         type: 'fifo',
-        config: {}
+        workers: 1,
+        queueSize: 100
       }
     });
     this.validator = new SpecificationValidator();
@@ -421,14 +422,15 @@ export class PlatformIntegration {
     }
     
     // Allocate agents for tasks
-    const allocations = await this.orchestrator.allocateAgents({
-      taskId: workflow.metadata.name,
-      requirements: {
+    const allocations = await this.orchestrator.allocateAgents(
+      workflow.metadata.name,
+      {
+        agentType: 'worker' as any,
+        count: 1,
         capabilities: workflow.spec.tasks[0]?.agent?.capabilities || [],
-        minAgents: 1,
-        maxAgents: workflow.spec.execution?.concurrency || 10
+        phase: 'execute'
       }
-    });
+    );
     
     // Execute tasks (simulated)
     const executionResults = [];

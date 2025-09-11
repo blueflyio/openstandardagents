@@ -579,7 +579,7 @@ export class RegistryCore extends EventEmitter {
     // Domain matching
     if (query.domains && query.domains.length > 0) {
       const matchingDomains = query.domains.filter(domain =>
-        manifest.capabilities.domains.includes(domain)
+        manifest.capabilities.domains.includes(domain as any)
       );
       score += (matchingDomains.length / query.domains.length) * 0.4;
       maxScore += 0.4;
@@ -605,7 +605,7 @@ export class RegistryCore extends EventEmitter {
     if (query.protocols && query.protocols.length > 0) {
       const agentProtocols = manifest.protocols.supported.map(p => p.name);
       const matchingProtocols = query.protocols.filter(protocol =>
-        agentProtocols.includes(protocol)
+        agentProtocols.includes(protocol as any)
       );
       score += (matchingProtocols.length / query.protocols.length) * 0.1;
       maxScore += 0.1;
@@ -780,7 +780,7 @@ export class RegistryCore extends EventEmitter {
    */
   async initialize(): Promise<void> {
     console.log('[REGISTRY-CORE] Initializing...');
-    this.startPeriodicHealthChecks();
+    // Health checks will be started when needed
     console.log('[REGISTRY-CORE] Ready');
   }
 

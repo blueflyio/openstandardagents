@@ -2,7 +2,7 @@
  * OSSA Platform Entry Point
  * Production orchestration platform initialization
  */
-import { OrchestratorPlatform } from './core/orchestrator.js';
+import { OrchestratorPlatform } from './core/orchestrator/index.js';
 import { OrchestrationAPIServer } from './api/orchestration/server.js';
 import { PlatformCoordination } from './core/coordination/PlatformCoordination.js';
 import { ComplianceEngine } from './core/compliance/ComplianceEngine.js';

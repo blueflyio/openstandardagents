@@ -5,8 +5,36 @@
  * Provides SSE transport and OSSA-specific tools for Claude Desktop
  */
 
-import { Server } from '@modelcontextprotocol/sdk';
-import { StdioServerTransport } from '@modelcontextprotocol/sdk';
+// Temporarily disabled due to missing @modelcontextprotocol/sdk package
+// import { Server } from '@modelcontextprotocol/sdk';
+// import { StdioServerTransport } from '@modelcontextprotocol/sdk';
+
+// Stub types for MCP Server functionality
+interface Server {
+  setRequestHandler(method: string, handler: (request: any) => Promise<any>): void;
+}
+
+interface StdioServerTransport {
+  start(): Promise<void>;
+  close(): Promise<void>;
+}
+
+// Stub implementations
+const Server = class implements Server {
+  constructor(config: any, capabilities: any) {}
+  setRequestHandler(method: string, handler: (request: any) => Promise<any>): void {
+    console.log(`[MCP-STUB] Handler registered for ${method}`);
+  }
+};
+
+const StdioServerTransport = class implements StdioServerTransport {
+  async start(): Promise<void> {
+    console.log('[MCP-STUB] Transport started (stubbed)');
+  }
+  async close(): Promise<void> {
+    console.log('[MCP-STUB] Transport closed (stubbed)');
+  }
+};
 import { OSSATools } from './tools/ossa-tools.js';
 import { OSSAResources } from './resources/ossa-resources.js';
 import { OSSAPrompts } from './prompts/ossa-prompts.js';

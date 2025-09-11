@@ -331,7 +331,7 @@ export class RegistryAPI {
         try {
             const { agentId } = req.params;
             const healthData = req.body;
-            await this.healthMonitor.updateAgentHealth(agentId, healthData);
+            await this.healthMonitor.updateHealth(agentId, healthData);
             res.json({
                 success: true,
                 message: 'Agent health updated',
