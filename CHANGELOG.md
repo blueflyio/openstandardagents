@@ -5,29 +5,46 @@ All notable changes to OSSA (Open Standards Scalable Agents) will be documented 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.1.9] - 2024-09-12
+## [0.1.9] - 2025-09-12
 
 ### Overview
-First public release of OSSA as both a specification standard and reference implementation for AI agent orchestration.
+Enhanced OSSA v0.1.9 release with master orchestrator capabilities, multi-agent coordination, and GitLab CI/CD integration. This release strengthens both the specification standard and reference implementation.
 
 ### Added
-- **Specification Standard**: Complete OpenAPI 3.1 compliant specification for AI agents
-  - 4 OpenAPI specifications (orchestration, specification, ACDL, voice-agent)
-  - 2 JSON schemas (agent-manifest, workflow)
-  - 6 TypeScript type definitions
-- **Reference Implementation**: Working implementation with 24 core files
-  - CLI tools for registry, orchestration, and compliance
-  - MCP (Model Context Protocol) server with SSE transport
-  - Core runtime with orchestration and registry capabilities
-- **Agent Types Support**: 10 agent types including voice, mcp, task, data, analytics
-- **Compliance Engine**: Multi-level conformance (bronze, silver, gold)
-- **Docker/Kubernetes**: Full containerization and orchestration support
-- **Documentation**: Comprehensive guides, API references, and architecture documentation
+- **OSSA Master Orchestrator**: Enhanced orchestrator with multi-agent coordination capabilities
+  - Adaptive strategy execution (parallel/sequential/adaptive)
+  - __REBUILD_TOOLS workflow for automated tool rebuilding
+  - Test-Driven Development (TDD) enforcement
+  - Agent lifecycle management and health monitoring
+  - 360° Feedback Loop: Plan → Execute → Review → Judge → Learn → Govern
+
+- **CLI Enhancements**: New OSSA orchestrator commands via `ossa orch`
+  - `spawn` - Create specialized agents with context inheritance
+  - `rebuild-tools` - Execute __REBUILD_TOOLS workflow
+  - `coordinate` - Multi-agent workflow coordination
+  - `enforce-tdd` - TDD compliance enforcement
+  - `status` - Orchestrator health and metrics
+  - `lifecycle` - Agent lifecycle management
+
+- **API-First Development**: OpenAPI 3.1.0 compliance for all new endpoints
+- **GitLab CI/CD Integration**: Golden component v0.1.0 for standardized pipelines
+- **Infrastructure Support**: Kubernetes, Helm, and OrbStack deployment ready
+
+### Enhanced
+- **Registry Core**: Improved agent registration with health monitoring
+- **Compliance Engine**: Enhanced OSSA v0.1.9 standard validation
+- **Platform Architecture**: Better separation between specification and implementation
+
+### Technical
+- TypeScript strict mode compliance improvements
+- ES Module support with proper configuration
+- Commander.js v14 for enhanced CLI experience
+- Chalk v5 for improved console output formatting
 
 ### Changed
-- Package name updated to `@bluefly/open-standards-scalable-agents`
-- Restructured as specification + reference implementation (not pure specification)
-- Updated roadmap to reflect actual project state (271 files total)
+- Package name remains `@bluefly/open-standards-scalable-agents`
+- Enhanced separation between specification and implementation layers
+- Updated roadmap with migration strategy and execution plans
 
 ### Fixed
 - Validator DNS-1123 pattern for proper agent name validation
@@ -36,15 +53,15 @@ First public release of OSSA as both a specification standard and reference impl
 - Build dependencies (zod, @modelcontextprotocol/sdk)
 
 ### Known Issues
-- Some TypeScript strict mode errors remain (non-blocking)
-- Jest configuration needs update for ESM modules
+- Jest configuration needs ESM module updates (non-blocking for release)
+- Some TypeScript strict mode warnings remain (non-breaking)
 - MCP server has minor type definition issues
-- Build shows warnings but produces working dist/ folder
 
 ### Migration Notes
-- Future v0.2.0 will separate implementation code to agent-buildkit
-- Current v0.1.9 includes both specification and implementation
-- No breaking changes from previous internal versions
+- OSSA specification files remain in this repository
+- Implementation components will migrate to agent-buildkit for better modularity
+- All CLI commands maintain backward compatibility
+- GitLab CI/CD pipelines now use golden components
 
 ## [0.1.8] - 2024-09-10 (Internal)
 
