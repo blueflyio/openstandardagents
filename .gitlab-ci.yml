@@ -2,9 +2,13 @@
 # Uses Bluefly Golden CI Orchestration Component
 
 # Include the golden workflow component
-# TODO: Switch to published component once available in catalog
+# Production usage (uncomment when component is published):
 # include:
 #   - component: gitlab.bluefly.io/llm/gitlab_components/workflow/golden@0.1.0
+#     inputs:
+#       project_version: "0.1.9"
+#       enable_ai_ml_testing: true
+#       ossa_compliance_check: true
 
 # Temporary: Use local template for testing
 include:
@@ -12,8 +16,11 @@ include:
 
 # Override variables for OSSA-specific needs
 variables:
+  PROJECT_VERSION: "0.1.9"  # Explicit version for OSSA
   ENABLE_OSSA: "true"
   ENABLE_TDD: "true"
+  ENABLE_AI_ML_TESTING: "true"
+  OSSA_COMPLIANCE_CHECK: "true"
   ENABLE_AUTO_MERGE: "false"  # Require manual review for spec changes
 
 # OSSA-specific validation job

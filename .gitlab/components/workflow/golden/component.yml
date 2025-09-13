@@ -1,5 +1,9 @@
 spec:
   inputs:
+    project_version:
+      description: "Override project version (auto-detected if not specified)"
+      type: string
+      default: ""
     stage-names:
       description: "Custom stage names override"
       type: string
@@ -18,6 +22,14 @@ spec:
       default: true
     enable-ossa-compliance:
       description: "Enable OSSA specification compliance"
+      type: boolean
+      default: false
+    ossa_compliance_check:
+      description: "Enable OSSA compliance validation (alias)"
+      type: boolean
+      default: false
+    enable_ai_ml_testing:
+      description: "Enable AI/ML model testing and validation"
       type: boolean
       default: false
     enable-auto-merge:
