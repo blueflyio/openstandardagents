@@ -1,0 +1,12 @@
+# OSSA Specification Validation Component Template
+# Version: v0.1.9
+
+include:
+  - local: .gitlab/components/spec-validation/component.yml
+
+# Example job using the component
+validate:ossa-specs:
+  extends: .spec-validation
+  variables:
+    SPEC_DIRECTORY: src/api
+    NODE_VERSION: "20"

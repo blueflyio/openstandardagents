@@ -149,7 +149,7 @@ export class PlatformIntegration {
             const agents = await this.registry.discover({
                 domains: ['orchestration']
             });
-            return agents.agents.length > 0;
+            return agents.agents?.length ? agents.agents.length > 0 : false;
         }
         catch (error) {
             console.error('Discovery test failed:', error);
@@ -292,7 +292,7 @@ export class PlatformIntegration {
         catch (error) {
             return {
                 status: 'failed',
-                errors: [error.message],
+                errors: [error instanceof Error ? error.message : String(error)],
                 duration: Date.now() - phaseStart
             };
         }
@@ -338,11 +338,11 @@ export class PlatformIntegration {
                 domains: task.agent?.capabilities || [],
                 agentType: task.agent?.type,
             });
-            if (agent.agents.length > 0) {
+            if (agent.agents?.length && agent.agents.length > 0) {
                 executionResults.push({
                     taskId: task.id,
                     status: 'completed',
-                    agentUsed: agent.agents[0].agentId
+                    agentUsed: agent.agents?.[0]?.agentId || 'unknown'
                 });
                 result.metrics.tasksCompleted++;
                 result.metrics.agentsInvolved++;

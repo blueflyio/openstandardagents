@@ -83,7 +83,7 @@ export class OSSAResources {
         ]
       };
     } catch (error) {
-      logger.error(`Failed to read resource ${uri}: ${error.message}`);
+      logger.error(`Failed to read resource ${uri}: ${error instanceof Error ? error.message : String(error)}`);
       throw error;
     }
   }
@@ -124,7 +124,7 @@ export class OSSAResources {
         .filter(entry => entry.isDirectory())
         .map(entry => entry.name);
     } catch (error) {
-      logger.error(`Failed to list agent manifests: ${error.message}`);
+      logger.error(`Failed to list agent manifests: ${error instanceof Error ? error.message : String(error)}`);
       return [];
     }
   }
@@ -141,7 +141,7 @@ export class OSSAResources {
         text: content
       };
     } catch (error) {
-      logger.error(`Failed to get agent manifest for ${agentName}: ${error.message}`);
+      logger.error(`Failed to get agent manifest for ${agentName}: ${error instanceof Error ? error.message : String(error)}`);
       throw error;
     }
   }
@@ -158,7 +158,7 @@ export class OSSAResources {
         text: content
       };
     } catch (error) {
-      logger.error(`Failed to get schema validation rules: ${error.message}`);
+      logger.error(`Failed to get schema validation rules: ${error instanceof Error ? error.message : String(error)}`);
       throw error;
     }
   }
@@ -187,7 +187,7 @@ export class OSSAResources {
         text: JSON.stringify(docs, null, 2)
       };
     } catch (error) {
-      logger.error(`Failed to get documentation index: ${error.message}`);
+      logger.error(`Failed to get documentation index: ${error instanceof Error ? error.message : String(error)}`);
       throw error;
     }
   }

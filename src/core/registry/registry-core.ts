@@ -318,8 +318,8 @@ export class RegistryCore extends EventEmitter {
       // Get candidate agents through discovery
       const discoveryResult = await this.discoverAgents(query, tenant);
       
-      for (const candidate of discoveryResult.agents) {
-        const registration = this.agents.get(candidate.agentId);
+      for (const candidate of discoveryResult.agents || []) {
+        const registration = this.agents.get(candidate.agentId || '');
         if (!registration) continue;
 
         const compatibility = await this.calculateTaskCompatibility(
@@ -330,7 +330,7 @@ export class RegistryCore extends EventEmitter {
 
         if (compatibility.score > 0.3) { // Minimum compatibility threshold
           matches.push({
-            agentId: candidate.agentId,
+            agentId: candidate.agentId || 'unknown',
             compatibility: compatibility.score,
             reasons: compatibility.reasons,
             warnings: compatibility.warnings

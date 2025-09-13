@@ -171,7 +171,7 @@ export class RegistryAPI {
         next();
     }
     async rateLimitMiddleware(req, res, next) {
-        const clientId = req.userId || req.ip;
+        const clientId = req.userId || req.ip || 'anonymous';
         const now = Date.now();
         const windowMs = this.defaultRateLimit.windowMs;
         const maxRequests = this.defaultRateLimit.requests;

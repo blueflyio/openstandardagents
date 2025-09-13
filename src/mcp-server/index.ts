@@ -21,8 +21,8 @@ interface StdioServerTransport {
 
 // Stub implementations
 const Server = class implements Server {
-  constructor(config: any, capabilities: any) {}
-  setRequestHandler(method: string, handler: (request: any) => Promise<any>): void {
+  constructor(_config: any, _capabilities: any) {}
+  setRequestHandler(method: string, _handler: (request: any) => Promise<any>): void {
     console.log(`[MCP-STUB] Handler registered for ${method}`);
   }
 };
@@ -44,7 +44,7 @@ const logger = new OSSALogger('ossa-mcp-server');
 
 class OSSAMCPServer {
   private server: Server;
-  private transport: StdioServerTransport;
+  private transport: StdioServerTransport | undefined;
 
   constructor() {
     this.server = new Server({
@@ -79,7 +79,7 @@ class OSSAMCPServer {
           request.params.arguments
         );
       } catch (error) {
-        logger.error(`Tool execution failed: ${error.message}`);
+        logger.error(`Tool execution failed: ${error instanceof Error ? error.message : String(error)}`);
         throw error;
       }
     });
@@ -97,7 +97,7 @@ class OSSAMCPServer {
       try {
         return await OSSAResources.readResource(request.params.uri);
       } catch (error) {
-        logger.error(`Resource read failed: ${error.message}`);
+        logger.error(`Resource read failed: ${error instanceof Error ? error.message : String(error)}`);
         throw error;
       }
     });
@@ -115,7 +115,7 @@ class OSSAMCPServer {
       try {
         return await OSSAPrompts.getPrompt(request.params.name, request.params.arguments);
       } catch (error) {
-        logger.error(`Prompt get failed: ${error.message}`);
+        logger.error(`Prompt get failed: ${error instanceof Error ? error.message : String(error)}`);
         throw error;
       }
     });
@@ -140,12 +140,12 @@ class OSSAMCPServer {
       // Keep the server running
       process.on('SIGINT', async () => {
         logger.info('🛑 Shutting down OSSA MCP Server...');
-        await this.transport.close();
+        if (this.transport) await this.transport.close();
         process.exit(0);
       });
 
     } catch (error) {
-      logger.error(`Failed to start MCP server: ${error.message}`);
+      logger.error(`Failed to start MCP server: ${error instanceof Error ? error.message : String(error)}`);
       process.exit(1);
     }
   }

@@ -1,0 +1,52 @@
+spec:
+  inputs:
+    project_version:
+      description: "Override project version (auto-detected if not specified)"
+      type: string
+      default: ""
+    stage-names:
+      description: "Custom stage names override"
+      type: string
+      default: "validate build test changelog release"
+    node-version:
+      description: "Node.js version for JavaScript/TypeScript projects"
+      type: string
+      default: "20"
+    python-version:
+      description: "Python version for Python projects"
+      type: string
+      default: "3.11"
+    enable-tdd:
+      description: "Enable TDD compliance checks"
+      type: boolean
+      default: true
+    enable-ossa-compliance:
+      description: "Enable OSSA specification compliance"
+      type: boolean
+      default: false
+    ossa_compliance_check:
+      description: "Enable OSSA compliance validation (alias)"
+      type: boolean
+      default: false
+    enable_ai_ml_testing:
+      description: "Enable AI/ML model testing and validation"
+      type: boolean
+      default: false
+    enable-auto-merge:
+      description: "Auto-merge feature branches to development"
+      type: boolean
+      default: false
+    changelog-preset:
+      description: "Conventional changelog preset"
+      type: string
+      default: "angular"
+---
+name: golden
+description: "Bluefly Golden CI Orchestration - Enforces safe, versioned, tag-and-release flow"
+version: "0.1.0"
+tags:
+  - ci
+  - automation
+  - release-management
+  - changelog
+  - versioning

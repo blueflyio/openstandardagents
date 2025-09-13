@@ -297,10 +297,10 @@ export class OSSATools {
 
       return validationResults;
     } catch (error) {
-      logger.error(`Validation failed: ${error.message}`);
+      logger.error(`Validation failed: ${error instanceof Error ? error.message : String(error)}`);
       return {
         valid: false,
-        errors: [error.message],
+        errors: [error instanceof Error ? error.message : String(error)],
         warnings: [],
         compliance_score: 0
       };
@@ -316,7 +316,7 @@ export class OSSATools {
       const introspection = {
         agent_id,
         capabilities: [],
-        dependencies: [],
+        dependencies: [] as any[],
         schema_compliance: {},
         health_status: 'unknown',
         last_seen: null,
@@ -341,7 +341,7 @@ export class OSSATools {
 
       return introspection;
     } catch (error) {
-      logger.error(`Introspection failed: ${error.message}`);
+      logger.error(`Introspection failed: ${error instanceof Error ? error.message : String(error)}`);
       throw error;
     }
   }
@@ -377,7 +377,7 @@ export class OSSATools {
       agent_path,
       passed: true,
       score: 0,
-      tests: [],
+      tests: [] as any[],
       summary: {}
     };
 

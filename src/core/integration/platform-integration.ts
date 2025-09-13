@@ -204,7 +204,7 @@ export class PlatformIntegration {
         domains: ['orchestration']
       });
       
-      return agents.agents.length > 0;
+      return agents.agents?.length ? agents.agents.length > 0 : false;
     } catch (error) {
       console.error('Discovery test failed:', error);
       return false;
@@ -321,7 +321,7 @@ export class PlatformIntegration {
         result
       );
       
-      result.phases[phase] = phaseResult;
+      result.phases[phase as keyof typeof result.phases] = phaseResult;
       result.metrics.totalTokens += phaseResult.tokensUsed || 0;
       
       if (phaseResult.status === 'failed' && phase !== 'govern') {
@@ -379,7 +379,7 @@ export class PlatformIntegration {
     } catch (error) {
       return {
         status: 'failed',
-        errors: [error.message],
+        errors: [error instanceof Error ? error.message : String(error)],
         duration: Date.now() - phaseStart
       };
     }
@@ -440,11 +440,11 @@ export class PlatformIntegration {
         agentType: task.agent?.type,
       });
       
-      if (agent.agents.length > 0) {
+      if (agent.agents?.length && agent.agents.length > 0) {
         executionResults.push({
           taskId: task.id,
           status: 'completed',
-          agentUsed: agent.agents[0].agentId
+          agentUsed: agent.agents?.[0]?.agentId || 'unknown'
         });
         result.metrics.tasksCompleted++;
         result.metrics.agentsInvolved++;
