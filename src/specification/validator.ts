@@ -9,13 +9,13 @@ type ValidationError = components['schemas']['ValidationError'];
 type AgentTaxonomy = components['schemas']['AgentTaxonomy'];
 
 /**
- * OSSA Specification Authority - ACDL Validator v0.1.9-alpha.1
+ * OSSA Specification Authority - ACDL Validator v0.1.9
  * 
  * Implements comprehensive ACDL (Agent Capability Description Language) validation
- * according to OSSA v0.1.9-alpha.1 specification standards.
+ * according to OSSA v0.1.9 specification standards.
  */
 export class SpecificationValidator {
-  private readonly ossaVersion = '0.1.9-alpha.1';
+  private readonly ossaVersion = '0.1.9';
   private readonly ajv: any;
   
   private readonly validAgentTypes = [
@@ -183,10 +183,10 @@ export class SpecificationValidator {
     const warnings: string[] = [];
     
     // Validate API version
-    if (manifest.apiVersion !== 'ossa.io/v0.1.9-alpha.1') {
+    if (manifest.apiVersion !== '@bluefly/ossa/v0.1.9') {
       errors.push({
         field: 'apiVersion',
-        message: `Expected OSSA API version 'ossa.io/v0.1.9-alpha.1', got '${manifest.apiVersion}'`,
+        message: `Expected OSSA API version '@bluefly/ossa/v0.1.9', got '${manifest.apiVersion}'`,
         code: 'INVALID_API_VERSION'
       });
     }
@@ -531,7 +531,7 @@ export class SpecificationValidator {
       properties: {
         apiVersion: {
           type: 'string',
-          const: 'ossa.io/v0.1.9-alpha.1'
+          const: '@bluefly/ossa/v0.1.9'
         },
         kind: {
           type: 'string',

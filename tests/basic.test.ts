@@ -46,8 +46,8 @@ describe('OSSA v0.1.9 Specification Package', () => {
     expect(indexContent).toContain('OSSA_VERSION');
     expect(indexContent).toContain('SPECIFICATION_VERSION');
     expect(indexContent).toContain('SPECIFICATION_FILES');
-    expect(indexContent).toContain('SPECIFICATION_URLS');
-    expect(indexContent).toContain('IMPLEMENTATION_GUIDANCE');
+    expect(indexContent).toContain('PROJECT_URLS');
+    expect(indexContent).toContain('IMPLEMENTATION_REFS');
     expect(indexContent).toContain('0.1.9');
   });
 

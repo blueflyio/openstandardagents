@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://ossa.bluefly.io/schemas/workflow/v0.1.9-alpha.1",
+  "$id": "https://gitlab.bluefly.io/llm/openapi-ai-agents-standard/-/raw/main/src/api/workflow.schema.json",
   "title": "OSSA Workflow Specification Schema",
   "description": "Schema for defining multi-agent workflows with 360° feedback loop execution",
   "type": "object",
@@ -13,7 +13,7 @@
   "properties": {
     "apiVersion": {
       "type": "string",
-      "const": "ossa.io/v0.1.9-alpha.1"
+      "const": "@bluefly/ossa/v0.1.9"
     },
     "kind": {
       "type": "string",

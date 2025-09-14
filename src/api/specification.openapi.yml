@@ -6,8 +6,8 @@ info:
     OSSA Platform Specification Engine - Defines and validates agent specifications,
     taxonomies, and capability descriptions according to OSSA v0.1.9 standards.
   contact:
-    name: OSSA Platform Team
-    url: https://ossa.bluefly.io
+    name: Bluefly.io LLM Platform Team
+    url: https://gitlab.bluefly.io/llm/openapi-ai-agents-standard
   license:
     name: MIT
     url: https://opensource.org/licenses/MIT
@@ -15,8 +15,8 @@ info:
 servers:
   - url: http://localhost:3000/api/v1
     description: Local development server
-  - url: https://ossa.bluefly.io/api/v1
-    description: Production server
+  - url: https://api.llm.bluefly.io/api/v1
+    description: Production server (when deployed)
 
 paths:
   /specification/validate:

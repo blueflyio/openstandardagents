@@ -1,8 +1,8 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://ossa.bluefly.io/schemas/agent-manifest/v0.1.9-alpha.1",
+  "$id": "https://gitlab.bluefly.io/llm/openapi-ai-agents-standard/-/raw/main/src/api/agent-manifest.schema.json",
   "title": "OSSA Agent Manifest Schema",
-  "description": "Schema for OSSA v0.1.9-alpha.1 agent manifest files defining agent capabilities, requirements, and integration points",
+  "description": "Schema for OSSA v0.1.9 agent manifest files defining agent capabilities, requirements, and integration points",
   "type": "object",
   "required": [
     "apiVersion",
@@ -13,7 +13,7 @@
   "properties": {
     "apiVersion": {
       "type": "string",
-      "const": "ossa.io/v0.1.9-alpha.1",
+      "const": "@bluefly/ossa/v0.1.9",
       "description": "OSSA API version"
     },
     "kind": {

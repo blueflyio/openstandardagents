@@ -24,20 +24,19 @@ export { SpecificationValidator } from './specification/validator.js';
 
 // Package metadata
 export const OSSA_VERSION = '0.1.9';
-export const SPECIFICATION_VERSION = 'ossa.io/v0.1.9';
+export const SPECIFICATION_VERSION = '@bluefly/open-standards-scalable-agents@0.1.9';
 
-// Specification URLs (for external references)
-export const SPECIFICATION_URLS = {
-  main: 'https://ossa.io/spec/v0.1.9/specification.yml',
-  acdl: 'https://ossa.io/spec/v0.1.9/acdl.yml', 
-  orchestration: 'https://ossa.io/spec/v0.1.9/orchestration.yml',
-  voice: 'https://ossa.io/spec/v0.1.9/voice-agent.yml'
+// Project URLs (ACTUAL locations)
+export const PROJECT_URLS = {
+  repository: 'https://gitlab.bluefly.io/llm/openapi-ai-agents-standard',
+  npm: 'https://www.npmjs.com/package/@bluefly/open-standards-scalable-agents',
+  issues: 'https://gitlab.bluefly.io/llm/openapi-ai-agents-standard/-/issues',
+  changelog: 'https://gitlab.bluefly.io/llm/openapi-ai-agents-standard/-/releases'
 } as const;
 
-// Implementation guidance (specification standard)
-export const IMPLEMENTATION_GUIDANCE = {
+// Implementation references
+export const IMPLEMENTATION_REFS = {
   referenceImplementation: 'https://gitlab.bluefly.io/llm/agent_buildkit',
-  documentation: 'https://ossa.io/docs/v0.1.9',
-  examples: 'https://ossa.io/examples/v0.1.9',
-  compliance: 'https://ossa.io/compliance/v0.1.9'
+  registryBridge: 'https://gitlab.bluefly.io/llm/agent_buildkit/-/tree/main/src/registry',
+  examples: 'https://gitlab.bluefly.io/llm/agent_buildkit/-/tree/main/examples'
 } as const;

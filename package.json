@@ -19,12 +19,20 @@
     "ossa",
     "ai-agents",
     "specification",
-    "orchestration",
-    "runtime",
-    "compliance"
+    "openapi",
+    "standards",
+    "interoperability"
   ],
   "author": "Bluefly.io",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://gitlab.bluefly.io/llm/openapi-ai-agents-standard.git"
+  },
+  "bugs": {
+    "url": "https://gitlab.bluefly.io/llm/openapi-ai-agents-standard/-/issues"
+  },
+  "homepage": "https://gitlab.bluefly.io/llm/openapi-ai-agents-standard",
   "dependencies": {
     "ajv": "^8.17.1",
     "ajv-formats": "^3.0.1",

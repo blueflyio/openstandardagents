@@ -3,10 +3,10 @@ type ValidationResult = components['schemas']['ValidationResult'];
 type ValidationError = components['schemas']['ValidationError'];
 type AgentTaxonomy = components['schemas']['AgentTaxonomy'];
 /**
- * OSSA Specification Authority - ACDL Validator v0.1.9-alpha.1
+ * OSSA Specification Authority - ACDL Validator v0.1.9
  *
  * Implements comprehensive ACDL (Agent Capability Description Language) validation
- * according to OSSA v0.1.9-alpha.1 specification standards.
+ * according to OSSA v0.1.9 specification standards.
  */
 export declare class SpecificationValidator {
     private readonly ossaVersion;

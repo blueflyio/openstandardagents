@@ -16,17 +16,16 @@ export declare const SPECIFICATION_FILES: {
 export * from './types/index.js';
 export { SpecificationValidator } from './specification/validator.js';
 export declare const OSSA_VERSION = "0.1.9";
-export declare const SPECIFICATION_VERSION = "ossa.io/v0.1.9";
-export declare const SPECIFICATION_URLS: {
-    readonly main: "https://ossa.io/spec/v0.1.9/specification.yml";
-    readonly acdl: "https://ossa.io/spec/v0.1.9/acdl.yml";
-    readonly orchestration: "https://ossa.io/spec/v0.1.9/orchestration.yml";
-    readonly voice: "https://ossa.io/spec/v0.1.9/voice-agent.yml";
+export declare const SPECIFICATION_VERSION = "@bluefly/open-standards-scalable-agents@0.1.9";
+export declare const PROJECT_URLS: {
+    readonly repository: "https://gitlab.bluefly.io/llm/openapi-ai-agents-standard";
+    readonly npm: "https://www.npmjs.com/package/@bluefly/open-standards-scalable-agents";
+    readonly issues: "https://gitlab.bluefly.io/llm/openapi-ai-agents-standard/-/issues";
+    readonly changelog: "https://gitlab.bluefly.io/llm/openapi-ai-agents-standard/-/releases";
 };
-export declare const IMPLEMENTATION_GUIDANCE: {
+export declare const IMPLEMENTATION_REFS: {
     readonly referenceImplementation: "https://gitlab.bluefly.io/llm/agent_buildkit";
-    readonly documentation: "https://ossa.io/docs/v0.1.9";
-    readonly examples: "https://ossa.io/examples/v0.1.9";
-    readonly compliance: "https://ossa.io/compliance/v0.1.9";
+    readonly registryBridge: "https://gitlab.bluefly.io/llm/agent_buildkit/-/tree/main/src/registry";
+    readonly examples: "https://gitlab.bluefly.io/llm/agent_buildkit/-/tree/main/examples";
 };
 //# sourceMappingURL=index.d.ts.map
