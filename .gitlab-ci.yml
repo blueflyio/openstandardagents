@@ -26,7 +26,7 @@ detect:version:
     - echo "🔍 Detecting OSSA project version"
     - PROJECT_VERSION=$(node -e "console.log(require('./package.json').version)")
     - echo "PROJECT_VERSION=$PROJECT_VERSION" >> build.env
-    - echo "Detected OSSA version: $PROJECT_VERSION"
+    - echo "Detected OSSA version $PROJECT_VERSION"
   artifacts:
     reports:
       dotenv: build.env
