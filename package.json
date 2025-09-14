@@ -1,113 +1,61 @@
 {
   "name": "@bluefly/open-standards-scalable-agents",
-  "version": "0.1.8",
-  "description": "Open Standards for Scalable Agents (OSSA) - Research-enhanced specification for universal AI agent interoperability with ACTA and memory systems integration",
-  "private": true,
+  "version": "0.1.9",
+  "description": "Open Standards Scalable Agents (OSSA) v0.1.9 - Pure Specification Standard for AI Agent Systems",
   "type": "module",
-  "workspaces": [
-    "cli"
-  ],
-  "bin": {
-    "ossa": "./cli/bin/ossa"
-  },
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "scripts": {
-    "build": "npm run build --workspace=cli",
-    "dev": "npm run dev --workspace=cli", 
-    "test": "vitest run",
-    "test:watch": "vitest watch",
-    "test:coverage": "vitest run --coverage",
-    "test:unit": "vitest run tests/unit/",
-    "test:api": "vitest run tests/api/",
-    "test:cli": "vitest run tests/cli/",
-    "test:integration": "vitest run tests/integration/",
-    "test:clean": "rimraf coverage test-results.json",
-    "test:setup": "npm run services:start:dev",
-    "test:teardown": "npm run services:stop",
-    "lint": "npm run lint --workspace=cli",
-    "lint:fix": "npm run lint:fix --workspace=cli",
-    "typecheck": "npm run typecheck --workspace=cli",
-    "clean": "npm run clean --workspace=cli && find . -name 'node_modules' -type d -prune -exec rm -rf {} +",
-    "validate": "npm run build --workspace=cli && ./cli/bin/ossa validate",
-    "serve": "npm run build --workspace=cli && ./cli/bin/ossa serve",
-    "api:validate": "swagger-codegen validate -i api/openapi.yaml",
-    "api:generate": "npm run api:generate:types && npm run api:generate:client",
-    "api:generate:types": "openapi-typescript api/openapi.yaml -o cli/src/api/types.ts",
-    "api:generate:client": "openapi-typescript-codegen --input api/openapi.yaml --output cli/src/api/generated",
-    "api:docs": "redoc-cli bundle api/openapi.yaml --output docs/api.html",
-    "services:start": "docker-compose -f infrastructure/docker/docker-compose.yml up -d",
-    "services:start:dev": "docker-compose -f infrastructure/docker/docker-compose.yml up -d --build",
-    "services:stop": "docker-compose -f infrastructure/docker/docker-compose.yml down",
-    "services:logs": "docker-compose -f infrastructure/docker/docker-compose.yml logs -f",
-    "services:status": "npx tsx cli/src/index.ts services status",
-    "services:health": "npx tsx cli/src/index.ts services health",
-    "version:patch": "npm version patch --no-git-tag-version",
-    "version:check": "node ../common_npm/scripts/version-control.js",
-    "publish:safe": "node ../common_npm/scripts/safe-publish.js",
-    "prepublishOnly": "npm run version:check"
+    "build": "tsc",
+    "test": "jest",
+    "lint": "eslint src/**/*.ts",
+    "format": "prettier --write 'src/**/*.ts' 'tests/**/*.ts'",
+    "api:validate": "swagger-cli validate src/api/specification.openapi.yml",
+    "api:generate": "openapi-typescript src/api/specification.openapi.yml -o src/types/api.ts",
+    "clean": "rm -rf dist coverage",
+    "precommit": "npm run lint && npm run api:validate && npm run test",
+    "prepublishOnly": "npm run clean && npm run build && npm run test && npm run api:validate",
+    "pack:test": "npm pack --dry-run"
   },
   "keywords": [
     "ossa",
-    "open-standards",
     "ai-agents",
-    "agent-interoperability",
-    "vendor-neutral",
-    "conformance",
-    "governance",
-    "mcp",
-    "langchain",
-    "crewai",
-    "openai",
-    "anthropic",
-    "agent-orchestration",
-    "kubernetes-for-ai"
+    "specification",
+    "openapi",
+    "standards",
+    "interoperability"
   ],
-  "author": "Open Standards for Scalable Agents Community",
-  "license": "Apache-2.0",
+  "author": "Bluefly.io",
+  "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://gitlab.com/bluefly-ai/ossa-standard.git"
+    "url": "git+https://gitlab.bluefly.io/llm/openapi-ai-agents-standard.git"
   },
-  "homepage": "https://gitlab.com/bluefly-ai/ossa-standard#readme",
   "bugs": {
-    "url": "https://gitlab.com/bluefly-ai/ossa-standard/issues"
+    "url": "https://gitlab.bluefly.io/llm/openapi-ai-agents-standard/-/issues"
+  },
+  "homepage": "https://gitlab.bluefly.io/llm/openapi-ai-agents-standard",
+  "dependencies": {
+    "ajv": "^8.17.1",
+    "ajv-formats": "^3.0.1",
+    "js-yaml": "^4.1.0",
+    "yaml": "^2.8.1"
+  },
+  "devDependencies": {
+    "@types/jest": "^29.5.11",
+    "@types/js-yaml": "^4.0.9",
+    "@types/node": "^20.10.5",
+    "@typescript-eslint/eslint-plugin": "^6.21.0",
+    "@typescript-eslint/parser": "^6.21.0",
+    "eslint": "^8.57.1",
+    "jest": "^29.7.0",
+    "openapi-typescript": "^6.7.3",
+    "prettier": "^3.1.1",
+    "swagger-cli": "^4.0.4",
+    "ts-jest": "^29.1.1",
+    "typescript": "^5.3.3"
   },
   "engines": {
     "node": ">=18.0.0"
-  },
-  "files": [
-    "cli/",
-    "lib/",
-    "examples/",
-    "docs/",
-    "README.md",
-    "LICENSE",
-    "CHANGELOG.md",
-    "ROADMAP.md"
-  ],
-  "dependencies": {
-    "@apidevtools/json-schema-ref-parser": "^14.2.0",
-    "ajv": "^8.17.1",
-    "ajv-formats": "^3.0.1",
-    "axios": "^1.11.0",
-    "express": "^5.1.0",
-    "glob": "^10.4.5",
-    "js-yaml": "^4.1.0",
-    "yaml": "^2.8.1",
-    "zod": "^4.1.5"
-  },
-  "devDependencies": {
-    "@types/node": "^20.10.0",
-    "@types/express": "^4.17.21",
-    "@types/js-yaml": "^4.0.9",
-    "@types/supertest": "^6.0.2",
-    "@vitest/coverage-v8": "^1.2.0",
-    "openapi-typescript": "^6.7.4",
-    "openapi-typescript-codegen": "^0.25.0",
-    "redoc-cli": "^0.13.21",
-    "rimraf": "^5.0.5",
-    "supertest": "^6.3.4",
-    "tsx": "^4.7.0",
-    "typescript": "^5.3.0",
-    "vitest": "^1.2.0"
   }
 }

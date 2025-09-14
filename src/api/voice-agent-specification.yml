@@ -1,0 +1,640 @@
+openapi: 3.1.0
+info:
+  title: OSSA Voice Agent Specification
+  version: 0.1.9
+  description: |
+    Voice Agent specification for OSSA Platform - enabling hands-free, audio-based
+    interaction with the agent ecosystem. Voice agents act as interface agents that
+    bridge human speech with OSSA orchestration.
+    
+    Voice agents are a new agent type that handles:
+    - Audio input processing (microphone, files, streams)
+    - Speech-to-text transcription
+    - Intent extraction and routing
+    - Text-to-speech response generation
+    - Context management across conversation turns
+
+servers:
+  - url: http://localhost:3006/api/v1
+    description: Local voice agent server
+  - url: https://voice.ossa.bluefly.io/api/v1
+    description: Production voice service
+
+paths:
+  /voice/agents/register:
+    post:
+      summary: Register a voice agent
+      operationId: registerVoiceAgent
+      tags:
+        - VoiceAgents
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VoiceAgentManifest'
+      responses:
+        '201':
+          description: Voice agent registered
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RegistrationResponse'
+
+  /voice/session/start:
+    post:
+      summary: Start a voice interaction session
+      operationId: startVoiceSession
+      tags:
+        - VoiceSessions
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SessionStartRequest'
+      responses:
+        '201':
+          description: Voice session created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VoiceSession'
+
+  /voice/session/{sessionId}/audio:
+    post:
+      summary: Process audio input
+      operationId: processAudioInput
+      tags:
+        - VoiceSessions
+      parameters:
+        - name: sessionId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          audio/wav:
+            schema:
+              type: string
+              format: binary
+          audio/mp3:
+            schema:
+              type: string
+              format: binary
+          application/json:
+            schema:
+              type: object
+              properties:
+                audioData:
+                  type: string
+                  format: base64
+                  description: Base64 encoded audio
+                format:
+                  type: string
+                  enum: [wav, mp3, m4a, webm]
+      responses:
+        '200':
+          description: Audio processed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AudioProcessingResponse'
+
+  /voice/session/{sessionId}/transcript:
+    get:
+      summary: Get session transcript
+      operationId: getSessionTranscript
+      tags:
+        - VoiceSessions
+      parameters:
+        - name: sessionId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: format
+          in: query
+          schema:
+            type: string
+            enum: [json, text, vtt, srt]
+            default: json
+      responses:
+        '200':
+          description: Session transcript
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Transcript'
+            text/plain:
+              schema:
+                type: string
+            text/vtt:
+              schema:
+                type: string
+            text/srt:
+              schema:
+                type: string
+
+  /voice/session/{sessionId}/context:
+    get:
+      summary: Get session context
+      operationId: getSessionContext
+      tags:
+        - VoiceSessions
+      parameters:
+        - name: sessionId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Session context
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SessionContext'
+
+  /voice/intent/analyze:
+    post:
+      summary: Analyze intent from transcription
+      operationId: analyzeIntent
+      tags:
+        - IntentAnalysis
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/IntentAnalysisRequest'
+      responses:
+        '200':
+          description: Intent analysis result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IntentAnalysisResponse'
+
+  /voice/tts/synthesize:
+    post:
+      summary: Synthesize text to speech
+      operationId: synthesizeSpeech
+      tags:
+        - TextToSpeech
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TTSRequest'
+      responses:
+        '200':
+          description: Synthesized audio
+          content:
+            audio/wav:
+              schema:
+                type: string
+                format: binary
+            audio/mp3:
+              schema:
+                type: string
+                format: binary
+            application/json:
+              schema:
+                type: object
+                properties:
+                  audioData:
+                    type: string
+                    format: base64
+                  duration:
+                    type: number
+                  format:
+                    type: string
+
+components:
+  schemas:
+    VoiceAgentManifest:
+      allOf:
+        - $ref: '../agent-manifest.schema.json#/definitions/AgentManifest'
+        - type: object
+          required:
+            - voiceConfig
+          properties:
+            spec:
+              type: object
+              properties:
+                type:
+                  const: voice
+                subtype:
+                  type: string
+                  enum:
+                    - voice.assistant
+                    - voice.transcriber
+                    - voice.translator
+                    - voice.narrator
+                voiceConfig:
+                  $ref: '#/components/schemas/VoiceConfiguration'
+
+    VoiceConfiguration:
+      type: object
+      required:
+        - inputMode
+        - outputMode
+        - transcriptionProvider
+      properties:
+        inputMode:
+          type: array
+          items:
+            type: string
+            enum: [microphone, audio_file, stream, websocket]
+          minItems: 1
+        outputMode:
+          type: array
+          items:
+            type: string
+            enum: [speaker, audio_file, stream, websocket]
+          minItems: 1
+        transcriptionProvider:
+          type: string
+          enum: [whisper, whisper-api, google-stt, azure-speech, aws-transcribe, webkit-speech]
+        ttsProvider:
+          type: string
+          enum: [elevenlabs, google-tts, azure-tts, aws-polly, local-say, espeak]
+        language:
+          type: string
+          default: en-US
+        voiceId:
+          type: string
+          description: Provider-specific voice identifier
+        contextWindow:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 10
+          description: Number of conversation turns to maintain
+        wakeWord:
+          type: string
+          description: Optional wake word for activation
+        audioFormat:
+          type: object
+          properties:
+            sampleRate:
+              type: integer
+              enum: [8000, 16000, 22050, 44100, 48000]
+              default: 16000
+            channels:
+              type: integer
+              enum: [1, 2]
+              default: 1
+            encoding:
+              type: string
+              enum: [pcm, mp3, opus, flac]
+              default: pcm
+
+    SessionStartRequest:
+      type: object
+      required:
+        - agentId
+        - inputMode
+      properties:
+        agentId:
+          type: string
+          description: Voice agent identifier
+        inputMode:
+          type: string
+          enum: [microphone, audio_file, stream]
+        outputMode:
+          type: string
+          enum: [speaker, audio_file, stream]
+        contextCarryOver:
+          type: boolean
+          default: true
+          description: Maintain context from previous sessions
+        sessionConfig:
+          type: object
+          properties:
+            maxDuration:
+              type: integer
+              description: Maximum session duration in seconds
+            silenceTimeout:
+              type: integer
+              description: Silence detection timeout in ms
+            interruptible:
+              type: boolean
+              default: true
+
+    VoiceSession:
+      type: object
+      required:
+        - sessionId
+        - agentId
+        - status
+        - startTime
+      properties:
+        sessionId:
+          type: string
+          format: uuid
+        agentId:
+          type: string
+        status:
+          type: string
+          enum: [initializing, active, paused, processing, ended, error]
+        startTime:
+          type: string
+          format: date-time
+        endTime:
+          type: string
+          format: date-time
+        audioConfig:
+          $ref: '#/components/schemas/AudioConfiguration'
+        statistics:
+          $ref: '#/components/schemas/SessionStatistics'
+
+    AudioConfiguration:
+      type: object
+      properties:
+        inputDevice:
+          type: string
+        outputDevice:
+          type: string
+        sampleRate:
+          type: integer
+        channels:
+          type: integer
+        format:
+          type: string
+        noiseReduction:
+          type: boolean
+        echoCancellation:
+          type: boolean
+
+    AudioProcessingResponse:
+      type: object
+      required:
+        - transcription
+        - intent
+        - action
+      properties:
+        transcription:
+          type: string
+          description: Transcribed text from audio
+        confidence:
+          type: number
+          minimum: 0
+          maximum: 1
+        intent:
+          $ref: '#/components/schemas/Intent'
+        action:
+          $ref: '#/components/schemas/AgentAction'
+        response:
+          type: object
+          properties:
+            text:
+              type: string
+            audioData:
+              type: string
+              format: base64
+            audioUrl:
+              type: string
+              format: uri
+        processingTime:
+          type: integer
+          description: Processing time in milliseconds
+
+    Intent:
+      type: object
+      required:
+        - type
+        - confidence
+      properties:
+        type:
+          type: string
+          enum:
+            - command
+            - query
+            - conversation
+            - feedback
+            - correction
+            - confirmation
+        confidence:
+          type: number
+          minimum: 0
+          maximum: 1
+        entities:
+          type: array
+          items:
+            type: object
+            properties:
+              type:
+                type: string
+              value:
+                type: string
+              confidence:
+                type: number
+        command:
+          type: string
+        parameters:
+          type: object
+          additionalProperties: true
+
+    AgentAction:
+      type: object
+      required:
+        - targetAgent
+        - operation
+      properties:
+        targetAgent:
+          type: string
+          description: Target agent ID or type
+        operation:
+          type: string
+          description: Operation to perform
+        parameters:
+          type: object
+          additionalProperties: true
+        priority:
+          type: string
+          enum: [low, normal, high, critical]
+          default: normal
+        timeout:
+          type: integer
+          description: Timeout in milliseconds
+
+    Transcript:
+      type: object
+      required:
+        - sessionId
+        - turns
+      properties:
+        sessionId:
+          type: string
+          format: uuid
+        turns:
+          type: array
+          items:
+            $ref: '#/components/schemas/ConversationTurn'
+        metadata:
+          type: object
+          properties:
+            duration:
+              type: integer
+            wordCount:
+              type: integer
+            language:
+              type: string
+
+    ConversationTurn:
+      type: object
+      required:
+        - timestamp
+        - speaker
+        - text
+      properties:
+        turnId:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+        speaker:
+          type: string
+          enum: [user, agent, system]
+        text:
+          type: string
+        audioSegment:
+          type: object
+          properties:
+            startTime:
+              type: number
+            endTime:
+              type: number
+            audioUrl:
+              type: string
+        intent:
+          $ref: '#/components/schemas/Intent'
+        action:
+          $ref: '#/components/schemas/AgentAction'
+        sentiment:
+          type: string
+          enum: [positive, neutral, negative]
+        confidence:
+          type: number
+
+    SessionContext:
+      type: object
+      properties:
+        sessionId:
+          type: string
+          format: uuid
+        currentIntent:
+          $ref: '#/components/schemas/Intent'
+        conversationHistory:
+          type: array
+          maxItems: 100
+          items:
+            $ref: '#/components/schemas/ConversationTurn'
+        activeAgents:
+          type: array
+          items:
+            type: string
+        workflowState:
+          type: object
+        userPreferences:
+          type: object
+          properties:
+            language:
+              type: string
+            voiceSpeed:
+              type: number
+            voiceStyle:
+              type: string
+
+    IntentAnalysisRequest:
+      type: object
+      required:
+        - text
+      properties:
+        text:
+          type: string
+        context:
+          type: array
+          items:
+            $ref: '#/components/schemas/ConversationTurn'
+        sessionId:
+          type: string
+          format: uuid
+
+    IntentAnalysisResponse:
+      type: object
+      properties:
+        primary:
+          $ref: '#/components/schemas/Intent'
+        alternatives:
+          type: array
+          items:
+            $ref: '#/components/schemas/Intent'
+        suggestedActions:
+          type: array
+          items:
+            $ref: '#/components/schemas/AgentAction'
+
+    TTSRequest:
+      type: object
+      required:
+        - text
+      properties:
+        text:
+          type: string
+        voiceId:
+          type: string
+        language:
+          type: string
+        speed:
+          type: number
+          minimum: 0.5
+          maximum: 2.0
+          default: 1.0
+        pitch:
+          type: number
+          minimum: -20
+          maximum: 20
+          default: 0
+        format:
+          type: string
+          enum: [wav, mp3, opus]
+          default: wav
+
+    SessionStatistics:
+      type: object
+      properties:
+        totalTurns:
+          type: integer
+        totalDuration:
+          type: integer
+        averageResponseTime:
+          type: integer
+        totalTokensUsed:
+          type: integer
+        errorCount:
+          type: integer
+
+    RegistrationResponse:
+      type: object
+      properties:
+        agentId:
+          type: string
+        status:
+          type: string
+          enum: [registered, pending, rejected]
+        validationResults:
+          type: array
+          items:
+            type: object
+        endpoint:
+          type: string
+          format: uri
