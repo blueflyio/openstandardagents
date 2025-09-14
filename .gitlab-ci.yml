@@ -73,17 +73,11 @@ validate:ossa-spec:
     - echo "🔍 Validating OSSA specification v${PROJECT_VERSION}"
     - npm ci
     - npm run api:validate
-    - |
-      # Verify specification files only (no implementation)
-      echo "Checking for specification purity..."
-      SPEC_COUNT=$(find src -name "*.openapi.yml" -o -name "*.schema.json" | wc -l)
-      TYPE_COUNT=$(find src/types -name "*.ts" | wc -l)
-      echo "Found $SPEC_COUNT specification files and $TYPE_COUNT type definitions"
-      
-      # Check that no implementation files exist
-      if [ -d "src/cli" ] || [ -d "src/mcp-server" ] || [ -d "src/core" ]; then
-        echo "⚠️ Warning: Implementation directories found (should be in agent-buildkit)"
-      fi
+    - echo "Checking for specification purity..."
+    - SPEC_COUNT=$(find src -name "*.openapi.yml" -o -name "*.schema.json" | wc -l)
+    - TYPE_COUNT=$(find src/types -name "*.ts" | wc -l)
+    - echo "Found $SPEC_COUNT specification files and $TYPE_COUNT type definitions"
+    - if [ -d "src/cli" ] || [ -d "src/mcp-server" ] || [ -d "src/core" ]; then echo "⚠️ Warning Implementation directories found"; fi
     - echo "✅ OSSA specification validation complete"
   rules:
     - when: on_success
@@ -99,14 +93,10 @@ test:specification:
     - npm run lint
     - npm test
     - echo "🔗 Testing OSSA ↔ agent-buildkit integration"
-    - |
-      # Verify Registry Bridge Service compatibility
-      echo "Checking Registry Bridge Service API compatibility..."
-      npm run test:integration || echo "Integration tests completed"
-      
-      # Validate Claude agent discovery
-      echo "Testing Universal Agent Discovery Protocol (UADP)..."
-      npm run test:uadp || echo "UADP tests completed"
+    - echo "Checking Registry Bridge Service API compatibility..."
+    - npm run test:integration || echo "Integration tests completed"
+    - echo "Testing Universal Agent Discovery Protocol (UADP)..."
+    - npm run test:uadp || echo "UADP tests completed"
     - echo "✅ Tests and integration completed successfully"
   coverage: '/All files[^|]*\|[^|]*\s+([\d\.]+)/'
   artifacts:
@@ -151,25 +141,11 @@ publish:npm:
     - echo "📦 Publishing OSSA specification to NPM"
     - echo "🔍 Final validation before publish"
     - npm run prepublishOnly
-    - |
-      # Verify this is the OSSA specification package
-      PACKAGE_NAME=$(node -e "console.log(require('./package.json').name)")
-      if [ "$PACKAGE_NAME" != "@bluefly/open-standards-scalable-agents" ]; then
-        echo "❌ Wrong package name: $PACKAGE_NAME"
-        exit 1
-      fi
-      
-      PACKAGE_VERSION=$(node -e "console.log(require('./package.json').version)")
-      echo "📋 Publishing: $PACKAGE_NAME@$PACKAGE_VERSION"
-      
-      # Check if version already exists
-      if npm view $PACKAGE_NAME@$PACKAGE_VERSION version 2>/dev/null; then
-        echo "⚠️ Version $PACKAGE_VERSION already exists, skipping"
-      else
-        echo "🚀 Publishing new version..."
-        npm publish --access public --tag latest
-        echo "✅ Published: $PACKAGE_NAME@$PACKAGE_VERSION"
-      fi
+    - PACKAGE_NAME=$(node -e "console.log(require('./package.json').name)")
+    - if [ "$PACKAGE_NAME" != "@bluefly/open-standards-scalable-agents" ]; then echo "❌ Wrong package name $PACKAGE_NAME" && exit 1; fi
+    - PACKAGE_VERSION=$(node -e "console.log(require('./package.json').version)")
+    - echo "📋 Publishing $PACKAGE_NAME@$PACKAGE_VERSION"
+    - if npm view $PACKAGE_NAME@$PACKAGE_VERSION version 2>/dev/null; then echo "⚠️ Version exists skipping"; else npm publish --access public --tag latest && echo "✅ Published $PACKAGE_NAME@$PACKAGE_VERSION"; fi
   rules:
     - if: '$CI_COMMIT_BRANCH == "main"'
       when: manual
@@ -190,10 +166,8 @@ security:scan:
     - npm ci
     - npm audit --audit-level high
     - echo "🔍 Checking for security vulnerabilities in dependencies"
-    - |
-      # Check for known vulnerability patterns in specification files
-      echo "Scanning specification files for security issues..."
-      find src/api -name "*.yml" -o -name "*.json" | xargs grep -l "password\|secret\|key\|token" || echo "No sensitive data patterns found"
+    - echo "Scanning specification files for security issues..."
+    - find src/api -name "*.yml" -o -name "*.json" | xargs grep -l "password\|secret\|key\|token" || echo "No sensitive data patterns found"
     - echo "✅ Security scan completed"
   allow_failure: true
   rules:
@@ -212,19 +186,11 @@ test:integration:
   script:
     - echo "🔗 Running integration tests"
     - npm ci
-    - |
-      # Test specification compatibility
-      echo "Testing specification compatibility..."
-      if [ -f "scripts/test-integration.sh" ]; then
-        ./scripts/test-integration.sh
-      else
-        echo "Integration tests skipped - no test script found"
-      fi
-    - |
-      # Test package integrity
-      echo "Testing package integrity..."
-      npm run pack:test
-      echo "Package test completed"
+    - echo "Testing specification compatibility..."
+    - if [ -f "scripts/test-integration.sh" ]; then ./scripts/test-integration.sh; else echo "Integration tests skipped - no test script found"; fi
+    - echo "Testing package integrity..."
+    - npm run pack:test
+    - echo "Package test completed"
     - echo "✅ Integration tests completed"
   rules:
     - if: '$CI_COMMIT_BRANCH == "development"'
@@ -247,11 +213,9 @@ auto-merge:development:
     - git checkout development
     - git pull origin development
     - git merge --no-ff $CI_COMMIT_SHA -m "auto-merge: feature $CI_COMMIT_REF_NAME → development"
-    - |
-      # Create development tag
-      DEV_TAG="dev-$(date +%Y%m%d-%H%M%S)-${CI_COMMIT_SHORT_SHA}"
-      git tag -a "$DEV_TAG" -m "Development tag for feature $CI_COMMIT_REF_NAME"
-      git push origin development --tags
+    - DEV_TAG="dev-$(date +%Y%m%d-%H%M%S)-${CI_COMMIT_SHORT_SHA}"
+    - git tag -a "$DEV_TAG" -m "Development tag for feature $CI_COMMIT_REF_NAME"
+    - git push origin development --tags
     - echo "✅ Auto-merged to development with tag $DEV_TAG"
   rules:
     - if: '$CI_COMMIT_BRANCH =~ /^feature\/.*/'
@@ -292,11 +256,9 @@ release:main:
     - git checkout main
     - git pull origin main
     - git merge --no-ff release/v0.1.9 -m "release: OSSA v0.1.9 - Standalone CI Pipeline"
-    - |
-      # Create release tag
-      RELEASE_TAG="v0.1.9-$(date +%Y%m%d)"
-      git tag -a "$RELEASE_TAG" -m "OSSA v0.1.9 Release - Standalone CI Pipeline"
-      git push origin main --tags
+    - RELEASE_TAG="v0.1.9-$(date +%Y%m%d)"
+    - git tag -a "$RELEASE_TAG" -m "OSSA v0.1.9 Release - Standalone CI Pipeline"
+    - git push origin main --tags
     - echo "✅ Released to main with tag $RELEASE_TAG"
   rules:
     - if: '$CI_COMMIT_BRANCH == "release/v0.1.9"'
