@@ -218,6 +218,8 @@ auto-merge:development:
     - git push origin development --tags
     - echo "✅ Auto-merged to development with tag $DEV_TAG"
   rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+      when: never
     - if: '$CI_COMMIT_BRANCH =~ /^feature\/.*/'
       when: on_success
     - if: '$CI_COMMIT_BRANCH =~ /^bug\/.*/'
@@ -239,6 +241,8 @@ auto-merge:release:
     - git push origin release/v0.1.9
     - echo "✅ Auto-merged to release/v0.1.9"
   rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+      when: never
     - if: '$CI_COMMIT_BRANCH =~ /^feature\/.*/'
       when: on_success
     - if: '$CI_COMMIT_BRANCH =~ /^bug\/.*/'
