@@ -4,6 +4,9 @@ stages:
   - validate
   - build
   - test
+  - tag
+  - merge
+  - release
 
 variables:
   NODE_VERSION: "20"
@@ -43,3 +46,57 @@ test:basic:
     - npm install
     - npm test || true
     - echo "✅ Tests complete"
+
+# Tag feature branches
+tag:feature:
+  stage: tag
+  image: alpine/git
+  needs: ["test:basic"]
+  before_script:
+    - git config --global user.email "ci@bluefly.io"
+    - git config --global user.name "OSSA CI"
+  script:
+    - echo "Creating feature tag"
+    - TAG="feature-$(date +%Y%m%d-%H%M%S)-${CI_COMMIT_SHORT_SHA}"
+    - git tag -a "$TAG" -m "Feature branch tag: $CI_COMMIT_REF_NAME"
+    - git push origin "$TAG"
+    - echo "✅ Tagged as $TAG"
+  rules:
+    - if: '$CI_COMMIT_BRANCH =~ /^feature\/.*/'
+
+# Auto-merge to development
+merge:development:
+  stage: merge
+  image: alpine/git
+  needs: ["tag:feature"]
+  before_script:
+    - git config --global user.email "ci@bluefly.io"
+    - git config --global user.name "OSSA CI"
+  script:
+    - echo "Auto-merging to development"
+    - git fetch origin
+    - git checkout development
+    - git pull origin development
+    - git merge --no-ff $CI_COMMIT_SHA -m "auto-merge: $CI_COMMIT_REF_NAME → development"
+    - git push origin development
+    - echo "✅ Merged to development"
+  rules:
+    - if: '$CI_COMMIT_BRANCH =~ /^feature\/.*/'
+
+# Release tag on main branch
+tag:release:
+  stage: release
+  image: alpine/git
+  before_script:
+    - git config --global user.email "ci@bluefly.io"
+    - git config --global user.name "OSSA CI"
+  script:
+    - echo "Creating release tag"
+    - VERSION=$(node -e "console.log(require('./package.json').version)")
+    - TAG="v${VERSION}-$(date +%Y%m%d-%H%M%S)"
+    - git tag -a "$TAG" -m "OSSA Release v${VERSION}"
+    - git push origin "$TAG"
+    - echo "✅ Released as $TAG"
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+      when: on_success
