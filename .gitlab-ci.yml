@@ -25,6 +25,7 @@ build:package:
   needs: ["validate:spec"]
   script:
     - echo "Building OSSA"
+    - rm -f package-lock.json
     - npm install
     - npm run build || true
     - echo "✅ Build complete"
