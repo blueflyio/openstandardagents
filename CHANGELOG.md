@@ -2,7 +2,7 @@
 
 All notable changes to the OpenAPI AI Agents Standard (OAAS) will be documented in this file.
 
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [0.1.1] - 2025-01-27
@@ -51,6 +51,38 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Some compliance automation features are in preview
 
 ## [Unreleased]
+
+### Added
+- Comprehensive branching conventions and semantic release workflow
+- Automated CI pipeline with branch name validation
+- Semantic tagging based on branch prefixes (feature-, fix-, hotfix-, perf-)
+- Auto-merge from feature branches to development with conventional commits
+- Proper release automation on main branch using semantic-release
+
+### Changed
+- CI pipeline now follows semantic release patterns with Keep a Changelog format
+- Branch naming enforced with regex validation: `prefix/scope-kebab-case[-issue123]`
+- Conventional commit messages required for all merges
+- Updated to Keep a Changelog v1.1.0 format
+
+## [0.1.9] - 2025-09-14
+
+### Added
+- OSSA v0.1.9 standalone specification package
+- Complete OpenAPI specification for agent systems
+- TypeScript type definitions for all OSSA interfaces
+- Independent CI/CD pipeline separate from parent project
+- NPM package publication workflow
+
+### Fixed
+- CI pipeline now properly handles package-lock.json sync issues
+- Test framework conflicts resolved (jest vs vitest)
+- Build process stabilized with proper error handling
+
+### Changed
+- Transformed OSSA into pure specification standard
+- Removed implementation code (moved to agent-buildkit)
+- Simplified package structure for specification distribution
 
 ### Planned
 - Multi-region federation support
