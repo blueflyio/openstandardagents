@@ -3,8 +3,8 @@
   "version": "0.1.9",
   "description": "Open Standards Scalable Agents (OSSA) v0.1.9 - Pure Specification Standard for AI Agent Systems",
   "type": "module",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "main": "dist/core/index.js",
+  "types": "dist/core/index.d.ts",
   "scripts": {
     "build": "tsc",
     "test": "jest",

@@ -1,0 +1,59 @@
+{
+  "version": "1.0.0",
+  "description": "Consolidated TDDAI policies from all common_npm projects",
+  "lastUpdated": "2025-09-08",
+  "policies": [
+    {
+      "id": "no-claude-commits",
+      "type": "commit-restrictions",
+      "rule": "No \"claude\" in commit messages",
+      "enabled": true,
+      "scope": "global",
+      "projects": ["workflow-engine", "doc-engine", "agent-router", "compliance-engine", "agent-docker", "agent-chat"]
+    },
+    {
+      "id": "no-claude-signatures",
+      "type": "content-restrictions",
+      "rule": "No Claude AI signatures in code or commits",
+      "enabled": true,
+      "scope": "global",
+      "projects": ["workflow-engine", "doc-engine", "compliance-engine", "agent-chat"]
+    },
+    {
+      "id": "no-hardcoded-paths",
+      "type": "content-restrictions",
+      "rule": "No hardcoded local paths like /Users/flux423 or ${HOME}",
+      "enabled": true,
+      "scope": "global",
+      "projects": ["workflow-engine", "doc-engine", "agent-router", "compliance-engine", "agent-docker", "agent-chat"]
+    },
+    {
+      "id": "no-random-files",
+      "type": "file-restrictions",
+      "rule": "No random files in root - only README.md and ROADMAP.md allowed",
+      "enabled": true,
+      "scope": "global",
+      "projects": ["workflow-engine", "doc-engine", "agent-router", "compliance-engine", "agent-docker", "agent-chat"]
+    },
+    {
+      "id": "no-marketing-language",
+      "type": "content-restrictions",
+      "rule": "No marketing language (enhanced, revolutionary, simple, improved, advanced, straightforward)",
+      "enabled": true,
+      "scope": "global",
+      "projects": ["workflow-engine", "doc-engine", "agent-router", "compliance-engine", "agent-docker", "agent-chat"]
+    }
+  ],
+  "metadata": {
+    "totalPolicies": 5,
+    "projectsCovered": 6,
+    "sources": [
+      "/workflow-engine/.tddai/policies.json",
+      "/doc-engine/.tddai/policies.json",
+      "/agent-router/.tddai/policies.json",
+      "/compliance-engine/.tddai/policies.json",
+      "/agent-docker/.tddai/policies.json",
+      "/agent-chat/.tddai/policies.json"
+    ]
+  }
+}

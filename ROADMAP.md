@@ -1512,3 +1512,33 @@ OAAS has established itself as the universal standard for AI agents, bridging fr
 **Version Range**: 0.1.9-alpha.1 → 0.1.11 → 1.0.0  
 **Status**: Comprehensive roadmap consolidation complete
 >>>>>>> Stashed changes
+
+## CI/CD Modernization Tasks
+
+### URGENT: Update to Golden Workflow
+- [ ] Replace .gitlab-ci.yml with golden workflow @main
+- [ ] Set project_version: "auto" (remove hardcoded versions)
+- [ ] Test quality gates prevent tags when CI fails
+- [ ] Verify semantic-release generates proper tags
+- [ ] Update branch naming to conventional format (feature/, fix/, docs/, ci/, chore/, perf/)
+- [ ] Use conventional commit messages (feat:, fix:, docs:, etc.)
+
+### Configuration Template:
+```yaml
+include:
+  - component: gitlab.bluefly.io/llm/gitlab_components/workflow/golden@main
+    inputs:
+      node_version: "20"  # or php_version: "8.3" or python_version: "3.11"
+      project_version: "auto"
+      enable_auto_flow: true
+      enable_comprehensive_testing: true
+      enable_security_scanning: true
+      test_coverage_threshold: 80
+```
+
+### Benefits After Update:
+- ✅ No tags created when tests fail
+- ✅ Automatic semantic versioning
+- ✅ Generated CHANGELOG.md files
+- ✅ Quality gates enforcement
+
