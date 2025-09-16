@@ -1,0 +1,107 @@
+openapi: 3.1.0
+info:
+  title: Istio Mesh Architect Agent API
+  version: 1.0.0
+  description: OSSA v0.1.8 advanced tier agent for infrastructure operations
+  x-openapi-ai-agents-standard:
+    version: 0.1.8
+    conformance_tier: advanced
+    certification_level: gold
+    compliance_frameworks:
+      - ISO_42001
+      - NIST_AI_RMF
+    enterprise_features: true
+  x-agent-metadata:
+    class: infrastructure
+    category: assistant
+    protocols:
+      - openapi
+      - mcp
+      - uadp
+    capabilities:
+      - infrastructure_analysis
+      - multi_framework_integration
+      - compliance_monitoring
+    domains:
+      - infrastructure
+servers:
+  - url: http://localhost:3000/api
+    description: Local development server
+paths:
+  /health:
+    get:
+      summary: Health check endpoint
+      description: OSSA v0.1.8 compliant health check
+      operationId: getHealth
+      tags:
+        - Health
+      responses:
+        '200':
+          description: Agent is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum:
+                      - healthy
+                      - degraded
+                      - unhealthy
+                  version:
+                    type: string
+                  ossa_version:
+                    type: string
+                  uptime:
+                    type: number
+                  timestamp:
+                    type: string
+                    format: date-time
+  /capabilities:
+    get:
+      summary: Get agent capabilities
+      description: Returns comprehensive agent capabilities per OSSA v0.1.8
+      operationId: getCapabilities
+      tags:
+        - Discovery
+      responses:
+        '200':
+          description: Agent capabilities
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  agent_name:
+                    type: string
+                  conformance_tier:
+                    type: string
+                  capabilities:
+                    type: array
+                    items:
+                      type: string
+                  protocols:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        name:
+                          type: string
+                        version:
+                          type: string
+                        required:
+                          type: boolean
+                  framework_support:
+                    type: object
+components:
+  schemas:
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+        version:
+          type: string
+        timestamp:
+          type: string

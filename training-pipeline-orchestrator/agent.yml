@@ -1,0 +1,94 @@
+ossa: 0.1.8
+metadata:
+  name: training-pipeline-orchestrator
+  version: 1.0.0
+  description: OSSA v0.1.8 advanced tier agent for infrastructure
+  author: OSSA CLI
+  license: Apache-2.0
+  created: '2025-09-06'
+  updated: '2025-09-06'
+  tags:
+    - infrastructure
+    - advanced
+    - critical
+spec:
+  conformance_tier: advanced
+  class: infrastructure
+  category: assistant
+  capabilities:
+    primary:
+      - infrastructure_analysis
+      - multi_framework_integration
+      - compliance_monitoring
+    secondary:
+      - automated_reporting
+      - performance_optimization
+      - knowledge_synthesis
+  protocols:
+    - name: openapi
+      version: 3.1.0
+      required: true
+      extensions:
+        - x-ossa-advanced
+        - x-enterprise-features
+    - name: mcp
+      version: '2024-11-05'
+      required: true
+      advanced_features:
+        - resource_streaming
+        - progress_tracking
+    - name: uadp
+      version: 0.1.8
+      required: true
+      discovery_modes:
+        - active
+        - passive
+  framework_support:
+    langchain:
+      enabled: true
+      integration_type: structured_tool
+      async_execution: true
+    crewai:
+      enabled: true
+      integration_type: specialist
+      role: infrastructure_expert
+    openai:
+      enabled: true
+      integration_type: assistant
+      function_calling: true
+    mcp:
+      enabled: true
+      integration_type: protocol_bridge
+      server_mode: true
+      client_mode: true
+  compliance_frameworks:
+    - name: ISO_42001
+      level: implemented
+      audit_ready: true
+    - name: NIST_AI_RMF
+      level: implemented
+      maturity_level: 3
+  discovery:
+    uadp_enabled: true
+    hierarchical_discovery: true
+    capability_inference: true
+  performance:
+    latency:
+      health_check: <50ms
+      capabilities: <100ms
+    throughput:
+      requests_per_second: 100
+    availability:
+      uptime_target: 99.5
+  security:
+    authentication:
+      - api_key
+      - oauth2
+    authorization: rbac
+    encryption:
+      at_rest: aes_256
+      in_transit: tls_1_3
+  endpoints:
+    health: /health
+    capabilities: /capabilities
+    discover: /discover
