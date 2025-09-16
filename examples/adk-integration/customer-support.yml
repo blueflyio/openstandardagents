@@ -1,0 +1,264 @@
+# Example: ADK Customer Support System with OSSA Agents
+# Demonstrates Coordinator and Dispatcher patterns
+
+apiVersion: "@ossa/v0.1.9"
+kind: Workflow
+metadata:
+  name: customer-support-system
+  description: "Multi-agent customer support with intelligent routing"
+  
+spec:
+  # ADK Coordinator pattern for complex support tasks
+  adk_pattern: coordinator
+  
+  agents:
+    # Coordinator agent
+    - name: support-coordinator
+      type: LlmAgent
+      ossa_type: orchestrator
+      model: gemini-2.0-pro
+      instruction: |
+        Analyze customer request and determine:
+        1. Request type (billing, technical, product, complaint)
+        2. Urgency level (low, medium, high, critical)
+        3. Required specialists
+        4. Delegation strategy
+        
+        Route to appropriate agents based on analysis.
+        Store routing decision in {routing_plan}
+      output_key: routing_plan
+      capabilities:
+        - request-analysis
+        - intent-classification
+        - routing-decision
+        
+    # Specialist agents
+    - name: billing-specialist
+      type: LlmAgent
+      ossa_type: worker
+      instruction: |
+        Handle billing-related inquiries:
+        - Payment issues
+        - Subscription changes
+        - Refund requests
+        - Invoice questions
+        
+        Use {routing_plan} context
+        Store response in {billing_response}
+      output_key: billing_response
+      tools:
+        - database_query
+        - api_call
+      capabilities:
+        - billing-operations
+        - payment-processing
+        
+    - name: technical-specialist
+      type: LlmAgent
+      ossa_type: worker
+      instruction: |
+        Resolve technical issues:
+        - Bug reports
+        - Feature questions
+        - Integration problems
+        - Performance issues
+        
+        Reference {routing_plan} for context
+        Store solution in {technical_response}
+      output_key: technical_response
+      tools:
+        - api_call
+        - database_query
+      capabilities:
+        - technical-support
+        - troubleshooting
+        
+    - name: product-specialist
+      type: LlmAgent
+      ossa_type: worker
+      instruction: |
+        Answer product questions:
+        - Feature explanations
+        - Best practices
+        - Use case guidance
+        - Product recommendations
+        
+        Use {routing_plan} guidance
+        Store answer in {product_response}
+      output_key: product_response
+      capabilities:
+        - product-knowledge
+        - recommendation-engine
+        
+    - name: escalation-handler
+      type: CustomAgent
+      custom_type: specialized
+      ossa_type: worker
+      instruction: |
+        Handle escalated issues:
+        - Complaints
+        - Complex problems
+        - VIP customers
+        - Legal matters
+        
+        Review all previous responses
+        Store resolution in {escalation_response}
+      output_key: escalation_response
+      capabilities:
+        - escalation-management
+        - conflict-resolution
+        
+    # Response aggregator
+    - name: response-synthesizer
+      type: WorkflowAgent
+      workflow_type: parallel
+      ossa_type: orchestrator
+      instruction: |
+        Synthesize all specialist responses:
+        - {billing_response}
+        - {technical_response}
+        - {product_response}
+        - {escalation_response}
+        
+        Create unified customer response
+        Store in {final_response}
+      output_key: final_response
+      sub_agents:
+        - billing-specialist
+        - technical-specialist
+        - product-specialist
+        - escalation-handler
+        
+  # Dispatcher configuration for routing
+  dispatcher_config:
+    routing_rules:
+      - pattern: "billing|payment|invoice|refund"
+        agent: billing-specialist
+        priority: high
+        
+      - pattern: "bug|error|crash|slow|broken"
+        agent: technical-specialist
+        priority: critical
+        
+      - pattern: "how to|feature|can I|what is"
+        agent: product-specialist
+        priority: medium
+        
+      - pattern: "complaint|angry|frustrated|cancel"
+        agent: escalation-handler
+        priority: critical
+        
+    fallback_agent: support-coordinator
+    
+    # LLM-driven routing when rules don't match
+    llm_routing:
+      enabled: true
+      model: gemini-2.0-flash
+      instruction: |
+        Analyze request and select best agent:
+        - Consider request content
+        - Check customer history
+        - Evaluate urgency
+        - Match agent capabilities
+        
+  # Coordination strategies
+  coordination:
+    strategy: adaptive  # Changes based on request type
+    
+    patterns:
+      simple_request:
+        pattern: dispatcher
+        condition: "session.state.routing_plan.complexity === 'simple'"
+        
+      complex_request:
+        pattern: coordinator
+        condition: "session.state.routing_plan.complexity === 'complex'"
+        
+      multi_issue:
+        pattern: parallel
+        condition: "session.state.routing_plan.issue_count > 1"
+        
+      escalated:
+        pattern: sequential
+        condition: "session.state.routing_plan.requires_escalation === true"
+        
+  # ADK communication patterns
+  communication:
+    # Shared session state
+    shared_state:
+      - customer_id
+      - request_history
+      - routing_plan
+      - urgency_level
+      - sentiment_score
+      
+    # Agent handoff
+    handoff_config:
+      preserve_context: true
+      transfer_method: state_based  # Via session.state
+      handoff_message: |
+        Transferring to {target_agent} because:
+        {handoff_reason}
+        
+    # Callback mechanisms
+    callbacks:
+      on_routing_complete: log_routing_decision
+      on_response_ready: notify_customer
+      on_escalation: alert_supervisor
+      
+  # Performance and optimization
+  adk_config:
+    performance:
+      # Agent pooling
+      agent_pool:
+        min_instances: 1
+        max_instances: 10
+        scale_based_on: request_volume
+        
+      # Response caching
+      cache:
+        enabled: true
+        ttl: 3600
+        cache_key: "request_hash"
+        
+    # Quality assurance
+    quality:
+      # Response validation
+      validate_responses: true
+      min_confidence: 0.8
+      
+      # Sentiment checking
+      check_sentiment: true
+      min_sentiment_score: 0.6
+      
+    # Metrics and monitoring
+    metrics:
+      - response_time
+      - customer_satisfaction
+      - resolution_rate
+      - escalation_rate
+      - agent_utilization
+      
+# Example usage with different patterns:
+#
+# 1. Simple request (Dispatcher):
+# const result = await adapter.executeOrchestration(
+#   'dispatcher',
+#   ['billing-specialist', 'technical-specialist', 'product-specialist'],
+#   { request: "How do I update my payment method?" },
+#   { router: customRouter }
+# );
+#
+# 2. Complex request (Coordinator):
+# const result = await adapter.executeOrchestration(
+#   'coordinator',
+#   ['support-coordinator', 'billing-specialist', 'technical-specialist', 'response-synthesizer'],
+#   { request: "I have billing issues and the app keeps crashing" }
+# );
+#
+# 3. Escalated issue (Sequential with conditions):
+# const result = await adapter.executeOrchestration(
+#   'sequential',
+#   ['support-coordinator', 'technical-specialist', 'escalation-handler', 'response-synthesizer'],
+#   { request: "This is the 5th time I'm reporting this critical bug!" }
+# );

@@ -1,0 +1,174 @@
+# Example: ADK Data Processing Pipeline with OSSA Agents
+# Demonstrates LoopAgent and ConditionalAgent patterns
+
+apiVersion: "@ossa/v0.1.9"
+kind: Workflow
+metadata:
+  name: data-processing-pipeline
+  description: "Iterative data processing with conditional branches"
+  
+spec:
+  # ADK Loop pattern for batch processing
+  adk_pattern: loop
+  
+  agents:
+    - name: data-ingester
+      type: LlmAgent
+      ossa_type: worker
+      capabilities:
+        - data-ingestion
+        - format-conversion
+      instruction: |
+        Ingest data batch from source
+        Convert to standard format
+        Store in {raw_data}
+        Set {has_more_data} flag
+      output_key: raw_data
+      tools:
+        - api_call
+        - file_operation
+        
+    - name: data-validator
+      type: LlmAgent
+      ossa_type: critic
+      capabilities:
+        - validation
+        - schema-checking
+      instruction: |
+        Validate {raw_data} against schema
+        Check data quality metrics
+        Store validation results in {validation_status}
+        Set {is_valid} flag
+      output_key: validation_status
+      
+    - name: data-transformer
+      type: WorkflowAgent
+      workflow_type: conditional
+      ossa_type: orchestrator
+      instruction: |
+        Transform data based on {validation_status}:
+        - If valid: apply standard transformations
+        - If invalid: apply error corrections
+        Store in {transformed_data}
+      output_key: transformed_data
+      sub_agents:
+        - name: standard-transformer
+          condition: "session.state.is_valid === true"
+        - name: error-corrector
+          condition: "session.state.is_valid === false"
+          
+    - name: data-enricher
+      type: CustomAgent
+      custom_type: specialized
+      ossa_type: worker
+      capabilities:
+        - data-enrichment
+        - ml-inference
+      instruction: |
+        Enrich {transformed_data} with:
+        - External API data
+        - ML model predictions
+        - Calculated metrics
+        Store in {enriched_data}
+      output_key: enriched_data
+      
+    - name: data-loader
+      type: LlmAgent
+      ossa_type: worker
+      capabilities:
+        - database-operations
+        - data-persistence
+      instruction: |
+        Load {enriched_data} to target system
+        Update {batch_counter}
+        Log operation in {load_status}
+      output_key: load_status
+      tools:
+        - database_query
+        
+  # Loop configuration
+  execution:
+    loop_config:
+      # Continue while more data exists
+      condition: "session.state.has_more_data === true"
+      max_iterations: 100
+      batch_size: 1000
+      
+      # Break conditions
+      break_conditions:
+        - "session.state.error_count > 5"
+        - "session.state.batch_counter >= session.state.total_batches"
+      
+    # Conditional branches
+    conditional_config:
+      data-validator:
+        skip_if: "session.state.skip_validation === true"
+        
+      data-enricher:
+        execute_if: "session.state.validation_status.quality_score > 0.8"
+        
+      error-corrector:
+        execute_if: |
+          session.state.validation_status.errors.length > 0 &&
+          session.state.validation_status.errors.some(e => e.severity === 'critical')
+          
+    # Parallel processing for sub-workflows
+    parallel_config:
+      enabled: true
+      max_workers: 5
+      distribute_by: "session.state.raw_data.partition_key"
+      
+  # ADK state management
+  adk_config:
+    state:
+      # Persistent state across iterations
+      persistent_keys:
+        - batch_counter
+        - total_processed
+        - error_count
+        - processing_metrics
+        
+      # Temporary state (cleared each iteration)
+      temp_keys:
+        - raw_data
+        - validation_status
+        - transformed_data
+        - enriched_data
+        
+    # Performance optimization
+    optimization:
+      cache_transformations: true
+      reuse_connections: true
+      batch_database_writes: true
+      
+    # Error recovery
+    error_recovery:
+      checkpoint_frequency: 10  # Save state every 10 iterations
+      resume_on_failure: true
+      dead_letter_queue: true
+      
+    # Monitoring
+    monitoring:
+      metrics:
+        - batches_processed
+        - records_transformed
+        - validation_failures
+        - enrichment_success_rate
+      alerts:
+        - condition: "metrics.validation_failures > 10"
+          severity: warning
+        - condition: "metrics.enrichment_success_rate < 0.95"
+          severity: critical
+          
+# Example usage:
+#
+# const result = await adapter.executeOrchestration(
+#   'loop',
+#   ['data-ingester', 'data-validator', 'data-transformer', 'data-enricher', 'data-loader'],
+#   { source: 's3://data-bucket/input/' },
+#   {
+#     maxIterations: 100,
+#     condition: (state) => state.has_more_data,
+#     breakCondition: (result, state) => state.error_count > 5
+#   }
+# );
