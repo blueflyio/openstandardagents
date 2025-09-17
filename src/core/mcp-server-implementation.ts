@@ -1200,4 +1200,26 @@ class ${this.toPascalCase(name)}Agent extends OrchestratorAgent {
     
     this.agents = new Map();
     this.taskQueue = [];
-    this.activeTask
+    this.activeTasks = new Set();
+  }
+
+  async start() {
+    await super.start();
+    console.log('${name} orchestrator agent started');
+  }
+
+  async stop() {
+    await super.stop();
+    console.log('${name} orchestrator agent stopped');
+  }
+}
+
+// Create and start the agent
+const agent = new ${this.toPascalCase(name)}Agent();
+agent.start();
+
+module.exports = agent;
+`;
+  }}
+
+export default OSSAMCPServer;
