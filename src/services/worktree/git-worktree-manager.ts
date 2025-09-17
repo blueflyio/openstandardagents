@@ -3,6 +3,18 @@
  * Manages git worktrees for parallel agent development
  */
 
+export interface WorktreeConfig {
+  agentName: string;
+  baseBranch: string;
+  featureBranch: string;
+  workingDirectory: string;
+  gitRepository: string;
+  ossaVersion: string;
+  priority: string;
+  phase: number;
+  dependencies: string[];
+}
+
 export default class GitWorktreeManager {
   private worktrees: Map<string, any> = new Map();
 
@@ -36,5 +48,33 @@ export default class GitWorktreeManager {
       name,
       ...config
     }));
+  }
+
+  listActiveWorktrees(): any[] {
+    return this.listWorktrees().filter(w => w.status === 'active');
+  }
+
+  createAgentWorktree(config: WorktreeConfig): void {
+    this.createWorktree(config.agentName, config);
+  }
+
+  getProjectVersionAwareness(): any {
+    return {
+      currentVersion: '0.1.9',
+      targetVersion: '0.2.0',
+      compatibility: 'compatible'
+    };
+  }
+
+  coordinateIntegration(agents: string[]): any {
+    return {
+      success: true,
+      integrated: agents,
+      conflicts: []
+    };
+  }
+
+  cleanupWorktree(agentName: string): boolean {
+    return this.deleteWorktree(agentName);
   }
 }

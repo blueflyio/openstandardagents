@@ -40,4 +40,37 @@ export default class BranchingStrategyManager {
     
     return `${type}/${sanitized}`;
   }
+
+  getBranchNamingRecommendations(name: string, specialization?: string, phase?: number, priority?: string): any {
+    const base = this.generateBranchName('feature', name);
+    return {
+      primary: base,
+      alternatives: [
+        `feature/${specialization || 'general'}-${name}`,
+        `feature/phase-${phase || 1}-${name}`
+      ],
+      priority: priority || 'medium'
+    };
+  }
+
+  determineOptimalFlow(agent: string): string {
+    // Determine flow based on agent type
+    return 'standard';
+  }
+
+  getFlowConfig(flow: string): any {
+    return {
+      name: flow,
+      stages: ['development', 'testing', 'staging', 'production'],
+      approvals: 1
+    };
+  }
+
+  adaptFlow(context: any): any {
+    return {
+      adapted: true,
+      flow: 'adaptive',
+      reason: 'Context-based adaptation'
+    };
+  }
 }

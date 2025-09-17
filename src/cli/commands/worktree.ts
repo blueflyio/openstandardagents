@@ -303,7 +303,7 @@ function createWorktreeCommand(): Command {
         console.log(`   # Begin agent development...`);
         
       } catch (error) {
-        console.error(chalk.red('❌ Failed to create worktree:'), error.message);
+        console.error(chalk.red('❌ Failed to create worktree:'), (error as Error).message);
         process.exit(1);
       }
     });
@@ -346,7 +346,7 @@ function listWorktreesCommand(): Command {
           .sort((a, b) => parseInt(a) - parseInt(b))
           .forEach(phase => {
             console.log(chalk.cyan(`Phase ${phase}:`));
-            byPhase[parseInt(phase)].forEach(worktree => {
+            byPhase[parseInt(phase)].forEach((worktree: any) => {
               const priorityColor = {
                 critical: chalk.red,
                 high: chalk.yellow,
@@ -363,7 +363,7 @@ function listWorktreesCommand(): Command {
           });
 
       } catch (error) {
-        console.error(chalk.red('❌ Failed to list worktrees:'), error.message);
+        console.error(chalk.red('❌ Failed to list worktrees:'), (error as Error).message);
       }
     });
 }
@@ -384,7 +384,7 @@ function syncWorktreeCommand(): Command {
         console.log(chalk.gray('🌿 Branch:'), chalk.white(branchAwareness?.currentBranch));
         
       } catch (error) {
-        console.error(chalk.red('❌ Failed to sync worktree:'), error.message);
+        console.error(chalk.red('❌ Failed to sync worktree:'), (error as Error).message);
         process.exit(1);
       }
     });
@@ -412,7 +412,7 @@ function integrateCommand(): Command {
         console.log(`   # Create merge request to v0.1.9-dev`);
         
       } catch (error) {
-        console.error(chalk.red('❌ Failed to coordinate integration:'), error.message);
+        console.error(chalk.red('❌ Failed to coordinate integration:'), (error as Error).message);
         process.exit(1);
       }
     });
@@ -436,7 +436,7 @@ function cleanupCommand(): Command {
         }
         
       } catch (error) {
-        console.error(chalk.red('❌ Failed to cleanup worktree:'), error.message);
+        console.error(chalk.red('❌ Failed to cleanup worktree:'), (error as Error).message);
         process.exit(1);
       }
     });
@@ -517,7 +517,7 @@ function branchCommand(): Command {
       
       if (recommendations.alternatives.length > 0) {
         console.log(chalk.gray('\n🔄 Alternatives:'));
-        recommendations.alternatives.forEach((alt, index) => {
+        recommendations.alternatives.forEach((alt: any, index: number) => {
           console.log(chalk.gray(`  ${index + 1}.`), chalk.white(alt));
         });
       }
@@ -577,7 +577,7 @@ function statusCommand(): Command {
         console.log(`   ossa worktree cleanup ${agent}   # Clean up when done`);
 
       } catch (error) {
-        console.error(chalk.red('❌ Failed to get status:'), error.message);
+        console.error(chalk.red('❌ Failed to get status:'), (error as Error).message);
       }
     });
 }
