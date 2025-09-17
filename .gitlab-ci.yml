@@ -138,10 +138,9 @@ test:mock-server:
     - __REBUILD
     - feature/*
 
-# OSSA specification release job
-release:ossa-spec:
-  stage: release
-  needs: ["release:production"]
+# OSSA specification security check
+security:ossa-spec:
+  stage: security
   image: node:20
   script:
     - echo "🔒 Running security scans"
