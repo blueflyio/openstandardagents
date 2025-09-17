@@ -3,8 +3,8 @@
  * Implements SequentialAgent, LoopAgent, ConditionalAgent patterns
  */
 
-import { ADKAgent } from '../agents';
-import { ADKSession, sessionManager } from '../state';
+import { ADKAgent } from '../agents/index.js';
+import { ADKSession, sessionManager } from '../state/index.js';
 
 export type OrchestrationPattern = 'sequential' | 'loop' | 'conditional' | 'parallel' | 'coordinator' | 'dispatcher';
 

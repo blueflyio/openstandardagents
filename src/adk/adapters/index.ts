@@ -3,14 +3,14 @@
  * Bridges OSSA components with ADK patterns
  */
 
-import { AgentManifest } from '../../types';
-import { ADKAgent, OSSAToADKMapper } from '../agents';
-import { OSSALlmAgent } from '../agents/llm-agent';
-import { OSSAWorkflowAgent } from '../agents/workflow-agent';
-import { OSSACustomAgent } from '../agents/custom-agent';
-import { sessionManager, ADKSession } from '../state';
-import { toolRegistry } from '../tools';
-import { orchestrationEngine, OrchestrationPattern } from '../orchestration';
+import { AgentManifest } from '../../types/index.js';
+import { ADKAgent, OSSAToADKMapper } from '../agents/index.js';
+import { OSSALlmAgent } from '../agents/llm-agent.js';
+import { OSSAWorkflowAgent } from '../agents/workflow-agent.js';
+import { OSSACustomAgent } from '../agents/custom-agent.js';
+import { sessionManager, ADKSession } from '../state/index.js';
+import { toolRegistry } from '../tools/index.js';
+import { orchestrationEngine, OrchestrationPattern } from '../orchestration/index.js';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as yaml from 'yaml';

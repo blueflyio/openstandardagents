@@ -3,7 +3,7 @@
  * Maps OSSA capabilities to ADK tools and AgentTools
  */
 
-import { ADKAgent } from '../agents';
+import { ADKAgent } from '../agents/index.js';
 
 export interface ADKTool {
   name: string;
