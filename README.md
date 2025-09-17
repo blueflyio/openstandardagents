@@ -1,308 +1,186 @@
 # OSSA - Open Standards for Scalable Agents
 
-[![Version](https://img.shields.io/npm/v/@ossa/specification)](https://www.npmjs.com/package/@ossa/specification)
-[![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![OpenAPI](https://img.shields.io/badge/OpenAPI-3.1-orange.svg)](src/api/)
+[![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
 ## Overview
 
-OSSA (Open Standards for Scalable Agents) is a comprehensive specification for building interoperable, scalable AI agent systems. It provides standardized protocols, schemas, and patterns that enable agents to discover, communicate, and orchestrate seamlessly across different frameworks and platforms.
+OSSA (Open Standards for Scalable Agents) is a comprehensive specification standard for building interoperable, scalable AI agent systems. It provides standardized protocols, schemas, and patterns that enable agents to discover, communicate, and orchestrate seamlessly across different frameworks and platforms.
 
-**Current Version:** 0.1.9
+**Current Version:** 0.1.9  
+**Status:** Specification Standard  
+**Implementation:** Available in [agent-buildkit](https://gitlab.bluefly.io/llm/agent_buildkit)
 
-## Key Features
+## What OSSA Provides
 
-- **Universal Agent Discovery**: Standardized capability-based discovery mechanism
-- **Cross-Framework Compatibility**: Works with LangChain, CrewAI, AutoGen, and custom implementations  
-- **Production-Ready Orchestration**: Enterprise-grade patterns for scaling agent deployments
-- **Compliance Framework**: Built-in support for AI governance and regulatory requirements
-- **OpenAPI Integration**: RESTful APIs with comprehensive specification support
+### ✅ Core Specifications
+- **OpenAPI 3.1 Schemas**: Complete API specifications in `src/api/`
+- **Agent Manifest Schema**: JSON Schema for agent definitions
+- **Registry Protocol**: Standardized agent discovery and registration
+- **Orchestration Patterns**: Workflow and coordination specifications
+- **Compliance Framework**: Governance and security standards
 
-## Agent Types
+### ✅ Agent Registry
+The `.agents/` directory contains 50+ pre-defined agent specifications including:
+- **Workers**: Data processing, API integration, security scanning
+- **Orchestrators**: Workflow management, resource allocation  
+- **Critics**: Code review, quality assessment, compliance checking
+- **Monitors**: System monitoring, performance tracking
+- **Specialists**: Domain-specific agents (ML, DevOps, Security)
 
-| Type | Purpose | Key Responsibilities |
-|------|---------|---------------------|
-| **Worker** | Task Execution | API calls, data processing, tool invocation |
-| **Orchestrator** | Coordination | Workflow management, resource allocation, scheduling |
-| **Critic** | Quality Control | Output validation, compliance checking, evaluation |
-| **Monitor** | Observability | Metrics collection, performance tracking, alerting |
-| **Governor** | Policy Enforcement | Security policies, access control, governance |
-
-## Installation
-
-### Prerequisites
-
-- Node.js >= 20.0.0
-- npm >= 10.0.0
-- Git >= 2.40.0
-
-### Install Package
-
-```bash
-npm install @ossa/specification
-```
-
-### Verify Installation
-
-```bash
-npx ossa --version
-# Expected output: 0.1.9
-```
-
-## Quick Start
-
-### 1. Initialize OSSA Project
-
-```bash
-# Create new OSSA project
-npx ossa init my-agent-project
-cd my-agent-project
-```
-
-### 2. Create an Agent
-
-```bash
-# Generate a new worker agent
-npx ossa create agent --name data-processor --type worker
-
-# Generate with specific capabilities
-npx ossa create agent --name api-gateway --type orchestrator --capabilities "routing,load-balancing"
-```
-
-### 3. Validate Configuration
-
-```bash
-# Validate agent manifests
-npx ossa validate
-
-# Run compliance checks
-npx ossa compliance check
-```
-
-### 4. Start Development Server
-
-```bash
-# Start local orchestrator
-npx ossa start
-
-# View agent status
-npx ossa status
-```
+### ✅ Development Tools
+- **TypeScript Types**: Generated from OpenAPI specifications
+- **CLI Commands**: Agent management and validation tools
+- **Docker Support**: MCP server containerization
+- **Validation Tools**: Schema and compliance checking
 
 ## Project Structure
 
 ```
-my-agent-project/
-├── .agents/                    # Agent definitions
-│   └── {agent-name}/
-│       ├── agent.yml          # OSSA manifest
-│       ├── openapi.yaml       # API specification
-│       └── README.md          # Documentation
-├── src/                       # Source code
-├── tests/                     # Test files
-├── package.json              # Project configuration
-└── ossa.config.js            # OSSA configuration
+ossa/
+├── .agents/                    # 50+ Agent Specifications
+│   ├── workers/               # Task execution agents
+│   ├── orchestrators/         # Coordination agents  
+│   ├── critics/               # Quality control agents
+│   ├── monitors/              # Observability agents
+│   └── registry.yml           # Agent registry
+├── src/
+│   ├── api/                   # OpenAPI 3.1 Specifications
+│   │   ├── specification.openapi.yml
+│   │   ├── agent-manifest.schema.json
+│   │   └── orchestration.openapi.yml
+│   ├── mcp/                   # MCP Server Implementation
+│   ├── cli/                   # Command Line Tools
+│   ├── core/                  # Core orchestration logic
+│   └── types/                 # TypeScript definitions
+├── docs/                      # Comprehensive documentation
+└── examples/                  # Integration examples
 ```
 
-## Agent Manifest Example
+## Installation & Usage
 
-```yaml
-apiVersion: "@ossa/v0.1.9"
-kind: Agent
-metadata:
-  name: data-processor
-  version: "1.0.0"
-  description: "Processes data with validation and transformation"
-spec:
-  type: worker
-  capabilities:
-    - data-processing
-    - validation
-    - transformation
-  runtime:
-    memory: "512Mi"
-    cpu: "0.5"
-  dependencies:
-    agents:
-      - name: validator-service
-        version: ">=1.0.0"
-```
+### Prerequisites
+- Node.js >= 18.0.0
+- TypeScript >= 5.3.0
 
-## Configuration
-
-### ossa.config.js
-
-```javascript
-module.exports = {
-  version: "0.1.9",
-  orchestration: {
-    maxConcurrentAgents: 10,
-    strategy: "hybrid"
-  },
-  compliance: {
-    enabled: true,
-    standards: ["iso-42001", "nist-ai-rmf"]
-  },
-  monitoring: {
-    metricsInterval: 30000,
-    healthCheckTimeout: 5000
-  }
-};
-```
-
-## API Reference
-
-OSSA provides RESTful APIs for agent management:
-
-### Core Endpoints
-
+### Install Dependencies
 ```bash
-# Agent Management
-GET    /api/v1/agents              # List agents
-POST   /api/v1/agents              # Create agent
-GET    /api/v1/agents/{id}         # Get agent details
-PUT    /api/v1/agents/{id}         # Update agent
-DELETE /api/v1/agents/{id}         # Remove agent
-
-# Orchestration
-POST   /api/v1/workflows           # Create workflow
-GET    /api/v1/workflows/{id}      # Get workflow status
-POST   /api/v1/workflows/{id}/run  # Execute workflow
-
-# Monitoring
-GET    /api/v1/health              # System health
-GET    /api/v1/metrics             # Performance metrics
+npm install
 ```
 
-For detailed API documentation, see the [OpenAPI specification](src/api/specification.openapi.yml).
-
-## Testing
-
+### Build Project
 ```bash
-# Run unit tests
+npm run build
+```
+
+### Validate Specifications
+```bash
+npm run api:validate
+```
+
+### Run Tests
+```bash
 npm test
-
-# Run integration tests
-npm run test:integration
-
-# Generate coverage report
-npm run test:coverage
-
-# Validate OpenAPI specs
-npm run validate:api
 ```
 
-## Development Workflow
+## API Specifications
 
-### Using Git Worktrees
+OSSA provides comprehensive OpenAPI 3.1 specifications:
 
-OSSA supports parallel development using git worktrees:
+### Core APIs
+- `specification.openapi.yml` - Main OSSA API
+- `orchestration.openapi.yml` - Workflow orchestration
+- `agent-manifest.schema.json` - Agent definition schema
+
+### Specialized APIs
+- `acdl-specification.yml` - Agent Communication Definition Language
+- `voice-agent-specification.yml` - Voice agent protocols
+- `mcp-infrastructure.openapi.yml` - MCP server specifications
+
+## Agent Types
+
+| Type | Purpose | Examples in `.agents/` |
+|------|---------|------------------------|
+| **Worker** | Task Execution | `rest-api-implementer`, `security-scanner`, `audit-logger` |
+| **Orchestrator** | Coordination | `kubernetes-orchestrator`, `mlops-pipeline-architect` |
+| **Critic** | Quality Control | `code-reviewer`, `compliance-auditor` |
+| **Monitor** | Observability | `system-monitor`, `prometheus-metrics-specialist` |
+
+## MCP Server
+
+OSSA includes an MCP (Model Context Protocol) server implementation:
 
 ```bash
-# Create worktree for agent development
-npx ossa worktree create --agent data-processor --priority high
+# Start MCP server
+node src/mcp/simple-server.ts
 
-# View flow status
-npx ossa worktree flow status
-
-# Sync and integrate changes
-npx ossa worktree sync data-processor
-npx ossa worktree integrate data-processor
+# Or using Docker
+docker-compose up ossa-mcp
 ```
 
-### Branching Strategy
+**Available on ports:**
+- 4000: HTTP/REST API
+- 4001: WebSocket transport  
+- 4002: SSE transport
 
-- `development` - Main development branch
-- `feature/{description}` - Feature branches
-- `hotfix/{description}` - Critical fixes
-- `release/{version}` - Release preparation
+## Development
 
-## Deployment
-
-### Docker
-
+### Validate All Schemas
 ```bash
-# Build image
-docker build -t my-ossa-project .
-
-# Run container
-docker run -p 8080:8080 my-ossa-project
+npm run validate:specs
 ```
 
-### Kubernetes
-
+### Generate TypeScript Types
 ```bash
-# Apply manifests
-kubectl apply -f k8s/
-
-# Check deployment status
-kubectl get pods -l app=ossa
+npm run api:generate
 ```
 
-## Monitoring & Observability
+### Lint Code
+```bash
+npm run lint
+```
 
-OSSA provides comprehensive monitoring capabilities:
+### Format Code
+```bash
+npm run format
+```
 
-- **Metrics**: Performance, throughput, error rates
-- **Health Checks**: Agent status, dependency checks
-- **Distributed Tracing**: Request flow across agents
-- **Alerting**: Configurable alerts for anomalies
+## Documentation
 
-## Compliance & Governance
+Comprehensive documentation is available in the `docs/` directory:
 
-OSSA supports enterprise compliance requirements:
+- **Architecture**: `docs/05-architecture.md`
+- **API Reference**: `docs/02-api.md`
+- **Best Practices**: `docs/04-best-practices.md`
+- **Deployment**: `docs/06-deployment.md`
+- **Security**: `docs/08-security-compliance.md`
 
-- **ISO 42001**: AI management systems
-- **NIST AI RMF**: AI risk management framework
-- **SOC 2**: Security and availability controls
-- **Custom Policies**: Configurable governance rules
+## Repository
+
+- **GitLab**: [gitlab.bluefly.io/llm/openapi-ai-agents-standard](https://gitlab.bluefly.io/llm/openapi-ai-agents-standard)
+- **Implementation**: [gitlab.bluefly.io/llm/agent_buildkit](https://gitlab.bluefly.io/llm/agent_buildkit)
 
 ## Contributing
 
-We welcome contributions to OSSA! Please see our [Contributing Guide](CONTRIBUTING.md) for details.
-
-### Development Setup
-
-```bash
-# Clone repository
-git clone https://github.com/ossa-org/ossa-specification.git
-cd ossa-specification
-
-# Install dependencies
-npm install
-
-# Run development build
-npm run dev
-
-# Run tests
-npm test
-```
+1. Fork the repository
+2. Create a feature branch: `git checkout -b feature/your-feature`
+3. Commit changes: `git commit -m 'Add feature'`
+4. Push to branch: `git push origin feature/your-feature`
+5. Submit a merge request
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+MIT License - see [LICENSE](LICENSE) file for details.
 
-## Support
+## What We Don't Provide
 
-- **Documentation**: [docs.ossa.dev](https://docs.ossa.dev)
-- **Issues**: [GitHub Issues](https://github.com/ossa-org/ossa-specification/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/ossa-org/ossa-specification/discussions)
-- **Email**: support@ossa.dev
+❌ Running services on ports 4021-4040  
+❌ Production agent deployments  
+❌ Live API endpoints  
+❌ Mock implementations presented as working services  
 
-## Roadmap
-
-### Version 0.2.0 (Planned)
-- Enhanced security framework
-- WebAssembly runtime support
-- Advanced orchestration patterns
-- Multi-cloud deployment templates
-
-### Version 0.3.0 (Future)
-- Federated agent networks
-- Advanced AI compliance tools
-- Enterprise integration patterns
-- Performance optimization suite
+OSSA is a **specification standard** - implementation is available in the agent-buildkit project.
 
 ---
 
-**OSSA** - Enabling seamless AI agent interoperability at scale.
+**OSSA** - Enabling seamless AI agent interoperability through open standards.
