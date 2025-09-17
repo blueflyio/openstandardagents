@@ -32,4 +32,4 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
   CMD node -e "require('http').get('http://localhost:4000/health', (res) => { process.exit(res.statusCode === 200 ? 0 : 1) })"
 
 # Start MCP server
-CMD ["node", "--import", "tsx/esm", "src/mcp/simple-server.ts"]
+CMD ["node", "--import", "tsx/esm", "src/mcp/crud-server.ts"]
