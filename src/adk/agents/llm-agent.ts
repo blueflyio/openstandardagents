@@ -2,7 +2,7 @@
  * ADK LlmAgent implementation for OSSA
  */
 
-import { ADKAgent, ADKAgentConfig } from './index';
+import { ADKAgent, ADKAgentConfig } from './index.js';
 
 export class OSSALlmAgent implements ADKAgent {
   type: 'LlmAgent' = 'LlmAgent';

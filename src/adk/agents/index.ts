@@ -3,7 +3,7 @@
  * Converts OSSA agent types to ADK categories
  */
 
-import { AgentManifest } from '../../types';
+import { AgentManifest } from '../../types/index.js';
 
 export interface ADKAgentConfig {
   name: string;
@@ -153,6 +153,6 @@ Specialized functionality as per OSSA specification.`;
   }
 }
 
-export * from './llm-agent';
-export * from './workflow-agent';
-export * from './custom-agent';
+export * from './llm-agent.js';
+export * from './workflow-agent.js';
+export * from './custom-agent.js';

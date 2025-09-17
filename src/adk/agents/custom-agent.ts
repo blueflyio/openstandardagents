@@ -2,12 +2,15 @@
  * ADK CustomAgent implementation for OSSA
  */
 
-import { ADKAgent, ADKAgentConfig } from './index';
+import { ADKAgent, ADKAgentConfig } from './index.js';
 
 export interface CustomAgentConfig extends ADKAgentConfig {
+  name: string;
+  description?: string;
   custom_type: string;
   capabilities?: string[];
   policies?: any[];
+  output_key?: string;
 }
 
 export class OSSACustomAgent implements ADKAgent {

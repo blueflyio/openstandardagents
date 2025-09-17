@@ -2,7 +2,7 @@
  * ADK WorkflowAgent implementation for OSSA
  */
 
-import { ADKAgent, ADKAgentConfig } from './index';
+import { ADKAgent, ADKAgentConfig } from './index.js';
 
 export type WorkflowType = 'sequential' | 'loop' | 'conditional' | 'parallel';
 
@@ -10,6 +10,7 @@ export interface WorkflowAgentConfig extends ADKAgentConfig {
   workflow_type: WorkflowType;
   max_iterations?: number;
   condition?: (state: any) => boolean;
+  sub_agents?: ADKAgent[];
 }
 
 export class OSSAWorkflowAgent implements ADKAgent {
