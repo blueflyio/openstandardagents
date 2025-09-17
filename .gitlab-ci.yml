@@ -2,12 +2,16 @@
 # TDD RED Phase Configuration - All tests expected to FAIL
 
 stages:
+  - detect
   - validate
-  - test-red
   - build
+  - test
+  - test-red
   - test-agents
+  - changelog
   - security
   - deploy
+  - release
 
 # Temporary: Use local template for testing
 include:
