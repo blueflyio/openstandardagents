@@ -483,7 +483,7 @@ function flowCommand(): Command {
       
       if (recommendation.suggestedActions.length > 0) {
         console.log(chalk.gray('\n📋 Suggested actions:'));
-        recommendation.suggestedActions.forEach(action => {
+        recommendation.suggestedActions.forEach((action: string) => {
           console.log(chalk.gray('  •'), chalk.white(action));
         });
       }

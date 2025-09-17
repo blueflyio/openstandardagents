@@ -3,6 +3,8 @@
  * Manages git worktrees for parallel agent development
  */
 
+import { EventEmitter } from 'events';
+
 export interface WorktreeConfig {
   agentName: string;
   baseBranch: string;
@@ -15,8 +17,12 @@ export interface WorktreeConfig {
   dependencies: string[];
 }
 
-export default class GitWorktreeManager {
+export default class GitWorktreeManager extends EventEmitter {
   private worktrees: Map<string, any> = new Map();
+
+  constructor() {
+    super();
+  }
 
   loadWorktreeConfig(agentName: string): any {
     return this.worktrees.get(agentName) || null;

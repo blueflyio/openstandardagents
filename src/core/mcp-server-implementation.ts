@@ -354,7 +354,7 @@ export class OSSAMCPServer {
       } catch (error) {
         return {
           success: false,
-          error: error.message
+          error: (error as Error).message
         };
       }
     });
@@ -454,7 +454,7 @@ export class OSSAMCPServer {
       };
       
       return {
-        prompt: templates[name] || 'Template not found'
+        prompt: (templates as any)[name] || 'Template not found'
       };
     });
   }
@@ -570,7 +570,7 @@ export class OSSAMCPServer {
       orchestrator: this.getOrchestratorAgentTemplate
     };
 
-    const mainCode = templates[type](name, description);
+    const mainCode = (templates as any)[type](name, description);
     const shutdownCode = this.getShutdownTemplate(name);
 
     await fs.writeFile(path.join(agentPath, 'src', 'index.js'), mainCode);
@@ -1330,7 +1330,7 @@ describe('${name} agent', () => {
       monitor: { interval: 5000, bufferSize: 100 },
       orchestrator: { maxAgents: 10, timeout: 300000 }
     };
-    return configs[type] || {};
+    return (configs as any)[type] || {};
   }
 
   private getDefaultResources(type: string): any {
@@ -1340,7 +1340,7 @@ describe('${name} agent', () => {
       monitor: { cpu: '0.5', memory: '512Mi' },
       orchestrator: { cpu: '2', memory: '4Gi' }
     };
-    return resources[type] || { cpu: '0.5', memory: '512Mi' };
+    return (resources as any)[type] || { cpu: '0.5', memory: '512Mi' };
   }
 
   private getPermissionsFromCapabilities(capabilities: string[]): string[] {
@@ -1353,9 +1353,9 @@ describe('${name} agent', () => {
 
     const permissions = new Set<string>();
     capabilities.forEach(cap => {
-      const mapped = permissionMap[cap];
+      const mapped = (permissionMap as any)[cap];
       if (mapped) {
-        mapped.forEach(p => permissions.add(p));
+        mapped.forEach((p: string) => permissions.add(p));
       }
     });
 
