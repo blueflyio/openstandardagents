@@ -35,6 +35,7 @@
     "coverage",
     "tests",
     "**/*.test.ts",
-    "**/*.spec.ts"
+    "**/*.spec.ts",
+    "src/mcp"
   ]
 }

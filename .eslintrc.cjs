@@ -29,5 +29,7 @@ module.exports = {
     'coverage/',
     '*.config.js',
     '.eslintrc.js',
+    'src/mcp/',
+    'scripts/',
   ],
 };

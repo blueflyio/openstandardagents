@@ -15,7 +15,7 @@
     "api:generate": "openapi-typescript src/api/specification.openapi.yml -o src/types/api.ts",
     "api:validate": "swagger-cli validate src/api/specification.openapi.yml",
     "validate:specs": "npm run api:validate && npm run validate:schemas",
-    "validate:schemas": "ajv compile -s src/api/*.json",
+    "validate:schemas": "node scripts/validate-schemas.cjs",
     "precommit": "npm run lint && npm run test",
     "clean": "rm -rf dist coverage"
   },
