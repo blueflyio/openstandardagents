@@ -6,8 +6,16 @@
  */
 
 import express from 'express';
-import { WebSocketServer } from 'ws';
+import { WebSocketServer, WebSocket } from 'ws';
 import * as http from 'http';
+
+// Type declarations for better TypeScript support
+declare module 'express' {
+  export interface Request {}
+  export interface Response {
+    json: (data: any) => void;
+  }
+}
 
 interface MCPRequest {
   jsonrpc: '2.0';
@@ -28,7 +36,7 @@ interface MCPResponse {
 }
 
 class OSSAMCPServer {
-  private app: express.Application;
+  private app: any; // Express application
   private server: http.Server;
   private wss: WebSocketServer;
   private port: number;
@@ -47,7 +55,7 @@ class OSSAMCPServer {
     this.app.use(express.json());
     
     // Health check
-    this.app.get('/health', (req, res) => {
+    this.app.get('/health', (req: any, res: any) => {
       res.json({
         status: 'healthy',
         version: '0.1.9',
@@ -57,7 +65,7 @@ class OSSAMCPServer {
     });
 
     // MCP capabilities
-    this.app.get('/capabilities', (req, res) => {
+    this.app.get('/capabilities', (req: any, res: any) => {
       res.json({
         capabilities: {
           tools: [
@@ -85,7 +93,7 @@ class OSSAMCPServer {
     });
 
     // MCP over HTTP
-    this.app.post('/mcp', (req, res) => {
+    this.app.post('/mcp', (req: any, res: any) => {
       const request: MCPRequest = req.body;
       const response = this.handleMCPRequest(request);
       res.json(response);
@@ -93,10 +101,10 @@ class OSSAMCPServer {
   }
 
   private setupWebSocket(): void {
-    this.wss.on('connection', (ws) => {
+    (this.wss as any).on('connection', (ws: any) => {
       console.log('[OSSA MCP] WebSocket client connected');
       
-      ws.on('message', (data) => {
+      ws.on('message', (data: any) => {
         try {
           const request: MCPRequest = JSON.parse(data.toString());
           const response = this.handleMCPRequest(request);
