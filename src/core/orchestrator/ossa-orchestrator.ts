@@ -349,7 +349,7 @@ export class OSSAOrchestrator extends OrchestratorPlatform {
 
     const hasValidVersion = /^\d+\.\d+\.\d+/.test(agent.version);
 
-    return hasRequiredCapabilities && hasValidMetadata && hasValidVersion;
+    return Boolean(hasRequiredCapabilities && hasValidMetadata && hasValidVersion);
   }
 
   /**

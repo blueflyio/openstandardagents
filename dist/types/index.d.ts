@@ -12,6 +12,33 @@ export interface Agent {
     metadata: AgentMetadata;
     config: AgentConfig;
 }
+export interface AgentManifest {
+    apiVersion: string;
+    kind: string;
+    metadata: {
+        name: string;
+        version: string;
+        description?: string;
+        author?: string;
+    };
+    spec: {
+        type: string;
+        capabilities?: string[];
+        configuration?: any;
+        dependencies?: {
+            agents?: Array<{
+                name: string;
+                version?: string;
+                optional?: boolean;
+            }>;
+        };
+        resources?: {
+            cpu?: string;
+            memory?: string;
+            gpu?: string;
+        };
+    };
+}
 export declare enum AgentType {
     WORKER = "worker",
     ORCHESTRATOR = "orchestrator",

@@ -201,12 +201,12 @@ export class WorktreeOrchestrator extends EventEmitter {
         });
 
       } catch (error) {
-        console.error(`Failed to deploy agent ${agent.name}:`, error.message);
+        console.error(`Failed to deploy agent ${agent.name}:`, (error as Error).message);
         failed.push(agent.name);
         
         this.emit('agent:deployment-failed', {
           name: agent.name,
-          error: error.message
+          error: (error as Error).message
         });
       }
     }
@@ -488,10 +488,10 @@ export class WorktreeOrchestrator extends EventEmitter {
       });
       
     } catch (error) {
-      console.error('Auto-integration failed:', error.message);
+      console.error('Auto-integration failed:', (error as Error).message);
       this.emit('orchestration:integration-failed', {
         agents: agentNames,
-        error: error.message
+        error: (error as Error).message
       });
     }
   }
@@ -695,7 +695,7 @@ export class WorktreeOrchestrator extends EventEmitter {
   }
 
   // Utility methods
-  private sortAgentsByDependencies(agents: Array<{ name: string; dependencies?: string[] }>): typeof agents {
+  private sortAgentsByDependencies<T extends { name: string; dependencies?: string[] }>(agents: Array<T>): Array<T> {
     const sorted: typeof agents = [];
     const remaining = [...agents];
 

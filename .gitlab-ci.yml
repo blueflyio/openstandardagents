@@ -2,12 +2,16 @@
 # TDD RED Phase Configuration - All tests expected to FAIL
 
 stages:
+  - detect
   - validate
-  - test-red
   - build
+  - test
+  - test-red
   - test-agents
+  - changelog
   - security
   - deploy
+  - release
 
 # Temporary: Use local template for testing
 include:
@@ -17,6 +21,7 @@ include:
 variables:
   NODE_VERSION: "20"
   OSSA_VERSION: "0.1.9-alpha.1"
+  PROJECT_VERSION: "0.1.9"
   MOCK_MODE: "true"
   
 # TDD Phase 1: All tests MUST fail (RED)
@@ -28,25 +33,13 @@ test:red-phase:
     - npm ci
     - npm run build || true  # Allow build to fail
     - npm run api:validate || echo "✅ API validation expected to pass"
-    - |
-      # Run tests and expect failures
-      echo "Running ACDL tests (expecting failures)..."
-      npm run test:acdl 2>&1 | tee test-output.log || true
-      
-      # Count failures
-      FAILED_TESTS=$(grep -c "FAIL" test-output.log || echo "0")
-      TOTAL_TESTS=$(grep -c "✓\|✗\|×" test-output.log || echo "1")
-      
-      echo "Failed tests: $FAILED_TESTS"
-      echo "Total tests: $TOTAL_TESTS"
-      
-      # In RED phase, we WANT failures
-      if [ "$FAILED_TESTS" -eq "0" ]; then
-        echo "❌ ERROR: Tests are passing but should fail in TDD RED phase!"
-        exit 1
-      else
-        echo "✅ SUCCESS: $FAILED_TESTS tests failing as expected in RED phase"
-      fi
+    - "echo 'Running ACDL tests (expecting failures)...'"
+    - "npm run test:acdl 2>&1 | tee test-output.log || true"
+    - "FAILED_TESTS=$(grep -c 'FAIL' test-output.log || echo '0')"
+    - "TOTAL_TESTS=$(grep -c '✓\\|✗\\|×' test-output.log || echo '1')"
+    - "echo 'Failed tests: $FAILED_TESTS'"
+    - "echo 'Total tests: $TOTAL_TESTS'"
+    - "if [ \"$FAILED_TESTS\" -eq \"0\" ]; then echo '❌ ERROR: Tests are passing but should fail in TDD RED phase!' && exit 1; else echo '✅ SUCCESS: $FAILED_TESTS tests failing as expected in RED phase'; fi"
     - npm run test:coverage || echo "Coverage collection may fail in RED phase"
   coverage: '/Lines\s*:\s*(\d+\.\d+)%/'
   artifacts:
@@ -99,36 +92,17 @@ test:mock-server:
     - echo "🖥️ Testing ACDL Mock Server"
     - npm ci
     - npm run build || echo "Build may fail in RED phase"
-    - |
-      # Start mock server in background
-      npm run mock:server:bg
-      sleep 5
-      
-      # Test server health
-      curl -f http://localhost:3001/health || {
-        echo "❌ Mock server health check failed"
-        exit 1
-      }
-      
-      echo "✅ Mock server running"
-    - |
-      # Test agent spawning commands
-      echo "🚀 Testing agent spawning..."
-      
-      # Test TDD development agent spawn
-      npm run agents:spawn:tdd || echo "Agent spawning expected to fail without implementation"
-      
-      # Test validation agent spawn
-      npm run agents:spawn:validation || echo "Validation spawning expected to fail"
-      
-      # Test workload check
-      npm run agents:workload || echo "Workload check may fail without agents"
-      
-      echo "Agent spawn tests completed"
-    - |
-      # Run tests against mock server
-      echo "🧪 Running tests against mock server"
-      npm run test:with-mock || echo "Tests expected to fail in RED phase"
+    - "npm run mock:server:bg"
+    - "sleep 5"
+    - "curl -f http://localhost:3001/health || (echo '❌ Mock server health check failed' && exit 1)"
+    - "echo '✅ Mock server running'"
+    - "echo '🚀 Testing agent spawning...'"
+    - "npm run agents:spawn:tdd || echo 'Agent spawning expected to fail without implementation'"
+    - "npm run agents:spawn:validation || echo 'Validation spawning expected to fail'"
+    - "npm run agents:workload || echo 'Workload check may fail without agents'"
+    - "echo 'Agent spawn tests completed'"
+    - "echo '🧪 Running tests against mock server'"
+    - "npm run test:with-mock || echo 'Tests expected to fail in RED phase'"
   artifacts:
     paths:
       - test-output.log
@@ -138,22 +112,15 @@ test:mock-server:
     - __REBUILD
     - feature/*
 
-# OSSA specification release job
-release:ossa-spec:
-  stage: release
-  needs: ["release:production"]
+# OSSA specification security check
+security:ossa-spec:
+  stage: security
   image: node:20
   script:
     - echo "🔒 Running security scans"
     - npm ci
     - npm audit --audit-level=moderate || echo "Security issues found - will be addressed in implementation phase"
-    - |
-      # Check for hardcoded secrets in test files
-      if grep -r "password\|secret\|key\|token" test/ --include="*.ts" --include="*.js" | grep -v "mock\|test\|example"; then
-        echo "⚠️ Potential secrets in test files"
-      else
-        echo "✅ No secrets found in test files"
-      fi
+    - "if grep -r 'password\\|secret\\|key\\|token' test/ --include='*.ts' --include='*.js' | grep -v 'mock\\|test\\|example'; then echo '⚠️ Potential secrets in test files'; else echo '✅ No secrets found in test files'; fi"
   allow_failure: true
   only:
     - __REBUILD
@@ -210,28 +177,15 @@ test:agent-integration:
     - echo "🤖 Testing agent integration patterns"
     - npm ci
     - npm run build || true
-    - |
-      # Start mock server
-      npm run mock:server:bg
-      sleep 3
-      
-      # Test 360° feedback loop agents
-      echo "Testing orchestrator agents..."
-      curl -X POST http://localhost:3001/api/v1/acdl/discover \
-        -H "Content-Type: application/json" \
-        -d '{"agentType": "orchestrator"}' || echo "Expected to work with mock"
-      
-      echo "Testing worker agents..."
-      curl -X POST http://localhost:3001/api/v1/acdl/discover \
-        -H "Content-Type: application/json" \
-        -d '{"agentType": "worker", "domains": ["api-design"]}' || echo "Expected to work with mock"
-      
-      echo "Testing critic agents..."
-      curl -X POST http://localhost:3001/api/v1/acdl/discover \
-        -H "Content-Type: application/json" \
-        -d '{"agentType": "critic", "domains": ["security", "quality"]}' || echo "Expected to work with mock"
-      
-      echo "✅ Agent integration patterns tested"
+    - "npm run mock:server:bg"
+    - "sleep 3"
+    - "echo 'Testing orchestrator agents...'"
+    - "curl -X POST http://localhost:3001/api/v1/acdl/discover -H 'Content-Type: application/json' -d '{\"agentType\": \"orchestrator\"}' || echo 'Expected to work with mock'"
+    - "echo 'Testing worker agents...'"
+    - "curl -X POST http://localhost:3001/api/v1/acdl/discover -H 'Content-Type: application/json' -d '{\"agentType\": \"worker\", \"domains\": [\"api-design\"]}' || echo 'Expected to work with mock'"
+    - "echo 'Testing critic agents...'"
+    - "curl -X POST http://localhost:3001/api/v1/acdl/discover -H 'Content-Type: application/json' -d '{\"agentType\": \"critic\", \"domains\": [\"security\", \"quality\"]}' || echo 'Expected to work with mock'"
+    - "echo '✅ Agent integration patterns tested'"
   allow_failure: true
   only:
     - __REBUILD
@@ -244,19 +198,10 @@ test:contracts:
   script:
     - echo "📋 Contract testing against OpenAPI spec"
     - npm ci
-    - |
-      # Install contract testing tools
-      npm install -g dredd || echo "Dredd installation may fail"
-      
-      # Start mock server
-      npm run mock:server:bg
-      sleep 3
-      
-      # Run contract tests (expected to have some failures in RED phase)
-      dredd src/api/acdl-specification.yml http://localhost:3001 || {
-        echo "⚠️ Contract tests failed - expected in RED phase"
-        echo "Will pass once implementation matches specification"
-      }
+    - "npm install -g dredd || echo 'Dredd installation may fail'"
+    - "npm run mock:server:bg"
+    - "sleep 3"
+    - "dredd src/api/acdl-specification.yml http://localhost:3001 || (echo '⚠️ Contract tests failed - expected in RED phase' && echo 'Will pass once implementation matches specification')"
   allow_failure: true
   only:
     - __REBUILD
@@ -285,17 +230,16 @@ notify:status:
   stage: .post
   image: alpine:latest
   script:
-    - echo "📊 CI/CD Pipeline Status for OSSA v0.1.9 Specification"
-    - echo "Phase: Specification Standard (pure specification)"
-    - echo "Implementation migrated to agent-buildkit"
-    - |
-      echo "OSSA Specification Results:"
-      echo "- ✅ API validation: Expected to PASS"
-      echo "- ✅ Specification build: Expected to PASS"  
-      echo "- ⚠️ Implementation tests: MIGRATED to agent-buildkit"
-      echo ""
-      echo "OSSA is now a pure specification standard like OpenAPI"
-      echo "Implementation available at agent-buildkit"
+    - "echo '📊 CI/CD Pipeline Status for OSSA v0.1.9 Specification'"
+    - "echo 'Phase: Specification Standard (pure specification)'"
+    - "echo 'Implementation migrated to agent-buildkit'"
+    - "echo 'OSSA Specification Results:'"
+    - "echo '- ✅ API validation: Expected to PASS'"
+    - "echo '- ✅ Specification build: Expected to PASS'"
+    - "echo '- ⚠️ Implementation tests: MIGRATED to agent-buildkit'"
+    - "echo ''"
+    - "echo 'OSSA is now a pure specification standard like OpenAPI'"
+    - "echo 'Implementation available at agent-buildkit'"
   allow_failure: true
   when: always
 

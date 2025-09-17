@@ -17,10 +17,10 @@ export const SPECIFICATION_FILES = {
 } as const;
 
 // Export TypeScript type definitions
-export * from './types/index.js';
+export * from '../types/index.js';
 
 // Export specification validator
-export { SpecificationValidator } from './specification/validator.js';
+export { SpecificationValidator } from '../specification/validator.js';
 
 // Package metadata
 export const OSSA_VERSION = '0.1.9';

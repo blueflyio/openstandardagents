@@ -130,6 +130,9 @@
         },
         "dependencies": {
           "$ref": "#/definitions/Dependencies"
+        },
+        "deployment": {
+          "$ref": "#/definitions/Deployment"
         }
       }
     },
@@ -628,6 +631,225 @@
             "tokenUsage": {
               "type": "integer",
               "description": "Total tokens consumed"
+            }
+          }
+        }
+      }
+    },
+    "Deployment": {
+      "type": "object",
+      "properties": {
+        "target": {
+          "type": "string",
+          "enum": [
+            "local",
+            "docker",
+            "kubernetes",
+            "serverless",
+            "edge"
+          ],
+          "description": "Deployment target environment"
+        },
+        "kubernetes": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": false,
+              "description": "Enable Kubernetes deployment"
+            },
+            "agent": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "pattern": "^[a-z0-9]([a-z0-9-]*[a-z0-9])?$",
+                  "description": "GitLab Agent for Kubernetes name"
+                },
+                "token": {
+                  "type": "string",
+                  "description": "GitLab Agent for Kubernetes token reference"
+                },
+                "namespace": {
+                  "type": "string",
+                  "default": "gitlab-agent",
+                  "description": "Kubernetes namespace for agent deployment"
+                }
+              },
+              "required": ["name", "token"]
+            },
+            "cluster": {
+              "type": "object",
+              "properties": {
+                "endpoint": {
+                  "type": "string",
+                  "format": "uri",
+                  "description": "Kubernetes cluster API endpoint"
+                },
+                "region": {
+                  "type": "string",
+                  "description": "Cloud provider region"
+                },
+                "zone": {
+                  "type": "string",
+                  "description": "Availability zone"
+                }
+              }
+            },
+            "remoteDevelopment": {
+              "type": "object",
+              "properties": {
+                "enabled": {
+                  "type": "boolean",
+                  "default": false
+                },
+                "dnsZone": {
+                  "type": "string",
+                  "description": "DNS zone for remote development workspaces"
+                },
+                "gitlabUrl": {
+                  "type": "string",
+                  "format": "uri",
+                  "description": "GitLab instance URL"
+                }
+              }
+            },
+            "oauth": {
+              "type": "object",
+              "properties": {
+                "clientId": {
+                  "type": "string",
+                  "description": "OAuth client ID for GitLab integration"
+                },
+                "clientSecret": {
+                  "type": "string",
+                  "description": "OAuth client secret reference"
+                },
+                "redirectUri": {
+                  "type": "string",
+                  "format": "uri",
+                  "description": "OAuth redirect URI"
+                },
+                "scopes": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "enum": ["api", "read_user", "openid", "profile"]
+                  },
+                  "default": ["api", "read_user", "openid", "profile"],
+                  "description": "Required OAuth scopes"
+                }
+              },
+              "required": ["clientId", "clientSecret", "redirectUri"]
+            },
+            "security": {
+              "type": "object",
+              "properties": {
+                "tls": {
+                  "type": "object",
+                  "properties": {
+                    "enabled": {
+                      "type": "boolean",
+                      "default": true
+                    },
+                    "certificate": {
+                      "type": "string",
+                      "description": "TLS certificate reference"
+                    },
+                    "key": {
+                      "type": "string",
+                      "description": "TLS private key reference"
+                    }
+                  }
+                },
+                "rbac": {
+                  "type": "object",
+                  "properties": {
+                    "enabled": {
+                      "type": "boolean",
+                      "default": true
+                    },
+                    "rules": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "apiGroups": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          },
+                          "resources": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          },
+                          "verbs": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "healthChecks": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": true
+            },
+            "path": {
+              "type": "string",
+              "default": "/health",
+              "description": "Health check endpoint path"
+            },
+            "port": {
+              "type": "integer",
+              "default": 3000,
+              "description": "Health check port"
+            },
+            "initialDelaySeconds": {
+              "type": "integer",
+              "default": 30
+            },
+            "periodSeconds": {
+              "type": "integer",
+              "default": 10
+            }
+          }
+        },
+        "scaling": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": false
+            },
+            "minReplicas": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1
+            },
+            "maxReplicas": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 10
+            },
+            "targetCPUUtilization": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 80
             }
           }
         }
