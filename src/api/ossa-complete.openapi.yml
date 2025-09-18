@@ -60,7 +60,6 @@ info:
     email: ossa@bluefly.io
   license:
     name: MIT
-    identifier: MIT
     url: https://spdx.org/licenses/MIT.html
   x-logo:
     url: https://ossa.bluefly.io/logo.svg
@@ -73,19 +72,10 @@ externalDocs:
 servers:
   - url: https://api.ossa.bluefly.io/v1
     description: Production Server
-    variables:
-      region:
-        default: us-east-1
-        enum: [us-east-1, us-west-2, eu-west-1, ap-southeast-1]
-        description: AWS region for API deployment
   - url: https://staging.api.ossa.bluefly.io/v1
     description: Staging Server
   - url: http://localhost:3000/v1
     description: Local Development Server
-    variables:
-      port:
-        default: "3000"
-        description: Development server port
 
 tags:
   - name: Agents
@@ -691,10 +681,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ExecutionStatus'
-            text/event-stream:
-              schema:
-                type: string
-              description: Server-sent events for real-time updates
         '404':
           $ref: '#/components/responses/NotFound'
         '401':
