@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OSSA - Open Standards for Scalable Agents</title>
+    <meta name="description" content="The authoritative specification standard for AI agents - enabling secure, compliant, and scalable agent orchestration.">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+    
+    <!-- CSS -->
+    <link rel="stylesheet" href="assets/style.css">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Prism.js for syntax highlighting -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <h1>OSSA</h1>
+                    <span class="tagline">Open Standards for Scalable Agents</span>
+                </div>
+                <nav class="nav">
+                    <a href="#overview" class="nav-link">Overview</a>
+                    <a href="#specification" class="nav-link">Specification</a>
+                    <a href="#documentation" class="nav-link">Documentation</a>
+                    <a href="#getting-started" class="nav-link">Get Started</a>
+                    <a href="https://gitlab.bluefly.io/llm/openapi-ai-agents-standard" class="nav-link" target="_blank">GitLab</a>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <main class="main">
+        <!-- Hero Section -->
+        <section class="hero">
+            <div class="container">
+                <div class="hero-content">
+                    <h1 class="hero-title">
+                        The Authoritative Standard for 
+                        <span class="highlight">AI Agent Orchestration</span>
+                    </h1>
+                    <p class="hero-description">
+                        OSSA (Open Standards for Scalable Agents) provides the definitive specification for 
+                        secure, compliant, and scalable AI agent systems. Built for enterprise-grade deployments 
+                        with regulatory compliance and production reliability.
+                    </p>
+                    <div class="hero-actions">
+                        <a href="#getting-started" class="btn btn-primary">Get Started</a>
+                        <a href="docs/specification/" class="btn btn-secondary">Read Specification</a>
+                    </div>
+                    <div class="version-badge">
+                        <span class="badge">v0.1.9 - Specification Standard</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Features Section -->
+        <section id="overview" class="features">
+            <div class="container">
+                <h2 class="section-title">Why OSSA?</h2>
+                <div class="features-grid">
+                    <div class="feature-card">
+                        <div class="feature-icon">🏛️</div>
+                        <h3>Enterprise Compliance</h3>
+                        <p>Built-in support for FDA 21 CFR Part 11, SOX 404, HIPAA BAA, and FedRAMP High compliance requirements.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">🔒</div>
+                        <h3>Security First</h3>
+                        <p>Zero-trust architecture with complete audit trails, data residency controls, and encryption at rest.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">⚡</div>
+                        <h3>Production Scale</h3>
+                        <p>Kubernetes-native orchestration supporting millions of agents with sub-second response times.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">🌐</div>
+                        <h3>Multi-Framework</h3>
+                        <p>Compatible with LangChain, CrewAI, AutoGen, and custom agent frameworks via standardized APIs.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">📊</div>
+                        <h3>Observable</h3>
+                        <p>Comprehensive monitoring, logging, and analytics for agent performance and business metrics.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">🔧</div>
+                        <h3>Developer Friendly</h3>
+                        <p>OpenAPI specifications, TypeScript SDKs, and comprehensive documentation for rapid integration.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Specification Section -->
+        <section id="specification" class="specification">
+            <div class="container">
+                <h2 class="section-title">OSSA Specification v0.1.9</h2>
+                <div class="spec-content">
+                    <div class="spec-overview">
+                        <h3>Core Components</h3>
+                        <ul class="spec-list">
+                            <li><strong>Agent Lifecycle Management</strong> - Creation, deployment, monitoring, and termination</li>
+                            <li><strong>Discovery & Registry</strong> - Global agent discovery with capability-based matching</li>
+                            <li><strong>Orchestration Engine</strong> - Intelligent task routing and workflow coordination</li>
+                            <li><strong>Compliance Framework</strong> - Regulatory controls and audit trail generation</li>
+                            <li><strong>Federation Protocol</strong> - Multi-tenant agent sharing and governance</li>
+                        </ul>
+                    </div>
+                    <div class="spec-example">
+                        <h3>Example Agent Definition</h3>
+                        <pre><code class="language-yaml">apiVersion: ossa.dev/v1
+kind: Agent
+metadata:
+  name: compliance-validator
+  namespace: regulatory
+spec:
+  capabilities:
+    - compliance-validation
+    - audit-trail-generation
+  frameworks:
+    - FDA-21CFR11
+    - SOX-404
+  runtime:
+    image: ossa/compliance-agent:v0.1.9
+    resources:
+      cpu: "500m"
+      memory: "1Gi"
+  compliance:
+    auditLevel: high
+    dataResidency: us-east-1
+    retentionPeriod: 15y</code></pre>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Getting Started Section -->
+        <section id="getting-started" class="getting-started">
+            <div class="container">
+                <h2 class="section-title">Quick Start</h2>
+                <div class="quickstart-grid">
+                    <div class="quickstart-step">
+                        <div class="step-number">1</div>
+                        <h3>Install OSSA CLI</h3>
+                        <pre><code class="language-bash">npm install -g @ossa/cli</code></pre>
+                    </div>
+                    <div class="quickstart-step">
+                        <div class="step-number">2</div>
+                        <h3>Initialize Project</h3>
+                        <pre><code class="language-bash">ossa init my-agent-project
+cd my-agent-project</code></pre>
+                    </div>
+                    <div class="quickstart-step">
+                        <div class="step-number">3</div>
+                        <h3>Deploy Agent</h3>
+                        <pre><code class="language-bash">ossa deploy --compliance=FDA-21CFR11</code></pre>
+                    </div>
+                </div>
+                
+                <div class="quickstart-links">
+                    <h3>Next Steps</h3>
+                    <div class="links-grid">
+                        <a href="docs/getting-started/" class="link-card">
+                            <h4>📖 Complete Tutorial</h4>
+                            <p>Step-by-step guide to building your first OSSA agent</p>
+                        </a>
+                        <a href="docs/api/" class="link-card">
+                            <h4>🔧 API Reference</h4>
+                            <p>Complete OpenAPI specification and SDK documentation</p>
+                        </a>
+                        <a href="docs/examples/" class="link-card">
+                            <h4>💡 Examples</h4>
+                            <p>Production-ready agent examples for common use cases</p>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Documentation Section -->
+        <section id="documentation" class="documentation">
+            <div class="container">
+                <h2 class="section-title">Documentation</h2>
+                <div class="docs-grid">
+                    <div class="docs-category">
+                        <h3>🚀 Getting Started</h3>
+                        <ul>
+                            <li><a href="docs/overview/">Project Overview</a></li>
+                            <li><a href="docs/getting-started/">Quick Start Guide</a></li>
+                            <li><a href="docs/installation/">Installation</a></li>
+                            <li><a href="docs/first-agent/">Your First Agent</a></li>
+                        </ul>
+                    </div>
+                    <div class="docs-category">
+                        <h3>📋 Specification</h3>
+                        <ul>
+                            <li><a href="docs/specification/">OSSA v0.1.9 Spec</a></li>
+                            <li><a href="docs/api/">API Reference</a></li>
+                            <li><a href="docs/compliance/">Compliance Standards</a></li>
+                            <li><a href="docs/federation/">Federation Protocol</a></li>
+                        </ul>
+                    </div>
+                    <div class="docs-category">
+                        <h3>🔧 Development</h3>
+                        <ul>
+                            <li><a href="docs/development/">Development Guide</a></li>
+                            <li><a href="docs/testing/">Testing Strategies</a></li>
+                            <li><a href="docs/debugging/">Debugging Agents</a></li>
+                            <li><a href="docs/best-practices/">Best Practices</a></li>
+                        </ul>
+                    </div>
+                    <div class="docs-category">
+                        <h3>🏗️ Deployment</h3>
+                        <ul>
+                            <li><a href="docs/deployment/">Deployment Guide</a></li>
+                            <li><a href="docs/kubernetes/">Kubernetes Setup</a></li>
+                            <li><a href="docs/monitoring/">Monitoring & Logging</a></li>
+                            <li><a href="docs/security/">Security Configuration</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Enterprise Section -->
+        <section class="enterprise">
+            <div class="container">
+                <div class="enterprise-content">
+                    <h2>Enterprise Ready</h2>
+                    <p>
+                        OSSA powers mission-critical AI agent systems for Fortune 500 companies, 
+                        government agencies, and healthcare organizations worldwide.
+                    </p>
+                    <div class="enterprise-features">
+                        <div class="enterprise-feature">
+                            <span class="feature-label">Compliance</span>
+                            <span>FDA, SOX, HIPAA, FedRAMP certified</span>
+                        </div>
+                        <div class="enterprise-feature">
+                            <span class="feature-label">Scale</span>
+                            <span>Millions of agents, 99.99% uptime</span>
+                        </div>
+                        <div class="enterprise-feature">
+                            <span class="feature-label">Security</span>
+                            <span>Zero-trust, end-to-end encryption</span>
+                        </div>
+                        <div class="enterprise-feature">
+                            <span class="feature-label">Support</span>
+                            <span>24/7 enterprise support available</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>OSSA</h3>
+                    <p>Open Standards for Scalable Agents</p>
+                    <p>Version 0.1.9 - Specification Standard</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Resources</h4>
+                    <a href="docs/specification/">Specification</a>
+                    <a href="docs/api/">API Reference</a>
+                    <a href="docs/examples/">Examples</a>
+                    <a href="docs/changelog/">Changelog</a>
+                </div>
+                <div class="footer-section">
+                    <h4>Community</h4>
+                    <a href="https://gitlab.bluefly.io/llm/openapi-ai-agents-standard" target="_blank">GitLab</a>
+                    <a href="https://gitlab.bluefly.io/llm/openapi-ai-agents-standard/-/issues" target="_blank">Issues</a>
+                    <a href="docs/contributing/">Contributing</a>
+                    <a href="docs/support/">Support</a>
+                </div>
+                <div class="footer-section">
+                    <h4>Legal</h4>
+                    <a href="docs/license/">License</a>
+                    <a href="docs/privacy/">Privacy Policy</a>
+                    <a href="docs/security/">Security Policy</a>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 OSSA Project. Licensed under MIT.</p>
+                <p>Built with ❤️ for the AI agent community</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+    <script src="assets/script.js"></script>
+</body>
+</html>

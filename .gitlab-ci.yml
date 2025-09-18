@@ -11,6 +11,7 @@ stages:
   - changelog
   - security
   - deploy
+  - pages
   - release
 
 # Temporary: Use local template for testing
@@ -252,10 +253,53 @@ cache:
     - node_modules/
     - .npm/
 
+# GitLab Pages deployment
+pages:
+  stage: pages
+  image: node:${NODE_VERSION}
+  script:
+    - echo "🌐 Building OSSA Documentation Site"
+    - echo "Copying static files to public/"
+    - cp -r public/* .
+    - echo "Building additional documentation pages..."
+    - |
+      # Create consolidated docs from existing markdown files
+      mkdir -p docs/specification
+      mkdir -p docs/getting-started
+      mkdir -p docs/development
+      mkdir -p docs/api
+      
+      # Copy and consolidate key documentation
+      if [ -f "docs/01-project-overview.md" ]; then
+        cp docs/01-project-overview.md docs/overview/project-overview.md
+      fi
+      
+      if [ -f "README.md" ]; then
+        cp README.md docs/getting-started/readme.md
+      fi
+      
+      # Process API documentation
+      if [ -f "src/api/openapi.yaml" ]; then
+        echo "API documentation available at src/api/openapi.yaml" > docs/api/index.md
+      fi
+      
+      echo "✅ Documentation site built successfully"
+    - ls -la
+  artifacts:
+    paths:
+      - public
+    expire_in: 1 hour
+  only:
+    - main
+    - development
+    - pages  # Allow manual deployment from pages branch
+
 # Only run on specific branches during TDD phases
 workflow:
   rules:
     - if: $CI_COMMIT_BRANCH == "__REBUILD"
     - if: $CI_COMMIT_BRANCH =~ /^feature\//
     - if: $CI_COMMIT_BRANCH == "development"
+    - if: $CI_COMMIT_BRANCH == "main"
+    - if: $CI_COMMIT_BRANCH == "pages"
     - if: $CI_COMMIT_TAG
