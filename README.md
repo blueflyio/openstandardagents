@@ -68,19 +68,44 @@ ossa/
 npm install
 ```
 
-### Build Project
+### Build CLI Tools
 ```bash
-npm run build
+npm run build:cli
 ```
 
-### Validate Specifications
+### Global CLI Installation
 ```bash
-npm run api:validate
+npm link
+# Now you can use 'ossa' and 'ossa-deploy' commands globally
 ```
 
-### Run Tests
+### Quick Start Commands
 ```bash
-npm test
+# Check system status
+ossa status
+
+# Create a new OpenAPI 3.1 specification
+ossa spec create my-api --type advanced --description "My OpenAPI 3.1 API"
+
+# Create a new agent
+ossa agent create my-worker --type worker --capabilities "data-processing,validation"
+
+# Validate all specifications and agents
+ossa validate --all --fix
+
+# Build all specifications
+ossa build --all
+
+# Deploy agents
+ossa-deploy deploy --all --parallel
+```
+
+### Traditional npm Scripts (Still Available)
+```bash
+npm run build          # Build TypeScript
+npm run api:validate   # Validate OpenAPI specs
+npm run validate:specs # Validate all schemas
+npm test              # Run tests
 ```
 
 ## API Specifications
@@ -106,16 +131,71 @@ OSSA provides comprehensive OpenAPI 3.1 specifications:
 | **Critic** | Quality Control | `code-reviewer`, `compliance-auditor` |
 | **Monitor** | Observability | `system-monitor`, `prometheus-metrics-specialist` |
 
+## OSSA CLI Commands
+
+OSSA provides two main CLI tools for comprehensive specification and agent management:
+
+### Specification Management (`ossa`)
+```bash
+# CRUD Operations for OpenAPI 3.1 Specifications
+ossa spec create <name> [options]     # Create new spec with templates
+ossa spec list --format table         # List all specifications
+ossa spec get <name> --format yaml    # Get specification details
+ossa spec update <name> [options]     # Update existing specification
+ossa spec delete <name> --force       # Delete specification
+
+# Agent Management
+ossa agent create <id> --type worker  # Create new agent
+ossa agent list --status active       # List agents with filters
+ossa agent update <id> [options]      # Update agent configuration
+ossa agent delete <id> --force        # Delete agent
+
+# System Operations
+ossa validate --all --fix             # Validate and auto-fix issues
+ossa build --all --watch              # Build with file watching
+ossa deploy --environment prod        # Deploy to environments
+ossa test --coverage                  # Run comprehensive tests
+ossa status --detailed                # Show system health
+ossa migrate --from 3.0               # Migrate from older OpenAPI versions
+```
+
+### Agent Deployment (`ossa-deploy`)
+```bash
+# Agent Lifecycle Management
+ossa-deploy create <agent> [options]  # Create agent with deployment config
+ossa-deploy list --filter type        # List agents with filtering
+ossa-deploy deploy --phase 1          # Deploy specific phases
+ossa-deploy deploy --all --parallel   # Deploy all agents in parallel
+ossa-deploy validate <agent> --schema # Validate agent against schema
+ossa-deploy status --detailed         # Show deployment status
+```
+
+### Template-Based Creation
+```bash
+# OpenAPI 3.1 Templates
+ossa spec create basic-api --template basic      # Simple API
+ossa spec create advanced-api --template advanced # Full-featured API  
+ossa spec create industrial-api --template industrial # OPC UA/UADP ready
+
+# Agent Templates by Type
+ossa agent create data-worker --type worker --specialization data-processing
+ossa agent create flow-orchestrator --type orchestrator --capabilities workflow
+ossa agent create quality-critic --type critic --capabilities code-review
+```
+
 ## MCP Server
 
 OSSA includes an MCP (Model Context Protocol) server implementation:
 
 ```bash
-# Start MCP server
-node src/mcp/simple-server.ts
+# Start MCP server using CLI
+ossa deploy --service mcp --port 4000
 
 # Or using Docker
 docker-compose up ossa-mcp
+
+# Or direct Node.js (development only)
+node dist/mcp/simple-server.js
 ```
 
 **Available on ports:**
@@ -125,24 +205,27 @@ docker-compose up ossa-mcp
 
 ## Development
 
-### Validate All Schemas
+### Modern CLI-First Development
 ```bash
-npm run validate:specs
+# Complete validation pipeline
+ossa validate --all --fix --verbose
+
+# Build and watch for changes
+ossa build --all --watch --output dist
+
+# Development server with hot reload
+ossa deploy --environment dev --watch
+
+# Generate TypeScript types from OpenAPI 3.1
+ossa build --generate-types --spec my-api
 ```
 
-### Generate TypeScript Types
+### Legacy npm Scripts (Deprecated)
 ```bash
-npm run api:generate
-```
-
-### Lint Code
-```bash
-npm run lint
-```
-
-### Format Code
-```bash
-npm run format
+npm run validate:specs  # Use: ossa validate --all
+npm run api:generate   # Use: ossa build --generate-types
+npm run lint          # Use: ossa validate --lint
+npm run format        # Use: ossa validate --fix --format
 ```
 
 ## Documentation

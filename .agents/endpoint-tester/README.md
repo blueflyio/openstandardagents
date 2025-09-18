@@ -1,13 +1,13 @@
 # endpoint-tester Agent
 
-[![OSSA v0.1.8](https://img.shields.io/badge/OSSA-v0.1.8-green.svg)](https://ossa.agents)
+[![OSSA v0.1.9](https://img.shields.io/badge/OSSA-v0.1.9-green.svg)](https://ossa.agents)
 [![UADP](https://img.shields.io/badge/UADP-Discovery-blue.svg)](https://ossa.agents)
 
-OSSA v0.1.8 advanced tier agent for api operations with UADP discovery protocol support.
+OSSA v0.1.9 advanced tier agent for api operations with UADP discovery protocol support.
 
 ## Features
 
-- 🚀 OSSA v0.1.8 compliant
+- 🚀 OSSA v0.1.9 compliant
 - 🔍 UADP discovery protocol
 - 🎯 advanced conformance tier
 - 🔗 Multi-framework integration (LangChain, CrewAI, OpenAI, MCP)
@@ -19,17 +19,17 @@ OSSA v0.1.8 advanced tier agent for api operations with UADP discovery protocol 
 
 ```bash
 # Validate agent
-ossa validate
+ossa agent validate
 
 # Register with UADP
-ossa discovery init
-ossa discovery register .
+ossa-deploy init
+ossa-deploy register .
 
 # Discover similar agents
-ossa discovery find --capabilities api_analysis
+ossa-deploy find --capabilities api_analysis
 
 # Check health
-ossa discovery health
+ossa-deploy health
 ```
 
 ## API Endpoints
@@ -51,4 +51,4 @@ This agent supports multiple AI frameworks:
 
 - ISO 42001 (AI Management Systems)
 - NIST AI Risk Management Framework
-- OSSA v0.1.8 Advanced Conformance Tier
+- OSSA v0.1.9 Advanced Conformance Tier
