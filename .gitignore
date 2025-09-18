@@ -74,3 +74,6 @@ jspm_packages/
 
 # Optional REPL history
 .node_repl_history
+
+# Temporary/Old files to ignore
+__DELETE_LATER/
