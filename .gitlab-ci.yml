@@ -1,9 +1,10 @@
 # GitLab CI/CD Pipeline for OSSA Platform v0.1.0-alpha.1
 # TDD RED Phase Configuration - All tests expected to FAIL
 
-# Golden template - local copy for CI
-include:
-  - local: .gitlab/templates/workflow/golden/template.yml
+# Golden template - temporarily disabled due to job conflicts
+# TODO: Merge golden template jobs properly
+# include:
+#   - local: .gitlab/templates/workflow/golden/template.yml
 
 # Override stages from golden template to include OSSA-specific stages
 stages:

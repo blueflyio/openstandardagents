@@ -41,6 +41,7 @@
     "server:health": "curl -f http://localhost:3000/health || exit 1",
     "server:docs": "open http://localhost:3000/docs",
     "precommit": "npm run lint && npm run test",
+    "clean": "node -e \"const fs=require('fs'); ['dist','coverage'].forEach(d => fs.rmSync(d, {recursive:true, force:true}))\"",
     "test:acdl": "node dist/cli/ossa-cli.js test --protocol acdl",
     "mock:server:bg": "node dist/server/simple-app.js &",
     "agents:spawn:tdd": "node dist/cli/ossa-cli.js spawn --type tdd",
