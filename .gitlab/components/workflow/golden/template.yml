@@ -367,17 +367,45 @@ promote:to-main:
   needs: ["test:project"]
   image: alpine:latest
   script:
-    - apk add --no-cache git openssh-client
+    - apk add --no-cache git openssh-client openssl
     - echo "🚀 Promoting development to main (version $PROJECT_VERSION)"
     - git config user.email "ci@gitlab.bluefly.io"
     - git config user.name "GitLab CI"
-    # Setup SSH authentication using group-level SSH keys
-    - eval $(ssh-agent -s)
-    - echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add -
+    # Setup SSH authentication with multiple fallback methods
     - mkdir -p ~/.ssh
     - chmod 700 ~/.ssh
-    - ssh-keyscan gitlab.bluefly.io >> ~/.ssh/known_hosts
+    # Write SSH key with proper format for Alpine OpenSSH
+    - echo "$SSH_PRIVATE_KEY" | base64 -d > ~/.ssh/id_rsa 2>/dev/null || echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
+    - chmod 600 ~/.ssh/id_rsa
+    # Convert key format if needed (PEM to OpenSSH format)
+    - |
+      if ! ssh-keygen -l -f ~/.ssh/id_rsa > /dev/null 2>&1; then
+        echo "Converting SSH key format for Alpine compatibility..."
+        # Try to convert key using openssl if it's in wrong format
+        openssl rsa -in ~/.ssh/id_rsa -out ~/.ssh/id_rsa_converted 2>/dev/null && mv ~/.ssh/id_rsa_converted ~/.ssh/id_rsa || true
+        chmod 600 ~/.ssh/id_rsa
+      fi
+    # Add GitLab host key
+    - ssh-keyscan -t ed25519,rsa gitlab.bluefly.io >> ~/.ssh/known_hosts
+    # Configure SSH to try all key types and be more permissive
+    - |
+      cat > ~/.ssh/config << EOF
+      Host gitlab.bluefly.io
+        HostName gitlab.bluefly.io
+        User git
+        IdentitiesOnly yes
+        IdentityFile ~/.ssh/id_rsa
+        IdentityFile ~/.ssh/id_ed25519
+        IdentityFile ~/.ssh/id_ecdsa
+        StrictHostKeyChecking no
+        UserKnownHostsFile ~/.ssh/known_hosts
+      EOF
+    - chmod 600 ~/.ssh/config
+    # Test SSH connection before proceeding
+    - ssh -T git@gitlab.bluefly.io || echo "SSH test completed"
+    # Configure git to use SSH
     - git remote set-url origin git@gitlab.bluefly.io:llm/openapi-ai-agents-standard.git
+    # Perform the merge
     - git fetch origin main
     - git checkout main
     - git merge --ff-only origin/development
@@ -395,20 +423,47 @@ release:production:
   needs: ["test:project"]
   image: alpine:latest
   script:
-    - "apk add --no-cache git curl jq openssh-client"
-    - "echo '🎉 Creating production release v${PROJECT_VERSION}'"
-    - "git config user.email 'ci@gitlab.bluefly.io'"
-    - "git config user.name 'GitLab CI'"
-    - "export RELEASE_TAG='v${PROJECT_VERSION}'"
-    - "git tag -a \"$RELEASE_TAG\" -m \"Release ${RELEASE_TAG}\""
-    # Setup SSH for tag push
-    - "eval $(ssh-agent -s)"
-    - "echo \"$SSH_PRIVATE_KEY\" | tr -d '\\r' | ssh-add -"
-    - "mkdir -p ~/.ssh"
-    - "chmod 700 ~/.ssh"
-    - "ssh-keyscan gitlab.bluefly.io >> ~/.ssh/known_hosts"
-    - "git remote set-url origin git@gitlab.bluefly.io:llm/openapi-ai-agents-standard.git"
-    - "git push origin \"$RELEASE_TAG\""
+    - apk add --no-cache git curl jq openssh-client
+    - echo '🎉 Creating production release v${PROJECT_VERSION}'
+    - git config user.email 'ci@gitlab.bluefly.io'
+    - git config user.name 'GitLab CI'
+    - export RELEASE_TAG='v${PROJECT_VERSION}'
+    - git tag -a "$RELEASE_TAG" -m "Release ${RELEASE_TAG}"
+    # Setup SSH authentication with multiple fallback methods
+    - mkdir -p ~/.ssh
+    - chmod 700 ~/.ssh
+    # Write SSH key with proper format for Alpine OpenSSH
+    - echo "$SSH_PRIVATE_KEY" | base64 -d > ~/.ssh/id_rsa 2>/dev/null || echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
+    - chmod 600 ~/.ssh/id_rsa
+    # Convert key format if needed (PEM to OpenSSH format)
+    - |
+      if ! ssh-keygen -l -f ~/.ssh/id_rsa > /dev/null 2>&1; then
+        echo "Converting SSH key format for Alpine compatibility..."
+        # Try to convert key using openssl if it's in wrong format
+        openssl rsa -in ~/.ssh/id_rsa -out ~/.ssh/id_rsa_converted 2>/dev/null && mv ~/.ssh/id_rsa_converted ~/.ssh/id_rsa || true
+        chmod 600 ~/.ssh/id_rsa
+      fi
+    # Add GitLab host key
+    - ssh-keyscan -t ed25519,rsa gitlab.bluefly.io >> ~/.ssh/known_hosts
+    # Configure SSH to try all key types and be more permissive
+    - |
+      cat > ~/.ssh/config << EOF
+      Host gitlab.bluefly.io
+        HostName gitlab.bluefly.io
+        User git
+        IdentitiesOnly yes
+        IdentityFile ~/.ssh/id_rsa
+        IdentityFile ~/.ssh/id_ed25519
+        IdentityFile ~/.ssh/id_ecdsa
+        StrictHostKeyChecking no
+        UserKnownHostsFile ~/.ssh/known_hosts
+      EOF
+    - chmod 600 ~/.ssh/config
+    # Test SSH connection before proceeding
+    - ssh -T git@gitlab.bluefly.io || echo "SSH test completed"
+    # Configure git to use SSH
+    - git remote set-url origin git@gitlab.bluefly.io:llm/openapi-ai-agents-standard.git
+    - git push origin "$RELEASE_TAG"
     - "if [ -f 'CHANGELOG.md' ]; then export RELEASE_NOTES=$(sed -n \"/## \\[${PROJECT_VERSION}\\]/,/## \\[/p\" CHANGELOG.md | head -n -1); else export RELEASE_NOTES='Release ${RELEASE_TAG}'; fi"
     - "curl --request POST --header \"PRIVATE-TOKEN: ${CI_JOB_TOKEN}\" --header 'Content-Type: application/json' --data \"{\\\"name\\\": \\\"${RELEASE_TAG}\\\", \\\"tag_name\\\": \\\"${RELEASE_TAG}\\\", \\\"description\\\": \\\"${RELEASE_NOTES}\\\", \\\"ref\\\": \\\"main\\\", \\\"assets\\\": {\\\"links\\\": []}}\" \"${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/releases\" || echo 'Release creation may require permissions'"
     - "echo '✅ Production release created: ${RELEASE_TAG}'"
