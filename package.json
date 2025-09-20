@@ -41,7 +41,12 @@
     "server:health": "curl -f http://localhost:3000/health || exit 1",
     "server:docs": "open http://localhost:3000/docs",
     "precommit": "npm run lint && npm run test",
-    "clean": "rm -rf dist coverage"
+    "test:acdl": "node dist/cli/ossa-cli.js test --protocol acdl",
+    "mock:server:bg": "node dist/server/simple-app.js &",
+    "agents:spawn:tdd": "node dist/cli/ossa-cli.js spawn --type tdd",
+    "agents:spawn:validation": "node dist/cli/ossa-cli.js spawn --type validation",
+    "agents:workload": "node dist/cli/ossa-cli.js workload",
+    "test:with-mock": "MOCK_MODE=true npm test"
   },
   "keywords": [
     "ossa",
