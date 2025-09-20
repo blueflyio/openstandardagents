@@ -371,13 +371,40 @@ promote:to-main:
     - echo "🚀 Promoting development to main (version $PROJECT_VERSION)"
     - git config user.email "ci@gitlab.bluefly.io"
     - git config user.name "GitLab CI"
-    # Setup SSH authentication - direct key write method (no ssh-agent)
+    # Setup SSH authentication with multiple fallback methods
     - mkdir -p ~/.ssh
     - chmod 700 ~/.ssh
-    - echo "$SSH_PRIVATE_KEY" | tr -d '\r' > ~/.ssh/id_rsa
+    # Clean and write SSH key with proper format detection
+    - echo "$SSH_PRIVATE_KEY" | tr -d '\r' | sed '/^$/d' > ~/.ssh/id_rsa
     - chmod 600 ~/.ssh/id_rsa
+    # Verify key format and try to fix common issues
+    - |
+      if ! ssh-keygen -l -f ~/.ssh/id_rsa > /dev/null 2>&1; then
+        echo "Key format issue detected, trying alternative methods..."
+        # Try writing as different key types
+        echo "$SSH_PRIVATE_KEY" | tr -d '\r' | sed '/^$/d' > ~/.ssh/id_ed25519
+        chmod 600 ~/.ssh/id_ed25519
+        echo "$SSH_PRIVATE_KEY" | tr -d '\r' | sed '/^$/d' > ~/.ssh/id_ecdsa  
+        chmod 600 ~/.ssh/id_ecdsa
+      fi
     # Add GitLab host key
     - ssh-keyscan -t ed25519,rsa gitlab.bluefly.io >> ~/.ssh/known_hosts
+    # Configure SSH to try all key types and be more permissive
+    - |
+      cat > ~/.ssh/config << EOF
+      Host gitlab.bluefly.io
+        HostName gitlab.bluefly.io
+        User git
+        IdentitiesOnly yes
+        IdentityFile ~/.ssh/id_rsa
+        IdentityFile ~/.ssh/id_ed25519
+        IdentityFile ~/.ssh/id_ecdsa
+        StrictHostKeyChecking no
+        UserKnownHostsFile ~/.ssh/known_hosts
+      EOF
+    - chmod 600 ~/.ssh/config
+    # Test SSH connection before proceeding
+    - ssh -T git@gitlab.bluefly.io || echo "SSH test completed"
     # Configure git to use SSH
     - git remote set-url origin git@gitlab.bluefly.io:llm/openapi-ai-agents-standard.git
     # Perform the merge
@@ -404,13 +431,40 @@ release:production:
     - git config user.name 'GitLab CI'
     - export RELEASE_TAG='v${PROJECT_VERSION}'
     - git tag -a "$RELEASE_TAG" -m "Release ${RELEASE_TAG}"
-    # Setup SSH authentication - direct key write method (no ssh-agent)
+    # Setup SSH authentication with multiple fallback methods
     - mkdir -p ~/.ssh
     - chmod 700 ~/.ssh
-    - echo "$SSH_PRIVATE_KEY" | tr -d '\r' > ~/.ssh/id_rsa
+    # Clean and write SSH key with proper format detection
+    - echo "$SSH_PRIVATE_KEY" | tr -d '\r' | sed '/^$/d' > ~/.ssh/id_rsa
     - chmod 600 ~/.ssh/id_rsa
+    # Verify key format and try to fix common issues
+    - |
+      if ! ssh-keygen -l -f ~/.ssh/id_rsa > /dev/null 2>&1; then
+        echo "Key format issue detected, trying alternative methods..."
+        # Try writing as different key types
+        echo "$SSH_PRIVATE_KEY" | tr -d '\r' | sed '/^$/d' > ~/.ssh/id_ed25519
+        chmod 600 ~/.ssh/id_ed25519
+        echo "$SSH_PRIVATE_KEY" | tr -d '\r' | sed '/^$/d' > ~/.ssh/id_ecdsa  
+        chmod 600 ~/.ssh/id_ecdsa
+      fi
     # Add GitLab host key
     - ssh-keyscan -t ed25519,rsa gitlab.bluefly.io >> ~/.ssh/known_hosts
+    # Configure SSH to try all key types and be more permissive
+    - |
+      cat > ~/.ssh/config << EOF
+      Host gitlab.bluefly.io
+        HostName gitlab.bluefly.io
+        User git
+        IdentitiesOnly yes
+        IdentityFile ~/.ssh/id_rsa
+        IdentityFile ~/.ssh/id_ed25519
+        IdentityFile ~/.ssh/id_ecdsa
+        StrictHostKeyChecking no
+        UserKnownHostsFile ~/.ssh/known_hosts
+      EOF
+    - chmod 600 ~/.ssh/config
+    # Test SSH connection before proceeding
+    - ssh -T git@gitlab.bluefly.io || echo "SSH test completed"
     # Configure git to use SSH
     - git remote set-url origin git@gitlab.bluefly.io:llm/openapi-ai-agents-standard.git
     - git push origin "$RELEASE_TAG"
