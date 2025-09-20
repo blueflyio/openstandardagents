@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OSSA Development Roadmap</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        .header {
+            border-bottom: 2px solid #0066cc;
+            padding-bottom: 1rem;
+            margin-bottom: 2rem;
+        }
+        h1 { color: #0066cc; }
+        h2 { color: #004499; margin-top: 2rem; }
+        h3 { color: #333; margin-top: 1.5rem; }
+        .phase {
+            background: #f8f9fa;
+            border-left: 4px solid #0066cc;
+            padding: 1rem;
+            margin: 1rem 0;
+        }
+        .current {
+            background: #e7f3ff;
+            border-left-color: #00aa00;
+        }
+        .completed {
+            opacity: 0.7;
+            border-left-color: #888;
+        }
+        .timeline {
+            display: flex;
+            gap: 2rem;
+            margin: 2rem 0;
+            padding: 1rem;
+            background: #f5f5f5;
+            border-radius: 4px;
+        }
+        .timeline-item {
+            flex: 1;
+            text-align: center;
+        }
+        .nav {
+            margin-bottom: 2rem;
+            padding: 1rem;
+            background: #f8f9fa;
+            border-radius: 4px;
+        }
+        .nav a {
+            margin-right: 1rem;
+            color: #0066cc;
+            text-decoration: none;
+        }
+        .nav a:hover { text-decoration: underline; }
+        .back-link {
+            display: inline-block;
+            margin-bottom: 1rem;
+            color: #0066cc;
+            text-decoration: none;
+        }
+        .back-link:hover { text-decoration: underline; }
+        .status-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+        .status-complete { background: #d4edda; color: #155724; }
+        .status-current { background: #cce5ff; color: #004085; }
+        .status-planned { background: #f8d7da; color: #721c24; }
+    </style>
+</head>
+<body>
+    <a href="/api-docs.html" class="back-link">← Back to API Documentation</a>
+    
+    <div class="header">
+        <h1>OSSA Development Roadmap</h1>
+        <p>Project Timeline and Milestones</p>
+    </div>
+
+    <div class="nav">
+        <a href="/api-docs.html">API Reference</a>
+        <a href="/docs/specification/agents.html">Agent Specification</a>
+        <a href="/">Home</a>
+    </div>
+
+    <div class="timeline">
+        <div class="timeline-item">
+            <strong>Q4 2024</strong><br>
+            <span class="status-badge status-complete">Complete</span><br>
+            v0.1.0 - v0.1.9
+        </div>
+        <div class="timeline-item">
+            <strong>Q1 2025</strong><br>
+            <span class="status-badge status-current">Current</span><br>
+            v0.2.0 - v0.5.0
+        </div>
+        <div class="timeline-item">
+            <strong>Q2 2025</strong><br>
+            <span class="status-badge status-planned">Planned</span><br>
+            v1.0.0 GA
+        </div>
+    </div>
+
+    <h2>Release History</h2>
+
+    <div class="phase completed">
+        <h3>✅ v0.1.9 - Current Release</h3>
+        <ul>
+            <li>Complete ACDL specification</li>
+            <li>Agent taxonomy definition</li>
+            <li>OpenAPI 3.1 specifications</li>
+            <li>Docker production infrastructure</li>
+            <li>GitLab CI/CD pipeline</li>
+            <li>Redocly documentation</li>
+        </ul>
+    </div>
+
+    <h2>Upcoming Releases</h2>
+
+    <div class="phase current">
+        <h3>🚀 v0.2.0 - Federation Support (Q1 2025)</h3>
+        <ul>
+            <li>Multi-tenant architecture</li>
+            <li>Cross-organization agent federation</li>
+            <li>Distributed discovery protocol</li>
+            <li>Enhanced security models</li>
+        </ul>
+    </div>
+
+    <div class="phase">
+        <h3>v0.3.0 - Performance Optimization</h3>
+        <ul>
+            <li>Agent pooling and caching</li>
+            <li>Improved message routing</li>
+            <li>Batch processing support</li>
+            <li>Resource optimization</li>
+        </ul>
+    </div>
+
+    <div class="phase">
+        <h3>v0.4.0 - Advanced Orchestration</h3>
+        <ul>
+            <li>Complex workflow support</li>
+            <li>Conditional routing</li>
+            <li>Parallel execution patterns</li>
+            <li>Saga pattern implementation</li>
+        </ul>
+    </div>
+
+    <div class="phase">
+        <h3>v0.5.0 - Observability Suite</h3>
+        <ul>
+            <li>Distributed tracing</li>
+            <li>Advanced metrics</li>
+            <li>Performance profiling</li>
+            <li>Debugging tools</li>
+        </ul>
+    </div>
+
+    <div class="phase">
+        <h3>v1.0.0 - General Availability (Q2 2025)</h3>
+        <ul>
+            <li>Production-ready specification</li>
+            <li>Complete documentation</li>
+            <li>Reference implementations</li>
+            <li>Certification program</li>
+            <li>Enterprise support</li>
+        </ul>
+    </div>
+
+    <h2>Community Contributions</h2>
+    <p>We welcome contributions in the following areas:</p>
+    <ul>
+        <li>Agent implementations</li>
+        <li>Language SDKs</li>
+        <li>Integration examples</li>
+        <li>Documentation improvements</li>
+        <li>Testing frameworks</li>
+    </ul>
+
+    <h2>Get Involved</h2>
+    <p>Join the OSSA community:</p>
+    <ul>
+        <li><a href="https://gitlab.bluefly.io/llm/ossa">GitLab Repository</a></li>
+        <li><a href="https://gitlab.bluefly.io/llm/agent_buildkit">Agent BuildKit</a></li>
+        <li>Discord: Coming Soon</li>
+        <li>Weekly Office Hours: Thursdays 3PM EST</li>
+    </ul>
+</body>
+</html>

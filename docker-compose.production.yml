@@ -1,0 +1,280 @@
+version: '3.8'
+
+# OSSA Production Docker Compose with all audit recommendations
+services:
+  # ===========================================
+  # Core OSSA Services with Full Production Config
+  # ===========================================
+  
+  ossa-mcp:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        - BUILD_VERSION=${VERSION:-0.1.9}
+    image: ossa/mcp-server:${VERSION:-0.1.9}
+    container_name: ossa-mcp-server
+    ports:
+      - "4000:4000"
+      - "4001:4001"
+      - "4002:4002"
+    environment:
+      - NODE_ENV=production
+      - OSSA_VERSION=${VERSION:-0.1.9}
+      - LOG_LEVEL=${LOG_LEVEL:-info}
+      # Secrets from environment
+      - JWT_SECRET=${JWT_SECRET}
+      - API_KEY=${API_KEY}
+      # Service discovery
+      - REDIS_URL=redis://ossa-redis:6379
+      - POSTGRES_URL=postgresql://ossa:${DB_PASSWORD}@ossa-postgres:5432/ossa
+    volumes:
+      # Persistent data
+      - ossa-data:/app/data:rw
+      - ossa-logs:/app/logs:rw
+      # Read-only configs
+      - ./config:/app/config:ro
+    depends_on:
+      ossa-redis:
+        condition: service_healthy
+      ossa-postgres:
+        condition: service_healthy
+    networks:
+      - frontend-network
+      - backend-network
+      - data-network
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:4000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    labels:
+      - "prometheus.io/scrape=true"
+      - "prometheus.io/port=4000"
+      - "prometheus.io/path=/metrics"
+
+  # ===========================================
+  # Data Persistence Layer
+  # ===========================================
+  
+  ossa-postgres:
+    image: postgres:15-alpine
+    container_name: ossa-postgres
+    environment:
+      - POSTGRES_USER=ossa
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_DB=ossa
+      - POSTGRES_INITDB_ARGS=--auth-host=scram-sha-256
+    volumes:
+      - postgres-data:/var/lib/postgresql/data:rw
+      - ./init-scripts:/docker-entrypoint-initdb.d:ro
+    networks:
+      - data-network
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 1G
+        reservations:
+          cpus: '0.25'
+          memory: 256M
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ossa"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  ossa-redis:
+    image: redis:7-alpine
+    container_name: ossa-redis
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD}
+    volumes:
+      - redis-data:/data:rw
+    networks:
+      - data-network
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+        reservations:
+          cpus: '0.1'
+          memory: 128M
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ===========================================
+  # API Gateway & Load Balancer
+  # ===========================================
+  
+  nginx-gateway:
+    image: nginx:alpine
+    container_name: ossa-gateway
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
+      - ./ssl:/etc/nginx/ssl:ro
+      - nginx-cache:/var/cache/nginx:rw
+    depends_on:
+      - ossa-mcp
+    networks:
+      - frontend-network
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 512M
+        reservations:
+          cpus: '0.25'
+          memory: 128M
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "nginx", "-t"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ===========================================
+  # Observability Stack
+  # ===========================================
+  
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: ossa-prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus:rw
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--storage.tsdb.retention.time=30d'
+    networks:
+      - backend-network
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 1G
+        reservations:
+          cpus: '0.25'
+          memory: 256M
+    restart: unless-stopped
+
+  loki:
+    image: grafana/loki:latest
+    container_name: ossa-loki
+    ports:
+      - "3100:3100"
+    volumes:
+      - ./monitoring/loki-config.yml:/etc/loki/local-config.yaml:ro
+      - loki-data:/loki:rw
+    networks:
+      - backend-network
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 1G
+        reservations:
+          cpus: '0.25'
+          memory: 256M
+    restart: unless-stopped
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: ossa-grafana
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=${GRAFANA_USER:-admin}
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD}
+      - GF_INSTALL_PLUGINS=redis-datasource
+    volumes:
+      - grafana-data:/var/lib/grafana:rw
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+    depends_on:
+      - prometheus
+      - loki
+    networks:
+      - frontend-network
+      - backend-network
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 1G
+        reservations:
+          cpus: '0.25'
+          memory: 256M
+    restart: unless-stopped
+
+# ===========================================
+# Networks Configuration
+# ===========================================
+networks:
+  frontend-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/24
+  
+  backend-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.21.0.0/24
+  
+  data-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.22.0.0/24
+
+# ===========================================
+# Volumes Configuration
+# ===========================================
+volumes:
+  # Application data
+  ossa-data:
+    driver: local
+  ossa-logs:
+    driver: local
+  
+  # Database volumes
+  postgres-data:
+    driver: local
+  redis-data:
+    driver: local
+  
+  # Monitoring volumes
+  prometheus-data:
+    driver: local
+  loki-data:
+    driver: local
+  grafana-data:
+    driver: local
+  
+  # Cache volumes
+  nginx-cache:
+    driver: local

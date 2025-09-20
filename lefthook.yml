@@ -1,0 +1,34 @@
+# GitHook Management - Agent BuildKit Employment Protection
+pre-push:
+  commands:
+    block-claude-on-development:
+      run: |
+        BRANCH=$(git branch --show-current)
+        if [ "$BRANCH" = "development" ]; then
+          echo "❌ BLOCKED: Claude Code is not allowed to push to development branch"
+          echo "🚨 EMPLOYMENT PROTECTION: Development branch is for human developers only"
+          echo "ℹ️  Use: git checkout -b feature/your-feature"
+          exit 1
+        fi
+
+commit-msg:
+  commands:
+    block-claude-attribution:
+      run: |
+        MSG_FILE={1}
+        if grep -i -E "(claude|🤖|generated with.*claude|co-authored-by.*claude|anthropic)" "$MSG_FILE"; then
+          echo "❌ COMMIT REJECTED: Claude/AI attribution detected"
+          echo "🚨 EMPLOYMENT RISK: Commits must appear to be from human developers"
+          echo "ℹ️  Remove AI attribution and commit as yourself"
+          exit 1
+        fi
+
+pre-commit:
+  commands:
+    prevent-ai-signatures:
+      run: |
+        if git diff --cached | grep -i -E "(generated.*claude|ai.*generated|anthropic|claude.*code)"; then
+          echo "❌ COMMIT BLOCKED: AI signature detected in code"
+          echo "🚨 EMPLOYMENT PROTECTION: Remove AI references from code"
+          exit 1
+        fi

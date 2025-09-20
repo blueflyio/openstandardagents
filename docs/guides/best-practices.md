@@ -1,681 +1,575 @@
-# Best Practices
-## Production Deployment Guidelines for OAAS
+# OSSA Platform Best Practices
 
-> **Focus**: Battle-tested practices for deploying Universal Translator in production  
-> **Based on**: Real-world experience with 402+ agents in production
+## Development Best Practices
 
----
+### Code Style and Conventions
 
-## 🏗️ **Architecture Best Practices**
+#### TypeScript Standards
+```typescript
+// ✅ GOOD: Explicit types, clear naming, error handling
+interface AgentConfig {
+  name: string;
+  version: string;
+  capabilities: string[];
+  tier: 'core' | 'governed' | 'advanced';
+}
 
-### **Project Organization**
+async function registerAgent(config: AgentConfig): Promise<Agent> {
+  try {
+    validateConfig(config);
+    const agent = await agentService.create(config);
+    logger.info('Agent registered', { agentId: agent.id });
+    return agent;
+  } catch (error) {
+    logger.error('Agent registration failed', { error, config });
+    throw new AgentRegistrationError('Failed to register agent', { cause: error });
+  }
+}
 
+// ❌ BAD: Any types, poor naming, no error handling
+async function reg(data: any) {
+  const a = await svc.create(data);
+  return a;
+}
 ```
-your-project/
-├── agents/                     # OAAS-native agents
-│   ├── core/                  # Core business agents
-│   ├── integrations/          # Third-party integrations
-│   └── experimental/          # New agent testing
-├── legacy/                    # Existing agents (unchanged)
-│   ├── drupal-plugins/       # Existing Drupal agents
-│   ├── mcp-tools/           # Existing MCP tools
-│   └── langchain-tools/     # Existing LangChain tools
-├── config/
-│   ├── oaas.config.js       # OAAS configuration
-│   ├── discovery.config.js   # Discovery settings
-│   └── environments/        # Environment-specific configs
-└── tests/
-    ├── integration/         # Cross-format testing
-    └── performance/         # Performance benchmarks
+
+#### TypeScript Configuration
+```json
+// tsconfig.json - Strict mode enabled
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "NodeNext",
+    "lib": ["ES2022"],
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true
+  }
+}
 ```
 
-### **Configuration Management**
-
+#### ESLint Configuration
 ```javascript
-// config/oaas.config.js - Production configuration
-export default {
-  production: {
-    projectRoot: process.cwd(),
-    runtimeTranslation: true,
-    cacheEnabled: true,
-    validationStrict: true,          // Strict validation in production
-    discoveryPaths: [
-      'agents/core',
-      'agents/integrations',
-      'legacy/drupal-plugins',
-      'legacy/mcp-tools'
-    ],
-    excludePatterns: [
-      'node_modules/**',
-      'tests/**',
-      '**/*.test.*',
-      'agents/experimental/**'        // Exclude experimental in prod
-    ],
-    performance: {
-      maxConcurrentDiscoveries: 10,
-      discoveryTimeout: 30000,
-      translationTimeout: 5000,
-      cacheTimeout: 300000            // 5 minutes
-    },
-    monitoring: {
-      enabled: true,
-      metricsEndpoint: '/metrics',
-      healthEndpoint: '/health'
-    }
-  },
-  
-  development: {
-    projectRoot: process.cwd(),
-    runtimeTranslation: true,
-    cacheEnabled: true,
-    validationStrict: false,         // Relaxed validation for dev
-    debug: true,
-    discoveryPaths: [
-      'agents',
-      'legacy',
-      'experiments'                   // Include experiments in dev
-    ]
+// .eslintrc.js
+module.exports = {
+  parser: '@typescript-eslint/parser',
+  extends: [
+    'eslint:recommended',
+    'plugin:@typescript-eslint/recommended',
+    'plugin:security/recommended',
+    'prettier'
+  ],
+  rules: {
+    '@typescript-eslint/explicit-function-return-type': 'error',
+    '@typescript-eslint/no-explicit-any': 'error',
+    '@typescript-eslint/no-unused-vars': 'error',
+    'security/detect-object-injection': 'warn',
+    'no-console': ['error', { allow: ['warn', 'error'] }]
   }
 };
 ```
 
----
+### Testing Standards
 
-## ⚡ **Performance Optimization**
-
-### **Caching Strategies**
-
+#### Vitest Configuration
 ```typescript
-// Intelligent caching configuration
-const service = new OAASService({
-  projectRoot: process.cwd(),
-  cacheEnabled: true,
-  cacheStrategy: {
-    // Discovery cache
-    discovery: {
-      enabled: true,
-      ttl: 300000,                   // 5 minutes
-      maxSize: 1000,                 // Max 1000 agents in cache
-      persistToDisk: true            // Survive restarts
-    },
-    
-    // Translation cache  
-    translation: {
-      enabled: true,
-      ttl: 600000,                   // 10 minutes
-      maxSize: 500,                  // Max 500 translations
-      invalidateOnSourceChange: true  // Smart invalidation
-    },
-    
-    // Execution cache (for idempotent operations)
-    execution: {
-      enabled: true,
-      ttl: 60000,                    // 1 minute
-      maxSize: 100,
-      keyGenerator: (agentId, capability, input) => {
-        // Custom cache key generation
-        return `${agentId}:${capability}:${hash(input)}`;
+// vitest.config.ts
+import { defineConfig } from 'vitest/config';
+
+export default defineConfig({
+  test: {
+    globals: true,
+    environment: 'node',
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'json', 'html'],
+      exclude: ['node_modules/', 'dist/', '*.config.ts'],
+      thresholds: {
+        statements: 80,
+        branches: 75,
+        functions: 80,
+        lines: 80
       }
-    }
+    },
+    setupFiles: ['./tests/setup.ts'],
+    testTimeout: 10000,
+    hookTimeout: 10000
   }
 });
 ```
 
-### **Batch Operations**
-
+#### Test Structure
 ```typescript
-// Efficient batch discovery
-class OptimizedOAASService extends OAASService {
-  async discoverAgentsBatch(batchSize: number = 50): Promise<DiscoveredAgent[]> {
-    const discoveryPaths = this.config.discoveryPaths || ['.'];
-    const batches = this.chunkArray(discoveryPaths, batchSize);
+// Follow AAA pattern: Arrange, Act, Assert
+describe('AgentService', () => {
+  let service: AgentService;
+  
+  beforeEach(() => {
+    service = new AgentService();
+  });
+  
+  describe('registerAgent', () => {
+    it('should register a valid agent', async () => {
+      // Arrange
+      const config: AgentConfig = {
+        name: 'test-agent',
+        version: '1.0.0',
+        capabilities: ['nlp', 'translation'],
+        tier: 'core'
+      };
+      
+      // Act
+      const agent = await service.registerAgent(config);
+      
+      // Assert
+      expect(agent).toBeDefined();
+      expect(agent.name).toBe(config.name);
+      expect(agent.status).toBe('active');
+    });
+  });
+});
+```
+
+### API Design Principles
+
+#### RESTful Resource Design
+```yaml
+# ✅ GOOD: Consistent, versioned, resource-based
+endpoints:
+  - GET /api/v1/agents?tier=advanced&limit=20
+  - POST /api/v1/agents
+  - GET /api/v1/agents/{id}
+  - PUT /api/v1/agents/{id}
+  - DELETE /api/v1/agents/{id}
+
+# ❌ BAD: Inconsistent, action-based
+bad_endpoints:
+  - GET /getAgents
+  - POST /createNewAgent
+  - GET /agent_details?agent={id}
+```
+
+#### Error Handling Standards
+```typescript
+// Use RFC7807 Problem Details
+class ProblemDetails {
+  type: string;      // URI reference
+  title: string;     // Human-readable summary
+  status: number;    // HTTP status code
+  detail?: string;   // Specific error details
+  instance?: string; // URI of specific occurrence
+  traceId: string;   // Correlation ID for tracing
+}
+
+// Example usage
+throw new ProblemDetails({
+  type: 'https://api.llm.bluefly.io/problems/agent-not-found',
+  title: 'Agent Not Found',
+  status: 404,
+  detail: `Agent with ID ${agentId} does not exist`,
+  instance: `/api/v1/agents/${agentId}`
+});
+```
+
+### Security Best Practices
+
+#### Secrets Management
+```yaml
+# Never hardcode secrets
+❌ BAD:
+  database_url: "postgresql://user:password@localhost/db"
+  api_key: "sk_live_1234567890"
+  
+✅ GOOD:
+  database_url: ${DATABASE_URL}
+  api_key: ${API_KEY}
+  
+# Use secret management tools
+secrets_management:
+  development: .env files with .env.example
+  staging: AWS Secrets Manager / Parameter Store
+  production: HashiCorp Vault / AWS KMS
+```
+
+#### Input Validation
+```typescript
+// Always validate and sanitize inputs
+import { z } from 'zod';
+
+const AgentSchema = z.object({
+  name: z.string()
+    .min(3, 'Name must be at least 3 characters')
+    .max(50, 'Name must be at most 50 characters')
+    .regex(/^[a-zA-Z0-9-_]+$/, 'Invalid characters in name'),
+  version: z.string()
+    .regex(/^\d+\.\d+\.\d+$/, 'Version must follow semver'),
+  capabilities: z.array(z.string())
+    .min(1, 'At least one capability required')
+    .max(20, 'Maximum 20 capabilities allowed'),
+  tier: z.enum(['core', 'governed', 'advanced'])
+});
+
+function validateInput(input: unknown): AgentConfig {
+  return AgentSchema.parse(input);
+}
+```
+
+### Performance Optimization
+
+#### Database Best Practices
+```typescript
+// Use connection pooling
+const pool = new Pool({
+  host: process.env.DB_HOST,
+  port: parseInt(process.env.DB_PORT || '5432'),
+  database: process.env.DB_NAME,
+  max: 20, // Maximum pool size
+  idleTimeoutMillis: 30000,
+  connectionTimeoutMillis: 2000,
+});
+
+// Use prepared statements to prevent SQL injection
+const getAgentQuery = {
+  name: 'get-agent',
+  text: 'SELECT * FROM agents WHERE id = $1 AND deleted_at IS NULL',
+  values: [agentId]
+};
+
+// Implement query result caching
+class AgentRepository {
+  private cache: Redis;
+  
+  async findById(id: string): Promise<Agent> {
+    // Check cache first
+    const cached = await this.cache.get(`agent:${id}`);
+    if (cached) return JSON.parse(cached);
     
-    const results = await Promise.all(
-      batches.map(batch => this.discovery.discoverPathsBatch(batch))
+    // Query database
+    const result = await this.db.query(getAgentQuery);
+    const agent = result.rows[0];
+    
+    // Cache result with TTL
+    await this.cache.setex(`agent:${id}`, 3600, JSON.stringify(agent));
+    
+    return agent;
+  }
+}
+```
+
+#### Caching Strategy
+```yaml
+caching_layers:
+  cdn_cache:
+    static_assets: 1 year
+    api_responses: 5 minutes
+    
+  application_cache:
+    session_data: 5 minutes
+    user_preferences: 1 hour
+    agent_list: 10 minutes
+    discovery_results: 5 minutes
+    
+  database_cache:
+    query_results: 5 minutes
+    materialized_views: 1 hour
+    
+  redis_cache:
+    hot_data: 60 seconds
+    warm_data: 5 minutes
+    cold_data: 1 hour
+```
+
+### Drupal-Specific Best Practices
+
+#### Drupal 11 Coding Standards
+```php
+<?php
+// Follow Drupal coding standards (PHPCS)
+namespace Drupal\ossa_agents\Controller;
+
+use Drupal\Core\Controller\ControllerBase;
+use Symfony\Component\DependencyInjection\ContainerInterface;
+use Symfony\Component\HttpFoundation\JsonResponse;
+
+/**
+ * Provides agent management endpoints.
+ */
+class AgentController extends ControllerBase {
+  
+  /**
+   * The agent service.
+   *
+   * @var \Drupal\ossa_agents\Service\AgentServiceInterface
+   */
+  protected $agentService;
+  
+  /**
+   * {@inheritdoc}
+   */
+  public static function create(ContainerInterface $container) {
+    return new static(
+      $container->get('ossa_agents.agent_service')
     );
-    
-    return results.flat();
   }
   
-  async executeCapabilitiesBatch(
-    executions: Array<{agentId: string, capability: string, input: any}>
-  ): Promise<any[]> {
-    // Parallel execution with concurrency control
-    const semaphore = new Semaphore(this.config.maxConcurrentExecutions || 10);
-    
-    return Promise.all(
-      executions.map(async (exec) => {
-        await semaphore.acquire();
-        try {
-          return await this.executeCapability(exec.agentId, exec.capability, exec.input);
-        } finally {
-          semaphore.release();
-        }
-      })
-    );
+  /**
+   * Lists all agents.
+   *
+   * @return \Symfony\Component\HttpFoundation\JsonResponse
+   *   JSON response with agent list.
+   */
+  public function list(): JsonResponse {
+    $agents = $this->agentService->getAllAgents();
+    return new JsonResponse($agents);
   }
 }
 ```
 
----
+#### PHPStan Configuration
+```yaml
+# phpstan.neon
+parameters:
+  level: 8  # Maximum strictness
+  paths:
+    - src
+    - modules/custom
+  excludePaths:
+    - */tests/*
+    - */node_modules/*
+  checkMissingIterableValueType: false
+  reportUnmatchedIgnoredErrors: false
+```
 
-## 🛡️ **Security Best Practices**
+#### PHPUnit Coverage
+```xml
+<!-- phpunit.xml -->
+<phpunit>
+  <coverage processUncoveredFiles="true">
+    <include>
+      <directory suffix=".php">src</directory>
+      <directory suffix=".php">modules/custom</directory>
+    </include>
+    <exclude>
+      <directory>tests</directory>
+    </exclude>
+    <report>
+      <html outputDirectory="coverage-report"/>
+      <text outputFile="php://stdout" showUncoveredFiles="true"/>
+    </report>
+  </coverage>
+  <testsuites>
+    <testsuite name="unit">
+      <directory>tests/Unit</directory>
+    </testsuite>
+    <testsuite name="kernel">
+      <directory>tests/Kernel</directory>
+    </testsuite>
+  </testsuites>
+</phpunit>
+```
 
-### **Input Validation**
+#### Drupal Performance Optimization
+```php
+// Use render caching
+$build = [
+  '#theme' => 'agent_list',
+  '#agents' => $agents,
+  '#cache' => [
+    'contexts' => ['user.permissions'],
+    'tags' => ['agent_list'],
+    'max-age' => 300, // 5 minutes
+  ],
+];
 
+// Use BigPipe for progressive loading
+$build['#attached']['library'][] = 'core/drupal.ajax';
+$build['#attached']['drupalSettings']['bigPipe'] = TRUE;
+
+// Queue workers for async processing
+\Drupal::queue('agent_processing')->createItem($agent_data);
+```
+
+### CI/CD Best Practices
+
+#### GitLab CI Pipeline
+```yaml
+stages:
+  - validate
+  - build
+  - test
+  - security
+  - deploy
+
+variables:
+  DOCKER_DRIVER: overlay2
+  DOCKER_TLS_CERTDIR: ""
+
+validate:
+  stage: validate
+  script:
+    - npm run lint
+    - npm run typecheck
+    - composer validate
+    - ./vendor/bin/phpcs
+    - ./vendor/bin/phpstan analyse
+
+build:
+  stage: build
+  script:
+    - npm ci
+    - npm run build
+    - composer install --no-dev --optimize-autoloader
+  artifacts:
+    paths:
+      - dist/
+      - vendor/
+    expire_in: 1 hour
+
+test:
+  stage: test
+  parallel:
+    matrix:
+      - TEST_SUITE: [unit, integration, e2e]
+  script:
+    - npm run test:$TEST_SUITE
+    - ./vendor/bin/phpunit --testsuite=$TEST_SUITE
+  coverage: '/Coverage: \d+\.\d+%/'
+
+security:
+  stage: security
+  script:
+    - npm audit --audit-level=high
+    - composer audit
+    - trivy fs --severity HIGH,CRITICAL .
+
+deploy:
+  stage: deploy
+  script:
+    - npm run deploy:$CI_ENVIRONMENT_NAME
+  environment:
+    name: $CI_ENVIRONMENT_NAME
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+      when: manual
+```
+
+### Documentation Standards
+
+#### Code Documentation
 ```typescript
-// Comprehensive input validation
-import Ajv from 'ajv';
-import addFormats from 'ajv-formats';
-
-class SecureOAASService extends OAASService {
-  private ajv = addFormats(new Ajv({ strict: false }));
-  
-  async executeCapability(
-    agentId: string, 
-    capabilityName: string, 
-    input: any,
-    options: ExecutionOptions = {}
-  ): Promise<any> {
-    // 1. Validate agent exists and is trusted
-    const agent = await this.registry.getAgent(agentId);
-    if (!agent) {
-      throw new OAASSecurityError(`Agent ${agentId} not found`);
-    }
-    
-    if (agent.metadata?.trusted !== true && !options.allowUntrusted) {
-      throw new OAASSecurityError(`Agent ${agentId} is not trusted`);
-    }
-    
-    // 2. Validate capability exists
-    const capability = agent.capabilities.find(c => c.name === capabilityName);
-    if (!capability) {
-      throw new OAASSecurityError(`Capability ${capabilityName} not found`);
-    }
-    
-    // 3. Validate input against schema
-    if (capability.input_schema) {
-      const validate = this.ajv.compile(capability.input_schema);
-      if (!validate(input)) {
-        throw new OAASValidationError(`Invalid input: ${validate.errors}`);
-      }
-    }
-    
-    // 4. Apply security constraints
-    const secureOptions = {
-      ...options,
-      timeout: Math.min(options.timeout || 30000, 60000), // Max 60s
-      memoryLimit: options.memoryLimit || '128MB',
-      networkAccess: options.networkAccess || false,
-      filesystemAccess: options.filesystemAccess || 'readonly'
-    };
-    
-    return super.executeCapability(agentId, capabilityName, input, secureOptions);
-  }
+/**
+ * Registers a new agent in the OSSA platform.
+ * 
+ * @param config - Agent configuration object
+ * @returns Promise resolving to the created Agent
+ * @throws {ValidationError} If configuration is invalid
+ * @throws {ConflictError} If agent name already exists
+ * 
+ * @example
+ * ```typescript
+ * const agent = await registerAgent({
+ *   name: 'nlp-processor',
+ *   version: '1.0.0',
+ *   capabilities: ['text-analysis'],
+ *   tier: 'advanced'
+ * });
+ * ```
+ */
+async function registerAgent(config: AgentConfig): Promise<Agent> {
+  // Implementation
 }
 ```
 
-### **Sandboxing**
+#### Documentation as Code
+- Keep docs in repository
+- Version control all changes
+- Review docs in PRs
+- Validate in CI pipeline
+- Auto-generate from code where possible
+- Check for drift between code and docs
 
+### Monitoring & Observability
+
+#### Structured Logging
 ```typescript
-// Execution sandboxing
-interface SandboxOptions {
-  timeout: number;
-  memoryLimit: string;
-  cpuLimit: number;
-  networkAccess: boolean;
-  filesystemAccess: 'none' | 'readonly' | 'restricted';
-  allowedDomains?: string[];
-  tempDirectory?: string;
-}
+import { Logger } from 'winston';
 
-class SandboxedRuntimeBridge extends RuntimeBridge {
-  async executeCapability(
-    agent: DiscoveredAgent,
-    capability: AgentCapability,
-    input: any,
-    sandbox: SandboxOptions
-  ): Promise<any> {
-    // Create isolated execution environment
-    const isolate = await this.createIsolate(sandbox);
-    
-    try {
-      return await isolate.execute({
-        agent,
-        capability,
-        input,
-        constraints: sandbox
-      });
-    } finally {
-      await isolate.cleanup();
-    }
-  }
-  
-  private async createIsolate(options: SandboxOptions): Promise<ExecutionIsolate> {
-    // Implementation depends on your sandboxing solution
-    // Options: Docker containers, VM2, Worker threads, etc.
-    return new DockerExecutionIsolate(options);
-  }
-}
-```
-
----
-
-## 📊 **Monitoring & Observability**
-
-### **Metrics Collection**
-
-```typescript
-// Comprehensive metrics collection
-import { createPrometheusMetrics } from '@prometheus/client';
-
-class MonitoredOAASService extends OAASService {
-  private metrics = createPrometheusMetrics({
-    // Discovery metrics
-    discoveryDuration: new Histogram({
-      name: 'oaas_discovery_duration_seconds',
-      help: 'Time spent discovering agents',
-      labelNames: ['format', 'status']
-    }),
-    
-    discoveredAgents: new Gauge({
-      name: 'oaas_discovered_agents_total',
-      help: 'Total number of discovered agents',
-      labelNames: ['format']
-    }),
-    
-    // Translation metrics
-    translationDuration: new Histogram({
-      name: 'oaas_translation_duration_seconds',
-      help: 'Time spent translating agents',
-      labelNames: ['from_format', 'to_format', 'status']
-    }),
-    
-    // Execution metrics
-    executionDuration: new Histogram({
-      name: 'oaas_execution_duration_seconds',
-      help: 'Time spent executing capabilities',
-      labelNames: ['agent_id', 'capability', 'status']
-    }),
-    
-    executionErrors: new Counter({
-      name: 'oaas_execution_errors_total',
-      help: 'Total execution errors',
-      labelNames: ['agent_id', 'capability', 'error_type']
-    }),
-    
-    // Cache metrics
-    cacheHits: new Counter({
-      name: 'oaas_cache_hits_total',
-      help: 'Cache hits',
-      labelNames: ['cache_type']
+const logger = new Logger({
+  format: winston.format.combine(
+    winston.format.timestamp(),
+    winston.format.errors({ stack: true }),
+    winston.format.json()
+  ),
+  defaultMeta: { service: 'ossa-platform' },
+  transports: [
+    new winston.transports.Console({
+      level: process.env.LOG_LEVEL || 'info'
     })
-  });
-  
-  async discoverAgents(): Promise<DiscoveredAgent[]> {
-    const timer = this.metrics.discoveryDuration.startTimer();
-    
-    try {
-      const agents = await super.discoverAgents();
-      
-      // Record metrics
-      timer({ status: 'success' });
-      
-      const formatCounts = agents.reduce((acc, agent) => {
-        acc[agent.format] = (acc[agent.format] || 0) + 1;
-        return acc;
-      }, {} as Record<string, number>);
-      
-      Object.entries(formatCounts).forEach(([format, count]) => {
-        this.metrics.discoveredAgents.set({ format }, count);
-      });
-      
-      return agents;
-    } catch (error) {
-      timer({ status: 'error' });
-      throw error;
-    }
-  }
-}
+  ]
+});
+
+// Log with structured data
+logger.info('Agent registered', {
+  agentId: agent.id,
+  agentName: agent.name,
+  tier: agent.tier,
+  userId: user.id,
+  duration: endTime - startTime,
+  correlationId: req.correlationId
+});
 ```
 
-### **Health Checks**
-
+#### Health Checks
 ```typescript
-// Comprehensive health checking
-class HealthCheckedOAASService extends OAASService {
-  async getHealthStatus(): Promise<HealthStatus> {
-    const checks = await Promise.allSettled([
-      this.checkDiscoveryHealth(),
-      this.checkTranslationHealth(),
-      this.checkExecutionHealth(),
-      this.checkCacheHealth(),
-      this.checkDependencyHealth()
-    ]);
-    
-    return {
-      status: checks.every(c => c.status === 'fulfilled') ? 'healthy' : 'degraded',
-      timestamp: new Date().toISOString(),
-      checks: {
-        discovery: this.getCheckResult(checks[0]),
-        translation: this.getCheckResult(checks[1]),
-        execution: this.getCheckResult(checks[2]),
-        cache: this.getCheckResult(checks[3]),
-        dependencies: this.getCheckResult(checks[4])
-      },
-      metrics: await this.getHealthMetrics()
-    };
-  }
+// Implement comprehensive health checks
+app.get('/health/live', (req, res) => {
+  res.status(200).json({ status: 'alive' });
+});
+
+app.get('/health/ready', async (req, res) => {
+  const checks = await Promise.all([
+    checkDatabase(),
+    checkRedis(),
+    checkKafka()
+  ]);
   
-  private async checkDiscoveryHealth(): Promise<HealthCheck> {
-    const startTime = Date.now();
-    
-    try {
-      // Quick discovery test
-      const testAgents = await this.discovery.discoverAll({ limit: 5, timeout: 5000 });
-      const duration = Date.now() - startTime;
-      
-      return {
-        status: 'healthy',
-        message: `Discovered ${testAgents.length} test agents in ${duration}ms`,
-        duration
-      };
-    } catch (error) {
-      return {
-        status: 'unhealthy',
-        message: `Discovery failed: ${error.message}`,
-        duration: Date.now() - startTime
-      };
-    }
-  }
-}
-```
-
----
-
-## 🚀 **Deployment Strategies**
-
-### **Blue-Green Deployment**
-
-```typescript
-// Blue-green deployment support
-class DeploymentAwareOAASService extends OAASService {
-  constructor(config: OAASServiceConfig & { deploymentSlot?: 'blue' | 'green' }) {
-    super({
-      ...config,
-      cachePrefix: `oaas_${config.deploymentSlot || 'default'}`,
-      discoveryPaths: config.discoveryPaths?.map(path => 
-        `${config.deploymentSlot || 'current'}/${path}`
-      )
-    });
-  }
-  
-  async warmup(): Promise<void> {
-    // Pre-warm the service before switching traffic
-    console.log('🔥 Warming up OAAS service...');
-    
-    // 1. Discover all agents
-    await this.discoverAgents();
-    
-    // 2. Pre-translate common combinations
-    const agents = await this.getAgentRegistry();
-    const commonFrameworks = ['langchain', 'openai'];
-    
-    await Promise.all(
-      agents.slice(0, 10).map(agent =>  // Warm up top 10 agents
-        Promise.all(
-          commonFrameworks.map(framework =>
-            this.getAgentForFramework(agent.id, framework as any)
-          )
-        )
-      )
-    );
-    
-    console.log('✅ OAAS service warmed up and ready');
-  }
-}
-```
-
-### **Canary Deployment**
-
-```typescript
-// Canary deployment with feature flags
-class CanaryOAASService extends OAASService {
-  constructor(
-    config: OAASServiceConfig, 
-    private featureFlags: FeatureFlags,
-    private canaryPercentage: number = 10
-  ) {
-    super(config);
-  }
-  
-  async executeCapability(
-    agentId: string,
-    capabilityName: string,
-    input: any
-  ): Promise<any> {
-    // Route percentage of traffic to canary version
-    const useCanary = Math.random() * 100 < this.canaryPercentage;
-    
-    if (useCanary && this.featureFlags.canaryEnabled) {
-      return this.executeCapabilityCanary(agentId, capabilityName, input);
-    }
-    
-    return super.executeCapability(agentId, capabilityName, input);
-  }
-  
-  private async executeCapabilityCanary(
-    agentId: string,
-    capabilityName: string,
-    input: any
-  ): Promise<any> {
-    // Execute on canary version with enhanced monitoring
-    const timer = Date.now();
-    
-    try {
-      const result = await super.executeCapability(agentId, capabilityName, input);
-      
-      // Log success
-      this.logCanaryMetric('success', agentId, capabilityName, Date.now() - timer);
-      return result;
-      
-    } catch (error) {
-      // Log failure and fallback to stable
-      this.logCanaryMetric('error', agentId, capabilityName, Date.now() - timer, error);
-      
-      // Fallback to stable version
-      return super.executeCapability(agentId, capabilityName, input);
-    }
-  }
-}
-```
-
----
-
-## 🧪 **Testing Strategies**
-
-### **Integration Testing**
-
-```typescript
-// Comprehensive integration tests
-describe('OAAS Production Integration', () => {
-  let service: OAASService;
-  
-  beforeAll(async () => {
-    service = new OAASService({
-      projectRoot: './test-fixtures',
-      runtimeTranslation: true,
-      cacheEnabled: false  // Disable cache for testing
-    });
-  });
-  
-  describe('Discovery', () => {
-    it('should discover all expected agents', async () => {
-      const agents = await service.discoverAgents();
-      
-      // Test agent counts by format
-      const formatCounts = agents.reduce((acc, agent) => {
-        acc[agent.format] = (acc[agent.format] || 0) + 1;
-        return acc;
-      }, {});
-      
-      expect(formatCounts.drupal).toBeGreaterThanOrEqual(5);
-      expect(formatCounts.mcp).toBeGreaterThanOrEqual(3);
-      expect(formatCounts.langchain).toBeGreaterThanOrEqual(2);
-    });
-    
-    it('should complete discovery within performance limits', async () => {
-      const startTime = Date.now();
-      await service.discoverAgents();
-      const duration = Date.now() - startTime;
-      
-      expect(duration).toBeLessThan(10000); // 10 seconds max
-    });
-  });
-  
-  describe('Cross-format Translation', () => {
-    it('should translate agents between all supported formats', async () => {
-      const agents = await service.discoverAgents();
-      const testAgent = agents[0];
-      
-      const frameworks = ['langchain', 'crewai', 'openai', 'anthropic'] as const;
-      
-      for (const framework of frameworks) {
-        const translated = await service.getAgentForFramework(
-          testAgent.id, framework
-        );
-        
-        expect(translated).toBeDefined();
-        expect(translated.format).toBe(framework);
-      }
-    });
-  });
-  
-  describe('Error Handling', () => {
-    it('should handle non-existent agents gracefully', async () => {
-      await expect(
-        service.executeCapability('non-existent', 'test', {})
-      ).rejects.toThrow('Agent non-existent not found');
-    });
-    
-    it('should handle malformed input gracefully', async () => {
-      const agents = await service.discoverAgents();
-      const testAgent = agents[0];
-      
-      // Test with invalid input
-      await expect(
-        service.executeCapability(testAgent.id, 'invalid-capability', null)
-      ).rejects.toThrow();
-    });
+  const ready = checks.every(check => check.healthy);
+  res.status(ready ? 200 : 503).json({
+    status: ready ? 'ready' : 'not ready',
+    checks
   });
 });
 ```
 
-### **Performance Testing**
+## Operational Best Practices
 
-```typescript
-// Load testing
-describe('OAAS Performance', () => {
-  it('should handle concurrent discovery requests', async () => {
-    const concurrentRequests = 10;
-    const startTime = Date.now();
-    
-    const promises = Array(concurrentRequests).fill(null).map(() =>
-      service.discoverAgents()
-    );
-    
-    const results = await Promise.all(promises);
-    const duration = Date.now() - startTime;
-    
-    // All requests should succeed
-    expect(results).toHaveLength(concurrentRequests);
-    
-    // Should complete within reasonable time
-    expect(duration).toBeLessThan(15000); // 15 seconds for 10 concurrent
-  });
-  
-  it('should maintain performance under load', async () => {
-    const agents = await service.discoverAgents();
-    const testAgent = agents[0];
-    
-    // Execute 50 concurrent capability calls
-    const executions = Array(50).fill(null).map(() =>
-      service.executeCapability(testAgent.id, testAgent.capabilities[0].name, {})
-    );
-    
-    const startTime = Date.now();
-    await Promise.all(executions);
-    const duration = Date.now() - startTime;
-    
-    const avgLatency = duration / 50;
-    expect(avgLatency).toBeLessThan(200); // <200ms average
-  });
-});
-```
+### Deployment Strategy
+- Use blue-green deployments for zero downtime
+- Implement feature flags for gradual rollouts
+- Maintain rollback procedures
+- Test in staging environment first
+- Use canary deployments for critical changes
 
----
+### Incident Response
+1. **Detection**: Automated monitoring and alerting
+2. **Triage**: Assess severity and impact
+3. **Communication**: Notify stakeholders via established channels
+4. **Investigation**: Root cause analysis with logs and metrics
+5. **Resolution**: Apply fix and verify
+6. **Post-mortem**: Document lessons learned without blame
 
-## 🔧 **Troubleshooting Guide**
-
-### **Common Issues & Solutions**
-
-| Issue | Symptoms | Solution |
-|-------|----------|----------|
-| **Slow Discovery** | Discovery takes >10 seconds | Enable caching, optimize discoveryPaths, reduce excludePatterns |
-| **Translation Failures** | Agents fail to translate | Check agent format compliance, enable debug mode |
-| **Execution Timeouts** | Capabilities timeout | Increase timeout limits, check agent resource usage |
-| **Memory Issues** | Out of memory errors | Reduce batch sizes, enable garbage collection, limit cache size |
-| **Cache Invalidation** | Stale cached results | Implement file watching, reduce cache TTL |
-
-### **Debug Configuration**
-
-```typescript
-// Enhanced debugging
-const debugService = new OAASService({
-  projectRoot: process.cwd(),
-  debug: true,
-  logging: {
-    level: 'debug',
-    format: 'detailed',
-    enableTracing: true,
-    logFile: 'oaas-debug.log'
-  },
-  profiling: {
-    enabled: true,
-    sampleRate: 0.1,
-    memoryTracking: true
-  }
-});
-```
-
----
-
-## 📋 **Production Checklist**
-
-### **Pre-Deployment**
-- [ ] Run full test suite
-- [ ] Performance benchmarking completed
-- [ ] Security audit passed
-- [ ] Monitoring dashboards configured
-- [ ] Alerting rules defined
-- [ ] Rollback plan tested
-
-### **Deployment**
-- [ ] Feature flags configured
-- [ ] Canary percentage set appropriately
-- [ ] Health checks responding
-- [ ] Metrics being collected
-- [ ] Logs being aggregated
-- [ ] Cache warmed up
-
-### **Post-Deployment**
-- [ ] Monitor error rates
-- [ ] Check performance metrics
-- [ ] Verify agent discovery working
-- [ ] Test cross-format translation
-- [ ] Validate critical workflows
-- [ ] Document any issues
-
----
-
-**🎯 Following these best practices ensures reliable, performant, and secure OAAS deployment in production environments.**
+### Capacity Planning
+- Monitor resource utilization trends
+- Plan for 20% headroom on all resources
+- Load test before major releases
+- Review and adjust quarterly
+- Implement auto-scaling for traffic spikes

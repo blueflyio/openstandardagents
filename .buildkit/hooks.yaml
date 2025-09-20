@@ -1,0 +1,23 @@
+# PreToolUse Hooks Configuration - Agent BuildKit
+enabled: true
+environment: development
+compliance: [SOC2]
+registered_hooks:
+  - name: command-validation
+    class: CommandValidationHook
+    module: security/CommandValidationHook
+    priority: 100
+    enabled: true
+hooks:
+  security:
+    enabled: true
+    priority: 100
+    config:
+      maxCommandLength: 1000
+      allowedDirectories: [/tmp, /Users/flux423/Sites/LLM/OSSA]
+      blockedDirectories: [/etc, /sys, /proc]
+      blockedCommands: [rm, dd, format]
+      blockedPatterns: ["rm -rf /", "sudo rm", "chmod 777"]
+audit:
+  enabled: true
+  logLevel: info

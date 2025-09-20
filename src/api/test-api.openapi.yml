@@ -1,0 +1,20 @@
+openapi: 3.1.0
+info:
+  title: test-api API
+  version: 1.0.0
+  description: Test API with RASP protection
+  x-rasp-enabled: true
+  x-rasp-config:
+    monitoring: true
+    protection: true
+    alerting: true
+paths: {}
+components:
+  securitySchemes:
+    RASPToken:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: RASP (Runtime Application Self-Protection) authentication token
+security:
+  - RASPToken: []

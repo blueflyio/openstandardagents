@@ -1,0 +1,41 @@
+{
+  "version": "1.0.0",
+  "enabled": true,
+  "workflow": {
+    "feature_branches_only": true,
+    "ci_driven_development": true,
+    "no_direct_development_commits": true,
+    "main_branch_protection": true
+  },
+  "branch_naming": {
+    "patterns": {
+      "feature": "feature/<scope-kebab-case>",
+      "fix": "fix/<scope-kebab-case>",
+      "chore": "chore/<scope-kebab-case>",
+      "bot": "bot/<agent-name>/<task>"
+    },
+    "validation": {
+      "enforce_naming": true,
+      "reject_version_numbers": true,
+      "require_kebab_case": true
+    }
+  },
+  "ci_rules": {
+    "target_branch": "development",
+    "require_approval": true,
+    "auto_fast_forward": true,
+    "pipeline_success_required": true
+  },
+  "protection": {
+    "block_direct_development_push": true,
+    "block_direct_main_push": true,
+    "quarantine_deleted_branches": true,
+    "backup_on_conflicts": true
+  },
+  "token_optimization": {
+    "agent_first_policy": true,
+    "prevent_manual_coding_over_500_tokens": true,
+    "require_agent_justification": true,
+    "track_token_usage": true
+  }
+}

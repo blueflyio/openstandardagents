@@ -1,0 +1,800 @@
+openapi: 3.1.0
+info:
+  title: REBUILD Projects Audit API
+  description: |
+    REBUILD Projects Audit System for OSSA v0.1.9.
+    Automated audit and assessment system for 55 REBUILD projects with comprehensive 
+    scoring, classification, and migration planning capabilities.
+  version: "@bluefly/ossa/v0.1.9"
+  contact:
+    name: OSSA Framework
+    url: https://gitlab.bluefly.io/llm/openapi-ai-agents-standard
+  license:
+    name: MIT
+    url: https://gitlab.bluefly.io/llm/openapi-ai-agents-standard/-/blob/main/LICENSE
+
+servers:
+  - url: https://api.ossa.bluefly.io/rebuild-audit
+    description: REBUILD Audit API Server
+
+paths:
+  /projects/discover:
+    post:
+      summary: Discover and classify projects
+      description: Automated discovery and initial classification of REBUILD projects
+      operationId: discoverProjects
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProjectDiscoveryRequest'
+      responses:
+        '200':
+          description: Projects discovered and classified
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProjectDiscoveryResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /projects/{projectId}/audit:
+    post:
+      summary: Perform comprehensive project audit
+      description: Deep technical audit with scoring matrix and recommendations
+      operationId: auditProject
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProjectAuditRequest'
+      responses:
+        '200':
+          description: Project audit completed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProjectAuditResponse'
+
+  /projects/{projectId}/migration-plan:
+    post:
+      summary: Generate migration strategy
+      description: Create detailed migration plan based on audit results
+      operationId: generateMigrationPlan
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MigrationPlanRequest'
+      responses:
+        '200':
+          description: Migration plan generated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MigrationPlanResponse'
+
+  /projects:
+    get:
+      summary: List all projects
+      description: Get paginated list of all REBUILD projects with filters
+      operationId: listProjects
+      parameters:
+        - name: category
+          in: query
+          schema:
+            type: string
+            enum: [legacy, modern, hybrid, deprecated, critical]
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [discovered, audited, planned, migrating, completed, archived]
+        - name: priority
+          in: query
+          schema:
+            type: string
+            enum: [low, medium, high, critical]
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+            maximum: 100
+      responses:
+        '200':
+          description: List of projects
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProjectListResponse'
+
+  /projects/{projectId}:
+    get:
+      summary: Get project details
+      operationId: getProject
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Project details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProjectDetail'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /analytics/dashboard:
+    get:
+      summary: Get audit dashboard analytics
+      description: Comprehensive analytics and metrics for all REBUILD projects
+      operationId: getAuditDashboard
+      responses:
+        '200':
+          description: Dashboard analytics
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuditDashboard'
+
+  /reports/comprehensive:
+    post:
+      summary: Generate comprehensive audit report
+      description: Generate detailed report across all projects or filtered subset
+      operationId: generateComprehensiveReport
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReportRequest'
+      responses:
+        '200':
+          description: Report generated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReportResponse'
+            text/html:
+              schema:
+                type: string
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+
+components:
+  schemas:
+    ProjectDiscoveryRequest:
+      type: object
+      required:
+        - repositories
+      properties:
+        repositories:
+          type: array
+          items:
+            type: object
+            properties:
+              url:
+                type: string
+                format: uri
+              branch:
+                type: string
+                default: main
+              credentials:
+                type: object
+                properties:
+                  type:
+                    type: string
+                    enum: [token, ssh, basic]
+                  value:
+                    type: string
+        scanDepth:
+          type: string
+          enum: [shallow, medium, deep]
+          default: medium
+        includeArchived:
+          type: boolean
+          default: false
+
+    ProjectDiscoveryResponse:
+      type: object
+      properties:
+        discoveredProjects:
+          type: array
+          items:
+            $ref: '#/components/schemas/DiscoveredProject'
+        summary:
+          type: object
+          properties:
+            totalFound:
+              type: integer
+            byCategory:
+              type: object
+              additionalProperties:
+                type: integer
+            byTechnology:
+              type: object
+              additionalProperties:
+                type: integer
+
+    DiscoveredProject:
+      type: object
+      properties:
+        projectId:
+          type: string
+        name:
+          type: string
+        repository:
+          type: string
+        category:
+          type: string
+          enum: [legacy, modern, hybrid, deprecated, critical]
+        technology:
+          type: object
+          properties:
+            primary:
+              type: string
+            framework:
+              type: string
+            version:
+              type: string
+            dependencies:
+              type: array
+              items:
+                type: string
+        initialScore:
+          type: number
+          minimum: 0
+          maximum: 100
+        complexity:
+          type: string
+          enum: [low, medium, high, very-high]
+
+    ProjectAuditRequest:
+      type: object
+      required:
+        - auditTypes
+      properties:
+        auditTypes:
+          type: array
+          items:
+            type: string
+            enum: [technical-debt, security, performance, architecture, dependencies, documentation]
+        depth:
+          type: string
+          enum: [quick, standard, comprehensive]
+          default: standard
+        customCriteria:
+          type: array
+          items:
+            $ref: '#/components/schemas/AuditCriterion'
+
+    ProjectAuditResponse:
+      type: object
+      properties:
+        auditId:
+          type: string
+        projectId:
+          type: string
+        overallScore:
+          type: number
+          minimum: 0
+          maximum: 100
+        categoryScores:
+          type: object
+          properties:
+            technicalDebt:
+              type: number
+            security:
+              type: number
+            performance:
+              type: number
+            architecture:
+              type: number
+            dependencies:
+              type: number
+            documentation:
+              type: number
+        findings:
+          type: array
+          items:
+            $ref: '#/components/schemas/AuditFinding'
+        recommendations:
+          type: array
+          items:
+            $ref: '#/components/schemas/AuditRecommendation'
+        modernizationReadiness:
+          type: string
+          enum: [ready, needs-preparation, major-refactor, rebuild-recommended]
+
+    MigrationPlanRequest:
+      type: object
+      required:
+        - targetArchitecture
+      properties:
+        targetArchitecture:
+          type: string
+          enum: [clean-architecture, microservices, serverless, hybrid]
+        migrationStrategy:
+          type: string
+          enum: [big-bang, strangler-fig, parallel-run, phased]
+        constraints:
+          type: object
+          properties:
+            timeline:
+              type: string
+            budget:
+              type: string
+            resources:
+              type: integer
+            downtime:
+              type: string
+
+    MigrationPlanResponse:
+      type: object
+      properties:
+        planId:
+          type: string
+        projectId:
+          type: string
+        strategy:
+          type: string
+        phases:
+          type: array
+          items:
+            $ref: '#/components/schemas/MigrationPhase'
+        timeline:
+          type: object
+          properties:
+            estimated:
+              type: string
+            phases:
+              type: array
+              items:
+                type: object
+                properties:
+                  phase:
+                    type: string
+                  duration:
+                    type: string
+                  dependencies:
+                    type: array
+                    items:
+                      type: string
+        riskAssessment:
+          $ref: '#/components/schemas/RiskAssessment'
+        resources:
+          $ref: '#/components/schemas/ResourceRequirements'
+
+    ProjectListResponse:
+      type: object
+      properties:
+        projects:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProjectSummary'
+        pagination:
+          type: object
+          properties:
+            page:
+              type: integer
+            limit:
+              type: integer
+            total:
+              type: integer
+            totalPages:
+              type: integer
+        filters:
+          type: object
+          properties:
+            applied:
+              type: object
+              additionalProperties: true
+            available:
+              type: object
+              additionalProperties:
+                type: array
+                items:
+                  type: string
+
+    ProjectDetail:
+      type: object
+      properties:
+        projectId:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        repository:
+          type: string
+        category:
+          type: string
+        status:
+          type: string
+        technology:
+          type: object
+        auditHistory:
+          type: array
+          items:
+            $ref: '#/components/schemas/AuditSummary'
+        migrationPlans:
+          type: array
+          items:
+            $ref: '#/components/schemas/MigrationPlanSummary'
+        metadata:
+          type: object
+          additionalProperties: true
+
+    AuditDashboard:
+      type: object
+      properties:
+        summary:
+          type: object
+          properties:
+            totalProjects:
+              type: integer
+            averageScore:
+              type: number
+            completedAudits:
+              type: integer
+            activeMigrations:
+              type: integer
+        distributions:
+          type: object
+          properties:
+            byCategory:
+              type: object
+              additionalProperties:
+                type: integer
+            byScore:
+              type: object
+              additionalProperties:
+                type: integer
+            byTechnology:
+              type: object
+              additionalProperties:
+                type: integer
+        trends:
+          type: object
+          properties:
+            scoreImprovement:
+              type: array
+              items:
+                type: object
+                properties:
+                  date:
+                    type: string
+                    format: date
+                  averageScore:
+                    type: number
+        priorities:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProjectPriority'
+
+    ReportRequest:
+      type: object
+      properties:
+        projectIds:
+          type: array
+          items:
+            type: string
+        reportType:
+          type: string
+          enum: [executive, technical, migration, security]
+        format:
+          type: string
+          enum: [json, html, pdf]
+          default: json
+        includeRecommendations:
+          type: boolean
+          default: true
+        customSections:
+          type: array
+          items:
+            type: string
+
+    ReportResponse:
+      type: object
+      properties:
+        reportId:
+          type: string
+        format:
+          type: string
+        generatedAt:
+          type: string
+          format: date-time
+        downloadUrl:
+          type: string
+        summary:
+          type: object
+          properties:
+            projectsIncluded:
+              type: integer
+            sectionsGenerated:
+              type: array
+              items:
+                type: string
+
+    AuditCriterion:
+      type: object
+      properties:
+        name:
+          type: string
+        weight:
+          type: number
+          minimum: 0
+          maximum: 1
+        thresholds:
+          type: object
+          properties:
+            excellent:
+              type: number
+            good:
+              type: number
+            fair:
+              type: number
+            poor:
+              type: number
+
+    AuditFinding:
+      type: object
+      properties:
+        category:
+          type: string
+        severity:
+          type: string
+          enum: [low, medium, high, critical]
+        title:
+          type: string
+        description:
+          type: string
+        location:
+          type: string
+        evidence:
+          type: array
+          items:
+            type: string
+        impact:
+          type: string
+
+    AuditRecommendation:
+      type: object
+      properties:
+        category:
+          type: string
+        priority:
+          type: string
+          enum: [low, medium, high, critical]
+        title:
+          type: string
+        description:
+          type: string
+        effort:
+          type: string
+          enum: [low, medium, high, very-high]
+        impact:
+          type: string
+          enum: [low, medium, high, very-high]
+        steps:
+          type: array
+          items:
+            type: string
+
+    MigrationPhase:
+      type: object
+      properties:
+        phaseId:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        order:
+          type: integer
+        tasks:
+          type: array
+          items:
+            $ref: '#/components/schemas/MigrationTask'
+        prerequisites:
+          type: array
+          items:
+            type: string
+        deliverables:
+          type: array
+          items:
+            type: string
+        estimatedDuration:
+          type: string
+
+    MigrationTask:
+      type: object
+      properties:
+        taskId:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        type:
+          type: string
+          enum: [analysis, development, testing, deployment, documentation]
+        estimatedHours:
+          type: number
+        skills:
+          type: array
+          items:
+            type: string
+        dependencies:
+          type: array
+          items:
+            type: string
+
+    RiskAssessment:
+      type: object
+      properties:
+        overallRisk:
+          type: string
+          enum: [low, medium, high, very-high]
+        risks:
+          type: array
+          items:
+            type: object
+            properties:
+              category:
+                type: string
+              probability:
+                type: string
+                enum: [low, medium, high]
+              impact:
+                type: string
+                enum: [low, medium, high]
+              mitigation:
+                type: string
+
+    ResourceRequirements:
+      type: object
+      properties:
+        roles:
+          type: array
+          items:
+            type: object
+            properties:
+              role:
+                type: string
+              level:
+                type: string
+                enum: [junior, mid, senior, lead]
+              estimatedHours:
+                type: number
+              skills:
+                type: array
+                items:
+                  type: string
+        infrastructure:
+          type: object
+          properties:
+            development:
+              type: array
+              items:
+                type: string
+            testing:
+              type: array
+              items:
+                type: string
+            production:
+              type: array
+              items:
+                type: string
+
+    ProjectSummary:
+      type: object
+      properties:
+        projectId:
+          type: string
+        name:
+          type: string
+        category:
+          type: string
+        status:
+          type: string
+        lastAuditScore:
+          type: number
+        lastAuditDate:
+          type: string
+          format: date
+        priority:
+          type: string
+
+    AuditSummary:
+      type: object
+      properties:
+        auditId:
+          type: string
+        date:
+          type: string
+          format: date
+        score:
+          type: number
+        type:
+          type: string
+
+    MigrationPlanSummary:
+      type: object
+      properties:
+        planId:
+          type: string
+        strategy:
+          type: string
+        status:
+          type: string
+        createdDate:
+          type: string
+          format: date
+
+    ProjectPriority:
+      type: object
+      properties:
+        projectId:
+          type: string
+        name:
+          type: string
+        priority:
+          type: string
+        reason:
+          type: string
+        dueDate:
+          type: string
+          format: date
+
+  responses:
+    BadRequest:
+      description: Bad request
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+              message:
+                type: string
+
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+              message:
+                type: string

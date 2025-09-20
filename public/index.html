@@ -43,17 +43,16 @@
             <div class="container">
                 <div class="hero-content">
                     <h1 class="hero-title">
-                        The Authoritative Standard for 
-                        <span class="highlight">AI Agent Orchestration</span>
+                        Open Specification for 
+                        <span class="highlight">AI Agent Communication</span>
                     </h1>
                     <p class="hero-description">
-                        OSSA (Open Standards for Scalable Agents) provides the definitive specification for 
-                        secure, compliant, and scalable AI agent systems. Built for enterprise-grade deployments 
-                        with regulatory compliance and production reliability.
+                        OSSA (Open Standards for Scalable Agents) is an experimental specification 
+                        for agent communication and discovery protocols. Currently in alpha development.
                     </p>
                     <div class="hero-actions">
                         <a href="#getting-started" class="btn btn-primary">Get Started</a>
-                        <a href="docs/specification/" class="btn btn-secondary">Read Specification</a>
+                        <a href="/docs/specification/agents.html" class="btn btn-secondary">Read Specification</a>
                     </div>
                     <div class="version-badge">
                         <span class="badge">v0.1.9 - Specification Standard</span>
@@ -170,17 +169,17 @@ cd my-agent-project</code></pre>
                 <div class="quickstart-links">
                     <h3>Next Steps</h3>
                     <div class="links-grid">
-                        <a href="docs/getting-started/" class="link-card">
-                            <h4>📖 Complete Tutorial</h4>
-                            <p>Step-by-step guide to building your first OSSA agent</p>
+                        <a href="/docs/specification/agents.html" class="link-card">
+                            <h4>📖 Agent Specification</h4>
+                            <p>Complete agent taxonomy and implementation standards</p>
                         </a>
-                        <a href="docs/api/" class="link-card">
+                        <a href="/api-docs.html" class="link-card">
                             <h4>🔧 API Reference</h4>
-                            <p>Complete OpenAPI specification and SDK documentation</p>
+                            <p>Interactive OpenAPI documentation with Redocly</p>
                         </a>
-                        <a href="docs/examples/" class="link-card">
-                            <h4>💡 Examples</h4>
-                            <p>Production-ready agent examples for common use cases</p>
+                        <a href="/docs/development/roadmap.html" class="link-card">
+                            <h4>💡 Development Roadmap</h4>
+                            <p>Project timeline and upcoming features</p>
                         </a>
                     </div>
                 </div>
@@ -195,68 +194,68 @@ cd my-agent-project</code></pre>
                     <div class="docs-category">
                         <h3>🚀 Getting Started</h3>
                         <ul>
-                            <li><a href="docs/overview/">Project Overview</a></li>
-                            <li><a href="docs/getting-started/">Quick Start Guide</a></li>
-                            <li><a href="docs/installation/">Installation</a></li>
-                            <li><a href="docs/first-agent/">Your First Agent</a></li>
+                            <li><a href="/docs/specification/agents.html">Agent Specification</a></li>
+                            <li><a href="/api-docs.html">API Documentation</a></li>
+                            <li><a href="#getting-started">Quick Start Guide</a></li>
+                            <li><a href="https://gitlab.bluefly.io/llm/ossa">Source Code</a></li>
                         </ul>
                     </div>
                     <div class="docs-category">
                         <h3>📋 Specification</h3>
                         <ul>
-                            <li><a href="docs/specification/">OSSA v0.1.9 Spec</a></li>
-                            <li><a href="docs/api/">API Reference</a></li>
-                            <li><a href="docs/compliance/">Compliance Standards</a></li>
-                            <li><a href="docs/federation/">Federation Protocol</a></li>
+                            <li><a href="/docs/specification/agents.html">OSSA v0.1.9 Spec</a></li>
+                            <li><a href="/api-docs.html">OpenAPI Reference</a></li>
+                            <li><a href="/src/api/ossa-complete.openapi.yml">OpenAPI YAML</a></li>
+                            <li><a href="/docs/specification/agents.html#discovery-mechanism">Discovery Protocol</a></li>
                         </ul>
                     </div>
                     <div class="docs-category">
                         <h3>🔧 Development</h3>
                         <ul>
-                            <li><a href="docs/development/">Development Guide</a></li>
-                            <li><a href="docs/testing/">Testing Strategies</a></li>
-                            <li><a href="docs/debugging/">Debugging Agents</a></li>
-                            <li><a href="docs/best-practices/">Best Practices</a></li>
+                            <li><a href="/docs/development/roadmap.html">Development Roadmap</a></li>
+                            <li><a href="/docs/specification/agents.html#implementation-standards">Implementation Standards</a></li>
+                            <li><a href="/api-docs.html">API Testing</a></li>
+                            <li><a href="/docs/specification/agents.html#communication-protocols">Communication Protocols</a></li>
                         </ul>
                     </div>
                     <div class="docs-category">
-                        <h3>🏗️ Deployment</h3>
+                        <h3>🏗️ Resources</h3>
                         <ul>
-                            <li><a href="docs/deployment/">Deployment Guide</a></li>
-                            <li><a href="docs/kubernetes/">Kubernetes Setup</a></li>
-                            <li><a href="docs/monitoring/">Monitoring & Logging</a></li>
-                            <li><a href="docs/security/">Security Configuration</a></li>
+                            <li><a href="https://gitlab.bluefly.io/llm/ossa">GitLab Repository</a></li>
+                            <li><a href="https://gitlab.bluefly.io/llm/agent_buildkit">Agent BuildKit</a></li>
+                            <li><a href="/docs/development/roadmap.html#community-contributions">Contributing</a></li>
+                            <li><a href="/docs/development/roadmap.html#get-involved">Community</a></li>
                         </ul>
                     </div>
                 </div>
             </div>
         </section>
 
-        <!-- Enterprise Section -->
+        <!-- Project Status Section -->
         <section class="enterprise">
             <div class="container">
                 <div class="enterprise-content">
-                    <h2>Enterprise Ready</h2>
+                    <h2>Project Status</h2>
                     <p>
-                        OSSA powers mission-critical AI agent systems for Fortune 500 companies, 
-                        government agencies, and healthcare organizations worldwide.
+                        OSSA is an open specification standard in active development. 
+                        Currently at v0.1.9-alpha, targeting v1.0 general availability in Q2 2025.
                     </p>
                     <div class="enterprise-features">
                         <div class="enterprise-feature">
-                            <span class="feature-label">Compliance</span>
-                            <span>FDA, SOX, HIPAA, FedRAMP certified</span>
+                            <span class="feature-label">Version</span>
+                            <span>v0.1.9-alpha (pre-release)</span>
                         </div>
                         <div class="enterprise-feature">
-                            <span class="feature-label">Scale</span>
-                            <span>Millions of agents, 99.99% uptime</span>
+                            <span class="feature-label">Status</span>
+                            <span>Specification development</span>
                         </div>
                         <div class="enterprise-feature">
-                            <span class="feature-label">Security</span>
-                            <span>Zero-trust, end-to-end encryption</span>
+                            <span class="feature-label">License</span>
+                            <span>MIT Open Source</span>
                         </div>
                         <div class="enterprise-feature">
-                            <span class="feature-label">Support</span>
-                            <span>24/7 enterprise support available</span>
+                            <span class="feature-label">Contributors</span>
+                            <span>Open for contributions</span>
                         </div>
                     </div>
                 </div>
@@ -274,23 +273,23 @@ cd my-agent-project</code></pre>
                 </div>
                 <div class="footer-section">
                     <h4>Resources</h4>
-                    <a href="docs/specification/">Specification</a>
-                    <a href="docs/api/">API Reference</a>
-                    <a href="docs/examples/">Examples</a>
-                    <a href="docs/changelog/">Changelog</a>
+                    <a href="/docs/specification/agents.html">Specification</a>
+                    <a href="/api-docs.html">API Reference</a>
+                    <a href="/src/api/ossa-complete.openapi.yml">OpenAPI Spec</a>
+                    <a href="/docs/development/roadmap.html">Roadmap</a>
                 </div>
                 <div class="footer-section">
                     <h4>Community</h4>
                     <a href="https://gitlab.bluefly.io/llm/openapi-ai-agents-standard" target="_blank">GitLab</a>
                     <a href="https://gitlab.bluefly.io/llm/openapi-ai-agents-standard/-/issues" target="_blank">Issues</a>
-                    <a href="docs/contributing/">Contributing</a>
-                    <a href="docs/support/">Support</a>
+                    <a href="https://gitlab.bluefly.io/llm/openapi-ai-agents-standard/-/merge_requests" target="_blank">Merge Requests</a>
+                    <a href="https://gitlab.bluefly.io/llm/agent_buildkit" target="_blank">Agent BuildKit</a>
                 </div>
                 <div class="footer-section">
                     <h4>Legal</h4>
-                    <a href="docs/license/">License</a>
-                    <a href="docs/privacy/">Privacy Policy</a>
-                    <a href="docs/security/">Security Policy</a>
+                    <a href="https://opensource.org/licenses/MIT" target="_blank">MIT License</a>
+                    <a href="https://gitlab.bluefly.io/llm/openapi-ai-agents-standard/-/blob/main/README.md" target="_blank">Documentation</a>
+                    <a href="https://gitlab.bluefly.io/llm/openapi-ai-agents-standard/-/blob/main/SECURITY.md" target="_blank">Security</a>
                 </div>
             </div>
             <div class="footer-bottom">

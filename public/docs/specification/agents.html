@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OSSA Agent Specification</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        .header {
+            border-bottom: 2px solid #0066cc;
+            padding-bottom: 1rem;
+            margin-bottom: 2rem;
+        }
+        h1 { color: #0066cc; }
+        h2 { color: #004499; margin-top: 2rem; }
+        h3 { color: #333; margin-top: 1.5rem; }
+        pre {
+            background: #f5f5f5;
+            padding: 1rem;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+        code {
+            background: #f0f0f0;
+            padding: 2px 4px;
+            border-radius: 3px;
+            font-family: 'Consolas', 'Monaco', monospace;
+        }
+        .nav {
+            margin-bottom: 2rem;
+            padding: 1rem;
+            background: #f8f9fa;
+            border-radius: 4px;
+        }
+        .nav a {
+            margin-right: 1rem;
+            color: #0066cc;
+            text-decoration: none;
+        }
+        .nav a:hover { text-decoration: underline; }
+        .back-link {
+            display: inline-block;
+            margin-bottom: 1rem;
+            color: #0066cc;
+            text-decoration: none;
+        }
+        .back-link:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <a href="/api-docs.html" class="back-link">← Back to API Documentation</a>
+    
+    <div class="header">
+        <h1>OSSA Agent Specification</h1>
+        <p>Open Standards for Scalable Agents - v0.1.9</p>
+    </div>
+
+    <div class="nav">
+        <a href="/api-docs.html">API Reference</a>
+        <a href="/docs/development/roadmap.html">Roadmap</a>
+        <a href="/">Home</a>
+    </div>
+
+    <div id="content">
+        <h2>Agent Taxonomy</h2>
+        <p>OSSA defines 9 standard agent types, each with specific responsibilities and capabilities:</p>
+        
+        <h3>1. Workers</h3>
+        <ul>
+            <li>Execute specific, well-defined tasks</li>
+            <li>Stateless and horizontally scalable</li>
+            <li>Focus on single responsibility</li>
+        </ul>
+
+        <h3>2. Orchestrators</h3>
+        <ul>
+            <li>Coordinate multiple agents</li>
+            <li>Manage workflows and dependencies</li>
+            <li>Handle task distribution and aggregation</li>
+        </ul>
+
+        <h3>3. Integrators</h3>
+        <ul>
+            <li>Connect with external systems</li>
+            <li>Handle API communications</li>
+            <li>Transform data between formats</li>
+        </ul>
+
+        <h3>4. Monitors</h3>
+        <ul>
+            <li>Observe system health</li>
+            <li>Track performance metrics</li>
+            <li>Alert on anomalies</li>
+        </ul>
+
+        <h3>5. Critics</h3>
+        <ul>
+            <li>Review and validate output</li>
+            <li>Provide quality assessment</li>
+            <li>Suggest improvements</li>
+        </ul>
+
+        <h3>6. Judges</h3>
+        <ul>
+            <li>Make decisions between options</li>
+            <li>Resolve conflicts</li>
+            <li>Apply business rules</li>
+        </ul>
+
+        <h3>7. Governors</h3>
+        <ul>
+            <li>Enforce policies and compliance</li>
+            <li>Manage resource allocation</li>
+            <li>Control access and permissions</li>
+        </ul>
+
+        <h3>8. Voice</h3>
+        <ul>
+            <li>Handle natural language interfaces</li>
+            <li>Manage conversational flows</li>
+            <li>Provide user interaction layer</li>
+        </ul>
+
+        <h3>9. Trainers</h3>
+        <ul>
+            <li>Improve agent capabilities</li>
+            <li>Manage learning processes</li>
+            <li>Update knowledge bases</li>
+        </ul>
+
+        <h2>Implementation Standards</h2>
+        <p>All OSSA-compliant agents must:</p>
+        <ul>
+            <li>Implement the ACDL (Agent Communication & Discovery Language) protocol</li>
+            <li>Provide OpenAPI 3.1 specifications</li>
+            <li>Support health check endpoints</li>
+            <li>Emit standardized metrics</li>
+            <li>Handle graceful shutdown</li>
+        </ul>
+
+        <h2>Communication Protocols</h2>
+        <p>Agents communicate using:</p>
+        <ul>
+            <li><strong>REST APIs</strong> for synchronous operations</li>
+            <li><strong>WebSockets</strong> for real-time updates</li>
+            <li><strong>Message Queues</strong> for asynchronous tasks</li>
+            <li><strong>gRPC</strong> for high-performance inter-agent communication</li>
+        </ul>
+
+        <h2>Discovery Mechanism</h2>
+        <p>The ACDL discovery protocol enables:</p>
+        <ul>
+            <li>Automatic agent registration</li>
+            <li>Capability advertisement</li>
+            <li>Dynamic service mesh formation</li>
+            <li>Load balancing and failover</li>
+        </ul>
+    </div>
+</body>
+</html>

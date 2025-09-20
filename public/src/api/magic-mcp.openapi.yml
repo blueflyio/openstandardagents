@@ -1,0 +1,647 @@
+openapi: 3.1.0
+info:
+  title: Magic MCP Server API
+  description: |
+    Magic MCP Server - UI component generation system for OSSA v0.1.9.
+    Provides intelligent UI generation, component templating, and design system automation.
+  version: "@bluefly/ossa/v0.1.9"
+  contact:
+    name: OSSA Framework
+    url: https://gitlab.bluefly.io/llm/openapi-ai-agents-standard
+  license:
+    name: MIT
+    url: https://gitlab.bluefly.io/llm/openapi-ai-agents-standard/-/blob/main/LICENSE
+
+servers:
+  - url: mcp://magic
+    description: Magic MCP Server
+
+paths:
+  /generate/component:
+    post:
+      summary: Generate UI component
+      description: Generate UI components from specifications or descriptions
+      operationId: generateComponent
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ComponentGenerationRequest'
+      responses:
+        '200':
+          description: Component generated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ComponentGenerationResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /generate/layout:
+    post:
+      summary: Generate page layout
+      description: Generate complete page layouts from wireframes or descriptions
+      operationId: generateLayout
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LayoutGenerationRequest'
+      responses:
+        '200':
+          description: Layout generated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LayoutGenerationResponse'
+
+  /generate/theme:
+    post:
+      summary: Generate design theme
+      description: Generate design themes and styling systems
+      operationId: generateTheme
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ThemeGenerationRequest'
+      responses:
+        '200':
+          description: Theme generated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ThemeGenerationResponse'
+
+  /templates:
+    get:
+      summary: List available templates
+      description: Get list of available component and layout templates
+      operationId: listTemplates
+      parameters:
+        - name: category
+          in: query
+          schema:
+            type: string
+            enum: [component, layout, theme, form, navigation]
+        - name: framework
+          in: query
+          schema:
+            type: string
+            enum: [react, vue, angular, svelte, vanilla]
+      responses:
+        '200':
+          description: List of templates
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TemplateList'
+
+  /templates/{templateId}:
+    get:
+      summary: Get template details
+      operationId: getTemplate
+      parameters:
+        - name: templateId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Template details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Template'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /customize:
+    post:
+      summary: Customize existing component
+      description: Modify and customize existing UI components
+      operationId: customizeComponent
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CustomizationRequest'
+      responses:
+        '200':
+          description: Component customized successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomizationResponse'
+
+  /validate/design:
+    post:
+      summary: Validate design consistency
+      description: Validate design system consistency and accessibility
+      operationId: validateDesign
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DesignValidationRequest'
+      responses:
+        '200':
+          description: Design validation completed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DesignValidationResponse'
+
+components:
+  schemas:
+    ComponentGenerationRequest:
+      type: object
+      required:
+        - type
+        - framework
+      properties:
+        type:
+          type: string
+          enum: [button, input, card, modal, navigation, form, table, chart]
+        framework:
+          type: string
+          enum: [react, vue, angular, svelte, vanilla]
+        description:
+          type: string
+        specifications:
+          type: object
+          properties:
+            props:
+              type: array
+              items:
+                $ref: '#/components/schemas/ComponentProp'
+            styling:
+              $ref: '#/components/schemas/StylingOptions'
+            behavior:
+              $ref: '#/components/schemas/BehaviorOptions'
+        designSystem:
+          $ref: '#/components/schemas/DesignSystem'
+
+    ComponentGenerationResponse:
+      type: object
+      properties:
+        componentId:
+          type: string
+        code:
+          type: object
+          properties:
+            component:
+              type: string
+            styles:
+              type: string
+            types:
+              type: string
+            tests:
+              type: string
+        preview:
+          type: string
+          description: Base64 encoded preview image
+        documentation:
+          type: string
+        dependencies:
+          type: array
+          items:
+            type: string
+
+    LayoutGenerationRequest:
+      type: object
+      required:
+        - type
+        - framework
+      properties:
+        type:
+          type: string
+          enum: [dashboard, landing, admin, ecommerce, blog, portfolio]
+        framework:
+          type: string
+          enum: [react, vue, angular, svelte, vanilla]
+        wireframe:
+          type: string
+          description: Base64 encoded wireframe image or JSON layout description
+        sections:
+          type: array
+          items:
+            $ref: '#/components/schemas/LayoutSection'
+        responsive:
+          type: boolean
+          default: true
+        designSystem:
+          $ref: '#/components/schemas/DesignSystem'
+
+    LayoutGenerationResponse:
+      type: object
+      properties:
+        layoutId:
+          type: string
+        code:
+          type: object
+          properties:
+            layout:
+              type: string
+            components:
+              type: array
+              items:
+                type: object
+                properties:
+                  name:
+                    type: string
+                  code:
+                    type: string
+            styles:
+              type: string
+            config:
+              type: string
+        preview:
+          type: string
+        responsive:
+          type: object
+          properties:
+            desktop:
+              type: string
+            tablet:
+              type: string
+            mobile:
+              type: string
+
+    ThemeGenerationRequest:
+      type: object
+      required:
+        - style
+      properties:
+        style:
+          type: string
+          enum: [modern, classic, minimal, bold, elegant, playful]
+        primaryColor:
+          type: string
+          pattern: "^#[0-9A-Fa-f]{6}$"
+        preferences:
+          type: object
+          properties:
+            typography:
+              type: string
+              enum: [serif, sans-serif, monospace, mixed]
+            spacing:
+              type: string
+              enum: [tight, normal, loose]
+            corners:
+              type: string
+              enum: [sharp, rounded, circular]
+        accessibility:
+          type: object
+          properties:
+            contrastLevel:
+              type: string
+              enum: [AA, AAA]
+              default: AA
+            reduceMotion:
+              type: boolean
+              default: false
+
+    ThemeGenerationResponse:
+      type: object
+      properties:
+        themeId:
+          type: string
+        theme:
+          type: object
+          properties:
+            colors:
+              $ref: '#/components/schemas/ColorPalette'
+            typography:
+              $ref: '#/components/schemas/Typography'
+            spacing:
+              $ref: '#/components/schemas/SpacingSystem'
+            components:
+              type: object
+              additionalProperties: true
+        cssVariables:
+          type: string
+        designTokens:
+          type: object
+        preview:
+          type: string
+
+    CustomizationRequest:
+      type: object
+      required:
+        - componentId
+        - modifications
+      properties:
+        componentId:
+          type: string
+        modifications:
+          type: object
+          properties:
+            styling:
+              $ref: '#/components/schemas/StylingModifications'
+            behavior:
+              $ref: '#/components/schemas/BehaviorModifications'
+            props:
+              type: array
+              items:
+                $ref: '#/components/schemas/PropModification'
+
+    CustomizationResponse:
+      type: object
+      properties:
+        componentId:
+          type: string
+        updatedCode:
+          type: object
+          properties:
+            component:
+              type: string
+            styles:
+              type: string
+            types:
+              type: string
+        changes:
+          type: array
+          items:
+            type: string
+        preview:
+          type: string
+
+    DesignValidationRequest:
+      type: object
+      required:
+        - components
+      properties:
+        components:
+          type: array
+          items:
+            type: string
+        designSystem:
+          $ref: '#/components/schemas/DesignSystem'
+        validationRules:
+          type: array
+          items:
+            type: string
+            enum: [consistency, accessibility, responsive, performance]
+
+    DesignValidationResponse:
+      type: object
+      properties:
+        validationId:
+          type: string
+        overall:
+          type: object
+          properties:
+            score:
+              type: number
+              minimum: 0
+              maximum: 100
+            status:
+              type: string
+              enum: [pass, warning, fail]
+        issues:
+          type: array
+          items:
+            $ref: '#/components/schemas/DesignIssue'
+        suggestions:
+          type: array
+          items:
+            $ref: '#/components/schemas/DesignSuggestion'
+
+    TemplateList:
+      type: object
+      properties:
+        templates:
+          type: array
+          items:
+            $ref: '#/components/schemas/TemplateSummary'
+        total:
+          type: integer
+        categories:
+          type: array
+          items:
+            type: string
+
+    Template:
+      type: object
+      properties:
+        templateId:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        category:
+          type: string
+        framework:
+          type: string
+        preview:
+          type: string
+        code:
+          type: string
+        customizable:
+          type: array
+          items:
+            type: string
+
+    TemplateSummary:
+      type: object
+      properties:
+        templateId:
+          type: string
+        name:
+          type: string
+        category:
+          type: string
+        framework:
+          type: string
+        preview:
+          type: string
+
+    ComponentProp:
+      type: object
+      properties:
+        name:
+          type: string
+        type:
+          type: string
+        required:
+          type: boolean
+        default:
+          type: string
+        description:
+          type: string
+
+    StylingOptions:
+      type: object
+      properties:
+        variant:
+          type: string
+        size:
+          type: string
+        color:
+          type: string
+        customCSS:
+          type: string
+
+    BehaviorOptions:
+      type: object
+      properties:
+        interactive:
+          type: boolean
+        animations:
+          type: array
+          items:
+            type: string
+        events:
+          type: array
+          items:
+            type: string
+
+    DesignSystem:
+      type: object
+      properties:
+        colors:
+          $ref: '#/components/schemas/ColorPalette'
+        typography:
+          $ref: '#/components/schemas/Typography'
+        spacing:
+          $ref: '#/components/schemas/SpacingSystem'
+
+    ColorPalette:
+      type: object
+      properties:
+        primary:
+          type: string
+        secondary:
+          type: string
+        accent:
+          type: string
+        neutral:
+          type: array
+          items:
+            type: string
+        semantic:
+          type: object
+          properties:
+            success:
+              type: string
+            warning:
+              type: string
+            error:
+              type: string
+            info:
+              type: string
+
+    Typography:
+      type: object
+      properties:
+        fontFamily:
+          type: object
+          properties:
+            primary:
+              type: string
+            secondary:
+              type: string
+        fontSizes:
+          type: array
+          items:
+            type: string
+        lineHeights:
+          type: array
+          items:
+            type: number
+
+    SpacingSystem:
+      type: object
+      properties:
+        base:
+          type: number
+        scale:
+          type: array
+          items:
+            type: number
+
+    LayoutSection:
+      type: object
+      properties:
+        type:
+          type: string
+          enum: [header, navigation, hero, content, sidebar, footer]
+        content:
+          type: string
+        layout:
+          type: string
+          enum: [full-width, container, grid, flex]
+
+    StylingModifications:
+      type: object
+      additionalProperties: true
+
+    BehaviorModifications:
+      type: object
+      additionalProperties: true
+
+    PropModification:
+      type: object
+      properties:
+        action:
+          type: string
+          enum: [add, remove, modify]
+        prop:
+          $ref: '#/components/schemas/ComponentProp'
+
+    DesignIssue:
+      type: object
+      properties:
+        type:
+          type: string
+        severity:
+          type: string
+          enum: [low, medium, high]
+        description:
+          type: string
+        component:
+          type: string
+
+    DesignSuggestion:
+      type: object
+      properties:
+        category:
+          type: string
+        suggestion:
+          type: string
+        impact:
+          type: string
+          enum: [low, medium, high]
+
+  responses:
+    BadRequest:
+      description: Bad request
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+              message:
+                type: string
+
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+              message:
+                type: string

@@ -16,8 +16,8 @@ RED='\033[0;31m'
 NC='\033[0m' # No Color
 
 # Configuration
-COMPOSE_FILE="../docker/docker-compose.openapi.yml"
-PROJECT_NAME="ossa-openapi"
+COMPOSE_FILE="../../docker-compose.yml"
+PROJECT_NAME="ossa"
 
 # Change to script directory
 cd "$(dirname "$0")"

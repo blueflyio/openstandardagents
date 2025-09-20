@@ -1,0 +1,57 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    cluster: 'ossa-production'
+    environment: 'production'
+
+rule_files:
+  - "alerts.yml"
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+          - alertmanager:9093
+
+scrape_configs:
+  # OSSA MCP Server
+  - job_name: 'ossa-mcp'
+    static_configs:
+      - targets: ['ossa-mcp:4000']
+    metrics_path: '/metrics'
+    scrape_interval: 30s
+    scrape_timeout: 10s
+
+  # PostgreSQL
+  - job_name: 'postgres'
+    static_configs:
+      - targets: ['ossa-postgres:5432']
+    metrics_path: '/metrics'
+
+  # Redis
+  - job_name: 'redis'
+    static_configs:
+      - targets: ['ossa-redis:6379']
+
+  # Nginx Gateway
+  - job_name: 'nginx'
+    static_configs:
+      - targets: ['nginx-gateway:80']
+    metrics_path: '/nginx_status'
+
+  # Node Exporter (if running)
+  - job_name: 'node'
+    static_configs:
+      - targets: ['node-exporter:9100']
+
+  # cAdvisor (Container metrics)
+  - job_name: 'cadvisor'
+    static_configs:
+      - targets: ['cadvisor:8080']
+    metrics_path: '/metrics'
+
+  # Prometheus itself
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']

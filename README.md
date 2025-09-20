@@ -313,6 +313,156 @@ Producer → Event Router → Consumer
 | WebSocket | Real-time streaming | High | Medium |
 | AMQP | Message queuing | High | High |
 
+## Universal Agent Protocol (UAP)
+
+UAP provides a unified communication framework for heterogeneous agent ecosystems, enabling seamless interaction between agents regardless of their underlying implementation or platform.
+
+### Core Protocol Stack
+
+UAP consists of four foundational protocols that work together to enable comprehensive agent interoperability:
+
+#### RASP (Resource Allocation & Scheduling Protocol)
+Manages resource distribution and task scheduling across agent clusters:
+
+```
+Agent Request → RASP Scheduler → Resource Pool → Task Assignment
+                     │                │              │
+                     ├─► Load Analysis ├─► Priority   ├─► Execution
+                     ├─► Constraint    ├─► Queueing   ├─► Monitoring
+                     └─► Optimization  └─► Balancing  └─► Feedback
+```
+
+#### ACAP (Agent Capability Advertisement Protocol)
+Enables dynamic service discovery and capability matching:
+
+```json
+{
+  "protocol": "ACAP/1.0",
+  "agentId": "worker-001",
+  "capabilities": [
+    {
+      "service": "data-processing",
+      "version": "2.1.0",
+      "endpoints": ["/api/v2/process"],
+      "sla": { "latency": "< 50ms", "availability": "99.9%" }
+    }
+  ],
+  "resources": {
+    "cpu": "available: 2.5 cores",
+    "memory": "available: 6.2GB"
+  }
+}
+```
+
+#### UADP (Universal Agent Discovery Protocol)
+Provides zero-configuration agent discovery with automatic topology mapping:
+
+```
+Registry Service ←→ Agent Mesh ←→ Discovery Beacon
+      │                 │               │
+      ├─► Health Check   ├─► Heartbeat   ├─► Announcement
+      ├─► Capability     ├─► Routing     ├─► Topology
+      └─► Status Update  └─► Load Info   └─► Metrics
+```
+
+#### CPC (Cross-Platform Communication)
+Standardizes message formats and transport mechanisms across different agent platforms:
+
+| Transport | Use Case | Reliability | Performance |
+|-----------|----------|-------------|-------------|
+| HTTP/3 | Synchronous RPC | High | Medium |
+| WebSocket | Real-time streams | Medium | High |
+| MQTT | IoT integration | Medium | Low |
+| gRPC | High-performance | High | High |
+
+### UAP CLI Commands
+
+The OSSA CLI provides comprehensive UAP management capabilities:
+
+#### Discovery Operations
+```bash
+# Discover agents in the network
+ossa discover --protocol UADP --filter "type=worker"
+
+# Register agent capabilities
+ossa register --capability "data-processing" --endpoint "/api/v1/process"
+
+# Query available services
+ossa query --service "machine-learning" --version ">= 2.0"
+```
+
+#### Resource Management
+```bash
+# Monitor resource allocation
+ossa resources --protocol RASP --view cluster
+
+# Request resource reservation
+ossa reserve --cpu "4 cores" --memory "8GB" --duration "2h"
+
+# Scale agent deployment
+ossa scale --agent-type worker --replicas 10 --zone us-west-2
+```
+
+#### Communication Setup
+```bash
+# Configure cross-platform communication
+ossa comm config --protocol CPC --transport grpc --encryption tls1.3
+
+# Test connectivity between agents
+ossa comm test --source agent-001 --target agent-002 --protocol all
+
+# Monitor message flows
+ossa comm monitor --protocol CPC --filter "error_rate > 1%"
+```
+
+#### Protocol Validation
+```bash
+# Validate UAP compliance
+ossa validate uap --spec-version 1.0 --agent-manifest ./agent.yaml
+
+# Generate UAP documentation
+ossa docs uap --output ./docs/uap-spec.md --format markdown
+
+# Benchmark protocol performance
+ossa benchmark uap --duration 5m --agents 100 --concurrent-requests 1000
+```
+
+### UAP Integration Example
+
+```typescript
+import { UAP, RASP, ACAP, UADP, CPC } from '@ossa/uap-client';
+
+// Initialize UAP stack
+const uap = new UAP({
+  agent: { id: 'worker-001', type: 'data-processor' },
+  protocols: {
+    rasp: { scheduler: 'kubernetes', priority: 'high' },
+    acap: { advertise: true, discovery: 'automatic' },
+    uadp: { beacon: true, mesh: 'cluster-local' },
+    cpc: { transport: ['grpc', 'websocket'] }
+  }
+});
+
+// Register capabilities
+await uap.acap.advertise({
+  service: 'data-processing',
+  version: '2.1.0',
+  endpoints: ['/api/v2/process'],
+  sla: { latency: 50, availability: 99.9 }
+});
+
+// Discover and connect to other agents
+const peers = await uap.uadp.discover({ type: 'orchestrator' });
+const connection = await uap.cpc.connect(peers[0], { protocol: 'grpc' });
+
+// Request resources for task execution
+const allocation = await uap.rasp.request({
+  cpu: '2 cores',
+  memory: '4GB',
+  duration: '1h'
+});
+```
+
 ## Observability Framework
 
 ### Metrics Collection

@@ -1,445 +1,484 @@
-# OSSA Platform Architecture v0.1.8
+# OSSA Platform Architecture
 
-## Overview
+## System Architecture Overview
 
-The Open Standards for Scalable Agents (OSSA) v0.1.8 platform provides a comprehensive microservices architecture for universal AI agent interoperability, discovery, orchestration, and management. Built with enterprise-grade compliance, security, and scalability.
+The OSSA platform implements a microservices-based architecture designed for scalability, resilience, and multi-tenant isolation. The system follows Domain-Driven Design (DDD) principles with clear bounded contexts and event-driven communication patterns.
 
-## Platform Component Architecture
+## High-Level Architecture
 
-```mermaid
-graph TB
-    subgraph "Client Layer"
-        CLI[OSSA CLI v0.1.8<br/>Workspace Management]
-        WEB[Web Dashboard<br/>Platform Monitor]
-        API[API Clients<br/>Generated SDKs]
-    end
-    
-    subgraph "API Gateway Layer"
-        GW[API Gateway<br/>Load Balancer]
-        AUTH[Auth Service<br/>JWT + API Keys]
-        RATE[Rate Limiter<br/>DDoS Protection]
-    end
-    
-    subgraph "Core Platform Services"
-        REG[Agent Registry<br/>PostgreSQL]
-        DISC[Discovery Engine<br/>UADP Compatible]
-        ORCH[Orchestration<br/>Multi-Agent Tasks]
-        GRAPH[GraphQL API<br/>Subscriptions]
-        MON[Monitoring<br/>Metrics & Health]
-    end
-    
-    subgraph "Agent Runtime Services"
-        CORE[Agent Core<br/>Base Implementation]
-        COORD[Coordination<br/>Inter-Agent Comm]
-        BRIDGE[Protocol Bridges<br/>MCP/LangChain/CrewAI]
-        TRANS[Translation Engine<br/>Multi-Framework]
-    end
-    
-    subgraph "Enterprise Services"
-        COMP[Compliance Engine<br/>ISO 42001, NIST AI RMF]
-        AUDIT[Audit Trail<br/>Immutable Logs]
-        SEC[Security<br/>Zero-Trust Model]
-        GOV[Governance<br/>Policy Enforcement]
-    end
-    
-    subgraph "Data Layer"
-        PGSQL[(PostgreSQL<br/>Registry & Config)]
-        REDIS[(Redis<br/>Cache & Sessions)]
-        QDRANT[(Qdrant<br/>Vector Search)]
-        FILES[(File Storage<br/>Agent Assets)]
-    end
-    
-    CLI --> GW
-    WEB --> GW
-    API --> GW
-    
-    GW --> AUTH
-    GW --> RATE
-    AUTH --> REG
-    RATE --> REG
-    
-    REG --> DISC
-    DISC --> ORCH
-    ORCH --> GRAPH
-    GRAPH --> MON
-    
-    ORCH --> CORE
-    CORE --> COORD
-    COORD --> BRIDGE
-    BRIDGE --> TRANS
-    
-    REG --> COMP
-    COMP --> AUDIT
-    AUDIT --> SEC
-    SEC --> GOV
-    
-    REG --> PGSQL
-    DISC --> REDIS
-    MON --> QDRANT
-    CORE --> FILES
+```
+┌─────────────────────────────────────────────────────────────┐
+│                        Client Layer                         │
+│  Web UI | Mobile | CLI | SDKs | Third-party Integrations   │
+└─────────────────────────┬───────────────────────────────────┘
+                          │
+┌─────────────────────────┴───────────────────────────────────┐
+│                    API Gateway Layer                        │
+│         Load Balancer | Rate Limiting | Auth Proxy          │
+└─────────────────────────┬───────────────────────────────────┘
+                          │
+┌─────────────────────────┴───────────────────────────────────┐
+│                    Service Mesh                             │
+│  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐  │
+│  │  Agent   │  │Discovery │  │Compliance│  │Orchestra-│  │
+│  │ Registry │  │  Engine  │  │ Service  │  │   tion   │  │
+│  └──────────┘  └──────────┘  └──────────┘  └──────────┘  │
+└─────────────────────────┬───────────────────────────────────┘
+                          │
+┌─────────────────────────┴───────────────────────────────────┐
+│                    Data Layer                               │
+│   PostgreSQL | Redis | Kafka | Elasticsearch | S3          │
+└─────────────────────────────────────────────────────────────┘
 ```
 
-## Microservices Breakdown
+## Core Components
 
-### Core Platform Services
+### 1. API Gateway Layer
 
-#### 1. Agent Registry (`/services/registry`)
-- **Purpose**: Central repository for agent definitions and metadata
-- **Database**: PostgreSQL with JSON columns for spec storage
-- **Features**: 
-  - CRUD operations for agent lifecycle
-  - Version management and rollback
-  - Health status tracking
+#### Kong Gateway Configuration
+```yaml
+services:
+  - name: ossa-api
+    url: http://upstream-services
+    plugins:
+      - name: rate-limiting
+        config:
+          minute: 1000
+          hour: 10000
+      - name: jwt
+        config:
+          key_claim_name: iss
+      - name: correlation-id
+      - name: prometheus
+```
+
+#### Load Balancing Strategy
+- **Algorithm**: Weighted round-robin with health checks
+- **Sticky Sessions**: Cookie-based for WebSocket connections
+- **Circuit Breaker**: 50% error rate triggers circuit open
+- **Retry Policy**: 3 retries with exponential backoff
+
+### 2. Service Architecture
+
+#### Agent Registry Service
+```typescript
+class AgentRegistryService {
+  // Core responsibilities
+  - Agent CRUD operations
+  - Version management
   - Capability indexing
-- **Port**: 3001
-- **Health**: `/health`, `/metrics`
-
-#### 2. Discovery Engine (`/services/discovery`)  
-- **Purpose**: UADP-compatible agent discovery and capability matching
-- **Features**:
-  - Sub-50ms discovery for 1000+ agents
-  - Hierarchical capability matching
-  - Real-time registry updates
-  - Semantic search with vector embeddings
-- **Port**: 3002
-- **Integration**: Qdrant vector database
-
-#### 3. Orchestration Service (`/services/orchestration`)
-- **Purpose**: Multi-agent task coordination and workflow management
-- **Features**:
-  - DAG-based workflow execution
-  - Agent delegation and load balancing
-  - State management and recovery
-  - Performance optimization
-- **Port**: 3003
-- **Dependencies**: Registry, Discovery, Coordination
-
-#### 4. GraphQL API (`/services/graphql`)
-- **Purpose**: Unified query interface with real-time subscriptions
-- **Features**:
-  - Schema federation across services
-  - Real-time agent status updates
-  - Complex query optimization
-  - Apollo Server integration
-- **Port**: 3004
-- **Schema**: Auto-generated from OpenAPI specs
-
-#### 5. Monitoring Service (`/services/monitoring`)
-- **Purpose**: Platform-wide observability and metrics collection
-- **Features**:
-  - Real-time performance metrics
-  - Health check aggregation  
-  - Alert management
-  - SLA tracking and reporting
-- **Port**: 3005
-- **Storage**: InfluxDB for time-series data
-
-### Agent Runtime Services
-
-#### 6. Agent Core (`/services/agent-core`)
-- **Purpose**: Base agent implementation and lifecycle management
-- **Features**:
-  - Standard OSSA agent interface
-  - Protocol-agnostic communication
-  - State persistence and recovery
-  - Security context management
-- **Integration**: All protocol bridges
-
-#### 7. Coordination Service (`/services/coordination`)
-- **Purpose**: Inter-agent communication and message routing
-- **Features**:
-  - Pub/sub messaging patterns
-  - Request/response routing
-  - Message queuing and reliability
-  - Circuit breaker patterns
-- **Transport**: Redis for message bus
-
-#### 8. Protocol Bridges (`/services/bridges`)
-- **Purpose**: Universal translation between AI frameworks
-- **Supported Protocols**:
-  - Model Context Protocol (MCP) v2024-11-05
-  - LangChain Tools and Agents
-  - CrewAI Agent and Task definitions
-  - OpenAI Assistant API
-  - Anthropic Tools API
-- **Features**: Zero-code framework integration
-
-### Enterprise Services
-
-#### 9. Compliance Engine (`/services/compliance`)
-- **Purpose**: Automated compliance validation and reporting
-- **Frameworks**:
-  - ISO 42001:2023 (AI Management Systems)
-  - NIST AI RMF 1.0 (Risk Management)
-  - EU AI Act 2024 (European regulation)
-  - SOC 2 Type II (Security controls)
-- **Features**: Continuous compliance monitoring
-
-#### 10. Security Service (`/services/security`)
-- **Purpose**: Zero-trust security model implementation  
-- **Features**:
-  - JWT token validation
-  - API key management
-  - Rate limiting and DDoS protection
-  - Encryption key management
-- **Integration**: All platform services
-
-## CLI Workspace Architecture
-
-### OSSA CLI v0.1.8 Structure
-
-```
-/Users/flux423/Sites/LLM/OSSA/
-├── src/cli/                         # CLI workspace
-│   ├── bin/ossa                    # Main CLI entry point
-│   ├── src/                        # TypeScript source
-│   │   ├── commands/               # Command implementations
-│   │   │   ├── agent-management.ts
-│   │   │   ├── discovery.ts
-│   │   │   ├── orchestration.ts
-│   │   │   ├── services.ts
-│   │   │   └── validation.ts
-│   │   ├── api/                    # Generated API clients
-│   │   │   ├── types.ts           # OpenAPI types
-│   │   │   └── generated/         # Generated clients
-│   │   ├── services/              # Service implementations
-│   │   └── utils/                 # Utility functions
-│   ├── package.json               # CLI dependencies
-│   └── tsconfig.json              # TypeScript config
-├── src/services/                  # Microservices
-│   ├── agent-core/
-│   ├── coordination/
-│   ├── discovery/
-│   ├── orchestration/
-│   └── monitoring/
-├── infrastructure/                # Deployment configs
-│   ├── docker/
-│   │   ├── docker-compose.yml
-│   │   ├── Dockerfile.platform
-│   │   └── Dockerfile.gateway
-│   └── kubernetes/               # K8s manifests
-└── examples/                     # 13 comprehensive examples
-    ├── 00-minimal-agent/
-    ├── 01-basic-validation/
-    ├── ...
-    └── 13-enterprise-deployment/
+  - Health monitoring
+  
+  // Data stores
+  - Primary: PostgreSQL (agent metadata)
+  - Cache: Redis (frequent lookups)
+  - Search: Elasticsearch (capability search)
+}
 ```
 
-### CLI Command Structure
-
-The OSSA CLI provides comprehensive platform management:
-
-```bash
-# Core Agent Operations
-ossa create <name>              # Create new agent
-ossa validate [path]            # Validate agent spec
-ossa list [--format=table|json] # List agents
-ossa upgrade [path]             # Upgrade to v0.1.8
-
-# Discovery Operations (UADP)
-ossa discovery init             # Initialize discovery
-ossa discovery register <path> # Register agent
-ossa discovery find --capabilities=X,Y
-ossa discovery health           # Check discovery status
-
-# Platform Services
-ossa services start             # Start all services
-ossa services stop              # Stop all services  
-ossa services status            # Service health
-ossa services logs [service]    # Service logs
-
-# Orchestration
-ossa orchestrate create <workflow>
-ossa orchestrate run <id>
-ossa orchestrate status <id>
-
-# API Operations
-ossa api agents list
-ossa api agents create <spec>
-ossa api discover --capabilities=X
-ossa api metrics --timeframe=1h
-
-# Migration & Validation
-ossa migrate from-v1 <path>     # Migrate from v0.1.1
-ossa validate compliance        # Check compliance
-ossa generate openapi <path>    # Generate API specs
+#### Discovery Engine Service
+```typescript
+class DiscoveryEngineService {
+  // Core responsibilities
+  - UADP protocol implementation
+  - Semantic matching algorithm
+  - Capability inference
+  - Cross-org federation
+  
+  // Data stores
+  - Vector DB: Qdrant (embeddings)
+  - Cache: Redis (discovery results)
+  - Graph DB: Neo4j (relationships)
+}
 ```
 
-## Data Flow Architecture
+#### Compliance Service
+```typescript
+class ComplianceService {
+  // Core responsibilities
+  - Control validation
+  - Audit trail generation
+  - Risk assessment
+  - Report generation
+  
+  // Data stores
+  - Primary: PostgreSQL (compliance data)
+  - Document Store: MongoDB (reports)
+  - Time Series: TimescaleDB (metrics)
+}
+```
 
+#### Orchestration Service
+```typescript
+class OrchestrationService {
+  // Core responsibilities
+  - Workflow execution
+  - Task scheduling
+  - Event coordination
+  - State management
+  
+  // Data stores
+  - State: Redis (workflow state)
+  - Events: Kafka (event streaming)
+  - History: PostgreSQL (execution logs)
+}
+```
+
+### 3. Data Architecture
+
+#### Database Schema Design
+
+##### Agent Registry Schema
+```sql
+-- Core agent table
+CREATE TABLE agents (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  name VARCHAR(255) UNIQUE NOT NULL,
+  version VARCHAR(50) NOT NULL,
+  description TEXT,
+  spec JSONB NOT NULL,
+  status VARCHAR(50) DEFAULT 'active',
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  deleted_at TIMESTAMP NULL
+);
+
+-- Capabilities table
+CREATE TABLE capabilities (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  agent_id UUID REFERENCES agents(id),
+  capability VARCHAR(255) NOT NULL,
+  type VARCHAR(50) NOT NULL, -- primary, secondary
+  metadata JSONB
+);
+
+-- Metrics table (TimescaleDB)
+CREATE TABLE agent_metrics (
+  time TIMESTAMPTZ NOT NULL,
+  agent_id UUID NOT NULL,
+  metric_name VARCHAR(100) NOT NULL,
+  value DOUBLE PRECISION,
+  tags JSONB
+);
+SELECT create_hypertable('agent_metrics', 'time');
+```
+
+#### Caching Strategy
+
+##### Redis Cache Layers
+```yaml
+cache_layers:
+  L1_session:
+    ttl: 300 # 5 minutes
+    patterns:
+      - "session:*"
+      - "auth:*"
+  
+  L2_application:
+    ttl: 3600 # 1 hour
+    patterns:
+      - "agent:*"
+      - "discovery:*"
+  
+  L3_static:
+    ttl: 86400 # 24 hours
+    patterns:
+      - "config:*"
+      - "schema:*"
+```
+
+#### Event Streaming Architecture
+
+##### Kafka Topics
+```yaml
+topics:
+  agent_events:
+    partitions: 10
+    replication: 3
+    retention_ms: 604800000 # 7 days
+    
+  compliance_events:
+    partitions: 5
+    replication: 3
+    retention_ms: 2592000000 # 30 days
+    
+  metrics_events:
+    partitions: 20
+    replication: 2
+    retention_ms: 86400000 # 1 day
+```
+
+### 4. Communication Patterns
+
+#### Synchronous Communication
+- **REST API**: Request-response for CRUD operations
+- **GraphQL**: Flexible queries with field selection
+- **gRPC**: High-performance service-to-service
+
+#### Asynchronous Communication
+- **Event Sourcing**: Capture all state changes as events
+- **CQRS**: Separate read and write models
+- **Pub/Sub**: Kafka for event distribution
+- **Message Queue**: SQS for task processing
+
+#### Real-time Communication
+- **WebSockets**: GraphQL subscriptions
+- **Server-Sent Events**: One-way notifications
+- **Long Polling**: Fallback for WebSocket issues
+
+### 5. Security Architecture
+
+#### Defense in Depth
+
+```
+┌─────────────────────────────────────────┐
+│          WAF (CloudFlare)               │ Layer 1: Edge Security
+├─────────────────────────────────────────┤
+│        API Gateway (Auth)               │ Layer 2: Authentication
+├─────────────────────────────────────────┤
+│     Service Mesh (mTLS)                 │ Layer 3: Service Auth
+├─────────────────────────────────────────┤
+│    Application (RBAC)                   │ Layer 4: Authorization
+├─────────────────────────────────────────┤
+│     Database (Encryption)               │ Layer 5: Data Security
+└─────────────────────────────────────────┘
+```
+
+#### Zero Trust Principles
+1. **Never Trust**: Verify every request
+2. **Least Privilege**: Minimal access rights
+3. **Assume Breach**: Design for compromise
+4. **Verify Explicitly**: Multi-factor validation
+5. **Secure by Default**: Deny unless allowed
+
+### 6. Scalability Patterns
+
+#### Horizontal Scaling
+```yaml
+scaling_rules:
+  api_gateway:
+    min_replicas: 3
+    max_replicas: 50
+    target_cpu: 70
+    target_memory: 80
+    
+  agent_registry:
+    min_replicas: 2
+    max_replicas: 20
+    target_rps: 1000
+    
+  discovery_engine:
+    min_replicas: 3
+    max_replicas: 30
+    target_latency_ms: 100
+```
+
+#### Database Scaling
+- **Read Replicas**: 3 replicas per region
+- **Sharding**: By tenant_id for multi-tenancy
+- **Connection Pooling**: PgBouncer configuration
+- **Query Optimization**: Materialized views
+
+### 7. Multi-Region Architecture
+
+#### Geographic Distribution
+```yaml
+regions:
+  us-east-1:
+    primary: true
+    services: all
+    database: master
+    
+  eu-west-1:
+    primary: false
+    services: all
+    database: read_replica
+    
+  ap-southeast-1:
+    primary: false
+    services: api_only
+    database: read_replica
+```
+
+#### Data Replication Strategy
+- **Synchronous**: Within region (strong consistency)
+- **Asynchronous**: Cross-region (eventual consistency)
+- **Conflict Resolution**: Last-write-wins with vector clocks
+- **Backup Strategy**: Cross-region S3 replication
+
+### 8. Deployment Architecture
+
+#### Kubernetes Configuration
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ossa-platform
+spec:
+  replicas: 3
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  template:
+    spec:
+      containers:
+      - name: ossa-api
+        image: ossa:0.1.8
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "500m"
+          limits:
+            memory: "1Gi"
+            cpu: "1000m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 30
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: 8080
+          initialDelaySeconds: 5
+```
+
+#### CI/CD Pipeline Architecture
 ```mermaid
-sequenceDiagram
-    participant Dev as Developer
-    participant CLI as OSSA CLI
-    participant GW as API Gateway
-    participant REG as Registry
-    participant DISC as Discovery
-    participant ORCH as Orchestration
-    participant AGENT as Target Agent
-    participant COMP as Compliance
-    
-    Note over Dev,COMP: Agent Creation Flow
-    Dev->>CLI: ossa create my-agent --tier=advanced
-    CLI->>CLI: Generate agent.yml + openapi.yaml
-    CLI->>GW: POST /agents (register)
-    GW->>REG: Store agent definition
-    REG->>DISC: Index capabilities
-    DISC->>COMP: Validate compliance
-    COMP->>REG: Update compliance status
-    REG->>CLI: Return agent ID
-    CLI->>Dev: Agent created successfully
-    
-    Note over Dev,COMP: Agent Discovery Flow
-    Dev->>CLI: ossa discovery find --capabilities=analysis
-    CLI->>GW: GET /discover?capabilities=analysis
-    GW->>DISC: Query capability index
-    DISC->>REG: Lookup matching agents
-    REG->>DISC: Return agent list
-    DISC->>GW: Filtered results
-    GW->>CLI: Discovery response
-    CLI->>Dev: Display matching agents
-    
-    Note over Dev,COMP: Orchestration Flow
-    Dev->>CLI: ossa orchestrate run workflow-id
-    CLI->>GW: POST /orchestrate/run
-    GW->>ORCH: Execute workflow
-    ORCH->>DISC: Find required agents
-    ORCH->>AGENT: Delegate tasks
-    AGENT->>ORCH: Return results
-    ORCH->>COMP: Log audit trail
-    ORCH->>GW: Workflow complete
-    GW->>CLI: Execution results
-    CLI->>Dev: Show workflow status
+graph LR
+    A[Code Push] --> B[Build]
+    B --> C[Unit Tests]
+    C --> D[Integration Tests]
+    D --> E[Security Scan]
+    E --> F[Container Build]
+    F --> G[Push Registry]
+    G --> H[Deploy Staging]
+    H --> I[E2E Tests]
+    I --> J[Deploy Production]
+    J --> K[Smoke Tests]
 ```
 
-## Directory Structure Standards
+### 9. Monitoring & Observability
 
-### OSSA v0.1.8 Agent Structure
-
-```
-agent-name/
-├── agent.yml                  # OSSA v0.1.8 agent manifest
-├── openapi.yaml              # OpenAPI 3.1+ specification
-├── README.md                 # Documentation
-├── behaviors/                # Agent behavior definitions
-│   ├── core-behaviors.yml
-│   └── custom-behaviors.yml
-├── config/                   # Configuration files
-│   ├── frameworks.yml        # Framework integrations
-│   ├── security.yml          # Security policies
-│   └── compliance.yml        # Compliance settings
-├── data/                     # Agent data and state
-│   ├── knowledge-base.json
-│   ├── training-data.json
-│   └── examples.json
-├── handlers/                 # Event and message handlers
-│   ├── http-handlers.ts
-│   ├── mcp-handlers.ts
-│   └── event-handlers.ts
-├── integrations/             # Framework integrations
-│   ├── langchain/
-│   ├── crewai/
-│   ├── openai/
-│   └── mcp/
-├── schemas/                  # Validation schemas
-│   ├── input-schema.json
-│   ├── output-schema.json
-│   └── state-schema.json  
-├── training-modules/         # Training and learning
-│   ├── supervised/
-│   ├── reinforcement/
-│   └── evaluation/
-└── _roadmap/                # Versioned roadmaps (DITA format)
-    ├── roadmap_meta.json
-    ├── agent-name_1.0.0.dita
-    ├── agent-name_1.0.1.dita
-    └── agent-name_1.0.2.dita
+#### Metrics Collection
+```yaml
+metrics:
+  application:
+    - request_duration_seconds
+    - request_total
+    - error_rate
+    - active_connections
+    
+  business:
+    - agents_registered
+    - discovery_requests
+    - compliance_score
+    - api_usage_by_tier
+    
+  infrastructure:
+    - cpu_utilization
+    - memory_usage
+    - disk_io
+    - network_throughput
 ```
 
-## Conformance Tiers
+#### Distributed Tracing
+```typescript
+// OpenTelemetry configuration
+const tracer = opentelemetry.trace.getTracer('ossa-platform');
 
-### Core Tier
-- **Requirements**: Basic OSSA compliance, health endpoint
-- **Validation**: Schema validation, basic functionality tests
-- **Use Cases**: Development, prototyping, learning
-- **SLA**: Best effort, community support
+async function handleRequest(req: Request) {
+  const span = tracer.startSpan('handle_request', {
+    attributes: {
+      'http.method': req.method,
+      'http.url': req.url,
+      'user.id': req.user?.id
+    }
+  });
+  
+  try {
+    // Process request
+    const result = await processRequest(req);
+    span.setStatus({ code: SpanStatusCode.OK });
+    return result;
+  } catch (error) {
+    span.recordException(error);
+    span.setStatus({ code: SpanStatusCode.ERROR });
+    throw error;
+  } finally {
+    span.end();
+  }
+}
+```
 
-### Governed Tier  
-- **Requirements**: Core + security, monitoring, framework integration
-- **Validation**: Performance tests, security scans, integration tests
-- **Use Cases**: Production systems, commercial applications
-- **SLA**: 99.5% uptime, business hour support
+### 10. Disaster Recovery
 
-### Advanced Tier
-- **Requirements**: Governed + enterprise compliance, audit trails
-- **Validation**: Regulatory compliance, scalability tests, enterprise security
-- **Use Cases**: Regulated industries, government, high-risk AI
-- **SLA**: 99.9% uptime, 24/7 enterprise support
+#### RTO/RPO Targets
+| Component | RTO | RPO | Strategy |
+|-----------|-----|-----|----------|
+| API Gateway | 30s | 0 | Multi-region active-active |
+| Agent Registry | 2min | 5min | Hot standby |
+| Discovery Engine | 5min | 15min | Warm standby |
+| Compliance Service | 10min | 1hour | Cold standby |
 
-## Performance Characteristics
+#### Backup Strategy
+```yaml
+backup_policy:
+  databases:
+    frequency: hourly
+    retention: 30_days
+    type: incremental
+    location: s3://ossa-backups/db/
+    
+  configurations:
+    frequency: daily
+    retention: 90_days
+    type: full
+    location: s3://ossa-backups/config/
+    
+  audit_logs:
+    frequency: continuous
+    retention: 7_years
+    type: streaming
+    location: s3://ossa-audit/logs/
+```
 
-### Discovery Engine
-- **Target**: <50ms discovery time for 1000+ agents
-- **Scaling**: Horizontal with Redis clustering
-- **Caching**: Multi-level caching with TTL
-- **Optimization**: Vector embeddings for semantic search
+## Architecture Decision Records (ADRs)
 
-### API Gateway
-- **Throughput**: 10K+ requests/second per instance
-- **Latency**: <100ms P95 response time
-- **Rate Limiting**: Per-user and global limits
-- **Load Balancing**: Round-robin with health checks
+### ADR-001: Microservices Architecture
+**Decision**: Adopt microservices architecture
+**Rationale**: Enables independent scaling and deployment
+**Consequences**: Increased complexity, requires service mesh
 
-### Agent Registry  
-- **Storage**: PostgreSQL with JSONB for flexible schemas
-- **Indexing**: B-tree and GIN indexes for fast queries
-- **Backup**: Continuous replication with point-in-time recovery
-- **Scaling**: Read replicas for query distribution
+### ADR-002: Event Sourcing Pattern
+**Decision**: Use event sourcing for audit trail
+**Rationale**: Provides complete audit history
+**Consequences**: Increased storage, eventual consistency
 
-### Message Bus (Redis)
-- **Pattern**: Pub/sub with message persistence  
-- **Reliability**: At-least-once delivery guarantees
-- **Scaling**: Cluster mode with automatic sharding
-- **Monitoring**: Real-time metrics and alerting
+### ADR-003: GraphQL for API
+**Decision**: Implement GraphQL alongside REST
+**Rationale**: Flexible queries, real-time subscriptions
+**Consequences**: Additional complexity, learning curve
 
-## Security Architecture
+### ADR-004: Multi-Region Deployment
+**Decision**: Deploy across 3 geographic regions
+**Rationale**: Global latency optimization, DR
+**Consequences**: Data consistency challenges, cost
 
-### Zero-Trust Model
-- **Principle**: Never trust, always verify
-- **Implementation**: Mutual TLS, certificate-based auth
-- **Network**: Micro-segmentation, encrypted communication
-- **Access Control**: RBAC with principle of least privilege
+## Future Architecture Considerations
 
-### Authentication & Authorization
-- **Methods**: JWT tokens, API keys, OAuth2/OIDC
-- **Token Management**: Automatic rotation, revocation lists  
-- **Session Management**: Stateless with Redis backing
-- **Audit**: Complete authentication audit trails
+### Planned Enhancements
+1. **Service Mesh**: Istio for advanced traffic management
+2. **Edge Computing**: CDN-based agent execution
+3. **Serverless**: Lambda functions for event processing
+4. **Federation**: Cross-organization agent sharing
+5. **Blockchain**: Immutable audit trail option
 
-### Data Protection
-- **Encryption at Rest**: AES-256 for sensitive data
-- **Encryption in Transit**: TLS 1.3 for all communication
-- **Key Management**: Hardware security modules (HSM)
-- **Data Classification**: Automatic PII detection and protection
-
-## Compliance Integration
-
-### Automated Compliance Monitoring
-- **Frameworks**: ISO 42001, NIST AI RMF, EU AI Act, SOC 2
-- **Validation**: Continuous compliance checking
-- **Reporting**: Automated regulatory reports
-- **Alerts**: Real-time compliance violations
-
-### Audit Trail System
-- **Storage**: Immutable audit logs with cryptographic signatures
-- **Retention**: Configurable retention policies by regulation
-- **Search**: Full-text search with role-based access
-- **Export**: Standard formats for regulatory submissions
-
-### Risk Management
-- **Assessment**: Automated AI risk scoring
-- **Mitigation**: Policy-based risk controls
-- **Monitoring**: Continuous risk posture monitoring
-- **Reporting**: Executive dashboards and KPIs
-
-This architecture provides enterprise-grade scalability, security, and compliance while maintaining the flexibility needed for universal AI agent interoperability across multiple frameworks and use cases.
+### Technical Debt
+1. **Monolithic Database**: Need to further decompose
+2. **Synchronous Dependencies**: Move to async patterns
+3. **Cache Invalidation**: Implement smart invalidation
+4. **Testing Coverage**: Increase to 90%+
+5. **Documentation**: Automate API doc generation

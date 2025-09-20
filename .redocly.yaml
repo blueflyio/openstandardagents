@@ -1,0 +1,63 @@
+# Redocly configuration for OSSA API documentation
+apiDefinitions:
+  main:
+    root: src/api/ossa-complete.openapi.yml
+  specification:
+    root: src/api/specification.openapi.yml
+  acdl:
+    root: src/api/acdl-specification.yml
+  clean-architecture:
+    root: src/api/clean-architecture.openapi.yml
+  mcp:
+    root: src/api/mcp-infrastructure.openapi.yml
+  orchestration:
+    root: src/api/orchestration.openapi.yml
+
+lint:
+  extends:
+    - recommended
+  rules:
+    operation-operationId: error
+    operation-summary: error
+    tag-description: warning
+    info-description: warning
+    no-server-example.com: error
+    no-unused-components: warning
+    
+theme:
+  colors:
+    primary:
+      main: '#2196F3'
+    success:
+      main: '#4CAF50'
+    warning:
+      main: '#FF9800'
+    error:
+      main: '#F44336'
+    
+  logo:
+    gutter: '20px'
+    
+  typography:
+    fontSize: '16px'
+    fontFamily: '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
+    
+  codeBlock:
+    backgroundColor: '#263238'
+    
+features.openapi:
+  showConsole: true
+  hideTryItPanel: false
+  hideDownloadButton: false
+  disableSearch: false
+  expandResponses: '200,201'
+  jsonSampleExpandLevel: 3
+  hideSchemaTitles: false
+  simpleOneOfTypeLabel: false
+  sortPropsAlphabetically: false
+  payloadSampleIdx: 0
+  
+seo:
+  title: 'OSSA - Open Standards for Scalable Agents'
+  description: 'Official API documentation for OSSA v0.1.9 specification'
+  keywords: 'OSSA, AI agents, API, OpenAPI, scalable agents, orchestration'
