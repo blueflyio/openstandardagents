@@ -367,25 +367,23 @@ promote:to-main:
   needs: ["test:project"]
   image: alpine:latest
   script:
-    - apk add --no-cache git openssh-client
+    - apk add --no-cache git openssh-client openssl
     - echo "🚀 Promoting development to main (version $PROJECT_VERSION)"
     - git config user.email "ci@gitlab.bluefly.io"
     - git config user.name "GitLab CI"
     # Setup SSH authentication with multiple fallback methods
     - mkdir -p ~/.ssh
     - chmod 700 ~/.ssh
-    # Clean and write SSH key with proper format detection
-    - echo "$SSH_PRIVATE_KEY" | tr -d '\r' | sed '/^$/d' > ~/.ssh/id_rsa
+    # Write SSH key with proper format for Alpine OpenSSH
+    - echo "$SSH_PRIVATE_KEY" | base64 -d > ~/.ssh/id_rsa 2>/dev/null || echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
     - chmod 600 ~/.ssh/id_rsa
-    # Verify key format and try to fix common issues
+    # Convert key format if needed (PEM to OpenSSH format)
     - |
       if ! ssh-keygen -l -f ~/.ssh/id_rsa > /dev/null 2>&1; then
-        echo "Key format issue detected, trying alternative methods..."
-        # Try writing as different key types
-        echo "$SSH_PRIVATE_KEY" | tr -d '\r' | sed '/^$/d' > ~/.ssh/id_ed25519
-        chmod 600 ~/.ssh/id_ed25519
-        echo "$SSH_PRIVATE_KEY" | tr -d '\r' | sed '/^$/d' > ~/.ssh/id_ecdsa  
-        chmod 600 ~/.ssh/id_ecdsa
+        echo "Converting SSH key format for Alpine compatibility..."
+        # Try to convert key using openssl if it's in wrong format
+        openssl rsa -in ~/.ssh/id_rsa -out ~/.ssh/id_rsa_converted 2>/dev/null && mv ~/.ssh/id_rsa_converted ~/.ssh/id_rsa || true
+        chmod 600 ~/.ssh/id_rsa
       fi
     # Add GitLab host key
     - ssh-keyscan -t ed25519,rsa gitlab.bluefly.io >> ~/.ssh/known_hosts
@@ -434,18 +432,16 @@ release:production:
     # Setup SSH authentication with multiple fallback methods
     - mkdir -p ~/.ssh
     - chmod 700 ~/.ssh
-    # Clean and write SSH key with proper format detection
-    - echo "$SSH_PRIVATE_KEY" | tr -d '\r' | sed '/^$/d' > ~/.ssh/id_rsa
+    # Write SSH key with proper format for Alpine OpenSSH
+    - echo "$SSH_PRIVATE_KEY" | base64 -d > ~/.ssh/id_rsa 2>/dev/null || echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
     - chmod 600 ~/.ssh/id_rsa
-    # Verify key format and try to fix common issues
+    # Convert key format if needed (PEM to OpenSSH format)
     - |
       if ! ssh-keygen -l -f ~/.ssh/id_rsa > /dev/null 2>&1; then
-        echo "Key format issue detected, trying alternative methods..."
-        # Try writing as different key types
-        echo "$SSH_PRIVATE_KEY" | tr -d '\r' | sed '/^$/d' > ~/.ssh/id_ed25519
-        chmod 600 ~/.ssh/id_ed25519
-        echo "$SSH_PRIVATE_KEY" | tr -d '\r' | sed '/^$/d' > ~/.ssh/id_ecdsa  
-        chmod 600 ~/.ssh/id_ecdsa
+        echo "Converting SSH key format for Alpine compatibility..."
+        # Try to convert key using openssl if it's in wrong format
+        openssl rsa -in ~/.ssh/id_rsa -out ~/.ssh/id_rsa_converted 2>/dev/null && mv ~/.ssh/id_rsa_converted ~/.ssh/id_rsa || true
+        chmod 600 ~/.ssh/id_rsa
       fi
     # Add GitLab host key
     - ssh-keyscan -t ed25519,rsa gitlab.bluefly.io >> ~/.ssh/known_hosts
