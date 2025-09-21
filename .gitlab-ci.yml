@@ -344,9 +344,11 @@ release:version:
         exit 0
       fi
     - |
-      # Create git tag
+      # Configure git with token authentication
       git config --global user.email "ci@ossa.dev"
       git config --global user.name "OSSA CI"
+
+      # Create tag
       git tag -a "$TAG_NAME" -m "OSSA Release $TAG_NAME
 
       Features:
@@ -356,9 +358,15 @@ release:version:
       - GitLab Pages documentation site
 
       Built from commit: ${CI_COMMIT_SHA}"
-      
-      # Push tag to repository
-      git push origin "$TAG_NAME"
+
+      # Push tag using token if available, fallback to default
+      if [ -n "$GITLAB_TOKEN" ]; then
+        echo "Using GITLAB_TOKEN for authentication"
+        git push https://oauth2:${GITLAB_TOKEN}@gitlab.bluefly.io/llm/openapi-ai-agents-standard.git "$TAG_NAME"
+      else
+        echo "Using default CI authentication"
+        git push origin "$TAG_NAME"
+      fi
       
       echo "✅ Tag $TAG_NAME created and pushed"
   rules:
