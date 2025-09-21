@@ -327,18 +327,25 @@ release:version:
   script:
     - echo "🏷️ Creating release tag for OSSA v${PROJECT_VERSION}"
     - |
-      # Check branch and create appropriate tag
+      # Create multiple environment tags based on branch
+      TAGS_TO_CREATE=()
+
       if [[ "$CI_COMMIT_BRANCH" == "main" ]]; then
-        TAG_NAME="v${PROJECT_VERSION}"
-        echo "Creating production release: $TAG_NAME"
+        # Production branch - create production tag
+        TAGS_TO_CREATE+=("v${PROJECT_VERSION}")
+        echo "Creating production tag: v${PROJECT_VERSION}"
       elif [[ "$CI_COMMIT_BRANCH" == "development" ]]; then
-        TAG_NAME="v${PROJECT_VERSION}-dev"
-        echo "Creating development release: $TAG_NAME"
+        # Development branch - create dev and staging tags
+        TAGS_TO_CREATE+=("v${PROJECT_VERSION}-dev")
+        TAGS_TO_CREATE+=("v${PROJECT_VERSION}-staging")
+        echo "Creating development tags"
       elif [[ "$CI_COMMIT_BRANCH" =~ ^feature/ ]]; then
-        # Extract feature name from branch
-        FEATURE_NAME=$(echo "$CI_COMMIT_BRANCH" | sed 's/^feature\///')
-        TAG_NAME="v${PROJECT_VERSION}-${FEATURE_NAME}"
-        echo "Creating feature release: $TAG_NAME"
+        # Feature branch - create feature, dev-preview, and candidate tags
+        FEATURE_NAME=$(echo "$CI_COMMIT_BRANCH" | sed 's/^feature\///' | sed 's/[^a-zA-Z0-9-]/-/g')
+        TAGS_TO_CREATE+=("v${PROJECT_VERSION}-feature-${FEATURE_NAME}")
+        TAGS_TO_CREATE+=("v${PROJECT_VERSION}-dev-${FEATURE_NAME}")
+        TAGS_TO_CREATE+=("v${PROJECT_VERSION}-rc-${FEATURE_NAME}")
+        echo "Creating feature branch tags for: $FEATURE_NAME"
       else
         echo "Release only runs on main, development, or feature branches"
         exit 0
@@ -348,27 +355,39 @@ release:version:
       git config --global user.email "ci@ossa.dev"
       git config --global user.name "OSSA CI"
 
-      # Create tag
-      git tag -a "$TAG_NAME" -m "OSSA Release $TAG_NAME
+      # Create and push each tag
+      for TAG_NAME in "${TAGS_TO_CREATE[@]}"; do
+        echo "📌 Creating tag: $TAG_NAME"
 
-      Features:
-      - Agent specification v${OSSA_VERSION}
-      - Complete API documentation
-      - Production-ready Docker infrastructure
-      - GitLab Pages documentation site
+        # Create tag with descriptive message
+        git tag -a "$TAG_NAME" -m "OSSA Release $TAG_NAME
 
-      Built from commit: ${CI_COMMIT_SHA}"
+        Branch: ${CI_COMMIT_BRANCH}
+        Version: ${OSSA_VERSION}
+        Features:
+        - Agent specification v${OSSA_VERSION}
+        - Complete API documentation
+        - Production-ready Docker infrastructure
+        - GitLab Pages documentation site
 
-      # Push tag using token if available, fallback to default
-      if [ -n "$GITLAB_TOKEN" ]; then
-        echo "Using GITLAB_TOKEN for authentication"
-        git push https://oauth2:${GITLAB_TOKEN}@gitlab.bluefly.io/llm/openapi-ai-agents-standard.git "$TAG_NAME"
-      else
-        echo "Using default CI authentication"
-        git push origin "$TAG_NAME"
-      fi
-      
-      echo "✅ Tag $TAG_NAME created and pushed"
+        Built from commit: ${CI_COMMIT_SHA}"
+
+        # Push tag using token if available, fallback to default
+        if [ -n "$GITLAB_TOKEN" ]; then
+          echo "Using GITLAB_TOKEN for authentication"
+          git push https://oauth2:${GITLAB_TOKEN}@gitlab.bluefly.io/llm/openapi-ai-agents-standard.git "$TAG_NAME"
+        else
+          echo "Using default CI authentication"
+          git push origin "$TAG_NAME"
+        fi
+
+        echo "✅ Tag $TAG_NAME created and pushed"
+      done
+
+      echo "🎉 All tags created successfully:"
+      for TAG in "${TAGS_TO_CREATE[@]}"; do
+        echo "  - $TAG"
+      done
   rules:
     - if: $CI_COMMIT_BRANCH == "main"
       when: manual
