@@ -1,2 +1,0 @@
-# Testing CI tag creation
-# CI tag test with token
