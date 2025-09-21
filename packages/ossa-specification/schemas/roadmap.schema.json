@@ -1,0 +1,277 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://ossa.ai/schemas/roadmap.schema.json",
+  "title": "OSSA Roadmap Schema",
+  "description": "Schema for defining project roadmaps with Linear and GitLab integration",
+  "type": "object",
+  "required": ["apiVersion", "kind", "metadata", "spec"],
+  "properties": {
+    "apiVersion": {
+      "type": "string",
+      "const": "@bluefly/ossa/v0.1.9",
+      "description": "OSSA API version"
+    },
+    "kind": {
+      "type": "string",
+      "enum": ["Roadmap", "AggregatedRoadmap"],
+      "description": "Resource type"
+    },
+    "metadata": {
+      "type": "object",
+      "required": ["name"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "pattern": "^[a-z0-9]([a-z0-9-]*[a-z0-9])?$",
+          "description": "Roadmap identifier"
+        },
+        "namespace": {
+          "type": "string",
+          "description": "Namespace for multi-project roadmaps"
+        },
+        "version": {
+          "type": "string",
+          "pattern": "^v?(\\d+)\\.(\\d+)\\.(\\d+)(-[a-zA-Z0-9.]+)?$",
+          "description": "Roadmap version"
+        },
+        "labels": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "Key-value labels"
+        },
+        "annotations": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "Key-value annotations"
+        }
+      }
+    },
+    "spec": {
+      "type": "object",
+      "required": ["initiatives", "milestones", "projects"],
+      "properties": {
+        "initiatives": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/RoadmapItem"
+          },
+          "description": "High-level strategic initiatives"
+        },
+        "milestones": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/RoadmapItem"
+          },
+          "description": "Version milestones and releases"
+        },
+        "projects": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/RoadmapItem"
+          },
+          "description": "Concrete projects and deliverables"
+        },
+        "dependencies": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Dependency"
+          },
+          "description": "Cross-item dependencies"
+        },
+        "integrations": {
+          "type": "object",
+          "properties": {
+            "linear": {
+              "$ref": "#/definitions/LinearIntegration"
+            },
+            "gitlab": {
+              "$ref": "#/definitions/GitLabIntegration"
+            }
+          },
+          "description": "External system integrations"
+        }
+      }
+    }
+  },
+  "definitions": {
+    "RoadmapItem": {
+      "type": "object",
+      "required": ["id", "title", "type", "status", "priority"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier"
+        },
+        "title": {
+          "type": "string",
+          "description": "Item title"
+        },
+        "description": {
+          "type": "string",
+          "description": "Detailed description"
+        },
+        "type": {
+          "type": "string",
+          "enum": ["initiative", "milestone", "project", "epic", "task", "feature"],
+          "description": "Item type"
+        },
+        "status": {
+          "type": "string",
+          "enum": ["planned", "in-progress", "completed", "cancelled", "on-hold"],
+          "description": "Current status"
+        },
+        "priority": {
+          "type": "string",
+          "enum": ["critical", "high", "medium", "low"],
+          "description": "Priority level"
+        },
+        "targetDate": {
+          "type": "string",
+          "format": "date",
+          "description": "Target completion date"
+        },
+        "startDate": {
+          "type": "string",
+          "format": "date",
+          "description": "Start date"
+        },
+        "assignees": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Assigned team members"
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Tags for categorization"
+        },
+        "effort": {
+          "type": "number",
+          "description": "Effort estimate in points"
+        },
+        "dependencies": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "IDs of dependent items"
+        },
+        "linearId": {
+          "type": "string",
+          "description": "Linear issue/project ID"
+        },
+        "gitlabId": {
+          "type": "string",
+          "description": "GitLab issue/milestone ID"
+        },
+        "children": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/RoadmapItem"
+          },
+          "description": "Child items"
+        }
+      }
+    },
+    "Dependency": {
+      "type": "object",
+      "required": ["from", "to", "type", "status"],
+      "properties": {
+        "from": {
+          "type": "string",
+          "description": "Source item ID"
+        },
+        "to": {
+          "type": "string",
+          "description": "Target item ID"
+        },
+        "type": {
+          "type": "string",
+          "enum": ["blocks", "requires", "relates-to"],
+          "description": "Dependency type"
+        },
+        "status": {
+          "type": "string",
+          "enum": ["active", "resolved"],
+          "description": "Dependency status"
+        }
+      }
+    },
+    "LinearIntegration": {
+      "type": "object",
+      "required": ["teamId"],
+      "properties": {
+        "teamId": {
+          "type": "string",
+          "description": "Linear team ID"
+        },
+        "projectId": {
+          "type": "string",
+          "description": "Linear project ID"
+        },
+        "lastSync": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Last synchronization timestamp"
+        },
+        "mappings": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "roadmapId": {
+                "type": "string"
+              },
+              "linearId": {
+                "type": "string"
+              }
+            }
+          },
+          "description": "ID mappings"
+        }
+      }
+    },
+    "GitLabIntegration": {
+      "type": "object",
+      "required": ["projectId"],
+      "properties": {
+        "projectId": {
+          "type": "string",
+          "description": "GitLab project ID"
+        },
+        "milestoneId": {
+          "type": "string",
+          "description": "GitLab milestone ID"
+        },
+        "lastSync": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Last synchronization timestamp"
+        },
+        "mappings": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "roadmapId": {
+                "type": "string"
+              },
+              "gitlabId": {
+                "type": "string"
+              }
+            }
+          },
+          "description": "ID mappings"
+        }
+      }
+    }
+  }
+}

@@ -13,6 +13,7 @@ stages:
   - test
   - test-red
   - test-agents
+  - roadmap
   - changelog
   - security
   - deploy
@@ -201,6 +202,81 @@ test:agent-integration:
     - __REBUILD
     - feature/*
     - fix/*
+
+# Roadmap Pipeline Jobs
+roadmap:validate:
+  stage: roadmap
+  image: node:${NODE_VERSION}
+  script:
+    - echo "📋 Validating ROADMAP.md"
+    - npm install
+    - npm run roadmap:validate ROADMAP.md || echo "Validation warnings"
+  artifacts:
+    reports:
+      junit: roadmap-validation.xml
+    paths:
+      - roadmap-validation.json
+  only:
+    changes:
+      - ROADMAP.md
+      - roadmaps/**/*.md
+
+roadmap:parse:
+  stage: roadmap
+  image: node:${NODE_VERSION}
+  script:
+    - echo "🔍 Parsing roadmap to structured format"
+    - npm install
+    - npm run roadmap:parse ROADMAP.md --output roadmap.json
+    - npm run roadmap:export --format yaml --output roadmap.yaml
+  artifacts:
+    paths:
+      - roadmap.json
+      - roadmap.yaml
+    expire_in: 1 week
+  only:
+    changes:
+      - ROADMAP.md
+
+roadmap:sync:linear:
+  stage: roadmap
+  image: node:${NODE_VERSION}
+  dependencies:
+    - roadmap:parse
+  script:
+    - echo "🔄 Syncing roadmap to Linear"
+    - npm install
+    - |
+      if [ -n "$LINEAR_API_KEY" ] && [ -n "$LINEAR_TEAM_ID" ]; then
+        npm run roadmap:sync --to-linear --team-id $LINEAR_TEAM_ID
+        echo "✅ Roadmap synced to Linear"
+      else
+        echo "⚠️ Linear credentials not configured, skipping sync"
+      fi
+  only:
+    refs:
+      - main
+      - development
+    changes:
+      - ROADMAP.md
+  when: manual
+
+roadmap:aggregate:
+  stage: roadmap
+  image: node:${NODE_VERSION}
+  script:
+    - echo "📊 Aggregating project roadmaps"
+    - npm install
+    - npm run roadmap:aggregate --projects "packages/*" --output AGGREGATED_ROADMAP.md
+    - npm run roadmap:export --source AGGREGATED_ROADMAP.md --format dita --output docs/roadmap/
+  artifacts:
+    paths:
+      - AGGREGATED_ROADMAP.md
+      - docs/roadmap/
+    expire_in: 1 month
+  only:
+    - schedules
+    - main
 
 # Contract Testing (Dredd-style)
 test:contracts:

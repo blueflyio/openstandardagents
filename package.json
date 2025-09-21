@@ -15,7 +15,13 @@
     "install:all": "npm install && npm install --workspaces",
     "postinstall": "npm run build",
     "api:validate": "npx @redocly/cli lint src/api/specification.openapi.yml",
-    "api:docs": "npx @redocly/cli preview src/api/ossa-complete.openapi.yml"
+    "api:docs": "npx @redocly/cli preview src/api/ossa-complete.openapi.yml",
+    "roadmap:parse": "npm run --workspace=@ossa/roadmap-bridge parse",
+    "roadmap:sync": "npm run --workspace=@ossa/roadmap-bridge sync",
+    "roadmap:aggregate": "npm run --workspace=@ossa/roadmap-bridge aggregate",
+    "roadmap:validate": "npm run --workspace=@ossa/validator dev roadmap",
+    "roadmap:export": "npm run --workspace=@ossa/roadmap-bridge export",
+    "roadmap:parse-glab": "glab api projects/$CI_PROJECT_ID/issues | npm run roadmap:parse --from-stdin"
   },
   "keywords": [
     "ossa",
