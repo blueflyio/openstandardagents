@@ -1,0 +1,2027 @@
+{
+  "validRepositories": [
+    {
+      "name": "agent-brain",
+      "path": "/Users/flux423/Sites/LLM/common_npm/agent-brain",
+      "hasOSSAStructure": true,
+      "hasDocumentation": true,
+      "hasRegistry": true,
+      "categories": {
+        "critics": {
+          "exists": true,
+          "agentCount": 0
+        },
+        "governors": {
+          "exists": true,
+          "agentCount": 0
+        },
+        "integrators": {
+          "exists": true,
+          "agentCount": 1
+        },
+        "judges": {
+          "exists": true,
+          "agentCount": 0
+        },
+        "monitors": {
+          "exists": true,
+          "agentCount": 0
+        },
+        "orchestrators": {
+          "exists": true,
+          "agentCount": 0
+        },
+        "trainers": {
+          "exists": true,
+          "agentCount": 2
+        },
+        "voice": {
+          "exists": true,
+          "agentCount": 0
+        },
+        "workers": {
+          "exists": true,
+          "agentCount": 0
+        }
+      },
+      "agents": [
+        {
+          "name": "agent-brain-integration-expert",
+          "category": "integrators",
+          "configPath": "/Users/flux423/Sites/LLM/common_npm/agent-brain/.agents/integrators/agent-brain-integration-expert/agent.yml",
+          "isValid": true,
+          "issues": []
+        },
+        {
+          "name": "agent-brain-core-specialist",
+          "category": "trainers",
+          "configPath": "/Users/flux423/Sites/LLM/common_npm/agent-brain/.agents/trainers/agent-brain-core-specialist/agent.yml",
+          "isValid": true,
+          "issues": []
+        },
+        {
+          "name": "agent-brain-troubleshoot-agent",
+          "category": "trainers",
+          "configPath": "/Users/flux423/Sites/LLM/common_npm/agent-brain/.agents/trainers/agent-brain-troubleshoot-agent/agent.yml",
+          "isValid": true,
+          "issues": []
+        }
+      ],
+      "issues": []
+    },
+    {
+      "name": "agent-chat",
+      "path": "/Users/flux423/Sites/LLM/common_npm/agent-chat",
+      "hasOSSAStructure": true,
+      "hasDocumentation": true,
+      "hasRegistry": true,
+      "categories": {
+        "critics": {
+          "exists": true,
+          "agentCount": 1
+        },
+        "governors": {
+          "exists": true,
+          "agentCount": 5
+        },
+        "integrators": {
+          "exists": true,
+          "agentCount": 0
+        },
+        "judges": {
+          "exists": true,
+          "agentCount": 0
+        },
+        "monitors": {
+          "exists": true,
+          "agentCount": 0
+        },
+        "orchestrators": {
+          "exists": true,
+          "agentCount": 0
+        },
+        "trainers": {
+          "exists": true,
+          "agentCount": 0
+        },
+        "voice": {
+          "exists": true,
+          "agentCount": 0
+        },
+        "workers": {
+          "exists": true,
+          "agentCount": 0
+        }
+      },
+      "agents": [
+        {
+          "name": "code-review-assignment",
+          "category": "critics",
+          "configPath": "/Users/flux423/Sites/LLM/common_npm/agent-chat/.agents/critics/code-review-assignment/agent.yml",
+          "isValid": true,
+          "issues": []
+        },
+        {
+          "name": "chaos-engineering",
+          "category": "governors",
+          "configPath": "/Users/flux423/Sites/LLM/common_npm/agent-chat/.agents/governors/chaos-engineering/agent.yml",
+          "isValid": true,
+          "issues": []
+        },
+        {
+          "name": "customer-issue-correlation",
+          "category": "governors",
+          "configPath": "/Users/flux423/Sites/LLM/common_npm/agent-chat/.agents/governors/customer-issue-correlation/agent.yml",
+          "isValid": true,
+          "issues": []
+        },
+        {
+          "name": "developer-onboarding",
+          "category": "governors",
+          "configPath": "/Users/flux423/Sites/LLM/common_npm/agent-chat/.agents/governors/developer-onboarding/agent.yml",
+          "isValid": true,
+          "issues": []
+        },
+        {
+          "name": "graphql-schema-evolution",
+          "category": "governors",
+          "configPath": "/Users/flux423/Sites/LLM/common_npm/agent-chat/.agents/governors/graphql-schema-evolution/agent.yml",
+          "isValid": true,
+          "issues": []
+        },
+        {
+          "name": "monorepo-management",
+          "category": "governors",
+          "configPath": "/Users/flux423/Sites/LLM/common_npm/agent-chat/.agents/governors/monorepo-management/agent.yml",
+          "isValid": true,
+          "issues": []
+        }
+      ],
+      "issues": []
+    },
+    {
+      "name": "agent-docker",
+      "path": "/Users/flux423/Sites/LLM/common_npm/agent-docker",
+      "hasOSSAStructure": true,
+      "hasDocumentation": true,
+      "hasRegistry": true,
+      "categories": {
+        "critics": {
+          "exists": true,
+          "agentCount": 0
+        },
+        "governors": {
+          "exists": true,
+          "agentCount": 1
+        },
+        "integrators": {
+          "exists": true,
+          "agentCount": 0
+        },
+        "judges": {
+          "exists": true,
+          "agentCount": 0
+        },
+        "monitors": {
+          "exists": true,
+          "agentCount": 0
+        },
+        "orchestrators": {
+          "exists": true,
+          "agentCount": 0
+        },
+        "trainers": {
+          "exists": true,
+          "agentCount": 0
+        },
+        "voice": {
+          "exists": true,
+          "agentCount": 0
+        },
+        "workers": {
+          "exists": true,
+          "agentCount": 0
+        }
+      },
+      "agents": [
+        {
+          "name": "service-mesh-configuration",
+          "category": "governors",
+          "configPath": "/Users/flux423/Sites/LLM/common_npm/agent-docker/.agents/governors/service-mesh-configuration/agent.yml",
+          "isValid": true,
+          "issues": []
+        }
+      ],
+      "issues": []
+    },
+    {
+      "name": "agent-mesh",
+      "path": "/Users/flux423/Sites/LLM/common_npm/agent-mesh",
+      "hasOSSAStructure": true,
+      "hasDocumentation": true,
+      "hasRegistry": true,
+      "categories": {
+        "critics": {
+          "exists": true,
+          "agentCount": 0
+        },
+        "governors": {
+          "exists": true,
+          "agentCount": 1
+        },
+        "integrators": {
+          "exists": true,
+          "agentCount": 0
+        },
+        "judges": {
+          "exists": true,
+          "agentCount": 0
+        },
+        "monitors": {
+          "exists": true,
+          "agentCount": 0
+        },
+        "orchestrators": {
+          "exists": true,
+          "agentCount": 0
+        },
+        "trainers": {
+          "exists": true,
+          "agentCount": 0
+        },
+        "voice": {
+          "exists": true,
+          "agentCount": 0
+        },
+        "workers": {
+          "exists": true,
+          "agentCount": 0
+        }
+      },
+      "agents": [
+        {
+          "name": "agent-mesh-specialist",
+          "category": "governors",
+          "configPath": "/Users/flux423/Sites/LLM/common_npm/agent-mesh/.agents/governors/agent-mesh-specialist/agent.yml",
+          "isValid": true,
+          "issues": []
+        }
+      ],
+      "issues": []
+    },
+    {
+      "name": "agent-ops",
+      "path": "/Users/flux423/Sites/LLM/common_npm/agent-ops",
+      "hasOSSAStructure": true,
+      "hasDocumentation": true,
+      "hasRegistry": true,
+      "categories": {
+        "critics": {
+          "exists": true,
+          "agentCount": 0
+        },
+        "governors": {
+          "exists": true,
+          "agentCount": 10
+        },
+        "integrators": {
+          "exists": true,
+          "agentCount": 0
+        },
+        "judges": {
+          "exists": true,
+          "agentCount": 0
+        },
+        "monitors": {
+          "exists": true,
+          "agentCount": 0
+        },
+        "orchestrators": {
+          "exists": true,
+          "agentCount": 1
+        },
+        "trainers": {
+          "exists": true,
+          "agentCount": 1
+        },
+        "voice": {
+          "exists": true,
+          "agentCount": 0
+        },
+        "workers": {
+          "exists": true,
+          "agentCount": 0
+        }
+      },
+      "agents": [
+        {
+          "name": "agent-ops-expert",
+          "category": "governors",
+          "configPath": "/Users/flux423/Sites/LLM/common_npm/agent-ops/.agents/governors/agent-ops-expert/agent.yml",
+          "isValid": true,
+          "issues": []
+        },
+        {
+          "name": "automated-rollback",
+          "category": "governors",
+          "configPath": "/Users/flux423/Sites/LLM/common_npm/agent-ops/.agents/governors/automated-rollback/agent.yml",
+          "isValid": true,
+          "issues": []
+        },
+        {
+          "name": "business-analyst",
+          "category": "governors",
+          "configPath": "/Users/flux423/Sites/LLM/common_npm/agent-ops/.agents/governors/business-analyst/agent.yml",
+          "isValid": true,
+          "issues": []
+        },
+        {
+          "name": "ci-cd-pipeline-optimization",
+          "category": "governors",
+          "configPath": "/Users/flux423/Sites/LLM/common_npm/agent-ops/.agents/governors/ci-cd-pipeline-optimization/agent.yml",
+          "isValid": true,
+          "issues": []
+        },
+        {
+          "name": "command-discovery",
+          "category": "governors",
+          "configPath": "/Users/flux423/Sites/LLM/common_npm/agent-ops/.agents/governors/command-discovery/agent.yml",
+          "isValid": true,
+          "issues": []
+        },
+        {
+          "name": "environment-configuration",
+          "category": "governors",
+          "configPath": "/Users/flux423/Sites/LLM/common_npm/agent-ops/.agents/governors/environment-configuration/agent.yml",
+          "isValid": true,
+          "issues": []
+        },
+        {
+          "name": "incident-response",
+          "category": "governors",
+          "configPath": "/Users/flux423/Sites/LLM/common_npm/agent-ops/.agents/governors/incident-response/agent.yml",
+          "isValid": true,
+          "issues": []
+        },
+        {
+          "name": "infrastructure-cost-optimization",
+          "category": "governors",
+          "configPath": "/Users/flux423/Sites/LLM/common_npm/agent-ops/.agents/governors/infrastructure-cost-optimization/agent.yml",
+          "isValid": true,
+          "issues": []
+        },
+        {
+          "name": "mobile-agent-controller",
+          "category": "governors",
+          "configPath": "/Users/flux423/Sites/LLM/common_npm/agent-ops/.agents/governors/mobile-agent-controller/agent.yml",
+          "isValid": true,
+          "issues": []
+        },
+        {
+          "name": "npm-package-agent",
+          "category": "governors",
+          "configPath": "/Users/flux423/Sites/LLM/common_npm/agent-ops/.agents/governors/npm-package-agent/agent.yml",
+          "isValid": true,
+          "issues": []
+        },
+        {
+          "name": "agent-orchestrator",
+          "category": "orchestrators",
+          "configPath": "/Users/flux423/Sites/LLM/common_npm/agent-ops/.agents/orchestrators/agent-orchestrator/agent.yml",
+          "isValid": true,
+          "issues": []
+        },
+        {
+          "name": "agent-ops-main",
+          "category": "trainers",
+          "configPath": "/Users/flux423/Sites/LLM/common_npm/agent-ops/.agents/trainers/agent-ops-main/agent.yml",
+          "isValid": true,
+          "issues": []
+        }
+      ],
+      "issues": []
+    },
+    {
+      "name": "agent-protocol",
+      "path": "/Users/flux423/Sites/LLM/common_npm/agent-protocol",
+      "hasOSSAStructure": true,
+      "hasDocumentation": true,
+      "hasRegistry": true,
+      "categories": {
+        "critics": {
+          "exists": true,
+          "agentCount": 0
+        },
+        "governors": {
+          "exists": true,
+          "agentCount": 0
+        },
+        "integrators": {
+          "exists": true,
+          "agentCount": 1
+        },
+        "judges": {
+          "exists": true,
+          "agentCount": 0
+        },
+        "monitors": {
+          "exists": true,
+          "agentCount": 0
+        },
+        "orchestrators": {
+          "exists": true,
+          "agentCount": 0
+        },
+        "trainers": {
+          "exists": true,
+          "agentCount": 0
+        },
+        "voice": {
+          "exists": true,
+          "agentCount": 0
+        },
+        "workers": {
+          "exists": true,
+          "agentCount": 0
+        }
+      },
+      "agents": [
+        {
+          "name": "mcp-protocol-specialist",
+          "category": "integrators",
+          "configPath": "/Users/flux423/Sites/LLM/common_npm/agent-protocol/.agents/integrators/mcp-protocol-specialist/agent.yml",
+          "isValid": true,
+          "issues": []
+        }
+      ],
+      "issues": []
+    },
+    {
+      "name": "agent-router",
+      "path": "/Users/flux423/Sites/LLM/common_npm/agent-router",
+      "hasOSSAStructure": true,
+      "hasDocumentation": true,
+      "hasRegistry": true,
+      "categories": {
+        "critics": {
+          "exists": true,
+          "agentCount": 0
+        },
+        "governors": {
+          "exists": true,
+          "agentCount": 1
+        },
+        "integrators": {
+          "exists": true,
+          "agentCount": 0
+        },
+        "judges": {
+          "exists": true,
+          "agentCount": 0
+        },
+        "monitors": {
+          "exists": true,
+          "agentCount": 0
+        },
+        "orchestrators": {
+          "exists": true,
+          "agentCount": 0
+        },
+        "trainers": {
+          "exists": true,
+          "agentCount": 0
+        },
+        "voice": {
+          "exists": true,
+          "agentCount": 0
+        },
+        "workers": {
+          "exists": true,
+          "agentCount": 1
+        }
+      },
+      "agents": [
+        {
+          "name": "agent-router-specialist",
+          "category": "governors",
+          "configPath": "/Users/flux423/Sites/LLM/common_npm/agent-router/.agents/governors/agent-router-specialist/agent.yml",
+          "isValid": true,
+          "issues": []
+        },
+        {
+          "name": "registry",
+          "category": "workers",
+          "configPath": "/Users/flux423/Sites/LLM/common_npm/agent-router/.agents/workers/registry/agent.yml",
+          "isValid": true,
+          "issues": []
+        }
+      ],
+      "issues": []
+    },
+    {
+      "name": "agent-studio",
+      "path": "/Users/flux423/Sites/LLM/common_npm/agent-studio",
+      "hasOSSAStructure": true,
+      "hasDocumentation": true,
+      "hasRegistry": true,
+      "categories": {
+        "critics": {
+          "exists": true,
+          "agentCount": 0
+        },
+        "governors": {
+          "exists": true,
+          "agentCount": 1
+        },
+        "integrators": {
+          "exists": true,
+          "agentCount": 0
+        },
+        "judges": {
+          "exists": true,
+          "agentCount": 0
+        },
+        "monitors": {
+          "exists": true,
+          "agentCount": 0
+        },
+        "orchestrators": {
+          "exists": true,
+          "agentCount": 0
+        },
+        "trainers": {
+          "exists": true,
+          "agentCount": 0
+        },
+        "voice": {
+          "exists": true,
+          "agentCount": 0
+        },
+        "workers": {
+          "exists": true,
+          "agentCount": 0
+        }
+      },
+      "agents": [
+        {
+          "name": "agent-studio-specialist",
+          "category": "governors",
+          "configPath": "/Users/flux423/Sites/LLM/common_npm/agent-studio/.agents/governors/agent-studio-specialist/agent.yml",
+          "isValid": true,
+          "issues": []
+        }
+      ],
+      "issues": []
+    },
+    {
+      "name": "agent-tracer",
+      "path": "/Users/flux423/Sites/LLM/common_npm/agent-tracer",
+      "hasOSSAStructure": true,
+      "hasDocumentation": true,
+      "hasRegistry": true,
+      "categories": {
+        "critics": {
+          "exists": true,
+          "agentCount": 0
+        },
+        "governors": {
+          "exists": true,
+          "agentCount": 0
+        },
+        "integrators": {
+          "exists": true,
+          "agentCount": 0
+        },
+        "judges": {
+          "exists": true,
+          "agentCount": 0
+        },
+        "monitors": {
+          "exists": true,
+          "agentCount": 0
+        },
+        "orchestrators": {
+          "exists": true,
+          "agentCount": 0
+        },
+        "trainers": {
+          "exists": true,
+          "agentCount": 1
+        },
+        "voice": {
+          "exists": true,
+          "agentCount": 0
+        },
+        "workers": {
+          "exists": true,
+          "agentCount": 0
+        }
+      },
+      "agents": [
+        {
+          "name": "ai-breadcrumbs-agent",
+          "category": "trainers",
+          "configPath": "/Users/flux423/Sites/LLM/common_npm/agent-tracer/.agents/trainers/ai-breadcrumbs-agent/agent.yml",
+          "isValid": true,
+          "issues": []
+        }
+      ],
+      "issues": []
+    },
+    {
+      "name": "agentic-flows",
+      "path": "/Users/flux423/Sites/LLM/common_npm/agentic-flows",
+      "hasOSSAStructure": true,
+      "hasDocumentation": true,
+      "hasRegistry": true,
+      "categories": {
+        "critics": {
+          "exists": true,
+          "agentCount": 0
+        },
+        "governors": {
+          "exists": true,
+          "agentCount": 0
+        },
+        "integrators": {
+          "exists": true,
+          "agentCount": 0
+        },
+        "judges": {
+          "exists": true,
+          "agentCount": 0
+        },
+        "monitors": {
+          "exists": true,
+          "agentCount": 0
+        },
+        "orchestrators": {
+          "exists": true,
+          "agentCount": 1
+        },
+        "trainers": {
+          "exists": true,
+          "agentCount": 0
+        },
+        "voice": {
+          "exists": true,
+          "agentCount": 0
+        },
+        "workers": {
+          "exists": true,
+          "agentCount": 0
+        }
+      },
+      "agents": [
+        {
+          "name": "agentic-flows-specialist",
+          "category": "orchestrators",
+          "configPath": "/Users/flux423/Sites/LLM/common_npm/agentic-flows/.agents/orchestrators/agentic-flows-specialist/agent.yml",
+          "isValid": true,
+          "issues": []
+        }
+      ],
+      "issues": []
+    },
+    {
+      "name": "compliance-engine",
+      "path": "/Users/flux423/Sites/LLM/common_npm/compliance-engine",
+      "hasOSSAStructure": true,
+      "hasDocumentation": true,
+      "hasRegistry": true,
+      "categories": {
+        "critics": {
+          "exists": true,
+          "agentCount": 0
+        },
+        "governors": {
+          "exists": true,
+          "agentCount": 1
+        },
+        "integrators": {
+          "exists": true,
+          "agentCount": 0
+        },
+        "judges": {
+          "exists": true,
+          "agentCount": 0
+        },
+        "monitors": {
+          "exists": true,
+          "agentCount": 0
+        },
+        "orchestrators": {
+          "exists": true,
+          "agentCount": 0
+        },
+        "trainers": {
+          "exists": true,
+          "agentCount": 0
+        },
+        "voice": {
+          "exists": true,
+          "agentCount": 0
+        },
+        "workers": {
+          "exists": true,
+          "agentCount": 0
+        }
+      },
+      "agents": [
+        {
+          "name": "compliance-engine-specialist",
+          "category": "governors",
+          "configPath": "/Users/flux423/Sites/LLM/common_npm/compliance-engine/.agents/governors/compliance-engine-specialist/agent.yml",
+          "isValid": true,
+          "issues": []
+        }
+      ],
+      "issues": []
+    },
+    {
+      "name": "doc-engine",
+      "path": "/Users/flux423/Sites/LLM/common_npm/doc-engine",
+      "hasOSSAStructure": true,
+      "hasDocumentation": true,
+      "hasRegistry": true,
+      "categories": {
+        "critics": {
+          "exists": true,
+          "agentCount": 0
+        },
+        "governors": {
+          "exists": true,
+          "agentCount": 0
+        },
+        "integrators": {
+          "exists": true,
+          "agentCount": 0
+        },
+        "judges": {
+          "exists": true,
+          "agentCount": 0
+        },
+        "monitors": {
+          "exists": true,
+          "agentCount": 0
+        },
+        "orchestrators": {
+          "exists": true,
+          "agentCount": 0
+        },
+        "trainers": {
+          "exists": true,
+          "agentCount": 0
+        },
+        "voice": {
+          "exists": true,
+          "agentCount": 0
+        },
+        "workers": {
+          "exists": true,
+          "agentCount": 0
+        }
+      },
+      "agents": [],
+      "issues": []
+    },
+    {
+      "name": "foundation-bridge",
+      "path": "/Users/flux423/Sites/LLM/common_npm/foundation-bridge",
+      "hasOSSAStructure": true,
+      "hasDocumentation": true,
+      "hasRegistry": true,
+      "categories": {
+        "critics": {
+          "exists": true,
+          "agentCount": 0
+        },
+        "governors": {
+          "exists": true,
+          "agentCount": 0
+        },
+        "integrators": {
+          "exists": true,
+          "agentCount": 1
+        },
+        "judges": {
+          "exists": true,
+          "agentCount": 0
+        },
+        "monitors": {
+          "exists": true,
+          "agentCount": 0
+        },
+        "orchestrators": {
+          "exists": true,
+          "agentCount": 0
+        },
+        "trainers": {
+          "exists": true,
+          "agentCount": 0
+        },
+        "voice": {
+          "exists": true,
+          "agentCount": 0
+        },
+        "workers": {
+          "exists": true,
+          "agentCount": 0
+        }
+      },
+      "agents": [
+        {
+          "name": "foundation-bridge-specialist",
+          "category": "integrators",
+          "configPath": "/Users/flux423/Sites/LLM/common_npm/foundation-bridge/.agents/integrators/foundation-bridge-specialist/agent.yml",
+          "isValid": true,
+          "issues": []
+        }
+      ],
+      "issues": []
+    },
+    {
+      "name": "rfp-automation",
+      "path": "/Users/flux423/Sites/LLM/common_npm/rfp-automation",
+      "hasOSSAStructure": true,
+      "hasDocumentation": true,
+      "hasRegistry": true,
+      "categories": {
+        "critics": {
+          "exists": true,
+          "agentCount": 0
+        },
+        "governors": {
+          "exists": true,
+          "agentCount": 0
+        },
+        "integrators": {
+          "exists": true,
+          "agentCount": 0
+        },
+        "judges": {
+          "exists": true,
+          "agentCount": 0
+        },
+        "monitors": {
+          "exists": true,
+          "agentCount": 0
+        },
+        "orchestrators": {
+          "exists": true,
+          "agentCount": 0
+        },
+        "trainers": {
+          "exists": true,
+          "agentCount": 0
+        },
+        "voice": {
+          "exists": true,
+          "agentCount": 0
+        },
+        "workers": {
+          "exists": true,
+          "agentCount": 0
+        }
+      },
+      "agents": [],
+      "issues": []
+    },
+    {
+      "name": "studio-ui",
+      "path": "/Users/flux423/Sites/LLM/common_npm/studio-ui",
+      "hasOSSAStructure": true,
+      "hasDocumentation": true,
+      "hasRegistry": true,
+      "categories": {
+        "critics": {
+          "exists": true,
+          "agentCount": 0
+        },
+        "governors": {
+          "exists": true,
+          "agentCount": 0
+        },
+        "integrators": {
+          "exists": true,
+          "agentCount": 0
+        },
+        "judges": {
+          "exists": true,
+          "agentCount": 0
+        },
+        "monitors": {
+          "exists": true,
+          "agentCount": 0
+        },
+        "orchestrators": {
+          "exists": true,
+          "agentCount": 0
+        },
+        "trainers": {
+          "exists": true,
+          "agentCount": 0
+        },
+        "voice": {
+          "exists": true,
+          "agentCount": 0
+        },
+        "workers": {
+          "exists": true,
+          "agentCount": 0
+        }
+      },
+      "agents": [],
+      "issues": []
+    },
+    {
+      "name": "workflow-engine",
+      "path": "/Users/flux423/Sites/LLM/common_npm/workflow-engine",
+      "hasOSSAStructure": true,
+      "hasDocumentation": true,
+      "hasRegistry": true,
+      "categories": {
+        "critics": {
+          "exists": true,
+          "agentCount": 0
+        },
+        "governors": {
+          "exists": true,
+          "agentCount": 0
+        },
+        "integrators": {
+          "exists": true,
+          "agentCount": 0
+        },
+        "judges": {
+          "exists": true,
+          "agentCount": 0
+        },
+        "monitors": {
+          "exists": true,
+          "agentCount": 0
+        },
+        "orchestrators": {
+          "exists": true,
+          "agentCount": 1
+        },
+        "trainers": {
+          "exists": true,
+          "agentCount": 0
+        },
+        "voice": {
+          "exists": true,
+          "agentCount": 0
+        },
+        "workers": {
+          "exists": true,
+          "agentCount": 0
+        }
+      },
+      "agents": [
+        {
+          "name": "workflow-engine-specialist",
+          "category": "orchestrators",
+          "configPath": "/Users/flux423/Sites/LLM/common_npm/workflow-engine/.agents/orchestrators/workflow-engine-specialist/agent.yml",
+          "isValid": true,
+          "issues": []
+        }
+      ],
+      "issues": []
+    },
+    {
+      "name": ".gitlab",
+      "path": "/Users/flux423/Sites/LLM/.gitlab",
+      "hasOSSAStructure": true,
+      "hasDocumentation": true,
+      "hasRegistry": true,
+      "categories": {
+        "critics": {
+          "exists": true,
+          "agentCount": 0
+        },
+        "governors": {
+          "exists": true,
+          "agentCount": 0
+        },
+        "integrators": {
+          "exists": true,
+          "agentCount": 0
+        },
+        "judges": {
+          "exists": true,
+          "agentCount": 0
+        },
+        "monitors": {
+          "exists": true,
+          "agentCount": 0
+        },
+        "orchestrators": {
+          "exists": true,
+          "agentCount": 0
+        },
+        "trainers": {
+          "exists": true,
+          "agentCount": 0
+        },
+        "voice": {
+          "exists": true,
+          "agentCount": 0
+        },
+        "workers": {
+          "exists": true,
+          "agentCount": 0
+        }
+      },
+      "agents": [],
+      "issues": []
+    }
+  ],
+  "invalidRepositories": [
+    {
+      "name": "agent_buildkit",
+      "path": "/Users/flux423/Sites/LLM/agent_buildkit",
+      "hasOSSAStructure": true,
+      "hasDocumentation": true,
+      "hasRegistry": true,
+      "categories": {
+        "critics": {
+          "exists": true,
+          "agentCount": 1
+        },
+        "governors": {
+          "exists": true,
+          "agentCount": 21
+        },
+        "integrators": {
+          "exists": true,
+          "agentCount": 13
+        },
+        "judges": {
+          "exists": true,
+          "agentCount": 0
+        },
+        "monitors": {
+          "exists": true,
+          "agentCount": 4
+        },
+        "orchestrators": {
+          "exists": true,
+          "agentCount": 2
+        },
+        "trainers": {
+          "exists": true,
+          "agentCount": 1
+        },
+        "voice": {
+          "exists": true,
+          "agentCount": 0
+        },
+        "workers": {
+          "exists": true,
+          "agentCount": 0
+        }
+      },
+      "agents": [
+        {
+          "name": "code-quality",
+          "category": "critics",
+          "configPath": "/Users/flux423/Sites/LLM/agent_buildkit/.agents/critics/code-quality/agent.yml",
+          "isValid": true,
+          "issues": []
+        },
+        {
+          "name": "analyzer",
+          "category": "governors",
+          "configPath": "/Users/flux423/Sites/LLM/agent_buildkit/.agents/governors/analyzer/agent.yml",
+          "isValid": true,
+          "issues": []
+        },
+        {
+          "name": "branch-policy-enforcer",
+          "category": "governors",
+          "configPath": "/Users/flux423/Sites/LLM/agent_buildkit/.agents/governors/branch-policy-enforcer/agent.yml",
+          "isValid": true,
+          "issues": []
+        },
+        {
+          "name": "contract-test-runner",
+          "category": "governors",
+          "configPath": "/Users/flux423/Sites/LLM/agent_buildkit/.agents/governors/contract-test-runner/agent.yml",
+          "isValid": true,
+          "issues": []
+        },
+        {
+          "name": "contract-validator",
+          "category": "governors",
+          "configPath": "/Users/flux423/Sites/LLM/agent_buildkit/.agents/governors/contract-validator/agent.yml",
+          "isValid": true,
+          "issues": []
+        },
+        {
+          "name": "cost-optimizer",
+          "category": "governors",
+          "configPath": "/Users/flux423/Sites/LLM/agent_buildkit/.agents/governors/cost-optimizer/agent.yml",
+          "isValid": true,
+          "issues": []
+        },
+        {
+          "name": "database-agent",
+          "category": "governors",
+          "configPath": "/Users/flux423/Sites/LLM/agent_buildkit/.agents/governors/database-agent/agent.yml",
+          "isValid": true,
+          "issues": []
+        },
+        {
+          "name": "dependency-resolver",
+          "category": "governors",
+          "configPath": "/Users/flux423/Sites/LLM/agent_buildkit/.agents/governors/dependency-resolver/agent.yml",
+          "isValid": true,
+          "issues": []
+        },
+        {
+          "name": "deployment-manager",
+          "category": "governors",
+          "configPath": "/Users/flux423/Sites/LLM/agent_buildkit/.agents/governors/deployment-manager/agent.yml",
+          "isValid": true,
+          "issues": []
+        },
+        {
+          "name": "fedramp-compliance-scanner",
+          "category": "governors",
+          "configPath": "/Users/flux423/Sites/LLM/agent_buildkit/.agents/governors/fedramp-compliance-scanner/agent.yml",
+          "isValid": true,
+          "issues": []
+        },
+        {
+          "name": "grafana-dashboard-builder",
+          "category": "governors",
+          "configPath": "/Users/flux423/Sites/LLM/agent_buildkit/.agents/governors/grafana-dashboard-builder/agent.yml",
+          "isValid": true,
+          "issues": []
+        },
+        {
+          "name": "implementation-minimizer",
+          "category": "governors",
+          "configPath": "/Users/flux423/Sites/LLM/agent_buildkit/.agents/governors/implementation-minimizer/agent.yml",
+          "isValid": true,
+          "issues": []
+        },
+        {
+          "name": "production-validator",
+          "category": "governors",
+          "configPath": "/Users/flux423/Sites/LLM/agent_buildkit/.agents/governors/production-validator/agent.yml",
+          "isValid": true,
+          "issues": []
+        },
+        {
+          "name": "schema-evolution",
+          "category": "governors",
+          "configPath": "/Users/flux423/Sites/LLM/agent_buildkit/.agents/governors/schema-evolution/agent.yml",
+          "isValid": true,
+          "issues": []
+        },
+        {
+          "name": "security-audit",
+          "category": "governors",
+          "configPath": "/Users/flux423/Sites/LLM/agent_buildkit/.agents/governors/security-audit/agent.yml",
+          "isValid": true,
+          "issues": []
+        },
+        {
+          "name": "security-scanner",
+          "category": "governors",
+          "configPath": "/Users/flux423/Sites/LLM/agent_buildkit/.agents/governors/security-scanner/agent.yml",
+          "isValid": true,
+          "issues": []
+        },
+        {
+          "name": "tdd-enforcer",
+          "category": "governors",
+          "configPath": "/Users/flux423/Sites/LLM/agent_buildkit/.agents/governors/tdd-enforcer/agent.yml",
+          "isValid": true,
+          "issues": []
+        },
+        {
+          "name": "test-generator",
+          "category": "governors",
+          "configPath": "/Users/flux423/Sites/LLM/agent_buildkit/.agents/governors/test-generator/agent.yml",
+          "isValid": true,
+          "issues": []
+        },
+        {
+          "name": "test-runner",
+          "category": "governors",
+          "configPath": "/Users/flux423/Sites/LLM/agent_buildkit/.agents/governors/test-runner/agent.yml",
+          "isValid": true,
+          "issues": []
+        },
+        {
+          "name": "version-sync",
+          "category": "governors",
+          "configPath": "/Users/flux423/Sites/LLM/agent_buildkit/.agents/governors/version-sync/agent.yml",
+          "isValid": true,
+          "issues": []
+        },
+        {
+          "name": "webhook-integrator",
+          "category": "governors",
+          "configPath": "/Users/flux423/Sites/LLM/agent_buildkit/.agents/governors/webhook-integrator/agent.yml",
+          "isValid": true,
+          "issues": []
+        },
+        {
+          "name": "websocket-handler",
+          "category": "governors",
+          "configPath": "/Users/flux423/Sites/LLM/agent_buildkit/.agents/governors/websocket-handler/agent.yml",
+          "isValid": true,
+          "issues": []
+        },
+        {
+          "name": "agent-registry",
+          "category": "integrators",
+          "configPath": "/Users/flux423/Sites/LLM/agent_buildkit/.agents/integrators/agent-registry/agent.yml",
+          "isValid": true,
+          "issues": []
+        },
+        {
+          "name": "api-builder",
+          "category": "integrators",
+          "configPath": "/Users/flux423/Sites/LLM/agent_buildkit/.agents/integrators/api-builder/agent.yml",
+          "isValid": true,
+          "issues": []
+        },
+        {
+          "name": "cache-manager",
+          "category": "integrators",
+          "configPath": "/Users/flux423/Sites/LLM/agent_buildkit/.agents/integrators/cache-manager/agent.yml",
+          "isValid": true,
+          "issues": []
+        },
+        {
+          "name": "cost-analytics",
+          "category": "integrators",
+          "configPath": "/Users/flux423/Sites/LLM/agent_buildkit/.agents/integrators/cost-analytics/agent.yml",
+          "isValid": true,
+          "issues": []
+        },
+        {
+          "name": "doc-sync",
+          "category": "integrators",
+          "configPath": "/Users/flux423/Sites/LLM/agent_buildkit/.agents/integrators/doc-sync/agent.yml",
+          "isValid": true,
+          "issues": []
+        },
+        {
+          "name": "documentation-generator",
+          "category": "integrators",
+          "configPath": "/Users/flux423/Sites/LLM/agent_buildkit/.agents/integrators/documentation-generator/agent.yml",
+          "isValid": true,
+          "issues": []
+        },
+        {
+          "name": "error-handler",
+          "category": "integrators",
+          "configPath": "/Users/flux423/Sites/LLM/agent_buildkit/.agents/integrators/error-handler/agent.yml",
+          "isValid": true,
+          "issues": []
+        },
+        {
+          "name": "git-cleanup-specialist",
+          "category": "integrators",
+          "configPath": "/Users/flux423/Sites/LLM/agent_buildkit/.agents/integrators/git-cleanup-specialist/agent.yml",
+          "isValid": true,
+          "issues": []
+        },
+        {
+          "name": "integration-test",
+          "category": "integrators",
+          "configPath": "/Users/flux423/Sites/LLM/agent_buildkit/.agents/integrators/integration-test/agent.yml",
+          "isValid": true,
+          "issues": []
+        },
+        {
+          "name": "log-aggregator",
+          "category": "integrators",
+          "configPath": "/Users/flux423/Sites/LLM/agent_buildkit/.agents/integrators/log-aggregator/agent.yml",
+          "isValid": true,
+          "issues": []
+        },
+        {
+          "name": "roadmap-tracker",
+          "category": "integrators",
+          "configPath": "/Users/flux423/Sites/LLM/agent_buildkit/.agents/integrators/roadmap-tracker/agent.yml",
+          "isValid": true,
+          "issues": []
+        },
+        {
+          "name": "task-queue-manager",
+          "category": "integrators",
+          "configPath": "/Users/flux423/Sites/LLM/agent_buildkit/.agents/integrators/task-queue-manager/agent.yml",
+          "isValid": true,
+          "issues": []
+        },
+        {
+          "name": "token-optimizer",
+          "category": "integrators",
+          "configPath": "/Users/flux423/Sites/LLM/agent_buildkit/.agents/integrators/token-optimizer/agent.yml",
+          "isValid": true,
+          "issues": []
+        },
+        {
+          "name": "drupal-monitor",
+          "category": "monitors",
+          "configPath": "/Users/flux423/Sites/LLM/agent_buildkit/.agents/monitors/drupal-monitor/agent.yml",
+          "isValid": true,
+          "issues": []
+        },
+        {
+          "name": "health-monitor",
+          "category": "monitors",
+          "configPath": "/Users/flux423/Sites/LLM/agent_buildkit/.agents/monitors/health-monitor/agent.yml",
+          "isValid": true,
+          "issues": []
+        },
+        {
+          "name": "metrics-collector",
+          "category": "monitors",
+          "configPath": "/Users/flux423/Sites/LLM/agent_buildkit/.agents/monitors/metrics-collector/agent.yml",
+          "isValid": true,
+          "issues": []
+        },
+        {
+          "name": "performance-monitor",
+          "category": "monitors",
+          "configPath": "/Users/flux423/Sites/LLM/agent_buildkit/.agents/monitors/performance-monitor/agent.yml",
+          "isValid": true,
+          "issues": []
+        },
+        {
+          "name": "git-workflow",
+          "category": "orchestrators",
+          "configPath": "/Users/flux423/Sites/LLM/agent_buildkit/.agents/orchestrators/git-workflow/agent.yml",
+          "isValid": true,
+          "issues": []
+        },
+        {
+          "name": "workflow-orchestrator",
+          "category": "orchestrators",
+          "configPath": "/Users/flux423/Sites/LLM/agent_buildkit/.agents/orchestrators/workflow-orchestrator/agent.yml",
+          "isValid": false,
+          "issues": [
+            "Config parsing error: duplicated mapping key (22:3)\n\n 19 |     - agent-coordination\n 20 |     - automation\n 21 |     - governance\n 22 |   uuid: workflow-orchestrator-v1\n--------^\n 23 |   tags:\n 24 |     - orchestration"
+          ]
+        },
+        {
+          "name": "ml-predictive-monitor",
+          "category": "trainers",
+          "configPath": "/Users/flux423/Sites/LLM/agent_buildkit/.agents/trainers/ml-predictive-monitor/agent.yml",
+          "isValid": true,
+          "issues": []
+        }
+      ],
+      "issues": [
+        "Invalid agent: workflow-orchestrator in orchestrators"
+      ]
+    },
+    {
+      "name": "agent-studio_model",
+      "path": "/Users/flux423/Sites/LLM/models/agent-studio_model",
+      "hasOSSAStructure": true,
+      "hasDocumentation": true,
+      "hasRegistry": true,
+      "categories": {
+        "critics": {
+          "exists": true,
+          "agentCount": 2
+        },
+        "governors": {
+          "exists": true,
+          "agentCount": 2
+        },
+        "integrators": {
+          "exists": true,
+          "agentCount": 1
+        },
+        "judges": {
+          "exists": true,
+          "agentCount": 0
+        },
+        "monitors": {
+          "exists": true,
+          "agentCount": 1
+        },
+        "orchestrators": {
+          "exists": true,
+          "agentCount": 1
+        },
+        "trainers": {
+          "exists": true,
+          "agentCount": 2
+        },
+        "voice": {
+          "exists": true,
+          "agentCount": 0
+        },
+        "workers": {
+          "exists": true,
+          "agentCount": 6
+        }
+      },
+      "agents": [
+        {
+          "name": "code-quality-agent",
+          "category": "critics",
+          "configPath": "/Users/flux423/Sites/LLM/models/agent-studio_model/.agents/critics/code-quality-agent/agent.yml",
+          "isValid": true,
+          "issues": []
+        },
+        {
+          "name": "quality-assurance-agent",
+          "category": "critics",
+          "configPath": "/Users/flux423/Sites/LLM/models/agent-studio_model/.agents/critics/quality-assurance-agent/agent.yml",
+          "isValid": false,
+          "issues": [
+            "Config parsing error: end of the stream or a document separator is expected (29:3)\n\n 26 |   spec:  \n 27 |     protocols:  \n 28 |       supported:  \n 29 |   - \n--------^\n 30 |         openapi\n 31 |         mcp"
+          ]
+        },
+        {
+          "name": "ossa-migration-specialist",
+          "category": "governors",
+          "configPath": "/Users/flux423/Sites/LLM/models/agent-studio_model/.agents/governors/ossa-migration-specialist/agent.yml",
+          "isValid": true,
+          "issues": []
+        },
+        {
+          "name": "security-vulnerability-scanner",
+          "category": "governors",
+          "configPath": "/Users/flux423/Sites/LLM/models/agent-studio_model/.agents/governors/security-vulnerability-scanner/agent.yml",
+          "isValid": false,
+          "issues": [
+            "Config parsing error: end of the stream or a document separator is expected (29:3)\n\n 26 |   spec:  \n 27 |     protocols:  \n 28 |       supported:  \n 29 |   - \n--------^\n 30 |         openapi\n 31 |         mcp"
+          ]
+        },
+        {
+          "name": "api-design-validation-agent",
+          "category": "integrators",
+          "configPath": "/Users/flux423/Sites/LLM/models/agent-studio_model/.agents/integrators/api-design-validation-agent/agent.yml",
+          "isValid": false,
+          "issues": [
+            "Config parsing error: end of the stream or a document separator is expected (29:3)\n\n 26 |   spec:  \n 27 |     protocols:  \n 28 |       supported:  \n 29 |   - \n--------^\n 30 |         openapi\n 31 |         mcp"
+          ]
+        },
+        {
+          "name": "monitoring-evaluation-specialist",
+          "category": "monitors",
+          "configPath": "/Users/flux423/Sites/LLM/models/agent-studio_model/.agents/monitors/monitoring-evaluation-specialist/agent.yml",
+          "isValid": false,
+          "issues": [
+            "Config parsing error: end of the stream or a document separator is expected (29:3)\n\n 26 |   spec:  \n 27 |     protocols:  \n 28 |       supported:  \n 29 |   - \n--------^\n 30 |         openapi\n 31 |         mcp"
+          ]
+        },
+        {
+          "name": "integration-testing-coordinator",
+          "category": "orchestrators",
+          "configPath": "/Users/flux423/Sites/LLM/models/agent-studio_model/.agents/orchestrators/integration-testing-coordinator/agent.yml",
+          "isValid": false,
+          "issues": [
+            "Config parsing error: end of the stream or a document separator is expected (29:3)\n\n 26 |   spec:  \n 27 |     protocols:  \n 28 |       supported:  \n 29 |   - \n--------^\n 30 |         openapi\n 31 |         mcp"
+          ]
+        },
+        {
+          "name": "agent-studio-model-agent",
+          "category": "trainers",
+          "configPath": "/Users/flux423/Sites/LLM/models/agent-studio_model/.agents/trainers/agent-studio-model-agent/agent.yml",
+          "isValid": true,
+          "issues": []
+        },
+        {
+          "name": "model-performance-optimizer",
+          "category": "trainers",
+          "configPath": "/Users/flux423/Sites/LLM/models/agent-studio_model/.agents/trainers/model-performance-optimizer/agent.yml",
+          "isValid": false,
+          "issues": [
+            "Config parsing error: end of the stream or a document separator is expected (29:3)\n\n 26 |   spec:  \n 27 |     protocols:  \n 28 |       supported:  \n 29 |   - \n--------^\n 30 |         openapi\n 31 |         mcp"
+          ]
+        },
+        {
+          "name": "dependency-management-specialist",
+          "category": "workers",
+          "configPath": "/Users/flux423/Sites/LLM/models/agent-studio_model/.agents/workers/dependency-management-specialist/agent.yml",
+          "isValid": false,
+          "issues": [
+            "Config parsing error: end of the stream or a document separator is expected (29:3)\n\n 26 |   spec:  \n 27 |     protocols:  \n 28 |       supported:  \n 29 |   - \n--------^\n 30 |         openapi\n 31 |         mcp"
+          ]
+        },
+        {
+          "name": "documentation-generation-agent",
+          "category": "workers",
+          "configPath": "/Users/flux423/Sites/LLM/models/agent-studio_model/.agents/workers/documentation-generation-agent/agent.yml",
+          "isValid": false,
+          "issues": [
+            "Config parsing error: end of the stream or a document separator is expected (29:3)\n\n 26 |   spec:  \n 27 |     protocols:  \n 28 |       supported:  \n 29 |   - \n--------^\n 30 |         openapi\n 31 |         mcp"
+          ]
+        },
+        {
+          "name": "prompt-engineering-specialist",
+          "category": "workers",
+          "configPath": "/Users/flux423/Sites/LLM/models/agent-studio_model/.agents/workers/prompt-engineering-specialist/agent.yml",
+          "isValid": false,
+          "issues": [
+            "Config parsing error: end of the stream or a document separator is expected (29:3)\n\n 26 |   spec:  \n 27 |     protocols:  \n 28 |       supported:  \n 29 |   - \n--------^\n 30 |         openapi\n 31 |         mcp"
+          ]
+        },
+        {
+          "name": "refactoring-recommendation-engine",
+          "category": "workers",
+          "configPath": "/Users/flux423/Sites/LLM/models/agent-studio_model/.agents/workers/refactoring-recommendation-engine/agent.yml",
+          "isValid": false,
+          "issues": [
+            "Config parsing error: end of the stream or a document separator is expected (29:3)\n\n 26 |   spec:  \n 27 |     protocols:  \n 28 |       supported:  \n 29 |   - \n--------^\n 30 |         openapi\n 31 |         mcp"
+          ]
+        },
+        {
+          "name": "test-generation-specialist",
+          "category": "workers",
+          "configPath": "/Users/flux423/Sites/LLM/models/agent-studio_model/.agents/workers/test-generation-specialist/agent.yml",
+          "isValid": false,
+          "issues": [
+            "Config parsing error: end of the stream or a document separator is expected (29:3)\n\n 26 |   spec:  \n 27 |     protocols:  \n 28 |       supported:  \n 29 |   - \n--------^\n 30 |         openapi\n 31 |         mcp"
+          ]
+        },
+        {
+          "name": "user-experience-optimizer",
+          "category": "workers",
+          "configPath": "/Users/flux423/Sites/LLM/models/agent-studio_model/.agents/workers/user-experience-optimizer/agent.yml",
+          "isValid": false,
+          "issues": [
+            "Config parsing error: end of the stream or a document separator is expected (29:3)\n\n 26 |   spec:  \n 27 |     protocols:  \n 28 |       supported:  \n 29 |   - \n--------^\n 30 |         openapi\n 31 |         mcp"
+          ]
+        }
+      ],
+      "issues": [
+        "Invalid agent: quality-assurance-agent in critics",
+        "Invalid agent: security-vulnerability-scanner in governors",
+        "Invalid agent: api-design-validation-agent in integrators",
+        "Invalid agent: monitoring-evaluation-specialist in monitors",
+        "Invalid agent: integration-testing-coordinator in orchestrators",
+        "Invalid agent: model-performance-optimizer in trainers",
+        "Invalid agent: dependency-management-specialist in workers",
+        "Invalid agent: documentation-generation-agent in workers",
+        "Invalid agent: prompt-engineering-specialist in workers",
+        "Invalid agent: refactoring-recommendation-engine in workers",
+        "Invalid agent: test-generation-specialist in workers",
+        "Invalid agent: user-experience-optimizer in workers"
+      ]
+    },
+    {
+      "name": "gov-policy_model",
+      "path": "/Users/flux423/Sites/LLM/models/gov-policy_model",
+      "hasOSSAStructure": true,
+      "hasDocumentation": true,
+      "hasRegistry": true,
+      "categories": {
+        "critics": {
+          "exists": true,
+          "agentCount": 2
+        },
+        "governors": {
+          "exists": true,
+          "agentCount": 5
+        },
+        "integrators": {
+          "exists": true,
+          "agentCount": 0
+        },
+        "judges": {
+          "exists": true,
+          "agentCount": 0
+        },
+        "monitors": {
+          "exists": true,
+          "agentCount": 0
+        },
+        "orchestrators": {
+          "exists": true,
+          "agentCount": 0
+        },
+        "trainers": {
+          "exists": true,
+          "agentCount": 0
+        },
+        "voice": {
+          "exists": true,
+          "agentCount": 0
+        },
+        "workers": {
+          "exists": true,
+          "agentCount": 4
+        }
+      },
+      "agents": [
+        {
+          "name": "impact-assessment-agent",
+          "category": "critics",
+          "configPath": "/Users/flux423/Sites/LLM/models/gov-policy_model/.agents/critics/impact-assessment-agent/agent.yml",
+          "isValid": false,
+          "issues": [
+            "Config parsing error: end of the stream or a document separator is expected (29:3)\n\n 26 |   spec:  \n 27 |     protocols:  \n 28 |       supported:  \n 29 |   - \n--------^\n 30 |         openapi\n 31 |         mcp"
+          ]
+        },
+        {
+          "name": "risk-assessment-analyzer",
+          "category": "critics",
+          "configPath": "/Users/flux423/Sites/LLM/models/gov-policy_model/.agents/critics/risk-assessment-analyzer/agent.yml",
+          "isValid": false,
+          "issues": [
+            "Config parsing error: end of the stream or a document separator is expected (29:3)\n\n 26 |   spec:  \n 27 |     protocols:  \n 28 |       supported:  \n 29 |   - \n--------^\n 30 |         openapi\n 31 |         mcp"
+          ]
+        },
+        {
+          "name": "compliance-audit-specialist",
+          "category": "governors",
+          "configPath": "/Users/flux423/Sites/LLM/models/gov-policy_model/.agents/governors/compliance-audit-specialist/agent.yml",
+          "isValid": false,
+          "issues": [
+            "Config parsing error: end of the stream or a document separator is expected (29:3)\n\n 26 |   spec:  \n 27 |     protocols:  \n 28 |       supported:  \n 29 |   - \n--------^\n 30 |         openapi\n 31 |         mcp"
+          ]
+        },
+        {
+          "name": "policy-document-processor",
+          "category": "governors",
+          "configPath": "/Users/flux423/Sites/LLM/models/gov-policy_model/.agents/governors/policy-document-processor/agent.yml",
+          "isValid": false,
+          "issues": [
+            "Config parsing error: end of the stream or a document separator is expected (29:3)\n\n 26 |   spec:  \n 27 |     protocols:  \n 28 |       supported:  \n 29 |   - \n--------^\n 30 |         openapi\n 31 |         mcp"
+          ]
+        },
+        {
+          "name": "policy-governance-specialist",
+          "category": "governors",
+          "configPath": "/Users/flux423/Sites/LLM/models/gov-policy_model/.agents/governors/policy-governance-specialist/agent.yml",
+          "isValid": true,
+          "issues": []
+        },
+        {
+          "name": "policy-recommendation-engine",
+          "category": "governors",
+          "configPath": "/Users/flux423/Sites/LLM/models/gov-policy_model/.agents/governors/policy-recommendation-engine/agent.yml",
+          "isValid": false,
+          "issues": [
+            "Config parsing error: end of the stream or a document separator is expected (29:3)\n\n 26 |   spec:  \n 27 |     protocols:  \n 28 |       supported:  \n 29 |   - \n--------^\n 30 |         openapi\n 31 |         mcp"
+          ]
+        },
+        {
+          "name": "regulatory-compliance-checker",
+          "category": "governors",
+          "configPath": "/Users/flux423/Sites/LLM/models/gov-policy_model/.agents/governors/regulatory-compliance-checker/agent.yml",
+          "isValid": false,
+          "issues": [
+            "Config parsing error: end of the stream or a document separator is expected (29:3)\n\n 26 |   spec:  \n 27 |     protocols:  \n 28 |       supported:  \n 29 |   - \n--------^\n 30 |         openapi\n 31 |         mcp"
+          ]
+        },
+        {
+          "name": "cross-agency-coordination-agent",
+          "category": "workers",
+          "configPath": "/Users/flux423/Sites/LLM/models/gov-policy_model/.agents/workers/cross-agency-coordination-agent/agent.yml",
+          "isValid": false,
+          "issues": [
+            "Config parsing error: end of the stream or a document separator is expected (29:3)\n\n 26 |   spec:  \n 27 |     protocols:  \n 28 |       supported:  \n 29 |   - \n--------^\n 30 |         openapi\n 31 |         mcp"
+          ]
+        },
+        {
+          "name": "legal-framework-analyzer",
+          "category": "workers",
+          "configPath": "/Users/flux423/Sites/LLM/models/gov-policy_model/.agents/workers/legal-framework-analyzer/agent.yml",
+          "isValid": false,
+          "issues": [
+            "Config parsing error: end of the stream or a document separator is expected (29:3)\n\n 26 |   spec:  \n 27 |     protocols:  \n 28 |       supported:  \n 29 |   - \n--------^\n 30 |         openapi\n 31 |         mcp"
+          ]
+        },
+        {
+          "name": "public-comment-processor",
+          "category": "workers",
+          "configPath": "/Users/flux423/Sites/LLM/models/gov-policy_model/.agents/workers/public-comment-processor/agent.yml",
+          "isValid": false,
+          "issues": [
+            "Config parsing error: end of the stream or a document separator is expected (29:3)\n\n 26 |   spec:  \n 27 |     protocols:  \n 28 |       supported:  \n 29 |   - \n--------^\n 30 |         openapi\n 31 |         mcp"
+          ]
+        },
+        {
+          "name": "stakeholder-analysis-specialist",
+          "category": "workers",
+          "configPath": "/Users/flux423/Sites/LLM/models/gov-policy_model/.agents/workers/stakeholder-analysis-specialist/agent.yml",
+          "isValid": false,
+          "issues": [
+            "Config parsing error: end of the stream or a document separator is expected (29:3)\n\n 26 |   spec:  \n 27 |     protocols:  \n 28 |       supported:  \n 29 |   - \n--------^\n 30 |         openapi\n 31 |         mcp"
+          ]
+        }
+      ],
+      "issues": [
+        "Invalid agent: impact-assessment-agent in critics",
+        "Invalid agent: risk-assessment-analyzer in critics",
+        "Invalid agent: compliance-audit-specialist in governors",
+        "Invalid agent: policy-document-processor in governors",
+        "Invalid agent: policy-recommendation-engine in governors",
+        "Invalid agent: regulatory-compliance-checker in governors",
+        "Invalid agent: cross-agency-coordination-agent in workers",
+        "Invalid agent: legal-framework-analyzer in workers",
+        "Invalid agent: public-comment-processor in workers",
+        "Invalid agent: stakeholder-analysis-specialist in workers"
+      ]
+    },
+    {
+      "name": "gov-rfp_model",
+      "path": "/Users/flux423/Sites/LLM/models/gov-rfp_model",
+      "hasOSSAStructure": true,
+      "hasDocumentation": true,
+      "hasRegistry": true,
+      "categories": {
+        "critics": {
+          "exists": true,
+          "agentCount": 0
+        },
+        "governors": {
+          "exists": true,
+          "agentCount": 2
+        },
+        "integrators": {
+          "exists": true,
+          "agentCount": 0
+        },
+        "judges": {
+          "exists": true,
+          "agentCount": 0
+        },
+        "monitors": {
+          "exists": true,
+          "agentCount": 0
+        },
+        "orchestrators": {
+          "exists": true,
+          "agentCount": 0
+        },
+        "trainers": {
+          "exists": true,
+          "agentCount": 0
+        },
+        "voice": {
+          "exists": true,
+          "agentCount": 0
+        },
+        "workers": {
+          "exists": true,
+          "agentCount": 9
+        }
+      },
+      "agents": [
+        {
+          "name": "compliance-requirements-extractor",
+          "category": "governors",
+          "configPath": "/Users/flux423/Sites/LLM/models/gov-rfp_model/.agents/governors/compliance-requirements-extractor/agent.yml",
+          "isValid": false,
+          "issues": [
+            "Config parsing error: end of the stream or a document separator is expected (29:3)\n\n 26 |   spec:  \n 27 |     protocols:  \n 28 |       supported:  \n 29 |   - \n--------^\n 30 |         openapi\n 31 |         mcp"
+          ]
+        },
+        {
+          "name": "rfp-specialist",
+          "category": "governors",
+          "configPath": "/Users/flux423/Sites/LLM/models/gov-rfp_model/.agents/governors/rfp-specialist/agent.yml",
+          "isValid": true,
+          "issues": []
+        },
+        {
+          "name": "budget-estimation-agent",
+          "category": "workers",
+          "configPath": "/Users/flux423/Sites/LLM/models/gov-rfp_model/.agents/workers/budget-estimation-agent/agent.yml",
+          "isValid": false,
+          "issues": [
+            "Config parsing error: end of the stream or a document separator is expected (29:3)\n\n 26 |   spec:  \n 27 |     protocols:  \n 28 |       supported:  \n 29 |   - \n--------^\n 30 |         openapi\n 31 |         mcp"
+          ]
+        },
+        {
+          "name": "implementation-planning-agent",
+          "category": "workers",
+          "configPath": "/Users/flux423/Sites/LLM/models/gov-rfp_model/.agents/workers/implementation-planning-agent/agent.yml",
+          "isValid": false,
+          "issues": [
+            "Config parsing error: end of the stream or a document separator is expected (29:3)\n\n 26 |   spec:  \n 27 |     protocols:  \n 28 |       supported:  \n 29 |   - \n--------^\n 30 |         openapi\n 31 |         mcp"
+          ]
+        },
+        {
+          "name": "proposal-generation-specialist",
+          "category": "workers",
+          "configPath": "/Users/flux423/Sites/LLM/models/gov-rfp_model/.agents/workers/proposal-generation-specialist/agent.yml",
+          "isValid": false,
+          "issues": [
+            "Config parsing error: end of the stream or a document separator is expected (29:3)\n\n 26 |   spec:  \n 27 |     protocols:  \n 28 |       supported:  \n 29 |   - \n--------^\n 30 |         openapi\n 31 |         mcp"
+          ]
+        },
+        {
+          "name": "rfp-document-analyzer",
+          "category": "workers",
+          "configPath": "/Users/flux423/Sites/LLM/models/gov-rfp_model/.agents/workers/rfp-document-analyzer/agent.yml",
+          "isValid": false,
+          "issues": [
+            "Config parsing error: end of the stream or a document separator is expected (29:3)\n\n 26 |   spec:  \n 27 |     protocols:  \n 28 |       supported:  \n 29 |   - \n--------^\n 30 |         openapi\n 31 |         mcp"
+          ]
+        },
+        {
+          "name": "scoring-criteria-evaluator",
+          "category": "workers",
+          "configPath": "/Users/flux423/Sites/LLM/models/gov-rfp_model/.agents/workers/scoring-criteria-evaluator/agent.yml",
+          "isValid": false,
+          "issues": [
+            "Config parsing error: end of the stream or a document separator is expected (29:3)\n\n 26 |   spec:  \n 27 |     protocols:  \n 28 |       supported:  \n 29 |   - \n--------^\n 30 |         openapi\n 31 |         mcp"
+          ]
+        },
+        {
+          "name": "submission-validation-specialist",
+          "category": "workers",
+          "configPath": "/Users/flux423/Sites/LLM/models/gov-rfp_model/.agents/workers/submission-validation-specialist/agent.yml",
+          "isValid": false,
+          "issues": [
+            "Config parsing error: end of the stream or a document separator is expected (29:3)\n\n 26 |   spec:  \n 27 |     protocols:  \n 28 |       supported:  \n 29 |   - \n--------^\n 30 |         openapi\n 31 |         mcp"
+          ]
+        },
+        {
+          "name": "technical-specification-parser",
+          "category": "workers",
+          "configPath": "/Users/flux423/Sites/LLM/models/gov-rfp_model/.agents/workers/technical-specification-parser/agent.yml",
+          "isValid": false,
+          "issues": [
+            "Config parsing error: end of the stream or a document separator is expected (29:3)\n\n 26 |   spec:  \n 27 |     protocols:  \n 28 |       supported:  \n 29 |   - \n--------^\n 30 |         openapi\n 31 |         mcp"
+          ]
+        },
+        {
+          "name": "timeline-planning-specialist",
+          "category": "workers",
+          "configPath": "/Users/flux423/Sites/LLM/models/gov-rfp_model/.agents/workers/timeline-planning-specialist/agent.yml",
+          "isValid": false,
+          "issues": [
+            "Config parsing error: end of the stream or a document separator is expected (29:3)\n\n 26 |   spec:  \n 27 |     protocols:  \n 28 |       supported:  \n 29 |   - \n--------^\n 30 |         openapi\n 31 |         mcp"
+          ]
+        },
+        {
+          "name": "vendor-qualification-agent",
+          "category": "workers",
+          "configPath": "/Users/flux423/Sites/LLM/models/gov-rfp_model/.agents/workers/vendor-qualification-agent/agent.yml",
+          "isValid": false,
+          "issues": [
+            "Config parsing error: end of the stream or a document separator is expected (29:3)\n\n 26 |   spec:  \n 27 |     protocols:  \n 28 |       supported:  \n 29 |   - \n--------^\n 30 |         openapi\n 31 |         mcp"
+          ]
+        }
+      ],
+      "issues": [
+        "Invalid agent: compliance-requirements-extractor in governors",
+        "Invalid agent: budget-estimation-agent in workers",
+        "Invalid agent: implementation-planning-agent in workers",
+        "Invalid agent: proposal-generation-specialist in workers",
+        "Invalid agent: rfp-document-analyzer in workers",
+        "Invalid agent: scoring-criteria-evaluator in workers",
+        "Invalid agent: submission-validation-specialist in workers",
+        "Invalid agent: technical-specification-parser in workers",
+        "Invalid agent: timeline-planning-specialist in workers",
+        "Invalid agent: vendor-qualification-agent in workers"
+      ]
+    },
+    {
+      "name": "llm-platform_model",
+      "path": "/Users/flux423/Sites/LLM/models/llm-platform_model",
+      "hasOSSAStructure": true,
+      "hasDocumentation": true,
+      "hasRegistry": true,
+      "categories": {
+        "critics": {
+          "exists": true,
+          "agentCount": 0
+        },
+        "governors": {
+          "exists": true,
+          "agentCount": 0
+        },
+        "integrators": {
+          "exists": true,
+          "agentCount": 0
+        },
+        "judges": {
+          "exists": true,
+          "agentCount": 0
+        },
+        "monitors": {
+          "exists": true,
+          "agentCount": 1
+        },
+        "orchestrators": {
+          "exists": true,
+          "agentCount": 1
+        },
+        "trainers": {
+          "exists": true,
+          "agentCount": 1
+        },
+        "voice": {
+          "exists": true,
+          "agentCount": 0
+        },
+        "workers": {
+          "exists": true,
+          "agentCount": 5
+        }
+      },
+      "agents": [
+        {
+          "name": "monitoring-alerting-agent",
+          "category": "monitors",
+          "configPath": "/Users/flux423/Sites/LLM/models/llm-platform_model/.agents/monitors/monitoring-alerting-agent/agent.yml",
+          "isValid": false,
+          "issues": [
+            "Config parsing error: end of the stream or a document separator is expected (29:3)\n\n 26 |   spec:  \n 27 |     protocols:  \n 28 |       supported:  \n 29 |   - \n--------^\n 30 |         openapi\n 31 |         mcp"
+          ]
+        },
+        {
+          "name": "multi-agent-orchestrator",
+          "category": "orchestrators",
+          "configPath": "/Users/flux423/Sites/LLM/models/llm-platform_model/.agents/orchestrators/multi-agent-orchestrator/agent.yml",
+          "isValid": false,
+          "issues": [
+            "Config parsing error: end of the stream or a document separator is expected (29:3)\n\n 26 |   spec:  \n 27 |     protocols:  \n 28 |       supported:  \n 29 |   - \n--------^\n 30 |         openapi\n 31 |         mcp"
+          ]
+        },
+        {
+          "name": "platform-model-specialist",
+          "category": "trainers",
+          "configPath": "/Users/flux423/Sites/LLM/models/llm-platform_model/.agents/trainers/platform-model-specialist/agent.yml",
+          "isValid": true,
+          "issues": []
+        },
+        {
+          "name": "conversation-context-manager",
+          "category": "workers",
+          "configPath": "/Users/flux423/Sites/LLM/models/llm-platform_model/.agents/workers/conversation-context-manager/agent.yml",
+          "isValid": false,
+          "issues": [
+            "Config parsing error: end of the stream or a document separator is expected (29:3)\n\n 26 |   spec:  \n 27 |     protocols:  \n 28 |       supported:  \n 29 |   - \n--------^\n 30 |         openapi\n 31 |         mcp"
+          ]
+        },
+        {
+          "name": "deployment-automation-specialist",
+          "category": "workers",
+          "configPath": "/Users/flux423/Sites/LLM/models/llm-platform_model/.agents/workers/deployment-automation-specialist/agent.yml",
+          "isValid": false,
+          "issues": [
+            "Config parsing error: end of the stream or a document separator is expected (29:3)\n\n 26 |   spec:  \n 27 |     protocols:  \n 28 |       supported:  \n 29 |   - \n--------^\n 30 |         openapi\n 31 |         mcp"
+          ]
+        },
+        {
+          "name": "multi-provider-router",
+          "category": "workers",
+          "configPath": "/Users/flux423/Sites/LLM/models/llm-platform_model/.agents/workers/multi-provider-router/agent.yml",
+          "isValid": false,
+          "issues": [
+            "Config parsing error: end of the stream or a document separator is expected (29:3)\n\n 26 |   spec:  \n 27 |     protocols:  \n 28 |       supported:  \n 29 |   - \n--------^\n 30 |         openapi\n 31 |         mcp"
+          ]
+        },
+        {
+          "name": "performance-optimization-expert",
+          "category": "workers",
+          "configPath": "/Users/flux423/Sites/LLM/models/llm-platform_model/.agents/workers/performance-optimization-expert/agent.yml",
+          "isValid": false,
+          "issues": [
+            "Config parsing error: end of the stream or a document separator is expected (29:3)\n\n 26 |   spec:  \n 27 |     protocols:  \n 28 |       supported:  \n 29 |   - \n--------^\n 30 |         openapi\n 31 |         mcp"
+          ]
+        },
+        {
+          "name": "token-usage-analyzer",
+          "category": "workers",
+          "configPath": "/Users/flux423/Sites/LLM/models/llm-platform_model/.agents/workers/token-usage-analyzer/agent.yml",
+          "isValid": false,
+          "issues": [
+            "Config parsing error: end of the stream or a document separator is expected (29:3)\n\n 26 |   spec:  \n 27 |     protocols:  \n 28 |       supported:  \n 29 |   - \n--------^\n 30 |         openapi\n 31 |         mcp"
+          ]
+        }
+      ],
+      "issues": [
+        "Invalid agent: monitoring-alerting-agent in monitors",
+        "Invalid agent: multi-agent-orchestrator in orchestrators",
+        "Invalid agent: conversation-context-manager in workers",
+        "Invalid agent: deployment-automation-specialist in workers",
+        "Invalid agent: multi-provider-router in workers",
+        "Invalid agent: performance-optimization-expert in workers",
+        "Invalid agent: token-usage-analyzer in workers"
+      ]
+    }
+  ],
+  "totalAgents": 119,
+  "categoryDistribution": {
+    "integrators": 17,
+    "trainers": 8,
+    "critics": 6,
+    "governors": 50,
+    "orchestrators": 7,
+    "workers": 25,
+    "monitors": 6
+  },
+  "errors": []
+}

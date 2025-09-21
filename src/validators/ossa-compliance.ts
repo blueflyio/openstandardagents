@@ -168,7 +168,7 @@ export class OSSAComplianceValidator {
       // Validate type
       if (!config.type) {
         report.warnings.push('agent.yml: missing field "type"');
-      } else if (config.category && config.type !== this.CATEGORY_TYPES[config.category]) {
+      } else if (config.category && config.type !== this.CATEGORY_TYPES[config.category as keyof typeof this.CATEGORY_TYPES]) {
         report.warnings.push(`agent.yml: type "${config.type}" doesn't match category "${config.category}"`);
       }
 
@@ -183,7 +183,7 @@ export class OSSAComplianceValidator {
       }
 
     } catch (error) {
-      report.errors.push(`agent.yml: invalid YAML - ${error.message}`);
+      report.errors.push(`agent.yml: invalid YAML - ${error instanceof Error ? error.message : String(error)}`);
     }
   }
 
@@ -239,7 +239,7 @@ export class OSSAComplianceValidator {
       }
 
     } catch (error) {
-      report.errors.push(`openapi.yaml: invalid spec - ${error.message}`);
+      report.errors.push(`openapi.yaml: invalid spec - ${error instanceof Error ? error.message : String(error)}`);
     }
   }
 

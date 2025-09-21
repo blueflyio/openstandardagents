@@ -1,0 +1,1176 @@
+{
+  "repositories": [
+    {
+      "name": "agent-brain",
+      "path": "/Users/flux423/Sites/LLM/common_npm/agent-brain",
+      "agentsPath": "/Users/flux423/Sites/LLM/common_npm/agent-brain/.agents",
+      "agentsMigrated": [
+        {
+          "success": true,
+          "name": "agent-brain-core-specialist",
+          "category": "trainers",
+          "action": "migrated",
+          "from": "/Users/flux423/Sites/LLM/common_npm/agent-brain/.agents/agents/agent-brain/agent-brain-core-specialist",
+          "to": "/Users/flux423/Sites/LLM/common_npm/agent-brain/.agents/trainers/agent-brain-core-specialist"
+        },
+        {
+          "success": true,
+          "name": "agent-brain-integration-expert",
+          "category": "integrators",
+          "action": "migrated",
+          "from": "/Users/flux423/Sites/LLM/common_npm/agent-brain/.agents/agents/agent-brain/agent-brain-integration-expert",
+          "to": "/Users/flux423/Sites/LLM/common_npm/agent-brain/.agents/integrators/agent-brain-integration-expert"
+        },
+        {
+          "success": true,
+          "name": "agent-brain-troubleshoot-agent",
+          "category": "trainers",
+          "action": "migrated",
+          "from": "/Users/flux423/Sites/LLM/common_npm/agent-brain/.agents/agents/agent-brain/agent-brain-troubleshoot-agent",
+          "to": "/Users/flux423/Sites/LLM/common_npm/agent-brain/.agents/trainers/agent-brain-troubleshoot-agent"
+        }
+      ],
+      "errors": [],
+      "ossaStructureCreated": true,
+      "documentationCopied": true
+    },
+    {
+      "name": "agent-chat",
+      "path": "/Users/flux423/Sites/LLM/common_npm/agent-chat",
+      "agentsPath": "/Users/flux423/Sites/LLM/common_npm/agent-chat/.agents",
+      "agentsMigrated": [
+        {
+          "success": true,
+          "name": "chaos-engineering",
+          "category": "governors",
+          "action": "migrated",
+          "from": "/Users/flux423/Sites/LLM/common_npm/agent-chat/.agents/definitions/chaos-engineering",
+          "to": "/Users/flux423/Sites/LLM/common_npm/agent-chat/.agents/governors/chaos-engineering"
+        },
+        {
+          "success": true,
+          "name": "code-review-assignment",
+          "category": "critics",
+          "action": "migrated",
+          "from": "/Users/flux423/Sites/LLM/common_npm/agent-chat/.agents/definitions/code-review-assignment",
+          "to": "/Users/flux423/Sites/LLM/common_npm/agent-chat/.agents/critics/code-review-assignment"
+        },
+        {
+          "success": true,
+          "name": "customer-issue-correlation",
+          "category": "governors",
+          "action": "migrated",
+          "from": "/Users/flux423/Sites/LLM/common_npm/agent-chat/.agents/definitions/customer-issue-correlation",
+          "to": "/Users/flux423/Sites/LLM/common_npm/agent-chat/.agents/governors/customer-issue-correlation"
+        },
+        {
+          "success": true,
+          "name": "developer-onboarding",
+          "category": "governors",
+          "action": "migrated",
+          "from": "/Users/flux423/Sites/LLM/common_npm/agent-chat/.agents/definitions/developer-onboarding",
+          "to": "/Users/flux423/Sites/LLM/common_npm/agent-chat/.agents/governors/developer-onboarding"
+        },
+        {
+          "success": true,
+          "name": "graphql-schema-evolution",
+          "category": "governors",
+          "action": "migrated",
+          "from": "/Users/flux423/Sites/LLM/common_npm/agent-chat/.agents/definitions/graphql-schema-evolution",
+          "to": "/Users/flux423/Sites/LLM/common_npm/agent-chat/.agents/governors/graphql-schema-evolution"
+        },
+        {
+          "success": true,
+          "name": "monorepo-management",
+          "category": "governors",
+          "action": "migrated",
+          "from": "/Users/flux423/Sites/LLM/common_npm/agent-chat/.agents/definitions/monorepo-management",
+          "to": "/Users/flux423/Sites/LLM/common_npm/agent-chat/.agents/governors/monorepo-management"
+        }
+      ],
+      "errors": [],
+      "ossaStructureCreated": true,
+      "documentationCopied": true
+    },
+    {
+      "name": "agent-docker",
+      "path": "/Users/flux423/Sites/LLM/common_npm/agent-docker",
+      "agentsPath": "/Users/flux423/Sites/LLM/common_npm/agent-docker/.agents",
+      "agentsMigrated": [
+        {
+          "success": true,
+          "name": "service-mesh-configuration",
+          "category": "governors",
+          "action": "migrated",
+          "from": "/Users/flux423/Sites/LLM/common_npm/agent-docker/.agents/definitions/service-mesh-configuration",
+          "to": "/Users/flux423/Sites/LLM/common_npm/agent-docker/.agents/governors/service-mesh-configuration"
+        }
+      ],
+      "errors": [],
+      "ossaStructureCreated": true,
+      "documentationCopied": true
+    },
+    {
+      "name": "agent-mesh",
+      "path": "/Users/flux423/Sites/LLM/common_npm/agent-mesh",
+      "agentsPath": "/Users/flux423/Sites/LLM/common_npm/agent-mesh/.agents",
+      "agentsMigrated": [
+        {
+          "success": true,
+          "name": "agent-mesh-specialist",
+          "category": "governors",
+          "action": "migrated",
+          "from": "/Users/flux423/Sites/LLM/common_npm/agent-mesh/.agents/agents/agent-mesh-specialist",
+          "to": "/Users/flux423/Sites/LLM/common_npm/agent-mesh/.agents/governors/agent-mesh-specialist"
+        }
+      ],
+      "errors": [],
+      "ossaStructureCreated": true,
+      "documentationCopied": true
+    },
+    {
+      "name": "agent-ops",
+      "path": "/Users/flux423/Sites/LLM/common_npm/agent-ops",
+      "agentsPath": "/Users/flux423/Sites/LLM/common_npm/agent-ops/.agents",
+      "agentsMigrated": [
+        {
+          "success": true,
+          "name": "agent-ops-expert",
+          "category": "governors",
+          "action": "migrated",
+          "from": "/Users/flux423/Sites/LLM/common_npm/agent-ops/.agents/agent-ops-expert",
+          "to": "/Users/flux423/Sites/LLM/common_npm/agent-ops/.agents/governors/agent-ops-expert"
+        },
+        {
+          "success": true,
+          "name": "agent-orchestrator",
+          "category": "orchestrators",
+          "action": "migrated",
+          "from": "/Users/flux423/Sites/LLM/common_npm/agent-ops/.agents/agent-orchestrator",
+          "to": "/Users/flux423/Sites/LLM/common_npm/agent-ops/.agents/orchestrators/agent-orchestrator"
+        },
+        {
+          "success": true,
+          "name": "business-analyst",
+          "category": "governors",
+          "action": "migrated",
+          "from": "/Users/flux423/Sites/LLM/common_npm/agent-ops/.agents/business-analyst",
+          "to": "/Users/flux423/Sites/LLM/common_npm/agent-ops/.agents/governors/business-analyst"
+        },
+        {
+          "success": true,
+          "name": "command-discovery",
+          "category": "governors",
+          "action": "migrated",
+          "from": "/Users/flux423/Sites/LLM/common_npm/agent-ops/.agents/command-discovery",
+          "to": "/Users/flux423/Sites/LLM/common_npm/agent-ops/.agents/governors/command-discovery"
+        },
+        {
+          "success": true,
+          "name": "agent-ops-main",
+          "category": "trainers",
+          "action": "migrated",
+          "from": "/Users/flux423/Sites/LLM/common_npm/agent-ops/.agents/definitions/agent-ops-main",
+          "to": "/Users/flux423/Sites/LLM/common_npm/agent-ops/.agents/trainers/agent-ops-main"
+        },
+        {
+          "success": true,
+          "name": "automated-rollback",
+          "category": "governors",
+          "action": "migrated",
+          "from": "/Users/flux423/Sites/LLM/common_npm/agent-ops/.agents/definitions/automated-rollback",
+          "to": "/Users/flux423/Sites/LLM/common_npm/agent-ops/.agents/governors/automated-rollback"
+        },
+        {
+          "success": true,
+          "name": "ci-cd-pipeline-optimization",
+          "category": "governors",
+          "action": "migrated",
+          "from": "/Users/flux423/Sites/LLM/common_npm/agent-ops/.agents/definitions/ci-cd-pipeline-optimization",
+          "to": "/Users/flux423/Sites/LLM/common_npm/agent-ops/.agents/governors/ci-cd-pipeline-optimization"
+        },
+        {
+          "success": true,
+          "name": "environment-configuration",
+          "category": "governors",
+          "action": "migrated",
+          "from": "/Users/flux423/Sites/LLM/common_npm/agent-ops/.agents/definitions/environment-configuration",
+          "to": "/Users/flux423/Sites/LLM/common_npm/agent-ops/.agents/governors/environment-configuration"
+        },
+        {
+          "success": true,
+          "name": "incident-response",
+          "category": "governors",
+          "action": "migrated",
+          "from": "/Users/flux423/Sites/LLM/common_npm/agent-ops/.agents/definitions/incident-response",
+          "to": "/Users/flux423/Sites/LLM/common_npm/agent-ops/.agents/governors/incident-response"
+        },
+        {
+          "success": true,
+          "name": "infrastructure-cost-optimization",
+          "category": "governors",
+          "action": "migrated",
+          "from": "/Users/flux423/Sites/LLM/common_npm/agent-ops/.agents/definitions/infrastructure-cost-optimization",
+          "to": "/Users/flux423/Sites/LLM/common_npm/agent-ops/.agents/governors/infrastructure-cost-optimization"
+        },
+        {
+          "success": true,
+          "name": "mobile-agent-controller",
+          "category": "governors",
+          "action": "migrated",
+          "from": "/Users/flux423/Sites/LLM/common_npm/agent-ops/.agents/definitions/mobile-agent-controller",
+          "to": "/Users/flux423/Sites/LLM/common_npm/agent-ops/.agents/governors/mobile-agent-controller"
+        },
+        {
+          "success": true,
+          "name": "npm-package-agent",
+          "category": "governors",
+          "action": "migrated",
+          "from": "/Users/flux423/Sites/LLM/common_npm/agent-ops/.agents/npm-package-agent",
+          "to": "/Users/flux423/Sites/LLM/common_npm/agent-ops/.agents/governors/npm-package-agent"
+        }
+      ],
+      "errors": [],
+      "ossaStructureCreated": true,
+      "documentationCopied": true
+    },
+    {
+      "name": "agent-protocol",
+      "path": "/Users/flux423/Sites/LLM/common_npm/agent-protocol",
+      "agentsPath": "/Users/flux423/Sites/LLM/common_npm/agent-protocol/.agents",
+      "agentsMigrated": [
+        {
+          "success": true,
+          "name": "mcp-protocol-specialist",
+          "category": "integrators",
+          "action": "migrated",
+          "from": "/Users/flux423/Sites/LLM/common_npm/agent-protocol/.agents/mcp-protocol-specialist",
+          "to": "/Users/flux423/Sites/LLM/common_npm/agent-protocol/.agents/integrators/mcp-protocol-specialist"
+        }
+      ],
+      "errors": [],
+      "ossaStructureCreated": true,
+      "documentationCopied": true
+    },
+    {
+      "name": "agent-router",
+      "path": "/Users/flux423/Sites/LLM/common_npm/agent-router",
+      "agentsPath": "/Users/flux423/Sites/LLM/common_npm/agent-router/.agents",
+      "agentsMigrated": [
+        {
+          "success": true,
+          "name": "agent-router-specialist",
+          "category": "governors",
+          "action": "migrated",
+          "from": "/Users/flux423/Sites/LLM/common_npm/agent-router/.agents/agent-router-specialist",
+          "to": "/Users/flux423/Sites/LLM/common_npm/agent-router/.agents/governors/agent-router-specialist"
+        },
+        {
+          "success": true,
+          "name": "registry",
+          "category": "workers",
+          "action": "migrated",
+          "from": "/Users/flux423/Sites/LLM/common_npm/agent-router/.agents/registry",
+          "to": "/Users/flux423/Sites/LLM/common_npm/agent-router/.agents/workers/registry"
+        }
+      ],
+      "errors": [],
+      "ossaStructureCreated": true,
+      "documentationCopied": true
+    },
+    {
+      "name": "agent-studio",
+      "path": "/Users/flux423/Sites/LLM/common_npm/agent-studio",
+      "agentsPath": "/Users/flux423/Sites/LLM/common_npm/agent-studio/.agents",
+      "agentsMigrated": [
+        {
+          "success": true,
+          "name": "agent-studio-specialist",
+          "category": "governors",
+          "action": "migrated",
+          "from": "/Users/flux423/Sites/LLM/common_npm/agent-studio/.agents/agent-studio-specialist",
+          "to": "/Users/flux423/Sites/LLM/common_npm/agent-studio/.agents/governors/agent-studio-specialist"
+        }
+      ],
+      "errors": [],
+      "ossaStructureCreated": true,
+      "documentationCopied": true
+    },
+    {
+      "name": "agent-tracer",
+      "path": "/Users/flux423/Sites/LLM/common_npm/agent-tracer",
+      "agentsPath": "/Users/flux423/Sites/LLM/common_npm/agent-tracer/.agents",
+      "agentsMigrated": [
+        {
+          "success": true,
+          "name": "ai-breadcrumbs-agent",
+          "category": "trainers",
+          "action": "migrated",
+          "from": "/Users/flux423/Sites/LLM/common_npm/agent-tracer/.agents/ai-breadcrumbs-agent",
+          "to": "/Users/flux423/Sites/LLM/common_npm/agent-tracer/.agents/trainers/ai-breadcrumbs-agent"
+        }
+      ],
+      "errors": [],
+      "ossaStructureCreated": true,
+      "documentationCopied": true
+    },
+    {
+      "name": "agentic-flows",
+      "path": "/Users/flux423/Sites/LLM/common_npm/agentic-flows",
+      "agentsPath": "/Users/flux423/Sites/LLM/common_npm/agentic-flows/.agents",
+      "agentsMigrated": [
+        {
+          "success": true,
+          "name": "agentic-flows-specialist",
+          "category": "orchestrators",
+          "action": "migrated",
+          "from": "/Users/flux423/Sites/LLM/common_npm/agentic-flows/.agents/agentic-flows-specialist",
+          "to": "/Users/flux423/Sites/LLM/common_npm/agentic-flows/.agents/orchestrators/agentic-flows-specialist"
+        }
+      ],
+      "errors": [],
+      "ossaStructureCreated": true,
+      "documentationCopied": true
+    },
+    {
+      "name": "compliance-engine",
+      "path": "/Users/flux423/Sites/LLM/common_npm/compliance-engine",
+      "agentsPath": "/Users/flux423/Sites/LLM/common_npm/compliance-engine/.agents",
+      "agentsMigrated": [
+        {
+          "success": true,
+          "name": "compliance-engine-specialist",
+          "category": "governors",
+          "action": "migrated",
+          "from": "/Users/flux423/Sites/LLM/common_npm/compliance-engine/.agents/compliance-engine-specialist",
+          "to": "/Users/flux423/Sites/LLM/common_npm/compliance-engine/.agents/governors/compliance-engine-specialist"
+        }
+      ],
+      "errors": [],
+      "ossaStructureCreated": true,
+      "documentationCopied": true
+    },
+    {
+      "name": "doc-engine",
+      "path": "/Users/flux423/Sites/LLM/common_npm/doc-engine",
+      "agentsPath": "/Users/flux423/Sites/LLM/common_npm/doc-engine/.agents",
+      "agentsMigrated": [],
+      "errors": [],
+      "ossaStructureCreated": true,
+      "documentationCopied": true
+    },
+    {
+      "name": "foundation-bridge",
+      "path": "/Users/flux423/Sites/LLM/common_npm/foundation-bridge",
+      "agentsPath": "/Users/flux423/Sites/LLM/common_npm/foundation-bridge/.agents",
+      "agentsMigrated": [
+        {
+          "success": true,
+          "name": "foundation-bridge-specialist",
+          "category": "integrators",
+          "action": "migrated",
+          "from": "/Users/flux423/Sites/LLM/common_npm/foundation-bridge/.agents/foundation-bridge-specialist",
+          "to": "/Users/flux423/Sites/LLM/common_npm/foundation-bridge/.agents/integrators/foundation-bridge-specialist"
+        }
+      ],
+      "errors": [],
+      "ossaStructureCreated": true,
+      "documentationCopied": true
+    },
+    {
+      "name": "rfp-automation",
+      "path": "/Users/flux423/Sites/LLM/common_npm/rfp-automation",
+      "agentsPath": "/Users/flux423/Sites/LLM/common_npm/rfp-automation/.agents",
+      "agentsMigrated": [],
+      "errors": [],
+      "ossaStructureCreated": true,
+      "documentationCopied": true
+    },
+    {
+      "name": "studio-ui",
+      "path": "/Users/flux423/Sites/LLM/common_npm/studio-ui",
+      "agentsPath": "/Users/flux423/Sites/LLM/common_npm/studio-ui/.agents",
+      "agentsMigrated": [],
+      "errors": [],
+      "ossaStructureCreated": true,
+      "documentationCopied": true
+    },
+    {
+      "name": "workflow-engine",
+      "path": "/Users/flux423/Sites/LLM/common_npm/workflow-engine",
+      "agentsPath": "/Users/flux423/Sites/LLM/common_npm/workflow-engine/.agents",
+      "agentsMigrated": [
+        {
+          "success": true,
+          "name": "workflow-engine-specialist",
+          "category": "orchestrators",
+          "action": "migrated",
+          "from": "/Users/flux423/Sites/LLM/common_npm/workflow-engine/.agents/workflow-engine-specialist",
+          "to": "/Users/flux423/Sites/LLM/common_npm/workflow-engine/.agents/orchestrators/workflow-engine-specialist"
+        }
+      ],
+      "errors": [],
+      "ossaStructureCreated": true,
+      "documentationCopied": true
+    },
+    {
+      "name": "agent_buildkit",
+      "path": "/Users/flux423/Sites/LLM/agent_buildkit",
+      "agentsPath": "/Users/flux423/Sites/LLM/agent_buildkit/.agents",
+      "agentsMigrated": [
+        {
+          "success": true,
+          "name": "agent-registry",
+          "category": "integrators",
+          "action": "migrated",
+          "from": "/Users/flux423/Sites/LLM/agent_buildkit/.agents/agents/agent-registry",
+          "to": "/Users/flux423/Sites/LLM/agent_buildkit/.agents/integrators/agent-registry"
+        },
+        {
+          "success": true,
+          "name": "analyzer",
+          "category": "governors",
+          "action": "migrated",
+          "from": "/Users/flux423/Sites/LLM/agent_buildkit/.agents/agents/analyzer",
+          "to": "/Users/flux423/Sites/LLM/agent_buildkit/.agents/governors/analyzer"
+        },
+        {
+          "success": true,
+          "name": "api-builder",
+          "category": "integrators",
+          "action": "migrated",
+          "from": "/Users/flux423/Sites/LLM/agent_buildkit/.agents/agents/api-builder",
+          "to": "/Users/flux423/Sites/LLM/agent_buildkit/.agents/integrators/api-builder"
+        },
+        {
+          "success": true,
+          "name": "branch-policy-enforcer",
+          "category": "governors",
+          "action": "migrated",
+          "from": "/Users/flux423/Sites/LLM/agent_buildkit/.agents/agents/branch-policy-enforcer",
+          "to": "/Users/flux423/Sites/LLM/agent_buildkit/.agents/governors/branch-policy-enforcer"
+        },
+        {
+          "success": true,
+          "name": "cache-manager",
+          "category": "integrators",
+          "action": "migrated",
+          "from": "/Users/flux423/Sites/LLM/agent_buildkit/.agents/agents/cache-manager",
+          "to": "/Users/flux423/Sites/LLM/agent_buildkit/.agents/integrators/cache-manager"
+        },
+        {
+          "success": true,
+          "name": "code-quality",
+          "category": "critics",
+          "action": "migrated",
+          "from": "/Users/flux423/Sites/LLM/agent_buildkit/.agents/agents/code-quality",
+          "to": "/Users/flux423/Sites/LLM/agent_buildkit/.agents/critics/code-quality"
+        },
+        {
+          "success": true,
+          "name": "contract-test-runner",
+          "category": "governors",
+          "action": "migrated",
+          "from": "/Users/flux423/Sites/LLM/agent_buildkit/.agents/agents/contract-test-runner",
+          "to": "/Users/flux423/Sites/LLM/agent_buildkit/.agents/governors/contract-test-runner"
+        },
+        {
+          "success": true,
+          "name": "contract-validator",
+          "category": "governors",
+          "action": "migrated",
+          "from": "/Users/flux423/Sites/LLM/agent_buildkit/.agents/agents/contract-validator",
+          "to": "/Users/flux423/Sites/LLM/agent_buildkit/.agents/governors/contract-validator"
+        },
+        {
+          "success": true,
+          "name": "cost-analytics",
+          "category": "integrators",
+          "action": "migrated",
+          "from": "/Users/flux423/Sites/LLM/agent_buildkit/.agents/agents/cost-analytics",
+          "to": "/Users/flux423/Sites/LLM/agent_buildkit/.agents/integrators/cost-analytics"
+        },
+        {
+          "success": true,
+          "name": "cost-optimizer",
+          "category": "governors",
+          "action": "migrated",
+          "from": "/Users/flux423/Sites/LLM/agent_buildkit/.agents/agents/cost-optimizer",
+          "to": "/Users/flux423/Sites/LLM/agent_buildkit/.agents/governors/cost-optimizer"
+        },
+        {
+          "success": true,
+          "name": "database-agent",
+          "category": "governors",
+          "action": "migrated",
+          "from": "/Users/flux423/Sites/LLM/agent_buildkit/.agents/agents/database-agent",
+          "to": "/Users/flux423/Sites/LLM/agent_buildkit/.agents/governors/database-agent"
+        },
+        {
+          "success": true,
+          "name": "dependency-resolver",
+          "category": "governors",
+          "action": "migrated",
+          "from": "/Users/flux423/Sites/LLM/agent_buildkit/.agents/agents/dependency-resolver",
+          "to": "/Users/flux423/Sites/LLM/agent_buildkit/.agents/governors/dependency-resolver"
+        },
+        {
+          "success": true,
+          "name": "deployment-manager",
+          "category": "governors",
+          "action": "migrated",
+          "from": "/Users/flux423/Sites/LLM/agent_buildkit/.agents/agents/deployment-manager",
+          "to": "/Users/flux423/Sites/LLM/agent_buildkit/.agents/governors/deployment-manager"
+        },
+        {
+          "success": true,
+          "name": "doc-sync",
+          "category": "integrators",
+          "action": "migrated",
+          "from": "/Users/flux423/Sites/LLM/agent_buildkit/.agents/agents/doc-sync",
+          "to": "/Users/flux423/Sites/LLM/agent_buildkit/.agents/integrators/doc-sync"
+        },
+        {
+          "success": true,
+          "name": "documentation-generator",
+          "category": "integrators",
+          "action": "migrated",
+          "from": "/Users/flux423/Sites/LLM/agent_buildkit/.agents/agents/documentation-generator",
+          "to": "/Users/flux423/Sites/LLM/agent_buildkit/.agents/integrators/documentation-generator"
+        },
+        {
+          "success": true,
+          "name": "drupal-monitor",
+          "category": "monitors",
+          "action": "migrated",
+          "from": "/Users/flux423/Sites/LLM/agent_buildkit/.agents/agents/drupal-monitor",
+          "to": "/Users/flux423/Sites/LLM/agent_buildkit/.agents/monitors/drupal-monitor"
+        },
+        {
+          "success": true,
+          "name": "error-handler",
+          "category": "integrators",
+          "action": "migrated",
+          "from": "/Users/flux423/Sites/LLM/agent_buildkit/.agents/agents/error-handler",
+          "to": "/Users/flux423/Sites/LLM/agent_buildkit/.agents/integrators/error-handler"
+        },
+        {
+          "success": true,
+          "name": "fedramp-compliance-scanner",
+          "category": "governors",
+          "action": "migrated",
+          "from": "/Users/flux423/Sites/LLM/agent_buildkit/.agents/agents/fedramp-compliance-scanner",
+          "to": "/Users/flux423/Sites/LLM/agent_buildkit/.agents/governors/fedramp-compliance-scanner"
+        },
+        {
+          "success": true,
+          "name": "git-cleanup-specialist",
+          "category": "integrators",
+          "action": "migrated",
+          "from": "/Users/flux423/Sites/LLM/agent_buildkit/.agents/agents/git-cleanup-specialist",
+          "to": "/Users/flux423/Sites/LLM/agent_buildkit/.agents/integrators/git-cleanup-specialist"
+        },
+        {
+          "success": true,
+          "name": "git-workflow",
+          "category": "orchestrators",
+          "action": "migrated",
+          "from": "/Users/flux423/Sites/LLM/agent_buildkit/.agents/agents/git-workflow",
+          "to": "/Users/flux423/Sites/LLM/agent_buildkit/.agents/orchestrators/git-workflow"
+        },
+        {
+          "success": true,
+          "name": "grafana-dashboard-builder",
+          "category": "governors",
+          "action": "migrated",
+          "from": "/Users/flux423/Sites/LLM/agent_buildkit/.agents/agents/grafana-dashboard-builder",
+          "to": "/Users/flux423/Sites/LLM/agent_buildkit/.agents/governors/grafana-dashboard-builder"
+        },
+        {
+          "success": true,
+          "name": "health-monitor",
+          "category": "monitors",
+          "action": "migrated",
+          "from": "/Users/flux423/Sites/LLM/agent_buildkit/.agents/agents/health-monitor",
+          "to": "/Users/flux423/Sites/LLM/agent_buildkit/.agents/monitors/health-monitor"
+        },
+        {
+          "success": true,
+          "name": "implementation-minimizer",
+          "category": "governors",
+          "action": "migrated",
+          "from": "/Users/flux423/Sites/LLM/agent_buildkit/.agents/agents/implementation-minimizer",
+          "to": "/Users/flux423/Sites/LLM/agent_buildkit/.agents/governors/implementation-minimizer"
+        },
+        {
+          "success": true,
+          "name": "integration-test",
+          "category": "integrators",
+          "action": "migrated",
+          "from": "/Users/flux423/Sites/LLM/agent_buildkit/.agents/agents/integration-test",
+          "to": "/Users/flux423/Sites/LLM/agent_buildkit/.agents/integrators/integration-test"
+        },
+        {
+          "success": true,
+          "name": "log-aggregator",
+          "category": "integrators",
+          "action": "migrated",
+          "from": "/Users/flux423/Sites/LLM/agent_buildkit/.agents/agents/log-aggregator",
+          "to": "/Users/flux423/Sites/LLM/agent_buildkit/.agents/integrators/log-aggregator"
+        },
+        {
+          "success": true,
+          "name": "metrics-collector",
+          "category": "monitors",
+          "action": "migrated",
+          "from": "/Users/flux423/Sites/LLM/agent_buildkit/.agents/agents/metrics-collector",
+          "to": "/Users/flux423/Sites/LLM/agent_buildkit/.agents/monitors/metrics-collector"
+        },
+        {
+          "success": true,
+          "name": "ml-predictive-monitor",
+          "category": "trainers",
+          "action": "migrated",
+          "from": "/Users/flux423/Sites/LLM/agent_buildkit/.agents/agents/ml-predictive-monitor",
+          "to": "/Users/flux423/Sites/LLM/agent_buildkit/.agents/trainers/ml-predictive-monitor"
+        },
+        {
+          "success": true,
+          "name": "performance-monitor",
+          "category": "monitors",
+          "action": "migrated",
+          "from": "/Users/flux423/Sites/LLM/agent_buildkit/.agents/agents/performance-monitor",
+          "to": "/Users/flux423/Sites/LLM/agent_buildkit/.agents/monitors/performance-monitor"
+        },
+        {
+          "success": true,
+          "name": "production-validator",
+          "category": "governors",
+          "action": "migrated",
+          "from": "/Users/flux423/Sites/LLM/agent_buildkit/.agents/agents/production-validator",
+          "to": "/Users/flux423/Sites/LLM/agent_buildkit/.agents/governors/production-validator"
+        },
+        {
+          "success": true,
+          "name": "roadmap-tracker",
+          "category": "integrators",
+          "action": "migrated",
+          "from": "/Users/flux423/Sites/LLM/agent_buildkit/.agents/agents/roadmap-tracker",
+          "to": "/Users/flux423/Sites/LLM/agent_buildkit/.agents/integrators/roadmap-tracker"
+        },
+        {
+          "success": true,
+          "name": "schema-evolution",
+          "category": "governors",
+          "action": "migrated",
+          "from": "/Users/flux423/Sites/LLM/agent_buildkit/.agents/agents/schema-evolution",
+          "to": "/Users/flux423/Sites/LLM/agent_buildkit/.agents/governors/schema-evolution"
+        },
+        {
+          "success": true,
+          "name": "security-audit",
+          "category": "governors",
+          "action": "migrated",
+          "from": "/Users/flux423/Sites/LLM/agent_buildkit/.agents/agents/security-audit",
+          "to": "/Users/flux423/Sites/LLM/agent_buildkit/.agents/governors/security-audit"
+        },
+        {
+          "success": true,
+          "name": "security-scanner",
+          "category": "governors",
+          "action": "migrated",
+          "from": "/Users/flux423/Sites/LLM/agent_buildkit/.agents/agents/security-scanner",
+          "to": "/Users/flux423/Sites/LLM/agent_buildkit/.agents/governors/security-scanner"
+        },
+        {
+          "success": true,
+          "name": "task-queue-manager",
+          "category": "integrators",
+          "action": "migrated",
+          "from": "/Users/flux423/Sites/LLM/agent_buildkit/.agents/agents/task-queue-manager",
+          "to": "/Users/flux423/Sites/LLM/agent_buildkit/.agents/integrators/task-queue-manager"
+        },
+        {
+          "success": true,
+          "name": "tdd-enforcer",
+          "category": "governors",
+          "action": "migrated",
+          "from": "/Users/flux423/Sites/LLM/agent_buildkit/.agents/agents/tdd-enforcer",
+          "to": "/Users/flux423/Sites/LLM/agent_buildkit/.agents/governors/tdd-enforcer"
+        },
+        {
+          "success": true,
+          "name": "test-generator",
+          "category": "governors",
+          "action": "migrated",
+          "from": "/Users/flux423/Sites/LLM/agent_buildkit/.agents/agents/test-generator",
+          "to": "/Users/flux423/Sites/LLM/agent_buildkit/.agents/governors/test-generator"
+        },
+        {
+          "success": true,
+          "name": "test-runner",
+          "category": "governors",
+          "action": "migrated",
+          "from": "/Users/flux423/Sites/LLM/agent_buildkit/.agents/agents/test-runner",
+          "to": "/Users/flux423/Sites/LLM/agent_buildkit/.agents/governors/test-runner"
+        },
+        {
+          "success": true,
+          "name": "token-optimizer",
+          "category": "integrators",
+          "action": "migrated",
+          "from": "/Users/flux423/Sites/LLM/agent_buildkit/.agents/agents/token-optimizer",
+          "to": "/Users/flux423/Sites/LLM/agent_buildkit/.agents/integrators/token-optimizer"
+        },
+        {
+          "success": true,
+          "name": "version-sync",
+          "category": "governors",
+          "action": "migrated",
+          "from": "/Users/flux423/Sites/LLM/agent_buildkit/.agents/agents/version-sync",
+          "to": "/Users/flux423/Sites/LLM/agent_buildkit/.agents/governors/version-sync"
+        },
+        {
+          "success": true,
+          "name": "webhook-integrator",
+          "category": "governors",
+          "action": "migrated",
+          "from": "/Users/flux423/Sites/LLM/agent_buildkit/.agents/agents/webhook-integrator",
+          "to": "/Users/flux423/Sites/LLM/agent_buildkit/.agents/governors/webhook-integrator"
+        },
+        {
+          "success": true,
+          "name": "websocket-handler",
+          "category": "governors",
+          "action": "migrated",
+          "from": "/Users/flux423/Sites/LLM/agent_buildkit/.agents/agents/websocket-handler",
+          "to": "/Users/flux423/Sites/LLM/agent_buildkit/.agents/governors/websocket-handler"
+        },
+        {
+          "success": true,
+          "name": "workflow-orchestrator",
+          "category": "orchestrators",
+          "action": "migrated",
+          "from": "/Users/flux423/Sites/LLM/agent_buildkit/.agents/agents/workflow-orchestrator",
+          "to": "/Users/flux423/Sites/LLM/agent_buildkit/.agents/orchestrators/workflow-orchestrator"
+        }
+      ],
+      "errors": [],
+      "ossaStructureCreated": true,
+      "documentationCopied": true
+    },
+    {
+      "name": "agent-studio_model",
+      "path": "/Users/flux423/Sites/LLM/models/agent-studio_model",
+      "agentsPath": "/Users/flux423/Sites/LLM/models/agent-studio_model/.agents",
+      "agentsMigrated": [
+        {
+          "success": true,
+          "name": "agent-studio-model-agent",
+          "category": "trainers",
+          "action": "migrated",
+          "from": "/Users/flux423/Sites/LLM/models/agent-studio_model/.agents/agent-studio-model-agent",
+          "to": "/Users/flux423/Sites/LLM/models/agent-studio_model/.agents/trainers/agent-studio-model-agent"
+        },
+        {
+          "success": true,
+          "name": "api-design-validation-agent",
+          "category": "integrators",
+          "action": "migrated",
+          "from": "/Users/flux423/Sites/LLM/models/agent-studio_model/.agents/api-design-validation-agent",
+          "to": "/Users/flux423/Sites/LLM/models/agent-studio_model/.agents/integrators/api-design-validation-agent"
+        },
+        {
+          "success": true,
+          "name": "code-quality-agent",
+          "category": "critics",
+          "action": "migrated",
+          "from": "/Users/flux423/Sites/LLM/models/agent-studio_model/.agents/code-quality-agent",
+          "to": "/Users/flux423/Sites/LLM/models/agent-studio_model/.agents/critics/code-quality-agent"
+        },
+        {
+          "success": true,
+          "name": "dependency-management-specialist",
+          "category": "workers",
+          "action": "migrated",
+          "from": "/Users/flux423/Sites/LLM/models/agent-studio_model/.agents/dependency-management-specialist",
+          "to": "/Users/flux423/Sites/LLM/models/agent-studio_model/.agents/workers/dependency-management-specialist"
+        },
+        {
+          "success": true,
+          "name": "documentation-generation-agent",
+          "category": "workers",
+          "action": "migrated",
+          "from": "/Users/flux423/Sites/LLM/models/agent-studio_model/.agents/documentation-generation-agent",
+          "to": "/Users/flux423/Sites/LLM/models/agent-studio_model/.agents/workers/documentation-generation-agent"
+        },
+        {
+          "success": true,
+          "name": "integration-testing-coordinator",
+          "category": "orchestrators",
+          "action": "migrated",
+          "from": "/Users/flux423/Sites/LLM/models/agent-studio_model/.agents/integration-testing-coordinator",
+          "to": "/Users/flux423/Sites/LLM/models/agent-studio_model/.agents/orchestrators/integration-testing-coordinator"
+        },
+        {
+          "success": true,
+          "name": "model-performance-optimizer",
+          "category": "trainers",
+          "action": "migrated",
+          "from": "/Users/flux423/Sites/LLM/models/agent-studio_model/.agents/model-performance-optimizer",
+          "to": "/Users/flux423/Sites/LLM/models/agent-studio_model/.agents/trainers/model-performance-optimizer"
+        },
+        {
+          "success": true,
+          "name": "monitoring-evaluation-specialist",
+          "category": "monitors",
+          "action": "migrated",
+          "from": "/Users/flux423/Sites/LLM/models/agent-studio_model/.agents/monitoring-evaluation-specialist",
+          "to": "/Users/flux423/Sites/LLM/models/agent-studio_model/.agents/monitors/monitoring-evaluation-specialist"
+        },
+        {
+          "success": true,
+          "name": "ossa-migration-specialist",
+          "category": "governors",
+          "action": "migrated",
+          "from": "/Users/flux423/Sites/LLM/models/agent-studio_model/.agents/ossa-migration-specialist",
+          "to": "/Users/flux423/Sites/LLM/models/agent-studio_model/.agents/governors/ossa-migration-specialist"
+        },
+        {
+          "success": true,
+          "name": "prompt-engineering-specialist",
+          "category": "workers",
+          "action": "migrated",
+          "from": "/Users/flux423/Sites/LLM/models/agent-studio_model/.agents/prompt-engineering-specialist",
+          "to": "/Users/flux423/Sites/LLM/models/agent-studio_model/.agents/workers/prompt-engineering-specialist"
+        },
+        {
+          "success": true,
+          "name": "quality-assurance-agent",
+          "category": "critics",
+          "action": "migrated",
+          "from": "/Users/flux423/Sites/LLM/models/agent-studio_model/.agents/quality-assurance-agent",
+          "to": "/Users/flux423/Sites/LLM/models/agent-studio_model/.agents/critics/quality-assurance-agent"
+        },
+        {
+          "success": true,
+          "name": "refactoring-recommendation-engine",
+          "category": "workers",
+          "action": "migrated",
+          "from": "/Users/flux423/Sites/LLM/models/agent-studio_model/.agents/refactoring-recommendation-engine",
+          "to": "/Users/flux423/Sites/LLM/models/agent-studio_model/.agents/workers/refactoring-recommendation-engine"
+        },
+        {
+          "success": true,
+          "name": "security-vulnerability-scanner",
+          "category": "governors",
+          "action": "migrated",
+          "from": "/Users/flux423/Sites/LLM/models/agent-studio_model/.agents/security-vulnerability-scanner",
+          "to": "/Users/flux423/Sites/LLM/models/agent-studio_model/.agents/governors/security-vulnerability-scanner"
+        },
+        {
+          "success": true,
+          "name": "test-generation-specialist",
+          "category": "workers",
+          "action": "migrated",
+          "from": "/Users/flux423/Sites/LLM/models/agent-studio_model/.agents/test-generation-specialist",
+          "to": "/Users/flux423/Sites/LLM/models/agent-studio_model/.agents/workers/test-generation-specialist"
+        },
+        {
+          "success": true,
+          "name": "user-experience-optimizer",
+          "category": "workers",
+          "action": "migrated",
+          "from": "/Users/flux423/Sites/LLM/models/agent-studio_model/.agents/user-experience-optimizer",
+          "to": "/Users/flux423/Sites/LLM/models/agent-studio_model/.agents/workers/user-experience-optimizer"
+        }
+      ],
+      "errors": [],
+      "ossaStructureCreated": true,
+      "documentationCopied": true
+    },
+    {
+      "name": "gov-policy_model",
+      "path": "/Users/flux423/Sites/LLM/models/gov-policy_model",
+      "agentsPath": "/Users/flux423/Sites/LLM/models/gov-policy_model/.agents",
+      "agentsMigrated": [
+        {
+          "success": true,
+          "name": "compliance-audit-specialist",
+          "category": "governors",
+          "action": "migrated",
+          "from": "/Users/flux423/Sites/LLM/models/gov-policy_model/.agents/compliance-audit-specialist",
+          "to": "/Users/flux423/Sites/LLM/models/gov-policy_model/.agents/governors/compliance-audit-specialist"
+        },
+        {
+          "success": true,
+          "name": "cross-agency-coordination-agent",
+          "category": "workers",
+          "action": "migrated",
+          "from": "/Users/flux423/Sites/LLM/models/gov-policy_model/.agents/cross-agency-coordination-agent",
+          "to": "/Users/flux423/Sites/LLM/models/gov-policy_model/.agents/workers/cross-agency-coordination-agent"
+        },
+        {
+          "success": true,
+          "name": "impact-assessment-agent",
+          "category": "critics",
+          "action": "migrated",
+          "from": "/Users/flux423/Sites/LLM/models/gov-policy_model/.agents/impact-assessment-agent",
+          "to": "/Users/flux423/Sites/LLM/models/gov-policy_model/.agents/critics/impact-assessment-agent"
+        },
+        {
+          "success": true,
+          "name": "legal-framework-analyzer",
+          "category": "workers",
+          "action": "migrated",
+          "from": "/Users/flux423/Sites/LLM/models/gov-policy_model/.agents/legal-framework-analyzer",
+          "to": "/Users/flux423/Sites/LLM/models/gov-policy_model/.agents/workers/legal-framework-analyzer"
+        },
+        {
+          "success": true,
+          "name": "policy-document-processor",
+          "category": "governors",
+          "action": "migrated",
+          "from": "/Users/flux423/Sites/LLM/models/gov-policy_model/.agents/policy-document-processor",
+          "to": "/Users/flux423/Sites/LLM/models/gov-policy_model/.agents/governors/policy-document-processor"
+        },
+        {
+          "success": true,
+          "name": "policy-governance-specialist",
+          "category": "governors",
+          "action": "migrated",
+          "from": "/Users/flux423/Sites/LLM/models/gov-policy_model/.agents/policy-governance-specialist",
+          "to": "/Users/flux423/Sites/LLM/models/gov-policy_model/.agents/governors/policy-governance-specialist"
+        },
+        {
+          "success": true,
+          "name": "policy-recommendation-engine",
+          "category": "governors",
+          "action": "migrated",
+          "from": "/Users/flux423/Sites/LLM/models/gov-policy_model/.agents/policy-recommendation-engine",
+          "to": "/Users/flux423/Sites/LLM/models/gov-policy_model/.agents/governors/policy-recommendation-engine"
+        },
+        {
+          "success": true,
+          "name": "public-comment-processor",
+          "category": "workers",
+          "action": "migrated",
+          "from": "/Users/flux423/Sites/LLM/models/gov-policy_model/.agents/public-comment-processor",
+          "to": "/Users/flux423/Sites/LLM/models/gov-policy_model/.agents/workers/public-comment-processor"
+        },
+        {
+          "success": true,
+          "name": "regulatory-compliance-checker",
+          "category": "governors",
+          "action": "migrated",
+          "from": "/Users/flux423/Sites/LLM/models/gov-policy_model/.agents/regulatory-compliance-checker",
+          "to": "/Users/flux423/Sites/LLM/models/gov-policy_model/.agents/governors/regulatory-compliance-checker"
+        },
+        {
+          "success": true,
+          "name": "risk-assessment-analyzer",
+          "category": "critics",
+          "action": "migrated",
+          "from": "/Users/flux423/Sites/LLM/models/gov-policy_model/.agents/risk-assessment-analyzer",
+          "to": "/Users/flux423/Sites/LLM/models/gov-policy_model/.agents/critics/risk-assessment-analyzer"
+        },
+        {
+          "success": true,
+          "name": "stakeholder-analysis-specialist",
+          "category": "workers",
+          "action": "migrated",
+          "from": "/Users/flux423/Sites/LLM/models/gov-policy_model/.agents/stakeholder-analysis-specialist",
+          "to": "/Users/flux423/Sites/LLM/models/gov-policy_model/.agents/workers/stakeholder-analysis-specialist"
+        }
+      ],
+      "errors": [],
+      "ossaStructureCreated": true,
+      "documentationCopied": true
+    },
+    {
+      "name": "gov-rfp_model",
+      "path": "/Users/flux423/Sites/LLM/models/gov-rfp_model",
+      "agentsPath": "/Users/flux423/Sites/LLM/models/gov-rfp_model/.agents",
+      "agentsMigrated": [
+        {
+          "success": true,
+          "name": "budget-estimation-agent",
+          "category": "workers",
+          "action": "migrated",
+          "from": "/Users/flux423/Sites/LLM/models/gov-rfp_model/.agents/budget-estimation-agent",
+          "to": "/Users/flux423/Sites/LLM/models/gov-rfp_model/.agents/workers/budget-estimation-agent"
+        },
+        {
+          "success": true,
+          "name": "compliance-requirements-extractor",
+          "category": "governors",
+          "action": "migrated",
+          "from": "/Users/flux423/Sites/LLM/models/gov-rfp_model/.agents/compliance-requirements-extractor",
+          "to": "/Users/flux423/Sites/LLM/models/gov-rfp_model/.agents/governors/compliance-requirements-extractor"
+        },
+        {
+          "success": true,
+          "name": "implementation-planning-agent",
+          "category": "workers",
+          "action": "migrated",
+          "from": "/Users/flux423/Sites/LLM/models/gov-rfp_model/.agents/implementation-planning-agent",
+          "to": "/Users/flux423/Sites/LLM/models/gov-rfp_model/.agents/workers/implementation-planning-agent"
+        },
+        {
+          "success": true,
+          "name": "proposal-generation-specialist",
+          "category": "workers",
+          "action": "migrated",
+          "from": "/Users/flux423/Sites/LLM/models/gov-rfp_model/.agents/proposal-generation-specialist",
+          "to": "/Users/flux423/Sites/LLM/models/gov-rfp_model/.agents/workers/proposal-generation-specialist"
+        },
+        {
+          "success": true,
+          "name": "rfp-document-analyzer",
+          "category": "workers",
+          "action": "migrated",
+          "from": "/Users/flux423/Sites/LLM/models/gov-rfp_model/.agents/rfp-document-analyzer",
+          "to": "/Users/flux423/Sites/LLM/models/gov-rfp_model/.agents/workers/rfp-document-analyzer"
+        },
+        {
+          "success": true,
+          "name": "rfp-specialist",
+          "category": "governors",
+          "action": "migrated",
+          "from": "/Users/flux423/Sites/LLM/models/gov-rfp_model/.agents/rfp-specialist",
+          "to": "/Users/flux423/Sites/LLM/models/gov-rfp_model/.agents/governors/rfp-specialist"
+        },
+        {
+          "success": true,
+          "name": "scoring-criteria-evaluator",
+          "category": "workers",
+          "action": "migrated",
+          "from": "/Users/flux423/Sites/LLM/models/gov-rfp_model/.agents/scoring-criteria-evaluator",
+          "to": "/Users/flux423/Sites/LLM/models/gov-rfp_model/.agents/workers/scoring-criteria-evaluator"
+        },
+        {
+          "success": true,
+          "name": "submission-validation-specialist",
+          "category": "workers",
+          "action": "migrated",
+          "from": "/Users/flux423/Sites/LLM/models/gov-rfp_model/.agents/submission-validation-specialist",
+          "to": "/Users/flux423/Sites/LLM/models/gov-rfp_model/.agents/workers/submission-validation-specialist"
+        },
+        {
+          "success": true,
+          "name": "technical-specification-parser",
+          "category": "workers",
+          "action": "migrated",
+          "from": "/Users/flux423/Sites/LLM/models/gov-rfp_model/.agents/technical-specification-parser",
+          "to": "/Users/flux423/Sites/LLM/models/gov-rfp_model/.agents/workers/technical-specification-parser"
+        },
+        {
+          "success": true,
+          "name": "timeline-planning-specialist",
+          "category": "workers",
+          "action": "migrated",
+          "from": "/Users/flux423/Sites/LLM/models/gov-rfp_model/.agents/timeline-planning-specialist",
+          "to": "/Users/flux423/Sites/LLM/models/gov-rfp_model/.agents/workers/timeline-planning-specialist"
+        },
+        {
+          "success": true,
+          "name": "vendor-qualification-agent",
+          "category": "workers",
+          "action": "migrated",
+          "from": "/Users/flux423/Sites/LLM/models/gov-rfp_model/.agents/vendor-qualification-agent",
+          "to": "/Users/flux423/Sites/LLM/models/gov-rfp_model/.agents/workers/vendor-qualification-agent"
+        }
+      ],
+      "errors": [],
+      "ossaStructureCreated": true,
+      "documentationCopied": true
+    },
+    {
+      "name": "llm-platform_model",
+      "path": "/Users/flux423/Sites/LLM/models/llm-platform_model",
+      "agentsPath": "/Users/flux423/Sites/LLM/models/llm-platform_model/.agents",
+      "agentsMigrated": [
+        {
+          "success": true,
+          "name": "conversation-context-manager",
+          "category": "workers",
+          "action": "migrated",
+          "from": "/Users/flux423/Sites/LLM/models/llm-platform_model/.agents/conversation-context-manager",
+          "to": "/Users/flux423/Sites/LLM/models/llm-platform_model/.agents/workers/conversation-context-manager"
+        },
+        {
+          "success": true,
+          "name": "deployment-automation-specialist",
+          "category": "workers",
+          "action": "migrated",
+          "from": "/Users/flux423/Sites/LLM/models/llm-platform_model/.agents/deployment-automation-specialist",
+          "to": "/Users/flux423/Sites/LLM/models/llm-platform_model/.agents/workers/deployment-automation-specialist"
+        },
+        {
+          "success": true,
+          "name": "monitoring-alerting-agent",
+          "category": "monitors",
+          "action": "migrated",
+          "from": "/Users/flux423/Sites/LLM/models/llm-platform_model/.agents/monitoring-alerting-agent",
+          "to": "/Users/flux423/Sites/LLM/models/llm-platform_model/.agents/monitors/monitoring-alerting-agent"
+        },
+        {
+          "success": true,
+          "name": "multi-agent-orchestrator",
+          "category": "orchestrators",
+          "action": "migrated",
+          "from": "/Users/flux423/Sites/LLM/models/llm-platform_model/.agents/multi-agent-orchestrator",
+          "to": "/Users/flux423/Sites/LLM/models/llm-platform_model/.agents/orchestrators/multi-agent-orchestrator"
+        },
+        {
+          "success": true,
+          "name": "multi-provider-router",
+          "category": "workers",
+          "action": "migrated",
+          "from": "/Users/flux423/Sites/LLM/models/llm-platform_model/.agents/multi-provider-router",
+          "to": "/Users/flux423/Sites/LLM/models/llm-platform_model/.agents/workers/multi-provider-router"
+        },
+        {
+          "success": true,
+          "name": "performance-optimization-expert",
+          "category": "workers",
+          "action": "migrated",
+          "from": "/Users/flux423/Sites/LLM/models/llm-platform_model/.agents/performance-optimization-expert",
+          "to": "/Users/flux423/Sites/LLM/models/llm-platform_model/.agents/workers/performance-optimization-expert"
+        },
+        {
+          "success": true,
+          "name": "platform-model-specialist",
+          "category": "trainers",
+          "action": "migrated",
+          "from": "/Users/flux423/Sites/LLM/models/llm-platform_model/.agents/platform-model-specialist",
+          "to": "/Users/flux423/Sites/LLM/models/llm-platform_model/.agents/trainers/platform-model-specialist"
+        },
+        {
+          "success": true,
+          "name": "token-usage-analyzer",
+          "category": "workers",
+          "action": "migrated",
+          "from": "/Users/flux423/Sites/LLM/models/llm-platform_model/.agents/token-usage-analyzer",
+          "to": "/Users/flux423/Sites/LLM/models/llm-platform_model/.agents/workers/token-usage-analyzer"
+        }
+      ],
+      "errors": [],
+      "ossaStructureCreated": true,
+      "documentationCopied": true
+    },
+    {
+      "name": ".gitlab",
+      "path": "/Users/flux423/Sites/LLM/.gitlab",
+      "agentsPath": "/Users/flux423/Sites/LLM/.gitlab/.agents",
+      "agentsMigrated": [],
+      "errors": [],
+      "ossaStructureCreated": true,
+      "documentationCopied": true
+    }
+  ],
+  "totalAgentsMigrated": 119,
+  "totalRepositoriesProcessed": 22,
+  "errors": [],
+  "summary": {}
+}
