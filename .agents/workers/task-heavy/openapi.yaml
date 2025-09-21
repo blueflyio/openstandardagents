@@ -1,0 +1,197 @@
+openapi: 3.1.0
+info:
+  title: Task Heavy Worker Agent API
+  version: 0.1.9
+  description: |
+    OSSA Task Heavy Worker Agent - Handles computationally intensive tasks,
+    batch processing, and long-running operations with progress tracking.
+  contact:
+    name: OSSA Framework
+    url: https://gitlab.bluefly.io/llm/openapi-ai-agents-standard
+
+servers:
+  - url: http://localhost:3019/api/v1
+    description: Local task heavy agent server
+
+paths:
+  /task/submit:
+    post:
+      summary: Submit heavy task
+      operationId: submitTask
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TaskSubmissionRequest'
+      responses:
+        '202':
+          description: Task accepted for processing
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskSubmissionResponse'
+
+  /task/{taskId}/status:
+    get:
+      summary: Get task status
+      operationId: getTaskStatus
+      parameters:
+        - name: taskId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Task status retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskStatusResponse'
+
+  /task/{taskId}/cancel:
+    post:
+      summary: Cancel running task
+      operationId: cancelTask
+      parameters:
+        - name: taskId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Task cancelled
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskCancellationResponse'
+
+  /task/batch:
+    post:
+      summary: Submit batch of tasks
+      operationId: submitBatch
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BatchSubmissionRequest'
+      responses:
+        '202':
+          description: Batch accepted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BatchSubmissionResponse'
+
+components:
+  schemas:
+    TaskSubmissionRequest:
+      type: object
+      required:
+        - type
+        - payload
+      properties:
+        type:
+          type: string
+          enum: [compute, transform, generate, analyze, process]
+        payload:
+          type: object
+        priority:
+          type: string
+          enum: [low, normal, high, critical]
+          default: normal
+        timeout:
+          type: integer
+        resources:
+          type: object
+          properties:
+            cpu:
+              type: integer
+            memory:
+              type: string
+            gpu:
+              type: boolean
+
+    TaskSubmissionResponse:
+      type: object
+      properties:
+        taskId:
+          type: string
+        status:
+          type: string
+          enum: [queued, processing, completed, failed]
+        estimatedCompletionTime:
+          type: string
+          format: date-time
+        queuePosition:
+          type: integer
+
+    TaskStatusResponse:
+      type: object
+      properties:
+        taskId:
+          type: string
+        status:
+          type: string
+          enum: [queued, processing, completed, failed, cancelled]
+        progress:
+          type: number
+          minimum: 0
+          maximum: 100
+        startTime:
+          type: string
+          format: date-time
+        completionTime:
+          type: string
+          format: date-time
+        result:
+          type: object
+        error:
+          type: string
+        logs:
+          type: array
+          items:
+            type: string
+
+    TaskCancellationResponse:
+      type: object
+      properties:
+        taskId:
+          type: string
+        cancelled:
+          type: boolean
+        message:
+          type: string
+
+    BatchSubmissionRequest:
+      type: object
+      required:
+        - tasks
+      properties:
+        tasks:
+          type: array
+          items:
+            $ref: '#/components/schemas/TaskSubmissionRequest'
+        parallel:
+          type: boolean
+          default: false
+        stopOnError:
+          type: boolean
+          default: false
+
+    BatchSubmissionResponse:
+      type: object
+      properties:
+        batchId:
+          type: string
+        taskIds:
+          type: array
+          items:
+            type: string
+        totalTasks:
+          type: integer
+        status:
+          type: string

@@ -1,0 +1,260 @@
+openapi: 3.1.0
+info:
+  title: API Connector Integrator Agent API
+  version: 0.1.9
+  description: |
+    OSSA API Connector Integrator Agent - Facilitates seamless integration
+    between different APIs, protocols, and external services.
+  contact:
+    name: OSSA Framework
+    url: https://gitlab.bluefly.io/llm/openapi-ai-agents-standard
+
+servers:
+  - url: http://localhost:3013/api/v1
+    description: Local integrator agent server
+
+paths:
+  /integrate/connect:
+    post:
+      summary: Connect to external API
+      operationId: connectAPI
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ConnectionRequest'
+      responses:
+        '200':
+          description: Connection established
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConnectionResponse'
+
+  /integrate/transform:
+    post:
+      summary: Transform data between formats
+      operationId: transformData
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TransformRequest'
+      responses:
+        '200':
+          description: Data transformed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransformResponse'
+
+  /integrate/orchestrate:
+    post:
+      summary: Orchestrate multi-API workflow
+      operationId: orchestrateWorkflow
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OrchestrationRequest'
+      responses:
+        '200':
+          description: Workflow executed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrchestrationResponse'
+
+  /integrate/webhooks:
+    post:
+      summary: Register webhook
+      operationId: registerWebhook
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WebhookRequest'
+      responses:
+        '201':
+          description: Webhook registered
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WebhookResponse'
+
+components:
+  schemas:
+    ConnectionRequest:
+      type: object
+      required:
+        - endpoint
+        - method
+      properties:
+        endpoint:
+          type: string
+          format: uri
+        method:
+          type: string
+          enum: [GET, POST, PUT, DELETE, PATCH]
+        authentication:
+          type: object
+          properties:
+            type:
+              type: string
+              enum: [bearer, basic, apikey, oauth2]
+            credentials:
+              type: object
+        headers:
+          type: object
+          additionalProperties:
+            type: string
+        body:
+          type: object
+        timeout:
+          type: integer
+
+    ConnectionResponse:
+      type: object
+      properties:
+        connectionId:
+          type: string
+        status:
+          type: string
+          enum: [connected, failed, timeout]
+        response:
+          type: object
+        metadata:
+          type: object
+          properties:
+            latency:
+              type: integer
+            statusCode:
+              type: integer
+
+    TransformRequest:
+      type: object
+      required:
+        - sourceFormat
+        - targetFormat
+        - data
+      properties:
+        sourceFormat:
+          type: string
+          enum: [json, xml, csv, yaml, protobuf]
+        targetFormat:
+          type: string
+          enum: [json, xml, csv, yaml, protobuf]
+        data:
+          type: string
+        schema:
+          type: object
+        mapping:
+          type: object
+
+    TransformResponse:
+      type: object
+      properties:
+        transformedData:
+          type: string
+        format:
+          type: string
+        validation:
+          type: object
+          properties:
+            valid:
+              type: boolean
+            errors:
+              type: array
+              items:
+                type: string
+
+    OrchestrationRequest:
+      type: object
+      required:
+        - workflow
+      properties:
+        workflow:
+          type: array
+          items:
+            type: object
+            properties:
+              step:
+                type: string
+              action:
+                type: string
+              endpoint:
+                type: string
+              dependencies:
+                type: array
+                items:
+                  type: string
+              transform:
+                type: object
+        parallel:
+          type: boolean
+          default: false
+        errorHandling:
+          type: string
+          enum: [fail-fast, continue, retry]
+
+    OrchestrationResponse:
+      type: object
+      properties:
+        workflowId:
+          type: string
+        status:
+          type: string
+          enum: [completed, failed, partial]
+        results:
+          type: array
+          items:
+            type: object
+            properties:
+              step:
+                type: string
+              status:
+                type: string
+              result:
+                type: object
+              duration:
+                type: integer
+        summary:
+          type: object
+
+    WebhookRequest:
+      type: object
+      required:
+        - url
+        - events
+      properties:
+        url:
+          type: string
+          format: uri
+        events:
+          type: array
+          items:
+            type: string
+        secret:
+          type: string
+        active:
+          type: boolean
+          default: true
+
+    WebhookResponse:
+      type: object
+      properties:
+        webhookId:
+          type: string
+        url:
+          type: string
+        events:
+          type: array
+          items:
+            type: string
+        status:
+          type: string
+          enum: [active, inactive, pending]

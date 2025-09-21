@@ -1,0 +1,222 @@
+openapi: 3.1.0
+info:
+  title: Analytics Agent Worker API
+  version: 0.1.9
+  description: |
+    OSSA Analytics Agent Worker - Performs data analysis, statistical computations,
+    trend detection, and generates insights from various data sources.
+  contact:
+    name: OSSA Framework
+    url: https://gitlab.bluefly.io/llm/openapi-ai-agents-standard
+
+servers:
+  - url: http://localhost:3017/api/v1
+    description: Local analytics agent server
+
+paths:
+  /analytics/analyze:
+    post:
+      summary: Perform data analysis
+      operationId: analyzeData
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AnalysisRequest'
+      responses:
+        '200':
+          description: Analysis completed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AnalysisResponse'
+
+  /analytics/trends:
+    post:
+      summary: Detect trends in data
+      operationId: detectTrends
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TrendRequest'
+      responses:
+        '200':
+          description: Trends detected
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TrendResponse'
+
+  /analytics/forecast:
+    post:
+      summary: Generate forecast
+      operationId: generateForecast
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ForecastRequest'
+      responses:
+        '200':
+          description: Forecast generated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForecastResponse'
+
+components:
+  schemas:
+    AnalysisRequest:
+      type: object
+      required:
+        - data
+        - analysisType
+      properties:
+        data:
+          type: array
+          items:
+            type: object
+        analysisType:
+          type: string
+          enum: [descriptive, diagnostic, predictive, prescriptive]
+        metrics:
+          type: array
+          items:
+            type: string
+        groupBy:
+          type: array
+          items:
+            type: string
+        filters:
+          type: object
+
+    AnalysisResponse:
+      type: object
+      properties:
+        summary:
+          type: object
+          properties:
+            mean:
+              type: number
+            median:
+              type: number
+            mode:
+              type: number
+            standardDeviation:
+              type: number
+            variance:
+              type: number
+        insights:
+          type: array
+          items:
+            type: object
+            properties:
+              type:
+                type: string
+              description:
+                type: string
+              confidence:
+                type: number
+        visualizations:
+          type: array
+          items:
+            type: object
+            properties:
+              type:
+                type: string
+              data:
+                type: object
+              config:
+                type: object
+
+    TrendRequest:
+      type: object
+      required:
+        - timeSeries
+      properties:
+        timeSeries:
+          type: array
+          items:
+            type: object
+            properties:
+              timestamp:
+                type: string
+                format: date-time
+              value:
+                type: number
+        method:
+          type: string
+          enum: [linear, exponential, seasonal, polynomial]
+        seasonality:
+          type: string
+          enum: [daily, weekly, monthly, yearly]
+
+    TrendResponse:
+      type: object
+      properties:
+        trend:
+          type: string
+          enum: [increasing, decreasing, stable, cyclic]
+        slope:
+          type: number
+        confidence:
+          type: number
+        changePoints:
+          type: array
+          items:
+            type: object
+            properties:
+              timestamp:
+                type: string
+                format: date-time
+              magnitude:
+                type: number
+
+    ForecastRequest:
+      type: object
+      required:
+        - historicalData
+        - periods
+      properties:
+        historicalData:
+          type: array
+          items:
+            type: object
+        periods:
+          type: integer
+        method:
+          type: string
+          enum: [arima, exponentialSmoothing, prophet, lstm]
+        confidenceLevel:
+          type: number
+          default: 0.95
+
+    ForecastResponse:
+      type: object
+      properties:
+        forecast:
+          type: array
+          items:
+            type: object
+            properties:
+              period:
+                type: string
+              value:
+                type: number
+              lowerBound:
+                type: number
+              upperBound:
+                type: number
+        accuracy:
+          type: object
+          properties:
+            mape:
+              type: number
+            mae:
+              type: number
+            rmse:
+              type: number

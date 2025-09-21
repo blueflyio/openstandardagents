@@ -1,0 +1,163 @@
+openapi: 3.1.0
+info:
+  title: Data Agent Worker API
+  version: 0.1.9
+  description: |
+    OSSA Data Agent Worker - Handles data processing, transformation,
+    validation, and storage operations across various data formats and sources.
+  contact:
+    name: OSSA Framework
+    url: https://gitlab.bluefly.io/llm/openapi-ai-agents-standard
+
+servers:
+  - url: http://localhost:3016/api/v1
+    description: Local data agent server
+
+paths:
+  /data/process:
+    post:
+      summary: Process data
+      operationId: processData
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DataProcessRequest'
+      responses:
+        '200':
+          description: Data processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DataProcessResponse'
+
+  /data/validate:
+    post:
+      summary: Validate data against schema
+      operationId: validateData
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DataValidationRequest'
+      responses:
+        '200':
+          description: Validation completed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DataValidationResponse'
+
+  /data/query:
+    post:
+      summary: Query data
+      operationId: queryData
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DataQueryRequest'
+      responses:
+        '200':
+          description: Query executed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DataQueryResponse'
+
+components:
+  schemas:
+    DataProcessRequest:
+      type: object
+      required:
+        - data
+        - operation
+      properties:
+        data:
+          type: object
+        operation:
+          type: string
+          enum: [transform, aggregate, filter, sort, join]
+        parameters:
+          type: object
+        format:
+          type: string
+          enum: [json, csv, xml, parquet]
+
+    DataProcessResponse:
+      type: object
+      properties:
+        processedData:
+          type: object
+        metadata:
+          type: object
+          properties:
+            recordsProcessed:
+              type: integer
+            processingTime:
+              type: integer
+            format:
+              type: string
+
+    DataValidationRequest:
+      type: object
+      required:
+        - data
+        - schema
+      properties:
+        data:
+          type: object
+        schema:
+          type: object
+        strictMode:
+          type: boolean
+          default: false
+
+    DataValidationResponse:
+      type: object
+      properties:
+        valid:
+          type: boolean
+        errors:
+          type: array
+          items:
+            type: object
+            properties:
+              field:
+                type: string
+              message:
+                type: string
+              value:
+                type: string
+
+    DataQueryRequest:
+      type: object
+      required:
+        - source
+        - query
+      properties:
+        source:
+          type: string
+        query:
+          type: string
+        parameters:
+          type: object
+        limit:
+          type: integer
+        offset:
+          type: integer
+
+    DataQueryResponse:
+      type: object
+      properties:
+        results:
+          type: array
+          items:
+            type: object
+        count:
+          type: integer
+        hasMore:
+          type: boolean

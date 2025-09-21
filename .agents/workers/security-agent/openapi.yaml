@@ -1,0 +1,246 @@
+openapi: 3.1.0
+info:
+  title: Security Agent Worker API
+  version: 0.1.9
+  description: |
+    OSSA Security Agent Worker - Handles security operations including
+    threat detection, vulnerability scanning, access control, and security auditing.
+  contact:
+    name: OSSA Framework
+    url: https://gitlab.bluefly.io/llm/openapi-ai-agents-standard
+
+servers:
+  - url: http://localhost:3018/api/v1
+    description: Local security agent server
+
+paths:
+  /security/scan:
+    post:
+      summary: Perform security scan
+      operationId: performSecurityScan
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SecurityScanRequest'
+      responses:
+        '200':
+          description: Scan completed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SecurityScanResponse'
+
+  /security/authenticate:
+    post:
+      summary: Authenticate user
+      operationId: authenticateUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AuthenticationRequest'
+      responses:
+        '200':
+          description: Authentication successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthenticationResponse'
+        '401':
+          description: Authentication failed
+
+  /security/authorize:
+    post:
+      summary: Check authorization
+      operationId: checkAuthorization
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AuthorizationRequest'
+      responses:
+        '200':
+          description: Authorization checked
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthorizationResponse'
+
+  /security/audit:
+    get:
+      summary: Get security audit log
+      operationId: getAuditLog
+      parameters:
+        - name: startDate
+          in: query
+          schema:
+            type: string
+            format: date-time
+        - name: endDate
+          in: query
+          schema:
+            type: string
+            format: date-time
+        - name: eventType
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Audit log retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuditLogResponse'
+
+components:
+  schemas:
+    SecurityScanRequest:
+      type: object
+      required:
+        - target
+        - scanType
+      properties:
+        target:
+          type: string
+        scanType:
+          type: string
+          enum: [vulnerability, malware, compliance, penetration]
+        depth:
+          type: string
+          enum: [quick, standard, deep]
+        configuration:
+          type: object
+
+    SecurityScanResponse:
+      type: object
+      properties:
+        scanId:
+          type: string
+        status:
+          type: string
+        riskScore:
+          type: number
+          minimum: 0
+          maximum: 100
+        vulnerabilities:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+              severity:
+                type: string
+                enum: [low, medium, high, critical]
+              description:
+                type: string
+              remediation:
+                type: string
+              cve:
+                type: string
+        recommendations:
+          type: array
+          items:
+            type: string
+
+    AuthenticationRequest:
+      type: object
+      required:
+        - credentials
+      properties:
+        credentials:
+          type: object
+          properties:
+            username:
+              type: string
+            password:
+              type: string
+            token:
+              type: string
+            mfaCode:
+              type: string
+        method:
+          type: string
+          enum: [password, token, oauth, saml, mfa]
+
+    AuthenticationResponse:
+      type: object
+      properties:
+        authenticated:
+          type: boolean
+        token:
+          type: string
+        expiresIn:
+          type: integer
+        refreshToken:
+          type: string
+        user:
+          type: object
+          properties:
+            id:
+              type: string
+            username:
+              type: string
+            roles:
+              type: array
+              items:
+                type: string
+
+    AuthorizationRequest:
+      type: object
+      required:
+        - subject
+        - resource
+        - action
+      properties:
+        subject:
+          type: string
+        resource:
+          type: string
+        action:
+          type: string
+        context:
+          type: object
+
+    AuthorizationResponse:
+      type: object
+      properties:
+        authorized:
+          type: boolean
+        reason:
+          type: string
+        permissions:
+          type: array
+          items:
+            type: string
+
+    AuditLogResponse:
+      type: object
+      properties:
+        entries:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+              timestamp:
+                type: string
+                format: date-time
+              eventType:
+                type: string
+              user:
+                type: string
+              resource:
+                type: string
+              action:
+                type: string
+              result:
+                type: string
+              details:
+                type: object

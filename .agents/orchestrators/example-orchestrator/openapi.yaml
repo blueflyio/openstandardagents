@@ -1,0 +1,265 @@
+openapi: 3.1.0
+info:
+  title: Example Orchestrator Agent API
+  version: 0.1.9
+  description: |
+    OSSA Example Orchestrator Agent - Coordinates multiple agents, manages workflows,
+    and orchestrates complex multi-step operations across the agent ecosystem.
+  contact:
+    name: OSSA Framework
+    url: https://gitlab.bluefly.io/llm/openapi-ai-agents-standard
+
+servers:
+  - url: http://localhost:3020/api/v1
+    description: Local orchestrator agent server
+
+paths:
+  /orchestrate/workflow:
+    post:
+      summary: Execute workflow
+      operationId: executeWorkflow
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WorkflowRequest'
+      responses:
+        '202':
+          description: Workflow started
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkflowResponse'
+
+  /orchestrate/coordinate:
+    post:
+      summary: Coordinate agents
+      operationId: coordinateAgents
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CoordinationRequest'
+      responses:
+        '200':
+          description: Coordination initiated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CoordinationResponse'
+
+  /orchestrate/workflow/{workflowId}/status:
+    get:
+      summary: Get workflow status
+      operationId: getWorkflowStatus
+      parameters:
+        - name: workflowId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Workflow status retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkflowStatusResponse'
+
+  /orchestrate/agents/discover:
+    get:
+      summary: Discover available agents
+      operationId: discoverAgents
+      parameters:
+        - name: capability
+          in: query
+          schema:
+            type: string
+        - name: type
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Available agents
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentDiscoveryResponse'
+
+components:
+  schemas:
+    WorkflowRequest:
+      type: object
+      required:
+        - name
+        - steps
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        steps:
+          type: array
+          items:
+            $ref: '#/components/schemas/WorkflowStep'
+        parallel:
+          type: boolean
+          default: false
+        errorHandling:
+          type: string
+          enum: [stop, continue, rollback]
+          default: stop
+
+    WorkflowStep:
+      type: object
+      required:
+        - id
+        - agentType
+        - action
+      properties:
+        id:
+          type: string
+        agentType:
+          type: string
+        action:
+          type: string
+        input:
+          type: object
+        dependencies:
+          type: array
+          items:
+            type: string
+        timeout:
+          type: integer
+        retryPolicy:
+          type: object
+          properties:
+            maxRetries:
+              type: integer
+            backoffStrategy:
+              type: string
+
+    WorkflowResponse:
+      type: object
+      properties:
+        workflowId:
+          type: string
+        status:
+          type: string
+          enum: [pending, running, completed, failed]
+        startTime:
+          type: string
+          format: date-time
+        steps:
+          type: array
+          items:
+            type: object
+            properties:
+              stepId:
+                type: string
+              status:
+                type: string
+
+    CoordinationRequest:
+      type: object
+      required:
+        - agents
+        - objective
+      properties:
+        agents:
+          type: array
+          items:
+            type: string
+        objective:
+          type: string
+        strategy:
+          type: string
+          enum: [sequential, parallel, adaptive, hierarchical]
+        constraints:
+          type: object
+          properties:
+            timeout:
+              type: integer
+            budget:
+              type: number
+            resources:
+              type: object
+
+    CoordinationResponse:
+      type: object
+      properties:
+        coordinationId:
+          type: string
+        assignedAgents:
+          type: array
+          items:
+            type: object
+            properties:
+              agentId:
+                type: string
+              role:
+                type: string
+              status:
+                type: string
+
+    WorkflowStatusResponse:
+      type: object
+      properties:
+        workflowId:
+          type: string
+        status:
+          type: string
+          enum: [pending, running, completed, failed, cancelled]
+        progress:
+          type: number
+        currentStep:
+          type: string
+        completedSteps:
+          type: array
+          items:
+            type: string
+        results:
+          type: array
+          items:
+            type: object
+            properties:
+              stepId:
+                type: string
+              output:
+                type: object
+              duration:
+                type: integer
+        errors:
+          type: array
+          items:
+            type: object
+            properties:
+              stepId:
+                type: string
+              error:
+                type: string
+
+    AgentDiscoveryResponse:
+      type: object
+      properties:
+        agents:
+          type: array
+          items:
+            type: object
+            properties:
+              agentId:
+                type: string
+              type:
+                type: string
+              capabilities:
+                type: array
+                items:
+                  type: string
+              status:
+                type: string
+                enum: [available, busy, offline]
+              load:
+                type: number
