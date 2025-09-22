@@ -9,6 +9,12 @@ OSSA_DIR="/Users/flux423/Sites/LLM/OSSA"
 SCRIPTS_DIR="$OSSA_DIR/scripts"
 INFRASTRUCTURE_DIR="$OSSA_DIR/infrastructure"
 
+# Subdirectory paths
+VALIDATION_DIR="$SCRIPTS_DIR/validation"
+DOCS_DIR="$SCRIPTS_DIR/docs"
+DEPLOYMENT_DIR="$SCRIPTS_DIR/deployment"
+FEDERATION_DIR="$SCRIPTS_DIR/federation"
+
 # Color codes
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
@@ -30,23 +36,23 @@ case $RESOURCE in
         case $ACTION in
             create|organize)
                 echo -e "${BLUE}📚 Creating organized documentation structure...${NC}"
-                bash "$SCRIPTS_DIR/organize-docs.sh"
+                bash "$SCRIPTS_DIR/docs/organize-docs.sh"
                 ;;
             read|status)
                 echo -e "${CYAN}📊 Reading documentation status...${NC}"
-                bash "$SCRIPTS_DIR/docs-safe-reorg.sh" status
+                bash "$SCRIPTS_DIR/docs/docs-safe-reorg.sh" status
                 ;;
             update|generate)
                 echo -e "${YELLOW}🔄 Updating documentation...${NC}"
-                bash "$SCRIPTS_DIR/generate-api-docs.sh"
+                bash "$SCRIPTS_DIR/docs/generate-api-docs.sh"
                 ;;
             delete|archive)
                 echo -e "${RED}📦 Archiving old documentation...${NC}"
-                bash "$SCRIPTS_DIR/docs-safe-reorg.sh" archive
+                bash "$SCRIPTS_DIR/docs/docs-safe-reorg.sh" archive
                 ;;
             pipeline)
                 echo -e "${BLUE}🚀 Running full documentation pipeline...${NC}"
-                bash "$SCRIPTS_DIR/docs-pipeline.sh" all
+                bash "$SCRIPTS_DIR/docs/docs-pipeline.sh" all
                 ;;
             *)
                 echo "Usage: $0 docs <create|read|update|delete|pipeline>"
@@ -141,16 +147,16 @@ case $RESOURCE in
         case $ACTION in
             create|run)
                 echo -e "${BLUE}✅ Running validations...${NC}"
-                npx tsx "$SCRIPTS_DIR/validate-golden.ts"
-                node "$SCRIPTS_DIR/validate-schemas.cjs"
+                npx tsx "$SCRIPTS_DIR/validation/validate-golden.ts"
+                node "$SCRIPTS_DIR/validation/validate-schemas.cjs"
                 ;;
             read|status)
                 echo -e "${CYAN}📊 Reading validation status...${NC}"
-                npx tsx "$SCRIPTS_DIR/validate-golden.ts" --status
+                npx tsx "$SCRIPTS_DIR/validation/validate-golden.ts" --status
                 ;;
             update|fix)
                 echo -e "${YELLOW}🔧 Fixing validation issues...${NC}"
-                npx tsx "$SCRIPTS_DIR/validate-golden.ts" --fix
+                npx tsx "$SCRIPTS_DIR/validation/validate-golden.ts" --fix
                 ;;
             delete|reset)
                 echo -e "${RED}🔄 Resetting validation state...${NC}"
@@ -168,15 +174,15 @@ case $RESOURCE in
         case $ACTION in
             create|run)
                 echo -e "${BLUE}📐 Standardizing all projects...${NC}"
-                bash "$SCRIPTS_DIR/standardize-all-projects.sh"
+                bash "$DEPLOYMENT_DIR/standardize-all-projects.sh"
                 ;;
             read|status)
                 echo -e "${CYAN}📊 Reading standardization status...${NC}"
-                bash "$SCRIPTS_DIR/standardize-all-projects.sh" --status
+                bash "$DEPLOYMENT_DIR/standardize-all-projects.sh" --status
                 ;;
             update|sync)
                 echo -e "${YELLOW}🔄 Updating project standards...${NC}"
-                bash "$SCRIPTS_DIR/standardize-all-projects.sh" --update
+                bash "$DEPLOYMENT_DIR/standardize-all-projects.sh" --update
                 ;;
             delete|revert)
                 echo -e "${RED}↩️ Reverting standardization...${NC}"

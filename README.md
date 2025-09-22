@@ -1,12 +1,16 @@
 # OSSA - Open Standard for Scalable Agents
 
-[![OpenAPI](https://img.shields.io/badge/OpenAPI-3.1-orange.svg)](src/api/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.3-blue.svg)](https://www.typescriptlang.org/)
+[![OpenAPI](https://img.shields.io/badge/OpenAPI-3.1-orange.svg)](specs/)
+[![Specification](https://img.shields.io/badge/OSSA-v0.1.9-blue.svg)](https://ossa.dev)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+
+> **⚠️ Important**: This repository contains the **OSSA specification standard only**. For implementation tools and runtime, see [Agent-BuildKit](https://gitlab.bluefly.io/llm/agent_buildkit).
 
 ## Executive Summary
 
-The Open Standard for Scalable Agents (OSSA) provides a comprehensive specification framework for building, deploying, and orchestrating autonomous AI agents at enterprise scale. OSSA defines standardized interfaces, communication protocols, and governance models that enable seamless interoperability between heterogeneous agent systems.
+The Open Standard for Scalable Agents (OSSA) is a **specification-only standard** that defines how AI agents should be structured, communicate, and interoperate. OSSA provides the OpenAPI schemas, communication protocols, and governance models that enable any implementation to build compliant, interoperable agent systems.
+
+**OSSA is to AI agents what OpenAPI is to REST APIs** - a vendor-neutral specification that ensures compatibility across different implementations.
 
 ## Technical Overview
 
@@ -375,56 +379,70 @@ Standardizes message formats and transport mechanisms across different agent pla
 | MQTT | IoT integration | Medium | Low |
 | gRPC | High-performance | High | High |
 
-### UAP CLI Commands
+### UAP Reference Implementations
 
-The OSSA CLI provides comprehensive UAP management capabilities:
+The UAP specification defines the interface contracts that implementations must follow. For working CLI tools that implement these specifications, see [Agent-BuildKit](https://gitlab.bluefly.io/llm/agent_buildkit).
 
-#### Discovery Operations
-```bash
-# Discover agents in the network
-ossa discover --protocol UADP --filter "type=worker"
-
-# Register agent capabilities
-ossa register --capability "data-processing" --endpoint "/api/v1/process"
-
-# Query available services
-ossa query --service "machine-learning" --version ">= 2.0"
+#### Discovery Operations Specification
+```yaml
+# Agent discovery endpoint specification
+/api/v1/agents/discover:
+  get:
+    parameters:
+      - name: protocol
+        in: query
+        schema: { type: string, enum: [UADP] }
+      - name: filter
+        in: query
+        schema: { type: string }
+    responses:
+      200:
+        description: List of discovered agents
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/AgentMetadata'
 ```
 
-#### Resource Management
-```bash
-# Monitor resource allocation
-ossa resources --protocol RASP --view cluster
-
-# Request resource reservation
-ossa reserve --cpu "4 cores" --memory "8GB" --duration "2h"
-
-# Scale agent deployment
-ossa scale --agent-type worker --replicas 10 --zone us-west-2
+#### Resource Management Specification
+```yaml
+# Resource allocation endpoint specification
+/api/v1/resources:
+  post:
+    summary: Request resource allocation
+    requestBody:
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              cpu: { type: string }
+              memory: { type: string }
+              duration: { type: string }
+    responses:
+      201:
+        description: Resource allocation granted
 ```
 
-#### Communication Setup
-```bash
-# Configure cross-platform communication
-ossa comm config --protocol CPC --transport grpc --encryption tls1.3
-
-# Test connectivity between agents
-ossa comm test --source agent-001 --target agent-002 --protocol all
-
-# Monitor message flows
-ossa comm monitor --protocol CPC --filter "error_rate > 1%"
-```
-
-#### Protocol Validation
-```bash
-# Validate UAP compliance
-ossa validate uap --spec-version 1.0 --agent-manifest ./agent.yaml
-
-# Generate UAP documentation
-ossa docs uap --output ./docs/uap-spec.md --format markdown
-
-# Benchmark protocol performance
-ossa benchmark uap --duration 5m --agents 100 --concurrent-requests 1000
+#### Protocol Validation Specification
+```yaml
+# Validation endpoint specification
+/api/v1/validate:
+  post:
+    summary: Validate OSSA compliance
+    requestBody:
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              spec_version: { type: string }
+              agent_manifest: { type: object }
+    responses:
+      200:
+        description: Validation results
 ```
 
 ### UAP Integration Example
@@ -487,30 +505,31 @@ Agent → OpenTelemetry Collector → Backend
 | `agent_saturation` | Resource utilization | > 80% |
 | `agent_availability` | Uptime percentage | < 99.9% |
 
-## Reference Implementation
+## Reference Implementations
 
-### Technology Stack
+OSSA is a specification standard - implementations are separate projects that follow the OSSA specification.
 
-The reference implementation demonstrates OSSA compliance using:
+### Agent-BuildKit (Primary Reference Implementation)
 
-- **Runtime**: Node.js 20 LTS with TypeScript 5.3
-- **Framework**: Express 4.18 with OpenAPI middleware
-- **Validation**: Ajv with JSON Schema Draft 2020-12
-- **Authentication**: Passport.js with OAuth 2.1
-- **Message Bus**: Kafka with Schema Registry
-- **Monitoring**: OpenTelemetry with Prometheus
-- **Container**: Docker with multi-stage builds
-- **Orchestration**: Kubernetes 1.28+
+[Agent-BuildKit](https://gitlab.bluefly.io/llm/agent_buildkit) provides the primary reference implementation of the OSSA specification:
 
-### Performance Characteristics
+- **Full OSSA v0.1.9 Compliance**: Complete implementation of all specification requirements
+- **Production-Ready Runtime**: BAR (BuildKit Agent Runtime) with ROE, VORTEX v3, QITS, and SWARM
+- **CLI Tools**: `buildkit` command for agent lifecycle management
+- **Enterprise Features**: Security, governance, observability, and scaling
+- **Multi-Agent Orchestration**: Complex workflow coordination and resource management
 
-Benchmarked on AWS m5.large instances:
+### Implementation Requirements for OSSA Compliance
 
-- **Startup Time**: < 3 seconds
-- **Memory Footprint**: < 256 MB idle
-- **CPU Usage**: < 5% idle
-- **Network Overhead**: < 2% of payload
-- **Compression Ratio**: 70% with gzip
+Any OSSA-compliant implementation must provide:
+
+1. **OpenAPI 3.1 Specification Compliance**: Full adherence to OSSA schemas
+2. **Agent Manifest Support**: JSON Schema-compliant agent definitions
+3. **UAP Protocol Implementation**: RASP, ACAP, UADP, and CPC protocols
+4. **Authentication & Authorization**: OAuth 2.1, mTLS, or equivalent
+5. **Observability**: OpenTelemetry-compatible metrics and tracing
+6. **Event Bus Integration**: Message queuing with at least one supported transport
+7. **Health Monitoring**: Kubernetes-compatible health checks
 
 ## Adoption Guide
 

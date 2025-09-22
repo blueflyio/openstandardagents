@@ -1,0 +1,113 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://ossa.dev/schemas/agent-manifest/v1.0.0",
+  "title": "OSSA Agent Manifest",
+  "description": "Schema for OSSA v0.1.9 agent manifest files",
+  "type": "object",
+  "required": ["ossa", "metadata", "spec"],
+  "properties": {
+    "ossa": {
+      "type": "string",
+      "pattern": "^0\\.1\\.[0-9]+$",
+      "description": "OSSA specification version"
+    },
+    "metadata": {
+      "type": "object",
+      "required": ["name", "version", "description"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "pattern": "^[a-z0-9-]+$",
+          "description": "Agent name in kebab-case"
+        },
+        "version": {
+          "type": "string",
+          "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
+          "description": "Semantic version"
+        },
+        "description": {
+          "type": "string",
+          "minLength": 10,
+          "maxLength": 500,
+          "description": "Agent description"
+        },
+        "author": {
+          "type": "string",
+          "description": "Agent author"
+        },
+        "license": {
+          "type": "string",
+          "description": "License identifier"
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Agent tags for discovery"
+        }
+      }
+    },
+    "spec": {
+      "type": "object",
+      "required": ["conformance_tier", "class", "category", "capabilities"],
+      "properties": {
+        "conformance_tier": {
+          "type": "string",
+          "enum": ["basic", "standard", "advanced", "industrial"],
+          "description": "OSSA conformance level"
+        },
+        "class": {
+          "type": "string",
+          "enum": ["api", "data", "ml", "security", "integration", "monitoring"],
+          "description": "Agent classification"
+        },
+        "category": {
+          "type": "string",
+          "enum": ["worker", "orchestrator", "critic", "monitor", "governor", "judge"],
+          "description": "Agent category"
+        },
+        "capabilities": {
+          "type": "object",
+          "required": ["primary"],
+          "properties": {
+            "primary": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "string"
+              },
+              "description": "Primary capabilities"
+            },
+            "secondary": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Secondary capabilities"
+            }
+          }
+        },
+        "protocols": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["name", "version", "required"],
+            "properties": {
+              "name": {
+                "type": "string",
+                "enum": ["openapi", "mcp", "uadp", "grpc", "websocket"]
+              },
+              "version": {
+                "type": "string"
+              },
+              "required": {
+                "type": "boolean"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

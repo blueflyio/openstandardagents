@@ -71,7 +71,7 @@ export type ValidAgentName = string & { __brand: 'ValidAgentName' };
 export type SemanticVersion = string & { __brand: 'SemanticVersion' };
 
 // Factory functions for creating typed agents
-export function createAgent(config: OSSAAgent): OSSAAgent {
+export function createAgent(config: Omit<OSSAAgent, 'ossa'>): OSSAAgent {
   return {
     ossa: '1.0',
     ...config

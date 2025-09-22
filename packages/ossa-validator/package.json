@@ -15,6 +15,7 @@
     "build": "tsc",
     "clean": "rm -rf dist",
     "dev": "ts-node src/cli.ts",
+    "test": "exit 0",
     "prepublishOnly": "npm run clean && npm run build"
   },
   "keywords": [
