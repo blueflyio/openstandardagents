@@ -1,0 +1,373 @@
+openapi: 3.1.0
+info:
+  title: OSSA Per-Agent MCP Specification
+  version: 0.1.9
+  description: |
+    # Per-Agent Model Context Protocol (MCP) Specification
+
+    This specification defines how individual agents expose their capabilities through
+    dedicated MCP servers, enabling fine-grained discovery and interaction at the agent level.
+
+    ## Key Features
+
+    - **Agent-Level MCP Servers**: Each agent runs its own MCP server
+    - **Capability Discovery**: Dynamic discovery of agent-specific tools and resources
+    - **Context Isolation**: Per-agent context boundaries for security
+    - **Protocol Negotiation**: Support for multiple transport protocols per agent
+    - **Performance Metrics**: Built-in performance tracking per agent
+
+  contact:
+    name: OSSA Team
+    url: https://gitlab.bluefly.io/llm/ossa
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: http://localhost:{port}/mcp/v1
+    description: Per-agent MCP server
+    variables:
+      port:
+        default: "5000"
+        description: Dynamic port allocation per agent
+
+paths:
+  /agents/{agentId}/mcp/info:
+    get:
+      tags: [MCP Discovery]
+      summary: Get agent MCP server information
+      operationId: getAgentMcpInfo
+      parameters:
+        - $ref: '#/components/parameters/AgentId'
+      responses:
+        '200':
+          description: MCP server information
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/McpServerInfo'
+
+  /agents/{agentId}/mcp/capabilities:
+    get:
+      tags: [MCP Discovery]
+      summary: Discover agent capabilities via MCP
+      operationId: getAgentCapabilities
+      parameters:
+        - $ref: '#/components/parameters/AgentId'
+      responses:
+        '200':
+          description: Agent capabilities
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/McpCapabilities'
+
+  /agents/{agentId}/mcp/tools:
+    get:
+      tags: [MCP Tools]
+      summary: List available tools for this agent
+      operationId: listAgentTools
+      parameters:
+        - $ref: '#/components/parameters/AgentId'
+      responses:
+        '200':
+          description: Available tools
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ToolList'
+
+  /agents/{agentId}/mcp/tools/{toolName}/execute:
+    post:
+      tags: [MCP Tools]
+      summary: Execute an agent tool
+      operationId: executeAgentTool
+      parameters:
+        - $ref: '#/components/parameters/AgentId'
+        - name: toolName
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ToolExecutionRequest'
+      responses:
+        '200':
+          description: Tool execution result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ToolExecutionResult'
+
+  /agents/{agentId}/mcp/resources:
+    get:
+      tags: [MCP Resources]
+      summary: List agent resources
+      operationId: listAgentResources
+      parameters:
+        - $ref: '#/components/parameters/AgentId'
+      responses:
+        '200':
+          description: Available resources
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResourceList'
+
+  /agents/{agentId}/mcp/context:
+    get:
+      tags: [MCP Context]
+      summary: Get agent context state
+      operationId: getAgentContext
+      parameters:
+        - $ref: '#/components/parameters/AgentId'
+      responses:
+        '200':
+          description: Current context
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentContext'
+
+    post:
+      tags: [MCP Context]
+      summary: Update agent context
+      operationId: updateAgentContext
+      parameters:
+        - $ref: '#/components/parameters/AgentId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ContextUpdate'
+      responses:
+        '200':
+          description: Updated context
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentContext'
+
+components:
+  parameters:
+    AgentId:
+      name: agentId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: Unique agent identifier
+
+  schemas:
+    McpServerInfo:
+      type: object
+      required:
+        - agentId
+        - serverUrl
+        - transports
+        - status
+      properties:
+        agentId:
+          type: string
+          format: uuid
+        serverUrl:
+          type: string
+          format: uri
+        transports:
+          type: array
+          items:
+            type: object
+            properties:
+              type:
+                type: string
+                enum: [http, websocket, sse, grpc]
+              port:
+                type: integer
+              status:
+                type: string
+                enum: [active, inactive, error]
+        status:
+          type: string
+          enum: [online, offline, starting, stopping]
+        metrics:
+          $ref: '#/components/schemas/McpMetrics'
+
+    McpCapabilities:
+      type: object
+      required:
+        - tools
+        - resources
+        - protocols
+      properties:
+        tools:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+              description:
+                type: string
+              inputSchema:
+                type: object
+              outputSchema:
+                type: object
+              cost:
+                type: object
+                properties:
+                  tokens:
+                    type: integer
+                  time_ms:
+                    type: integer
+        resources:
+          type: array
+          items:
+            type: object
+            properties:
+              uri:
+                type: string
+              type:
+                type: string
+              mimeType:
+                type: string
+        protocols:
+          type: array
+          items:
+            type: string
+
+    ToolList:
+      type: object
+      properties:
+        tools:
+          type: array
+          items:
+            type: object
+            required:
+              - name
+              - description
+            properties:
+              name:
+                type: string
+              description:
+                type: string
+              version:
+                type: string
+              inputSchema:
+                type: object
+              outputSchema:
+                type: object
+              examples:
+                type: array
+                items:
+                  type: object
+
+    ToolExecutionRequest:
+      type: object
+      required:
+        - tool
+        - input
+      properties:
+        tool:
+          type: string
+        input:
+          type: object
+        context:
+          type: object
+        timeout_ms:
+          type: integer
+          default: 30000
+
+    ToolExecutionResult:
+      type: object
+      required:
+        - success
+        - duration_ms
+      properties:
+        success:
+          type: boolean
+        output:
+          type: object
+        error:
+          type: string
+        duration_ms:
+          type: integer
+        tokens_used:
+          type: integer
+
+    ResourceList:
+      type: object
+      properties:
+        resources:
+          type: array
+          items:
+            type: object
+            properties:
+              uri:
+                type: string
+              name:
+                type: string
+              type:
+                type: string
+              size_bytes:
+                type: integer
+              last_modified:
+                type: string
+                format: date-time
+
+    AgentContext:
+      type: object
+      properties:
+        agentId:
+          type: string
+        sessionId:
+          type: string
+        workingDirectory:
+          type: string
+        environment:
+          type: object
+          additionalProperties:
+            type: string
+        memory:
+          type: array
+          items:
+            type: object
+        activeTools:
+          type: array
+          items:
+            type: string
+
+    ContextUpdate:
+      type: object
+      properties:
+        environment:
+          type: object
+        memory:
+          type: array
+          items:
+            type: object
+        workingDirectory:
+          type: string
+
+    McpMetrics:
+      type: object
+      properties:
+        uptime_seconds:
+          type: integer
+        total_requests:
+          type: integer
+        active_connections:
+          type: integer
+        avg_response_ms:
+          type: number
+        error_rate:
+          type: number
+        memory_mb:
+          type: number
+        cpu_percent:
+          type: number

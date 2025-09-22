@@ -1,0 +1,578 @@
+openapi: 3.1.0
+info:
+  title: OSSA Agent Management API
+  version: 1.0.0
+  description: |
+    API endpoints for OSSA agent management operations including backup, migration,
+    capability matrix generation, and validation.
+
+servers:
+  - url: https://api.ossa.bluefly.io/v1
+    description: Production Server
+  - url: http://localhost:3000/v1
+    description: Local Development Server
+
+tags:
+  - name: Backup
+    description: Agent backup and restore operations
+  - name: Migration
+    description: Agent taxonomy migration operations
+  - name: Capabilities
+    description: Agent capability analysis operations
+  - name: Validation
+    description: Agent validation operations
+
+paths:
+  /agents/backup:
+    post:
+      tags:
+        - Backup
+      summary: Create agent backup
+      description: Creates a backup of all agent configurations
+      operationId: createAgentBackup
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                repositories:
+                  type: array
+                  items:
+                    type: string
+                  description: List of repository paths to backup
+                backupName:
+                  type: string
+                  description: Optional name for the backup
+      responses:
+        '201':
+          description: Backup created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BackupResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /agents/backups:
+    get:
+      tags:
+        - Backup
+      summary: List available backups
+      description: Returns a list of all available agent backups
+      operationId: listAgentBackups
+      responses:
+        '200':
+          description: List of backups retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  backups:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/BackupInfo'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /agents/restore/{backupId}:
+    post:
+      tags:
+        - Backup
+      summary: Restore from backup
+      description: Restores agents from a specific backup
+      operationId: restoreAgentBackup
+      parameters:
+        - name: backupId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: ID of the backup to restore
+      responses:
+        '200':
+          description: Restore completed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestoreResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /agents/migrate:
+    post:
+      tags:
+        - Migration
+      summary: Migrate agents to OSSA taxonomy
+      description: Migrates agents to proper OSSA taxonomy categories
+      operationId: migrateAgents
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                dryRun:
+                  type: boolean
+                  default: false
+                  description: Perform a dry run without making changes
+                repositories:
+                  type: array
+                  items:
+                    type: string
+                  description: List of repository paths to migrate
+      responses:
+        '200':
+          description: Migration completed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MigrationResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /agents/migration/status:
+    get:
+      tags:
+        - Migration
+      summary: Check migration status
+      description: Returns the current status of an ongoing migration
+      operationId: getMigrationStatus
+      responses:
+        '200':
+          description: Migration status retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MigrationStatus'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /agents/migration/validate:
+    post:
+      tags:
+        - Migration
+        - Validation
+      summary: Validate migration results
+      description: Validates that the OSSA taxonomy migration was successful
+      operationId: validateMigration
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                repositories:
+                  type: array
+                  items:
+                    type: string
+                  description: List of repository paths to validate
+      responses:
+        '200':
+          description: Validation completed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationReport'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /agents/taxonomy/validate:
+    post:
+      tags:
+        - Validation
+      summary: Validate taxonomy compliance
+      description: Validates agent taxonomy compliance with OSSA standards
+      operationId: validateTaxonomy
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                agentPath:
+                  type: string
+                  description: Path to the agent to validate
+                category:
+                  type: string
+                  enum: [critics, governors, integrators, judges, monitors, orchestrators, trainers, voice, workers]
+                  description: Expected OSSA category
+      responses:
+        '200':
+          description: Validation completed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaxonomyValidation'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /agents/capabilities/matrix:
+    get:
+      tags:
+        - Capabilities
+      summary: Generate capability matrix
+      description: Generates a comprehensive matrix of all agent capabilities
+      operationId: getCapabilityMatrix
+      parameters:
+        - name: format
+          in: query
+          schema:
+            type: string
+            enum: [json, csv, markdown]
+            default: json
+          description: Output format for the matrix
+      responses:
+        '200':
+          description: Capability matrix generated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CapabilityMatrix'
+            text/csv:
+              schema:
+                type: string
+            text/markdown:
+              schema:
+                type: string
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /agents/capabilities/{category}:
+    get:
+      tags:
+        - Capabilities
+      summary: Get capabilities by category
+      description: Returns capabilities for a specific agent category
+      operationId: getCategoryCapabilities
+      parameters:
+        - name: category
+          in: path
+          required: true
+          schema:
+            type: string
+            enum: [critics, governors, integrators, judges, monitors, orchestrators, trainers, voice, workers]
+          description: OSSA agent category
+      responses:
+        '200':
+          description: Category capabilities retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CategoryCapabilities'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /agents/domains:
+    get:
+      tags:
+        - Capabilities
+      summary: List all agent domains
+      description: Returns a list of all agent domains
+      operationId: getAgentDomains
+      responses:
+        '200':
+          description: Domains retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  domains:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/AgentDomain'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /agents/migration/report:
+    get:
+      tags:
+        - Migration
+        - Validation
+      summary: Get migration validation report
+      description: Returns a detailed validation report for the last migration
+      operationId: getMigrationReport
+      responses:
+        '200':
+          description: Report retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MigrationReport'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+components:
+  schemas:
+    BackupResponse:
+      type: object
+      properties:
+        backupId:
+          type: string
+          description: Unique identifier for the backup
+        timestamp:
+          type: string
+          format: date-time
+        path:
+          type: string
+          description: Path where backup is stored
+        totalAgents:
+          type: integer
+          description: Total number of agents backed up
+        repositories:
+          type: array
+          items:
+            type: string
+
+    BackupInfo:
+      type: object
+      properties:
+        backupId:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+        name:
+          type: string
+        size:
+          type: integer
+          description: Backup size in bytes
+        agentCount:
+          type: integer
+
+    RestoreResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        restoredAgents:
+          type: integer
+        errors:
+          type: array
+          items:
+            type: string
+
+    MigrationResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        migratedAgents:
+          type: integer
+        categorization:
+          type: object
+          additionalProperties:
+            type: integer
+        errors:
+          type: array
+          items:
+            type: string
+
+    MigrationStatus:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [idle, running, completed, failed]
+        progress:
+          type: number
+          minimum: 0
+          maximum: 100
+        currentRepository:
+          type: string
+        processedAgents:
+          type: integer
+        totalAgents:
+          type: integer
+
+    ValidationReport:
+      type: object
+      properties:
+        valid:
+          type: boolean
+        totalAgents:
+          type: integer
+        validAgents:
+          type: integer
+        invalidAgents:
+          type: integer
+        issues:
+          type: array
+          items:
+            type: object
+            properties:
+              agent:
+                type: string
+              issue:
+                type: string
+              severity:
+                type: string
+                enum: [error, warning, info]
+
+    TaxonomyValidation:
+      type: object
+      properties:
+        valid:
+          type: boolean
+        agent:
+          type: string
+        expectedCategory:
+          type: string
+        actualCategory:
+          type: string
+        matches:
+          type: boolean
+        recommendations:
+          type: array
+          items:
+            type: string
+
+    CapabilityMatrix:
+      type: object
+      properties:
+        categories:
+          type: object
+          additionalProperties:
+            type: object
+            properties:
+              agents:
+                type: array
+                items:
+                  type: string
+              capabilities:
+                type: array
+                items:
+                  type: string
+              domains:
+                type: array
+                items:
+                  type: string
+        totalAgents:
+          type: integer
+        totalCapabilities:
+          type: integer
+        generatedAt:
+          type: string
+          format: date-time
+
+    CategoryCapabilities:
+      type: object
+      properties:
+        category:
+          type: string
+        agents:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+              capabilities:
+                type: array
+                items:
+                  type: string
+              domains:
+                type: array
+                items:
+                  type: string
+
+    AgentDomain:
+      type: object
+      properties:
+        domain:
+          type: string
+        description:
+          type: string
+        agentCount:
+          type: integer
+        categories:
+          type: array
+          items:
+            type: string
+
+    MigrationReport:
+      type: object
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+        summary:
+          type: object
+          properties:
+            totalRepositories:
+              type: integer
+            validRepositories:
+              type: integer
+            invalidRepositories:
+              type: integer
+            totalAgents:
+              type: integer
+        repositories:
+          type: array
+          items:
+            type: object
+            properties:
+              path:
+                type: string
+              valid:
+                type: boolean
+              agentCount:
+                type: integer
+              issues:
+                type: array
+                items:
+                  type: string
+
+  responses:
+    BadRequest:
+      description: Bad request
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                description: Error message
+
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                description: Error message
+
+    InternalServerError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                description: Error message

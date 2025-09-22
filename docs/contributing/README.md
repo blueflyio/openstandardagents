@@ -590,7 +590,7 @@ node --trace-gc ./bin/ossa validate memory-test.yaml
 
 ### Development References
 
-- **[OSSA Specification v0.1.8](../spec/v0.1.8/README.md)** - Complete technical specification
+- **[OSSA Specification v0.1.8](../specs/v0.1.8/README.md)** - Complete technical specification
 - **[API Reference](../reference/api/README.md)** - Comprehensive API documentation  
 - **[OpenAPI 3.1 Guide](../guides/openapi-3.1.md)** - OpenAPI 3.1 implementation guide
 - **[Compliance Framework](../enterprise/compliance.md)** - Enterprise compliance requirements

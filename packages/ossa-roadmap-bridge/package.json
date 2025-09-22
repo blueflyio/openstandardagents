@@ -14,7 +14,7 @@
   "dependencies": {
     "@ossa/specification": "^0.1.9",
     "@ossa/validator": "^0.1.9",
-    "@bluefly/agent-build-kit": "^0.1.9",
+    "@bluefly/agent-build-kit": "file:../../../agent_buildkit",
     "@linear/sdk": "^59.1.0",
     "commander": "^11.0.0",
     "js-yaml": "^4.1.0"

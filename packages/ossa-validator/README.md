@@ -98,9 +98,9 @@ $ ossa-validate agent invalid-agent.yml
 ✗ Validation failed
 
 Issues found:
-✗ /spec/type: must be equal to one of the allowed values
-✗ /spec/capabilities: must be array
-⚠ /spec/configuration/authentication: recommended for silver+ conformance
+✗ /specs/type: must be equal to one of the allowed values
+✗ /specs/capabilities: must be array
+⚠ /specs/configuration/authentication: recommended for silver+ conformance
 ```
 
 ## Programmatic Usage

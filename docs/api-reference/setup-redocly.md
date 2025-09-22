@@ -31,9 +31,9 @@ npx @redocly/cli preview-docs src/api/specification.openapi.yml --port 8080
 
 # Or use Docker
 docker run -p 8080:80 \
-  -v $(pwd)/src/api:/spec \
+  -v $(pwd)/src/api:/specs \
   redocly/redoc \
-  -spec /spec/ossa-complete.openapi.yml
+  -spec /specs/ossa-complete.openapi.yml
 ```
 
 ### Access Points
