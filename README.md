@@ -1,12 +1,42 @@
 # OSSA - Open Standard for Scalable Agents
 
+[![Specification](https://img.shields.io/badge/Specification-v0.1.9-green.svg)](src/api/)
 [![OpenAPI](https://img.shields.io/badge/OpenAPI-3.1-orange.svg)](src/api/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.3-blue.svg)](https://www.typescriptlang.org/)
+[![Status](https://img.shields.io/badge/Status-Pure%20Specification-blue.svg)]()
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
 ## Executive Summary
 
-The Open Standard for Scalable Agents (OSSA) provides a comprehensive specification framework for building, deploying, and orchestrating autonomous AI agents at enterprise scale. OSSA defines standardized interfaces, communication protocols, and governance models that enable seamless interoperability between heterogeneous agent systems.
+The Open Standard for Scalable Agents (OSSA) is a **pure specification standard** for building, deploying, and orchestrating autonomous AI agents at enterprise scale. Like OpenAPI for APIs, OSSA defines standardized interfaces, communication protocols, and governance models that enable seamless interoperability between heterogeneous agent systems.
+
+> **Note**: OSSA is a specification-only project. Reference implementations and tooling are available in the [agent-buildkit](https://gitlab.bluefly.io/llm/agent-buildkit) repository.
+
+## Specification Philosophy
+
+OSSA follows the same philosophy as successful standards like OpenAPI, GraphQL, and JSON Schema:
+
+- **Specification First**: Define the standard, let implementations follow
+- **Technology Agnostic**: No language or framework dependencies
+- **Vendor Neutral**: Open standard with no proprietary lock-in
+- **Implementation Flexible**: Multiple implementations can coexist
+- **Version Stable**: Semantic versioning with backward compatibility
+
+### What OSSA Defines
+
+- **Agent Capability Descriptions** - Standardized schemas for agent abilities
+- **Communication Protocols** - Inter-agent messaging specifications
+- **Security Models** - Authentication and authorization standards
+- **Observability Interfaces** - Monitoring and telemetry specifications
+- **Discovery Mechanisms** - Agent registration and lookup protocols
+- **Governance Policies** - Compliance and audit requirements
+
+### What OSSA Does NOT Include
+
+- Implementation code (see agent-buildkit)
+- Runtime executables
+- Language-specific SDKs
+- Deployment scripts
+- Infrastructure code
 
 ## Technical Overview
 
