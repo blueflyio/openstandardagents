@@ -1,6 +1,6 @@
 ---
 # OSSA Specification Project CI/CD
-# Based on golden specification template
+# Simple standalone CI configuration
 
 stages:
   - validate
