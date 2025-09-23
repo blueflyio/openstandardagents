@@ -422,7 +422,11 @@ deploy:staging:
 deploy:production:
   stage: deploy
   image: alpine/helm:latest
-  needs: ["deploy:staging", "conformance:gold"]
+  needs:
+    - job: deploy:staging
+      optional: true
+    - job: conformance:gold
+      optional: true
   environment:
     name: production
     url: https://api.ossa.ai
@@ -436,7 +440,9 @@ deploy:production:
 
 monitor:health:
   stage: monitor
-  needs: ["deploy:staging"]
+  needs:
+    - job: deploy:staging
+      optional: true
   script:
     - |
       echo "🏥 Checking health..."
@@ -446,14 +452,22 @@ monitor:health:
       done
   retry: 2
   allow_failure: true
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "development" || $CI_COMMIT_BRANCH == "main"'
+    - when: manual
 
 monitor:metrics:
   stage: monitor
-  needs: ["deploy:staging"]
+  needs:
+    - job: deploy:staging
+      optional: true
   script:
     - echo "📊 Collecting metrics..."
     - curl -s https://staging.ossa.ai/v1/metrics || echo "Metrics endpoint not available"
   allow_failure: true
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "development" || $CI_COMMIT_BRANCH == "main"'
+    - when: manual
 
 # ==================== ROADMAP SYNC STAGE ====================
 
@@ -494,7 +508,9 @@ roadmap:sync-gitlab:
 release:npm:
   stage: release
   extends: .node_template
-  needs: ["deploy:production"]
+  needs:
+    - job: deploy:production
+      optional: true
   script:
     - echo "📦 Publishing to npm..."
     - echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > .npmrc
@@ -511,7 +527,9 @@ release:npm:
 release:changelog:
   stage: release
   extends: .node_template
-  needs: ["release:npm"]
+  needs:
+    - job: release:npm
+      optional: true
   script:
     - echo "📝 Generating changelog..."
     - npx conventional-changelog -p angular -i CHANGELOG.md -s
