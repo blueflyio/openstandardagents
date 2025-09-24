@@ -43,7 +43,7 @@
     "precommit": "npm run lint && npm run test",
     "clean": "node -e \"const fs=require('fs'); ['dist','coverage'].forEach(d => fs.rmSync(d, {recursive:true, force:true}))\"",
     "test:acdl": "node dist/cli/ossa-cli.js test --protocol acdl",
-    "mock:server:bg": "node dist/server/simple-app.js &",
+    "mock:server:bg": "PORT=${PORT:-3001} node dist/server/simple-app.js &",
     "agents:spawn:tdd": "node dist/cli/ossa-cli.js spawn --type tdd",
     "agents:spawn:validation": "node dist/cli/ossa-cli.js spawn --type validation",
     "agents:workload": "node dist/cli/ossa-cli.js workload",
