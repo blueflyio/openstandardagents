@@ -1,0 +1,7 @@
+openapi: 3.1.0
+info:
+  title: "ossa-specification API"
+  version: "0.1.0"
+  description: "OSSA-compliant ossa-specification service"
+paths: {}
+components: {}

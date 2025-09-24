@@ -1,0 +1,14 @@
+version: "0.1.9"
+name: "ossa-specification"
+type: "service"
+capabilities:
+  - "processing"
+  - "api"
+frameworks:
+  - "nodejs"
+  - "typescript"
+compliance:
+  level: "governed"
+  standards:
+    - "ISO_42001"
+    - "NIST_AI_RMF"
