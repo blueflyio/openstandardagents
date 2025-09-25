@@ -1,4 +1,5 @@
 openapi: 3.1.0
+jsonSchemaDialect: https://spec.openapis.org/oas/3.1/dialect/base
 info:
   title: OSSA Service Registry API
   version: 0.1.9
@@ -482,6 +483,28 @@ paths:
           $ref: '#/components/responses/InternalError'
 
 components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+      description: API key for accessing services
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT token for authenticated requests
+    OAuth2:
+      type: oauth2
+      description: OAuth2 authentication
+      flows:
+        authorizationCode:
+          authorizationUrl: https://auth.llm.bluefly.io/oauth/authorize
+          tokenUrl: https://auth.llm.bluefly.io/oauth/token
+          scopes:
+            read: Read access to resources
+            write: Write access to resources
+            admin: Administrative access
   schemas:
     ServiceDefinition:
       type: object
@@ -975,3 +998,7 @@ components:
           tags: ["data", "etl", "production"]
           author: "Data Engineering Team"
           environment: "production"
+
+security:
+  - ApiKeyAuth: []
+  - BearerAuth: []

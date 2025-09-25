@@ -743,7 +743,13 @@ export class AgentOrchestrationOptimizer {
   private async handlePerformanceMetrics(event: PerformanceMetricsEvent): Promise<void> {
     const agent = this.agents.get(event.source);
     if (agent) {
-      agent.resources = event.metrics;
+      // Map PerformanceMetricsEvent.metrics to ResourceUsage structure
+      agent.resources = {
+        cpu: event.metrics.cpu,
+        memory: event.metrics.memory,
+        networkIO: 0, // Default value since not provided in PerformanceMetricsEvent
+        diskIO: 0     // Default value since not provided in PerformanceMetricsEvent
+      };
       agent.performance.loadFactor = event.metrics.cpu / 100;
     }
   }

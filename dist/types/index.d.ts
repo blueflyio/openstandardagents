@@ -276,4 +276,5 @@ export interface EncryptionConfig {
 export * from './agents/index.js';
 export * from './workflows/index.js';
 export * from './policies/index.js';
+export type { ServiceDefinition, ServiceCapability, ServiceHealth, ServiceHealthStatus, ServiceDiscoveryFilter, ServiceRegistryConfig, RedisClient } from '../services/ServiceRegistry.js';
 //# sourceMappingURL=index.d.ts.map

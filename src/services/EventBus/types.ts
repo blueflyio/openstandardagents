@@ -255,6 +255,101 @@ export interface TaskAssignedEvent {
   dependencies: string[];
 }
 
+// Missing agent lifecycle event types
+export interface AgentStartedEvent {
+  agentId: string;
+  agentType: string;
+  timestamp: Date;
+}
+
+export interface AgentStoppedEvent {
+  agentId: string;
+  reason: string;
+  timestamp: Date;
+}
+
+export interface AgentFailedEvent {
+  agentId: string;
+  error: string;
+  timestamp: Date;
+}
+
+export interface AgentTerminatedEvent {
+  agentId: string;
+  reason: string;
+  timestamp: Date;
+}
+
+// Missing task coordination event types
+export interface TaskStartedEvent {
+  taskId: string;
+  agentId: string;
+  timestamp: Date;
+}
+
+export interface TaskCompletedEvent {
+  taskId: string;
+  agentId: string;
+  result: any;
+  duration: number;
+  timestamp: Date;
+}
+
+export interface TaskFailedEvent {
+  taskId: string;
+  agentId: string;
+  error: string;
+  timestamp: Date;
+}
+
+export interface TaskCancelledEvent {
+  taskId: string;
+  agentId: string;
+  reason: string;
+  timestamp: Date;
+}
+
+// Missing resource management event types
+export interface ResourceAllocatedEvent {
+  resourceId: string;
+  resourceType: string;
+  agentId: string;
+  allocation: any;
+  timestamp: Date;
+}
+
+export interface ResourceReleasedEvent {
+  resourceId: string;
+  resourceType: string;
+  agentId: string;
+  timestamp: Date;
+}
+
+export interface ResourceExhaustedEvent {
+  resourceType: string;
+  threshold: number;
+  current: number;
+  timestamp: Date;
+}
+
+// Missing performance monitoring event types
+export interface ThresholdBreachedEvent {
+  metric: string;
+  threshold: number;
+  currentValue: number;
+  severity: 'warning' | 'critical';
+  source: string;
+  timestamp: Date;
+}
+
+export interface BottleneckDetectedEvent {
+  component: string;
+  bottleneckType: string;
+  impact: string;
+  recommendations: string[];
+  timestamp: Date;
+}
+
 export interface PerformanceMetricsEvent {
   source: string;
   metrics: {

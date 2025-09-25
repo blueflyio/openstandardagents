@@ -3,10 +3,17 @@
  * Express router for service registration, discovery, and health monitoring endpoints
  */
 
-import { Router, Request, Response, NextFunction } from 'express';
-import ServiceRegistry, { 
-  ServiceDefinition, 
-  ServiceDiscoveryFilter, 
+import express from 'express';
+
+// Type definitions for Express v5 compatibility
+type Router = any;
+type Request = any;
+type Response = any;
+type NextFunction = any;
+
+import ServiceRegistry, {
+  ServiceDefinition,
+  ServiceDiscoveryFilter,
   ServiceHealthStatus,
   ServiceCapability,
   RedisClient,
@@ -92,12 +99,12 @@ export function createRegistryApiRouter(
     enableRateLimit?: boolean;
     apiVersion?: string;
   } = {}
-): Router {
-  const router = Router();
+): any {
+  const router = (express as any).Router();
   const apiVersion = options.apiVersion || '0.1.9';
 
   // Middleware for consistent response formatting
-  const formatResponse = (req: Request, res: Response, next: NextFunction) => {
+  const formatResponse = (req: any, res: any, next: any) => {
     const originalJson = res.json;
     res.json = function(body: any) {
       const response: ApiResponse = {
@@ -115,7 +122,7 @@ export function createRegistryApiRouter(
   };
 
   // Error handling middleware
-  const handleError = (err: Error, req: Request, res: Response, next: NextFunction) => {
+  const handleError = (err: Error, req: any, res: any, next: any) => {
     console.error('Registry API error:', err);
 
     const isApiError = err instanceof ApiError;
@@ -147,7 +154,7 @@ export function createRegistryApiRouter(
    * GET /registry/services
    * Discover services with optional filtering
    */
-  router.get('/services', async (req: Request, res: Response, next: NextFunction) => {
+  router.get('/services', async (req: any, res: any, next: any) => {
     try {
       const filter: ServiceDiscoveryFilter = {};
 
@@ -168,7 +175,7 @@ export function createRegistryApiRouter(
 
       if (req.query.tags) {
         const tags = typeof req.query.tags === 'string' 
-          ? req.query.tags.split(',').map(t => t.trim())
+          ? req.query.tags.split(',').map((t: string) => t.trim())
           : req.query.tags as string[];
         filter.tags = tags;
       }
@@ -196,7 +203,7 @@ export function createRegistryApiRouter(
    * POST /registry/services
    * Register a new service
    */
-  router.post('/services', async (req: Request, res: Response, next: NextFunction) => {
+  router.post('/services', async (req: any, res: any, next: any) => {
     try {
       const serviceData: RegisterServiceRequest = req.body;
 

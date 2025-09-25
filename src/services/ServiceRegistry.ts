@@ -204,7 +204,7 @@ export class ServiceRegistry extends EventEmitter {
 
       // Start health monitoring for this service
       if (this.isHealthMonitoringActive) {
-        this.startHealthMonitoring(service.name);
+        this.startServiceHealthMonitoring(service.name);
       }
 
       this.emit('service:registered', serviceDefinition);
@@ -306,7 +306,7 @@ export class ServiceRegistry extends EventEmitter {
       const existed = this.services.delete(serviceName);
 
       // Stop health monitoring
-      this.stopHealthMonitoring(serviceName);
+      this.stopServiceHealthMonitoring(serviceName);
 
       if (existed || deleted > 0) {
         this.emit('service:unregistered', serviceName);
@@ -383,7 +383,7 @@ export class ServiceRegistry extends EventEmitter {
 
     // Start monitoring for all services
     for (const serviceName of this.services.keys()) {
-      this.startHealthMonitoring(serviceName);
+      this.startServiceHealthMonitoring(serviceName);
     }
   }
 
@@ -394,7 +394,7 @@ export class ServiceRegistry extends EventEmitter {
     this.isHealthMonitoringActive = false;
     
     for (const serviceName of this.services.keys()) {
-      this.stopHealthMonitoring(serviceName);
+      this.stopServiceHealthMonitoring(serviceName);
     }
   }
 
@@ -554,9 +554,9 @@ export class ServiceRegistry extends EventEmitter {
     }
   }
 
-  private startHealthMonitoring(serviceName: string): void {
+  private startServiceHealthMonitoring(serviceName: string): void {
     // Clear any existing interval
-    this.stopHealthMonitoring(serviceName);
+    this.stopServiceHealthMonitoring(serviceName);
 
     // Initialize counters
     this.healthCheckCounters.set(serviceName, { failures: 0, successes: 0 });
@@ -569,7 +569,7 @@ export class ServiceRegistry extends EventEmitter {
     this.healthCheckIntervals.set(serviceName, interval);
   }
 
-  private stopHealthMonitoring(serviceName: string): void {
+  private stopServiceHealthMonitoring(serviceName: string): void {
     const interval = this.healthCheckIntervals.get(serviceName);
     if (interval) {
       clearInterval(interval);

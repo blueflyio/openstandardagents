@@ -36,9 +36,9 @@ export interface RedisEventBusEvents {
 
 export class RedisEventBus extends EventEmitter {
   private config: EventBusConfig;
-  private redis: Redis | Cluster;
-  private publisher: Redis | Cluster;
-  private subscriber: Redis | Cluster;
+  private redis!: Redis | Cluster;
+  private publisher!: Redis | Cluster;
+  private subscriber!: Redis | Cluster;
 
   private subscriptions = new Map<string, Set<EventHandler>>();
   private streams = new Map<string, EventStream>();
@@ -239,7 +239,7 @@ export class RedisEventBus extends EventEmitter {
       if (!this.subscriptions.has(eventType)) {
         this.subscriptions.set(eventType, new Set());
       }
-      this.subscriptions.get(eventType)!.add({ handler, options: handler.options });
+      this.subscriptions.get(eventType)!.add({ handler, options: undefined });
 
       // Start consuming events
       this.startConsumer(streamKey, consumerGroup, consumerName, handler, options);
@@ -268,13 +268,13 @@ export class RedisEventBus extends EventEmitter {
         // Read from consumer group with blocking
         const results = await this.subscriber.xreadgroup(
           'GROUP', consumerGroup, consumerName,
-          'BLOCK', 1000, // Block for 1 second
           'COUNT', this.config.performance.batchSize,
+          'BLOCK', 1000, // Block for 1 second
           'STREAMS', streamKey, '>'
         );
 
         if (results && results.length > 0) {
-          const [stream, messages] = results[0];
+          const [stream, messages] = results[0] as [string, Array<[string, string[]]>];
 
           // Process messages in batch for performance
           await this.processBatch(messages, handler, streamKey, consumerGroup);

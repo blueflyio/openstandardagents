@@ -7,7 +7,8 @@ import { RedisEventBus } from './RedisEventBus.js';
 import {
   CrossProjectEventContract,
   EventPayload,
-  EVENT_TYPES
+  EVENT_TYPES,
+  EventPriority
 } from './types.js';
 import Ajv, { JSONSchemaType } from 'ajv';
 import addFormats from 'ajv-formats';
@@ -61,7 +62,7 @@ export class CrossProjectCommunication {
   private eventBus: RedisEventBus;
   private projectConfigs = new Map<string, ProjectConfig>();
   private contracts = new Map<string, CrossProjectEventContract>();
-  private validators = new Map<string, Ajv>();
+  private validators = new Map<string, (data: any) => boolean>();
   private rateLimiters = new Map<string, RateLimiter>();
 
   constructor(eventBus: RedisEventBus) {
@@ -127,7 +128,7 @@ export class CrossProjectCommunication {
         const ajv = new Ajv({ allErrors: true });
         addFormats(ajv);
         const validator = ajv.compile(contract.schema);
-        this.validators.set(contract.name, validator as any);
+        this.validators.set(contract.name, validator);
       }
 
       // Register with event bus
@@ -149,7 +150,7 @@ export class CrossProjectCommunication {
     targetProjectId: string,
     eventType: string,
     data: T,
-    options: { correlationId?: string; priority?: 'high' | 'normal' | 'low' } = {}
+    options: { correlationId?: string; priority?: EventPriority } = {}
   ): Promise<string> {
     try {
       // Validate source project
@@ -199,7 +200,7 @@ export class CrossProjectCommunication {
             target: targetProject.namespace,
             timestamp: new Date(),
             version: '1.0.0',
-            priority: options.priority === 'high' ? 'high' : 'normal',
+            priority: options.priority || EventPriority.NORMAL,
             correlationId: options.correlationId
           },
           data
@@ -214,7 +215,7 @@ export class CrossProjectCommunication {
       // Send message via event bus to target namespace
       const crossProjectEventType = `${targetProject.namespace}.${eventType}`;
       const messageId = await this.eventBus.publish(crossProjectEventType, message, {
-        priority: options.priority === 'high' ? 'high' : 'normal'
+        priority: options.priority || EventPriority.NORMAL
       });
 
       // Log successful cross-project communication
@@ -248,9 +249,8 @@ export class CrossProjectCommunication {
       await this.eventBus.subscribe(
         namespacedEventType,
         async (payload: EventPayload<CrossProjectMessage<T>>) => {
+          const message = payload.data;
           try {
-            const message = payload.data;
-
             // Validate message security if required
             if (options.requireSignatureValidation) {
               await this.validateMessageSecurity(message);
@@ -431,7 +431,9 @@ export class CrossProjectCommunication {
     if (contract) {
       const validator = this.validators.get(contract.name);
       if (validator && !validator(data)) {
-        throw new Error(`Message data validation failed: ${JSON.stringify(validator.errors)}`);
+        // Cast validator to access errors property
+        const validatorWithErrors = validator as any;
+        throw new Error(`Message data validation failed: ${JSON.stringify(validatorWithErrors.errors)}`);
       }
     }
   }
@@ -493,7 +495,7 @@ export class CrossProjectCommunication {
           error,
           timestamp: new Date()
         },
-        { correlationId, priority: 'high' }
+        { correlationId, priority: EventPriority.HIGH }
       );
     } catch (responseError) {
       console.error('Failed to send error response:', responseError);

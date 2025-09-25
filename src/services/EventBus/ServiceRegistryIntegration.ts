@@ -150,7 +150,7 @@ export class ServiceRegistryIntegration {
 
       const response = await fetch(contractsEndpoint);
       if (response.ok) {
-        const contracts: CrossProjectEventContract[] = await response.json();
+        const contracts = await response.json() as CrossProjectEventContract[];
 
         for (const contract of contracts) {
           await this.eventBus.registerContract({
@@ -158,8 +158,7 @@ export class ServiceRegistryIntegration {
             sourceProject: service.name,
             metadata: {
               ...contract.metadata,
-              discoveredAt: new Date(),
-              serviceEndpoint: service.endpoint
+              tags: [...(contract.metadata.tags || []), 'discovered', 'auto-generated']
             }
           });
 

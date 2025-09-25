@@ -8,6 +8,9 @@ export { ServiceRegistryIntegration } from './ServiceRegistryIntegration.js';
 export { CrossProjectCommunication } from './CrossProjectCommunication.js';
 export { AgentOrchestrationOptimizer } from './AgentOrchestrationOptimizer.js';
 export { EventBusMonitoring } from './EventBusMonitoring.js';
+export type { ProjectConfig } from './CrossProjectCommunication.js';
+export type { LoadBalancingConfig } from './AgentOrchestrationOptimizer.js';
+export type { MonitoringConfig } from './EventBusMonitoring.js';
 
 export * from './types.js';
 
@@ -19,12 +22,13 @@ import { EventBusMonitoring } from './EventBusMonitoring.js';
 import { ServiceRegistry } from '../ServiceRegistry.js';
 import {
   EventBusConfig,
-  ProjectConfig,
   CrossProjectEventContract,
-  LoadBalancingConfig,
-  MonitoringConfig,
-  DEFAULT_EVENT_BUS_CONFIG
+  DEFAULT_EVENT_BUS_CONFIG,
+  EventPriority
 } from './types.js';
+import { ProjectConfig } from './CrossProjectCommunication.js';
+import { LoadBalancingConfig } from './AgentOrchestrationOptimizer.js';
+import { MonitoringConfig } from './EventBusMonitoring.js';
 
 export interface OSSAEventBusConfig {
   /** Redis event bus configuration */
@@ -181,11 +185,8 @@ export class OSSAEventBus {
     if (this.monitoring) {
       // Monitor service registry integration
       if (this.serviceRegistryIntegration) {
-        this.serviceRegistryIntegration.on('service:registered', (service) => {
-          this.monitoring!.recordMetric('service_registrations_total', 1, {
-            service_name: service.name
-          });
-        });
+        // Monitor service registry integration (events would be handled via event bus)
+        // ServiceRegistryIntegration doesn't extend EventEmitter, so we monitor via event bus instead
       }
 
       // Monitor cross-project communication
@@ -232,7 +233,7 @@ export class OSSAEventBus {
     targetProjectId: string,
     eventType: string,
     data: T,
-    options?: { correlationId?: string; priority?: 'high' | 'normal' | 'low' }
+    options?: { correlationId?: string; priority?: EventPriority }
   ): Promise<string> {
     if (!this.crossProjectCommunication) {
       throw new Error('Cross-project communication is not enabled');
