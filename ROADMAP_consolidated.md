@@ -107,7 +107,7 @@ git checkout -b feature/receive-ossa-runtime
 ## 🎯 Specification Standard Roadmap (v0.1.9)
 
 ### Phase Overview
-The OSSA v0.1.9 release focuses on **specification separation** - removing implementation code to agent-buildkit while establishing OSSA as the authoritative specification standard.
+The OSSA v0.1.9 release focuses on **specification separation** and **Google ADK compatibility** - removing implementation code to agent-buildkit while establishing OSSA as the authoritative specification standard that works seamlessly with ADK.
 
 ### Current Status: v0.1.8 → v0.1.9
 - ✅ **Core OSSA Foundation**: Agent specification, registry, CLI tools
