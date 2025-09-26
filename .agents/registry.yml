@@ -193,6 +193,78 @@ spec:
         storage: "5-10Gi"
       description: Voice interface agent for hands-free interaction with OSSA platform
 
+    # Drupal Specialist Agents
+    - name: drupal-migration-intelligence
+      type: worker
+      subtype: worker.drupal_migration
+      version: "0.1.9"
+      namespace: drupal-ossa
+      path: ./workers/drupal-migration-intelligence/agent.yml
+      status: active
+      conformance: gold
+      dockerService: ossa-drupal-migration
+      capabilities:
+        - drupal-migration
+        - database-analysis
+        - code-assessment
+        - compatibility-checking
+        - content-mapping
+        - dependency-resolution
+      protocols: [ossa, rest, drush]
+      resources:
+        cpu: "2-8"
+        memory: "4-16Gi"
+        storage: "100Gi-1Ti"
+      description: Intelligent Drupal migration specialist for D7 to D11 migrations with automated assessment and planning
+
+    - name: drupal-security-compliance
+      type: worker
+      subtype: worker.drupal_security
+      version: "0.1.9"
+      namespace: drupal-ossa
+      path: ./workers/drupal-security-compliance/agent.yml
+      status: active
+      conformance: gold
+      dockerService: ossa-drupal-security
+      capabilities:
+        - drupal-security
+        - compliance-auditing
+        - vulnerability-assessment
+        - fedramp-compliance
+        - nist-framework
+        - accessibility-compliance
+        - gdpr-compliance
+      protocols: [ossa, rest, sarif]
+      resources:
+        cpu: "2-6"
+        memory: "4-12Gi"
+        storage: "200Gi-1Ti"
+      description: Drupal security and compliance specialist for FedRAMP, NIST, and enterprise security requirements
+
+    - name: drupal-module-developer
+      type: worker
+      subtype: worker.drupal_development
+      version: "0.1.9"
+      namespace: drupal-ossa
+      path: ./workers/drupal-module-developer/agent.yml
+      status: active
+      conformance: gold
+      dockerService: ossa-drupal-developer
+      capabilities:
+        - drupal-module-development
+        - code-generation
+        - api-development
+        - entity-modeling
+        - form-building
+        - plugin-architecture
+        - testing-automation
+      protocols: [ossa, rest, git]
+      resources:
+        cpu: "2-6"
+        memory: "4-12Gi"
+        storage: "100-500Gi"
+      description: Advanced Drupal module development specialist with AI-powered code generation and best practices
+
   dockerServices:
     # Map Docker Compose services to agents
     - serviceName: ossa-task-heavy
