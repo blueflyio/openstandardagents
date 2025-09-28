@@ -1,0 +1,26 @@
+openapi: 3.1.0
+info:
+  title: model-serving-specialist Agent API
+  version: 1.0.0
+  description: OSSA-compliant API specification for model-serving-specialist
+paths:
+  /health:
+    get:
+      summary: Health check endpoint
+      responses:
+        '200':
+          description: Agent is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: healthy
+                  agent:
+                    type: string
+                    example: model-serving-specialist
+                  version:
+                    type: string
+                    example: 1.0.0

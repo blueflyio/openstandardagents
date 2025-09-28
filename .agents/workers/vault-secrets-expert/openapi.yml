@@ -1,0 +1,26 @@
+openapi: 3.1.0
+info:
+  title: vault-secrets-expert Agent API
+  version: 1.0.0
+  description: OSSA-compliant API specification for vault-secrets-expert
+paths:
+  /health:
+    get:
+      summary: Health check endpoint
+      responses:
+        '200':
+          description: Agent is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: healthy
+                  agent:
+                    type: string
+                    example: vault-secrets-expert
+                  version:
+                    type: string
+                    example: 1.0.0
