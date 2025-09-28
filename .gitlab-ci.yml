@@ -1,9 +1,9 @@
 # GitLab CI/CD Pipeline for OSSA Platform v0.1.0-alpha.1
 # TDD RED Phase Configuration - All tests expected to FAIL
+# STANDALONE VERSION - NO EXTERNAL COMPONENTS
 
-# Golden template - GitLab component format
-# This is a GitLab component template and needs to be registered as a component
-# For now, we'll implement the necessary jobs directly
+# Self-contained CI pipeline without external dependencies
+# All jobs implemented directly in this file
 
 # Override stages from golden template to include OSSA-specific stages
 stages:
