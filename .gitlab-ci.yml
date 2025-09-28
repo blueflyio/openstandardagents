@@ -31,7 +31,7 @@ test:red-phase:
   image: node:${NODE_VERSION}
   script:
     - echo "🔴 TDD RED Phase - Expecting ALL tests to fail"
-    - npm install
+    - npm install  # Use install instead of ci to handle lock file mismatches
     - npm run build || true  # Allow build to fail
     - npm run api:validate || echo "✅ API validation expected to pass"
     - "echo 'Running ACDL tests (expecting failures)...'"
@@ -68,7 +68,7 @@ validate:ossa-spec:
   image: node:20
   script:
     - echo "🔍 Validating OSSA specification v${PROJECT_VERSION}"
-    - npm install
+    - npm install  # Use install instead of ci to handle lock file mismatches
     - npm run api:validate
     - npx swagger-cli validate src/api/ossa-complete.openapi.yml || echo "Swagger validation completed"
     - echo "✅ API specifications valid"
@@ -95,7 +95,7 @@ test:mock-server:
     MOCK_PORT: "3001"
   script:
     - echo "🖥️ Testing ACDL Mock Server"
-    - npm install
+    - npm install  # Use install instead of ci to handle lock file mismatches
     - npm run build || echo "Build may fail in RED phase"
     - "npm run mock:server:bg"
     - "sleep 5"
@@ -124,7 +124,7 @@ security:ossa-spec:
   image: node:20
   script:
     - echo "🔒 Running security scans"
-    - npm install
+    - npm install  # Use install instead of ci to handle lock file mismatches
     - npm audit --audit-level=moderate || echo "Security issues found - will be addressed in implementation phase"
     - "if grep -r 'password\\|secret\\|key\\|token' test/ --include='*.ts' --include='*.js' | grep -v 'mock\\|test\\|example'; then echo '⚠️ Potential secrets in test files'; else echo '✅ No secrets found in test files'; fi"
   allow_failure: true
@@ -140,7 +140,7 @@ lint:check:
   image: node:${NODE_VERSION}
   script:
     - echo "🧹 Running linting and formatting checks"
-    - npm install
+    - npm install  # Use install instead of ci to handle lock file mismatches
     - npm run lint || echo "Linting issues found"
     - npx prettier --check 'src/**/*.ts' 'test/**/*.ts' || echo "Formatting issues found"
   artifacts:
@@ -158,7 +158,7 @@ build:verify:
   image: node:${NODE_VERSION}
   script:
     - echo "🔨 Attempting build (may fail in TDD RED phase)"
-    - npm install
+    - npm install  # Use install instead of ci to handle lock file mismatches
     - npm run clean
     - npm run build || {
         echo "⚠️ Build failed - expected in RED phase without implementation"
@@ -184,7 +184,7 @@ test:agent-integration:
     OSSA_API_URL: "http://localhost:3001"
   script:
     - echo "🤖 Testing agent integration patterns"
-    - npm install
+    - npm install  # Use install instead of ci to handle lock file mismatches
     - npm run build || true
     - "npm run mock:server:bg"
     - "sleep 3"
@@ -207,7 +207,7 @@ test:contracts:
   image: node:${NODE_VERSION}
   script:
     - echo "📋 Contract testing against OpenAPI spec"
-    - npm install
+    - npm install  # Use install instead of ci to handle lock file mismatches
     - "npm install -g dredd || echo 'Dredd installation may fail'"
     - "npm run mock:server:bg"
     - "sleep 3"
@@ -225,7 +225,7 @@ deploy:test:
   script:
     - echo "🚀 Deploying OSSA specification standard"
     - echo "Building specification package"
-    - npm install
+    - npm install  # Use install instead of ci to handle lock file mismatches
     - npm run build
     - echo "✅ OSSA specification ready for deployment"
   when: manual
@@ -269,7 +269,7 @@ pages:
   image: node:${NODE_VERSION}
   script:
     - echo "🌐 Building OSSA Documentation Site with Redocly"
-    - npm install  # Use install instead of ci to handle lock file issues
+    - npm install  # Use install instead of ci to handle lock file mismatches
     - echo "Preparing public directory with Redocly API documentation..."
     - |
       # The public directory already contains our Redocly setup
