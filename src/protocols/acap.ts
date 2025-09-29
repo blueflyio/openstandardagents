@@ -56,18 +56,25 @@ export class ACAPProtocol {
   /**
    * Verify agent capability through challenge-response
    */
-  async verifyCapability(agent: Agent, capability: string): Promise<CapabilityAttestation> {
+  async verifyCapability(
+    agent: Agent,
+    capability: string
+  ): Promise<CapabilityAttestation> {
     if (agent.status !== AgentStatus.IDLE) {
       throw new Error('Agent must be idle for capability verification');
     }
 
     const challenge = this.generateChallenge();
-    const response = await this.executeCapabilityChallenge(agent, capability, challenge);
-    
+    const response = await this.executeCapabilityChallenge(
+      agent,
+      capability,
+      challenge
+    );
+
     const proof: AttestationProof = {
       challenge,
       response,
-      metadata: { timestamp: Date.now(), version: capability }
+      metadata: { timestamp: Date.now(), version: capability },
     };
 
     const attestation: CapabilityAttestation = {
@@ -78,7 +85,7 @@ export class ACAPProtocol {
       attestedAt: new Date(),
       signature: this.signAttestation(agent.id, capability, proof),
       proof,
-      status: 'valid'
+      status: 'valid',
     };
 
     return attestation;
@@ -87,27 +94,33 @@ export class ACAPProtocol {
   /**
    * Generate verifiable credential from attestations
    */
-  generateCredential(agent: Agent, attestations: CapabilityAttestation[]): VerifiableCredential {
+  generateCredential(
+    agent: Agent,
+    attestations: CapabilityAttestation[]
+  ): VerifiableCredential {
     const now = new Date().toISOString();
-    
+
     return {
-      '@context': ['https://www.w3.org/2018/credentials/v1', 'https://ossa.org/credentials/v1'],
+      '@context': [
+        'https://www.w3.org/2018/credentials/v1',
+        'https://ossa.org/credentials/v1',
+      ],
       id: `urn:ossa:credential:${this.generateId()}`,
       type: ['VerifiableCredential', 'AgentCapabilityCredential'],
       issuer: this.issuer,
       issuanceDate: now,
       credentialSubject: {
         id: agent.id,
-        capabilities: attestations.map(a => a.capability),
-        attestations
+        capabilities: attestations.map((a) => a.capability),
+        attestations,
       },
       proof: {
         type: 'JsonWebSignature2020',
         created: now,
         verificationMethod: `${this.issuer}#key-1`,
         proofPurpose: 'assertionMethod',
-        jws: this.signCredential(agent, attestations)
-      }
+        jws: this.signCredential(agent, attestations),
+      },
     };
   }
 
@@ -123,24 +136,45 @@ export class ACAPProtocol {
     return randomBytes(16).toString('hex');
   }
 
-  private async executeCapabilityChallenge(agent: Agent, capability: string, challenge: string): Promise<string> {
+  private async executeCapabilityChallenge(
+    agent: Agent,
+    capability: string,
+    challenge: string
+  ): Promise<string> {
     // Simulate capability execution with challenge
     const input = `capability:${capability}:challenge:${challenge}`;
-    return createHash('sha256').update(input + agent.id).digest('hex');
+    return createHash('sha256')
+      .update(input + agent.id)
+      .digest('hex');
   }
 
   private getCapabilityVersion(agent: Agent, capability: string): string {
-    const cap = agent.capabilities.find(c => c.name === capability);
+    const cap = agent.capabilities.find((c) => c.name === capability);
     return cap?.version || '1.0.0';
   }
 
-  private signAttestation(agentId: string, capability: string, proof: AttestationProof): string {
+  private signAttestation(
+    agentId: string,
+    capability: string,
+    proof: AttestationProof
+  ): string {
     const payload = JSON.stringify({ agentId, capability, proof });
-    return createHash('sha256').update(payload + this.signingKey).digest('hex');
+    return createHash('sha256')
+      .update(payload + this.signingKey)
+      .digest('hex');
   }
 
-  private signCredential(agent: Agent, attestations: CapabilityAttestation[]): string {
-    const payload = JSON.stringify({ agentId: agent.id, attestations, issuer: this.issuer });
-    return createHash('sha256').update(payload + this.signingKey).digest('hex');
+  private signCredential(
+    agent: Agent,
+    attestations: CapabilityAttestation[]
+  ): string {
+    const payload = JSON.stringify({
+      agentId: agent.id,
+      attestations,
+      issuer: this.issuer,
+    });
+    return createHash('sha256')
+      .update(payload + this.signingKey)
+      .digest('hex');
   }
 }

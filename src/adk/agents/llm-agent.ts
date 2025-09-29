@@ -8,7 +8,7 @@ export class OSSALlmAgent implements ADKAgent {
   type: 'LlmAgent' = 'LlmAgent';
   config: ADKAgentConfig;
   ossaType?: string;
-  
+
   constructor(config: ADKAgentConfig, ossaType?: string) {
     this.config = config;
     this.ossaType = ossaType;
@@ -20,15 +20,15 @@ export class OSSALlmAgent implements ADKAgent {
   async invoke(input: any, session?: any): Promise<any> {
     // Prepare context with session state
     const context = this.prepareContext(input, session);
-    
+
     // Execute with model (simulated)
     const result = await this.executeWithModel(context);
-    
+
     // Save to session state if output_key specified
     if (this.config.output_key && session) {
       session.state[this.config.output_key] = result;
     }
-    
+
     return result;
   }
 
@@ -37,16 +37,16 @@ export class OSSALlmAgent implements ADKAgent {
    */
   private prepareContext(input: any, session?: any): any {
     let instruction = this.config.instruction;
-    
+
     // Interpolate session state variables
     if (session?.state) {
       instruction = this.interpolateState(instruction, session.state);
     }
-    
+
     return {
       instruction,
       input,
-      tools: this.config.tools || []
+      tools: this.config.tools || [],
     };
   }
 
@@ -66,11 +66,11 @@ export class OSSALlmAgent implements ADKAgent {
     // TODO: Integrate with actual LLM provider
     console.log(`Executing LlmAgent: ${this.config.name}`);
     console.log(`Instruction: ${context.instruction}`);
-    
+
     return {
       success: true,
       output: `Executed ${this.config.name} with input`,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     };
   }
 }

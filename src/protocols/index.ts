@@ -1,6 +1,6 @@
 /**
  * OSSA Protocols Module
- * 
+ *
  * Exports protocol implementations for OSSA specification
  */
 

@@ -23,18 +23,19 @@ jest.setTimeout(10000);
 // Add custom matchers if needed
 expect.extend({
   toBeValidAgent(received) {
-    const pass = received && 
-      received.metadata && 
-      received.metadata.name && 
-      received.spec && 
+    const pass =
+      received &&
+      received.metadata &&
+      received.metadata.name &&
+      received.spec &&
       received.spec.type;
-    
+
     return {
       pass,
-      message: () => pass 
-        ? `expected ${received} not to be a valid agent`
-        : `expected ${received} to be a valid agent with metadata and spec`
+      message: () =>
+        pass
+          ? `expected ${received} not to be a valid agent`
+          : `expected ${received} to be a valid agent with metadata and spec`,
     };
-  }
+  },
 });
-

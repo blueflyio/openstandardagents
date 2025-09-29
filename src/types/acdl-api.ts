@@ -3,19 +3,18 @@
  * Do not make direct changes to the file.
  */
 
-
 export interface paths {
-  "/acdl/register": {
+  '/acdl/register': {
     /** Register agent capabilities */
-    post: operations["registerAgent"];
+    post: operations['registerAgent'];
   };
-  "/acdl/discover": {
+  '/acdl/discover': {
     /** Discover agents by capability */
-    post: operations["discoverAgents"];
+    post: operations['discoverAgents'];
   };
-  "/acdl/match": {
+  '/acdl/match': {
     /** Match agents for task requirements */
-    post: operations["matchAgents"];
+    post: operations['matchAgents'];
   };
 }
 
@@ -33,7 +32,15 @@ export interface components {
        * @description Primary agent classification
        * @enum {string}
        */
-      agentType: "orchestrator" | "worker" | "critic" | "judge" | "trainer" | "governor" | "monitor" | "integrator";
+      agentType:
+        | 'orchestrator'
+        | 'worker'
+        | 'critic'
+        | 'judge'
+        | 'trainer'
+        | 'governor'
+        | 'monitor'
+        | 'integrator';
       /**
        * @description Detailed agent specialization
        * @example worker.openapi
@@ -44,11 +51,11 @@ export interface components {
        * @example 1.2.0-alpha.1
        */
       version: string;
-      capabilities: components["schemas"]["Capabilities"];
-      protocols: components["schemas"]["Protocols"];
-      performance: components["schemas"]["Performance"];
-      requirements?: components["schemas"]["Requirements"];
-      metadata?: components["schemas"]["Metadata"];
+      capabilities: components['schemas']['Capabilities'];
+      protocols: components['schemas']['Protocols'];
+      performance: components['schemas']['Performance'];
+      requirements?: components['schemas']['Requirements'];
+      metadata?: components['schemas']['Metadata'];
     };
     Capabilities: {
       /**
@@ -59,17 +66,28 @@ export interface components {
        *   "validation"
        * ]
        */
-      domains: ("nlp" | "vision" | "reasoning" | "data" | "documentation" | "api-design" | "validation" | "orchestration" | "monitoring" | "security")[];
+      domains: (
+        | 'nlp'
+        | 'vision'
+        | 'reasoning'
+        | 'data'
+        | 'documentation'
+        | 'api-design'
+        | 'validation'
+        | 'orchestration'
+        | 'monitoring'
+        | 'security'
+      )[];
       operations: {
-          /** @example validate */
-          name: string;
-          /** @example Validate OpenAPI specifications */
-          description: string;
-          /** @description JSON Schema for operation input */
-          inputSchema?: Record<string, never>;
-          /** @description JSON Schema for operation output */
-          outputSchema?: Record<string, never>;
-        }[];
+        /** @example validate */
+        name: string;
+        /** @example Validate OpenAPI specifications */
+        description: string;
+        /** @description JSON Schema for operation input */
+        inputSchema?: Record<string, never>;
+        /** @description JSON Schema for operation output */
+        outputSchema?: Record<string, never>;
+      }[];
       /**
        * @example {
        *   "openapi": {
@@ -94,18 +112,18 @@ export interface components {
       };
     };
     Protocols: {
-      supported: ({
+      supported: {
+        /** @enum {string} */
+        name: 'rest' | 'grpc' | 'websocket' | 'mcp' | 'graphql';
+        version: string;
+        /** Format: uri */
+        endpoint: string;
+        authentication?: {
           /** @enum {string} */
-          name: "rest" | "grpc" | "websocket" | "mcp" | "graphql";
-          version: string;
-          /** Format: uri */
-          endpoint: string;
-          authentication?: {
-            /** @enum {string} */
-            type?: "none" | "api-key" | "oauth2" | "jwt" | "mtls";
-            details?: Record<string, never>;
-          };
-        })[];
+          type?: 'none' | 'api-key' | 'oauth2' | 'jwt' | 'mtls';
+          details?: Record<string, never>;
+        };
+      }[];
       /** @description Preferred protocol for communication */
       preferred?: string;
     };
@@ -169,17 +187,17 @@ export interface components {
         /** @example 10Gi */
         storage?: string;
       };
-      dependencies?: ({
-          name?: string;
-          version?: string;
-          /** @enum {string} */
-          type?: "service" | "library" | "model" | "database";
-        })[];
+      dependencies?: {
+        name?: string;
+        version?: string;
+        /** @enum {string} */
+        type?: 'service' | 'library' | 'model' | 'database';
+      }[];
       environment?: {
         /** @example node:20 */
         runtime?: string;
         /** @enum {string} */
-        platform?: "kubernetes" | "docker" | "serverless" | "bare-metal";
+        platform?: 'kubernetes' | 'docker' | 'serverless' | 'bare-metal';
       };
     };
     Metadata: {
@@ -219,11 +237,11 @@ export interface components {
     };
     DiscoveryResponse: {
       agents?: {
-          agentId?: string;
-          /** @description Match score (0-1) */
-          score?: number;
-          manifest?: components["schemas"]["ACDLManifest"];
-        }[];
+        agentId?: string;
+        /** @description Match score (0-1) */
+        score?: number;
+        manifest?: components['schemas']['ACDLManifest'];
+      }[];
       totalFound?: number;
       /** @description Query execution time in ms */
       queryTime?: number;
@@ -236,8 +254,8 @@ export interface components {
         expectedDuration?: number;
       };
       requirements: {
-        capabilities?: components["schemas"]["Capabilities"];
-        performance?: components["schemas"]["Performance"];
+        capabilities?: components['schemas']['Capabilities'];
+        performance?: components['schemas']['Performance'];
         constraints?: {
           /** @description Token budget */
           budget?: number;
@@ -248,30 +266,30 @@ export interface components {
     };
     MatchResponse: {
       matches?: {
-          agentId?: string;
-          compatibility?: number;
-          reasons?: string[];
-          warnings?: string[];
-        }[];
+        agentId?: string;
+        compatibility?: number;
+        reasons?: string[];
+        warnings?: string[];
+      }[];
       recommendation?: {
         primaryAgent?: string;
         alternativeAgents?: string[];
         ensemble?: {
-            agentId?: string;
-            role?: string;
-          }[];
+          agentId?: string;
+          role?: string;
+        }[];
       };
     };
     RegistrationResponse: {
       /** Format: uuid */
       registrationId?: string;
       /** @enum {string} */
-      status?: "registered" | "pending" | "rejected";
+      status?: 'registered' | 'pending' | 'rejected';
       validationResults?: {
-          check?: string;
-          passed?: boolean;
-          message?: string;
-        }[];
+        check?: string;
+        passed?: boolean;
+        message?: string;
+      }[];
       /** Format: date-time */
       registeredAt?: string;
       /** Format: date-time */
@@ -290,19 +308,18 @@ export type $defs = Record<string, never>;
 export type external = Record<string, never>;
 
 export interface operations {
-
   /** Register agent capabilities */
   registerAgent: {
     requestBody: {
       content: {
-        "application/json": components["schemas"]["ACDLManifest"];
+        'application/json': components['schemas']['ACDLManifest'];
       };
     };
     responses: {
       /** @description Agent registered successfully */
       201: {
         content: {
-          "application/json": components["schemas"]["RegistrationResponse"];
+          'application/json': components['schemas']['RegistrationResponse'];
         };
       };
     };
@@ -311,14 +328,14 @@ export interface operations {
   discoverAgents: {
     requestBody: {
       content: {
-        "application/json": components["schemas"]["DiscoveryQuery"];
+        'application/json': components['schemas']['DiscoveryQuery'];
       };
     };
     responses: {
       /** @description Matching agents found */
       200: {
         content: {
-          "application/json": components["schemas"]["DiscoveryResponse"];
+          'application/json': components['schemas']['DiscoveryResponse'];
         };
       };
     };
@@ -327,14 +344,14 @@ export interface operations {
   matchAgents: {
     requestBody: {
       content: {
-        "application/json": components["schemas"]["MatchRequest"];
+        'application/json': components['schemas']['MatchRequest'];
       };
     };
     responses: {
       /** @description Compatible agents matched */
       200: {
         content: {
-          "application/json": components["schemas"]["MatchResponse"];
+          'application/json': components['schemas']['MatchResponse'];
         };
       };
     };

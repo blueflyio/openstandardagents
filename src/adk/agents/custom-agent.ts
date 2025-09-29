@@ -17,7 +17,7 @@ export class OSSACustomAgent implements ADKAgent {
   type: 'CustomAgent' = 'CustomAgent';
   config: CustomAgentConfig;
   ossaType?: string;
-  
+
   constructor(config: CustomAgentConfig, ossaType?: string) {
     this.config = config;
     this.ossaType = ossaType;
@@ -31,13 +31,13 @@ export class OSSACustomAgent implements ADKAgent {
     switch (this.config.custom_type) {
       case 'governor':
         return this.executeGovernor(input, session);
-      
+
       case 'monitor':
         return this.executeMonitor(input, session);
-      
+
       case 'specialized':
         return this.executeSpecialized(input, session);
-      
+
       default:
         return this.executeGeneric(input, session);
     }
@@ -50,7 +50,7 @@ export class OSSACustomAgent implements ADKAgent {
     const policies = this.config.policies || [];
     const violations: any[] = [];
     const approvals: any[] = [];
-    
+
     // Check policies
     for (const policy of policies) {
       const result = await this.checkPolicy(policy, input);
@@ -60,20 +60,20 @@ export class OSSACustomAgent implements ADKAgent {
         approvals.push(result);
       }
     }
-    
+
     const finalResult = {
       type: 'governor',
       violations,
       approvals,
       compliant: violations.length === 0,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     };
-    
+
     // Save to session state
     if (this.config.output_key && session) {
       session.state[this.config.output_key] = finalResult;
     }
-    
+
     return finalResult;
   }
 
@@ -83,20 +83,20 @@ export class OSSACustomAgent implements ADKAgent {
   private async executeMonitor(input: any, session?: any): Promise<any> {
     const metrics = await this.collectMetrics(input);
     const alerts = await this.checkAlerts(metrics);
-    
+
     const finalResult = {
       type: 'monitor',
       metrics,
       alerts,
       healthy: alerts.length === 0,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     };
-    
+
     // Save to session state
     if (this.config.output_key && session) {
       session.state[this.config.output_key] = finalResult;
     }
-    
+
     return finalResult;
   }
 
@@ -106,25 +106,25 @@ export class OSSACustomAgent implements ADKAgent {
   private async executeSpecialized(input: any, session?: any): Promise<any> {
     const capabilities = this.config.capabilities || [];
     const results: any[] = [];
-    
+
     for (const capability of capabilities) {
       const result = await this.executeCapability(capability, input);
       results.push(result);
     }
-    
+
     const finalResult = {
       type: 'specialized',
       capabilities: capabilities,
       results,
       success: true,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     };
-    
+
     // Save to session state
     if (this.config.output_key && session) {
       session.state[this.config.output_key] = finalResult;
     }
-    
+
     return finalResult;
   }
 
@@ -133,20 +133,20 @@ export class OSSACustomAgent implements ADKAgent {
    */
   private async executeGeneric(input: any, session?: any): Promise<any> {
     console.log(`Executing custom agent: ${this.config.name}`);
-    
+
     const finalResult = {
       type: 'custom',
       name: this.config.name,
       input,
       output: `Processed by ${this.config.name}`,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     };
-    
+
     // Save to session state
     if (this.config.output_key && session) {
       session.state[this.config.output_key] = finalResult;
     }
-    
+
     return finalResult;
   }
 
@@ -158,7 +158,7 @@ export class OSSACustomAgent implements ADKAgent {
     return {
       policy: policy.name || 'unknown',
       violated: false,
-      details: 'Policy check passed'
+      details: 'Policy check passed',
     };
   }
 
@@ -171,7 +171,7 @@ export class OSSACustomAgent implements ADKAgent {
       cpu: Math.random() * 100,
       memory: Math.random() * 100,
       throughput: Math.random() * 1000,
-      latency: Math.random() * 100
+      latency: Math.random() * 100,
     };
   }
 
@@ -180,7 +180,7 @@ export class OSSACustomAgent implements ADKAgent {
    */
   private async checkAlerts(metrics: any): Promise<any[]> {
     const alerts: any[] = [];
-    
+
     // Example alert conditions
     if (metrics.cpu > 80) {
       alerts.push({ type: 'high_cpu', value: metrics.cpu });
@@ -188,19 +188,22 @@ export class OSSACustomAgent implements ADKAgent {
     if (metrics.memory > 90) {
       alerts.push({ type: 'high_memory', value: metrics.memory });
     }
-    
+
     return alerts;
   }
 
   /**
    * Execute capability (placeholder)
    */
-  private async executeCapability(capability: string, input: any): Promise<any> {
+  private async executeCapability(
+    capability: string,
+    input: any
+  ): Promise<any> {
     // TODO: Implement actual capability execution
     return {
       capability,
       executed: true,
-      result: `Executed ${capability} capability`
+      result: `Executed ${capability} capability`,
     };
   }
 }

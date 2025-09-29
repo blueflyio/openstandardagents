@@ -51,7 +51,7 @@ export enum AgentType {
   CRITIC = 'critic',
   JUDGE = 'judge',
   TRAINER = 'trainer',
-  INTEGRATOR = 'integrator'
+  INTEGRATOR = 'integrator',
 }
 
 export interface Capability {
@@ -80,7 +80,7 @@ export enum AgentStatus {
   ERROR = 'error',
   OFFLINE = 'offline',
   STARTING = 'starting',
-  STOPPING = 'stopping'
+  STOPPING = 'stopping',
 }
 
 export interface AgentMetadata {
@@ -170,7 +170,7 @@ export enum TaskStatus {
   SUCCESS = 'success',
   FAILED = 'failed',
   CANCELLED = 'cancelled',
-  TIMEOUT = 'timeout'
+  TIMEOUT = 'timeout',
 }
 
 export interface TaskError {
@@ -196,7 +196,7 @@ export enum PolicyType {
   COMPLIANCE = 'compliance',
   RESOURCE = 'resource',
   QUALITY = 'quality',
-  PERFORMANCE = 'performance'
+  PERFORMANCE = 'performance',
 }
 
 export interface PolicyRule {
@@ -211,13 +211,13 @@ export enum PolicyAction {
   DENY = 'deny',
   WARN = 'warn',
   AUDIT = 'audit',
-  REMEDIATE = 'remediate'
+  REMEDIATE = 'remediate',
 }
 
 export enum EnforcementLevel {
   MANDATORY = 'mandatory',
   RECOMMENDED = 'recommended',
-  OPTIONAL = 'optional'
+  OPTIONAL = 'optional',
 }
 
 export interface PolicyMetadata {
@@ -245,7 +245,7 @@ export enum MessageType {
   EVENT = 'event',
   QUERY = 'query',
   RESPONSE = 'response',
-  ERROR = 'error'
+  ERROR = 'error',
 }
 
 // Configuration Types

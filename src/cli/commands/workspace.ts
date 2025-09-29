@@ -46,7 +46,10 @@ export interface WorkspaceConfig {
 /**
  * Initialize OSSA workspace in target project
  */
-export async function initializeWorkspace(projectPath: string, options: WorkspaceOptions): Promise<void> {
+export async function initializeWorkspace(
+  projectPath: string,
+  options: WorkspaceOptions
+): Promise<void> {
   const targetPath = resolve(projectPath);
   const agentsPath = join(targetPath, '.agents');
   const workspacePath = join(targetPath, '.agents-workspace');
@@ -55,8 +58,15 @@ export async function initializeWorkspace(projectPath: string, options: Workspac
 
   try {
     // Check if workspace already exists
-    if ((existsSync(agentsPath) || existsSync(workspacePath)) && !options.force) {
-      console.log(chalk.yellow('⚠️  OSSA workspace already exists. Use --force to overwrite.'));
+    if (
+      (existsSync(agentsPath) || existsSync(workspacePath)) &&
+      !options.force
+    ) {
+      console.log(
+        chalk.yellow(
+          '⚠️  OSSA workspace already exists. Use --force to overwrite.'
+        )
+      );
       return;
     }
 
@@ -70,10 +80,10 @@ export async function initializeWorkspace(projectPath: string, options: Workspac
       '.agents/workflows',
       '.agents/governance/policies',
       '.agents/governance/audits/logs',
-      '.agents/config'
+      '.agents/config',
     ];
 
-    agentDirs.forEach(dir => {
+    agentDirs.forEach((dir) => {
       mkdirSync(join(targetPath, dir), { recursive: true });
     });
 
@@ -110,10 +120,10 @@ export async function initializeWorkspace(projectPath: string, options: Workspac
         '.agents-workspace/compliance/reports',
         '.agents-workspace/compliance/violations',
         '.agents-workspace/compliance/audit-trail',
-        '.agents-workspace/config'
+        '.agents-workspace/config',
       ];
 
-      workspaceDirs.forEach(dir => {
+      workspaceDirs.forEach((dir) => {
         mkdirSync(join(targetPath, dir), { recursive: true });
       });
     }
@@ -127,7 +137,10 @@ export async function initializeWorkspace(projectPath: string, options: Workspac
     // Generate .agents/registry.yml
     console.log(chalk.gray('📋 Creating agents registry...'));
     const registry = generateAgentRegistry(projectName);
-    writeFileSync(join(targetPath, '.agents/registry.yml'), yaml.dump(registry));
+    writeFileSync(
+      join(targetPath, '.agents/registry.yml'),
+      yaml.dump(registry)
+    );
 
     // Generate .agents-workspace files (if local)
     if (options.type === 'local') {
@@ -135,15 +148,24 @@ export async function initializeWorkspace(projectPath: string, options: Workspac
 
       // workspace.yml
       const workspaceConfig = generateLocalWorkspaceConfig(projectName);
-      writeFileSync(join(targetPath, '.agents-workspace/workspace.yml'), yaml.dump(workspaceConfig));
+      writeFileSync(
+        join(targetPath, '.agents-workspace/workspace.yml'),
+        yaml.dump(workspaceConfig)
+      );
 
       // memory.json
       const memoryConfig = generateMemoryConfig(projectName);
-      writeFileSync(join(targetPath, '.agents-workspace/memory.json'), JSON.stringify(memoryConfig, null, 2));
+      writeFileSync(
+        join(targetPath, '.agents-workspace/memory.json'),
+        JSON.stringify(memoryConfig, null, 2)
+      );
 
       // README.md
       const readmeContent = generateWorkspaceReadme(projectName, options.type);
-      writeFileSync(join(targetPath, '.agents-workspace/README.md'), readmeContent);
+      writeFileSync(
+        join(targetPath, '.agents-workspace/README.md'),
+        readmeContent
+      );
     }
 
     // Generate .agents/README.md
@@ -155,9 +177,11 @@ export async function initializeWorkspace(projectPath: string, options: Workspac
     console.log(chalk.gray('1. ossa agent create <name> --type worker'));
     console.log(chalk.gray('2. ossa spec create <name> --template worker'));
     console.log(chalk.gray('3. ossa validate workspace'));
-
   } catch (error) {
-    console.error(chalk.red('❌ Failed to initialize workspace:'), error instanceof Error ? error.message : String(error));
+    console.error(
+      chalk.red('❌ Failed to initialize workspace:'),
+      error instanceof Error ? error.message : String(error)
+    );
     process.exit(1);
   }
 }
@@ -165,12 +189,17 @@ export async function initializeWorkspace(projectPath: string, options: Workspac
 /**
  * Generate workspace from template
  */
-export async function generateWorkspace(template: string, outputPath: string): Promise<void> {
-  console.log(chalk.blue(`📁 Generating workspace from ${template} template...`));
+export async function generateWorkspace(
+  template: string,
+  outputPath: string
+): Promise<void> {
+  console.log(
+    chalk.blue(`📁 Generating workspace from ${template} template...`)
+  );
 
   const templateOptions: WorkspaceOptions = {
     type: template === 'basic' ? 'local' : 'shared',
-    force: false
+    force: false,
   };
 
   await initializeWorkspace(outputPath, templateOptions);
@@ -179,37 +208,40 @@ export async function generateWorkspace(template: string, outputPath: string): P
 /**
  * Generate workspace configuration
  */
-function generateWorkspaceConfig(projectName: string, options: WorkspaceOptions): WorkspaceConfig {
+function generateWorkspaceConfig(
+  projectName: string,
+  options: WorkspaceOptions
+): WorkspaceConfig {
   const config: WorkspaceConfig = {
     apiVersion: 'open-standards-scalable-agents/v0.1.9',
     kind: 'ProjectConfiguration',
     metadata: {
       name: projectName,
       version: '0.1.9-alpha.1',
-      project: `project-${projectName}`
+      project: `project-${projectName}`,
     },
     spec: {
       workspace: {
         type: options.type,
         ...(options.type === 'shared' && {
-          global_path: '../.agent-workspace'
+          global_path: '../.agent-workspace',
         }),
         ...(options.type === 'local' && {
-          local_path: '.agents-workspace'
-        })
+          local_path: '.agents-workspace',
+        }),
       },
       agents: {
         base_path: '.agents',
         auto_discover: true,
-        validation: 'strict'
+        validation: 'strict',
       },
       registry: {
         project: '.agents/registry.yml',
         ...(options.type === 'shared' && {
-          global: '../.agent-workspace/registry.yml'
-        })
-      }
-    }
+          global: '../.agent-workspace/registry.yml',
+        }),
+      },
+    },
   };
 
   return config;
@@ -224,15 +256,15 @@ function generateAgentRegistry(projectName: string) {
     kind: 'Registry',
     metadata: {
       name: `${projectName}-agents`,
-      scope: 'project'
+      scope: 'project',
     },
     spec: {
       agents: [],
       discovery: {
         enabled: true,
-        methods: ['filesystem', 'git', 'uadp']
-      }
-    }
+        methods: ['filesystem', 'git', 'uadp'],
+      },
+    },
   };
 }
 
@@ -246,28 +278,28 @@ function generateLocalWorkspaceConfig(projectName: string) {
     metadata: {
       name: `${projectName}-workspace`,
       project: projectName,
-      version: '0.1.9-alpha.1'
+      version: '0.1.9-alpha.1',
     },
     spec: {
       workspace: {
         type: 'local',
-        project: projectName
+        project: projectName,
       },
       agents: {
         total: 0,
         local_execution: true,
-        artifact_storage: 'data/artifacts/'
+        artifact_storage: 'data/artifacts/',
       },
       compliance: {
-        standard: 'ossa-v0.1.9'
+        standard: 'ossa-v0.1.9',
       },
       storage: {
         artifacts: 'data/artifacts/',
         logs: 'logs/',
         cache: 'data/cache/',
-        snapshots: 'data/snapshots/'
-      }
-    }
+        snapshots: 'data/snapshots/',
+      },
+    },
   };
 }
 
@@ -282,25 +314,25 @@ function generateMemoryConfig(projectName: string) {
       type: 'local',
       created: new Date().toISOString(),
       last_updated: new Date().toISOString(),
-      project: projectName
+      project: projectName,
     },
     agents: {
       total: 0,
       active: 0,
-      categories: {}
+      categories: {},
     },
     execution: {
       workflows_executed: 0,
       tasks_completed: 0,
-      artifacts_generated: 0
+      artifacts_generated: 0,
     },
     compliance: {
       standard: 'ossa-v0.1.9',
       level: 'core',
       last_validation: new Date().toISOString(),
       violations: 0,
-      score: 100
-    }
+      score: 100,
+    },
   };
 }
 
@@ -314,9 +346,11 @@ This is an OSSA v0.1.9-alpha.1 compliant workspace for the ${projectName} projec
 
 ## Type: ${type}
 
-${type === 'local' ?
-`This workspace operates independently with local artifact storage and execution.` :
-`This workspace coordinates with a global workspace for cross-project collaboration.`}
+${
+  type === 'local'
+    ? `This workspace operates independently with local artifact storage and execution.`
+    : `This workspace coordinates with a global workspace for cross-project collaboration.`
+}
 
 ## Structure
 

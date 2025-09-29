@@ -3,35 +3,34 @@
  * Do not make direct changes to the file.
  */
 
-
 export interface paths {
-  "/specification/validate": {
+  '/specification/validate': {
     /**
      * Validate agent specification
      * @description Validates an agent manifest against OSSA specification standards
      */
-    post: operations["validateSpecification"];
+    post: operations['validateSpecification'];
   };
-  "/specification/taxonomy": {
+  '/specification/taxonomy': {
     /**
      * Get agent taxonomy
      * @description Returns the complete OSSA agent taxonomy with all types and categories
      */
-    get: operations["getTaxonomy"];
+    get: operations['getTaxonomy'];
   };
-  "/specification/capabilities": {
+  '/specification/capabilities': {
     /**
      * Register agent capabilities
      * @description Registers agent capabilities using ACDL (Agent Capability Description Language)
      */
-    post: operations["registerCapabilities"];
+    post: operations['registerCapabilities'];
   };
-  "/specification/schema/{agentType}": {
+  '/specification/schema/{agentType}': {
     /**
      * Get agent type schema
      * @description Returns the JSON schema for a specific agent type
      */
-    get: operations["getAgentSchema"];
+    get: operations['getAgentSchema'];
   };
 }
 
@@ -43,12 +42,20 @@ export interface components {
       /** @example worker-openapi-v1-2-0 */
       agentId: string;
       /** @enum {string} */
-      agentType: "orchestrator" | "worker" | "critic" | "judge" | "trainer" | "governor" | "monitor" | "integrator";
+      agentType:
+        | 'orchestrator'
+        | 'worker'
+        | 'critic'
+        | 'judge'
+        | 'trainer'
+        | 'governor'
+        | 'monitor'
+        | 'integrator';
       /** @example worker.openapi */
       agentSubType?: string;
       /** @example 1.2.0 */
       version: string;
-      capabilities: components["schemas"]["AgentCapabilities"];
+      capabilities: components['schemas']['AgentCapabilities'];
       metadata?: {
         author?: string;
         description?: string;
@@ -97,17 +104,17 @@ export interface components {
       compliance?: {
         ossaVersion?: string;
         /** @enum {string} */
-        level?: "basic" | "standard" | "enterprise";
+        level?: 'basic' | 'standard' | 'enterprise';
       };
     };
     ValidationError: {
       /** @default false */
       valid: boolean;
       errors: {
-          field?: string;
-          message?: string;
-          code?: string;
-        }[];
+        field?: string;
+        message?: string;
+        code?: string;
+      }[];
     };
     AgentTaxonomy: {
       version?: string;
@@ -125,16 +132,16 @@ export interface components {
         phases?: string[];
       };
       types?: {
-          name?: string;
-          description?: string;
-          capabilities?: string[];
-        }[];
+        name?: string;
+        description?: string;
+        capabilities?: string[];
+      }[];
     };
     RegistrationResult: {
       /** Format: uuid */
       id?: string;
       /** @enum {string} */
-      status?: "registered" | "pending" | "failed";
+      status?: 'registered' | 'pending' | 'failed';
       /** Format: date-time */
       timestamp?: string;
     };
@@ -151,7 +158,6 @@ export type $defs = Record<string, never>;
 export type external = Record<string, never>;
 
 export interface operations {
-
   /**
    * Validate agent specification
    * @description Validates an agent manifest against OSSA specification standards
@@ -159,20 +165,20 @@ export interface operations {
   validateSpecification: {
     requestBody: {
       content: {
-        "application/json": components["schemas"]["AgentManifest"];
+        'application/json': components['schemas']['AgentManifest'];
       };
     };
     responses: {
       /** @description Validation successful */
       200: {
         content: {
-          "application/json": components["schemas"]["ValidationResult"];
+          'application/json': components['schemas']['ValidationResult'];
         };
       };
       /** @description Validation failed */
       400: {
         content: {
-          "application/json": components["schemas"]["ValidationError"];
+          'application/json': components['schemas']['ValidationError'];
         };
       };
     };
@@ -186,7 +192,7 @@ export interface operations {
       /** @description Agent taxonomy retrieved */
       200: {
         content: {
-          "application/json": components["schemas"]["AgentTaxonomy"];
+          'application/json': components['schemas']['AgentTaxonomy'];
         };
       };
     };
@@ -198,14 +204,14 @@ export interface operations {
   registerCapabilities: {
     requestBody: {
       content: {
-        "application/json": components["schemas"]["AgentCapabilities"];
+        'application/json': components['schemas']['AgentCapabilities'];
       };
     };
     responses: {
       /** @description Capabilities registered */
       201: {
         content: {
-          "application/json": components["schemas"]["RegistrationResult"];
+          'application/json': components['schemas']['RegistrationResult'];
         };
       };
     };
@@ -217,14 +223,22 @@ export interface operations {
   getAgentSchema: {
     parameters: {
       path: {
-        agentType: "orchestrator" | "worker" | "critic" | "judge" | "trainer" | "governor" | "monitor" | "integrator";
+        agentType:
+          | 'orchestrator'
+          | 'worker'
+          | 'critic'
+          | 'judge'
+          | 'trainer'
+          | 'governor'
+          | 'monitor'
+          | 'integrator';
       };
     };
     responses: {
       /** @description Schema retrieved */
       200: {
         content: {
-          "application/json": Record<string, never>;
+          'application/json': Record<string, never>;
         };
       };
     };

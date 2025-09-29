@@ -19,7 +19,7 @@ export class AgentService {
       configuration: request.configuration || {},
       metadata: request.metadata,
       created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
+      updated_at: new Date().toISOString(),
     };
     return agent;
   }

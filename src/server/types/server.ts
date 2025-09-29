@@ -262,7 +262,12 @@ export interface AuditLog extends LogEntry {
 export interface SecurityEvent {
   id: string;
   timestamp: string;
-  type: 'authentication_failure' | 'authorization_failure' | 'rate_limit_exceeded' | 'suspicious_activity' | 'data_breach_attempt';
+  type:
+    | 'authentication_failure'
+    | 'authorization_failure'
+    | 'rate_limit_exceeded'
+    | 'suspicious_activity'
+    | 'data_breach_attempt';
   severity: 'low' | 'medium' | 'high' | 'critical';
   source_ip: string;
   user_id?: string;
@@ -319,8 +324,18 @@ export interface FeatureFlag {
 }
 
 export interface FeatureFlagCondition {
-  type: 'user_attribute' | 'organization_attribute' | 'time_window' | 'random_percentage';
-  operator: 'equals' | 'not_equals' | 'contains' | 'greater_than' | 'less_than' | 'between';
+  type:
+    | 'user_attribute'
+    | 'organization_attribute'
+    | 'time_window'
+    | 'random_percentage';
+  operator:
+    | 'equals'
+    | 'not_equals'
+    | 'contains'
+    | 'greater_than'
+    | 'less_than'
+    | 'between';
   attribute?: string;
   value: any;
 }
@@ -392,26 +407,32 @@ export interface RequestWithUser extends Request {
 
 // Type guards
 export function isAuthUser(obj: any): obj is AuthUser {
-  return obj && 
-         typeof obj.id === 'string' &&
-         typeof obj.email === 'string' &&
-         typeof obj.organization_id === 'string' &&
-         Array.isArray(obj.roles) &&
-         Array.isArray(obj.permissions);
+  return (
+    obj &&
+    typeof obj.id === 'string' &&
+    typeof obj.email === 'string' &&
+    typeof obj.organization_id === 'string' &&
+    Array.isArray(obj.roles) &&
+    Array.isArray(obj.permissions)
+  );
 }
 
 export function isHealthCheck(obj: any): obj is HealthCheck {
-  return obj && 
-         typeof obj.status === 'string' &&
-         ['healthy', 'unhealthy'].includes(obj.status);
+  return (
+    obj &&
+    typeof obj.status === 'string' &&
+    ['healthy', 'unhealthy'].includes(obj.status)
+  );
 }
 
 export function isWebhookEvent(obj: any): obj is WebhookEvent {
-  return obj &&
-         typeof obj.event_type === 'string' &&
-         typeof obj.event_id === 'string' &&
-         typeof obj.timestamp === 'string' &&
-         typeof obj.data === 'object';
+  return (
+    obj &&
+    typeof obj.event_type === 'string' &&
+    typeof obj.event_id === 'string' &&
+    typeof obj.timestamp === 'string' &&
+    typeof obj.data === 'object'
+  );
 }
 
 // Constants
@@ -431,16 +452,16 @@ export const HTTP_STATUS_CODES = {
   INTERNAL_SERVER_ERROR: 500,
   BAD_GATEWAY: 502,
   SERVICE_UNAVAILABLE: 503,
-  GATEWAY_TIMEOUT: 504
+  GATEWAY_TIMEOUT: 504,
 } as const;
 
 export const AGENT_TYPES = [
   'worker',
-  'orchestrator', 
+  'orchestrator',
   'critic',
   'judge',
   'monitor',
-  'governor'
+  'governor',
 ] as const;
 
 export const AGENT_STATUSES = [
@@ -449,7 +470,7 @@ export const AGENT_STATUSES = [
   'error',
   'deploying',
   'maintenance',
-  'deprecated'
+  'deprecated',
 ] as const;
 
 export const EXECUTION_STATUSES = [
@@ -457,9 +478,9 @@ export const EXECUTION_STATUSES = [
   'running',
   'completed',
   'failed',
-  'cancelled'
+  'cancelled',
 ] as const;
 
-export type AgentType = typeof AGENT_TYPES[number];
-export type AgentStatus = typeof AGENT_STATUSES[number];
-export type ExecutionStatus = typeof EXECUTION_STATUSES[number];
+export type AgentType = (typeof AGENT_TYPES)[number];
+export type AgentStatus = (typeof AGENT_STATUSES)[number];
+export type ExecutionStatus = (typeof EXECUTION_STATUSES)[number];

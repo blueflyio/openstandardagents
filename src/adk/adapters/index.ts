@@ -10,7 +10,10 @@ import { OSSAWorkflowAgent } from '../agents/workflow-agent.js';
 import { OSSACustomAgent } from '../agents/custom-agent.js';
 import { sessionManager, ADKSession } from '../state/index.js';
 import { toolRegistry } from '../tools/index.js';
-import { orchestrationEngine, OrchestrationPattern } from '../orchestration/index.js';
+import {
+  orchestrationEngine,
+  OrchestrationPattern,
+} from '../orchestration/index.js';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as yaml from 'yaml';
@@ -30,52 +33,54 @@ export class OSSAADKAdapter {
     const manifestPath = path.join(agentPath, 'agent.yml');
     const manifestContent = fs.readFileSync(manifestPath, 'utf8');
     const manifest = yaml.parse(manifestContent) as AgentManifest;
-    
+
     // Convert to ADK agent
     const adkConfig = OSSAToADKMapper.mapAgent(manifest);
-    
+
     // Create appropriate agent instance
     let agent: ADKAgent;
     switch (adkConfig.type) {
       case 'LlmAgent':
         agent = new OSSALlmAgent(adkConfig.config, adkConfig.ossaType);
         break;
-      
+
       case 'WorkflowAgent':
         agent = new OSSAWorkflowAgent(
           { ...adkConfig.config, workflow_type: 'sequential' },
           adkConfig.ossaType
         );
         break;
-      
+
       case 'CustomAgent':
         agent = new OSSACustomAgent(
           { ...adkConfig.config, custom_type: adkConfig.ossaType || 'generic' },
           adkConfig.ossaType
         );
         break;
-      
+
       default:
         agent = new OSSACustomAgent(
           { ...adkConfig.config, custom_type: 'generic' },
           adkConfig.ossaType
         );
     }
-    
+
     // Register agent
     this.agents.set(manifest.metadata.name, agent);
-    
+
     // Register tools for agent capabilities
     if (manifest.spec.capabilities) {
-      const tools = toolRegistry.getToolsForCapabilities(manifest.spec.capabilities);
+      const tools = toolRegistry.getToolsForCapabilities(
+        manifest.spec.capabilities
+      );
       // TODO: Attach tools to agent
     }
-    
+
     // Register agent as tool for orchestration
     if (manifest.spec.type === 'worker' || manifest.spec.type === 'critic') {
       toolRegistry.registerAgentTool(agent, 'explicit');
     }
-    
+
     return agent;
   }
 
@@ -87,10 +92,11 @@ export class OSSAADKAdapter {
       console.warn(`Agents directory not found: ${baseDir}`);
       return;
     }
-    
-    const agentDirs = fs.readdirSync(baseDir)
-      .filter(dir => fs.statSync(path.join(baseDir, dir)).isDirectory());
-    
+
+    const agentDirs = fs
+      .readdirSync(baseDir)
+      .filter((dir) => fs.statSync(path.join(baseDir, dir)).isDirectory());
+
     for (const agentDir of agentDirs) {
       try {
         await this.loadAgent(path.join(baseDir, agentDir));
@@ -113,7 +119,7 @@ export class OSSAADKAdapter {
     if (!agent) {
       throw new Error(`Agent not found: ${agentName}`);
     }
-    
+
     // Get or create session
     let session: ADKSession;
     if (sessionId && this.sessions.has(sessionId)) {
@@ -122,7 +128,7 @@ export class OSSAADKAdapter {
       session = sessionManager.createSession(sessionId);
       this.sessions.set(session.id, session);
     }
-    
+
     // Execute agent based on type
     if (agent instanceof OSSALlmAgent) {
       return agent.invoke(input, session);
@@ -153,17 +159,17 @@ export class OSSAADKAdapter {
       }
       agents.push(agent);
     }
-    
+
     // Create session for orchestration
     const session = sessionManager.createSession();
     this.sessions.set(session.id, session);
-    
+
     // Execute orchestration
     return orchestrationEngine.execute({
       pattern,
       agents,
       session,
-      options: { ...options, initialInput: input }
+      options: { ...options, initialInput: input },
     });
   }
 
@@ -175,13 +181,13 @@ export class OSSAADKAdapter {
     if (!agent) {
       return null;
     }
-    
+
     return {
       name: agent.config.name,
       type: agent.type,
       ossaType: agent.ossaType,
       description: agent.config.description,
-      output_key: agent.config.output_key
+      output_key: agent.config.output_key,
     };
   }
 
@@ -190,16 +196,16 @@ export class OSSAADKAdapter {
    */
   listAgents(): any[] {
     const agentList: any[] = [];
-    
+
     for (const [name, agent] of this.agents) {
       agentList.push({
         name,
         type: agent.type,
         ossaType: agent.ossaType,
-        description: agent.config.description
+        description: agent.config.description,
       });
     }
-    
+
     return agentList;
   }
 
@@ -211,7 +217,7 @@ export class OSSAADKAdapter {
     if (!session) {
       return null;
     }
-    
+
     return sessionManager.exportSession(sessionId);
   }
 
@@ -243,7 +249,7 @@ export class MCPADKBridge {
     if (!agentInfo) {
       throw new Error(`Agent not found: ${agentName}`);
     }
-    
+
     return {
       name: `adk_agent_${agentName}`,
       description: agentInfo.description || `Execute ADK agent: ${agentName}`,
@@ -252,18 +258,18 @@ export class MCPADKBridge {
         properties: {
           input: {
             type: 'object',
-            description: 'Input data for the agent'
+            description: 'Input data for the agent',
           },
           sessionId: {
             type: 'string',
-            description: 'Optional session ID for state persistence'
-          }
+            description: 'Optional session ID for state persistence',
+          },
         },
-        required: ['input']
+        required: ['input'],
       },
       handler: async (args: any) => {
         return this.adapter.executeAgent(agentName, args.input, args.sessionId);
-      }
+      },
     };
   }
 
@@ -280,18 +286,18 @@ export class MCPADKBridge {
           agents: {
             type: 'array',
             items: { type: 'string' },
-            description: 'List of agent names to orchestrate'
+            description: 'List of agent names to orchestrate',
           },
           input: {
             type: 'object',
-            description: 'Input data for the orchestration'
+            description: 'Input data for the orchestration',
           },
           options: {
             type: 'object',
-            description: 'Orchestration options'
-          }
+            description: 'Orchestration options',
+          },
         },
-        required: ['agents']
+        required: ['agents'],
       },
       handler: async (args: any) => {
         return this.adapter.executeOrchestration(
@@ -300,7 +306,7 @@ export class MCPADKBridge {
           args.input,
           args.options
         );
-      }
+      },
     };
   }
 }

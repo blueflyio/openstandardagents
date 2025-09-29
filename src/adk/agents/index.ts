@@ -30,21 +30,21 @@ export class OSSAToADKMapper {
    */
   static mapAgent(manifest: AgentManifest): ADKAgent {
     const ossaType = manifest.spec.type;
-    
+
     switch (ossaType) {
       case 'worker':
         return this.createLlmAgent(manifest);
-      
+
       case 'orchestrator':
         return this.createWorkflowAgent(manifest);
-      
+
       case 'critic':
       case 'monitor':
         return this.createLlmAgent(manifest);
-      
+
       case 'governor':
         return this.createCustomAgent(manifest);
-      
+
       default:
         return this.createCustomAgent(manifest);
     }
@@ -63,8 +63,8 @@ export class OSSAToADKMapper {
         model: manifest.spec.configuration?.model || 'gemini-2.0-flash',
         instruction: this.generateInstruction(manifest),
         tools: this.mapTools(manifest),
-        output_key: `${manifest.metadata.name}_output`
-      }
+        output_key: `${manifest.metadata.name}_output`,
+      },
     };
   }
 
@@ -80,8 +80,8 @@ export class OSSAToADKMapper {
         description: manifest.metadata.description,
         instruction: this.generateWorkflowInstruction(manifest),
         sub_agents: this.mapSubAgents(manifest),
-        output_key: `${manifest.metadata.name}_result`
-      }
+        output_key: `${manifest.metadata.name}_result`,
+      },
     };
   }
 
@@ -96,8 +96,8 @@ export class OSSAToADKMapper {
         name: manifest.metadata.name,
         description: manifest.metadata.description,
         instruction: this.generateCustomInstruction(manifest),
-        tools: this.mapTools(manifest)
-      }
+        tools: this.mapTools(manifest),
+      },
     };
   }
 
@@ -107,7 +107,7 @@ export class OSSAToADKMapper {
   private static generateInstruction(manifest: AgentManifest): string {
     const capabilities = manifest.spec.capabilities || [];
     const description = manifest.metadata.description || '';
-    
+
     return `${description}
 
 Capabilities: ${capabilities.join(', ')}

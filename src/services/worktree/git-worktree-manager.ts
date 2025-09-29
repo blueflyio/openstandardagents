@@ -33,7 +33,7 @@ export default class GitWorktreeManager extends EventEmitter {
       commitsAhead: 0,
       commitsBehind: 0,
       hasConflicts: false,
-      lastSync: new Date()
+      lastSync: new Date(),
     };
   }
 
@@ -52,12 +52,12 @@ export default class GitWorktreeManager extends EventEmitter {
   listWorktrees(): any[] {
     return Array.from(this.worktrees.entries()).map(([name, config]) => ({
       name,
-      ...config
+      ...config,
     }));
   }
 
   listActiveWorktrees(): any[] {
-    return this.listWorktrees().filter(w => w.status === 'active');
+    return this.listWorktrees().filter((w) => w.status === 'active');
   }
 
   createAgentWorktree(config: WorktreeConfig): void {
@@ -68,7 +68,7 @@ export default class GitWorktreeManager extends EventEmitter {
     return {
       currentVersion: '0.1.9',
       targetVersion: '0.2.0',
-      compatibility: 'compatible'
+      compatibility: 'compatible',
     };
   }
 
@@ -76,7 +76,7 @@ export default class GitWorktreeManager extends EventEmitter {
     return {
       success: true,
       integrated: agents,
-      conflicts: []
+      conflicts: [],
     };
   }
 

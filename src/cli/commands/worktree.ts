@@ -4,7 +4,9 @@
  */
 
 import { Command } from 'commander';
-import GitWorktreeManager, { type WorktreeConfig } from '../../services/worktree/git-worktree-manager.js';
+import GitWorktreeManager, {
+  type WorktreeConfig,
+} from '../../services/worktree/git-worktree-manager.js';
 import BranchingStrategyManager from '../../services/worktree/branching-strategy.js';
 import { existsSync, readFileSync } from 'fs';
 import { resolve, join } from 'path';
@@ -20,25 +22,28 @@ const branchingStrategy = new BranchingStrategyManager();
 function extractAgentDependencies(agentName: string): string[] {
   try {
     const agentPath = join('.agents', agentName, 'agent.yml');
-    
+
     if (!existsSync(agentPath)) {
       console.warn(chalk.yellow(`⚠️  Agent config not found at ${agentPath}`));
       return [];
     }
-    
+
     const agentConfig = yaml.load(readFileSync(agentPath, 'utf8')) as any;
-    
+
     if (!agentConfig?.spec?.dependencies?.agents) {
       return [];
     }
-    
+
     // Extract agent dependency names
     return agentConfig.spec.dependencies.agents
       .filter((dep: any) => !dep.optional) // Only required dependencies
       .map((dep: any) => dep.name);
-      
   } catch (error) {
-    console.warn(chalk.yellow(`⚠️  Unable to extract dependencies for ${agentName}: ${(error as Error).message}`));
+    console.warn(
+      chalk.yellow(
+        `⚠️  Unable to extract dependencies for ${agentName}: ${(error as Error).message}`
+      )
+    );
     return [];
   }
 }
@@ -48,38 +53,45 @@ function extractAgentDependencies(agentName: string): string[] {
  */
 function displayFlowStatus(specificAgent?: string): void {
   console.log(chalk.blue('🔀 Agentic Flow Status\n'));
-  
+
   try {
     const activeWorktrees = worktreeManager.listActiveWorktrees();
-    
+
     if (activeWorktrees.length === 0) {
       console.log(chalk.gray('📭 No active agent worktrees found'));
       return;
     }
-    
+
     // Filter for specific agent if requested
-    const targetWorktrees = specificAgent 
-      ? activeWorktrees.filter(w => w.agentName === specificAgent)
+    const targetWorktrees = specificAgent
+      ? activeWorktrees.filter((w) => w.agentName === specificAgent)
       : activeWorktrees;
-    
+
     if (specificAgent && targetWorktrees.length === 0) {
-      console.log(chalk.red(`❌ Agent '${specificAgent}' not found in active worktrees`));
+      console.log(
+        chalk.red(`❌ Agent '${specificAgent}' not found in active worktrees`)
+      );
       return;
     }
-    
-    console.log(chalk.cyan(`📊 Found ${targetWorktrees.length} active agent${targetWorktrees.length === 1 ? '' : 's'}\n`));
-    
+
+    console.log(
+      chalk.cyan(
+        `📊 Found ${targetWorktrees.length} active agent${targetWorktrees.length === 1 ? '' : 's'}\n`
+      )
+    );
+
     for (const worktree of targetWorktrees) {
       displayAgentFlowStatus(worktree);
     }
-    
+
     // Overall summary if showing all agents
     if (!specificAgent && targetWorktrees.length > 1) {
       displayFlowSummary(targetWorktrees);
     }
-    
   } catch (error) {
-    console.error(chalk.red(`❌ Error retrieving flow status: ${(error as Error).message}`));
+    console.error(
+      chalk.red(`❌ Error retrieving flow status: ${(error as Error).message}`)
+    );
   }
 }
 
@@ -88,31 +100,47 @@ function displayFlowStatus(specificAgent?: string): void {
  */
 function displayAgentFlowStatus(worktree: any): void {
   const config = worktreeManager.loadWorktreeConfig(worktree.agentName);
-  const branchAwareness = worktreeManager.getBranchAwareness(worktree.agentName);
-  
+  const branchAwareness = worktreeManager.getBranchAwareness(
+    worktree.agentName
+  );
+
   console.log(chalk.bold(`🤖 ${worktree.agentName}`));
   console.log(`   ${chalk.gray('Path:')} ${worktree.path}`);
-  
+
   if (config) {
-    console.log(`   ${chalk.gray('Priority:')} ${getPriorityDisplay(config.priority)}`);
+    console.log(
+      `   ${chalk.gray('Priority:')} ${getPriorityDisplay(config.priority)}`
+    );
     console.log(`   ${chalk.gray('Phase:')} ${config.phase}`);
-    console.log(`   ${chalk.gray('Base Branch:')} ${chalk.green(config.baseBranch)}`);
-    
+    console.log(
+      `   ${chalk.gray('Base Branch:')} ${chalk.green(config.baseBranch)}`
+    );
+
     if (config.dependencies && config.dependencies.length > 0) {
-      console.log(`   ${chalk.gray('Dependencies:')} ${config.dependencies.join(', ')}`);
+      console.log(
+        `   ${chalk.gray('Dependencies:')} ${config.dependencies.join(', ')}`
+      );
     }
   }
-  
+
   // Git status
-  console.log(`   ${chalk.gray('Commits Ahead:')} ${branchAwareness.commitsAhead}`);
-  console.log(`   ${chalk.gray('Commits Behind:')} ${branchAwareness.commitsBehind}`);
-  console.log(`   ${chalk.gray('Uncommitted Changes:')} ${branchAwareness.hasUncommittedChanges ? chalk.yellow('Yes') : chalk.green('No')}`);
-  console.log(`   ${chalk.gray('Conflicts:')} ${branchAwareness.hasConflicts ? chalk.red('Yes') : chalk.green('No')}`);
-  
+  console.log(
+    `   ${chalk.gray('Commits Ahead:')} ${branchAwareness.commitsAhead}`
+  );
+  console.log(
+    `   ${chalk.gray('Commits Behind:')} ${branchAwareness.commitsBehind}`
+  );
+  console.log(
+    `   ${chalk.gray('Uncommitted Changes:')} ${branchAwareness.hasUncommittedChanges ? chalk.yellow('Yes') : chalk.green('No')}`
+  );
+  console.log(
+    `   ${chalk.gray('Conflicts:')} ${branchAwareness.hasConflicts ? chalk.red('Yes') : chalk.green('No')}`
+  );
+
   // Flow recommendations
   const flowStatus = getFlowStatus(branchAwareness, config);
   console.log(`   ${chalk.gray('Flow Status:')} ${flowStatus}`);
-  
+
   console.log(); // Empty line for spacing
 }
 
@@ -121,11 +149,16 @@ function displayAgentFlowStatus(worktree: any): void {
  */
 function getPriorityDisplay(priority: string): string {
   switch (priority) {
-    case 'critical': return chalk.red('🔴 Critical');
-    case 'high': return chalk.yellow('🟡 High');
-    case 'medium': return chalk.blue('🔵 Medium');
-    case 'low': return chalk.gray('⚫ Low');
-    default: return priority;
+    case 'critical':
+      return chalk.red('🔴 Critical');
+    case 'high':
+      return chalk.yellow('🟡 High');
+    case 'medium':
+      return chalk.blue('🔵 Medium');
+    case 'low':
+      return chalk.gray('⚫ Low');
+    default:
+      return priority;
   }
 }
 
@@ -136,19 +169,22 @@ function getFlowStatus(branchAwareness: any, config: any): string {
   if (branchAwareness.hasConflicts) {
     return chalk.red('🚨 Conflicts need resolution');
   }
-  
-  if (branchAwareness.commitsAhead > 0 && !branchAwareness.hasUncommittedChanges) {
+
+  if (
+    branchAwareness.commitsAhead > 0 &&
+    !branchAwareness.hasUncommittedChanges
+  ) {
     return chalk.green('✅ Ready for integration');
   }
-  
+
   if (branchAwareness.hasUncommittedChanges) {
     return chalk.yellow('⚡ Active development');
   }
-  
+
   if (branchAwareness.commitsBehind > 0) {
     return chalk.cyan('🔄 Needs sync with base');
   }
-  
+
   return chalk.gray('⏸️  Idle');
 }
 
@@ -157,22 +193,27 @@ function getFlowStatus(branchAwareness: any, config: any): string {
  */
 function displayFlowSummary(worktrees: any[]): void {
   console.log(chalk.bold('📈 Flow Summary\n'));
-  
+
   const stats = {
     total: worktrees.length,
     readyForIntegration: 0,
     activeDevelopment: 0,
     conflicts: 0,
     needsSync: 0,
-    idle: 0
+    idle: 0,
   };
-  
+
   for (const worktree of worktrees) {
-    const branchAwareness = worktreeManager.getBranchAwareness(worktree.agentName);
-    
+    const branchAwareness = worktreeManager.getBranchAwareness(
+      worktree.agentName
+    );
+
     if (branchAwareness.hasConflicts) {
       stats.conflicts++;
-    } else if (branchAwareness.commitsAhead > 0 && !branchAwareness.hasUncommittedChanges) {
+    } else if (
+      branchAwareness.commitsAhead > 0 &&
+      !branchAwareness.hasUncommittedChanges
+    ) {
       stats.readyForIntegration++;
     } else if (branchAwareness.hasUncommittedChanges) {
       stats.activeDevelopment++;
@@ -182,19 +223,31 @@ function displayFlowSummary(worktrees: any[]): void {
       stats.idle++;
     }
   }
-  
-  console.log(`   ${chalk.green('✅ Ready for Integration:')} ${stats.readyForIntegration}`);
-  console.log(`   ${chalk.yellow('⚡ Active Development:')} ${stats.activeDevelopment}`);
+
+  console.log(
+    `   ${chalk.green('✅ Ready for Integration:')} ${stats.readyForIntegration}`
+  );
+  console.log(
+    `   ${chalk.yellow('⚡ Active Development:')} ${stats.activeDevelopment}`
+  );
   console.log(`   ${chalk.red('🚨 Conflicts:')} ${stats.conflicts}`);
   console.log(`   ${chalk.cyan('🔄 Needs Sync:')} ${stats.needsSync}`);
   console.log(`   ${chalk.gray('⏸️  Idle:')} ${stats.idle}`);
-  
+
   // Recommendations
   if (stats.conflicts > 0) {
-    console.log(chalk.red(`\n⚠️  ${stats.conflicts} agent${stats.conflicts === 1 ? '' : 's'} have conflicts that need resolution`));
+    console.log(
+      chalk.red(
+        `\n⚠️  ${stats.conflicts} agent${stats.conflicts === 1 ? '' : 's'} have conflicts that need resolution`
+      )
+    );
   }
   if (stats.readyForIntegration > 0) {
-    console.log(chalk.green(`\n🎉 ${stats.readyForIntegration} agent${stats.readyForIntegration === 1 ? '' : 's'} ready for integration`));
+    console.log(
+      chalk.green(
+        `\n🎉 ${stats.readyForIntegration} agent${stats.readyForIntegration === 1 ? '' : 's'} ready for integration`
+      )
+    );
   }
 }
 
@@ -214,8 +267,15 @@ worktreeCommand
 function createWorktreeCommand(): Command {
   return new Command('create')
     .description('Create a new worktree for an agent')
-    .requiredOption('-a, --agent <name>', 'Agent name (must follow OSSA naming conventions)')
-    .option('-b, --base-branch <branch>', 'Base branch to branch from', 'v0.1.9-dev')
+    .requiredOption(
+      '-a, --agent <name>',
+      'Agent name (must follow OSSA naming conventions)'
+    )
+    .option(
+      '-b, --base-branch <branch>',
+      'Base branch to branch from',
+      'v0.1.9-dev'
+    )
     .option('-v, --version <version>', 'OSSA version', '0.1.9')
     .option('-p, --priority <priority>', 'Priority level', 'medium')
     .option('-s, --specialization <spec>', 'Agent specialization')
@@ -225,51 +285,81 @@ function createWorktreeCommand(): Command {
     .option('--auto-branch', 'Automatically determine branch type and name')
     .action(async (options) => {
       try {
-        console.log(chalk.blue('🚀 Creating agent worktree with intelligent branching...'));
-        
+        console.log(
+          chalk.blue('🚀 Creating agent worktree with intelligent branching...')
+        );
+
         // Validate agent name follows OSSA conventions
         if (!isValidAgentName(options.agent)) {
-          console.error(chalk.red('❌ Agent name must follow OSSA naming convention: [scope-]domain-role[-framework]'));
-          console.log(chalk.yellow('Examples: openapi-expert, security-auditor, workflow-orchestrator'));
+          console.error(
+            chalk.red(
+              '❌ Agent name must follow OSSA naming convention: [scope-]domain-role[-framework]'
+            )
+          );
+          console.log(
+            chalk.yellow(
+              'Examples: openapi-expert, security-auditor, workflow-orchestrator'
+            )
+          );
           return;
         }
 
         // Get repository path
         const gitRepository = findGitRepository();
         if (!gitRepository) {
-          console.error(chalk.red('❌ Not in a git repository. Please run from OSSA project root.'));
+          console.error(
+            chalk.red(
+              '❌ Not in a git repository. Please run from OSSA project root.'
+            )
+          );
           return;
         }
 
         // Determine optimal branching strategy
         let taskType = options.taskType;
         let branchRecommendations;
-        
+
         if (options.autoBranch && options.specialization) {
-          branchRecommendations = branchingStrategy.getBranchNamingRecommendations(
-            options.agent,
-            options.specialization,
-            parseInt(options.phase),
-            options.priority
+          branchRecommendations =
+            branchingStrategy.getBranchNamingRecommendations(
+              options.agent,
+              options.specialization,
+              parseInt(options.phase),
+              options.priority
+            );
+          console.log(
+            chalk.green(
+              `✨ Recommended branch: ${branchRecommendations.primary}`
+            )
           );
-          console.log(chalk.green(`✨ Recommended branch: ${branchRecommendations.primary}`));
-          console.log(chalk.gray(`   Reasoning: ${branchRecommendations.reasoning}`));
+          console.log(
+            chalk.gray(`   Reasoning: ${branchRecommendations.reasoning}`)
+          );
         }
 
         // Determine optimal agentic flow
         const flowContext = {
           agentCount: 1, // Individual agent for now
           priority: options.priority,
-          complexity: options.specialization?.includes('protocol') ? 'high' : 'medium',
+          complexity: options.specialization?.includes('protocol')
+            ? 'high'
+            : 'medium',
           dependencies: extractAgentDependencies(options.agent),
-          riskTolerance: options.priority === 'critical' ? 'conservative' : 'moderate',
-          timeline: options.priority === 'critical' ? 'immediate' : 'standard'
+          riskTolerance:
+            options.priority === 'critical' ? 'conservative' : 'moderate',
+          timeline: options.priority === 'critical' ? 'immediate' : 'standard',
         } as const;
 
-        const optimalFlow = branchingStrategy.determineOptimalFlow(options.agent);
+        const optimalFlow = branchingStrategy.determineOptimalFlow(
+          options.agent
+        );
         const flowConfig = branchingStrategy.getFlowConfig(optimalFlow);
-        
-        console.log(chalk.cyan(`🔀 Using ${optimalFlow} flow with ${flowConfig?.coordinationLevel} coordination`));
+
+        console.log(
+          chalk.cyan(
+            `🔀 Using ${optimalFlow} flow with ${flowConfig?.coordinationLevel} coordination`
+          )
+        );
 
         // Create worktree configuration
         const worktreeConfig: WorktreeConfig = {
@@ -281,29 +371,40 @@ function createWorktreeCommand(): Command {
           ossaVersion: options.version,
           priority: options.priority as any,
           phase: parseInt(options.phase),
-          dependencies: extractAgentDependencies(options.agent)
+          dependencies: extractAgentDependencies(options.agent),
         };
 
         // Create the worktree
-        const worktreePath = await worktreeManager.createAgentWorktree(worktreeConfig);
-        
+        const worktreePath =
+          await worktreeManager.createAgentWorktree(worktreeConfig);
+
         // Get branch awareness information
-        const branchAwareness = worktreeManager.getBranchAwareness(options.agent);
+        const branchAwareness = worktreeManager.getBranchAwareness(
+          options.agent
+        );
         const versionAwareness = worktreeManager.getProjectVersionAwareness();
 
         console.log(chalk.green('✅ Agent worktree created successfully!'));
         console.log(chalk.gray('📁 Path:'), chalk.white(worktreePath));
-        console.log(chalk.gray('🌿 Branch:'), chalk.white(branchAwareness?.currentBranch));
-        console.log(chalk.gray('🎯 Target:'), chalk.white(versionAwareness?.targetVersion));
+        console.log(
+          chalk.gray('🌿 Branch:'),
+          chalk.white(branchAwareness?.currentBranch)
+        );
+        console.log(
+          chalk.gray('🎯 Target:'),
+          chalk.white(versionAwareness?.targetVersion)
+        );
         console.log(chalk.gray('🔄 Flow:'), chalk.white(optimalFlow));
-        
+
         console.log(chalk.yellow('\n📋 Next steps:'));
         console.log(`   cd ${worktreePath}`);
         console.log(`   ossa worktree status ${options.agent}`);
         console.log(`   # Begin agent development...`);
-        
       } catch (error) {
-        console.error(chalk.red('❌ Failed to create worktree:'), (error as Error).message);
+        console.error(
+          chalk.red('❌ Failed to create worktree:'),
+          (error as Error).message
+        );
         process.exit(1);
       }
     });
@@ -317,13 +418,15 @@ function listWorktreesCommand(): Command {
     .action((options) => {
       try {
         const worktrees = worktreeManager.listActiveWorktrees();
-        
+
         let filtered = worktrees;
         if (options.phase) {
-          filtered = filtered.filter(w => w.phase.toString() === options.phase);
+          filtered = filtered.filter(
+            (w) => w.phase.toString() === options.phase
+          );
         }
         if (options.priority) {
-          filtered = filtered.filter(w => w.priority === options.priority);
+          filtered = filtered.filter((w) => w.priority === options.priority);
         }
 
         if (filtered.length === 0) {
@@ -331,39 +434,51 @@ function listWorktreesCommand(): Command {
           return;
         }
 
-        console.log(chalk.blue(`🌳 Active Agent Worktrees (${filtered.length})`));
+        console.log(
+          chalk.blue(`🌳 Active Agent Worktrees (${filtered.length})`)
+        );
         console.log('');
 
         // Group by phase for better organization
-        const byPhase = filtered.reduce((groups, worktree) => {
-          const phase = worktree.phase;
-          if (!groups[phase]) groups[phase] = [];
-          groups[phase].push(worktree);
-          return groups;
-        }, {} as Record<number, typeof filtered>);
+        const byPhase = filtered.reduce(
+          (groups, worktree) => {
+            const phase = worktree.phase;
+            if (!groups[phase]) groups[phase] = [];
+            groups[phase].push(worktree);
+            return groups;
+          },
+          {} as Record<number, typeof filtered>
+        );
 
         Object.keys(byPhase)
           .sort((a, b) => parseInt(a) - parseInt(b))
-          .forEach(phase => {
+          .forEach((phase) => {
             console.log(chalk.cyan(`Phase ${phase}:`));
             byPhase[parseInt(phase)].forEach((worktree: any) => {
-              const priorityColor = ({
-                critical: chalk.red,
-                high: chalk.yellow,
-                medium: chalk.blue,
-                low: chalk.gray
-              } as any)[worktree.priority] || chalk.white;
+              const priorityColor =
+                (
+                  {
+                    critical: chalk.red,
+                    high: chalk.yellow,
+                    medium: chalk.blue,
+                    low: chalk.gray,
+                  } as any
+                )[worktree.priority] || chalk.white;
 
-              console.log(`  ${priorityColor('●')} ${chalk.white(worktree.agent)}`);
+              console.log(
+                `  ${priorityColor('●')} ${chalk.white(worktree.agent)}`
+              );
               console.log(`    Branch: ${chalk.gray(worktree.branch)}`);
               console.log(`    Path: ${chalk.gray(worktree.path)}`);
               console.log(`    Version: ${chalk.gray(worktree.ossaVersion)}`);
             });
             console.log('');
           });
-
       } catch (error) {
-        console.error(chalk.red('❌ Failed to list worktrees:'), (error as Error).message);
+        console.error(
+          chalk.red('❌ Failed to list worktrees:'),
+          (error as Error).message
+        );
       }
     });
 }
@@ -376,15 +491,20 @@ function syncWorktreeCommand(): Command {
     .action(async (agent, options) => {
       try {
         console.log(chalk.blue(`🔄 Synchronizing worktree for ${agent}...`));
-        
+
         await worktreeManager.syncWorktree(agent);
-        
+
         const branchAwareness = worktreeManager.getBranchAwareness(agent);
         console.log(chalk.green(`✅ Worktree synchronized successfully!`));
-        console.log(chalk.gray('🌿 Branch:'), chalk.white(branchAwareness?.currentBranch));
-        
+        console.log(
+          chalk.gray('🌿 Branch:'),
+          chalk.white(branchAwareness?.currentBranch)
+        );
       } catch (error) {
-        console.error(chalk.red('❌ Failed to sync worktree:'), (error as Error).message);
+        console.error(
+          chalk.red('❌ Failed to sync worktree:'),
+          (error as Error).message
+        );
         process.exit(1);
       }
     });
@@ -394,25 +514,38 @@ function integrateCommand(): Command {
   return new Command('integrate')
     .description('Coordinate integration between multiple agent worktrees')
     .argument('<agents...>', 'Agent names to integrate')
-    .option('--branch <name>', 'Integration branch name (auto-generated if not provided)')
+    .option(
+      '--branch <name>',
+      'Integration branch name (auto-generated if not provided)'
+    )
     .option('--strategy <strategy>', 'Integration strategy', 'parallel')
     .action(async (agents, options) => {
       try {
-        console.log(chalk.blue(`🔀 Coordinating integration for ${agents.length} agents...`));
+        console.log(
+          chalk.blue(
+            `🔀 Coordinating integration for ${agents.length} agents...`
+          )
+        );
         console.log(chalk.gray('Agents:'), agents.join(', '));
-        
-        const integrationBranch = await worktreeManager.coordinateIntegration(agents);
-        
+
+        const integrationBranch =
+          await worktreeManager.coordinateIntegration(agents);
+
         console.log(chalk.green('✅ Integration coordination complete!'));
-        console.log(chalk.gray('🌿 Integration branch:'), chalk.white(integrationBranch));
-        
+        console.log(
+          chalk.gray('🌿 Integration branch:'),
+          chalk.white(integrationBranch)
+        );
+
         console.log(chalk.yellow('\n📋 Next steps:'));
         console.log(`   git checkout ${integrationBranch}`);
         console.log(`   # Review integrated changes`);
         console.log(`   # Create merge request to v0.1.9-dev`);
-        
       } catch (error) {
-        console.error(chalk.red('❌ Failed to coordinate integration:'), (error as Error).message);
+        console.error(
+          chalk.red('❌ Failed to coordinate integration:'),
+          (error as Error).message
+        );
         process.exit(1);
       }
     });
@@ -427,16 +560,20 @@ function cleanupCommand(): Command {
     .action(async (agent, options) => {
       try {
         console.log(chalk.yellow(`🧹 Cleaning up worktree for ${agent}...`));
-        
+
         await worktreeManager.cleanupWorktree(agent);
-        
+
         console.log(chalk.green(`✅ Worktree cleaned up successfully!`));
         if (options.keepBranch) {
-          console.log(chalk.gray('🌿 Feature branch preserved for future reference'));
+          console.log(
+            chalk.gray('🌿 Feature branch preserved for future reference')
+          );
         }
-        
       } catch (error) {
-        console.error(chalk.red('❌ Failed to cleanup worktree:'), (error as Error).message);
+        console.error(
+          chalk.red('❌ Failed to cleanup worktree:'),
+          (error as Error).message
+        );
         process.exit(1);
       }
     });
@@ -445,7 +582,7 @@ function cleanupCommand(): Command {
 function flowCommand(): Command {
   const flowCmd = new Command('flow');
   flowCmd.description('Manage agentic development flows');
-  
+
   flowCmd
     .command('status')
     .description('Show current flow status for agents')
@@ -467,20 +604,27 @@ function flowCommand(): Command {
         errorRate: parseFloat(options.errorRate),
         conflictRate: parseFloat(options.conflictRate),
         agentUtilization: 0.7,
-        timeToCompletion: 24
+        timeToCompletion: 24,
       };
 
       const constraints = {
-        deadline: new Date(Date.now() + 48 * 60 * 60 * 1000) // 48 hours from now
+        deadline: new Date(Date.now() + 48 * 60 * 60 * 1000), // 48 hours from now
       };
 
-      const recommendation = branchingStrategy.adaptFlow({ flow: options.flow, metrics, constraints });
-      
+      const recommendation = branchingStrategy.adaptFlow({
+        flow: options.flow,
+        metrics,
+        constraints,
+      });
+
       console.log(chalk.blue('🧠 Flow Adaptation Analysis'));
       console.log(chalk.gray('Current flow:'), chalk.white(options.flow));
-      console.log(chalk.gray('Recommended:'), chalk.white(recommendation.recommendedFlow));
+      console.log(
+        chalk.gray('Recommended:'),
+        chalk.white(recommendation.recommendedFlow)
+      );
       console.log(chalk.gray('Reason:'), chalk.yellow(recommendation.reason));
-      
+
       if (recommendation.suggestedActions.length > 0) {
         console.log(chalk.gray('\n📋 Suggested actions:'));
         recommendation.suggestedActions.forEach((action: string) => {
@@ -495,7 +639,7 @@ function flowCommand(): Command {
 function branchCommand(): Command {
   const branchCmd = new Command('branch');
   branchCmd.description('Intelligent branch naming and management');
-  
+
   branchCmd
     .command('suggest')
     .description('Get branch naming suggestions for an agent')
@@ -513,8 +657,11 @@ function branchCommand(): Command {
 
       console.log(chalk.blue('🌿 Branch Naming Recommendations'));
       console.log(chalk.gray('Primary:'), chalk.green(recommendations.primary));
-      console.log(chalk.gray('Reasoning:'), chalk.yellow(recommendations.reasoning));
-      
+      console.log(
+        chalk.gray('Reasoning:'),
+        chalk.yellow(recommendations.reasoning)
+      );
+
       if (recommendations.alternatives.length > 0) {
         console.log(chalk.gray('\n🔄 Alternatives:'));
         recommendations.alternatives.forEach((alt: any, index: number) => {
@@ -543,7 +690,7 @@ function statusCommand(): Command {
 
         console.log(chalk.blue(`📊 Agent Worktree Status: ${agent}`));
         console.log('');
-        
+
         console.log(chalk.cyan('🔧 Configuration:'));
         console.log(`   Agent: ${chalk.white(config.agentName)}`);
         console.log(`   Phase: ${chalk.white(config.phase)}`);
@@ -553,31 +700,51 @@ function statusCommand(): Command {
 
         if (branchAwareness) {
           console.log(chalk.cyan('🌿 Branch Information:'));
-          console.log(`   Current: ${chalk.white(branchAwareness.currentBranch)}`);
+          console.log(
+            `   Current: ${chalk.white(branchAwareness.currentBranch)}`
+          );
           console.log(`   Base: ${chalk.gray(branchAwareness.baseBranch)}`);
           console.log(`   Type: ${chalk.white(branchAwareness.branchType)}`);
-          console.log(`   Merge Target: ${chalk.white(branchAwareness.mergeTarget)}`);
-          console.log(`   Auto-merge: ${branchAwareness.canAutoMerge ? chalk.green('Yes') : chalk.red('No')}`);
-          console.log(`   Review Required: ${branchAwareness.requiresReview ? chalk.yellow('Yes') : chalk.green('No')}`);
+          console.log(
+            `   Merge Target: ${chalk.white(branchAwareness.mergeTarget)}`
+          );
+          console.log(
+            `   Auto-merge: ${branchAwareness.canAutoMerge ? chalk.green('Yes') : chalk.red('No')}`
+          );
+          console.log(
+            `   Review Required: ${branchAwareness.requiresReview ? chalk.yellow('Yes') : chalk.green('No')}`
+          );
           console.log('');
         }
 
         if (versionAwareness) {
           console.log(chalk.cyan('🎯 Version Awareness:'));
-          console.log(`   Current: ${chalk.white(versionAwareness.currentVersion)}`);
-          console.log(`   Target: ${chalk.white(versionAwareness.targetVersion)}`);
-          console.log(`   Phase: ${chalk.white(versionAwareness.developmentPhase)}`);
-          console.log(`   Compatibility: ${chalk.white(versionAwareness.compatibilityLevel)}`);
+          console.log(
+            `   Current: ${chalk.white(versionAwareness.currentVersion)}`
+          );
+          console.log(
+            `   Target: ${chalk.white(versionAwareness.targetVersion)}`
+          );
+          console.log(
+            `   Phase: ${chalk.white(versionAwareness.developmentPhase)}`
+          );
+          console.log(
+            `   Compatibility: ${chalk.white(versionAwareness.compatibilityLevel)}`
+          );
           console.log('');
         }
 
         console.log(chalk.cyan('🚀 Available Commands:'));
         console.log(`   ossa worktree sync ${agent}     # Sync with remote`);
-        console.log(`   ossa worktree integrate ${agent} # Coordinate integration`);
+        console.log(
+          `   ossa worktree integrate ${agent} # Coordinate integration`
+        );
         console.log(`   ossa worktree cleanup ${agent}   # Clean up when done`);
-
       } catch (error) {
-        console.error(chalk.red('❌ Failed to get status:'), (error as Error).message);
+        console.error(
+          chalk.red('❌ Failed to get status:'),
+          (error as Error).message
+        );
       }
     });
 }
@@ -591,13 +758,13 @@ function isValidAgentName(name: string): boolean {
 
 function findGitRepository(): string | null {
   let currentDir = process.cwd();
-  
+
   while (currentDir !== '/') {
     if (existsSync(resolve(currentDir, '.git'))) {
       return currentDir;
     }
     currentDir = resolve(currentDir, '..');
   }
-  
+
   return null;
 }

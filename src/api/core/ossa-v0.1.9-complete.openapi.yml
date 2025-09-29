@@ -1,0 +1,964 @@
+openapi: 3.1.0
+info:
+  title: OSSA Agent API
+  version: 0.1.9
+  description: Open Standards for Scalable Agents - Complete API Specification
+  contact:
+    name: OSSA Technical Committee
+    email: support@ossa.io
+    url: https://ossa.io
+  license:
+    name: Apache 2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0
+  x-ossa:
+    version: 0.1.9
+    conformance_tier: gold
+    protocols: [rest, grpc, websocket]
+
+servers:
+  - url: http://localhost:{port}/api/v1
+    description: Local development
+    variables:
+      port:
+        default: '3000'
+        enum: ['3000', '3001', '3002', '3003']
+  - url: https://agent.{environment}.ossa.io/api/v1
+    description: Cloud deployment
+    variables:
+      environment:
+        default: staging
+        enum: [development, staging, production]
+
+tags:
+  - name: Agent
+    description: Core agent operations
+  - name: Capabilities
+    description: Agent capability management
+  - name: Execution
+    description: Task execution and workflow
+  - name: Conformance
+    description: OSSA conformance and compliance
+  - name: Feedback
+    description: 360° feedback loop operations
+  - name: Budget
+    description: Token and resource budget management
+  - name: Deployment
+    description: Deployment and scaling operations
+
+paths:
+  # Agent Core Operations
+  /agent:
+    get:
+      operationId: getAgent
+      summary: Get agent manifest
+      tags: [Agent]
+      responses:
+        '200':
+          description: Agent manifest
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentManifest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    patch:
+      operationId: updateAgent
+      summary: Update agent configuration
+      tags: [Agent]
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AgentManifest'
+      responses:
+        '200':
+          description: Agent updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentManifest'
+
+  /agent/validate:
+    post:
+      operationId: validateManifest
+      summary: Validate agent manifest
+      tags: [Agent]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AgentManifest'
+      responses:
+        '200':
+          description: Validation result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationResult'
+
+  # Capabilities
+  /agent/capabilities:
+    get:
+      operationId: getCapabilities
+      summary: Get agent capabilities
+      tags: [Capabilities]
+      responses:
+        '200':
+          description: Agent capabilities
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Capabilities'
+
+  /agent/capabilities/operations:
+    get:
+      operationId: getOperations
+      summary: List available operations
+      tags: [Capabilities]
+      responses:
+        '200':
+          description: Operations list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Operation'
+
+  /agent/capabilities/operations/{operationName}/execute:
+    post:
+      operationId: executeOperation
+      summary: Execute specific operation
+      tags: [Execution]
+      parameters:
+        - name: operationName
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '202':
+          description: Operation accepted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExecutionResponse'
+
+  # Conformance
+  /agent/conformance:
+    get:
+      operationId: getConformance
+      summary: Get conformance status
+      tags: [Conformance]
+      responses:
+        '200':
+          description: Conformance details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Conformance'
+
+  /agent/conformance/audit:
+    post:
+      operationId: runConformanceAudit
+      summary: Run conformance audit
+      tags: [Conformance]
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Audit report
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuditReport'
+
+  # Feedback Loop
+  /agent/feedback:
+    post:
+      operationId: submitFeedback
+      summary: Submit 360° feedback
+      tags: [Feedback]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FeedbackLoop'
+      responses:
+        '201':
+          description: Feedback accepted
+
+  /agent/feedback/{phase}:
+    get:
+      operationId: getFeedbackByPhase
+      summary: Get feedback for specific phase
+      tags: [Feedback]
+      parameters:
+        - name: phase
+          in: path
+          required: true
+          schema:
+            type: string
+            enum: [plan, execute, review, judge, learn, govern]
+      responses:
+        '200':
+          description: Phase feedback
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FeedbackLoop'
+
+  # Budget Management
+  /agent/budgets:
+    get:
+      operationId: getBudgets
+      summary: Get current budget status
+      tags: [Budget]
+      responses:
+        '200':
+          description: Budget status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Budgets'
+
+  /agent/budgets/tokens:
+    get:
+      operationId: getTokenBudget
+      summary: Get token budget status
+      tags: [Budget]
+      responses:
+        '200':
+          description: Token budget
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  used:
+                    type: integer
+                  remaining:
+                    type: integer
+                  limit:
+                    type: integer
+                  strategy:
+                    type: string
+                    enum: [fixed, adaptive, hierarchical]
+
+  # Performance Metrics
+  /agent/performance:
+    get:
+      operationId: getPerformance
+      summary: Get performance metrics
+      tags: [Agent]
+      responses:
+        '200':
+          description: Performance metrics
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Performance'
+
+  # Deployment
+  /agent/deployment:
+    get:
+      operationId: getDeployment
+      summary: Get deployment configuration
+      tags: [Deployment]
+      responses:
+        '200':
+          description: Deployment configuration
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Deployment'
+
+  /agent/deployment/scale:
+    post:
+      operationId: scaleAgent
+      summary: Scale agent replicas
+      tags: [Deployment]
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                replicas:
+                  type: integer
+                  minimum: 1
+                  maximum: 100
+      responses:
+        '200':
+          description: Scaling initiated
+
+  # Health and Status
+  /agent/health:
+    get:
+      operationId: getHealth
+      summary: Get agent health
+      tags: [Agent]
+      responses:
+        '200':
+          description: Health status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status'
+
+  /agent/status:
+    get:
+      operationId: getStatus
+      summary: Get agent runtime status
+      tags: [Agent]
+      responses:
+        '200':
+          description: Runtime status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status'
+
+components:
+  schemas:
+    # Main Agent Manifest
+    AgentManifest:
+      type: object
+      required: [apiVersion, kind, metadata, spec]
+      properties:
+        apiVersion:
+          type: string
+          pattern: '^ossa\.io/v\d+\.\d+\.\d+'
+          example: "ossa.io/v0.1.9"
+        kind:
+          type: string
+          enum: [Agent]
+        metadata:
+          $ref: '#/components/schemas/Metadata'
+        spec:
+          $ref: '#/components/schemas/Spec'
+        status:
+          $ref: '#/components/schemas/Status'
+
+    # Metadata Schema
+    Metadata:
+      type: object
+      required: [name, version]
+      properties:
+        name:
+          type: string
+          pattern: '^[a-z0-9]([-a-z0-9]*[a-z0-9])?'
+          minLength: 3
+          maxLength: 63
+          description: DNS-1123 compliant name
+        version:
+          type: string
+          pattern: '^v\d+\.\d+\.\d+(-[a-z0-9-]+)?'
+          example: "v1.2.0"
+        description:
+          type: string
+          maxLength: 500
+        author:
+          type: string
+        license:
+          type: string
+          enum: [Apache-2.0, MIT, GPL-3.0, BSD-3-Clause, proprietary]
+        labels:
+          type: object
+          additionalProperties:
+            type: string
+          properties:
+            environment:
+              type: string
+              enum: [production, development, staging]
+            classification:
+              type: string
+              enum: [internal, public, restricted]
+            role:
+              type: string
+              enum: [orchestrator, worker, critic, judge, trainer, governor, monitor, integrator, voice]
+            complexity:
+              type: string
+              enum: [simple, standard, enterprise]
+        annotations:
+          type: object
+          additionalProperties:
+            type: string
+        repository:
+          type: string
+          format: uri
+        documentation:
+          type: string
+          format: uri
+
+    # Spec Schema
+    Spec:
+      type: object
+      required: [type, capabilities, protocols, conformance]
+      properties:
+        type:
+          type: string
+          enum: [orchestrator, worker, critic, judge, trainer, governor, monitor, integrator, voice]
+        subtype:
+          type: string
+          description: Specialized role (e.g., worker.api, critic.security)
+        capabilities:
+          $ref: '#/components/schemas/Capabilities'
+        protocols:
+          $ref: '#/components/schemas/Protocols'
+        conformance:
+          $ref: '#/components/schemas/Conformance'
+        performance:
+          $ref: '#/components/schemas/Performance'
+        resources:
+          $ref: '#/components/schemas/Resources'
+        feedbackLoop:
+          $ref: '#/components/schemas/FeedbackLoop'
+        budgets:
+          $ref: '#/components/schemas/Budgets'
+        dependencies:
+          $ref: '#/components/schemas/Dependencies'
+        deployment:
+          $ref: '#/components/schemas/Deployment'
+
+    # Capabilities Schema
+    Capabilities:
+      type: object
+      required: [domains]
+      properties:
+        domains:
+          type: array
+          items:
+            type: string
+            enum: [nlp, vision, reasoning, data, orchestration, monitoring, security, compliance]
+        operations:
+          type: array
+          items:
+            $ref: '#/components/schemas/Operation'
+        inputFormats:
+          type: array
+          items:
+            type: string
+            enum: [json, xml, csv, yaml, text, binary]
+        outputFormats:
+          type: array
+          items:
+            type: string
+            enum: [json, html, pdf, xml, csv, text]
+        tokenEfficiency:
+          type: object
+          properties:
+            strategies:
+              type: array
+              items:
+                type: string
+                enum: [key-based-context, delta-prompting, compression-support, checkpoint-memos]
+            compressionRatio:
+              type: number
+              minimum: 0
+              maximum: 1
+
+    # Operation Schema
+    Operation:
+      type: object
+      required: [name]
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        inputSchema:
+          type: object
+        outputSchema:
+          type: object
+        timeout:
+          type: integer
+          description: Timeout in milliseconds
+
+    # Protocols Schema
+    Protocols:
+      type: object
+      required: [supported]
+      properties:
+        supported:
+          type: array
+          items:
+            type: object
+            required: [name, version, endpoint]
+            properties:
+              name:
+                type: string
+                enum: [rest, grpc, websocket, graphql, mqtt]
+              version:
+                type: string
+              endpoint:
+                type: string
+                format: uri
+              authentication:
+                type: object
+                properties:
+                  type:
+                    type: string
+                    enum: [oauth2, jwt, api-key, mtls, none]
+                  config:
+                    type: object
+              tls:
+                type: boolean
+                default: false
+        preferred:
+          type: string
+          enum: [rest, grpc, websocket, graphql, mqtt]
+
+    # Conformance Schema
+    Conformance:
+      type: object
+      required: [level]
+      properties:
+        level:
+          type: string
+          enum: [bronze, silver, gold]
+        certifications:
+          type: array
+          items:
+            type: string
+            enum: [ISO-42001, NIST-AI-RMF, SOC2, FedRAMP, HIPAA]
+        auditLogging:
+          type: boolean
+          default: false
+        feedbackLoop:
+          type: boolean
+          default: false
+        propsTokens:
+          type: boolean
+          default: false
+        learningSignals:
+          type: boolean
+          default: false
+
+    # Performance Schema
+    Performance:
+      type: object
+      properties:
+        throughput:
+          type: object
+          properties:
+            requestsPerSecond:
+              type: integer
+            concurrentRequests:
+              type: integer
+        latency:
+          type: object
+          properties:
+            p50:
+              type: integer
+              description: 50th percentile in ms
+            p95:
+              type: integer
+              description: 95th percentile in ms
+            p99:
+              type: integer
+              description: 99th percentile in ms
+        limits:
+          type: object
+          properties:
+            maxRequestSize:
+              type: integer
+              description: Maximum request size in bytes
+            maxResponseSize:
+              type: integer
+              description: Maximum response size in bytes
+            timeout:
+              type: integer
+              description: Default timeout in milliseconds
+
+    # Resources Schema
+    Resources:
+      type: object
+      properties:
+        requests:
+          type: object
+          properties:
+            cpu:
+              type: string
+              pattern: '^\d+m?'
+              example: "500m"
+            memory:
+              type: string
+              pattern: '^\d+(Mi|Gi)'
+              example: "512Mi"
+            storage:
+              type: string
+              pattern: '^\d+(Gi|Ti)'
+              example: "1Gi"
+        limits:
+          type: object
+          properties:
+            cpu:
+              type: string
+              pattern: '^\d+m?'
+              example: "2000m"
+            memory:
+              type: string
+              pattern: '^\d+(Mi|Gi)'
+              example: "2Gi"
+            storage:
+              type: string
+              pattern: '^\d+(Gi|Ti)'
+              example: "10Gi"
+
+    # FeedbackLoop Schema
+    FeedbackLoop:
+      type: object
+      properties:
+        phase:
+          type: string
+          enum: [plan, execute, review, judge, learn, govern]
+        inputs:
+          type: array
+          items:
+            type: string
+        outputs:
+          type: array
+          items:
+            type: string
+
+    # Budgets Schema
+    Budgets:
+      type: object
+      properties:
+        tokens:
+          type: object
+          properties:
+            default:
+              type: integer
+            maximum:
+              type: integer
+            strategy:
+              type: string
+              enum: [fixed, adaptive, hierarchical]
+        time:
+          type: object
+          properties:
+            default:
+              type: integer
+              description: Default timeout in ms
+            maximum:
+              type: integer
+              description: Maximum timeout in ms
+
+    # Dependencies Schema
+    Dependencies:
+      type: object
+      properties:
+        agents:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+              version:
+                type: string
+              optional:
+                type: boolean
+        services:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+              endpoint:
+                type: string
+                format: uri
+              healthCheck:
+                type: string
+
+    # Deployment Schema
+    Deployment:
+      type: object
+      properties:
+        target:
+          type: string
+          enum: [local, docker, kubernetes, serverless, edge]
+        kubernetes:
+          type: object
+          properties:
+            enabled:
+              type: boolean
+            agent:
+              type: object
+              properties:
+                name:
+                  type: string
+                namespace:
+                  type: string
+            security:
+              type: object
+              properties:
+                tls:
+                  type: object
+                  properties:
+                    enabled:
+                      type: boolean
+                rbac:
+                  type: object
+                  properties:
+                    enabled:
+                      type: boolean
+        healthChecks:
+          type: object
+          properties:
+            enabled:
+              type: boolean
+            path:
+              type: string
+            port:
+              type: integer
+            initialDelaySeconds:
+              type: integer
+            periodSeconds:
+              type: integer
+        scaling:
+          type: object
+          properties:
+            enabled:
+              type: boolean
+            minReplicas:
+              type: integer
+            maxReplicas:
+              type: integer
+            targetCPUUtilization:
+              type: integer
+
+    # Status Schema
+    Status:
+      type: object
+      properties:
+        state:
+          type: string
+          enum: [pending, registered, active, suspended, terminated]
+        health:
+          type: string
+          enum: [healthy, degraded, unhealthy, unknown]
+        lastHeartbeat:
+          type: string
+          format: date-time
+        registeredAt:
+          type: string
+          format: date-time
+        metrics:
+          type: object
+          properties:
+            requestsHandled:
+              type: integer
+            successRate:
+              type: number
+              minimum: 0
+              maximum: 1
+            avgResponseTime:
+              type: integer
+              description: Average response time in ms
+            tokenUsage:
+              type: integer
+
+    # Validation Result
+    ValidationResult:
+      type: object
+      properties:
+        valid:
+          type: boolean
+        conformanceLevel:
+          type: string
+          enum: [bronze, silver, gold]
+        errors:
+          type: array
+          items:
+            type: object
+            properties:
+              path:
+                type: string
+              message:
+                type: string
+              severity:
+                type: string
+                enum: [error, warning, info]
+
+    # Audit Report
+    AuditReport:
+      type: object
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+        conformanceLevel:
+          type: string
+          enum: [bronze, silver, gold]
+        passed:
+          type: boolean
+        score:
+          type: number
+          minimum: 0
+          maximum: 100
+        violations:
+          type: array
+          items:
+            type: object
+            properties:
+              rule:
+                type: string
+              severity:
+                type: string
+              message:
+                type: string
+
+    # Execution Response
+    ExecutionResponse:
+      type: object
+      properties:
+        executionId:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum: [accepted, rejected, queued]
+        estimatedCompletion:
+          type: integer
+        webhookUrl:
+          type: string
+          format: uri
+
+  responses:
+    BadRequest:
+      description: Bad request
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+              code:
+                type: string
+              details:
+                type: object
+
+    Unauthorized:
+      description: Authentication required
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+
+    Forbidden:
+      description: Insufficient permissions
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+
+  securitySchemes:
+    ApiKey:
+      type: apiKey
+      in: header
+      name: X-API-Key
+
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+    OAuth2:
+      type: oauth2
+      flows:
+        authorizationCode:
+          authorizationUrl: https://auth.ossa.io/authorize
+          tokenUrl: https://auth.ossa.io/token
+          scopes:
+            read: Read access
+            write: Write access
+            admin: Admin access
+
+security:
+  - ApiKey: []
+  - BearerAuth: []
+
+webhooks:
+  stateChange:
+    post:
+      operationId: handleStateChange
+      summary: Handle agent state change
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                agentId:
+                  type: string
+                previousState:
+                  type: string
+                newState:
+                  type: string
+                timestamp:
+                  type: string
+                  format: date-time
+      responses:
+        '200':
+          description: Webhook processed
+
+  conformanceViolation:
+    post:
+      operationId: handleConformanceViolation
+      summary: Handle conformance violation
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                agentId:
+                  type: string
+                violation:
+                  type: string
+                severity:
+                  type: string
+                timestamp:
+                  type: string
+                  format: date-time
+      responses:
+        '200':
+          description: Webhook processed

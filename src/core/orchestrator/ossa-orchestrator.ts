@@ -2,7 +2,7 @@
  * OSSA v0.1.9 Orchestrator Agent
  * Master orchestrator for OSSA-compliant agent systems
  * Specializes in multi-agent coordination, __REBUILD_TOOLS workflows, and TDD enforcement
- * 
+ *
  * Capabilities:
  * - Multi-agent spawning and lifecycle management
  * - __REBUILD_TOOLS workflow orchestration
@@ -14,18 +14,22 @@
  */
 
 import { EventEmitter } from 'events';
-import { 
-  Agent, 
-  Workflow, 
-  Task, 
+import {
+  Agent,
+  Workflow,
+  Task,
   OrchestratorConfig,
   AgentType,
   TaskStatus,
   AgentStatus,
-  MessageType
+  MessageType,
 } from '../../types/index.js';
 import { v4 as uuidv4 } from 'uuid';
-import { OrchestratorPlatform, WorkflowExecution, FeedbackLoopPhase } from './index.js';
+import {
+  OrchestratorPlatform,
+  WorkflowExecution,
+  FeedbackLoopPhase,
+} from './index.js';
 
 export interface RebuildToolsConfig {
   enableAutoRebuild: boolean;
@@ -77,7 +81,7 @@ export class OSSAOrchestrator extends OrchestratorPlatform {
 
   constructor(config: OSSAOrchestratorConfig) {
     super(config);
-    
+
     this.rebuildToolsConfig = config.rebuildTools;
     this.tddConfig = config.tddEnforcement;
     this.agentPool = new Map();
@@ -101,18 +105,18 @@ export class OSSAOrchestrator extends OrchestratorPlatform {
    */
   async spawnSpecializedAgent(config: AgentSpawnConfig): Promise<Agent> {
     console.log(`[OSSA] Spawning specialized agent: ${config.agentType}`);
-    
+
     const agentId = `${config.agentType}-${uuidv4()}`;
     const agent: Agent = {
       id: agentId,
       name: `OSSA ${config.agentType} Agent`,
       version: '0.1.9',
       type: this.mapAgentType(config.agentType),
-      capabilities: config.capabilities.map(cap => ({
+      capabilities: config.capabilities.map((cap) => ({
         name: cap,
         version: '1.0.0',
         inputs: [],
-        outputs: []
+        outputs: [],
       })),
       status: AgentStatus.IDLE,
       metadata: {
@@ -120,22 +124,26 @@ export class OSSAOrchestrator extends OrchestratorPlatform {
         updated: new Date(),
         author: 'ossa-orchestrator',
         tags: ['ossa', 'specialized', config.agentType],
-        description: `Specialized ${config.agentType} agent spawned by OSSA orchestrator`
+        description: `Specialized ${config.agentType} agent spawned by OSSA orchestrator`,
       },
       config: {
         resources: undefined,
         scaling: undefined,
         networking: undefined,
         security: undefined,
-        ...{ healthCheckInterval: config.healthCheckInterval, maxRetries: config.maxRetries, ossaCompliant: true } as any
-      }
+        ...({
+          healthCheckInterval: config.healthCheckInterval,
+          maxRetries: config.maxRetries,
+          ossaCompliant: true,
+        } as any),
+      },
     };
 
     // Validate OSSA compliance before registration
     if (await this.validateOSSACompliance(agent)) {
       await this.registerAgent(agent);
       this.agentPool.set(agentId, agent);
-      
+
       if (config.autoRegister) {
         await this.autoRegisterWithPlatform(agent);
       }
@@ -152,7 +160,7 @@ export class OSSAOrchestrator extends OrchestratorPlatform {
    */
   async executeRebuildToolsWorkflow(targetTools: string[]): Promise<void> {
     console.log('[OSSA] Executing __REBUILD_TOOLS workflow');
-    
+
     const workflow: Workflow = {
       id: `rebuild-tools-${uuidv4()}`,
       name: '__REBUILD_TOOLS Workflow',
@@ -163,7 +171,7 @@ export class OSSAOrchestrator extends OrchestratorPlatform {
           name: 'Analyze Tool Failures',
           agent: 'analyzer',
           action: 'analyze',
-          inputs: { tools: targetTools }
+          inputs: { tools: targetTools },
         },
         {
           id: 'generate-tests',
@@ -171,7 +179,7 @@ export class OSSAOrchestrator extends OrchestratorPlatform {
           agent: 'test-generator',
           action: 'generate',
           inputs: { coverage: this.tddConfig.minimumCoverage },
-          dependencies: ['analyze-tools']
+          dependencies: ['analyze-tools'],
         },
         {
           id: 'rebuild-tools',
@@ -179,7 +187,7 @@ export class OSSAOrchestrator extends OrchestratorPlatform {
           agent: 'builder',
           action: 'rebuild',
           inputs: { apiFirst: this.rebuildToolsConfig.apiFirstEnforcement },
-          dependencies: ['generate-tests']
+          dependencies: ['generate-tests'],
         },
         {
           id: 'validate-rebuild',
@@ -187,36 +195,37 @@ export class OSSAOrchestrator extends OrchestratorPlatform {
           agent: 'validator',
           action: 'validate',
           inputs: { complianceLevel: this.rebuildToolsConfig.complianceLevel },
-          dependencies: ['rebuild-tools']
-        }
+          dependencies: ['rebuild-tools'],
+        },
       ],
       triggers: [{ type: 'manual', config: {} }],
       policies: ['tdd-enforcement', 'api-first', 'ossa-compliance'],
       metadata: {
         author: 'ossa-orchestrator',
-        description: 'Automated tool rebuilding with TDD and API-first approach',
+        description:
+          'Automated tool rebuilding with TDD and API-first approach',
         tags: ['rebuild', 'tools', 'tdd', 'api-first'],
         created: new Date(),
-        updated: new Date()
-      }
+        updated: new Date(),
+      },
     };
 
     const budget = {
       tokens: 50000,
-      timeLimit: 3600 // 1 hour
+      timeLimit: 3600, // 1 hour
     };
 
     const executionId = await this.executeWorkflow(workflow, budget);
-    
+
     // Track rebuild history
-    targetTools.forEach(tool => {
+    targetTools.forEach((tool) => {
       if (!this.toolRebuildHistory.has(tool)) {
         this.toolRebuildHistory.set(tool, []);
       }
       this.toolRebuildHistory.get(tool)!.push({
         executionId,
         timestamp: new Date(),
-        reason: 'threshold_exceeded'
+        reason: 'threshold_exceeded',
       });
     });
 
@@ -228,24 +237,26 @@ export class OSSAOrchestrator extends OrchestratorPlatform {
    */
   private async enforceTDD(event: any): Promise<void> {
     console.log('[OSSA] Enforcing TDD practices');
-    
+
     if (!this.tddConfig.requireTestsFirst) {
       return;
     }
 
     const { taskId, code } = event;
-    
+
     // Check if tests exist for the code
     const testsExist = await this.checkTestsExist(taskId);
-    
+
     if (!testsExist) {
       if (this.tddConfig.generateTestStubs) {
         await this.generateTestStubs(taskId, code);
         console.log(`[OSSA] Generated test stubs for task ${taskId}`);
       }
-      
+
       if (this.tddConfig.blockOnFailure) {
-        throw new Error(`TDD Enforcement: Tests must be written before implementation for task ${taskId}`);
+        throw new Error(
+          `TDD Enforcement: Tests must be written before implementation for task ${taskId}`
+        );
       }
     }
 
@@ -263,7 +274,7 @@ export class OSSAOrchestrator extends OrchestratorPlatform {
     strategy: 'parallel' | 'sequential' | 'adaptive' = 'adaptive'
   ): Promise<string> {
     console.log(`[OSSA] Coordinating multi-agent workflow: ${workflow.name}`);
-    
+
     const executionId = uuidv4();
     const execution: WorkflowExecution = {
       id: executionId,
@@ -274,15 +285,15 @@ export class OSSAOrchestrator extends OrchestratorPlatform {
       budget: {
         totalTokens: 100000,
         usedTokens: 0,
-        timeLimit: 7200
+        timeLimit: 7200,
       },
       startTime: new Date(),
       metrics: {
         agentsUsed: 0,
         tasksCompleted: 0,
         errors: 0,
-        performance: {}
-      }
+        performance: {},
+      },
     };
 
     this.activeWorkflows.set(executionId, execution);
@@ -315,14 +326,17 @@ export class OSSAOrchestrator extends OrchestratorPlatform {
     }
 
     // Set up health monitoring
-    const healthCheckInterval = setInterval(async () => {
-      const health = await this.checkAgentHealth(agentId);
-      
-      if (!health.healthy) {
-        console.log(`[OSSA] Agent ${agentId} unhealthy, attempting recovery`);
-        await this.attemptAgentRecovery(agentId);
-      }
-    }, (agent.config as any).healthCheckInterval || 30000);
+    const healthCheckInterval = setInterval(
+      async () => {
+        const health = await this.checkAgentHealth(agentId);
+
+        if (!health.healthy) {
+          console.log(`[OSSA] Agent ${agentId} unhealthy, attempting recovery`);
+          await this.attemptAgentRecovery(agentId);
+        }
+      },
+      (agent.config as any).healthCheckInterval || 30000
+    );
 
     // Set up lifecycle events
     this.on(`agent:${agentId}:shutdown`, async () => {
@@ -338,18 +352,21 @@ export class OSSAOrchestrator extends OrchestratorPlatform {
   private async validateOSSACompliance(agent: Agent): Promise<boolean> {
     // Check agent against OSSA v0.1.9 standards
     const requiredCapabilities = ['execute', 'report', 'validate'];
-    const hasRequiredCapabilities = requiredCapabilities.some(req => 
-      agent.capabilities.some(cap => cap.name.includes(req))
+    const hasRequiredCapabilities = requiredCapabilities.some((req) =>
+      agent.capabilities.some((cap) => cap.name.includes(req))
     );
 
-    const hasValidMetadata = agent.metadata && 
-      agent.metadata.author && 
-      agent.metadata.created && 
+    const hasValidMetadata =
+      agent.metadata &&
+      agent.metadata.author &&
+      agent.metadata.created &&
       agent.metadata.tags;
 
     const hasValidVersion = /^\d+\.\d+\.\d+/.test(agent.version);
 
-    return Boolean(hasRequiredCapabilities && hasValidMetadata && hasValidVersion);
+    return Boolean(
+      hasRequiredCapabilities && hasValidMetadata && hasValidVersion
+    );
   }
 
   /**
@@ -357,26 +374,56 @@ export class OSSAOrchestrator extends OrchestratorPlatform {
    */
   private mapAgentType(type: string): AgentType {
     const typeMap: Record<string, AgentType> = {
-      'orchestrator': AgentType.ORCHESTRATOR,
-      'worker': AgentType.WORKER,
-      'critic': AgentType.CRITIC,
-      'judge': AgentType.JUDGE,
-      'trainer': AgentType.TRAINER,
-      'governor': AgentType.GOVERNOR,
-      'monitor': AgentType.WORKER, // Using WORKER since MONITOR doesn't exist in enum
-      'integrator': AgentType.INTEGRATOR
+      orchestrator: AgentType.ORCHESTRATOR,
+      worker: AgentType.WORKER,
+      critic: AgentType.CRITIC,
+      judge: AgentType.JUDGE,
+      trainer: AgentType.TRAINER,
+      governor: AgentType.GOVERNOR,
+      monitor: AgentType.WORKER, // Using WORKER since MONITOR doesn't exist in enum
+      integrator: AgentType.INTEGRATOR,
     };
     return typeMap[type.toLowerCase()] || AgentType.WORKER;
   }
 
   private createFeedbackLoopPhases(): FeedbackLoopPhase[] {
     return [
-      { name: 'plan', agents: [], status: 'pending', budget: { tokens: 5000, used: 0 } },
-      { name: 'execute', agents: [], status: 'pending', budget: { tokens: 30000, used: 0 } },
-      { name: 'review', agents: [], status: 'pending', budget: { tokens: 10000, used: 0 } },
-      { name: 'judge', agents: [], status: 'pending', budget: { tokens: 5000, used: 0 } },
-      { name: 'learn', agents: [], status: 'pending', budget: { tokens: 10000, used: 0 } },
-      { name: 'govern', agents: [], status: 'pending', budget: { tokens: 5000, used: 0 } }
+      {
+        name: 'plan',
+        agents: [],
+        status: 'pending',
+        budget: { tokens: 5000, used: 0 },
+      },
+      {
+        name: 'execute',
+        agents: [],
+        status: 'pending',
+        budget: { tokens: 30000, used: 0 },
+      },
+      {
+        name: 'review',
+        agents: [],
+        status: 'pending',
+        budget: { tokens: 10000, used: 0 },
+      },
+      {
+        name: 'judge',
+        agents: [],
+        status: 'pending',
+        budget: { tokens: 5000, used: 0 },
+      },
+      {
+        name: 'learn',
+        agents: [],
+        status: 'pending',
+        budget: { tokens: 10000, used: 0 },
+      },
+      {
+        name: 'govern',
+        agents: [],
+        status: 'pending',
+        budget: { tokens: 5000, used: 0 },
+      },
     ];
   }
 
@@ -395,23 +442,35 @@ export class OSSAOrchestrator extends OrchestratorPlatform {
     console.log(`[OSSA] Enforcing red-green-refactor for ${taskId}`);
   }
 
-  private determineOptimalStrategy(workflow: Workflow): 'parallel' | 'sequential' {
+  private determineOptimalStrategy(
+    workflow: Workflow
+  ): 'parallel' | 'sequential' {
     // Analyze workflow dependencies to determine optimal strategy
-    const hasDependencies = workflow.steps.some(step => step.dependencies && step.dependencies.length > 0);
+    const hasDependencies = workflow.steps.some(
+      (step) => step.dependencies && step.dependencies.length > 0
+    );
     return hasDependencies ? 'sequential' : 'parallel';
   }
 
-  private async executeParallelCoordination(workflow: Workflow, execution: WorkflowExecution): Promise<void> {
+  private async executeParallelCoordination(
+    workflow: Workflow,
+    execution: WorkflowExecution
+  ): Promise<void> {
     console.log(`[OSSA] Executing parallel coordination for ${workflow.id}`);
     // Implementation for parallel execution
   }
 
-  private async executeSequentialCoordination(workflow: Workflow, execution: WorkflowExecution): Promise<void> {
+  private async executeSequentialCoordination(
+    workflow: Workflow,
+    execution: WorkflowExecution
+  ): Promise<void> {
     console.log(`[OSSA] Executing sequential coordination for ${workflow.id}`);
     // Implementation for sequential execution
   }
 
-  private async checkAgentHealth(agentId: string): Promise<{ healthy: boolean; issues?: string[] }> {
+  private async checkAgentHealth(
+    agentId: string
+  ): Promise<{ healthy: boolean; issues?: string[] }> {
     // Implementation would check agent health
     return { healthy: true };
   }
@@ -438,9 +497,11 @@ export class OSSAOrchestrator extends OrchestratorPlatform {
   private async checkRebuildThreshold(event: any): Promise<void> {
     const { tool, failureCount } = event;
     const threshold = this.rebuildToolsConfig.rebuildThreshold;
-    
+
     if (failureCount >= threshold) {
-      console.log(`[OSSA] Tool ${tool} exceeded failure threshold, initiating rebuild`);
+      console.log(
+        `[OSSA] Tool ${tool} exceeded failure threshold, initiating rebuild`
+      );
       await this.executeRebuildToolsWorkflow([tool]);
     }
   }
@@ -459,46 +520,46 @@ export const DEFAULT_OSSA_CONFIG: OSSAOrchestratorConfig = {
     maxAttempts: 3,
     backoff: 'exponential',
     initialDelay: 1000,
-    maxDelay: 30000
+    maxDelay: 30000,
   },
   messagebus: {
     type: 'memory',
     connection: {},
-    topics: ['ossa.orchestration', 'ossa.agents', 'ossa.workflows']
+    topics: ['ossa.orchestration', 'ossa.agents', 'ossa.workflows'],
   },
   registry: {
     type: 'memory',
     connection: {},
-    ttl: 300
+    ttl: 300,
   },
   scheduler: {
     type: 'priority',
     workers: 20,
-    queueSize: 5000
+    queueSize: 5000,
   },
   rebuildTools: {
     enableAutoRebuild: true,
     rebuildThreshold: 5,
     testCoverage: 80,
     apiFirstEnforcement: true,
-    complianceLevel: 'strict'
+    complianceLevel: 'strict',
   },
   tddEnforcement: {
     requireTestsFirst: true,
     minimumCoverage: 80,
     blockOnFailure: false,
     generateTestStubs: true,
-    enforceRedGreenRefactor: true
+    enforceRedGreenRefactor: true,
   },
   multiAgentCoordination: {
     maxConcurrentAgents: 50,
     agentTimeout: 300000,
     coordinationStrategy: 'adaptive',
-    loadBalancing: true
+    loadBalancing: true,
   },
   complianceValidation: {
     ossaVersion: '0.1.9',
     validateOnSpawn: true,
-    enforceStandards: true
-  }
+    enforceStandards: true,
+  },
 };

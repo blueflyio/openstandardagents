@@ -24,7 +24,11 @@ export interface Agent {
 // Specialized Agent Types (Polymorphic with discriminator)
 export interface WorkerAgent extends Agent {
   type: 'worker';
-  specialization: 'data-processing' | 'api-integration' | 'file-handling' | 'validation';
+  specialization:
+    | 'data-processing'
+    | 'api-integration'
+    | 'file-handling'
+    | 'validation';
   configuration: WorkerConfiguration;
 }
 
@@ -78,7 +82,12 @@ export interface OrchestratorConfiguration {
 export interface CriticConfiguration {
   quality_threshold?: number;
   automated_fixes?: boolean;
-  review_categories?: ('code-quality' | 'security' | 'performance' | 'compliance')[];
+  review_categories?: (
+    | 'code-quality'
+    | 'security'
+    | 'performance'
+    | 'compliance'
+  )[];
   severity_levels?: ('low' | 'medium' | 'high' | 'critical')[];
   [key: string]: any;
 }
@@ -105,7 +114,13 @@ export interface MonitorConfiguration {
 
 export interface GovernorConfiguration {
   policy_enforcement_level?: 'strict' | 'moderate' | 'permissive';
-  compliance_frameworks?: ('ISO42001' | 'NIST-AI-RMF' | 'EU-AI-ACT' | 'SOX' | 'HIPAA')[];
+  compliance_frameworks?: (
+    | 'ISO42001'
+    | 'NIST-AI-RMF'
+    | 'EU-AI-ACT'
+    | 'SOX'
+    | 'HIPAA'
+  )[];
   audit_retention_days?: number;
   auto_remediation?: boolean;
   [key: string]: any;
@@ -159,7 +174,7 @@ export interface CreateAgentRequest {
   configuration?: Record<string, any>;
   metadata?: AgentMetadata;
   webhook_url?: string;
-  
+
   // Type-specific properties
   specialization?: string; // for worker agents
   managed_agents?: string[]; // for orchestrator agents
@@ -167,7 +182,11 @@ export interface CreateAgentRequest {
 
 export interface CreateWorkerAgentRequest extends CreateAgentRequest {
   type: 'worker';
-  specialization: 'data-processing' | 'api-integration' | 'file-handling' | 'validation';
+  specialization:
+    | 'data-processing'
+    | 'api-integration'
+    | 'file-handling'
+    | 'validation';
   configuration?: WorkerConfiguration;
 }
 
@@ -555,12 +574,12 @@ export interface PatchError {
 }
 
 // Utility Types
-export type AgentUnion = 
-  | WorkerAgent 
-  | OrchestratorAgent 
-  | CriticAgent 
-  | JudgeAgent 
-  | MonitorAgent 
+export type AgentUnion =
+  | WorkerAgent
+  | OrchestratorAgent
+  | CriticAgent
+  | JudgeAgent
+  | MonitorAgent
   | GovernorAgent;
 
 export type CreateAgentRequestUnion =
@@ -597,16 +616,20 @@ export function isGovernorAgent(agent: Agent): agent is GovernorAgent {
 }
 
 export function isExecutionError(obj: any): obj is ExecutionError {
-  return obj && 
-         typeof obj.code === 'string' &&
-         typeof obj.message === 'string' &&
-         typeof obj.recoverable === 'boolean';
+  return (
+    obj &&
+    typeof obj.code === 'string' &&
+    typeof obj.message === 'string' &&
+    typeof obj.recoverable === 'boolean'
+  );
 }
 
 export function isAgentEvent(obj: any): obj is AgentEvent {
-  return obj &&
-         typeof obj.event_id === 'string' &&
-         typeof obj.event_type === 'string' &&
-         typeof obj.timestamp === 'string' &&
-         typeof obj.agent_id === 'string';
+  return (
+    obj &&
+    typeof obj.event_id === 'string' &&
+    typeof obj.event_type === 'string' &&
+    typeof obj.timestamp === 'string' &&
+    typeof obj.agent_id === 'string'
+  );
 }

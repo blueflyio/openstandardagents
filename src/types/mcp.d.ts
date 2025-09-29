@@ -4,7 +4,10 @@
 declare module '@modelcontextprotocol/server' {
   export class Server {
     constructor(config: any);
-    setRequestHandler(name: string, handler: (request: any) => Promise<any>): void;
+    setRequestHandler(
+      name: string,
+      handler: (request: any) => Promise<any>
+    ): void;
   }
 }
 
@@ -26,7 +29,7 @@ declare module 'express' {
 }
 
 declare module 'cors' {
-  export default function(): any;
+  export default function (): any;
 }
 
 declare module 'ws' {

@@ -42,16 +42,16 @@ export class OSSAToolRegistry {
         type: 'object',
         properties: {
           data: { type: 'any' },
-          operation: { type: 'string' }
-        }
+          operation: { type: 'string' },
+        },
       },
       function: async (params) => {
         return {
           processed: true,
           data: params.data,
-          operation: params.operation
+          operation: params.operation,
         };
-      }
+      },
     });
 
     // API interaction tools
@@ -63,16 +63,16 @@ export class OSSAToolRegistry {
         properties: {
           url: { type: 'string' },
           method: { type: 'string' },
-          body: { type: 'any' }
-        }
+          body: { type: 'any' },
+        },
       },
       function: async (params) => {
         return {
           status: 200,
           response: 'API call simulated',
-          url: params.url
+          url: params.url,
         };
-      }
+      },
     });
 
     // Database operations
@@ -83,15 +83,15 @@ export class OSSAToolRegistry {
         type: 'object',
         properties: {
           query: { type: 'string' },
-          params: { type: 'array' }
-        }
+          params: { type: 'array' },
+        },
       },
       function: async (params) => {
         return {
           rows: [],
-          query: params.query
+          query: params.query,
         };
-      }
+      },
     });
 
     // File operations
@@ -103,16 +103,16 @@ export class OSSAToolRegistry {
         properties: {
           operation: { type: 'string', enum: ['read', 'write', 'delete'] },
           path: { type: 'string' },
-          content: { type: 'string' }
-        }
+          content: { type: 'string' },
+        },
       },
       function: async (params) => {
         return {
           success: true,
           operation: params.operation,
-          path: params.path
+          path: params.path,
         };
-      }
+      },
     });
 
     // Validation tools
@@ -123,15 +123,15 @@ export class OSSAToolRegistry {
         type: 'object',
         properties: {
           data: { type: 'any' },
-          schema: { type: 'any' }
-        }
+          schema: { type: 'any' },
+        },
       },
       function: async (params) => {
         return {
           valid: true,
-          errors: []
+          errors: [],
         };
-      }
+      },
     });
 
     // Monitoring tools
@@ -142,18 +142,18 @@ export class OSSAToolRegistry {
         type: 'object',
         properties: {
           target: { type: 'string' },
-          metrics: { type: 'array' }
-        }
+          metrics: { type: 'array' },
+        },
       },
       function: async (params) => {
         return {
           metrics: {
             cpu: Math.random() * 100,
             memory: Math.random() * 100,
-            timestamp: new Date().toISOString()
-          }
+            timestamp: new Date().toISOString(),
+          },
         };
-      }
+      },
     });
   }
 
@@ -168,7 +168,7 @@ export class OSSAToolRegistry {
     this.capabilityMapping.set('file-management', ['file_operation']);
     this.capabilityMapping.set('validation', ['validate']);
     this.capabilityMapping.set('monitoring', ['collect_metrics']);
-    this.capabilityMapping.set('orchestration', []);  // Uses AgentTools instead
+    this.capabilityMapping.set('orchestration', []); // Uses AgentTools instead
     this.capabilityMapping.set('governance', ['validate']);
   }
 
@@ -182,7 +182,10 @@ export class OSSAToolRegistry {
   /**
    * Register an agent as a tool (AgentTool pattern)
    */
-  registerAgentTool(agent: ADKAgent, delegationType: 'explicit' | 'implicit' = 'explicit'): void {
+  registerAgentTool(
+    agent: ADKAgent,
+    delegationType: 'explicit' | 'implicit' = 'explicit'
+  ): void {
     const agentTool: AgentTool = {
       name: `invoke_${agent.config.name}`,
       description: `Delegate to ${agent.config.name} agent: ${agent.config.description}`,
@@ -193,11 +196,11 @@ export class OSSAToolRegistry {
         return {
           delegated_to: agent.config.name,
           input: params,
-          result: `Executed by ${agent.config.name}`
+          result: `Executed by ${agent.config.name}`,
         };
-      }
+      },
     };
-    
+
     this.agentTools.set(agentTool.name, agentTool);
   }
 
@@ -206,12 +209,12 @@ export class OSSAToolRegistry {
    */
   getToolsForCapabilities(capabilities: string[]): ADKTool[] {
     const toolNames = new Set<string>();
-    
+
     for (const capability of capabilities) {
       const mappedTools = this.capabilityMapping.get(capability) || [];
-      mappedTools.forEach(name => toolNames.add(name));
+      mappedTools.forEach((name) => toolNames.add(name));
     }
-    
+
     const tools: ADKTool[] = [];
     for (const name of toolNames) {
       const tool = this.tools.get(name);
@@ -219,7 +222,7 @@ export class OSSAToolRegistry {
         tools.push(tool);
       }
     }
-    
+
     return tools;
   }
 
@@ -235,21 +238,21 @@ export class OSSAToolRegistry {
    */
   async executeTool(name: string, params: any): Promise<any> {
     const tool = this.tools.get(name) || this.agentTools.get(name);
-    
+
     if (!tool) {
       throw new Error(`Tool not found: ${name}`);
     }
-    
+
     return tool.function(params);
   }
 
   /**
    * List all available tools
    */
-  listTools(): { standard: string[], agent: string[] } {
+  listTools(): { standard: string[]; agent: string[] } {
     return {
       standard: Array.from(this.tools.keys()),
-      agent: Array.from(this.agentTools.keys())
+      agent: Array.from(this.agentTools.keys()),
     };
   }
 
@@ -258,7 +261,7 @@ export class OSSAToolRegistry {
    */
   exportToolDefinitions(): any[] {
     const definitions: any[] = [];
-    
+
     // Standard tools
     for (const [name, tool] of this.tools) {
       definitions.push({
@@ -266,11 +269,11 @@ export class OSSAToolRegistry {
         function: {
           name,
           description: tool.description,
-          parameters: tool.parameters || {}
-        }
+          parameters: tool.parameters || {},
+        },
       });
     }
-    
+
     // Agent tools
     for (const [name, tool] of this.agentTools) {
       definitions.push({
@@ -279,11 +282,11 @@ export class OSSAToolRegistry {
           name,
           description: tool.description,
           agent: tool.agent.config.name,
-          delegation_type: tool.delegation_type
-        }
+          delegation_type: tool.delegation_type,
+        },
       });
     }
-    
+
     return definitions;
   }
 }

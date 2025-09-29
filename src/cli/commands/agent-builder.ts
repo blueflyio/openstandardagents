@@ -11,7 +11,13 @@ import chalk from 'chalk';
 import * as yaml from 'js-yaml';
 
 export interface AgentOptions {
-  type: 'orchestrator' | 'worker' | 'critic' | 'governor' | 'monitor' | 'integrator';
+  type:
+    | 'orchestrator'
+    | 'worker'
+    | 'critic'
+    | 'governor'
+    | 'monitor'
+    | 'integrator';
   schema?: string;
   output: string;
   template?: string;
@@ -49,7 +55,10 @@ export interface AgentManifest {
 /**
  * Create new agent from OSSA schema
  */
-export async function createAgent(name: string, options: AgentOptions): Promise<void> {
+export async function createAgent(
+  name: string,
+  options: AgentOptions
+): Promise<void> {
   console.log(chalk.green(`🤖 Creating ${options.type} agent: ${name}...`));
 
   try {
@@ -77,10 +86,10 @@ export async function createAgent(name: string, options: AgentOptions): Promise<
       'training-modules/configs',
       'config',
       'deployments/k8s',
-      'deployments/helm'
+      'deployments/helm',
     ];
 
-    dirs.forEach(dir => {
+    dirs.forEach((dir) => {
       mkdirSync(join(agentDir, dir), { recursive: true });
     });
 
@@ -97,7 +106,10 @@ export async function createAgent(name: string, options: AgentOptions): Promise<
     // Generate behavior definition
     console.log(chalk.gray('🎭 Generating behavior definition...'));
     const behavior = generateBehaviorDefinition(name, options.type);
-    writeFileSync(join(agentDir, `behaviors/${name}.behavior.yml`), yaml.dump(behavior));
+    writeFileSync(
+      join(agentDir, `behaviors/${name}.behavior.yml`),
+      yaml.dump(behavior)
+    );
 
     // Generate TypeScript handler
     console.log(chalk.gray('🔧 Generating TypeScript handler...'));
@@ -108,18 +120,30 @@ export async function createAgent(name: string, options: AgentOptions): Promise<
     console.log(chalk.gray('📊 Generating JSON schemas...'));
     const inputSchema = generateInputSchema(name, options.type);
     const outputSchema = generateOutputSchema(name, options.type);
-    writeFileSync(join(agentDir, `schemas/input/${name}.input.json`), JSON.stringify(inputSchema, null, 2));
-    writeFileSync(join(agentDir, `schemas/output/${name}.output.json`), JSON.stringify(outputSchema, null, 2));
+    writeFileSync(
+      join(agentDir, `schemas/input/${name}.input.json`),
+      JSON.stringify(inputSchema, null, 2)
+    );
+    writeFileSync(
+      join(agentDir, `schemas/output/${name}.output.json`),
+      JSON.stringify(outputSchema, null, 2)
+    );
 
     // Generate package.json
     console.log(chalk.gray('📦 Generating package.json...'));
     const packageJson = generatePackageJson(name, options.type);
-    writeFileSync(join(agentDir, 'package.json'), JSON.stringify(packageJson, null, 2));
+    writeFileSync(
+      join(agentDir, 'package.json'),
+      JSON.stringify(packageJson, null, 2)
+    );
 
     // Generate TypeScript config
     console.log(chalk.gray('⚙️  Generating TypeScript configuration...'));
     const tsconfig = generateTsConfig();
-    writeFileSync(join(agentDir, 'tsconfig.json'), JSON.stringify(tsconfig, null, 2));
+    writeFileSync(
+      join(agentDir, 'tsconfig.json'),
+      JSON.stringify(tsconfig, null, 2)
+    );
 
     // Generate README
     console.log(chalk.gray('📄 Generating README...'));
@@ -134,7 +158,10 @@ export async function createAgent(name: string, options: AgentOptions): Promise<
     // Generate metadata
     console.log(chalk.gray('📋 Generating OSSA metadata...'));
     const metadata = generateOSSAMetadata(name, options.type);
-    writeFileSync(join(agentDir, '.agents-metadata.json'), JSON.stringify(metadata, null, 2));
+    writeFileSync(
+      join(agentDir, '.agents-metadata.json'),
+      JSON.stringify(metadata, null, 2)
+    );
 
     console.log(chalk.green(`✅ Agent '${name}' created successfully!`));
     console.log(chalk.blue('\n📋 Next steps:'));
@@ -142,9 +169,11 @@ export async function createAgent(name: string, options: AgentOptions): Promise<
     console.log(chalk.gray('2. npm install'));
     console.log(chalk.gray('3. npm run build'));
     console.log(chalk.gray('4. npm test'));
-
   } catch (error) {
-    console.error(chalk.red('❌ Failed to create agent:'), error instanceof Error ? error.message : String(error));
+    console.error(
+      chalk.red('❌ Failed to create agent:'),
+      error instanceof Error ? error.message : String(error)
+    );
     process.exit(1);
   }
 }
@@ -152,8 +181,13 @@ export async function createAgent(name: string, options: AgentOptions): Promise<
 /**
  * Generate agent from existing OpenAPI specification
  */
-export async function generateAgentFromOpenAPI(openapiFile: string, options: any): Promise<void> {
-  console.log(chalk.blue(`📋 Generating agent from OpenAPI spec: ${openapiFile}...`));
+export async function generateAgentFromOpenAPI(
+  openapiFile: string,
+  options: any
+): Promise<void> {
+  console.log(
+    chalk.blue(`📋 Generating agent from OpenAPI spec: ${openapiFile}...`)
+  );
 
   try {
     // Read and parse OpenAPI spec
@@ -161,7 +195,10 @@ export async function generateAgentFromOpenAPI(openapiFile: string, options: any
     const openapiSpec = yaml.load(openapiContent) as any;
 
     // Extract agent name from spec or use provided name
-    const agentName = options.name || openapiSpec.info?.title?.toLowerCase().replace(/\s+/g, '-') || basename(openapiFile, '.yml');
+    const agentName =
+      options.name ||
+      openapiSpec.info?.title?.toLowerCase().replace(/\s+/g, '-') ||
+      basename(openapiFile, '.yml');
 
     // Determine agent type from spec (basic heuristics)
     const agentType = determineAgentTypeFromSpec(openapiSpec);
@@ -170,13 +207,19 @@ export async function generateAgentFromOpenAPI(openapiFile: string, options: any
     await createAgent(agentName, {
       type: agentType,
       output: options.output,
-      schema: openapiFile
+      schema: openapiFile,
     });
 
-    console.log(chalk.green(`✅ Agent '${agentName}' generated from OpenAPI specification!`));
-
+    console.log(
+      chalk.green(
+        `✅ Agent '${agentName}' generated from OpenAPI specification!`
+      )
+    );
   } catch (error) {
-    console.error(chalk.red('❌ Failed to generate agent from OpenAPI:'), error instanceof Error ? error.message : String(error));
+    console.error(
+      chalk.red('❌ Failed to generate agent from OpenAPI:'),
+      error instanceof Error ? error.message : String(error)
+    );
     process.exit(1);
   }
 }
@@ -190,11 +233,14 @@ function determineAgentTypeFromSpec(spec: any): AgentOptions['type'] {
   const paths = Object.keys(spec.paths || {});
 
   // Simple heuristics to determine agent type
-  if (title.includes('orchestrator') || title.includes('coordinator')) return 'orchestrator';
-  if (title.includes('monitor') || paths.some(p => p.includes('monitor'))) return 'monitor';
+  if (title.includes('orchestrator') || title.includes('coordinator'))
+    return 'orchestrator';
+  if (title.includes('monitor') || paths.some((p) => p.includes('monitor')))
+    return 'monitor';
   if (title.includes('critic') || title.includes('validator')) return 'critic';
   if (title.includes('governor') || title.includes('policy')) return 'governor';
-  if (title.includes('integrator') || title.includes('bridge')) return 'integrator';
+  if (title.includes('integrator') || title.includes('bridge'))
+    return 'integrator';
 
   // Default to worker
   return 'worker';
@@ -212,39 +258,36 @@ function generateAgentManifest(name: string, type: string): AgentManifest {
       uuid: `project-${name}-${type}-v1`,
       type,
       version: '1.0.0',
-      description: `OSSA-compliant ${type} agent: ${name}`
+      description: `OSSA-compliant ${type} agent: ${name}`,
     },
     spec: {
       capabilities: getCapabilitiesForType(type),
-      dependencies: [
-        '@ossa/core@0.1.9',
-        'express@^4.18.0'
-      ],
+      dependencies: ['@ossa/core@0.1.9', 'express@^4.18.0'],
       endpoints: {
         health: '/health',
         execute: '/execute',
         status: '/status',
-        metrics: '/metrics'
+        metrics: '/metrics',
       },
       integrations: {
         workspace: {
           local: '.agents-workspace',
-          global: '../.agent-workspace'
+          global: '../.agent-workspace',
         },
         registry: {
           local: '../registry.yml',
-          global: '../.agent-workspace/registry.yml'
-        }
+          global: '../.agent-workspace/registry.yml',
+        },
       },
       behaviors: {
         primary: `${name}.behavior.yml`,
-        additional: []
+        additional: [],
       },
       validation: {
         schema: `schemas/${name}.schema.json`,
-        openapi: 'openapi.yml'
-      }
-    }
+        openapi: 'openapi.yml',
+      },
+    },
   };
 }
 
@@ -253,12 +296,20 @@ function generateAgentManifest(name: string, type: string): AgentManifest {
  */
 function getCapabilitiesForType(type: string): string[] {
   const capabilities: Record<string, string[]> = {
-    orchestrator: ['multi_agent_coordination', 'workflow_orchestration', 'resource_allocation'],
+    orchestrator: [
+      'multi_agent_coordination',
+      'workflow_orchestration',
+      'resource_allocation',
+    ],
     worker: ['task_execution', 'data_processing', 'api_interaction'],
     critic: ['output_validation', 'quality_assessment', 'compliance_checking'],
     governor: ['policy_enforcement', 'resource_management', 'access_control'],
     monitor: ['health_monitoring', 'performance_tracking', 'alert_generation'],
-    integrator: ['external_integration', 'protocol_bridging', 'data_transformation']
+    integrator: [
+      'external_integration',
+      'protocol_bridging',
+      'data_transformation',
+    ],
   };
 
   return capabilities[type] || capabilities.worker;
@@ -273,13 +324,13 @@ function generateOpenAPISpec(name: string, type: string) {
     info: {
       title: `${name} Agent API`,
       version: '1.0.0',
-      description: `OSSA-compliant API for ${name} ${type} agent`
+      description: `OSSA-compliant API for ${name} ${type} agent`,
     },
     servers: [
       {
         url: 'http://localhost:3000',
-        description: 'Development server'
-      }
+        description: 'Development server',
+      },
     ],
     paths: {
       '/health': {
@@ -298,14 +349,14 @@ function generateOpenAPISpec(name: string, type: string) {
                       agent: { type: 'string', example: name },
                       type: { type: 'string', example: type },
                       version: { type: 'string', example: '1.0.0' },
-                      timestamp: { type: 'string', format: 'date-time' }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
+                      timestamp: { type: 'string', format: 'date-time' },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
       },
       '/execute': {
         post: {
@@ -319,12 +370,15 @@ function generateOpenAPISpec(name: string, type: string) {
                   type: 'object',
                   properties: {
                     task: { type: 'string', description: 'Task to execute' },
-                    parameters: { type: 'object', description: 'Task parameters' }
+                    parameters: {
+                      type: 'object',
+                      description: 'Task parameters',
+                    },
                   },
-                  required: ['task']
-                }
-              }
-            }
+                  required: ['task'],
+                },
+              },
+            },
           },
           responses: {
             '200': {
@@ -337,16 +391,16 @@ function generateOpenAPISpec(name: string, type: string) {
                       status: { type: 'string', example: 'success' },
                       result: { type: 'object' },
                       execution_id: { type: 'string' },
-                      timestamp: { type: 'string', format: 'date-time' }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    }
+                      timestamp: { type: 'string', format: 'date-time' },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
   };
 }
 
@@ -360,28 +414,36 @@ function generateBehaviorDefinition(name: string, type: string) {
     metadata: {
       name: `${name}-behavior`,
       agent: name,
-      version: '1.0.0'
+      version: '1.0.0',
     },
     spec: {
       behavior_type: type,
       triggers: [
         { type: 'api_request', endpoint: '/execute', method: 'POST' },
         { type: 'event_driven', events: ['task.assigned'] },
-        { type: 'scheduled', cron: '0 */6 * * *' }
+        { type: 'scheduled', cron: '0 */6 * * *' },
       ],
       capabilities: getCapabilitiesForType(type),
       quality_gates: [
-        { name: 'input_validation', required: true, schema: `schemas/input/${name}.input.json` },
-        { name: 'output_verification', required: true, schema: `schemas/output/${name}.output.json` }
+        {
+          name: 'input_validation',
+          required: true,
+          schema: `schemas/input/${name}.input.json`,
+        },
+        {
+          name: 'output_verification',
+          required: true,
+          schema: `schemas/output/${name}.output.json`,
+        },
       ],
       artifacts: {
         outputs: [`${name}_logs`, `${name}_results`],
         storage: {
           local: '.agents-workspace/data/artifacts',
-          global: '../.agent-workspace/data/artifacts'
-        }
-      }
-    }
+          global: '../.agent-workspace/data/artifacts',
+        },
+      },
+    },
   };
 }
 
@@ -389,7 +451,10 @@ function generateBehaviorDefinition(name: string, type: string) {
  * Generate TypeScript handler
  */
 function generateTypeScriptHandler(name: string, type: string): string {
-  const className = name.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join('');
+  const className = name
+    .split('-')
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join('');
 
   return `import { Request, Response } from 'express';
 
@@ -458,14 +523,14 @@ function generateInputSchema(name: string, type: string) {
     properties: {
       task: {
         type: 'string',
-        description: 'Task to execute'
+        description: 'Task to execute',
       },
       parameters: {
         type: 'object',
-        description: 'Task parameters'
-      }
+        description: 'Task parameters',
+      },
     },
-    required: ['task']
+    required: ['task'],
   };
 }
 
@@ -477,20 +542,20 @@ function generateOutputSchema(name: string, type: string) {
     properties: {
       status: {
         type: 'string',
-        enum: ['success', 'error', 'processing']
+        enum: ['success', 'error', 'processing'],
       },
       result: {
-        type: 'object'
+        type: 'object',
       },
       execution_id: {
-        type: 'string'
+        type: 'string',
       },
       timestamp: {
         type: 'string',
-        format: 'date-time'
-      }
+        format: 'date-time',
+      },
     },
-    required: ['status']
+    required: ['status'],
   };
 }
 
@@ -505,12 +570,12 @@ function generatePackageJson(name: string, type: string) {
       start: 'node dist/index.js',
       dev: 'ts-node src/index.ts',
       test: 'jest',
-      lint: 'eslint src/**/*.ts'
+      lint: 'eslint src/**/*.ts',
     },
     dependencies: {
       '@ossa/core': '^0.1.9',
       express: '^4.18.0',
-      zod: '^3.22.0'
+      zod: '^3.22.0',
     },
     devDependencies: {
       '@types/express': '^4.17.0',
@@ -519,8 +584,8 @@ function generatePackageJson(name: string, type: string) {
       'ts-node': '^10.9.0',
       jest: '^29.0.0',
       '@types/jest': '^29.0.0',
-      eslint: '^8.0.0'
-    }
+      eslint: '^8.0.0',
+    },
   };
 }
 
@@ -538,15 +603,18 @@ function generateTsConfig() {
       forceConsistentCasingInFileNames: true,
       declaration: true,
       declarationMap: true,
-      sourceMap: true
+      sourceMap: true,
     },
     include: ['src/**/*'],
-    exclude: ['node_modules', 'dist', 'tests']
+    exclude: ['node_modules', 'dist', 'tests'],
   };
 }
 
 function generateBasicTest(name: string, type: string): string {
-  const className = name.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join('');
+  const className = name
+    .split('-')
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join('');
 
   return `import { ${className}Handler } from '../handlers/${name}.handlers';
 
@@ -612,7 +680,7 @@ function generateOSSAMetadata(name: string, type: string) {
       compliance_level: 'full',
       api_version: '1.0.0',
       last_updated: new Date().toISOString(),
-      structure_complete: true
+      structure_complete: true,
     },
     directories: {
       behaviors: true,
@@ -623,15 +691,15 @@ function generateOSSAMetadata(name: string, type: string) {
       src: true,
       tests: true,
       config: true,
-      deployments: true
+      deployments: true,
     },
     files: {
       'agent.yml': true,
       'openapi.yml': true,
       'README.md': true,
       'package.json': true,
-      'tsconfig.json': true
-    }
+      'tsconfig.json': true,
+    },
   };
 }
 

@@ -10,7 +10,7 @@ export interface ADKSessionState {
 export interface ADKSession {
   id: string;
   state: ADKSessionState;
-  temp: ADKSessionState;  // Turn-specific temporary state
+  temp: ADKSessionState; // Turn-specific temporary state
   metadata: {
     created_at: Date;
     updated_at: Date;
@@ -29,7 +29,7 @@ export class OSSASessionManager {
    */
   createSession(id?: string): ADKSession {
     const sessionId = id || this.generateSessionId();
-    
+
     const session: ADKSession = {
       id: sessionId,
       state: {},
@@ -37,10 +37,10 @@ export class OSSASessionManager {
       metadata: {
         created_at: new Date(),
         updated_at: new Date(),
-        agent_trace: []
-      }
+        agent_trace: [],
+      },
     };
-    
+
     this.sessions.set(sessionId, session);
     return session;
   }
@@ -60,7 +60,7 @@ export class OSSASessionManager {
     if (!session) {
       throw new Error(`Session not found: ${sessionId}`);
     }
-    
+
     session.state[key] = value;
     session.metadata.updated_at = new Date();
   }
@@ -73,7 +73,7 @@ export class OSSASessionManager {
     if (!session) {
       throw new Error(`Session not found: ${sessionId}`);
     }
-    
+
     session.temp[key] = value;
   }
 
@@ -104,7 +104,7 @@ export class OSSASessionManager {
   interpolateState(text: string, sessionId: string): string {
     const session = this.sessions.get(sessionId);
     if (!session) return text;
-    
+
     // Replace {variable} with state value
     return text.replace(/\{(\w+)\}/g, (match, key) => {
       // Check temp state first, then persistent state
@@ -126,7 +126,7 @@ export class OSSASessionManager {
     if (!original) {
       throw new Error(`Session not found: ${sessionId}`);
     }
-    
+
     const clonedId = this.generateSessionId();
     const cloned: ADKSession = {
       id: clonedId,
@@ -135,10 +135,10 @@ export class OSSASessionManager {
       metadata: {
         created_at: new Date(),
         updated_at: new Date(),
-        agent_trace: [...original.metadata.agent_trace]
-      }
+        agent_trace: [...original.metadata.agent_trace],
+      },
     };
-    
+
     this.sessions.set(clonedId, cloned);
     return cloned;
   }
@@ -151,21 +151,21 @@ export class OSSASessionManager {
     if (!target) {
       throw new Error(`Target session not found: ${targetId}`);
     }
-    
+
     for (const sourceId of sourceIds) {
       const source = this.sessions.get(sourceId);
       if (source) {
         // Merge state (source overwrites target for conflicts)
         Object.assign(target.state, source.state);
-        
+
         // Merge agent traces
         target.metadata.agent_trace.push(...source.metadata.agent_trace);
-        
+
         // Clean up source session
         this.sessions.delete(sourceId);
       }
     }
-    
+
     target.metadata.updated_at = new Date();
   }
 
@@ -174,14 +174,14 @@ export class OSSASessionManager {
    */
   cleanupSessions(olderThan: Date): number {
     let cleaned = 0;
-    
+
     for (const [id, session] of this.sessions.entries()) {
       if (session.metadata.updated_at < olderThan) {
         this.sessions.delete(id);
         cleaned++;
       }
     }
-    
+
     return cleaned;
   }
 
@@ -198,7 +198,7 @@ export class OSSASessionManager {
   exportSession(sessionId: string): any {
     const session = this.sessions.get(sessionId);
     if (!session) return null;
-    
+
     return {
       id: session.id,
       state: session.state,
@@ -208,8 +208,8 @@ export class OSSASessionManager {
         updated_at: session.metadata.updated_at.toISOString(),
         agent_trace: session.metadata.agent_trace,
         state_keys: Object.keys(session.state),
-        temp_keys: Object.keys(session.temp)
-      }
+        temp_keys: Object.keys(session.temp),
+      },
     };
   }
 }

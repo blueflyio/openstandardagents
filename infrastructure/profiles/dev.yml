@@ -1,0 +1,59 @@
+version: '3.8'
+
+extends:
+  - core.yml
+
+services:
+  agent-brain:
+    image: agent-brain:latest
+    container_name: agent-brain
+    ports:
+      - "4000:4000"
+    environment:
+      - NODE_ENV=development
+      - PORT=4000
+    networks:
+      - llm-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4000/health"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 5s
+    restart: unless-stopped
+
+  compliance-engine:
+    image: compliance-engine:latest
+    container_name: compliance-engine
+    ports:
+      - "4100:4100"
+    environment:
+      - NODE_ENV=development
+      - PORT=4100
+    networks:
+      - llm-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4100/health"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 5s
+    restart: unless-stopped
+
+  studio-ui:
+    image: studio-ui:latest
+    container_name: studio-ui
+    ports:
+      - "4140:4140"
+    environment:
+      - NODE_ENV=development
+      - PORT=4140
+    networks:
+      - llm-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4140/health"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 5s
+    restart: unless-stopped
