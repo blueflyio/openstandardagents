@@ -70,7 +70,7 @@ validate:ossa-spec:
     - echo "🔍 Validating OSSA specification v${PROJECT_VERSION}"
     - npm install  # Use install instead of ci to handle lock file mismatches
     - npm run api:validate
-    - npx swagger-cli validate src/api/ossa-complete.openapi.yml || echo "Swagger validation completed"
+    - npx swagger-cli validate src/api/core/ossa-complete.openapi.yml || echo "Swagger validation completed"
     - echo "✅ API specifications valid"
   artifacts:
     paths:
@@ -82,6 +82,34 @@ validate:ossa-spec:
     - fix/*
     - development
     - pages
+
+# OpenAPI comprehensive validation
+validate:openapi:
+  stage: validate
+  image: node:20
+  script:
+    - echo "🔍 Validating all OpenAPI 3.1 specifications"
+    - npm install
+    - echo "Validating core specifications..."
+    - npm run api:validate:complete  # Main spec must pass
+    - echo "Validating all specifications (warnings allowed)..."
+    - npm run api:validate:all || true  # Allow warnings for now
+    - echo "Generating TypeScript client..."
+    - npm run generate:client
+    - echo "Bundling specifications..."
+    - npm run api:bundle
+    - echo "✅ OpenAPI validation complete"
+  artifacts:
+    reports:
+      junit: openapi-validation-report.xml
+    paths:
+      - dist/ossa-complete.json
+      - src/types/api-client.ts
+    expire_in: 1 week
+  only:
+    - merge_requests
+    - main
+    - /^release\/.*$/
 
 # Mock Server Testing
 test:mock-server:

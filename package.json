@@ -1,6 +1,6 @@
 {
   "name": "@ossa/specification",
-  "version": "0.1.9",
+  "version": "0.1.2",
   "description": "OSSA v0.1.9 - Open Standards for Scalable Agents Specification",
   "type": "module",
   "main": "dist/types/index.js",
