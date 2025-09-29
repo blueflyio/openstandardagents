@@ -1,53 +1,465 @@
-# .infrastructure.yaml - Project Metadata Template
-# This file defines the project's infrastructure requirements and dependencies
+# .infrastructure.yaml - Comprehensive Project Infrastructure Metadata
+# This file defines ALL infrastructure requirements and dependencies for ossa
 
 metadata:
-  name: "OSSA"
-  type: "orchestrator"  # core, service, model
+  name: "ossa"
+  type: "orchestrator"  # orchestrator, service, model
   port: 7000
+  version: "1.0.0"
   cluster: "service-layer"  # core-infrastructure, service-layer, model-layer
+  namespace: "${NAMESPACE:-llm-platform}"
+  registry: "registry.gitlab.bluefly.io/llm/ossa"
 
 description:
-  summary: "Open Source Systems Architecture - Core orchestration framework for LLM ecosystem"
+  summary: "Open Source Software Agent - Core AI agent orchestration system"
   category: "service"  # orchestrator, api, ui, model, gateway
+  tags:
+    - "orchestrator"
+    - "llm-ecosystem"
+    - "${DEPLOYMENT_PROFILE}"
+  owner: "llm-platform-team"
+  documentation: "https://gitlab.bluefly.io/llm/${PROJECT_GROUP}/ossa"
 
 dependencies:
+  # Infrastructure dependencies
   infrastructure:
     postgresql:
-      required: true
+      required: ${DB_REQUIRED:-true}
       shared: true
+      version: "15-alpine"
       host: "postgresql://localhost:5433"
+      database: "ossa_${ENVIRONMENT:-dev}"
+      migrations: true
+      backup: true
+
     redis:
-      required: true
+      required: ${CACHE_REQUIRED:-true}
       shared: true
+      version: "7-alpine"
       host: "redis://localhost:6380"
+      persistence: true
+      maxmemory: "256mb"
+
     qdrant:
-      required: false
+      required: ${VECTOR_DB_REQUIRED:-false}
       shared: true
+      version: "latest"
       host: "http://localhost:6333"
+      collection: "ossa_vectors"
+
     minio:
-      required: false
+      required: ${STORAGE_REQUIRED:-false}
       shared: true
+      version: "latest"
       host: "http://localhost:9001"
+      bucket: "ossa-assets"
+
+    elasticsearch:
+      required: ${SEARCH_REQUIRED:-false}
+      shared: true
+      version: "8.11.0"
+      host: "http://localhost:9200"
+      index: "ossa"
+
+  # Service dependencies (other microservices)
+  services:
+    agent_protocol:
+      required: ${NEEDS_PROTOCOL:-false}
+      endpoint: "http://agent-protocol:4050"
+      version: "^1.0.0"
+
+    agent_buildkit:
+      required: ${NEEDS_BUILDKIT:-false}
+      endpoint: "http://agent-buildkit:7100"
+      version: "^1.0.0"
+
+    ossa:
+      required: ${NEEDS_OSSA:-false}
+      endpoint: "http://ossa:7000"
+      version: "^1.0.0"
+
+  # External APIs
+  external:
+    openai:
+      required: ${NEEDS_OPENAI:-false}
+      endpoint: "https://api.openai.com/v1"
+      auth: "bearer"
+
+    anthropic:
+      required: ${NEEDS_ANTHROPIC:-false}
+      endpoint: "https://api.anthropic.com/v1"
+      auth: "x-api-key"
+
+    huggingface:
+      required: ${NEEDS_HF:-false}
+      endpoint: "https://api-inference.huggingface.co"
+      auth: "bearer"
 
 deployment:
+  # Deployment profiles this service is included in
   profiles:
-    - "services"  # minimal, development, full
+    - "${DEPLOYMENT_PROFILE}"  # minimal, development, full, production
+    - "all"
 
+  # Scaling configuration
   replicas:
-    min: 1
-    max: 5
+    min: ${MIN_REPLICAS:-1}
+    max: ${MAX_REPLICAS:-5}
+    autoscaling:
+      enabled: ${AUTOSCALING:-true}
+      targetCPU: 70
+      targetMemory: 80
 
+  # Resource requirements
   resources:
-    cpu: "500m"
-    memory: "512Mi"
+    limits:
+      cpu: "${CPU_LIMIT:-1000m}"
+      memory: "${MEMORY_LIMIT:-1Gi}"
+      storage: "${STORAGE_LIMIT:-10Gi}"
+    requests:
+      cpu: "${CPU_REQUEST:-100m}"
+      memory: "${MEMORY_REQUEST:-128Mi}"
+      storage: "${STORAGE_REQUEST:-1Gi}"
 
+  # Health checks
   health:
-    endpoint: "/health"
+    liveness:
+      endpoint: "/health/live"
+      initialDelaySeconds: 30
+      periodSeconds: 10
+      timeoutSeconds: 5
+      failureThreshold: 3
+    readiness:
+      endpoint: "/health/ready"
+      initialDelaySeconds: 10
+      periodSeconds: 5
+      timeoutSeconds: 3
+      failureThreshold: 3
+    startup:
+      endpoint: "/health/startup"
+      initialDelaySeconds: 0
+      periodSeconds: 10
+      timeoutSeconds: 5
+      failureThreshold: 30
+
+  # Environment-specific configuration
+  environments:
+    development:
+      replicas: 1
+      log_level: "debug"
+      debug: true
+      tracing: true
+    staging:
+      replicas: 2
+      log_level: "info"
+      debug: false
+      tracing: true
+    production:
+      replicas: 3
+      log_level: "warn"
+      debug: false
+      tracing: true
 
 networking:
-  internal_port: 3000
-  external_port: 7000
+  # Port configuration
+  ports:
+    internal: ${INTERNAL_PORT:-3000}
+    external: 7000
+    metrics: ${METRICS_PORT:-9090}
+    websocket: ${WS_PORT:-0}
+    grpc: ${GRPC_PORT:-0}
+
+  # Ingress configuration
+  ingress:
+    enabled: ${INGRESS_ENABLED:-true}
+    host: "ossa.${DOMAIN:-llm.local}"
+    paths:
+      - path: "/"
+        pathType: "Prefix"
+    tls:
+      enabled: ${TLS_ENABLED:-false}
+      secretName: "ossa-tls"
+    annotations:
+      nginx.ingress.kubernetes.io/rewrite-target: "/"
+      nginx.ingress.kubernetes.io/proxy-body-size: "50m"
+
+  # Service mesh configuration
+  mesh:
+    enabled: ${MESH_ENABLED:-true}
+    istio:
+      virtualService: true
+      destinationRule: true
+      peerAuthentication: "STRICT"
+    linkerd:
+      inject: true
+      profile: "auto"
 
 security:
-  run_as_non_root: true
+  # Pod security
+  pod:
+    runAsNonRoot: true
+    runAsUser: 1001
+    fsGroup: 1001
+    seccompProfile:
+      type: RuntimeDefault
+
+  # Container security
+  container:
+    allowPrivilegeEscalation: false
+    readOnlyRootFilesystem: ${READONLY_FS:-false}
+    capabilities:
+      drop:
+        - ALL
+      add:
+        - NET_BIND_SERVICE
+
+  # Network policies
+  networkPolicies:
+    enabled: true
+    ingress:
+      - from:
+        - namespaceSelector:
+            matchLabels:
+              name: llm-platform
+    egress:
+      - to:
+        - namespaceSelector:
+            matchLabels:
+              name: llm-platform
+      - to:
+        - podSelector:
+            matchLabels:
+              app: postgresql
+      - to:
+        - podSelector:
+            matchLabels:
+              app: redis
+
+  # RBAC
+  rbac:
+    enabled: true
+    serviceAccount:
+      create: true
+      name: "ossa"
+    role:
+      create: true
+      rules:
+        - apiGroups: [""]
+          resources: ["configmaps", "secrets"]
+          verbs: ["get", "list", "watch"]
+
+observability:
+  # Metrics
+  metrics:
+    enabled: true
+    endpoint: "/metrics"
+    port: 9090
+    prometheus:
+      scrape: true
+      interval: "30s"
+    exporters:
+      - node
+      - process
+      - custom
+
+  # Logging
+  logging:
+    enabled: true
+    format: "json"
+    level: "${LOG_LEVEL:-info}"
+    outputs:
+      - stdout
+      - file
+    elasticsearch:
+      enabled: ${ES_LOGGING:-false}
+      index: "ossa-logs"
+    fluentd:
+      enabled: ${FLUENTD:-false}
+      tag: "ossa"
+
+  # Tracing
+  tracing:
+    enabled: ${TRACING_ENABLED:-true}
+    provider: "opentelemetry"
+    jaeger:
+      endpoint: "http://jaeger:14268"
+      samplingRate: ${SAMPLING_RATE:-0.1}
+    zipkin:
+      endpoint: "http://zipkin:9411"
+
+  # Alerting
+  alerts:
+    enabled: true
+    rules:
+      - name: "high-cpu"
+        condition: "cpu > 80%"
+        duration: "5m"
+        severity: "warning"
+      - name: "high-memory"
+        condition: "memory > 90%"
+        duration: "2m"
+        severity: "critical"
+      - name: "health-check-failure"
+        condition: "health_check_success_rate < 95%"
+        duration: "1m"
+        severity: "critical"
+      - name: "high-error-rate"
+        condition: "error_rate > 5%"
+        duration: "5m"
+        severity: "warning"
+      - name: "slow-response"
+        condition: "p95_latency > 1s"
+        duration: "5m"
+        severity: "warning"
+
+backup:
+  enabled: ${BACKUP_ENABLED:-true}
+  schedule: "0 2 * * *"  # Daily at 2 AM
+  retention: "7d"
+  destinations:
+    - type: "s3"
+      bucket: "llm-backups"
+      prefix: "ossa/"
+    - type: "local"
+      path: "/backups/ossa"
+  databases:
+    - postgresql
+    - redis
+  volumes:
+    - data
+    - config
+
+ci_cd:
+  # GitLab CI/CD configuration
+  pipeline:
+    enabled: true
+    stages:
+      - build
+      - test
+      - scan
+      - deploy
+
+  # Build configuration
+  build:
+    dockerfile: "infrastructure/Dockerfile"
+    context: "."
+    cache: true
+    registry: "registry.gitlab.bluefly.io"
+
+  # Testing
+  testing:
+    unit: true
+    integration: true
+    e2e: ${E2E_TESTS:-false}
+    coverage:
+      threshold: ${COVERAGE_THRESHOLD:-80}
+
+  # Security scanning
+  scanning:
+    sast: true
+    dependency_scanning: true
+    container_scanning: true
+    license_scanning: true
+
+  # Deployment
+  deploy:
+    environments:
+      - dev
+      - staging
+      - production
+    strategy: "rolling"
+    canary:
+      enabled: ${CANARY_ENABLED:-false}
+      percentage: 10
+
+integration:
+  # MCP (Model Context Protocol) integration
+  mcp:
+    enabled: ${MCP_ENABLED:-false}
+    server: true
+    client: false
+    protocols:
+      - "stdio"
+      - "websocket"
+
+  # Phoenix integration
+  phoenix:
+    enabled: ${PHOENIX_ENABLED:-false}
+    endpoint: "http://phoenix:8080"
+    api_version: "v1"
+
+  # GraphQL
+  graphql:
+    enabled: ${GRAPHQL_ENABLED:-false}
+    endpoint: "/graphql"
+    playground: ${GRAPHQL_PLAYGROUND:-true}
+
+  # REST API
+  rest:
+    enabled: true
+    version: "v1"
+    base_path: "/api/v1"
+    openapi: true
+    swagger: ${SWAGGER_ENABLED:-true}
+
+features:
+  # Feature flags
+  flags:
+    new_ui: ${FEATURE_NEW_UI:-false}
+    beta_features: ${FEATURE_BETA:-false}
+    experimental: ${FEATURE_EXPERIMENTAL:-false}
+
+  # Capabilities
+  capabilities:
+    websocket: ${HAS_WEBSOCKET:-false}
+    streaming: ${HAS_STREAMING:-false}
+    batch_processing: ${HAS_BATCH:-false}
+    async_processing: ${HAS_ASYNC:-true}
+    caching: ${HAS_CACHING:-true}
+    rate_limiting: ${HAS_RATE_LIMIT:-true}
+
+compliance:
+  # Regulatory compliance
+  standards:
+    - "SOC2"
+    - "GDPR"
+    - "HIPAA"
+
+  # Data governance
+  data:
+    encryption_at_rest: true
+    encryption_in_transit: true
+    retention_days: ${DATA_RETENTION:-90}
+    pii_handling: "masked"
+
+  # Audit logging
+  audit:
+    enabled: true
+    events:
+      - authentication
+      - authorization
+      - data_access
+      - configuration_change
+    retention_days: ${AUDIT_RETENTION:-365}
+
+maintenance:
+  # Maintenance windows
+  windows:
+    - day: "sunday"
+      start: "02:00"
+      duration: "4h"
+
+  # Update strategy
+  updates:
+    auto_minor: true
+    auto_patch: true
+    notify_major: true
+
+  # Lifecycle
+  lifecycle:
+    preStop:
+      exec:
+        command: ["/bin/sh", "-c", "sleep 15"]
+    postStart:
+      exec:
+        command: ["/bin/sh", "-c", "echo 'Container started'"]

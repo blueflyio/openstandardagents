@@ -15,9 +15,12 @@ export interface AgentOptions {
     | 'orchestrator'
     | 'worker'
     | 'critic'
+    | 'judge'
+    | 'trainer'
     | 'governor'
     | 'monitor'
-    | 'integrator';
+    | 'integrator'
+    | 'voice';
   schema?: string;
   output: string;
   template?: string;
@@ -251,7 +254,7 @@ function determineAgentTypeFromSpec(spec: any): AgentOptions['type'] {
  */
 function generateAgentManifest(name: string, type: string): AgentManifest {
   return {
-    apiVersion: 'open-standards-scalable-agents/v0.1.9',
+    apiVersion: '@bluefly/ossa/v0.1.9',
     kind: 'Agent',
     metadata: {
       name,
@@ -409,7 +412,7 @@ function generateOpenAPISpec(name: string, type: string) {
  */
 function generateBehaviorDefinition(name: string, type: string) {
   return {
-    apiVersion: 'open-standards-scalable-agents/v0.1.9',
+    apiVersion: '@bluefly/ossa/v0.1.9',
     kind: 'AgentBehavior',
     metadata: {
       name: `${name}-behavior`,

@@ -1,11 +1,11 @@
 services:
-  OSSA:
+  ossa:
     build: .
     ports:
       - "7000:3000"
     environment:
       NODE_ENV: development
-      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/OSSA_dev
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/ossa_dev
       REDIS_URL: redis://redis:6379
     depends_on:
       - postgres
@@ -18,7 +18,7 @@ services:
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: OSSA_dev
+      POSTGRES_DB: ossa_dev
     ports:
       - "5433:5432"
     networks:

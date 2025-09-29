@@ -1,6 +1,6 @@
 .PHONY: build run test deploy clean help
 
-SERVICE_NAME = OSSA
+SERVICE_NAME = ossa
 SERVICE_PORT = 7000
 
 help:

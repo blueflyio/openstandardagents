@@ -59,11 +59,15 @@
 ### Core Agent Types
 | Type | Purpose | Capabilities | Use Cases |
 |------|---------|-------------|-----------|
+| **Orchestrator** | Coordination | Workflow management, multi-agent coordination | Process automation, workflow orchestration |
 | **Worker** | Task execution | Data processing, API calls, computation | ETL, analysis, integration |
-| **Orchestrator** | Coordination | Workflow management, task routing | Process automation, coordination |
 | **Critic** | Quality control | Review, validation, assessment | Code review, quality assurance |
-| **Monitor** | Observability | Metrics, logging, alerting | System monitoring, health checks |
+| **Judge** | Decision making | Evaluation, scoring, decision resolution | Approval workflows, conflict resolution |
+| **Trainer** | Learning | Model training, feedback processing | Continuous learning, adaptation |
 | **Governor** | Compliance | Policy enforcement, auditing | Regulatory compliance, governance |
+| **Monitor** | Observability | Metrics, logging, alerting | System monitoring, health checks |
+| **Integrator** | Connectivity | Protocol bridging, system integration | API integration, data synchronization |
+| **Voice** | Audio/Speech | Speech recognition, audio processing | Voice interfaces, audio analysis |
 
 ### Specialized Agents
 - **LangChain Workers** - LangChain framework integration

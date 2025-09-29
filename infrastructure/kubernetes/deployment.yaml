@@ -1,23 +1,23 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: OSSA
+  name: ossa
   labels:
-    app: OSSA
+    app: ossa
     type: orchestrator
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: OSSA
+      app: ossa
   template:
     metadata:
       labels:
-        app: OSSA
+        app: ossa
     spec:
       containers:
-        - name: OSSA
-          image: OSSA:latest
+        - name: ossa
+          image: ossa:latest
           ports:
             - containerPort: 3000
           env:

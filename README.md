@@ -14,7 +14,7 @@ The **Open Standards for Scalable Agents (OSSA)** v0.1.9 is the industry's most 
 🚀 **OpenAPI 3.1 Complete Implementation** - Advanced features including discriminator mapping, webhooks, conditional schemas, and JSON Schema Draft 2020-12
 🤖 **15 Production-Ready Specifications** - Core OSSA, MCP infrastructure, and project orchestration APIs
 ⚡ **Universal Agent Protocol (UAP)** - RASP, ACAP, UADP, CPC protocols for seamless agent communication
-🏗️ **6 Agent Archetypes** - Worker, Orchestrator, Critic, Monitor, Governor, Judge with inheritance patterns
+🏗️ **9 Agent Archetypes** - Orchestrator, Worker, Critic, Judge, Trainer, Governor, Monitor, Integrator, Voice with inheritance patterns
 🔗 **MCP-per-Agent Architecture** - Each agent can expose its own Model Context Protocol server for maximum modularity and interoperability
 🧠 **Model Context Switching** - Dynamic model selection and per-agent model configuration with multi-provider support
 🔒 **Enterprise Security** - OAuth 2.1, mTLS, RBAC with OPA policies

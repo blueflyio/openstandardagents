@@ -151,7 +151,7 @@ paths:
           in: query
           schema:
             type: string
-            enum: [worker, governor, critic, judge, observer]
+            enum: [orchestrator, worker, critic, judge, trainer, governor, monitor, integrator, voice]
           description: Filter by agent type
       responses:
         '200':
@@ -613,7 +613,7 @@ components:
           example: "0.1.9-alpha.1"
         type:
           type: string
-          enum: [worker, governor, critic, judge, observer]
+          enum: [orchestrator, worker, critic, judge, trainer, governor, monitor, integrator, voice]
         subtype:
           type: string
           example: "worker.text-processor"
