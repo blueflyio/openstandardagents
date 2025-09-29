@@ -31,19 +31,19 @@ The `OSSALlmAgent` class now connects to Ollama instead of paid APIs.
 # Make sure Ollama is running
 ollama serve
 
-# Test the integration
-node test-ollama.js
+# Test the integration with TypeScript examples
+npm run test
 ```
 
 ### Using Different Models
 ```bash
 # Switch to different model
 export OLLAMA_MODEL=mistral:7b
-node test-ollama.js
+npm run test
 
 # Or for code tasks
 export OLLAMA_MODEL=codellama:7b
-node test-ollama.js
+npm run test
 ```
 
 ### From TypeScript/JavaScript
