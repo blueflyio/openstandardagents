@@ -1,10 +1,10 @@
-import { endpointtesterHandler } from '../../handlers/endpoint-tester.handlers';
+import { EndpointTesterHandler } from '../../handlers/endpoint-tester.handlers';
 
-describe('endpoint-testerHandler', () => {
-  let handler: endpointtesterHandler;
+describe('EndpointTesterHandler', () => {
+  let handler: EndpointTesterHandler;
 
   beforeEach(() => {
-    handler = new endpointtesterHandler();
+    handler = new EndpointTesterHandler();
   });
 
   test('should create handler instance', () => {

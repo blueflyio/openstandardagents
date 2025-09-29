@@ -4,7 +4,7 @@ import { Request, Response } from 'express';
  * task-heavy Agent Handler
  * OSSA v0.1.9 compliant handler implementation
  */
-export class task-heavyHandler {
+export class TaskHeavyHandler {
 
   /**
    * Health check endpoint
