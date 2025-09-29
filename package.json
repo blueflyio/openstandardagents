@@ -34,7 +34,7 @@
     "api:docs:build": "npx @redocly/cli build-docs src/api/ossa-complete.openapi.yml --output dist/api-docs/index.html",
     "api:docs:serve": "npx @redocly/cli preview src/api/ossa-complete.openapi.yml",
     "validate:specs": "npm run api:validate && npm run api:validate:complete && npm run validate:schemas",
-    "validate:schemas": "node scripts/validate-schemas.cjs",
+    "validate:schemas": "tsx src/cli/validate-schemas.ts",
     "cli:link": "npm link",
     "cli:unlink": "npm unlink -g @ossa/specification",
     "deploy:agents": "ossa-deploy deploy --all",
@@ -47,7 +47,8 @@
     "agents:spawn:tdd": "node dist/cli/ossa-cli.js spawn --type tdd",
     "agents:spawn:validation": "node dist/cli/ossa-cli.js spawn --type validation",
     "agents:workload": "node dist/cli/ossa-cli.js workload",
-    "test:with-mock": "MOCK_MODE=true npm test"
+    "test:with-mock": "MOCK_MODE=true npm test",
+    "typecheck": "tsc --noEmit"
   },
   "keywords": [
     "ossa",
@@ -103,7 +104,8 @@
     "ts-jest": "^29.1.1",
     "ts-node": "^10.9.2",
     "tsx": "^4.6.2",
-    "typescript": "^5.3.3"
+    "typescript": "^5.3.3",
+    "eslint-config-prettier": "^9.1.0"
   },
   "engines": {
     "node": ">=18.0.0"

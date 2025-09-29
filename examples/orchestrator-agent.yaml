@@ -1,0 +1,82 @@
+apiVersion: ossa.io/v0.1.9
+kind: Agent
+metadata:
+  name: multi-workflow-orchestrator
+  version: v2.1.0
+  description: "Enterprise orchestrator managing complex multi-agent workflows across distributed systems"
+  author: "platform-engineering-team"
+  labels:
+    environment: production
+    classification: internal
+    role: orchestrator
+    complexity: enterprise
+spec:
+  type: orchestrator
+  subtype: workflow-coordinator
+  capabilities:
+    domains:
+      - workflow-orchestration
+      - agent-coordination
+      - resource-allocation
+      - dependency-management
+      - failure-recovery
+    operations:
+      - orchestrate-workflows
+      - coordinate-agents
+      - manage-dependencies
+      - handle-failures
+      - scale-resources
+      - monitor-execution
+    patterns:
+      - saga-pattern
+      - event-sourcing
+      - choreography
+      - orchestration
+      - circuit-breaker
+  protocols:
+    supported:
+      - name: rest
+        version: "1.1"
+        endpoint: "https://orchestrator.platform.com/api/v2"
+        authentication:
+          type: oauth2
+          scopes: ["orchestrator.execute", "agents.coordinate", "resources.manage"]
+        tls: true
+      - name: grpc
+        version: "1.0"
+        endpoint: "grpc://orchestrator.platform.com:9443/WorkflowOrchestrator"
+        authentication:
+          type: mutual-tls
+      - name: event-stream
+        version: "1.0"
+        endpoint: "wss://events.platform.com/orchestrator"
+        authentication:
+          type: jwt
+  coordination:
+    maxConcurrentWorkflows: 1000
+    maxAgentsPerWorkflow: 50
+    workflowTimeout: 3600000
+    retryPolicy:
+      maxAttempts: 3
+      backoffStrategy: exponential
+      baseDelay: 1000
+    failureHandling:
+      strategy: graceful-degradation
+      fallbackWorkflows: true
+      compensationActions: true
+  performance:
+    throughput:
+      workflowsPerSecond: 50
+      maxConcurrentExecutions: 500
+    latency:
+      orchestrationOverhead: 50
+      coordinationLatency: 100
+      p99: 2000
+  monitoring:
+    workflowTracking: true
+    agentHealthChecks: true
+    performanceMetrics: true
+    alerting:
+      failureThreshold: 5
+      latencyThreshold: 5000
+      resourceThreshold: 90
