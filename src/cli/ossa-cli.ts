@@ -137,8 +137,8 @@ class OSSACli {
         if (thisCommand.opts().debug) this.config.logLevel = 'debug';
       });
 
-    // Add OSSA validation commands
-    this.program.addCommand(createValidateCommand());
+    // Add OSSA validation commands (commented out to avoid duplicate)
+    // this.program.addCommand(createValidateCommand());
 
     // SPECIFICATION CRUD Operations
     const specCommand = this.program
