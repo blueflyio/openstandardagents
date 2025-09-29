@@ -1,6 +1,6 @@
 import { complianceauditorHandler } from '../../handlers/compliance-auditor.handlers';
 
-describe('compliance-auditorHandler', () => {
+describe('ComplianceAuditorHandler', () => {
   let handler: complianceauditorHandler;
 
   beforeEach(() => {
@@ -8,7 +8,7 @@ describe('compliance-auditorHandler', () => {
   });
 
   test('should create handler instance', () => {
-    expect(handler).toBeInstanceOf(compliance-auditorHandler);
+    expect(handler).toBeInstanceOf(ComplianceAuditorHandler);
   });
 
   test('should handle health check', async () => {

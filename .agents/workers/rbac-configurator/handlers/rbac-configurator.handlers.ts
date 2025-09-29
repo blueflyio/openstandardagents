@@ -4,7 +4,7 @@ import { Request, Response } from 'express';
  * rbac-configurator Agent Handler
  * OSSA v0.1.9 compliant handler implementation
  */
-export class rbac-configuratorHandler {
+export class RbacConfiguratorHandler {
 
   /**
    * Health check endpoint

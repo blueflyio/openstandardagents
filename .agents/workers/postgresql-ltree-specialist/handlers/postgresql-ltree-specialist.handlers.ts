@@ -4,7 +4,7 @@ import { Request, Response } from 'express';
  * postgresql-ltree-specialist Agent Handler
  * OSSA v0.1.9 compliant handler implementation
  */
-export class postgresql-ltree-specialistHandler {
+export class PostgresqlLtreeSpecialistHandler {
 
   /**
    * Health check endpoint

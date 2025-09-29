@@ -1,6 +1,6 @@
 import { kafka-streamingexpertHandler } from '../../handlers/kafka-streaming-expert.handlers';
 
-describe('kafka-streaming-expertHandler', () => {
+describe('KafkaStreamingExpertHandler', () => {
   let handler: kafka-streamingexpertHandler;
 
   beforeEach(() => {
@@ -8,7 +8,7 @@ describe('kafka-streaming-expertHandler', () => {
   });
 
   test('should create handler instance', () => {
-    expect(handler).toBeInstanceOf(kafka-streaming-expertHandler);
+    expect(handler).toBeInstanceOf(KafkaStreamingExpertHandler);
   });
 
   test('should handle health check', async () => {

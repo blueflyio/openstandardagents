@@ -1,6 +1,6 @@
 import { middlewaredeveloperHandler } from '../../handlers/middleware-developer.handlers';
 
-describe('middleware-developerHandler', () => {
+describe('MiddlewareDeveloperHandler', () => {
   let handler: middlewaredeveloperHandler;
 
   beforeEach(() => {
@@ -8,7 +8,7 @@ describe('middleware-developerHandler', () => {
   });
 
   test('should create handler instance', () => {
-    expect(handler).toBeInstanceOf(middleware-developerHandler);
+    expect(handler).toBeInstanceOf(MiddlewareDeveloperHandler);
   });
 
   test('should handle health check', async () => {

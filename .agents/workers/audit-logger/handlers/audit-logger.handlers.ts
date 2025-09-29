@@ -4,7 +4,7 @@ import { Request, Response } from 'express';
  * audit-logger Agent Handler
  * OSSA v0.1.9 compliant handler implementation
  */
-export class audit-loggerHandler {
+export class AuditLoggerHandler {
 
   /**
    * Health check endpoint

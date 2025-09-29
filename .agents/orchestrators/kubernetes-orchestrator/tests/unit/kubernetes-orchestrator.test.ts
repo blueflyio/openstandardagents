@@ -1,6 +1,6 @@
 import { kubernetesorchestratorHandler } from '../../handlers/kubernetes-orchestrator.handlers';
 
-describe('kubernetes-orchestratorHandler', () => {
+describe('KubernetesOrchestratorHandler', () => {
   let handler: kubernetesorchestratorHandler;
 
   beforeEach(() => {
@@ -8,7 +8,7 @@ describe('kubernetes-orchestratorHandler', () => {
   });
 
   test('should create handler instance', () => {
-    expect(handler).toBeInstanceOf(kubernetes-orchestratorHandler);
+    expect(handler).toBeInstanceOf(KubernetesOrchestratorHandler);
   });
 
   test('should handle health check', async () => {

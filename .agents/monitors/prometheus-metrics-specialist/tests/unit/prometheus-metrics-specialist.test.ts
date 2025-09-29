@@ -1,6 +1,6 @@
 import { prometheus-metricsspecialistHandler } from '../../handlers/prometheus-metrics-specialist.handlers';
 
-describe('prometheus-metrics-specialistHandler', () => {
+describe('PrometheusMetricsSpecialistHandler', () => {
   let handler: prometheus-metricsspecialistHandler;
 
   beforeEach(() => {
@@ -8,7 +8,7 @@ describe('prometheus-metrics-specialistHandler', () => {
   });
 
   test('should create handler instance', () => {
-    expect(handler).toBeInstanceOf(prometheus-metrics-specialistHandler);
+    expect(handler).toBeInstanceOf(PrometheusMetricsSpecialistHandler);
   });
 
   test('should handle health check', async () => {

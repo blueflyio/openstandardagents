@@ -4,7 +4,7 @@ import { Request, Response } from 'express';
  * lora-training-specialist Agent Handler
  * OSSA v0.1.9 compliant handler implementation
  */
-export class lora-training-specialistHandler {
+export class LoraTrainingSpecialistHandler {
 
   /**
    * Health check endpoint

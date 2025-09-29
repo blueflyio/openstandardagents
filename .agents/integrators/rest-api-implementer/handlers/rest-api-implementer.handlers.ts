@@ -4,7 +4,7 @@ import { Request, Response } from 'express';
  * rest-api-implementer Agent Handler
  * OSSA v0.1.9 compliant handler implementation
  */
-export class rest-api-implementerHandler {
+export class RestApiImplementerHandler {
 
   /**
    * Health check endpoint

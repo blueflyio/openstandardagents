@@ -4,7 +4,7 @@ import { Request, Response } from 'express';
  * model-serving-specialist Agent Handler
  * OSSA v0.1.9 compliant handler implementation
  */
-export class model-serving-specialistHandler {
+export class ModelServingSpecialistHandler {
 
   /**
    * Health check endpoint

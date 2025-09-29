@@ -4,7 +4,7 @@ import { Request, Response } from 'express';
  * graphql-schema-architect Agent Handler
  * OSSA v0.1.9 compliant handler implementation
  */
-export class graphql-schema-architectHandler {
+export class GraphqlSchemaArchitectHandler {
 
   /**
    * Health check endpoint

@@ -4,7 +4,7 @@ import { Request, Response } from 'express';
  * openapi-3-1-generator Agent Handler
  * OSSA v0.1.9 compliant handler implementation
  */
-export class openapi-3-1-generatorHandler {
+export class Openapi31GeneratorHandler {
 
   /**
    * Health check endpoint

@@ -4,7 +4,7 @@ import { Request, Response } from 'express';
  * kubernetes-orchestrator Agent Handler
  * OSSA v0.1.9 compliant handler implementation
  */
-export class kubernetes-orchestratorHandler {
+export class KubernetesOrchestratorHandler {
 
   /**
    * Health check endpoint

@@ -1,6 +1,6 @@
 import { auth-securityspecialistHandler } from '../../handlers/auth-security-specialist.handlers';
 
-describe('auth-security-specialistHandler', () => {
+describe('AuthSecuritySpecialistHandler', () => {
   let handler: auth-securityspecialistHandler;
 
   beforeEach(() => {
@@ -8,7 +8,7 @@ describe('auth-security-specialistHandler', () => {
   });
 
   test('should create handler instance', () => {
-    expect(handler).toBeInstanceOf(auth-security-specialistHandler);
+    expect(handler).toBeInstanceOf(AuthSecuritySpecialistHandler);
   });
 
   test('should handle health check', async () => {

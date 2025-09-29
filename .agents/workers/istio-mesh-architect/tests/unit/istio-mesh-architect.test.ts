@@ -1,6 +1,6 @@
 import { istio-mesharchitectHandler } from '../../handlers/istio-mesh-architect.handlers';
 
-describe('istio-mesh-architectHandler', () => {
+describe('IstioMeshArchitectHandler', () => {
   let handler: istio-mesharchitectHandler;
 
   beforeEach(() => {
@@ -8,7 +8,7 @@ describe('istio-mesh-architectHandler', () => {
   });
 
   test('should create handler instance', () => {
-    expect(handler).toBeInstanceOf(istio-mesh-architectHandler);
+    expect(handler).toBeInstanceOf(IstioMeshArchitectHandler);
   });
 
   test('should handle health check', async () => {

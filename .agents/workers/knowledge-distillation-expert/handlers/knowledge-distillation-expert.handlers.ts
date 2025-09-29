@@ -4,7 +4,7 @@ import { Request, Response } from 'express';
  * knowledge-distillation-expert Agent Handler
  * OSSA v0.1.9 compliant handler implementation
  */
-export class knowledge-distillation-expertHandler {
+export class KnowledgeDistillationExpertHandler {
 
   /**
    * Health check endpoint

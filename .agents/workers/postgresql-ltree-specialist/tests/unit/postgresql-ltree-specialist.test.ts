@@ -1,6 +1,6 @@
 import { postgresql-ltreespecialistHandler } from '../../handlers/postgresql-ltree-specialist.handlers';
 
-describe('postgresql-ltree-specialistHandler', () => {
+describe('PostgresqlLtreeSpecialistHandler', () => {
   let handler: postgresql-ltreespecialistHandler;
 
   beforeEach(() => {
@@ -8,7 +8,7 @@ describe('postgresql-ltree-specialistHandler', () => {
   });
 
   test('should create handler instance', () => {
-    expect(handler).toBeInstanceOf(postgresql-ltree-specialistHandler);
+    expect(handler).toBeInstanceOf(PostgresqlLtreeSpecialistHandler);
   });
 
   test('should handle health check', async () => {

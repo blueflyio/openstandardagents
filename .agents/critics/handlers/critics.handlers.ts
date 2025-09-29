@@ -4,7 +4,7 @@ import { Request, Response } from 'express';
  * critics Agent Handler
  * OSSA v0.1.9 compliant handler implementation
  */
-export class criticsHandler {
+export class CriticsHandler {
 
   /**
    * Health check endpoint

@@ -4,7 +4,7 @@ import { Request, Response } from 'express';
  * example-orchestrator Agent Handler
  * OSSA v0.1.9 compliant handler implementation
  */
-export class example-orchestratorHandler {
+export class ExampleOrchestratorHandler {
 
   /**
    * Health check endpoint

@@ -4,7 +4,7 @@ import { Request, Response } from 'express';
  * system-monitor Agent Handler
  * OSSA v0.1.9 compliant handler implementation
  */
-export class system-monitorHandler {
+export class SystemMonitorHandler {
 
   /**
    * Health check endpoint

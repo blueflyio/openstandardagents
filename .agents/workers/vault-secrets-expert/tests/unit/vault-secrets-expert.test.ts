@@ -1,6 +1,6 @@
 import { vault-secretsexpertHandler } from '../../handlers/vault-secrets-expert.handlers';
 
-describe('vault-secrets-expertHandler', () => {
+describe('VaultSecretsExpertHandler', () => {
   let handler: vault-secretsexpertHandler;
 
   beforeEach(() => {
@@ -8,7 +8,7 @@ describe('vault-secrets-expertHandler', () => {
   });
 
   test('should create handler instance', () => {
-    expect(handler).toBeInstanceOf(vault-secrets-expertHandler);
+    expect(handler).toBeInstanceOf(VaultSecretsExpertHandler);
   });
 
   test('should handle health check', async () => {

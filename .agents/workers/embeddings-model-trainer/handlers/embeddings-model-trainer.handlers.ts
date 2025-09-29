@@ -4,7 +4,7 @@ import { Request, Response } from 'express';
  * embeddings-model-trainer Agent Handler
  * OSSA v0.1.9 compliant handler implementation
  */
-export class embeddings-model-trainerHandler {
+export class EmbeddingsModelTrainerHandler {
 
   /**
    * Health check endpoint

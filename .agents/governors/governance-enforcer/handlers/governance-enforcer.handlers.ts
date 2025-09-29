@@ -4,7 +4,7 @@ import { Request, Response } from 'express';
  * governance-enforcer Agent Handler
  * OSSA v0.1.9 compliant handler implementation
  */
-export class governance-enforcerHandler {
+export class GovernanceEnforcerHandler {
 
   /**
    * Health check endpoint

@@ -4,7 +4,7 @@ import { Request, Response } from 'express';
  * communication-multiprotocol Agent Handler
  * OSSA v0.1.9 compliant handler implementation
  */
-export class communication-multiprotocolHandler {
+export class CommunicationMultiprotocolHandler {
 
   /**
    * Health check endpoint

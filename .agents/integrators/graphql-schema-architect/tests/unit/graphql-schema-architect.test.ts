@@ -1,6 +1,6 @@
 import { graphql-schemaarchitectHandler } from '../../handlers/graphql-schema-architect.handlers';
 
-describe('graphql-schema-architectHandler', () => {
+describe('GraphqlSchemaArchitectHandler', () => {
   let handler: graphql-schemaarchitectHandler;
 
   beforeEach(() => {
@@ -8,7 +8,7 @@ describe('graphql-schema-architectHandler', () => {
   });
 
   test('should create handler instance', () => {
-    expect(handler).toBeInstanceOf(graphql-schema-architectHandler);
+    expect(handler).toBeInstanceOf(GraphqlSchemaArchitectHandler);
   });
 
   test('should handle health check', async () => {

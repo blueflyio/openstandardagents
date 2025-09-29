@@ -1,6 +1,6 @@
 import { rest-apiimplementerHandler } from '../../handlers/rest-api-implementer.handlers';
 
-describe('rest-api-implementerHandler', () => {
+describe('RestApiImplementerHandler', () => {
   let handler: rest-apiimplementerHandler;
 
   beforeEach(() => {
@@ -8,7 +8,7 @@ describe('rest-api-implementerHandler', () => {
   });
 
   test('should create handler instance', () => {
-    expect(handler).toBeInstanceOf(rest-api-implementerHandler);
+    expect(handler).toBeInstanceOf(RestApiImplementerHandler);
   });
 
   test('should handle health check', async () => {

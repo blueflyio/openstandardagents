@@ -1,14 +1,14 @@
-import { criticsHandler } from '../../handlers/critics.handlers';
+import { CriticsHandler } from '../../handlers/critics.handlers';
 
-describe('criticsHandler', () => {
-  let handler: criticsHandler;
+describe('CriticsHandler', () => {
+  let handler: CriticsHandler;
 
   beforeEach(() => {
-    handler = new criticsHandler();
+    handler = new CriticsHandler();
   });
 
   test('should create handler instance', () => {
-    expect(handler).toBeInstanceOf(criticsHandler);
+    expect(handler).toBeInstanceOf(CriticsHandler);
   });
 
   test('should handle health check', async () => {

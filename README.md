@@ -1,186 +1,271 @@
-# OSSA - Open Standard for Scalable Agents
+# OSSA - Open Standards for Scalable Agents
 
 [![OpenAPI](https://img.shields.io/badge/OpenAPI-3.1-orange.svg)](src/api/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.3-blue.svg)](https://www.typescriptlang.org/)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+[![OSSA](https://img.shields.io/badge/OSSA-v0.1.9-blue.svg)](https://ossa.dev)
 
 ## Executive Summary
 
-The Open Standard for Scalable Agents (OSSA) provides a comprehensive specification framework for building, deploying, and orchestrating autonomous AI agents at enterprise scale. OSSA defines standardized interfaces, communication protocols, and governance models that enable seamless interoperability between heterogeneous agent systems.
+The **Open Standards for Scalable Agents (OSSA)** v0.1.9 is the industry's most comprehensive specification framework for building, deploying, and orchestrating autonomous AI agents at enterprise scale. OSSA defines standardized interfaces, communication protocols, and governance models that enable seamless interoperability between heterogeneous agent systems using **OpenAPI 3.1** advanced features.
 
-## Technical Overview
+## Key Features
 
-OSSA establishes a vendor-neutral, technology-agnostic standard for agent development, addressing critical challenges in multi-agent system architecture:
+🚀 **OpenAPI 3.1 Complete Implementation** - Advanced features including discriminator mapping, webhooks, conditional schemas, and JSON Schema Draft 2020-12  
+🤖 **12 Production-Ready Specifications** - Core OSSA, MCP infrastructure, and project orchestration APIs  
+⚡ **Universal Agent Protocol (UAP)** - RASP, ACAP, UADP, CPC protocols for seamless agent communication  
+🏗️ **6 Agent Archetypes** - Worker, Orchestrator, Critic, Monitor, Governor, Judge with inheritance patterns  
+🔒 **Enterprise Security** - OAuth 2.1, mTLS, RBAC with OPA policies  
+📊 **OpenTelemetry Integration** - Comprehensive observability and monitoring  
+🛡️ **Multi-Tier Compliance** - Core → Governed → Advanced → Enterprise levels  
+🎯 **Custom OSSA Validator** - 400+ line TypeScript validator with comprehensive compliance checking
 
-- **Interoperability**: Standardized APIs enabling cross-platform agent communication
-- **Scalability**: Horizontal scaling patterns supporting millions of concurrent agents
-- **Governance**: Built-in compliance, security, and audit capabilities
-- **Observability**: Comprehensive telemetry and monitoring specifications
-- **Determinism**: Reproducible agent behaviors through formal specifications
+## Technology Stack
 
-## Architecture
+- **Runtime**: Node.js 20 LTS + TypeScript 5.3
+- **API Framework**: Express 4.18 with OpenAPI 3.1 middleware
+- **Validation**: Custom OSSA validator with Ajv + JSON Schema Draft 2020-12
+- **CLI**: Commander.js with comprehensive agent lifecycle management
+- **Security**: Passport.js with OAuth 2.1, mTLS, and OPA integration
+- **Message Bus**: Kafka/RabbitMQ/NATS with Schema Registry
+- **Monitoring**: OpenTelemetry with Prometheus and Grafana
+- **Container**: Docker with multi-stage builds
+- **Orchestration**: Kubernetes 1.28+ with custom CRDs
 
-### Core Components
+## Quick Start
 
+```bash
+# Clone and install
+git clone https://gitlab.bluefly.io/llm/ossa.git
+cd ossa
+npm install
+
+# Build the project
+npm run build
+
+# Validate OpenAPI specifications
+npm run api:validate:complete
+
+# Start development server
+npm run start:dev
+
+# Run comprehensive tests
+npm test
+
+# View API documentation
+npm run api:docs
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│                         OSSA Architecture                       │
-├─────────────────────────────────────────────────────────────────┤
-│                                                                 │
-│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐        │
-│  │   Agent      │  │  Discovery   │  │  Governance  │        │
-│  │  Registry    │◄─┤   Service    │─►│   Engine     │        │
-│  └──────┬───────┘  └──────┬───────┘  └──────┬───────┘        │
-│         │                  │                  │                │
-│         ▼                  ▼                  ▼                │
-│  ┌──────────────────────────────────────────────────┐         │
-│  │            Message Bus (Event-Driven)            │         │
-│  └──────────────────────────────────────────────────┘         │
-│         │                  │                  │                │
-│         ▼                  ▼                  ▼                │
-│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐        │
-│  │   Worker     │  │ Orchestrator │  │   Monitor    │        │
-│  │   Agents     │  │   Agents     │  │   Agents     │        │
-│  └──────────────┘  └──────────────┘  └──────────────┘        │
-│                                                                 │
-└─────────────────────────────────────────────────────────────────┘
-```
+
+## OpenAPI 3.1 Specifications
+
+OSSA provides **12 comprehensive OpenAPI 3.1 specifications** across three domains:
+
+### Core Specifications
+- **`ossa-complete.openapi.yml`** - Complete OSSA API with all OpenAPI 3.1 features
+- **`ossa-v0.1.9-complete.openapi.yml`** - Version-specific complete specification
+- **`specification.openapi.yml`** - Core OSSA specification API
+
+### Project Domain
+- **`clean-architecture.openapi.yml`** - Clean architecture patterns API
+- **`orchestration.openapi.yml`** - Multi-agent orchestration workflows
+- **`project-discovery.openapi.yml`** - Project discovery and analysis
+- **`rebuild-audit.openapi.yml`** - Automated rebuild and audit processes
+
+### MCP (Model Context Protocol) Domain  
+- **`context7-mcp.openapi.yml`** - Context management for AI models
+- **`magic-mcp.openapi.yml`** - Advanced MCP operations
+- **`mcp-infrastructure.openapi.yml`** - MCP infrastructure management
+- **`web-eval-mcp.openapi.yml`** - Web-based evaluation framework
+
+### Legacy/Testing
+- **`test-api.openapi.yml`** - Testing framework specification
+
+## Advanced OpenAPI 3.1 Features Demonstrated
+
+✅ **JSON Schema Draft 2020-12** - `$schema`, `$vocabulary`, conditional schemas  
+✅ **Discriminator Mapping** - Polymorphic agent type inheritance  
+✅ **Webhooks** - Event-driven notifications and callbacks  
+✅ **Content Encoding** - Binary payloads and multiple content types  
+✅ **OAuth 2.1 PKCE** - Advanced security with modern authentication  
+✅ **Path Item References** - Reusable API components  
+✅ **External Examples** - Rich documentation with external references  
+✅ **Callbacks** - Asynchronous workflow triggers  
+✅ **HATEOAS Links** - Hypermedia-driven API navigation  
+✅ **Complex Parameters** - Dependencies and conditional validation  
+
+## Agent Architecture
 
 ### Agent Taxonomy
 
-OSSA defines six primary agent archetypes, each with distinct responsibilities and interface contracts:
-
-| Type | Responsibility | Interface Contract |
-|------|---------------|-------------------|
-| **Worker** | Task execution and data processing | Stateless, idempotent operations via REST/gRPC |
-| **Orchestrator** | Workflow coordination and resource allocation | Saga pattern implementation with compensation logic |
-| **Critic** | Quality assurance and validation | Immutable audit trails with cryptographic verification |
-| **Monitor** | System observability and alerting | OpenTelemetry-compliant metrics and traces |
-| **Governor** | Policy enforcement and compliance | OPA-based policy decision points |
-| **Judge** | Consensus and conflict resolution | Byzantine fault-tolerant consensus protocols |
-
-## Data Flow Architecture
-
-### Inter-Agent Communication Protocol
+OSSA defines six primary agent archetypes with distinct responsibilities:
 
 ```
-┌─────────────┐       ┌─────────────┐       ┌─────────────┐
-│   Agent A   │       │   Message   │       │   Agent B   │
-│  (Producer) │       │     Bus     │       │ (Consumer)  │
-└─────┬───────┘       └──────┬──────┘       └──────┬──────┘
-      │                      │                      │
-      │ 1. Publish Event     │                      │
-      ├─────────────────────►│                      │
-      │                      │ 2. Route & Filter    │
-      │                      ├──────────────────────┤
-      │                      │                      │
-      │                      │ 3. Deliver Event     │
-      │                      ├─────────────────────►│
-      │                      │                      │
-      │                      │ 4. Acknowledge       │
-      │                      │◄─────────────────────┤
-      │ 5. Confirm           │                      │
-      │◄─────────────────────┤                      │
-      │                      │                      │
+Agent (base)
+├── ExecutionAgent
+│   ├── WorkerAgent (task execution)
+│   ├── OrchestratorAgent (coordination)
+│   └── ProcessorAgent (data transformation)
+├── GovernanceAgent
+│   ├── CriticAgent (quality control)
+│   ├── JudgeAgent (decision making)
+│   └── GovernorAgent (policy enforcement)
+└── ObservabilityAgent
+    ├── MonitorAgent (system observation)
+    ├── TracerAgent (execution tracking)
+    └── AuditorAgent (compliance logging)
 ```
 
-### Request Processing Pipeline
+### Universal Agent Protocol (UAP)
 
-```
-┌──────────┐    ┌───────────┐    ┌────────────┐    ┌──────────┐
-│  Client  │───►│   Auth    │───►│ Rate Limit │───►│  Router  │
-└──────────┘    └───────────┘    └────────────┘    └────┬─────┘
-                                                          │
-                 ┌────────────────────────────────────────┘
-                 │
-    ┌────────────▼────────────┐
-    │   Request Validation    │
-    │  • Schema validation    │
-    │  • Business rules       │
-    │  • Security policies    │
-    └────────────┬────────────┘
-                 │
-    ┌────────────▼────────────┐
-    │   Agent Dispatching     │
-    │  • Load balancing       │
-    │  • Circuit breaking     │
-    │  • Retry logic          │
-    └────────────┬────────────┘
-                 │
-    ┌────────────▼────────────┐
-    │   Response Assembly     │
-    │  • Data aggregation     │
-    │  • Format conversion    │
-    │  • Compression          │
-    └────────────┬────────────┘
-                 │
-                 ▼
-            Response
-```
+UAP provides unified communication across heterogeneous agent ecosystems:
 
-## Specification Components
+- **RASP** (Resource Allocation & Scheduling Protocol) - Resource management
+- **ACAP** (Agent Capability Advertisement Protocol) - Service discovery  
+- **UADP** (Universal Agent Discovery Protocol) - Zero-config discovery
+- **CPC** (Cross-Platform Communication) - Transport abstraction
 
-### OpenAPI 3.1 Specifications
+## CLI Commands
 
-OSSA provides comprehensive API specifications using OpenAPI 3.1, leveraging advanced features:
+The OSSA CLI provides comprehensive agent lifecycle management:
 
-- **Discriminator Mappings**: Polymorphic agent type inheritance
-- **Webhooks**: Event-driven lifecycle notifications
-- **JSON Schema Draft 2020-12**: Advanced validation with conditional schemas
-- **Content Negotiation**: Multiple serialization formats (JSON, CBOR, MessagePack)
-- **Security Schemes**: OAuth 2.1, mTLS, API keys with rotation
+```bash
+# Agent Discovery & Management
+ossa discover --protocol UADP --filter "type=worker"
+ossa register --capability "data-processing" --endpoint "/api/v1/process"
+ossa query --service "machine-learning" --version ">= 2.0"
 
-### Agent Manifest Schema
+# Resource Management  
+ossa resources --protocol RASP --view cluster
+ossa reserve --cpu "4 cores" --memory "8GB" --duration "2h"
+ossa scale --agent-type worker --replicas 10 --zone us-west-2
 
-Each agent is defined by a JSON Schema-compliant manifest:
+# Communication & Testing
+ossa comm config --protocol CPC --transport grpc --encryption tls1.3
+ossa comm test --source agent-001 --target agent-002 --protocol all
+ossa benchmark uap --duration 5m --agents 100 --concurrent-requests 1000
 
-```json
-{
-  "$schema": "https://ossa.dev/schemas/agent-manifest/v1.0.0",
-  "apiVersion": "v1",
-  "kind": "Agent",
-  "metadata": {
-    "name": "data-processor",
-    "version": "1.0.0",
-    "type": "worker"
-  },
-  "spec": {
-    "capabilities": ["data-processing", "batch-operations"],
-    "interfaces": {
-      "rest": { "port": 8080, "path": "/api/v1" },
-      "grpc": { "port": 9090, "service": "DataProcessor" }
-    },
-    "requirements": {
-      "cpu": "2000m",
-      "memory": "4Gi",
-      "storage": "10Gi"
-    },
-    "scaling": {
-      "min": 1,
-      "max": 100,
-      "targetCPU": 70
-    }
-  }
-}
+# Validation & Compliance
+ossa validate uap --spec-version 1.0 --agent-manifest ./agent.yaml
+ossa compliance audit --tier governed --output report.json
+ossa sbom generate --format spdx --sign
 ```
 
-## Implementation Requirements
+## OpenAPI Validation & Tooling
 
-### Minimum Viable Implementation
+OSSA includes a **custom 400+ line TypeScript validator** for OpenAPI 3.1 compliance:
 
-Conformant OSSA implementations must provide:
+```bash
+# Validate specifications
+npm run api:validate          # Core specification  
+npm run api:validate:complete # Complete specification
+npm run validate:specs        # All specifications + schemas
 
-1. **API Compliance**: Full OpenAPI 3.1 specification implementation
-2. **Schema Validation**: JSON Schema Draft 2020-12 support
-3. **Authentication**: OAuth 2.1 with PKCE flow
-4. **Monitoring**: OpenTelemetry-compatible metrics export
-5. **Event Bus**: At least one supported transport (Kafka, RabbitMQ, NATS)
-6. **Service Discovery**: DNS-based or registry-based discovery
-7. **Health Checks**: Kubernetes-compatible liveness/readiness probes
+# Generate documentation
+npm run api:docs              # Preview documentation
+npm run api:docs:build        # Build static docs
+npm run api:bundle            # Bundle specification
 
-### Performance Benchmarks
+# Generate TypeScript types
+npm run generate:client       # Generate API client types
+npm run api:generate          # Generate core API types
+```
 
-Reference implementation performance targets:
+## Development Tools
+
+### Redocly Integration
+
+OSSA uses **Redocly CLI 2.1.5** for advanced OpenAPI tooling:
+
+```yaml
+# .redocly.yaml configuration
+apiDefinitions:
+  main: src/api/core/ossa-complete.openapi.yml
+  specification: src/api/core/specification.openapi.yml
+  # ... 12 total specifications
+
+lint:
+  extends: [recommended]
+  rules:
+    operation-operationId: error
+    no-server-example.com: error
+    
+features.openapi:
+  showConsole: true
+  expandResponses: '200,201'
+  jsonSampleExpandLevel: 3
+```
+
+### Custom OSSA Validator
+
+The built-in validator provides comprehensive compliance checking:
+
+```typescript
+import { OSSAOpenAPIValidator } from './src/core/validation/openapi-validator.js';
+
+const validator = new OSSAOpenAPIValidator({
+  enableOSSACompliance: true,
+  requireAgentMetadata: true,
+  enforceSecuritySchemes: true,
+  validateExamples: true,
+  ossaVersion: '0.1.9'
+});
+
+const result = await validator.validateSpec('./spec.yml');
+console.log(validator.generateReport(result));
+```
+
+## Project Structure
+
+```
+/Users/flux423/Sites/LLM/OSSA/
+├── src/
+│   ├── api/                    # 12 OpenAPI 3.1 specifications
+│   │   ├── core/              # Core OSSA specifications
+│   │   ├── project/           # Project domain APIs
+│   │   ├── mcp/               # MCP infrastructure
+│   │   └── schemas/           # JSON schemas
+│   ├── cli/                   # OSSA CLI implementation
+│   ├── core/                  # Core libraries and validation
+│   ├── server/                # Express server implementation
+│   └── types/                 # TypeScript type definitions
+├── docs/                      # Generated documentation
+├── examples/                  # Example implementations
+├── infrastructure/            # Kubernetes manifests
+├── tests/                     # Test suites
+├── .redocly.yaml             # Redocly configuration
+├── package.json              # Node.js dependencies
+└── tsconfig.json            # TypeScript configuration
+```
+
+## Enterprise Features
+
+### Security & Compliance
+
+- **Multi-tier Compliance**: Core, Governed, Advanced, Enterprise
+- **Security Frameworks**: OAuth 2.1, mTLS, X.509 certificates
+- **Policy Enforcement**: OPA-based policy decision points
+- **Audit Logging**: Immutable audit trails with tamper detection
+- **Encryption**: At-rest and in-transit with key rotation
+
+### Observability & Monitoring
+
+- **OpenTelemetry**: Complete metrics, traces, and logs
+- **Performance Targets**: <100ms p99 latency, >10,000 req/s throughput
+- **Health Checks**: Kubernetes-compatible liveness/readiness probes
+- **SLA Enforcement**: 99.95% availability targets
+- **Real-time Metrics**: Comprehensive dashboards and alerting
+
+### Deployment Patterns
+
+- **Kubernetes-Native**: Custom CRDs and operators
+- **Multi-Region**: Global load balancing with regional clusters
+- **Auto-scaling**: Horizontal scaling to 1000+ nodes
+- **GitLab CI/CD**: Golden component integration
+- **Container-First**: Docker with multi-stage builds
+
+## Performance Benchmarks
+
+Reference implementation performance on AWS m5.large:
 
 | Metric | Requirement | Measurement |
 |--------|------------|-------------|
@@ -189,371 +274,35 @@ Reference implementation performance targets:
 | Availability | > 99.95% | Monthly uptime |
 | MTTR | < 5 minutes | Automatic recovery time |
 | Scalability | Linear to 1000 nodes | Horizontal scaling efficiency |
-
-## Governance Model
-
-### Compliance Framework
-
-OSSA incorporates enterprise governance requirements:
-
-- **Audit Logging**: Immutable audit trails with tamper detection
-- **Policy Enforcement**: OPA-based policy decision points
-- **Data Residency**: Geographic constraint enforcement
-- **Encryption**: At-rest and in-transit encryption with key rotation
-- **Access Control**: RBAC with attribute-based extensions
-
-### Security Architecture
-
-```
-┌─────────────────────────────────────────────────────┐
-│                Security Perimeter                   │
-│                                                     │
-│  ┌──────────┐     ┌──────────┐    ┌──────────┐   │
-│  │   WAF    │────►│   mTLS   │───►│   RBAC   │   │
-│  └──────────┘     │  Gateway │    │  Engine  │   │
-│                   └──────────┘    └──────────┘   │
-│                         │                          │
-│  ┌──────────────────────┼──────────────────────┐  │
-│  │                      ▼                      │  │
-│  │  ┌──────────┐  ┌──────────┐  ┌──────────┐ │  │
-│  │  │  Secret  │  │  Policy  │  │  Audit   │ │  │
-│  │  │  Manager │  │  Engine  │  │  Logger  │ │  │
-│  │  └──────────┘  └──────────┘  └──────────┘ │  │
-│  │                                             │  │
-│  │            Internal Network                 │  │
-│  └─────────────────────────────────────────────┘  │
-│                                                     │
-└─────────────────────────────────────────────────────┘
-```
-
-## Deployment Patterns
-
-### Kubernetes-Native Deployment
-
-OSSA agents are designed for Kubernetes-native deployment:
-
-```yaml
-apiVersion: ossa.dev/v1
-kind: AgentDeployment
-metadata:
-  name: data-processor
-spec:
-  replicas: 3
-  selector:
-    matchLabels:
-      agent.ossa.dev/type: worker
-  template:
-    metadata:
-      labels:
-        agent.ossa.dev/type: worker
-    spec:
-      agentRef:
-        name: data-processor
-        version: 1.0.0
-      resources:
-        limits:
-          cpu: "2"
-          memory: "4Gi"
-      autoscaling:
-        enabled: true
-        minReplicas: 3
-        maxReplicas: 100
-        metrics:
-        - type: CPU
-          target: 70
-```
-
-### Multi-Region Architecture
-
-```
-┌────────────────────────────────────────────────────┐
-│                  Global Load Balancer              │
-└─────────┬──────────────┬──────────────┬───────────┘
-          │              │              │
-    ┌─────▼─────┐  ┌─────▼─────┐  ┌─────▼─────┐
-    │  Region   │  │  Region   │  │  Region   │
-    │    US     │  │    EU     │  │   APAC    │
-    └─────┬─────┘  └─────┬─────┘  └─────┬─────┘
-          │              │              │
-    ┌─────▼─────┐  ┌─────▼─────┐  ┌─────▼─────┐
-    │   Agent   │  │   Agent   │  │   Agent   │
-    │  Cluster  │◄─┤  Cluster  │─►│  Cluster  │
-    └───────────┘  └───────────┘  └───────────┘
-          ▲              ▲              ▲
-          └──────────────┼──────────────┘
-                         │
-                 ┌───────▼───────┐
-                 │  Global State │
-                 │   Store (CRD) │
-                 └───────────────┘
-```
-
-## Integration Specifications
-
-### Event-Driven Integration
-
-OSSA supports multiple event transport mechanisms:
-
-```
-Producer → Event Router → Consumer
-           │
-           ├─► Kafka (recommended for high throughput)
-           ├─► RabbitMQ (recommended for complex routing)
-           ├─► NATS (recommended for low latency)
-           └─► Redis Streams (recommended for simplicity)
-```
-
-### Protocol Support Matrix
-
-| Protocol | Use Case | Performance | Complexity |
-|----------|----------|-------------|------------|
-| REST/HTTP | Synchronous operations | Medium | Low |
-| gRPC | High-performance RPC | High | Medium |
-| GraphQL | Flexible queries | Medium | High |
-| WebSocket | Real-time streaming | High | Medium |
-| AMQP | Message queuing | High | High |
-
-## Universal Agent Protocol (UAP)
-
-UAP provides a unified communication framework for heterogeneous agent ecosystems, enabling seamless interaction between agents regardless of their underlying implementation or platform.
-
-### Core Protocol Stack
-
-UAP consists of four foundational protocols that work together to enable comprehensive agent interoperability:
-
-#### RASP (Resource Allocation & Scheduling Protocol)
-Manages resource distribution and task scheduling across agent clusters:
-
-```
-Agent Request → RASP Scheduler → Resource Pool → Task Assignment
-                     │                │              │
-                     ├─► Load Analysis ├─► Priority   ├─► Execution
-                     ├─► Constraint    ├─► Queueing   ├─► Monitoring
-                     └─► Optimization  └─► Balancing  └─► Feedback
-```
-
-#### ACAP (Agent Capability Advertisement Protocol)
-Enables dynamic service discovery and capability matching:
-
-```json
-{
-  "protocol": "ACAP/1.0",
-  "agentId": "worker-001",
-  "capabilities": [
-    {
-      "service": "data-processing",
-      "version": "2.1.0",
-      "endpoints": ["/api/v2/process"],
-      "sla": { "latency": "< 50ms", "availability": "99.9%" }
-    }
-  ],
-  "resources": {
-    "cpu": "available: 2.5 cores",
-    "memory": "available: 6.2GB"
-  }
-}
-```
-
-#### UADP (Universal Agent Discovery Protocol)
-Provides zero-configuration agent discovery with automatic topology mapping:
-
-```
-Registry Service ←→ Agent Mesh ←→ Discovery Beacon
-      │                 │               │
-      ├─► Health Check   ├─► Heartbeat   ├─► Announcement
-      ├─► Capability     ├─► Routing     ├─► Topology
-      └─► Status Update  └─► Load Info   └─► Metrics
-```
-
-#### CPC (Cross-Platform Communication)
-Standardizes message formats and transport mechanisms across different agent platforms:
-
-| Transport | Use Case | Reliability | Performance |
-|-----------|----------|-------------|-------------|
-| HTTP/3 | Synchronous RPC | High | Medium |
-| WebSocket | Real-time streams | Medium | High |
-| MQTT | IoT integration | Medium | Low |
-| gRPC | High-performance | High | High |
-
-### UAP CLI Commands
-
-The OSSA CLI provides comprehensive UAP management capabilities:
-
-#### Discovery Operations
-```bash
-# Discover agents in the network
-ossa discover --protocol UADP --filter "type=worker"
-
-# Register agent capabilities
-ossa register --capability "data-processing" --endpoint "/api/v1/process"
-
-# Query available services
-ossa query --service "machine-learning" --version ">= 2.0"
-```
-
-#### Resource Management
-```bash
-# Monitor resource allocation
-ossa resources --protocol RASP --view cluster
-
-# Request resource reservation
-ossa reserve --cpu "4 cores" --memory "8GB" --duration "2h"
-
-# Scale agent deployment
-ossa scale --agent-type worker --replicas 10 --zone us-west-2
-```
-
-#### Communication Setup
-```bash
-# Configure cross-platform communication
-ossa comm config --protocol CPC --transport grpc --encryption tls1.3
-
-# Test connectivity between agents
-ossa comm test --source agent-001 --target agent-002 --protocol all
-
-# Monitor message flows
-ossa comm monitor --protocol CPC --filter "error_rate > 1%"
-```
-
-#### Protocol Validation
-```bash
-# Validate UAP compliance
-ossa validate uap --spec-version 1.0 --agent-manifest ./agent.yaml
-
-# Generate UAP documentation
-ossa docs uap --output ./docs/uap-spec.md --format markdown
-
-# Benchmark protocol performance
-ossa benchmark uap --duration 5m --agents 100 --concurrent-requests 1000
-```
-
-### UAP Integration Example
-
-```typescript
-import { UAP, RASP, ACAP, UADP, CPC } from '@ossa/uap-client';
-
-// Initialize UAP stack
-const uap = new UAP({
-  agent: { id: 'worker-001', type: 'data-processor' },
-  protocols: {
-    rasp: { scheduler: 'kubernetes', priority: 'high' },
-    acap: { advertise: true, discovery: 'automatic' },
-    uadp: { beacon: true, mesh: 'cluster-local' },
-    cpc: { transport: ['grpc', 'websocket'] }
-  }
-});
-
-// Register capabilities
-await uap.acap.advertise({
-  service: 'data-processing',
-  version: '2.1.0',
-  endpoints: ['/api/v2/process'],
-  sla: { latency: 50, availability: 99.9 }
-});
-
-// Discover and connect to other agents
-const peers = await uap.uadp.discover({ type: 'orchestrator' });
-const connection = await uap.cpc.connect(peers[0], { protocol: 'grpc' });
-
-// Request resources for task execution
-const allocation = await uap.rasp.request({
-  cpu: '2 cores',
-  memory: '4GB',
-  duration: '1h'
-});
-```
-
-## Observability Framework
-
-### Metrics Collection
-
-OSSA mandates OpenTelemetry-compliant metrics:
-
-```
-Agent → OpenTelemetry Collector → Backend
-         │                         │
-         ├─► Metrics              ├─► Prometheus
-         ├─► Traces               ├─► Jaeger
-         └─► Logs                 └─► Elasticsearch
-```
-
-### Key Performance Indicators
-
-| Metric | Description | Alert Threshold |
-|--------|-------------|-----------------|
-| `agent_tasks_total` | Total tasks processed | - |
-| `agent_task_duration_seconds` | Task processing time | p99 > 1s |
-| `agent_error_rate` | Error percentage | > 1% |
-| `agent_saturation` | Resource utilization | > 80% |
-| `agent_availability` | Uptime percentage | < 99.9% |
-
-## Reference Implementation
-
-### Technology Stack
-
-The reference implementation demonstrates OSSA compliance using:
-
-- **Runtime**: Node.js 20 LTS with TypeScript 5.3
-- **Framework**: Express 4.18 with OpenAPI middleware
-- **Validation**: Ajv with JSON Schema Draft 2020-12
-- **Authentication**: Passport.js with OAuth 2.1
-- **Message Bus**: Kafka with Schema Registry
-- **Monitoring**: OpenTelemetry with Prometheus
-- **Container**: Docker with multi-stage builds
-- **Orchestration**: Kubernetes 1.28+
-
-### Performance Characteristics
-
-Benchmarked on AWS m5.large instances:
-
-- **Startup Time**: < 3 seconds
-- **Memory Footprint**: < 256 MB idle
-- **CPU Usage**: < 5% idle
-- **Network Overhead**: < 2% of payload
-- **Compression Ratio**: 70% with gzip
-
-## Adoption Guide
-
-### Enterprise Integration
-
-Organizations implementing OSSA should follow this phased approach:
-
-1. **Assessment Phase**: Evaluate existing agent infrastructure
-2. **Pilot Phase**: Implement reference agent in non-production
-3. **Migration Phase**: Gradually migrate existing agents
-4. **Scale Phase**: Deploy production workloads
-5. **Optimization Phase**: Fine-tune performance and costs
-
-### Compliance Verification
-
-OSSA provides automated compliance verification:
-
-```bash
-ossa validate --spec /path/to/implementation
-ossa certify --level basic|standard|advanced
-ossa audit --compliance SOC2|ISO27001|GDPR
-```
+| Memory | < 256 MB | Idle footprint |
+| CPU | < 5% | Idle usage |
+| Startup | < 3 seconds | Cold start time |
 
 ## Contributing
 
-Contributions to the OSSA specification follow a formal RFC process:
+OSSA follows a formal RFC process for specification changes:
 
 1. **Proposal**: Submit RFC with rationale and specification changes
-2. **Review**: Community review period (minimum 30 days)
+2. **Review**: Community review period (minimum 30 days)  
 3. **Implementation**: Proof-of-concept in reference implementation
 4. **Testing**: Comprehensive test suite additions
 5. **Approval**: Technical steering committee review
 6. **Merge**: Integration into specification
 
+See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines.
+
 ## License
 
-The OSSA specification is licensed under the MIT License. Implementations may use any license compatible with the specification requirements.
+OSSA is licensed under the [MIT License](LICENSE). Implementations may use any license compatible with the specification requirements.
 
-## Repository
+## Repository & Resources
 
-- **Specification**: [gitlab.bluefly.io/llm/openapi-ai-agents-standard](https://gitlab.bluefly.io/llm/openapi-ai-agents-standard)
+- **Specification**: [gitlab.bluefly.io/llm/ossa](https://gitlab.bluefly.io/llm/ossa)
 - **Reference Implementation**: [gitlab.bluefly.io/llm/agent_buildkit](https://gitlab.bluefly.io/llm/agent_buildkit)
+- **Documentation**: [docs.ossa.dev](https://docs.ossa.dev)
+- **OpenAPI Specs**: [api.ossa.dev](https://api.ossa.dev)
+- **Community**: [Discord](https://discord.gg/ossa) | [GitHub Discussions](https://github.com/ossa-ai/discussions)
 
 ---
 
-**OSSA v0.1.9** - Enabling enterprise-grade AI agent interoperability through open standards.
+**OSSA v0.1.9** - The definitive standard for enterprise-grade AI agent interoperability through comprehensive OpenAPI 3.1 specifications and production-ready tooling.

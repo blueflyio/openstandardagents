@@ -4,7 +4,7 @@ import { Request, Response } from 'express';
  * gpu-cluster-manager Agent Handler
  * OSSA v0.1.9 compliant handler implementation
  */
-export class gpu-cluster-managerHandler {
+export class GpuClusterManagerHandler {
 
   /**
    * Health check endpoint

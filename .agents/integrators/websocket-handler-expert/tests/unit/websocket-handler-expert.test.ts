@@ -1,6 +1,6 @@
 import { websocket-handlerexpertHandler } from '../../handlers/websocket-handler-expert.handlers';
 
-describe('websocket-handler-expertHandler', () => {
+describe('WebsocketHandlerExpertHandler', () => {
   let handler: websocket-handlerexpertHandler;
 
   beforeEach(() => {
@@ -8,7 +8,7 @@ describe('websocket-handler-expertHandler', () => {
   });
 
   test('should create handler instance', () => {
-    expect(handler).toBeInstanceOf(websocket-handler-expertHandler);
+    expect(handler).toBeInstanceOf(WebsocketHandlerExpertHandler);
   });
 
   test('should handle health check', async () => {

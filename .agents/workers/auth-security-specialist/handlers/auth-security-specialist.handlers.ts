@@ -4,7 +4,7 @@ import { Request, Response } from 'express';
  * auth-security-specialist Agent Handler
  * OSSA v0.1.9 compliant handler implementation
  */
-export class auth-security-specialistHandler {
+export class AuthSecuritySpecialistHandler {
 
   /**
    * Health check endpoint

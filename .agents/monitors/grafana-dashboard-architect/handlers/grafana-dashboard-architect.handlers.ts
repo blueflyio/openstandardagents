@@ -4,7 +4,7 @@ import { Request, Response } from 'express';
  * grafana-dashboard-architect Agent Handler
  * OSSA v0.1.9 compliant handler implementation
  */
-export class grafana-dashboard-architectHandler {
+export class GrafanaDashboardArchitectHandler {
 
   /**
    * Health check endpoint

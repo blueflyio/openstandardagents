@@ -1,6 +1,6 @@
 import { systemmonitorHandler } from '../../handlers/system-monitor.handlers';
 
-describe('system-monitorHandler', () => {
+describe('SystemMonitorHandler', () => {
   let handler: systemmonitorHandler;
 
   beforeEach(() => {
@@ -8,7 +8,7 @@ describe('system-monitorHandler', () => {
   });
 
   test('should create handler instance', () => {
-    expect(handler).toBeInstanceOf(system-monitorHandler);
+    expect(handler).toBeInstanceOf(SystemMonitorHandler);
   });
 
   test('should handle health check', async () => {

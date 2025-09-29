@@ -1,6 +1,6 @@
 import { auditloggerHandler } from '../../handlers/audit-logger.handlers';
 
-describe('audit-loggerHandler', () => {
+describe('AuditLoggerHandler', () => {
   let handler: auditloggerHandler;
 
   beforeEach(() => {
@@ -8,7 +8,7 @@ describe('audit-loggerHandler', () => {
   });
 
   test('should create handler instance', () => {
-    expect(handler).toBeInstanceOf(audit-loggerHandler);
+    expect(handler).toBeInstanceOf(AuditLoggerHandler);
   });
 
   test('should handle health check', async () => {

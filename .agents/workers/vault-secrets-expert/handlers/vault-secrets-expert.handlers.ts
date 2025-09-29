@@ -4,7 +4,7 @@ import { Request, Response } from 'express';
  * vault-secrets-expert Agent Handler
  * OSSA v0.1.9 compliant handler implementation
  */
-export class vault-secrets-expertHandler {
+export class VaultSecretsExpertHandler {
 
   /**
    * Health check endpoint

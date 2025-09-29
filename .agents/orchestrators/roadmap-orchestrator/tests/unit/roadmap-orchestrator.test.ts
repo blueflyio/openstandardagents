@@ -1,6 +1,6 @@
 import { roadmaporchestratorHandler } from '../../handlers/roadmap-orchestrator.handlers';
 
-describe('roadmap-orchestratorHandler', () => {
+describe('RoadmapOrchestratorHandler', () => {
   let handler: roadmaporchestratorHandler;
 
   beforeEach(() => {
@@ -8,7 +8,7 @@ describe('roadmap-orchestratorHandler', () => {
   });
 
   test('should create handler instance', () => {
-    expect(handler).toBeInstanceOf(roadmap-orchestratorHandler);
+    expect(handler).toBeInstanceOf(RoadmapOrchestratorHandler);
   });
 
   test('should handle health check', async () => {

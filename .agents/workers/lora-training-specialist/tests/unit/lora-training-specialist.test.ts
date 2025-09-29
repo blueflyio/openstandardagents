@@ -1,6 +1,6 @@
 import { lora-trainingspecialistHandler } from '../../handlers/lora-training-specialist.handlers';
 
-describe('lora-training-specialistHandler', () => {
+describe('LoraTrainingSpecialistHandler', () => {
   let handler: lora-trainingspecialistHandler;
 
   beforeEach(() => {
@@ -8,7 +8,7 @@ describe('lora-training-specialistHandler', () => {
   });
 
   test('should create handler instance', () => {
-    expect(handler).toBeInstanceOf(lora-training-specialistHandler);
+    expect(handler).toBeInstanceOf(LoraTrainingSpecialistHandler);
   });
 
   test('should handle health check', async () => {

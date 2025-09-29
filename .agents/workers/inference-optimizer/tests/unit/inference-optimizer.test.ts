@@ -1,6 +1,6 @@
 import { inferenceoptimizerHandler } from '../../handlers/inference-optimizer.handlers';
 
-describe('inference-optimizerHandler', () => {
+describe('InferenceOptimizerHandler', () => {
   let handler: inferenceoptimizerHandler;
 
   beforeEach(() => {
@@ -8,7 +8,7 @@ describe('inference-optimizerHandler', () => {
   });
 
   test('should create handler instance', () => {
-    expect(handler).toBeInstanceOf(inference-optimizerHandler);
+    expect(handler).toBeInstanceOf(InferenceOptimizerHandler);
   });
 
   test('should handle health check', async () => {

@@ -1,6 +1,6 @@
 import { model-servingspecialistHandler } from '../../handlers/model-serving-specialist.handlers';
 
-describe('model-serving-specialistHandler', () => {
+describe('ModelServingSpecialistHandler', () => {
   let handler: model-servingspecialistHandler;
 
   beforeEach(() => {
@@ -8,7 +8,7 @@ describe('model-serving-specialistHandler', () => {
   });
 
   test('should create handler instance', () => {
-    expect(handler).toBeInstanceOf(model-serving-specialistHandler);
+    expect(handler).toBeInstanceOf(ModelServingSpecialistHandler);
   });
 
   test('should handle health check', async () => {

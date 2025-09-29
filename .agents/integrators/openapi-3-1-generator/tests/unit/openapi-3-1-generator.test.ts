@@ -1,6 +1,6 @@
 import { openapi-3-1generatorHandler } from '../../handlers/openapi-3-1-generator.handlers';
 
-describe('openapi-3-1-generatorHandler', () => {
+describe('Openapi31GeneratorHandler', () => {
   let handler: openapi-3-1generatorHandler;
 
   beforeEach(() => {
@@ -8,7 +8,7 @@ describe('openapi-3-1-generatorHandler', () => {
   });
 
   test('should create handler instance', () => {
-    expect(handler).toBeInstanceOf(openapi-3-1-generatorHandler);
+    expect(handler).toBeInstanceOf(Openapi31GeneratorHandler);
   });
 
   test('should handle health check', async () => {

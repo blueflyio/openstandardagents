@@ -1,6 +1,6 @@
 import { communicationmultiprotocolHandler } from '../../handlers/communication-multiprotocol.handlers';
 
-describe('communication-multiprotocolHandler', () => {
+describe('CommunicationMultiprotocolHandler', () => {
   let handler: communicationmultiprotocolHandler;
 
   beforeEach(() => {
@@ -8,7 +8,7 @@ describe('communication-multiprotocolHandler', () => {
   });
 
   test('should create handler instance', () => {
-    expect(handler).toBeInstanceOf(communication-multiprotocolHandler);
+    expect(handler).toBeInstanceOf(CommunicationMultiprotocolHandler);
   });
 
   test('should handle health check', async () => {

@@ -1,6 +1,6 @@
 import { drools-rulesexpertHandler } from '../../handlers/drools-rules-expert.handlers';
 
-describe('drools-rules-expertHandler', () => {
+describe('DroolsRulesExpertHandler', () => {
   let handler: drools-rulesexpertHandler;
 
   beforeEach(() => {
@@ -8,7 +8,7 @@ describe('drools-rules-expertHandler', () => {
   });
 
   test('should create handler instance', () => {
-    expect(handler).toBeInstanceOf(drools-rules-expertHandler);
+    expect(handler).toBeInstanceOf(DroolsRulesExpertHandler);
   });
 
   test('should handle health check', async () => {

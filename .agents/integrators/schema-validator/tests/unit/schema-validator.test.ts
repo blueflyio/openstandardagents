@@ -1,6 +1,6 @@
 import { schemavalidatorHandler } from '../../handlers/schema-validator.handlers';
 
-describe('schema-validatorHandler', () => {
+describe('SchemaValidatorHandler', () => {
   let handler: schemavalidatorHandler;
 
   beforeEach(() => {
@@ -8,7 +8,7 @@ describe('schema-validatorHandler', () => {
   });
 
   test('should create handler instance', () => {
-    expect(handler).toBeInstanceOf(schema-validatorHandler);
+    expect(handler).toBeInstanceOf(SchemaValidatorHandler);
   });
 
   test('should handle health check', async () => {

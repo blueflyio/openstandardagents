@@ -1,6 +1,6 @@
 import { api-gatewayconfiguratorHandler } from '../../handlers/api-gateway-configurator.handlers';
 
-describe('api-gateway-configuratorHandler', () => {
+describe('ApiGatewayConfiguratorHandler', () => {
   let handler: api-gatewayconfiguratorHandler;
 
   beforeEach(() => {
@@ -8,7 +8,7 @@ describe('api-gateway-configuratorHandler', () => {
   });
 
   test('should create handler instance', () => {
-    expect(handler).toBeInstanceOf(api-gateway-configuratorHandler);
+    expect(handler).toBeInstanceOf(ApiGatewayConfiguratorHandler);
   });
 
   test('should handle health check', async () => {

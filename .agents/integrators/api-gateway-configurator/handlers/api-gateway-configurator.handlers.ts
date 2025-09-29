@@ -4,7 +4,7 @@ import { Request, Response } from 'express';
  * api-gateway-configurator Agent Handler
  * OSSA v0.1.9 compliant handler implementation
  */
-export class api-gateway-configuratorHandler {
+export class ApiGatewayConfiguratorHandler {
 
   /**
    * Health check endpoint

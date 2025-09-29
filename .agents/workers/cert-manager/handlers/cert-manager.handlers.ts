@@ -4,7 +4,7 @@ import { Request, Response } from 'express';
  * cert-manager Agent Handler
  * OSSA v0.1.9 compliant handler implementation
  */
-export class cert-managerHandler {
+export class CertManagerHandler {
 
   /**
    * Health check endpoint

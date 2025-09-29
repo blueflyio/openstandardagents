@@ -4,7 +4,7 @@ import { Request, Response } from 'express';
  * compliance-auditor Agent Handler
  * OSSA v0.1.9 compliant handler implementation
  */
-export class compliance-auditorHandler {
+export class ComplianceAuditorHandler {
 
   /**
    * Health check endpoint

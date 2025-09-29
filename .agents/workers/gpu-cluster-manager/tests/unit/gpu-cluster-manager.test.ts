@@ -1,6 +1,6 @@
 import { gpu-clustermanagerHandler } from '../../handlers/gpu-cluster-manager.handlers';
 
-describe('gpu-cluster-managerHandler', () => {
+describe('GpuClusterManagerHandler', () => {
   let handler: gpu-clustermanagerHandler;
 
   beforeEach(() => {
@@ -8,7 +8,7 @@ describe('gpu-cluster-managerHandler', () => {
   });
 
   test('should create handler instance', () => {
-    expect(handler).toBeInstanceOf(gpu-cluster-managerHandler);
+    expect(handler).toBeInstanceOf(GpuClusterManagerHandler);
   });
 
   test('should handle health check', async () => {

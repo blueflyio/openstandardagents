@@ -4,7 +4,7 @@ import { Request, Response } from 'express';
  * grpc-service-designer Agent Handler
  * OSSA v0.1.9 compliant handler implementation
  */
-export class grpc-service-designerHandler {
+export class GrpcServiceDesignerHandler {
 
   /**
    * Health check endpoint

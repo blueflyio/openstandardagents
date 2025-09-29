@@ -1,6 +1,6 @@
 import { mlops-pipelinearchitectHandler } from '../../handlers/mlops-pipeline-architect.handlers';
 
-describe('mlops-pipeline-architectHandler', () => {
+describe('MlopsPipelineArchitectHandler', () => {
   let handler: mlops-pipelinearchitectHandler;
 
   beforeEach(() => {
@@ -8,7 +8,7 @@ describe('mlops-pipeline-architectHandler', () => {
   });
 
   test('should create handler instance', () => {
-    expect(handler).toBeInstanceOf(mlops-pipeline-architectHandler);
+    expect(handler).toBeInstanceOf(MlopsPipelineArchitectHandler);
   });
 
   test('should handle health check', async () => {

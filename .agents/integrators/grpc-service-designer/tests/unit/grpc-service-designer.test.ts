@@ -1,6 +1,6 @@
 import { grpc-servicedesignerHandler } from '../../handlers/grpc-service-designer.handlers';
 
-describe('grpc-service-designerHandler', () => {
+describe('GrpcServiceDesignerHandler', () => {
   let handler: grpc-servicedesignerHandler;
 
   beforeEach(() => {
@@ -8,7 +8,7 @@ describe('grpc-service-designerHandler', () => {
   });
 
   test('should create handler instance', () => {
-    expect(handler).toBeInstanceOf(grpc-service-designerHandler);
+    expect(handler).toBeInstanceOf(GrpcServiceDesignerHandler);
   });
 
   test('should handle health check', async () => {

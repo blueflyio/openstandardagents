@@ -1,6 +1,6 @@
 import { mcpenhancedHandler } from '../../handlers/mcp-enhanced.handlers';
 
-describe('mcp-enhancedHandler', () => {
+describe('McpEnhancedHandler', () => {
   let handler: mcpenhancedHandler;
 
   beforeEach(() => {
@@ -8,7 +8,7 @@ describe('mcp-enhancedHandler', () => {
   });
 
   test('should create handler instance', () => {
-    expect(handler).toBeInstanceOf(mcp-enhancedHandler);
+    expect(handler).toBeInstanceOf(McpEnhancedHandler);
   });
 
   test('should handle health check', async () => {

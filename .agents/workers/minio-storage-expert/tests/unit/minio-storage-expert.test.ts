@@ -1,6 +1,6 @@
 import { minio-storageexpertHandler } from '../../handlers/minio-storage-expert.handlers';
 
-describe('minio-storage-expertHandler', () => {
+describe('MinioStorageExpertHandler', () => {
   let handler: minio-storageexpertHandler;
 
   beforeEach(() => {
@@ -8,7 +8,7 @@ describe('minio-storage-expertHandler', () => {
   });
 
   test('should create handler instance', () => {
-    expect(handler).toBeInstanceOf(minio-storage-expertHandler);
+    expect(handler).toBeInstanceOf(MinioStorageExpertHandler);
   });
 
   test('should handle health check', async () => {

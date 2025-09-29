@@ -1,6 +1,6 @@
 import { neo4j-grapharchitectHandler } from '../../handlers/neo4j-graph-architect.handlers';
 
-describe('neo4j-graph-architectHandler', () => {
+describe('Neo4jGraphArchitectHandler', () => {
   let handler: neo4j-grapharchitectHandler;
 
   beforeEach(() => {
@@ -8,7 +8,7 @@ describe('neo4j-graph-architectHandler', () => {
   });
 
   test('should create handler instance', () => {
-    expect(handler).toBeInstanceOf(neo4j-graph-architectHandler);
+    expect(handler).toBeInstanceOf(Neo4jGraphArchitectHandler);
   });
 
   test('should handle health check', async () => {

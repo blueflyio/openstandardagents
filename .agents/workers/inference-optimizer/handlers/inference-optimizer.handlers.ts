@@ -4,7 +4,7 @@ import { Request, Response } from 'express';
  * inference-optimizer Agent Handler
  * OSSA v0.1.9 compliant handler implementation
  */
-export class inference-optimizerHandler {
+export class InferenceOptimizerHandler {
 
   /**
    * Health check endpoint

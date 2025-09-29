@@ -4,7 +4,7 @@ import { Request, Response } from 'express';
  * quality-assessor Agent Handler
  * OSSA v0.1.9 compliant handler implementation
  */
-export class quality-assessorHandler {
+export class QualityAssessorHandler {
 
   /**
    * Health check endpoint

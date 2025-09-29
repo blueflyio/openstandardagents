@@ -4,7 +4,7 @@ import { Request, Response } from 'express';
  * prometheus-metrics-specialist Agent Handler
  * OSSA v0.1.9 compliant handler implementation
  */
-export class prometheus-metrics-specialistHandler {
+export class PrometheusMetricsSpecialistHandler {
 
   /**
    * Health check endpoint

@@ -1,6 +1,6 @@
 import { llama2-fine-tuningexpertHandler } from '../../handlers/llama2-fine-tuning-expert.handlers';
 
-describe('llama2-fine-tuning-expertHandler', () => {
+describe('Llama2FineTuningExpertHandler', () => {
   let handler: llama2-fine-tuningexpertHandler;
 
   beforeEach(() => {
@@ -8,7 +8,7 @@ describe('llama2-fine-tuning-expertHandler', () => {
   });
 
   test('should create handler instance', () => {
-    expect(handler).toBeInstanceOf(llama2-fine-tuning-expertHandler);
+    expect(handler).toBeInstanceOf(Llama2FineTuningExpertHandler);
   });
 
   test('should handle health check', async () => {

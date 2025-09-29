@@ -4,7 +4,7 @@ import { Request, Response } from 'express';
  * minio-storage-expert Agent Handler
  * OSSA v0.1.9 compliant handler implementation
  */
-export class minio-storage-expertHandler {
+export class MinioStorageExpertHandler {
 
   /**
    * Health check endpoint

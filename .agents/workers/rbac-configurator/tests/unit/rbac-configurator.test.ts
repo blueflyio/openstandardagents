@@ -1,6 +1,6 @@
 import { rbacconfiguratorHandler } from '../../handlers/rbac-configurator.handlers';
 
-describe('rbac-configuratorHandler', () => {
+describe('RbacConfiguratorHandler', () => {
   let handler: rbacconfiguratorHandler;
 
   beforeEach(() => {
@@ -8,7 +8,7 @@ describe('rbac-configuratorHandler', () => {
   });
 
   test('should create handler instance', () => {
-    expect(handler).toBeInstanceOf(rbac-configuratorHandler);
+    expect(handler).toBeInstanceOf(RbacConfiguratorHandler);
   });
 
   test('should handle health check', async () => {

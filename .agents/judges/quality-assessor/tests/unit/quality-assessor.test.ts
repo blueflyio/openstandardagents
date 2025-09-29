@@ -1,6 +1,6 @@
 import { qualityassessorHandler } from '../../handlers/quality-assessor.handlers';
 
-describe('quality-assessorHandler', () => {
+describe('QualityAssessorHandler', () => {
   let handler: qualityassessorHandler;
 
   beforeEach(() => {
@@ -8,7 +8,7 @@ describe('quality-assessorHandler', () => {
   });
 
   test('should create handler instance', () => {
-    expect(handler).toBeInstanceOf(quality-assessorHandler);
+    expect(handler).toBeInstanceOf(QualityAssessorHandler);
   });
 
   test('should handle health check', async () => {

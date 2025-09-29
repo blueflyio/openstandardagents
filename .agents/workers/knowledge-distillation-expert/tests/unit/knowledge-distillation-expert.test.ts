@@ -1,6 +1,6 @@
 import { knowledge-distillationexpertHandler } from '../../handlers/knowledge-distillation-expert.handlers';
 
-describe('knowledge-distillation-expertHandler', () => {
+describe('KnowledgeDistillationExpertHandler', () => {
   let handler: knowledge-distillationexpertHandler;
 
   beforeEach(() => {
@@ -8,7 +8,7 @@ describe('knowledge-distillation-expertHandler', () => {
   });
 
   test('should create handler instance', () => {
-    expect(handler).toBeInstanceOf(knowledge-distillation-expertHandler);
+    expect(handler).toBeInstanceOf(KnowledgeDistillationExpertHandler);
   });
 
   test('should handle health check', async () => {

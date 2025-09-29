@@ -1,6 +1,6 @@
 import { dataagentHandler } from '../../handlers/data-agent.handlers';
 
-describe('data-agentHandler', () => {
+describe('DataAgentHandler', () => {
   let handler: dataagentHandler;
 
   beforeEach(() => {
@@ -8,7 +8,7 @@ describe('data-agentHandler', () => {
   });
 
   test('should create handler instance', () => {
-    expect(handler).toBeInstanceOf(data-agentHandler);
+    expect(handler).toBeInstanceOf(DataAgentHandler);
   });
 
   test('should handle health check', async () => {

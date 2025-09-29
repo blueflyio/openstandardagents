@@ -1,6 +1,6 @@
 import { securityagentHandler } from '../../handlers/security-agent.handlers';
 
-describe('security-agentHandler', () => {
+describe('SecurityAgentHandler', () => {
   let handler: securityagentHandler;
 
   beforeEach(() => {
@@ -8,7 +8,7 @@ describe('security-agentHandler', () => {
   });
 
   test('should create handler instance', () => {
-    expect(handler).toBeInstanceOf(security-agentHandler);
+    expect(handler).toBeInstanceOf(SecurityAgentHandler);
   });
 
   test('should handle health check', async () => {

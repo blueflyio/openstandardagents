@@ -1,6 +1,6 @@
 import { embeddings-modeltrainerHandler } from '../../handlers/embeddings-model-trainer.handlers';
 
-describe('embeddings-model-trainerHandler', () => {
+describe('EmbeddingsModelTrainerHandler', () => {
   let handler: embeddings-modeltrainerHandler;
 
   beforeEach(() => {
@@ -8,7 +8,7 @@ describe('embeddings-model-trainerHandler', () => {
   });
 
   test('should create handler instance', () => {
-    expect(handler).toBeInstanceOf(embeddings-model-trainerHandler);
+    expect(handler).toBeInstanceOf(EmbeddingsModelTrainerHandler);
   });
 
   test('should handle health check', async () => {

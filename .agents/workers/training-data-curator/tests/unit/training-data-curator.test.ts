@@ -1,6 +1,6 @@
 import { training-datacuratorHandler } from '../../handlers/training-data-curator.handlers';
 
-describe('training-data-curatorHandler', () => {
+describe('TrainingDataCuratorHandler', () => {
   let handler: training-datacuratorHandler;
 
   beforeEach(() => {
@@ -8,7 +8,7 @@ describe('training-data-curatorHandler', () => {
   });
 
   test('should create handler instance', () => {
-    expect(handler).toBeInstanceOf(training-data-curatorHandler);
+    expect(handler).toBeInstanceOf(TrainingDataCuratorHandler);
   });
 
   test('should handle health check', async () => {

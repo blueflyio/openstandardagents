@@ -4,7 +4,7 @@ import { Request, Response } from 'express';
  * drools-rules-expert Agent Handler
  * OSSA v0.1.9 compliant handler implementation
  */
-export class drools-rules-expertHandler {
+export class DroolsRulesExpertHandler {
 
   /**
    * Health check endpoint

@@ -1,6 +1,6 @@
 import { ppo-optimizationagentHandler } from '../../handlers/ppo-optimization-agent.handlers';
 
-describe('ppo-optimization-agentHandler', () => {
+describe('PpoOptimizationAgentHandler', () => {
   let handler: ppo-optimizationagentHandler;
 
   beforeEach(() => {
@@ -8,7 +8,7 @@ describe('ppo-optimization-agentHandler', () => {
   });
 
   test('should create handler instance', () => {
-    expect(handler).toBeInstanceOf(ppo-optimization-agentHandler);
+    expect(handler).toBeInstanceOf(PpoOptimizationAgentHandler);
   });
 
   test('should handle health check', async () => {

@@ -4,7 +4,7 @@ import { Request, Response } from 'express';
  * redis-cluster-architect Agent Handler
  * OSSA v0.1.9 compliant handler implementation
  */
-export class redis-cluster-architectHandler {
+export class RedisClusterArchitectHandler {
 
   /**
    * Health check endpoint

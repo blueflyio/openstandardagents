@@ -4,7 +4,7 @@ import { Request, Response } from 'express';
  * opa-policy-architect Agent Handler
  * OSSA v0.1.9 compliant handler implementation
  */
-export class opa-policy-architectHandler {
+export class OpaPolicyArchitectHandler {
 
   /**
    * Health check endpoint

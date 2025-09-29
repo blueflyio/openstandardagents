@@ -1,6 +1,6 @@
 import { apiconnectorHandler } from '../../handlers/api-connector.handlers';
 
-describe('api-connectorHandler', () => {
+describe('ApiConnectorHandler', () => {
   let handler: apiconnectorHandler;
 
   beforeEach(() => {
@@ -8,7 +8,7 @@ describe('api-connectorHandler', () => {
   });
 
   test('should create handler instance', () => {
-    expect(handler).toBeInstanceOf(api-connectorHandler);
+    expect(handler).toBeInstanceOf(ApiConnectorHandler);
   });
 
   test('should handle health check', async () => {

@@ -1,6 +1,6 @@
 import { exampleorchestratorHandler } from '../../handlers/example-orchestrator.handlers';
 
-describe('example-orchestratorHandler', () => {
+describe('ExampleOrchestratorHandler', () => {
   let handler: exampleorchestratorHandler;
 
   beforeEach(() => {
@@ -8,7 +8,7 @@ describe('example-orchestratorHandler', () => {
   });
 
   test('should create handler instance', () => {
-    expect(handler).toBeInstanceOf(example-orchestratorHandler);
+    expect(handler).toBeInstanceOf(ExampleOrchestratorHandler);
   });
 
   test('should handle health check', async () => {

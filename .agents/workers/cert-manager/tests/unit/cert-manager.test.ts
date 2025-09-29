@@ -1,6 +1,6 @@
 import { certmanagerHandler } from '../../handlers/cert-manager.handlers';
 
-describe('cert-managerHandler', () => {
+describe('CertManagerHandler', () => {
   let handler: certmanagerHandler;
 
   beforeEach(() => {
@@ -8,7 +8,7 @@ describe('cert-managerHandler', () => {
   });
 
   test('should create handler instance', () => {
-    expect(handler).toBeInstanceOf(cert-managerHandler);
+    expect(handler).toBeInstanceOf(CertManagerHandler);
   });
 
   test('should handle health check', async () => {

@@ -4,7 +4,7 @@ import { Request, Response } from 'express';
  * istio-mesh-architect Agent Handler
  * OSSA v0.1.9 compliant handler implementation
  */
-export class istio-mesh-architectHandler {
+export class IstioMeshArchitectHandler {
 
   /**
    * Health check endpoint

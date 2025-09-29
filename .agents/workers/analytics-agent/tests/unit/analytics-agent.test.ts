@@ -1,6 +1,6 @@
 import { analyticsagentHandler } from '../../handlers/analytics-agent.handlers';
 
-describe('analytics-agentHandler', () => {
+describe('AnalyticsAgentHandler', () => {
   let handler: analyticsagentHandler;
 
   beforeEach(() => {
@@ -8,7 +8,7 @@ describe('analytics-agentHandler', () => {
   });
 
   test('should create handler instance', () => {
-    expect(handler).toBeInstanceOf(analytics-agentHandler);
+    expect(handler).toBeInstanceOf(AnalyticsAgentHandler);
   });
 
   test('should handle health check', async () => {

@@ -1,6 +1,6 @@
 import { opa-policyarchitectHandler } from '../../handlers/opa-policy-architect.handlers';
 
-describe('opa-policy-architectHandler', () => {
+describe('OpaPolicyArchitectHandler', () => {
   let handler: opa-policyarchitectHandler;
 
   beforeEach(() => {
@@ -8,7 +8,7 @@ describe('opa-policy-architectHandler', () => {
   });
 
   test('should create handler instance', () => {
-    expect(handler).toBeInstanceOf(opa-policy-architectHandler);
+    expect(handler).toBeInstanceOf(OpaPolicyArchitectHandler);
   });
 
   test('should handle health check', async () => {

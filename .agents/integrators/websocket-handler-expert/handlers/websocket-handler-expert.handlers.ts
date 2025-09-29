@@ -4,7 +4,7 @@ import { Request, Response } from 'express';
  * websocket-handler-expert Agent Handler
  * OSSA v0.1.9 compliant handler implementation
  */
-export class websocket-handler-expertHandler {
+export class WebsocketHandlerExpertHandler {
 
   /**
    * Health check endpoint

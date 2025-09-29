@@ -4,7 +4,7 @@ import { Request, Response } from 'express';
  * training-data-curator Agent Handler
  * OSSA v0.1.9 compliant handler implementation
  */
-export class training-data-curatorHandler {
+export class TrainingDataCuratorHandler {
 
   /**
    * Health check endpoint

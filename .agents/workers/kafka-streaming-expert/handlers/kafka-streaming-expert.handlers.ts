@@ -4,7 +4,7 @@ import { Request, Response } from 'express';
  * kafka-streaming-expert Agent Handler
  * OSSA v0.1.9 compliant handler implementation
  */
-export class kafka-streaming-expertHandler {
+export class KafkaStreamingExpertHandler {
 
   /**
    * Health check endpoint

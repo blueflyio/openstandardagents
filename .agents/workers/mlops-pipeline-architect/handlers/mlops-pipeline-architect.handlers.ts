@@ -4,7 +4,7 @@ import { Request, Response } from 'express';
  * mlops-pipeline-architect Agent Handler
  * OSSA v0.1.9 compliant handler implementation
  */
-export class mlops-pipeline-architectHandler {
+export class MlopsPipelineArchitectHandler {
 
   /**
    * Health check endpoint

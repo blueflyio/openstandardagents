@@ -4,7 +4,7 @@ import { Request, Response } from 'express';
  * llama2-fine-tuning-expert Agent Handler
  * OSSA v0.1.9 compliant handler implementation
  */
-export class llama2-fine-tuning-expertHandler {
+export class Llama2FineTuningExpertHandler {
 
   /**
    * Health check endpoint

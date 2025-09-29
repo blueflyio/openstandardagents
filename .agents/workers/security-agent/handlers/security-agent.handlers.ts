@@ -4,7 +4,7 @@ import { Request, Response } from 'express';
  * security-agent Agent Handler
  * OSSA v0.1.9 compliant handler implementation
  */
-export class security-agentHandler {
+export class SecurityAgentHandler {
 
   /**
    * Health check endpoint

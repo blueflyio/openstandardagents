@@ -4,7 +4,7 @@ import { Request, Response } from 'express';
  * mcp-enhanced Agent Handler
  * OSSA v0.1.9 compliant handler implementation
  */
-export class mcp-enhancedHandler {
+export class McpEnhancedHandler {
 
   /**
    * Health check endpoint

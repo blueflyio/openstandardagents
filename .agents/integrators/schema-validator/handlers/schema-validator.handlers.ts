@@ -4,7 +4,7 @@ import { Request, Response } from 'express';
  * schema-validator Agent Handler
  * OSSA v0.1.9 compliant handler implementation
  */
-export class schema-validatorHandler {
+export class SchemaValidatorHandler {
 
   /**
    * Health check endpoint

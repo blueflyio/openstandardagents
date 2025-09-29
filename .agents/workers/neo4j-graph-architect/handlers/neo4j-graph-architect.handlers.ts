@@ -4,7 +4,7 @@ import { Request, Response } from 'express';
  * neo4j-graph-architect Agent Handler
  * OSSA v0.1.9 compliant handler implementation
  */
-export class neo4j-graph-architectHandler {
+export class Neo4jGraphArchitectHandler {
 
   /**
    * Health check endpoint

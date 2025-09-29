@@ -4,7 +4,7 @@ import { Request, Response } from 'express';
  * roadmap-orchestrator Agent Handler
  * OSSA v0.1.9 compliant handler implementation
  */
-export class roadmap-orchestratorHandler {
+export class RoadmapOrchestratorHandler {
 
   /**
    * Health check endpoint

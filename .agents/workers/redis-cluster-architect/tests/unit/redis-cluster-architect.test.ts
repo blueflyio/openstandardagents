@@ -1,6 +1,6 @@
 import { redis-clusterarchitectHandler } from '../../handlers/redis-cluster-architect.handlers';
 
-describe('redis-cluster-architectHandler', () => {
+describe('RedisClusterArchitectHandler', () => {
   let handler: redis-clusterarchitectHandler;
 
   beforeEach(() => {
@@ -8,7 +8,7 @@ describe('redis-cluster-architectHandler', () => {
   });
 
   test('should create handler instance', () => {
-    expect(handler).toBeInstanceOf(redis-cluster-architectHandler);
+    expect(handler).toBeInstanceOf(RedisClusterArchitectHandler);
   });
 
   test('should handle health check', async () => {

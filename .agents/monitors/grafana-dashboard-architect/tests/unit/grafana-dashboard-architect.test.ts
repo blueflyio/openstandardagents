@@ -1,6 +1,6 @@
 import { grafana-dashboardarchitectHandler } from '../../handlers/grafana-dashboard-architect.handlers';
 
-describe('grafana-dashboard-architectHandler', () => {
+describe('GrafanaDashboardArchitectHandler', () => {
   let handler: grafana-dashboardarchitectHandler;
 
   beforeEach(() => {
@@ -8,7 +8,7 @@ describe('grafana-dashboard-architectHandler', () => {
   });
 
   test('should create handler instance', () => {
-    expect(handler).toBeInstanceOf(grafana-dashboard-architectHandler);
+    expect(handler).toBeInstanceOf(GrafanaDashboardArchitectHandler);
   });
 
   test('should handle health check', async () => {

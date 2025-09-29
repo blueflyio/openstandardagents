@@ -1,6 +1,6 @@
 import { governanceenforcerHandler } from '../../handlers/governance-enforcer.handlers';
 
-describe('governance-enforcerHandler', () => {
+describe('GovernanceEnforcerHandler', () => {
   let handler: governanceenforcerHandler;
 
   beforeEach(() => {
@@ -8,7 +8,7 @@ describe('governance-enforcerHandler', () => {
   });
 
   test('should create handler instance', () => {
-    expect(handler).toBeInstanceOf(governance-enforcerHandler);
+    expect(handler).toBeInstanceOf(GovernanceEnforcerHandler);
   });
 
   test('should handle health check', async () => {
