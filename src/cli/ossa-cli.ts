@@ -18,7 +18,7 @@ import {
 import { join, resolve, extname } from 'path';
 import { execSync } from 'child_process';
 import chalk from 'chalk';
-import { createValidateCommand } from './commands/validate.js';
+// import { createValidateCommand } from './commands/validate.js'; // Removed - causes duplicate command
 import { z } from 'zod';
 import * as yaml from 'js-yaml';
 
