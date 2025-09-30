@@ -1,15 +1,7 @@
 # GitLab CI/CD Pipeline for OSSA Platform v0.1.0-alpha.1
 # TDD RED Phase Configuration - All tests expected to FAIL
 
-include:
-  - component: gitlab.bluefly.io/llm/gitlab_components/workflow/golden@v0.1.0
-    inputs:
-      project_name: "OSSA"
-      enable_auto_flow: true
-      enable_comprehensive_testing: true
-      enable_security_scanning: true
-      test_coverage_threshold: 85
-      specification_mode: true
+# Removed invalid component reference - using direct pipeline configuration
 
 # Override stages from golden template to include OSSA-specific stages
 stages:
