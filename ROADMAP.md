@@ -1,101 +1,92 @@
-# OSSA Development Roadmap
+# OSSA Specification Roadmap
 
-**Current Status**: v0.1.9 Production Released ✅ | v0.2.0 Development Planning 🚧
-
----
-
-## 📊 **Current Release Status**
-
-### ✅ **OSSA v0.1.9 - PRODUCTION RELEASE (September 2025)**
-
-**Status**: **PRODUCTION READY & RELEASED**  
-**Confidence**: 100% - Complete OpenAPI 3.1 TypeScript CLI implementation
-
-#### **Major Features Delivered**
-
-##### **OpenAPI 3.1 Transformation - 100% Complete**
-- ✅ **Full OpenAPI 3.1 Compliance** - All specifications upgraded from 3.0 to 3.1.0
-- ✅ **TypeScript CLI System** - Complete CRUD operations replacing all shell scripts
-- ✅ **OSSA CLI (`ossa`)** - Comprehensive specification and agent management
-- ✅ **Agent Deployment CLI (`ossa-deploy`)** - Advanced agent lifecycle management
-- ✅ **Zero Shell Script Dependencies** - 100% TypeScript implementation
-- ✅ **Zod Schema Validation** - Runtime type safety for all OpenAPI operations
-- ✅ **Template-Based Creation** - Basic, Advanced, and Industrial API templates
-- ✅ **ES Module Support** - Modern JavaScript module system compatibility
-
-##### **CLI Features - 100% Complete**
-- ✅ **Specification CRUD** - Create, Read, Update, Delete OpenAPI 3.1 specs
-- ✅ **Agent CRUD** - Complete agent lifecycle management
-- ✅ **Validation Pipeline** - Schema validation with auto-fix capabilities
-- ✅ **Build System** - TypeScript compilation with type generation
-- ✅ **Deployment Management** - Multi-environment deployment support
-- ✅ **Testing Framework** - Comprehensive test coverage reporting
-- ✅ **Migration Tools** - Seamless OpenAPI version migration
-- ✅ **Health Monitoring** - Real-time system status and metrics
-
-### ✅ **OSSA v0.1.8 - PREVIOUS RELEASE**
-
-**Status**: **PRODUCTION READY & PUBLICLY RELEASED**  
-**Confidence**: 95% - Enterprise-grade with complete infrastructure
-
-#### **Major Features Delivered**
-
-##### **Core Infrastructure - 100% Complete**
-- ✅ **Agent Naming Conventions Standard v1.0.0** - Complete specification with UADP integration
-- ✅ **Golden Standard Templates** - 1000+ line comprehensive agent specifications
-- ✅ **Validation API Server** - Production server running on port 3003
-- ✅ **TDDAI Integration** - Gold-level OSSA compliance with all CLI commands working
-- ✅ **Workspace Orchestrator Service** - Complete enterprise orchestration engine
-- ✅ **Universal Agent Discovery Protocol (UADP)** - Hierarchical discovery supporting 10,000+ agents
-
-##### **Enterprise Features - 100% Complete**
-- ✅ **Compliance Frameworks** - ISO 42001, NIST AI RMF, EU AI Act, SOX, HIPAA support
-- ✅ **Security Policies** - Zero trust architecture, RBAC/ABAC, comprehensive encryption
-- ✅ **Observability Stack** - Metrics, tracing, logging, dashboards, real-time alerting
-- ✅ **Orchestration Patterns** - 6 advanced patterns (sequential, parallel, fanout, pipeline, mapreduce, circuit breaker)
-- ✅ **Framework Interoperability** - Universal bridges for MCP, LangChain, CrewAI, OpenAI, AutoGen
-
-##### **Production Infrastructure - 100% Complete**
-- ✅ **Service Architecture** - Complete monorepo with 6 production-ready services
-- ✅ **OpenAPI Specifications** - All agent examples have comprehensive API specs (150-960+ lines each)
-- ✅ **Docker Containerization** - OrbStack optimization with health monitoring
-- ✅ **TypeScript Architecture** - Complete service implementation with error handling
-- ✅ **API-First Development** - Generated clients with comprehensive testing
-
-#### **Success Metrics Achieved**
-| Metric | Target | Status | Achievement |
-|--------|--------|--------|-------------|
-| **Discovery Engine** | <5 seconds for 100+ projects | ✅ **OPERATIONAL** | **100%** |
-| **Validation API** | Production-ready server | ✅ **PORT 3003** | **100%** |
-| **Framework Bridges** | Universal interoperability | ✅ **ALL COMPLETE** | **100%** |
-| **Enterprise Compliance** | Major frameworks | ✅ **ISO/NIST/EU ACT** | **100%** |
-| **Agent Templates** | Production specifications | ✅ **1000+ LINES** | **100%** |
-| **Service Architecture** | Complete infrastructure | ✅ **6 SERVICES** | **100%** |
+**Current Status**: v0.1.2 Development | Specification Framework
+**Note**: Implementation targets have been moved to [agent_buildkit/ROADMAP.md](../agent_buildkit/ROADMAP.md)
 
 ---
 
-## 🚀 **OSSA v0.1.9 Development Roadmap**
+## 📊 **Current Implementation Status**
 
-**Status**: **ADVANCED INFRASTRUCTURE DEVELOPMENT** - Building on v0.1.8 foundation  
-**Timeline**: 6-month development cycle (Q1-Q2 2025)  
-**Focus**: Advanced tooling, multi-modal capabilities, industrial protocols
+### 🔧 **OSSA v0.1.2 - SPECIFICATION FRAMEWORK**
 
-### **Development Phases Overview**
+**Status**: **Development Phase**
+**Focus**: OpenAPI 3.1 specifications and validation framework
 
-| Phase | Timeline | Priority | Focus Area | Status |
-|-------|----------|----------|------------|--------|
-| **Phase 1** | Months 1-2 | **CRITICAL** | Advanced CLI Infrastructure | 🚧 Planning |
-| **Phase 2** | Months 2-3 | **HIGH** | Industrial Protocol Integration | 📋 Designed |
-| **Phase 3** | Months 3-4 | **MEDIUM** | Production Analytics & Monitoring | 📋 Planned |
-| **Phase 4** | Months 4-6 | **MEDIUM** | Multi-Modal Agent Architecture | 💡 Research |
+#### **Current Implementation**
+
+##### **OpenAPI 3.1 Specifications**
+- ✅ **15 OpenAPI Specifications** - Core, MCP, Project domains
+- ✅ **TypeScript CLI Framework** - Commander.js-based CLI
+- ✅ **Validation Framework** - 520+ line OpenAPI validator
+- ✅ **JSON Schema Support** - Agent manifest validation
+- ✅ **Express Server** - Basic API server implementation
+- 🚧 **Agent Templates** - Basic agent structure definitions
+- 🚧 **Documentation** - API reference generation
+
+##### **Available CLI Commands**
+- ✅ **`ossa validate`** - OpenAPI specification validation
+- ✅ **`ossa agent`** - Agent manifest management
+- ✅ **`ossa build`** - TypeScript compilation
+- ✅ **`ossa-deploy`** - Deployment helper
+- 🚧 **Protocol Commands** - UAP protocol implementation
+- 🚧 **Discovery Commands** - Agent discovery features
+- 🚧 **Testing Integration** - Test coverage reporting
+
+## 🎯 **OSSA v0.2.0 Specification Roadmap**
+
+**Timeline**: Q1-Q2 2025
+**Focus**: Complete specification standard for AI agent interoperability
+
+### 📋 **Phase 1: Core Specification Enhancement** (Q1 2025)
+
+**Focus**: Complete the OpenAPI 3.1 specification framework
+
+#### Tasks:
+- [ ] **Specification Completeness** - Finalize all 15 OpenAPI specifications
+- [ ] **Schema Validation** - Complete JSON Schema definitions for all agent types
+- [ ] **Protocol Documentation** - Document UAP, RASP, ACAP, UADP, CPC protocols
+- [ ] **Validation Framework** - Enhance the 520-line validator with more rules
+- [ ] **Type Definitions** - Complete TypeScript type generation
+- [ ] **Reference Documentation** - Generate comprehensive API documentation
+
+### 📋 **Phase 2: Developer Experience** (Q2 2025)
+
+**Focus**: Improve tooling and developer workflows
+
+#### Tasks:
+- [ ] **CLI Enhancement** - Complete all planned CLI commands
+- [ ] **Testing Framework** - Implement specification testing tools
+- [ ] **Migration Tools** - OpenAPI version migration utilities
+- [ ] **Documentation Generator** - Automated specification documentation
+- [ ] **Example Library** - Comprehensive agent implementation examples
+- [ ] **Validation Suite** - Comprehensive compliance checking
+
+### 📋 **Phase 3: Protocol Standardization** (Q3 2025)
+
+**Focus**: Formalize agent communication protocols
+
+#### Tasks:
+- [ ] **Universal Agent Protocol (UAP)** - Complete protocol specification
+- [ ] **RASP Protocol** - Resource Allocation & Scheduling specification
+- [ ] **ACAP Protocol** - Agent Capability Advertisement specification
+- [ ] **UADP Protocol** - Universal Agent Discovery specification
+- [ ] **CPC Protocol** - Cross-Platform Communication specification
+- [ ] **Protocol Validation** - Testing and validation frameworks
+
+## 🔗 **Links to Implementation**
+
+**Implementation Repository**: [agent_buildkit](https://gitlab.bluefly.io/llm/agent_buildkit)
+- Server implementations
+- Agent runtime
+- Deployment tools
+- Performance testing
+- Enterprise features
 
 ---
 
-## 🎯 **Phase 1: Advanced CLI Infrastructure** (Months 1-2)
+### **Areas for Future Research**
 
-**Priority**: **CRITICAL** - Essential for public adoption and developer experience
-
-### **1.0 Claude Code Integration Features** - NEW
+These topics have been identified for future exploration:
 #### **Transcript & User Experience**
 - [ ] **Model Attribution System** - Track and display AI model versions in interactions
   - [ ] Model metadata in OSSA agent responses

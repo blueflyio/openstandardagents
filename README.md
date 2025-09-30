@@ -3,24 +3,20 @@
 [![OpenAPI](https://img.shields.io/badge/OpenAPI-3.1-orange.svg)](src/api/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.3-blue.svg)](https://www.typescriptlang.org/)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
-[![OSSA](https://img.shields.io/badge/OSSA-v0.1.9-blue.svg)](https://ossa.dev)
+[![Version](https://img.shields.io/badge/Version-0.1.2-blue.svg)](package.json)
 
-## Executive Summary
+## Overview
 
-The **Open Standards for Scalable Agents (OSSA)** v0.1.9 is the industry's most comprehensive specification framework for building, deploying, and orchestrating autonomous AI agents at enterprise scale. OSSA defines standardized interfaces, communication protocols, and governance models that enable seamless interoperability between heterogeneous agent systems using **OpenAPI 3.1** advanced features.
+OSSA (Open Standards for Scalable Agents) is a specification framework for AI agent interoperability. This repository contains OpenAPI 3.1 specifications, TypeScript implementations, and development tools for building standardized AI agents.
 
-## Key Features
+## Current Implementation
 
-🚀 **OpenAPI 3.1 Complete Implementation** - Advanced features including discriminator mapping, webhooks, conditional schemas, and JSON Schema Draft 2020-12
-🤖 **15 Production-Ready Specifications** - Core OSSA, MCP infrastructure, and project orchestration APIs
-⚡ **Universal Agent Protocol (UAP)** - RASP, ACAP, UADP, CPC protocols for seamless agent communication
-🏗️ **9 Agent Archetypes** - Orchestrator, Worker, Critic, Judge, Trainer, Governor, Monitor, Integrator, Voice with inheritance patterns
-🔗 **MCP-per-Agent Architecture** - Each agent can expose its own Model Context Protocol server for maximum modularity and interoperability
-🧠 **Model Context Switching** - Dynamic model selection and per-agent model configuration with multi-provider support
-🔒 **Enterprise Security** - OAuth 2.1, mTLS, RBAC with OPA policies
-📊 **OpenTelemetry Integration** - Comprehensive observability and monitoring
-🛡️ **Multi-Tier Compliance** - Core → Governed → Advanced → Enterprise levels
-🎯 **Custom OSSA Validator** - 400+ line TypeScript validator with comprehensive compliance checking
+- **15 OpenAPI 3.1 Specifications** - Core OSSA, MCP infrastructure, and project APIs
+- **TypeScript Implementation** - CLI, server, and validation tools
+- **Agent Definitions** - Specification for 9 agent types
+- **Validation Framework** - OpenAPI specification validation
+- **CLI Tools** - Agent lifecycle management commands
+- **Express Server** - Basic API server implementation
 
 ## Technology Stack
 
