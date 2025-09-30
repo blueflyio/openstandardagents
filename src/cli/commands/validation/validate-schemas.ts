@@ -29,17 +29,13 @@ function validateJsonSchema(filePath: string): boolean {
     console.log(`✅ ${path.basename(filePath)} is valid JSON Schema`);
     return true;
   } catch (error) {
-    const errorMessage =
-      error instanceof Error ? error.message : 'Unknown error';
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     console.error(`❌ ${path.basename(filePath)}: ${errorMessage}`);
     return false;
   }
 }
 
-const schemaFiles: string[] = [
-  'src/api/agent-manifest.schema.json',
-  'src/api/workflow.schema.json',
-];
+const schemaFiles: string[] = ['src/api/agent-manifest.schema.json', 'src/api/workflow.schema.json'];
 
 let allValid = true;
 

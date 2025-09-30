@@ -3,9 +3,8 @@
  * Do not make direct changes to the file.
  */
 
-
 export interface paths {
-  "/agents": {
+  '/agents': {
     /**
      * List all agents
      * @description Retrieve a paginated list of agents with advanced filtering and sorting capabilities.
@@ -17,7 +16,7 @@ export interface paths {
      * - Creation date range queries
      * - Performance metric filtering
      */
-    get: operations["listAgents"];
+    get: operations['listAgents'];
     /**
      * Create a new agent
      * @description Create a new agent with comprehensive validation and automatic capability inference.
@@ -30,9 +29,9 @@ export interface paths {
      * - **Resource quota enforcement** per organization
      * - **Async creation** with webhook notifications
      */
-    post: operations["createAgent"];
+    post: operations['createAgent'];
   };
-  "/agents/{agent_id}": {
+  '/agents/{agent_id}': {
     /**
      * Get agent details
      * @description Retrieve detailed information about a specific agent including:
@@ -42,7 +41,7 @@ export interface paths {
      * - Recent execution history
      * - Configuration and metadata
      */
-    get: operations["getAgent"];
+    get: operations['getAgent'];
     /**
      * Update agent
      * @description Update an existing agent with full replacement semantics.
@@ -54,7 +53,7 @@ export interface paths {
      * - **Hot updates** for non-breaking changes
      * - **Blue-green deployment** for breaking changes
      */
-    put: operations["updateAgent"];
+    put: operations['updateAgent'];
     /**
      * Delete agent
      * @description Delete an agent with comprehensive cleanup and dependency management.
@@ -66,7 +65,7 @@ export interface paths {
      * - **Audit trail preservation** for compliance
      * - **Cascading deletion** of related resources
      */
-    delete: operations["deleteAgent"];
+    delete: operations['deleteAgent'];
     /**
      * Partially update agent
      * @description Perform partial updates to an agent using JSON Patch (RFC 6902) operations.
@@ -79,14 +78,14 @@ export interface paths {
      * - `copy` - Copy values within the document
      * - `test` - Test values before applying other operations
      */
-    patch: operations["patchAgent"];
+    patch: operations['patchAgent'];
     parameters: {
       path: {
-        agent_id: components["parameters"]["AgentIdParam"];
+        agent_id: components['parameters']['AgentIdParam'];
       };
     };
   };
-  "/agents/{agent_id}/execute": {
+  '/agents/{agent_id}/execute': {
     /**
      * Execute agent operation
      * @description Execute a specific operation on an agent with comprehensive input validation
@@ -100,14 +99,14 @@ export interface paths {
      * - **Execution history** and audit logging
      * - **Resource quotas** and throttling
      */
-    post: operations["executeAgent"];
+    post: operations['executeAgent'];
     parameters: {
       path: {
-        agent_id: components["parameters"]["AgentIdParam"];
+        agent_id: components['parameters']['AgentIdParam'];
       };
     };
   };
-  "/agents/{agent_id}/executions/{execution_id}": {
+  '/agents/{agent_id}/executions/{execution_id}': {
     /**
      * Get execution status
      * @description Retrieve the status and results of an asynchronous execution.
@@ -119,15 +118,15 @@ export interface paths {
      * - **Resource usage metrics** (CPU, memory, duration)
      * - **Error details** with stack traces and context
      */
-    get: operations["getExecutionStatus"];
+    get: operations['getExecutionStatus'];
     parameters: {
       path: {
-        agent_id: components["parameters"]["AgentIdParam"];
-        execution_id: components["parameters"]["ExecutionIdParam"];
+        agent_id: components['parameters']['AgentIdParam'];
+        execution_id: components['parameters']['ExecutionIdParam'];
       };
     };
   };
-  "/specifications": {
+  '/specifications': {
     /**
      * List OpenAPI specifications
      * @description Retrieve all OpenAPI specifications with metadata and validation status.
@@ -138,24 +137,24 @@ export interface paths {
      * - **Dependency mapping** between specifications
      * - **Usage analytics** and adoption metrics
      */
-    get: operations["listSpecifications"];
+    get: operations['listSpecifications'];
   };
-  "/specifications/{spec_id}": {
+  '/specifications/{spec_id}': {
     /**
      * Get specification
      * @description Retrieve a specific OpenAPI specification with full content and metadata
      */
-    get: operations["getSpecification"];
+    get: operations['getSpecification'];
     parameters: {
       path: {
-        spec_id: components["parameters"]["SpecIdParam"];
+        spec_id: components['parameters']['SpecIdParam'];
       };
     };
   };
 }
 
 export interface webhooks {
-  "agentCreated": {
+  agentCreated: {
     /**
      * Agent created notification
      * @description Triggered when a new agent is successfully created
@@ -163,7 +162,7 @@ export interface webhooks {
     post: {
       requestBody?: {
         content: {
-          "application/json": components["schemas"]["AgentCreatedEvent"];
+          'application/json': components['schemas']['AgentCreatedEvent'];
         };
       };
       responses: {
@@ -174,7 +173,7 @@ export interface webhooks {
       };
     };
   };
-  "agentStatusChanged": {
+  agentStatusChanged: {
     /**
      * Agent status change notification
      * @description Triggered when an agent's status changes
@@ -182,7 +181,7 @@ export interface webhooks {
     post: {
       requestBody?: {
         content: {
-          "application/json": components["schemas"]["AgentStatusEvent"];
+          'application/json': components['schemas']['AgentStatusEvent'];
         };
       };
       responses: {
@@ -193,7 +192,7 @@ export interface webhooks {
       };
     };
   };
-  "executionCompleted": {
+  executionCompleted: {
     /**
      * Execution completed notification
      * @description Triggered when an agent execution completes
@@ -201,7 +200,7 @@ export interface webhooks {
     post: {
       requestBody?: {
         content: {
-          "application/json": components["schemas"]["ExecutionCompletedEvent"];
+          'application/json': components['schemas']['ExecutionCompletedEvent'];
         };
       };
       responses: {
@@ -222,7 +221,7 @@ export interface components {
        * @example agent-001
        */
       id: string;
-      type: components["schemas"]["AgentType"];
+      type: components['schemas']['AgentType'];
       /**
        * @description Human-readable agent name
        * @example Data Processing Agent
@@ -235,7 +234,7 @@ export interface components {
        * @example 1.2.3
        */
       version: string;
-      status: components["schemas"]["AgentStatus"];
+      status: components['schemas']['AgentStatus'];
       /**
        * @description List of capabilities this agent provides
        * @example [
@@ -249,7 +248,7 @@ export interface components {
       configuration?: {
         [key: string]: unknown;
       };
-      metadata?: components["schemas"]["AgentMetadata"];
+      metadata?: components['schemas']['AgentMetadata'];
       /**
        * Format: date-time
        * @description Agent creation timestamp in ISO 8601 format
@@ -262,109 +261,109 @@ export interface components {
        * @example 2025-01-15T14:30:00Z
        */
       updated_at: string;
-      metrics?: components["schemas"]["AgentMetrics"];
+      metrics?: components['schemas']['AgentMetrics'];
     };
     WorkerAgent: {
-      type: "worker";
-    } & Omit<components["schemas"]["Agent"], "type"> & ({
-      /** @constant */
-      type?: "worker";
-      configuration?: {
-        /** @default 10 */
-        max_concurrent_tasks?: number;
-        /** @default 300 */
-        timeout_seconds?: number;
-        /** @default 3 */
-        retry_attempts?: number;
-        [key: string]: unknown;
-      };
-      /**
-       * @description Worker specialization type
-       * @enum {string}
-       */
-      specialization: "data-processing" | "api-integration" | "file-handling" | "validation";
-    });
-    OrchestratorAgent: {
-      type: "orchestrator";
-    } & Omit<components["schemas"]["Agent"], "type"> & {
-      /** @constant */
-      type?: "orchestrator";
-      configuration?: {
-        /** @default 5 */
-        max_concurrent_workflows?: number;
-        /** @default 60 */
-        workflow_timeout_minutes?: number;
-        /** @default true */
-        enable_parallel_execution?: boolean;
-        [key: string]: unknown;
-      };
-      /** @description List of agent IDs this orchestrator manages */
-      managed_agents?: string[];
-    };
-    CriticAgent: {
-      type: "critic";
-    } & Omit<components["schemas"]["Agent"], "type"> & ({
-      /** @constant */
-      type?: "critic";
-      configuration?: {
-        /** @default 80 */
-        quality_threshold?: number;
-        /** @default false */
-        automated_fixes?: boolean;
-        review_categories?: ("code-quality" | "security" | "performance" | "compliance")[];
-        [key: string]: unknown;
-      };
-    });
-    JudgeAgent: {
-      type: "judge";
-    } & Omit<components["schemas"]["Agent"], "type"> & ({
-      /** @constant */
-      type?: "judge";
-      configuration?: {
-        /**
-         * @default majority
-         * @enum {string}
-         */
-        decision_model?: "consensus" | "majority" | "weighted" | "ai-assisted";
-        /** @default 0.8 */
-        confidence_threshold?: number;
-        [key: string]: unknown;
-      };
-    });
-    MonitorAgent: {
-      type: "monitor";
-    } & Omit<components["schemas"]["Agent"], "type"> & {
-      /** @constant */
-      type?: "monitor";
-      configuration?: {
-        /** @default 60 */
-        monitoring_interval_seconds?: number;
-        alert_thresholds?: {
-          /** @default 80 */
-          cpu_percent?: number;
-          /** @default 80 */
-          memory_percent?: number;
-          /** @default 5 */
-          error_rate_percent?: number;
+      type: 'worker';
+    } & Omit<components['schemas']['Agent'], 'type'> & {
+        /** @constant */
+        type?: 'worker';
+        configuration?: {
+          /** @default 10 */
+          max_concurrent_tasks?: number;
+          /** @default 300 */
+          timeout_seconds?: number;
+          /** @default 3 */
+          retry_attempts?: number;
+          [key: string]: unknown;
         };
-        [key: string]: unknown;
-      };
-    };
-    GovernorAgent: {
-      type: "governor";
-    } & Omit<components["schemas"]["Agent"], "type"> & ({
-      /** @constant */
-      type?: "governor";
-      configuration?: {
         /**
-         * @default strict
+         * @description Worker specialization type
          * @enum {string}
          */
-        policy_enforcement_level?: "strict" | "moderate" | "permissive";
-        compliance_frameworks?: ("ISO42001" | "NIST-AI-RMF" | "EU-AI-ACT" | "SOX" | "HIPAA")[];
-        [key: string]: unknown;
+        specialization: 'data-processing' | 'api-integration' | 'file-handling' | 'validation';
       };
-    });
+    OrchestratorAgent: {
+      type: 'orchestrator';
+    } & Omit<components['schemas']['Agent'], 'type'> & {
+        /** @constant */
+        type?: 'orchestrator';
+        configuration?: {
+          /** @default 5 */
+          max_concurrent_workflows?: number;
+          /** @default 60 */
+          workflow_timeout_minutes?: number;
+          /** @default true */
+          enable_parallel_execution?: boolean;
+          [key: string]: unknown;
+        };
+        /** @description List of agent IDs this orchestrator manages */
+        managed_agents?: string[];
+      };
+    CriticAgent: {
+      type: 'critic';
+    } & Omit<components['schemas']['Agent'], 'type'> & {
+        /** @constant */
+        type?: 'critic';
+        configuration?: {
+          /** @default 80 */
+          quality_threshold?: number;
+          /** @default false */
+          automated_fixes?: boolean;
+          review_categories?: ('code-quality' | 'security' | 'performance' | 'compliance')[];
+          [key: string]: unknown;
+        };
+      };
+    JudgeAgent: {
+      type: 'judge';
+    } & Omit<components['schemas']['Agent'], 'type'> & {
+        /** @constant */
+        type?: 'judge';
+        configuration?: {
+          /**
+           * @default majority
+           * @enum {string}
+           */
+          decision_model?: 'consensus' | 'majority' | 'weighted' | 'ai-assisted';
+          /** @default 0.8 */
+          confidence_threshold?: number;
+          [key: string]: unknown;
+        };
+      };
+    MonitorAgent: {
+      type: 'monitor';
+    } & Omit<components['schemas']['Agent'], 'type'> & {
+        /** @constant */
+        type?: 'monitor';
+        configuration?: {
+          /** @default 60 */
+          monitoring_interval_seconds?: number;
+          alert_thresholds?: {
+            /** @default 80 */
+            cpu_percent?: number;
+            /** @default 80 */
+            memory_percent?: number;
+            /** @default 5 */
+            error_rate_percent?: number;
+          };
+          [key: string]: unknown;
+        };
+      };
+    GovernorAgent: {
+      type: 'governor';
+    } & Omit<components['schemas']['Agent'], 'type'> & {
+        /** @constant */
+        type?: 'governor';
+        configuration?: {
+          /**
+           * @default strict
+           * @enum {string}
+           */
+          policy_enforcement_level?: 'strict' | 'moderate' | 'permissive';
+          compliance_frameworks?: ('ISO42001' | 'NIST-AI-RMF' | 'EU-AI-ACT' | 'SOX' | 'HIPAA')[];
+          [key: string]: unknown;
+        };
+      };
     /**
      * @description Agent type classification:
      * - **worker**: Task execution agents
@@ -376,7 +375,7 @@ export interface components {
      *
      * @enum {string}
      */
-    AgentType: "worker" | "orchestrator" | "critic" | "judge" | "monitor" | "governor";
+    AgentType: 'worker' | 'orchestrator' | 'critic' | 'judge' | 'monitor' | 'governor';
     /**
      * @description Current agent status:
      * - **active**: Agent is running and available
@@ -388,7 +387,7 @@ export interface components {
      *
      * @enum {string}
      */
-    AgentStatus: "active" | "inactive" | "error" | "deploying" | "maintenance" | "deprecated";
+    AgentStatus: 'active' | 'inactive' | 'error' | 'deploying' | 'maintenance' | 'deprecated';
     AgentMetadata: {
       /** @example John Doe <john@example.com> */
       author?: string;
@@ -443,7 +442,7 @@ export interface components {
       memory_usage_mb?: number;
     };
     CreateAgentRequest: {
-      type: components["schemas"]["AgentType"];
+      type: components['schemas']['AgentType'];
       name: string;
       description?: string;
       /** @default 1.0.0 */
@@ -452,7 +451,7 @@ export interface components {
       configuration?: {
         [key: string]: unknown;
       };
-      metadata?: components["schemas"]["AgentMetadata"];
+      metadata?: components['schemas']['AgentMetadata'];
       /**
        * Format: uri
        * @description URL to receive status change notifications
@@ -460,85 +459,85 @@ export interface components {
       webhook_url?: string;
     };
     CreateWorkerAgentRequest: {
-      type: "worker";
-    } & Omit<components["schemas"]["CreateAgentRequest"], "type"> & ({
-      /** @constant */
-      type?: "worker";
-      /** @enum {string} */
-      specialization: "data-processing" | "api-integration" | "file-handling" | "validation";
-      configuration?: {
-        /** @default 10 */
-        max_concurrent_tasks?: number;
-        /** @default 300 */
-        timeout_seconds?: number;
-        [key: string]: unknown;
+      type: 'worker';
+    } & Omit<components['schemas']['CreateAgentRequest'], 'type'> & {
+        /** @constant */
+        type?: 'worker';
+        /** @enum {string} */
+        specialization: 'data-processing' | 'api-integration' | 'file-handling' | 'validation';
+        configuration?: {
+          /** @default 10 */
+          max_concurrent_tasks?: number;
+          /** @default 300 */
+          timeout_seconds?: number;
+          [key: string]: unknown;
+        };
       };
-    });
     CreateOrchestratorAgentRequest: {
-      type: "orchestrator";
-    } & Omit<components["schemas"]["CreateAgentRequest"], "type"> & {
-      /** @constant */
-      type?: "orchestrator";
-      configuration?: {
-        /** @default 5 */
-        max_concurrent_workflows?: number;
-        /** @default 60 */
-        workflow_timeout_minutes?: number;
-        [key: string]: unknown;
+      type: 'orchestrator';
+    } & Omit<components['schemas']['CreateAgentRequest'], 'type'> & {
+        /** @constant */
+        type?: 'orchestrator';
+        configuration?: {
+          /** @default 5 */
+          max_concurrent_workflows?: number;
+          /** @default 60 */
+          workflow_timeout_minutes?: number;
+          [key: string]: unknown;
+        };
       };
-    };
     CreateCriticAgentRequest: {
-      type: "critic";
-    } & Omit<components["schemas"]["CreateAgentRequest"], "type"> & {
-      /** @constant */
-      type?: "critic";
-      configuration?: {
-        /** @default 80 */
-        quality_threshold?: number;
-        /** @default false */
-        automated_fixes?: boolean;
-        [key: string]: unknown;
+      type: 'critic';
+    } & Omit<components['schemas']['CreateAgentRequest'], 'type'> & {
+        /** @constant */
+        type?: 'critic';
+        configuration?: {
+          /** @default 80 */
+          quality_threshold?: number;
+          /** @default false */
+          automated_fixes?: boolean;
+          [key: string]: unknown;
+        };
       };
-    };
     CreateJudgeAgentRequest: {
-      type: "judge";
-    } & Omit<components["schemas"]["CreateAgentRequest"], "type"> & ({
-      /** @constant */
-      type?: "judge";
-      configuration?: {
-        /**
-         * @default majority
-         * @enum {string}
-         */
-        decision_model?: "consensus" | "majority" | "weighted" | "ai-assisted";
-        [key: string]: unknown;
+      type: 'judge';
+    } & Omit<components['schemas']['CreateAgentRequest'], 'type'> & {
+        /** @constant */
+        type?: 'judge';
+        configuration?: {
+          /**
+           * @default majority
+           * @enum {string}
+           */
+          decision_model?: 'consensus' | 'majority' | 'weighted' | 'ai-assisted';
+          [key: string]: unknown;
+        };
       };
-    });
     CreateMonitorAgentRequest: {
-      type: "monitor";
-    } & Omit<components["schemas"]["CreateAgentRequest"], "type"> & {
-      /** @constant */
-      type?: "monitor";
-      configuration?: {
-        /** @default 60 */
-        monitoring_interval_seconds?: number;
-        [key: string]: unknown;
+      type: 'monitor';
+    } & Omit<components['schemas']['CreateAgentRequest'], 'type'> & {
+        /** @constant */
+        type?: 'monitor';
+        configuration?: {
+          /** @default 60 */
+          monitoring_interval_seconds?: number;
+          [key: string]: unknown;
+        };
       };
-    };
     CreateGovernorAgentRequest: {
-      type: "governor";
-    } & Omit<components["schemas"]["CreateAgentRequest"], "type"> & ({
-      /** @constant */
-      type?: "governor";
-      configuration?: {
-        /**
-         * @default strict
-         * @enum {string}
-         */
-        policy_enforcement_level?: "strict" | "moderate" | "permissive";
-        [key: string]: unknown;
+      type: 'governor';
+    } & Omit<components['schemas']['CreateAgentRequest'], 'type'> & {
+        /** @constant */
+        type?: 'governor';
+        configuration?: {
+          /**
+           * @default strict
+           * @enum {string}
+           */
+          policy_enforcement_level?: 'strict' | 'moderate' | 'permissive';
+          [key: string]: unknown;
+        };
       };
-    });
     UpdateAgentRequest: {
       name?: string;
       description?: string;
@@ -547,13 +546,13 @@ export interface components {
       configuration?: {
         [key: string]: unknown;
       };
-      metadata?: components["schemas"]["AgentMetadata"];
+      metadata?: components['schemas']['AgentMetadata'];
       /** @description Expected current version for optimistic locking */
       expected_version?: string;
     };
     AgentListResponse: {
-      agents: components["schemas"]["Agent"][];
-      pagination: components["schemas"]["PaginationInfo"];
+      agents: components['schemas']['Agent'][];
+      pagination: components['schemas']['PaginationInfo'];
       /** @description Applied filters for this query */
       filters?: {
         [key: string]: unknown;
@@ -610,12 +609,12 @@ export interface components {
       /** @example exec-123 */
       execution_id: string;
       /** @enum {string} */
-      status: "completed" | "failed";
+      status: 'completed' | 'failed';
       /** @description Execution output data */
       result?: {
         [key: string]: unknown;
       };
-      error?: components["schemas"]["ExecutionError"];
+      error?: components['schemas']['ExecutionError'];
       metadata?: {
         /** @example 1250 */
         duration_ms?: number;
@@ -636,7 +635,7 @@ export interface components {
       /** @example exec-123 */
       execution_id: string;
       /** @enum {string} */
-      status: "pending" | "running";
+      status: 'pending' | 'running';
       /** @example 300 */
       estimated_duration_seconds?: number;
       /**
@@ -656,7 +655,7 @@ export interface components {
       execution_id: string;
       agent_id: string;
       /** @enum {string} */
-      status: "pending" | "running" | "completed" | "failed" | "cancelled";
+      status: 'pending' | 'running' | 'completed' | 'failed' | 'cancelled';
       progress?: {
         percentage?: number;
         current_step?: string;
@@ -667,8 +666,8 @@ export interface components {
       result?: {
         [key: string]: unknown;
       };
-      error?: components["schemas"]["ExecutionError"];
-      logs?: components["schemas"]["ExecutionLogEntry"][];
+      error?: components['schemas']['ExecutionError'];
+      logs?: components['schemas']['ExecutionLogEntry'][];
       metadata?: {
         [key: string]: unknown;
       };
@@ -694,7 +693,7 @@ export interface components {
       /** Format: date-time */
       timestamp: string;
       /** @enum {string} */
-      level: "debug" | "info" | "warn" | "error";
+      level: 'debug' | 'info' | 'warn' | 'error';
       message: string;
       data?: {
         [key: string]: unknown;
@@ -704,15 +703,15 @@ export interface components {
       /** @example Execution validation failed */
       error: string;
       validation_errors: {
-          /** @example input.data_source */
-          field?: string;
-          /** @example REQUIRED */
-          code?: string;
-          /** @example Field is required */
-          message?: string;
-          /** @description The invalid value that was provided */
-          value?: unknown;
-        }[];
+        /** @example input.data_source */
+        field?: string;
+        /** @example REQUIRED */
+        code?: string;
+        /** @example Field is required */
+        message?: string;
+        /** @description The invalid value that was provided */
+        value?: unknown;
+      }[];
       /** @example process_data */
       operation?: string;
       /**
@@ -725,7 +724,7 @@ export interface components {
     };
     JsonPatchOperation: {
       /** @enum {string} */
-      op: "add" | "remove" | "replace" | "move" | "copy" | "test";
+      op: 'add' | 'remove' | 'replace' | 'move' | 'copy' | 'test';
       /** @description JSON Pointer path */
       path: string;
       /** @description Value for add, replace, and test operations */
@@ -745,13 +744,13 @@ export interface components {
         [key: string]: unknown;
       };
       /** @enum {string} */
-      validation_status: "valid" | "invalid" | "warning" | "unknown";
-      validation_errors?: ({
-          path?: string;
-          message?: string;
-          /** @enum {string} */
-          severity?: "error" | "warning" | "info";
-        })[];
+      validation_status: 'valid' | 'invalid' | 'warning' | 'unknown';
+      validation_errors?: {
+        path?: string;
+        message?: string;
+        /** @enum {string} */
+        severity?: 'error' | 'warning' | 'info';
+      }[];
       /** @example 3.1.0 */
       version: string;
       /** Format: date-time */
@@ -760,30 +759,30 @@ export interface components {
       updated_at: string;
     };
     SpecificationListResponse: {
-      specifications: components["schemas"]["OpenAPISpecification"][];
-      pagination: components["schemas"]["PaginationInfo"];
+      specifications: components['schemas']['OpenAPISpecification'][];
+      pagination: components['schemas']['PaginationInfo'];
     };
     AgentCreatedEvent: {
       /** @constant */
-      event_type: "agent.created";
+      event_type: 'agent.created';
       /** Format: uuid */
       event_id: string;
       /** Format: date-time */
       timestamp: string;
-      agent: components["schemas"]["Agent"];
+      agent: components['schemas']['Agent'];
       organization_id?: string;
       user_id?: string;
     };
     AgentStatusEvent: {
       /** @constant */
-      event_type: "agent.status_changed";
+      event_type: 'agent.status_changed';
       /** Format: uuid */
       event_id: string;
       /** Format: date-time */
       timestamp: string;
       agent_id: string;
-      previous_status: components["schemas"]["AgentStatus"];
-      new_status: components["schemas"]["AgentStatus"];
+      previous_status: components['schemas']['AgentStatus'];
+      new_status: components['schemas']['AgentStatus'];
       /** @description Reason for status change */
       reason?: string;
       organization_id?: string;
@@ -791,7 +790,7 @@ export interface components {
     };
     ExecutionCompletedEvent: {
       /** @constant */
-      event_type: "execution.completed";
+      event_type: 'execution.completed';
       /** Format: uuid */
       event_id: string;
       /** Format: date-time */
@@ -799,12 +798,12 @@ export interface components {
       execution_id: string;
       agent_id: string;
       /** @enum {string} */
-      status: "completed" | "failed";
+      status: 'completed' | 'failed';
       duration_ms: number;
       result?: {
         [key: string]: unknown;
       };
-      error?: components["schemas"]["ExecutionError"];
+      error?: components['schemas']['ExecutionError'];
       organization_id?: string;
       user_id?: string;
     };
@@ -824,19 +823,19 @@ export interface components {
       /** @description API path where error occurred */
       path?: string;
     };
-    ValidationError: components["schemas"]["ErrorResponse"] & {
+    ValidationError: components['schemas']['ErrorResponse'] & {
       validation_errors?: {
-          /** @description Field that failed validation */
-          field: string;
-          /** @description Validation error code */
-          code: string;
-          /** @description Field-specific error message */
-          message: string;
-          /** @description The invalid value */
-          value?: unknown;
-        }[];
+        /** @description Field that failed validation */
+        field: string;
+        /** @description Validation error code */
+        code: string;
+        /** @description Field-specific error message */
+        message: string;
+        /** @description The invalid value */
+        value?: unknown;
+      }[];
     };
-    ConflictError: components["schemas"]["ErrorResponse"] & {
+    ConflictError: components['schemas']['ErrorResponse'] & {
       conflicting_resource?: {
         /** @example agent */
         type?: string;
@@ -846,63 +845,63 @@ export interface components {
         name?: string;
       };
     };
-    PatchError: components["schemas"]["ErrorResponse"] & {
+    PatchError: components['schemas']['ErrorResponse'] & {
       failed_operations?: {
-          operation_index?: number;
-          operation?: components["schemas"]["JsonPatchOperation"];
-          error?: string;
-        }[];
+        operation_index?: number;
+        operation?: components['schemas']['JsonPatchOperation'];
+        error?: string;
+      }[];
     };
   };
   responses: {
     /** @description Bad request - invalid input parameters */
     BadRequest: {
       content: {
-        "application/json": components["schemas"]["ErrorResponse"];
+        'application/json': components['schemas']['ErrorResponse'];
       };
     };
     /** @description Unauthorized - authentication required */
     Unauthorized: {
       content: {
-        "application/json": components["schemas"]["ErrorResponse"];
+        'application/json': components['schemas']['ErrorResponse'];
       };
     };
     /** @description Forbidden - insufficient permissions */
     Forbidden: {
       content: {
-        "application/json": components["schemas"]["ErrorResponse"];
+        'application/json': components['schemas']['ErrorResponse'];
       };
     };
     /** @description Resource not found */
     NotFound: {
       content: {
-        "application/json": components["schemas"]["ErrorResponse"];
+        'application/json': components['schemas']['ErrorResponse'];
       };
     };
     /** @description Validation failed */
     ValidationError: {
       content: {
-        "application/json": components["schemas"]["ValidationError"];
+        'application/json': components['schemas']['ValidationError'];
       };
     };
     /** @description Too many requests - rate limit exceeded */
     TooManyRequests: {
       headers: {
         /** @description The rate limit ceiling for that given request */
-        "X-RateLimit-Limit"?: number;
+        'X-RateLimit-Limit'?: number;
         /** @description The number of requests left for the time window */
-        "X-RateLimit-Remaining"?: number;
+        'X-RateLimit-Remaining'?: number;
         /** @description The time at which the rate limit resets (Unix timestamp) */
-        "X-RateLimit-Reset"?: number;
+        'X-RateLimit-Reset'?: number;
       };
       content: {
-        "application/json": components["schemas"]["ErrorResponse"];
+        'application/json': components['schemas']['ErrorResponse'];
       };
     };
     /** @description Internal server error */
     InternalServerError: {
       content: {
-        "application/json": components["schemas"]["ErrorResponse"];
+        'application/json': components['schemas']['ErrorResponse'];
       };
     };
   };
@@ -936,7 +935,7 @@ export interface components {
      * @description Sort order for results
      * @example name
      */
-    SortParam?: "created_at" | "updated_at" | "name" | "status" | "type";
+    SortParam?: 'created_at' | 'updated_at' | 'name' | 'status' | 'type';
   };
   requestBodies: never;
   headers: never;
@@ -948,7 +947,6 @@ export type $defs = Record<string, never>;
 export type external = Record<string, never>;
 
 export interface operations {
-
   /**
    * List all agents
    * @description Retrieve a paginated list of agents with advanced filtering and sorting capabilities.
@@ -963,13 +961,13 @@ export interface operations {
   listAgents: {
     parameters: {
       query?: {
-        page?: components["parameters"]["PageParam"];
-        limit?: components["parameters"]["LimitParam"];
-        sort?: components["parameters"]["SortParam"];
+        page?: components['parameters']['PageParam'];
+        limit?: components['parameters']['LimitParam'];
+        sort?: components['parameters']['SortParam'];
         /** @description Filter by agent type (supports inheritance) */
-        type?: components["schemas"]["AgentType"];
+        type?: components['schemas']['AgentType'];
         /** @description Filter by agent status */
-        status?: components["schemas"]["AgentStatus"][];
+        status?: components['schemas']['AgentStatus'][];
         /** @description Filter by required capabilities (AND logic) */
         capabilities?: string[];
         /** @description Filter agents created after this timestamp */
@@ -982,16 +980,16 @@ export interface operations {
       /** @description List of agents retrieved successfully */
       200: {
         content: {
-          "application/json": components["schemas"]["AgentListResponse"];
-          "application/yaml": components["schemas"]["AgentListResponse"];
-          "text/csv": string;
+          'application/json': components['schemas']['AgentListResponse'];
+          'application/yaml': components['schemas']['AgentListResponse'];
+          'text/csv': string;
         };
       };
-      400: components["responses"]["BadRequest"];
-      401: components["responses"]["Unauthorized"];
-      403: components["responses"]["Forbidden"];
-      429: components["responses"]["TooManyRequests"];
-      500: components["responses"]["InternalServerError"];
+      400: components['responses']['BadRequest'];
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+      429: components['responses']['TooManyRequests'];
+      500: components['responses']['InternalServerError'];
     };
   };
   /**
@@ -1009,10 +1007,10 @@ export interface operations {
   createAgent: {
     requestBody: {
       content: {
-        "application/json": components["schemas"]["CreateAgentRequest"];
-        "application/yaml": components["schemas"]["CreateAgentRequest"];
-        "multipart/form-data": {
-          agent_data?: components["schemas"]["CreateAgentRequest"];
+        'application/json': components['schemas']['CreateAgentRequest'];
+        'application/yaml': components['schemas']['CreateAgentRequest'];
+        'multipart/form-data': {
+          agent_data?: components['schemas']['CreateAgentRequest'];
           /**
            * Format: binary
            * @description OpenAPI specification file
@@ -1030,26 +1028,26 @@ export interface operations {
       /** @description Agent created successfully */
       201: {
         content: {
-          "application/json": components["schemas"]["Agent"];
+          'application/json': components['schemas']['Agent'];
         };
       };
-      400: components["responses"]["BadRequest"];
-      401: components["responses"]["Unauthorized"];
-      403: components["responses"]["Forbidden"];
+      400: components['responses']['BadRequest'];
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
       /** @description Agent with this name already exists */
       409: {
         content: {
-          "application/json": components["schemas"]["ConflictError"];
+          'application/json': components['schemas']['ConflictError'];
         };
       };
       /** @description Validation failed */
       422: {
         content: {
-          "application/json": components["schemas"]["ValidationError"];
+          'application/json': components['schemas']['ValidationError'];
         };
       };
-      429: components["responses"]["TooManyRequests"];
-      500: components["responses"]["InternalServerError"];
+      429: components['responses']['TooManyRequests'];
+      500: components['responses']['InternalServerError'];
     };
   };
   /**
@@ -1065,24 +1063,24 @@ export interface operations {
     parameters: {
       query?: {
         /** @description Additional data to include in response */
-        include?: ("metrics" | "history" | "dependencies" | "logs")[];
+        include?: ('metrics' | 'history' | 'dependencies' | 'logs')[];
       };
       path: {
-        agent_id: components["parameters"]["AgentIdParam"];
+        agent_id: components['parameters']['AgentIdParam'];
       };
     };
     responses: {
       /** @description Agent details retrieved successfully */
       200: {
         content: {
-          "application/json": components["schemas"]["Agent"];
-          "application/yaml": components["schemas"]["Agent"];
+          'application/json': components['schemas']['Agent'];
+          'application/yaml': components['schemas']['Agent'];
         };
       };
-      401: components["responses"]["Unauthorized"];
-      403: components["responses"]["Forbidden"];
-      404: components["responses"]["NotFound"];
-      500: components["responses"]["InternalServerError"];
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+      404: components['responses']['NotFound'];
+      500: components['responses']['InternalServerError'];
     };
   };
   /**
@@ -1099,33 +1097,33 @@ export interface operations {
   updateAgent: {
     parameters: {
       path: {
-        agent_id: components["parameters"]["AgentIdParam"];
+        agent_id: components['parameters']['AgentIdParam'];
       };
     };
     requestBody: {
       content: {
-        "application/json": components["schemas"]["UpdateAgentRequest"];
+        'application/json': components['schemas']['UpdateAgentRequest'];
       };
     };
     responses: {
       /** @description Agent updated successfully */
       200: {
         content: {
-          "application/json": components["schemas"]["Agent"];
+          'application/json': components['schemas']['Agent'];
         };
       };
-      400: components["responses"]["BadRequest"];
-      401: components["responses"]["Unauthorized"];
-      403: components["responses"]["Forbidden"];
-      404: components["responses"]["NotFound"];
+      400: components['responses']['BadRequest'];
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+      404: components['responses']['NotFound'];
       /** @description Version conflict detected */
       409: {
         content: {
-          "application/json": components["schemas"]["ConflictError"];
+          'application/json': components['schemas']['ConflictError'];
         };
       };
-      422: components["responses"]["ValidationError"];
-      500: components["responses"]["InternalServerError"];
+      422: components['responses']['ValidationError'];
+      500: components['responses']['InternalServerError'];
     };
   };
   /**
@@ -1148,7 +1146,7 @@ export interface operations {
         retention_days?: number;
       };
       path: {
-        agent_id: components["parameters"]["AgentIdParam"];
+        agent_id: components['parameters']['AgentIdParam'];
       };
     };
     responses: {
@@ -1156,26 +1154,26 @@ export interface operations {
       204: {
         content: never;
       };
-      400: components["responses"]["BadRequest"];
-      401: components["responses"]["Unauthorized"];
-      403: components["responses"]["Forbidden"];
-      404: components["responses"]["NotFound"];
+      400: components['responses']['BadRequest'];
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+      404: components['responses']['NotFound'];
       /** @description Cannot delete agent due to dependencies */
       409: {
         content: {
-          "application/json": {
+          'application/json': {
             /** @example Cannot delete agent due to active dependencies */
             error?: string;
-            dependencies?: ({
-                /** @enum {string} */
-                type?: "workflow" | "orchestration" | "subscription";
-                id?: string;
-                name?: string;
-              })[];
+            dependencies?: {
+              /** @enum {string} */
+              type?: 'workflow' | 'orchestration' | 'subscription';
+              id?: string;
+              name?: string;
+            }[];
           };
         };
       };
-      500: components["responses"]["InternalServerError"];
+      500: components['responses']['InternalServerError'];
     };
   };
   /**
@@ -1193,32 +1191,32 @@ export interface operations {
   patchAgent: {
     parameters: {
       path: {
-        agent_id: components["parameters"]["AgentIdParam"];
+        agent_id: components['parameters']['AgentIdParam'];
       };
     };
     requestBody: {
       content: {
-        "application/json-patch+json": components["schemas"]["JsonPatchOperation"][];
+        'application/json-patch+json': components['schemas']['JsonPatchOperation'][];
       };
     };
     responses: {
       /** @description Agent patched successfully */
       200: {
         content: {
-          "application/json": components["schemas"]["Agent"];
+          'application/json': components['schemas']['Agent'];
         };
       };
-      400: components["responses"]["BadRequest"];
-      401: components["responses"]["Unauthorized"];
-      403: components["responses"]["Forbidden"];
-      404: components["responses"]["NotFound"];
+      400: components['responses']['BadRequest'];
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+      404: components['responses']['NotFound'];
       /** @description Patch operation failed */
       422: {
         content: {
-          "application/json": components["schemas"]["PatchError"];
+          'application/json': components['schemas']['PatchError'];
         };
       };
-      500: components["responses"]["InternalServerError"];
+      500: components['responses']['InternalServerError'];
     };
   };
   /**
@@ -1245,39 +1243,39 @@ export interface operations {
         priority?: number;
       };
       path: {
-        agent_id: components["parameters"]["AgentIdParam"];
+        agent_id: components['parameters']['AgentIdParam'];
       };
     };
     requestBody: {
       content: {
-        "application/json": components["schemas"]["ExecutionRequest"];
+        'application/json': components['schemas']['ExecutionRequest'];
       };
     };
     responses: {
       /** @description Execution completed successfully (synchronous) */
       200: {
         content: {
-          "application/json": components["schemas"]["ExecutionResult"];
+          'application/json': components['schemas']['ExecutionResult'];
         };
       };
       /** @description Execution started (asynchronous) */
       202: {
         content: {
-          "application/json": components["schemas"]["AsyncExecutionResponse"];
+          'application/json': components['schemas']['AsyncExecutionResponse'];
         };
       };
-      400: components["responses"]["BadRequest"];
-      401: components["responses"]["Unauthorized"];
-      403: components["responses"]["Forbidden"];
-      404: components["responses"]["NotFound"];
+      400: components['responses']['BadRequest'];
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+      404: components['responses']['NotFound'];
       /** @description Execution validation failed */
       422: {
         content: {
-          "application/json": components["schemas"]["ExecutionValidationError"];
+          'application/json': components['schemas']['ExecutionValidationError'];
         };
       };
-      429: components["responses"]["TooManyRequests"];
-      500: components["responses"]["InternalServerError"];
+      429: components['responses']['TooManyRequests'];
+      500: components['responses']['InternalServerError'];
     };
   };
   /**
@@ -1294,21 +1292,21 @@ export interface operations {
   getExecutionStatus: {
     parameters: {
       path: {
-        agent_id: components["parameters"]["AgentIdParam"];
-        execution_id: components["parameters"]["ExecutionIdParam"];
+        agent_id: components['parameters']['AgentIdParam'];
+        execution_id: components['parameters']['ExecutionIdParam'];
       };
     };
     responses: {
       /** @description Execution status retrieved successfully */
       200: {
         content: {
-          "application/json": components["schemas"]["ExecutionStatus"];
+          'application/json': components['schemas']['ExecutionStatus'];
         };
       };
-      401: components["responses"]["Unauthorized"];
-      403: components["responses"]["Forbidden"];
-      404: components["responses"]["NotFound"];
-      500: components["responses"]["InternalServerError"];
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+      404: components['responses']['NotFound'];
+      500: components['responses']['InternalServerError'];
     };
   };
   /**
@@ -1324,24 +1322,24 @@ export interface operations {
   listSpecifications: {
     parameters: {
       query?: {
-        page?: components["parameters"]["PageParam"];
-        limit?: components["parameters"]["LimitParam"];
+        page?: components['parameters']['PageParam'];
+        limit?: components['parameters']['LimitParam'];
         /** @description Filter by OpenAPI version */
-        version?: "3.0.0" | "3.0.1" | "3.0.2" | "3.0.3" | "3.1.0";
+        version?: '3.0.0' | '3.0.1' | '3.0.2' | '3.0.3' | '3.1.0';
         /** @description Filter by validation status */
-        status?: "valid" | "invalid" | "warning" | "unknown";
+        status?: 'valid' | 'invalid' | 'warning' | 'unknown';
       };
     };
     responses: {
       /** @description Specifications retrieved successfully */
       200: {
         content: {
-          "application/json": components["schemas"]["SpecificationListResponse"];
+          'application/json': components['schemas']['SpecificationListResponse'];
         };
       };
-      400: components["responses"]["BadRequest"];
-      401: components["responses"]["Unauthorized"];
-      500: components["responses"]["InternalServerError"];
+      400: components['responses']['BadRequest'];
+      401: components['responses']['Unauthorized'];
+      500: components['responses']['InternalServerError'];
     };
   };
   /**
@@ -1352,23 +1350,23 @@ export interface operations {
     parameters: {
       query?: {
         /** @description Response format */
-        format?: "json" | "yaml";
+        format?: 'json' | 'yaml';
       };
       path: {
-        spec_id: components["parameters"]["SpecIdParam"];
+        spec_id: components['parameters']['SpecIdParam'];
       };
     };
     responses: {
       /** @description Specification retrieved successfully */
       200: {
         content: {
-          "application/json": components["schemas"]["OpenAPISpecification"];
-          "application/yaml": components["schemas"]["OpenAPISpecification"];
+          'application/json': components['schemas']['OpenAPISpecification'];
+          'application/yaml': components['schemas']['OpenAPISpecification'];
         };
       };
-      401: components["responses"]["Unauthorized"];
-      404: components["responses"]["NotFound"];
-      500: components["responses"]["InternalServerError"];
+      401: components['responses']['Unauthorized'];
+      404: components['responses']['NotFound'];
+      500: components['responses']['InternalServerError'];
     };
   };
 }

@@ -10,10 +10,7 @@ import { OSSAWorkflowAgent } from '../agents/workflow-agent.js';
 import { OSSACustomAgent } from '../agents/custom-agent.js';
 import { sessionManager, ADKSession } from '../state/index.js';
 import { toolRegistry } from '../tools/index.js';
-import {
-  orchestrationEngine,
-  OrchestrationPattern,
-} from '../orchestration/index.js';
+import { orchestrationEngine, OrchestrationPattern } from '../orchestration/index.js';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as yaml from 'yaml';
@@ -45,10 +42,7 @@ export class OSSAADKAdapter {
         break;
 
       case 'WorkflowAgent':
-        agent = new OSSAWorkflowAgent(
-          { ...adkConfig.config, workflow_type: 'sequential' },
-          adkConfig.ossaType
-        );
+        agent = new OSSAWorkflowAgent({ ...adkConfig.config, workflow_type: 'sequential' }, adkConfig.ossaType);
         break;
 
       case 'CustomAgent':
@@ -59,10 +53,7 @@ export class OSSAADKAdapter {
         break;
 
       default:
-        agent = new OSSACustomAgent(
-          { ...adkConfig.config, custom_type: 'generic' },
-          adkConfig.ossaType
-        );
+        agent = new OSSACustomAgent({ ...adkConfig.config, custom_type: 'generic' }, adkConfig.ossaType);
     }
 
     // Register agent
@@ -70,9 +61,7 @@ export class OSSAADKAdapter {
 
     // Register tools for agent capabilities
     if (manifest.spec.capabilities) {
-      const tools = toolRegistry.getToolsForCapabilities(
-        manifest.spec.capabilities
-      );
+      const tools = toolRegistry.getToolsForCapabilities(manifest.spec.capabilities);
       // TODO: Attach tools to agent
     }
 
@@ -93,9 +82,7 @@ export class OSSAADKAdapter {
       return;
     }
 
-    const agentDirs = fs
-      .readdirSync(baseDir)
-      .filter((dir) => fs.statSync(path.join(baseDir, dir)).isDirectory());
+    const agentDirs = fs.readdirSync(baseDir).filter((dir) => fs.statSync(path.join(baseDir, dir)).isDirectory());
 
     for (const agentDir of agentDirs) {
       try {
@@ -110,11 +97,7 @@ export class OSSAADKAdapter {
   /**
    * Execute an agent with ADK patterns
    */
-  async executeAgent(
-    agentName: string,
-    input: any,
-    sessionId?: string
-  ): Promise<any> {
+  async executeAgent(agentName: string, input: any, sessionId?: string): Promise<any> {
     const agent = this.agents.get(agentName);
     if (!agent) {
       throw new Error(`Agent not found: ${agentName}`);
@@ -169,7 +152,7 @@ export class OSSAADKAdapter {
       pattern,
       agents,
       session,
-      options: { ...options, initialInput: input },
+      options: { ...options, initialInput: input }
     });
   }
 
@@ -187,7 +170,7 @@ export class OSSAADKAdapter {
       type: agent.type,
       ossaType: agent.ossaType,
       description: agent.config.description,
-      output_key: agent.config.output_key,
+      output_key: agent.config.output_key
     };
   }
 
@@ -202,7 +185,7 @@ export class OSSAADKAdapter {
         name,
         type: agent.type,
         ossaType: agent.ossaType,
-        description: agent.config.description,
+        description: agent.config.description
       });
     }
 
@@ -258,18 +241,18 @@ export class MCPADKBridge {
         properties: {
           input: {
             type: 'object',
-            description: 'Input data for the agent',
+            description: 'Input data for the agent'
           },
           sessionId: {
             type: 'string',
-            description: 'Optional session ID for state persistence',
-          },
+            description: 'Optional session ID for state persistence'
+          }
         },
-        required: ['input'],
+        required: ['input']
       },
       handler: async (args: any) => {
         return this.adapter.executeAgent(agentName, args.input, args.sessionId);
-      },
+      }
     };
   }
 
@@ -286,27 +269,22 @@ export class MCPADKBridge {
           agents: {
             type: 'array',
             items: { type: 'string' },
-            description: 'List of agent names to orchestrate',
+            description: 'List of agent names to orchestrate'
           },
           input: {
             type: 'object',
-            description: 'Input data for the orchestration',
+            description: 'Input data for the orchestration'
           },
           options: {
             type: 'object',
-            description: 'Orchestration options',
-          },
+            description: 'Orchestration options'
+          }
         },
-        required: ['agents'],
+        required: ['agents']
       },
       handler: async (args: any) => {
-        return this.adapter.executeOrchestration(
-          pattern,
-          args.agents,
-          args.input,
-          args.options
-        );
-      },
+        return this.adapter.executeOrchestration(pattern, args.agents, args.input, args.options);
+      }
     };
   }
 }

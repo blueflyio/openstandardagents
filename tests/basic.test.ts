@@ -11,9 +11,7 @@ describe('OSSA v0.1.2 Specification Package', () => {
     const packageJson = require('../package.json');
     expect(packageJson.version).toBe('0.1.2');
     expect(packageJson.name).toBe('@bluefly/open-standards-scalable-agents');
-    expect(packageJson.description).toContain(
-      'Open Standards for Scalable Agents Specification'
-    );
+    expect(packageJson.description).toContain('Open Standards for Scalable Agents Specification');
   });
 
   test('specification files should exist', () => {
@@ -24,7 +22,7 @@ describe('OSSA v0.1.2 Specification Package', () => {
       '../src/api/core/voice-agent.openapi.yml',
       '../src/api/project/orchestration.openapi.yml',
       '../src/api/schemas/agent-manifest.schema.json',
-      '../src/api/schemas/workflow.schema.json',
+      '../src/api/schemas/workflow.schema.json'
     ];
 
     specFiles.forEach((file) => {

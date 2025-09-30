@@ -99,16 +99,16 @@ export class OSSAMCPServer {
       version: '1.0.0',
       capabilities: {
         tools: {
-          list: true,
+          list: true
         },
         resources: {
           list: true,
-          read: true,
+          read: true
         },
         prompts: {
-          list: true,
-        },
-      },
+          list: true
+        }
+      }
     });
 
     this.wss = new WebSocketServer({ noServer: true });
@@ -128,7 +128,7 @@ export class OSSAMCPServer {
           this.agents.set(manifest.name, {
             ...manifest,
             id: manifest.name,
-            status: 'inactive',
+            status: 'inactive'
           });
         } catch (err) {
           console.error(`Failed to load agent ${dir}:`, err);
@@ -145,35 +145,31 @@ export class OSSAMCPServer {
       tools: [
         {
           name: 'ossa_generate_agent',
-          description:
-            'Generate a new OSSA-compliant agent with full scaffolding',
+          description: 'Generate a new OSSA-compliant agent with full scaffolding',
           inputSchema: {
             type: 'object',
             properties: {
               name: {
                 type: 'string',
-                description:
-                  'Name of the agent (alphanumeric and hyphens only)',
+                description: 'Name of the agent (alphanumeric and hyphens only)'
               },
               type: {
                 type: 'string',
                 enum: ['voice', 'critic', 'monitor', 'orchestrator'],
-                description: 'Type of agent to generate',
+                description: 'Type of agent to generate'
               },
               capabilities: {
                 type: 'array',
                 items: { type: 'string' },
-                description:
-                  'List of capabilities like: audio, network, file-access',
+                description: 'List of capabilities like: audio, network, file-access'
               },
               description: {
                 type: 'string',
-                description:
-                  "Human-readable description of the agent's purpose",
-              },
+                description: "Human-readable description of the agent's purpose"
+              }
             },
-            required: ['name', 'type'],
-          },
+            required: ['name', 'type']
+          }
         },
         {
           name: 'ossa_validate',
@@ -183,16 +179,16 @@ export class OSSAMCPServer {
             properties: {
               path: {
                 type: 'string',
-                description: 'Path to validate (relative to project root)',
+                description: 'Path to validate (relative to project root)'
               },
               strict: {
                 type: 'boolean',
                 default: false,
-                description: 'Enable strict validation mode',
-              },
+                description: 'Enable strict validation mode'
+              }
             },
-            required: ['path'],
-          },
+            required: ['path']
+          }
         },
         {
           name: 'ossa_test_compliance',
@@ -202,16 +198,16 @@ export class OSSAMCPServer {
             properties: {
               agentId: {
                 type: 'string',
-                description: 'ID of the agent to test',
+                description: 'ID of the agent to test'
               },
               testSuite: {
                 type: 'string',
                 enum: ['basic', 'full', 'security', 'performance'],
-                description: 'Test suite to run',
-              },
+                description: 'Test suite to run'
+              }
             },
-            required: ['agentId'],
-          },
+            required: ['agentId']
+          }
         },
         {
           name: 'ossa_introspect',
@@ -222,15 +218,15 @@ export class OSSAMCPServer {
               target: {
                 type: 'string',
                 enum: ['agents', 'types', 'specs', 'schemas', 'capabilities'],
-                description: 'What to introspect',
+                description: 'What to introspect'
               },
               filter: {
                 type: 'object',
-                description: 'Optional filter criteria',
-              },
+                description: 'Optional filter criteria'
+              }
             },
-            required: ['target'],
-          },
+            required: ['target']
+          }
         },
         {
           name: 'ossa_lifecycle',
@@ -241,15 +237,15 @@ export class OSSAMCPServer {
               action: {
                 type: 'string',
                 enum: ['start', 'stop', 'restart', 'status', 'logs'],
-                description: 'Lifecycle action to perform',
+                description: 'Lifecycle action to perform'
               },
               agentId: {
                 type: 'string',
-                description: 'ID of the agent',
-              },
+                description: 'ID of the agent'
+              }
             },
-            required: ['action', 'agentId'],
-          },
+            required: ['action', 'agentId']
+          }
         },
         {
           name: 'ossa_schema_evolve',
@@ -259,21 +255,21 @@ export class OSSAMCPServer {
             properties: {
               newVersion: {
                 type: 'string',
-                description: 'New schema version (e.g., 1.1.0)',
+                description: 'New schema version (e.g., 1.1.0)'
               },
               changes: {
                 type: 'array',
                 items: { type: 'string' },
-                description: 'List of changes in the new version',
+                description: 'List of changes in the new version'
               },
               breaking: {
                 type: 'boolean',
                 default: false,
-                description: 'Whether this includes breaking changes',
-              },
+                description: 'Whether this includes breaking changes'
+              }
             },
-            required: ['newVersion'],
-          },
+            required: ['newVersion']
+          }
         },
         {
           name: 'ossa_gitlab_ci',
@@ -284,15 +280,15 @@ export class OSSAMCPServer {
               action: {
                 type: 'string',
                 enum: ['init', 'update', 'add-job', 'validate'],
-                description: 'CI/CD action to perform',
+                description: 'CI/CD action to perform'
               },
               config: {
                 type: 'object',
-                description: 'Configuration parameters',
-              },
+                description: 'Configuration parameters'
+              }
             },
-            required: ['action'],
-          },
+            required: ['action']
+          }
         },
         {
           name: 'ossa_project_init',
@@ -302,24 +298,24 @@ export class OSSAMCPServer {
             properties: {
               name: {
                 type: 'string',
-                description: 'Project name',
+                description: 'Project name'
               },
               template: {
                 type: 'string',
                 enum: ['basic', 'advanced', 'enterprise'],
                 default: 'basic',
-                description: 'Project template to use',
+                description: 'Project template to use'
               },
               features: {
                 type: 'array',
                 items: { type: 'string' },
-                description: 'Additional features to enable',
-              },
+                description: 'Additional features to enable'
+              }
             },
-            required: ['name'],
-          },
-        },
-      ],
+            required: ['name']
+          }
+        }
+      ]
     }));
 
     // Tool execution handler
@@ -358,7 +354,7 @@ export class OSSAMCPServer {
       } catch (error) {
         return {
           success: false,
-          error: (error as Error).message,
+          error: (error as Error).message
         };
       }
     });
@@ -370,27 +366,27 @@ export class OSSAMCPServer {
           uri: 'ossa://docs',
           name: 'OSSA Documentation',
           mimeType: 'text/markdown',
-          description: 'Complete OSSA framework documentation',
+          description: 'Complete OSSA framework documentation'
         },
         {
           uri: 'ossa://schemas',
           name: 'OSSA Schemas',
           mimeType: 'application/json',
-          description: 'Current OSSA schema definitions',
+          description: 'Current OSSA schema definitions'
         },
         {
           uri: 'ossa://agents',
           name: 'Registered Agents',
           mimeType: 'application/json',
-          description: 'All registered OSSA agents',
+          description: 'All registered OSSA agents'
         },
         {
           uri: 'ossa://lifecycle',
           name: 'Lifecycle Events',
           mimeType: 'application/json',
-          description: 'Recent lifecycle events',
-        },
-      ],
+          description: 'Recent lifecycle events'
+        }
+      ]
     }));
 
     this.server.setRequestHandler('resources/read', async (request) => {
@@ -399,22 +395,22 @@ export class OSSAMCPServer {
       switch (uri) {
         case 'ossa://docs':
           return {
-            contents: await this.getDocumentation(),
+            contents: await this.getDocumentation()
           };
 
         case 'ossa://schemas':
           return {
-            contents: JSON.stringify(await this.getSchemas(), null, 2),
+            contents: JSON.stringify(await this.getSchemas(), null, 2)
           };
 
         case 'ossa://agents':
           return {
-            contents: JSON.stringify(Array.from(this.agents.values()), null, 2),
+            contents: JSON.stringify(Array.from(this.agents.values()), null, 2)
           };
 
         case 'ossa://lifecycle':
           return {
-            contents: JSON.stringify(this.lifecycleEvents, null, 2),
+            contents: JSON.stringify(this.lifecycleEvents, null, 2)
           };
 
         default:
@@ -433,14 +429,14 @@ export class OSSAMCPServer {
             {
               name: 'capabilities',
               description: 'Comma-separated capabilities',
-              required: false,
-            },
-          ],
+              required: false
+            }
+          ]
         },
         {
           name: 'validate_project',
           description: 'Validate entire OSSA project structure',
-          arguments: [],
+          arguments: []
         },
         {
           name: 'setup_cicd',
@@ -449,11 +445,11 @@ export class OSSAMCPServer {
             {
               name: 'platform',
               description: 'CI/CD platform (gitlab/github)',
-              required: true,
-            },
-          ],
-        },
-      ],
+              required: true
+            }
+          ]
+        }
+      ]
     }));
 
     this.server.setRequestHandler('prompts/get', async (request) => {
@@ -462,11 +458,11 @@ export class OSSAMCPServer {
       const templates = {
         create_voice_agent: `Generate a voice assistant agent named "${args.name}" with capabilities: ${args.capabilities || 'audio,network'}. Include full implementation with voice processing, command handling, and response generation.`,
         validate_project: `Validate all agents in the current OSSA project against the schema. Check for: manifest validity, required fields, capability declarations, and lifecycle configurations.`,
-        setup_cicd: `Set up a complete CI/CD pipeline for ${args.platform} including: schema validation, agent testing, compliance checks, build stages, and deployment configuration.`,
+        setup_cicd: `Set up a complete CI/CD pipeline for ${args.platform} including: schema validation, agent testing, compliance checks, build stages, and deployment configuration.`
       };
 
       return {
-        prompt: (templates as any)[name] || 'Template not found',
+        prompt: (templates as any)[name] || 'Template not found'
       };
     });
   }
@@ -503,34 +499,31 @@ export class OSSAMCPServer {
         created: new Date().toISOString(),
         updated: new Date().toISOString(),
         author: 'Claude Desktop',
-        framework: 'OSSA 1.0',
+        framework: 'OSSA 1.0'
       },
       configuration: {
         runtime: this.getDefaultRuntimeConfig(type),
         resources: this.getDefaultResources(type),
-        permissions: this.getPermissionsFromCapabilities(capabilities),
+        permissions: this.getPermissionsFromCapabilities(capabilities)
       },
       lifecycle: {
         startup: {
           command: `node ./src/index.js`,
-          timeout: 30,
+          timeout: 30
         },
         shutdown: {
           command: `node ./src/shutdown.js`,
-          gracePeriod: 10,
+          gracePeriod: 10
         },
         health: {
           endpoint: `/health/${name}`,
-          interval: 60,
-        },
-      },
+          interval: 60
+        }
+      }
     };
 
     // Write manifest
-    await fs.writeFile(
-      path.join(agentPath, 'manifest.json'),
-      JSON.stringify(manifest, null, 2)
-    );
+    await fs.writeFile(path.join(agentPath, 'manifest.json'), JSON.stringify(manifest, null, 2));
 
     // Generate source code
     await this.generateAgentCode(name, type, agentPath, description);
@@ -555,7 +548,7 @@ export class OSSAMCPServer {
       timestamp: new Date().toISOString(),
       agentId: name,
       event: 'started',
-      details: { action: 'created', type, capabilities },
+      details: { action: 'created', type, capabilities }
     });
 
     return {
@@ -569,32 +562,24 @@ export class OSSAMCPServer {
         'src/shutdown.js',
         'tests/unit.test.js',
         'config/default.json',
-        'package.json',
-      ],
+        'package.json'
+      ]
     };
   }
 
-  private async generateAgentCode(
-    name: string,
-    type: string,
-    agentPath: string,
-    description: string
-  ) {
+  private async generateAgentCode(name: string, type: string, agentPath: string, description: string) {
     const templates = {
       voice: this.getVoiceAgentTemplate,
       critic: this.getCriticAgentTemplate,
       monitor: this.getMonitorAgentTemplate,
-      orchestrator: this.getOrchestratorAgentTemplate,
+      orchestrator: this.getOrchestratorAgentTemplate
     };
 
     const mainCode = (templates as any)[type](name, description);
     const shutdownCode = this.getShutdownTemplate(name);
 
     await fs.writeFile(path.join(agentPath, 'src', 'index.js'), mainCode);
-    await fs.writeFile(
-      path.join(agentPath, 'src', 'shutdown.js'),
-      shutdownCode
-    );
+    await fs.writeFile(path.join(agentPath, 'src', 'shutdown.js'), shutdownCode);
   }
 
   private getVoiceAgentTemplate(name: string, description: string): string {
@@ -1196,10 +1181,7 @@ module.exports = agent;
 `;
   }
 
-  private getOrchestratorAgentTemplate(
-    name: string,
-    description: string
-  ): string {
+  private getOrchestratorAgentTemplate(name: string, description: string): string {
     return `/**
  * OSSA Orchestrator Agent: ${name}
  * ${description || 'Multi-agent orchestration and coordination'}
@@ -1271,11 +1253,7 @@ module.exports = { shutdown: () => process.exit(0) };
 `;
   }
 
-  private async generateAgentTests(
-    name: string,
-    type: string,
-    agentPath: string
-  ) {
+  private async generateAgentTests(name: string, type: string, agentPath: string) {
     const testTemplate = `const agent = require('../src/index');
 
 describe('${name} agent', () => {
@@ -1285,17 +1263,10 @@ describe('${name} agent', () => {
   });
 });`;
 
-    await fs.writeFile(
-      path.join(agentPath, 'tests', 'unit.test.js'),
-      testTemplate
-    );
+    await fs.writeFile(path.join(agentPath, 'tests', 'unit.test.js'), testTemplate);
   }
 
-  private async generateAgentConfig(
-    name: string,
-    type: string,
-    agentPath: string
-  ) {
+  private async generateAgentConfig(name: string, type: string, agentPath: string) {
     const config = {
       name,
       type,
@@ -1303,21 +1274,14 @@ describe('${name} agent', () => {
       environment: {
         NODE_ENV: 'development',
         LOG_LEVEL: 'info',
-        HEALTH_PORT: 3001,
-      },
+        HEALTH_PORT: 3001
+      }
     };
 
-    await fs.writeFile(
-      path.join(agentPath, 'config', 'default.json'),
-      JSON.stringify(config, null, 2)
-    );
+    await fs.writeFile(path.join(agentPath, 'config', 'default.json'), JSON.stringify(config, null, 2));
   }
 
-  private async generatePackageJson(
-    name: string,
-    type: string,
-    agentPath: string
-  ) {
+  private async generatePackageJson(name: string, type: string, agentPath: string) {
     const packageJson = {
       name: `@ossa/agent-${name}`,
       version: '0.1.0',
@@ -1326,22 +1290,19 @@ describe('${name} agent', () => {
       scripts: {
         start: 'node src/index.js',
         test: 'jest',
-        lint: 'eslint src',
+        lint: 'eslint src'
       },
       dependencies: {
         '@ossa/core': '^1.0.0',
-        express: '^4.18.0',
+        express: '^4.18.0'
       },
       devDependencies: {
         jest: '^29.0.0',
-        eslint: '^8.0.0',
-      },
+        eslint: '^8.0.0'
+      }
     };
 
-    await fs.writeFile(
-      path.join(agentPath, 'package.json'),
-      JSON.stringify(packageJson, null, 2)
-    );
+    await fs.writeFile(path.join(agentPath, 'package.json'), JSON.stringify(packageJson, null, 2));
   }
 
   private async addAgentToCI(name: string, type: string) {
@@ -1366,7 +1327,7 @@ describe('${name} agent', () => {
       voice: { engine: 'whisper', model: 'whisper-1' },
       critic: { evaluationMode: 'strict', threshold: 0.7 },
       monitor: { interval: 5000, bufferSize: 100 },
-      orchestrator: { maxAgents: 10, timeout: 300000 },
+      orchestrator: { maxAgents: 10, timeout: 300000 }
     };
     return (configs as any)[type] || {};
   }
@@ -1376,7 +1337,7 @@ describe('${name} agent', () => {
       voice: { cpu: '1', memory: '2Gi', gpu: '0' },
       critic: { cpu: '0.5', memory: '1Gi' },
       monitor: { cpu: '0.5', memory: '512Mi' },
-      orchestrator: { cpu: '2', memory: '4Gi' },
+      orchestrator: { cpu: '2', memory: '4Gi' }
     };
     return (resources as any)[type] || { cpu: '0.5', memory: '512Mi' };
   }
@@ -1386,7 +1347,7 @@ describe('${name} agent', () => {
       audio: ['microphone', 'speaker'],
       network: ['internet', 'localhost'],
       file: ['read', 'write'],
-      system: ['process', 'environment'],
+      system: ['process', 'environment']
     };
 
     const permissions = new Set<string>();

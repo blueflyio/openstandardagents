@@ -108,7 +108,7 @@ export class ValidationService extends EventEmitter {
   private setupFileWatchers(): void {
     console.log(chalk.gray('📁 Setting up file watchers...'));
 
-    this.config.watchDirectories.forEach(directory => {
+    this.config.watchDirectories.forEach((directory) => {
       if (!existsSync(directory)) {
         console.log(chalk.yellow(`⚠️ Watch directory does not exist: ${directory}`));
         return;
@@ -189,25 +189,26 @@ export class ValidationService extends EventEmitter {
         console.log(chalk.green(`✅ ${result.agentId}: Valid OSSA agent`));
       } else {
         console.log(chalk.red(`❌ ${result.agentId}: ${result.errors.length} errors`));
-        result.errors.forEach(error => {
+        result.errors.forEach((error) => {
           console.log(chalk.red(`   • ${error.message}`));
         });
       }
 
       this.emit('agent:validated', result);
       return result;
-
     } catch (error) {
       const result: ValidationResult = {
         valid: false,
         agentId: 'unknown',
         filePath,
-        errors: [{
-          code: 'PARSE_ERROR',
-          message: error instanceof Error ? error.message : 'Unknown parse error',
-          path: filePath,
-          severity: 'error'
-        }],
+        errors: [
+          {
+            code: 'PARSE_ERROR',
+            message: error instanceof Error ? error.message : 'Unknown parse error',
+            path: filePath,
+            severity: 'error'
+          }
+        ],
         warnings: [],
         ossaCompliance: false,
         schemaVersion: 'unknown',
@@ -237,7 +238,7 @@ export class ValidationService extends EventEmitter {
 
     // Check required fields
     const requiredFields = ['apiVersion', 'kind', 'metadata', 'spec'];
-    requiredFields.forEach(field => {
+    requiredFields.forEach((field) => {
       if (!agent[field]) {
         result.errors.push({
           code: 'MISSING_REQUIRED_FIELD',
@@ -310,9 +311,7 @@ export class ValidationService extends EventEmitter {
 
       // Warn if agent doesn't implement standard OSSA operations
       const standardOps = ['execute', 'health', 'capabilities', 'status'];
-      const missingOps = standardOps.filter(op =>
-        !operations.some((o: any) => o.name === op)
-      );
+      const missingOps = standardOps.filter((op) => !operations.some((o: any) => o.name === op));
 
       if (missingOps.length > 0) {
         result.warnings.push(`Missing standard operations: ${missingOps.join(', ')}`);
@@ -328,7 +327,7 @@ export class ValidationService extends EventEmitter {
       if (!this.isRunning) return;
 
       console.log(chalk.gray('🔄 Running periodic validation...'));
-      this.watchedFiles.forEach(filePath => {
+      this.watchedFiles.forEach((filePath) => {
         this.validateAgentFile(filePath);
       });
     }, this.config.validationInterval);
@@ -373,7 +372,7 @@ export class ValidationService extends EventEmitter {
     app.post('/validation/validate', (req: any, res: any) => {
       const { agentPath } = req.body;
       if (agentPath && existsSync(agentPath)) {
-        this.validateAgentFile(agentPath).then(result => {
+        this.validateAgentFile(agentPath).then((result) => {
           res.json(result);
         });
       } else {
@@ -422,9 +421,7 @@ export class ValidationService extends EventEmitter {
    * Get validation status for specific agent
    */
   public getAgentValidation(agentId: string): ValidationResult | undefined {
-    return Array.from(this.validationCache.values()).find(
-      result => result.agentId === agentId
-    );
+    return Array.from(this.validationCache.values()).find((result) => result.agentId === agentId);
   }
 }
 
@@ -433,11 +430,7 @@ export class ValidationService extends EventEmitter {
  */
 export const defaultConfig: ValidationConfig = {
   agentBuildkitPath: '../agent_buildkit',
-  watchDirectories: [
-    './.agents',
-    '../agent_buildkit/agents',
-    './agents'
-  ],
+  watchDirectories: ['./.agents', '../agent_buildkit/agents', './agents'],
   validationInterval: 30000, // 30 seconds
   communicationProtocol: 'http',
   port: 3001
@@ -464,7 +457,7 @@ export async function startValidationService(config?: Partial<ValidationConfig>)
 
 // CLI entry point
 if (require.main === module) {
-  startValidationService().catch(error => {
+  startValidationService().catch((error) => {
     console.error(chalk.red('❌ Failed to start validation service:'), error);
     process.exit(1);
   });

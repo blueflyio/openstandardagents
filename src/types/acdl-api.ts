@@ -32,15 +32,7 @@ export interface components {
        * @description Primary agent classification
        * @enum {string}
        */
-      agentType:
-        | 'orchestrator'
-        | 'worker'
-        | 'critic'
-        | 'judge'
-        | 'trainer'
-        | 'governor'
-        | 'monitor'
-        | 'integrator';
+      agentType: 'orchestrator' | 'worker' | 'critic' | 'judge' | 'trainer' | 'governor' | 'monitor' | 'integrator';
       /**
        * @description Detailed agent specialization
        * @example worker.openapi

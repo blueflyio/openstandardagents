@@ -70,17 +70,13 @@ export class OSSAServer {
         contentSecurityPolicy: {
           directives: {
             defaultSrc: ["'self'"],
-            styleSrc: [
-              "'self'",
-              "'unsafe-inline'",
-              'https://fonts.googleapis.com',
-            ],
+            styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
             fontSrc: ["'self'", 'https://fonts.gstatic.com'],
             imgSrc: ["'self'", 'data:', 'https:'],
-            scriptSrc: ["'self'", "'unsafe-inline'"], // Needed for Swagger UI
-          },
+            scriptSrc: ["'self'", "'unsafe-inline'"] // Needed for Swagger UI
+          }
         },
-        crossOriginEmbedderPolicy: false,
+        crossOriginEmbedderPolicy: false
       })
     );
 
@@ -90,7 +86,7 @@ export class OSSAServer {
         origin: this.config.cors?.origins || ['http://localhost:3000'],
         credentials: true,
         methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-        allowedHeaders: ['Content-Type', 'Authorization', 'X-API-Key'],
+        allowedHeaders: ['Content-Type', 'Authorization', 'X-API-Key']
       })
     );
 
@@ -115,7 +111,7 @@ export class OSSAServer {
         error: 'TOO_MANY_REQUESTS',
         message: 'Rate limit exceeded. Please try again later.',
         correlation_id: uuidv4(),
-        timestamp: new Date().toISOString(),
+        timestamp: new Date().toISOString()
       },
       standardHeaders: true,
       legacyHeaders: false,
@@ -125,21 +121,17 @@ export class OSSAServer {
           message: 'Rate limit exceeded. Please try again later.',
           correlation_id: uuidv4(),
           timestamp: new Date().toISOString(),
-          path: req.path,
+          path: req.path
         });
-      },
+      }
     });
 
     this.app.use('/api', limiter);
 
     // Request ID middleware
     this.app.use((req: Request, res: Response, next: NextFunction) => {
-      req.headers['x-correlation-id'] =
-        req.headers['x-correlation-id'] || uuidv4();
-      res.setHeader(
-        'X-Correlation-ID',
-        req.headers['x-correlation-id'] as string
-      );
+      req.headers['x-correlation-id'] = req.headers['x-correlation-id'] || uuidv4();
+      res.setHeader('X-Correlation-ID', req.headers['x-correlation-id'] as string);
       next();
     });
   }
@@ -154,12 +146,11 @@ export class OSSAServer {
       res.json({
         name: 'OSSA Complete API',
         version: '0.1.9',
-        description:
-          'Open Standards for Scalable Agents - Complete OpenAPI 3.1 Implementation',
+        description: 'Open Standards for Scalable Agents - Complete OpenAPI 3.1 Implementation',
         documentation: '/docs',
         health: '/health',
         ready: '/ready',
-        openapi_spec: '/api/openapi.yaml',
+        openapi_spec: '/api/openapi.yaml'
       });
     });
 
@@ -174,7 +165,7 @@ export class OSSAServer {
         res.status(500).json({
           error: 'SPEC_LOAD_ERROR',
           message: 'Failed to load OpenAPI specification',
-          correlation_id: req.headers['x-correlation-id'],
+          correlation_id: req.headers['x-correlation-id']
         });
       }
     });
@@ -189,42 +180,30 @@ export class OSSAServer {
         res.status(500).json({
           error: 'SPEC_LOAD_ERROR',
           message: 'Failed to load OpenAPI specification',
-          correlation_id: req.headers['x-correlation-id'],
+          correlation_id: req.headers['x-correlation-id']
         });
       }
     });
 
     // API routes with authentication
     this.app.use('/api/v1/agents', authMiddleware, agentsRouter);
-    this.app.use(
-      '/api/v1/specifications',
-      authMiddleware,
-      specificationsRouter
-    );
+    this.app.use('/api/v1/specifications', authMiddleware, specificationsRouter);
     this.app.use('/api/v1/orchestration', authMiddleware, orchestrationRouter);
     this.app.use('/api/v1/monitoring', authMiddleware, monitoringRouter);
 
     // Webhook endpoints (special auth handling)
-    this.app.post(
-      '/webhooks/:webhook_id',
-      validationMiddleware,
-      async (req: Request, res: Response) => {
-        try {
-          await this.webhookService.handleWebhook(
-            req.params.webhook_id,
-            req.body,
-            req.headers
-          );
-          res.status(200).json({ received: true });
-        } catch (error) {
-          res.status(400).json({
-            error: 'WEBHOOK_ERROR',
-            message: 'Failed to process webhook',
-            correlation_id: req.headers['x-correlation-id'],
-          });
-        }
+    this.app.post('/webhooks/:webhook_id', validationMiddleware, async (req: Request, res: Response) => {
+      try {
+        await this.webhookService.handleWebhook(req.params.webhook_id, req.body, req.headers);
+        res.status(200).json({ received: true });
+      } catch (error) {
+        res.status(400).json({
+          error: 'WEBHOOK_ERROR',
+          message: 'Failed to process webhook',
+          correlation_id: req.headers['x-correlation-id']
+        });
       }
-    );
+    });
 
     // 404 handler for undefined routes
     this.app.use('*', (req: Request, res: Response) => {
@@ -233,7 +212,7 @@ export class OSSAServer {
         message: `Route ${req.method} ${req.originalUrl} not found`,
         correlation_id: req.headers['x-correlation-id'],
         timestamp: new Date().toISOString(),
-        path: req.originalUrl,
+        path: req.originalUrl
       });
     });
   }
@@ -261,8 +240,8 @@ export class OSSAServer {
             appName: 'OSSA Complete API',
             scopeSeparator: ' ',
             additionalQueryStringParams: {},
-            usePkceWithAuthorizationCodeGrant: true,
-          },
+            usePkceWithAuthorizationCodeGrant: true
+          }
         },
         customCss: `
           .swagger-ui .topbar { display: none }
@@ -271,26 +250,14 @@ export class OSSAServer {
           .swagger-ui .info .title { color: #3b4151; font-size: 36px }
         `,
         customSiteTitle: 'OSSA Complete API Documentation',
-        customfavIcon: '/favicon.ico',
+        customfavIcon: '/favicon.ico'
       };
 
-      this.app.use(
-        '/docs',
-        swaggerUi.serve,
-        swaggerUi.setup(spec, swaggerOptions)
-      );
+      this.app.use('/docs', swaggerUi.serve, swaggerUi.setup(spec, swaggerOptions));
 
       // Alternative documentation endpoints
-      this.app.use(
-        '/swagger',
-        swaggerUi.serve,
-        swaggerUi.setup(spec, swaggerOptions)
-      );
-      this.app.use(
-        '/api-docs',
-        swaggerUi.serve,
-        swaggerUi.setup(spec, swaggerOptions)
-      );
+      this.app.use('/swagger', swaggerUi.serve, swaggerUi.setup(spec, swaggerOptions));
+      this.app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(spec, swaggerOptions));
     } catch (error) {
       console.error('Failed to initialize Swagger documentation:', error);
     }
@@ -312,13 +279,11 @@ export class OSSAServer {
         database: await this.checkDatabase(),
         redis: await this.checkRedis(),
         webhooks: await this.checkWebhooks(),
-        external_apis: await this.checkExternalAPIs(),
-      },
+        external_apis: await this.checkExternalAPIs()
+      }
     };
 
-    const overallHealthy = Object.values(health.checks).every(
-      (check) => check.status === 'healthy'
-    );
+    const overallHealthy = Object.values(health.checks).every((check) => check.status === 'healthy');
     health.status = overallHealthy ? 'healthy' : 'degraded';
 
     const statusCode = overallHealthy ? 200 : 503;
@@ -331,7 +296,7 @@ export class OSSAServer {
       const checks = await Promise.all([
         this.checkDatabase(),
         this.agentService.isReady(),
-        this.specificationService.isReady(),
+        this.specificationService.isReady()
       ]);
 
       const ready = checks.every((check) => check.status === 'healthy');
@@ -340,14 +305,14 @@ export class OSSAServer {
         res.status(200).json({
           status: 'ready',
           timestamp: new Date().toISOString(),
-          message: 'Service is ready to accept requests',
+          message: 'Service is ready to accept requests'
         });
       } else {
         res.status(503).json({
           status: 'not_ready',
           timestamp: new Date().toISOString(),
           message: 'Service is not ready to accept requests',
-          checks,
+          checks
         });
       }
     } catch (error) {
@@ -355,7 +320,7 @@ export class OSSAServer {
         status: 'not_ready',
         timestamp: new Date().toISOString(),
         message: 'Readiness check failed',
-        error: error instanceof Error ? error.message : 'Unknown error',
+        error: error instanceof Error ? error.message : 'Unknown error'
       });
     }
   }
@@ -374,8 +339,7 @@ export class OSSAServer {
     } catch (error) {
       return {
         status: 'unhealthy',
-        error:
-          error instanceof Error ? error.message : 'Database connection failed',
+        error: error instanceof Error ? error.message : 'Database connection failed'
       };
     }
   }
@@ -394,8 +358,7 @@ export class OSSAServer {
     } catch (error) {
       return {
         status: 'unhealthy',
-        error:
-          error instanceof Error ? error.message : 'Redis connection failed',
+        error: error instanceof Error ? error.message : 'Redis connection failed'
       };
     }
   }
@@ -408,8 +371,7 @@ export class OSSAServer {
     } catch (error) {
       return {
         status: 'unhealthy',
-        error:
-          error instanceof Error ? error.message : 'Webhook service failed',
+        error: error instanceof Error ? error.message : 'Webhook service failed'
       };
     }
   }
@@ -424,8 +386,7 @@ export class OSSAServer {
     } catch (error) {
       return {
         status: 'unhealthy',
-        error:
-          error instanceof Error ? error.message : 'External API check failed',
+        error: error instanceof Error ? error.message : 'External API check failed'
       };
     }
   }
@@ -438,9 +399,7 @@ export class OSSAServer {
         console.log(`🚀 OSSA Complete API Server started on port ${port}`);
         console.log(`📚 API Documentation: http://localhost:${port}/docs`);
         console.log(`🔍 Health Check: http://localhost:${port}/health`);
-        console.log(
-          `📊 OpenAPI Spec: http://localhost:${port}/api/openapi.yaml`
-        );
+        console.log(`📊 OpenAPI Spec: http://localhost:${port}/api/openapi.yaml`);
         console.log(`🌟 Environment: ${process.env.NODE_ENV || 'development'}`);
         resolve();
       });
@@ -489,34 +448,34 @@ export const defaultConfig: OSSAConfig = {
     database: process.env.DB_NAME || 'ossa',
     username: process.env.DB_USER || 'ossa',
     password: process.env.DB_PASSWORD || '',
-    ssl: process.env.DB_SSL === 'true',
+    ssl: process.env.DB_SSL === 'true'
   },
   redis: {
     host: process.env.REDIS_HOST || 'localhost',
     port: parseInt(process.env.REDIS_PORT || '6379'),
-    password: process.env.REDIS_PASSWORD,
+    password: process.env.REDIS_PASSWORD
   },
   cors: {
-    origins: process.env.CORS_ORIGINS?.split(',') || ['http://localhost:3000'],
+    origins: process.env.CORS_ORIGINS?.split(',') || ['http://localhost:3000']
   },
   rateLimit: {
     windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 100, // limit each IP to 100 requests per windowMs
+    max: 100 // limit each IP to 100 requests per windowMs
   },
   oauth: {
     clientId: process.env.OAUTH_CLIENT_ID,
     clientSecret: process.env.OAUTH_CLIENT_SECRET,
-    issuer: process.env.OAUTH_ISSUER,
+    issuer: process.env.OAUTH_ISSUER
   },
   webhooks: {
     secret: process.env.WEBHOOK_SECRET || 'default-webhook-secret',
-    timeout: 30000,
+    timeout: 30000
   },
   execution: {
     timeout: 300000, // 5 minutes default
     maxConcurrent: 10,
-    retryAttempts: 3,
-  },
+    retryAttempts: 3
+  }
 };
 
 // Export for use in other modules

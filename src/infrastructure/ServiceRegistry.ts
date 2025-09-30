@@ -11,7 +11,7 @@ export class LLMServiceRegistry {
 
   private loadServices(): void {
     const registry = this.portManager.getServiceRegistry();
-    
+
     for (const [name, allocation] of registry) {
       const service: ServiceDefinition = {
         name: allocation.service,
@@ -24,7 +24,7 @@ export class LLMServiceRegistry {
         dependencies: allocation.dependencies,
         profiles: allocation.profiles
       };
-      
+
       this.services.set(name, service);
     }
   }
@@ -37,24 +37,26 @@ export class LLMServiceRegistry {
   private validatePorts(service: ServiceDefinition): void {
     const validation = this.portManager.validateNoConflicts();
     if (!validation.valid) {
-      throw new Error(`Port conflicts detected: ${validation.conflicts.map(c => 
-        `Port ${c.port} used by: ${c.services.join(', ')}`
-      ).join('; ')}`);
+      throw new Error(
+        `Port conflicts detected: ${validation.conflicts
+          .map((c) => `Port ${c.port} used by: ${c.services.join(', ')}`)
+          .join('; ')}`
+      );
     }
   }
 
   getProfile(profile: 'core' | 'dev' | 'full'): ServiceDefinition[] {
-    return Array.from(this.services.values())
-      .filter(s => s.profiles.includes(profile));
+    return Array.from(this.services.values()).filter((s) => s.profiles.includes(profile));
   }
 
   generateComposeFile(profile: string): string {
     const services = this.getProfile(profile as 'core' | 'dev' | 'full');
-    
-    const composeServices = services.map(service => {
-      const ports = service.ports.map(p => `"${p.external}:${p.internal}"`).join(', ');
-      
-      return `  ${service.name.toLowerCase()}:
+
+    const composeServices = services
+      .map((service) => {
+        const ports = service.ports.map((p) => `"${p.external}:${p.internal}"`).join(', ');
+
+        return `  ${service.name.toLowerCase()}:
     image: ${service.name.toLowerCase()}:latest
     container_name: ${service.name.toLowerCase()}
     ports: [${ports}]
@@ -69,7 +71,8 @@ export class LLMServiceRegistry {
       retries: 3
       start_period: 5s
     restart: unless-stopped`;
-    }).join('\n\n');
+      })
+      .join('\n\n');
 
     return `version: '3.8'
 
@@ -92,7 +95,7 @@ networks:
   }
 
   getServicesByType(type: string): ServiceDefinition[] {
-    return this.getAllServices().filter(service => {
+    return this.getAllServices().filter((service) => {
       if (type === 'core' && ['OSSA', 'agent-buildkit', 'llm-platform'].includes(service.name)) {
         return true;
       }
@@ -108,13 +111,11 @@ networks:
 
   validateRegistry(): { valid: boolean; errors: string[] } {
     const errors: string[] = [];
-    
+
     // Check for port conflicts
     const portValidation = this.portManager.validateNoConflicts();
     if (!portValidation.valid) {
-      errors.push(...portValidation.conflicts.map(c => 
-        `Port conflict: ${c.port} used by ${c.services.join(', ')}`
-      ));
+      errors.push(...portValidation.conflicts.map((c) => `Port conflict: ${c.port} used by ${c.services.join(', ')}`));
     }
 
     // Check for dependency cycles

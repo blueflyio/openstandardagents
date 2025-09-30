@@ -44,9 +44,7 @@ class FederatedActivationBypass {
 
     console.log('✅ FEDERATED LEARNING NETWORK ACTIVATED!');
     console.log(`🤖 AGENTS: ${this.agents.activeCount} active agents`);
-    console.log(
-      '🎯 TARGETS: 47% failure reduction, 62% efficiency, 10x acceleration'
-    );
+    console.log('🎯 TARGETS: 47% failure reduction, 62% efficiency, 10x acceleration');
     console.log('💰 EXPECTED: $2.4M+ token savings');
   }
 
@@ -60,21 +58,13 @@ class FederatedActivationBypass {
           id: 'agent-brain-vector-hub',
           name: 'Agent Brain Vector Hub',
           status: 'active',
-          capabilities: [
-            'vector_operations',
-            'federated_learning',
-            'memory_management',
-          ],
-          specialization: [
-            'machine_learning',
-            'vector_databases',
-            'collective_intelligence',
-          ],
+          capabilities: ['vector_operations', 'federated_learning', 'memory_management'],
+          specialization: ['machine_learning', 'vector_databases', 'collective_intelligence'],
           performance: {
             successRate: 0.95,
             responseTime: 120,
-            resourceUsage: 0.7,
-          },
+            resourceUsage: 0.7
+          }
         },
         {
           id: 'agent-ops-orchestrator',
@@ -85,73 +75,48 @@ class FederatedActivationBypass {
           performance: {
             successRate: 0.92,
             responseTime: 80,
-            resourceUsage: 0.6,
-          },
+            resourceUsage: 0.6
+          }
         },
         {
           id: 'compliance-engine-validator',
           name: 'Compliance Engine Validator',
           status: 'active',
-          capabilities: [
-            'compliance_checking',
-            'validation',
-            'audit',
-            'security',
-          ],
-          specialization: [
-            'regulatory_compliance',
-            'security_standards',
-            'audit_trails',
-          ],
+          capabilities: ['compliance_checking', 'validation', 'audit', 'security'],
+          specialization: ['regulatory_compliance', 'security_standards', 'audit_trails'],
           performance: {
             successRate: 0.98,
             responseTime: 90,
-            resourceUsage: 0.5,
-          },
+            resourceUsage: 0.5
+          }
         },
         {
           id: 'workflow-engine-orchestrator',
           name: 'Workflow Engine Orchestrator',
           status: 'active',
-          capabilities: [
-            'workflow_execution',
-            'orchestration',
-            'state_management',
-          ],
-          specialization: [
-            'process_automation',
-            'state_machines',
-            'workflow_patterns',
-          ],
+          capabilities: ['workflow_execution', 'orchestration', 'state_management'],
+          specialization: ['process_automation', 'state_machines', 'workflow_patterns'],
           performance: {
             successRate: 0.94,
             responseTime: 100,
-            resourceUsage: 0.8,
-          },
+            resourceUsage: 0.8
+          }
         },
         {
           id: 'vortex-token-optimizer',
           name: 'VORTEX Token Optimizer',
           status: 'active',
-          capabilities: [
-            'token_optimization',
-            'cost_reduction',
-            'efficiency_analysis',
-          ],
-          specialization: [
-            'token_management',
-            'cost_optimization',
-            'usage_analytics',
-          ],
+          capabilities: ['token_optimization', 'cost_reduction', 'efficiency_analysis'],
+          specialization: ['token_management', 'cost_optimization', 'usage_analytics'],
           performance: {
             successRate: 0.97,
             responseTime: 50,
-            resourceUsage: 0.4,
-          },
-        },
+            resourceUsage: 0.4
+          }
+        }
       ],
       totalCount: 46, // From OSSA status
-      activeCount: 46,
+      activeCount: 46
     };
 
     // Add mock agents for the remaining 41 from OSSA
@@ -165,8 +130,8 @@ class FederatedActivationBypass {
         performance: {
           successRate: 0.85 + Math.random() * 0.1,
           responseTime: 100 + Math.random() * 100,
-          resourceUsage: 0.5 + Math.random() * 0.3,
-        },
+          resourceUsage: 0.5 + Math.random() * 0.3
+        }
       });
     }
 
@@ -186,15 +151,11 @@ class FederatedActivationBypass {
     console.log('💰 Launching VORTEX federated integration...');
 
     // Spawn VORTEX integration in background
-    const vortexProcess = spawn(
-      'npx',
-      ['tsx', 'scripts/vortex-federated-integration.ts'],
-      {
-        cwd: '/Users/flux423/Sites/LLM/OSSA',
-        stdio: ['ignore', 'pipe', 'pipe'],
-        detached: true,
-      }
-    );
+    const vortexProcess = spawn('npx', ['tsx', 'scripts/vortex-federated-integration.ts'], {
+      cwd: '/Users/flux423/Sites/LLM/OSSA',
+      stdio: ['ignore', 'pipe', 'pipe'],
+      detached: true
+    });
 
     vortexProcess.stdout?.on('data', (data) => {
       console.log(`VORTEX: ${data.toString().trim()}`);
@@ -233,63 +194,40 @@ class FederatedActivationBypass {
     const learningGain = Math.random() * 0.05; // 0-5% improvement
     const failureReduction = Math.random() * 0.02; // 0-2% failure reduction
 
-    console.log(
-      `🔄 Learning cycle: ${participatingAgents} agents, ${(learningGain * 100).toFixed(2)}% gain`
-    );
+    console.log(`🔄 Learning cycle: ${participatingAgents} agents, ${(learningGain * 100).toFixed(2)}% gain`);
 
     // Update performance metrics
     this.agents.agents.forEach((agent) => {
       if (Math.random() > 0.7) {
         // 30% chance of improvement
-        agent.performance.successRate = Math.min(
-          0.99,
-          agent.performance.successRate + learningGain
-        );
-        agent.performance.responseTime = Math.max(
-          50,
-          agent.performance.responseTime * (1 - learningGain)
-        );
+        agent.performance.successRate = Math.min(0.99, agent.performance.successRate + learningGain);
+        agent.performance.responseTime = Math.max(50, agent.performance.responseTime * (1 - learningGain));
       }
     });
   }
 
   private reportProgress(): void {
     const avgSuccessRate =
-      this.agents.agents.reduce(
-        (sum, a) => sum + a.performance.successRate,
-        0
-      ) / this.agents.agents.length;
+      this.agents.agents.reduce((sum, a) => sum + a.performance.successRate, 0) / this.agents.agents.length;
     const avgResponseTime =
-      this.agents.agents.reduce(
-        (sum, a) => sum + a.performance.responseTime,
-        0
-      ) / this.agents.agents.length;
+      this.agents.agents.reduce((sum, a) => sum + a.performance.responseTime, 0) / this.agents.agents.length;
     const avgResourceUsage =
-      this.agents.agents.reduce(
-        (sum, a) => sum + a.performance.resourceUsage,
-        0
-      ) / this.agents.agents.length;
+      this.agents.agents.reduce((sum, a) => sum + a.performance.resourceUsage, 0) / this.agents.agents.length;
 
     console.log('\n📊 FEDERATED LEARNING PROGRESS REPORT');
     console.log('=====================================');
     console.log(`🤖 Active Agents: ${this.agents.activeCount}`);
     console.log(`✅ Avg Success Rate: ${(avgSuccessRate * 100).toFixed(1)}%`);
     console.log(`⚡ Avg Response Time: ${avgResponseTime.toFixed(0)}ms`);
-    console.log(
-      `📈 Avg Resource Usage: ${(avgResourceUsage * 100).toFixed(1)}%`
-    );
+    console.log(`📈 Avg Resource Usage: ${(avgResourceUsage * 100).toFixed(1)}%`);
 
     // Calculate progress toward targets
     const taskFailureReduction = (1 - (1 - avgSuccessRate)) * 100; // Success rate improvement
     const efficiencyGain = Math.max(0, ((200 - avgResponseTime) / 200) * 100); // Response time improvement
 
     console.log('\n🎯 TARGET PROGRESS:');
-    console.log(
-      `💥 Task Failure Reduction: ${taskFailureReduction.toFixed(1)}% (target: 47%)`
-    );
-    console.log(
-      `⚡ Efficiency Gain: ${efficiencyGain.toFixed(1)}% (target: 62%)`
-    );
+    console.log(`💥 Task Failure Reduction: ${taskFailureReduction.toFixed(1)}% (target: 47%)`);
+    console.log(`⚡ Efficiency Gain: ${efficiencyGain.toFixed(1)}% (target: 62%)`);
     console.log(`🚀 Discovery Acceleration: 8.5x (target: 10x)`);
 
     if (taskFailureReduction >= 47) {
@@ -309,8 +247,8 @@ class FederatedActivationBypass {
         status: 'active',
         cyclesCompleted: Math.floor(Date.now() / 10000), // Rough estimate
         learningRate: 0.05,
-        convergenceRate: 0.85,
-      },
+        convergenceRate: 0.85
+      }
     };
   }
 }

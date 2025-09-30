@@ -22,14 +22,13 @@ export default class BranchingStrategyManager {
       protectionRules: {
         requireReview: true,
         dismissStaleReviews: true,
-        requireStatusChecks: true,
-      },
+        requireStatusChecks: true
+      }
     };
   }
 
   validateBranchName(branchName: string): boolean {
-    const pattern =
-      /^(feature|bug|hotfix|chore|docs|test|perf|ci)\/[a-z0-9-]+$/;
+    const pattern = /^(feature|bug|hotfix|chore|docs|test|perf|ci)\/[a-z0-9-]+$/;
     return pattern.test(branchName);
   }
 
@@ -43,20 +42,12 @@ export default class BranchingStrategyManager {
     return `${type}/${sanitized}`;
   }
 
-  getBranchNamingRecommendations(
-    name: string,
-    specialization?: string,
-    phase?: number,
-    priority?: string
-  ): any {
+  getBranchNamingRecommendations(name: string, specialization?: string, phase?: number, priority?: string): any {
     const base = this.generateBranchName('feature', name);
     return {
       primary: base,
-      alternatives: [
-        `feature/${specialization || 'general'}-${name}`,
-        `feature/phase-${phase || 1}-${name}`,
-      ],
-      priority: priority || 'medium',
+      alternatives: [`feature/${specialization || 'general'}-${name}`, `feature/phase-${phase || 1}-${name}`],
+      priority: priority || 'medium'
     };
   }
 
@@ -69,7 +60,7 @@ export default class BranchingStrategyManager {
     return {
       name: flow,
       stages: ['development', 'testing', 'staging', 'production'],
-      approvals: 1,
+      approvals: 1
     };
   }
 
@@ -77,7 +68,7 @@ export default class BranchingStrategyManager {
     return {
       adapted: true,
       flow: 'adaptive',
-      reason: 'Context-based adaptation',
+      reason: 'Context-based adaptation'
     };
   }
 }

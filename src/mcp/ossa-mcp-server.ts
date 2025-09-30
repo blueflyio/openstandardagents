@@ -52,7 +52,7 @@ class OSSAMCPServer {
         status: 'healthy',
         version: '0.1.9',
         server: 'ossa-mcp',
-        timestamp: new Date().toISOString(),
+        timestamp: new Date().toISOString()
       });
     });
 
@@ -63,24 +63,24 @@ class OSSAMCPServer {
           tools: [
             {
               name: 'ossa_agent_list',
-              description: 'List all OSSA agents',
+              description: 'List all OSSA agents'
             },
             {
               name: 'ossa_agent_spawn',
-              description: 'Spawn a new OSSA agent',
+              description: 'Spawn a new OSSA agent'
             },
             {
               name: 'ossa_orchestrator_status',
-              description: 'Get orchestrator status',
-            },
+              description: 'Get orchestrator status'
+            }
           ],
           resources: [
             {
               uri: 'ossa://agents',
-              name: 'OSSA Agents Registry',
-            },
-          ],
-        },
+              name: 'OSSA Agents Registry'
+            }
+          ]
+        }
       });
     });
 
@@ -108,8 +108,8 @@ class OSSAMCPServer {
               id: null,
               error: {
                 code: -32700,
-                message: 'Parse error',
-              },
+                message: 'Parse error'
+              }
             })
           );
         }
@@ -134,13 +134,13 @@ class OSSAMCPServer {
             capabilities: {
               tools: {},
               resources: {},
-              prompts: {},
+              prompts: {}
             },
             serverInfo: {
               name: 'ossa-mcp-server',
-              version: '0.1.9',
-            },
-          },
+              version: '0.1.9'
+            }
+          }
         };
 
       case 'tools/list':
@@ -157,10 +157,10 @@ class OSSAMCPServer {
                   properties: {
                     filter: {
                       type: 'string',
-                      description: 'Filter agents by type',
-                    },
-                  },
-                },
+                      description: 'Filter agents by type'
+                    }
+                  }
+                }
               },
               {
                 name: 'ossa_agent_spawn',
@@ -170,23 +170,23 @@ class OSSAMCPServer {
                   properties: {
                     type: {
                       type: 'string',
-                      description: 'Agent type (worker, orchestrator, critic)',
+                      description: 'Agent type (worker, orchestrator, critic)'
                     },
-                    name: { type: 'string', description: 'Agent name' },
+                    name: { type: 'string', description: 'Agent name' }
                   },
-                  required: ['type', 'name'],
-                },
+                  required: ['type', 'name']
+                }
               },
               {
                 name: 'ossa_orchestrator_status',
                 description: 'Get OSSA orchestrator status',
                 inputSchema: {
                   type: 'object',
-                  properties: {},
-                },
-              },
-            ],
-          },
+                  properties: {}
+                }
+              }
+            ]
+          }
         };
 
       case 'tools/call':
@@ -202,10 +202,10 @@ class OSSAMCPServer {
                 uri: 'ossa://agents',
                 name: 'OSSA Agents Registry',
                 description: 'Registry of all OSSA agents',
-                mimeType: 'application/json',
-              },
-            ],
-          },
+                mimeType: 'application/json'
+              }
+            ]
+          }
         };
 
       default:
@@ -214,8 +214,8 @@ class OSSAMCPServer {
           id,
           error: {
             code: -32601,
-            message: `Method not found: ${method}`,
-          },
+            message: `Method not found: ${method}`
+          }
         };
     }
   }
@@ -240,23 +240,23 @@ class OSSAMCPServer {
                         name: 'OSSA Orchestrator',
                         type: 'orchestrator',
                         status: 'active',
-                        version: '0.1.9',
+                        version: '0.1.9'
                       },
                       {
                         id: 'ossa-worker-001',
                         name: 'Development Worker',
                         type: 'worker',
                         status: 'active',
-                        version: '0.1.9',
-                      },
-                    ],
+                        version: '0.1.9'
+                      }
+                    ]
                   },
                   null,
                   2
-                ),
-              },
-            ],
-          },
+                )
+              }
+            ]
+          }
         };
 
       case 'ossa_agent_spawn':
@@ -275,15 +275,15 @@ class OSSAMCPServer {
                       name: args?.name || 'Unnamed Agent',
                       type: args?.type || 'worker',
                       status: 'spawning',
-                      version: '0.1.9',
-                    },
+                      version: '0.1.9'
+                    }
                   },
                   null,
                   2
-                ),
-              },
-            ],
-          },
+                )
+              }
+            ]
+          }
         };
 
       case 'ossa_orchestrator_status':
@@ -300,14 +300,14 @@ class OSSAMCPServer {
                     version: '0.1.9',
                     activeAgents: 2,
                     workflowsRunning: 0,
-                    lastHealthCheck: new Date().toISOString(),
+                    lastHealthCheck: new Date().toISOString()
                   },
                   null,
                   2
-                ),
-              },
-            ],
-          },
+                )
+              }
+            ]
+          }
         };
 
       default:
@@ -316,8 +316,8 @@ class OSSAMCPServer {
           id,
           error: {
             code: -32601,
-            message: `Unknown tool: ${name}`,
-          },
+            message: `Unknown tool: ${name}`
+          }
         };
     }
   }

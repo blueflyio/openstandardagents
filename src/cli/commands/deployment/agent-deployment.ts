@@ -15,16 +15,7 @@ import { z } from 'zod';
 // OpenAPI 3.1 Schema Validation
 const AgentManifestSchema = z.object({
   agentId: z.string().regex(/^[a-z0-9-]+$/),
-  agentType: z.enum([
-    'orchestrator',
-    'worker',
-    'critic',
-    'judge',
-    'trainer',
-    'governor',
-    'monitor',
-    'integrator',
-  ]),
+  agentType: z.enum(['orchestrator', 'worker', 'critic', 'judge', 'trainer', 'governor', 'monitor', 'integrator']),
   agentSubType: z.string().optional(),
   version: z.string().regex(/^\d+\.\d+\.\d+$/),
   capabilities: z.object({
@@ -36,18 +27,18 @@ const AgentManifestSchema = z.object({
       .object({
         maxTokens: z.number().optional(),
         timeout: z.number().optional(),
-        memoryLimit: z.string().optional(),
+        memoryLimit: z.string().optional()
       })
-      .optional(),
+      .optional()
   }),
   metadata: z
     .object({
       author: z.string().optional(),
       description: z.string().optional(),
       created: z.string().datetime().optional(),
-      updated: z.string().datetime().optional(),
+      updated: z.string().datetime().optional()
     })
-    .optional(),
+    .optional()
 });
 
 type AgentManifest = z.infer<typeof AgentManifestSchema>;
@@ -92,16 +83,13 @@ class AgentDeploymentCLI {
     }
   }
 
-  private log(
-    level: 'info' | 'error' | 'success' | 'warning',
-    message: string
-  ): void {
+  private log(level: 'info' | 'error' | 'success' | 'warning', message: string): void {
     const timestamp = new Date().toISOString();
     const colors = {
       info: chalk.blue,
       error: chalk.red,
       success: chalk.green,
-      warning: chalk.yellow,
+      warning: chalk.yellow
     };
 
     const formattedMessage = `[${timestamp}] [${level.toUpperCase()}] ${message}`;
@@ -147,11 +135,7 @@ class AgentDeploymentCLI {
       .command('get')
       .description('Get agent details')
       .argument('<agent-id>', 'Agent identifier')
-      .option(
-        '-f, --format <format>',
-        'Output format (json, yaml, table)',
-        'table'
-      )
+      .option('-f, --format <format>', 'Output format (json, yaml, table)', 'table')
       .action(this.getAgent.bind(this));
 
     // UPDATE operations
@@ -203,12 +187,8 @@ class AgentDeploymentCLI {
     try {
       this.log('info', `Creating agent: ${agentName}`);
 
-      const capabilities = options.capabilities
-        ? options.capabilities.split(',')
-        : [];
-      const dependencies = options.dependencies
-        ? options.dependencies.split(',')
-        : [];
+      const capabilities = options.capabilities ? options.capabilities.split(',') : [];
+      const dependencies = options.dependencies ? options.dependencies.split(',') : [];
 
       const agentManifest: AgentManifest = {
         agentId: agentName,
@@ -219,23 +199,20 @@ class AgentDeploymentCLI {
           supportedDomains: [options.specialization || 'general'],
           inputFormats: ['json', 'yaml'],
           outputFormats: ['json', 'yaml'],
-          requirements: dependencies,
+          requirements: dependencies
         },
         metadata: {
           author: 'OSSA v0.1.9',
           description: `${options.specialization} specialist agent`,
           created: new Date().toISOString(),
-          updated: new Date().toISOString(),
-        },
+          updated: new Date().toISOString()
+        }
       };
 
       // Validate against schema
       const validationResult = AgentManifestSchema.safeParse(agentManifest);
       if (!validationResult.success) {
-        this.log(
-          'error',
-          `Validation failed: ${validationResult.error.message}`
-        );
+        this.log('error', `Validation failed: ${validationResult.error.message}`);
         return;
       }
 
@@ -259,10 +236,7 @@ class AgentDeploymentCLI {
         await this.deployAgent(agentName);
       }
     } catch (error) {
-      this.log(
-        'error',
-        `Failed to create agent: ${error instanceof Error ? error.message : String(error)}`
-      );
+      this.log('error', `Failed to create agent: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
 
@@ -272,10 +246,7 @@ class AgentDeploymentCLI {
       this.log('info', 'Listing agents...');
       // TODO: Implement agent listing logic
     } catch (error) {
-      this.log(
-        'error',
-        `Failed to list agents: ${error instanceof Error ? error.message : String(error)}`
-      );
+      this.log('error', `Failed to list agents: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
 
@@ -284,10 +255,7 @@ class AgentDeploymentCLI {
       this.log('info', `Getting agent: ${agentId}`);
       // TODO: Implement get agent logic
     } catch (error) {
-      this.log(
-        'error',
-        `Failed to get agent: ${error instanceof Error ? error.message : String(error)}`
-      );
+      this.log('error', `Failed to get agent: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
 
@@ -296,10 +264,7 @@ class AgentDeploymentCLI {
       this.log('info', `Updating agent: ${agentId}`);
       // TODO: Implement update agent logic
     } catch (error) {
-      this.log(
-        'error',
-        `Failed to update agent: ${error instanceof Error ? error.message : String(error)}`
-      );
+      this.log('error', `Failed to update agent: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
 
@@ -308,10 +273,7 @@ class AgentDeploymentCLI {
       this.log('info', `Deleting agent: ${agentId}`);
       // TODO: Implement delete agent logic
     } catch (error) {
-      this.log(
-        'error',
-        `Failed to delete agent: ${error instanceof Error ? error.message : String(error)}`
-      );
+      this.log('error', `Failed to delete agent: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
 
@@ -323,7 +285,7 @@ class AgentDeploymentCLI {
         '1': this.deployPhase1.bind(this),
         '2': this.deployPhase2.bind(this),
         '3': this.deployPhase3.bind(this),
-        '4': this.deployPhase4.bind(this),
+        '4': this.deployPhase4.bind(this)
       };
 
       if (options.phase === 'all') {
@@ -343,10 +305,7 @@ class AgentDeploymentCLI {
         this.log('error', `Invalid phase: ${options.phase}`);
       }
     } catch (error) {
-      this.log(
-        'error',
-        `Deployment failed: ${error instanceof Error ? error.message : String(error)}`
-      );
+      this.log('error', `Deployment failed: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
 
@@ -355,10 +314,7 @@ class AgentDeploymentCLI {
       this.log('info', `Validating agent: ${agentId}`);
       // TODO: Implement validation logic
     } catch (error) {
-      this.log(
-        'error',
-        `Validation failed: ${error instanceof Error ? error.message : String(error)}`
-      );
+      this.log('error', `Validation failed: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
 
@@ -367,10 +323,7 @@ class AgentDeploymentCLI {
       this.log('info', 'Showing deployment status...');
       // TODO: Implement status display logic
     } catch (error) {
-      this.log(
-        'error',
-        `Failed to show status: ${error instanceof Error ? error.message : String(error)}`
-      );
+      this.log('error', `Failed to show status: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
 
@@ -386,10 +339,7 @@ class AgentDeploymentCLI {
   }
 
   private async deployPhase3(): Promise<void> {
-    this.log(
-      'info',
-      '📊 Phase 3: Production Analytics & Monitoring (20 agents)'
-    );
+    this.log('info', '📊 Phase 3: Production Analytics & Monitoring (20 agents)');
     // Implementation for Phase 3 deployment
   }
 
@@ -409,7 +359,7 @@ class AgentDeploymentCLI {
       success: true,
       agentId: agentName,
       message: 'Agent deployed successfully',
-      timestamp: new Date().toISOString(),
+      timestamp: new Date().toISOString()
     };
   }
 

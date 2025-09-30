@@ -55,11 +55,7 @@ export class OSSAWorkflowAgent implements ADKAgent {
     let currentInput = input;
 
     for (const subAgent of this.config.sub_agents || []) {
-      const result = await this.executeSubAgent(
-        subAgent,
-        currentInput,
-        session
-      );
+      const result = await this.executeSubAgent(subAgent, currentInput, session);
       results.push(result);
 
       // Pass output to next agent
@@ -69,7 +65,7 @@ export class OSSAWorkflowAgent implements ADKAgent {
     const finalResult = {
       workflow: 'sequential',
       results,
-      final_output: results[results.length - 1],
+      final_output: results[results.length - 1]
     };
 
     // Save to session state
@@ -91,19 +87,12 @@ export class OSSAWorkflowAgent implements ADKAgent {
 
     while (iteration < maxIterations) {
       for (const subAgent of this.config.sub_agents || []) {
-        const result = await this.executeSubAgent(
-          subAgent,
-          currentInput,
-          session
-        );
+        const result = await this.executeSubAgent(subAgent, currentInput, session);
         results.push(result);
         currentInput = result;
 
         // Check loop condition
-        if (
-          this.config.condition &&
-          !this.config.condition(session?.state || {})
-        ) {
+        if (this.config.condition && !this.config.condition(session?.state || {})) {
           break;
         }
       }
@@ -111,10 +100,7 @@ export class OSSAWorkflowAgent implements ADKAgent {
       iteration++;
 
       // Check loop condition
-      if (
-        this.config.condition &&
-        !this.config.condition(session?.state || {})
-      ) {
+      if (this.config.condition && !this.config.condition(session?.state || {})) {
         break;
       }
     }
@@ -123,7 +109,7 @@ export class OSSAWorkflowAgent implements ADKAgent {
       workflow: 'loop',
       iterations: iteration,
       results,
-      final_output: results[results.length - 1],
+      final_output: results[results.length - 1]
     };
 
     // Save to session state
@@ -142,10 +128,7 @@ export class OSSAWorkflowAgent implements ADKAgent {
 
     for (const subAgent of this.config.sub_agents || []) {
       // Check condition before executing
-      if (
-        this.config.condition &&
-        !this.config.condition(session?.state || {})
-      ) {
+      if (this.config.condition && !this.config.condition(session?.state || {})) {
         continue;
       }
 
@@ -156,7 +139,7 @@ export class OSSAWorkflowAgent implements ADKAgent {
     const finalResult = {
       workflow: 'conditional',
       results,
-      executed_count: results.length,
+      executed_count: results.length
     };
 
     // Save to session state
@@ -171,16 +154,14 @@ export class OSSAWorkflowAgent implements ADKAgent {
    * Execute agents in parallel
    */
   private async executeParallel(input: any, session?: any): Promise<any> {
-    const promises = (this.config.sub_agents || []).map((subAgent) =>
-      this.executeSubAgent(subAgent, input, session)
-    );
+    const promises = (this.config.sub_agents || []).map((subAgent) => this.executeSubAgent(subAgent, input, session));
 
     const results = await Promise.all(promises);
 
     const finalResult = {
       workflow: 'parallel',
       results,
-      completed_count: results.length,
+      completed_count: results.length
     };
 
     // Save to session state
@@ -194,11 +175,7 @@ export class OSSAWorkflowAgent implements ADKAgent {
   /**
    * Execute a sub-agent
    */
-  private async executeSubAgent(
-    agent: ADKAgent,
-    input: any,
-    session?: any
-  ): Promise<any> {
+  private async executeSubAgent(agent: ADKAgent, input: any, session?: any): Promise<any> {
     // TODO: Implement actual sub-agent execution
     console.log(`Executing sub-agent: ${agent.config.name}`);
 
@@ -206,7 +183,7 @@ export class OSSAWorkflowAgent implements ADKAgent {
       agent: agent.config.name,
       success: true,
       output: `Executed ${agent.config.name}`,
-      timestamp: new Date().toISOString(),
+      timestamp: new Date().toISOString()
     };
   }
 }

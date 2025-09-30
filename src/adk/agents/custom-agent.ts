@@ -66,7 +66,7 @@ export class OSSACustomAgent implements ADKAgent {
       violations,
       approvals,
       compliant: violations.length === 0,
-      timestamp: new Date().toISOString(),
+      timestamp: new Date().toISOString()
     };
 
     // Save to session state
@@ -89,7 +89,7 @@ export class OSSACustomAgent implements ADKAgent {
       metrics,
       alerts,
       healthy: alerts.length === 0,
-      timestamp: new Date().toISOString(),
+      timestamp: new Date().toISOString()
     };
 
     // Save to session state
@@ -117,7 +117,7 @@ export class OSSACustomAgent implements ADKAgent {
       capabilities: capabilities,
       results,
       success: true,
-      timestamp: new Date().toISOString(),
+      timestamp: new Date().toISOString()
     };
 
     // Save to session state
@@ -139,7 +139,7 @@ export class OSSACustomAgent implements ADKAgent {
       name: this.config.name,
       input,
       output: `Processed by ${this.config.name}`,
-      timestamp: new Date().toISOString(),
+      timestamp: new Date().toISOString()
     };
 
     // Save to session state
@@ -158,7 +158,7 @@ export class OSSACustomAgent implements ADKAgent {
     return {
       policy: policy.name || 'unknown',
       violated: false,
-      details: 'Policy check passed',
+      details: 'Policy check passed'
     };
   }
 
@@ -171,7 +171,7 @@ export class OSSACustomAgent implements ADKAgent {
       cpu: Math.random() * 100,
       memory: Math.random() * 100,
       throughput: Math.random() * 1000,
-      latency: Math.random() * 100,
+      latency: Math.random() * 100
     };
   }
 
@@ -195,15 +195,12 @@ export class OSSACustomAgent implements ADKAgent {
   /**
    * Execute capability (placeholder)
    */
-  private async executeCapability(
-    capability: string,
-    input: any
-  ): Promise<any> {
+  private async executeCapability(capability: string, input: any): Promise<any> {
     // TODO: Implement actual capability execution
     return {
       capability,
       executed: true,
-      result: `Executed ${capability} capability`,
+      result: `Executed ${capability} capability`
     };
   }
 }

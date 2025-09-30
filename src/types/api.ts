@@ -42,15 +42,7 @@ export interface components {
       /** @example worker-openapi-v1-2-0 */
       agentId: string;
       /** @enum {string} */
-      agentType:
-        | 'orchestrator'
-        | 'worker'
-        | 'critic'
-        | 'judge'
-        | 'trainer'
-        | 'governor'
-        | 'monitor'
-        | 'integrator';
+      agentType: 'orchestrator' | 'worker' | 'critic' | 'judge' | 'trainer' | 'governor' | 'monitor' | 'integrator';
       /** @example worker.openapi */
       agentSubType?: string;
       /** @example 1.2.0 */
@@ -223,15 +215,7 @@ export interface operations {
   getAgentSchema: {
     parameters: {
       path: {
-        agentType:
-          | 'orchestrator'
-          | 'worker'
-          | 'critic'
-          | 'judge'
-          | 'trainer'
-          | 'governor'
-          | 'monitor'
-          | 'integrator';
+        agentType: 'orchestrator' | 'worker' | 'critic' | 'judge' | 'trainer' | 'governor' | 'monitor' | 'integrator';
       };
     };
     responses: {

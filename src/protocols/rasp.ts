@@ -64,7 +64,7 @@ export class RoadmapSpecificationParser {
             phase: currentPhase,
             priority: currentPriority,
             status: 'planned',
-            commands,
+            commands
           });
         }
       }
@@ -79,7 +79,7 @@ export class RoadmapSpecificationParser {
             priority: currentPriority,
             status: task.status,
             endpoints: task.endpoints,
-            schemas: task.schemas,
+            schemas: task.schemas
           });
         }
       }
@@ -99,13 +99,12 @@ export class RoadmapSpecificationParser {
       info: {
         title: this.config.title,
         version: this.config.version,
-        description:
-          'OSSA agent specification generated from roadmap annotations',
+        description: 'OSSA agent specification generated from roadmap annotations'
       },
       paths: {},
       components: {
-        schemas: {},
-      },
+        schemas: {}
+      }
     };
 
     // Generate paths from command annotations
@@ -150,20 +149,14 @@ export class RoadmapSpecificationParser {
     for (let i = startIndex; i < lines.length; i++) {
       const line = lines[i].trim();
       if (line === '```') break;
-      if (
-        line.startsWith('ossa ') ||
-        line.startsWith('opcua-') ||
-        line.startsWith('uadp-')
-      ) {
+      if (line.startsWith('ossa ') || line.startsWith('opcua-') || line.startsWith('uadp-')) {
         commands.push(line);
       }
     }
     return commands;
   }
 
-  private parseTask(
-    line: string
-  ): {
+  private parseTask(line: string): {
     name: string;
     status: RoadmapAnnotation['status'];
     endpoints?: string[];
@@ -175,17 +168,12 @@ export class RoadmapSpecificationParser {
     if (!match) return null;
 
     const name = match[1].toLowerCase().replace(/\s+/g, '-');
-    const status: RoadmapAnnotation['status'] = completed
-      ? 'complete'
-      : 'planned';
+    const status: RoadmapAnnotation['status'] = completed ? 'complete' : 'planned';
 
     return { name, status };
   }
 
-  private addCommandPaths(
-    spec: OpenAPIV3_1.Document,
-    annotation: RoadmapAnnotation
-  ): void {
+  private addCommandPaths(spec: OpenAPIV3_1.Document, annotation: RoadmapAnnotation): void {
     annotation.commands?.forEach((command) => {
       const pathKey = this.commandToPath(command);
       if (pathKey && spec.paths && !spec.paths[pathKey]) {
@@ -197,38 +185,32 @@ export class RoadmapSpecificationParser {
             requestBody: {
               content: {
                 'application/json': {
-                  schema: { type: 'object' },
-                },
-              },
+                  schema: { type: 'object' }
+                }
+              }
             },
             responses: {
               '200': {
                 description: 'Command executed successfully',
                 content: {
                   'application/json': {
-                    schema: { type: 'object' },
-                  },
-                },
-              },
-            },
-          },
+                    schema: { type: 'object' }
+                  }
+                }
+              }
+            }
+          }
         };
       }
     });
   }
 
-  private addEndpointPaths(
-    spec: OpenAPIV3_1.Document,
-    annotation: RoadmapAnnotation
-  ): void {
+  private addEndpointPaths(spec: OpenAPIV3_1.Document, annotation: RoadmapAnnotation): void {
     // Implementation for endpoint paths would go here
     // This is a stub for the core functionality
   }
 
-  private addSchemas(
-    spec: OpenAPIV3_1.Document,
-    annotation: RoadmapAnnotation
-  ): void {
+  private addSchemas(spec: OpenAPIV3_1.Document, annotation: RoadmapAnnotation): void {
     // Implementation for schema generation would go here
     // This is a stub for the core functionality
   }
@@ -263,23 +245,18 @@ export class RoadmapSpecificationParser {
 /**
  * Factory function to create RASP parser with default OSSA configuration
  */
-export function createRaspParser(
-  roadmapPath: string
-): RoadmapSpecificationParser {
+export function createRaspParser(roadmapPath: string): RoadmapSpecificationParser {
   return new RoadmapSpecificationParser({
     roadmapPath,
     version: '0.1.9',
-    title: 'OSSA Roadmap-Generated Specification',
+    title: 'OSSA Roadmap-Generated Specification'
   });
 }
 
 /**
  * Quick parse utility for CLI usage
  */
-export function parseRoadmapToSpec(
-  roadmapPath: string,
-  outputPath?: string
-): OpenAPIV3_1.Document {
+export function parseRoadmapToSpec(roadmapPath: string, outputPath?: string): OpenAPIV3_1.Document {
   const parser = createRaspParser(roadmapPath);
   const spec = parser.generateOpenAPI();
 

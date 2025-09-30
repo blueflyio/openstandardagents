@@ -10,8 +10,8 @@ export class SpecificationService {
       openapi: '3.1.0',
       info: {
         title: 'OSSA API',
-        version: '0.1.9',
-      },
+        version: '0.1.9'
+      }
     };
   }
 

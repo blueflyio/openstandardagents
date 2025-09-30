@@ -15,11 +15,11 @@ interface DocGenOptions {
 
 export async function main(options: DocGenOptions = {}) {
   try {
-    console.log(chalk.blue("🚀 OSSA API Documentation Generator"));
-    console.log(chalk.blue("===================================="));
-    console.log("");
+    console.log(chalk.blue('🚀 OSSA API Documentation Generator'));
+    console.log(chalk.blue('===================================='));
+    console.log('');
 
-    const OSSA_DIR = "/Users/flux423/Sites/LLM/OSSA";
+    const OSSA_DIR = '/Users/flux423/Sites/LLM/OSSA';
     const API_DIR = `${OSSA_DIR}/src/api`;
     const DOCS_DIR = `${OSSA_DIR}/docs`;
     const OUTPUT_DIR = options.output || `${DOCS_DIR}/api`;
@@ -35,7 +35,7 @@ export async function main(options: DocGenOptions = {}) {
     console.log(chalk.blue(`📋 Found ${specs.length} OpenAPI specifications`));
 
     if (specs.length === 0) {
-      console.log(chalk.yellow("⚠️  No OpenAPI specs found"));
+      console.log(chalk.yellow('⚠️  No OpenAPI specs found'));
       return;
     }
 
@@ -52,9 +52,8 @@ export async function main(options: DocGenOptions = {}) {
       }
     }
 
-    console.log(chalk.green("\n✅ Documentation generation complete!"));
+    console.log(chalk.green('\n✅ Documentation generation complete!'));
     console.log(chalk.cyan(`📁 Output directory: ${OUTPUT_DIR}`));
-
   } catch (error) {
     console.error(chalk.red('❌ Error generating API documentation:'), error);
     process.exit(1);
@@ -162,7 +161,11 @@ function generateRedocDocs(spec: SpecInfo, outputDir: string): void {
 
 // CLI execution
 if (require.main === module) {
-  const format = process.argv.find(arg => ['redoc', 'swagger', 'both'].includes(arg)) as 'redoc' | 'swagger' | 'both' | undefined;
+  const format = process.argv.find((arg) => ['redoc', 'swagger', 'both'].includes(arg)) as
+    | 'redoc'
+    | 'swagger'
+    | 'both'
+    | undefined;
   const outputIndex = process.argv.indexOf('--output') || process.argv.indexOf('-o');
   const output = outputIndex > -1 ? process.argv[outputIndex + 1] : undefined;
 

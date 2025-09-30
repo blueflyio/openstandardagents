@@ -6,13 +6,7 @@
 import { ADKAgent } from '../agents/index.js';
 import { ADKSession, sessionManager } from '../state/index.js';
 
-export type OrchestrationPattern =
-  | 'sequential'
-  | 'loop'
-  | 'conditional'
-  | 'parallel'
-  | 'coordinator'
-  | 'dispatcher';
+export type OrchestrationPattern = 'sequential' | 'loop' | 'conditional' | 'parallel' | 'coordinator' | 'dispatcher';
 
 /**
  * Base orchestration configuration
@@ -61,11 +55,7 @@ export class OSSAOrchestrationEngine {
   /**
    * Sequential execution pattern (ADK SequentialAgent)
    */
-  private async executeSequential(
-    agents: ADKAgent[],
-    session: ADKSession,
-    options?: any
-  ): Promise<any> {
+  private async executeSequential(agents: ADKAgent[], session: ADKSession, options?: any): Promise<any> {
     const results: any[] = [];
     let lastOutput: any = options?.initialInput || {};
 
@@ -88,18 +78,14 @@ export class OSSAOrchestrationEngine {
       session_id: session.id,
       results,
       final_output: lastOutput,
-      agent_trace: session.metadata.agent_trace,
+      agent_trace: session.metadata.agent_trace
     };
   }
 
   /**
    * Loop execution pattern (ADK LoopAgent)
    */
-  private async executeLoop(
-    agents: ADKAgent[],
-    session: ADKSession,
-    options?: any
-  ): Promise<any> {
+  private async executeLoop(agents: ADKAgent[], session: ADKSession, options?: any): Promise<any> {
     const maxIterations = options?.maxIterations || 10;
     const condition = options?.condition || (() => true);
     const results: any[] = [];
@@ -108,32 +94,26 @@ export class OSSAOrchestrationEngine {
 
     while (iteration < maxIterations && condition(session.state, iteration)) {
       for (const agent of agents) {
-        sessionManager.addAgentTrace(
-          session.id,
-          `${agent.config.name}_iter${iteration}`
-        );
+        sessionManager.addAgentTrace(session.id, `${agent.config.name}_iter${iteration}`);
 
         const result = await this.invokeAgent(agent, lastOutput, session);
         results.push({
           iteration,
           agent: agent.config.name,
-          result,
+          result
         });
 
         lastOutput = result;
 
         // Check break condition
-        if (
-          options?.breakCondition &&
-          options.breakCondition(result, session.state)
-        ) {
+        if (options?.breakCondition && options.breakCondition(result, session.state)) {
           return {
             pattern: 'loop',
             session_id: session.id,
             iterations: iteration + 1,
             results,
             final_output: lastOutput,
-            break_reason: 'condition_met',
+            break_reason: 'condition_met'
           };
         }
       }
@@ -148,19 +128,14 @@ export class OSSAOrchestrationEngine {
       iterations: iteration,
       results,
       final_output: lastOutput,
-      break_reason:
-        iteration >= maxIterations ? 'max_iterations' : 'condition_false',
+      break_reason: iteration >= maxIterations ? 'max_iterations' : 'condition_false'
     };
   }
 
   /**
    * Conditional execution pattern (ADK ConditionalAgent)
    */
-  private async executeConditional(
-    agents: ADKAgent[],
-    session: ADKSession,
-    options?: any
-  ): Promise<any> {
+  private async executeConditional(agents: ADKAgent[], session: ADKSession, options?: any): Promise<any> {
     const conditions = options?.conditions || [];
     const results: any[] = [];
     const input = options?.initialInput || {};
@@ -177,13 +152,13 @@ export class OSSAOrchestrationEngine {
         results.push({
           agent: agent.config.name,
           executed: true,
-          result,
+          result
         });
       } else {
         results.push({
           agent: agent.config.name,
           executed: false,
-          reason: 'condition_not_met',
+          reason: 'condition_not_met'
         });
       }
     }
@@ -192,24 +167,18 @@ export class OSSAOrchestrationEngine {
       pattern: 'conditional',
       session_id: session.id,
       results,
-      executed_count: results.filter((r) => r.executed).length,
+      executed_count: results.filter((r) => r.executed).length
     };
   }
 
   /**
    * Parallel execution pattern
    */
-  private async executeParallel(
-    agents: ADKAgent[],
-    session: ADKSession,
-    options?: any
-  ): Promise<any> {
+  private async executeParallel(agents: ADKAgent[], session: ADKSession, options?: any): Promise<any> {
     const input = options?.initialInput || {};
 
     // Clone sessions for parallel execution
-    const clonedSessions = agents.map(() =>
-      sessionManager.cloneSession(session.id)
-    );
+    const clonedSessions = agents.map(() => sessionManager.cloneSession(session.id));
 
     // Execute all agents in parallel
     const promises = agents.map((agent, i) => {
@@ -230,28 +199,21 @@ export class OSSAOrchestrationEngine {
       session_id: session.id,
       results: agents.map((agent, i) => ({
         agent: agent.config.name,
-        result: results[i],
+        result: results[i]
       })),
-      completed_count: results.length,
+      completed_count: results.length
     };
   }
 
   /**
    * Coordinator pattern (ADK multi-agent coordinator)
    */
-  private async executeCoordinator(
-    agents: ADKAgent[],
-    session: ADKSession,
-    options?: any
-  ): Promise<any> {
+  private async executeCoordinator(agents: ADKAgent[], session: ADKSession, options?: any): Promise<any> {
     const coordinator = agents[0]; // First agent acts as coordinator
     const workers = agents.slice(1);
     const input = options?.initialInput || {};
 
-    sessionManager.addAgentTrace(
-      session.id,
-      `${coordinator.config.name}_coordination`
-    );
+    sessionManager.addAgentTrace(session.id, `${coordinator.config.name}_coordination`);
 
     // Coordinator determines task delegation
     const coordinationPlan = await this.invokeAgent(
@@ -261,8 +223,8 @@ export class OSSAOrchestrationEngine {
         available_agents: workers.map((a) => ({
           name: a.config.name,
           description: a.config.description,
-          type: a.type,
-        })),
+          type: a.type
+        }))
       },
       session
     );
@@ -277,7 +239,7 @@ export class OSSAOrchestrationEngine {
         const result = await this.invokeAgent(worker, input, session);
         delegationResults.push({
           agent: worker.config.name,
-          result,
+          result
         });
       }
     }
@@ -287,7 +249,7 @@ export class OSSAOrchestrationEngine {
       coordinator,
       {
         task: 'aggregate',
-        results: delegationResults,
+        results: delegationResults
       },
       session
     );
@@ -298,18 +260,14 @@ export class OSSAOrchestrationEngine {
       coordinator: coordinator.config.name,
       coordination_plan: coordinationPlan,
       delegation_results: delegationResults,
-      final_result: finalResult,
+      final_result: finalResult
     };
   }
 
   /**
    * Dispatcher pattern (routing based on input)
    */
-  private async executeDispatcher(
-    agents: ADKAgent[],
-    session: ADKSession,
-    options?: any
-  ): Promise<any> {
+  private async executeDispatcher(agents: ADKAgent[], session: ADKSession, options?: any): Promise<any> {
     const router = options?.router || this.defaultRouter;
     const input = options?.initialInput || {};
 
@@ -320,7 +278,7 @@ export class OSSAOrchestrationEngine {
       return {
         pattern: 'dispatcher',
         session_id: session.id,
-        error: 'No suitable agent found for input',
+        error: 'No suitable agent found for input'
       };
     }
 
@@ -332,18 +290,14 @@ export class OSSAOrchestrationEngine {
       pattern: 'dispatcher',
       session_id: session.id,
       dispatched_to: selectedAgent.config.name,
-      result,
+      result
     };
   }
 
   /**
    * Invoke an agent (placeholder for actual execution)
    */
-  private async invokeAgent(
-    agent: ADKAgent,
-    input: any,
-    session: ADKSession
-  ): Promise<any> {
+  private async invokeAgent(agent: ADKAgent, input: any, session: ADKSession): Promise<any> {
     // TODO: Implement actual agent invocation
     console.log(`Invoking ${agent.config.name} with input:`, input);
 
@@ -353,16 +307,12 @@ export class OSSAOrchestrationEngine {
       type: agent.type,
       input,
       output: `Processed by ${agent.config.name}`,
-      timestamp: new Date().toISOString(),
+      timestamp: new Date().toISOString()
     };
 
     // Update session state if output_key is specified
     if (agent.config.output_key) {
-      sessionManager.updateState(
-        session.id,
-        agent.config.output_key,
-        result.output
-      );
+      sessionManager.updateState(session.id, agent.config.output_key, result.output);
     }
 
     return result;
@@ -379,11 +329,7 @@ export class OSSAOrchestrationEngine {
   /**
    * Default router for dispatcher pattern
    */
-  private defaultRouter(
-    input: any,
-    agents: ADKAgent[],
-    state: any
-  ): ADKAgent | null {
+  private defaultRouter(input: any, agents: ADKAgent[], state: any): ADKAgent | null {
     // Simple routing - select first matching agent
     // In real implementation would use more sophisticated routing
     return agents[0] || null;

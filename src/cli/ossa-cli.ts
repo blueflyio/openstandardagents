@@ -7,14 +7,7 @@
  */
 
 import { Command } from 'commander';
-import {
-  readFileSync,
-  writeFileSync,
-  existsSync,
-  mkdirSync,
-  readdirSync,
-  statSync,
-} from 'fs';
+import { readFileSync, writeFileSync, existsSync, mkdirSync, readdirSync, statSync } from 'fs';
 import { join, resolve, extname } from 'path';
 import { execSync } from 'child_process';
 import chalk from 'chalk';
@@ -28,42 +21,33 @@ const OpenAPISchema = z.object({
   info: z.object({
     title: z.string(),
     version: z.string(),
-    description: z.string().optional(),
+    description: z.string().optional()
   }),
   servers: z
     .array(
       z.object({
         url: z.string(),
-        description: z.string().optional(),
+        description: z.string().optional()
       })
     )
     .optional(),
   paths: z.record(z.string(), z.any()),
   components: z
     .object({
-      schemas: z.record(z.string(), z.any()).optional(),
+      schemas: z.record(z.string(), z.any()).optional()
     })
-    .optional(),
+    .optional()
 });
 
 const SpecificationSchema = z.object({
   agentId: z.string().regex(/^[a-z0-9-]+$/),
-  agentType: z.enum([
-    'orchestrator',
-    'worker',
-    'critic',
-    'judge',
-    'trainer',
-    'governor',
-    'monitor',
-    'integrator',
-  ]),
+  agentType: z.enum(['orchestrator', 'worker', 'critic', 'judge', 'trainer', 'governor', 'monitor', 'integrator']),
   version: z.string().regex(/^\d+\.\d+\.\d+$/),
   capabilities: z.object({
     supportedDomains: z.array(z.string()),
     inputFormats: z.array(z.string()),
-    outputFormats: z.array(z.string()),
-  }),
+    outputFormats: z.array(z.string())
+  })
 });
 
 interface CLIConfig {
@@ -91,17 +75,13 @@ class OSSACli {
       specsDir: join(process.cwd(), 'src', 'api'),
       agentsDir: join(process.cwd(), '.agents'),
       outputDir: join(process.cwd(), 'dist'),
-      logLevel: 'info',
+      logLevel: 'info'
     };
     this.program = new Command();
     this.setupCommands();
   }
 
-  private log(
-    level: 'debug' | 'info' | 'warn' | 'error',
-    message: string,
-    data?: any
-  ): void {
+  private log(level: 'debug' | 'info' | 'warn' | 'error', message: string, data?: any): void {
     const levels = { debug: 0, info: 1, warn: 2, error: 3 };
     const configLevel = levels[this.config.logLevel];
     const messageLevel = levels[level];
@@ -112,13 +92,11 @@ class OSSACli {
       debug: chalk.gray,
       info: chalk.blue,
       warn: chalk.yellow,
-      error: chalk.red,
+      error: chalk.red
     };
 
     const timestamp = new Date().toISOString();
-    console.log(
-      colors[level](`[${timestamp}] [${level.toUpperCase()}] ${message}`)
-    );
+    console.log(colors[level](`[${timestamp}] [${level.toUpperCase()}] ${message}`));
 
     if (data) {
       console.log(chalk.gray(JSON.stringify(data, null, 2)));
@@ -141,9 +119,7 @@ class OSSACli {
     // this.program.addCommand(createValidateCommand());
 
     // SPECIFICATION CRUD Operations
-    const specCommand = this.program
-      .command('spec')
-      .description('Specification management (CRUD operations)');
+    const specCommand = this.program.command('spec').description('Specification management (CRUD operations)');
 
     // CREATE specification
     specCommand
@@ -153,25 +129,15 @@ class OSSACli {
       .option('-t, --type <type>', 'Agent type', 'worker')
       .option('-d, --description <desc>', 'Specification description')
       .option('-v, --version <version>', 'API version', '1.0.0')
-      .option(
-        '--template <template>',
-        'Use template (basic, advanced, industrial)'
-      )
-      .option(
-        '--rasp-enabled',
-        'Enable RASP (Runtime Application Self-Protection) protocol support'
-      )
+      .option('--template <template>', 'Use template (basic, advanced, industrial)')
+      .option('--rasp-enabled', 'Enable RASP (Runtime Application Self-Protection) protocol support')
       .action(this.createSpecification.bind(this));
 
     // READ specifications
     specCommand
       .command('list')
       .description('List all specifications')
-      .option(
-        '-f, --format <format>',
-        'Output format (table, json, yaml)',
-        'table'
-      )
+      .option('-f, --format <format>', 'Output format (table, json, yaml)', 'table')
       .option('--filter <filter>', 'Filter by type or version')
       .action(this.listSpecifications.bind(this));
 
@@ -202,9 +168,7 @@ class OSSACli {
       .action(this.deleteSpecification.bind(this));
 
     // AGENT CRUD Operations
-    const agentCommand = this.program
-      .command('agent')
-      .description('Agent management (CRUD operations)');
+    const agentCommand = this.program.command('agent').description('Agent management (CRUD operations)');
 
     // CREATE agent
     agentCommand
@@ -228,11 +192,7 @@ class OSSACli {
       .command('get')
       .description('Get agent details')
       .argument('<agent-id>', 'Agent identifier')
-      .option(
-        '-f, --format <format>',
-        'Output format (json, yaml, table)',
-        'table'
-      )
+      .option('-f, --format <format>', 'Output format (json, yaml, table)', 'table')
       .action(this.getAgent.bind(this));
 
     // UPDATE agent
@@ -276,11 +236,7 @@ class OSSACli {
     this.program
       .command('deploy')
       .description('Deploy agents and specifications')
-      .option(
-        '-e, --environment <env>',
-        'Target environment (dev, staging, prod)',
-        'dev'
-      )
+      .option('-e, --environment <env>', 'Target environment (dev, staging, prod)', 'dev')
       .option('-a, --agent <agent>', 'Deploy specific agent')
       .option('--all', 'Deploy all agents')
       .option('--dry-run', 'Show what would be deployed without deploying')
@@ -317,10 +273,7 @@ class OSSACli {
     this.program
       .command('certify')
       .description('Certify agents and specifications for UAP compliance')
-      .option(
-        '--acap',
-        'Enable ACAP (Agent Capability Assurance Protocol) certification'
-      )
+      .option('--acap', 'Enable ACAP (Agent Capability Assurance Protocol) certification')
       .option('-a, --agent <agent>', 'Certify specific agent')
       .option('-s, --spec <spec>', 'Certify specific specification')
       .option('--all', 'Certify all agents and specifications')
@@ -330,16 +283,10 @@ class OSSACli {
     this.program
       .command('discover')
       .description('Discover UAP-compliant agents and services')
-      .option(
-        '--uadp',
-        'Enable UADP (Universal Agent Discovery Protocol) for network discovery'
-      )
+      .option('--uadp', 'Enable UADP (Universal Agent Discovery Protocol) for network discovery')
       .option('--network <network>', 'Target network for discovery')
       .option('--timeout <ms>', 'Discovery timeout in milliseconds', '5000')
-      .option(
-        '--filter <filter>',
-        'Filter by agent type, capability, or version'
-      )
+      .option('--filter <filter>', 'Filter by agent type, capability, or version')
       .option('--output <format>', 'Output format (json, yaml, table)', 'table')
       .action(this.discover.bind(this));
   }
@@ -356,17 +303,16 @@ class OSSACli {
           ...specTemplate.info,
           title: `${name} API`,
           version: options.version || '1.0.0',
-          description:
-            options.description || `OpenAPI 3.1 specification for ${name}`,
+          description: options.description || `OpenAPI 3.1 specification for ${name}`,
           ...(options.raspEnabled && {
             'x-rasp-enabled': true,
             'x-rasp-config': {
               monitoring: true,
               protection: true,
-              alerting: true,
-            },
-          }),
-        },
+              alerting: true
+            }
+          })
+        }
       };
 
       // Add RASP security schemes if enabled
@@ -378,9 +324,8 @@ class OSSACli {
             type: 'http',
             scheme: 'bearer',
             bearerFormat: 'JWT',
-            description:
-              'RASP (Runtime Application Self-Protection) authentication token',
-          },
+            description: 'RASP (Runtime Application Self-Protection) authentication token'
+          }
         };
         spec.security = [{ RASPToken: [] }];
       }
@@ -388,11 +333,7 @@ class OSSACli {
       // Validate against OpenAPI 3.1 schema
       const validation = OpenAPISchema.safeParse(spec);
       if (!validation.success) {
-        this.log(
-          'error',
-          'Specification validation failed',
-          validation.error.issues
-        );
+        this.log('error', 'Specification validation failed', validation.error.issues);
         return;
       }
 
@@ -406,10 +347,7 @@ class OSSACli {
         await this.generateTypes(name);
       }
     } catch (error) {
-      this.log(
-        'error',
-        `Failed to create specification: ${error instanceof Error ? error.message : String(error)}`
-      );
+      this.log('error', `Failed to create specification: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
 
@@ -430,15 +368,12 @@ class OSSACli {
             Name: spec.name,
             Version: spec.version,
             Type: spec.type || 'Unknown',
-            'Last Modified': spec.lastModified,
+            'Last Modified': spec.lastModified
           }))
         );
       }
     } catch (error) {
-      this.log(
-        'error',
-        `Failed to list specifications: ${error instanceof Error ? error.message : String(error)}`
-      );
+      this.log('error', `Failed to list specifications: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
 
@@ -461,10 +396,7 @@ class OSSACli {
         console.log(content);
       }
     } catch (error) {
-      this.log(
-        'error',
-        `Failed to get specification: ${error instanceof Error ? error.message : String(error)}`
-      );
+      this.log('error', `Failed to get specification: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
 
@@ -473,10 +405,7 @@ class OSSACli {
       this.log('info', `Updating specification: ${name}`);
       // TODO: Implement specification update logic
     } catch (error) {
-      this.log(
-        'error',
-        `Failed to update specification: ${error instanceof Error ? error.message : String(error)}`
-      );
+      this.log('error', `Failed to update specification: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
 
@@ -485,10 +414,7 @@ class OSSACli {
       this.log('info', `Deleting specification: ${name}`);
       // TODO: Implement specification deletion logic
     } catch (error) {
-      this.log(
-        'error',
-        `Failed to delete specification: ${error instanceof Error ? error.message : String(error)}`
-      );
+      this.log('error', `Failed to delete specification: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
 
@@ -498,10 +424,7 @@ class OSSACli {
       this.log('info', `Creating agent: ${agentId}`);
       // TODO: Implement agent creation logic
     } catch (error) {
-      this.log(
-        'error',
-        `Failed to create agent: ${error instanceof Error ? error.message : String(error)}`
-      );
+      this.log('error', `Failed to create agent: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
 
@@ -510,10 +433,7 @@ class OSSACli {
       this.log('info', 'Listing agents...');
       // TODO: Implement agent listing logic
     } catch (error) {
-      this.log(
-        'error',
-        `Failed to list agents: ${error instanceof Error ? error.message : String(error)}`
-      );
+      this.log('error', `Failed to list agents: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
 
@@ -522,10 +442,7 @@ class OSSACli {
       this.log('info', `Getting agent: ${agentId}`);
       // TODO: Implement get agent logic
     } catch (error) {
-      this.log(
-        'error',
-        `Failed to get agent: ${error instanceof Error ? error.message : String(error)}`
-      );
+      this.log('error', `Failed to get agent: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
 
@@ -534,10 +451,7 @@ class OSSACli {
       this.log('info', `Updating agent: ${agentId}`);
       // TODO: Implement agent update logic
     } catch (error) {
-      this.log(
-        'error',
-        `Failed to update agent: ${error instanceof Error ? error.message : String(error)}`
-      );
+      this.log('error', `Failed to update agent: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
 
@@ -546,10 +460,7 @@ class OSSACli {
       this.log('info', `Deleting agent: ${agentId}`);
       // TODO: Implement agent deletion logic
     } catch (error) {
-      this.log(
-        'error',
-        `Failed to delete agent: ${error instanceof Error ? error.message : String(error)}`
-      );
+      this.log('error', `Failed to delete agent: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
 
@@ -567,10 +478,7 @@ class OSSACli {
         await this.validateAgent(options.agent);
       }
     } catch (error) {
-      this.log(
-        'error',
-        `Validation failed: ${error instanceof Error ? error.message : String(error)}`
-      );
+      this.log('error', `Validation failed: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
 
@@ -579,10 +487,7 @@ class OSSACli {
       this.log('info', 'Building specifications...');
       // TODO: Implement build logic
     } catch (error) {
-      this.log(
-        'error',
-        `Build failed: ${error instanceof Error ? error.message : String(error)}`
-      );
+      this.log('error', `Build failed: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
 
@@ -591,10 +496,7 @@ class OSSACli {
       this.log('info', `Deploying to ${options.environment}...`);
       // TODO: Implement deployment logic
     } catch (error) {
-      this.log(
-        'error',
-        `Deployment failed: ${error instanceof Error ? error.message : String(error)}`
-      );
+      this.log('error', `Deployment failed: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
 
@@ -603,10 +505,7 @@ class OSSACli {
       this.log('info', 'Running tests...');
       // TODO: Implement testing logic
     } catch (error) {
-      this.log(
-        'error',
-        `Tests failed: ${error instanceof Error ? error.message : String(error)}`
-      );
+      this.log('error', `Tests failed: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
 
@@ -619,16 +518,13 @@ class OSSACli {
         agents: this.getAllAgents().length,
         environment: process.env.NODE_ENV || 'development',
         version: '0.1.9',
-        health: 'healthy',
+        health: 'healthy'
       };
 
       console.log(chalk.green('OSSA System Status:'));
       console.table(status);
     } catch (error) {
-      this.log(
-        'error',
-        `Failed to get status: ${error instanceof Error ? error.message : String(error)}`
-      );
+      this.log('error', `Failed to get status: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
 
@@ -637,10 +533,7 @@ class OSSACli {
       this.log('info', 'Starting migration...');
       // TODO: Implement migration logic
     } catch (error) {
-      this.log(
-        'error',
-        `Migration failed: ${error instanceof Error ? error.message : String(error)}`
-      );
+      this.log('error', `Migration failed: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
 
@@ -652,10 +545,7 @@ class OSSACli {
       const certificationResults: any[] = [];
 
       if (options.acap) {
-        this.log(
-          'info',
-          'ACAP (Agent Capability Assurance Protocol) certification enabled'
-        );
+        this.log('info', 'ACAP (Agent Capability Assurance Protocol) certification enabled');
       }
 
       if (options.all) {
@@ -685,15 +575,9 @@ class OSSACli {
       }
 
       // Output results
-      this.outputCertificationResults(
-        certificationResults,
-        options.output || 'table'
-      );
+      this.outputCertificationResults(certificationResults, options.output || 'table');
     } catch (error) {
-      this.log(
-        'error',
-        `Certification failed: ${error instanceof Error ? error.message : String(error)}`
-      );
+      this.log('error', `Certification failed: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
 
@@ -710,10 +594,7 @@ class OSSACli {
       // Output results
       this.outputDiscoveryResults(discoveryResults, options.output || 'table');
     } catch (error) {
-      this.log(
-        'error',
-        `Discovery failed: ${error instanceof Error ? error.message : String(error)}`
-      );
+      this.log('error', `Discovery failed: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
 
@@ -731,17 +612,15 @@ class OSSACli {
           uapCompliant: false,
           acapCompliant: false,
           errors: [] as string[],
-          warnings: [] as string[],
+          warnings: [] as string[]
         },
-        timestamp: new Date().toISOString(),
+        timestamp: new Date().toISOString()
       };
 
       // Check if agent exists
       const agentPath = join(this.config.agentsDir, agentId);
       if (!existsSync(agentPath)) {
-        certification.compliance.errors.push(
-          `Agent directory not found: ${agentPath}`
-        );
+        certification.compliance.errors.push(`Agent directory not found: ${agentPath}`);
         return certification;
       }
 
@@ -775,15 +654,12 @@ class OSSACli {
         certified: false,
         certificationLevel: 'error',
         error: error instanceof Error ? error.message : String(error),
-        timestamp: new Date().toISOString(),
+        timestamp: new Date().toISOString()
       };
     }
   }
 
-  private async certifySpecification(
-    specName: string,
-    options: any
-  ): Promise<any> {
+  private async certifySpecification(specName: string, options: any): Promise<any> {
     try {
       this.log('info', `Certifying specification: ${specName}`);
 
@@ -797,17 +673,15 @@ class OSSACli {
           uapCompliant: false,
           raspEnabled: false,
           errors: [] as string[],
-          warnings: [] as string[],
+          warnings: [] as string[]
         },
-        timestamp: new Date().toISOString(),
+        timestamp: new Date().toISOString()
       };
 
       // Check if specification exists
       const specPath = join(this.config.specsDir, `${specName}.openapi.yml`);
       if (!existsSync(specPath)) {
-        certification.compliance.errors.push(
-          `Specification file not found: ${specPath}`
-        );
+        certification.compliance.errors.push(`Specification file not found: ${specPath}`);
         return certification;
       }
 
@@ -821,10 +695,7 @@ class OSSACli {
         certification.compliance.openapi31Compliant = true;
       } else {
         certification.compliance.errors.push(
-          ...validation.error.issues.map(
-            (issue) =>
-              `OpenAPI validation: ${issue.path.join('.')}: ${issue.message}`
-          )
+          ...validation.error.issues.map((issue) => `OpenAPI validation: ${issue.path.join('.')}: ${issue.message}`)
         );
       }
 
@@ -855,7 +726,7 @@ class OSSACli {
         certified: false,
         certificationLevel: 'error',
         error: error instanceof Error ? error.message : String(error),
-        timestamp: new Date().toISOString(),
+        timestamp: new Date().toISOString()
       };
     }
   }
@@ -867,32 +738,21 @@ class OSSACli {
     const result = {
       compliant: true,
       errors: [] as string[],
-      warnings: [] as string[],
+      warnings: [] as string[]
     };
 
     try {
       // Check for agent capability manifest
-      const capabilityManifestPath = join(
-        this.config.agentsDir,
-        agentId,
-        'capabilities.json'
-      );
+      const capabilityManifestPath = join(this.config.agentsDir, agentId, 'capabilities.json');
       if (!existsSync(capabilityManifestPath)) {
         result.errors.push('ACAP: Missing capabilities.json manifest file');
         result.compliant = false;
       } else {
         // Validate capability manifest structure
-        const capabilitiesContent = readFileSync(
-          capabilityManifestPath,
-          'utf8'
-        );
+        const capabilitiesContent = readFileSync(capabilityManifestPath, 'utf8');
         try {
           const capabilities = JSON.parse(capabilitiesContent);
-          if (
-            !capabilities.version ||
-            !capabilities.capabilities ||
-            !Array.isArray(capabilities.capabilities)
-          ) {
+          if (!capabilities.version || !capabilities.capabilities || !Array.isArray(capabilities.capabilities)) {
             result.errors.push('ACAP: Invalid capabilities.json structure');
             result.compliant = false;
           }
@@ -903,18 +763,12 @@ class OSSACli {
       }
 
       // Check for performance benchmarks
-      const benchmarkPath = join(
-        this.config.agentsDir,
-        agentId,
-        'benchmarks.json'
-      );
+      const benchmarkPath = join(this.config.agentsDir, agentId, 'benchmarks.json');
       if (!existsSync(benchmarkPath)) {
         result.warnings.push('ACAP: Missing performance benchmarks file');
       }
     } catch (error) {
-      result.errors.push(
-        `ACAP certification error: ${error instanceof Error ? error.message : String(error)}`
-      );
+      result.errors.push(`ACAP certification error: ${error instanceof Error ? error.message : String(error)}`);
       result.compliant = false;
     }
 
@@ -928,7 +782,7 @@ class OSSACli {
     const result = {
       compliant: true,
       errors: [] as string[],
-      warnings: [] as string[],
+      warnings: [] as string[]
     };
 
     try {
@@ -940,18 +794,12 @@ class OSSACli {
       }
 
       // Check for API specification
-      const apiSpecPath = join(
-        this.config.agentsDir,
-        agentId,
-        'api.openapi.yml'
-      );
+      const apiSpecPath = join(this.config.agentsDir, agentId, 'api.openapi.yml');
       if (!existsSync(apiSpecPath)) {
         result.warnings.push('UAP: Missing OpenAPI specification');
       }
     } catch (error) {
-      result.errors.push(
-        `UAP certification error: ${error instanceof Error ? error.message : String(error)}`
-      );
+      result.errors.push(`UAP certification error: ${error instanceof Error ? error.message : String(error)}`);
       result.compliant = false;
     }
 
@@ -965,7 +813,7 @@ class OSSACli {
     const result = {
       compliant: true,
       errors: [] as string[],
-      warnings: [] as string[],
+      warnings: [] as string[]
     };
 
     try {
@@ -1012,10 +860,7 @@ class OSSACli {
 
       return discoveryResults;
     } catch (error) {
-      this.log(
-        'error',
-        `Discovery error: ${error instanceof Error ? error.message : String(error)}`
-      );
+      this.log('error', `Discovery error: ${error instanceof Error ? error.message : String(error)}`);
       return [];
     }
   }
@@ -1027,10 +872,7 @@ class OSSACli {
     const network = options.network || 'local';
 
     try {
-      this.log(
-        'info',
-        `UADP: Scanning network '${network}' (timeout: ${timeout}ms)`
-      );
+      this.log('info', `UADP: Scanning network '${network}' (timeout: ${timeout}ms)`);
 
       // Simulate network discovery (in real implementation, this would use UDP multicast or similar)
       const mockNetworkAgents = [
@@ -1043,7 +885,7 @@ class OSSACli {
           version: '1.0.0',
           uapCompliant: true,
           discovered: new Date().toISOString(),
-          discoveryMethod: 'UADP',
+          discoveryMethod: 'UADP'
         },
         {
           id: 'network-agent-002',
@@ -1054,8 +896,8 @@ class OSSACli {
           version: '1.1.0',
           uapCompliant: true,
           discovered: new Date().toISOString(),
-          discoveryMethod: 'UADP',
-        },
+          discoveryMethod: 'UADP'
+        }
       ];
 
       // Apply filters if specified
@@ -1065,19 +907,14 @@ class OSSACli {
         filteredResults = mockNetworkAgents.filter(
           (agent) =>
             agent.type.toLowerCase().includes(filterLower) ||
-            agent.capabilities.some((cap) =>
-              cap.toLowerCase().includes(filterLower)
-            ) ||
+            agent.capabilities.some((cap) => cap.toLowerCase().includes(filterLower)) ||
             agent.version.includes(options.filter)
         );
       }
 
       results.push(...filteredResults);
     } catch (error) {
-      this.log(
-        'error',
-        `UADP discovery error: ${error instanceof Error ? error.message : String(error)}`
-      );
+      this.log('error', `UADP discovery error: ${error instanceof Error ? error.message : String(error)}`);
     }
 
     return results;
@@ -1099,7 +936,7 @@ class OSSACli {
             version: 'unknown',
             uapCompliant: false,
             discovered: new Date().toISOString(),
-            discoveryMethod: 'local',
+            discoveryMethod: 'local'
           };
 
           // Try to load agent configuration
@@ -1119,9 +956,7 @@ class OSSACli {
             const filterLower = options.filter.toLowerCase();
             const matchesFilter =
               agentInfo.type.toLowerCase().includes(filterLower) ||
-              agentInfo.capabilities.some((cap) =>
-                cap.toLowerCase().includes(filterLower)
-              ) ||
+              agentInfo.capabilities.some((cap) => cap.toLowerCase().includes(filterLower)) ||
               agentInfo.version.includes(options.filter);
 
             if (matchesFilter) {
@@ -1140,10 +975,7 @@ class OSSACli {
 
       return results;
     } catch (error) {
-      this.log(
-        'error',
-        `Local discovery error: ${error instanceof Error ? error.message : String(error)}`
-      );
+      this.log('error', `Local discovery error: ${error instanceof Error ? error.message : String(error)}`);
       return [];
     }
   }
@@ -1163,7 +995,7 @@ class OSSACli {
         'UAP Compliant': result.compliance?.uapCompliant ? '✅' : '❌',
         'ACAP Compliant': result.compliance?.acapCompliant ? '✅' : '❌',
         Errors: result.compliance?.errors?.length || 0,
-        Warnings: result.compliance?.warnings?.length || 0,
+        Warnings: result.compliance?.warnings?.length || 0
       }));
 
       console.log(chalk.cyan('\n📋 UAP Certification Results:\n'));
@@ -1184,11 +1016,9 @@ class OSSACli {
         Location: result.location,
         Method: result.discoveryMethod,
         'UAP Compliant': result.uapCompliant ? '✅' : '❌',
-        Capabilities:
-          result.capabilities.slice(0, 3).join(', ') +
-          (result.capabilities.length > 3 ? '...' : ''),
+        Capabilities: result.capabilities.slice(0, 3).join(', ') + (result.capabilities.length > 3 ? '...' : ''),
         Version: result.version,
-        Endpoint: result.endpoint || result.path || 'N/A',
+        Endpoint: result.endpoint || result.path || 'N/A'
       }));
 
       console.log(chalk.cyan('\n🔍 UAP Discovery Results:\n'));
@@ -1203,38 +1033,38 @@ class OSSACli {
         openapi: '3.1.0',
         info: {
           title: 'API',
-          version: '1.0.0',
+          version: '1.0.0'
         },
-        paths: {},
+        paths: {}
       },
       advanced: {
         openapi: '3.1.0',
         info: {
           title: 'API',
-          version: '1.0.0',
+          version: '1.0.0'
         },
         servers: [
           {
             url: 'http://localhost:3000/api/v1',
-            description: 'Development server',
-          },
+            description: 'Development server'
+          }
         ],
         paths: {},
         components: {
-          schemas: {},
-        },
+          schemas: {}
+        }
       },
       industrial: {
         openapi: '3.1.0',
         info: {
           title: 'Industrial API',
-          version: '1.0.0',
+          version: '1.0.0'
         },
         servers: [
           {
             url: 'http://localhost:3000/api/v1',
-            description: 'Development server',
-          },
+            description: 'Development server'
+          }
         ],
         paths: {
           '/opcua/connect': {
@@ -1249,24 +1079,24 @@ class OSSACli {
                       type: 'object',
                       properties: {
                         endpoint: { type: 'string' },
-                        securityMode: { type: 'string' },
-                      },
-                    },
-                  },
-                },
+                        securityMode: { type: 'string' }
+                      }
+                    }
+                  }
+                }
               },
               responses: {
                 '200': {
-                  description: 'Connection successful',
-                },
-              },
-            },
-          },
+                  description: 'Connection successful'
+                }
+              }
+            }
+          }
         },
         components: {
-          schemas: {},
-        },
-      },
+          schemas: {}
+        }
+      }
     };
 
     return templates[template as keyof typeof templates] || templates.basic;
@@ -1277,10 +1107,7 @@ class OSSACli {
       if (!existsSync(this.config.specsDir)) return [];
 
       return readdirSync(this.config.specsDir)
-        .filter(
-          (file) =>
-            file.endsWith('.openapi.yml') || file.endsWith('.openapi.yaml')
-        )
+        .filter((file) => file.endsWith('.openapi.yml') || file.endsWith('.openapi.yaml'))
         .map((file) => {
           const filePath = join(this.config.specsDir, file);
           const stats = statSync(filePath);
@@ -1288,14 +1115,11 @@ class OSSACli {
             name: file.replace(/\.openapi\.ya?ml$/, ''),
             path: filePath,
             lastModified: stats.mtime.toISOString(),
-            size: stats.size,
+            size: stats.size
           };
         });
     } catch (error) {
-      this.log(
-        'error',
-        `Failed to get specifications: ${error instanceof Error ? error.message : String(error)}`
-      );
+      this.log('error', `Failed to get specifications: ${error instanceof Error ? error.message : String(error)}`);
       return [];
     }
   }
@@ -1308,13 +1132,10 @@ class OSSACli {
         .filter((dirent) => dirent.isDirectory())
         .map((dirent) => ({
           name: dirent.name,
-          path: join(this.config.agentsDir, dirent.name),
+          path: join(this.config.agentsDir, dirent.name)
         }));
     } catch (error) {
-      this.log(
-        'error',
-        `Failed to get agents: ${error instanceof Error ? error.message : String(error)}`
-      );
+      this.log('error', `Failed to get agents: ${error instanceof Error ? error.message : String(error)}`);
       return [];
     }
   }
@@ -1349,11 +1170,7 @@ class OSSACli {
         this.log('info', `✅ Specification ${name} is valid`);
         return true;
       } else {
-        this.log(
-          'error',
-          `❌ Specification ${name} is invalid`,
-          validation.error.issues
-        );
+        this.log('error', `❌ Specification ${name} is invalid`, validation.error.issues);
         return false;
       }
     } catch (error) {
@@ -1384,10 +1201,7 @@ class OSSACli {
       this.log('info', `Generating TypeScript types for ${specName}...`);
       // TODO: Implement TypeScript type generation
     } catch (error) {
-      this.log(
-        'error',
-        `Failed to generate types: ${error instanceof Error ? error.message : String(error)}`
-      );
+      this.log('error', `Failed to generate types: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
 

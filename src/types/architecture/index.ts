@@ -8,7 +8,7 @@ export enum ArchitectureLayer {
   ENTITIES = 'entities',
   USE_CASES = 'use_cases',
   INTERFACE_ADAPTERS = 'interface_adapters',
-  FRAMEWORKS_DRIVERS = 'frameworks_drivers',
+  FRAMEWORKS_DRIVERS = 'frameworks_drivers'
 }
 
 export interface ArchitecturePattern {
@@ -30,7 +30,7 @@ export enum PatternType {
   MICROSERVICES = 'microservices',
   EVENT_DRIVEN = 'event_driven',
   CQRS = 'cqrs',
-  DOMAIN_DRIVEN = 'domain_driven',
+  DOMAIN_DRIVEN = 'domain_driven'
 }
 
 export interface LayerDefinition {
@@ -54,7 +54,7 @@ export enum ArtifactType {
   SERVICE = 'service',
   FACTORY = 'factory',
   ADAPTER = 'adapter',
-  POLICY = 'policy',
+  POLICY = 'policy'
 }
 
 export interface DependencyRule {
@@ -73,21 +73,21 @@ export enum DependencyType {
   INHERITANCE = 'inheritance',
   AGGREGATION = 'aggregation',
   ASSOCIATION = 'association',
-  DEPENDENCY_INJECTION = 'dependency_injection',
+  DEPENDENCY_INJECTION = 'dependency_injection'
 }
 
 export enum DependencyDirection {
   INWARD = 'inward',
   OUTWARD = 'outward',
   BIDIRECTIONAL = 'bidirectional',
-  PROHIBITED = 'prohibited',
+  PROHIBITED = 'prohibited'
 }
 
 export enum DependencyStrength {
   MANDATORY = 'mandatory',
   OPTIONAL = 'optional',
   CONDITIONAL = 'conditional',
-  FORBIDDEN = 'forbidden',
+  FORBIDDEN = 'forbidden'
 }
 
 export interface ArchitectureConstraint {
@@ -110,7 +110,7 @@ export enum ConstraintType {
   CYCLIC_DEPENDENCY = 'cyclic_dependency',
   ABSTRACTION_LEVEL = 'abstraction_level',
   COUPLING = 'coupling',
-  COHESION = 'cohesion',
+  COHESION = 'cohesion'
 }
 
 export enum ConstraintScope {
@@ -119,14 +119,14 @@ export enum ConstraintScope {
   MODULE = 'module',
   CLASS = 'class',
   METHOD = 'method',
-  PACKAGE = 'package',
+  PACKAGE = 'package'
 }
 
 export enum ConstraintSeverity {
   ERROR = 'error',
   WARNING = 'warning',
   INFO = 'info',
-  SUGGESTION = 'suggestion',
+  SUGGESTION = 'suggestion'
 }
 
 export interface ArchitectureMetadata {
@@ -166,7 +166,7 @@ export enum ComplianceType {
   PERFORMANCE = 'performance',
   MAINTAINABILITY = 'maintainability',
   TESTABILITY = 'testability',
-  ACCESSIBILITY = 'accessibility',
+  ACCESSIBILITY = 'accessibility'
 }
 
 export interface ValidationRule {
@@ -216,14 +216,14 @@ export enum FixType {
   INLINE = 'inline',
   REPLACE = 'replace',
   ADD = 'add',
-  REMOVE = 'remove',
+  REMOVE = 'remove'
 }
 
 export enum RiskLevel {
   LOW = 'low',
   MEDIUM = 'medium',
   HIGH = 'high',
-  CRITICAL = 'critical',
+  CRITICAL = 'critical'
 }
 
 export interface CodeChange {
@@ -239,7 +239,7 @@ export enum ChangeType {
   INSERT = 'insert',
   DELETE = 'delete',
   REPLACE = 'replace',
-  MOVE = 'move',
+  MOVE = 'move'
 }
 
 export interface ViolationMetadata {
@@ -256,7 +256,7 @@ export enum ImpactLevel {
   LOW = 'low',
   MEDIUM = 'medium',
   HIGH = 'high',
-  CRITICAL = 'critical',
+  CRITICAL = 'critical'
 }
 
 export enum EffortLevel {
@@ -264,7 +264,7 @@ export enum EffortLevel {
   LOW = 'low',
   MEDIUM = 'medium',
   HIGH = 'high',
-  VERY_HIGH = 'very_high',
+  VERY_HIGH = 'very_high'
 }
 
 // Quality Metrics
@@ -341,14 +341,14 @@ export enum TaskType {
   TEST = 'test',
   DEPLOY = 'deploy',
   VALIDATE = 'validate',
-  ROLLBACK = 'rollback',
+  ROLLBACK = 'rollback'
 }
 
 export enum AutomationLevel {
   MANUAL = 'manual',
   SEMI_AUTOMATED = 'semi_automated',
   AUTOMATED = 'automated',
-  FULLY_AUTOMATED = 'fully_automated',
+  FULLY_AUTOMATED = 'fully_automated'
 }
 
 export interface MigrationRisk {
@@ -410,7 +410,7 @@ export enum MigrationStatus {
   IN_PROGRESS = 'in_progress',
   COMPLETED = 'completed',
   FAILED = 'failed',
-  ROLLED_BACK = 'rolled_back',
+  ROLLED_BACK = 'rolled_back'
 }
 
 // Configuration and Settings
@@ -439,7 +439,7 @@ export enum RuleType {
   DEPENDENCY = 'dependency',
   COMPLEXITY = 'complexity',
   DOCUMENTATION = 'documentation',
-  TESTING = 'testing',
+  TESTING = 'testing'
 }
 
 export interface EnforcementConfig {
@@ -454,7 +454,7 @@ export enum EnforcementMode {
   STRICT = 'strict',
   MODERATE = 'moderate',
   ADVISORY = 'advisory',
-  DISABLED = 'disabled',
+  DISABLED = 'disabled'
 }
 
 export interface Exemption {
@@ -478,7 +478,7 @@ export enum ReportFormat {
   PDF = 'pdf',
   MARKDOWN = 'markdown',
   JUNIT = 'junit',
-  SONAR = 'sonar',
+  SONAR = 'sonar'
 }
 
 export interface ReportDestination {
@@ -491,7 +491,7 @@ export enum DestinationType {
   EMAIL = 'email',
   SLACK = 'slack',
   WEBHOOK = 'webhook',
-  DATABASE = 'database',
+  DATABASE = 'database'
 }
 
 export interface ReportSchedule {
@@ -507,7 +507,7 @@ export enum ScheduleFrequency {
   HOURLY = 'hourly',
   DAILY = 'daily',
   WEEKLY = 'weekly',
-  MONTHLY = 'monthly',
+  MONTHLY = 'monthly'
 }
 
 export interface IntegrationConfig {
@@ -529,7 +529,7 @@ export enum CICDPlatform {
   JENKINS = 'jenkins',
   AZURE_DEVOPS = 'azure_devops',
   CIRCLECI = 'circleci',
-  TRAVIS_CI = 'travis_ci',
+  TRAVIS_CI = 'travis_ci'
 }
 
 export enum TriggerEvent {
@@ -537,7 +537,7 @@ export enum TriggerEvent {
   MERGE_REQUEST = 'merge_request',
   DEPLOY = 'deploy',
   SCHEDULE = 'schedule',
-  MANUAL = 'manual',
+  MANUAL = 'manual'
 }
 
 export interface IDEIntegration {
@@ -552,7 +552,7 @@ export enum IDEType {
   INTELLIJ = 'intellij',
   ECLIPSE = 'eclipse',
   VIM = 'vim',
-  EMACS = 'emacs',
+  EMACS = 'emacs'
 }
 
 export enum IDEFeature {
@@ -560,7 +560,7 @@ export enum IDEFeature {
   AUTO_FIX = 'auto_fix',
   REFACTORING_SUGGESTIONS = 'refactoring_suggestions',
   ARCHITECTURE_VISUALIZATION = 'architecture_visualization',
-  QUALITY_METRICS = 'quality_metrics',
+  QUALITY_METRICS = 'quality_metrics'
 }
 
 export interface QualityGateConfig {
@@ -586,7 +586,7 @@ export enum ComparisonOperator {
   LESS_THAN = 'less_than',
   LESS_THAN_OR_EQUAL = 'less_than_or_equal',
   CONTAINS = 'contains',
-  NOT_CONTAINS = 'not_contains',
+  NOT_CONTAINS = 'not_contains'
 }
 
 export interface QualityAction {
@@ -599,5 +599,5 @@ export enum ActionType {
   SEND_NOTIFICATION = 'send_notification',
   CREATE_ISSUE = 'create_issue',
   TRIGGER_PIPELINE = 'trigger_pipeline',
-  AUTO_REMEDIATE = 'auto_remediate',
+  AUTO_REMEDIATE = 'auto_remediate'
 }

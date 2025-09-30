@@ -13,7 +13,7 @@ import {
   AgentType,
   TaskStatus,
   AgentStatus,
-  MessageType,
+  MessageType
 } from '../../types/index.js';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -90,23 +90,19 @@ export class OrchestratorPlatform extends EventEmitter {
       activeExecutions: 0,
       avgExecutionTime: 0,
       resourceUtilization: 0,
-      errorRate: 0,
+      errorRate: 0
     };
     this.initialize();
   }
 
   private async initialize(): Promise<void> {
-    console.log(
-      '[ORCHESTRATOR-PLATFORM] Initializing production orchestration engine...'
-    );
+    console.log('[ORCHESTRATOR-PLATFORM] Initializing production orchestration engine...');
     await this.loadAgents();
     await this.setupMessageBus();
     await this.startScheduler();
     await this.initializeHealthMonitoring();
     this.emit('orchestrator:ready');
-    console.log(
-      '[ORCHESTRATOR-PLATFORM] Production orchestration engine ready'
-    );
+    console.log('[ORCHESTRATOR-PLATFORM] Production orchestration engine ready');
   }
 
   /**
@@ -115,9 +111,7 @@ export class OrchestratorPlatform extends EventEmitter {
   async registerAgent(agent: Agent): Promise<void> {
     // Validate agent capabilities for production
     if (!this.validateAgentForProduction(agent)) {
-      throw new Error(
-        `Agent ${agent.id} does not meet production requirements`
-      );
+      throw new Error(`Agent ${agent.id} does not meet production requirements`);
     }
 
     this.agents.set(agent.id, agent);
@@ -125,12 +119,10 @@ export class OrchestratorPlatform extends EventEmitter {
       agentId: agent.id,
       type: agent.type,
       capabilities: agent.capabilities.length,
-      timestamp: new Date(),
+      timestamp: new Date()
     });
 
-    console.log(
-      `[ORCHESTRATOR-PLATFORM] Agent registered: ${agent.id} (${agent.type})`
-    );
+    console.log(`[ORCHESTRATOR-PLATFORM] Agent registered: ${agent.id} (${agent.type})`);
   }
 
   /**
@@ -146,7 +138,7 @@ export class OrchestratorPlatform extends EventEmitter {
     const executionId = uuidv4();
     const defaultBudget = {
       tokens: budget?.tokens || 50000,
-      timeLimit: budget?.timeLimit || 3600,
+      timeLimit: budget?.timeLimit || 3600
     };
 
     const execution: WorkflowExecution = {
@@ -158,15 +150,15 @@ export class OrchestratorPlatform extends EventEmitter {
       budget: {
         totalTokens: defaultBudget.tokens,
         usedTokens: 0,
-        timeLimit: defaultBudget.timeLimit,
+        timeLimit: defaultBudget.timeLimit
       },
       startTime: new Date(),
       metrics: {
         agentsUsed: 0,
         tasksCompleted: 0,
         errors: 0,
-        performance: {},
-      },
+        performance: {}
+      }
     };
 
     this.executions.set(executionId, execution);
@@ -174,17 +166,12 @@ export class OrchestratorPlatform extends EventEmitter {
     this.healthMetrics.totalWorkflows++;
     this.healthMetrics.activeExecutions++;
 
-    console.log(
-      `[ORCHESTRATOR-PLATFORM] Starting workflow execution: ${executionId}`
-    );
+    console.log(`[ORCHESTRATOR-PLATFORM] Starting workflow execution: ${executionId}`);
     this.emit('workflow:started', { executionId, workflowId: workflow.id });
 
     // Start execution in background
     this.executeFeedbackLoop(executionId).catch((error) => {
-      console.error(
-        `[ORCHESTRATOR-PLATFORM] Workflow execution failed: ${executionId}`,
-        error
-      );
+      console.error(`[ORCHESTRATOR-PLATFORM] Workflow execution failed: ${executionId}`, error);
       this.handleExecutionError(executionId, error);
     });
 
@@ -225,8 +212,7 @@ export class OrchestratorPlatform extends EventEmitter {
 
     const allocatedAgentIds: string[] = [];
     const tokensPerAgent = Math.floor(
-      (execution.budget.totalTokens - execution.budget.usedTokens) /
-        (requirements.count || 1)
+      (execution.budget.totalTokens - execution.budget.usedTokens) / (requirements.count || 1)
     );
 
     for (const agent of availableAgents) {
@@ -237,13 +223,13 @@ export class OrchestratorPlatform extends EventEmitter {
         phase: requirements.phase,
         resourceQuota: {
           tokens: tokensPerAgent,
-          timeout: 300000, // 5 minutes default
+          timeout: 300000 // 5 minutes default
         },
         performance: {
           tasksCompleted: 0,
           avgResponseTime: 0,
-          errorRate: 0,
-        },
+          errorRate: 0
+        }
       };
 
       this.allocations.set(`${agent.id}-${executionId}`, allocation);
@@ -255,13 +241,11 @@ export class OrchestratorPlatform extends EventEmitter {
 
     execution.metrics.agentsUsed += allocatedAgentIds.length;
 
-    console.log(
-      `[ORCHESTRATOR-PLATFORM] Allocated ${allocatedAgentIds.length} agents to execution ${executionId}`
-    );
+    console.log(`[ORCHESTRATOR-PLATFORM] Allocated ${allocatedAgentIds.length} agents to execution ${executionId}`);
     this.emit('agents:allocated', {
       executionId,
       agentIds: allocatedAgentIds,
-      phase: requirements.phase,
+      phase: requirements.phase
     });
 
     return allocatedAgentIds;
@@ -283,26 +267,20 @@ export class OrchestratorPlatform extends EventEmitter {
         const phase = execution.phases[i];
         execution.currentPhase = i;
 
-        console.log(
-          `[ORCHESTRATOR-PLATFORM] Executing phase: ${phase.name} for execution ${executionId}`
-        );
+        console.log(`[ORCHESTRATOR-PLATFORM] Executing phase: ${phase.name} for execution ${executionId}`);
 
         await this.executePhase(executionId, phase);
 
         // Check budget constraints
         if (execution.budget.usedTokens >= execution.budget.totalTokens) {
-          console.warn(
-            `[ORCHESTRATOR-PLATFORM] Token budget exceeded for execution ${executionId}`
-          );
+          console.warn(`[ORCHESTRATOR-PLATFORM] Token budget exceeded for execution ${executionId}`);
           throw new Error('Token budget exceeded');
         }
 
         // Check time constraints
         const elapsed = Date.now() - execution.startTime.getTime();
         if (elapsed > execution.budget.timeLimit * 1000) {
-          console.warn(
-            `[ORCHESTRATOR-PLATFORM] Time limit exceeded for execution ${executionId}`
-          );
+          console.warn(`[ORCHESTRATOR-PLATFORM] Time limit exceeded for execution ${executionId}`);
           throw new Error('Time limit exceeded');
         }
       }
@@ -311,9 +289,7 @@ export class OrchestratorPlatform extends EventEmitter {
       execution.endTime = new Date();
       this.healthMetrics.activeExecutions--;
 
-      console.log(
-        `[ORCHESTRATOR-PLATFORM] Workflow execution completed: ${executionId}`
-      );
+      console.log(`[ORCHESTRATOR-PLATFORM] Workflow execution completed: ${executionId}`);
       this.emit('workflow:completed', { executionId });
     } catch (error) {
       execution.status = 'failed';
@@ -321,10 +297,7 @@ export class OrchestratorPlatform extends EventEmitter {
       this.healthMetrics.activeExecutions--;
       this.healthMetrics.errorRate++;
 
-      console.error(
-        `[ORCHESTRATOR-PLATFORM] Workflow execution failed: ${executionId}`,
-        error
-      );
+      console.error(`[ORCHESTRATOR-PLATFORM] Workflow execution failed: ${executionId}`, error);
       this.emit('workflow:failed', { executionId, error });
       throw error;
     } finally {
@@ -335,35 +308,23 @@ export class OrchestratorPlatform extends EventEmitter {
   /**
    * Execute individual phase with agent coordination
    */
-  private async executePhase(
-    executionId: string,
-    phase: FeedbackLoopPhase
-  ): Promise<void> {
+  private async executePhase(executionId: string, phase: FeedbackLoopPhase): Promise<void> {
     phase.status = 'active';
     phase.startTime = new Date();
 
     const agentRequirements = this.getPhaseAgentRequirements(phase.name);
-    const allocatedAgents = await this.allocateAgents(
-      executionId,
-      agentRequirements
-    );
+    const allocatedAgents = await this.allocateAgents(executionId, agentRequirements);
 
     phase.agents = allocatedAgents;
 
     // Coordinate agents for this phase
-    const phaseResults = await this.coordinatePhaseExecution(
-      executionId,
-      phase,
-      allocatedAgents
-    );
+    const phaseResults = await this.coordinatePhaseExecution(executionId, phase, allocatedAgents);
 
     phase.output = phaseResults;
     phase.status = 'completed';
     phase.endTime = new Date();
 
-    console.log(
-      `[ORCHESTRATOR-PLATFORM] Phase ${phase.name} completed for execution ${executionId}`
-    );
+    console.log(`[ORCHESTRATOR-PLATFORM] Phase ${phase.name} completed for execution ${executionId}`);
   }
 
   /**
@@ -379,33 +340,33 @@ export class OrchestratorPlatform extends EventEmitter {
       plan: {
         agentType: AgentType.ORCHESTRATOR,
         count: 1,
-        capabilities: ['planning', 'coordination'],
+        capabilities: ['planning', 'coordination']
       },
       execute: {
         agentType: AgentType.WORKER,
         count: 3,
-        capabilities: ['implementation', 'processing'],
+        capabilities: ['implementation', 'processing']
       },
       review: {
         agentType: AgentType.CRITIC,
         count: 2,
-        capabilities: ['analysis', 'validation'],
+        capabilities: ['analysis', 'validation']
       },
       judge: {
         agentType: AgentType.JUDGE,
         count: 1,
-        capabilities: ['evaluation', 'decision'],
+        capabilities: ['evaluation', 'decision']
       },
       learn: {
         agentType: AgentType.TRAINER,
         count: 1,
-        capabilities: ['learning', 'optimization'],
+        capabilities: ['learning', 'optimization']
       },
       govern: {
         agentType: AgentType.GOVERNOR,
         count: 1,
-        capabilities: ['governance', 'compliance'],
-      },
+        capabilities: ['governance', 'compliance']
+      }
     };
 
     const requirements = phaseMap[phaseName as keyof typeof phaseMap];
@@ -420,9 +381,7 @@ export class OrchestratorPlatform extends EventEmitter {
     phase: FeedbackLoopPhase,
     agentIds: string[]
   ): Promise<any> {
-    console.log(
-      `[ORCHESTRATOR-PLATFORM] Coordinating ${agentIds.length} agents for phase ${phase.name}`
-    );
+    console.log(`[ORCHESTRATOR-PLATFORM] Coordinating ${agentIds.length} agents for phase ${phase.name}`);
 
     const results: any[] = [];
     const execution = this.executions.get(executionId)!;
@@ -436,9 +395,7 @@ export class OrchestratorPlatform extends EventEmitter {
       }
     } else {
       // Parallel execution for other phases
-      const promises = agentIds.map((agentId) =>
-        this.executeAgentTask(executionId, agentId, phase)
-      );
+      const promises = agentIds.map((agentId) => this.executeAgentTask(executionId, agentId, phase));
       const parallelResults = await Promise.allSettled(promises);
 
       parallelResults.forEach((result, index) => {
@@ -457,18 +414,14 @@ export class OrchestratorPlatform extends EventEmitter {
     return {
       phase: phase.name,
       agentResults: results,
-      summary: this.summarizePhaseResults(phase.name, results),
+      summary: this.summarizePhaseResults(phase.name, results)
     };
   }
 
   /**
    * Execute task for specific agent
    */
-  private async executeAgentTask(
-    executionId: string,
-    agentId: string,
-    phase: FeedbackLoopPhase
-  ): Promise<any> {
+  private async executeAgentTask(executionId: string, agentId: string, phase: FeedbackLoopPhase): Promise<any> {
     const agent = this.agents.get(agentId);
     if (!agent) {
       throw new Error(`Agent ${agentId} not found`);
@@ -476,9 +429,7 @@ export class OrchestratorPlatform extends EventEmitter {
 
     const allocation = this.allocations.get(`${agentId}-${executionId}`);
     if (!allocation) {
-      throw new Error(
-        `No allocation found for agent ${agentId} in execution ${executionId}`
-      );
+      throw new Error(`No allocation found for agent ${agentId} in execution ${executionId}`);
     }
 
     const startTime = Date.now();
@@ -490,10 +441,8 @@ export class OrchestratorPlatform extends EventEmitter {
         agentId,
         phase: phase.name,
         status: 'completed',
-        tokensUsed: Math.floor(
-          Math.random() * allocation.resourceQuota.tokens * 0.5
-        ),
-        output: `${phase.name} result from ${agentId}`,
+        tokensUsed: Math.floor(Math.random() * allocation.resourceQuota.tokens * 0.5),
+        output: `${phase.name} result from ${agentId}`
       };
 
       const endTime = Date.now();
@@ -506,8 +455,7 @@ export class OrchestratorPlatform extends EventEmitter {
 
       allocation.performance.tasksCompleted++;
       allocation.performance.avgResponseTime =
-        (allocation.performance.avgResponseTime + duration) /
-        allocation.performance.tasksCompleted;
+        (allocation.performance.avgResponseTime + duration) / allocation.performance.tasksCompleted;
 
       console.log(
         `[ORCHESTRATOR-PLATFORM] Agent ${agentId} completed task in phase ${phase.name} (${duration}ms, ${mockResult.tokensUsed} tokens)`
@@ -528,31 +476,22 @@ export class OrchestratorPlatform extends EventEmitter {
       totalAgents: results.length,
       successfulTasks: results.filter((r) => r.status === 'completed').length,
       totalTokensUsed: results.reduce((sum, r) => sum + (r.tokensUsed || 0), 0),
-      insights: `Phase ${phaseName} completed with ${results.length} agent contributions`,
+      insights: `Phase ${phaseName} completed with ${results.length} agent contributions`
     };
   }
 
   /**
    * Initialize feedback loop phases for workflow
    */
-  private initializeFeedbackLoopPhases(
-    workflow: Workflow
-  ): FeedbackLoopPhase[] {
-    const phases: FeedbackLoopPhase[] = [
-      'plan',
-      'execute',
-      'review',
-      'judge',
-      'learn',
-      'govern',
-    ].map((name) => ({
+  private initializeFeedbackLoopPhases(workflow: Workflow): FeedbackLoopPhase[] {
+    const phases: FeedbackLoopPhase[] = ['plan', 'execute', 'review', 'judge', 'learn', 'govern'].map((name) => ({
       name: name as any,
       agents: [],
       status: 'pending',
       budget: {
         tokens: Math.floor(8000), // ~1/6 of total budget per phase
-        used: 0,
-      },
+        used: 0
+      }
     }));
 
     return phases;
@@ -574,14 +513,9 @@ export class OrchestratorPlatform extends EventEmitter {
   /**
    * Check if agent has required capabilities
    */
-  private hasRequiredCapabilities(
-    agent: Agent,
-    requiredCapabilities: string[]
-  ): boolean {
+  private hasRequiredCapabilities(agent: Agent, requiredCapabilities: string[]): boolean {
     const agentCapabilityNames = agent.capabilities.map((cap) => cap.name);
-    return requiredCapabilities.every((required) =>
-      agentCapabilityNames.includes(required)
-    );
+    return requiredCapabilities.every((required) => agentCapabilityNames.includes(required));
   }
 
   /**
@@ -596,10 +530,7 @@ export class OrchestratorPlatform extends EventEmitter {
       this.healthMetrics.errorRate++;
     }
 
-    console.error(
-      `[ORCHESTRATOR-PLATFORM] Execution ${executionId} failed:`,
-      error
-    );
+    console.error(`[ORCHESTRATOR-PLATFORM] Execution ${executionId} failed:`, error);
     this.emit('execution:error', { executionId, error });
   }
 
@@ -644,9 +575,7 @@ export class OrchestratorPlatform extends EventEmitter {
     ).length;
 
     this.healthMetrics.resourceUtilization =
-      activeAgents > 0
-        ? (this.healthMetrics.activeExecutions / activeAgents) * 100
-        : 0;
+      activeAgents > 0 ? (this.healthMetrics.activeExecutions / activeAgents) * 100 : 0;
   }
 
   /**
@@ -658,18 +587,14 @@ export class OrchestratorPlatform extends EventEmitter {
       metrics: { ...this.healthMetrics },
       agents: {
         total: this.agents.size,
-        active: Array.from(this.agents.values()).filter(
-          (agent) => agent.status === AgentStatus.BUSY
-        ).length,
-        idle: Array.from(this.agents.values()).filter(
-          (agent) => agent.status === AgentStatus.IDLE
-        ).length,
+        active: Array.from(this.agents.values()).filter((agent) => agent.status === AgentStatus.BUSY).length,
+        idle: Array.from(this.agents.values()).filter((agent) => agent.status === AgentStatus.IDLE).length
       },
       executions: {
         active: this.healthMetrics.activeExecutions,
-        total: this.healthMetrics.totalWorkflows,
+        total: this.healthMetrics.totalWorkflows
       },
-      timestamp: new Date(),
+      timestamp: new Date()
     };
   }
 
@@ -684,16 +609,12 @@ export class OrchestratorPlatform extends EventEmitter {
    * List all active executions
    */
   public getActiveExecutions(): WorkflowExecution[] {
-    return Array.from(this.executions.values()).filter(
-      (execution) => execution.status === 'running'
-    );
+    return Array.from(this.executions.values()).filter((execution) => execution.status === 'running');
   }
 
   private async scheduleWorkflowTasks(workflow: Workflow): Promise<void> {
     // Legacy method - now handled by executeWorkflow
-    console.log(
-      '[ORCHESTRATOR-PLATFORM] scheduleWorkflowTasks deprecated - use executeWorkflow'
-    );
+    console.log('[ORCHESTRATOR-PLATFORM] scheduleWorkflowTasks deprecated - use executeWorkflow');
   }
 
   private async loadAgents(): Promise<void> {

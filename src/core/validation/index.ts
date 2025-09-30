@@ -1,10 +1,7 @@
 // OSSA Core Validation Exports
 // Centralized validation system for OSSA compliance
 
-export {
-  OSSAOpenAPIValidator,
-  validateOpenAPISpec
-} from './openapi-validator.js';
+export { OSSAOpenAPIValidator, validateOpenAPISpec } from './openapi-validator.js';
 
 // Re-export types for external use
 export type {
@@ -24,11 +21,7 @@ export const CONFORMANCE_TIERS = ['core', 'governed', 'advanced', 'enterprise'] 
 export const SUPPORTED_OPENAPI_VERSIONS = ['3.1.0', '3.0.3', '3.0.2'] as const;
 
 // OSSA-specific validation rules
-export const OSSA_REQUIRED_PATHS = [
-  '/agent/health',
-  '/agent/info',
-  '/agent/capabilities'
-] as const;
+export const OSSA_REQUIRED_PATHS = ['/agent/health', '/agent/info', '/agent/capabilities'] as const;
 
 export const OSSA_RECOMMENDED_PATHS = [
   '/agent/execute',
@@ -38,11 +31,7 @@ export const OSSA_RECOMMENDED_PATHS = [
   '/agent/register'
 ] as const;
 
-export const OSSA_SECURITY_SCHEMES = [
-  'ApiKey',
-  'BearerAuth',
-  'OAuth2'
-] as const;
+export const OSSA_SECURITY_SCHEMES = ['ApiKey', 'BearerAuth', 'OAuth2'] as const;
 
 // Validation utilities
 export function isValidOSSAVersion(version: string): boolean {

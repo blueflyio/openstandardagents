@@ -37,8 +37,8 @@ export class OSSASessionManager {
       metadata: {
         created_at: new Date(),
         updated_at: new Date(),
-        agent_trace: [],
-      },
+        agent_trace: []
+      }
     };
 
     this.sessions.set(sessionId, session);
@@ -135,8 +135,8 @@ export class OSSASessionManager {
       metadata: {
         created_at: new Date(),
         updated_at: new Date(),
-        agent_trace: [...original.metadata.agent_trace],
-      },
+        agent_trace: [...original.metadata.agent_trace]
+      }
     };
 
     this.sessions.set(clonedId, cloned);
@@ -208,8 +208,8 @@ export class OSSASessionManager {
         updated_at: session.metadata.updated_at.toISOString(),
         agent_trace: session.metadata.agent_trace,
         state_keys: Object.keys(session.state),
-        temp_keys: Object.keys(session.temp),
-      },
+        temp_keys: Object.keys(session.temp)
+      }
     };
   }
 }

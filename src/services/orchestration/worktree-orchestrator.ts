@@ -52,7 +52,7 @@ export class WorktreeOrchestrator extends EventEmitter {
       flowAdaptationEnabled: true,
       autoIntegrationEnabled: false,
       conflictPreventionEnabled: true,
-      ...config,
+      ...config
     };
 
     this.worktreeManager = new GitWorktreeManager();
@@ -63,22 +63,10 @@ export class WorktreeOrchestrator extends EventEmitter {
 
   private setupEventHandlers(): void {
     // Worktree event monitoring
-    this.worktreeManager.on(
-      'worktree:created',
-      this.handleWorktreeCreated.bind(this)
-    );
-    this.worktreeManager.on(
-      'worktree:synced',
-      this.handleWorktreeSynced.bind(this)
-    );
-    this.worktreeManager.on(
-      'integration:merged',
-      this.handleIntegrationMerged.bind(this)
-    );
-    this.worktreeManager.on(
-      'worktree:error',
-      this.handleWorktreeError.bind(this)
-    );
+    this.worktreeManager.on('worktree:created', this.handleWorktreeCreated.bind(this));
+    this.worktreeManager.on('worktree:synced', this.handleWorktreeSynced.bind(this));
+    this.worktreeManager.on('integration:merged', this.handleIntegrationMerged.bind(this));
+    this.worktreeManager.on('worktree:error', this.handleWorktreeError.bind(this));
 
     // Periodic metrics collection
     setInterval(() => this.collectMetrics(), 5 * 60 * 1000); // Every 5 minutes
@@ -112,19 +100,14 @@ export class WorktreeOrchestrator extends EventEmitter {
     const workloadDistribution = this.analyzeWorkloadDistribution(agents);
     const optimizedFlow = this.optimizeDeploymentFlow(workloadDistribution);
 
-    console.log(
-      `📊 Workload analysis: ${workloadDistribution.length} phases, ${optimizedFlow} flow recommended`
-    );
+    console.log(`📊 Workload analysis: ${workloadDistribution.length} phases, ${optimizedFlow} flow recommended`);
 
     const deployed: string[] = [];
     const failed: string[] = [];
     const deploymentPromises: Promise<void>[] = [];
 
     // Group agents by deployment strategy
-    const deploymentGroups = this.groupAgentsForDeployment(
-      agents,
-      optimizedFlow
-    );
+    const deploymentGroups = this.groupAgentsForDeployment(agents, optimizedFlow);
 
     for (const group of deploymentGroups) {
       if (deploymentPromises.length >= this.config.maxConcurrentAgents) {
@@ -153,7 +136,7 @@ export class WorktreeOrchestrator extends EventEmitter {
     this.emit('swarm:deployment-completed', {
       deployed: deployed.length,
       failed: failed.length,
-      estimatedCompletion,
+      estimatedCompletion
     });
 
     return { deployed, failed, estimatedCompletion };
@@ -180,24 +163,18 @@ export class WorktreeOrchestrator extends EventEmitter {
     for (const agent of sortedAgents) {
       try {
         // Check if dependencies are met
-        if (
-          agent.dependencies &&
-          !this.areDependenciesMet(agent.dependencies, deployed)
-        ) {
-          console.log(
-            `⏸️  Waiting for dependencies for ${agent.name}: ${agent.dependencies.join(', ')}`
-          );
+        if (agent.dependencies && !this.areDependenciesMet(agent.dependencies, deployed)) {
+          console.log(`⏸️  Waiting for dependencies for ${agent.name}: ${agent.dependencies.join(', ')}`);
           continue;
         }
 
         // Create worktree configuration
-        const branchRecommendations =
-          this.branchingStrategy.getBranchNamingRecommendations(
-            agent.name,
-            agent.specialization,
-            agent.phase,
-            agent.priority
-          );
+        const branchRecommendations = this.branchingStrategy.getBranchNamingRecommendations(
+          agent.name,
+          agent.specialization,
+          agent.phase,
+          agent.priority
+        );
 
         const worktreeConfig = {
           agentName: agent.name,
@@ -208,12 +185,11 @@ export class WorktreeOrchestrator extends EventEmitter {
           ossaVersion: '0.1.9',
           priority: agent.priority as any,
           phase: agent.phase,
-          dependencies: agent.dependencies || [],
+          dependencies: agent.dependencies || []
         };
 
         // Deploy agent worktree
-        const worktreePath =
-          await this.worktreeManager.createAgentWorktree(worktreeConfig);
+        const worktreePath = await this.worktreeManager.createAgentWorktree(worktreeConfig);
 
         // Setup agent-specific coordination
         await this.setupAgentCoordination(agent.name, sortedAgents);
@@ -223,18 +199,15 @@ export class WorktreeOrchestrator extends EventEmitter {
         this.emit('agent:deployed', {
           name: agent.name,
           path: worktreePath,
-          branch: branchRecommendations.primary,
+          branch: branchRecommendations.primary
         });
       } catch (error) {
-        console.error(
-          `Failed to deploy agent ${agent.name}:`,
-          (error as Error).message
-        );
+        console.error(`Failed to deploy agent ${agent.name}:`, (error as Error).message);
         failed.push(agent.name);
 
         this.emit('agent:deployment-failed', {
           name: agent.name,
-          error: (error as Error).message,
+          error: (error as Error).message
         });
       }
     }
@@ -255,15 +228,11 @@ export class WorktreeOrchestrator extends EventEmitter {
     // Determine peer agents (same phase, no dependencies)
     const agent = allAgents.find((a) => a.name === agentName);
     const peerAgents = allAgents
-      .filter(
-        (a) => a.name !== agentName && !a.dependencies?.includes(agentName)
-      )
+      .filter((a) => a.name !== agentName && !a.dependencies?.includes(agentName))
       .map((a) => a.name);
 
     // Determine dependent agents
-    const dependentAgents = allAgents
-      .filter((a) => a.dependencies?.includes(agentName))
-      .map((a) => a.name);
+    const dependentAgents = allAgents.filter((a) => a.dependencies?.includes(agentName)).map((a) => a.name);
 
     // Create coordination configuration
     const coordinationConfig = {
@@ -272,25 +241,16 @@ export class WorktreeOrchestrator extends EventEmitter {
       dependentAgents,
       integrationBranch: `integration/v0.1.9-phase-${config.phase}-${Date.now()}`,
       syncSchedule: config.priority === 'critical' ? 'immediate' : 'hourly',
-      conflictResolutionPriority: this.calculateConflictPriority(
-        config.priority,
-        config.phase
-      ),
+      conflictResolutionPriority: this.calculateConflictPriority(config.priority, config.phase)
     };
 
     // Save coordination configuration
-    const coordinationPath = join(
-      config.workingDirectory,
-      '.agents-workspace/config/coordination.json'
-    );
-    writeFileSync(
-      coordinationPath,
-      JSON.stringify(coordinationConfig, null, 2)
-    );
+    const coordinationPath = join(config.workingDirectory, '.agents-workspace/config/coordination.json');
+    writeFileSync(coordinationPath, JSON.stringify(coordinationConfig, null, 2));
 
     this.emit('coordination:configured', {
       agent: agentName,
-      coordination: coordinationConfig,
+      coordination: coordinationConfig
     });
   }
 
@@ -318,31 +278,23 @@ export class WorktreeOrchestrator extends EventEmitter {
 
     // Calculate workload distribution
     return Array.from(phases.entries()).map(([phase, phaseAgents]) => {
-      const criticalCount = phaseAgents.filter(
-        (a) => a.priority === 'critical'
-      ).length;
+      const criticalCount = phaseAgents.filter((a) => a.priority === 'critical').length;
       const highCount = phaseAgents.filter((a) => a.priority === 'high').length;
 
       // Estimate based on priority and complexity
       const estimatedHours = this.estimatePhaseHours(phase, phaseAgents);
 
       // Check if phase work can be parallelized
-      const totalDependencies = phaseAgents.reduce(
-        (acc, agent) => acc + (agent.dependencies?.length || 0),
-        0
-      );
+      const totalDependencies = phaseAgents.reduce((acc, agent) => acc + (agent.dependencies?.length || 0), 0);
       const parallelizable = totalDependencies < phaseAgents.length * 0.3; // Less than 30% have dependencies
 
       return {
         phase,
         agentCount: phaseAgents.length,
         estimatedHours,
-        priority:
-          criticalCount > 0 ? 'critical' : highCount > 0 ? 'high' : 'medium',
-        dependencies: Array.from(
-          new Set(phaseAgents.flatMap((a) => a.dependencies || []))
-        ),
-        parallelizable,
+        priority: criticalCount > 0 ? 'critical' : highCount > 0 ? 'high' : 'medium',
+        dependencies: Array.from(new Set(phaseAgents.flatMap((a) => a.dependencies || []))),
+        parallelizable
       };
     });
   }
@@ -350,17 +302,10 @@ export class WorktreeOrchestrator extends EventEmitter {
   /**
    * Optimize deployment flow based on workload analysis
    */
-  private optimizeDeploymentFlow(
-    workload: AgentWorkloadDistribution[]
-  ): string {
-    const totalAgents = workload.reduce(
-      (sum, phase) => sum + phase.agentCount,
-      0
-    );
+  private optimizeDeploymentFlow(workload: AgentWorkloadDistribution[]): string {
+    const totalAgents = workload.reduce((sum, phase) => sum + phase.agentCount, 0);
     const hasCritical = workload.some((phase) => phase.priority === 'critical');
-    const highlyParallelizable = workload.every(
-      (phase) => phase.parallelizable
-    );
+    const highlyParallelizable = workload.every((phase) => phase.parallelizable);
     const complexPhases = workload.filter((phase) => phase.agentCount > 10);
 
     if (hasCritical && totalAgents < 20) {
@@ -442,9 +387,7 @@ export class WorktreeOrchestrator extends EventEmitter {
 
     // First pass: critical priority agents with no dependencies
     const criticalNoDeps = agents.filter(
-      (a) =>
-        a.priority === 'critical' &&
-        (!a.dependencies || a.dependencies.length === 0)
+      (a) => a.priority === 'critical' && (!a.dependencies || a.dependencies.length === 0)
     );
     if (criticalNoDeps.length > 0) {
       groups.push(criticalNoDeps);
@@ -466,18 +409,8 @@ export class WorktreeOrchestrator extends EventEmitter {
     // Add remaining groups, sorted by priority
     const sortedGroups = Array.from(phaseSpecGroups.values()).sort((a, b) => {
       const priorityWeight = { critical: 4, high: 3, medium: 2, low: 1 };
-      const aWeight = Math.max(
-        ...a.map(
-          (agent) =>
-            priorityWeight[agent.priority as keyof typeof priorityWeight]
-        )
-      );
-      const bWeight = Math.max(
-        ...b.map(
-          (agent) =>
-            priorityWeight[agent.priority as keyof typeof priorityWeight]
-        )
-      );
+      const aWeight = Math.max(...a.map((agent) => priorityWeight[agent.priority as keyof typeof priorityWeight]));
+      const bWeight = Math.max(...b.map((agent) => priorityWeight[agent.priority as keyof typeof priorityWeight]));
       return bWeight - aWeight;
     });
 
@@ -489,11 +422,7 @@ export class WorktreeOrchestrator extends EventEmitter {
   /**
    * Handle worktree creation events
    */
-  private handleWorktreeCreated(event: {
-    agent: string;
-    branch: string;
-    path: string;
-  }): void {
+  private handleWorktreeCreated(event: { agent: string; branch: string; path: string }): void {
     console.log(`✅ Worktree created for ${event.agent}: ${event.branch}`);
     this.emit('orchestration:agent-ready', event);
   }
@@ -509,14 +438,8 @@ export class WorktreeOrchestrator extends EventEmitter {
   /**
    * Handle integration merge events
    */
-  private handleIntegrationMerged(event: {
-    agent: string;
-    branch: string;
-    integrationBranch: string;
-  }): void {
-    console.log(
-      `🔀 Integration merged: ${event.agent} → ${event.integrationBranch}`
-    );
+  private handleIntegrationMerged(event: { agent: string; branch: string; integrationBranch: string }): void {
+    console.log(`🔀 Integration merged: ${event.agent} → ${event.integrationBranch}`);
     this.emit('orchestration:integration-completed', event);
   }
 
@@ -541,10 +464,7 @@ export class WorktreeOrchestrator extends EventEmitter {
     if (!branchAwareness?.canAutoMerge) return;
 
     // Check if all peer agents are ready for integration
-    const coordinationPath = join(
-      config.workingDirectory,
-      '.agents-workspace/config/coordination.json'
-    );
+    const coordinationPath = join(config.workingDirectory, '.agents-workspace/config/coordination.json');
     if (!existsSync(coordinationPath)) return;
 
     const coordination = JSON.parse(readFileSync(coordinationPath, 'utf-8'));
@@ -566,21 +486,18 @@ export class WorktreeOrchestrator extends EventEmitter {
    */
   private async triggerIntegration(agentNames: string[]): Promise<void> {
     try {
-      const integrationBranch =
-        await this.worktreeManager.coordinateIntegration(agentNames);
-      console.log(
-        `🔀 Auto-integration triggered: ${agentNames.join(', ')} → ${integrationBranch}`
-      );
+      const integrationBranch = await this.worktreeManager.coordinateIntegration(agentNames);
+      console.log(`🔀 Auto-integration triggered: ${agentNames.join(', ')} → ${integrationBranch}`);
 
       this.emit('orchestration:auto-integration', {
         agents: agentNames,
-        integrationBranch,
+        integrationBranch
       });
     } catch (error) {
       console.error('Auto-integration failed:', (error as Error).message);
       this.emit('orchestration:integration-failed', {
         agents: agentNames,
-        error: (error as Error).message,
+        error: (error as Error).message
       });
     }
   }
@@ -596,7 +513,7 @@ export class WorktreeOrchestrator extends EventEmitter {
       // Check if there are uncommitted changes
       const status = execSync('git status --porcelain', {
         cwd: config.workingDirectory,
-        encoding: 'utf-8',
+        encoding: 'utf-8'
       });
 
       // Agent is ready if there are no uncommitted changes
@@ -619,7 +536,7 @@ export class WorktreeOrchestrator extends EventEmitter {
       conflictsDetected: this.detectConflicts(activeWorktrees),
       averageCompletionTime: this.calculateAverageCompletionTime(),
       throughput: this.calculateThroughput(),
-      utilizationRate: this.calculateUtilizationRate(activeWorktrees),
+      utilizationRate: this.calculateUtilizationRate(activeWorktrees)
     };
 
     this.metricsHistory.push(metrics);
@@ -641,28 +558,18 @@ export class WorktreeOrchestrator extends EventEmitter {
     for (const worktree of activeWorktrees) {
       try {
         // Check if worktree has commits ready for integration
-        const agentConfig = this.worktreeManager.loadWorktreeConfig(
-          worktree.agentName
-        );
+        const agentConfig = this.worktreeManager.loadWorktreeConfig(worktree.agentName);
         if (agentConfig) {
-          const branchAwareness = this.worktreeManager.getBranchAwareness(
-            worktree.agentName
-          );
+          const branchAwareness = this.worktreeManager.getBranchAwareness(worktree.agentName);
 
           // Count branches with commits ahead of their base
-          if (
-            branchAwareness.commitsAhead > 0 &&
-            !branchAwareness.hasConflicts
-          ) {
+          if (branchAwareness.commitsAhead > 0 && !branchAwareness.hasConflicts) {
             pendingCount++;
           }
         }
       } catch (error) {
         // Skip if unable to check git state
-        console.warn(
-          `Unable to check integration status for ${worktree.agentName}:`,
-          (error as Error).message
-        );
+        console.warn(`Unable to check integration status for ${worktree.agentName}:`, (error as Error).message);
       }
     }
 
@@ -677,18 +584,13 @@ export class WorktreeOrchestrator extends EventEmitter {
 
     for (const worktree of activeWorktrees) {
       try {
-        const branchAwareness = this.worktreeManager.getBranchAwareness(
-          worktree.agentName
-        );
+        const branchAwareness = this.worktreeManager.getBranchAwareness(worktree.agentName);
         if (branchAwareness.hasConflicts) {
           conflictCount++;
         }
       } catch (error) {
         // Skip if unable to check git state
-        console.warn(
-          `Unable to check conflict status for ${worktree.agentName}:`,
-          (error as Error).message
-        );
+        console.warn(`Unable to check conflict status for ${worktree.agentName}:`, (error as Error).message);
       }
     }
 
@@ -714,8 +616,7 @@ export class WorktreeOrchestrator extends EventEmitter {
 
       // If active agents decreased, some completed
       if (previous.activeWorktrees > current.activeWorktrees) {
-        const completedAgents =
-          previous.activeWorktrees - current.activeWorktrees;
+        const completedAgents = previous.activeWorktrees - current.activeWorktrees;
         totalCompletionTime += 5; // 5 minutes per interval
         completions += completedAgents;
       }
@@ -742,8 +643,7 @@ export class WorktreeOrchestrator extends EventEmitter {
 
       // If pending integrations decreased, they were completed
       if (previous.integrationsPending > current.integrationsPending) {
-        totalIntegrations +=
-          previous.integrationsPending - current.integrationsPending;
+        totalIntegrations += previous.integrationsPending - current.integrationsPending;
       }
     }
 
@@ -763,32 +663,20 @@ export class WorktreeOrchestrator extends EventEmitter {
 
     for (const worktree of activeWorktrees) {
       try {
-        const branchAwareness = this.worktreeManager.getBranchAwareness(
-          worktree.agentName
-        );
+        const branchAwareness = this.worktreeManager.getBranchAwareness(worktree.agentName);
 
         // Consider agent active if it has recent commits or pending changes
-        if (
-          branchAwareness.commitsAhead > 0 ||
-          branchAwareness.hasUncommittedChanges
-        ) {
+        if (branchAwareness.commitsAhead > 0 || branchAwareness.hasUncommittedChanges) {
           activeAgents++;
         }
       } catch (error) {
         // Skip if unable to check activity
-        console.warn(
-          `Unable to check activity for ${worktree.agentName}:`,
-          (error as Error).message
-        );
+        console.warn(`Unable to check activity for ${worktree.agentName}:`, (error as Error).message);
       }
     }
 
     // Return percentage of active agents
-    return Math.round(
-      (activeAgents /
-        Math.max(activeWorktrees.length, this.config.maxConcurrentAgents)) *
-        100
-    );
+    return Math.round((activeAgents / Math.max(activeWorktrees.length, this.config.maxConcurrentAgents)) * 100);
   }
 
   /**
@@ -798,33 +686,27 @@ export class WorktreeOrchestrator extends EventEmitter {
     if (this.metricsHistory.length < 3) return; // Need some history
 
     const recent = this.metricsHistory.slice(-3);
-    const avgConflicts =
-      recent.reduce((sum, m) => sum + m.conflictsDetected, 0) / recent.length;
-    const avgUtilization =
-      recent.reduce((sum, m) => sum + m.utilizationRate, 0) / recent.length;
+    const avgConflicts = recent.reduce((sum, m) => sum + m.conflictsDetected, 0) / recent.length;
+    const avgUtilization = recent.reduce((sum, m) => sum + m.utilizationRate, 0) / recent.length;
 
     // Simple adaptation logic - can be made more sophisticated
     if (avgConflicts > 0.1) {
       this.emit('orchestration:adaptation-needed', {
         reason: 'High conflict rate',
         recommendation: 'Switch to sequential flow',
-        metrics: { conflicts: avgConflicts, utilization: avgUtilization },
+        metrics: { conflicts: avgConflicts, utilization: avgUtilization }
       });
     }
   }
 
   // Utility methods
-  private sortAgentsByDependencies<
-    T extends { name: string; dependencies?: string[] },
-  >(agents: Array<T>): Array<T> {
+  private sortAgentsByDependencies<T extends { name: string; dependencies?: string[] }>(agents: Array<T>): Array<T> {
     const sorted: typeof agents = [];
     const remaining = [...agents];
 
     while (remaining.length > 0) {
       const nextBatch = remaining.filter(
-        (agent) =>
-          !agent.dependencies ||
-          agent.dependencies.every((dep) => sorted.some((s) => s.name === dep))
+        (agent) => !agent.dependencies || agent.dependencies.every((dep) => sorted.some((s) => s.name === dep))
       );
 
       if (nextBatch.length === 0) {
@@ -843,24 +725,16 @@ export class WorktreeOrchestrator extends EventEmitter {
     return sorted;
   }
 
-  private areDependenciesMet(
-    dependencies: string[],
-    deployed: string[]
-  ): boolean {
+  private areDependenciesMet(dependencies: string[], deployed: string[]): boolean {
     return dependencies.every((dep) => deployed.includes(dep));
   }
 
   private calculateConflictPriority(priority: string, phase: number): number {
     const priorityWeight = { critical: 4, high: 3, medium: 2, low: 1 };
-    return (
-      (priorityWeight[priority as keyof typeof priorityWeight] || 1) * phase
-    );
+    return (priorityWeight[priority as keyof typeof priorityWeight] || 1) * phase;
   }
 
-  private estimatePhaseHours(
-    phase: number,
-    agents: Array<{ specialization: string; priority: string }>
-  ): number {
+  private estimatePhaseHours(phase: number, agents: Array<{ specialization: string; priority: string }>): number {
     // Rough estimation based on phase complexity and agent specializations
     const baseHours = { 1: 40, 2: 60, 3: 30, 4: 20 }[phase] || 40;
     const specializationMultiplier =
@@ -873,12 +747,9 @@ export class WorktreeOrchestrator extends EventEmitter {
           'security-framework': 1.3,
           'knowledge-management': 1.1,
           'quality-assurance': 0.8,
-          coordination: 0.9,
+          coordination: 0.9
         };
-        return (
-          sum +
-          (multipliers[agent.specialization as keyof typeof multipliers] || 1.0)
-        );
+        return sum + (multipliers[agent.specialization as keyof typeof multipliers] || 1.0);
       }, 0) / agents.length;
 
     return Math.round(baseHours * specializationMultiplier);
@@ -888,10 +759,7 @@ export class WorktreeOrchestrator extends EventEmitter {
     // Simple estimation - can be made more sophisticated
     const baseHoursPerAgent = 8;
     const totalHours = deployedAgents.length * baseHoursPerAgent;
-    const parallelizationFactor = Math.min(
-      this.config.maxConcurrentAgents / deployedAgents.length,
-      1
-    );
+    const parallelizationFactor = Math.min(this.config.maxConcurrentAgents / deployedAgents.length, 1);
     const adjustedHours = totalHours * parallelizationFactor;
 
     return new Date(Date.now() + adjustedHours * 60 * 60 * 1000);
@@ -908,9 +776,7 @@ export class WorktreeOrchestrator extends EventEmitter {
     return {
       config: this.config,
       metrics: this.metricsHistory[this.metricsHistory.length - 1] || null,
-      activeAgents: this.worktreeManager
-        .listActiveWorktrees()
-        .map((w) => w.agent),
+      activeAgents: this.worktreeManager.listActiveWorktrees().map((w) => w.agent)
     };
   }
 }

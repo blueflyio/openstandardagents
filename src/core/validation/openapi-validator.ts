@@ -104,7 +104,7 @@ export class OSSAOpenAPIValidator {
       }
 
       // Set final validation status
-      result.valid = result.errors.filter(e => e.severity === 'error').length === 0;
+      result.valid = result.errors.filter((e) => e.severity === 'error').length === 0;
 
       return result;
     } catch (error) {
@@ -251,17 +251,9 @@ export class OSSAOpenAPIValidator {
   private validateOSSAAgentPaths(spec: any, result: ValidationResult): void {
     if (!spec.paths) return;
 
-    const requiredAgentPaths = [
-      '/agent/health',
-      '/agent/info',
-      '/agent/capabilities'
-    ];
+    const requiredAgentPaths = ['/agent/health', '/agent/info', '/agent/capabilities'];
 
-    const recommendedPaths = [
-      '/agent/execute',
-      '/agent/config',
-      '/agent/metrics'
-    ];
+    const recommendedPaths = ['/agent/execute', '/agent/config', '/agent/metrics'];
 
     // Check required paths
     for (const path of requiredAgentPaths) {

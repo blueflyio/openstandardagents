@@ -324,18 +324,8 @@ export interface FeatureFlag {
 }
 
 export interface FeatureFlagCondition {
-  type:
-    | 'user_attribute'
-    | 'organization_attribute'
-    | 'time_window'
-    | 'random_percentage';
-  operator:
-    | 'equals'
-    | 'not_equals'
-    | 'contains'
-    | 'greater_than'
-    | 'less_than'
-    | 'between';
+  type: 'user_attribute' | 'organization_attribute' | 'time_window' | 'random_percentage';
+  operator: 'equals' | 'not_equals' | 'contains' | 'greater_than' | 'less_than' | 'between';
   attribute?: string;
   value: any;
 }
@@ -418,11 +408,7 @@ export function isAuthUser(obj: any): obj is AuthUser {
 }
 
 export function isHealthCheck(obj: any): obj is HealthCheck {
-  return (
-    obj &&
-    typeof obj.status === 'string' &&
-    ['healthy', 'unhealthy'].includes(obj.status)
-  );
+  return obj && typeof obj.status === 'string' && ['healthy', 'unhealthy'].includes(obj.status);
 }
 
 export function isWebhookEvent(obj: any): obj is WebhookEvent {
@@ -452,34 +438,14 @@ export const HTTP_STATUS_CODES = {
   INTERNAL_SERVER_ERROR: 500,
   BAD_GATEWAY: 502,
   SERVICE_UNAVAILABLE: 503,
-  GATEWAY_TIMEOUT: 504,
+  GATEWAY_TIMEOUT: 504
 } as const;
 
-export const AGENT_TYPES = [
-  'worker',
-  'orchestrator',
-  'critic',
-  'judge',
-  'monitor',
-  'governor',
-] as const;
+export const AGENT_TYPES = ['worker', 'orchestrator', 'critic', 'judge', 'monitor', 'governor'] as const;
 
-export const AGENT_STATUSES = [
-  'active',
-  'inactive',
-  'error',
-  'deploying',
-  'maintenance',
-  'deprecated',
-] as const;
+export const AGENT_STATUSES = ['active', 'inactive', 'error', 'deploying', 'maintenance', 'deprecated'] as const;
 
-export const EXECUTION_STATUSES = [
-  'pending',
-  'running',
-  'completed',
-  'failed',
-  'cancelled',
-] as const;
+export const EXECUTION_STATUSES = ['pending', 'running', 'completed', 'failed', 'cancelled'] as const;
 
 export type AgentType = (typeof AGENT_TYPES)[number];
 export type AgentStatus = (typeof AGENT_STATUSES)[number];

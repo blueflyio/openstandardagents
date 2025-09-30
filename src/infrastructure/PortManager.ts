@@ -23,7 +23,7 @@ export interface PortAllocation {
 export class PortManager {
   private allocations = new Map<string, number[]>();
   private registry = new Map<string, PortAllocation>();
-  
+
   constructor(private registryPath: string = '/Users/flux423/Sites/LLM') {
     this.loadPortRegistry();
   }
@@ -31,11 +31,25 @@ export class PortManager {
   private loadPortRegistry(): void {
     try {
       const projects = [
-        'OSSA', 'agent-buildkit', 'llm-platform',
-        'agent-brain', 'agent-chat', 'agent-docker', 'agent-mesh',
-        'agent-ops', 'agent-protocol', 'agent-router', 'agent-studio',
-        'agent-tracer', 'agentic-flows', 'compliance-engine', 'doc-engine',
-        'foundation-bridge', 'rfp-automation', 'studio-ui', 'workflow-engine'
+        'OSSA',
+        'agent-buildkit',
+        'llm-platform',
+        'agent-brain',
+        'agent-chat',
+        'agent-docker',
+        'agent-mesh',
+        'agent-ops',
+        'agent-protocol',
+        'agent-router',
+        'agent-studio',
+        'agent-tracer',
+        'agentic-flows',
+        'compliance-engine',
+        'doc-engine',
+        'foundation-bridge',
+        'rfp-automation',
+        'studio-ui',
+        'workflow-engine'
       ];
 
       for (const project of projects) {
@@ -44,7 +58,7 @@ export class PortManager {
           const content = fs.readFileSync(portsFile, 'utf8');
           const allocation = yaml.load(content) as PortAllocation;
           this.registry.set(project, allocation);
-          
+
           // Track allocated ports
           const ports = Object.values(allocation.ports);
           this.allocations.set(project, ports);
@@ -57,7 +71,7 @@ export class PortManager {
 
   allocatePort(service: string, preferred?: number): number {
     const serviceRange = this.getServiceRange(service);
-    
+
     if (preferred && this.isPortAvailable(preferred)) {
       return preferred;
     }

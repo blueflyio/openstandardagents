@@ -49,7 +49,7 @@ export class SimpleOSSAServer {
         status: 'healthy',
         timestamp: new Date().toISOString(),
         version: '0.1.9',
-        environment: this.config.environment,
+        environment: this.config.environment
       });
     });
 
@@ -60,10 +60,7 @@ export class SimpleOSSAServer {
 
     // Load OpenAPI spec for Swagger UI
     try {
-      const specPath = path.join(
-        __dirname,
-        '../../api/ossa-complete.openapi.yml'
-      );
+      const specPath = path.join(__dirname, '../../api/ossa-complete.openapi.yml');
       if (fs.existsSync(specPath)) {
         const spec = yaml.load(fs.readFileSync(specPath, 'utf8')) as any;
         this.app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(spec));
@@ -82,8 +79,8 @@ export class SimpleOSSAServer {
           total: 0,
           has_next: false,
           has_previous: false,
-          total_pages: 0,
-        },
+          total_pages: 0
+        }
       });
     });
 
@@ -99,7 +96,7 @@ export class SimpleOSSAServer {
         capabilities: req.body.capabilities || [],
         configuration: req.body.configuration || {},
         created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
       };
 
       res.status(201).json(agent);
@@ -108,10 +105,7 @@ export class SimpleOSSAServer {
     // OpenAPI specification endpoint
     this.app.get('/api/openapi.yaml', (req: any, res: any) => {
       try {
-        const specPath = path.join(
-          __dirname,
-          '../../api/ossa-complete.openapi.yml'
-        );
+        const specPath = path.join(__dirname, '../../api/ossa-complete.openapi.yml');
         if (fs.existsSync(specPath)) {
           res.setHeader('Content-Type', 'application/x-yaml');
           res.sendFile(path.resolve(specPath));
@@ -134,8 +128,8 @@ export class SimpleOSSAServer {
           'GET /api-docs',
           'GET /api/v1/agents',
           'POST /api/v1/agents',
-          'GET /api/openapi.yaml',
-        ],
+          'GET /api/openapi.yaml'
+        ]
       });
     });
   }
@@ -147,15 +141,9 @@ export class SimpleOSSAServer {
           console.log(`🚀 OSSA Server started successfully!`);
           console.log(`📍 Server running on port ${this.config.port}`);
           console.log(`🌍 Environment: ${this.config.environment}`);
-          console.log(
-            `📚 API Documentation: http://localhost:${this.config.port}/docs`
-          );
-          console.log(
-            `🔍 Health Check: http://localhost:${this.config.port}/health`
-          );
-          console.log(
-            `📋 OpenAPI Spec: http://localhost:${this.config.port}/api/openapi.yaml`
-          );
+          console.log(`📚 API Documentation: http://localhost:${this.config.port}/docs`);
+          console.log(`🔍 Health Check: http://localhost:${this.config.port}/health`);
+          console.log(`📋 OpenAPI Spec: http://localhost:${this.config.port}/api/openapi.yaml`);
           resolve();
         });
       } catch (error) {
@@ -172,7 +160,7 @@ export default SimpleOSSAServer;
 if (import.meta.url === `file://${process.argv[1]}`) {
   const config: OSSAConfig = {
     port: parseInt(process.env.PORT || '3000'),
-    environment: process.env.NODE_ENV || 'development',
+    environment: process.env.NODE_ENV || 'development'
   };
 
   const server = new SimpleOSSAServer(config);

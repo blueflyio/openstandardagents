@@ -27,7 +27,7 @@ export class SpecificationValidator {
     'governor',
     'monitor',
     'integrator',
-    'voice',
+    'voice'
   ];
 
   private readonly validDomains = [
@@ -46,16 +46,10 @@ export class SpecificationValidator {
     'deployment',
     'audio',
     'speech',
-    'interaction',
+    'interaction'
   ];
 
-  private readonly validProtocols = [
-    'rest',
-    'grpc',
-    'websocket',
-    'mcp',
-    'graphql',
-  ];
+  private readonly validProtocols = ['rest', 'grpc', 'websocket', 'mcp', 'graphql'];
 
   private readonly conformanceLevels = {
     bronze: {
@@ -64,7 +58,7 @@ export class SpecificationValidator {
       propsTokens: false,
       learningSignals: false,
       minCapabilities: 1,
-      minProtocols: 1,
+      minProtocols: 1
     },
     silver: {
       auditLogging: true,
@@ -72,7 +66,7 @@ export class SpecificationValidator {
       propsTokens: false,
       learningSignals: true,
       minCapabilities: 2,
-      minProtocols: 2,
+      minProtocols: 2
     },
     gold: {
       auditLogging: true,
@@ -80,8 +74,8 @@ export class SpecificationValidator {
       propsTokens: true,
       learningSignals: true,
       minCapabilities: 3,
-      minProtocols: 3,
-    },
+      minProtocols: 3
+    }
   };
 
   constructor() {
@@ -90,10 +84,7 @@ export class SpecificationValidator {
 
     // Load and add OSSA agent manifest schema
     try {
-      const schemaPath = path.resolve(
-        __dirname,
-        '../api/agent-manifest.schema.json'
-      );
+      const schemaPath = path.resolve(__dirname, '../api/agent-manifest.schema.json');
       if (fs.existsSync(schemaPath)) {
         const schemaContent = JSON.parse(fs.readFileSync(schemaPath, 'utf-8'));
         this.ajv.addSchema(schemaContent, 'agent-manifest');
@@ -128,24 +119,18 @@ export class SpecificationValidator {
       warnings.push(...ossaValidation.warnings);
 
       // 3. Protocol validation
-      const protocolValidation = this.validateProtocols(
-        manifest.spec?.protocols
-      );
+      const protocolValidation = this.validateProtocols(manifest.spec?.protocols);
       errors.push(...protocolValidation.errors);
       warnings.push(...protocolValidation.warnings);
 
       // 4. Performance characteristics validation
-      const performanceValidation = this.validatePerformance(
-        manifest.spec?.performance
-      );
+      const performanceValidation = this.validatePerformance(manifest.spec?.performance);
       errors.push(...performanceValidation.errors);
       warnings.push(...performanceValidation.warnings);
 
       // 5. Conformance level validation (optional for basic compliance)
       if (manifest.spec?.conformance) {
-        const conformanceValidation = this.validateConformance(
-          manifest.spec.conformance
-        );
+        const conformanceValidation = this.validateConformance(manifest.spec.conformance);
         errors.push(...conformanceValidation.errors);
         warnings.push(...conformanceValidation.warnings);
       }
@@ -158,7 +143,7 @@ export class SpecificationValidator {
       if (errors.length > 0) {
         return {
           valid: false,
-          errors,
+          errors
         };
       }
 
@@ -171,8 +156,8 @@ export class SpecificationValidator {
         warnings: warnings.length > 0 ? warnings : undefined,
         compliance: {
           ossaVersion: this.ossaVersion,
-          level: achievedLevel as 'basic' | 'standard' | 'enterprise',
-        },
+          level: achievedLevel as 'basic' | 'standard' | 'enterprise'
+        }
       };
     } catch (error) {
       return {
@@ -181,9 +166,9 @@ export class SpecificationValidator {
           {
             field: 'manifest',
             message: `Validation failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
-            code: 'VALIDATION_ERROR',
-          },
-        ],
+            code: 'VALIDATION_ERROR'
+          }
+        ]
       };
     }
   }
@@ -203,7 +188,7 @@ export class SpecificationValidator {
         errors.push({
           field: error.instancePath || error.schemaPath || 'unknown',
           message: error.message || 'Schema validation failed',
-          code: error.keyword?.toUpperCase() || 'SCHEMA_ERROR',
+          code: error.keyword?.toUpperCase() || 'SCHEMA_ERROR'
         });
       }
     }
@@ -226,7 +211,7 @@ export class SpecificationValidator {
       errors.push({
         field: 'apiVersion',
         message: `Expected OSSA API version '@bluefly/ossa/v0.1.9', got '${manifest.apiVersion}'`,
-        code: 'INVALID_API_VERSION',
+        code: 'INVALID_API_VERSION'
       });
     }
 
@@ -235,20 +220,16 @@ export class SpecificationValidator {
       errors.push({
         field: 'kind',
         message: `Expected kind 'Agent', got '${manifest.kind}'`,
-        code: 'INVALID_KIND',
+        code: 'INVALID_KIND'
       });
     }
 
     // Validate agent name format (DNS-1123)
-    if (
-      manifest.metadata?.name &&
-      !/^[a-z0-9]([a-z0-9-]*[a-z0-9])?$/.test(manifest.metadata.name)
-    ) {
+    if (manifest.metadata?.name && !/^[a-z0-9]([a-z0-9-]*[a-z0-9])?$/.test(manifest.metadata.name)) {
       errors.push({
         field: 'metadata.name',
-        message:
-          'Agent name must follow DNS-1123 naming convention (lowercase, hyphens only)',
-        code: 'INVALID_NAME_FORMAT',
+        message: 'Agent name must follow DNS-1123 naming convention (lowercase, hyphens only)',
+        code: 'INVALID_NAME_FORMAT'
       });
     }
 
@@ -262,19 +243,16 @@ export class SpecificationValidator {
       errors.push({
         field: 'metadata.version',
         message: 'Version must follow semantic versioning format',
-        code: 'INVALID_VERSION_FORMAT',
+        code: 'INVALID_VERSION_FORMAT'
       });
     }
 
     // Validate agent type
-    if (
-      manifest.spec?.type &&
-      !this.validAgentTypes.includes(manifest.spec.type)
-    ) {
+    if (manifest.spec?.type && !this.validAgentTypes.includes(manifest.spec.type)) {
       errors.push({
         field: 'spec.type',
         message: `Invalid agent type '${manifest.spec.type}'. Valid types: ${this.validAgentTypes.join(', ')}`,
-        code: 'INVALID_AGENT_TYPE',
+        code: 'INVALID_AGENT_TYPE'
       });
     }
 
@@ -288,19 +266,14 @@ export class SpecificationValidator {
         errors.push({
           field: 'spec.capabilities.domains',
           message: `Invalid capability domains: ${invalidDomains.join(', ')}. Valid domains: ${this.validDomains.join(', ')}`,
-          code: 'INVALID_CAPABILITY_DOMAIN',
+          code: 'INVALID_CAPABILITY_DOMAIN'
         });
       }
     }
 
     // Check for deprecated features
-    if (
-      manifest.metadata?.version &&
-      manifest.metadata.version.startsWith('0.1.')
-    ) {
-      warnings.push(
-        `Version ${manifest.metadata.version} uses legacy 0.1.x format`
-      );
+    if (manifest.metadata?.version && manifest.metadata.version.startsWith('0.1.')) {
+      warnings.push(`Version ${manifest.metadata.version} uses legacy 0.1.x format`);
     }
 
     return { errors, warnings };
@@ -320,7 +293,7 @@ export class SpecificationValidator {
       errors.push({
         field: 'spec.protocols',
         message: 'Protocol configuration is required',
-        code: 'MISSING_PROTOCOLS',
+        code: 'MISSING_PROTOCOLS'
       });
       return { errors, warnings };
     }
@@ -330,7 +303,7 @@ export class SpecificationValidator {
       errors.push({
         field: 'spec.protocols.supported',
         message: 'At least one supported protocol is required',
-        code: 'MISSING_SUPPORTED_PROTOCOLS',
+        code: 'MISSING_SUPPORTED_PROTOCOLS'
       });
       return { errors, warnings };
     }
@@ -341,7 +314,7 @@ export class SpecificationValidator {
         errors.push({
           field: `spec.protocols.supported[${index}].name`,
           message: `Invalid protocol '${protocol.name}'. Valid protocols: ${this.validProtocols.join(', ')}`,
-          code: 'INVALID_PROTOCOL_NAME',
+          code: 'INVALID_PROTOCOL_NAME'
         });
       }
 
@@ -349,15 +322,13 @@ export class SpecificationValidator {
         errors.push({
           field: `spec.protocols.supported[${index}].endpoint`,
           message: 'Protocol endpoint is required',
-          code: 'MISSING_PROTOCOL_ENDPOINT',
+          code: 'MISSING_PROTOCOL_ENDPOINT'
         });
       }
 
       // Warn if TLS is disabled
       if (protocol.tls === false) {
-        warnings.push(
-          `Protocol ${protocol.name} has TLS disabled - not recommended for production`
-        );
+        warnings.push(`Protocol ${protocol.name} has TLS disabled - not recommended for production`);
       }
     });
 
@@ -375,33 +346,25 @@ export class SpecificationValidator {
     const warnings: string[] = [];
 
     if (!performance) {
-      warnings.push(
-        'Performance characteristics not specified - consider defining for better orchestration'
-      );
+      warnings.push('Performance characteristics not specified - consider defining for better orchestration');
       return { errors, warnings };
     }
 
     // Validate throughput specifications
     if (performance.throughput) {
-      if (
-        performance.throughput.requestsPerSecond &&
-        performance.throughput.requestsPerSecond < 1
-      ) {
+      if (performance.throughput.requestsPerSecond && performance.throughput.requestsPerSecond < 1) {
         errors.push({
           field: 'spec.performance.throughput.requestsPerSecond',
           message: 'Requests per second must be at least 1',
-          code: 'INVALID_THROUGHPUT',
+          code: 'INVALID_THROUGHPUT'
         });
       }
 
-      if (
-        performance.throughput.concurrentRequests &&
-        performance.throughput.concurrentRequests < 1
-      ) {
+      if (performance.throughput.concurrentRequests && performance.throughput.concurrentRequests < 1) {
         errors.push({
           field: 'spec.performance.throughput.concurrentRequests',
           message: 'Concurrent requests must be at least 1',
-          code: 'INVALID_CONCURRENCY',
+          code: 'INVALID_CONCURRENCY'
         });
       }
     }
@@ -414,7 +377,7 @@ export class SpecificationValidator {
         errors.push({
           field: 'spec.performance.latency',
           message: 'P50 latency must be less than P95 latency',
-          code: 'INVALID_LATENCY_DISTRIBUTION',
+          code: 'INVALID_LATENCY_DISTRIBUTION'
         });
       }
 
@@ -422,15 +385,13 @@ export class SpecificationValidator {
         errors.push({
           field: 'spec.performance.latency',
           message: 'P95 latency must be less than P99 latency',
-          code: 'INVALID_LATENCY_DISTRIBUTION',
+          code: 'INVALID_LATENCY_DISTRIBUTION'
         });
       }
 
       // Warn about high latency
       if (p95 && p95 > 1000) {
-        warnings.push(
-          `High P95 latency (${p95}ms) may impact orchestration performance`
-        );
+        warnings.push(`High P95 latency (${p95}ms) may impact orchestration performance`);
       }
     }
 
@@ -448,9 +409,7 @@ export class SpecificationValidator {
     const warnings: string[] = [];
 
     if (!conformance) {
-      warnings.push(
-        'Conformance level not specified - defaulting to bronze level'
-      );
+      warnings.push('Conformance level not specified - defaulting to bronze level');
       return { errors, warnings };
     }
 
@@ -460,7 +419,7 @@ export class SpecificationValidator {
       errors.push({
         field: 'spec.conformance.level',
         message: `Invalid conformance level '${conformance.level}'. Valid levels: ${validLevels.join(', ')}`,
-        code: 'INVALID_CONFORMANCE_LEVEL',
+        code: 'INVALID_CONFORMANCE_LEVEL'
       });
     }
 
@@ -478,9 +437,7 @@ export class SpecificationValidator {
     const warnings: string[] = [];
 
     if (!budgets) {
-      warnings.push(
-        'Budget specifications not provided - consider defining for cost control'
-      );
+      warnings.push('Budget specifications not provided - consider defining for cost control');
       return { errors, warnings };
     }
 
@@ -490,20 +447,15 @@ export class SpecificationValidator {
         errors.push({
           field: 'spec.budgets.tokens.default',
           message: 'Default token budget must be at least 100',
-          code: 'INVALID_TOKEN_BUDGET',
+          code: 'INVALID_TOKEN_BUDGET'
         });
       }
 
-      if (
-        budgets.tokens.maximum &&
-        budgets.tokens.default &&
-        budgets.tokens.maximum < budgets.tokens.default
-      ) {
+      if (budgets.tokens.maximum && budgets.tokens.default && budgets.tokens.maximum < budgets.tokens.default) {
         errors.push({
           field: 'spec.budgets.tokens.maximum',
-          message:
-            'Maximum token budget must be greater than or equal to default budget',
-          code: 'INVALID_BUDGET_RELATIONSHIP',
+          message: 'Maximum token budget must be greater than or equal to default budget',
+          code: 'INVALID_BUDGET_RELATIONSHIP'
         });
       }
     }
@@ -522,20 +474,14 @@ export class SpecificationValidator {
     const declaredLevel = conformance.level || 'bronze';
 
     // Check if the agent actually meets the requirements for the declared level
-    const requirements =
-      this.conformanceLevels[
-        declaredLevel as keyof typeof this.conformanceLevels
-      ];
+    const requirements = this.conformanceLevels[declaredLevel as keyof typeof this.conformanceLevels];
     if (!requirements) return 'bronze';
 
     const capabilities = spec.capabilities?.domains || [];
     const protocols = spec.protocols?.supported || [];
 
     // Validate minimum requirements
-    if (
-      capabilities.length < requirements.minCapabilities ||
-      protocols.length < requirements.minProtocols
-    ) {
+    if (capabilities.length < requirements.minCapabilities || protocols.length < requirements.minProtocols) {
       return 'bronze';
     }
 
@@ -562,32 +508,24 @@ export class SpecificationValidator {
     return {
       version: this.ossaVersion,
       feedbackLoop: {
-        phases: ['plan', 'execute', 'review', 'judge', 'learn', 'govern'],
+        phases: ['plan', 'execute', 'review', 'judge', 'learn', 'govern']
       },
       types: [
         {
           name: 'orchestrator',
-          description:
-            'Manages goal decomposition, task planning, and workflow coordination in the 360° feedback loop',
+          description: 'Manages goal decomposition, task planning, and workflow coordination in the 360° feedback loop',
           capabilities: [
             'goal-decomposition',
             'task-planning',
             'workflow-management',
             'agent-coordination',
-            'resource-allocation',
-          ],
+            'resource-allocation'
+          ]
         },
         {
           name: 'worker',
-          description:
-            'Executes specific tasks with self-reporting and result validation',
-          capabilities: [
-            'task-execution',
-            'self-reporting',
-            'result-validation',
-            'progress-tracking',
-            'error-recovery',
-          ],
+          description: 'Executes specific tasks with self-reporting and result validation',
+          capabilities: ['task-execution', 'self-reporting', 'result-validation', 'progress-tracking', 'error-recovery']
         },
         {
           name: 'critic',
@@ -598,66 +536,40 @@ export class SpecificationValidator {
             'feedback-analysis',
             'quality-assessment',
             'security-analysis',
-            'performance-critique',
-          ],
+            'performance-critique'
+          ]
         },
         {
           name: 'judge',
-          description:
-            'Makes binary decisions through pairwise comparisons and evaluation frameworks',
-          capabilities: [
-            'decision-making',
-            'comparison',
-            'evaluation',
-            'ranking',
-            'conflict-resolution',
-          ],
+          description: 'Makes binary decisions through pairwise comparisons and evaluation frameworks',
+          capabilities: ['decision-making', 'comparison', 'evaluation', 'ranking', 'conflict-resolution']
         },
         {
           name: 'trainer',
-          description:
-            'Continuously improves agent capabilities through learning and adaptation',
+          description: 'Continuously improves agent capabilities through learning and adaptation',
           capabilities: [
             'learning-signal-processing',
             'capability-enhancement',
             'performance-optimization',
-            'knowledge-transfer',
-          ],
+            'knowledge-transfer'
+          ]
         },
         {
           name: 'governor',
-          description:
-            'Enforces policies, budgets, and compliance across the agent ecosystem',
-          capabilities: [
-            'policy-enforcement',
-            'budget-management',
-            'compliance-monitoring',
-            'audit-trail-generation',
-          ],
+          description: 'Enforces policies, budgets, and compliance across the agent ecosystem',
+          capabilities: ['policy-enforcement', 'budget-management', 'compliance-monitoring', 'audit-trail-generation']
         },
         {
           name: 'monitor',
-          description:
-            'Provides real-time observability and health monitoring of agent operations',
-          capabilities: [
-            'health-monitoring',
-            'performance-tracking',
-            'alert-generation',
-            'metrics-collection',
-          ],
+          description: 'Provides real-time observability and health monitoring of agent operations',
+          capabilities: ['health-monitoring', 'performance-tracking', 'alert-generation', 'metrics-collection']
         },
         {
           name: 'integrator',
-          description:
-            'Manages external system integrations and protocol bridging',
-          capabilities: [
-            'system-integration',
-            'protocol-bridging',
-            'data-transformation',
-            'external-api-management',
-          ],
-        },
-      ],
+          description: 'Manages external system integrations and protocol bridging',
+          capabilities: ['system-integration', 'protocol-bridging', 'data-transformation', 'external-api-management']
+        }
+      ]
     };
   }
 
@@ -666,9 +578,7 @@ export class SpecificationValidator {
    */
   getSchema(agentType: string): any {
     if (!this.validAgentTypes.includes(agentType)) {
-      throw new Error(
-        `Unknown agent type: ${agentType}. Valid types: ${this.validAgentTypes.join(', ')}`
-      );
+      throw new Error(`Unknown agent type: ${agentType}. Valid types: ${this.validAgentTypes.join(', ')}`);
     }
 
     // Create a basic schema for the agent type
@@ -679,11 +589,11 @@ export class SpecificationValidator {
       properties: {
         apiVersion: {
           type: 'string',
-          const: '@bluefly/ossa/v0.1.9',
+          const: '@bluefly/ossa/v0.1.9'
         },
         kind: {
           type: 'string',
-          const: 'Agent',
+          const: 'Agent'
         },
         metadata: {
           type: 'object',
@@ -691,14 +601,14 @@ export class SpecificationValidator {
           properties: {
             name: {
               type: 'string',
-              pattern: '^[a-z0-9]([a-z0-9-]*[a-z0-9])?$',
+              pattern: '^[a-z0-9]([a-z0-9-]*[a-z0-9])?$'
             },
             version: {
               type: 'string',
               pattern:
-                '^v?(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-((?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\\+([0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?$',
-            },
-          },
+                '^v?(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-((?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\\+([0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?$'
+            }
+          }
         },
         spec: {
           type: 'object',
@@ -706,7 +616,7 @@ export class SpecificationValidator {
           properties: {
             type: {
               type: 'string',
-              const: agentType,
+              const: agentType
             },
             capabilities: {
               type: 'object',
@@ -716,15 +626,15 @@ export class SpecificationValidator {
                   type: 'array',
                   items: {
                     type: 'string',
-                    enum: this.getTypeSpecificCapabilities(agentType),
+                    enum: this.getTypeSpecificCapabilities(agentType)
                   },
-                  minItems: 1,
-                },
-              },
-            },
-          },
-        },
-      },
+                  minItems: 1
+                }
+              }
+            }
+          }
+        }
+      }
     };
 
     return baseSchema;
@@ -742,7 +652,7 @@ export class SpecificationValidator {
       trainer: ['nlp', 'reasoning', 'monitoring'],
       governor: ['compliance', 'security', 'monitoring'],
       monitor: ['monitoring', 'security', 'data'],
-      integrator: ['api-design', 'data', 'orchestration'],
+      integrator: ['api-design', 'data', 'orchestration']
     };
 
     return typeCapabilities[agentType] || this.validDomains;
@@ -761,18 +671,13 @@ export class SpecificationValidator {
     warnings: string[];
   }> {
     const agentCapabilities = agentManifest.spec?.capabilities?.domains || [];
-    const missing = requiredCapabilities.filter(
-      (cap) => !agentCapabilities.includes(cap)
-    );
+    const missing = requiredCapabilities.filter((cap) => !agentCapabilities.includes(cap));
     const compatible = missing.length === 0;
-    const score =
-      (agentCapabilities.length - missing.length) / requiredCapabilities.length;
+    const score = (agentCapabilities.length - missing.length) / requiredCapabilities.length;
     const warnings: string[] = [];
 
     if (!compatible) {
-      warnings.push(
-        `Agent missing required capabilities: ${missing.join(', ')}`
-      );
+      warnings.push(`Agent missing required capabilities: ${missing.join(', ')}`);
     }
 
     if (score < 0.8) {
@@ -783,7 +688,7 @@ export class SpecificationValidator {
       compatible,
       score: Math.max(0, score),
       missing,
-      warnings,
+      warnings
     };
   }
 

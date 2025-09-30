@@ -15,15 +15,15 @@ interface ReorgOptions {
 
 export async function main(options: ReorgOptions = { dryRun: false, category: 'status' }) {
   try {
-    console.log(chalk.blue("📚 OSSA Documentation Safe Reorganization Tool"));
-    console.log(chalk.blue("=============================================="));
-    console.log("");
+    console.log(chalk.blue('📚 OSSA Documentation Safe Reorganization Tool'));
+    console.log(chalk.blue('=============================================='));
+    console.log('');
 
-    const DOCS_DIR = "/Users/flux423/Sites/LLM/OSSA/docs";
+    const DOCS_DIR = '/Users/flux423/Sites/LLM/OSSA/docs';
 
     if (options.dryRun) {
-      console.log(chalk.yellow("🔍 DRY RUN MODE - No changes will be made"));
-      console.log("");
+      console.log(chalk.yellow('🔍 DRY RUN MODE - No changes will be made'));
+      console.log('');
     }
 
     // Function to safely move with git
@@ -48,14 +48,14 @@ export async function main(options: ReorgOptions = { dryRun: false, category: 's
     // Reorganization logic based on category
     switch (options.category) {
       case 'status':
-        console.log(chalk.blue("📊 Current documentation structure:"));
+        console.log(chalk.blue('📊 Current documentation structure:'));
         if (fs.existsSync(DOCS_DIR)) {
           execSync(`find "${DOCS_DIR}" -type f -name "*.md" | head -20`, { stdio: 'inherit' });
         }
         break;
 
       case 'reorganize':
-        console.log(chalk.blue("🔄 Starting documentation reorganization..."));
+        console.log(chalk.blue('🔄 Starting documentation reorganization...'));
 
         // Create new structure
         const newDirs = [
@@ -65,7 +65,7 @@ export async function main(options: ReorgOptions = { dryRun: false, category: 's
           `${DOCS_DIR}/architecture`
         ];
 
-        newDirs.forEach(dir => {
+        newDirs.forEach((dir) => {
           if (!fs.existsSync(dir) && !options.dryRun) {
             fs.mkdirSync(dir, { recursive: true });
             console.log(chalk.green(`✅ Created directory: ${dir}`));
@@ -84,9 +84,8 @@ export async function main(options: ReorgOptions = { dryRun: false, category: 's
 
       default:
         console.log(chalk.yellow(`Unknown category: ${options.category}`));
-        console.log("Available categories: status, reorganize");
+        console.log('Available categories: status, reorganize');
     }
-
   } catch (error) {
     console.error(chalk.red('❌ Error during documentation reorganization:'), error);
     process.exit(1);
@@ -96,7 +95,7 @@ export async function main(options: ReorgOptions = { dryRun: false, category: 's
 // CLI execution
 if (require.main === module) {
   const dryRun = process.argv.includes('--dry-run') || process.argv.includes('-n');
-  const category = process.argv.find(arg => !arg.startsWith('-') && arg !== __filename.split('/').pop()) || 'status';
+  const category = process.argv.find((arg) => !arg.startsWith('-') && arg !== __filename.split('/').pop()) || 'status';
 
   main({ dryRun, category });
 }

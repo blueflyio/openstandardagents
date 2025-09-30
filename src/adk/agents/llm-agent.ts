@@ -57,7 +57,7 @@ export class OSSALlmAgent implements ADKAgent {
     return {
       instruction,
       input,
-      tools: this.config.tools || [],
+      tools: this.config.tools || []
     };
   }
 
@@ -86,14 +86,14 @@ export class OSSALlmAgent implements ADKAgent {
         output: response.response,
         model: response.model,
         thinking: response.thinking,
-        timestamp: new Date().toISOString(),
+        timestamp: new Date().toISOString()
       };
     } catch (error) {
       console.error('Ollama execution error:', error);
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Unknown error',
-        timestamp: new Date().toISOString(),
+        timestamp: new Date().toISOString()
       };
     }
   }
@@ -105,13 +105,13 @@ export class OSSALlmAgent implements ADKAgent {
     const response = await fetch(`${this.ollamaBaseUrl}/api/generate`, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
+        'Content-Type': 'application/json'
       },
       body: JSON.stringify({
         model: this.ollamaModel,
         prompt: prompt,
-        stream: false,
-      }),
+        stream: false
+      })
     });
 
     if (!response.ok) {
