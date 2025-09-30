@@ -213,6 +213,18 @@ paths:
               responses:
                 '200':
                   description: Webhook received successfully
+                '400':
+                  description: Bad request - invalid webhook payload
+                  content:
+                    application/json:
+                      schema:
+                        $ref: '#/components/schemas/ErrorResponse'
+                '404':
+                  description: Webhook endpoint not found
+                  content:
+                    application/json:
+                      schema:
+                        $ref: '#/components/schemas/ErrorResponse'
 
     post:
       tags: [Agents]

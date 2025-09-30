@@ -7,9 +7,8 @@
  */
 
 import { Command } from 'commander';
-import { readFileSync, writeFileSync, existsSync, mkdirSync, readdirSync, statSync } from 'fs';
-import { join, resolve, extname } from 'path';
-import { execSync } from 'child_process';
+import { readFileSync, writeFileSync, existsSync, readdirSync, statSync } from 'fs';
+import { join } from 'path';
 import chalk from 'chalk';
 // import { createValidateCommand } from './commands/validate.js'; // Removed - causes duplicate command
 import { z } from 'zod';
@@ -39,16 +38,15 @@ const OpenAPISchema = z.object({
     .optional()
 });
 
-const SpecificationSchema = z.object({
-  agentId: z.string().regex(/^[a-z0-9-]+$/),
-  agentType: z.enum(['orchestrator', 'worker', 'critic', 'judge', 'trainer', 'governor', 'monitor', 'integrator']),
-  version: z.string().regex(/^\d+\.\d+\.\d+$/),
-  capabilities: z.object({
-    supportedDomains: z.array(z.string()),
-    inputFormats: z.array(z.string()),
-    outputFormats: z.array(z.string())
-  })
-});
+// const SpecificationSchema = z.object({
+//   agentId: z.string().regex(/^[a-z0-9-]+$/),
+//   agentType: z.enum(['orchestrator', 'worker', 'critic', 'judge', 'trainer', 'governor', 'monitor', 'integrator']),
+//   version: z.string().regex(/^\d+\.\d+\.\d+$/),
+//   capabilities: z.object({
+//     supportedDomains: z.array(z.string()),
+//     inputFormats: z.array(z.string()),
+//     outputFormats: z.array(z.string())
+//   })
 
 interface CLIConfig {
   baseDir: string;
@@ -61,7 +59,7 @@ interface CLIConfig {
 interface OperationResult {
   success: boolean;
   message: string;
-  data?: any;
+  data?: unknown;
   errors?: string[];
 }
 
@@ -96,9 +94,11 @@ class OSSACli {
     };
 
     const timestamp = new Date().toISOString();
+    // eslint-disable-next-line no-console
     console.log(colors[level](`[${timestamp}] [${level.toUpperCase()}] ${message}`));
 
     if (data) {
+      // eslint-disable-next-line no-console
       console.log(chalk.gray(JSON.stringify(data, null, 2)));
     }
   }
@@ -358,8 +358,10 @@ class OSSACli {
       const specs = this.getAllSpecifications();
 
       if (options.format === 'json') {
+        // eslint-disable-next-line no-console
         console.log(JSON.stringify(specs, null, 2));
       } else if (options.format === 'yaml') {
+        // eslint-disable-next-line no-console
         console.log(yaml.dump(specs));
       } else {
         // Table format
@@ -521,6 +523,7 @@ class OSSACli {
         health: 'healthy'
       };
 
+      // eslint-disable-next-line no-console
       console.log(chalk.green('OSSA System Status:'));
       console.table(status);
     } catch (error) {
