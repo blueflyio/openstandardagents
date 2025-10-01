@@ -27,7 +27,7 @@
     "format": "prettier --write 'src/**/*.ts' 'tests/**/*.ts'",
     "api:generate": "openapi-typescript src/api/core/specification.openapi.yml -o src/types/api.ts",
     "api:validate": "npx @redocly/cli lint src/api/core/specification.openapi.yml",
-    "api:validate:complete": "npx @redocly/cli lint src/api/core/ossa-complete.openapi.yml",
+    "api:validate:complete": "npx @redocly/cli lint src/api/core/ossa-complete.openapi.yml --config .redocly.yaml",
     "api:validate:all": "npx @redocly/cli lint src/api/core/*.openapi.yml src/api/project/*.openapi.yml src/api/mcp/*.openapi.yml src/api/legacy/*.openapi.yml",
     "api:validate:ecosystem": "cd ../agent_buildkit && npm run ecosystem:validate",
     "api:bundle": "npx @redocly/cli bundle src/api/core/ossa-complete.openapi.yml --output dist/ossa-complete.json",

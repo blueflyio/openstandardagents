@@ -1,0 +1,63 @@
+name: ossa
+version: 0.1.9
+type: specification
+description: 'OSSA v0.1.9 - Open Standards for Scalable Agents Specification Framework'
+
+metadata:
+  project_type: core_specification
+  compliance_level: gold
+  security_classification: public
+
+specification:
+  standard: ossa-v0.1.9
+  level: production
+  certification: gold
+
+agents:
+  enabled: true
+  auto_discovery: true
+  coordination:
+    enabled: true
+    registry_url: http://localhost:8080
+  capabilities:
+    - specification_validation
+    - compliance_certification
+    - agent_orchestration
+    - protocol_management
+
+workflows:
+  enabled: true
+  auto_trigger: true
+  standard_flows:
+    - build
+    - test
+    - deploy
+    - validate
+    - certify
+
+integration:
+  buildkit_powered: true
+  mcp_enabled: true
+  registry_sync: true
+  specification_enforcement: true
+
+governance:
+  compliance_required: true
+  audit_enabled: true
+  security_scanning: true
+  frameworks:
+    - OSSA-v0.1.9
+    - OpenAPI
+    - JSON-Schema
+
+monitoring:
+  observability: enabled
+  specification_validation: enabled
+  compliance_tracking: enabled
+  certification_monitoring: enabled
+
+security:
+  specification_validation: enabled
+  schema_validation: enabled
+  api_validation: enabled
+  compliance_enforcement: enabled
