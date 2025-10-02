@@ -13,9 +13,9 @@ spec:
     workspace_ref: "../.agent-workspace"
     
   agents:
-    total: 51
+    total: 52
     categories:
-      orchestrators: 12
+      orchestrators: 13
       workers: 15
       critics: 8
       governors: 6

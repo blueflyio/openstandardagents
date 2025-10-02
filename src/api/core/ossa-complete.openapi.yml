@@ -1678,39 +1678,61 @@ components:
 
     # JSON Patch Operations (OpenAPI 3.1 feature)
     JsonPatchOperation:
-      type: object
-      properties:
-        op:
-          type: string
-          enum: [add, remove, replace, move, copy, test]
-        path:
-          type: string
-          pattern: '^(/[^/~]*(~[01][^/~]*)*)*$'
-          description: JSON Pointer path
-        value:
-          description: Value for add, replace, and test operations
-        from:
-          type: string
-          pattern: '^(/[^/~]*(~[01][^/~]*)*)*$'
-          description: Source path for move and copy operations
-      required:
-        - op
-        - path
-      if:
-        properties:
-          op:
-            enum: [add, replace, test]
-      then:
-        required:
-          - value
-      else:
-        if:
+      oneOf:
+        - type: object
+          description: Add, replace, or test operation
+          required:
+            - op
+            - path
+            - value
           properties:
             op:
-              enum: [move, copy]
-        then:
+              type: string
+              enum: [add, replace, test]
+            path:
+              type: string
+              pattern: '^(/[^/~]*(~[01][^/~]*)*)*$'
+              description: JSON Pointer path
+            value:
+              description: Value for operation
+              oneOf:
+                - type: string
+                - type: number
+                - type: boolean
+                - type: object
+                - type: array
+                - type: "null"
+        - type: object
+          description: Move or copy operation
           required:
+            - op
+            - path
             - from
+          properties:
+            op:
+              type: string
+              enum: [move, copy]
+            path:
+              type: string
+              pattern: '^(/[^/~]*(~[01][^/~]*)*)*$'
+              description: JSON Pointer path
+            from:
+              type: string
+              pattern: '^(/[^/~]*(~[01][^/~]*)*)*$'
+              description: Source path for operation
+        - type: object
+          description: Remove operation
+          required:
+            - op
+            - path
+          properties:
+            op:
+              type: string
+              enum: [remove]
+            path:
+              type: string
+              pattern: '^(/[^/~]*(~[01][^/~]*)*)*$'
+              description: JSON Pointer path
 
     # OpenAPI Specification Schemas
     OpenAPISpecification:
