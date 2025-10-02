@@ -3,6 +3,15 @@
  * Do not make direct changes to the file.
  */
 
+/** OneOf type helpers */
+type Without<T, U> = { [P in Exclude<keyof T, keyof U>]?: never };
+type XOR<T, U> = T | U extends object ? (Without<T, U> & U) | (Without<U, T> & T) : T | U;
+type OneOf<T extends any[]> = T extends [infer Only]
+  ? Only
+  : T extends [infer A, infer B, ...infer Rest]
+    ? OneOf<[XOR<A, B>, ...Rest]>
+    : never;
+
 export interface paths {
   '/agents': {
     /**
@@ -159,57 +168,21 @@ export interface webhooks {
      * Agent created notification
      * @description Triggered when a new agent is successfully created
      */
-    post: {
-      requestBody?: {
-        content: {
-          'application/json': components['schemas']['AgentCreatedEvent'];
-        };
-      };
-      responses: {
-        /** @description Webhook received successfully */
-        200: {
-          content: never;
-        };
-      };
-    };
+    post: operations['handleAgentCreated'];
   };
   agentStatusChanged: {
     /**
      * Agent status change notification
      * @description Triggered when an agent's status changes
      */
-    post: {
-      requestBody?: {
-        content: {
-          'application/json': components['schemas']['AgentStatusEvent'];
-        };
-      };
-      responses: {
-        /** @description Webhook received successfully */
-        200: {
-          content: never;
-        };
-      };
-    };
+    post: operations['handleAgentStatusChanged'];
   };
   executionCompleted: {
     /**
      * Execution completed notification
      * @description Triggered when an agent execution completes
      */
-    post: {
-      requestBody?: {
-        content: {
-          'application/json': components['schemas']['ExecutionCompletedEvent'];
-        };
-      };
-      responses: {
-        /** @description Webhook received successfully */
-        200: {
-          content: never;
-        };
-      };
-    };
+    post: operations['handleExecutionCompleted'];
   };
 }
 
@@ -722,16 +695,32 @@ export interface components {
        */
       agent_capabilities?: string[];
     };
-    JsonPatchOperation: {
-      /** @enum {string} */
-      op: 'add' | 'remove' | 'replace' | 'move' | 'copy' | 'test';
-      /** @description JSON Pointer path */
-      path: string;
-      /** @description Value for add, replace, and test operations */
-      value?: unknown;
-      /** @description Source path for move and copy operations */
-      from?: string;
-    };
+    JsonPatchOperation: OneOf<
+      [
+        {
+          /** @enum {string} */
+          op: 'add' | 'replace' | 'test';
+          /** @description JSON Pointer path */
+          path: string;
+          /** @description Value for operation */
+          value: string | number | boolean | Record<string, never> | unknown[] | null;
+        },
+        {
+          /** @enum {string} */
+          op: 'move' | 'copy';
+          /** @description JSON Pointer path */
+          path: string;
+          /** @description Source path for operation */
+          from: string;
+        },
+        {
+          /** @enum {string} */
+          op: 'remove';
+          /** @description JSON Pointer path */
+          path: string;
+        }
+      ]
+    >;
     OpenAPISpecification: {
       /** @example user-api */
       id: string;
@@ -1367,6 +1356,57 @@ export interface operations {
       401: components['responses']['Unauthorized'];
       404: components['responses']['NotFound'];
       500: components['responses']['InternalServerError'];
+    };
+  };
+  /**
+   * Agent created notification
+   * @description Triggered when a new agent is successfully created
+   */
+  handleAgentCreated: {
+    requestBody?: {
+      content: {
+        'application/json': components['schemas']['AgentCreatedEvent'];
+      };
+    };
+    responses: {
+      /** @description Webhook received successfully */
+      200: {
+        content: never;
+      };
+    };
+  };
+  /**
+   * Agent status change notification
+   * @description Triggered when an agent's status changes
+   */
+  handleAgentStatusChanged: {
+    requestBody?: {
+      content: {
+        'application/json': components['schemas']['AgentStatusEvent'];
+      };
+    };
+    responses: {
+      /** @description Webhook received successfully */
+      200: {
+        content: never;
+      };
+    };
+  };
+  /**
+   * Execution completed notification
+   * @description Triggered when an agent execution completes
+   */
+  handleExecutionCompleted: {
+    requestBody?: {
+      content: {
+        'application/json': components['schemas']['ExecutionCompletedEvent'];
+      };
+    };
+    responses: {
+      /** @description Webhook received successfully */
+      200: {
+        content: never;
+      };
     };
   };
 }
