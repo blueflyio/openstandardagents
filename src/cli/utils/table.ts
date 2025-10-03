@@ -19,8 +19,8 @@ export function table(data: any[], columns: string[]) {
     }
   });
 
-  data.forEach(row => {
-    const values = columns.map(col => {
+  data.forEach((row) => {
+    const values = columns.map((col) => {
       const value = row[col];
       if (value === undefined || value === null) return '';
       if (typeof value === 'object') return JSON.stringify(value);

@@ -79,7 +79,6 @@ export class ObservabilityDeployCommand {
       }
 
       result.nextSteps = this.generateNextSteps(config.target);
-
     } catch (error) {
       result.success = false;
       const errorMessage = error instanceof Error ? error.message : String(error);
@@ -191,11 +190,7 @@ export class ObservabilityDeployCommand {
     try {
       await this.client.post('/api/routes/update', {
         target,
-        routes: [
-          '/api/v1/evaluation/rag',
-          '/api/v1/experiments',
-          '/api/v1/experiments/:id/runs'
-        ],
+        routes: ['/api/v1/evaluation/rag', '/api/v1/experiments', '/api/v1/experiments/:id/runs'],
         dry_run: dryRun
       });
 
@@ -230,22 +225,9 @@ export class ObservabilityDeployCommand {
    */
   private getServicesForTarget(target: string): string[] {
     const serviceMap: Record<string, string[]> = {
-      'agent-tracer': [
-        'rag-evaluator',
-        'llm-assertions',
-        'experiment-tracker'
-      ],
-      'agent-ops': [
-        'ops-dashboard',
-        'deployment-manager'
-      ],
-      'all': [
-        'rag-evaluator',
-        'llm-assertions',
-        'experiment-tracker',
-        'ops-dashboard',
-        'deployment-manager'
-      ]
+      'agent-tracer': ['rag-evaluator', 'llm-assertions', 'experiment-tracker'],
+      'agent-ops': ['ops-dashboard', 'deployment-manager'],
+      all: ['rag-evaluator', 'llm-assertions', 'experiment-tracker', 'ops-dashboard', 'deployment-manager']
     };
 
     return serviceMap[target] || [];
@@ -297,7 +279,7 @@ export function registerCommand(program: Command) {
       } else {
         logger.error('\n❌ Deployment failed');
         logger.error('\n🔥 Errors:');
-        result.errors.forEach(error => logger.error(`  - ${error}`));
+        result.errors.forEach((error) => logger.error(`  - ${error}`));
         process.exit(1);
       }
     });
