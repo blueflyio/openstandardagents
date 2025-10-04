@@ -104,9 +104,8 @@ export class AgentGraphBuilder {
       const spec = parseYaml(content);
 
       // Handle OpenAPI agent specs
-      const agentName = spec.info?.title?.replace(' API', '') ||
-                       spec['x-agent-id'] ||
-                       path.split('/').pop()?.replace('.yml', '');
+      const agentName =
+        spec.info?.title?.replace(' API', '') || spec['x-agent-id'] || path.split('/').pop()?.replace('.yml', '');
 
       if (!agentName) {
         return null;
@@ -186,7 +185,7 @@ export class AgentGraphBuilder {
     try {
       for (const agent of this.agents) {
         for (const dep of agent.dependencies) {
-          const target = this.agents.find(a => a.id === dep);
+          const target = this.agents.find((a) => a.id === dep);
           if (target) {
             this.relationships.push({
               source: agent.id,
@@ -244,13 +243,13 @@ export class AgentGraphBuilder {
     const span = this.tracer.startSpan('build_coordination_relationships');
 
     try {
-      const orchestrators = this.agents.filter(a => a.type === 'orchestrator');
-      const workers = this.agents.filter(a => a.type === 'worker');
+      const orchestrators = this.agents.filter((a) => a.type === 'orchestrator');
+      const workers = this.agents.filter((a) => a.type === 'worker');
 
       for (const orchestrator of orchestrators) {
         for (const worker of workers) {
           // Orchestrators coordinate workers in overlapping domains
-          const sharedDomains = orchestrator.domains.filter(d => worker.domains.includes(d));
+          const sharedDomains = orchestrator.domains.filter((d) => worker.domains.includes(d));
           if (sharedDomains.length > 0) {
             this.relationships.push({
               source: orchestrator.id,
@@ -262,8 +261,7 @@ export class AgentGraphBuilder {
         }
       }
 
-      span.setAttribute('coordination_links',
-        this.relationships.filter(r => r.type === 'coordinates').length);
+      span.setAttribute('coordination_links', this.relationships.filter((r) => r.type === 'coordinates').length);
     } finally {
       span.end();
     }
@@ -382,10 +380,10 @@ export class AgentGraphBuilder {
 
   private toCytoscape(graph: KnowledgeGraph): string {
     const elements = {
-      nodes: graph.nodes.map(n => ({
+      nodes: graph.nodes.map((n) => ({
         data: { id: n.id, label: n.name, type: n.type }
       })),
-      edges: graph.relationships.map(r => ({
+      edges: graph.relationships.map((r) => ({
         data: {
           source: r.source,
           target: r.target,

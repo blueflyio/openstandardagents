@@ -115,7 +115,6 @@ async function executeKnowledgeGraph(options: any): Promise<void> {
     mainSpan.setAttribute('total_agents', graph.stats.totalAgents);
     mainSpan.setAttribute('total_relationships', graph.relationships.length);
     mainSpan.setAttribute('duration_ms', duration);
-
   } catch (error) {
     console.error(chalk.red('\n❌ Error building knowledge graph:'));
     console.error(chalk.red(error instanceof Error ? error.message : String(error)));
@@ -143,11 +142,11 @@ async function executeKnowledgeGraph(options: any): Promise<void> {
 
 async function initializePhoenixTracing(): Promise<NodeSDK> {
   const exporter = new OTLPTraceExporter({
-    url: 'http://localhost:4317/v1/traces',
+    url: 'http://localhost:4317/v1/traces'
   });
 
   const sdk = new NodeSDK({
-    traceExporter: exporter,
+    traceExporter: exporter
   });
 
   await sdk.start();

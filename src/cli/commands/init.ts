@@ -140,10 +140,7 @@ function generateConfigFiles(projectDir: string, name: string, options: InitOpti
     }
   };
 
-  writeFileSync(
-    join(projectDir, 'config', 'knowledge-graph.config.json'),
-    JSON.stringify(graphConfig, null, 2)
-  );
+  writeFileSync(join(projectDir, 'config', 'knowledge-graph.config.json'), JSON.stringify(graphConfig, null, 2));
   console.log(chalk.gray('  ✓ config/knowledge-graph.config.json'));
 
   // agents.json (starter list)
@@ -156,10 +153,7 @@ function generateConfigFiles(projectDir: string, name: string, options: InitOpti
     }
   };
 
-  writeFileSync(
-    join(projectDir, 'config', 'agents.json'),
-    JSON.stringify(agentsConfig, null, 2)
-  );
+  writeFileSync(join(projectDir, 'config', 'agents.json'), JSON.stringify(agentsConfig, null, 2));
   console.log(chalk.gray('  ✓ config/agents.json'));
 }
 
@@ -459,10 +453,7 @@ function getTemplatePaths(template: string): string[] {
     case 'medium':
       return ['/Users/flux423/Sites/LLM/agent_buildkit/.agents'];
     case 'full':
-      return [
-        '/Users/flux423/Sites/LLM/agent_buildkit/.agents',
-        '/Users/flux423/Sites/LLM/OSSA/.agents'
-      ];
+      return ['/Users/flux423/Sites/LLM/agent_buildkit/.agents', '/Users/flux423/Sites/LLM/OSSA/.agents'];
     default:
       return [];
   }
