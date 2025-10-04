@@ -1,0 +1,219 @@
+{
+  "name": "OSSA Agents",
+  "children": [
+    {
+      "name": "worker",
+      "children": [
+        {
+          "name": "Agent",
+          "value": 21,
+          "metadata": {
+            "type": "object",
+            "discriminator": {
+              "propertyName": "type",
+              "mapping": {
+                "worker": "#/components/schemas/WorkerAgent",
+                "orchestrator": "#/components/schemas/OrchestratorAgent",
+                "critic": "#/components/schemas/CriticAgent",
+                "judge": "#/components/schemas/JudgeAgent",
+                "monitor": "#/components/schemas/MonitorAgent",
+                "governor": "#/components/schemas/GovernorAgent"
+              }
+            },
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^[a-z0-9-]+$",
+                "minLength": 3,
+                "maxLength": 63,
+                "example": "agent-001",
+                "description": "Unique agent identifier following DNS naming conventions"
+              },
+              "type": {
+                "$ref": "#/components/schemas/AgentType"
+              },
+              "name": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 255,
+                "example": "Data Processing Agent",
+                "description": "Human-readable agent name"
+              },
+              "description": {
+                "type": "string",
+                "maxLength": 1000,
+                "example": "Processes incoming data streams with validation and transformation"
+              },
+              "version": {
+                "type": "string",
+                "pattern": "^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-((?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\\+([0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?$",
+                "example": "1.2.3",
+                "description": "Semantic version following SemVer specification"
+              },
+              "status": {
+                "$ref": "#/components/schemas/AgentStatus"
+              },
+              "capabilities": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "pattern": "^[a-z0-9-]+$"
+                },
+                "minItems": 1,
+                "maxItems": 50,
+                "uniqueItems": true,
+                "example": [
+                  "data-processing",
+                  "validation",
+                  "transformation"
+                ],
+                "description": "List of capabilities this agent provides"
+              },
+              "configuration": {
+                "type": "object",
+                "additionalProperties": true,
+                "description": "Agent-specific configuration parameters"
+              },
+              "metadata": {
+                "$ref": "#/components/schemas/AgentMetadata"
+              },
+              "created_at": {
+                "type": "string",
+                "format": "date-time",
+                "example": "2025-01-15T10:30:00Z",
+                "description": "Agent creation timestamp in ISO 8601 format"
+              },
+              "updated_at": {
+                "type": "string",
+                "format": "date-time",
+                "example": "2025-01-15T14:30:00Z",
+                "description": "Last update timestamp in ISO 8601 format"
+              },
+              "metrics": {
+                "$ref": "#/components/schemas/AgentMetrics"
+              }
+            },
+            "required": [
+              "id",
+              "type",
+              "name",
+              "version",
+              "status",
+              "capabilities",
+              "created_at",
+              "updated_at"
+            ]
+          }
+        },
+        {
+          "name": "CreateAgentRequest",
+          "value": 12,
+          "metadata": {
+            "type": "object",
+            "discriminator": {
+              "propertyName": "type",
+              "mapping": {
+                "worker": "#/components/schemas/CreateWorkerAgentRequest",
+                "orchestrator": "#/components/schemas/CreateOrchestratorAgentRequest",
+                "critic": "#/components/schemas/CreateCriticAgentRequest",
+                "judge": "#/components/schemas/CreateJudgeAgentRequest",
+                "monitor": "#/components/schemas/CreateMonitorAgentRequest",
+                "governor": "#/components/schemas/CreateGovernorAgentRequest"
+              }
+            },
+            "properties": {
+              "type": {
+                "$ref": "#/components/schemas/AgentType"
+              },
+              "name": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 255
+              },
+              "description": {
+                "type": "string",
+                "maxLength": 1000
+              },
+              "version": {
+                "type": "string",
+                "pattern": "^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-((?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\\+([0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?$",
+                "default": "1.0.0"
+              },
+              "capabilities": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "pattern": "^[a-z0-9-]+$"
+                },
+                "minItems": 1,
+                "maxItems": 50,
+                "uniqueItems": true
+              },
+              "configuration": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "metadata": {
+                "$ref": "#/components/schemas/AgentMetadata"
+              },
+              "webhook_url": {
+                "type": "string",
+                "format": "uri",
+                "description": "URL to receive status change notifications"
+              }
+            },
+            "required": [
+              "type",
+              "name",
+              "capabilities"
+            ]
+          }
+        },
+        {
+          "name": "UpdateAgentRequest",
+          "value": 8,
+          "metadata": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 255
+              },
+              "description": {
+                "type": "string",
+                "maxLength": 1000
+              },
+              "version": {
+                "type": "string",
+                "pattern": "^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-((?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\\+([0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?$"
+              },
+              "capabilities": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "pattern": "^[a-z0-9-]+$"
+                },
+                "minItems": 1,
+                "maxItems": 50,
+                "uniqueItems": true
+              },
+              "configuration": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "metadata": {
+                "$ref": "#/components/schemas/AgentMetadata"
+              },
+              "expected_version": {
+                "type": "string",
+                "description": "Expected current version for optimistic locking"
+              }
+            },
+            "minProperties": 1
+          }
+        }
+      ]
+    }
+  ]
+}

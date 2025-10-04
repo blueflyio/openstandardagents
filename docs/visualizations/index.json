@@ -1,0 +1,30 @@
+{
+  "generatedAt": "2025-10-04T05:13:09.577Z",
+  "visualizations": [
+    "mermaid-flowchart",
+    "mermaid-class",
+    "graphviz-dependency",
+    "d3-force",
+    "d3-hierarchy"
+  ],
+  "metadata": {
+    "mermaid-flowchart": {
+      "generatedAt": "2025-10-04T05:13:09.572Z",
+      "nodeCount": 1
+    },
+    "mermaid-class": {
+      "generatedAt": "2025-10-04T05:13:09.573Z"
+    },
+    "graphviz-dependency": {
+      "generatedAt": "2025-10-04T05:13:09.575Z"
+    },
+    "d3-force": {
+      "generatedAt": "2025-10-04T05:13:09.576Z",
+      "nodeCount": 3,
+      "edgeCount": 30
+    },
+    "d3-hierarchy": {
+      "generatedAt": "2025-10-04T05:13:09.576Z"
+    }
+  }
+}

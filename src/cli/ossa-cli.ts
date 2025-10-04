@@ -11,6 +11,7 @@ import { readFileSync, writeFileSync, existsSync, readdirSync, statSync } from '
 import { join } from 'path';
 import chalk from 'chalk';
 // import { createValidateCommand } from './commands/validate.js'; // Removed - causes duplicate command
+import { createVisualizeCommand } from './commands/visualize.js';
 import { z } from 'zod';
 import * as yaml from 'js-yaml';
 
@@ -117,6 +118,9 @@ class OSSACli {
 
     // Add OSSA validation commands (commented out to avoid duplicate)
     // this.program.addCommand(createValidateCommand());
+
+    // Add visualization command
+    this.program.addCommand(createVisualizeCommand());
 
     // SPECIFICATION CRUD Operations
     const specCommand = this.program.command('spec').description('Specification management (CRUD operations)');

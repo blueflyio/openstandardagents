@@ -69,10 +69,13 @@ export function createVisualizeCommand(): Command {
   cmd
     .command('suite')
     .description('Generate complete visualization suite')
-    .option('-s, --spec <path>', 'OpenAPI spec path', required())
-    .option('-o, --output-dir <dir>', 'Output directory', required())
-    .action(async (options) => {
-      await generateSuite(options);
+    .requiredOption('-s, --spec <path>', 'OpenAPI spec path')
+    .requiredOption('-o, --output-dir <dir>', 'Output directory')
+    .action(async (options, command) => {
+      // Merge parent options with command options
+      const parentOpts = command.parent?.opts() || {};
+      const mergedOpts = { ...parentOpts, ...options };
+      await generateSuite(mergedOpts);
     });
 
   return cmd;
@@ -217,12 +220,29 @@ async function generateD3(options: any): Promise<void> {
 async function generateSuite(options: any): Promise<void> {
   const vizService = new VisualizationService();
 
-  console.log(chalk.blue('Generating visualization suite...'));
-  console.log(chalk.gray(`Spec: ${options.spec}`));
-  console.log(chalk.gray(`Output: ${options.outputDir}`));
+  // Debug: log received options
+  console.log(chalk.gray('DEBUG: Received options:'), options);
 
-  const suite = await vizService.generateSuite(options.spec);
-  await vizService.exportSuite(suite, options.outputDir);
+  // Commander.js converts --output-dir to outputDir in camelCase
+  const specPath = options.spec;
+  const outputDir = options.outputDir;
+
+  if (!specPath) {
+    console.error(chalk.red('Error: --spec is required'));
+    process.exit(1);
+  }
+
+  if (!outputDir) {
+    console.error(chalk.red('Error: --output-dir is required'));
+    process.exit(1);
+  }
+
+  console.log(chalk.blue('Generating visualization suite...'));
+  console.log(chalk.gray(`Spec: ${specPath}`));
+  console.log(chalk.gray(`Output: ${outputDir}`));
+
+  const suite = await vizService.generateSuite(specPath);
+  await vizService.exportSuite(suite, outputDir);
 
   console.log(chalk.green(`\n✓ Generated ${suite.size} visualizations:`));
 
@@ -230,7 +250,7 @@ async function generateSuite(options: any): Promise<void> {
     console.log(chalk.gray(`  • ${type}`));
   }
 
-  console.log(chalk.cyan(`\nOutput directory: ${path.resolve(options.outputDir)}`));
+  console.log(chalk.cyan(`\nOutput directory: ${path.resolve(outputDir)}`));
 }
 
 /**

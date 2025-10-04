@@ -1,0 +1,27 @@
+classDiagram
+  class Agent {
+    +string id
+    +string name
+    +string description
+    +string version
+    +array capabilities
+    +object configuration
+    +string created_at
+    +string updated_at
+  }
+  class CreateAgentRequest {
+    +string name
+    +string description
+    +string version
+    +array capabilities
+    +object configuration
+    +string webhook_url
+  }
+  class UpdateAgentRequest {
+    +string name
+    +string description
+    +string version
+    +array capabilities
+    +object configuration
+    +string expected_version
+  }
