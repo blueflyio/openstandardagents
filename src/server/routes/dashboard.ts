@@ -1,5 +1,6 @@
 import { Router, Request, Response } from 'express';
 import axios from 'axios';
+import { execSync } from 'child_process';
 
 const router = Router();
 
@@ -48,14 +49,21 @@ router.get('/ecosystem', async (req: Request, res: Response) => {
     const prometheusQuery = `
       http_requests_total{job="agent-router"}
     `;
-    const prometheusMetrics = await axios.get('http://localhost:9090/api/v1/query', {
-      params: { query: prometheusQuery }
-    }).catch(() => null);
+    const prometheusMetrics = await axios
+      .get('http://localhost:9090/api/v1/query', {
+        params: { query: prometheusQuery }
+      })
+      .catch(() => null);
 
     // Aggregate agent counts from .agents directories
-    const { execSync } = require('child_process');
-    const buildkitAgents = execSync('find /Users/flux423/Sites/LLM/agent_buildkit/.agents -name "*.yml" 2>/dev/null | wc -l').toString().trim();
-    const ossaAgents = execSync('find /Users/flux423/Sites/LLM/OSSA/.agents -name "*.yml" 2>/dev/null | wc -l').toString().trim();
+    const buildkitAgents = execSync(
+      'find /Users/flux423/Sites/LLM/agent_buildkit/.agents -name "*.yml" 2>/dev/null | wc -l'
+    )
+      .toString()
+      .trim();
+    const ossaAgents = execSync('find /Users/flux423/Sites/LLM/OSSA/.agents -name "*.yml" 2>/dev/null | wc -l')
+      .toString()
+      .trim();
 
     const stats: EcosystemStats = {
       agents: {
@@ -115,17 +123,15 @@ router.get('/agents/live', async (req: Request, res: Response) => {
  */
 router.get('/metrics', async (req: Request, res: Response) => {
   try {
-    const queries = [
-      'up{job="agent-router"}',
-      'http_request_duration_seconds',
-      'agent_tasks_total'
-    ];
+    const queries = ['up{job="agent-router"}', 'http_request_duration_seconds', 'agent_tasks_total'];
 
     const results = await Promise.all(
-      queries.map(query =>
-        axios.get('http://localhost:9090/api/v1/query', {
-          params: { query }
-        }).catch(() => null)
+      queries.map((query) =>
+        axios
+          .get('http://localhost:9090/api/v1/query', {
+            params: { query }
+          })
+          .catch(() => null)
       )
     );
 

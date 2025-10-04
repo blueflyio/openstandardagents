@@ -1,0 +1,41 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    cluster: 'ossa-dev'
+    environment: 'development'
+
+scrape_configs:
+  # OSSA API Server
+  - job_name: 'ossa-api'
+    static_configs:
+      - targets: ['host.docker.internal:3000']
+    metrics_path: '/metrics'
+
+  # Agent Router
+  - job_name: 'agent-router'
+    static_configs:
+      - targets: ['host.docker.internal:4000']
+    metrics_path: '/metrics'
+
+  # Knowledge Graph Service
+  - job_name: 'knowledge-graph'
+    static_configs:
+      - targets: ['host.docker.internal:3000']
+    metrics_path: '/api/v1/knowledge-graph/metrics'
+
+  # Prometheus Self-Monitoring
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  # Phoenix Metrics (if exposed)
+  - job_name: 'phoenix'
+    static_configs:
+      - targets: ['phoenix:6006']
+    metrics_path: '/metrics'
+
+  # Node Exporter (System Metrics)
+  - job_name: 'node'
+    static_configs:
+      - targets: ['host.docker.internal:9100']

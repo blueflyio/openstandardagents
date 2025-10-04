@@ -42,14 +42,10 @@ export interface GraphEdge {
  * Service for generating DOT format graphs
  */
 export class GraphvizService {
-
   /**
    * Generate directed graph (digraph) from OpenAPI spec
    */
-  async generateDigraph(
-    spec: OpenAPIObject,
-    options: GraphvizOptions = {}
-  ): Promise<string> {
+  async generateDigraph(spec: OpenAPIObject, options: GraphvizOptions = {}): Promise<string> {
     const { rankdir = 'TB', layout = 'dot', style = 'detailed' } = options;
 
     let dot = `digraph OSSA {\n`;
@@ -76,11 +72,7 @@ export class GraphvizService {
   /**
    * Generate clustered graph grouping agents by type
    */
-  async generateClusteredGraph(
-    nodes: GraphNode[],
-    edges: GraphEdge[],
-    options: GraphvizOptions = {}
-  ): Promise<string> {
+  async generateClusteredGraph(nodes: GraphNode[], edges: GraphEdge[], options: GraphvizOptions = {}): Promise<string> {
     const { rankdir = 'LR', style = 'colorful' } = options;
 
     let dot = `digraph OSSA_Clustered {\n`;
@@ -134,10 +126,7 @@ export class GraphvizService {
   /**
    * Generate execution flow graph
    */
-  async generateExecutionFlow(
-    workflow: string[],
-    options: GraphvizOptions = {}
-  ): Promise<string> {
+  async generateExecutionFlow(workflow: string[], options: GraphvizOptions = {}): Promise<string> {
     let dot = `digraph ExecutionFlow {\n`;
     dot += '  rankdir=LR;\n';
     dot += '  node [shape=ellipse, style=filled];\n';
@@ -148,7 +137,7 @@ export class GraphvizService {
       dot += `  step_${i} [label="${step}", fillcolor="${color}"];\n`;
 
       if (i > 0) {
-        dot += `  step_${i-1} -> step_${i};\n`;
+        dot += `  step_${i - 1} -> step_${i};\n`;
       }
     }
 
@@ -159,10 +148,7 @@ export class GraphvizService {
   /**
    * Generate capability map showing agent capabilities
    */
-  async generateCapabilityMap(
-    agents: GraphNode[],
-    capabilities: Map<string, string[]>
-  ): Promise<string> {
+  async generateCapabilityMap(agents: GraphNode[], capabilities: Map<string, string[]>): Promise<string> {
     let dot = `digraph CapabilityMap {\n`;
     dot += '  rankdir=LR;\n';
     dot += '  node [shape=box];\n';
@@ -170,7 +156,7 @@ export class GraphvizService {
     // Capability nodes (left side)
     const allCaps = new Set<string>();
     for (const caps of capabilities.values()) {
-      caps.forEach(cap => allCaps.add(cap));
+      caps.forEach((cap) => allCaps.add(cap));
     }
 
     dot += '  subgraph cluster_capabilities {\n';
@@ -210,14 +196,12 @@ export class GraphvizService {
   /**
    * Generate communication graph showing message flows
    */
-  async generateCommunicationGraph(
-    messages: Array<{ from: string; to: string; protocol: string }>
-  ): Promise<string> {
+  async generateCommunicationGraph(messages: Array<{ from: string; to: string; protocol: string }>): Promise<string> {
     let dot = `digraph Communication {\n`;
     dot += '  rankdir=LR;\n';
     dot += '  edge [fontsize=10];\n';
 
-    const protocols = new Set(messages.map(m => m.protocol));
+    const protocols = new Set(messages.map((m) => m.protocol));
 
     for (const msg of messages) {
       const color = this.getProtocolColor(msg.protocol);
@@ -423,10 +407,7 @@ export class GraphvizService {
   }
 
   private isAgentSchema(schema: any): boolean {
-    return (
-      'properties' in schema &&
-      (schema.properties?.type || schema.properties?.capabilities)
-    );
+    return 'properties' in schema && (schema.properties?.type || schema.properties?.capabilities);
   }
 
   private getSchemaType(schema: any): string {

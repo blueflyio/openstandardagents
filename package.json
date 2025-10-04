@@ -54,7 +54,12 @@
     "agents:spawn:validation": "node dist/cli/ossa-cli.js spawn --type validation",
     "agents:workload": "node dist/cli/ossa-cli.js workload",
     "test:with-mock": "MOCK_MODE=true npm test",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "dev:start": "./scripts/dev-start.sh",
+    "dev:stop": "./scripts/dev-stop.sh",
+    "graph:build": "node dist/cli/ossa-cli.js knowledge-graph --output knowledge-graph",
+    "graph:init": "node dist/cli/ossa-cli.js init",
+    "hooks:install": "./hooks/install-hooks.sh"
   },
   "keywords": [
     "ossa",
@@ -68,6 +73,11 @@
   "author": "Bluefly.io",
   "license": "MIT",
   "dependencies": {
+    "@opentelemetry/api": "^1.9.0",
+    "@opentelemetry/exporter-trace-otlp-http": "^0.205.0",
+    "@opentelemetry/resources": "^2.1.0",
+    "@opentelemetry/sdk-node": "^0.205.0",
+    "@opentelemetry/semantic-conventions": "^1.37.0",
     "ajv": "^8.17.1",
     "ajv-formats": "^3.0.1",
     "chalk": "^5.6.2",
