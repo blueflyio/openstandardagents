@@ -134,9 +134,7 @@ describe('MermaidService', () => {
         { id: 'orchestrator_1', name: 'orchestrator-1', type: 'orchestrator' }
       ];
 
-      const relationships = [
-        { from: 'orchestrator_1', to: 'worker_1', type: 'invokes' as const }
-      ];
+      const relationships = [{ from: 'orchestrator_1', to: 'worker_1', type: 'invokes' as const }];
 
       const result = await service.generateArchitectureDiagram(agents, relationships);
 

@@ -1,4 +1,6 @@
-import type { OpenAPIObject } from 'openapi-types';
+import type { OpenAPIV3_1 } from 'openapi-types';
+
+type OpenAPIObject = OpenAPIV3_1.Document;
 
 /**
  * D3DataService - D3.js Compatible Data Preparation
@@ -61,7 +63,6 @@ export interface D3ChordData {
  * Service for preparing D3.js compatible data structures
  */
 export class D3DataService {
-
   /**
    * Generate force-directed graph data
    * Perfect for agent relationship visualization
@@ -82,7 +83,7 @@ export class D3DataService {
       metadata: node.metadata
     }));
 
-    const d3Links: D3Link[] = links.map(link => ({
+    const d3Links: D3Link[] = links.map((link) => ({
       source: link.from,
       target: link.to,
       value: link.weight || 1,
@@ -127,7 +128,7 @@ export class D3DataService {
     for (const [type, agents] of agentGroups.entries()) {
       const typeNode: D3HierarchyNode = {
         name: type,
-        children: agents.map(agent => ({
+        children: agents.map((agent) => ({
           name: agent.name,
           value: agent.value,
           metadata: agent.schema
@@ -166,12 +167,10 @@ export class D3DataService {
    * Generate Sankey diagram data
    * Perfect for showing data/message flow between agents
    */
-  async generateSankey(
-    flows: Array<{ from: string; to: string; volume: number }>
-  ): Promise<D3SankeyData> {
+  async generateSankey(flows: Array<{ from: string; to: string; volume: number }>): Promise<D3SankeyData> {
     // Extract unique nodes
     const nodeSet = new Set<string>();
-    flows.forEach(flow => {
+    flows.forEach((flow) => {
       nodeSet.add(flow.from);
       nodeSet.add(flow.to);
     });
@@ -188,7 +187,7 @@ export class D3DataService {
     });
 
     // Convert flows to links
-    const links = flows.map(flow => ({
+    const links = flows.map((flow) => ({
       source: nodeIndex.get(flow.from) || 0,
       target: nodeIndex.get(flow.to) || 0,
       value: flow.volume
@@ -201,12 +200,10 @@ export class D3DataService {
    * Generate chord diagram data
    * Perfect for showing bidirectional relationships
    */
-  async generateChord(
-    interactions: Array<{ agent1: string; agent2: string; count: number }>
-  ): Promise<D3ChordData> {
+  async generateChord(interactions: Array<{ agent1: string; agent2: string; count: number }>): Promise<D3ChordData> {
     // Extract unique agents
     const agentSet = new Set<string>();
-    interactions.forEach(int => {
+    interactions.forEach((int) => {
       agentSet.add(int.agent1);
       agentSet.add(int.agent2);
     });
@@ -221,10 +218,12 @@ export class D3DataService {
     });
 
     // Initialize matrix
-    const matrix: number[][] = Array(size).fill(0).map(() => Array(size).fill(0));
+    const matrix: number[][] = Array(size)
+      .fill(0)
+      .map(() => Array(size).fill(0));
 
     // Fill matrix
-    interactions.forEach(int => {
+    interactions.forEach((int) => {
       const i = agentIndex.get(int.agent1);
       const j = agentIndex.get(int.agent2);
 
@@ -241,9 +240,7 @@ export class D3DataService {
    * Generate network topology data
    * Perfect for showing infrastructure layout
    */
-  async generateNetworkTopology(
-    spec: OpenAPIObject
-  ): Promise<{
+  async generateNetworkTopology(spec: OpenAPIObject): Promise<{
     nodes: D3Node[];
     links: D3Link[];
     layers: Map<number, string[]>;
@@ -257,7 +254,7 @@ export class D3DataService {
     // Layer 1: Workers and Critics
     // Layer 2: Monitors and Governors
 
-    forceData.nodes.forEach(node => {
+    forceData.nodes.forEach((node) => {
       const layer = this.getAgentLayer(node.type);
 
       if (!layers.has(layer)) {
@@ -293,7 +290,7 @@ export class D3DataService {
     const nodes = await this.extractNodes(spec);
     const links = await this.extractLinks(spec);
 
-    const nodeNames = nodes.map(n => n.name);
+    const nodeNames = nodes.map((n) => n.name);
     const size = nodeNames.length;
 
     // Create index map
@@ -303,10 +300,12 @@ export class D3DataService {
     });
 
     // Initialize matrix
-    const matrix: number[][] = Array(size).fill(0).map(() => Array(size).fill(0));
+    const matrix: number[][] = Array(size)
+      .fill(0)
+      .map(() => Array(size).fill(0));
 
     // Fill matrix based on links
-    links.forEach(link => {
+    links.forEach((link) => {
       const sourceIdx = nodeIndex.get(link.from);
       const targetIdx = nodeIndex.get(link.to);
 
@@ -317,7 +316,7 @@ export class D3DataService {
 
     // Create metadata map
     const metadata = new Map<string, any>();
-    nodes.forEach(node => {
+    nodes.forEach((node) => {
       metadata.set(node.name, node.metadata);
     });
 
@@ -331,7 +330,7 @@ export class D3DataService {
     agentId: string,
     events: Array<{ timestamp: number; value: number; type: string }>
   ): Array<{ date: Date; value: number; type: string }> {
-    return events.map(event => ({
+    return events.map((event) => ({
       date: new Date(event.timestamp),
       value: event.value,
       type: event.type
@@ -403,7 +402,7 @@ export class D3DataService {
   }
 
   private createTypeMap(nodes: any[]): Map<string, number> {
-    const types = [...new Set(nodes.map(n => n.type))];
+    const types = [...new Set(nodes.map((n) => n.type))];
     const typeMap = new Map<string, number>();
 
     types.forEach((type, index) => {
@@ -465,10 +464,7 @@ export class D3DataService {
   private isAgentSchema(schema: any): boolean {
     if (!schema || typeof schema !== 'object') return false;
 
-    return (
-      'properties' in schema &&
-      (schema.properties?.type || schema.properties?.capabilities)
-    );
+    return 'properties' in schema && (schema.properties?.type || schema.properties?.capabilities);
   }
 
   private getAgentType(schema: any): string {

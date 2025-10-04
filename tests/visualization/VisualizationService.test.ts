@@ -153,11 +153,7 @@ components:
 
       await service.exportToFile(result, '/test/output.txt');
 
-      expect(fs.writeFile).toHaveBeenCalledWith(
-        '/test/output.txt',
-        'flowchart TB\n  A --> B',
-        'utf-8'
-      );
+      expect(fs.writeFile).toHaveBeenCalledWith('/test/output.txt', 'flowchart TB\n  A --> B', 'utf-8');
     });
 
     it('should export JSON visualization to file', async () => {

@@ -23,9 +23,7 @@ describe('D3DataService', () => {
         },
         OrchestratorAgent: {
           type: 'object',
-          allOf: [
-            { $ref: '#/components/schemas/WorkerAgent' }
-          ],
+          allOf: [{ $ref: '#/components/schemas/WorkerAgent' }],
           properties: {
             type: { type: 'string', enum: ['orchestrator'] }
           }
@@ -47,7 +45,7 @@ describe('D3DataService', () => {
     it('should assign groups to nodes', async () => {
       const result = await service.generateForceGraph(mockSpec);
 
-      const workerNode = result.nodes.find(n => n.type === 'worker');
+      const workerNode = result.nodes.find((n) => n.type === 'worker');
       expect(workerNode).toBeDefined();
       expect(workerNode?.group).toBeDefined();
     });
@@ -56,9 +54,7 @@ describe('D3DataService', () => {
       const result = await service.generateForceGraph(mockSpec);
 
       // Should have a link from OrchestratorAgent to WorkerAgent (allOf)
-      const inheritanceLink = result.links.find(
-        l => l.type === 'extends'
-      );
+      const inheritanceLink = result.links.find((l) => l.type === 'extends');
 
       expect(inheritanceLink).toBeDefined();
     });
@@ -76,7 +72,7 @@ describe('D3DataService', () => {
     it('should group agents by type', async () => {
       const result = await service.generateHierarchy(mockSpec);
 
-      const workerGroup = result.children?.find(c => c.name === 'worker');
+      const workerGroup = result.children?.find((c) => c.name === 'worker');
       expect(workerGroup).toBeDefined();
       expect(workerGroup?.children).toBeDefined();
     });
@@ -96,9 +92,7 @@ describe('D3DataService', () => {
     });
 
     it('should map node names to indices', async () => {
-      const flows = [
-        { from: 'Agent1', to: 'Agent2', volume: 10 }
-      ];
+      const flows = [{ from: 'Agent1', to: 'Agent2', volume: 10 }];
 
       const result = await service.generateSankey(flows);
 
@@ -123,9 +117,7 @@ describe('D3DataService', () => {
     });
 
     it('should create symmetric matrix', async () => {
-      const interactions = [
-        { agent1: 'A', agent2: 'B', count: 5 }
-      ];
+      const interactions = [{ agent1: 'A', agent2: 'B', count: 5 }];
 
       const result = await service.generateChord(interactions);
 

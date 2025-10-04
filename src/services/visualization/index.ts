@@ -37,36 +37,20 @@ export { GraphvizService } from './GraphvizService.js';
 export { D3DataService } from './D3DataService.js';
 export { VisualizationService } from './VisualizationService.js';
 
+// Import for default export
+import { VisualizationService } from './VisualizationService.js';
+
 // Mermaid Types
-export type {
-  DiagramOptions,
-  AgentNode,
-  AgentRelationship
-} from './MermaidService.js';
+export type { DiagramOptions, AgentNode, AgentRelationship } from './MermaidService.js';
 
 // Graphviz Types
-export type {
-  GraphvizOptions,
-  GraphNode,
-  GraphEdge
-} from './GraphvizService.js';
+export type { GraphvizOptions, GraphNode, GraphEdge } from './GraphvizService.js';
 
 // D3 Types
-export type {
-  D3Node,
-  D3Link,
-  D3ForceGraphData,
-  D3HierarchyNode,
-  D3SankeyData,
-  D3ChordData
-} from './D3DataService.js';
+export type { D3Node, D3Link, D3ForceGraphData, D3HierarchyNode, D3SankeyData, D3ChordData } from './D3DataService.js';
 
 // Unified Types
-export type {
-  VisualizationType,
-  VisualizationRequest,
-  VisualizationResult
-} from './VisualizationService.js';
+export type { VisualizationType, VisualizationRequest, VisualizationResult } from './VisualizationService.js';
 
 /**
  * Default export: Unified service

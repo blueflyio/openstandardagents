@@ -1,4 +1,6 @@
-import type { OpenAPIObject } from 'openapi-types';
+import type { OpenAPIV3_1 } from 'openapi-types';
+
+type OpenAPIObject = OpenAPIV3_1.Document;
 import { MermaidService, type DiagramOptions, type AgentNode, type AgentRelationship } from './MermaidService.js';
 import { GraphvizService, type GraphvizOptions, type GraphNode, type GraphEdge } from './GraphvizService.js';
 import { D3DataService, type D3ForceGraphData, type D3HierarchyNode } from './D3DataService.js';
@@ -69,11 +71,7 @@ export class VisualizationService {
   private graphviz: GraphvizService;
   private d3: D3DataService;
 
-  constructor(
-    mermaidService?: MermaidService,
-    graphvizService?: GraphvizService,
-    d3Service?: D3DataService
-  ) {
+  constructor(mermaidService?: MermaidService, graphvizService?: GraphvizService, d3Service?: D3DataService) {
     // Dependency injection with defaults
     this.mermaid = mermaidService || new MermaidService();
     this.graphviz = graphvizService || new GraphvizService();
@@ -124,7 +122,7 @@ export class VisualizationService {
    * Generate multiple visualizations in batch
    */
   async generateBatch(requests: VisualizationRequest[]): Promise<VisualizationResult[]> {
-    return Promise.all(requests.map(req => this.generate(req)));
+    return Promise.all(requests.map((req) => this.generate(req)));
   }
 
   /**
@@ -160,13 +158,8 @@ export class VisualizationService {
   /**
    * Export visualization to file
    */
-  async exportToFile(
-    result: VisualizationResult,
-    outputPath: string
-  ): Promise<void> {
-    const content = typeof result.content === 'string'
-      ? result.content
-      : JSON.stringify(result.content, null, 2);
+  async exportToFile(result: VisualizationResult, outputPath: string): Promise<void> {
+    const content = typeof result.content === 'string' ? result.content : JSON.stringify(result.content, null, 2);
 
     await fs.writeFile(outputPath, content, 'utf-8');
   }
@@ -174,10 +167,7 @@ export class VisualizationService {
   /**
    * Export suite to directory
    */
-  async exportSuite(
-    suite: Map<string, VisualizationResult>,
-    outputDir: string
-  ): Promise<void> {
+  async exportSuite(suite: Map<string, VisualizationResult>, outputDir: string): Promise<void> {
     // Create directory if it doesn't exist
     await fs.mkdir(outputDir, { recursive: true });
 
@@ -194,30 +184,18 @@ export class VisualizationService {
     const index = {
       generatedAt: new Date().toISOString(),
       visualizations: Array.from(suite.keys()),
-      metadata: Object.fromEntries(
-        Array.from(suite.entries()).map(([type, result]) => [
-          type,
-          result.metadata
-        ])
-      )
+      metadata: Object.fromEntries(Array.from(suite.entries()).map(([type, result]) => [type, result.metadata]))
     };
 
-    await fs.writeFile(
-      `${outputDir}/index.json`,
-      JSON.stringify(index, null, 2),
-      'utf-8'
-    );
+    await fs.writeFile(`${outputDir}/index.json`, JSON.stringify(index, null, 2), 'utf-8');
   }
 
   // ============================================================================
   // Private Mermaid Generators
   // ============================================================================
 
-  private async generateMermaid(
-    request: VisualizationRequest,
-    spec: OpenAPIObject | null
-  ): Promise<string> {
-    const opts = request.options as DiagramOptions || {};
+  private async generateMermaid(request: VisualizationRequest, spec: OpenAPIObject | null): Promise<string> {
+    const opts = (request.options as DiagramOptions) || {};
 
     switch (request.type) {
       case 'mermaid-flowchart':
@@ -257,11 +235,8 @@ export class VisualizationService {
   // Private Graphviz Generators
   // ============================================================================
 
-  private async generateGraphviz(
-    request: VisualizationRequest,
-    spec: OpenAPIObject | null
-  ): Promise<string> {
-    const opts = request.options as GraphvizOptions || {};
+  private async generateGraphviz(request: VisualizationRequest, spec: OpenAPIObject | null): Promise<string> {
+    const opts = (request.options as GraphvizOptions) || {};
 
     switch (request.type) {
       case 'graphviz-digraph':
@@ -295,10 +270,7 @@ export class VisualizationService {
   // Private D3 Generators
   // ============================================================================
 
-  private async generateD3(
-    request: VisualizationRequest,
-    spec: OpenAPIObject | null
-  ): Promise<object> {
+  private async generateD3(request: VisualizationRequest, spec: OpenAPIObject | null): Promise<object> {
     switch (request.type) {
       case 'd3-force':
         if (!spec) throw new Error('Spec required');

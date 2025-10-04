@@ -1,7 +1,9 @@
 import * as yaml from 'yaml';
 import * as fs from 'fs/promises';
 import * as path from 'path';
-import type { OpenAPIObject } from 'openapi-types';
+import type { OpenAPIV3_1 } from 'openapi-types';
+
+type OpenAPIObject = OpenAPIV3_1.Document;
 
 /**
  * MermaidService - OpenAPI to Mermaid Diagram Generator

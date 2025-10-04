@@ -201,9 +201,7 @@ async function generateD3(options: any): Promise<void> {
     specPath: options.spec
   });
 
-  const content = typeof result.content === 'string'
-    ? result.content
-    : JSON.stringify(result.content, null, 2);
+  const content = typeof result.content === 'string' ? result.content : JSON.stringify(result.content, null, 2);
 
   if (options.output) {
     await fs.writeFile(options.output, content, 'utf-8');

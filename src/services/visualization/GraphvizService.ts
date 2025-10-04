@@ -1,4 +1,6 @@
-import type { OpenAPIObject } from 'openapi-types';
+import type { OpenAPIV3_1 } from 'openapi-types';
+
+type OpenAPIObject = OpenAPIV3_1.Document;
 
 /**
  * GraphvizService - DOT Format Graph Generator
@@ -213,7 +215,7 @@ export class GraphvizService {
   ): Promise<string> {
     let dot = `digraph Communication {\n`;
     dot += '  rankdir=LR;\n';
-    dot += '  edge [fontsize=10];\n`;
+    dot += '  edge [fontsize=10];\n';
 
     const protocols = new Set(messages.map(m => m.protocol));
 
