@@ -291,7 +291,7 @@ pages:
   stage: pages
   image: node:${NODE_VERSION}
   script:
-    - echo "🌐 Building OSSA Documentation Site with Redocly"
+    - echo "🌐 Building OSSA Documentation Site with Redocly + Visualizations"
     - npm install  # Use install instead of ci to handle lock file mismatches
     - echo "Preparing public directory with Redocly API documentation..."
     - |
@@ -323,6 +323,16 @@ pages:
         npx markdown-to-html ROADMAP.md -o public/docs/development/roadmap.html 2>/dev/null || true
       fi
 
+      # Deploy visualization dashboard (NEW!)
+      echo "🎨 Deploying Agent Ecosystem Visualization Dashboard..."
+      mkdir -p public/visualizations
+      cp -r docs/visualizations/* public/visualizations/ 2>/dev/null || true
+
+      # Copy dashboard as alternative index if it exists
+      if [ -f "docs/visualizations/agent-ecosystem-dashboard.html" ]; then
+        cp docs/visualizations/agent-ecosystem-dashboard.html public/dashboard.html
+        echo "✅ Agent Ecosystem Dashboard deployed at /dashboard.html"
+      fi
 
       # The main API documentation page is api-docs.html with Redocly
       if [ -f "public/api-docs.html" ]; then
@@ -333,6 +343,8 @@ pages:
     - ls -la public/
     - echo "📦 Documentation structure:"
     - find public -type f -name "*.html" | head -20
+    - echo "🎨 Visualization files:"
+    - ls -la public/visualizations/ 2>/dev/null || echo "No visualizations yet"
   artifacts:
     paths:
       - public
@@ -341,6 +353,7 @@ pages:
     - main
     - development
     - pages
+    - feature/architecture-visualization
 
 # Release and tagging job
 release:version:
