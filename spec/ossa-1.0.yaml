@@ -130,6 +130,106 @@ schema:
         license: string
         keywords: string[]
 
+      # Bridge Configuration (Protocol Interoperability)
+      bridge:
+        # Model Context Protocol Bridge
+        mcp:
+          enabled: boolean
+          server_type: enum # stdio|sse|websocket
+          tools: # MCP tools exposed by the agent
+            - name: string
+              description: string
+              input_schema: object # JSON Schema
+              output_schema: object # JSON Schema
+              capability: string # Maps to OSSA capability
+          resources: # MCP resources provided
+            - uri: string # e.g., "ossa://agents"
+              name: string
+              description: string
+              mimeType: string
+              readonly: boolean
+          prompts: # MCP prompts available
+            - name: string
+              description: string
+              template: string # Template with {{variables}}
+              arguments:
+                - name: string
+                  type: string
+                  required: boolean
+          config:
+            max_message_size: integer # bytes
+            timeout_ms: integer # milliseconds
+            retry_count: integer
+
+        # Agent-to-Agent Protocol Bridge
+        a2a:
+          enabled: boolean
+          card_url: uri
+          schema_version: string
+          capabilities_mapping: object # Map OSSA caps to A2A actions
+          metadata:
+            "@context": string
+            "@type": string
+
+        # OpenAPI Bridge
+        openapi:
+          enabled: boolean
+          spec_url: uri
+          spec_version: enum # 3.0|3.1
+          auto_generate: boolean
+          servers:
+            - url: uri
+              description: string
+          security: object[]
+
+        # LangChain Bridge
+        langchain:
+          enabled: boolean
+          tool_class: string
+          chain_type: enum # llm|retrieval|agent|sequential|custom
+          memory:
+            type: enum # buffer|summary|conversation|vector
+            max_tokens: integer
+          callbacks: string[]
+          export:
+            as_tool: boolean
+            as_chain: boolean
+            as_agent: boolean
+
+        # CrewAI Bridge
+        crewai:
+          enabled: boolean
+          agent_type: enum # worker|manager|researcher|analyst|custom
+          role: string
+          goal: string
+          backstory: string
+          tools: string[]
+          llm:
+            model: string
+            temperature: float
+          max_iter: integer
+          allow_delegation: boolean
+
+        # AutoGen Bridge
+        autogen:
+          enabled: boolean
+          agent_type: enum # assistant|user_proxy|groupchat|custom
+          system_message: string
+          human_input_mode: enum # ALWAYS|NEVER|TERMINATE
+          code_execution:
+            enabled: boolean
+            work_dir: string
+            use_docker: boolean
+          llm_config:
+            model: string
+            temperature: float
+            max_tokens: integer
+            functions: object[]
+          max_consecutive_auto_reply: integer
+
+        # Custom Bridges
+        custom: object # Arbitrary custom bridge configurations
+
 # Validation Rules
 validation:
   - id: must match DNS-1123 subdomain format
