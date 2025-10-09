@@ -306,7 +306,7 @@ describe('OSSA Agent Schema - MCPB Integration', () => {
 
       expect(prompt.template).toContain('{{language}}');
       expect(prompt.arguments).toHaveLength(3);
-      expect(prompt.arguments?.find(a => a.name === 'language')?.required).toBe(true);
+      expect(prompt.arguments?.find((a) => a.name === 'language')?.required).toBe(true);
     });
   });
 
