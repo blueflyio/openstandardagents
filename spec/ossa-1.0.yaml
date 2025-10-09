@@ -329,6 +329,36 @@ versioning:
     - ossa_version: "1.1"
       agent_versions: "1.x.x || 2.x.x"
 
+# Bridge Use Cases
+bridge_use_cases:
+  mcp:
+    description: "Model Context Protocol - Claude Desktop, Langflow integration"
+    when_to_use: "Expose agent as MCP tool server for AI assistants"
+    transport_types:
+      stdio: "Local execution, Claude Desktop"
+      sse: "Server-sent events for web integration"
+      websocket: "Real-time bidirectional communication"
+
+  a2a:
+    description: "Agent-to-Agent Protocol - Multi-agent coordination"
+    when_to_use: "Enable agent discovery and inter-agent communication"
+
+  openapi:
+    description: "REST API bridge - Standard HTTP/REST integration"
+    when_to_use: "Expose agent capabilities as REST API"
+
+  langchain:
+    description: "LangChain framework integration"
+    when_to_use: "Use agent within LangChain workflows"
+
+  crewai:
+    description: "CrewAI framework integration"
+    when_to_use: "Agent as part of CrewAI multi-agent system"
+
+  autogen:
+    description: "AutoGen framework integration"
+    when_to_use: "Multi-agent conversations with AutoGen"
+
 # Best Practices
 best_practices:
   - Always specify health_check endpoint
@@ -341,3 +371,7 @@ best_practices:
   - Tag agents for discovery
   - Reference OpenAPI specs for complex schemas
   - Use dependency declarations for agent coordination
+  - Enable bridge protocols for interoperability
+  - Map MCP tools to OSSA capabilities for consistency
+  - Use stdio transport for local/desktop integration
+  - Use websocket transport for production deployments

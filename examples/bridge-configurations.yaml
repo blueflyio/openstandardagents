@@ -1,0 +1,346 @@
+# OSSA Bridge Configuration Examples
+# Demonstrates how to configure various protocol bridges for agent interoperability
+
+---
+# Example 1: MCP Bridge with stdio transport (Claude Desktop integration)
+ossaVersion: "1.0"
+agent:
+  id: mcp-stdio-agent
+  name: "Claude Desktop MCP Agent"
+  version: "1.0.0"
+  description: "Agent exposed as MCP tool server for Claude Desktop"
+  role: custom
+  tags: ["mcp", "claude-desktop", "local"]
+
+  runtime:
+    type: local
+    command: ["node", "dist/agent.js"]
+    resources:
+      cpu: "500m"
+      memory: "512Mi"
+
+  capabilities:
+    - name: analyze_code
+      description: "Analyze source code for issues"
+      input_schema:
+        type: object
+        properties:
+          code:
+            type: string
+          language:
+            type: string
+            enum: ["typescript", "javascript", "python"]
+        required: ["code", "language"]
+      output_schema:
+        type: object
+        properties:
+          issues:
+            type: array
+            items:
+              type: object
+
+  bridge:
+    mcp:
+      enabled: true
+      server_type: stdio
+      tools:
+        - name: analyze_code
+          description: "Analyze source code for issues"
+          capability: analyze_code
+          input_schema:
+            type: object
+            properties:
+              code: { type: string }
+              language: { type: string }
+            required: ["code", "language"]
+
+      resources:
+        - uri: "ossa://code-analysis"
+          name: "Code Analysis Results"
+          description: "Access to code analysis results"
+          mimeType: "application/json"
+          readonly: true
+
+      prompts:
+        - name: review_pr
+          description: "Review a pull request"
+          template: "Review the following {{language}} code changes:\n{{diff}}"
+          arguments:
+            - name: language
+              type: string
+              required: true
+            - name: diff
+              type: string
+              required: true
+
+      config:
+        max_message_size: 1048576
+        timeout_ms: 30000
+        retry_count: 3
+
+---
+# Example 2: Multi-Bridge Agent (MCP + OpenAPI + LangChain)
+ossaVersion: "1.0"
+agent:
+  id: multi-bridge-orchestrator
+  name: "Multi-Protocol Orchestrator"
+  version: "1.0.0"
+  description: "Agent supporting multiple bridge protocols simultaneously"
+  role: orchestration
+  tags: ["multi-protocol", "orchestrator", "integration"]
+
+  runtime:
+    type: docker
+    image: "ossa/multi-bridge:latest"
+    resources:
+      cpu: "1"
+      memory: "1Gi"
+
+  capabilities:
+    - name: execute_workflow
+      description: "Execute multi-step workflow"
+      input_schema:
+        type: object
+        properties:
+          workflow_id: { type: string }
+          steps: { type: array }
+
+  bridge:
+    # MCP Bridge for AI assistant integration
+    mcp:
+      enabled: true
+      server_type: websocket
+      tools:
+        - name: execute_workflow
+          description: "Execute a workflow"
+          capability: execute_workflow
+
+    # OpenAPI Bridge for REST API access
+    openapi:
+      enabled: true
+      spec_url: "https://api.example.com/openapi.json"
+      spec_version: "3.1"
+      auto_generate: false
+      servers:
+        - url: "https://api.example.com"
+          description: "Production API"
+
+    # LangChain Bridge for Python integration
+    langchain:
+      enabled: true
+      tool_class: "OSSAWorkflowTool"
+      chain_type: agent
+      memory:
+        type: conversation
+        max_tokens: 4096
+      export:
+        as_tool: true
+        as_chain: true
+        as_agent: false
+
+---
+# Example 3: CrewAI Integration
+ossaVersion: "1.0"
+agent:
+  id: crewai-researcher
+  name: "Research Agent"
+  version: "1.0.0"
+  description: "Agent configured for CrewAI framework"
+  role: custom
+  tags: ["crewai", "research", "analyst"]
+
+  runtime:
+    type: docker
+    image: "ossa/crewai-agent:latest"
+
+  capabilities:
+    - name: research_topic
+      description: "Research a topic and provide insights"
+
+  bridge:
+    crewai:
+      enabled: true
+      agent_type: researcher
+      role: "Senior Research Analyst"
+      goal: "Conduct thorough research and provide actionable insights"
+      backstory: "Expert researcher with 10+ years of experience in data analysis"
+      tools: ["web_search", "document_reader", "data_analyzer"]
+      llm:
+        model: "gpt-4"
+        temperature: 0.7
+      max_iter: 15
+      allow_delegation: true
+
+---
+# Example 4: AutoGen Group Chat Agent
+ossaVersion: "1.0"
+agent:
+  id: autogen-assistant
+  name: "AutoGen Assistant"
+  version: "1.0.0"
+  description: "Agent for AutoGen multi-agent conversations"
+  role: chat
+  tags: ["autogen", "assistant", "conversation"]
+
+  runtime:
+    type: local
+    command: ["python", "agent.py"]
+
+  capabilities:
+    - name: code_generation
+      description: "Generate code based on requirements"
+    - name: code_execution
+      description: "Execute and test code"
+
+  bridge:
+    autogen:
+      enabled: true
+      agent_type: assistant
+      system_message: "You are a helpful AI assistant specializing in code generation and testing."
+      human_input_mode: TERMINATE
+      code_execution:
+        enabled: true
+        work_dir: "/tmp/autogen"
+        use_docker: true
+      llm_config:
+        model: "gpt-4"
+        temperature: 0.7
+        max_tokens: 4096
+        functions:
+          - name: generate_code
+            description: "Generate code"
+          - name: execute_code
+            description: "Execute code"
+      max_consecutive_auto_reply: 10
+
+---
+# Example 5: Agent-to-Agent (A2A) Protocol
+ossaVersion: "1.0"
+agent:
+  id: a2a-discovery-agent
+  name: "Discovery Agent"
+  version: "1.0.0"
+  description: "Agent supporting A2A protocol for discovery"
+  role: custom
+  tags: ["a2a", "discovery", "coordination"]
+
+  runtime:
+    type: k8s
+    image: "ossa/a2a-agent:latest"
+
+  capabilities:
+    - name: discover_agents
+      description: "Discover other agents in the network"
+    - name: coordinate_task
+      description: "Coordinate task execution across agents"
+
+  bridge:
+    a2a:
+      enabled: true
+      card_url: "https://agents.example.com/cards/discovery-agent"
+      schema_version: "1.0"
+      capabilities_mapping:
+        discover_agents: "agent.discovery"
+        coordinate_task: "task.coordination"
+      metadata:
+        "@context": "https://a2a-protocol.org/context"
+        "@type": "DiscoveryAgent"
+
+---
+# Example 6: Custom Bridge Implementation
+ossaVersion: "1.0"
+agent:
+  id: custom-bridge-agent
+  name: "Custom Bridge Agent"
+  version: "1.0.0"
+  description: "Agent with custom bridge protocol"
+  role: integration
+  tags: ["custom", "integration"]
+
+  runtime:
+    type: docker
+    image: "ossa/custom-bridge:latest"
+
+  capabilities:
+    - name: custom_operation
+      description: "Custom operation"
+
+  bridge:
+    # Standard MCP bridge
+    mcp:
+      enabled: true
+      server_type: websocket
+
+    # Custom bridge configuration
+    custom:
+      my_custom_protocol:
+        enabled: true
+        endpoint: "wss://custom.protocol.io"
+        auth:
+          type: "api_key"
+          key_env_var: "CUSTOM_API_KEY"
+        features:
+          - streaming
+          - bidirectional
+          - binary_data
+        config:
+          max_connections: 100
+          heartbeat_interval_ms: 30000
+
+---
+# Example 7: MCP Bridge with SSE Transport (Web Integration)
+ossaVersion: "1.0"
+agent:
+  id: mcp-sse-agent
+  name: "Web MCP Agent"
+  version: "1.0.0"
+  description: "Agent exposed via Server-Sent Events for web apps"
+  role: custom
+  tags: ["mcp", "sse", "web"]
+
+  runtime:
+    type: docker
+    image: "ossa/mcp-sse:latest"
+    resources:
+      cpu: "500m"
+      memory: "512Mi"
+
+  integration:
+    protocol: http
+    endpoints:
+      base_url: "https://agent.example.com"
+      health: "/health"
+      metrics: "/metrics"
+
+  capabilities:
+    - name: chat
+      description: "Chat with the agent"
+    - name: file_analysis
+      description: "Analyze uploaded files"
+
+  bridge:
+    mcp:
+      enabled: true
+      server_type: sse
+      tools:
+        - name: chat
+          description: "Chat with the agent"
+          capability: chat
+        - name: analyze_file
+          description: "Analyze a file"
+          capability: file_analysis
+
+      resources:
+        - uri: "ossa://conversations"
+          name: "Conversation History"
+          mimeType: "application/json"
+          readonly: false
+        - uri: "ossa://files"
+          name: "Uploaded Files"
+          mimeType: "application/octet-stream"
+          readonly: false
+
+      config:
+        max_message_size: 5242880  # 5MB
+        timeout_ms: 60000
+        retry_count: 5

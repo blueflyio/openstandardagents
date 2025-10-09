@@ -182,10 +182,59 @@ createMCPTool(agentName: string) {
 }
 ```
 
+## 🌉 MCPB - Bridge Configuration System
+
+**NEW in v0.1.9**: OSSA now supports **Model Context Protocol Bridge (MCPB)** - a unified bridge configuration system that enables agents to communicate using multiple protocols simultaneously.
+
+### Supported Bridge Protocols
+
+- **🔌 MCP (Model Context Protocol)**: Claude Desktop, Langflow integration
+- **🤝 A2A (Agent-to-Agent)**: Multi-agent coordination
+- **🔗 OpenAPI**: Standard REST API integration
+- **🐍 LangChain**: Python framework integration
+- **👥 CrewAI**: Multi-agent framework integration
+- **💬 AutoGen**: Conversational AI framework integration
+
+### Quick Example
+
+```yaml
+bridge:
+  mcp:
+    enabled: true
+    server_type: stdio  # For Claude Desktop
+    tools:
+      - name: analyze_code
+        capability: code-analysis
+    resources:
+      - uri: "ossa://results"
+        name: "Analysis Results"
+    config:
+      timeout_ms: 30000
+      retry_count: 3
+```
+
+### Multi-Bridge Support
+
+Agents can support multiple protocols simultaneously:
+
+```typescript
+const agent: CreateAgentRequest = {
+  type: 'worker',
+  name: 'Multi-Protocol Agent',
+  bridge: {
+    mcp: { enabled: true, server_type: 'websocket' },
+    openapi: { enabled: true, spec_version: '3.1' },
+    langchain: { enabled: true, chain_type: 'agent' }
+  }
+};
+```
+
 ### 📚 Learn More
 
+- **[MCPB Integration Guide](docs/bridges/mcpb-integration.md)** - Complete bridge configuration documentation
+- **[Bridge Examples](examples/bridge-configurations.yaml)** - 7 comprehensive examples
+- **[TypeScript Examples](examples/typescript/mcpb-agent-example.ts)** - Programmatic bridge configuration
 - **[Complete Architecture Guide](docs/ARCHITECTURE.md)** - Deep dive into MCP-per-Agent design
-- **[MCP Examples](examples/mcp-agent-examples.md)** - Concrete implementation examples
 - **[API Documentation](src/api/)** - Full OpenAPI 3.1 specifications
 
 ## Model Context Switching & Multi-Provider Support
