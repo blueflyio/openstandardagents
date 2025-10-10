@@ -254,6 +254,93 @@ test:contracts:
     - feature/*
     - fix/*
 
+# Enhanced tagging for OSSA releases
+tag:development:
+  stage: release
+  image: alpine:latest
+  script:
+    - "apk add --no-cache git"
+    - "git config user.email 'ci@gitlab.bluefly.io'"
+    - "git config user.name 'GitLab CI'"
+    - "DEV_TAG='v${PROJECT_VERSION}-dev.$(date +%Y%m%d-%H%M%S)+sha.${CI_COMMIT_SHORT_SHA}'"
+    - "echo 'Creating development tag: $DEV_TAG'"
+    - "git tag -a \"$DEV_TAG\" -m \"Development build: ${CI_COMMIT_MESSAGE}\""
+    - "git push origin \"$DEV_TAG\" || echo 'Tag push may require permissions'"
+    - "echo '✅ Development tag created: $DEV_TAG'"
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "development"'
+      when: on_success
+
+tag:alpha:
+  stage: release
+  image: alpine:latest
+  script:
+    - "apk add --no-cache git"
+    - "git config user.email 'ci@gitlab.bluefly.io'"
+    - "git config user.name 'GitLab CI'"
+    - "ALPHA_TAG='v${PROJECT_VERSION}-alpha.$(date +%Y%m%d-%H%M%S)'"
+    - "echo 'Creating alpha tag: $ALPHA_TAG'"
+    - "git tag -a \"$ALPHA_TAG\" -m \"Alpha release: ${CI_COMMIT_MESSAGE}\""
+    - "git push origin \"$ALPHA_TAG\" || echo 'Tag push may require permissions'"
+    - "echo '✅ Alpha tag created: $ALPHA_TAG'"
+  when: manual
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "development"'
+
+tag:beta:
+  stage: release
+  image: alpine:latest
+  script:
+    - "apk add --no-cache git"
+    - "git config user.email 'ci@gitlab.bluefly.io'"
+    - "git config user.name 'GitLab CI'"
+    - "BETA_TAG='v${PROJECT_VERSION}-beta.$(date +%Y%m%d-%H%M%S)'"
+    - "echo 'Creating beta tag: $BETA_TAG'"
+    - "git tag -a \"$BETA_TAG\" -m \"Beta release: ${CI_COMMIT_MESSAGE}\""
+    - "git push origin \"$BETA_TAG\" || echo 'Tag push may require permissions'"
+    - "echo '✅ Beta tag created: $BETA_TAG'"
+  when: manual
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "development"'
+
+tag:release-candidate:
+  stage: release
+  image: alpine:latest
+  script:
+    - "apk add --no-cache git"
+    - "git config user.email 'ci@gitlab.bluefly.io'"
+    - "git config user.name 'GitLab CI'"
+    - "RC_TAG='v${PROJECT_VERSION}-rc.$(date +%Y%m%d-%H%M%S)'"
+    - "echo 'Creating release candidate tag: $RC_TAG'"
+    - "git tag -a \"$RC_TAG\" -m \"Release candidate: ${CI_COMMIT_MESSAGE}\""
+    - "git push origin \"$RC_TAG\" || echo 'Tag push may require permissions'"
+    - "echo '✅ Release candidate tag created: $RC_TAG'"
+  when: manual
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "development"'
+
+tag:production:
+  stage: release
+  image: alpine:latest
+  script:
+    - "apk add --no-cache git curl jq"
+    - "git config user.email 'ci@gitlab.bluefly.io'"
+    - "git config user.name 'GitLab CI'"
+    - "PROD_TAG='v${PROJECT_VERSION}'"
+    - "echo 'Creating production tag: $PROD_TAG'"
+    - "git tag -a \"$PROD_TAG\" -m \"Production release v${PROJECT_VERSION}\""
+    - "git push origin \"$PROD_TAG\" || echo 'Tag push may require permissions'"
+    - "echo '🎉 Production tag created: $PROD_TAG'"
+    - "echo 'Creating GitLab release...'"
+    - "RELEASE_NOTES='OSSA v${PROJECT_VERSION} - Open Standards for Scalable Agents'"
+    - "curl --request POST --header \"PRIVATE-TOKEN: ${CI_JOB_TOKEN}\" --header 'Content-Type: application/json' --data \"{\\\"name\\\": \\\"${PROD_TAG}\\\", \\\"tag_name\\\": \\\"${PROD_TAG}\\\", \\\"description\\\": \\\"${RELEASE_NOTES}\\\", \\\"ref\\\": \\\"main\\\"}\" \"${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/releases\" || echo 'Release creation may require permissions'"
+  when: manual
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+  environment:
+    name: production
+    url: https://gitlab.bluefly.io/${CI_PROJECT_PATH}/-/releases/${PROJECT_VERSION}
+
 # Deploy to test environment (OSSA as specification standard)
 deploy:test:
   stage: deploy

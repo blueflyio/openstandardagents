@@ -270,36 +270,19 @@ tag:pre-release:
   needs: ["test:project"]
   image: alpine:latest
   script:
-    - apk add --no-cache git
-    - |
-      echo "🏷️ Creating pre-release tag for version $PROJECT_VERSION"
-      
-      # Extract branch type and slug
-      BRANCH_TYPE=$(echo $CI_COMMIT_BRANCH | cut -d'/' -f1)
-      BRANCH_SLUG=$(echo $CI_COMMIT_BRANCH | cut -d'/' -f2- | sed 's/[^a-zA-Z0-9-]/-/g' | cut -c1-20)
-      SHORT_SHA=$(echo $CI_COMMIT_SHORT_SHA | cut -c1-7)
-      
-      # Generate pre-release tag
-      PRE_RELEASE_TAG="v${PROJECT_VERSION}-${BRANCH_TYPE}.${BRANCH_SLUG}+sha.${SHORT_SHA}"
-      echo "Generated pre-release tag: $PRE_RELEASE_TAG"
-      
-      # Check if tag exists
-      if git rev-parse "$PRE_RELEASE_TAG" >/dev/null 2>&1; then
-        # Append build counter if tag exists
-        COUNTER=1
-        while git rev-parse "${PRE_RELEASE_TAG}+build.${COUNTER}" >/dev/null 2>&1; do
-          COUNTER=$((COUNTER + 1))
-        done
-        PRE_RELEASE_TAG="${PRE_RELEASE_TAG}+build.${COUNTER}"
-      fi
-      
-      # Create and push tag
-      git config user.email "ci@gitlab.bluefly.io"
-      git config user.name "GitLab CI"
-      git tag -a "$PRE_RELEASE_TAG" -m "Pre-release: $CI_COMMIT_MESSAGE"
-      git push origin "$PRE_RELEASE_TAG" || echo "Tag push failed - may need permissions"
-      
-      echo "✅ Pre-release tag created: $PRE_RELEASE_TAG"
+    - "apk add --no-cache git"
+    - "echo '🏷️ Creating pre-release tag for version $PROJECT_VERSION'"
+    - "BRANCH_TYPE=$(echo $CI_COMMIT_BRANCH | cut -d'/' -f1)"
+    - "BRANCH_SLUG=$(echo $CI_COMMIT_BRANCH | cut -d'/' -f2- | sed 's/[^a-zA-Z0-9-]/-/g' | cut -c1-20)"
+    - "SHORT_SHA=$(echo $CI_COMMIT_SHORT_SHA | cut -c1-7)"
+    - "PRE_RELEASE_TAG=\"v${PROJECT_VERSION}-${BRANCH_TYPE}.${BRANCH_SLUG}+sha.${SHORT_SHA}\""
+    - "echo 'Generated pre-release tag: $PRE_RELEASE_TAG'"
+    - "if git rev-parse \"$PRE_RELEASE_TAG\" >/dev/null 2>&1; then COUNTER=1; while git rev-parse \"${PRE_RELEASE_TAG}+build.${COUNTER}\" >/dev/null 2>&1; do COUNTER=$((COUNTER + 1)); done; PRE_RELEASE_TAG=\"${PRE_RELEASE_TAG}+build.${COUNTER}\"; fi"
+    - "git config user.email 'ci@gitlab.bluefly.io'"
+    - "git config user.name 'GitLab CI'"
+    - "git tag -a \"$PRE_RELEASE_TAG\" -m \"Pre-release: $CI_COMMIT_MESSAGE\""
+    - "git push origin \"$PRE_RELEASE_TAG\" || echo 'Tag push failed - may need permissions'"
+    - "echo '✅ Pre-release tag created: $PRE_RELEASE_TAG'"
   rules:
     - if: '$CI_COMMIT_BRANCH =~ /^(feature|bug|hotfix|perf)\/.*/'
       when: on_success
