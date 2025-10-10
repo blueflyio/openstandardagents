@@ -1,0 +1,227 @@
+apiVersion: "@bluefly/open-standards-scalable-agents/v0.1.9"
+kind: Agent
+metadata:
+  name: task-heavy-worker
+  version: "0.1.9"
+  namespace: ossa-examples
+  description: Heavy computation worker agent for resource-intensive tasks
+  labels:
+    category: worker
+    specialization: heavy-computation
+    tenant: ossa-platform
+  annotations:
+    openapi: /api/task-worker-specification.yml
+    compliance: gold
+    docker-service: ossa-task-heavy
+  author: OSSA Platform Team
+  license: Apache-2.0
+  repository: https://github.com/ossa/task-heavy-worker
+  documentation: https://docs.ossa.io/agents/workers/task-heavy
+
+spec:
+  type: worker
+  subtype: worker.computation
+  
+  capabilities:
+    domains:
+      - heavy-computation
+      - batch-processing
+      - data-transformation
+      - algorithmic-processing
+      - parallel-execution
+    operations:
+      - name: execute_heavy_task
+        description: Execute computationally intensive tasks with resource optimization
+        inputSchema:
+          type: object
+          required: [taskType, payload]
+          properties:
+            taskType:
+              type: string
+              enum: [batch_processing, data_transformation, algorithm_execution, parallel_computation]
+            payload:
+              type: object
+              properties:
+                data: {type: object}
+                parameters: {type: object}
+                optimizations: {type: array}
+            priority:
+              type: string
+              enum: [low, normal, high, critical]
+              default: normal
+            timeout:
+              type: number
+              default: 120000
+        outputSchema:
+          type: object
+          properties:
+            taskId: {type: string}
+            result: {type: object}
+            metrics:
+              type: object
+              properties:
+                executionTime: {type: number}
+                resourceUsage: {type: object}
+                throughput: {type: number}
+            status: {type: string}
+        timeout: 120000
+      
+      - name: get_task_status
+        description: Get status and progress of running heavy tasks
+        inputSchema:
+          type: object
+          required: [taskId]
+          properties:
+            taskId: {type: string}
+        outputSchema:
+          type: object
+          properties:
+            taskId: {type: string}
+            status: {type: string}
+            progress: {type: number}
+            estimatedCompletion: {type: string}
+            resourceUsage: {type: object}
+        timeout: 5000
+      
+      - name: cancel_task
+        description: Cancel a running heavy task
+        inputSchema:
+          type: object
+          required: [taskId]
+          properties:
+            taskId: {type: string}
+            reason: {type: string}
+        outputSchema:
+          type: object
+          properties:
+            cancelled: {type: boolean}
+            taskId: {type: string}
+            finalStatus: {type: string}
+        timeout: 10000
+
+    inputFormats:
+      - application/json
+      - application/octet-stream
+      - text/csv
+      - application/parquet
+
+    outputFormats:
+      - application/json
+      - application/octet-stream
+      - text/csv
+      - application/parquet
+
+    tokenEfficiency:
+      strategies:
+        - result-only-reporting
+        - progress-chunking
+        - cacheable-capsules
+        - compressed-payloads
+        - delta-updates
+      compressionRatio: 0.9
+
+  protocols:
+    supported:
+      - name: ossa
+        version: "0.1.9"
+        endpoint: http://localhost:3004/ossa/v1
+        authentication:
+          type: api-key
+        tls: false
+      - name: rest
+        version: "3.1.0"
+        endpoint: http://localhost:3004/api/v1
+        authentication:
+          type: bearer-token
+        tls: false
+    preferred: ossa
+
+  conformance:
+    level: gold
+    certifications:
+      - ISO-42001
+    auditLogging: true
+    feedbackLoop: true
+    propsTokens: true
+    learningSignals: true
+
+  performance:
+    throughput:
+      tasksPerMinute: 10
+      concurrentTasks: 5
+    latency:
+      p50: 30000
+      p95: 90000
+      p99: 120000
+    limits:
+      maxTaskSize: 1073741824  # 1GB
+      maxConcurrentTasks: 5
+      timeout: 120000
+
+  resources:
+    requests:
+      cpu: 2
+      memory: 4Gi
+      storage: 20Gi
+    limits:
+      cpu: 4
+      memory: 8Gi
+      storage: 100Gi
+
+  feedbackLoop:
+    phase: execute
+    inputs:
+      - task_definition
+      - computational_requirements
+      - resource_constraints
+      - performance_targets
+    outputs:
+      - execution_results
+      - resource_utilization
+      - performance_metrics
+      - optimization_recommendations
+
+  budgets:
+    tokens:
+      default: 2000
+      maximum: 10000
+      strategy: result-proportional
+    time:
+      default: 120000
+      maximum: 300000
+
+  dependencies:
+    agents:
+      - name: registry-core
+        version: ">=0.1.9"
+        optional: false
+    services:
+      - name: redis-cache
+        endpoint: redis://redis:6379
+        healthCheck: redis://redis:6379/ping
+      - name: postgres-storage
+        endpoint: postgresql://ossa:ossa_dev_password@postgres:5432/ossa
+        healthCheck: postgresql://ossa:ossa_dev_password@postgres:5432/ossa
+
+status:
+  state: registered
+  health: healthy
+  lastHeartbeat: "2024-01-01T00:00:00Z"
+  registeredAt: "2024-01-01T00:00:00Z"
+  metrics:
+    tasksCompleted: 0
+    successRate: 1.0
+    avgExecutionTime: 45000
+    tokenUsage: 0
+
+workerConfig:
+  maxConcurrentTasks: 5
+  taskTimeout: 120000
+  resourceOptimization: true
+  progressReporting: true
+  autoScaling: false
+  queueStrategy: priority
+  retryPolicy:
+    maxRetries: 3
+    backoffMultiplier: 2
+    initialDelay: 1000

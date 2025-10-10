@@ -1,0 +1,35 @@
+apiVersion: '@bluefly/ossa/v0.1.9'
+kind: AgentBehavior
+metadata:
+  name: dependency-update-manager-behavior
+  agent: dependency-update-manager
+  version: 1.0.0
+spec:
+  behavior_type: worker
+  triggers:
+    - type: api_request
+      endpoint: /execute
+      method: POST
+    - type: event_driven
+      events:
+        - task.assigned
+    - type: scheduled
+      cron: 0 */6 * * *
+  capabilities:
+    - task_execution
+    - data_processing
+    - api_interaction
+  quality_gates:
+    - name: input_validation
+      required: true
+      schema: schemas/input/dependency-update-manager.input.json
+    - name: output_verification
+      required: true
+      schema: schemas/output/dependency-update-manager.output.json
+  artifacts:
+    outputs:
+      - dependency-update-manager_logs
+      - dependency-update-manager_results
+    storage:
+      local: .agents-workspace/data/artifacts
+      global: ../.agent-workspace/data/artifacts

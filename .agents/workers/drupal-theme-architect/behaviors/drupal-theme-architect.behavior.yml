@@ -1,0 +1,35 @@
+apiVersion: '@bluefly/ossa/v0.1.9'
+kind: AgentBehavior
+metadata:
+  name: drupal-theme-architect-behavior
+  agent: drupal-theme-architect
+  version: 1.0.0
+spec:
+  behavior_type: worker
+  triggers:
+    - type: api_request
+      endpoint: /execute
+      method: POST
+    - type: event_driven
+      events:
+        - task.assigned
+    - type: scheduled
+      cron: 0 */6 * * *
+  capabilities:
+    - task_execution
+    - data_processing
+    - api_interaction
+  quality_gates:
+    - name: input_validation
+      required: true
+      schema: schemas/input/drupal-theme-architect.input.json
+    - name: output_verification
+      required: true
+      schema: schemas/output/drupal-theme-architect.output.json
+  artifacts:
+    outputs:
+      - drupal-theme-architect_logs
+      - drupal-theme-architect_results
+    storage:
+      local: .agents-workspace/data/artifacts
+      global: ../.agent-workspace/data/artifacts

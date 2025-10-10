@@ -1,0 +1,26 @@
+openapi: 3.1.0
+info:
+  title: mlops-pipeline-architect Agent API
+  version: 1.0.0
+  description: OSSA-compliant API specification for mlops-pipeline-architect
+paths:
+  /health:
+    get:
+      summary: Health check endpoint
+      responses:
+        '200':
+          description: Agent is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: healthy
+                  agent:
+                    type: string
+                    example: mlops-pipeline-architect
+                  version:
+                    type: string
+                    example: 1.0.0

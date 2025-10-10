@@ -16,6 +16,14 @@ import { createKnowledgeGraphCommand } from './commands/knowledge-graph.js';
 import { createInitCommand } from './commands/init.js';
 import { z } from 'zod';
 import * as yaml from 'js-yaml';
+import { fixImportsCommand } from './commands/fix/import-fixer.js';
+import {
+  createSpecCommand,
+  readSpecCommand,
+  listSpecsCommand,
+  validateSpecCommand
+} from './commands/fix/openapi-crud.js';
+import { registerCommand as registerObservabilityCommand } from './commands/observability/deploy.js';
 
 // OpenAPI 3.1 Schema Definitions
 const OpenAPISchema = z.object({
@@ -253,6 +261,46 @@ class OSSACli {
       .option('--all', 'Deploy all agents')
       .option('--dry-run', 'Show what would be deployed without deploying')
       .action(this.deploy.bind(this));
+
+    // FIX Operations - Automated import path fixing
+    const fixCommand = this.program.command('fix').description('Automated code fixing operations');
+
+    fixCommand
+      .command('imports')
+      .description('Fix TypeScript import paths using IMPORT_PATH_MAPPINGS.json')
+      .option('--dry-run', 'Preview changes without modifying files')
+      .option('--validate', 'Run TypeScript validation after fixes')
+      .action(fixImportsCommand);
+
+    // OPENAPI CRUD Operations - Enhanced spec management
+    const openapiCommand = this.program.command('openapi').description('OpenAPI specification CRUD operations');
+
+    openapiCommand
+      .command('create')
+      .description('Create a new OpenAPI specification')
+      .requiredOption('-n, --name <name>', 'Specification name')
+      .option('-t, --title <title>', 'API title')
+      .option('-v, --version <version>', 'API version', '1.0.0')
+      .option('-d, --description <desc>', 'API description')
+      .option('--template <type>', 'Template type (minimal, rest-api, microservice)', 'minimal')
+      .action(createSpecCommand);
+
+    openapiCommand
+      .command('read')
+      .description('Read and display an OpenAPI specification')
+      .argument('<spec-name>', 'Specification name or path')
+      .action(readSpecCommand);
+
+    openapiCommand.command('list').description('List all OpenAPI specifications').action(listSpecsCommand);
+
+    openapiCommand
+      .command('validate')
+      .description('Validate an OpenAPI specification')
+      .argument('<spec-name>', 'Specification name or path')
+      .action(validateSpecCommand);
+
+    // OBSERVABILITY Operations - NEW: Replace bash scripts with OpenAPI
+    registerObservabilityCommand(this.program);
 
     // TESTING Operations
     this.program

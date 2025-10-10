@@ -1,0 +1,241 @@
+openapi: 3.1.0
+info:
+  title: OSSA Master Orchestrator API
+  version: 1.0.0
+  description: |
+    Reference implementation API for OSSA Master Orchestrator.
+    Demonstrates OSSA v0.1.9 API-first design principles.
+    
+servers:
+  - url: http://localhost:3000
+    description: Development server
+    
+paths:
+  /health:
+    get:
+      summary: Health check
+      operationId: getHealth
+      tags: [Health]
+      responses:
+        '200':
+          description: Agent is healthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+                
+  /orchestrate:
+    post:
+      summary: Execute orchestration workflow
+      operationId: executeOrchestration
+      tags: [Orchestration]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OrchestrationRequest'
+      responses:
+        '200':
+          description: Orchestration executed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrchestrationResult'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+                
+  /status:
+    get:
+      summary: Get orchestrator status
+      operationId: getStatus
+      tags: [Status]
+      responses:
+        '200':
+          description: Current status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatusResponse'
+                
+  /metrics:
+    get:
+      summary: Get performance metrics
+      operationId: getMetrics
+      tags: [Monitoring]
+      responses:
+        '200':
+          description: Performance metrics
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MetricsResponse'
+
+components:
+  schemas:
+    HealthResponse:
+      type: object
+      required: [status, agent, version, timestamp]
+      properties:
+        status:
+          type: string
+          enum: [healthy, degraded, unhealthy]
+        agent:
+          type: string
+          example: "ossa-master-orchestrator"
+        version:
+          type: string
+          example: "1.0.0"
+        timestamp:
+          type: string
+          format: date-time
+        details:
+          type: object
+          properties:
+            uptime:
+              type: number
+            active_workflows:
+              type: integer
+            connected_agents:
+              type: integer
+              
+    OrchestrationRequest:
+      type: object
+      required: [workflow_id, agents]
+      properties:
+        workflow_id:
+          type: string
+          description: "Unique workflow identifier"
+        agents:
+          type: array
+          items:
+            type: string
+          description: "List of agent UUIDs to coordinate"
+        parameters:
+          type: object
+          description: "Workflow-specific parameters"
+        priority:
+          type: string
+          enum: [low, normal, high, critical]
+          default: normal
+        timeout:
+          type: integer
+          description: "Timeout in seconds"
+          default: 300
+          
+    OrchestrationResult:
+      type: object
+      required: [execution_id, status]
+      properties:
+        execution_id:
+          type: string
+          description: "Unique execution identifier"
+        status:
+          type: string
+          enum: [running, completed, failed, timeout]
+        result:
+          type: object
+          description: "Orchestration result data"
+        agents:
+          type: array
+          items:
+            type: object
+            properties:
+              agent_id:
+                type: string
+              status:
+                type: string
+              execution_time:
+                type: number
+        logs:
+          type: array
+          items:
+            type: string
+        artifacts:
+          type: array
+          items:
+            type: string
+          description: "Generated artifact paths"
+          
+    StatusResponse:
+      type: object
+      properties:
+        orchestrator:
+          type: object
+          properties:
+            status:
+              type: string
+            uptime:
+              type: number
+            version:
+              type: string
+        workflows:
+          type: object
+          properties:
+            active:
+              type: integer
+            completed:
+              type: integer
+            failed:
+              type: integer
+        agents:
+          type: object
+          properties:
+            discovered:
+              type: integer
+            active:
+              type: integer
+            failed:
+              type: integer
+            
+    MetricsResponse:
+      type: object
+      properties:
+        performance:
+          type: object
+          properties:
+            latency_p50:
+              type: number
+            latency_p99:
+              type: number
+            throughput:
+              type: number
+            error_rate:
+              type: number
+        resources:
+          type: object
+          properties:
+            cpu_usage:
+              type: number
+            memory_usage:
+              type: number
+            disk_usage:
+              type: number
+              
+    ErrorResponse:
+      type: object
+      required: [error, message]
+      properties:
+        error:
+          type: string
+        message:
+          type: string
+        details:
+          type: object
+        timestamp:
+          type: string
+          format: date-time
+
+tags:
+  - name: Health
+    description: Health check operations
+  - name: Orchestration
+    description: Workflow orchestration operations
+  - name: Status
+    description: Status monitoring operations
+  - name: Monitoring
+    description: Performance monitoring operations

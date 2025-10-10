@@ -1,0 +1,275 @@
+apiVersion: "@bluefly/open-standards-scalable-agents/v0.1.9"
+kind: Agent
+metadata:
+  name: quality-assessor-judge
+  version: "0.1.9"
+  namespace: ossa-examples
+  description: Quality assessment judge agent for evaluating outputs and making quality decisions
+  labels:
+    category: judge
+    specialization: quality-assessment
+    tenant: ossa-platform
+  annotations:
+    openapi: /api/judge-specification.yml
+    compliance: gold
+  author: OSSA Platform Team
+  license: Apache-2.0
+  repository: https://github.com/ossa/quality-assessor-judge
+  documentation: https://docs.ossa.io/agents/judges/quality-assessor
+
+spec:
+  type: judge
+  subtype: judge.quality
+  
+  capabilities:
+    domains:
+      - quality-assessment
+      - decision-making
+      - standards-compliance
+      - performance-evaluation
+      - acceptability-criteria
+    operations:
+      - name: assess_quality
+        description: Evaluate quality of outputs against defined criteria
+        inputSchema:
+          type: object
+          required: [artifact, criteria]
+          properties:
+            artifact:
+              type: object
+              properties:
+                type: {type: string}
+                content: {type: object}
+                metadata: {type: object}
+            criteria:
+              type: object
+              properties:
+                standards: {type: array}
+                thresholds: {type: object}
+                weights: {type: object}
+            context:
+              type: object
+              properties:
+                domain: {type: string}
+                requirements: {type: array}
+                constraints: {type: object}
+        outputSchema:
+          type: object
+          properties:
+            overall_score: {type: number, minimum: 0, maximum: 100}
+            decision: 
+              type: string
+              enum: [accept, reject, conditional_accept, needs_revision]
+            quality_dimensions:
+              type: object
+              properties:
+                accuracy: {type: number}
+                completeness: {type: number}
+                consistency: {type: number}
+                usability: {type: number}
+                reliability: {type: number}
+            justification: {type: string}
+            improvement_areas: {type: array}
+        timeout: 20000
+      
+      - name: compare_alternatives
+        description: Compare multiple alternatives and rank them by quality
+        inputSchema:
+          type: object
+          required: [alternatives, criteria]
+          properties:
+            alternatives:
+              type: array
+              items:
+                type: object
+                properties:
+                  id: {type: string}
+                  content: {type: object}
+                  metadata: {type: object}
+            criteria: {type: object}
+            comparison_method:
+              type: string
+              enum: [pairwise, ranking, scoring]
+              default: scoring
+        outputSchema:
+          type: object
+          properties:
+            rankings:
+              type: array
+              items:
+                type: object
+                properties:
+                  id: {type: string}
+                  rank: {type: number}
+                  score: {type: number}
+                  strengths: {type: array}
+                  weaknesses: {type: array}
+            best_choice: {type: string}
+            confidence: {type: number}
+        timeout: 30000
+      
+      - name: validate_compliance
+        description: Validate compliance against regulatory or organizational standards
+        inputSchema:
+          type: object
+          required: [subject, standards]
+          properties:
+            subject: {type: object}
+            standards:
+              type: array
+              items:
+                type: object
+                properties:
+                  name: {type: string}
+                  version: {type: string}
+                  requirements: {type: array}
+        outputSchema:
+          type: object
+          properties:
+            compliant: {type: boolean}
+            violations:
+              type: array
+              items:
+                type: object
+                properties:
+                  standard: {type: string}
+                  requirement: {type: string}
+                  severity: {type: string}
+                  description: {type: string}
+            compliance_score: {type: number}
+            certification_eligible: {type: boolean}
+        timeout: 25000
+
+    inputFormats:
+      - application/json
+      - text/plain
+      - application/yaml
+      - text/xml
+
+    outputFormats:
+      - application/json
+      - text/markdown
+      - application/yaml
+
+    tokenEfficiency:
+      strategies:
+        - criteria-focused-evaluation
+        - structured-reasoning
+        - cached-standards
+        - comparative-analysis
+        - decision-trees
+      compressionRatio: 0.7
+
+  protocols:
+    supported:
+      - name: ossa
+        version: "0.1.9"
+        endpoint: http://localhost:3012/ossa/v1
+        authentication:
+          type: api-key
+        tls: false
+      - name: rest
+        version: "3.1.0"
+        endpoint: http://localhost:3012/api/v1
+        authentication:
+          type: bearer-token
+        tls: false
+    preferred: ossa
+
+  conformance:
+    level: gold
+    certifications:
+      - ISO-42001
+      - ISO-9001
+    auditLogging: true
+    feedbackLoop: true
+    propsTokens: true
+    learningSignals: true
+
+  performance:
+    throughput:
+      assessmentsPerMinute: 30
+      comparisonsPerMinute: 15
+    latency:
+      p50: 3000
+      p95: 15000
+      p99: 25000
+    limits:
+      maxArtifactSize: 10485760  # 10MB
+      maxAlternatives: 20
+      timeout: 30000
+
+  resources:
+    requests:
+      cpu: 500m
+      memory: 1Gi
+      storage: 2Gi
+    limits:
+      cpu: 2
+      memory: 4Gi
+      storage: 10Gi
+
+  feedbackLoop:
+    phase: evaluate
+    inputs:
+      - assessment_criteria
+      - quality_standards
+      - domain_context
+      - historical_decisions
+    outputs:
+      - quality_scores
+      - decisions
+      - justifications
+      - improvement_recommendations
+
+  budgets:
+    tokens:
+      default: 3000
+      maximum: 15000
+      strategy: criteria-proportional
+    time:
+      default: 20000
+      maximum: 30000
+
+  dependencies:
+    agents:
+      - name: registry-core
+        version: ">=0.1.9"
+        optional: false
+    services:
+      - name: standards-repository
+        endpoint: http://standards-repo:8080
+        healthCheck: http://standards-repo:8080/health
+      - name: metrics-store
+        endpoint: http://metrics:9090
+        healthCheck: http://metrics:9090/health
+
+status:
+  state: registered
+  health: healthy
+  lastHeartbeat: "2024-01-01T00:00:00Z"
+  registeredAt: "2024-01-01T00:00:00Z"
+  metrics:
+    assessmentsCompleted: 0
+    averageConfidence: 88.5
+    acceptanceRate: 0.75
+    tokenUsage: 0
+
+judgeConfig:
+  decisionFramework: multi_criteria
+  confidenceThreshold: 0.8
+  biasDetection: enabled
+  auditTrail: comprehensive
+  appealProcess: enabled
+  qualityDimensions:
+    - accuracy
+    - completeness
+    - consistency
+    - usability
+    - reliability
+    - maintainability
+  complianceFrameworks:
+    - ISO-9001
+    - ISO-27001
+    - GDPR
+    - SOX

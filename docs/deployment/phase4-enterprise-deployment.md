@@ -207,7 +207,7 @@ Phase 4 establishes the enterprise foundation for advanced capabilities in futur
 The Phase 4 implementation consists of:
 
 - **Enterprise Intelligence Pool** (`src/analytics/enterprise-intelligence-pool.ts`)
-- **Enterprise Scaling Manager** (`src/infrastructure/enterprise-scaling-manager.ts`)
+- **Enterprise Scaling Manager** (`src/runtime/enterprise-scaling-manager.ts`)
 - **Kubernetes Deployment** (`infrastructure/kubernetes/phase4-enterprise-deployment.yaml`)
 - **Live Service Integration** via `ossa.ossa.orb.local` API orchestration
 

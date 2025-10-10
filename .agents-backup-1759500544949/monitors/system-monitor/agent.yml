@@ -1,0 +1,251 @@
+apiVersion: "@bluefly/open-standards-scalable-agents/v0.1.9"
+kind: Agent
+metadata:
+  name: system-monitor
+  version: "0.1.9"
+  namespace: ossa-examples
+  description: System monitoring agent for tracking performance, health, and metrics
+  labels:
+    category: monitor
+    specialization: system-monitoring
+    tenant: ossa-platform
+  annotations:
+    openapi: /api/monitor-specification.yml
+    compliance: silver
+  author: OSSA Platform Team
+  license: Apache-2.0
+  repository: https://github.com/ossa/system-monitor
+  documentation: https://docs.ossa.io/agents/monitors/system
+
+spec:
+  type: monitor
+  subtype: monitor.system
+  
+  capabilities:
+    domains:
+      - system-monitoring
+      - performance-tracking
+      - health-assessment
+      - alerting
+      - metrics-collection
+    operations:
+      - name: collect_metrics
+        description: Collect system metrics from various sources
+        inputSchema:
+          type: object
+          required: [targets]
+          properties:
+            targets:
+              type: array
+              items:
+                type: object
+                properties:
+                  id: {type: string}
+                  type: {type: string}
+                  endpoint: {type: string}
+                  metrics: {type: array}
+            interval: 
+              type: number
+              default: 60000
+            aggregation:
+              type: string
+              enum: [sum, avg, max, min, count]
+              default: avg
+        outputSchema:
+          type: object
+          properties:
+            timestamp: {type: string}
+            metrics:
+              type: array
+              items:
+                type: object
+                properties:
+                  target: {type: string}
+                  metric: {type: string}
+                  value: {type: number}
+                  unit: {type: string}
+            health_status: {type: string}
+        timeout: 30000
+      
+      - name: analyze_trends
+        description: Analyze metric trends and patterns
+        inputSchema:
+          type: object
+          required: [metrics, timeRange]
+          properties:
+            metrics: {type: array}
+            timeRange:
+              type: object
+              properties:
+                start: {type: string}
+                end: {type: string}
+            analysisType:
+              type: string
+              enum: [trend, anomaly, forecast, pattern]
+              default: trend
+        outputSchema:
+          type: object
+          properties:
+            trends:
+              type: array
+              items:
+                type: object
+                properties:
+                  metric: {type: string}
+                  direction: {type: string}
+                  magnitude: {type: number}
+                  confidence: {type: number}
+            anomalies: {type: array}
+            forecasts: {type: array}
+            recommendations: {type: array}
+        timeout: 45000
+      
+      - name: trigger_alert
+        description: Trigger alerts based on thresholds and conditions
+        inputSchema:
+          type: object
+          required: [condition, severity]
+          properties:
+            condition: {type: object}
+            severity:
+              type: string
+              enum: [info, warning, error, critical]
+            recipients: {type: array}
+            escalation: {type: object}
+        outputSchema:
+          type: object
+          properties:
+            alertId: {type: string}
+            triggered: {type: boolean}
+            notificationsSent: {type: array}
+            escalated: {type: boolean}
+        timeout: 10000
+
+    inputFormats:
+      - application/json
+      - application/prometheus
+      - text/influxdb
+      - application/yaml
+
+    outputFormats:
+      - application/json
+      - text/prometheus
+      - application/grafana-json
+
+    tokenEfficiency:
+      strategies:
+        - metric-summarization
+        - trend-compression
+        - threshold-filtering
+        - batch-reporting
+        - delta-updates
+      compressionRatio: 0.85
+
+  protocols:
+    supported:
+      - name: ossa
+        version: "0.1.9"
+        endpoint: http://localhost:3013/ossa/v1
+        authentication:
+          type: api-key
+        tls: false
+      - name: prometheus
+        version: "2.0"
+        endpoint: http://localhost:3013/metrics
+        authentication:
+          type: none
+        tls: false
+    preferred: ossa
+
+  conformance:
+    level: silver
+    certifications: []
+    auditLogging: true
+    feedbackLoop: false
+    propsTokens: true
+    learningSignals: false
+
+  performance:
+    throughput:
+      metricsPerSecond: 1000
+      alertsPerMinute: 100
+    latency:
+      p50: 500
+      p95: 2000
+      p99: 5000
+    limits:
+      maxTargets: 1000
+      maxMetricsPerTarget: 100
+      timeout: 45000
+
+  resources:
+    requests:
+      cpu: 1
+      memory: 2Gi
+      storage: 50Gi
+    limits:
+      cpu: 4
+      memory: 8Gi
+      storage: 500Gi
+
+  feedbackLoop:
+    phase: none
+    inputs: []
+    outputs:
+      - metrics_data
+      - trend_analysis
+      - alert_notifications
+      - health_reports
+
+  budgets:
+    tokens:
+      default: 1000
+      maximum: 5000
+      strategy: metric-proportional
+    time:
+      default: 30000
+      maximum: 45000
+
+  dependencies:
+    agents:
+      - name: registry-core
+        version: ">=0.1.9"
+        optional: false
+    services:
+      - name: prometheus
+        endpoint: http://prometheus:9090
+        healthCheck: http://prometheus:9090/-/healthy
+      - name: alertmanager
+        endpoint: http://alertmanager:9093
+        healthCheck: http://alertmanager:9093/-/healthy
+      - name: grafana
+        endpoint: http://grafana:3000
+        healthCheck: http://grafana:3000/api/health
+
+status:
+  state: registered
+  health: healthy
+  lastHeartbeat: "2024-01-01T00:00:00Z"
+  registeredAt: "2024-01-01T00:00:00Z"
+  metrics:
+    metricsCollected: 0
+    alertsTriggered: 0
+    uptime: 1.0
+    tokenUsage: 0
+
+monitorConfig:
+  collectionInterval: 60000
+  retentionPeriod: 2592000000  # 30 days
+  alerting:
+    enabled: true
+    defaultSeverity: warning
+    escalationDelay: 300000  # 5 minutes
+  storage:
+    backend: prometheus
+    compression: true
+    retention: 90d
+  dashboards:
+    - system-overview
+    - agent-performance
+    - resource-utilization
+    - alert-summary

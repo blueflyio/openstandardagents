@@ -1,0 +1,225 @@
+apiVersion: "@bluefly/open-standards-scalable-agents/v0.1.9"
+kind: Agent
+metadata:
+  name: mcp-enhanced
+  version: "0.1.9"
+  namespace: ossa-examples
+  description: Enhanced MCP Server agent with auto-discovery and large tool registry
+  labels:
+    category: integrator
+    specialization: mcp-server
+    tenant: ossa-platform
+  annotations:
+    openapi: /api/mcp-specification.yml
+    compliance: gold
+    docker-service: ossa-mcp-enhanced
+  author: OSSA Platform Team
+  license: Apache-2.0
+  repository: https://github.com/ossa/mcp-enhanced
+  documentation: https://docs.ossa.io/agents/integrators/mcp
+
+spec:
+  type: integrator
+  subtype: integrator.mcp
+  
+  capabilities:
+    domains:
+      - mcp-server
+      - tool-registry
+      - auto-discovery
+      - resource-management
+      - protocol-bridging
+    operations:
+      - name: register_tool
+        description: Register new tool in MCP server
+        inputSchema:
+          type: object
+          required: [tool]
+          properties:
+            tool:
+              type: object
+              properties:
+                name: {type: string}
+                description: {type: string}
+                inputSchema: {type: object}
+                outputSchema: {type: object}
+                handler: {type: string}
+            metadata: {type: object}
+        outputSchema:
+          type: object
+          properties:
+            toolId: {type: string}
+            registered: {type: boolean}
+            version: {type: string}
+        timeout: 10000
+      
+      - name: execute_tool
+        description: Execute registered tool with given parameters
+        inputSchema:
+          type: object
+          required: [toolId, parameters]
+          properties:
+            toolId: {type: string}
+            parameters: {type: object}
+            context: {type: object}
+        outputSchema:
+          type: object
+          properties:
+            result: {type: object}
+            executionTime: {type: number}
+            success: {type: boolean}
+        timeout: 60000
+      
+      - name: discover_tools
+        description: Auto-discover available tools from connected services
+        inputSchema:
+          type: object
+          properties:
+            sources: {type: array}
+            filters: {type: object}
+        outputSchema:
+          type: object
+          properties:
+            discovered:
+              type: array
+              items:
+                type: object
+                properties:
+                  name: {type: string}
+                  description: {type: string}
+                  source: {type: string}
+                  schema: {type: object}
+            count: {type: number}
+        timeout: 30000
+      
+      - name: list_tools
+        description: List all registered tools in registry
+        inputSchema:
+          type: object
+          properties:
+            category: {type: string}
+            filters: {type: object}
+        outputSchema:
+          type: object
+          properties:
+            tools:
+              type: array
+              items:
+                type: object
+                properties:
+                  id: {type: string}
+                  name: {type: string}
+                  description: {type: string}
+                  category: {type: string}
+                  version: {type: string}
+            total: {type: number}
+        timeout: 5000
+
+    inputFormats:
+      - application/json
+      - application/mcp
+      - text/plain
+
+    outputFormats:
+      - application/json
+      - application/mcp
+
+    tokenEfficiency:
+      strategies:
+        - tool-result-caching
+        - schema-optimization
+        - batch-discovery
+        - registry-indexing
+      compressionRatio: 0.75
+
+  protocols:
+    supported:
+      - name: ossa
+        version: "0.1.9"
+        endpoint: http://localhost:3006/ossa/v1
+        authentication:
+          type: api-key
+        tls: false
+      - name: mcp
+        version: "2.0"
+        endpoint: mcp://localhost:3006
+        authentication:
+          type: bearer-token
+        tls: false
+    preferred: mcp
+
+  conformance:
+    level: gold
+    certifications:
+      - MCP-2.0-Compatible
+    auditLogging: true
+    feedbackLoop: true
+    propsTokens: true
+    learningSignals: true
+
+  performance:
+    throughput:
+      toolExecutionsPerMinute: 500
+      discoveryScansPerHour: 12
+    latency:
+      p50: 100
+      p95: 1000
+      p99: 5000
+    limits:
+      maxToolRegistrySize: 500
+      maxToolExecutionTime: 60000
+      timeout: 60000
+
+  resources:
+    requests:
+      cpu: 500m
+      memory: 1Gi
+      storage: 10Gi
+    limits:
+      cpu: 2
+      memory: 4Gi
+      storage: 50Gi
+
+  budgets:
+    tokens:
+      default: 2000
+      maximum: 10000
+      strategy: tool-proportional
+    time:
+      default: 30000
+      maximum: 60000
+
+  dependencies:
+    services:
+      - name: redis-cache
+        endpoint: redis://redis:6379
+        healthCheck: redis://redis:6379/ping
+    volumes:
+      - name: mcp-tools
+        mountPath: /app/mcp-tools
+        readOnly: true
+
+status:
+  state: registered
+  health: healthy
+  lastHeartbeat: "2024-01-01T00:00:00Z"
+  registeredAt: "2024-01-01T00:00:00Z"
+
+mcpConfig:
+  mcpVersion: "2.0"
+  toolRegistrySize: 500
+  autoDiscovery: true
+  discoveryInterval: 300000  # 5 minutes
+  toolCategories:
+    - data-processing
+    - api-integration
+    - file-operations
+    - computation
+    - monitoring
+  caching:
+    enabled: true
+    ttl: 3600000  # 1 hour
+  security:
+    toolValidation: true
+    sandboxed: true
+    timeoutEnforcement: true

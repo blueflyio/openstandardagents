@@ -1,0 +1,289 @@
+apiVersion: "@bluefly/open-standards-scalable-agents/v0.1.9"
+kind: Agent
+metadata:
+  name: analytics-agent
+  version: "0.1.9"
+  namespace: ossa-examples
+  description: Analytics worker with pandas, numpy, scipy, sklearn support and visualization capabilities
+  labels:
+    category: worker
+    specialization: analytics
+    tenant: ossa-platform
+  annotations:
+    openapi: /api/analytics-agent-specification.yml
+    compliance: silver
+    docker-service: ossa-analytics-agent
+  author: OSSA Platform Team
+  license: Apache-2.0
+  repository: https://github.com/ossa/analytics-agent
+  documentation: https://docs.ossa.io/agents/workers/analytics
+
+spec:
+  type: worker
+  subtype: worker.analytics
+  
+  capabilities:
+    domains:
+      - data-analytics
+      - statistical-analysis
+      - machine-learning
+      - data-visualization
+      - predictive-modeling
+    operations:
+      - name: analyze_dataset
+        description: Perform comprehensive statistical analysis on dataset
+        inputSchema:
+          type: object
+          required: [dataset]
+          properties:
+            dataset:
+              type: object
+              properties:
+                data: {type: object}
+                format: {type: string}
+                columns: {type: array}
+            analysisType:
+              type: array
+              items:
+                type: string
+                enum: [descriptive, correlation, regression, clustering, classification, time_series]
+            options: {type: object}
+        outputSchema:
+          type: object
+          properties:
+            analysis:
+              type: object
+              properties:
+                summary: {type: object}
+                insights: {type: array}
+                metrics: {type: object}
+                recommendations: {type: array}
+            visualizations: {type: array}
+            modelMetrics: {type: object}
+        timeout: 120000
+      
+      - name: build_model
+        description: Build machine learning model using specified algorithm
+        inputSchema:
+          type: object
+          required: [dataset, modelType]
+          properties:
+            dataset: {type: object}
+            modelType:
+              type: string
+              enum: [linear_regression, logistic_regression, random_forest, svm, neural_network, clustering]
+            parameters: {type: object}
+            validation: {type: object}
+        outputSchema:
+          type: object
+          properties:
+            modelId: {type: string}
+            performance:
+              type: object
+              properties:
+                accuracy: {type: number}
+                precision: {type: number}
+                recall: {type: number}
+                f1Score: {type: number}
+            feature_importance: {type: array}
+            model_metadata: {type: object}
+        timeout: 300000
+      
+      - name: predict
+        description: Make predictions using trained model
+        inputSchema:
+          type: object
+          required: [modelId, data]
+          properties:
+            modelId: {type: string}
+            data: {type: object}
+            options: {type: object}
+        outputSchema:
+          type: object
+          properties:
+            predictions: {type: array}
+            confidence: {type: array}
+            probability: {type: array}
+        timeout: 30000
+      
+      - name: create_visualization
+        description: Create data visualization charts and graphs
+        inputSchema:
+          type: object
+          required: [data, chartType]
+          properties:
+            data: {type: object}
+            chartType:
+              type: string
+              enum: [bar, line, scatter, histogram, heatmap, box_plot, violin_plot]
+            options:
+              type: object
+              properties:
+                title: {type: string}
+                xAxis: {type: string}
+                yAxis: {type: string}
+                style: {type: object}
+        outputSchema:
+          type: object
+          properties:
+            visualizationId: {type: string}
+            imageData: {type: string}
+            format: {type: string}
+            metadata: {type: object}
+        timeout: 60000
+      
+      - name: generate_report
+        description: Generate comprehensive analytics report
+        inputSchema:
+          type: object
+          required: [analysisResults]
+          properties:
+            analysisResults: {type: object}
+            reportFormat:
+              type: string
+              enum: [pdf, html, json]
+              default: html
+            includeVisualization: {type: boolean}
+            template: {type: string}
+        outputSchema:
+          type: object
+          properties:
+            reportId: {type: string}
+            reportData: {type: string}
+            format: {type: string}
+            size: {type: number}
+        timeout: 90000
+
+    inputFormats:
+      - application/json
+      - text/csv
+      - application/parquet
+      - application/excel
+
+    outputFormats:
+      - application/json
+      - text/csv
+      - application/pdf
+      - text/html
+      - image/png
+
+    tokenEfficiency:
+      strategies:
+        - result-summarization
+        - statistical-compression
+        - visualization-optimization
+        - model-caching
+      compressionRatio: 0.85
+
+  protocols:
+    supported:
+      - name: ossa
+        version: "0.1.9"
+        endpoint: http://localhost:3008/ossa/v1
+        authentication:
+          type: api-key
+        tls: false
+      - name: rest
+        version: "3.1.0"
+        endpoint: http://localhost:3008/api/v1
+        authentication:
+          type: bearer-token
+        tls: false
+    preferred: ossa
+
+  conformance:
+    level: silver
+    certifications: []
+    auditLogging: false
+    feedbackLoop: true
+    propsTokens: true
+    learningSignals: true
+
+  performance:
+    throughput:
+      analysesPerHour: 50
+      modelsPerDay: 10
+    latency:
+      p50: 5000
+      p95: 60000
+      p99: 120000
+    limits:
+      maxDatasetSize: 1073741824  # 1GB
+      maxModelComplexity: 1000
+      timeout: 300000
+
+  resources:
+    requests:
+      cpu: 2
+      memory: 4Gi
+      storage: 50Gi
+    limits:
+      cpu: 8
+      memory: 16Gi
+      storage: 500Gi
+
+  budgets:
+    tokens:
+      default: 3000
+      maximum: 15000
+      strategy: analysis-proportional
+    time:
+      default: 120000
+      maximum: 300000
+
+  dependencies:
+    services:
+      - name: redis-cache
+        endpoint: redis://redis:6379
+        healthCheck: redis://redis:6379/ping
+      - name: postgres-storage
+        endpoint: postgresql://ossa:ossa_dev_password@postgres:5432/ossa
+        healthCheck: postgresql://ossa:ossa_dev_password@postgres:5432/ossa
+      - name: qdrant-vector
+        endpoint: http://qdrant:6333
+        healthCheck: http://qdrant:6333/health
+
+status:
+  state: registered
+  health: healthy
+  lastHeartbeat: "2024-01-01T00:00:00Z"
+  registeredAt: "2024-01-01T00:00:00Z"
+
+analyticsConfig:
+  analyticsEngines:
+    - pandas
+    - numpy
+    - scipy
+    - sklearn
+  visualizationEnabled: true
+  reportFormats:
+    - pdf
+    - html
+    - json
+  supportedAlgorithms:
+    regression:
+      - linear
+      - polynomial
+      - ridge
+      - lasso
+    classification:
+      - logistic_regression
+      - random_forest
+      - svm
+      - naive_bayes
+    clustering:
+      - kmeans
+      - dbscan
+      - hierarchical
+    timeSeries:
+      - arima
+      - seasonal_decompose
+      - exponential_smoothing
+  visualization:
+    defaultStyle: seaborn
+    formats: [png, svg, pdf]
+    maxResolution: [1920, 1080]
+  modelStorage:
+    backend: filesystem
+    compression: true
+    versioning: true

@@ -1,0 +1,212 @@
+openapi: 3.1.0
+info:
+  title: OSSA Reference Implementation API
+  version: 0.1.9-alpha.1
+  description: |
+    Complete API specification for OSSA (Open Standards for Scalable Agents) 
+    reference implementation. This serves as the gold standard for OSSA-compliant APIs.
+  contact:
+    name: OSSA Specification Team
+    url: https://ossa.dev
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: http://localhost:3000
+    description: Development server
+  - url: https://api.ossa.dev
+    description: Production server
+
+paths:
+  # Agent Discovery and Registry
+  /api/v1/agents:
+    get:
+      summary: Discover all agents
+      operationId: discoverAgents
+      tags: [Registry]
+      responses:
+        '200':
+          description: List of discovered agents
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentList'
+                
+  /api/v1/agents/{agentId}:
+    get:
+      summary: Get agent details
+      operationId: getAgent
+      tags: [Registry]
+      parameters:
+        - name: agentId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Agent details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Agent'
+
+  # OSSA Compliance
+  /api/v1/compliance/validate:
+    post:
+      summary: Validate OSSA compliance
+      operationId: validateCompliance
+      tags: [Compliance]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ComplianceRequest'
+      responses:
+        '200':
+          description: Compliance validation result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ComplianceResult'
+
+  # Orchestration
+  /api/v1/orchestration/workflows:
+    post:
+      summary: Execute workflow
+      operationId: executeWorkflow
+      tags: [Orchestration]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WorkflowRequest'
+      responses:
+        '200':
+          description: Workflow execution result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkflowResult'
+
+components:
+  schemas:
+    Agent:
+      type: object
+      required: [id, name, type, version, status]
+      properties:
+        id:
+          type: string
+          example: "ossa-orchestrator-v1"
+        name:
+          type: string
+          example: "OSSA Master Orchestrator"
+        type:
+          type: string
+          enum: [orchestrator, worker, critic, governor, monitor, integrator]
+        version:
+          type: string
+          example: "1.0.0"
+        status:
+          type: string
+          enum: [active, idle, error, maintenance]
+        capabilities:
+          type: array
+          items:
+            type: string
+        endpoints:
+          type: object
+          properties:
+            health:
+              type: string
+            execute:
+              type: string
+            metrics:
+              type: string
+              
+    AgentList:
+      type: object
+      properties:
+        agents:
+          type: array
+          items:
+            $ref: '#/components/schemas/Agent'
+        total:
+          type: integer
+        discovered_at:
+          type: string
+          format: date-time
+          
+    ComplianceRequest:
+      type: object
+      required: [target]
+      properties:
+        target:
+          type: string
+          description: "Agent or project to validate"
+        level:
+          type: string
+          enum: [basic, standard, governed]
+          default: standard
+          
+    ComplianceResult:
+      type: object
+      properties:
+        compliant:
+          type: boolean
+        level:
+          type: string
+        violations:
+          type: array
+          items:
+            type: object
+            properties:
+              rule:
+                type: string
+              severity:
+                type: string
+              message:
+                type: string
+        score:
+          type: number
+          minimum: 0
+          maximum: 100
+          
+    WorkflowRequest:
+      type: object
+      required: [workflow_id, agents]
+      properties:
+        workflow_id:
+          type: string
+        agents:
+          type: array
+          items:
+            type: string
+        parameters:
+          type: object
+          
+    WorkflowResult:
+      type: object
+      properties:
+        execution_id:
+          type: string
+        status:
+          type: string
+          enum: [running, completed, failed]
+        result:
+          type: object
+        logs:
+          type: array
+          items:
+            type: string
+
+tags:
+  - name: Registry
+    description: Agent discovery and registry operations
+  - name: Compliance
+    description: OSSA compliance validation
+  - name: Orchestration
+    description: Multi-agent workflow orchestration

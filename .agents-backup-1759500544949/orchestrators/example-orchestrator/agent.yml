@@ -1,0 +1,227 @@
+apiVersion: "@bluefly/open-standards-scalable-agents/v0.1.9"
+kind: Agent
+metadata:
+  name: example-orchestrator
+  version: "0.1.9"
+  namespace: ossa-examples
+  description: Reference implementation orchestrator agent for complex multi-agent workflows
+  labels:
+    category: orchestrator
+    specialization: workflow-coordination
+    tenant: ossa-platform
+  annotations:
+    openapi: /api/orchestrator-specification.yml
+    compliance: gold
+  author: OSSA Platform Team
+  license: Apache-2.0
+  repository: https://github.com/ossa/example-orchestrator
+  documentation: https://docs.ossa.io/agents/orchestrators
+
+spec:
+  type: orchestrator
+  subtype: orchestrator.workflow
+  
+  capabilities:
+    domains:
+      - workflow-management
+      - agent-coordination
+      - task-decomposition
+      - execution-planning
+      - resource-allocation
+    operations:
+      - name: orchestrate_workflow
+        description: Coordinate execution of complex multi-agent workflows
+        inputSchema:
+          type: object
+          required: [workflow, agents]
+          properties:
+            workflow:
+              type: object
+              properties:
+                id: {type: string}
+                name: {type: string}
+                steps: 
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      id: {type: string}
+                      agent: {type: string}
+                      task: {type: object}
+                      dependencies: {type: array}
+            agents:
+              type: array
+              items:
+                type: object
+                properties:
+                  id: {type: string}
+                  type: {type: string}
+                  capabilities: {type: array}
+        outputSchema:
+          type: object
+          properties:
+            workflowId: {type: string}
+            status: {type: string}
+            executionPlan: {type: object}
+            estimatedDuration: {type: number}
+        timeout: 30000
+      
+      - name: monitor_execution
+        description: Monitor and track workflow execution progress
+        inputSchema:
+          type: object
+          required: [workflowId]
+          properties:
+            workflowId: {type: string}
+        outputSchema:
+          type: object
+          properties:
+            status: {type: string}
+            progress: {type: number}
+            currentStep: {type: object}
+            metrics: {type: object}
+        timeout: 5000
+      
+      - name: adapt_workflow
+        description: Adapt workflow execution based on real-time feedback
+        inputSchema:
+          type: object
+          required: [workflowId, adaptations]
+          properties:
+            workflowId: {type: string}
+            adaptations: {type: object}
+            reason: {type: string}
+        outputSchema:
+          type: object
+          properties:
+            adapted: {type: boolean}
+            newPlan: {type: object}
+            impact: {type: string}
+        timeout: 15000
+
+    inputFormats:
+      - application/json
+      - application/yaml
+      - text/plain
+
+    outputFormats:
+      - application/json
+      - application/yaml
+      - text/plain
+
+    tokenEfficiency:
+      strategies:
+        - hierarchical-planning
+        - agent-specialization
+        - cacheable-capsules
+        - delta-prompting
+        - checkpoint-memos
+      compressionRatio: 0.8
+
+  protocols:
+    supported:
+      - name: ossa
+        version: "0.1.9"
+        endpoint: http://localhost:3001/ossa/v1
+        authentication:
+          type: api-key
+        tls: false
+      - name: rest
+        version: "3.1.0"
+        endpoint: http://localhost:3001/api/v1
+        authentication:
+          type: bearer-token
+        tls: false
+    preferred: ossa
+
+  conformance:
+    level: gold
+    certifications:
+      - ISO-42001
+      - SOC-2-Type-II
+    auditLogging: true
+    feedbackLoop: true
+    propsTokens: true
+    learningSignals: true
+
+  performance:
+    throughput:
+      requestsPerSecond: 50
+      concurrentWorkflows: 25
+    latency:
+      p50: 500
+      p95: 2000
+      p99: 5000
+    limits:
+      maxWorkflowComplexity: 100
+      maxConcurrentAgents: 10
+      timeout: 300000
+
+  resources:
+    requests:
+      cpu: 1
+      memory: 2Gi
+      storage: 10Gi
+    limits:
+      cpu: 4
+      memory: 8Gi
+      storage: 50Gi
+
+  feedbackLoop:
+    phase: orchestrate
+    inputs:
+      - workflow_definition
+      - agent_capabilities
+      - execution_context
+      - performance_metrics
+    outputs:
+      - execution_plan
+      - resource_allocation
+      - monitoring_data
+      - adaptation_decisions
+
+  budgets:
+    tokens:
+      default: 10000
+      maximum: 50000
+      strategy: workflow-proportional
+    time:
+      default: 60000
+      maximum: 300000
+
+  dependencies:
+    agents:
+      - name: registry-core
+        version: ">=0.1.9"
+        optional: false
+      - name: monitor-system
+        version: ">=0.1.9"
+        optional: true
+    services:
+      - name: workflow-engine
+        endpoint: http://workflow-engine:8080
+        healthCheck: http://workflow-engine:8080/health
+      - name: metrics-collector
+        endpoint: http://metrics:9090
+        healthCheck: http://metrics:9090/health
+
+status:
+  state: registered
+  health: healthy
+  lastHeartbeat: "2024-01-01T00:00:00Z"
+  registeredAt: "2024-01-01T00:00:00Z"
+  metrics:
+    workflowsOrchestrated: 0
+    successRate: 1.0
+    avgExecutionTime: 45000
+    tokenUsage: 0
+
+orchestratorConfig:
+  maxConcurrentWorkflows: 25
+  defaultTimeout: 300000
+  adaptationThreshold: 0.7
+  monitoringInterval: 5000
+  failureRetryCount: 3
+  resourceOptimization: true
+  planningStrategy: hierarchical
+  coordinationProtocol: event-driven

@@ -1,0 +1,262 @@
+apiVersion: open-standards-scalable-agents/v0.1.9
+kind: Agent
+metadata:
+  name: ossa-project-coordinator
+  version: "1.0.0"
+  description: "OSSA Project Coordinator - Integrates and coordinates activities across multiple OSSA projects and workspaces"
+  tags: ["integrator", "coordination", "projects", "synchronization"]
+  
+spec:
+  type: integrator
+  role: project_coordinator
+  priority: high
+  
+  capabilities:
+    primary:
+      - multi_project_discovery_and_mapping
+      - cross_project_dependency_management
+      - synchronized_deployment_coordination
+      - shared_resource_optimization
+      - inter_project_communication_facilitation
+      - conflict_resolution_across_projects
+      
+    secondary:
+      - project_portfolio_management
+      - resource_sharing_optimization
+      - knowledge_transfer_facilitation
+      - best_practice_propagation
+      
+  responsibilities:
+    - "Discover and map all OSSA projects in the ecosystem"
+    - "Coordinate dependencies between multiple projects"
+    - "Facilitate resource sharing and optimization"
+    - "Synchronize deployments across related projects"
+    - "Resolve conflicts between project requirements"
+    - "Propagate best practices and standards"
+    
+  interfaces:
+    api:
+      protocol: "REST/GraphQL"
+      version: "v1"
+      endpoints:
+        - "/projects"
+        - "/projects/{id}/dependencies"
+        - "/projects/coordinate"
+        - "/projects/synchronize"
+        - "/resources/allocate"
+        - "/conflicts/resolve"
+        
+    events:
+      publishes:
+        - "project.discovered"
+        - "dependency.mapped"
+        - "coordination.completed"
+        - "conflict.resolved"
+        - "resource.reallocated"
+      subscribes:
+        - "project.created"
+        - "project.updated"
+        - "deployment.initiated"
+        - "resource.requested"
+        
+  project_discovery:
+    scanning_strategies:
+      filesystem_scan:
+        - recursive_directory_traversal
+        - agent_manifest_detection
+        - workspace_configuration_analysis
+        - git_repository_integration
+        
+      network_discovery:
+        - service_registry_integration
+        - api_endpoint_discovery
+        - health_check_aggregation
+        - peer_to_peer_communication
+        
+      registry_integration:
+        - global_registry_synchronization
+        - local_registry_aggregation
+        - metadata_enrichment
+        - relationship_mapping
+        
+    project_classification:
+      by_type:
+        - core_ossa_systems
+        - specialized_applications
+        - integration_projects
+        - experimental_prototypes
+        
+      by_maturity:
+        - production_ready
+        - development_stage
+        - prototype_phase
+        - deprecated_legacy
+        
+      by_criticality:
+        - mission_critical
+        - business_important
+        - operational_support
+        - development_tools
+        
+  dependency_management:
+    dependency_types:
+      functional:
+        - service_dependencies
+        - data_dependencies
+        - api_dependencies
+        - configuration_dependencies
+        
+      technical:
+        - infrastructure_dependencies
+        - library_dependencies
+        - platform_dependencies
+        - security_dependencies
+        
+      operational:
+        - deployment_dependencies
+        - monitoring_dependencies
+        - maintenance_dependencies
+        - backup_dependencies
+        
+    resolution_strategies:
+      automated_resolution:
+        - version_compatibility_checking
+        - automatic_update_coordination
+        - conflict_prevention_mechanisms
+        - rollback_capability_management
+        
+      manual_resolution:
+        - stakeholder_communication
+        - negotiation_facilitation
+        - compromise_solution_development
+        - escalation_path_management
+        
+  coordination_patterns:
+    synchronous_coordination:
+      description: "Real-time coordination across projects"
+      use_cases:
+        - critical_deployments
+        - emergency_responses
+        - security_updates
+        - data_migrations
+      mechanisms:
+        - real_time_communication
+        - synchronized_execution
+        - immediate_feedback_loops
+        
+    asynchronous_coordination:
+      description: "Event-driven coordination"
+      use_cases:
+        - regular_deployments
+        - feature_rollouts
+        - maintenance_activities
+        - optimization_tasks
+      mechanisms:
+        - event_driven_triggers
+        - queue_based_processing
+        - eventual_consistency
+        
+    hierarchical_coordination:
+      description: "Tiered coordination structure"
+      use_cases:
+        - large_scale_transformations
+        - enterprise_rollouts
+        - complex_integrations
+        - multi_team_projects
+      mechanisms:
+        - delegation_hierarchies
+        - escalation_procedures
+        - approval_workflows
+        
+  resource_optimization:
+    shared_resources:
+      infrastructure:
+        - computing_clusters
+        - storage_systems
+        - network_bandwidth
+        - monitoring_infrastructure
+        
+      services:
+        - authentication_services
+        - logging_aggregation
+        - metrics_collection
+        - notification_systems
+        
+      knowledge:
+        - documentation_repositories
+        - best_practice_libraries
+        - template_collections
+        - training_materials
+        
+    optimization_algorithms:
+      load_balancing:
+        - resource_usage_analysis
+        - demand_forecasting
+        - capacity_planning
+        - dynamic_allocation
+        
+      cost_optimization:
+        - usage_pattern_analysis
+        - redundancy_elimination
+        - efficiency_improvements
+        - budget_optimization
+        
+  conflict_resolution:
+    conflict_types:
+      resource_conflicts:
+        - competing_resource_demands
+        - capacity_limitations
+        - priority_disputes
+        - allocation_disagreements
+        
+      technical_conflicts:
+        - incompatible_requirements
+        - version_mismatches
+        - architecture_differences
+        - security_policy_conflicts
+        
+      operational_conflicts:
+        - deployment_schedule_conflicts
+        - maintenance_window_overlaps
+        - team_responsibility_disputes
+        - process_inconsistencies
+        
+    resolution_mechanisms:
+      automated_resolution:
+        - policy_based_decisions
+        - priority_matrix_application
+        - resource_queuing_systems
+        - fallback_strategy_execution
+        
+      mediated_resolution:
+        - stakeholder_workshops
+        - compromise_negotiation
+        - expert_consultation
+        - escalation_to_governance
+        
+  deployment:
+    runtime: "node:18-alpine"
+    resources:
+      cpu: "1500m"
+      memory: "3Gi"
+    volumes:
+      - project_data: "/data/projects"
+      - coordination_state: "/data/state"
+    dependencies:
+      - project-registry
+      - dependency-analyzer
+      - resource-optimizer
+      - conflict-resolver
+      
+  monitoring:
+    health_check: "/health"
+    metrics:
+      - projects_discovered_count
+      - coordination_success_rate
+      - dependency_resolution_time
+      - resource_optimization_efficiency
+      - conflict_resolution_speed
+      
+  compliance:
+    ossa_level: "standard"
+    security_clearance: "medium"

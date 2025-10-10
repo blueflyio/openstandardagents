@@ -1,0 +1,216 @@
+openapi: 3.1.0
+info:
+  title: OSSA Observability Deployment API
+  version: 0.1.0
+  description: |
+    OpenAPI specification for deploying observability enhancements.
+    Replaces bash scripts with REST API endpoints.
+
+servers:
+  - url: http://localhost:8080/api/v1
+    description: Local OSSA server
+
+paths:
+  /infrastructure/detect:
+    get:
+      summary: Detect infrastructure type
+      description: Auto-detect if running on Docker Compose or Kubernetes
+      operationId: detectInfrastructure
+      parameters:
+        - name: environment
+          in: query
+          schema:
+            type: string
+            enum: [auto, docker, kubernetes]
+          required: false
+      responses:
+        '200':
+          description: Infrastructure detected
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InfrastructureInfo'
+
+  /deployment/validate:
+    post:
+      summary: Validate deployment prerequisites
+      description: Check if required services are available
+      operationId: validateDeployment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                infrastructure:
+                  type: string
+                  enum: [docker, kubernetes]
+                services:
+                  type: array
+                  items:
+                    type: string
+      responses:
+        '200':
+          description: Validation result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationResult'
+
+  /database/schema/deploy:
+    post:
+      summary: Deploy database schema
+      description: Apply ClickHouse schema extension
+      operationId: deploySchema
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                database:
+                  type: string
+                  enum: [clickhouse, postgres]
+                schema_file:
+                  type: string
+                infrastructure:
+                  type: string
+                  enum: [docker, kubernetes]
+                dry_run:
+                  type: boolean
+      responses:
+        '200':
+          description: Schema deployed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeploymentResult'
+
+  /services/deploy:
+    post:
+      summary: Deploy TypeScript services
+      description: Deploy RAG evaluator, LLM assertions, etc.
+      operationId: deployServices
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                service_name:
+                  type: string
+                dry_run:
+                  type: boolean
+      responses:
+        '200':
+          description: Services deployed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeploymentResult'
+
+  /api/routes/update:
+    post:
+      summary: Update API routes
+      description: Register new API endpoints
+      operationId: updateRoutes
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                target:
+                  type: string
+                routes:
+                  type: array
+                  items:
+                    type: string
+                dry_run:
+                  type: boolean
+      responses:
+        '200':
+          description: Routes updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeploymentResult'
+
+  /services/restart:
+    post:
+      summary: Restart services
+      description: Restart deployed services
+      operationId: restartServices
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                infrastructure:
+                  type: string
+                  enum: [docker, kubernetes]
+                services:
+                  type: array
+                  items:
+                    type: string
+      responses:
+        '200':
+          description: Services restarted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeploymentResult'
+
+components:
+  schemas:
+    InfrastructureInfo:
+      type: object
+      properties:
+        type:
+          type: string
+          enum: [docker, kubernetes]
+        version:
+          type: string
+        services:
+          type: object
+          additionalProperties:
+            type: object
+            properties:
+              status:
+                type: string
+              port:
+                type: integer
+
+    ValidationResult:
+      type: object
+      properties:
+        valid:
+          type: boolean
+        missing:
+          type: array
+          items:
+            type: string
+        warnings:
+          type: array
+          items:
+            type: string
+
+    DeploymentResult:
+      type: object
+      properties:
+        success:
+          type: boolean
+        message:
+          type: string
+        preview:
+          type: string
+        services_affected:
+          type: array
+          items:
+            type: string

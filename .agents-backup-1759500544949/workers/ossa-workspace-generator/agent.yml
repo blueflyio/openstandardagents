@@ -1,0 +1,198 @@
+apiVersion: open-standards-scalable-agents/v0.1.9
+kind: Agent
+metadata:
+  name: ossa-workspace-generator
+  version: "1.0.0"
+  description: "OSSA Workspace Generator - Creates and configures standardized OSSA workspaces and project structures"
+  tags: ["worker", "generator", "workspace", "scaffolding"]
+  
+spec:
+  type: worker
+  role: generator
+  priority: medium
+  
+  capabilities:
+    primary:
+      - workspace_structure_generation
+      - template_based_scaffolding
+      - configuration_file_creation
+      - dependency_setup_and_initialization
+      - compliance_framework_setup
+      - documentation_generation
+      
+    secondary:
+      - custom_template_creation
+      - workspace_migration_support
+      - backup_workspace_creation
+      - development_environment_setup
+      
+  responsibilities:
+    - "Generate standardized OSSA workspace structures"
+    - "Create project scaffolding from templates"
+    - "Initialize configuration files and settings"
+    - "Setup development and deployment environments"
+    - "Ensure compliance framework integration"
+    - "Generate initial documentation"
+    
+  interfaces:
+    api:
+      protocol: "REST"
+      version: "v1"
+      endpoints:
+        - "/generate/workspace"
+        - "/generate/project"
+        - "/generate/agent"
+        - "/templates/list"
+        - "/templates/validate"
+        
+    cli:
+      commands:
+        - "generate workspace --template [name]"
+        - "generate project --type [type]"
+        - "generate agent --kind [orchestrator|worker|critic]"
+        
+  templates:
+    workspace_templates:
+      minimal:
+        description: "Minimal OSSA workspace"
+        structure:
+          - ".agents/"
+          - ".agents-workspace/"
+          - "README.md"
+          - "ossa.config.yaml"
+        agents:
+          - basic-orchestrator
+          
+      standard:
+        description: "Standard OSSA workspace"
+        structure:
+          - ".agents/"
+          - ".agents-workspace/"
+          - "docs/"
+          - "tests/"
+          - "scripts/"
+          - "README.md"
+          - "CHANGELOG.md"
+          - "ossa.config.yaml"
+          - ".gitlab-ci.yml"
+        agents:
+          - master-orchestrator
+          - compliance-monitor
+          - basic-workers
+          
+      enterprise:
+        description: "Enterprise OSSA workspace"
+        structure:
+          - ".agents/"
+          - ".agents-workspace/"
+          - "docs/"
+          - "tests/"
+          - "scripts/"
+          - "infrastructure/"
+          - "monitoring/"
+          - "security/"
+          - "README.md"
+          - "CHANGELOG.md"
+          - "ROADMAP.md"
+          - "ossa.config.yaml"
+          - ".gitlab-ci.yml"
+          - "docker-compose.yml"
+        agents:
+          - full-orchestration-suite
+          - governance-framework
+          - security-monitoring
+          - performance-optimization
+          
+    agent_templates:
+      orchestrator:
+        files:
+          - "agent.yml"
+          - "behavior.py"
+          - "contracts/"
+          - "tests/"
+          - "README.md"
+        capabilities:
+          - coordination
+          - workflow_management
+          - decision_making
+          
+      worker:
+        files:
+          - "agent.yml"
+          - "behavior.py"
+          - "tasks/"
+          - "tests/"
+          - "README.md"
+        capabilities:
+          - task_execution
+          - data_processing
+          - specialized_operations
+          
+      critic:
+        files:
+          - "agent.yml"
+          - "behavior.py"
+          - "evaluations/"
+          - "tests/"
+          - "README.md"
+        capabilities:
+          - quality_assessment
+          - compliance_checking
+          - performance_evaluation
+          
+  generation_workflow:
+    workspace_creation:
+      - validate_target_directory
+      - select_appropriate_template
+      - generate_directory_structure
+      - create_configuration_files
+      - initialize_agent_registry
+      - setup_compliance_framework
+      - generate_documentation
+      - validate_generated_workspace
+      
+    project_initialization:
+      - analyze_project_requirements
+      - determine_agent_composition
+      - generate_project_structure
+      - create_ci_cd_configuration
+      - setup_testing_framework
+      - initialize_git_repository
+      - create_initial_documentation
+      
+  validation:
+    structure_validation:
+      - required_directories_present
+      - configuration_files_valid
+      - agent_manifests_compliant
+      - documentation_complete
+      
+    compliance_validation:
+      - ossa_standard_adherence
+      - security_requirements_met
+      - accessibility_guidelines_followed
+      - performance_standards_met
+      
+  deployment:
+    runtime: "node:18-alpine"
+    resources:
+      cpu: "500m"
+      memory: "1Gi"
+    volumes:
+      - templates: "/templates"
+      - workspace: "/workspace"
+    dependencies:
+      - template-registry
+      - validation-service
+      
+  monitoring:
+    health_check: "/health"
+    metrics:
+      - workspace_generation_success_rate
+      - template_usage_statistics
+      - generation_time_per_template
+      - validation_failure_rate
+      
+  compliance:
+    ossa_level: "standard"
+    security_clearance: "low"

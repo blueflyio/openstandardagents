@@ -1,0 +1,198 @@
+apiVersion: "@bluefly/open-standards-scalable-agents/v0.1.9"
+kind: Agent
+metadata:
+  name: communication-multiprotocol
+  version: "0.1.9"
+  namespace: ossa-examples
+  description: Multi-protocol communication integrator supporting WebSocket, gRPC, REST, and GraphQL
+  labels:
+    category: integrator
+    specialization: communication
+    tenant: ossa-platform
+  annotations:
+    openapi: /api/communication-specification.yml
+    compliance: silver
+    docker-service: ossa-comm-multiprotocol
+  author: OSSA Platform Team
+  license: Apache-2.0
+  repository: https://github.com/ossa/communication-multiprotocol
+  documentation: https://docs.ossa.io/agents/integrators/communication
+
+spec:
+  type: integrator
+  subtype: integrator.communication
+  
+  capabilities:
+    domains:
+      - multi-protocol-communication
+      - real-time-messaging
+      - service-integration
+      - protocol-translation
+      - connection-management
+    operations:
+      - name: establish_connection
+        description: Establish connection using specified protocol
+        inputSchema:
+          type: object
+          required: [protocol, endpoint]
+          properties:
+            protocol:
+              type: string
+              enum: [websocket, grpc, rest, graphql]
+            endpoint: {type: string}
+            authentication: {type: object}
+            options: {type: object}
+        outputSchema:
+          type: object
+          properties:
+            connectionId: {type: string}
+            status: {type: string}
+            capabilities: {type: array}
+        timeout: 30000
+      
+      - name: send_message
+        description: Send message through established connection
+        inputSchema:
+          type: object
+          required: [connectionId, message]
+          properties:
+            connectionId: {type: string}
+            message: {type: object}
+            options: {type: object}
+        outputSchema:
+          type: object
+          properties:
+            messageId: {type: string}
+            sent: {type: boolean}
+            response: {type: object}
+        timeout: 15000
+      
+      - name: subscribe_events
+        description: Subscribe to real-time events
+        inputSchema:
+          type: object
+          required: [connectionId, eventTypes]
+          properties:
+            connectionId: {type: string}
+            eventTypes: {type: array}
+            filters: {type: object}
+        outputSchema:
+          type: object
+          properties:
+            subscriptionId: {type: string}
+            status: {type: string}
+        timeout: 10000
+
+    inputFormats:
+      - application/json
+      - application/grpc
+      - text/plain
+      - application/graphql
+
+    outputFormats:
+      - application/json
+      - application/grpc
+      - text/plain
+
+    tokenEfficiency:
+      strategies:
+        - connection-pooling
+        - message-batching
+        - protocol-optimization
+        - streaming-compression
+      compressionRatio: 0.8
+
+  protocols:
+    supported:
+      - name: ossa
+        version: "0.1.9"
+        endpoint: http://localhost:3005/ossa/v1
+        authentication:
+          type: api-key
+        tls: false
+      - name: websocket
+        version: "1.0"
+        endpoint: ws://localhost:3105
+        authentication:
+          type: jwt
+        tls: false
+      - name: grpc
+        version: "1.0"
+        endpoint: grpc://localhost:3205
+        authentication:
+          type: mutual-tls
+        tls: true
+    preferred: ossa
+
+  conformance:
+    level: silver
+    certifications: []
+    auditLogging: false
+    feedbackLoop: false
+    propsTokens: true
+    learningSignals: false
+
+  performance:
+    throughput:
+      connectionsPerSecond: 100
+      messagesPerSecond: 1000
+    latency:
+      p50: 50
+      p95: 200
+      p99: 500
+    limits:
+      maxConnections: 10000
+      maxMessageSize: 1048576  # 1MB
+      timeout: 30000
+
+  resources:
+    requests:
+      cpu: 500m
+      memory: 1Gi
+      storage: 5Gi
+    limits:
+      cpu: 2
+      memory: 4Gi
+      storage: 20Gi
+
+  budgets:
+    tokens:
+      default: 1000
+      maximum: 5000
+      strategy: connection-proportional
+    time:
+      default: 15000
+      maximum: 30000
+
+  dependencies:
+    services:
+      - name: redis-pubsub
+        endpoint: redis://redis:6379
+        healthCheck: redis://redis:6379/ping
+
+status:
+  state: registered
+  health: healthy
+  lastHeartbeat: "2024-01-01T00:00:00Z"
+  registeredAt: "2024-01-01T00:00:00Z"
+
+communicationConfig:
+  supportedProtocols:
+    - websocket
+    - grpc  
+    - rest
+    - graphql
+  ports:
+    websocket: 3105
+    grpc: 3205
+    rest: 3005
+  connectionLimits:
+    websocket: 5000
+    grpc: 1000
+    rest: 10000
+    graphql: 2000
+  features:
+    realTimeMessaging: true
+    protocolTranslation: true
+    connectionPooling: true
+    messageQueuing: true

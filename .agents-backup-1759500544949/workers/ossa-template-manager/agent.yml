@@ -1,0 +1,213 @@
+apiVersion: open-standards-scalable-agents/v0.1.9
+kind: Agent
+metadata:
+  name: ossa-template-manager
+  version: "1.0.0"
+  description: "OSSA Template Manager - Manages, versions, and distributes agent and workspace templates across the ecosystem"
+  tags: ["worker", "template", "management", "versioning"]
+  
+spec:
+  type: worker
+  role: manager
+  priority: medium
+  
+  capabilities:
+    primary:
+      - template_lifecycle_management
+      - version_control_and_distribution
+      - template_validation_and_compliance
+      - custom_template_creation
+      - template_repository_management
+      - dependency_resolution_and_management
+      
+    secondary:
+      - template_optimization_and_performance
+      - usage_analytics_and_reporting
+      - template_migration_support
+      - community_template_curation
+      
+  responsibilities:
+    - "Manage the complete lifecycle of OSSA templates"
+    - "Version and distribute templates across projects"
+    - "Validate template compliance and quality"
+    - "Create and maintain template repositories"
+    - "Resolve template dependencies automatically"
+    - "Provide template usage analytics and insights"
+    
+  interfaces:
+    api:
+      protocol: "REST"
+      version: "v1"
+      endpoints:
+        - "/templates"
+        - "/templates/{id}"
+        - "/templates/{id}/versions"
+        - "/templates/validate"
+        - "/templates/search"
+        - "/templates/dependencies"
+        
+    cli:
+      commands:
+        - "template list [--type] [--category]"
+        - "template get [name] [--version]"
+        - "template create [--from-existing]"
+        - "template publish [--repository]"
+        - "template validate [name]"
+        - "template update [name] [--version]"
+        
+  template_categories:
+    workspace_templates:
+      minimal:
+        description: "Basic OSSA workspace structure"
+        components: ["registry", "basic-config"]
+        use_cases: ["prototype", "learning", "simple-projects"]
+        
+      standard:
+        description: "Production-ready workspace"
+        components: ["full-registry", "orchestration", "monitoring", "compliance"]
+        use_cases: ["production", "enterprise", "scalable-systems"]
+        
+      enterprise:
+        description: "Enterprise-grade workspace"
+        components: ["governance", "security", "audit", "performance", "disaster-recovery"]
+        use_cases: ["large-enterprise", "regulated-industries", "mission-critical"]
+        
+    agent_templates:
+      orchestrator:
+        master: "Central coordination and decision-making"
+        workflow: "Process and workflow management"
+        resource: "Resource allocation and optimization"
+        
+      worker:
+        processor: "Data and task processing"
+        integrator: "System and service integration"
+        generator: "Content and code generation"
+        
+      critic:
+        validator: "Quality and compliance validation"
+        assessor: "Performance and security assessment"
+        auditor: "Audit and governance checking"
+        
+      monitor:
+        health: "System health and availability"
+        performance: "Performance metrics and optimization"
+        security: "Security monitoring and alerting"
+        
+      governor:
+        policy: "Policy enforcement and compliance"
+        resource: "Resource governance and limits"
+        access: "Access control and permissions"
+        
+  template_structure:
+    metadata:
+      required_fields:
+        - name
+        - version
+        - description
+        - author
+        - ossa_version
+        - type
+        - category
+      optional_fields:
+        - tags
+        - dependencies
+        - variables
+        - documentation_url
+        - support_contact
+        
+    content:
+      files:
+        - "template.yml"
+        - "README.md"
+        - "CHANGELOG.md"
+        - "files/"
+        - "scripts/"
+        - "docs/"
+        
+      variables:
+        - project_name
+        - author_name
+        - ossa_version
+        - deployment_environment
+        - custom_configurations
+        
+  version_management:
+    versioning_scheme: "semver"
+    release_types:
+      major: "Breaking changes or major feature additions"
+      minor: "New features, backward compatible"
+      patch: "Bug fixes and minor improvements"
+      
+    branching_strategy:
+      main: "Stable, production-ready templates"
+      develop: "Development and testing"
+      feature: "New template development"
+      hotfix: "Critical fixes"
+      
+  repository_management:
+    repositories:
+      official:
+        url: "https://templates.ossa.dev/official"
+        type: "official"
+        access: "public"
+        
+      community:
+        url: "https://templates.ossa.dev/community"
+        type: "community"
+        access: "public"
+        
+      enterprise:
+        url: "https://templates.enterprise.ossa.dev"
+        type: "enterprise"
+        access: "private"
+        
+    synchronization:
+      frequency: "hourly"
+      conflict_resolution: "latest_wins"
+      backup_strategy: "incremental"
+      
+  validation_framework:
+    structural_validation:
+      - required_files_present
+      - metadata_completeness
+      - file_structure_compliance
+      - naming_convention_adherence
+      
+    content_validation:
+      - variable_consistency
+      - dependency_resolution
+      - security_best_practices
+      - performance_considerations
+      
+    compliance_validation:
+      - ossa_standard_adherence
+      - security_requirements
+      - accessibility_guidelines
+      - documentation_standards
+      
+  deployment:
+    runtime: "node:18-alpine"
+    resources:
+      cpu: "750m"
+      memory: "2Gi"
+    volumes:
+      - template_storage: "/templates"
+      - cache: "/cache"
+      - repositories: "/repositories"
+    dependencies:
+      - version-control-system
+      - validation-engine
+      - repository-sync-service
+      
+  monitoring:
+    health_check: "/health"
+    metrics:
+      - template_download_count
+      - template_usage_by_type
+      - validation_success_rate
+      - repository_sync_status
+      - template_creation_rate
+      
+  compliance:
+    ossa_level: "standard"
+    security_clearance: "medium"

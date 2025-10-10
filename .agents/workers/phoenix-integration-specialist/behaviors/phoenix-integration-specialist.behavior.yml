@@ -1,0 +1,35 @@
+apiVersion: '@bluefly/ossa/v0.1.9'
+kind: AgentBehavior
+metadata:
+  name: phoenix-integration-specialist-behavior
+  agent: phoenix-integration-specialist
+  version: 1.0.0
+spec:
+  behavior_type: worker
+  triggers:
+    - type: api_request
+      endpoint: /execute
+      method: POST
+    - type: event_driven
+      events:
+        - task.assigned
+    - type: scheduled
+      cron: 0 */6 * * *
+  capabilities:
+    - task_execution
+    - data_processing
+    - api_interaction
+  quality_gates:
+    - name: input_validation
+      required: true
+      schema: schemas/input/phoenix-integration-specialist.input.json
+    - name: output_verification
+      required: true
+      schema: schemas/output/phoenix-integration-specialist.output.json
+  artifacts:
+    outputs:
+      - phoenix-integration-specialist_logs
+      - phoenix-integration-specialist_results
+    storage:
+      local: .agents-workspace/data/artifacts
+      global: ../.agent-workspace/data/artifacts

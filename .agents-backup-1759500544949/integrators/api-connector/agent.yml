@@ -1,0 +1,329 @@
+apiVersion: "@bluefly/open-standards-scalable-agents/v0.1.9"
+kind: Agent
+metadata:
+  name: api-connector-integrator
+  version: "0.1.9"
+  namespace: ossa-examples
+  description: API integration agent for connecting with external services and systems
+  labels:
+    category: integrator
+    specialization: api-integration
+    tenant: ossa-platform
+  annotations:
+    openapi: /api/integrator-specification.yml
+    compliance: gold
+  author: OSSA Platform Team
+  license: Apache-2.0
+  repository: https://github.com/ossa/api-connector-integrator
+  documentation: https://docs.ossa.io/agents/integrators/api-connector
+
+spec:
+  type: integrator
+  subtype: integrator.api
+  
+  capabilities:
+    domains:
+      - api-integration
+      - data-transformation
+      - protocol-bridging
+      - service-orchestration
+      - authentication-management
+    operations:
+      - name: connect_service
+        description: Establish connection to external API service
+        inputSchema:
+          type: object
+          required: [serviceConfig]
+          properties:
+            serviceConfig:
+              type: object
+              properties:
+                name: {type: string}
+                baseUrl: {type: string}
+                authentication:
+                  type: object
+                  properties:
+                    type: {type: string}
+                    credentials: {type: object}
+                    refreshPolicy: {type: object}
+                protocols: {type: array}
+                rateLimit: {type: object}
+            healthCheck:
+              type: object
+              properties:
+                endpoint: {type: string}
+                interval: {type: number}
+                timeout: {type: number}
+        outputSchema:
+          type: object
+          properties:
+            connectionId: {type: string}
+            status: {type: string}
+            capabilities: {type: array}
+            metadata: {type: object}
+        timeout: 30000
+      
+      - name: execute_request
+        description: Execute API request with automatic retry and error handling
+        inputSchema:
+          type: object
+          required: [connectionId, request]
+          properties:
+            connectionId: {type: string}
+            request:
+              type: object
+              properties:
+                method: {type: string}
+                path: {type: string}
+                parameters: {type: object}
+                headers: {type: object}
+                body: {type: object}
+            options:
+              type: object
+              properties:
+                timeout: {type: number}
+                retries: {type: number}
+                transform: {type: boolean}
+        outputSchema:
+          type: object
+          properties:
+            requestId: {type: string}
+            response:
+              type: object
+              properties:
+                status: {type: number}
+                headers: {type: object}
+                data: {type: object}
+            metadata:
+              type: object
+              properties:
+                executionTime: {type: number}
+                retryCount: {type: number}
+                cached: {type: boolean}
+        timeout: 60000
+      
+      - name: transform_data
+        description: Transform data between different formats and schemas
+        inputSchema:
+          type: object
+          required: [data, transformation]
+          properties:
+            data: {type: object}
+            transformation:
+              type: object
+              properties:
+                sourceFormat: {type: string}
+                targetFormat: {type: string}
+                mapping: {type: object}
+                validation: {type: object}
+            options:
+              type: object
+              properties:
+                strict: {type: boolean}
+                preserveMetadata: {type: boolean}
+        outputSchema:
+          type: object
+          properties:
+            transformedData: {type: object}
+            metadata:
+              type: object
+              properties:
+                recordsProcessed: {type: number}
+                errors: {type: array}
+                warnings: {type: array}
+        timeout: 20000
+      
+      - name: batch_operations
+        description: Execute multiple API operations in batch with coordination
+        inputSchema:
+          type: object
+          required: [operations]
+          properties:
+            operations:
+              type: array
+              items:
+                type: object
+                properties:
+                  id: {type: string}
+                  connectionId: {type: string}
+                  request: {type: object}
+            strategy:
+              type: string
+              enum: [parallel, sequential, adaptive]
+              default: adaptive
+            failurePolicy:
+              type: string
+              enum: [fail_fast, continue, retry_failed]
+              default: continue
+        outputSchema:
+          type: object
+          properties:
+            batchId: {type: string}
+            results:
+              type: array
+              items:
+                type: object
+                properties:
+                  operationId: {type: string}
+                  success: {type: boolean}
+                  response: {type: object}
+                  error: {type: string}
+            summary:
+              type: object
+              properties:
+                total: {type: number}
+                successful: {type: number}
+                failed: {type: number}
+                executionTime: {type: number}
+        timeout: 180000
+
+    inputFormats:
+      - application/json
+      - application/xml
+      - application/x-www-form-urlencoded
+      - text/csv
+      - application/yaml
+
+    outputFormats:
+      - application/json
+      - application/xml
+      - text/csv
+      - application/yaml
+
+    tokenEfficiency:
+      strategies:
+        - response-filtering
+        - schema-optimization
+        - batch-consolidation
+        - cached-transformations
+        - delta-synchronization
+      compressionRatio: 0.75
+
+  protocols:
+    supported:
+      - name: ossa
+        version: "0.1.9"
+        endpoint: http://localhost:3014/ossa/v1
+        authentication:
+          type: api-key
+        tls: false
+      - name: rest
+        version: "3.1.0"
+        endpoint: http://localhost:3014/api/v1
+        authentication:
+          type: bearer-token
+        tls: false
+      - name: graphql
+        version: "2021.2"
+        endpoint: http://localhost:3014/graphql
+        authentication:
+          type: bearer-token
+        tls: false
+    preferred: ossa
+
+  conformance:
+    level: gold
+    certifications:
+      - ISO-42001
+      - SOC-2-Type-II
+    auditLogging: true
+    feedbackLoop: true
+    propsTokens: true
+    learningSignals: true
+
+  performance:
+    throughput:
+      requestsPerSecond: 200
+      batchOperationsPerMinute: 50
+    latency:
+      p50: 1000
+      p95: 5000
+      p99: 15000
+    limits:
+      maxConcurrentConnections: 100
+      maxBatchSize: 1000
+      timeout: 180000
+
+  resources:
+    requests:
+      cpu: 1
+      memory: 2Gi
+      storage: 10Gi
+    limits:
+      cpu: 4
+      memory: 8Gi
+      storage: 100Gi
+
+  feedbackLoop:
+    phase: integrate
+    inputs:
+      - api_specifications
+      - transformation_rules
+      - performance_metrics
+      - error_patterns
+    outputs:
+      - integration_results
+      - performance_data
+      - error_logs
+      - optimization_suggestions
+
+  budgets:
+    tokens:
+      default: 3000
+      maximum: 15000
+      strategy: operation-proportional
+    time:
+      default: 60000
+      maximum: 180000
+
+  dependencies:
+    agents:
+      - name: registry-core
+        version: ">=0.1.9"
+        optional: false
+    services:
+      - name: redis-cache
+        endpoint: redis://redis:6379
+        healthCheck: redis://redis:6379/ping
+      - name: rate-limiter
+        endpoint: http://rate-limiter:8080
+        healthCheck: http://rate-limiter:8080/health
+
+status:
+  state: registered
+  health: healthy
+  lastHeartbeat: "2024-01-01T00:00:00Z"
+  registeredAt: "2024-01-01T00:00:00Z"
+  metrics:
+    connectionsActive: 0
+    requestsProcessed: 0
+    successRate: 1.0
+    avgResponseTime: 1200
+    tokenUsage: 0
+
+integratorConfig:
+  connectionPoolSize: 100
+  defaultTimeout: 30000
+  retryPolicy:
+    maxRetries: 3
+    backoffStrategy: exponential
+    initialDelay: 1000
+    maxDelay: 30000
+  caching:
+    enabled: true
+    ttl: 300000  # 5 minutes
+    maxSize: 10000
+  rateLimiting:
+    enabled: true
+    globalLimit: 1000
+    perServiceLimit: 100
+  transformation:
+    cacheEnabled: true
+    validationStrict: false
+    preserveMetadata: true
+  monitoring:
+    metricsEnabled: true
+    tracingEnabled: true
+    alertThresholds:
+      errorRate: 0.05
+      responseTime: 10000

@@ -1,0 +1,51 @@
+apiVersion: open-standards-scalable-agents/v0.1.9
+kind: ProjectRegistry
+metadata:
+  name: ossa-project-registry
+  project: OSSA
+  version: "0.1.9-alpha.1"
+  description: "OSSA specification project - reference implementation"
+spec:
+  project:
+    name: OSSA
+    type: specification
+    path: "OSSA/.agents"
+    workspace_ref: "../.agent-workspace"
+    
+  agents:
+    total: 52
+    categories:
+      orchestrators: 13
+      workers: 15
+      critics: 8
+      governors: 6
+      monitors: 5
+      integrators: 5
+    
+    discovery:
+      auto_scan: true
+      paths:
+        - "agents/"
+        - "orchestrators/"
+        - "workers/"
+        - "critics/"
+        - "governors/"
+        - "monitors/"
+        - "integrators/"
+      
+  compliance:
+    standard: "ossa-v0.1.9"
+    validation: "strict"
+    conformance_level: "governed"
+    
+  capabilities:
+    - specification_validation
+    - reference_implementation
+    - best_practice_examples
+    - compliance_demonstration
+    - cross_project_coordination
+    
+  integrations:
+    workspace: "../.agent-workspace"
+    global_registry: "../.agent-workspace/registry.yml"
+    artifacts: "../.agent-workspace/data/artifacts/OSSA"

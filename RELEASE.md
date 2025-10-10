@@ -164,7 +164,7 @@ docker run -p 3000:3000 ossa:0.1.2
 
 ### Kubernetes
 ```bash
-kubectl apply -f infrastructure/k8s/
+kubectl apply -f infrastructure/kubernetes/
 kubectl get pods -n ossa-system
 ```
 

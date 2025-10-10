@@ -1,0 +1,34 @@
+apiVersion: '@bluefly/ossa/v0.1.9'
+kind: Agent
+metadata:
+  name: ansible-playbook-writer
+  uuid: project-ansible-playbook-writer-worker-v1
+  type: worker
+  version: 1.0.0
+  description: 'OSSA-compliant worker agent: ansible-playbook-writer'
+spec:
+  capabilities:
+    - task_execution
+    - data_processing
+    - api_interaction
+  dependencies:
+    - '@ossa/core@0.1.9'
+    - express@^4.18.0
+  endpoints:
+    health: /health
+    execute: /execute
+    status: /status
+    metrics: /metrics
+  integrations:
+    workspace:
+      local: .agents-workspace
+      global: ../.agent-workspace
+    registry:
+      local: ../registry.yml
+      global: ../.agent-workspace/registry.yml
+  behaviors:
+    primary: ansible-playbook-writer.behavior.yml
+    additional: []
+  validation:
+    schema: schemas/ansible-playbook-writer.schema.json
+    openapi: openapi.yml

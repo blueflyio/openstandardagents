@@ -1,0 +1,212 @@
+apiVersion: open-standards-scalable-agents/v0.1.9
+kind: Agent
+metadata:
+  name: ossa-agent-builder
+  version: "1.0.0"
+  description: "OSSA Agent Builder - Automated agent creation, configuration, and deployment system"
+  tags: ["worker", "builder", "agent", "automation"]
+  
+spec:
+  type: worker
+  role: builder
+  priority: high
+  
+  capabilities:
+    primary:
+      - agent_specification_processing
+      - code_generation_from_templates
+      - behavior_implementation_generation
+      - contract_and_interface_creation
+      - test_suite_generation
+      - deployment_configuration_creation
+      
+    secondary:
+      - agent_customization_and_tuning
+      - performance_optimization
+      - documentation_auto_generation
+      - version_management
+      
+  responsibilities:
+    - "Build agents from specifications and requirements"
+    - "Generate compliant agent code and configurations"
+    - "Create comprehensive test suites for agents"
+    - "Generate deployment and monitoring configurations"
+    - "Ensure agents meet OSSA compliance standards"
+    - "Optimize agent performance and resource usage"
+    
+  interfaces:
+    api:
+      protocol: "REST"
+      version: "v1"
+      endpoints:
+        - "/build/agent"
+        - "/build/validate"
+        - "/build/optimize"
+        - "/build/deploy"
+        - "/build/test"
+        
+    cli:
+      commands:
+        - "build agent --spec [file]"
+        - "build validate --agent [name]"
+        - "build optimize --target [metric]"
+        - "build deploy --environment [env]"
+        
+  build_process:
+    specification_analysis:
+      - parse_agent_requirements
+      - validate_specification_completeness
+      - identify_dependencies_and_constraints
+      - determine_optimal_architecture
+      
+    code_generation:
+      - generate_agent_manifest
+      - create_behavior_implementation
+      - build_interface_contracts
+      - generate_configuration_files
+      - create_deployment_scripts
+      
+    testing_framework:
+      - unit_test_generation
+      - integration_test_creation
+      - performance_test_setup
+      - compliance_test_validation
+      
+    optimization:
+      - performance_profiling
+      - resource_usage_optimization
+      - code_efficiency_improvements
+      - memory_footprint_reduction
+      
+  agent_types_supported:
+    orchestrator:
+      templates:
+        - master_orchestrator
+        - workflow_coordinator
+        - resource_manager
+        - decision_engine
+      capabilities:
+        - multi_agent_coordination
+        - workflow_management
+        - resource_allocation
+        - conflict_resolution
+        
+    worker:
+      templates:
+        - data_processor
+        - api_integrator
+        - file_manager
+        - computation_engine
+      capabilities:
+        - task_execution
+        - data_transformation
+        - service_integration
+        - specialized_processing
+        
+    critic:
+      templates:
+        - quality_assessor
+        - compliance_checker
+        - performance_evaluator
+        - security_auditor
+      capabilities:
+        - quality_evaluation
+        - standards_compliance
+        - performance_analysis
+        - security_assessment
+        
+    monitor:
+      templates:
+        - health_monitor
+        - performance_tracker
+        - resource_monitor
+        - alert_manager
+      capabilities:
+        - system_monitoring
+        - metric_collection
+        - alert_generation
+        - health_checking
+        
+    governor:
+      templates:
+        - policy_enforcer
+        - resource_governor
+        - access_controller
+        - compliance_governor
+      capabilities:
+        - policy_enforcement
+        - resource_management
+        - access_control
+        - regulatory_compliance
+        
+    integrator:
+      templates:
+        - system_integrator
+        - data_synchronizer
+        - protocol_bridge
+        - service_mesh
+      capabilities:
+        - system_integration
+        - data_synchronization
+        - protocol_translation
+        - service_coordination
+        
+  quality_assurance:
+    code_quality:
+      - syntax_validation
+      - style_guide_compliance
+      - security_best_practices
+      - performance_optimization
+      
+    functional_testing:
+      - unit_test_coverage
+      - integration_test_validation
+      - end_to_end_testing
+      - regression_testing
+      
+    compliance_validation:
+      - ossa_standard_adherence
+      - security_requirement_verification
+      - accessibility_compliance
+      - documentation_completeness
+      
+  deployment_support:
+    containerization:
+      - docker_image_creation
+      - kubernetes_manifest_generation
+      - resource_requirement_specification
+      - health_check_configuration
+      
+    orchestration:
+      - deployment_pipeline_creation
+      - rollback_strategy_implementation
+      - monitoring_setup
+      - logging_configuration
+      
+  deployment:
+    runtime: "node:18-alpine"
+    resources:
+      cpu: "1500m"
+      memory: "3Gi"
+    volumes:
+      - templates: "/templates"
+      - build_cache: "/cache"
+      - artifacts: "/artifacts"
+    dependencies:
+      - template-engine
+      - code-generator
+      - test-framework
+      - deployment-tools
+      
+  monitoring:
+    health_check: "/health"
+    metrics:
+      - agent_build_success_rate
+      - build_time_per_agent_type
+      - test_coverage_percentage
+      - deployment_success_rate
+      - optimization_improvement_metrics
+      
+  compliance:
+    ossa_level: "standard"
+    security_clearance: "medium"

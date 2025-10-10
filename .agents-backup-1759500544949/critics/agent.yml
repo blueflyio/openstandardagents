@@ -1,0 +1,288 @@
+apiVersion: "@bluefly/open-standards-scalable-agents/v0.1.9"
+kind: Agent
+metadata:
+  name: code-reviewer-critic
+  version: "0.1.9"
+  namespace: ossa-examples
+  description: Code review and quality analysis critic agent for development workflows
+  labels:
+    category: critic
+    specialization: code-quality
+    tenant: ossa-platform
+  annotations:
+    openapi: /api/critic-specification.yml
+    compliance: gold
+  author: OSSA Platform Team
+  license: Apache-2.0
+  repository: https://github.com/ossa/code-reviewer-critic
+  documentation: https://docs.ossa.io/agents/critics/code-reviewer
+
+spec:
+  type: critic
+  subtype: critic.code_quality
+  
+  capabilities:
+    domains:
+      - code-analysis
+      - quality-assessment
+      - security-review
+      - performance-analysis
+      - best-practices
+    operations:
+      - name: analyze_code
+        description: Comprehensive code quality analysis including style, security, and performance
+        inputSchema:
+          type: object
+          required: [code, language]
+          properties:
+            code:
+              type: string
+              description: Source code to analyze
+            language:
+              type: string
+              enum: [javascript, typescript, python, java, go, rust, php]
+            analysisType:
+              type: array
+              items:
+                type: string
+                enum: [quality, security, performance, style, complexity, documentation]
+              default: [quality, security, style]
+            standards:
+              type: object
+              properties:
+                styleGuide: {type: string}
+                securityLevel: {type: string}
+                performanceTargets: {type: object}
+        outputSchema:
+          type: object
+          properties:
+            overall_score: {type: number, minimum: 0, maximum: 100}
+            issues:
+              type: array
+              items:
+                type: object
+                properties:
+                  type: {type: string}
+                  severity: {type: string}
+                  line: {type: number}
+                  column: {type: number}
+                  message: {type: string}
+                  suggestion: {type: string}
+            metrics:
+              type: object
+              properties:
+                complexity: {type: number}
+                maintainability: {type: number}
+                testability: {type: number}
+                security_score: {type: number}
+            recommendations: {type: array}
+        timeout: 30000
+      
+      - name: review_pull_request
+        description: Review entire pull request with contextual analysis
+        inputSchema:
+          type: object
+          required: [pullRequest]
+          properties:
+            pullRequest:
+              type: object
+              properties:
+                id: {type: string}
+                title: {type: string}
+                description: {type: string}
+                files:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      path: {type: string}
+                      content: {type: string}
+                      changes: {type: string}
+                author: {type: string}
+                target_branch: {type: string}
+            reviewCriteria:
+              type: object
+              properties:
+                focus_areas: {type: array}
+                blocking_issues: {type: array}
+                team_standards: {type: object}
+        outputSchema:
+          type: object
+          properties:
+            approval_status: 
+              type: string
+              enum: [approved, needs_changes, rejected]
+            overall_feedback: {type: string}
+            file_reviews:
+              type: array
+              items:
+                type: object
+                properties:
+                  file_path: {type: string}
+                  score: {type: number}
+                  issues: {type: array}
+                  suggestions: {type: array}
+            summary_metrics: {type: object}
+        timeout: 60000
+      
+      - name: suggest_improvements
+        description: Generate improvement suggestions based on analysis
+        inputSchema:
+          type: object
+          required: [analysisResults]
+          properties:
+            analysisResults: {type: object}
+            improvementFocus:
+              type: array
+              items:
+                type: string
+                enum: [performance, security, maintainability, readability, testing]
+        outputSchema:
+          type: object
+          properties:
+            suggestions:
+              type: array
+              items:
+                type: object
+                properties:
+                  category: {type: string}
+                  priority: {type: string}
+                  description: {type: string}
+                  code_example: {type: string}
+                  impact: {type: string}
+        timeout: 15000
+
+    inputFormats:
+      - text/plain
+      - application/json
+      - text/x-diff
+      - application/yaml
+
+    outputFormats:
+      - application/json
+      - text/markdown
+      - text/plain
+
+    tokenEfficiency:
+      strategies:
+        - focused-analysis
+        - incremental-review
+        - pattern-recognition
+        - cacheable-capsules
+        - summarized-feedback
+      compressionRatio: 0.6
+
+  protocols:
+    supported:
+      - name: ossa
+        version: "0.1.9"
+        endpoint: http://localhost:3011/ossa/v1
+        authentication:
+          type: api-key
+        tls: false
+      - name: rest
+        version: "3.1.0"
+        endpoint: http://localhost:3011/api/v1
+        authentication:
+          type: bearer-token
+        tls: false
+    preferred: ossa
+
+  conformance:
+    level: gold
+    certifications:
+      - ISO-42001
+      - OWASP-SAMM
+    auditLogging: true
+    feedbackLoop: true
+    propsTokens: true
+    learningSignals: true
+
+  performance:
+    throughput:
+      reviewsPerMinute: 20
+      linesPerSecond: 1000
+    latency:
+      p50: 2000
+      p95: 15000
+      p99: 30000
+    limits:
+      maxFileSize: 1048576  # 1MB
+      maxFilesPerReview: 50
+      timeout: 60000
+
+  resources:
+    requests:
+      cpu: 500m
+      memory: 1Gi
+      storage: 5Gi
+    limits:
+      cpu: 2
+      memory: 4Gi
+      storage: 20Gi
+
+  feedbackLoop:
+    phase: analyze
+    inputs:
+      - source_code
+      - coding_standards
+      - historical_patterns
+      - team_preferences
+    outputs:
+      - quality_metrics
+      - issue_identification
+      - improvement_suggestions
+      - risk_assessment
+
+  budgets:
+    tokens:
+      default: 5000
+      maximum: 20000
+      strategy: code-proportional
+    time:
+      default: 30000
+      maximum: 60000
+
+  dependencies:
+    agents:
+      - name: registry-core
+        version: ">=0.1.9"
+        optional: false
+    services:
+      - name: static-analysis-tools
+        endpoint: http://sonarqube:9000
+        healthCheck: http://sonarqube:9000/api/system/health
+      - name: security-scanner
+        endpoint: http://security-scanner:8080
+        healthCheck: http://security-scanner:8080/health
+
+status:
+  state: registered
+  health: healthy
+  lastHeartbeat: "2024-01-01T00:00:00Z"
+  registeredAt: "2024-01-01T00:00:00Z"
+  metrics:
+    reviewsCompleted: 0
+    averageScore: 85.5
+    issuesIdentified: 0
+    tokenUsage: 0
+
+criticConfig:
+  analysisDepth: comprehensive
+  securityFocus: high
+  performanceThresholds:
+    complexity: 10
+    maintainability: 70
+    security: 90
+  reportingFormat: detailed
+  autoApprovalThreshold: 95
+  languages:
+    - javascript
+    - typescript
+    - python
+    - java
+    - go
+  integrations:
+    git: enabled
+    jira: enabled
+    slack: enabled

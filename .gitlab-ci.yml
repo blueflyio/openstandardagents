@@ -459,56 +459,100 @@ pages:
 release:version:
   stage: release
   image: node:${NODE_VERSION}
+  before_script:
+    - apk add --no-cache git curl jq || apt-get update && apt-get install -y git curl jq
   script:
     - echo "🏷️ Creating release tag for OSSA v${PROJECT_VERSION}"
     - |
-      # Check if we're on main, development, or pages branch
+      # Determine tag name based on branch
       if [[ "$CI_COMMIT_BRANCH" == "main" ]]; then
-        TAG_NAME="v${PROJECT_VERSION}"
+        export TAG_NAME="v${PROJECT_VERSION}"
+        export RELEASE_TYPE="Production"
         echo "Creating production release: $TAG_NAME"
       elif [[ "$CI_COMMIT_BRANCH" == "development" ]]; then
-        TAG_NAME="v${PROJECT_VERSION}-dev"
+        export TAG_NAME="v${PROJECT_VERSION}-dev.${CI_PIPELINE_IID}"
+        export RELEASE_TYPE="Development"
         echo "Creating development release: $TAG_NAME"
       elif [[ "$CI_COMMIT_BRANCH" == "pages" ]]; then
-        TAG_NAME="v${PROJECT_VERSION}-pages"
+        export TAG_NAME="v${PROJECT_VERSION}-pages"
+        export RELEASE_TYPE="Documentation"
         echo "Creating pages release: $TAG_NAME"
       else
-        echo "Release only runs on main, development, or pages branches"
+        echo "⚠️ Release only runs on main, development, or pages branches"
         exit 0
       fi
     - |
-      # Create GitLab release using API instead of git push
+      # Check if tag already exists
+      if git rev-parse "$TAG_NAME" >/dev/null 2>&1; then
+        echo "⚠️ Tag $TAG_NAME already exists, skipping release creation"
+        exit 0
+      fi
+    - |
+      # Create lightweight tag first
+      echo "Creating git tag: $TAG_NAME"
+      git tag "$TAG_NAME" "${CI_COMMIT_SHA}"
+
+      # Push tag to repository using CI credentials
+      git remote set-url origin "https://gitlab-ci-token:${CI_JOB_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git"
+      git push origin "$TAG_NAME"
+
+      echo "✅ Tag $TAG_NAME pushed to repository"
+    - |
+      # Create GitLab release using API
       echo "Creating GitLab release via API..."
 
-      RELEASE_DESCRIPTION="OSSA Release $TAG_NAME
+      # Build release notes
+      RELEASE_NOTES=$(cat <<EOF
+      ## OSSA ${RELEASE_TYPE} Release ${TAG_NAME}
 
-      Features:
+      ### Features
       - Agent specification v${OSSA_VERSION}
       - Complete API documentation
       - Production-ready Docker infrastructure
       - GitLab Pages documentation site
 
-      Built from commit: ${CI_COMMIT_SHA}"
+      ### Build Information
+      - Commit: ${CI_COMMIT_SHA}
+      - Branch: ${CI_COMMIT_BRANCH}
+      - Pipeline: ${CI_PIPELINE_URL}
+      - Built: $(date -u +"%Y-%m-%d %H:%M:%S UTC")
+      EOF
+      )
 
-      # Create release using GitLab Release API (uses CI_JOB_TOKEN automatically)
-      curl --request POST \
-        --header "JOB-TOKEN: ${CI_JOB_TOKEN}" \
+      # Create release payload
+      PAYLOAD=$(jq -n \
+        --arg name "$TAG_NAME" \
+        --arg tag "$TAG_NAME" \
+        --arg desc "$RELEASE_NOTES" \
+        --arg ref "${CI_COMMIT_SHA}" \
+        '{
+          name: $name,
+          tag_name: $tag,
+          description: $desc,
+          ref: $ref
+        }')
+
+      # Create release using GitLab Release API
+      RESPONSE=$(curl --silent --show-error --fail \
+        --request POST \
+        --header "PRIVATE-TOKEN: ${CI_JOB_TOKEN}" \
         --header "Content-Type: application/json" \
-        --data "{
-          \"name\": \"$TAG_NAME\",
-          \"tag_name\": \"$TAG_NAME\",
-          \"description\": \"$RELEASE_DESCRIPTION\",
-          \"ref\": \"${CI_COMMIT_SHA}\"
-        }" \
-        "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/releases"
+        --data "$PAYLOAD" \
+        "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/releases")
 
-      echo "✅ Release $TAG_NAME created via GitLab API"
+      if [ $? -eq 0 ]; then
+        echo "✅ Release $TAG_NAME created successfully"
+        echo "$RESPONSE" | jq '.'
+      else
+        echo "⚠️ Release creation may have failed, but tag was pushed"
+        echo "$RESPONSE"
+      fi
   rules:
-    - if: $CI_COMMIT_BRANCH == "main"
+    - if: '$CI_COMMIT_BRANCH == "main"'
       when: manual
-    - if: $CI_COMMIT_BRANCH == "development"
+    - if: '$CI_COMMIT_BRANCH == "development"'
       when: on_success
-    - if: $CI_COMMIT_BRANCH == "pages"
+    - if: '$CI_COMMIT_BRANCH == "pages"'
       when: manual
   allow_failure: false
 

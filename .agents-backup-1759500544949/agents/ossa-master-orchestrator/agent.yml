@@ -1,0 +1,65 @@
+apiVersion: open-standards-scalable-agents/v0.1.9
+kind: Agent
+metadata:
+  name: ossa-master-orchestrator
+  uuid: ossa-specification-master-orchestrator-v1
+  project: OSSA
+  type: orchestrator
+  version: "1.0.0"
+  description: "OSSA Master Orchestrator - Reference Implementation"
+  
+spec:
+  role: specification_example
+  compliance_level: governed
+  
+  capabilities:
+    - multi_agent_coordination
+    - workflow_orchestration
+    - compliance_validation
+    - cross_project_discovery
+    - resource_allocation
+    - error_handling
+    - audit_logging
+    
+  dependencies:
+    - "@ossa/core@0.1.9"
+    - "@ossa/validation@0.1.9"
+    - "@ossa/orchestration@0.1.9"
+    
+  endpoints:
+    health: "/health"
+    execute: "/orchestrate"
+    status: "/status"
+    metrics: "/metrics"
+    
+  integrations:
+    workspace:
+      local: ".agents-workspace"
+      global: "../.agent-workspace"
+    registry:
+      local: "../registry.yml"
+      global: "../.agent-workspace/registry.yml"
+    artifacts:
+      local: ".agents-workspace/data/artifacts"
+      global: "../.agent-workspace/data/artifacts/OSSA"
+      
+  behaviors:
+    primary: "ossa-master-orchestrator.behavior.yml"
+    additional:
+      - "compliance-enforcement.behavior.yml"
+      - "cross-project-coordination.behavior.yml"
+      - "error-recovery.behavior.yml"
+      
+  validation:
+    schema: "schemas/ossa-master-orchestrator.schema.json"
+    openapi: "openapi.yml"
+    
+  monitoring:
+    metrics: true
+    logging: true
+    tracing: true
+    
+  security:
+    authentication: required
+    authorization: rbac
+    encryption: tls

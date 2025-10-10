@@ -1,0 +1,257 @@
+apiVersion: open-standards-scalable-agents/v0.1.9
+kind: Agent
+metadata:
+  name: ossa-performance-monitor
+  version: "1.0.0"
+  description: "OSSA Performance Monitor - Monitors, analyzes, and optimizes performance across all OSSA agents and systems"
+  tags: ["monitor", "performance", "optimization", "metrics"]
+  
+spec:
+  type: monitor
+  role: performance_analyzer
+  priority: high
+  
+  capabilities:
+    primary:
+      - real_time_performance_monitoring
+      - resource_usage_tracking
+      - performance_bottleneck_detection
+      - optimization_recommendation_generation
+      - sla_compliance_monitoring
+      - performance_trend_analysis
+      
+    secondary:
+      - capacity_planning_assistance
+      - cost_optimization_analysis
+      - performance_benchmarking
+      - custom_metric_creation
+      
+  responsibilities:
+    - "Monitor performance metrics across all OSSA components"
+    - "Detect and analyze performance bottlenecks"
+    - "Generate optimization recommendations"
+    - "Track SLA compliance and performance trends"
+    - "Provide capacity planning insights"
+    - "Optimize resource allocation and usage"
+    
+  interfaces:
+    api:
+      protocol: "REST/WebSocket"
+      version: "v1"
+      endpoints:
+        - "/metrics"
+        - "/performance/status"
+        - "/performance/analyze"
+        - "/performance/optimize"
+        - "/performance/trends"
+        - "/performance/alerts"
+        
+    events:
+      publishes:
+        - "performance.bottleneck.detected"
+        - "performance.sla.violated"
+        - "performance.optimization.suggested"
+        - "performance.threshold.exceeded"
+      subscribes:
+        - "agent.started"
+        - "agent.stopped"
+        - "resource.allocated"
+        - "workload.changed"
+        
+  monitoring_dimensions:
+    system_metrics:
+      cpu:
+        - utilization_percentage
+        - cores_allocated
+        - throttling_events
+        - context_switches
+        
+      memory:
+        - usage_percentage
+        - allocated_memory
+        - memory_leaks
+        - gc_frequency
+        
+      network:
+        - bandwidth_utilization
+        - connection_count
+        - latency_measurements
+        - packet_loss_rate
+        
+      storage:
+        - disk_usage_percentage
+        - io_operations_per_second
+        - read_write_latency
+        - storage_throughput
+        
+    application_metrics:
+      response_times:
+        - api_endpoint_latency
+        - database_query_time
+        - processing_duration
+        - end_to_end_response_time
+        
+      throughput:
+        - requests_per_second
+        - transactions_per_minute
+        - data_processing_rate
+        - concurrent_user_capacity
+        
+      reliability:
+        - uptime_percentage
+        - error_rate
+        - availability_score
+        - mean_time_to_recovery
+        
+    business_metrics:
+      orchestration:
+        - workflow_completion_time
+        - agent_coordination_efficiency
+        - resource_allocation_optimization
+        - conflict_resolution_speed
+        
+      compliance:
+        - validation_processing_time
+        - compliance_check_frequency
+        - remediation_response_time
+        - audit_completion_duration
+        
+  performance_analysis:
+    bottleneck_detection:
+      algorithms:
+        - statistical_analysis
+        - machine_learning_based
+        - threshold_based
+        - pattern_recognition
+        
+      indicators:
+        - response_time_spikes
+        - resource_saturation
+        - queue_length_growth
+        - error_rate_increases
+        
+    root_cause_analysis:
+      correlation_analysis:
+        - metric_correlation_matrix
+        - temporal_pattern_analysis
+        - dependency_impact_assessment
+        
+      diagnostic_tools:
+        - distributed_tracing
+        - log_analysis
+        - profiling_integration
+        - health_check_aggregation
+        
+  optimization_engine:
+    recommendation_types:
+      resource_optimization:
+        - cpu_scaling_recommendations
+        - memory_allocation_adjustments
+        - network_bandwidth_optimization
+        - storage_performance_tuning
+        
+      architecture_optimization:
+        - load_balancing_improvements
+        - caching_strategy_enhancements
+        - database_query_optimization
+        - service_communication_efficiency
+        
+      cost_optimization:
+        - resource_rightsizing
+        - usage_pattern_optimization
+        - scaling_policy_improvements
+        - infrastructure_cost_reduction
+        
+    implementation_support:
+      automated_optimizations:
+        - auto_scaling_adjustments
+        - cache_configuration_updates
+        - resource_limit_modifications
+        
+      manual_optimizations:
+        - code_refactoring_suggestions
+        - architecture_redesign_recommendations
+        - infrastructure_upgrade_proposals
+        
+  sla_management:
+    performance_targets:
+      response_time:
+        api_endpoints: "< 2 seconds"
+        health_checks: "< 100ms"
+        bulk_operations: "< 30 seconds"
+        
+      availability:
+        critical_services: "> 99.9%"
+        standard_services: "> 99.5%"
+        development_services: "> 95%"
+        
+      throughput:
+        concurrent_requests: "> 1000 rps"
+        data_processing: "> 10MB/s"
+        workflow_execution: "> 100 workflows/hour"
+        
+    violation_handling:
+      immediate_actions:
+        - alert_generation
+        - automatic_scaling
+        - traffic_rerouting
+        - resource_reallocation
+        
+      escalation_procedures:
+        - team_notifications
+        - incident_creation
+        - executive_reporting
+        - vendor_escalation
+        
+  alerting_and_reporting:
+    alert_configurations:
+      critical:
+        - sla_violations
+        - system_failures
+        - security_breaches
+        - data_loss_events
+        
+      warning:
+        - performance_degradation
+        - resource_constraints
+        - unusual_patterns
+        - capacity_thresholds
+        
+    reporting_schedules:
+      real_time:
+        - live_dashboards
+        - metric_streams
+        - alert_notifications
+        
+      periodic:
+        - hourly_summaries
+        - daily_reports
+        - weekly_trends
+        - monthly_reviews
+        
+  deployment:
+    runtime: "node:18-alpine"
+    resources:
+      cpu: "1000m"
+      memory: "2Gi"
+    persistence:
+      - metrics_database: "/data/metrics"
+      - historical_data: "/data/history"
+    dependencies:
+      - metrics-collector
+      - time-series-database
+      - alerting-service
+      - analytics-engine
+      
+  monitoring:
+    health_check: "/health"
+    metrics:
+      - monitoring_system_uptime
+      - metrics_collection_rate
+      - alert_generation_latency
+      - analysis_processing_time
+      - optimization_success_rate
+      
+  compliance:
+    ossa_level: "standard"
+    security_clearance: "medium"

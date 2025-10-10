@@ -1,0 +1,268 @@
+apiVersion: "@bluefly/open-standards-scalable-agents/v0.1.9"
+kind: Agent
+metadata:
+  name: data-agent
+  version: "0.1.9"
+  namespace: ossa-examples
+  description: Data processing worker supporting batch, stream, and realtime processing modes
+  labels:
+    category: worker
+    specialization: data-processing
+    tenant: ossa-platform
+  annotations:
+    openapi: /api/data-agent-specification.yml
+    compliance: gold
+    docker-service: ossa-data-agent
+  author: OSSA Platform Team
+  license: Apache-2.0
+  repository: https://github.com/ossa/data-agent
+  documentation: https://docs.ossa.io/agents/workers/data
+
+spec:
+  type: worker
+  subtype: worker.data
+  
+  capabilities:
+    domains:
+      - data-processing
+      - batch-operations
+      - stream-processing
+      - realtime-analytics
+      - format-conversion
+    operations:
+      - name: process_batch
+        description: Process large datasets in batch mode
+        inputSchema:
+          type: object
+          required: [data, operation]
+          properties:
+            data:
+              type: object
+              properties:
+                source: {type: string}
+                format: 
+                  type: string
+                  enum: [json, csv, xml, yaml, parquet]
+                size: {type: number}
+            operation:
+              type: object
+              properties:
+                type: 
+                  type: string
+                  enum: [transform, aggregate, filter, join, validate]
+                parameters: {type: object}
+            options:
+              type: object
+              properties:
+                chunkSize: {type: number}
+                parallel: {type: boolean}
+                validate: {type: boolean}
+        outputSchema:
+          type: object
+          properties:
+            jobId: {type: string}
+            status: {type: string}
+            recordsProcessed: {type: number}
+            result: {type: object}
+            errors: {type: array}
+        timeout: 300000
+      
+      - name: start_stream
+        description: Start stream processing pipeline
+        inputSchema:
+          type: object
+          required: [source, pipeline]
+          properties:
+            source:
+              type: object
+              properties:
+                type: {type: string}
+                endpoint: {type: string}
+                format: {type: string}
+            pipeline:
+              type: array
+              items:
+                type: object
+                properties:
+                  stage: {type: string}
+                  operation: {type: string}
+                  parameters: {type: object}
+            options: {type: object}
+        outputSchema:
+          type: object
+          properties:
+            streamId: {type: string}
+            status: {type: string}
+            throughput: {type: number}
+        timeout: 30000
+      
+      - name: query_realtime
+        description: Execute realtime queries on streaming data
+        inputSchema:
+          type: object
+          required: [query]
+          properties:
+            query:
+              type: object
+              properties:
+                type: {type: string}
+                filter: {type: object}
+                aggregation: {type: object}
+                window: {type: object}
+            timeRange: {type: object}
+        outputSchema:
+          type: object
+          properties:
+            results: {type: array}
+            count: {type: number}
+            executionTime: {type: number}
+        timeout: 10000
+      
+      - name: convert_format
+        description: Convert data between different formats
+        inputSchema:
+          type: object
+          required: [data, targetFormat]
+          properties:
+            data: {type: object}
+            sourceFormat: 
+              type: string
+              enum: [json, csv, xml, yaml, parquet]
+            targetFormat:
+              type: string
+              enum: [json, csv, xml, yaml, parquet]
+            options: {type: object}
+        outputSchema:
+          type: object
+          properties:
+            convertedData: {type: object}
+            size: {type: number}
+            compressionRatio: {type: number}
+        timeout: 60000
+
+    inputFormats:
+      - application/json
+      - text/csv
+      - application/xml
+      - application/yaml
+      - application/parquet
+
+    outputFormats:
+      - application/json
+      - text/csv
+      - application/xml
+      - application/yaml
+      - application/parquet
+
+    tokenEfficiency:
+      strategies:
+        - data-summarization
+        - schema-compression
+        - incremental-processing
+        - result-aggregation
+      compressionRatio: 0.9
+
+  protocols:
+    supported:
+      - name: ossa
+        version: "0.1.9"
+        endpoint: http://localhost:3007/ossa/v1
+        authentication:
+          type: api-key
+        tls: false
+      - name: rest
+        version: "3.1.0"
+        endpoint: http://localhost:3007/api/v1
+        authentication:
+          type: bearer-token
+        tls: false
+    preferred: ossa
+
+  conformance:
+    level: gold
+    certifications:
+      - ISO-42001
+    auditLogging: true
+    feedbackLoop: true
+    propsTokens: true
+    learningSignals: true
+
+  performance:
+    throughput:
+      recordsPerSecond: 10000
+      batchJobsPerHour: 100
+    latency:
+      p50: 1000
+      p95: 5000
+      p99: 15000
+    limits:
+      maxFileSize: 104857600  # 100MB
+      maxConcurrentJobs: 10
+      timeout: 300000
+
+  resources:
+    requests:
+      cpu: 1
+      memory: 2Gi
+      storage: 100Gi
+    limits:
+      cpu: 4
+      memory: 8Gi
+      storage: 1Ti
+
+  budgets:
+    tokens:
+      default: 2000
+      maximum: 10000
+      strategy: data-proportional
+    time:
+      default: 60000
+      maximum: 300000
+
+  dependencies:
+    services:
+      - name: redis-cache
+        endpoint: redis://redis:6379
+        healthCheck: redis://redis:6379/ping
+      - name: postgres-storage
+        endpoint: postgresql://ossa:ossa_dev_password@postgres:5432/ossa
+        healthCheck: postgresql://ossa:ossa_dev_password@postgres:5432/ossa
+      - name: qdrant-vector
+        endpoint: http://qdrant:6333
+        healthCheck: http://qdrant:6333/health
+    volumes:
+      - name: data-storage
+        mountPath: /app/data
+        readOnly: false
+
+status:
+  state: registered
+  health: healthy
+  lastHeartbeat: "2024-01-01T00:00:00Z"
+  registeredAt: "2024-01-01T00:00:00Z"
+
+dataConfig:
+  processingModes:
+    - batch
+    - stream  
+    - realtime
+  maxFileSize: "100MB"
+  supportedFormats:
+    - json
+    - csv
+    - xml
+    - yaml
+    - parquet
+  batchProcessing:
+    defaultChunkSize: 1000
+    maxConcurrentChunks: 10
+    timeoutPerChunk: 30000
+  streamProcessing:
+    bufferSize: 10000
+    flushInterval: 5000
+    maxLatency: 1000
+  storage:
+    backend: postgresql
+    vectorStore: qdrant
+    caching: redis
+    retention: 90d

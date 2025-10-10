@@ -1,0 +1,138 @@
+apiVersion: open-standards-scalable-agents/v0.1.9
+kind: Agent
+metadata:
+  name: ossa-cli-orchestrator
+  version: "1.0.0"
+  description: "OSSA CLI Orchestrator - Manages command-line interactions and coordinates CLI-driven workflows"
+  tags: ["orchestrator", "cli", "interface", "commands"]
+  
+spec:
+  type: orchestrator
+  role: interface
+  priority: high
+  
+  capabilities:
+    primary:
+      - cli_command_processing
+      - interactive_workflow_management
+      - user_intent_interpretation
+      - command_validation_and_execution
+      - multi_step_command_orchestration
+      - cli_help_and_documentation
+      
+    secondary:
+      - command_history_management
+      - auto_completion_support
+      - error_recovery_and_guidance
+      - progress_visualization
+      
+  responsibilities:
+    - "Process and validate OSSA CLI commands"
+    - "Orchestrate multi-step CLI workflows"
+    - "Provide intelligent command suggestions and help"
+    - "Coordinate between CLI interface and agent systems"
+    - "Manage command execution state and history"
+    - "Handle error recovery and user guidance"
+    
+  interfaces:
+    cli:
+      commands:
+        - "ossa init"
+        - "ossa agent create"
+        - "ossa agent deploy"
+        - "ossa orchestrate"
+        - "ossa validate"
+        - "ossa discover"
+        - "ossa status"
+        - "ossa logs"
+        
+    api:
+      protocol: "HTTP"
+      version: "v1"
+      endpoints:
+        - "/cli/execute"
+        - "/cli/validate"
+        - "/cli/help"
+        - "/cli/history"
+        
+  command_structure:
+    ossa:
+      subcommands:
+        init:
+          description: "Initialize OSSA workspace"
+          flags:
+            - "--template [template-name]"
+            - "--path [directory]"
+            - "--force"
+        agent:
+          subcommands:
+            create:
+              description: "Create new agent"
+              flags:
+                - "--type [type]"
+                - "--name [name]"
+                - "--template [template]"
+            deploy:
+              description: "Deploy agent"
+              flags:
+                - "--environment [env]"
+                - "--config [file]"
+            list:
+              description: "List agents"
+              flags:
+                - "--type [type]"
+                - "--status [status]"
+        orchestrate:
+          description: "Execute orchestration"
+          flags:
+            - "--workflow [name]"
+            - "--agents [list]"
+            - "--async"
+        validate:
+          description: "Validate OSSA compliance"
+          flags:
+            - "--level [basic|standard|governed]"
+            - "--fix"
+        discover:
+          description: "Discover agents"
+          flags:
+            - "--network"
+            - "--local"
+            - "--all"
+            
+  workflow_patterns:
+    project_initialization:
+      - "ossa init --template standard"
+      - "ossa agent create --type orchestrator"
+      - "ossa validate --level standard"
+      
+    agent_development:
+      - "ossa agent create --type worker --name [name]"
+      - "ossa validate --level basic"
+      - "ossa agent deploy --environment dev"
+      
+    orchestration_setup:
+      - "ossa discover --all"
+      - "ossa orchestrate --workflow multi-agent"
+      - "ossa status --watch"
+      
+  deployment:
+    runtime: "node:18-alpine"
+    resources:
+      cpu: "500m"
+      memory: "1Gi"
+    dependencies:
+      - ossa-master-orchestrator
+      - agent-registry
+      
+  monitoring:
+    health_check: "/health"
+    metrics:
+      - command_execution_success_rate
+      - user_workflow_completion_rate
+      - error_recovery_rate
+      - command_response_time
+      
+  compliance:
+    ossa_level: "standard"
+    security_clearance: "medium"
