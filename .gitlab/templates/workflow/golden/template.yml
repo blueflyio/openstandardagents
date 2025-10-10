@@ -1587,7 +1587,7 @@ deploy:staging:
         # Add deployment logic here based on project type
         if echo "$PROJECT_TYPES" | grep -q "nodejs"; then
           echo "Deploying Node.js application to staging"
-          # kubectl apply -f k8s/staging/ || echo "No K8s config"
+          # kubectl apply -f infrastructure/k8s/staging/ || echo "No K8s config"
         fi
 
         if echo "$PROJECT_TYPES" | grep -q "drupal"; then
@@ -1621,7 +1621,7 @@ deploy:production:
       # Production deployment logic
       if echo "$PROJECT_TYPES" | grep -q "nodejs"; then
         echo "Deploying Node.js application to production"
-        # kubectl apply -f k8s/production/
+        # kubectl apply -f infrastructure/k8s/production/
       fi
 
       if echo "$PROJECT_TYPES" | grep -q "drupal"; then

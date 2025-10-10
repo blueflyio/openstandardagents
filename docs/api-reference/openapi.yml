@@ -1,4 +1,5 @@
 openapi: 3.1.0
+jsonSchemaDialect: https://spec.openapis.org/oas/3.1/dialect/base
 info:
   title: OSSA Platform API
   version: 0.1.9-alpha.1

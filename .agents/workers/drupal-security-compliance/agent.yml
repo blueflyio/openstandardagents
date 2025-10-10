@@ -1,0 +1,466 @@
+apiVersion: "@bluefly/open-standards-scalable-agents/v0.1.9"
+kind: Agent
+metadata:
+  name: drupal-security-compliance
+  version: "0.1.9"
+  namespace: drupal-ossa
+  description: Drupal security and compliance specialist for FedRAMP, NIST, and enterprise security requirements
+  labels:
+    category: worker
+    specialization: drupal-security
+    domain: compliance
+    tenant: drupal-platform
+  annotations:
+    openapi: /api/drupal-security-specification.yml
+    compliance: gold
+    docker-service: ossa-drupal-security
+  author: Bluefly Drupal Platform Team
+  license: Apache-2.0
+  repository: https://gitlab.bluefly.io/llm/drupal-agents
+  documentation: https://docs.drupal-ossa.io/agents/workers/security
+
+spec:
+  type: worker
+  subtype: worker.drupal_security
+
+  capabilities:
+    domains:
+      - drupal-security
+      - compliance-auditing
+      - vulnerability-assessment
+      - fedramp-compliance
+      - nist-framework
+      - accessibility-compliance
+      - gdpr-compliance
+    operations:
+      - name: security_audit
+        description: Comprehensive security audit of Drupal site following NIST and FedRAMP guidelines
+        inputSchema:
+          type: object
+          required: [siteInfo]
+          properties:
+            siteInfo:
+              type: object
+              properties:
+                drupalRoot: {type: string}
+                siteUrl: {type: string}
+                environment:
+                  type: string
+                  enum: [development, staging, production]
+                hostingProvider: {type: string}
+                drupalVersion: {type: string}
+            auditScope:
+              type: object
+              properties:
+                codeAudit: {type: boolean, default: true}
+                configAudit: {type: boolean, default: true}
+                moduleAudit: {type: boolean, default: true}
+                permissionsAudit: {type: boolean, default: true}
+                accessibilityCheck: {type: boolean, default: true}
+                performanceCheck: {type: boolean, default: true}
+            complianceFrameworks:
+              type: array
+              items:
+                type: string
+                enum: [fedramp, nist_csf, nist_800_53, sox, hipaa, gdpr, wcag_aa]
+        outputSchema:
+          type: object
+          properties:
+            auditId: {type: string}
+            overallScore:
+              type: number
+              minimum: 0
+              maximum: 100
+            riskLevel:
+              type: string
+              enum: [low, medium, high, critical]
+            findings:
+              type: array
+              items:
+                type: object
+                properties:
+                  id: {type: string}
+                  category:
+                    type: string
+                    enum: [authentication, authorization, data_protection, input_validation, session_management, logging, configuration, dependencies]
+                  severity:
+                    type: string
+                    enum: [info, low, medium, high, critical]
+                  title: {type: string}
+                  description: {type: string}
+                  impact: {type: string}
+                  remediation: {type: string}
+                  compliance_mappings: {type: array}
+                  cwe_id: {type: string}
+                  cvss_score: {type: number}
+            complianceReport:
+              type: object
+              properties:
+                fedramp:
+                  type: object
+                  properties:
+                    status: {type: string}
+                    controls_met: {type: number}
+                    controls_total: {type: number}
+                    gaps: {type: array}
+                nist:
+                  type: object
+                  properties:
+                    framework_alignment: {type: string}
+                    category_scores: {type: object}
+                    recommendations: {type: array}
+                accessibility:
+                  type: object
+                  properties:
+                    wcag_level: {type: string}
+                    violations: {type: array}
+                    success_criteria: {type: object}
+            remediationPlan:
+              type: array
+              items:
+                type: object
+                properties:
+                  priority: {type: string}
+                  effort: {type: string}
+                  timeline: {type: string}
+                  resources: {type: array}
+        timeout: 1800000
+
+      - name: vulnerability_scan
+        description: Automated vulnerability scanning for Drupal core, modules, and custom code
+        inputSchema:
+          type: object
+          required: [target]
+          properties:
+            target:
+              type: object
+              properties:
+                type:
+                  type: string
+                  enum: [site, code, modules, dependencies]
+                path: {type: string}
+                url: {type: string}
+            scanOptions:
+              type: object
+              properties:
+                scanDepth:
+                  type: string
+                  enum: [basic, standard, comprehensive]
+                  default: standard
+                includeContrib: {type: boolean, default: true}
+                includeCustom: {type: boolean, default: true}
+                activeScan: {type: boolean, default: false}
+                reportFormat:
+                  type: string
+                  enum: [json, html, pdf, sarif]
+                  default: json
+        outputSchema:
+          type: object
+          properties:
+            scanId: {type: string}
+            scanDate: {type: string}
+            vulnerabilities:
+              type: array
+              items:
+                type: object
+                properties:
+                  id: {type: string}
+                  cve_id: {type: string}
+                  severity:
+                    type: string
+                    enum: [info, low, medium, high, critical]
+                  score: {type: number}
+                  title: {type: string}
+                  description: {type: string}
+                  affected_component: {type: string}
+                  fixed_version: {type: string}
+                  patch_available: {type: boolean}
+                  exploit_available: {type: boolean}
+                  remediation: {type: string}
+            summary:
+              type: object
+              properties:
+                total: {type: number}
+                critical: {type: number}
+                high: {type: number}
+                medium: {type: number}
+                low: {type: number}
+                info: {type: number}
+            recommendations:
+              type: array
+              items:
+                type: object
+                properties:
+                  action: {type: string}
+                  priority: {type: string}
+                  impact: {type: string}
+        timeout: 3600000
+
+      - name: compliance_assessment
+        description: Detailed compliance assessment against specific frameworks
+        inputSchema:
+          type: object
+          required: [framework, siteInfo]
+          properties:
+            framework:
+              type: string
+              enum: [fedramp_low, fedramp_moderate, fedramp_high, nist_csf, nist_800_53, sox, hipaa, gdpr]
+            siteInfo:
+              type: object
+              properties:
+                drupalRoot: {type: string}
+                configPath: {type: string}
+                environment: {type: string}
+                dataClassification: {type: string}
+            assessmentOptions:
+              type: object
+              properties:
+                includeDocumentation: {type: boolean, default: true}
+                generateEvidence: {type: boolean, default: true}
+                createPOAM: {type: boolean, default: true}
+        outputSchema:
+          type: object
+          properties:
+            assessmentId: {type: string}
+            framework: {type: string}
+            complianceStatus:
+              type: string
+              enum: [compliant, partially_compliant, non_compliant]
+            overallScore: {type: number}
+            controlsAssessment:
+              type: array
+              items:
+                type: object
+                properties:
+                  control_id: {type: string}
+                  control_name: {type: string}
+                  status:
+                    type: string
+                    enum: [implemented, partially_implemented, planned, not_implemented]
+                  evidence: {type: array}
+                  gaps: {type: array}
+                  recommendations: {type: array}
+            documentation:
+              type: object
+              properties:
+                ssp: {type: string}  # System Security Plan
+                poam: {type: string}  # Plan of Action & Milestones
+                contingencyPlan: {type: string}
+                incidentResponse: {type: string}
+            nextSteps: {type: array}
+        timeout: 7200000
+
+      - name: generate_security_hardening
+        description: Generate security hardening configuration for Drupal
+        inputSchema:
+          type: object
+          required: [environment, securityLevel]
+          properties:
+            environment:
+              type: string
+              enum: [development, staging, production]
+            securityLevel:
+              type: string
+              enum: [basic, enhanced, maximum]
+            requirements:
+              type: object
+              properties:
+                fedramp: {type: boolean, default: false}
+                hipaa: {type: boolean, default: false}
+                gdpr: {type: boolean, default: false}
+                pci: {type: boolean, default: false}
+            customizations:
+              type: object
+              properties:
+                allowedModules: {type: array}
+                deniedModules: {type: array}
+                customPolicies: {type: array}
+        outputSchema:
+          type: object
+          properties:
+            hardeningId: {type: string}
+            configurations:
+              type: object
+              properties:
+                drupalSettings: {type: object}
+                phpSettings: {type: object}
+                webserverConfig: {type: object}
+                databaseConfig: {type: object}
+                moduleConfigs: {type: object}
+            securityModules:
+              type: array
+              items:
+                type: object
+                properties:
+                  name: {type: string}
+                  version: {type: string}
+                  configuration: {type: object}
+                  required: {type: boolean}
+            policies:
+              type: array
+              items:
+                type: object
+                properties:
+                  category: {type: string}
+                  policy: {type: string}
+                  enforcement: {type: string}
+            monitoring:
+              type: object
+              properties:
+                logSettings: {type: object}
+                alertRules: {type: array}
+                dashboards: {type: array}
+        timeout: 900000
+
+    inputFormats:
+      - application/json
+      - application/xml
+      - text/plain
+      - application/yaml
+
+    outputFormats:
+      - application/json
+      - text/html
+      - application/pdf
+      - application/sarif+json
+      - text/csv
+
+    tokenEfficiency:
+      strategies:
+        - security-checklist-templates
+        - vulnerability-database-caching
+        - compliance-framework-reuse
+        - remediation-pattern-matching
+        - audit-result-compression
+      compressionRatio: 0.7
+
+  protocols:
+    supported:
+      - name: ossa
+        version: "0.1.9"
+        endpoint: http://localhost:3011/ossa/v1
+        authentication:
+          type: api-key
+        tls: true
+      - name: rest
+        version: "3.1.0"
+        endpoint: http://localhost:3011/api/v1
+        authentication:
+          type: bearer-token
+        tls: true
+      - name: sarif
+        version: "2.1.0"
+        endpoint: http://localhost:3011/sarif/v1
+        authentication:
+          type: api-key
+    preferred: ossa
+
+  conformance:
+    level: gold
+    certifications:
+      - FedRAMP-Security-Assessor
+      - NIST-Cybersecurity-Framework
+      - CISSP
+      - CISA
+      - Drupal-Security-Team
+    auditLogging: true
+    feedbackLoop: true
+    propsTokens: true
+    learningSignals: true
+
+  performance:
+    throughput:
+      auditsPerHour: 5
+      vulnerabilityScanSpeed: 1000
+    latency:
+      p50: 30000
+      p95: 180000
+      p99: 600000
+    limits:
+      maxSiteSize: 5368709120  # 5GB
+      maxConcurrentScans: 3
+      timeout: 7200000
+
+  resources:
+    requests:
+      cpu: 2
+      memory: 4Gi
+      storage: 200Gi
+    limits:
+      cpu: 6
+      memory: 12Gi
+      storage: 1Ti
+
+  feedbackLoop:
+    phase: secure
+    inputs:
+      - security_policies
+      - compliance_frameworks
+      - vulnerability_databases
+      - threat_intelligence
+      - audit_feedback
+    outputs:
+      - security_assessments
+      - compliance_reports
+      - remediation_plans
+      - hardening_configs
+
+  budgets:
+    tokens:
+      default: 8000
+      maximum: 50000
+      strategy: audit-complexity-based
+    time:
+      default: 1800000
+      maximum: 7200000
+
+  dependencies:
+    agents:
+      - name: security-agent
+        version: ">=0.1.9"
+        optional: false
+    services:
+      - name: vulnerability-db
+        endpoint: https://nvd.nist.gov/feeds/json/cve/1.1/
+        healthCheck: https://nvd.nist.gov/feeds/json/cve/1.1/nvdcve-1.1-recent.json.gz
+      - name: drupal-security-advisories
+        endpoint: https://www.drupal.org/api-d7/advisories.json
+        healthCheck: https://www.drupal.org/api-d7/advisories.json
+    tools:
+      - drush
+      - security_review
+      - paranoia
+      - password_policy
+      - session_limit
+      - login_security
+
+status:
+  state: registered
+  health: healthy
+  lastHeartbeat: "2024-01-01T00:00:00Z"
+  registeredAt: "2024-01-01T00:00:00Z"
+  metrics:
+    auditsCompleted: 0
+    vulnerabilitiesFound: 0
+    complianceAssessments: 0
+    remediationsGenerated: 0
+    tokenUsage: 0
+
+securityConfig:
+  frameworks:
+    - fedramp
+    - nist_csf
+    - nist_800_53
+    - sox
+    - hipaa
+    - gdpr
+    - wcag
+  scanTools:
+    - drupal_security_review
+    - drupal_paranoia
+    - custom_vulnerability_scanner
+    - dependency_checker
+  complianceLevel: high
+  auditRetention: 2555000000  # 7 years in milliseconds
+  reportEncryption: true
+  evidenceCollection: true

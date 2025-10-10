@@ -74,6 +74,51 @@ interface OperationResult {
   errors?: string[];
 }
 
+interface ProjectStructure {
+  rootDirectories: Array<{
+    name: string;
+    path: string;
+    isEmpty: boolean;
+  }>;
+  infrastructureDirectories: Array<{
+    name: string;
+    currentLocation: string;
+    targetLocation: string;
+    isEmpty: boolean;
+  }>;
+  duplicateDirectories: Array<{
+    name: string;
+    locations: string[];
+    rootPath: string;
+    infraPath: string;
+  }>;
+  emptyDirectories: Array<{
+    name: string;
+    path: string;
+  }>;
+  misplacedFiles: any[];
+}
+
+interface StandardizationAction {
+  type: 'move' | 'merge_duplicate' | 'remove_empty' | 'ensure_directory';
+  source?: string;
+  target?: string;
+  path?: string;
+  primary?: string;
+  duplicate?: string;
+  reason: string;
+}
+
+interface StandardizationPlan {
+  actions: StandardizationAction[];
+  summary: {
+    moveToInfrastructure: number;
+    removeDuplicates: number;
+    removeEmpty: number;
+    createDirectories: number;
+  };
+}
+
 class OSSACli {
   private config: CLIConfig;
   private program: Command;
@@ -349,6 +394,19 @@ class OSSACli {
       .option('--filter <filter>', 'Filter by agent type, capability, or version')
       .option('--output <format>', 'Output format (json, yaml, table)', 'table')
       .action(this.discover.bind(this));
+
+    // PROJECT STANDARDIZATION Operations [DEPRECATED - moved to agent-buildkit]
+    this.program
+      .command('standardize')
+      .description('[DEPRECATED] Use "buildkit standardize" instead - moved to agent-buildkit for proper tool separation')
+      .argument('<project-path>', 'Path to project directory to standardize')
+      .option('--dry-run', 'Show planned changes without executing them')
+      .option('--infrastructure', 'Focus on infrastructure directory consolidation')
+      .option('--duplicates', 'Remove duplicate empty directories')
+      .option('--force', 'Force changes without confirmation prompts')
+      .option('--backup', 'Create backup before making changes')
+      .option('-v, --verbose', 'Show detailed output')
+      .action(this.deprecatedStandardizeProject.bind(this));
   }
 
   // SPECIFICATION CRUD Operations
@@ -1265,6 +1323,315 @@ class OSSACli {
       // TODO: Implement TypeScript type generation
     } catch (error) {
       this.log('error', `Failed to generate types: ${error instanceof Error ? error.message : String(error)}`);
+    }
+  }
+
+  // DEPRECATED PROJECT STANDARDIZATION - Use agent-buildkit instead
+  private async deprecatedStandardizeProject(projectPath: string, options: any): Promise<void> {
+    console.log(chalk.yellow('⚠️  DEPRECATION NOTICE'));
+    console.log(chalk.yellow('=================='));
+    console.log(chalk.yellow('The "standardize" command has been moved to agent-buildkit for proper tool separation.'));
+    console.log('');
+    console.log(chalk.green('Please use instead:'));
+    console.log(chalk.green('  buildkit standardize directories --path ' + projectPath + (options.dryRun ? ' --dry-run' : '')));
+    console.log('');
+    console.log(chalk.blue('Why this change?'));
+    console.log('- OSSA focuses on OpenAPI specifications and agent standards');
+    console.log('- agent-buildkit is the proper tool for project standardization and cleanup');
+    console.log('- This separation provides better tool specialization');
+    console.log('');
+    console.log(chalk.red('This command will be removed in a future version.'));
+    console.log('');
+
+    // Still provide the functionality for now, but with deprecation warnings
+    console.log(chalk.gray('Falling back to deprecated implementation...'));
+    return this.standardizeProject(projectPath, options);
+  }
+
+  // PROJECT STANDARDIZATION Operations [DEPRECATED]
+  private async standardizeProject(projectPath: string, options: any): Promise<void> {
+    try {
+      const resolvedPath = resolve(projectPath);
+      this.log('info', `Standardizing project at: ${resolvedPath}`);
+
+      // Validate project path exists
+      if (!existsSync(resolvedPath)) {
+        throw new Error(`Project path does not exist: ${resolvedPath}`);
+      }
+
+      const projectStat = statSync(resolvedPath);
+      if (!projectStat.isDirectory()) {
+        throw new Error(`Path is not a directory: ${resolvedPath}`);
+      }
+
+      // Analyze current directory structure
+      const analysis = await this.analyzeProjectStructure(resolvedPath);
+
+      // Generate standardization plan
+      const plan = this.generateStandardizationPlan(analysis, options);
+
+      if (options.dryRun) {
+        this.outputStandardizationPlan(plan);
+        this.log('info', '🔍 Dry run complete - no changes made');
+        return;
+      }
+
+      // Create backup if requested
+      if (options.backup) {
+        await this.createProjectBackup(resolvedPath);
+      }
+
+      // Execute standardization plan
+      await this.executeStandardizationPlan(resolvedPath, plan, options);
+
+      this.log('info', '✅ Project standardization completed successfully');
+
+    } catch (error) {
+      this.log('error', `Failed to standardize project: ${error instanceof Error ? error.message : String(error)}`);
+    }
+  }
+
+  private async analyzeProjectStructure(projectPath: string): Promise<ProjectStructure> {
+    const structure: ProjectStructure = {
+      rootDirectories: [],
+      infrastructureDirectories: [],
+      duplicateDirectories: [],
+      emptyDirectories: [],
+      misplacedFiles: []
+    };
+
+    const entries = readdirSync(projectPath, { withFileTypes: true });
+
+    // Infrastructure-related directory patterns
+    const infrastructurePatterns = [
+      'k8s', 'kubernetes', 'docker', 'nginx', 'monitoring', 'grafana', 'prometheus',
+      'terraform', 'helm', 'ansible', 'vagrant', 'qdrant_storage', 'orbstack',
+      'deployment', 'deployments'
+    ];
+
+    for (const entry of entries) {
+      if (entry.isDirectory()) {
+        const dirPath = join(projectPath, entry.name);
+        const dirStat = statSync(dirPath);
+
+        structure.rootDirectories.push({
+          name: entry.name,
+          path: dirPath,
+          isEmpty: readdirSync(dirPath).length === 0
+        });
+
+        // Check if this is an infrastructure-related directory in root
+        if (infrastructurePatterns.includes(entry.name.toLowerCase())) {
+          structure.infrastructureDirectories.push({
+            name: entry.name,
+            currentLocation: 'root',
+            targetLocation: `infrastructure/${entry.name}`,
+            isEmpty: readdirSync(dirPath).length === 0
+          });
+        }
+
+        // Check for empty directories
+        if (readdirSync(dirPath).length === 0) {
+          structure.emptyDirectories.push({
+            name: entry.name,
+            path: dirPath
+          });
+        }
+      }
+    }
+
+    // Check for existing infrastructure directory
+    const infraDir = join(projectPath, 'infrastructure');
+    if (existsSync(infraDir)) {
+      const infraEntries = readdirSync(infraDir, { withFileTypes: true });
+
+      // Look for duplicates between root and infrastructure
+      for (const rootDir of structure.infrastructureDirectories) {
+        const infraMatch = infraEntries.find(e => e.name === rootDir.name);
+        if (infraMatch) {
+          structure.duplicateDirectories.push({
+            name: rootDir.name,
+            locations: ['root', 'infrastructure'],
+            rootPath: join(projectPath, rootDir.name),
+            infraPath: join(infraDir, rootDir.name)
+          });
+        }
+      }
+    }
+
+    return structure;
+  }
+
+  private generateStandardizationPlan(analysis: ProjectStructure, options: any): StandardizationPlan {
+    const plan: StandardizationPlan = {
+      actions: [],
+      summary: {
+        moveToInfrastructure: 0,
+        removeDuplicates: 0,
+        removeEmpty: 0,
+        createDirectories: 0
+      }
+    };
+
+    // Plan infrastructure directory consolidation
+    if (options.infrastructure !== false) {
+      for (const dir of analysis.infrastructureDirectories) {
+        if (!dir.isEmpty || options.force) {
+          plan.actions.push({
+            type: 'move',
+            source: join('root', dir.name),
+            target: dir.targetLocation,
+            reason: 'Infrastructure consolidation'
+          });
+          plan.summary.moveToInfrastructure++;
+        }
+      }
+    }
+
+    // Plan duplicate removal
+    if (options.duplicates !== false) {
+      for (const dup of analysis.duplicateDirectories) {
+        // Compare directories and plan merge/removal
+        plan.actions.push({
+          type: 'merge_duplicate',
+          primary: dup.infraPath,
+          duplicate: dup.rootPath,
+          reason: 'Remove duplicate directory'
+        });
+        plan.summary.removeDuplicates++;
+      }
+    }
+
+    // Plan empty directory removal
+    for (const empty of analysis.emptyDirectories) {
+      if (!analysis.infrastructureDirectories.find(d => d.name === empty.name)) {
+        plan.actions.push({
+          type: 'remove_empty',
+          path: empty.path,
+          reason: 'Remove empty directory'
+        });
+        plan.summary.removeEmpty++;
+      }
+    }
+
+    // Ensure infrastructure directory exists
+    plan.actions.push({
+      type: 'ensure_directory',
+      path: 'infrastructure',
+      reason: 'Create infrastructure directory if not exists'
+    });
+
+    return plan;
+  }
+
+  private outputStandardizationPlan(plan: StandardizationPlan): void {
+    console.log(chalk.blue('\n📋 Standardization Plan:\n'));
+
+    if (plan.actions.length === 0) {
+      console.log(chalk.green('✅ Project structure is already standardized!'));
+      return;
+    }
+
+    console.log(chalk.yellow('Planned Changes:'));
+
+    plan.actions.forEach((action: StandardizationAction, index: number) => {
+      const emoji = action.type === 'move' ? '📦' :
+                   action.type === 'merge_duplicate' ? '🔄' :
+                   action.type === 'remove_empty' ? '🗑️' : '📁';
+
+      console.log(`${index + 1}. ${emoji} ${action.reason}`);
+      if (action.source && action.target) {
+        console.log(`   ${action.source} → ${action.target}`);
+      } else if (action.path) {
+        console.log(`   ${action.path}`);
+      }
+    });
+
+    console.log(chalk.blue('\n📊 Summary:'));
+    console.table(plan.summary);
+  }
+
+  private async createProjectBackup(projectPath: string): Promise<void> {
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+    const backupPath = `${projectPath}.backup.${timestamp}`;
+
+    this.log('info', `Creating backup at: ${backupPath}`);
+
+    // Use system cp command for efficient backup
+    try {
+      execSync(`cp -R "${projectPath}" "${backupPath}"`, { stdio: 'pipe' });
+      this.log('info', `✅ Backup created successfully`);
+    } catch (error) {
+      throw new Error(`Failed to create backup: ${error instanceof Error ? error.message : String(error)}`);
+    }
+  }
+
+  private async executeStandardizationPlan(projectPath: string, plan: StandardizationPlan, options: any): Promise<void> {
+    for (const action of plan.actions) {
+      try {
+        switch (action.type) {
+          case 'ensure_directory':
+            if (action.path) {
+              const dirPath = join(projectPath, action.path);
+              if (!existsSync(dirPath)) {
+                mkdirSync(dirPath, { recursive: true });
+                this.log('info', `📁 Created directory: ${action.path}`);
+              }
+            }
+            break;
+
+          case 'move':
+            if (action.source && action.target) {
+              const sourcePath = join(projectPath, action.source.replace('root/', ''));
+              const targetPath = join(projectPath, action.target);
+
+              // Ensure target directory exists
+              mkdirSync(resolve(targetPath, '..'), { recursive: true });
+
+              // Move directory
+              execSync(`mv "${sourcePath}" "${targetPath}"`, { stdio: 'pipe' });
+              this.log('info', `📦 Moved: ${action.source} → ${action.target}`);
+            }
+            break;
+
+          case 'merge_duplicate':
+            if (action.duplicate && action.primary) {
+              // Handle duplicate directory merging
+              if (existsSync(action.duplicate)) {
+                const duplicateEntries = readdirSync(action.duplicate);
+                if (duplicateEntries.length === 0) {
+                  // Empty duplicate - just remove
+                  execSync(`rm -rf "${action.duplicate}"`, { stdio: 'pipe' });
+                  this.log('info', `🗑️ Removed empty duplicate: ${action.duplicate}`);
+                } else {
+                  // Non-empty duplicate - merge contents if primary exists
+                  if (existsSync(action.primary)) {
+                    execSync(`cp -R "${action.duplicate}/"* "${action.primary}/" 2>/dev/null || true`, { stdio: 'pipe' });
+                    execSync(`rm -rf "${action.duplicate}"`, { stdio: 'pipe' });
+                    this.log('info', `🔄 Merged duplicate: ${action.duplicate} → ${action.primary}`);
+                  } else {
+                    // Primary doesn't exist, just move
+                    execSync(`mv "${action.duplicate}" "${action.primary}"`, { stdio: 'pipe' });
+                    this.log('info', `📦 Moved: ${action.duplicate} → ${action.primary}`);
+                  }
+                }
+              }
+            }
+            break;
+
+          case 'remove_empty':
+            if (action.path && existsSync(action.path)) {
+              execSync(`rmdir "${action.path}"`, { stdio: 'pipe' });
+              this.log('info', `🗑️ Removed empty directory: ${action.path}`);
+            }
+            break;
+        }
+      } catch (error) {
+        this.log('error', `Failed to execute action ${action.type}: ${error instanceof Error ? error.message : String(error)}`);
+        if (!options.force) {
+          throw error;
+        }
+      }
     }
   }
 

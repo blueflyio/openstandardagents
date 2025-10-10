@@ -1,0 +1,1004 @@
+openapi: 3.1.0
+jsonSchemaDialect: https://spec.openapis.org/oas/3.1/dialect/base
+info:
+  title: OSSA Service Registry API
+  version: 0.1.9
+  description: |
+    Service Registry API for the OSSA (Open Standards for Scalable Agents) platform.
+    
+    This API provides service discovery, registration, and health monitoring capabilities
+    for distributed agent systems. Services can register themselves, discover other services,
+    and monitor health status across the ecosystem.
+    
+    ## Features
+    - **Service Registration**: Register services with capabilities and metadata
+    - **Service Discovery**: Find services by name, capability, health status, or tags
+    - **Health Monitoring**: Automatic health checks with configurable intervals
+    - **Statistics**: Registry-wide statistics and insights
+    - **Cleanup**: Automatic and manual cleanup of expired services
+    
+    ## Authentication
+    Authentication is handled at the infrastructure level and is not part of this API specification.
+    
+  contact:
+    name: OSSA Team
+    url: https://github.com/bluefly-io/ossa
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: http://localhost:3002/api/v1/registry
+    description: Local development server
+  - url: https://registry.ossa.bluefly.io/api/v1/registry
+    description: Production registry server
+
+tags:
+  - name: Services
+    description: Service registration and discovery operations
+  - name: Health
+    description: Health monitoring operations
+  - name: Registry
+    description: Registry management and statistics
+
+paths:
+  /services:
+    get:
+      summary: Discover services
+      description: |
+        Discover services based on filter criteria. All filters are optional and can be combined.
+        
+        ## Examples
+        - Get all services: `GET /services`
+        - Get services with specific capability: `GET /services?capability=text-processing`
+        - Get healthy services only: `GET /services?health=healthy`
+        - Get services by tags: `GET /services?tags=ai,nlp`
+      operationId: discoverServices
+      tags:
+        - Services
+      parameters:
+        - name: name
+          in: query
+          description: Filter by service name (supports regex patterns)
+          required: false
+          schema:
+            type: string
+            example: "ai-.*"
+        - name: capability
+          in: query
+          description: Filter by specific capability name
+          required: false
+          schema:
+            type: string
+            example: "text-processing"
+        - name: health
+          in: query
+          description: Filter by health status
+          required: false
+          schema:
+            $ref: '#/components/schemas/ServiceHealthStatus'
+        - name: tags
+          in: query
+          description: Filter by tags (comma-separated)
+          required: false
+          schema:
+            type: string
+            example: "ai,nlp,production"
+        - name: version
+          in: query
+          description: Filter by exact version
+          required: false
+          schema:
+            type: string
+            example: "1.2.3"
+        - name: environment
+          in: query
+          description: Filter by environment
+          required: false
+          schema:
+            type: string
+            enum: [development, staging, production]
+            example: "production"
+      responses:
+        '200':
+          description: Services discovered successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          services:
+                            type: array
+                            items:
+                              $ref: '#/components/schemas/ServiceDefinition'
+                          count:
+                            type: integer
+                            description: Number of services returned
+                          filter:
+                            $ref: '#/components/schemas/ServiceDiscoveryFilter'
+              examples:
+                successful_discovery:
+                  summary: Successful service discovery
+                  value:
+                    success: true
+                    data:
+                      services:
+                        - name: "ai-text-processor"
+                          endpoint: "https://ai-text.service.local:8080"
+                          version: "1.2.3"
+                          capabilities:
+                            - name: "text-processing"
+                              version: "1.0.0"
+                              description: "Advanced NLP text processing"
+                          health:
+                            status: "healthy"
+                            lastCheck: "2024-01-15T10:30:00Z"
+                            responseTime: 125
+                          metadata:
+                            tags: ["ai", "nlp"]
+                            environment: "production"
+                      count: 1
+                      filter:
+                        capability: "text-processing"
+                    meta:
+                      timestamp: "2024-01-15T10:30:00Z"
+                      version: "0.1.9"
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+    post:
+      summary: Register a new service
+      description: |
+        Register a new service in the registry. The service will be immediately available
+        for discovery and health monitoring will begin automatically.
+        
+        ## Requirements
+        - Service name must be unique within the registry
+        - Endpoint must be a valid URL
+        - At least one capability should be specified
+      operationId: registerService
+      tags:
+        - Services
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterServiceRequest'
+            examples:
+              ai_service:
+                summary: AI text processing service
+                value:
+                  name: "ai-text-processor"
+                  endpoint: "https://ai-text.service.local:8080"
+                  version: "1.2.3"
+                  capabilities:
+                    - name: "text-processing"
+                      version: "1.0.0"
+                      description: "Advanced NLP text processing"
+                      inputs:
+                        text:
+                          type: "string"
+                          description: "Input text to process"
+                      outputs:
+                        processedText:
+                          type: "string"
+                          description: "Processed text result"
+                  metadata:
+                    description: "High-performance AI text processing service"
+                    tags: ["ai", "nlp", "production"]
+                    author: "AI Team"
+                    environment: "production"
+      responses:
+        '201':
+          description: Service registered successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/ServiceDefinition'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /services/{serviceName}:
+    get:
+      summary: Get service details
+      description: Retrieve detailed information about a specific service
+      operationId: getService
+      tags:
+        - Services
+      parameters:
+        - name: serviceName
+          in: path
+          required: true
+          description: Name of the service to retrieve
+          schema:
+            type: string
+            example: "ai-text-processor"
+      responses:
+        '200':
+          description: Service details retrieved successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/ServiceDefinition'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+    put:
+      summary: Update service registration
+      description: |
+        Update an existing service registration. Only provided fields will be updated.
+        The service's `updatedAt` timestamp will be automatically set.
+      operationId: updateService
+      tags:
+        - Services
+      parameters:
+        - name: serviceName
+          in: path
+          required: true
+          description: Name of the service to update
+          schema:
+            type: string
+            example: "ai-text-processor"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateServiceRequest'
+      responses:
+        '200':
+          description: Service updated successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/ServiceDefinition'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+    delete:
+      summary: Unregister service
+      description: |
+        Remove a service from the registry. Health monitoring will stop and the service
+        will no longer be discoverable. This operation is irreversible.
+      operationId: unregisterService
+      tags:
+        - Services
+      parameters:
+        - name: serviceName
+          in: path
+          required: true
+          description: Name of the service to unregister
+          schema:
+            type: string
+            example: "ai-text-processor"
+      responses:
+        '200':
+          description: Service unregistered successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          message:
+                            type: string
+                            example: "Service 'ai-text-processor' successfully unregistered"
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /services/{serviceName}/health:
+    get:
+      summary: Get service health
+      description: |
+        Retrieve the current health status of a specific service. This includes
+        the latest health check results and timing information.
+      operationId: getServiceHealth
+      tags:
+        - Health
+      parameters:
+        - name: serviceName
+          in: path
+          required: true
+          description: Name of the service to check
+          schema:
+            type: string
+            example: "ai-text-processor"
+      responses:
+        '200':
+          description: Service health retrieved successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/ServiceHealth'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /health:
+    get:
+      summary: Get registry health
+      description: |
+        Get the overall health status of the service registry and aggregate
+        statistics about all registered services.
+      operationId: getRegistryHealth
+      tags:
+        - Health
+      responses:
+        '200':
+          description: Registry health retrieved successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          status:
+                            type: string
+                            enum: [healthy, degraded, unhealthy]
+                            description: Overall registry health status
+                          timestamp:
+                            type: string
+                            format: date-time
+                            description: Health check timestamp
+                          statistics:
+                            $ref: '#/components/schemas/RegistryStatistics'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /cleanup:
+    post:
+      summary: Cleanup expired services
+      description: |
+        Manually trigger cleanup of services that have exceeded their TTL.
+        This operation is also performed automatically on a schedule.
+      operationId: cleanupServices
+      tags:
+        - Registry
+      responses:
+        '200':
+          description: Cleanup completed successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          message:
+                            type: string
+                            example: "Cleanup completed"
+                          servicesRemoved:
+                            type: integer
+                            description: Number of services removed during cleanup
+                            example: 3
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /stats:
+    get:
+      summary: Get registry statistics
+      description: |
+        Retrieve detailed statistics about the service registry, including
+        service counts, capabilities, and performance metrics.
+      operationId: getRegistryStats
+      tags:
+        - Registry
+      responses:
+        '200':
+          description: Statistics retrieved successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/DetailedRegistryStatistics'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /capabilities:
+    get:
+      summary: Get available capabilities
+      description: |
+        Retrieve a list of all capabilities available across all registered services.
+        This provides an overview of the ecosystem's functionality.
+      operationId: getCapabilities
+      tags:
+        - Registry
+      responses:
+        '200':
+          description: Capabilities retrieved successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          capabilities:
+                            type: array
+                            items:
+                              $ref: '#/components/schemas/CapabilityInfo'
+                          totalCapabilities:
+                            type: integer
+                            description: Total number of unique capabilities
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+      description: API key for accessing services
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT token for authenticated requests
+    OAuth2:
+      type: oauth2
+      description: OAuth2 authentication
+      flows:
+        authorizationCode:
+          authorizationUrl: https://auth.llm.bluefly.io/oauth/authorize
+          tokenUrl: https://auth.llm.bluefly.io/oauth/token
+          scopes:
+            read: Read access to resources
+            write: Write access to resources
+            admin: Administrative access
+  schemas:
+    ServiceDefinition:
+      type: object
+      description: Complete service definition with all metadata and status
+      required:
+        - name
+        - endpoint
+        - capabilities
+        - version
+        - health
+        - registeredAt
+        - updatedAt
+      properties:
+        name:
+          type: string
+          description: Unique service name
+          example: "ai-text-processor"
+        endpoint:
+          type: string
+          format: uri
+          description: Service endpoint URL
+          example: "https://ai-text.service.local:8080"
+        capabilities:
+          type: array
+          description: Service capabilities
+          items:
+            $ref: '#/components/schemas/ServiceCapability'
+        version:
+          type: string
+          description: Service version (semantic versioning recommended)
+          example: "1.2.3"
+        health:
+          $ref: '#/components/schemas/ServiceHealth'
+        metadata:
+          $ref: '#/components/schemas/ServiceMetadata'
+        registeredAt:
+          type: string
+          format: date-time
+          description: Service registration timestamp
+          example: "2024-01-15T10:00:00Z"
+        updatedAt:
+          type: string
+          format: date-time
+          description: Last update timestamp
+          example: "2024-01-15T10:30:00Z"
+
+    ServiceCapability:
+      type: object
+      description: A capability provided by the service
+      required:
+        - name
+        - version
+      properties:
+        name:
+          type: string
+          description: Capability name
+          example: "text-processing"
+        version:
+          type: string
+          description: Capability version
+          example: "1.0.0"
+        inputs:
+          type: object
+          description: Input schema definition
+          additionalProperties:
+            type: object
+            properties:
+              type:
+                type: string
+              description:
+                type: string
+        outputs:
+          type: object
+          description: Output schema definition
+          additionalProperties:
+            type: object
+            properties:
+              type:
+                type: string
+              description:
+                type: string
+        description:
+          type: string
+          description: Capability description
+          example: "Advanced natural language processing"
+
+    ServiceHealth:
+      type: object
+      description: Service health status information
+      required:
+        - status
+        - lastCheck
+      properties:
+        status:
+          $ref: '#/components/schemas/ServiceHealthStatus'
+        lastCheck:
+          type: string
+          format: date-time
+          description: Last health check timestamp
+          example: "2024-01-15T10:30:00Z"
+        responseTime:
+          type: integer
+          description: Health check response time in milliseconds
+          example: 125
+        details:
+          type: object
+          description: Additional health check details
+          additionalProperties: true
+        error:
+          type: string
+          description: Error message if service is unhealthy
+          example: "Connection timeout"
+
+    ServiceHealthStatus:
+      type: string
+      enum:
+        - healthy
+        - unhealthy
+        - degraded
+        - unknown
+        - maintenance
+      description: |
+        Service health status:
+        - `healthy`: Service is operating normally
+        - `unhealthy`: Service is not responding or returning errors
+        - `degraded`: Service is responding but with performance issues
+        - `unknown`: Health status has not been determined
+        - `maintenance`: Service is temporarily in maintenance mode
+
+    ServiceMetadata:
+      type: object
+      description: Optional service metadata
+      properties:
+        description:
+          type: string
+          description: Human-readable service description
+          example: "High-performance AI text processing service"
+        tags:
+          type: array
+          items:
+            type: string
+          description: Service tags for categorization
+          example: ["ai", "nlp", "production"]
+        author:
+          type: string
+          description: Service author or team
+          example: "AI Engineering Team"
+        documentation:
+          type: string
+          format: uri
+          description: Link to service documentation
+          example: "https://docs.example.com/ai-text-processor"
+        environment:
+          type: string
+          enum: [development, staging, production]
+          description: Deployment environment
+          example: "production"
+
+    RegisterServiceRequest:
+      type: object
+      description: Request body for service registration
+      required:
+        - name
+        - endpoint
+        - capabilities
+        - version
+      properties:
+        name:
+          type: string
+          description: Unique service name
+          example: "ai-text-processor"
+        endpoint:
+          type: string
+          format: uri
+          description: Service endpoint URL
+          example: "https://ai-text.service.local:8080"
+        capabilities:
+          type: array
+          description: Service capabilities
+          items:
+            $ref: '#/components/schemas/ServiceCapability'
+          minItems: 1
+        version:
+          type: string
+          description: Service version
+          example: "1.2.3"
+        metadata:
+          $ref: '#/components/schemas/ServiceMetadata'
+
+    UpdateServiceRequest:
+      type: object
+      description: Request body for service updates (all fields optional)
+      properties:
+        endpoint:
+          type: string
+          format: uri
+          description: Updated service endpoint URL
+        capabilities:
+          type: array
+          description: Updated service capabilities
+          items:
+            $ref: '#/components/schemas/ServiceCapability'
+        version:
+          type: string
+          description: Updated service version
+        metadata:
+          $ref: '#/components/schemas/ServiceMetadata'
+
+    ServiceDiscoveryFilter:
+      type: object
+      description: Filter criteria for service discovery
+      properties:
+        namePattern:
+          type: string
+          description: Service name pattern (regex supported)
+        capability:
+          type: string
+          description: Required capability name
+        healthStatus:
+          $ref: '#/components/schemas/ServiceHealthStatus'
+        tags:
+          type: array
+          items:
+            type: string
+          description: Required tags
+        version:
+          type: string
+          description: Exact version match
+        environment:
+          type: string
+          description: Environment filter
+
+    RegistryStatistics:
+      type: object
+      description: Basic registry statistics
+      properties:
+        totalServices:
+          type: integer
+          description: Total number of registered services
+          example: 15
+        healthyServices:
+          type: integer
+          description: Number of healthy services
+          example: 12
+        unhealthyServices:
+          type: integer
+          description: Number of unhealthy services
+          example: 2
+        degradedServices:
+          type: integer
+          description: Number of degraded services
+          example: 1
+        unknownServices:
+          type: integer
+          description: Number of services with unknown health
+          example: 0
+        servicesInMaintenance:
+          type: integer
+          description: Number of services in maintenance
+          example: 0
+
+    DetailedRegistryStatistics:
+      allOf:
+        - $ref: '#/components/schemas/RegistryStatistics'
+        - type: object
+          properties:
+            uniqueCapabilities:
+              type: integer
+              description: Number of unique capabilities across all services
+              example: 8
+            totalCapabilities:
+              type: integer
+              description: Total number of capability instances
+              example: 25
+            uniqueVersions:
+              type: integer
+              description: Number of unique service versions
+              example: 12
+            uniqueTags:
+              type: integer
+              description: Number of unique tags
+              example: 6
+            averageCapabilitiesPerService:
+              type: number
+              format: float
+              description: Average number of capabilities per service
+              example: 1.67
+
+    CapabilityInfo:
+      type: object
+      description: Information about a capability across services
+      required:
+        - name
+        - versions
+        - services
+        - serviceCount
+      properties:
+        name:
+          type: string
+          description: Capability name
+          example: "text-processing"
+        versions:
+          type: array
+          items:
+            type: string
+          description: Available versions of this capability
+          example: ["1.0.0", "1.1.0"]
+        services:
+          type: array
+          items:
+            type: string
+          description: Services that provide this capability
+          example: ["ai-text-processor", "nlp-service"]
+        serviceCount:
+          type: integer
+          description: Number of services providing this capability
+          example: 2
+        description:
+          type: string
+          description: Capability description
+          example: "Advanced natural language processing"
+
+    ApiResponse:
+      type: object
+      description: Standard API response wrapper
+      required:
+        - success
+        - meta
+      properties:
+        success:
+          type: boolean
+          description: Indicates if the request was successful
+        data:
+          description: Response data (varies by endpoint)
+        error:
+          type: object
+          description: Error information (present when success is false)
+          properties:
+            code:
+              type: string
+              description: Error code
+              example: "SERVICE_NOT_FOUND"
+            message:
+              type: string
+              description: Human-readable error message
+              example: "Service 'ai-text-processor' not found"
+            details:
+              description: Additional error details
+        meta:
+          type: object
+          description: Response metadata
+          required:
+            - timestamp
+            - version
+          properties:
+            timestamp:
+              type: string
+              format: date-time
+              description: Response timestamp
+              example: "2024-01-15T10:30:00Z"
+            version:
+              type: string
+              description: API version
+              example: "0.1.9"
+            requestId:
+              type: string
+              description: Request identifier for tracing
+              example: "req-12345"
+
+  responses:
+    BadRequest:
+      description: Bad Request - Invalid input or parameters
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: '#/components/schemas/ApiResponse'
+              - type: object
+                properties:
+                  success:
+                    type: boolean
+                    enum: [false]
+                  error:
+                    type: object
+                    properties:
+                      code:
+                        type: string
+                        example: "INVALID_REQUEST"
+                      message:
+                        type: string
+                        example: "Missing required fields: name, endpoint, and version are required"
+
+    NotFound:
+      description: Not Found - Requested resource does not exist
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: '#/components/schemas/ApiResponse'
+              - type: object
+                properties:
+                  success:
+                    type: boolean
+                    enum: [false]
+                  error:
+                    type: object
+                    properties:
+                      code:
+                        type: string
+                        example: "SERVICE_NOT_FOUND"
+                      message:
+                        type: string
+                        example: "Service 'ai-text-processor' not found"
+
+    Conflict:
+      description: Conflict - Resource already exists
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: '#/components/schemas/ApiResponse'
+              - type: object
+                properties:
+                  success:
+                    type: boolean
+                    enum: [false]
+                  error:
+                    type: object
+                    properties:
+                      code:
+                        type: string
+                        example: "SERVICE_ALREADY_EXISTS"
+                      message:
+                        type: string
+                        example: "Service 'ai-text-processor' is already registered"
+
+    InternalError:
+      description: Internal Server Error
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: '#/components/schemas/ApiResponse'
+              - type: object
+                properties:
+                  success:
+                    type: boolean
+                    enum: [false]
+                  error:
+                    type: object
+                    properties:
+                      code:
+                        type: string
+                        example: "INTERNAL_ERROR"
+                      message:
+                        type: string
+                        example: "An internal error occurred while processing the request"
+
+  examples:
+    aiTextProcessor:
+      summary: AI Text Processing Service
+      value:
+        name: "ai-text-processor"
+        endpoint: "https://ai-text.service.local:8080"
+        version: "1.2.3"
+        capabilities:
+          - name: "text-processing"
+            version: "1.0.0"
+            description: "Advanced NLP text processing"
+        metadata:
+          description: "High-performance AI text processing service"
+          tags: ["ai", "nlp", "production"]
+          author: "AI Engineering Team"
+          environment: "production"
+
+    dataProcessor:
+      summary: Data Processing Service
+      value:
+        name: "data-processor"
+        endpoint: "https://data.service.local:9090"
+        version: "2.1.0"
+        capabilities:
+          - name: "data-transformation"
+            version: "2.0.0"
+            description: "ETL and data transformation"
+          - name: "data-validation"
+            version: "1.5.0"
+            description: "Data quality validation"
+        metadata:
+          description: "Enterprise data processing pipeline"
+          tags: ["data", "etl", "production"]
+          author: "Data Engineering Team"
+          environment: "production"
+
+security:
+  - ApiKeyAuth: []
+  - BearerAuth: []

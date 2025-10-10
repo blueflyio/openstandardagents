@@ -1,0 +1,178 @@
+version: '3.8'
+
+# ===========================================
+# OSSA Observability - Langfuse Configuration
+# ===========================================
+# This Docker Compose file provides Langfuse observability
+# for AI/LLM operations within the OSSA infrastructure.
+# 
+# Usage:
+#   docker-compose -f infrastructure/docker-compose.observability.yml up -d
+#
+# Integration:
+#   - Uses port 3030:3000 to avoid conflicts with existing Grafana (3000)
+#   - Connects to existing ossa-cluster-network for seamless integration
+#   - Provides dedicated PostgreSQL instance for Langfuse data
+# ===========================================
+
+services:
+  # ===========================================
+  # Langfuse - LLM Observability Platform
+  # ===========================================
+  langfuse-server:
+    image: langfuse/langfuse:latest
+    container_name: ossa-langfuse
+    ports:
+      - "3030:3000"  # Port 3030 externally to avoid conflict with Grafana
+    environment:
+      # Database connection
+      - DATABASE_URL=postgresql://langfuse:${LANGFUSE_DB_PASSWORD:-langfuse_secure_pass}@langfuse-postgres:5432/langfuse
+      
+      # Langfuse configuration
+      - NEXTAUTH_URL=http://localhost:3030
+      - NEXTAUTH_SECRET=${LANGFUSE_NEXTAUTH_SECRET:-your-nextauth-secret-change-in-production}
+      
+      # Security and authentication
+      - SALT=${LANGFUSE_SALT:-your-salt-change-in-production}
+      
+      # Optional: Enable direct login without OAuth
+      - AUTH_DISABLE_USERNAME_PASSWORD=false
+      
+      # Performance optimization
+      - NODE_ENV=production
+      - LANGFUSE_ENABLE_EXPERIMENTAL_FEATURES=false
+      
+      # Telemetry (can be disabled for privacy)
+      - TELEMETRY_ENABLED=${LANGFUSE_TELEMETRY_ENABLED:-true}
+      
+      # Optional: Custom branding
+      - LANGFUSE_DEFAULT_PROJECT_ID=${LANGFUSE_DEFAULT_PROJECT_ID:-}
+      
+    depends_on:
+      langfuse-postgres:
+        condition: service_healthy
+    networks:
+      - ossa-cluster-network
+      - langfuse-internal
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/public/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 1G
+        reservations:
+          cpus: '0.25'
+          memory: 256M
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.langfuse.rule=Host(`langfuse.ossa.local`)"
+      - "traefik.http.services.langfuse.loadbalancer.server.port=3000"
+
+  # ===========================================
+  # PostgreSQL Database for Langfuse
+  # ===========================================
+  langfuse-postgres:
+    image: postgres:15-alpine
+    container_name: ossa-langfuse-postgres
+    environment:
+      # Database configuration
+      - POSTGRES_USER=langfuse
+      - POSTGRES_PASSWORD=${LANGFUSE_DB_PASSWORD:-langfuse_secure_pass}
+      - POSTGRES_DB=langfuse
+      
+      # Security hardening
+      - POSTGRES_INITDB_ARGS=--auth-host=scram-sha-256
+      
+      # Performance tuning for observability workloads
+      - POSTGRES_SHARED_PRELOAD_LIBRARIES=pg_stat_statements
+      
+    volumes:
+      # Persistent data storage
+      - langfuse-postgres-data:/var/lib/postgresql/data
+      
+      # Optional: Custom initialization scripts
+      # - ./scripts/langfuse-init.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
+      
+    ports:
+      # Expose on non-standard port to avoid conflicts
+      - "5433:5432"
+    networks:
+      - langfuse-internal
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U langfuse -d langfuse"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 512M
+        reservations:
+          cpus: '0.25'
+          memory: 128M
+    command: >
+      postgres
+      -c shared_preload_libraries=pg_stat_statements
+      -c pg_stat_statements.track=all
+      -c max_connections=100
+      -c shared_buffers=256MB
+      -c effective_cache_size=1GB
+      -c maintenance_work_mem=64MB
+      -c checkpoint_completion_target=0.7
+      -c wal_buffers=16MB
+      -c default_statistics_target=100
+
+# ===========================================
+# Networks Configuration
+# ===========================================
+networks:
+  # Connect to existing OSSA network for integration
+  ossa-cluster-network:
+    external: true
+    name: ossa-cluster-network
+  
+  # Internal network for Langfuse components
+  langfuse-internal:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.30.0.0/24
+
+# ===========================================
+# Volumes Configuration
+# ===========================================
+volumes:
+  # Persistent storage for Langfuse PostgreSQL data
+  langfuse-postgres-data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${PWD}/infrastructure/data/langfuse/postgres
+
+# ===========================================
+# Environment Variables Template
+# ===========================================
+# Create a .env file with these variables for production:
+#
+# # Langfuse Database
+# LANGFUSE_DB_PASSWORD=your_very_secure_database_password
+# 
+# # Langfuse Authentication
+# LANGFUSE_NEXTAUTH_SECRET=your_very_secure_nextauth_secret_min_32_chars
+# LANGFUSE_SALT=your_very_secure_salt_for_password_hashing
+# 
+# # Optional Configuration
+# LANGFUSE_TELEMETRY_ENABLED=false
+# LANGFUSE_DEFAULT_PROJECT_ID=your_default_project_id
+#
+# ===========================================

@@ -1,0 +1,24 @@
+# OSSA Configuration - v0.1.9
+project:
+  name: OSSA
+  type: core
+  version: 0.1.0
+
+compliance:
+  standard: ossa-v0.1.9
+  level: production
+
+infrastructure:
+  docker: infrastructure/docker
+  kubernetes: infrastructure/k8s
+  monitoring: infrastructure/monitoring
+  scripts: infrastructure/scripts
+
+ci-cd:
+  provider: gitlab
+  template: golden-workflow
+
+monitoring:
+  prometheus: enabled
+  grafana: enabled
+  alerts: enabled

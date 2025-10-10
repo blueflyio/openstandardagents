@@ -1,0 +1,383 @@
+apiVersion: "@bluefly/open-standards-scalable-agents/v0.1.9"
+kind: Agent
+metadata:
+  name: drupal-migration-intelligence
+  version: "0.1.9"
+  namespace: drupal-ossa
+  description: Intelligent Drupal migration specialist for D7 to D11 migrations with automated assessment and planning
+  labels:
+    category: worker
+    specialization: drupal-migration
+    domain: cms
+    tenant: drupal-platform
+  annotations:
+    openapi: /api/drupal-migration-specification.yml
+    compliance: gold
+    docker-service: ossa-drupal-migration
+  author: Bluefly Drupal Platform Team
+  license: Apache-2.0
+  repository: https://gitlab.bluefly.io/llm/drupal-agents
+  documentation: https://docs.drupal-ossa.io/agents/workers/migration
+
+spec:
+  type: worker
+  subtype: worker.drupal_migration
+
+  capabilities:
+    domains:
+      - drupal-migration
+      - database-analysis
+      - code-assessment
+      - compatibility-checking
+      - content-mapping
+      - dependency-resolution
+    operations:
+      - name: assess_drupal_site
+        description: Comprehensive assessment of existing Drupal 7 site for migration readiness
+        inputSchema:
+          type: object
+          required: [siteInfo]
+          properties:
+            siteInfo:
+              type: object
+              properties:
+                drupalRoot: {type: string}
+                databaseUrl: {type: string}
+                filesPath: {type: string}
+                version: {type: string}
+                multisite: {type: boolean}
+            assessmentOptions:
+              type: object
+              properties:
+                includeCustomCode: {type: boolean, default: true}
+                analyzeContribModules: {type: boolean, default: true}
+                checkThemeCompatibility: {type: boolean, default: true}
+                assessContent: {type: boolean, default: true}
+                securityAudit: {type: boolean, default: true}
+        outputSchema:
+          type: object
+          properties:
+            assessmentId: {type: string}
+            migrationComplexity:
+              type: string
+              enum: [low, medium, high, critical]
+            compatibilityReport:
+              type: object
+              properties:
+                modules:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      name: {type: string}
+                      current_version: {type: string}
+                      d11_status:
+                        type: string
+                        enum: [available, ported, needs_porting, deprecated]
+                      replacement_module: {type: string}
+                      migration_effort:
+                        type: string
+                        enum: [trivial, low, medium, high, critical]
+                themes:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      name: {type: string}
+                      d11_compatible: {type: boolean}
+                      migration_strategy: {type: string}
+                customCode:
+                  type: object
+                  properties:
+                    hooks: {type: array}
+                    entities: {type: array}
+                    apis_deprecated: {type: array}
+                    security_issues: {type: array}
+            contentAnalysis:
+              type: object
+              properties:
+                contentTypes: {type: array}
+                fieldMapping: {type: object}
+                mediaFiles: {type: object}
+                taxonomies: {type: array}
+                users: {type: object}
+            recommendations:
+              type: array
+              items:
+                type: object
+                properties:
+                  category: {type: string}
+                  priority:
+                    type: string
+                    enum: [critical, high, medium, low]
+                  action: {type: string}
+                  effort_estimate: {type: string}
+            timeline: {type: object}
+        timeout: 300000
+
+      - name: generate_migration_plan
+        description: Create detailed migration plan with phases and dependencies
+        inputSchema:
+          type: object
+          required: [assessmentId, migrationGoals]
+          properties:
+            assessmentId: {type: string}
+            migrationGoals:
+              type: object
+              properties:
+                targetDrupalVersion: {type: string, default: "11.x"}
+                hostingEnvironment:
+                  type: string
+                  enum: [acquia, pantheon, platform_sh, aws, custom]
+                timeline: {type: string}
+                budget: {type: string}
+                riskTolerance:
+                  type: string
+                  enum: [low, medium, high]
+                performanceRequirements: {type: object}
+        outputSchema:
+          type: object
+          properties:
+            migrationPlanId: {type: string}
+            phases:
+              type: array
+              items:
+                type: object
+                properties:
+                  name: {type: string}
+                  description: {type: string}
+                  duration: {type: string}
+                  dependencies: {type: array}
+                  tasks: {type: array}
+                  risks: {type: array}
+                  deliverables: {type: array}
+            resourceRequirements:
+              type: object
+              properties:
+                developers: {type: number}
+                testers: {type: number}
+                devops: {type: number}
+                timeline: {type: string}
+                budget_estimate: {type: string}
+            riskAssessment:
+              type: array
+              items:
+                type: object
+                properties:
+                  risk: {type: string}
+                  probability: {type: string}
+                  impact: {type: string}
+                  mitigation: {type: string}
+        timeout: 180000
+
+      - name: execute_content_migration
+        description: Execute content migration with field mapping and validation
+        inputSchema:
+          type: object
+          required: [migrationPlanId, contentTypes]
+          properties:
+            migrationPlanId: {type: string}
+            contentTypes: {type: array}
+            migrationOptions:
+              type: object
+              properties:
+                batchSize: {type: number, default: 100}
+                validateMigration: {type: boolean, default: true}
+                rollbackOnError: {type: boolean, default: true}
+                preserveIds: {type: boolean, default: false}
+        outputSchema:
+          type: object
+          properties:
+            migrationJobId: {type: string}
+            status: {type: string}
+            progress:
+              type: object
+              properties:
+                total_items: {type: number}
+                processed: {type: number}
+                successful: {type: number}
+                failed: {type: number}
+                errors: {type: array}
+            validation_report: {type: object}
+        timeout: 3600000
+
+      - name: validate_migration
+        description: Comprehensive validation of migrated content and functionality
+        inputSchema:
+          type: object
+          required: [migrationJobId]
+          properties:
+            migrationJobId: {type: string}
+            validationChecks:
+              type: array
+              items:
+                type: string
+                enum: [content_integrity, field_mapping, media_files, user_accounts, taxonomies, url_aliases, custom_entities]
+        outputSchema:
+          type: object
+          properties:
+            validationId: {type: string}
+            overallStatus:
+              type: string
+              enum: [passed, failed, warning]
+            checks:
+              type: array
+              items:
+                type: object
+                properties:
+                  check: {type: string}
+                  status: {type: string}
+                  details: {type: object}
+                  issues: {type: array}
+            recommendations: {type: array}
+        timeout: 900000
+
+    inputFormats:
+      - application/json
+      - application/sql
+      - text/plain
+      - application/xml
+
+    outputFormats:
+      - application/json
+      - text/html
+      - application/pdf
+      - text/csv
+
+    tokenEfficiency:
+      strategies:
+        - migration-plan-templates
+        - assessment-result-caching
+        - module-compatibility-database
+        - content-type-mapping-reuse
+        - batch-processing-optimization
+      compressionRatio: 0.75
+
+  protocols:
+    supported:
+      - name: ossa
+        version: "0.1.9"
+        endpoint: http://localhost:3010/ossa/v1
+        authentication:
+          type: api-key
+        tls: true
+      - name: rest
+        version: "3.1.0"
+        endpoint: http://localhost:3010/api/v1
+        authentication:
+          type: bearer-token
+        tls: true
+      - name: drush
+        version: "12.x"
+        endpoint: local
+        authentication:
+          type: none
+    preferred: ossa
+
+  conformance:
+    level: gold
+    certifications:
+      - Drupal-Association-Certified
+      - Acquia-Certified-Developer
+    auditLogging: true
+    feedbackLoop: true
+    propsTokens: true
+    learningSignals: true
+
+  performance:
+    throughput:
+      assessmentsPerHour: 10
+      contentItemsPerSecond: 50
+    latency:
+      p50: 5000
+      p95: 30000
+      p99: 120000
+    limits:
+      maxSiteSize: 1099511627776  # 1TB
+      maxConcurrentMigrations: 5
+      timeout: 3600000
+
+  resources:
+    requests:
+      cpu: 2
+      memory: 4Gi
+      storage: 100Gi
+    limits:
+      cpu: 8
+      memory: 16Gi
+      storage: 1Ti
+
+  feedbackLoop:
+    phase: assess
+    inputs:
+      - drupal_site_info
+      - migration_requirements
+      - compatibility_databases
+      - best_practices
+    outputs:
+      - migration_plans
+      - compatibility_reports
+      - risk_assessments
+      - progress_updates
+
+  budgets:
+    tokens:
+      default: 5000
+      maximum: 50000
+      strategy: complexity-based
+    time:
+      default: 300000
+      maximum: 3600000
+
+  dependencies:
+    agents:
+      - name: drupal-security-compliance
+        version: ">=0.1.9"
+        optional: true
+    services:
+      - name: drupal-site
+        endpoint: variable
+        healthCheck: /admin/config
+      - name: database
+        endpoint: variable
+        healthCheck: SELECT 1
+    tools:
+      - drush
+      - migrate_tools
+      - migrate_plus
+      - migrate_upgrade
+
+status:
+  state: registered
+  health: healthy
+  lastHeartbeat: "2024-01-01T00:00:00Z"
+  registeredAt: "2024-01-01T00:00:00Z"
+  metrics:
+    assessmentsCompleted: 0
+    migrationsExecuted: 0
+    contentItemsMigrated: 0
+    validationsPassed: 0
+    tokenUsage: 0
+
+drupalConfig:
+  supportedVersions:
+    source: [7.x]
+    target: [10.x, 11.x]
+  migrationStrategies:
+    - phased
+    - big-bang
+    - parallel
+    - rollback-ready
+  contentTypes:
+    - node
+    - user
+    - taxonomy
+    - media
+    - custom_entities
+  fieldTypes:
+    - text
+    - image
+    - file
+    - entity_reference
+    - date
+    - custom_fields

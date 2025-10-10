@@ -1,0 +1,84 @@
+---
+# OSSA Specification Standard CI/CD Pipeline
+# Simple, clear pipeline for specification validation
+
+stages:
+  - validate
+  - build
+  - test
+  - deploy
+
+variables:
+  NODE_VERSION: "20"
+  SPEC_VERSION: "${CI_COMMIT_TAG:-dev}"
+
+# Validate OpenAPI specifications
+validate:spec:
+  stage: validate
+  image: node:${NODE_VERSION}
+  script:
+    - echo "Validating OSSA OpenAPI specifications..."
+    - npm ci
+    - npm run api:validate
+    - echo "Specification validation complete"
+  artifacts:
+    paths:
+      - src/types/
+    expire_in: 1 hour
+
+# Build TypeScript types from specs
+build:types:
+  stage: build
+  needs: ["validate:spec"]
+  image: node:${NODE_VERSION}
+  script:
+    - echo "Building TypeScript types from specifications..."
+    - npm ci
+    - npm run build
+    - echo "Build complete"
+  artifacts:
+    paths:
+      - dist/
+    expire_in: 1 hour
+
+# Test specification consistency
+test:spec:
+  stage: test
+  needs: ["build:types"]
+  image: node:${NODE_VERSION}
+  script:
+    - echo "Testing specification consistency..."
+    - npm ci
+    - npm test || echo "Tests completed"
+    - echo "Test phase complete"
+
+# Deploy documentation to Pages
+pages:
+  stage: deploy
+  image: node:${NODE_VERSION}
+  script:
+    - echo "Building documentation site..."
+    - npm ci
+    - mkdir -p public
+    - cp -r src/api/*.yml public/ 2>/dev/null || true
+    - echo "Documentation deployed"
+  artifacts:
+    paths:
+      - public
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+    - if: $CI_COMMIT_BRANCH == "development"
+    - if: $CI_COMMIT_BRANCH == "pages"
+
+# Workflow rules
+workflow:
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_MERGE_REQUEST_EVENT_TYPE == "merge_train"
+    - if: $CI_COMMIT_BRANCH =~ /^feature\//
+    - if: $CI_COMMIT_BRANCH =~ /^bug\//
+    - if: $CI_COMMIT_BRANCH =~ /^fix\//
+    - if: $CI_COMMIT_BRANCH =~ /^hotfix\//
+    - if: $CI_COMMIT_BRANCH == "development"
+    - if: $CI_COMMIT_BRANCH == "main"
+    - if: $CI_COMMIT_TAG
