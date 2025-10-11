@@ -1,0 +1,240 @@
+openapi: 3.1.0
+info:
+  title: Quality Assessor Judge Agent API
+  version: 0.1.9
+  description: |
+    OSSA Quality Assessor Judge Agent - Makes final determinations on quality,
+    compliance, and acceptance criteria for agent outputs and system decisions.
+  contact:
+    name: OSSA Framework
+    url: https://gitlab.bluefly.io/llm/openapi-ai-agents-standard
+
+servers:
+  - url: http://localhost:3012/api/v1
+    description: Local judge agent server
+
+paths:
+  /judge/quality:
+    post:
+      summary: Judge output quality
+      operationId: judgeQuality
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QualityJudgmentRequest'
+      responses:
+        '200':
+          description: Quality judgment completed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QualityJudgmentResponse'
+
+  /judge/compliance:
+    post:
+      summary: Judge compliance with standards
+      operationId: judgeCompliance
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ComplianceJudgmentRequest'
+      responses:
+        '200':
+          description: Compliance judgment completed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ComplianceJudgmentResponse'
+
+  /judge/decision:
+    post:
+      summary: Make final decision
+      operationId: makeDecision
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DecisionRequest'
+      responses:
+        '200':
+          description: Decision made
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DecisionResponse'
+
+components:
+  schemas:
+    QualityJudgmentRequest:
+      type: object
+      required:
+        - artifact
+        - criteria
+      properties:
+        artifact:
+          type: object
+          properties:
+            type:
+              type: string
+            content:
+              type: string
+            metadata:
+              type: object
+        criteria:
+          type: array
+          items:
+            $ref: '#/components/schemas/QualityCriterion'
+        context:
+          type: string
+
+    QualityCriterion:
+      type: object
+      properties:
+        name:
+          type: string
+        weight:
+          type: number
+        threshold:
+          type: number
+        description:
+          type: string
+
+    QualityJudgmentResponse:
+      type: object
+      properties:
+        verdict:
+          type: string
+          enum: [accepted, rejected, conditional]
+        score:
+          type: number
+          minimum: 0
+          maximum: 100
+        criteriaResults:
+          type: array
+          items:
+            type: object
+            properties:
+              criterion:
+                type: string
+              score:
+                type: number
+              passed:
+                type: boolean
+              notes:
+                type: string
+        reasoning:
+          type: string
+        conditions:
+          type: array
+          items:
+            type: string
+        recommendations:
+          type: array
+          items:
+            type: string
+
+    ComplianceJudgmentRequest:
+      type: object
+      required:
+        - subject
+        - standards
+      properties:
+        subject:
+          type: object
+        standards:
+          type: array
+          items:
+            type: string
+        strictMode:
+          type: boolean
+          default: false
+
+    ComplianceJudgmentResponse:
+      type: object
+      properties:
+        compliant:
+          type: boolean
+        level:
+          type: string
+          enum: [full, partial, non-compliant]
+        violations:
+          type: array
+          items:
+            type: object
+            properties:
+              standard:
+                type: string
+              requirement:
+                type: string
+              severity:
+                type: string
+              description:
+                type: string
+        certifications:
+          type: array
+          items:
+            type: string
+        report:
+          type: string
+
+    DecisionRequest:
+      type: object
+      required:
+        - options
+        - criteria
+      properties:
+        options:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+              description:
+                type: string
+              data:
+                type: object
+        criteria:
+          type: object
+        constraints:
+          type: object
+        requireUnanimous:
+          type: boolean
+          default: false
+
+    DecisionResponse:
+      type: object
+      properties:
+        decision:
+          type: string
+        confidence:
+          type: number
+          minimum: 0
+          maximum: 1
+        selectedOption:
+          type: string
+        reasoning:
+          type: string
+        dissent:
+          type: array
+          items:
+            type: object
+            properties:
+              point:
+                type: string
+              impact:
+                type: string
+        alternativeOptions:
+          type: array
+          items:
+            type: object
+            properties:
+              option:
+                type: string
+              score:
+                type: number

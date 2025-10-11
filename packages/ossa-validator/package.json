@@ -1,0 +1,56 @@
+{
+  "name": "@ossa/validator",
+  "version": "0.1.9",
+  "description": "OSSA Validator CLI - Validate agent manifests and workflows against OSSA specification",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "bin": {
+    "ossa-validate": "dist/cli.js"
+  },
+  "files": [
+    "dist/",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "clean": "rm -rf dist",
+    "dev": "ts-node src/cli.ts",
+    "test": "exit 0",
+    "prepublishOnly": "npm run clean && npm run build"
+  },
+  "keywords": [
+    "ossa",
+    "validator",
+    "cli",
+    "agents",
+    "specification",
+    "validation"
+  ],
+  "author": "OSSA Community",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://gitlab.bluefly.io/llm/openapi-ai-agents-standard.git",
+    "directory": "packages/ossa-validator"
+  },
+  "homepage": "https://ossa.dev",
+  "dependencies": {
+    "@ossa/specification": "^0.1.9",
+    "ajv": "^8.12.0",
+    "ajv-formats": "^2.1.1",
+    "commander": "^11.0.0",
+    "yaml": "^2.3.0",
+    "chalk": "^4.1.2"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.0",
+    "ts-node": "^10.9.0",
+    "@types/node": "^18.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

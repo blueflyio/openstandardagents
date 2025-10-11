@@ -15,7 +15,7 @@ Establishes the fundamental identity of OSSA, including:
 - Brand architecture and origin story
 - Key differentiators and success metrics
 
-#### 🎨 [2. Visual Identity Guidelines](./ossa-visual-identity.md)
+####  [2. Visual Identity Guidelines](./ossa-visual-identity.md)
 Defines the visual language of OSSA, covering:
 - Logo usage and variations
 - Color palette and typography
@@ -31,7 +31,7 @@ Provides strategic communication guidance, including:
 - Content templates and examples
 - Crisis communication protocols
 
-#### ⚙️ [4. Technical Standards Overview](./ossa-technical-standards.md)
+####  [4. Technical Standards Overview](./ossa-technical-standards.md)
 Details the technical specifications, featuring:
 - Core standards (ACP, ALM, ASF)
 - Orchestration and infrastructure standards
@@ -39,7 +39,7 @@ Details the technical specifications, featuring:
 - Testing and validation frameworks
 - Roadmap and evolution plans
 
-#### 🤝 [5. Community Guidelines](./ossa-community-guidelines.md)
+####  [5. Community Guidelines](./ossa-community-guidelines.md)
 Outlines community structure and participation, including:
 - Code of conduct and values
 - Contribution processes

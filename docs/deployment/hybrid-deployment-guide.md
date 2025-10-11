@@ -176,4 +176,4 @@ monitoring:
    - Set up alerts for cost overruns
    - Monitor model availability and health
 
-Your hybrid OSSA setup is now production-ready with optimal cost-performance balance! 🚀
+Your hybrid OSSA setup is now production-ready with optimal cost-performance balance! 

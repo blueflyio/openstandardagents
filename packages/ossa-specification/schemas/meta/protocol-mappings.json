@@ -1,0 +1,430 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://ossa.ai/schemas/meta/protocol-mappings",
+  "title": "OSSA Protocol Mappings",
+  "description": "Defines mappings between OSSA and various AI agent protocols/frameworks",
+  "type": "object",
+  "properties": {
+    "mcp": {
+      "$ref": "#/definitions/MCPMapping"
+    },
+    "a2a": {
+      "$ref": "#/definitions/A2AMapping"
+    },
+    "openapi": {
+      "$ref": "#/definitions/OpenAPIMapping"
+    },
+    "langchain": {
+      "$ref": "#/definitions/LangChainMapping"
+    },
+    "crewai": {
+      "$ref": "#/definitions/CrewAIMapping"
+    },
+    "autogen": {
+      "$ref": "#/definitions/AutoGenMapping"
+    }
+  },
+  "definitions": {
+    "MCPMapping": {
+      "type": "object",
+      "title": "Model Context Protocol Mapping",
+      "properties": {
+        "protocol": {
+          "type": "string",
+          "const": "mcp"
+        },
+        "version": {
+          "type": "string",
+          "default": "0.1.0"
+        },
+        "mappings": {
+          "type": "object",
+          "properties": {
+            "capability_to_tool": {
+              "type": "object",
+              "description": "Map OSSA capabilities to MCP tools",
+              "additionalProperties": {
+                "type": "object",
+                "properties": {
+                  "tool_name": {
+                    "type": "string"
+                  },
+                  "description": {
+                    "type": "string"
+                  },
+                  "input_transformation": {
+                    "type": "string",
+                    "description": "JSONPath or transformation expression"
+                  },
+                  "output_transformation": {
+                    "type": "string",
+                    "description": "JSONPath or transformation expression"
+                  }
+                }
+              }
+            },
+            "endpoint_to_resource": {
+              "type": "object",
+              "description": "Map OSSA endpoints to MCP resources",
+              "additionalProperties": {
+                "type": "object",
+                "properties": {
+                  "uri": {
+                    "type": "string"
+                  },
+                  "mimeType": {
+                    "type": "string"
+                  }
+                }
+              }
+            },
+            "transport_mapping": {
+              "type": "object",
+              "properties": {
+                "http_to_stdio": {
+                  "type": "boolean",
+                  "default": true
+                },
+                "websocket_to_sse": {
+                  "type": "boolean",
+                  "default": false
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "A2AMapping": {
+      "type": "object",
+      "title": "Agent-to-Agent Protocol Mapping",
+      "properties": {
+        "protocol": {
+          "type": "string",
+          "const": "a2a"
+        },
+        "version": {
+          "type": "string",
+          "default": "1.0"
+        },
+        "mappings": {
+          "type": "object",
+          "properties": {
+            "agent_card_template": {
+              "type": "object",
+              "description": "Template for generating A2A agent cards",
+              "properties": {
+                "@context": {
+                  "type": "string",
+                  "default": "https://schema.org/"
+                },
+                "@type": {
+                  "type": "string",
+                  "default": "SoftwareApplication"
+                },
+                "field_mappings": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "string",
+                    "description": "JSONPath to OSSA field"
+                  }
+                }
+              }
+            },
+            "capability_to_action": {
+              "type": "object",
+              "description": "Map OSSA capabilities to A2A actions",
+              "additionalProperties": {
+                "type": "object",
+                "properties": {
+                  "action_type": {
+                    "type": "string"
+                  },
+                  "target": {
+                    "type": "string"
+                  },
+                  "result": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "OpenAPIMapping": {
+      "type": "object",
+      "title": "OpenAPI Specification Mapping",
+      "properties": {
+        "protocol": {
+          "type": "string",
+          "const": "openapi"
+        },
+        "version": {
+          "type": "string",
+          "enum": ["3.0", "3.1"],
+          "default": "3.1"
+        },
+        "mappings": {
+          "type": "object",
+          "properties": {
+            "auto_generation": {
+              "type": "object",
+              "description": "Rules for auto-generating OpenAPI from OSSA",
+              "properties": {
+                "include_schemas": {
+                  "type": "boolean",
+                  "default": true
+                },
+                "include_examples": {
+                  "type": "boolean",
+                  "default": true
+                },
+                "include_security": {
+                  "type": "boolean",
+                  "default": true
+                }
+              }
+            },
+            "capability_tags": {
+              "type": "boolean",
+              "default": true,
+              "description": "Generate OpenAPI tags from capabilities"
+            },
+            "endpoint_mapping": {
+              "type": "object",
+              "properties": {
+                "operation_id_pattern": {
+                  "type": "string",
+                  "default": "{capability}_{method}"
+                },
+                "summary_pattern": {
+                  "type": "string",
+                  "default": "{capability} operation"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "LangChainMapping": {
+      "type": "object",
+      "title": "LangChain Framework Mapping",
+      "properties": {
+        "protocol": {
+          "type": "string",
+          "const": "langchain"
+        },
+        "version": {
+          "type": "string",
+          "default": "0.1.0"
+        },
+        "mappings": {
+          "type": "object",
+          "properties": {
+            "capability_to_tool": {
+              "type": "object",
+              "description": "Map OSSA capabilities to LangChain tools",
+              "additionalProperties": {
+                "type": "object",
+                "properties": {
+                  "tool_class": {
+                    "type": "string",
+                    "description": "LangChain tool class to extend"
+                  },
+                  "method_name": {
+                    "type": "string",
+                    "default": "_run"
+                  },
+                  "async_method": {
+                    "type": "string",
+                    "default": "_arun"
+                  }
+                }
+              }
+            },
+            "agent_types": {
+              "type": "object",
+              "description": "Map OSSA agent types to LangChain agent types",
+              "properties": {
+                "orchestrator": {
+                  "type": "string",
+                  "default": "openai-functions"
+                },
+                "worker": {
+                  "type": "string",
+                  "default": "zero-shot-react-description"
+                },
+                "critic": {
+                  "type": "string",
+                  "default": "self-ask-with-search"
+                }
+              }
+            },
+            "memory_mapping": {
+              "type": "object",
+              "properties": {
+                "enable_memory": {
+                  "type": "boolean",
+                  "default": true
+                },
+                "memory_type": {
+                  "type": "string",
+                  "enum": ["buffer", "summary", "conversation", "vector"],
+                  "default": "conversation"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "CrewAIMapping": {
+      "type": "object",
+      "title": "CrewAI Framework Mapping",
+      "properties": {
+        "protocol": {
+          "type": "string",
+          "const": "crewai"
+        },
+        "version": {
+          "type": "string",
+          "default": "0.1.0"
+        },
+        "mappings": {
+          "type": "object",
+          "properties": {
+            "agent_role_mapping": {
+              "type": "object",
+              "description": "Map OSSA agent metadata to CrewAI roles",
+              "properties": {
+                "role_template": {
+                  "type": "string",
+                  "default": "{name} - {description}"
+                },
+                "goal_template": {
+                  "type": "string",
+                  "default": "Execute {capabilities} efficiently"
+                },
+                "backstory_template": {
+                  "type": "string",
+                  "default": "An expert agent specialized in {capabilities}"
+                }
+              }
+            },
+            "capability_to_task": {
+              "type": "object",
+              "description": "Map OSSA capabilities to CrewAI tasks",
+              "additionalProperties": {
+                "type": "object",
+                "properties": {
+                  "task_description": {
+                    "type": "string"
+                  },
+                  "expected_output": {
+                    "type": "string"
+                  },
+                  "tools": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            },
+            "crew_configuration": {
+              "type": "object",
+              "properties": {
+                "process": {
+                  "type": "string",
+                  "enum": ["sequential", "hierarchical"],
+                  "default": "sequential"
+                },
+                "verbose": {
+                  "type": "boolean",
+                  "default": true
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "AutoGenMapping": {
+      "type": "object",
+      "title": "AutoGen Framework Mapping",
+      "properties": {
+        "protocol": {
+          "type": "string",
+          "const": "autogen"
+        },
+        "version": {
+          "type": "string",
+          "default": "0.2.0"
+        },
+        "mappings": {
+          "type": "object",
+          "properties": {
+            "agent_type_mapping": {
+              "type": "object",
+              "description": "Map OSSA agent types to AutoGen agent classes",
+              "properties": {
+                "orchestrator": {
+                  "type": "string",
+                  "default": "AssistantAgent"
+                },
+                "worker": {
+                  "type": "string",
+                  "default": "UserProxyAgent"
+                },
+                "critic": {
+                  "type": "string",
+                  "default": "AssistantAgent"
+                }
+              }
+            },
+            "capability_to_function": {
+              "type": "object",
+              "description": "Map OSSA capabilities to AutoGen functions",
+              "additionalProperties": {
+                "type": "object",
+                "properties": {
+                  "function_name": {
+                    "type": "string"
+                  },
+                  "description": {
+                    "type": "string"
+                  },
+                  "parameters": {
+                    "type": "object"
+                  }
+                }
+              }
+            },
+            "conversation_patterns": {
+              "type": "object",
+              "properties": {
+                "enable_group_chat": {
+                  "type": "boolean",
+                  "default": false
+                },
+                "max_round": {
+                  "type": "integer",
+                  "default": 10
+                },
+                "human_input_mode": {
+                  "type": "string",
+                  "enum": ["ALWAYS", "NEVER", "TERMINATE"],
+                  "default": "NEVER"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

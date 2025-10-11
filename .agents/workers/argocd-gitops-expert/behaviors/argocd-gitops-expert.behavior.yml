@@ -1,0 +1,35 @@
+apiVersion: '@bluefly/ossa/v0.1.9'
+kind: AgentBehavior
+metadata:
+  name: argocd-gitops-expert-behavior
+  agent: argocd-gitops-expert
+  version: 1.0.0
+spec:
+  behavior_type: worker
+  triggers:
+    - type: api_request
+      endpoint: /execute
+      method: POST
+    - type: event_driven
+      events:
+        - task.assigned
+    - type: scheduled
+      cron: 0 */6 * * *
+  capabilities:
+    - task_execution
+    - data_processing
+    - api_interaction
+  quality_gates:
+    - name: input_validation
+      required: true
+      schema: schemas/input/argocd-gitops-expert.input.json
+    - name: output_verification
+      required: true
+      schema: schemas/output/argocd-gitops-expert.output.json
+  artifacts:
+    outputs:
+      - argocd-gitops-expert_logs
+      - argocd-gitops-expert_results
+    storage:
+      local: .agents-workspace/data/artifacts
+      global: ../.agent-workspace/data/artifacts

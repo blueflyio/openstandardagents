@@ -98,21 +98,60 @@ spec:
   protocols:
     supported: ["openapi", "mcp", "uadp", "a2a"]
     primary: "openapi"
-    bridges:
-      mcp:
-        enabled: true
-        version: "2024-11-05"
-        capabilities: ["tools", "resources", "prompts"]
-        latency: "<50ms"
-      uadp:
-        enabled: true
-        discovery: "automatic"
-        context_sharing: "enabled"
-        latency: "<35ms"
-      a2a:
-        enabled: true
-        negotiation: "automatic"
-        latency: "<40ms"
+
+  # Bridge Configuration (MCPB - Model Context Protocol Bridge)
+  # Enables interoperability with multiple frameworks and protocols
+  bridge:
+    # MCP Bridge for Claude Desktop, Langflow integration
+    mcp:
+      enabled: true
+      server_type: "stdio"  # stdio|sse|websocket
+      tools:
+        - name: "analyze_code"
+          description: "Analyze source code"
+          capability: "code_analysis"
+          input_schema: "./schemas/code.input.json"
+      resources:
+        - uri: "ossa://analysis-results"
+          name: "Analysis Results"
+          readonly: true
+      prompts:
+        - name: "review_pr"
+          template: "Review {{language}} code: {{diff}}"
+      config:
+        max_message_size: 1048576
+        timeout_ms: 30000
+        retry_count: 3
+
+    # OpenAPI Bridge for REST integration
+    openapi:
+      enabled: true
+      spec_url: "./openapi.yaml"
+      spec_version: "3.1"
+
+    # LangChain Bridge for Python integration
+    langchain:
+      enabled: true
+      chain_type: "agent"
+      memory:
+        type: "conversation"
+        max_tokens: 4096
+
+    # CrewAI Bridge (optional)
+    crewai:
+      enabled: false
+      agent_type: "researcher"
+
+    # AutoGen Bridge (optional)
+    autogen:
+      enabled: false
+      agent_type: "assistant"
+
+    # Agent-to-Agent Bridge (optional)
+    a2a:
+      enabled: true
+      card_url: "./agent-card.json"
+      schema_version: "1.0"
         
   # Resource requirements (Kubernetes-style)
   resource_requirements:

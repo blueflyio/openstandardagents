@@ -1,0 +1,103 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://ossa.ai/schemas/conformance.schema.json",
+  "title": "OSSA Conformance Schema",
+  "description": "Schema for OSSA conformance levels and validation",
+  "type": "object",
+  "required": ["level", "features"],
+  "properties": {
+    "level": {
+      "type": "string",
+      "enum": ["bronze", "silver", "gold", "advanced"],
+      "description": "OSSA conformance level"
+    },
+    "features": {
+      "type": "object",
+      "properties": {
+        "agent_manifest": {
+          "type": "boolean",
+          "description": "Has valid agent.yml manifest"
+        },
+        "openapi_spec": {
+          "type": "boolean",
+          "description": "Has valid OpenAPI 3.1 specification"
+        },
+        "capability_declaration": {
+          "type": "boolean",
+          "description": "Properly declares capabilities"
+        },
+        "health_endpoint": {
+          "type": "boolean",
+          "description": "Implements /health endpoint"
+        },
+        "discovery_endpoint": {
+          "type": "boolean",
+          "description": "Implements /capabilities endpoint"
+        },
+        "error_handling": {
+          "type": "boolean",
+          "description": "Implements standard error responses"
+        },
+        "authentication": {
+          "type": "boolean",
+          "description": "Supports authentication (Silver+)"
+        },
+        "authorization": {
+          "type": "boolean",
+          "description": "Supports authorization (Silver+)"
+        },
+        "audit_logging": {
+          "type": "boolean",
+          "description": "Implements audit logging (Gold+)"
+        },
+        "performance_metrics": {
+          "type": "boolean",
+          "description": "Exposes performance metrics (Gold+)"
+        },
+        "feedback_loop": {
+          "type": "boolean",
+          "description": "Implements learning feedback (Advanced)"
+        },
+        "multi_agent_coordination": {
+          "type": "boolean",
+          "description": "Supports coordination protocols (Advanced)"
+        }
+      }
+    },
+    "validation": {
+      "type": "object",
+      "properties": {
+        "timestamp": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "validator_version": {
+          "type": "string"
+        },
+        "score": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "issues": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "severity": {
+                "type": "string",
+                "enum": ["error", "warning", "info"]
+              },
+              "message": {
+                "type": "string"
+              },
+              "location": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

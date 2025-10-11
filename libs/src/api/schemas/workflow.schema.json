@@ -1,0 +1,524 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://gitlab.bluefly.io/llm/openapi-ai-agents-standard/-/raw/main/src/api/workflow.schema.json",
+  "title": "OSSA Workflow Specification Schema",
+  "description": "Schema for defining multi-agent workflows with 360° feedback loop execution",
+  "type": "object",
+  "required": [
+    "apiVersion",
+    "kind",
+    "metadata",
+    "spec"
+  ],
+  "properties": {
+    "apiVersion": {
+      "type": "string",
+      "const": "@bluefly/ossa/v0.1.9"
+    },
+    "kind": {
+      "type": "string",
+      "const": "Workflow"
+    },
+    "metadata": {
+      "$ref": "#/definitions/WorkflowMetadata"
+    },
+    "spec": {
+      "$ref": "#/definitions/WorkflowSpec"
+    }
+  },
+  "definitions": {
+    "WorkflowMetadata": {
+      "type": "object",
+      "required": ["name", "version"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "pattern": "^[a-z0-9]([a-z0-9-]*[a-z0-9])?$",
+          "description": "Workflow identifier"
+        },
+        "version": {
+          "type": "string",
+          "pattern": "^v?(\\d+)\\.(\\d+)\\.(\\d+)$"
+        },
+        "description": {
+          "type": "string"
+        },
+        "labels": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "WorkflowSpec": {
+      "type": "object",
+      "required": ["phases", "tasks", "execution"],
+      "properties": {
+        "phases": {
+          "$ref": "#/definitions/FeedbackLoopPhases"
+        },
+        "tasks": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Task"
+          }
+        },
+        "execution": {
+          "$ref": "#/definitions/ExecutionStrategy"
+        },
+        "budget": {
+          "$ref": "#/definitions/WorkflowBudget"
+        },
+        "governance": {
+          "$ref": "#/definitions/GovernancePolicy"
+        }
+      }
+    },
+    "FeedbackLoopPhases": {
+      "type": "object",
+      "required": ["enabled"],
+      "properties": {
+        "enabled": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["plan", "execute", "review", "judge", "learn", "govern"]
+          },
+          "uniqueItems": true,
+          "description": "Active phases in 360° feedback loop"
+        },
+        "plan": {
+          "$ref": "#/definitions/PlanPhase"
+        },
+        "execute": {
+          "$ref": "#/definitions/ExecutePhase"
+        },
+        "review": {
+          "$ref": "#/definitions/ReviewPhase"
+        },
+        "judge": {
+          "$ref": "#/definitions/JudgePhase"
+        },
+        "learn": {
+          "$ref": "#/definitions/LearnPhase"
+        },
+        "govern": {
+          "$ref": "#/definitions/GovernPhase"
+        }
+      }
+    },
+    "PlanPhase": {
+      "type": "object",
+      "properties": {
+        "orchestrator": {
+          "type": "string",
+          "description": "Agent ID or type for planning"
+        },
+        "strategy": {
+          "type": "string",
+          "enum": ["sequential", "parallel", "dag", "adaptive"],
+          "default": "dag"
+        },
+        "decomposition": {
+          "type": "object",
+          "properties": {
+            "maxDepth": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 10
+            },
+            "minTaskSize": {
+              "type": "integer"
+            }
+          }
+        }
+      }
+    },
+    "ExecutePhase": {
+      "type": "object",
+      "properties": {
+        "workers": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/WorkerAssignment"
+          }
+        },
+        "parallelism": {
+          "type": "integer",
+          "minimum": 1,
+          "default": 1
+        },
+        "timeout": {
+          "type": "integer",
+          "description": "Execution timeout in milliseconds"
+        },
+        "retryPolicy": {
+          "$ref": "#/definitions/RetryPolicy"
+        }
+      }
+    },
+    "ReviewPhase": {
+      "type": "object",
+      "properties": {
+        "critics": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/CriticAssignment"
+          }
+        },
+        "dimensions": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["quality", "security", "performance", "compliance", "efficiency"]
+          }
+        },
+        "aggregation": {
+          "type": "string",
+          "enum": ["unanimous", "majority", "weighted", "threshold"],
+          "default": "majority"
+        }
+      }
+    },
+    "JudgePhase": {
+      "type": "object",
+      "properties": {
+        "judge": {
+          "type": "string",
+          "description": "Judge agent ID or type"
+        },
+        "criteria": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/JudgmentCriteria"
+          }
+        },
+        "decisionType": {
+          "type": "string",
+          "enum": ["binary", "ranking", "scoring", "selection"],
+          "default": "binary"
+        }
+      }
+    },
+    "LearnPhase": {
+      "type": "object",
+      "properties": {
+        "trainer": {
+          "type": "string",
+          "description": "Trainer agent ID or type"
+        },
+        "learningStrategy": {
+          "type": "string",
+          "enum": ["pattern-extraction", "feedback-synthesis", "skill-update", "curriculum"],
+          "default": "feedback-synthesis"
+        },
+        "persistence": {
+          "type": "object",
+          "properties": {
+            "store": {
+              "type": "string",
+              "enum": ["memory", "database", "vector-store"]
+            },
+            "retention": {
+              "type": "integer",
+              "description": "Retention period in seconds"
+            }
+          }
+        }
+      }
+    },
+    "GovernPhase": {
+      "type": "object",
+      "properties": {
+        "governor": {
+          "type": "string",
+          "description": "Governor agent ID or type"
+        },
+        "policies": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/GovernancePolicy"
+          }
+        },
+        "enforcement": {
+          "type": "string",
+          "enum": ["strict", "advisory", "monitoring"],
+          "default": "strict"
+        }
+      }
+    },
+    "Task": {
+      "type": "object",
+      "required": ["id", "type"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z0-9-]+$"
+        },
+        "type": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "dependencies": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Task IDs this task depends on"
+        },
+        "agent": {
+          "$ref": "#/definitions/AgentRequirement"
+        },
+        "input": {
+          "type": "object",
+          "description": "Task input data"
+        },
+        "expectedOutput": {
+          "type": "object",
+          "description": "Expected output schema"
+        },
+        "budget": {
+          "$ref": "#/definitions/TaskBudget"
+        }
+      }
+    },
+    "AgentRequirement": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["orchestrator", "worker", "critic", "judge", "trainer", "governor", "monitor", "integrator"]
+        },
+        "subtype": {
+          "type": "string"
+        },
+        "capabilities": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "performance": {
+          "type": "object",
+          "properties": {
+            "minThroughput": {
+              "type": "integer"
+            },
+            "maxLatency": {
+              "type": "integer"
+            }
+          }
+        }
+      }
+    },
+    "ExecutionStrategy": {
+      "type": "object",
+      "required": ["mode"],
+      "properties": {
+        "mode": {
+          "type": "string",
+          "enum": ["sequential", "parallel", "dag", "streaming", "adaptive"],
+          "default": "dag"
+        },
+        "concurrency": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100,
+          "default": 10
+        },
+        "scheduling": {
+          "type": "string",
+          "enum": ["fifo", "priority", "deadline", "resource-aware"],
+          "default": "priority"
+        },
+        "optimization": {
+          "type": "string",
+          "enum": ["latency", "throughput", "cost", "balanced"],
+          "default": "balanced"
+        }
+      }
+    },
+    "WorkflowBudget": {
+      "type": "object",
+      "properties": {
+        "tokens": {
+          "type": "object",
+          "properties": {
+            "total": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "perPhase": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "integer"
+              }
+            },
+            "perTask": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "integer"
+              }
+            }
+          }
+        },
+        "time": {
+          "type": "object",
+          "properties": {
+            "total": {
+              "type": "integer",
+              "description": "Total time budget in milliseconds"
+            },
+            "perPhase": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "integer"
+              }
+            }
+          }
+        },
+        "cost": {
+          "type": "object",
+          "properties": {
+            "currency": {
+              "type": "string",
+              "default": "USD"
+            },
+            "maximum": {
+              "type": "number"
+            }
+          }
+        }
+      }
+    },
+    "TaskBudget": {
+      "type": "object",
+      "properties": {
+        "tokens": {
+          "type": "integer"
+        },
+        "time": {
+          "type": "integer"
+        },
+        "retries": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 5
+        }
+      }
+    },
+    "GovernancePolicy": {
+      "type": "object",
+      "required": ["type"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["budget", "compliance", "security", "quality", "performance"]
+        },
+        "rules": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/PolicyRule"
+          }
+        },
+        "enforcement": {
+          "type": "string",
+          "enum": ["block", "warn", "monitor"],
+          "default": "block"
+        }
+      }
+    },
+    "PolicyRule": {
+      "type": "object",
+      "required": ["condition", "action"],
+      "properties": {
+        "condition": {
+          "type": "string",
+          "description": "Rule condition expression"
+        },
+        "action": {
+          "type": "string",
+          "enum": ["allow", "deny", "escalate", "delegate"]
+        },
+        "message": {
+          "type": "string"
+        }
+      }
+    },
+    "WorkerAssignment": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string"
+        },
+        "count": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "strategy": {
+          "type": "string",
+          "enum": ["round-robin", "least-loaded", "capability-match", "sticky"],
+          "default": "capability-match"
+        }
+      }
+    },
+    "CriticAssignment": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string"
+        },
+        "dimension": {
+          "type": "string"
+        },
+        "weight": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        }
+      }
+    },
+    "JudgmentCriteria": {
+      "type": "object",
+      "properties": {
+        "dimension": {
+          "type": "string"
+        },
+        "threshold": {
+          "type": "number"
+        },
+        "comparator": {
+          "type": "string",
+          "enum": ["gt", "gte", "lt", "lte", "eq", "neq"]
+        }
+      }
+    },
+    "RetryPolicy": {
+      "type": "object",
+      "properties": {
+        "maxAttempts": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 10,
+          "default": 3
+        },
+        "backoff": {
+          "type": "string",
+          "enum": ["fixed", "linear", "exponential"],
+          "default": "exponential"
+        },
+        "initialDelay": {
+          "type": "integer",
+          "default": 1000
+        },
+        "maxDelay": {
+          "type": "integer",
+          "default": 30000
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,196 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://ossa.ai/schemas/v1.0/capability",
+  "title": "OSSA Capability Schema",
+  "description": "Defines the structure and requirements for agent capabilities",
+  "type": "object",
+  "required": ["name", "type", "description"],
+  "properties": {
+    "name": {
+      "type": "string",
+      "pattern": "^[a-z0-9_]+$",
+      "minLength": 2,
+      "maxLength": 50,
+      "description": "Unique capability identifier"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "query",
+        "action",
+        "transform",
+        "analysis",
+        "generation",
+        "monitoring",
+        "orchestration"
+      ],
+      "description": "Capability type classification"
+    },
+    "description": {
+      "type": "string",
+      "maxLength": 500,
+      "description": "Human-readable description of the capability"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "nlp",
+        "vision",
+        "audio",
+        "data",
+        "integration",
+        "security",
+        "infrastructure",
+        "workflow"
+      ],
+      "description": "Capability category"
+    },
+    "inputs": {
+      "$ref": "#/definitions/IOSchema"
+    },
+    "outputs": {
+      "$ref": "#/definitions/IOSchema"
+    },
+    "requirements": {
+      "$ref": "#/definitions/Requirements"
+    },
+    "performance": {
+      "$ref": "#/definitions/PerformanceMetrics"
+    },
+    "examples": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/Example"
+      },
+      "description": "Usage examples"
+    }
+  },
+  "definitions": {
+    "IOSchema": {
+      "type": "object",
+      "properties": {
+        "schema": {
+          "type": "object",
+          "description": "JSON Schema for input/output validation"
+        },
+        "contentType": {
+          "type": "string",
+          "description": "MIME type of the content"
+        },
+        "encoding": {
+          "type": "string",
+          "description": "Content encoding (e.g., utf-8, base64)"
+        },
+        "maxSize": {
+          "type": "string",
+          "pattern": "^\\d+[KMG]B?$",
+          "description": "Maximum size (e.g., '10MB')"
+        }
+      }
+    },
+    "Requirements": {
+      "type": "object",
+      "properties": {
+        "minMemory": {
+          "type": "string",
+          "pattern": "^\\d+[KMG]B?$",
+          "description": "Minimum memory requirement"
+        },
+        "minCPU": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Minimum CPU cores"
+        },
+        "gpu": {
+          "type": "boolean",
+          "default": false,
+          "description": "GPU required"
+        },
+        "dependencies": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Required dependencies or services"
+        },
+        "permissions": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Required permissions or access levels"
+        }
+      }
+    },
+    "PerformanceMetrics": {
+      "type": "object",
+      "properties": {
+        "latencyP50": {
+          "type": "integer",
+          "description": "P50 latency in milliseconds"
+        },
+        "latencyP95": {
+          "type": "integer",
+          "description": "P95 latency in milliseconds"
+        },
+        "latencyP99": {
+          "type": "integer",
+          "description": "P99 latency in milliseconds"
+        },
+        "throughput": {
+          "type": "integer",
+          "description": "Requests per second"
+        },
+        "tokenUsage": {
+          "type": "object",
+          "properties": {
+            "input": {
+              "type": "integer",
+              "description": "Average input tokens"
+            },
+            "output": {
+              "type": "integer",
+              "description": "Average output tokens"
+            },
+            "total": {
+              "type": "integer",
+              "description": "Average total tokens"
+            }
+          }
+        },
+        "successRate": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Success rate (0-1)"
+        }
+      }
+    },
+    "Example": {
+      "type": "object",
+      "required": ["input", "output"],
+      "properties": {
+        "title": {
+          "type": "string",
+          "description": "Example title"
+        },
+        "description": {
+          "type": "string",
+          "description": "Example description"
+        },
+        "input": {
+          "type": "object",
+          "description": "Example input"
+        },
+        "output": {
+          "type": "object",
+          "description": "Expected output"
+        },
+        "notes": {
+          "type": "string",
+          "description": "Additional notes or explanations"
+        }
+      }
+    }
+  }
+}

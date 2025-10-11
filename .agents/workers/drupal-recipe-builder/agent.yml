@@ -1,0 +1,34 @@
+apiVersion: '@bluefly/ossa/v0.1.9'
+kind: Agent
+metadata:
+  name: drupal-recipe-builder
+  uuid: project-drupal-recipe-builder-worker-v1
+  type: worker
+  version: 1.0.0
+  description: 'OSSA-compliant worker agent: drupal-recipe-builder'
+spec:
+  capabilities:
+    - task_execution
+    - data_processing
+    - api_interaction
+  dependencies:
+    - '@ossa/core@0.1.9'
+    - express@^4.18.0
+  endpoints:
+    health: /health
+    execute: /execute
+    status: /status
+    metrics: /metrics
+  integrations:
+    workspace:
+      local: .agents-workspace
+      global: ../.agent-workspace
+    registry:
+      local: ../registry.yml
+      global: ../.agent-workspace/registry.yml
+  behaviors:
+    primary: drupal-recipe-builder.behavior.yml
+    additional: []
+  validation:
+    schema: schemas/drupal-recipe-builder.schema.json
+    openapi: openapi.yml

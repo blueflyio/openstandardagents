@@ -1,0 +1,31 @@
+# Minimal OSSA Agent Example (50 lines)
+# Bronze conformance level - Basic functionality
+
+ossa: 1.0
+agent:
+  name: hello-world
+  version: 1.0.0
+  description: Minimal OSSA-compliant agent example
+  author: OSSA Community
+  license: MIT
+
+discover:
+  auto: true
+
+capabilities:
+  - greeting
+  - echo
+  - status
+
+api:
+  POST /greet:
+    capability: greeting
+    description: Generate a personalized greeting
+
+  POST /echo:
+    capability: echo
+    description: Echo input back to user
+
+  GET /status:
+    capability: status
+    description: Get agent status

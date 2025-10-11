@@ -1,0 +1,469 @@
+apiVersion: "@bluefly/open-standards-scalable-agents/v0.1.9"
+kind: Agent
+metadata:
+  name: drupal-module-developer
+  version: "0.1.9"
+  namespace: drupal-ossa
+  description: Advanced Drupal module development specialist with AI-powered code generation and best practices
+  labels:
+    category: worker
+    specialization: drupal-development
+    domain: cms
+    tenant: drupal-platform
+  annotations:
+    openapi: /api/drupal-module-specification.yml
+    compliance: gold
+    docker-service: ossa-drupal-developer
+  author: Bluefly Drupal Platform Team
+  license: Apache-2.0
+  repository: https://gitlab.bluefly.io/llm/drupal-agents
+  documentation: https://docs.drupal-ossa.io/agents/workers/developer
+
+spec:
+  type: worker
+  subtype: worker.drupal_development
+
+  capabilities:
+    domains:
+      - drupal-module-development
+      - code-generation
+      - api-development
+      - entity-modeling
+      - form-building
+      - plugin-architecture
+      - testing-automation
+    operations:
+      - name: generate_module_scaffold
+        description: Generate complete Drupal module scaffold with best practices
+        inputSchema:
+          type: object
+          required: [moduleName, moduleType]
+          properties:
+            moduleName: {type: string}
+            moduleType:
+              type: string
+              enum: [custom_entity, content_type, api_integration, utility, plugin_system, workflow]
+            moduleInfo:
+              type: object
+              properties:
+                description: {type: string}
+                package: {type: string}
+                version: {type: string}
+                dependencies: {type: array}
+                drupalVersion: {type: string, default: "^10 || ^11"}
+            features:
+              type: object
+              properties:
+                entities: {type: array}
+                plugins: {type: array}
+                services: {type: array}
+                forms: {type: array}
+                controllers: {type: array}
+                tests: {type: boolean, default: true}
+                configuration: {type: boolean, default: true}
+                permissions: {type: array}
+                routing: {type: array}
+        outputSchema:
+          type: object
+          properties:
+            moduleId: {type: string}
+            files:
+              type: array
+              items:
+                type: object
+                properties:
+                  path: {type: string}
+                  content: {type: string}
+                  type: {type: string}
+                  purpose: {type: string}
+            structure:
+              type: object
+              properties:
+                directories: {type: array}
+                configFiles: {type: array}
+                phpFiles: {type: array}
+                templateFiles: {type: array}
+                jsFiles: {type: array}
+                cssFiles: {type: array}
+            documentation:
+              type: object
+              properties:
+                readme: {type: string}
+                apiDocs: {type: string}
+                installInstructions: {type: string}
+                exampleUsage: {type: string}
+        timeout: 300000
+
+      - name: create_custom_entity
+        description: Generate complete custom entity with bundle support, fields, and views
+        inputSchema:
+          type: object
+          required: [entityType, entityLabel]
+          properties:
+            entityType: {type: string}
+            entityLabel: {type: string}
+            entityConfig:
+              type: object
+              properties:
+                hasBundle: {type: boolean, default: false}
+                isRevisionable: {type: boolean, default: false}
+                isTranslatable: {type: boolean, default: false}
+                hasOwner: {type: boolean, default: true}
+                isPublishable: {type: boolean, default: false}
+                baseFields: {type: array}
+                bundleFields: {type: array}
+            permissions:
+              type: array
+              items:
+                type: string
+                enum: [view, create, edit, delete, administer]
+            viewModes:
+              type: array
+              items:
+                type: object
+                properties:
+                  name: {type: string}
+                  label: {type: string}
+                  settings: {type: object}
+        outputSchema:
+          type: object
+          properties:
+            entityId: {type: string}
+            entityClass: {type: string}
+            generatedFiles:
+              type: array
+              items:
+                type: object
+                properties:
+                  file: {type: string}
+                  class: {type: string}
+                  purpose: {type: string}
+                  content: {type: string}
+            configuration:
+              type: array
+              items:
+                type: object
+                properties:
+                  configName: {type: string}
+                  configData: {type: object}
+            routes:
+              type: array
+              items:
+                type: object
+                properties:
+                  routeName: {type: string}
+                  path: {type: string}
+                  controller: {type: string}
+            forms:
+              type: array
+              items:
+                type: object
+                properties:
+                  formClass: {type: string}
+                  formType: {type: string}
+        timeout: 600000
+
+      - name: build_api_endpoint
+        description: Create REST API endpoints with proper serialization and authentication
+        inputSchema:
+          type: object
+          required: [endpointName, resourceType]
+          properties:
+            endpointName: {type: string}
+            resourceType: {type: string}
+            apiConfig:
+              type: object
+              properties:
+                version: {type: string, default: "v1"}
+                methods: {type: array, default: ["GET", "POST", "PATCH", "DELETE"]}
+                authentication:
+                  type: string
+                  enum: [none, basic, oauth, jwt, api_key]
+                  default: oauth
+                serialization:
+                  type: string
+                  enum: [json, hal_json, xml]
+                  default: json
+                caching: {type: boolean, default: true}
+                rateLimit: {type: object}
+            fields:
+              type: array
+              items:
+                type: object
+                properties:
+                  name: {type: string}
+                  type: {type: string}
+                  required: {type: boolean}
+                  validation: {type: array}
+            security:
+              type: object
+              properties:
+                permissions: {type: array}
+                accessChecks: {type: array}
+                sanitization: {type: boolean, default: true}
+        outputSchema:
+          type: object
+          properties:
+            apiId: {type: string}
+            endpoints:
+              type: array
+              items:
+                type: object
+                properties:
+                  method: {type: string}
+                  path: {type: string}
+                  controller: {type: string}
+                  permissions: {type: array}
+            resourceFiles:
+              type: array
+              items:
+                type: object
+                properties:
+                  filename: {type: string}
+                  content: {type: string}
+                  type: {type: string}
+            openApiSpec: {type: object}
+            documentation: {type: string}
+        timeout: 900000
+
+      - name: generate_form_api
+        description: Create complex Drupal forms with validation and theming
+        inputSchema:
+          type: object
+          required: [formId, formType]
+          properties:
+            formId: {type: string}
+            formType:
+              type: string
+              enum: [config, entity, custom, wizard, ajax]
+            formElements:
+              type: array
+              items:
+                type: object
+                properties:
+                  name: {type: string}
+                  type: {type: string}
+                  title: {type: string}
+                  required: {type: boolean}
+                  validation: {type: array}
+                  ajax: {type: boolean}
+                  states: {type: object}
+            formBehavior:
+              type: object
+              properties:
+                ajax: {type: boolean, default: false}
+                clientValidation: {type: boolean, default: true}
+                multiStep: {type: boolean, default: false}
+                fileUploads: {type: boolean, default: false}
+                entityReference: {type: boolean, default: false}
+        outputSchema:
+          type: object
+          properties:
+            formId: {type: string}
+            formClass: {type: string}
+            formFile: {type: string}
+            templateFile: {type: string}
+            jsFile: {type: string}
+            cssFile: {type: string}
+            validationMethods: {type: array}
+            submitHandlers: {type: array}
+        timeout: 450000
+
+      - name: create_plugin_system
+        description: Generate plugin system with discovery, managers, and base classes
+        inputSchema:
+          type: object
+          required: [pluginType, pluginId]
+          properties:
+            pluginType: {type: string}
+            pluginId: {type: string}
+            pluginConfig:
+              type: object
+              properties:
+                discoveryType:
+                  type: string
+                  enum: [annotation, yaml, hook]
+                  default: annotation
+                derivativeSupport: {type: boolean, default: false}
+                cacheSupport: {type: boolean, default: true}
+                alterSupport: {type: boolean, default: true}
+            pluginInterface:
+              type: object
+              properties:
+                methods: {type: array}
+                properties: {type: array}
+            examplePlugins:
+              type: array
+              items:
+                type: object
+                properties:
+                  id: {type: string}
+                  label: {type: string}
+                  implementation: {type: string}
+        outputSchema:
+          type: object
+          properties:
+            pluginSystemId: {type: string}
+            generatedFiles:
+              type: array
+              items:
+                type: object
+                properties:
+                  type: {type: string}
+                  class: {type: string}
+                  file: {type: string}
+                  purpose: {type: string}
+            documentation: {type: string}
+            examples: {type: array}
+        timeout: 600000
+
+    inputFormats:
+      - application/json
+      - text/plain
+      - application/yaml
+
+    outputFormats:
+      - application/json
+      - text/plain
+      - application/zip
+      - text/html
+
+    tokenEfficiency:
+      strategies:
+        - code-template-reuse
+        - pattern-recognition-caching
+        - drupal-api-documentation
+        - best-practice-templates
+        - generated-code-optimization
+      compressionRatio: 0.65
+
+  protocols:
+    supported:
+      - name: ossa
+        version: "0.1.9"
+        endpoint: http://localhost:3012/ossa/v1
+        authentication:
+          type: api-key
+        tls: true
+      - name: rest
+        version: "3.1.0"
+        endpoint: http://localhost:3012/api/v1
+        authentication:
+          type: bearer-token
+        tls: true
+      - name: git
+        version: "2.x"
+        endpoint: local
+        authentication:
+          type: ssh-key
+    preferred: ossa
+
+  conformance:
+    level: gold
+    certifications:
+      - Drupal-Association-Certified
+      - Acquia-Certified-Developer
+      - Drupal-Code-Standards
+    auditLogging: true
+    feedbackLoop: true
+    propsTokens: true
+    learningSignals: true
+
+  performance:
+    throughput:
+      modulesPerHour: 5
+      entitiesPerHour: 10
+      apisPerHour: 8
+    latency:
+      p50: 15000
+      p95: 60000
+      p99: 180000
+    limits:
+      maxModuleComplexity: 1000
+      maxConcurrentGenerations: 3
+      timeout: 900000
+
+  resources:
+    requests:
+      cpu: 2
+      memory: 4Gi
+      storage: 100Gi
+    limits:
+      cpu: 6
+      memory: 12Gi
+      storage: 500Gi
+
+  feedbackLoop:
+    phase: develop
+    inputs:
+      - drupal_best_practices
+      - api_specifications
+      - code_patterns
+      - user_requirements
+    outputs:
+      - generated_modules
+      - api_endpoints
+      - entity_definitions
+      - documentation
+
+  budgets:
+    tokens:
+      default: 10000
+      maximum: 75000
+      strategy: complexity-based
+    time:
+      default: 300000
+      maximum: 900000
+
+  dependencies:
+    agents:
+      - name: drupal-security-compliance
+        version: ">=0.1.9"
+        optional: true
+    services:
+      - name: drupal-site
+        endpoint: variable
+        healthCheck: /admin/modules
+      - name: git-repository
+        endpoint: variable
+        healthCheck: git status
+    tools:
+      - drush
+      - composer
+      - drupal_console
+      - phpunit
+      - phpcs
+      - phpstan
+
+status:
+  state: registered
+  health: healthy
+  lastHeartbeat: "2024-01-01T00:00:00Z"
+  registeredAt: "2024-01-01T00:00:00Z"
+  metrics:
+    modulesGenerated: 0
+    entitiesCreated: 0
+    apisBuilt: 0
+    formsGenerated: 0
+    tokenUsage: 0
+
+drupalConfig:
+  supportedVersions: [10.x, 11.x]
+  codeStandards:
+    - drupal
+    - drupal-practice
+  testingFrameworks:
+    - phpunit
+    - drupal_test_traits
+    - behat
+  generationTemplates:
+    - module_scaffold
+    - entity_complete
+    - plugin_system
+    - api_resource
+    - form_builder
+  qualityChecks:
+    - syntax_validation
+    - code_standards
+    - security_review
+    - performance_analysis

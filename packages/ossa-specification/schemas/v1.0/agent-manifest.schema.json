@@ -1,0 +1,504 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://ossa.ai/schemas/v1.0/agent-manifest",
+  "title": "OSSA Agent Manifest",
+  "description": "OSSA v1.0 Agent Manifest Schema - Simplified and developer-friendly",
+  "type": "object",
+  "required": ["ossa", "agent", "discover", "capabilities", "api"],
+  "properties": {
+    "ossa": {
+      "type": "string",
+      "enum": ["1.0"],
+      "description": "OSSA specification version"
+    },
+    "agent": {
+      "$ref": "#/definitions/AgentMetadata"
+    },
+    "discover": {
+      "$ref": "#/definitions/DiscoveryConfig"
+    },
+    "capabilities": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z0-9_]+$"
+      },
+      "minItems": 1,
+      "uniqueItems": true,
+      "description": "List of agent capabilities"
+    },
+    "api": {
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "#/definitions/EndpointSpec"
+      },
+      "description": "API endpoints mapped to capabilities"
+    },
+    "monitoring": {
+      "$ref": "#/definitions/MonitoringConfig"
+    },
+    "performance": {
+      "$ref": "#/definitions/PerformanceConfig"
+    },
+    "bridge": {
+      "$ref": "#/definitions/BridgeConfig"
+    }
+  },
+  "definitions": {
+    "AgentMetadata": {
+      "type": "object",
+      "required": ["name", "version"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "pattern": "^[a-z0-9]([a-z0-9-]*[a-z0-9])?$",
+          "minLength": 2,
+          "maxLength": 63,
+          "description": "Agent name (lowercase, alphanumeric, hyphens allowed)"
+        },
+        "version": {
+          "type": "string",
+          "pattern": "^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-((?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\\+([0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?$",
+          "description": "Semantic version (e.g., 1.0.0)"
+        },
+        "description": {
+          "type": "string",
+          "maxLength": 500,
+          "description": "Brief description of the agent"
+        },
+        "author": {
+          "type": "string",
+          "description": "Author or organization"
+        },
+        "license": {
+          "type": "string",
+          "description": "License identifier (e.g., MIT, Apache-2.0)"
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z0-9-]+$"
+          },
+          "uniqueItems": true,
+          "description": "Tags for categorization"
+        },
+        "conformance": {
+          "type": "string",
+          "enum": ["bronze", "silver", "gold", "platinum"],
+          "description": "OSSA conformance level"
+        }
+      }
+    },
+    "DiscoveryConfig": {
+      "type": "object",
+      "required": ["auto"],
+      "properties": {
+        "auto": {
+          "type": "boolean",
+          "description": "Enable automatic discovery"
+        },
+        "registry": {
+          "type": "string",
+          "format": "uri",
+          "description": "Registry URL for agent registration"
+        },
+        "protocol": {
+          "type": "string",
+          "enum": ["uadp", "custom"],
+          "default": "uadp",
+          "description": "Discovery protocol"
+        },
+        "endpoints": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uri"
+          },
+          "description": "Additional discovery endpoints"
+        }
+      }
+    },
+    "EndpointSpec": {
+      "type": "object",
+      "required": ["capability"],
+      "properties": {
+        "capability": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "minItems": 1
+            }
+          ],
+          "description": "Capability or capabilities this endpoint implements"
+        },
+        "description": {
+          "type": "string",
+          "description": "Endpoint description"
+        },
+        "parameters": {
+          "type": "object",
+          "description": "Parameter definitions (reference to OpenAPI)"
+        },
+        "responses": {
+          "type": "object",
+          "description": "Response definitions (reference to OpenAPI)"
+        }
+      }
+    },
+    "MonitoringConfig": {
+      "type": "object",
+      "properties": {
+        "io_aware": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable IO awareness tracking"
+        },
+        "logs": {
+          "$ref": "#/definitions/LogConfig"
+        },
+        "metrics": {
+          "$ref": "#/definitions/MetricsConfig"
+        },
+        "traces": {
+          "$ref": "#/definitions/TraceConfig"
+        },
+        "redact": {
+          "$ref": "#/definitions/RedactionConfig"
+        }
+      }
+    },
+    "LogConfig": {
+      "type": "object",
+      "properties": {
+        "format": {
+          "type": "string",
+          "enum": ["json", "jsonl", "text"],
+          "default": "jsonl"
+        },
+        "level": {
+          "type": "string",
+          "enum": ["debug", "info", "warn", "error"],
+          "default": "info"
+        },
+        "trace": {
+          "type": "boolean",
+          "default": false
+        },
+        "retention": {
+          "type": "string",
+          "pattern": "^\\d+[dh]$",
+          "description": "Retention period (e.g., '30d', '24h')"
+        }
+      }
+    },
+    "MetricsConfig": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": true
+        },
+        "endpoint": {
+          "type": "string",
+          "default": "/metrics"
+        },
+        "format": {
+          "type": "string",
+          "enum": ["prometheus", "openmetrics"],
+          "default": "prometheus"
+        }
+      }
+    },
+    "TraceConfig": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": false
+        },
+        "format": {
+          "type": "string",
+          "enum": ["jsonl", "otlp", "jaeger", "zipkin"],
+          "default": "otlp"
+        },
+        "endpoint": {
+          "type": "string",
+          "format": "uri"
+        },
+        "sampling_rate": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "default": 0.1
+        }
+      }
+    },
+    "RedactionConfig": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": true
+        },
+        "patterns": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": ["pii.*", "secret.*", "credential.*", "password.*", "token.*"]
+        },
+        "replacement": {
+          "type": "string",
+          "default": "[REDACTED]"
+        }
+      }
+    },
+    "PerformanceConfig": {
+      "type": "object",
+      "properties": {
+        "token_optimization": {
+          "$ref": "#/definitions/TokenOptimization"
+        },
+        "cache": {
+          "$ref": "#/definitions/CacheConfig"
+        },
+        "quantization": {
+          "$ref": "#/definitions/QuantizationConfig"
+        },
+        "batch": {
+          "$ref": "#/definitions/BatchConfig"
+        }
+      }
+    },
+    "TokenOptimization": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": false
+        },
+        "strategies": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["flash_attention", "block_sparse", "paged_kv", "grouped_query", "sliding_window"]
+          }
+        },
+        "max_context": {
+          "type": "integer",
+          "minimum": 1024,
+          "maximum": 1000000,
+          "default": 32000
+        },
+        "compression_ratio": {
+          "type": "number",
+          "minimum": 0.1,
+          "maximum": 1.0
+        }
+      }
+    },
+    "CacheConfig": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": false
+        },
+        "type": {
+          "type": "string",
+          "enum": ["memory", "redis", "memcached", "disk"],
+          "default": "memory"
+        },
+        "ttl": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Time to live in seconds"
+        },
+        "max_size": {
+          "type": "string",
+          "pattern": "^\\d+[KMG]B?$",
+          "description": "Maximum cache size (e.g., '100MB', '1GB')"
+        }
+      }
+    },
+    "QuantizationConfig": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": false
+        },
+        "method": {
+          "type": "string",
+          "enum": ["int8", "int4", "fp16", "gptq", "awq", "bnb"],
+          "description": "Quantization method"
+        },
+        "target_bits": {
+          "type": "integer",
+          "enum": [4, 8, 16],
+          "description": "Target bit precision"
+        }
+      }
+    },
+    "BatchConfig": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": true
+        },
+        "max_batch_size": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1000,
+          "default": 32
+        },
+        "timeout_ms": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 60000,
+          "default": 100
+        }
+      }
+    },
+    "BridgeConfig": {
+      "type": "object",
+      "properties": {
+        "mcp": {
+          "$ref": "#/definitions/MCPBridgeConfig"
+        },
+        "a2a": {
+          "$ref": "#/definitions/A2ABridgeConfig"
+        },
+        "openapi": {
+          "$ref": "#/definitions/OpenAPIBridgeConfig"
+        },
+        "langchain": {
+          "$ref": "#/definitions/LangChainBridgeConfig"
+        },
+        "custom": {
+          "type": "object",
+          "additionalProperties": true
+        }
+      }
+    },
+    "MCPBridgeConfig": {
+      "type": "object",
+      "required": ["enabled"],
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "Enable MCP bridge"
+        },
+        "server_type": {
+          "type": "string",
+          "enum": ["stdio", "sse", "websocket"],
+          "default": "stdio"
+        },
+        "tools": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/MCPTool"
+          }
+        },
+        "resources": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/MCPResource"
+          }
+        }
+      }
+    },
+    "MCPTool": {
+      "type": "object",
+      "required": ["name", "description"],
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "input_schema": {
+          "type": "object"
+        }
+      }
+    },
+    "MCPResource": {
+      "type": "object",
+      "required": ["uri", "name"],
+      "properties": {
+        "uri": {
+          "type": "string",
+          "format": "uri"
+        },
+        "name": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "mimeType": {
+          "type": "string"
+        }
+      }
+    },
+    "A2ABridgeConfig": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "card_url": {
+          "type": "string",
+          "format": "uri"
+        },
+        "capabilities_mapping": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "OpenAPIBridgeConfig": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "spec_url": {
+          "type": "string",
+          "description": "Path or URL to OpenAPI spec"
+        },
+        "auto_generate": {
+          "type": "boolean",
+          "default": true
+        }
+      }
+    },
+    "LangChainBridgeConfig": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "tool_class": {
+          "type": "string",
+          "description": "LangChain tool class name"
+        },
+        "chain_type": {
+          "type": "string",
+          "enum": ["llm", "retrieval", "agent", "custom"]
+        }
+      }
+    }
+  }
+}

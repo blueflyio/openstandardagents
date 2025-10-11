@@ -1,0 +1,189 @@
+ossaVersion: "1.0"
+
+agent:
+  # Identity
+  id: customer-support-chat
+  name: Customer Support Chat Agent
+  version: 1.2.0
+  description: |
+    AI-powered customer support agent with natural language understanding,
+    context retention, and integration with ticketing systems.
+  role: chat
+  tags:
+    - customer-support
+    - chat
+    - nlp
+    - tickets
+
+  # Runtime
+  runtime:
+    type: docker
+    image: ossa/chat-agent:1.2.0
+    requirements:
+      node: ">=20.0.0"
+      packages:
+        - fastify
+        - openai
+        - langchain
+    resources:
+      cpu: "500m"
+      memory: "512Mi"
+      gpu: false
+    health_check:
+      type: http
+      endpoint: /health
+      port: 3000
+      period_seconds: 10
+
+  # Capabilities
+  capabilities:
+    - name: handle_chat_message
+      description: Process customer support chat message
+      input_schema:
+        type: object
+        required:
+          - message
+          - user_id
+        properties:
+          message:
+            type: string
+            description: Customer message
+          user_id:
+            type: string
+          session_id:
+            type: string
+          context:
+            type: object
+            description: Additional conversation context
+      output_schema:
+        type: object
+        properties:
+          response:
+            type: string
+          confidence:
+            type: number
+            minimum: 0
+            maximum: 1
+          suggested_actions:
+            type: array
+            items:
+              type: string
+          escalate_to_human:
+            type: boolean
+      timeout_seconds: 30
+      retry_policy:
+        max_attempts: 1
+        backoff: linear
+
+    - name: search_knowledge_base
+      description: Search knowledge base for relevant articles
+      input_schema:
+        type: object
+        required:
+          - query
+        properties:
+          query:
+            type: string
+          limit:
+            type: integer
+            default: 5
+      output_schema:
+        type: object
+        properties:
+          articles:
+            type: array
+            items:
+              type: object
+              properties:
+                title:
+                  type: string
+                content:
+                  type: string
+                relevance_score:
+                  type: number
+
+    - name: create_support_ticket
+      description: Create support ticket for escalation
+      input_schema:
+        type: object
+        required:
+          - subject
+          - description
+        properties:
+          subject:
+            type: string
+          description:
+            type: string
+          priority:
+            type: string
+            enum: [low, medium, high, urgent]
+          category:
+            type: string
+      output_schema:
+        type: object
+        properties:
+          ticket_id:
+            type: string
+          ticket_url:
+            type: string
+            format: uri
+
+  # Policies
+  policies:
+    compliance:
+      - gdpr
+      - soc2-type1
+    data_residency:
+      - US
+      - EU
+    encryption: true
+    audit: false
+    pii_handling: anonymize
+
+  # Integration
+  integration:
+    protocol: http
+    endpoints:
+      base_url: http://chat-agent:3000
+      health: /health
+      metrics: /metrics
+      openapi: /api/docs
+    auth:
+      type: api_key
+      config:
+        header_name: X-API-Key
+    rate_limits:
+      requests_per_second: 50
+      burst: 10
+
+  # Monitoring
+  monitoring:
+    traces: true
+    metrics: true
+    logs: true
+    health_check: http://localhost:3000/health
+    phoenix_arise:
+      enabled: false
+
+  # Dependencies
+  dependencies:
+    required:
+      - agent_id: agent-brain
+        min_version: "1.0.0"
+    optional:
+      - agent_id: agent-tracer
+        fallback: Log to local files
+
+  # Metadata
+  metadata:
+    author: OSSA Chat Team
+    maintainer: chat@ossa.io
+    homepage: https://ossa.io/agents/customer-support-chat
+    repository: https://github.com/ossa-agents/chat-agent
+    documentation: https://docs.ossa.io/agents/chat
+    license: MIT
+    keywords:
+      - chat
+      - support
+      - nlp
+      - customer-service

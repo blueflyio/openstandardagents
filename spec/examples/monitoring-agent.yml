@@ -1,0 +1,130 @@
+ossaVersion: "1.0"
+
+agent:
+  # Identity
+  id: system-health-monitor
+  name: System Health Monitoring Agent
+  version: 1.0.0
+  description: |
+    Continuous system health monitoring with intelligent alerting
+    and auto-remediation capabilities.
+  role: monitoring
+  tags:
+    - monitoring
+    - health-checks
+    - auto-remediation
+    - alerting
+
+  # Runtime
+  runtime:
+    type: k8s
+    image: ossa/health-monitor:1.0.0
+    requirements:
+      node: ">=20.0.0"
+      packages:
+        - prom-client
+        - node-fetch
+    resources:
+      cpu: "250m"
+      memory: "256Mi"
+    health_check:
+      type: http
+      endpoint: /health
+      port: 3800
+
+  # Capabilities
+  capabilities:
+    - name: check_service_health
+      description: Check health of all OSSA services
+      input_schema:
+        type: object
+        properties:
+          services:
+            type: array
+            items:
+              type: string
+      output_schema:
+        type: object
+        properties:
+          services:
+            type: array
+            items:
+              type: object
+              properties:
+                name:
+                  type: string
+                status:
+                  type: string
+                  enum: [healthy, degraded, unhealthy]
+                latency_ms:
+                  type: number
+      timeout_seconds: 30
+
+    - name: collect_metrics
+      description: Collect system metrics
+      input_schema:
+        type: object
+        properties:
+          metric_types:
+            type: array
+            items:
+              type: string
+      output_schema:
+        type: object
+        properties:
+          metrics:
+            type: object
+      timeout_seconds: 10
+
+    - name: auto_remediate
+      description: Automatically fix common issues
+      input_schema:
+        type: object
+        required:
+          - issue_type
+        properties:
+          issue_type:
+            type: string
+          severity:
+            type: string
+      output_schema:
+        type: object
+        properties:
+          remediated:
+            type: boolean
+          actions_taken:
+            type: array
+
+  # Policies
+  policies:
+    compliance:
+      - soc2-type1
+    encryption: false
+    audit: true
+
+  # Integration
+  integration:
+    protocol: http
+    endpoints:
+      base_url: http://health-monitor:3800
+      health: /health
+      metrics: /metrics
+    auth:
+      type: none
+
+  # Monitoring
+  monitoring:
+    traces: true
+    metrics: true
+    logs: true
+    health_check: http://localhost:3800/health
+
+  # Metadata
+  metadata:
+    author: OSSA Monitoring Team
+    maintainer: monitoring@ossa.io
+    license: MIT
+    keywords:
+      - monitoring
+      - health
+      - metrics

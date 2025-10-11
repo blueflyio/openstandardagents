@@ -309,23 +309,23 @@ ossa certify monitor \
 ## Certification Benefits
 
 ### Bronze Certification
-- ✅ OSSA specification compliance verification
-- ✅ Basic interoperability assurance
-- ✅ Community recognition
-- ✅ Listing in OSSA agent registry
+-  OSSA specification compliance verification
+-  Basic interoperability assurance
+-  Community recognition
+-  Listing in OSSA agent registry
 
 ### Silver Certification
-- ✅ Production readiness validation
-- ✅ Performance benchmark achievement
-- ✅ Enhanced marketplace visibility
-- ✅ Enterprise consideration eligibility
+-  Production readiness validation
+-  Performance benchmark achievement
+-  Enhanced marketplace visibility
+-  Enterprise consideration eligibility
 
 ### Gold Certification
-- ✅ Enterprise-grade validation
-- ✅ Ecosystem leadership recognition
-- ✅ Premium marketplace placement
-- ✅ Innovation contribution acknowledgment
-- ✅ Specification influence opportunities
+-  Enterprise-grade validation
+-  Ecosystem leadership recognition
+-  Premium marketplace placement
+-  Innovation contribution acknowledgment
+-  Specification influence opportunities
 
 ## Support and Resources
 

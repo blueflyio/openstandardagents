@@ -46,7 +46,7 @@
 - **Model Gateway**: Port 8090 (existing llm-platform)
 - **Agent Orchestrator**: Port 8091 (existing llm-platform)
 
-## 🏗️ Standard Infrastructure Template
+##  Standard Infrastructure Template
 
 Each project gets this structure:
 ```
@@ -74,7 +74,7 @@ Each project gets this structure:
 └── .gitlab-ci.yml               # CI/CD pipeline
 ```
 
-## 🎯 Three-Cluster Architecture
+##  Three-Cluster Architecture
 
 ### Cluster 1: Core (Always Running)
 - OSSA + agent_buildkit + llm-platform orchestration
@@ -91,7 +91,7 @@ Each project gets this structure:
 - GPU resource allocation
 - Model serving and inference
 
-## 🚀 llm-platform Orchestration Strategy
+##  llm-platform Orchestration Strategy
 
 **llm-platform becomes the master orchestrator using:**
 
@@ -103,32 +103,32 @@ Each project gets this structure:
    - `development`: Core + selected services
    - `full`: Everything (all 23 projects)
 
-## 📦 Implementation Phases
+##  Implementation Phases
 
-### Phase 1: Template Creation ✅ COMPLETED
-- ✅ Create master infrastructure template
-- ✅ Port allocation registry
-- ✅ Standard Dockerfile/docker-compose patterns
-- ✅ llm-platform orchestrator with health matrix
-- ✅ Agent-router standardization (test case)
-- ✅ Model container builds (4 models)
+### Phase 1: Template Creation  COMPLETED
+-  Create master infrastructure template
+-  Port allocation registry
+-  Standard Dockerfile/docker-compose patterns
+-  llm-platform orchestrator with health matrix
+-  Agent-router standardization (test case)
+-  Model container builds (4 models)
 
-### Phase 2: Service Standardization ✅ COMPLETED
-- ✅ Apply template to all 16 common_npm services
-- ✅ Apply template to all 4 model services
-- ✅ Preserve OSSA/agent_buildkit existing infrastructure
+### Phase 2: Service Standardization  COMPLETED
+-  Apply template to all 16 common_npm services
+-  Apply template to all 4 model services
+-  Preserve OSSA/agent_buildkit existing infrastructure
 
-### Phase 3: Orchestration Integration ✅ COMPLETED
-- ✅ Create docker-compose.orchestrate.yml for orchestrator
-- ✅ Implement deployment profiles (api-services, web-services, model-services, workflow, all)
-- ✅ Service discovery and registry system
+### Phase 3: Orchestration Integration  COMPLETED
+-  Create docker-compose.orchestrate.yml for orchestrator
+-  Implement deployment profiles (api-services, web-services, model-services, workflow, all)
+-  Service discovery and registry system
 
-### Phase 4: CI/CD & Production ✅ LARGELY COMPLETED
-- ✅ GitLab CI/CD templates (golden workflow components)
-- ✅ Helm chart deployment (multiple services)
+### Phase 4: CI/CD & Production  LARGELY COMPLETED
+-  GitLab CI/CD templates (golden workflow components)
+-  Helm chart deployment (multiple services)
 - ❌ Full stack validation testing
 
-## 🔄 Migration Strategy
+##  Migration Strategy
 
 **SAFE APPROACH - No Breaking Changes:**
 
@@ -158,7 +158,7 @@ cd /Users/flux423/Sites/LLM/llm-platform
 make deploy-profile services=all  # Everything
 ```
 
-## ✅ Success Criteria
+##  Success Criteria
 
 - [x] Zero port conflicts across 23 services
 - [x] Infrastructure standardization template
@@ -170,22 +170,22 @@ make deploy-profile services=all  # Everything
 - [x] Multiple deployment profiles operational
 - [ ] All services preserve existing functionality
 
-## 🔧 Current Status
+##  Current Status
 
 **COMPLETED:**
-- ✅ Infrastructure audit of all projects
-- ✅ Port allocation strategy
-- ✅ Three-cluster architecture design
-- ✅ Master template implementation
-- ✅ llm-platform orchestrator system
-- ✅ All 23 services standardized with infrastructure templates
-- ✅ All 4 model containers built
-- ✅ Orchestration integration layer (docker-compose.orchestrate.yml)
-- ✅ Deployment profiles (api-services, web-services, model-services, workflow, all)
-- ✅ Service discovery and registry system
+-  Infrastructure audit of all projects
+-  Port allocation strategy
+-  Three-cluster architecture design
+-  Master template implementation
+-  llm-platform orchestrator system
+-  All 23 services standardized with infrastructure templates
+-  All 4 model containers built
+-  Orchestration integration layer (docker-compose.orchestrate.yml)
+-  Deployment profiles (api-services, web-services, model-services, workflow, all)
+-  Service discovery and registry system
 
 **IN PROGRESS:**
-- 🔄 Full stack validation testing
+-  Full stack validation testing
 
 **NEXT:**
 - ❌ Complete full stack validation testing

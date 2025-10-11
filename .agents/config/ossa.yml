@@ -1,0 +1,144 @@
+# OSSA Taxonomy Configuration
+ossa:
+  version: "1.0.0"
+  specification_version: "0.1.9"
+
+taxonomy:
+  categories:
+    critics:
+      description: "Code review, quality checks, security analysis"
+      capabilities:
+        - "code_analysis"
+        - "security_scanning"
+        - "quality_assessment"
+        - "compliance_checking"
+      required_endpoints:
+        - "/analyze"
+        - "/review"
+        - "/health"
+
+    governors:
+      description: "Rate limiting, policy enforcement, access control"
+      capabilities:
+        - "rate_limiting"
+        - "policy_enforcement"
+        - "access_control"
+        - "audit_logging"
+      required_endpoints:
+        - "/enforce"
+        - "/validate"
+        - "/health"
+
+    integrators:
+      description: "External system connections, data transformation"
+      capabilities:
+        - "system_integration"
+        - "data_transformation"
+        - "protocol_bridging"
+        - "webhook_handling"
+      required_endpoints:
+        - "/connect"
+        - "/transform"
+        - "/health"
+
+    judges:
+      description: "Decision making, validation, scoring"
+      capabilities:
+        - "decision_making"
+        - "validation"
+        - "scoring"
+        - "recommendation"
+      required_endpoints:
+        - "/decide"
+        - "/validate"
+        - "/score"
+        - "/health"
+
+    monitors:
+      description: "Observability, metrics collection, alerting"
+      capabilities:
+        - "metrics_collection"
+        - "log_aggregation"
+        - "alerting"
+        - "dashboard_generation"
+      required_endpoints:
+        - "/metrics"
+        - "/logs"
+        - "/alerts"
+        - "/health"
+
+    orchestrators:
+      description: "Coordination, workflow management, task scheduling"
+      capabilities:
+        - "workflow_orchestration"
+        - "task_scheduling"
+        - "resource_coordination"
+        - "dependency_management"
+      required_endpoints:
+        - "/orchestrate"
+        - "/schedule"
+        - "/coordinate"
+        - "/health"
+
+    trainers:
+      description: "ML model training, fine-tuning, optimization"
+      capabilities:
+        - "model_training"
+        - "fine_tuning"
+        - "hyperparameter_optimization"
+        - "model_validation"
+      required_endpoints:
+        - "/train"
+        - "/finetune"
+        - "/optimize"
+        - "/health"
+
+    voice:
+      description: "Voice/NLP interfaces, conversational AI"
+      capabilities:
+        - "speech_to_text"
+        - "text_to_speech"
+        - "conversation_management"
+        - "nlp_processing"
+      required_endpoints:
+        - "/process"
+        - "/converse"
+        - "/synthesize"
+        - "/health"
+
+    workers:
+      description: "Data processing, file handling, computational tasks"
+      capabilities:
+        - "data_processing"
+        - "file_manipulation"
+        - "batch_processing"
+        - "computational_tasks"
+      required_endpoints:
+        - "/process"
+        - "/execute"
+        - "/status"
+        - "/health"
+
+compliance:
+  validation:
+    strict_mode: true
+    require_all_endpoints: false
+    validate_schemas: true
+    check_dependencies: true
+
+  security:
+    require_authentication: true
+    require_authorization: true
+    validate_inputs: true
+    sanitize_outputs: true
+
+  performance:
+    max_response_time: 30000
+    max_memory_usage: "512Mi"
+    max_cpu_usage: "500m"
+
+  documentation:
+    require_readme: true
+    require_openapi: true
+    require_examples: true
+    require_changelog: false

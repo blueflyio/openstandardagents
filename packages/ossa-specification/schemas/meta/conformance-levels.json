@@ -1,0 +1,334 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://ossa.ai/schemas/meta/conformance-levels",
+  "title": "OSSA Conformance Levels",
+  "description": "Defines the requirements and criteria for OSSA conformance certification",
+  "type": "object",
+  "properties": {
+    "bronze": {
+      "$ref": "#/definitions/BronzeLevel"
+    },
+    "silver": {
+      "$ref": "#/definitions/SilverLevel"
+    },
+    "gold": {
+      "$ref": "#/definitions/GoldLevel"
+    },
+    "platinum": {
+      "$ref": "#/definitions/PlatinumLevel"
+    }
+  },
+  "definitions": {
+    "BronzeLevel": {
+      "type": "object",
+      "title": "Bronze Conformance Level",
+      "description": "Basic OSSA compliance - Minimum viable agent",
+      "properties": {
+        "requirements": {
+          "type": "object",
+          "properties": {
+            "hasValidManifest": {
+              "type": "boolean",
+              "const": true,
+              "description": "Valid agent.yml conforming to schema"
+            },
+            "hasOpenAPISpec": {
+              "type": "boolean",
+              "const": true,
+              "description": "Valid OpenAPI 3.x specification"
+            },
+            "hasCapabilities": {
+              "type": "boolean",
+              "const": true,
+              "description": "At least one capability defined"
+            },
+            "hasDiscovery": {
+              "type": "boolean",
+              "const": true,
+              "description": "Discovery configuration present"
+            },
+            "passesDualValidation": {
+              "type": "boolean",
+              "const": true,
+              "description": "Agent manifest and OpenAPI are aligned"
+            }
+          },
+          "required": ["hasValidManifest", "hasOpenAPISpec", "hasCapabilities", "hasDiscovery", "passesDualValidation"]
+        },
+        "benefits": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [
+            "Basic OSSA certification badge",
+            "Listing in OSSA registry",
+            "Automatic discovery support",
+            "Community support access"
+          ]
+        }
+      }
+    },
+    "SilverLevel": {
+      "type": "object",
+      "title": "Silver Conformance Level",
+      "description": "Production-ready agent with monitoring and health checks",
+      "properties": {
+        "inherits": {
+          "type": "string",
+          "const": "bronze",
+          "description": "Includes all Bronze requirements"
+        },
+        "requirements": {
+          "type": "object",
+          "properties": {
+            "hasMonitoring": {
+              "type": "boolean",
+              "const": true,
+              "description": "Monitoring configuration enabled"
+            },
+            "hasHealthEndpoint": {
+              "type": "boolean",
+              "const": true,
+              "description": "/health endpoint implemented"
+            },
+            "hasMetricsEndpoint": {
+              "type": "boolean",
+              "const": true,
+              "description": "/metrics endpoint with Prometheus format"
+            },
+            "hasIOAwareness": {
+              "type": "boolean",
+              "const": true,
+              "description": "IO-aware monitoring enabled"
+            },
+            "hasLogging": {
+              "type": "boolean",
+              "const": true,
+              "description": "Structured logging (JSON/JSONL)"
+            },
+            "hasErrorHandling": {
+              "type": "boolean",
+              "const": true,
+              "description": "Comprehensive error handling and recovery"
+            },
+            "hasDocumentation": {
+              "type": "boolean",
+              "const": true,
+              "description": "API documentation and usage examples"
+            },
+            "hasTests": {
+              "type": "boolean",
+              "const": true,
+              "description": "Test coverage >= 70%"
+            }
+          },
+          "required": [
+            "hasMonitoring",
+            "hasHealthEndpoint",
+            "hasMetricsEndpoint",
+            "hasIOAwareness",
+            "hasLogging",
+            "hasErrorHandling",
+            "hasDocumentation",
+            "hasTests"
+          ]
+        },
+        "benefits": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [
+            "Silver certification badge",
+            "Priority listing in registry",
+            "Production deployment guides",
+            "Performance benchmarking tools",
+            "Advanced monitoring dashboards"
+          ]
+        }
+      }
+    },
+    "GoldLevel": {
+      "type": "object",
+      "title": "Gold Conformance Level",
+      "description": "Enterprise-grade agent with advanced features",
+      "properties": {
+        "inherits": {
+          "type": "string",
+          "const": "silver",
+          "description": "Includes all Silver requirements"
+        },
+        "requirements": {
+          "type": "object",
+          "properties": {
+            "hasBridgeSupport": {
+              "type": "boolean",
+              "const": true,
+              "description": "At least 2 protocol bridges (MCP, A2A, etc.)"
+            },
+            "hasPerformanceConfig": {
+              "type": "boolean",
+              "const": true,
+              "description": "Performance optimization configured"
+            },
+            "hasTracing": {
+              "type": "boolean",
+              "const": true,
+              "description": "Distributed tracing with OpenTelemetry"
+            },
+            "hasAutoScaling": {
+              "type": "boolean",
+              "const": true,
+              "description": "Horizontal or vertical scaling configured"
+            },
+            "hasCaching": {
+              "type": "boolean",
+              "const": true,
+              "description": "Multi-layer caching strategy"
+            },
+            "hasSecurityFeatures": {
+              "type": "boolean",
+              "const": true,
+              "description": "Authentication, authorization, and encryption"
+            },
+            "hasRedaction": {
+              "type": "boolean",
+              "const": true,
+              "description": "PII and sensitive data redaction"
+            },
+            "hasHighAvailability": {
+              "type": "boolean",
+              "const": true,
+              "description": "HA configuration with failover"
+            },
+            "hasTestCoverage": {
+              "type": "boolean",
+              "const": true,
+              "description": "Test coverage >= 85%"
+            }
+          },
+          "required": [
+            "hasBridgeSupport",
+            "hasPerformanceConfig",
+            "hasTracing",
+            "hasAutoScaling",
+            "hasCaching",
+            "hasSecurityFeatures",
+            "hasRedaction",
+            "hasHighAvailability",
+            "hasTestCoverage"
+          ]
+        },
+        "benefits": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [
+            "Gold certification badge",
+            "Featured partner status",
+            "Enterprise support channel",
+            "Performance optimization consulting",
+            "Security audit reports",
+            "Integration priority with major platforms"
+          ]
+        }
+      }
+    },
+    "PlatinumLevel": {
+      "type": "object",
+      "title": "Platinum Conformance Level",
+      "description": "Industry-leading agent with cutting-edge capabilities",
+      "properties": {
+        "inherits": {
+          "type": "string",
+          "const": "gold",
+          "description": "Includes all Gold requirements"
+        },
+        "requirements": {
+          "type": "object",
+          "properties": {
+            "hasMultipleBridges": {
+              "type": "boolean",
+              "const": true,
+              "description": "4+ protocol bridges implemented"
+            },
+            "hasAdvancedOptimization": {
+              "type": "boolean",
+              "const": true,
+              "description": "Token optimization, quantization, compiler optimization"
+            },
+            "hasCustomMetrics": {
+              "type": "boolean",
+              "const": true,
+              "description": "Domain-specific custom metrics"
+            },
+            "hasCompleteDocumentation": {
+              "type": "boolean",
+              "const": true,
+              "description": "Architecture docs, API refs, tutorials, migration guides"
+            },
+            "hasMLOpsIntegration": {
+              "type": "boolean",
+              "const": true,
+              "description": "Model versioning, A/B testing, continuous learning"
+            },
+            "hasObservabilityStack": {
+              "type": "boolean",
+              "const": true,
+              "description": "Full observability with logs, metrics, traces, profiles"
+            },
+            "hasDisasterRecovery": {
+              "type": "boolean",
+              "const": true,
+              "description": "Backup, restore, and disaster recovery procedures"
+            },
+            "hasCompliance": {
+              "type": "boolean",
+              "const": true,
+              "description": "SOC2, GDPR, HIPAA compliance as applicable"
+            },
+            "hasTestCoverage": {
+              "type": "boolean",
+              "const": true,
+              "description": "Test coverage >= 95%"
+            },
+            "hasContribution": {
+              "type": "boolean",
+              "const": true,
+              "description": "Active contribution to OSSA ecosystem"
+            }
+          },
+          "required": [
+            "hasMultipleBridges",
+            "hasAdvancedOptimization",
+            "hasCustomMetrics",
+            "hasCompleteDocumentation",
+            "hasMLOpsIntegration",
+            "hasObservabilityStack",
+            "hasDisasterRecovery",
+            "hasCompliance",
+            "hasTestCoverage",
+            "hasContribution"
+          ]
+        },
+        "benefits": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [
+            "Platinum certification badge",
+            "Strategic partner status",
+            "Co-marketing opportunities",
+            "Speaking opportunities at OSSA events",
+            "Early access to new features",
+            "Influence on OSSA roadmap",
+            "Dedicated enterprise architect support"
+          ]
+        }
+      }
+    }
+  }
+}

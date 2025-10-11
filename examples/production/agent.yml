@@ -1,0 +1,193 @@
+# Production OSSA Agent Example (200 lines)
+# Silver conformance level - Production-ready with monitoring
+
+ossa: 1.0
+agent:
+  name: document-analyzer
+  version: 2.1.0
+  description: Production document analysis agent with NLP capabilities
+  author: Bluefly.io
+  license: MIT
+  conformance: silver
+  tags:
+    - nlp
+    - documents
+    - analysis
+    - production
+
+discover:
+  auto: true
+  protocol: uadp
+  registry: https://registry.ossa.ai
+  endpoints:
+    - https://discovery.ossa.ai/agents
+
+capabilities:
+  - text_extraction
+  - sentiment_analysis
+  - entity_recognition
+  - summarization
+  - classification
+  - language_detection
+
+api:
+  POST /analyze:
+    capability: [sentiment_analysis, entity_recognition]
+    description: Comprehensive document analysis
+    parameters:
+      includeEntities:
+        type: boolean
+        default: true
+      includeSentiment:
+        type: boolean
+        default: true
+
+  POST /extract:
+    capability: text_extraction
+    description: Extract text from various document formats
+
+  POST /summarize:
+    capability: summarization
+    description: Generate concise document summary
+    parameters:
+      maxLength:
+        type: integer
+        default: 500
+
+  POST /classify:
+    capability: classification
+    description: Classify document into categories
+
+  GET /health:
+    description: Health check endpoint
+
+  GET /metrics:
+    description: Prometheus metrics endpoint
+
+monitoring:
+  io_aware: true
+  logs:
+    format: jsonl
+    level: info
+    trace: true
+    retention: 30d
+    outputs:
+      - type: console
+      - type: file
+        config:
+          path: /var/log/ossa/document-analyzer.log
+          rotation: daily
+          max_files: 7
+
+  metrics:
+    enabled: true
+    endpoint: /metrics
+    format: prometheus
+    interval: 60
+    custom_metrics:
+      - name: documents_processed_total
+        type: counter
+        description: Total documents processed
+        labels: [document_type, status]
+      - name: analysis_duration_seconds
+        type: histogram
+        description: Document analysis duration
+        buckets: [0.1, 0.5, 1, 2, 5, 10]
+
+  traces:
+    enabled: true
+    format: otlp
+    endpoint: http://jaeger:4317
+    sampling:
+      type: probabilistic
+      rate: 0.1
+
+  health:
+    enabled: true
+    endpoint: /health
+    interval: 30
+    checks:
+      - name: database
+        type: tcp
+        config:
+          port: 5432
+          timeout: 5
+      - name: redis
+        type: tcp
+        config:
+          port: 6379
+          timeout: 5
+
+  redaction:
+    enabled: true
+    patterns:
+      - pattern: "\\b[A-Z]{2}\\d{2}\\s?\\d{4}\\s?\\d{4}\\s?\\d{4}\\s?\\d{4}\\b"
+        name: credit_card
+      - pattern: "\\b\\d{3}-\\d{2}-\\d{4}\\b"
+        name: ssn
+      - pattern: "\\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Z|a-z]{2,}\\b"
+        name: email
+    replacement: "[REDACTED]"
+
+performance:
+  token_optimization:
+    enabled: true
+    strategies:
+      - type: sliding_window
+        config:
+          window_size: 4096
+    max_context: 32000
+
+  cache:
+    enabled: true
+    layers:
+      - name: memory_cache
+        type: memory
+        size: 100MB
+        ttl: 300
+      - name: redis_cache
+        type: redis
+        ttl: 3600
+        config:
+          host: redis
+          port: 6379
+          db: 0
+    key_strategy: semantic
+
+  batching:
+    enabled: true
+    dynamic: true
+    max_batch_size: 32
+    timeout_ms: 100
+
+bridge:
+  openapi:
+    enabled: true
+    spec_url: ./openapi.yaml
+    auto_generate: false
+
+  mcp:
+    enabled: true
+    server_type: stdio
+    tools:
+      - name: analyzeDocument
+        description: Analyze document with NLP
+        input_schema:
+          type: object
+          required: [document]
+          properties:
+            document:
+              type: string
+            options:
+              type: object
+        capability: sentiment_analysis
+
+      - name: extractEntities
+        description: Extract named entities
+        input_schema:
+          type: object
+          required: [text]
+          properties:
+            text:
+              type: string
+        capability: entity_recognition

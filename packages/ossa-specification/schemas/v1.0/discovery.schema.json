@@ -1,0 +1,254 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://ossa.ai/schemas/v1.0/discovery",
+  "title": "OSSA Discovery Protocol Schema",
+  "description": "Universal Agent Discovery Protocol (UADP) schema for agent registration and discovery",
+  "type": "object",
+  "required": ["version", "timestamp", "workspace"],
+  "properties": {
+    "version": {
+      "type": "string",
+      "const": "1.0",
+      "description": "UADP version"
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Registry last update timestamp"
+    },
+    "workspace": {
+      "$ref": "#/definitions/WorkspaceInfo"
+    },
+    "agents": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/RegisteredAgent"
+      },
+      "description": "List of discovered agents"
+    },
+    "capabilities": {
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "#/definitions/CapabilityIndex"
+      },
+      "description": "Capability to agent mapping"
+    },
+    "dependencies": {
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "#/definitions/DependencyInfo"
+      },
+      "description": "Agent dependency graph"
+    }
+  },
+  "definitions": {
+    "WorkspaceInfo": {
+      "type": "object",
+      "required": ["root", "protocol"],
+      "properties": {
+        "root": {
+          "type": "string",
+          "description": "Workspace root path"
+        },
+        "protocol": {
+          "type": "string",
+          "enum": ["uadp"],
+          "description": "Discovery protocol"
+        },
+        "conformance": {
+          "type": "string",
+          "enum": ["bronze", "silver", "gold", "platinum"],
+          "description": "Workspace conformance level"
+        },
+        "registry": {
+          "type": "string",
+          "format": "uri",
+          "description": "Remote registry URL"
+        },
+        "metadata": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "RegisteredAgent": {
+      "type": "object",
+      "required": ["id", "name", "version", "path", "capabilities"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z0-9-]+@\\d+\\.\\d+\\.\\d+$",
+          "description": "Unique agent identifier (name@version)"
+        },
+        "name": {
+          "type": "string",
+          "description": "Agent name"
+        },
+        "version": {
+          "type": "string",
+          "description": "Agent version"
+        },
+        "path": {
+          "type": "string",
+          "description": "Relative path to agent directory"
+        },
+        "capabilities": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Agent capabilities"
+        },
+        "endpoints": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/EndpointInfo"
+          },
+          "description": "Agent API endpoints"
+        },
+        "bridge": {
+          "type": "object",
+          "properties": {
+            "mcp": {
+              "type": "boolean"
+            },
+            "a2a": {
+              "type": "boolean"
+            },
+            "openapi": {
+              "type": "boolean"
+            },
+            "langchain": {
+              "type": "boolean"
+            }
+          },
+          "description": "Supported protocol bridges"
+        },
+        "conformance": {
+          "type": "string",
+          "enum": ["bronze", "silver", "gold", "platinum"],
+          "description": "Agent conformance level"
+        },
+        "status": {
+          "$ref": "#/definitions/AgentStatus"
+        },
+        "metadata": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "EndpointInfo": {
+      "type": "object",
+      "required": ["method", "path"],
+      "properties": {
+        "method": {
+          "type": "string",
+          "enum": ["GET", "POST", "PUT", "DELETE", "PATCH"],
+          "description": "HTTP method"
+        },
+        "path": {
+          "type": "string",
+          "description": "Endpoint path"
+        },
+        "capability": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ],
+          "description": "Associated capability or capabilities"
+        },
+        "description": {
+          "type": "string"
+        }
+      }
+    },
+    "AgentStatus": {
+      "type": "object",
+      "properties": {
+        "state": {
+          "type": "string",
+          "enum": ["active", "inactive", "maintenance", "deprecated"],
+          "default": "active"
+        },
+        "health": {
+          "type": "string",
+          "enum": ["healthy", "degraded", "unhealthy", "unknown"],
+          "default": "unknown"
+        },
+        "lastSeen": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "CapabilityIndex": {
+      "type": "object",
+      "required": ["agents"],
+      "properties": {
+        "agents": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "List of agent IDs that provide this capability"
+        },
+        "description": {
+          "type": "string",
+          "description": "Capability description"
+        },
+        "category": {
+          "type": "string",
+          "description": "Capability category"
+        },
+        "preferred": {
+          "type": "string",
+          "description": "Preferred agent ID for this capability"
+        }
+      }
+    },
+    "DependencyInfo": {
+      "type": "object",
+      "properties": {
+        "runtime": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Required runtime dependencies"
+        },
+        "optional": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Optional dependencies"
+        },
+        "conflicts": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Conflicting agents"
+        }
+      }
+    }
+  }
+}

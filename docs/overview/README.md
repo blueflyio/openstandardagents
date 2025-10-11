@@ -8,7 +8,7 @@ OSSA provides a comprehensive framework for building, deploying, and managing AI
 
 ## Key Features
 
-### 🏛️ Enterprise Compliance
+### 🏛 Enterprise Compliance
 - **FDA 21 CFR Part 11** - Electronic records and signatures for pharmaceutical companies
 - **SOX 404** - Internal controls for financial reporting
 - **HIPAA BAA** - Healthcare data protection and business associate agreements
@@ -23,13 +23,13 @@ OSSA provides a comprehensive framework for building, deploying, and managing AI
 - **Encryption at rest and in transit** for all agent communications
 - **Role-based access control** with fine-grained permissions
 
-### ⚡ Production Scale
+###  Production Scale
 - **Kubernetes-native orchestration** supporting millions of agents
 - **Sub-second response times** with optimized routing algorithms
 - **Auto-scaling capabilities** based on workload demands
 - **High availability** with 99.99% uptime SLA
 
-### 🌐 Multi-Framework Support
+###  Multi-Framework Support
 - **LangChain** - Popular AI application framework
 - **CrewAI** - Multi-agent collaboration platform
 - **AutoGen** - Microsoft's conversational AI framework

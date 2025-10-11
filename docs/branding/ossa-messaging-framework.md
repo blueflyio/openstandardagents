@@ -264,7 +264,7 @@
 - ❌ "The only solution" (respect alternatives)
 - ❌ "Revolutionary" (we're evolutionary)
 - ❌ "Proprietary advantage" (we're open)
-- ❌ "Set it and forget it" (agents require governance)
+- ❌ "Set it and buildt it" (agents require governance)
 - ❌ "Replace human workers" (agents augment human capabilities)
 
 #### Topics to Handle Carefully

@@ -1,0 +1,499 @@
+openapi: 3.1.0
+jsonSchemaDialect: https://spec.openapis.org/oas/3.1/dialect/base
+info:
+  title: OSSA Specification Engine API
+  version: 0.1.9
+  description: |
+    OSSA Platform Specification Engine - Defines and validates agent specifications,
+    taxonomies, and capability descriptions according to OSSA v0.1.9 standards.
+  contact:
+    name: Bluefly.io LLM Platform Team
+    url: https://gitlab.bluefly.io/llm/openapi-ai-agents-standard
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: https://api-dev.llm.bluefly.io/ossa/v1
+    description: Development server
+  - url: https://api.llm.bluefly.io/ossa/v1
+    description: Production server
+
+security:
+  - ApiKeyAuth: []
+  - BearerAuth: []
+  - OAuth2: [read, write]
+
+paths:
+  /specification/validate:
+    post:
+      summary: Validate agent specification
+      description: Validates an agent manifest against OSSA specification standards
+      operationId: validateSpecification
+      tags:
+        - Specification
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AgentManifest'
+      responses:
+        '200':
+          description: Validation successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationResult'
+        '400':
+          description: Validation failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+
+  /agent/kubernetes/token:
+    post:
+      summary: Create GitLab Agent for Kubernetes token
+      description: Creates and validates a GitLab Agent for Kubernetes token for agent deployment
+      operationId: createKubernetesAgentToken
+      tags:
+        - Kubernetes Integration
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/KubernetesAgentTokenRequest'
+      responses:
+        '201':
+          description: Token created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KubernetesAgentTokenResponse'
+        '400':
+          description: Invalid token request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+
+  /agent/kubernetes/validate:
+    post:
+      summary: Validate Kubernetes agent configuration
+      description: Validates agent configuration for Kubernetes deployment compliance
+      operationId: validateKubernetesAgentConfig
+      tags:
+        - Kubernetes Integration
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/KubernetesAgentConfig'
+      responses:
+        '200':
+          description: Configuration valid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KubernetesValidationResult'
+        '400':
+          description: Configuration invalid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+
+  /specification/taxonomy:
+    get:
+      summary: Get agent taxonomy
+      description: Returns the complete OSSA agent taxonomy with all types and categories
+      operationId: getTaxonomy
+      tags:
+        - Specification
+      responses:
+        '200':
+          description: Agent taxonomy retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentTaxonomy'
+
+  /specification/capabilities:
+    post:
+      summary: Register agent capabilities
+      description: Registers agent capabilities using ACDL (Agent Capability Description Language)
+      operationId: registerCapabilities
+      tags:
+        - Specification
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AgentCapabilities'
+      responses:
+        '201':
+          description: Capabilities registered
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RegistrationResult'
+
+  /specification/schema/{agentType}:
+    get:
+      summary: Get agent type schema
+      description: Returns the JSON schema for a specific agent type
+      operationId: getAgentSchema
+      tags:
+        - Specification
+      parameters:
+        - name: agentType
+          in: path
+          required: true
+          schema:
+            type: string
+            enum:
+              - orchestrator
+              - worker
+              - critic
+              - judge
+              - trainer
+              - governor
+              - monitor
+              - integrator
+      responses:
+        '200':
+          description: Schema retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+      description: API key for accessing OSSA platform
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT token for authenticated requests
+    OAuth2:
+      type: oauth2
+      description: OAuth2 authentication
+      flows:
+        authorizationCode:
+          authorizationUrl: https://auth.llm.bluefly.io/oauth/authorize
+          tokenUrl: https://auth.llm.bluefly.io/oauth/token
+          scopes:
+            read: Read access to agent specifications
+            write: Write access to create and modify specifications
+            admin: Administrative access to platform
+  schemas:
+    AgentManifest:
+      type: object
+      required:
+        - agentId
+        - agentType
+        - version
+        - capabilities
+      properties:
+        agentId:
+          type: string
+          pattern: '^[a-z0-9-]+$'
+          example: 'worker-openapi-v1-2-0'
+        agentType:
+          type: string
+          enum:
+            - orchestrator
+            - worker
+            - critic
+            - judge
+            - trainer
+            - governor
+            - monitor
+            - integrator
+        agentSubType:
+          type: string
+          example: 'worker.openapi'
+        version:
+          type: string
+          pattern: '^\d+\.\d+\.\d+$'
+          example: '1.2.0'
+        capabilities:
+          $ref: '#/components/schemas/AgentCapabilities'
+        metadata:
+          type: object
+          properties:
+            author:
+              type: string
+            description:
+              type: string
+            created:
+              type: string
+              format: date-time
+            updated:
+              type: string
+              format: date-time
+
+    AgentCapabilities:
+      type: object
+      required:
+        - supportedDomains
+        - inputFormats
+        - outputFormats
+      properties:
+        supportedDomains:
+          type: array
+          items:
+            type: string
+          example: ['documentation', 'api-design', 'validation']
+        inputFormats:
+          type: array
+          items:
+            type: string
+          example: ['json', 'yaml', 'text']
+        outputFormats:
+          type: array
+          items:
+            type: string
+          example: ['json', 'yaml', 'markdown']
+        requirements:
+          type: array
+          items:
+            type: string
+        constraints:
+          type: object
+          properties:
+            maxTokens:
+              type: integer
+            timeout:
+              type: integer
+            memoryLimit:
+              type: string
+
+    ValidationResult:
+      type: object
+      required:
+        - valid
+        - version
+      properties:
+        valid:
+          type: boolean
+        version:
+          type: string
+        warnings:
+          type: array
+          items:
+            type: string
+        compliance:
+          type: object
+          properties:
+            ossaVersion:
+              type: string
+            level:
+              type: string
+              enum: [basic, standard, enterprise]
+
+    ValidationError:
+      type: object
+      required:
+        - valid
+        - errors
+      properties:
+        valid:
+          type: boolean
+          default: false
+        errors:
+          type: array
+          items:
+            type: object
+            properties:
+              field:
+                type: string
+              message:
+                type: string
+              code:
+                type: string
+
+    AgentTaxonomy:
+      type: object
+      properties:
+        version:
+          type: string
+        feedbackLoop:
+          type: object
+          properties:
+            phases:
+              type: array
+              items:
+                type: string
+              example: ['plan', 'execute', 'review', 'judge', 'learn', 'govern']
+        types:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+              description:
+                type: string
+              capabilities:
+                type: array
+                items:
+                  type: string
+
+    RegistrationResult:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum: [registered, pending, failed]
+        timestamp:
+          type: string
+          format: date-time
+
+    KubernetesAgentTokenRequest:
+      type: object
+      required:
+        - name
+        - scopes
+      properties:
+        name:
+          type: string
+          description: Agent token name
+          pattern: "^[a-z0-9]([a-z0-9-]*[a-z0-9])?$"
+        scopes:
+          type: array
+          items:
+            type: string
+            enum: [api, read_user, openid, profile]
+          description: Required OAuth scopes for GitLab integration
+        description:
+          type: string
+          description: Token description
+        expiresAt:
+          type: string
+          format: date-time
+          description: Token expiration time
+
+    KubernetesAgentTokenResponse:
+      type: object
+      properties:
+        token:
+          type: string
+          description: Generated agent token
+        tokenId:
+          type: string
+          description: Token identifier
+        scopes:
+          type: array
+          items:
+            type: string
+        expiresAt:
+          type: string
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+
+    KubernetesAgentConfig:
+      type: object
+      required:
+        - agent
+        - cluster
+      properties:
+        agent:
+          type: object
+          required:
+            - name
+            - token
+          properties:
+            name:
+              type: string
+              pattern: "^[a-z0-9]([a-z0-9-]*[a-z0-9])?$"
+            token:
+              type: string
+              description: GitLab Agent for Kubernetes token
+            namespace:
+              type: string
+              default: "gitlab-agent"
+        cluster:
+          type: object
+          properties:
+            endpoint:
+              type: string
+              format: uri
+              description: Kubernetes cluster endpoint
+            certificate:
+              type: string
+              description: TLS certificate for cluster communication
+            dnsSuffix:
+              type: string
+              description: DNS zone for workspaces
+        remoteDevelopment:
+          type: object
+          properties:
+            enabled:
+              type: boolean
+              default: false
+            dnsZone:
+              type: string
+              description: DNS zone for remote development workspaces
+            gitlabUrl:
+              type: string
+              format: uri
+        oauth:
+          type: object
+          required:
+            - clientId
+            - clientSecret
+            - redirectUri
+          properties:
+            clientId:
+              type: string
+            clientSecret:
+              type: string
+            redirectUri:
+              type: string
+              format: uri
+            signingKey:
+              type: string
+
+    KubernetesValidationResult:
+      type: object
+      properties:
+        valid:
+          type: boolean
+        compliance:
+          type: object
+          properties:
+            gitlabAgent:
+              type: boolean
+              description: GitLab Agent for Kubernetes compliance
+            tokenScopes:
+              type: boolean
+              description: Required OAuth scopes present
+            tlsConfiguration:
+              type: boolean
+              description: TLS configuration valid
+            dnsConfiguration:
+              type: boolean
+              description: DNS configuration valid
+        warnings:
+          type: array
+          items:
+            type: string
+        recommendations:
+          type: array
+          items:
+            type: string

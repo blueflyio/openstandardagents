@@ -3,15 +3,15 @@
 **Release Date**: September 29, 2025  
 **Version**: 0.1.2  
 **Codename**: "OpenAPI Excellence"  
-**Status**: Production Ready 🚀
+**Status**: Production Ready 
 
-## 🎯 Release Highlights
+##  Release Highlights
 
 ### The Industry's Most Comprehensive OpenAPI 3.1 Implementation for AI Agents
 
 OSSA v0.1.2 delivers **15 production-ready OpenAPI 3.1 specifications** that define the complete ecosystem for enterprise AI agent orchestration. This release represents months of development, testing, and refinement to create the definitive standard for scalable agent systems.
 
-## 📊 By The Numbers
+##  By The Numbers
 
 - **15** OpenAPI 3.1 Specifications
 - **6** Agent Archetypes (Worker, Orchestrator, Critic, Monitor, Governor, Judge)
@@ -21,16 +21,16 @@ OSSA v0.1.2 delivers **15 production-ready OpenAPI 3.1 specifications** that def
 - **>10,000** req/s Throughput Target
 - **99.95%** Availability SLA
 
-## 🚀 What's New
+##  What's New
 
 ### Complete OpenAPI 3.1 Feature Set
-- ✅ JSON Schema Draft 2020-12
-- ✅ Discriminator Mapping for Polymorphic Types
-- ✅ Webhooks and Callbacks
-- ✅ HATEOAS Links
-- ✅ Content Encoding
-- ✅ OAuth 2.1 PKCE Security
-- ✅ Multiple Content Types
+-  JSON Schema Draft 2020-12
+-  Discriminator Mapping for Polymorphic Types
+-  Webhooks and Callbacks
+-  HATEOAS Links
+-  Content Encoding
+-  OAuth 2.1 PKCE Security
+-  Multiple Content Types
 
 ### Enterprise-Grade Architecture
 - **Multi-Tier Compliance**: Core → Governed → Advanced → Enterprise
@@ -46,7 +46,7 @@ OSSA v0.1.2 delivers **15 production-ready OpenAPI 3.1 specifications** that def
 - **Validation Tools**: Custom OSSA compliance validator
 - **Migration Guides**: Step-by-step upgrade paths
 
-## 📦 What's Included
+##  What's Included
 
 ### Core Specifications (6)
 - `ossa-complete.openapi.yml` - Complete OSSA API with all features
@@ -68,7 +68,7 @@ OSSA v0.1.2 delivers **15 production-ready OpenAPI 3.1 specifications** that def
 - `mcp-infrastructure.openapi.yml` - Infrastructure management
 - `web-eval-mcp.openapi.yml` - Web evaluation framework
 
-## 🔧 Installation
+##  Installation
 
 ```bash
 # Clone the repository
@@ -88,7 +88,7 @@ npm run validate:specs
 npm run api:docs:build
 ```
 
-## 🧪 Testing
+##  Testing
 
 ```bash
 # Validate all OpenAPI specifications
@@ -136,15 +136,15 @@ These warnings are cosmetic and do not affect functionality. They will be addres
 
 See [MIGRATION.md](docs/MIGRATION.md) for detailed instructions.
 
-## 🎯 Performance Benchmarks
+##  Performance Benchmarks
 
 | Metric | Target | Achieved |
 |--------|--------|----------|
-| Startup Time | <3s | ✅ 2.8s |
-| Memory (Idle) | <256MB | ✅ 220MB |
-| CPU (Idle) | <5% | ✅ 3.2% |
-| p99 Latency | <100ms | ✅ 87ms |
-| Throughput | >10k req/s | ✅ 12.3k |
+| Startup Time | <3s |  2.8s |
+| Memory (Idle) | <256MB |  220MB |
+| CPU (Idle) | <5% |  3.2% |
+| p99 Latency | <100ms |  87ms |
+| Throughput | >10k req/s |  12.3k |
 
 ## 🔐 Security
 
@@ -164,7 +164,7 @@ docker run -p 3000:3000 ossa:0.1.2
 
 ### Kubernetes
 ```bash
-kubectl apply -f infrastructure/k8s/
+kubectl apply -f infrastructure/kubernetes/
 kubectl get pods -n ossa-system
 ```
 
@@ -174,7 +174,7 @@ include:
   - component: gitlab.bluefly.io/llm/gitlab_components/workflow/golden@v0.1.0
 ```
 
-## 👥 Contributors
+##  Contributors
 
 Special thanks to all contributors who made this release possible:
 - OSSA Development Team

@@ -1,0 +1,354 @@
+# Value Stream Analytics (VSA) Template
+# Tracks DORA metrics and software delivery performance
+
+variables:
+  VSA_ENABLED: $[[ inputs.enable_vsa ]]
+  VSA_DASHBOARD_URL: $[[ inputs.vsa_dashboard_url ]]
+  VSA_REPORT_FORMAT: $[[ inputs.vsa_report_format ]]
+  TRACK_LEAD_TIME: $[[ inputs.track_lead_time ]]
+  TRACK_CYCLE_TIME: $[[ inputs.track_cycle_time ]]
+  TRACK_DEPLOYMENT_FREQ: $[[ inputs.track_deployment_frequency ]]
+  TRACK_MTTR: $[[ inputs.track_mttr ]]
+  TRACK_CHANGE_FAILURE: $[[ inputs.track_change_failure_rate ]]
+
+# VSA-specific stages
+stages:
+  - vsa-collect
+  - vsa-analyze
+  - vsa-report
+
+# Job: Collect VSA metrics from pipeline
+vsa:collect-metrics:
+  stage: vsa-collect
+  image: alpine:latest
+  script:
+    - |
+      if [ "$VSA_ENABLED" = "true" ]; then
+        echo "📊 Collecting Value Stream Analytics metrics..."
+        apk add --no-cache git jq curl
+
+        # Initialize metrics file
+        cat > vsa-metrics.json <<EOF
+      {
+        "pipeline_id": "${CI_PIPELINE_ID}",
+        "project": "${CI_PROJECT_NAME}",
+        "commit": "${CI_COMMIT_SHA}",
+        "branch": "${CI_COMMIT_BRANCH}",
+        "timestamp": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
+        "metrics": {}
+      }
+      EOF
+
+        # Collect Lead Time (time from commit to deploy)
+        if [ "$TRACK_LEAD_TIME" = "true" ]; then
+          echo "Tracking lead time..."
+          COMMIT_TIME=$(git show -s --format=%ct ${CI_COMMIT_SHA})
+          CURRENT_TIME=$(date +%s)
+          LEAD_TIME=$((CURRENT_TIME - COMMIT_TIME))
+
+          # Add to metrics
+          jq --arg lt "$LEAD_TIME" '.metrics.lead_time_seconds = ($lt | tonumber)' vsa-metrics.json > tmp.json && mv tmp.json vsa-metrics.json
+          echo "Lead Time: ${LEAD_TIME}s ($(($LEAD_TIME / 60)) minutes)"
+        fi
+
+        # Collect Cycle Time (time from pipeline start to current job)
+        if [ "$TRACK_CYCLE_TIME" = "true" ]; then
+          echo "Tracking cycle time..."
+          PIPELINE_START=$(curl --silent --header "PRIVATE-TOKEN: ${CI_JOB_TOKEN}" \
+            "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/pipelines/${CI_PIPELINE_ID}" | \
+            jq -r '.created_at' | date -d - +%s 2>/dev/null || echo "$CURRENT_TIME")
+          CYCLE_TIME=$((CURRENT_TIME - PIPELINE_START))
+
+          jq --arg ct "$CYCLE_TIME" '.metrics.cycle_time_seconds = ($ct | tonumber)' vsa-metrics.json > tmp.json && mv tmp.json vsa-metrics.json
+          echo "Cycle Time: ${CYCLE_TIME}s"
+        fi
+
+        # Collect Deployment Frequency
+        if [ "$TRACK_DEPLOYMENT_FREQ" = "true" ]; then
+          echo "Tracking deployment frequency..."
+
+          # Count deployments in last 24 hours
+          YESTERDAY=$(date -u -d '24 hours ago' +%Y-%m-%dT%H:%M:%SZ 2>/dev/null || date -u -v-24H +%Y-%m-%dT%H:%M:%SZ 2>/dev/null || echo "2025-10-02T00:00:00Z")
+
+          DEPLOY_COUNT=$(curl --silent --header "PRIVATE-TOKEN: ${CI_JOB_TOKEN}" \
+            "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/deployments?updated_after=${YESTERDAY}" | \
+            jq '. | length' || echo "0")
+
+          jq --arg dc "$DEPLOY_COUNT" '.metrics.deployments_24h = ($dc | tonumber)' vsa-metrics.json > tmp.json && mv tmp.json vsa-metrics.json
+          echo "Deployments (24h): ${DEPLOY_COUNT}"
+        fi
+
+        # Track pipeline status for failure rate
+        if [ "$TRACK_CHANGE_FAILURE" = "true" ]; then
+          echo "Tracking change failure rate..."
+
+          # Get last 10 pipelines
+          FAILED_PIPELINES=$(curl --silent --header "PRIVATE-TOKEN: ${CI_JOB_TOKEN}" \
+            "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/pipelines?per_page=10&status=failed" | \
+            jq '. | length' || echo "0")
+
+          TOTAL_PIPELINES=$(curl --silent --header "PRIVATE-TOKEN: ${CI_JOB_TOKEN}" \
+            "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/pipelines?per_page=10" | \
+            jq '. | length' || echo "1")
+
+          if [ "$TOTAL_PIPELINES" -gt "0" ]; then
+            FAILURE_RATE=$(echo "scale=2; ($FAILED_PIPELINES / $TOTAL_PIPELINES) * 100" | bc 2>/dev/null || echo "0")
+          else
+            FAILURE_RATE="0"
+          fi
+
+          jq --arg fr "$FAILURE_RATE" '.metrics.failure_rate_percent = ($fr | tonumber)' vsa-metrics.json > tmp.json && mv tmp.json vsa-metrics.json
+          echo "Failure Rate: ${FAILURE_RATE}%"
+        fi
+
+        echo "✅ VSA metrics collected"
+        cat vsa-metrics.json
+      else
+        echo "VSA tracking disabled"
+      fi
+  artifacts:
+    reports:
+      dotenv: vsa-metrics.env
+    paths:
+      - vsa-metrics.json
+    expire_in: 30 days
+  rules:
+    - if: '$VSA_ENABLED == "true"'
+      when: on_success
+    - when: never
+
+# Job: Analyze VSA metrics and generate insights
+vsa:analyze-metrics:
+  stage: vsa-analyze
+  needs: ["vsa:collect-metrics"]
+  image: alpine:latest
+  script:
+    - |
+      if [ "$VSA_ENABLED" = "true" ] && [ -f "vsa-metrics.json" ]; then
+        echo "🔍 Analyzing VSA metrics..."
+        apk add --no-cache jq bc
+
+        # Extract metrics
+        LEAD_TIME=$(jq -r '.metrics.lead_time_seconds // 0' vsa-metrics.json)
+        CYCLE_TIME=$(jq -r '.metrics.cycle_time_seconds // 0' vsa-metrics.json)
+        DEPLOY_FREQ=$(jq -r '.metrics.deployments_24h // 0' vsa-metrics.json)
+        FAILURE_RATE=$(jq -r '.metrics.failure_rate_percent // 0' vsa-metrics.json)
+
+        # Create analysis report
+        cat > vsa-analysis.json <<EOF
+      {
+        "analysis_timestamp": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
+        "dora_classification": {
+          "deployment_frequency": "calculating",
+          "lead_time_for_changes": "calculating",
+          "change_failure_rate": "calculating",
+          "time_to_restore_service": "calculating"
+        },
+        "performance_indicators": {},
+        "recommendations": []
+      }
+      EOF
+
+        # Analyze Deployment Frequency (DORA metric)
+        echo "Analyzing deployment frequency..."
+        if [ "$DEPLOY_FREQ" -ge "30" ]; then
+          DEPLOY_CLASS="Elite"
+        elif [ "$DEPLOY_FREQ" -ge "7" ]; then
+          DEPLOY_CLASS="High"
+        elif [ "$DEPLOY_FREQ" -ge "1" ]; then
+          DEPLOY_CLASS="Medium"
+        else
+          DEPLOY_CLASS="Low"
+        fi
+        jq --arg dc "$DEPLOY_CLASS" '.dora_classification.deployment_frequency = $dc' vsa-analysis.json > tmp.json && mv tmp.json vsa-analysis.json
+
+        # Analyze Lead Time (DORA metric)
+        echo "Analyzing lead time for changes..."
+        LEAD_TIME_HOURS=$(echo "scale=2; $LEAD_TIME / 3600" | bc 2>/dev/null || echo "0")
+        if [ "$(echo "$LEAD_TIME_HOURS < 1" | bc 2>/dev/null)" = "1" ]; then
+          LEAD_CLASS="Elite"
+        elif [ "$(echo "$LEAD_TIME_HOURS < 24" | bc 2>/dev/null)" = "1" ]; then
+          LEAD_CLASS="High"
+        elif [ "$(echo "$LEAD_TIME_HOURS < 168" | bc 2>/dev/null)" = "1" ]; then
+          LEAD_CLASS="Medium"
+        else
+          LEAD_CLASS="Low"
+        fi
+        jq --arg lc "$LEAD_CLASS" '.dora_classification.lead_time_for_changes = $lc' vsa-analysis.json > tmp.json && mv tmp.json vsa-analysis.json
+
+        # Analyze Change Failure Rate (DORA metric)
+        echo "Analyzing change failure rate..."
+        FAILURE_NUM=$(echo "$FAILURE_RATE" | sed 's/%//')
+        if [ "$(echo "$FAILURE_NUM < 5" | bc 2>/dev/null)" = "1" ]; then
+          FAILURE_CLASS="Elite"
+        elif [ "$(echo "$FAILURE_NUM < 15" | bc 2>/dev/null)" = "1" ]; then
+          FAILURE_CLASS="High"
+        elif [ "$(echo "$FAILURE_NUM < 30" | bc 2>/dev/null)" = "1" ]; then
+          FAILURE_CLASS="Medium"
+        else
+          FAILURE_CLASS="Low"
+        fi
+        jq --arg fc "$FAILURE_CLASS" '.dora_classification.change_failure_rate = $fc' vsa-analysis.json > tmp.json && mv tmp.json vsa-analysis.json
+
+        # Generate recommendations
+        echo "Generating recommendations..."
+        if [ "$DEPLOY_CLASS" = "Low" ] || [ "$DEPLOY_CLASS" = "Medium" ]; then
+          jq '.recommendations += ["Consider increasing deployment frequency through automation"]' vsa-analysis.json > tmp.json && mv tmp.json vsa-analysis.json
+        fi
+
+        if [ "$LEAD_CLASS" = "Low" ] || [ "$LEAD_CLASS" = "Medium" ]; then
+          jq '.recommendations += ["Reduce lead time by optimizing CI/CD pipeline"]' vsa-analysis.json > tmp.json && mv tmp.json vsa-analysis.json
+        fi
+
+        if [ "$FAILURE_CLASS" = "Low" ] || [ "$FAILURE_CLASS" = "Medium" ]; then
+          jq '.recommendations += ["Improve test coverage to reduce change failure rate"]' vsa-analysis.json > tmp.json && mv tmp.json vsa-analysis.json
+        fi
+
+        # Add performance indicators
+        jq --arg lt "$LEAD_TIME_HOURS" \
+           --arg ct "$(echo "scale=2; $CYCLE_TIME / 60" | bc 2>/dev/null || echo "0")" \
+           --arg df "$DEPLOY_FREQ" \
+           --arg fr "$FAILURE_RATE" \
+           '.performance_indicators = {
+             "lead_time_hours": ($lt | tonumber),
+             "cycle_time_minutes": ($ct | tonumber),
+             "deployments_per_day": ($df | tonumber),
+             "failure_rate_percent": ($fr | tonumber)
+           }' vsa-analysis.json > tmp.json && mv tmp.json vsa-analysis.json
+
+        echo "✅ VSA analysis complete"
+        cat vsa-analysis.json
+      else
+        echo "No VSA metrics to analyze"
+      fi
+  artifacts:
+    paths:
+      - vsa-analysis.json
+    expire_in: 30 days
+  rules:
+    - if: '$VSA_ENABLED == "true"'
+      when: on_success
+    - when: never
+
+# Job: Generate VSA dashboard/report
+vsa:generate-report:
+  stage: vsa-report
+  needs: ["vsa:analyze-metrics"]
+  image: alpine:latest
+  script:
+    - |
+      if [ "$VSA_ENABLED" = "true" ] && [ -f "vsa-analysis.json" ]; then
+        echo "📈 Generating VSA report..."
+        apk add --no-cache jq
+
+        # Generate report based on format
+        case "$VSA_REPORT_FORMAT" in
+          markdown|md)
+            echo "Generating Markdown report..."
+            cat > vsa-report.md <<'MDEOF'
+      # Value Stream Analytics Report
+
+      **Generated:** $(date -u +"%Y-%m-%d %H:%M:%S UTC")
+      **Pipeline:** ${CI_PIPELINE_ID}
+      **Project:** ${CI_PROJECT_NAME}
+      **Branch:** ${CI_COMMIT_BRANCH}
+
+      ## DORA Metrics Classification
+
+      MDEOF
+
+            # Add DORA metrics
+            echo "- **Deployment Frequency:** $(jq -r '.dora_classification.deployment_frequency' vsa-analysis.json)" >> vsa-report.md
+            echo "- **Lead Time for Changes:** $(jq -r '.dora_classification.lead_time_for_changes' vsa-analysis.json)" >> vsa-report.md
+            echo "- **Change Failure Rate:** $(jq -r '.dora_classification.change_failure_rate' vsa-analysis.json)" >> vsa-report.md
+            echo "- **Time to Restore Service:** $(jq -r '.dora_classification.time_to_restore_service' vsa-analysis.json)" >> vsa-report.md
+
+            echo "" >> vsa-report.md
+            echo "## Performance Indicators" >> vsa-report.md
+            echo "" >> vsa-report.md
+            echo "- **Lead Time:** $(jq -r '.performance_indicators.lead_time_hours' vsa-analysis.json) hours" >> vsa-report.md
+            echo "- **Cycle Time:** $(jq -r '.performance_indicators.cycle_time_minutes' vsa-analysis.json) minutes" >> vsa-report.md
+            echo "- **Deployments (24h):** $(jq -r '.performance_indicators.deployments_per_day' vsa-analysis.json)" >> vsa-report.md
+            echo "- **Failure Rate:** $(jq -r '.performance_indicators.failure_rate_percent' vsa-analysis.json)%" >> vsa-report.md
+
+            # Add recommendations if any
+            RECS=$(jq -r '.recommendations | length' vsa-analysis.json)
+            if [ "$RECS" -gt "0" ]; then
+              echo "" >> vsa-report.md
+              echo "## Recommendations" >> vsa-report.md
+              echo "" >> vsa-report.md
+              jq -r '.recommendations[] | "- " + .' vsa-analysis.json >> vsa-report.md
+            fi
+
+            cat vsa-report.md
+            ;;
+
+          html)
+            echo "Generating HTML report..."
+            cat > vsa-report.html <<'HTMLEOF'
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>VSA Report</title>
+        <style>
+          body { font-family: Arial, sans-serif; margin: 40px; }
+          h1 { color: #333; }
+          .metric { background: #f5f5f5; padding: 15px; margin: 10px 0; border-radius: 5px; }
+          .elite { color: #22c55e; }
+          .high { color: #3b82f6; }
+          .medium { color: #f59e0b; }
+          .low { color: #ef4444; }
+        </style>
+      </head>
+      <body>
+        <h1>Value Stream Analytics Report</h1>
+        <p><strong>Pipeline:</strong> ${CI_PIPELINE_ID}</p>
+        <p><strong>Project:</strong> ${CI_PROJECT_NAME}</p>
+        <h2>DORA Metrics</h2>
+      HTMLEOF
+
+            # Add metrics with color coding
+            DEPLOY_CLASS=$(jq -r '.dora_classification.deployment_frequency' vsa-analysis.json | tr '[:upper:]' '[:lower:]')
+            echo "<div class='metric'><strong>Deployment Frequency:</strong> <span class='$DEPLOY_CLASS'>$(jq -r '.dora_classification.deployment_frequency' vsa-analysis.json)</span></div>" >> vsa-report.html
+
+            echo "</body></html>" >> vsa-report.html
+            cat vsa-report.html
+            ;;
+
+          *)
+            echo "Using JSON format (default)"
+            cp vsa-analysis.json vsa-report.json
+            cat vsa-report.json
+            ;;
+        esac
+
+        # Create dashboard summary
+        cat > vsa-dashboard.json <<EOF
+      {
+        "title": "VSA Dashboard Summary",
+        "pipeline_id": "${CI_PIPELINE_ID}",
+        "timestamp": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
+        "metrics": $(cat vsa-analysis.json | jq '.performance_indicators'),
+        "dora": $(cat vsa-analysis.json | jq '.dora_classification'),
+        "dashboard_url": "${VSA_DASHBOARD_URL:-Not configured}"
+      }
+      EOF
+
+        echo "✅ VSA report generated"
+        echo ""
+        echo "📊 VSA Dashboard Summary:"
+        cat vsa-dashboard.json | jq '.'
+      else
+        echo "No VSA analysis to report"
+      fi
+  artifacts:
+    reports:
+      metrics: vsa-dashboard.json
+    paths:
+      - vsa-report.*
+      - vsa-dashboard.json
+    expire_in: 90 days
+  rules:
+    - if: '$VSA_ENABLED == "true"'
+      when: on_success
+    - when: never

@@ -6,12 +6,12 @@ The OSSA LangChain integration provides seamless conversion of OSSA agent defini
 
 ## Features
 
-- **🔄 Automatic Conversion**: Convert OSSA YAML definitions to LangChain chains
+- ** Automatic Conversion**: Convert OSSA YAML definitions to LangChain chains
 - **🎭 Multiple Patterns**: Support for sequential, parallel, conditional, map-reduce, and pipeline patterns
 - **🤖 Multi-Provider**: Compatible with OpenAI, Anthropic, and other LangChain-supported providers
-- **⚡ Streaming Support**: Built-in streaming capabilities using LangChain's Runnable interface
-- **🔧 Flexible Composition**: Create complex agent workflows from simple OSSA definitions
-- **🛡️ Error Handling**: Comprehensive validation and error handling throughout the chain lifecycle
+- ** Streaming Support**: Built-in streaming capabilities using LangChain's Runnable interface
+- ** Flexible Composition**: Create complex agent workflows from simple OSSA definitions
+- ** Error Handling**: Comprehensive validation and error handling throughout the chain lifecycle
 
 ## Installation
 
@@ -304,14 +304,14 @@ The current integration supports these OSSA capabilities:
 
 | Capability | Description | Template Available |
 |------------|-------------|-------------------|
-| `analyze_code` | Code quality and structure analysis | ✅ |
-| `generate_docs` | Documentation generation from code | ✅ |
-| `validate_syntax` | Syntax and formatting validation | ✅ |
-| `suggest_improvements` | Performance and quality improvements | ✅ |
-| `text_processing` | General text processing tasks | ✅ |
-| `data_analysis` | Data analysis and interpretation | ✅ |
-| `code_review` | Comprehensive code reviews | ✅ |
-| `planning` | Task and strategy planning | ✅ |
+| `analyze_code` | Code quality and structure analysis |  |
+| `generate_docs` | Documentation generation from code |  |
+| `validate_syntax` | Syntax and formatting validation |  |
+| `suggest_improvements` | Performance and quality improvements |  |
+| `text_processing` | General text processing tasks |  |
+| `data_analysis` | Data analysis and interpretation |  |
+| `code_review` | Comprehensive code reviews |  |
+| `planning` | Task and strategy planning |  |
 
 ## Examples
 

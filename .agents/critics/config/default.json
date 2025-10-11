@@ -1,0 +1,76 @@
+{
+  "name": "code-reviewer",
+  "version": "1.0.0",
+  "port": 3000,
+  "capabilities": [
+    "code_analysis",
+    "security_scanning",
+    "quality_assessment",
+    "compliance_checking",
+    "vulnerability_detection",
+    "performance_analysis"
+  ],
+  "security": {
+    "require_authentication": true,
+    "require_authorization": true,
+    "max_file_size": 10485760,
+    "allowed_file_types": [
+      ".ts", ".js", ".tsx", ".jsx",
+      ".py", ".java", ".go", ".rs",
+      ".cpp", ".cxx", ".cc", ".cs",
+      ".php", ".rb", ".swift", ".kt"
+    ],
+    "scan_timeout": 30000
+  },
+  "quality": {
+    "complexity_threshold": 10,
+    "maintainability_threshold": 70,
+    "coverage_threshold": 80,
+    "duplication_threshold": 5,
+    "max_method_length": 50,
+    "max_class_length": 1000
+  },
+  "cors": {
+    "origin": ["http://localhost:3000", "https://ossa.dev"],
+    "credentials": true
+  },
+  "rateLimit": {
+    "requests_per_minute": 1000,
+    "burst_size": 10,
+    "window_ms": 60000
+  },
+  "observability": {
+    "metrics_enabled": true,
+    "tracing_enabled": true,
+    "logging_level": "info",
+    "log_format": "json"
+  },
+  "integrations": {
+    "gitlab": {
+      "enabled": true,
+      "webhook_secret": "${GITLAB_WEBHOOK_SECRET}",
+      "api_token": "${GITLAB_API_TOKEN}"
+    },
+    "github": {
+      "enabled": false,
+      "webhook_secret": "${GITHUB_WEBHOOK_SECRET}",
+      "api_token": "${GITHUB_API_TOKEN}"
+    },
+    "sonarqube": {
+      "enabled": false,
+      "url": "${SONAR_URL}",
+      "token": "${SONAR_TOKEN}"
+    }
+  },
+  "cache": {
+    "enabled": true,
+    "ttl": 3600,
+    "max_size": 1000
+  },
+  "features": {
+    "batch_processing": true,
+    "parallel_analysis": true,
+    "incremental_analysis": true,
+    "custom_rules": true
+  }
+}

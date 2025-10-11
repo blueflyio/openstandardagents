@@ -2,11 +2,11 @@
 ## 10 Specialized Agents for v0.1.9-alpha.1 Development
 
 ### Current State Assessment
-- ✅ Specifications complete (ACDL, OpenAPI, Agent Manifests, Orchestration API)
-- ⚠️ Need test infrastructure (failing tests for TDD)
-- ⚠️ Need implementation framework
-- ⚠️ Need validation and compliance checking
-- ⚠️ Need documentation generation
+-  Specifications complete (ACDL, OpenAPI, Agent Manifests, Orchestration API)
+- ⚠ Need test infrastructure (failing tests for TDD)
+- ⚠ Need implementation framework
+- ⚠ Need validation and compliance checking
+- ⚠ Need documentation generation
 
 ### Strategic Agent Allocation
 

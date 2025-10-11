@@ -1,0 +1,177 @@
+openapi: 3.1.0
+info:
+  title: MCP Enhanced Integrator Agent API
+  version: 0.1.9
+  description: |
+    OSSA MCP Enhanced Integrator Agent - Advanced Model Context Protocol integration
+    with enhanced capabilities for context management and model coordination.
+  contact:
+    name: OSSA Framework
+    url: https://gitlab.bluefly.io/llm/openapi-ai-agents-standard
+
+servers:
+  - url: http://localhost:3015/api/v1
+    description: Local MCP enhanced agent server
+
+paths:
+  /mcp/context/manage:
+    post:
+      summary: Manage model context
+      operationId: manageContext
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ContextManagementRequest'
+      responses:
+        '200':
+          description: Context managed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContextManagementResponse'
+
+  /mcp/tools/register:
+    post:
+      summary: Register MCP tools
+      operationId: registerTools
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ToolRegistrationRequest'
+      responses:
+        '201':
+          description: Tools registered
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ToolRegistrationResponse'
+
+  /mcp/resources/provide:
+    post:
+      summary: Provide resources to model
+      operationId: provideResources
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResourceProvisionRequest'
+      responses:
+        '200':
+          description: Resources provided
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResourceProvisionResponse'
+
+components:
+  schemas:
+    ContextManagementRequest:
+      type: object
+      required:
+        - action
+        - context
+      properties:
+        action:
+          type: string
+          enum: [create, update, delete, retrieve]
+        context:
+          type: object
+          properties:
+            id:
+              type: string
+            content:
+              type: string
+            metadata:
+              type: object
+            tokens:
+              type: integer
+        windowSize:
+          type: integer
+        compressionStrategy:
+          type: string
+          enum: [none, summarize, truncate, selective]
+
+    ContextManagementResponse:
+      type: object
+      properties:
+        contextId:
+          type: string
+        status:
+          type: string
+        tokensUsed:
+          type: integer
+        tokensRemaining:
+          type: integer
+        context:
+          type: object
+
+    ToolRegistrationRequest:
+      type: object
+      required:
+        - tools
+      properties:
+        tools:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+              description:
+                type: string
+              inputSchema:
+                type: object
+              handler:
+                type: string
+
+    ToolRegistrationResponse:
+      type: object
+      properties:
+        registeredTools:
+          type: array
+          items:
+            type: string
+        status:
+          type: string
+        available:
+          type: boolean
+
+    ResourceProvisionRequest:
+      type: object
+      required:
+        - resources
+      properties:
+        resources:
+          type: array
+          items:
+            type: object
+            properties:
+              uri:
+                type: string
+              type:
+                type: string
+                enum: [file, api, database, stream]
+              content:
+                type: string
+              mimeType:
+                type: string
+
+    ResourceProvisionResponse:
+      type: object
+      properties:
+        providedResources:
+          type: array
+          items:
+            type: object
+            properties:
+              uri:
+                type: string
+              status:
+                type: string
+              accessible:
+                type: boolean

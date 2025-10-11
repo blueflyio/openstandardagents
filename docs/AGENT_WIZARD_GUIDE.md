@@ -1,9 +1,9 @@
-# 🧙‍♂️ OSSA Agent Wizard Guide
+# 🧙‍♂ OSSA Agent Wizard Guide
 ## Complete Deep Dive into Agent Architecture, Communication, and Backend Services
 
 ---
 
-## 📚 Table of Contents
+##  Table of Contents
 
 1. [System Architecture Overview](#system-architecture-overview)
 2. [Agent Type System](#agent-type-system)
@@ -1205,7 +1205,7 @@ private determineOptimalStrategy(workflow: Workflow): 'parallel' | 'sequential' 
 
 ---
 
-## 🎯 Quick Reference
+##  Quick Reference
 
 ### Essential Files
 
@@ -1251,7 +1251,7 @@ npm run lint                    # Lint code
 
 ---
 
-## 📚 Additional Resources
+##  Additional Resources
 
 - [OSSA Specification](./docs/ARCHITECTURE.md)
 - [API Documentation](./docs/api/GETTING_STARTED.md)

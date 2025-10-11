@@ -12,10 +12,10 @@ help:
 	@echo "  clean  - Clean up containers"
 
 build:
-	docker build -t $(SERVICE_NAME) -f infrastructure/Dockerfile .
+	docker build -t $(SERVICE_NAME) -f infrastructure/docker/Dockerfile .
 
 run:
-	docker-compose -f infrastructure/docker-compose.yml up -d
+	docker-compose -f infrastructure/docker/docker-compose.yml up -d
 
 test:
 	npm test
@@ -24,4 +24,4 @@ deploy:
 	kubectl apply -f infrastructure/kubernetes/
 
 clean:
-	docker-compose -f infrastructure/docker-compose.yml down -v
+	docker-compose -f infrastructure/docker/docker-compose.yml down -v

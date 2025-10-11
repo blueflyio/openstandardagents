@@ -7,12 +7,12 @@
 **Status**: ACTIVE - Working on specifications
 
 #### Current Tasks:
-- ✅ Created FILE_INDEX.md (complete file inventory)
-- ✅ Created ACDL specification (src/api/acdl-specification.yml)
-- ✅ Updated OpenAPI to v0.1.9-alpha.1
-- ✅ Created agent orchestration guide
-- 🔄 Building agent manifest schemas
-- 🔄 Defining orchestration endpoints
+-  Created FILE_INDEX.md (complete file inventory)
+-  Created ACDL specification (src/api/acdl-specification.yml)
+-  Updated OpenAPI to v0.1.9-alpha.1
+-  Created agent orchestration guide
+-  Building agent manifest schemas
+-  Defining orchestration endpoints
 - ⏳ Creating workflow specifications
 
 #### Files I Own:
@@ -59,26 +59,26 @@ CLAUDE_COORDINATION.md
 
 ### 2. Communication Points
 - Update this file when switching tasks
-- Mark sections with 🔄 (in progress) or ✅ (complete)
+- Mark sections with  (in progress) or  (complete)
 - Use git commits every 30 minutes
 
 ### 3. Handoff Points
 When Window 1 completes a specification:
 1. Update FILE_INDEX.md
-2. Mark spec as ✅ in this file
+2. Mark spec as  in this file
 3. Window 2 creates tests for that spec
 
 When Window 2 needs a specification:
-1. Check if marked ✅ here
+1. Check if marked  here
 2. If not ready, work on different test area
 3. Never create specs (that's Window 1's job)
 
 ## Current Sprint (Week 1: API-First Foundation)
 
 ### Day 1-2: Specifications (Window 1)
-- ✅ ACDL specification
-- ✅ OpenAPI v0.1.9-alpha.1
-- 🔄 Agent manifest schemas
+-  ACDL specification
+-  OpenAPI v0.1.9-alpha.1
+-  Agent manifest schemas
 - ⏳ Orchestration endpoints
 - ⏳ Workflow schemas
 
@@ -132,9 +132,9 @@ git commit -m "test(tdd): [description] v0.1.9-alpha"
 ## Status Indicators
 
 ### Specification Status
-- ✅ ACDL Core: COMPLETE
-- ✅ OpenAPI Main: COMPLETE
-- 🔄 Agent Manifests: IN PROGRESS
+-  ACDL Core: COMPLETE
+-  OpenAPI Main: COMPLETE
+-  Agent Manifests: IN PROGRESS
 - ⏳ Orchestration API: PENDING
 - ⏳ Workflow Schemas: PENDING
 - ⏳ Discovery Protocol: PENDING

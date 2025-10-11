@@ -1,0 +1,189 @@
+openapi: 3.1.0
+info:
+  title: System Monitor Agent API
+  version: 0.1.9
+  description: |
+    OSSA System Monitor Agent - Real-time monitoring of system resources,
+    agent health, and performance metrics across the OSSA platform.
+  contact:
+    name: OSSA Framework
+    url: https://gitlab.bluefly.io/llm/openapi-ai-agents-standard
+
+servers:
+  - url: http://localhost:3010/api/v1
+    description: Local monitor agent server
+
+paths:
+  /monitor/system:
+    get:
+      summary: Get system metrics
+      operationId: getSystemMetrics
+      responses:
+        '200':
+          description: Current system metrics
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SystemMetrics'
+
+  /monitor/agents:
+    get:
+      summary: Get agent health status
+      operationId: getAgentHealth
+      responses:
+        '200':
+          description: Agent health information
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentHealth'
+
+  /monitor/alerts:
+    get:
+      summary: Get active alerts
+      operationId: getAlerts
+      responses:
+        '200':
+          description: Active system alerts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Alert'
+
+  /monitor/metrics/history:
+    get:
+      summary: Get historical metrics
+      operationId: getMetricsHistory
+      parameters:
+        - name: start
+          in: query
+          schema:
+            type: string
+            format: date-time
+        - name: end
+          in: query
+          schema:
+            type: string
+            format: date-time
+        - name: metric
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Historical metric data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MetricsHistory'
+
+components:
+  schemas:
+    SystemMetrics:
+      type: object
+      properties:
+        cpu:
+          type: object
+          properties:
+            usage:
+              type: number
+            cores:
+              type: integer
+            loadAverage:
+              type: array
+              items:
+                type: number
+        memory:
+          type: object
+          properties:
+            total:
+              type: integer
+            used:
+              type: integer
+            free:
+              type: integer
+            percentage:
+              type: number
+        disk:
+          type: object
+          properties:
+            total:
+              type: integer
+            used:
+              type: integer
+            free:
+              type: integer
+            percentage:
+              type: number
+        network:
+          type: object
+          properties:
+            bytesReceived:
+              type: integer
+            bytesSent:
+              type: integer
+            packetsReceived:
+              type: integer
+            packetsSent:
+              type: integer
+
+    AgentHealth:
+      type: object
+      properties:
+        totalAgents:
+          type: integer
+        healthy:
+          type: integer
+        unhealthy:
+          type: integer
+        agents:
+          type: array
+          items:
+            type: object
+            properties:
+              agentId:
+                type: string
+              status:
+                type: string
+                enum: [healthy, unhealthy, degraded, unknown]
+              lastHeartbeat:
+                type: string
+                format: date-time
+              metrics:
+                type: object
+
+    Alert:
+      type: object
+      properties:
+        id:
+          type: string
+        severity:
+          type: string
+          enum: [info, warning, error, critical]
+        category:
+          type: string
+        message:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+        acknowledged:
+          type: boolean
+
+    MetricsHistory:
+      type: object
+      properties:
+        metric:
+          type: string
+        dataPoints:
+          type: array
+          items:
+            type: object
+            properties:
+              timestamp:
+                type: string
+                format: date-time
+              value:
+                type: number

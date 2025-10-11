@@ -1,198 +1,548 @@
-# OSSA Reference Agents
+# OSSA Agent Reference Implementation
 
-This directory contains the complete reference implementation of all 9 OSSA agent types, providing examples that others can use as templates for building their own OSSA-compliant agents.
+Reference implementations and examples for OSSA 1.0 compliant agents.
 
-## Directory Structure
+---
 
+## Overview
+
+This document provides reference implementations for all supported agent roles in the OSSA 1.0 specification. These examples demonstrate proper structure, required fields, and best practices for building OSSA-compliant agents.
+
+---
+
+## Agent Roles
+
+OSSA 1.0 defines ten standardized agent roles:
+
+1. **Compliance** - Regulatory and standards validation
+2. **Chat** - Conversational interaction
+3. **Orchestration** - Multi-agent workflow coordination
+4. **Audit** - Security and compliance auditing
+5. **Workflow** - Business process automation
+6. **Monitoring** - System observation and metrics
+7. **Data Processing** - ETL and analytics
+8. **Integration** - External system connectivity
+9. **Development** - Developer tools and code assistance
+10. **Custom** - Domain-specific functionality
+
+---
+
+## Reference Implementation: Compliance Agent
+
+```yaml
+ossaVersion: "1.0"
+agent:
+  id: compliance-scanner
+  name: FedRAMP Compliance Scanner
+  version: 1.0.0
+  description: Automated FedRAMP compliance validation and reporting
+  role: compliance
+
+  runtime:
+    type: docker
+    image: ossa/compliance-scanner:1.0.0
+    resources:
+      limits:
+        cpu: "2"
+        memory: "4Gi"
+      requests:
+        cpu: "1"
+        memory: "2Gi"
+
+  capabilities:
+    - name: scan_fedramp
+      description: Scan system configuration against FedRAMP controls
+      inputs:
+        type: object
+        required: ["system_config"]
+        properties:
+          system_config:
+            type: object
+            description: System configuration to analyze
+          baseline:
+            type: string
+            enum: ["low", "moderate", "high"]
+            default: "moderate"
+      outputs:
+        type: object
+        required: ["compliant", "findings", "score"]
+        properties:
+          compliant:
+            type: boolean
+          findings:
+            type: array
+            items:
+              type: object
+              properties:
+                control_id:
+                  type: string
+                severity:
+                  type: string
+                  enum: ["critical", "high", "medium", "low"]
+                description:
+                  type: string
+                remediation:
+                  type: string
+          score:
+            type: number
+            minimum: 0
+            maximum: 100
+
+  security:
+    authentication: oauth2
+    authorization: rbac
+    compliance:
+      - fedramp
+      - fisma
+      - nist-800-53
+
+  monitoring:
+    healthCheck:
+      httpGet:
+        path: /health
+        port: 8080
+      initialDelaySeconds: 30
+      periodSeconds: 10
+    metrics:
+      enabled: true
+      port: 9090
+      path: /metrics
 ```
-.agents/
-├── README.md                    # This documentation
-├── registry.yml                 # Complete agent registry
-├── orchestrators/               # Workflow coordination agents
-│   └── example-orchestrator/
-│       ├── agent.yml
-│       └── README.md
-├── workers/                     # Task execution agents
-│   ├── task-heavy/
-│   │   ├── agent.yml
-│   │   └── README.md
-│   ├── security-agent/
-│   │   └── agent.yml
-│   ├── data-agent/
-│   │   └── agent.yml
-│   └── analytics-agent/
-│       └── agent.yml
-├── critics/                     # Quality assessment agents
-│   └── code-reviewer/
-│       └── agent.yml
-├── judges/                      # Decision-making agents
-│   └── quality-assessor/
-│       └── agent.yml
-├── trainers/                    # (Future expansion)
-├── governors/                   # (Future expansion)
-├── monitors/                    # System monitoring agents
-│   └── system-monitor/
-│       └── agent.yml
-├── integrators/                 # External system integration agents
-│   ├── api-connector/
-│   │   └── agent.yml
-│   ├── communication-multiprotocol/
-│   │   └── agent.yml
-│   └── mcp-enhanced/
-│       └── agent.yml
-└── voice/                       # Voice interface agents
-    └── voice-assistant.yml
+
+---
+
+## Reference Implementation: Chat Agent
+
+```yaml
+ossaVersion: "1.0"
+agent:
+  id: support-chatbot
+  name: Customer Support Chatbot
+  version: 1.0.0
+  description: AI-powered customer support chatbot with context awareness
+  role: chat
+
+  runtime:
+    type: k8s
+    image: ossa/support-chatbot:1.0.0
+    replicas: 3
+    resources:
+      limits:
+        cpu: "1"
+        memory: "2Gi"
+      requests:
+        cpu: "500m"
+        memory: "1Gi"
+
+  capabilities:
+    - name: chat
+      description: Process chat messages and generate responses
+      inputs:
+        type: object
+        required: ["message"]
+        properties:
+          message:
+            type: string
+            description: User message
+          context:
+            type: object
+            description: Conversation context
+          user_id:
+            type: string
+            description: User identifier
+      outputs:
+        type: object
+        required: ["response"]
+        properties:
+          response:
+            type: string
+            description: Bot response
+          intent:
+            type: string
+            description: Detected intent
+          confidence:
+            type: number
+            minimum: 0
+            maximum: 1
+          actions:
+            type: array
+            items:
+              type: string
+
+    - name: escalate
+      description: Escalate conversation to human agent
+      inputs:
+        type: object
+        required: ["conversation_id", "reason"]
+        properties:
+          conversation_id:
+            type: string
+          reason:
+            type: string
+      outputs:
+        type: object
+        properties:
+          ticket_id:
+            type: string
+          estimated_wait_time:
+            type: integer
+
+  security:
+    authentication: jwt
+    authorization: rbac
+    compliance:
+      - gdpr
+      - ccpa
+
+  monitoring:
+    healthCheck:
+      httpGet:
+        path: /health
+        port: 8080
+    metrics:
+      enabled: true
+      port: 9090
 ```
 
-## Agent Types Overview
+---
 
-### 1. Orchestrator Agents
-- **Purpose**: Coordinate complex multi-agent workflows
-- **Example**: `example-orchestrator` - Workflow coordination and resource allocation
-- **Key Features**: Hierarchical planning, agent specialization, adaptive execution
+## Reference Implementation: Orchestration Agent
 
-### 2. Worker Agents
-- **Purpose**: Execute specific tasks and computations
-- **Examples**: 
-  - `task-heavy-worker` - Heavy computation tasks
-  - `security-agent` - Authentication, encryption, auditing
-  - `data-agent` - Batch, stream, and realtime data processing
-  - `analytics-agent` - Statistical analysis and machine learning
-- **Key Features**: Specialized capabilities, resource management, scalability
+```yaml
+ossaVersion: "1.0"
+agent:
+  id: workflow-orchestrator
+  name: Multi-Agent Workflow Orchestrator
+  version: 1.0.0
+  description: Coordinate complex multi-agent workflows with dynamic routing
+  role: orchestration
 
-### 3. Critic Agents
-- **Purpose**: Evaluate quality and provide feedback
-- **Example**: `code-reviewer-critic` - Code quality analysis and security review
-- **Key Features**: Quality assessment, best practices enforcement, issue identification
+  runtime:
+    type: k8s
+    image: ossa/orchestrator:1.0.0
+    replicas: 2
+    resources:
+      limits:
+        cpu: "4"
+        memory: "8Gi"
+      requests:
+        cpu: "2"
+        memory: "4Gi"
 
-### 4. Judge Agents
-- **Purpose**: Make decisions based on criteria and standards
-- **Example**: `quality-assessor-judge` - Quality decisions and compliance validation
-- **Key Features**: Multi-criteria decision making, standards compliance, justification
+  capabilities:
+    - name: orchestrate_workflow
+      description: Execute multi-step workflow across multiple agents
+      inputs:
+        type: object
+        required: ["workflow_definition"]
+        properties:
+          workflow_definition:
+            type: object
+            description: Workflow DAG definition
+          parameters:
+            type: object
+            description: Workflow input parameters
+          priority:
+            type: string
+            enum: ["low", "normal", "high", "critical"]
+            default: "normal"
+      outputs:
+        type: object
+        required: ["workflow_id", "status"]
+        properties:
+          workflow_id:
+            type: string
+          status:
+            type: string
+            enum: ["pending", "running", "completed", "failed"]
+          steps_completed:
+            type: integer
+          steps_total:
+            type: integer
+          results:
+            type: object
 
-### 5. Monitor Agents
-- **Purpose**: Track system performance and health
-- **Example**: `system-monitor` - Performance tracking, alerting, metrics collection
-- **Key Features**: Real-time monitoring, trend analysis, automated alerting
+    - name: get_workflow_status
+      description: Query workflow execution status
+      inputs:
+        type: object
+        required: ["workflow_id"]
+        properties:
+          workflow_id:
+            type: string
+      outputs:
+        type: object
+        properties:
+          status:
+            type: string
+          progress:
+            type: number
+          current_step:
+            type: string
+          error:
+            type: string
 
-### 6. Integrator Agents
-- **Purpose**: Connect with external systems and services
-- **Examples**:
-  - `api-connector-integrator` - REST/GraphQL API integration
-  - `communication-multiprotocol` - WebSocket, gRPC, REST, GraphQL support
-  - `mcp-enhanced` - Enhanced MCP Server with auto-discovery
-- **Key Features**: Protocol bridging, data transformation, service orchestration
+  security:
+    authentication: mtls
+    authorization: rbac
+    compliance:
+      - iso-27001
+      - soc-2
 
-### 7. Voice Agents
-- **Purpose**: Handle voice interactions and speech processing
-- **Example**: `voice-assistant` - Speech-to-text, intent analysis, text-to-speech
-- **Key Features**: Multi-modal interaction, context awareness, natural language processing
+  monitoring:
+    healthCheck:
+      httpGet:
+        path: /health
+        port: 8080
+    metrics:
+      enabled: true
+      port: 9090
+```
 
-### 8. Trainer Agents (Future)
-- **Purpose**: Model training and learning optimization
-- **Status**: Not yet implemented in reference
+---
 
-### 9. Governor Agents (Future)
-- **Purpose**: Policy enforcement and compliance governance
-- **Status**: Not yet implemented in reference
+## Reference Implementation: Data Processing Agent
 
-## Docker Service Integration
+```yaml
+ossaVersion: "1.0"
+agent:
+  id: etl-processor
+  name: ETL Data Processing Agent
+  version: 1.0.0
+  description: Extract, transform, and load data with schema validation
+  role: data_processing
 
-The reference implementation includes agent manifests for all Docker services defined in `infrastructure/docker/docker-compose.agents.yml`:
+  runtime:
+    type: k8s
+    image: ossa/etl-processor:1.0.0
+    replicas: 5
+    resources:
+      limits:
+        cpu: "4"
+        memory: "16Gi"
+      requests:
+        cpu: "2"
+        memory: "8Gi"
 
-| Docker Service | Agent Type | Port | Description |
-|---------------|------------|------|-------------|
-| `ossa-task-heavy` | worker | 3004 | Heavy computation worker |
-| `ossa-comm-multiprotocol` | integrator | 3005 | Multi-protocol communication |
-| `ossa-mcp-enhanced` | integrator | 3006 | Enhanced MCP server |
-| `ossa-data-agent` | worker | 3007 | Data processing worker |
-| `ossa-analytics-agent` | worker | 3008 | Analytics and ML worker |
-| `ossa-security-agent` | worker | 3009 | Security operations worker |
+  capabilities:
+    - name: process_batch
+      description: Process batch data transformation
+      inputs:
+        type: object
+        required: ["source", "transformation", "destination"]
+        properties:
+          source:
+            type: object
+            properties:
+              type:
+                type: string
+                enum: ["s3", "database", "api", "file"]
+              location:
+                type: string
+              credentials:
+                type: object
+          transformation:
+            type: object
+            description: Transformation rules
+          destination:
+            type: object
+            properties:
+              type:
+                type: string
+              location:
+                type: string
+      outputs:
+        type: object
+        properties:
+          job_id:
+            type: string
+          records_processed:
+            type: integer
+          duration_ms:
+            type: integer
+          errors:
+            type: array
 
-## Conformance Levels
+  storage:
+    - name: temp-storage
+      size: "100Gi"
+      mountPath: /data
+      accessMode: ReadWriteMany
 
-The reference agents demonstrate different conformance levels:
+  security:
+    authentication: apikey
+    authorization: abac
+    compliance:
+      - gdpr
+      - hipaa
 
-- **Gold**: 7 agents with full OSSA compliance including audit logging, feedback loops, and certifications
-- **Silver**: 1 agent with essential OSSA features but limited advanced capabilities
+  monitoring:
+    healthCheck:
+      httpGet:
+        path: /health
+        port: 8080
+    metrics:
+      enabled: true
+      port: 9090
+```
 
-## Key Features Demonstrated
+---
 
-### 1. API Version Format
-All agents use the correct `apiVersion: "@bluefly/open-standards-scalable-agents/v0.1.9"` format.
+## Reference Implementation: Monitoring Agent
 
-### 2. Token Efficiency Strategies
-Each agent implements appropriate token efficiency strategies:
-- Hierarchical planning (orchestrators)
-- Result-only reporting (workers) 
-- Focused analysis (critics)
-- Criteria-focused evaluation (judges)
-- Metric summarization (monitors)
-- Response filtering (integrators)
+```yaml
+ossaVersion: "1.0"
+agent:
+  id: system-monitor
+  name: System Performance Monitor
+  version: 1.0.0
+  description: Real-time system performance monitoring and alerting
+  role: monitoring
 
-### 3. Protocol Support
-Agents demonstrate various protocol implementations:
-- OSSA native protocol
-- REST APIs
-- WebSocket connections
-- gRPC services
-- GraphQL endpoints
-- Prometheus metrics
-- MCP (Model Context Protocol)
+  runtime:
+    type: k8s
+    image: ossa/monitor:1.0.0
+    replicas: 2
+    resources:
+      limits:
+        cpu: "2"
+        memory: "4Gi"
+      requests:
+        cpu: "1"
+        memory: "2Gi"
 
-### 4. Resource Management
-Proper resource specification following Kubernetes patterns:
-- CPU requests and limits
-- Memory requests and limits
-- Storage requirements
-- Performance characteristics
+  capabilities:
+    - name: collect_metrics
+      description: Collect system metrics from monitored services
+      inputs:
+        type: object
+        required: ["targets"]
+        properties:
+          targets:
+            type: array
+            items:
+              type: string
+          interval_seconds:
+            type: integer
+            default: 60
+      outputs:
+        type: object
+        properties:
+          metrics:
+            type: object
+          timestamp:
+            type: string
+            format: date-time
 
-### 5. Security and Compliance
-Multiple compliance frameworks demonstrated:
-- ISO-42001 (AI Management Systems)
-- ISO-27001 (Information Security)
-- SOC-2-Type-II
-- PCI-DSS
-- FIPS-140-2
-- WCAG-2.1-AA
+    - name: create_alert
+      description: Create alert when threshold is exceeded
+      inputs:
+        type: object
+        required: ["metric", "threshold", "condition"]
+        properties:
+          metric:
+            type: string
+          threshold:
+            type: number
+          condition:
+            type: string
+            enum: ["above", "below", "equals"]
+          notification_channels:
+            type: array
+            items:
+              type: string
+      outputs:
+        type: object
+        properties:
+          alert_id:
+            type: string
+          triggered:
+            type: boolean
 
-## Usage as Templates
+  security:
+    authentication: mtls
+    authorization: rbac
+    compliance:
+      - iso-27001
 
-These reference implementations serve as templates for:
+  monitoring:
+    healthCheck:
+      httpGet:
+        path: /health
+        port: 8080
+    metrics:
+      enabled: true
+      port: 9090
+```
 
-1. **Creating New Agents**: Copy and modify agent.yml files
-2. **Understanding OSSA Standards**: See proper structure and required fields
-3. **Docker Integration**: Learn how to map Docker services to OSSA agents
-4. **Conformance Requirements**: Understand different compliance levels
-5. **Token Efficiency**: Implement appropriate optimization strategies
+---
 
-## Registry Management
+## Best Practices
 
-The `registry.yml` file provides:
-- Complete catalog of all agents
-- Docker service mappings
-- Conformance level tracking
-- Resource utilization overview
-- Protocol coverage analysis
-- Domain coverage metrics
+### 1. Capability Design
 
-## Getting Started
+- Define clear input and output schemas
+- Use JSON Schema for validation
+- Provide meaningful descriptions
+- Specify required vs optional fields
 
-1. **Browse Examples**: Review agent.yml files to understand structure
-2. **Check Registry**: Use registry.yml to understand available agents
-3. **Copy Templates**: Use as starting points for new agent development
-4. **Adapt Configuration**: Modify for your specific use cases
-5. **Test Integration**: Validate with OSSA platform components
+### 2. Resource Specification
 
-## Best Practices Demonstrated
+- Set realistic resource limits
+- Define appropriate requests for scheduling
+- Consider peak load requirements
+- Plan for horizontal scaling
 
-- Comprehensive operation definitions with proper schemas
-- Appropriate timeout and resource specifications
-- Token efficiency optimization strategies
-- Protocol flexibility and preference handling
-- Proper dependency management
-- Status tracking and health monitoring
-- Configuration externalization
-- Documentation standards
+### 3. Security
 
-This reference implementation provides a solid foundation for building OSSA-compliant agents across all supported agent types.
+- Always specify authentication method
+- Use least-privilege authorization
+- Declare relevant compliance frameworks
+- Implement secure credential management
+
+### 4. Monitoring
+
+- Provide health check endpoints
+- Expose Prometheus-compatible metrics
+- Implement structured logging
+- Define SLOs and SLIs
+
+### 5. Documentation
+
+- Write clear descriptions
+- Provide usage examples
+- Document error conditions
+- Maintain changelog
+
+---
+
+## Validation
+
+All agent manifests must validate against the OSSA 1.0 schema:
+
+```bash
+# Validate single agent
+ossa validate agent.yml
+
+# Validate directory of agents
+ossa validate agents/
+
+# Validation with compliance checks
+ossa validate agent.yml --compliance fedramp,iso-27001
+
+# Generate detailed validation report
+ossa validate agent.yml --report report.json --verbose
+```
+
+---
+
+## Additional Resources
+
+- [OSSA Schema](../../../spec/ossa-1.0.schema.json)
+- [Agent Workspace Guide](agents-workspace.md)
+- [API Documentation](../../../openapi/)
+- [Quick Start Guide](../../../README.md)
+
+---
+
+**OSSA 1.0.0 Reference Implementation**

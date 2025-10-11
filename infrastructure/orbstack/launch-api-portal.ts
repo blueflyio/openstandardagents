@@ -28,7 +28,7 @@ export async function main() {
     execSync("NC='\\033[0m' # No Color", { stdio: 'inherit' });
 
     // Configuration
-    const COMPOSE_FILE = "../../docker-compose.yml";
+    const COMPOSE_FILE = "../docker/docker-compose.yml";
     const PROJECT_NAME = "ossa";
 
     // Change to script directory

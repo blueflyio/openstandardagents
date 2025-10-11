@@ -1,0 +1,415 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://ossa.ai/schemas/v1.0/bridge",
+  "title": "OSSA Bridge Configuration Schema",
+  "description": "Schema for protocol bridge configurations enabling interoperability with various AI frameworks",
+  "type": "object",
+  "properties": {
+    "mcp": {
+      "$ref": "#/definitions/MCPBridge"
+    },
+    "a2a": {
+      "$ref": "#/definitions/A2ABridge"
+    },
+    "openapi": {
+      "$ref": "#/definitions/OpenAPIBridge"
+    },
+    "langchain": {
+      "$ref": "#/definitions/LangChainBridge"
+    },
+    "crewai": {
+      "$ref": "#/definitions/CrewAIBridge"
+    },
+    "autogen": {
+      "$ref": "#/definitions/AutoGenBridge"
+    },
+    "custom": {
+      "type": "object",
+      "additionalProperties": true
+    }
+  },
+  "definitions": {
+    "MCPBridge": {
+      "type": "object",
+      "required": ["enabled"],
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "Enable Model Context Protocol bridge"
+        },
+        "server_type": {
+          "type": "string",
+          "enum": ["stdio", "sse", "websocket"],
+          "default": "stdio",
+          "description": "MCP transport type"
+        },
+        "tools": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/MCPTool"
+          },
+          "description": "MCP tools exposed by the agent"
+        },
+        "resources": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/MCPResource"
+          },
+          "description": "MCP resources provided"
+        },
+        "prompts": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/MCPPrompt"
+          },
+          "description": "MCP prompts available"
+        },
+        "config": {
+          "type": "object",
+          "properties": {
+            "max_message_size": {
+              "type": "integer",
+              "description": "Maximum message size in bytes"
+            },
+            "timeout_ms": {
+              "type": "integer",
+              "description": "Connection timeout in milliseconds"
+            },
+            "retry_count": {
+              "type": "integer",
+              "description": "Number of retry attempts"
+            }
+          }
+        }
+      }
+    },
+    "MCPTool": {
+      "type": "object",
+      "required": ["name", "description"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "pattern": "^[a-zA-Z0-9_-]+$"
+        },
+        "description": {
+          "type": "string"
+        },
+        "input_schema": {
+          "type": "object",
+          "description": "JSON Schema for tool input"
+        },
+        "output_schema": {
+          "type": "object",
+          "description": "JSON Schema for tool output"
+        },
+        "capability": {
+          "type": "string",
+          "description": "Mapped OSSA capability"
+        }
+      }
+    },
+    "MCPResource": {
+      "type": "object",
+      "required": ["uri", "name"],
+      "properties": {
+        "uri": {
+          "type": "string",
+          "format": "uri"
+        },
+        "name": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "mimeType": {
+          "type": "string"
+        },
+        "readonly": {
+          "type": "boolean",
+          "default": true
+        }
+      }
+    },
+    "MCPPrompt": {
+      "type": "object",
+      "required": ["name", "template"],
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "template": {
+          "type": "string"
+        },
+        "arguments": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "type": {
+                "type": "string"
+              },
+              "required": {
+                "type": "boolean"
+              }
+            }
+          }
+        }
+      }
+    },
+    "A2ABridge": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "card_url": {
+          "type": "string",
+          "format": "uri",
+          "description": "Agent card URL"
+        },
+        "schema_version": {
+          "type": "string",
+          "default": "1.0"
+        },
+        "capabilities_mapping": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "Map OSSA capabilities to A2A actions"
+        },
+        "metadata": {
+          "type": "object",
+          "properties": {
+            "@context": {
+              "type": "string",
+              "default": "https://schema.org/"
+            },
+            "@type": {
+              "type": "string",
+              "default": "SoftwareApplication"
+            }
+          }
+        }
+      }
+    },
+    "OpenAPIBridge": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "spec_url": {
+          "type": "string",
+          "description": "Path or URL to OpenAPI specification"
+        },
+        "spec_version": {
+          "type": "string",
+          "enum": ["3.0", "3.1"],
+          "default": "3.1"
+        },
+        "auto_generate": {
+          "type": "boolean",
+          "default": true,
+          "description": "Auto-generate OpenAPI spec from agent manifest"
+        },
+        "servers": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "url": {
+                "type": "string"
+              },
+              "description": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "security": {
+          "type": "array",
+          "items": {
+            "type": "object"
+          }
+        }
+      }
+    },
+    "LangChainBridge": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "tool_class": {
+          "type": "string",
+          "description": "LangChain tool class name"
+        },
+        "chain_type": {
+          "type": "string",
+          "enum": ["llm", "retrieval", "agent", "sequential", "custom"],
+          "description": "Type of LangChain chain"
+        },
+        "memory": {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string",
+              "enum": ["buffer", "summary", "conversation", "vector"],
+              "default": "buffer"
+            },
+            "max_tokens": {
+              "type": "integer"
+            }
+          }
+        },
+        "callbacks": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "LangChain callback handlers"
+        },
+        "export": {
+          "type": "object",
+          "properties": {
+            "as_tool": {
+              "type": "boolean",
+              "default": true
+            },
+            "as_chain": {
+              "type": "boolean",
+              "default": false
+            },
+            "as_agent": {
+              "type": "boolean",
+              "default": false
+            }
+          }
+        }
+      }
+    },
+    "CrewAIBridge": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "agent_type": {
+          "type": "string",
+          "enum": ["worker", "manager", "researcher", "analyst", "custom"],
+          "description": "CrewAI agent role"
+        },
+        "role": {
+          "type": "string",
+          "description": "Agent role description"
+        },
+        "goal": {
+          "type": "string",
+          "description": "Agent goal"
+        },
+        "backstory": {
+          "type": "string",
+          "description": "Agent backstory for context"
+        },
+        "tools": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "CrewAI tools to use"
+        },
+        "llm": {
+          "type": "object",
+          "properties": {
+            "model": {
+              "type": "string"
+            },
+            "temperature": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 2
+            }
+          }
+        },
+        "max_iter": {
+          "type": "integer",
+          "default": 25
+        },
+        "allow_delegation": {
+          "type": "boolean",
+          "default": true
+        }
+      }
+    },
+    "AutoGenBridge": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "agent_type": {
+          "type": "string",
+          "enum": ["assistant", "user_proxy", "groupchat", "custom"],
+          "description": "AutoGen agent type"
+        },
+        "system_message": {
+          "type": "string",
+          "description": "System message for the agent"
+        },
+        "human_input_mode": {
+          "type": "string",
+          "enum": ["ALWAYS", "NEVER", "TERMINATE"],
+          "default": "NEVER"
+        },
+        "code_execution": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": false
+            },
+            "work_dir": {
+              "type": "string"
+            },
+            "use_docker": {
+              "type": "boolean",
+              "default": false
+            }
+          }
+        },
+        "llm_config": {
+          "type": "object",
+          "properties": {
+            "model": {
+              "type": "string"
+            },
+            "temperature": {
+              "type": "number"
+            },
+            "max_tokens": {
+              "type": "integer"
+            },
+            "functions": {
+              "type": "array",
+              "items": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "max_consecutive_auto_reply": {
+          "type": "integer",
+          "default": 10
+        }
+      }
+    }
+  }
+}

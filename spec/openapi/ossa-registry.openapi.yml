@@ -1,0 +1,782 @@
+openapi: 3.1.0
+info:
+  title: OSSA Agent Registry API
+  version: 0.1.9
+  description: |
+    **REVOLUTIONARY** OSSA Agent Registry - First-of-its-kind for AI agents
+    
+    Production Architecture:
+    - OpenAPI-First: Spec drives all implementation
+    - DRY: Single source of truth for agent metadata
+    - CRUD: Full agent lifecycle management
+    - SOLID: Clean interfaces, dependency injection
+    - Type-Safe: Zod validation + TypeScript
+    
+    Features:
+    - Agent discovery and registration
+    - Version management with semantic versioning
+    - Cryptographic signature verification
+    - Compliance certification tracking
+    - Multi-cloud deployment metadata
+    - Performance metrics and health scoring
+    
+    OSSA Compliance: v0.1.9
+
+servers:
+  - url: https://registry.ossa.io/api/v1
+    description: Production registry
+  - url: http://localhost:8080/api/v1
+    description: Local development
+
+paths:
+  /agents:
+    get:
+      operationId: listAgents
+      summary: List all registered agents
+      tags: [Agents]
+      parameters:
+        - name: role
+          in: query
+          schema:
+            type: string
+            enum: [compliance, chat, orchestration, audit, workflow]
+        - name: certified
+          in: query
+          schema:
+            type: boolean
+        - name: cloud
+          in: query
+          schema:
+            type: string
+            enum: [aws, gcp, azure, local, hybrid]
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+      responses:
+        '200':
+          description: List of agents
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [agents, pagination]
+                properties:
+                  agents:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Agent'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+    
+    post:
+      operationId: registerAgent
+      summary: Register a new agent
+      tags: [Agents]
+      security:
+        - ApiKeyAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AgentRegistration'
+      responses:
+        '201':
+          description: Agent registered
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Agent'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /agents/{agentId}:
+    get:
+      operationId: getAgent
+      summary: Get agent details
+      tags: [Agents]
+      parameters:
+        - $ref: '#/components/parameters/AgentId'
+      responses:
+        '200':
+          description: Agent details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Agent'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    
+    put:
+      operationId: updateAgent
+      summary: Update agent metadata
+      tags: [Agents]
+      security:
+        - ApiKeyAuth: []
+      parameters:
+        - $ref: '#/components/parameters/AgentId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AgentUpdate'
+      responses:
+        '200':
+          description: Agent updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Agent'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    
+    delete:
+      operationId: deleteAgent
+      summary: Deprecate an agent
+      tags: [Agents]
+      security:
+        - ApiKeyAuth: []
+      parameters:
+        - $ref: '#/components/parameters/AgentId'
+      responses:
+        '204':
+          description: Agent deprecated
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /agents/{agentId}/versions:
+    get:
+      operationId: listAgentVersions
+      summary: List agent versions
+      tags: [Versions]
+      parameters:
+        - $ref: '#/components/parameters/AgentId'
+      responses:
+        '200':
+          description: Agent versions
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  versions:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/AgentVersion'
+    
+    post:
+      operationId: publishVersion
+      summary: Publish new agent version
+      tags: [Versions]
+      security:
+        - ApiKeyAuth: []
+      parameters:
+        - $ref: '#/components/parameters/AgentId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VersionPublish'
+      responses:
+        '201':
+          description: Version published
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentVersion'
+
+  /agents/{agentId}/certifications:
+    get:
+      operationId: listCertifications
+      summary: List agent certifications
+      tags: [Certifications]
+      parameters:
+        - $ref: '#/components/parameters/AgentId'
+      responses:
+        '200':
+          description: Certifications
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  certifications:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Certification'
+    
+    post:
+      operationId: addCertification
+      summary: Add certification
+      tags: [Certifications]
+      security:
+        - ApiKeyAuth: []
+      parameters:
+        - $ref: '#/components/parameters/AgentId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CertificationRequest'
+      responses:
+        '201':
+          description: Certification added
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Certification'
+
+  /agents/{agentId}/deploy:
+    post:
+      operationId: deployAgent
+      summary: Deploy agent to environment
+      tags: [Deployment]
+      security:
+        - ApiKeyAuth: []
+      parameters:
+        - $ref: '#/components/parameters/AgentId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeploymentRequest'
+      responses:
+        '202':
+          description: Deployment initiated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeploymentStatus'
+
+  /agents/{agentId}/health:
+    get:
+      operationId: getAgentHealth
+      summary: Get agent health metrics
+      tags: [Health]
+      parameters:
+        - $ref: '#/components/parameters/AgentId'
+      responses:
+        '200':
+          description: Health metrics
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthMetrics'
+
+  /compliance/validate:
+    post:
+      operationId: validateCompliance
+      summary: Validate agent compliance
+      tags: [Compliance]
+      security:
+        - ApiKeyAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ComplianceValidation'
+      responses:
+        '200':
+          description: Compliance validation result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ComplianceResult'
+
+  /search:
+    post:
+      operationId: searchAgents
+      summary: Search agents
+      tags: [Search]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SearchQuery'
+      responses:
+        '200':
+          description: Search results
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  results:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/SearchResult'
+                  facets:
+                    type: object
+                    additionalProperties:
+                      type: array
+                      items:
+                        type: object
+
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-OSSA-API-Key
+
+  parameters:
+    AgentId:
+      name: agentId
+      in: path
+      required: true
+      schema:
+        type: string
+        pattern: '^[a-z0-9-]+$'
+
+  schemas:
+    Agent:
+      type: object
+      required:
+        - id
+        - name
+        - role
+        - version
+        - status
+        - createdAt
+        - updatedAt
+      properties:
+        id:
+          type: string
+          pattern: '^[a-z0-9-]+$'
+        name:
+          type: string
+        description:
+          type: string
+        role:
+          type: string
+          enum: [compliance, chat, orchestration, audit, workflow, custom]
+        version:
+          type: string
+          pattern: '^\d+\.\d+\.\d+$'
+        status:
+          type: string
+          enum: [active, deprecated, beta, experimental]
+        author:
+          type: object
+          properties:
+            name:
+              type: string
+            email:
+              type: string
+              format: email
+            organization:
+              type: string
+        capabilities:
+          type: array
+          items:
+            type: string
+        deployment:
+          type: object
+          properties:
+            clouds:
+              type: array
+              items:
+                type: string
+                enum: [aws, gcp, azure, local, hybrid]
+            regions:
+              type: array
+              items:
+                type: string
+            helm:
+              type: object
+              properties:
+                chart:
+                  type: string
+                repository:
+                  type: string
+        compliance:
+          type: array
+          items:
+            type: string
+            enum: [fedramp, iso27001, soc2, hipaa, gdpr]
+        metrics:
+          $ref: '#/components/schemas/AgentMetrics'
+        certifications:
+          type: array
+          items:
+            type: string
+        signature:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    AgentRegistration:
+      type: object
+      required:
+        - name
+        - role
+        - version
+        - manifest
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        role:
+          type: string
+          enum: [compliance, chat, orchestration, audit, workflow, custom]
+        version:
+          type: string
+          pattern: '^\d+\.\d+\.\d+$'
+        manifest:
+          type: object
+          description: OSSA agent manifest
+        author:
+          type: object
+          properties:
+            name:
+              type: string
+            email:
+              type: string
+              format: email
+            organization:
+              type: string
+        capabilities:
+          type: array
+          items:
+            type: string
+        deployment:
+          type: object
+        signature:
+          type: string
+
+    AgentUpdate:
+      type: object
+      properties:
+        description:
+          type: string
+        status:
+          type: string
+          enum: [active, deprecated, beta, experimental]
+        capabilities:
+          type: array
+          items:
+            type: string
+
+    AgentVersion:
+      type: object
+      required:
+        - version
+        - releaseDate
+        - manifest
+      properties:
+        version:
+          type: string
+          pattern: '^\d+\.\d+\.\d+$'
+        releaseDate:
+          type: string
+          format: date-time
+        changelog:
+          type: string
+        manifest:
+          type: object
+        breaking:
+          type: boolean
+        signature:
+          type: string
+
+    VersionPublish:
+      type: object
+      required:
+        - version
+        - manifest
+      properties:
+        version:
+          type: string
+          pattern: '^\d+\.\d+\.\d+$'
+        changelog:
+          type: string
+        manifest:
+          type: object
+        breaking:
+          type: boolean
+        signature:
+          type: string
+
+    Certification:
+      type: object
+      required:
+        - type
+        - issuedAt
+        - expiresAt
+      properties:
+        type:
+          type: string
+          enum: [fedramp, iso27001, soc2, hipaa, gdpr, custom]
+        issuedAt:
+          type: string
+          format: date-time
+        expiresAt:
+          type: string
+          format: date-time
+        issuer:
+          type: string
+        certificateUrl:
+          type: string
+          format: uri
+        verified:
+          type: boolean
+
+    CertificationRequest:
+      type: object
+      required:
+        - type
+        - expiresAt
+      properties:
+        type:
+          type: string
+          enum: [fedramp, iso27001, soc2, hipaa, gdpr, custom]
+        expiresAt:
+          type: string
+          format: date-time
+        certificateUrl:
+          type: string
+          format: uri
+
+    DeploymentRequest:
+      type: object
+      required:
+        - environment
+        - cloud
+      properties:
+        environment:
+          type: string
+          enum: [development, staging, production]
+        cloud:
+          type: string
+          enum: [aws, gcp, azure, local, hybrid]
+        region:
+          type: string
+        namespace:
+          type: string
+        config:
+          type: object
+          additionalProperties: true
+
+    DeploymentStatus:
+      type: object
+      required:
+        - id
+        - status
+        - startedAt
+      properties:
+        id:
+          type: string
+        status:
+          type: string
+          enum: [pending, deploying, deployed, failed, rollback]
+        startedAt:
+          type: string
+          format: date-time
+        completedAt:
+          type: string
+          format: date-time
+        message:
+          type: string
+        logs:
+          type: array
+          items:
+            type: string
+
+    HealthMetrics:
+      type: object
+      required:
+        - healthy
+        - score
+        - checkedAt
+      properties:
+        healthy:
+          type: boolean
+        score:
+          type: number
+          minimum: 0
+          maximum: 100
+        checkedAt:
+          type: string
+          format: date-time
+        uptime:
+          type: number
+        responseTime:
+          type: number
+        errorRate:
+          type: number
+        compliance:
+          type: object
+          properties:
+            fedramp:
+              type: boolean
+            iso27001:
+              type: boolean
+            soc2:
+              type: boolean
+
+    AgentMetrics:
+      type: object
+      properties:
+        downloads:
+          type: integer
+        deployments:
+          type: integer
+        healthScore:
+          type: number
+          minimum: 0
+          maximum: 100
+        successRate:
+          type: number
+          minimum: 0
+          maximum: 1
+
+    ComplianceValidation:
+      type: object
+      required:
+        - agentId
+        - frameworks
+      properties:
+        agentId:
+          type: string
+        frameworks:
+          type: array
+          items:
+            type: string
+            enum: [fedramp, iso27001, soc2, hipaa, gdpr]
+
+    ComplianceResult:
+      type: object
+      required:
+        - compliant
+        - results
+      properties:
+        compliant:
+          type: boolean
+        results:
+          type: array
+          items:
+            type: object
+            properties:
+              framework:
+                type: string
+              compliant:
+                type: boolean
+              issues:
+                type: array
+                items:
+                  type: string
+              recommendations:
+                type: array
+                items:
+                  type: string
+
+    SearchQuery:
+      type: object
+      properties:
+        query:
+          type: string
+        filters:
+          type: object
+          properties:
+            role:
+              type: array
+              items:
+                type: string
+            cloud:
+              type: array
+              items:
+                type: string
+            compliance:
+              type: array
+              items:
+                type: string
+            certified:
+              type: boolean
+        sort:
+          type: string
+          enum: [relevance, downloads, health, recent]
+        page:
+          type: integer
+        limit:
+          type: integer
+
+    SearchResult:
+      type: object
+      properties:
+        agent:
+          $ref: '#/components/schemas/Agent'
+        relevance:
+          type: number
+
+    Pagination:
+      type: object
+      required:
+        - page
+        - limit
+        - total
+      properties:
+        page:
+          type: integer
+        limit:
+          type: integer
+        total:
+          type: integer
+        pages:
+          type: integer
+
+    Error:
+      type: object
+      required:
+        - error
+        - message
+      properties:
+        error:
+          type: string
+        message:
+          type: string
+        code:
+          type: string
+        details:
+          type: object
+
+  responses:
+    BadRequest:
+      description: Bad request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    
+    Unauthorized:
+      description: Unauthorized
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    
+    NotFound:
+      description: Not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'

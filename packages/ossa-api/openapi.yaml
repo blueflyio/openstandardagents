@@ -1,0 +1,1490 @@
+openapi: 3.1.0
+info:
+  title: OSSA API
+  version: 1.0.0
+  description: |
+    Open Standard for Scalable AI Agents - REST API
+
+    This API provides complete management of OSSA agents including:
+    - Agent CRUD operations
+    - Capability discovery
+    - Conformance validation
+    - Roadmap management
+    - Bridge configurations
+    - Monitoring and metrics
+  contact:
+    name: OSSA Team
+    email: api@ossa.ai
+    url: https://ossa.ai
+  license:
+    name: Apache 2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0
+
+servers:
+  - url: https://api.ossa.ai/v1
+    description: Production API
+  - url: https://staging-api.ossa.ai/v1
+    description: Staging API
+  - url: http://localhost:3000/v1
+    description: Local development
+
+tags:
+  - name: Agents
+    description: Agent management operations
+  - name: Capabilities
+    description: Capability discovery and management
+  - name: Validation
+    description: Agent validation and conformance
+  - name: Roadmaps
+    description: Roadmap management
+  - name: Bridges
+    description: Protocol bridge configuration
+  - name: Discovery
+    description: Agent discovery and registry
+  - name: Monitoring
+    description: Metrics and monitoring
+  - name: Webhooks
+    description: Event webhooks
+
+paths:
+  # ==================== AGENTS CRUD ====================
+  /agents:
+    get:
+      tags: [Agents]
+      summary: List all agents
+      operationId: listAgents
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/LimitParam'
+        - $ref: '#/components/parameters/SortParam'
+        - name: conformance
+          in: query
+          schema:
+            type: string
+            enum: [bronze, silver, gold, platinum]
+          description: Filter by conformance level
+        - name: capability
+          in: query
+          schema:
+            type: string
+          description: Filter by capability
+        - name: tag
+          in: query
+          schema:
+            type: string
+          description: Filter by tag
+        - name: search
+          in: query
+          schema:
+            type: string
+          description: Search in name and description
+      responses:
+        '200':
+          description: List of agents
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentList'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+    post:
+      tags: [Agents]
+      summary: Create a new agent
+      operationId: createAgent
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AgentCreate'
+      responses:
+        '201':
+          description: Agent created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Agent'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '409':
+          $ref: '#/components/responses/Conflict'
+
+  /agents/{agentId}:
+    parameters:
+      - $ref: '#/components/parameters/AgentId'
+
+    get:
+      tags: [Agents]
+      summary: Get agent by ID
+      operationId: getAgent
+      responses:
+        '200':
+          description: Agent details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Agent'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    put:
+      tags: [Agents]
+      summary: Update agent
+      operationId: updateAgent
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AgentUpdate'
+      responses:
+        '200':
+          description: Agent updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Agent'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      tags: [Agents]
+      summary: Delete agent
+      operationId: deleteAgent
+      security:
+        - bearerAuth: []
+      responses:
+        '204':
+          description: Agent deleted
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /agents/{agentId}/manifest:
+    parameters:
+      - $ref: '#/components/parameters/AgentId'
+
+    get:
+      tags: [Agents]
+      summary: Get agent manifest (agent.yml)
+      operationId: getAgentManifest
+      responses:
+        '200':
+          description: Agent manifest
+          content:
+            application/x-yaml:
+              schema:
+                type: string
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentManifest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    put:
+      tags: [Agents]
+      summary: Update agent manifest
+      operationId: updateAgentManifest
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/x-yaml:
+            schema:
+              type: string
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AgentManifest'
+      responses:
+        '200':
+          description: Manifest updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationResult'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /agents/{agentId}/openapi:
+    parameters:
+      - $ref: '#/components/parameters/AgentId'
+
+    get:
+      tags: [Agents]
+      summary: Get agent OpenAPI specification
+      operationId: getAgentOpenAPI
+      responses:
+        '200':
+          description: OpenAPI specification
+          content:
+            application/x-yaml:
+              schema:
+                type: string
+            application/json:
+              schema:
+                type: object
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    put:
+      tags: [Agents]
+      summary: Update agent OpenAPI specification
+      operationId: updateAgentOpenAPI
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/x-yaml:
+            schema:
+              type: string
+          application/json:
+            schema:
+              type: object
+      responses:
+        '200':
+          description: OpenAPI updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationResult'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  # ==================== VALIDATION ====================
+  /agents/{agentId}/validate:
+    parameters:
+      - $ref: '#/components/parameters/AgentId'
+
+    post:
+      tags: [Validation]
+      summary: Validate agent configuration
+      operationId: validateAgent
+      parameters:
+        - name: strict
+          in: query
+          schema:
+            type: boolean
+            default: false
+          description: Enable strict validation
+      responses:
+        '200':
+          description: Validation result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationResult'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /agents/{agentId}/conformance:
+    parameters:
+      - $ref: '#/components/parameters/AgentId'
+
+    get:
+      tags: [Validation]
+      summary: Check conformance level
+      operationId: checkConformance
+      responses:
+        '200':
+          description: Conformance result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConformanceResult'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # ==================== CAPABILITIES ====================
+  /capabilities:
+    get:
+      tags: [Capabilities]
+      summary: List all capabilities
+      operationId: listCapabilities
+      parameters:
+        - name: category
+          in: query
+          schema:
+            type: string
+            enum: [nlp, vision, audio, data, integration, security, infrastructure, workflow]
+        - name: type
+          in: query
+          schema:
+            type: string
+            enum: [query, action, transform, analysis, generation, monitoring, orchestration]
+      responses:
+        '200':
+          description: List of capabilities
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CapabilityList'
+
+  /capabilities/{capability}:
+    parameters:
+      - name: capability
+        in: path
+        required: true
+        schema:
+          type: string
+
+    get:
+      tags: [Capabilities]
+      summary: Get capability details
+      operationId: getCapability
+      responses:
+        '200':
+          description: Capability details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Capability'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /capabilities/{capability}/agents:
+    parameters:
+      - name: capability
+        in: path
+        required: true
+        schema:
+          type: string
+
+    get:
+      tags: [Capabilities]
+      summary: List agents with capability
+      operationId: listAgentsByCapability
+      responses:
+        '200':
+          description: List of agents
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentList'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # ==================== DISCOVERY ====================
+  /discovery/scan:
+    post:
+      tags: [Discovery]
+      summary: Scan workspace for agents
+      operationId: scanWorkspace
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                path:
+                  type: string
+                  description: Workspace path to scan
+                recursive:
+                  type: boolean
+                  default: true
+      responses:
+        '200':
+          description: Scan results
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ScanResult'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /discovery/registry:
+    get:
+      tags: [Discovery]
+      summary: Get agent registry
+      operationId: getRegistry
+      responses:
+        '200':
+          description: Agent registry
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Registry'
+
+  # ==================== ROADMAPS ====================
+  /roadmaps:
+    get:
+      tags: [Roadmaps]
+      summary: List roadmaps
+      operationId: listRoadmaps
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/LimitParam'
+      responses:
+        '200':
+          description: List of roadmaps
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RoadmapList'
+
+    post:
+      tags: [Roadmaps]
+      summary: Create roadmap
+      operationId: createRoadmap
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RoadmapCreate'
+      responses:
+        '201':
+          description: Roadmap created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Roadmap'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /roadmaps/{roadmapId}:
+    parameters:
+      - name: roadmapId
+        in: path
+        required: true
+        schema:
+          type: string
+
+    get:
+      tags: [Roadmaps]
+      summary: Get roadmap
+      operationId: getRoadmap
+      responses:
+        '200':
+          description: Roadmap details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Roadmap'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    put:
+      tags: [Roadmaps]
+      summary: Update roadmap
+      operationId: updateRoadmap
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RoadmapUpdate'
+      responses:
+        '200':
+          description: Roadmap updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Roadmap'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      tags: [Roadmaps]
+      summary: Delete roadmap
+      operationId: deleteRoadmap
+      security:
+        - bearerAuth: []
+      responses:
+        '204':
+          description: Roadmap deleted
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /roadmaps/{roadmapId}/sync/linear:
+    parameters:
+      - name: roadmapId
+        in: path
+        required: true
+        schema:
+          type: string
+
+    post:
+      tags: [Roadmaps]
+      summary: Sync roadmap with Linear
+      operationId: syncRoadmapToLinear
+      security:
+        - bearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                projectId:
+                  type: string
+                teamId:
+                  type: string
+                direction:
+                  type: string
+                  enum: [push, pull, bidirectional]
+      responses:
+        '200':
+          description: Sync result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SyncResult'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # ==================== BRIDGES ====================
+  /agents/{agentId}/bridges:
+    parameters:
+      - $ref: '#/components/parameters/AgentId'
+
+    get:
+      tags: [Bridges]
+      summary: Get agent bridges
+      operationId: getAgentBridges
+      responses:
+        '200':
+          description: Bridge configurations
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BridgeConfig'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    put:
+      tags: [Bridges]
+      summary: Update agent bridges
+      operationId: updateAgentBridges
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BridgeConfig'
+      responses:
+        '200':
+          description: Bridges updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BridgeConfig'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /agents/{agentId}/bridges/mcp/test:
+    parameters:
+      - $ref: '#/components/parameters/AgentId'
+
+    post:
+      tags: [Bridges]
+      summary: Test MCP bridge
+      operationId: testMCPBridge
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Test result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TestResult'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # ==================== MONITORING ====================
+  /agents/{agentId}/metrics:
+    parameters:
+      - $ref: '#/components/parameters/AgentId'
+
+    get:
+      tags: [Monitoring]
+      summary: Get agent metrics
+      operationId: getAgentMetrics
+      parameters:
+        - name: format
+          in: query
+          schema:
+            type: string
+            enum: [prometheus, json]
+            default: json
+      responses:
+        '200':
+          description: Agent metrics
+          content:
+            text/plain:
+              schema:
+                type: string
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Metrics'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /agents/{agentId}/health:
+    parameters:
+      - $ref: '#/components/parameters/AgentId'
+
+    get:
+      tags: [Monitoring]
+      summary: Get agent health
+      operationId: getAgentHealth
+      responses:
+        '200':
+          description: Agent is healthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthStatus'
+        '503':
+          description: Agent is unhealthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthStatus'
+
+  # ==================== WEBHOOKS ====================
+  /webhooks:
+    get:
+      tags: [Webhooks]
+      summary: List webhooks
+      operationId: listWebhooks
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: List of webhooks
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WebhookList'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+    post:
+      tags: [Webhooks]
+      summary: Create webhook
+      operationId: createWebhook
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WebhookCreate'
+      responses:
+        '201':
+          description: Webhook created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Webhook'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /webhooks/{webhookId}:
+    parameters:
+      - name: webhookId
+        in: path
+        required: true
+        schema:
+          type: string
+
+    delete:
+      tags: [Webhooks]
+      summary: Delete webhook
+      operationId: deleteWebhook
+      security:
+        - bearerAuth: []
+      responses:
+        '204':
+          description: Webhook deleted
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+components:
+  schemas:
+    # ==================== AGENT SCHEMAS ====================
+    Agent:
+      type: object
+      required: [id, name, version, capabilities, status, createdAt, updatedAt]
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        version:
+          type: string
+        description:
+          type: string
+        author:
+          type: string
+        license:
+          type: string
+        conformance:
+          type: string
+          enum: [bronze, silver, gold, platinum]
+        tags:
+          type: array
+          items:
+            type: string
+        capabilities:
+          type: array
+          items:
+            type: string
+        status:
+          type: string
+          enum: [draft, active, deprecated, archived]
+        manifestUrl:
+          type: string
+          format: uri
+        openapiUrl:
+          type: string
+          format: uri
+        monitoring:
+          $ref: '#/components/schemas/MonitoringConfig'
+        performance:
+          $ref: '#/components/schemas/PerformanceConfig'
+        bridges:
+          $ref: '#/components/schemas/BridgeConfig'
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    AgentCreate:
+      type: object
+      required: [name, version, capabilities]
+      properties:
+        name:
+          type: string
+          pattern: '^[a-z0-9]([a-z0-9-]*[a-z0-9])?$'
+        version:
+          type: string
+          pattern: '^\d+\.\d+\.\d+$'
+        description:
+          type: string
+        author:
+          type: string
+        license:
+          type: string
+        tags:
+          type: array
+          items:
+            type: string
+        capabilities:
+          type: array
+          items:
+            type: string
+          minItems: 1
+        manifest:
+          $ref: '#/components/schemas/AgentManifest'
+        openapi:
+          type: object
+
+    AgentUpdate:
+      type: object
+      properties:
+        description:
+          type: string
+        author:
+          type: string
+        license:
+          type: string
+        tags:
+          type: array
+          items:
+            type: string
+        status:
+          type: string
+          enum: [draft, active, deprecated, archived]
+
+    AgentList:
+      type: object
+      required: [items, total]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Agent'
+        total:
+          type: integer
+        page:
+          type: integer
+        limit:
+          type: integer
+        hasMore:
+          type: boolean
+
+    AgentManifest:
+      type: object
+      required: [ossa, agent, discover, capabilities, api]
+      properties:
+        ossa:
+          type: string
+          const: '1.0'
+        agent:
+          type: object
+        discover:
+          type: object
+        capabilities:
+          type: array
+          items:
+            type: string
+        api:
+          type: object
+        monitoring:
+          $ref: '#/components/schemas/MonitoringConfig'
+        performance:
+          $ref: '#/components/schemas/PerformanceConfig'
+        bridge:
+          $ref: '#/components/schemas/BridgeConfig'
+
+    # ==================== VALIDATION SCHEMAS ====================
+    ValidationResult:
+      type: object
+      required: [valid, errors, warnings]
+      properties:
+        valid:
+          type: boolean
+        errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/ValidationError'
+        warnings:
+          type: array
+          items:
+            $ref: '#/components/schemas/ValidationWarning'
+        info:
+          type: array
+          items:
+            $ref: '#/components/schemas/ValidationInfo'
+        conformance:
+          $ref: '#/components/schemas/ConformanceResult'
+
+    ValidationError:
+      type: object
+      required: [path, message, severity]
+      properties:
+        path:
+          type: string
+        message:
+          type: string
+        severity:
+          type: string
+          const: error
+        source:
+          type: string
+          enum: [agent, openapi, cross-validation]
+
+    ValidationWarning:
+      type: object
+      required: [path, message, severity]
+      properties:
+        path:
+          type: string
+        message:
+          type: string
+        severity:
+          type: string
+          const: warning
+        source:
+          type: string
+
+    ValidationInfo:
+      type: object
+      required: [path, message, severity]
+      properties:
+        path:
+          type: string
+        message:
+          type: string
+        severity:
+          type: string
+          const: info
+
+    ConformanceResult:
+      type: object
+      required: [level, passed, requirements]
+      properties:
+        level:
+          type: string
+          enum: [bronze, silver, gold, platinum]
+        passed:
+          type: boolean
+        requirements:
+          type: object
+          additionalProperties:
+            type: boolean
+        missingRequirements:
+          type: array
+          items:
+            type: string
+
+    # ==================== CAPABILITY SCHEMAS ====================
+    Capability:
+      type: object
+      required: [name, type, description]
+      properties:
+        name:
+          type: string
+        type:
+          type: string
+          enum: [query, action, transform, analysis, generation, monitoring, orchestration]
+        description:
+          type: string
+        category:
+          type: string
+          enum: [nlp, vision, audio, data, integration, security, infrastructure, workflow]
+        agents:
+          type: array
+          items:
+            type: string
+        inputs:
+          type: object
+        outputs:
+          type: object
+        requirements:
+          type: object
+
+    CapabilityList:
+      type: object
+      required: [items, total]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Capability'
+        total:
+          type: integer
+
+    # ==================== DISCOVERY SCHEMAS ====================
+    Registry:
+      type: object
+      required: [version, timestamp, workspace]
+      properties:
+        version:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+        workspace:
+          type: object
+        agents:
+          type: array
+          items:
+            type: object
+        capabilities:
+          type: object
+        dependencies:
+          type: object
+
+    ScanResult:
+      type: object
+      required: [path, agentsFound, duration]
+      properties:
+        path:
+          type: string
+        agentsFound:
+          type: integer
+        agents:
+          type: array
+          items:
+            type: object
+        errors:
+          type: array
+          items:
+            type: string
+        duration:
+          type: number
+
+    # ==================== ROADMAP SCHEMAS ====================
+    Roadmap:
+      type: object
+      required: [id, name, version, spec]
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        version:
+          type: string
+        description:
+          type: string
+        owner:
+          type: string
+        spec:
+          type: object
+          properties:
+            initiatives:
+              type: array
+              items:
+                $ref: '#/components/schemas/Initiative'
+            milestones:
+              type: array
+              items:
+                $ref: '#/components/schemas/Milestone'
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    RoadmapCreate:
+      type: object
+      required: [name, version]
+      properties:
+        name:
+          type: string
+        version:
+          type: string
+        description:
+          type: string
+        owner:
+          type: string
+        initiatives:
+          type: array
+          items:
+            $ref: '#/components/schemas/InitiativeCreate'
+
+    RoadmapUpdate:
+      type: object
+      properties:
+        description:
+          type: string
+        owner:
+          type: string
+        initiatives:
+          type: array
+          items:
+            $ref: '#/components/schemas/InitiativeUpdate'
+
+    RoadmapList:
+      type: object
+      required: [items, total]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Roadmap'
+        total:
+          type: integer
+
+    Initiative:
+      type: object
+      required: [id, title, status]
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        description:
+          type: string
+        status:
+          type: string
+          enum: [planned, in_progress, blocked, completed, cancelled]
+        priority:
+          type: string
+          enum: [critical, high, medium, low]
+        assignee:
+          type: string
+        startDate:
+          type: string
+          format: date
+        endDate:
+          type: string
+          format: date
+        capabilities:
+          type: array
+          items:
+            type: string
+        agents:
+          type: array
+          items:
+            type: string
+        tasks:
+          type: array
+          items:
+            $ref: '#/components/schemas/Task'
+
+    InitiativeCreate:
+      type: object
+      required: [title, status]
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+        status:
+          type: string
+          enum: [planned, in_progress, blocked, completed, cancelled]
+        priority:
+          type: string
+          enum: [critical, high, medium, low]
+
+    InitiativeUpdate:
+      type: object
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+        status:
+          type: string
+        priority:
+          type: string
+
+    Task:
+      type: object
+      required: [title, status]
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+        status:
+          type: string
+          enum: [todo, in_progress, done]
+        assignee:
+          type: string
+        estimate:
+          type: string
+        completed:
+          type: boolean
+
+    Milestone:
+      type: object
+      required: [name, date]
+      properties:
+        name:
+          type: string
+        date:
+          type: string
+          format: date
+        description:
+          type: string
+        initiatives:
+          type: array
+          items:
+            type: string
+
+    SyncResult:
+      type: object
+      required: [success, itemsSynced]
+      properties:
+        success:
+          type: boolean
+        itemsSynced:
+          type: integer
+        errors:
+          type: array
+          items:
+            type: string
+        linearProjectId:
+          type: string
+        gitlabProjectId:
+          type: string
+
+    # ==================== BRIDGE SCHEMAS ====================
+    BridgeConfig:
+      type: object
+      properties:
+        mcp:
+          $ref: '#/components/schemas/MCPBridge'
+        a2a:
+          type: object
+        openapi:
+          type: object
+        langchain:
+          type: object
+        crewai:
+          type: object
+        autogen:
+          type: object
+
+    MCPBridge:
+      type: object
+      properties:
+        enabled:
+          type: boolean
+        server_type:
+          type: string
+          enum: [stdio, sse, websocket]
+        tools:
+          type: array
+          items:
+            type: object
+        resources:
+          type: array
+          items:
+            type: object
+
+    TestResult:
+      type: object
+      required: [success, tests]
+      properties:
+        success:
+          type: boolean
+        tests:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+              passed:
+                type: boolean
+              duration:
+                type: number
+              error:
+                type: string
+
+    # ==================== MONITORING SCHEMAS ====================
+    MonitoringConfig:
+      type: object
+      properties:
+        io_aware:
+          type: boolean
+        logs:
+          type: object
+        metrics:
+          type: object
+        traces:
+          type: object
+        health:
+          type: object
+
+    PerformanceConfig:
+      type: object
+      properties:
+        token_optimization:
+          type: object
+        cache:
+          type: object
+        quantization:
+          type: object
+        batching:
+          type: object
+
+    Metrics:
+      type: object
+      additionalProperties:
+        type: number
+
+    HealthStatus:
+      type: object
+      required: [status, checks]
+      properties:
+        status:
+          type: string
+          enum: [healthy, degraded, unhealthy]
+        checks:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+              status:
+                type: string
+              message:
+                type: string
+
+    # ==================== WEBHOOK SCHEMAS ====================
+    Webhook:
+      type: object
+      required: [id, url, events, active]
+      properties:
+        id:
+          type: string
+          format: uuid
+        url:
+          type: string
+          format: uri
+        secret:
+          type: string
+        events:
+          type: array
+          items:
+            type: string
+            enum: [agent.created, agent.updated, agent.deleted, validation.failed, conformance.changed]
+        active:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+
+    WebhookCreate:
+      type: object
+      required: [url, events]
+      properties:
+        url:
+          type: string
+          format: uri
+        secret:
+          type: string
+        events:
+          type: array
+          items:
+            type: string
+
+    WebhookList:
+      type: object
+      required: [items, total]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Webhook'
+        total:
+          type: integer
+
+    # ==================== ERROR SCHEMAS ====================
+    Error:
+      type: object
+      required: [code, message]
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+        details:
+          type: object
+
+  parameters:
+    AgentId:
+      name: agentId
+      in: path
+      required: true
+      description: Agent identifier (UUID or name@version)
+      schema:
+        type: string
+
+    PageParam:
+      name: page
+      in: query
+      description: Page number
+      schema:
+        type: integer
+        minimum: 1
+        default: 1
+
+    LimitParam:
+      name: limit
+      in: query
+      description: Items per page
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 20
+
+    SortParam:
+      name: sort
+      in: query
+      description: Sort field and order
+      schema:
+        type: string
+        enum: [name, -name, version, -version, createdAt, -createdAt]
+        default: -createdAt
+
+  responses:
+    BadRequest:
+      description: Bad request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+    Unauthorized:
+      description: Unauthorized
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+    NotFound:
+      description: Not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+    Conflict:
+      description: Conflict
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+    apiKey:
+      type: apiKey
+      in: header
+      name: X-API-Key
+
+    oauth2:
+      type: oauth2
+      flows:
+        authorizationCode:
+          authorizationUrl: https://auth.ossa.ai/oauth/authorize
+          tokenUrl: https://auth.ossa.ai/oauth/token
+          scopes:
+            read: Read access
+            write: Write access
+            admin: Admin access

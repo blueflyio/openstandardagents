@@ -6,7 +6,7 @@ OSSA (Open Standards Scalable Agents) is a specification-first framework that en
 
 ---
 
-## 🚀 Quick Start
+##  Quick Start
 
 ```bash
 # 1. Clone and setup workspace
@@ -27,7 +27,7 @@ ossa agent discover
 
 ---
 
-## 📁 Core Architecture
+##  Core Architecture
 
 ### Workspace Hierarchy
 
@@ -55,7 +55,7 @@ ossa agent discover
 
 ---
 
-## 🔧 Installation & Setup
+##  Installation & Setup
 
 ### Prerequisites
 
@@ -210,7 +210,7 @@ EOF
 
 ---
 
-## 🔄 GitLab Integration
+##  GitLab Integration
 
 ### GitLab CI/CD Pipeline
 
@@ -286,7 +286,7 @@ experiments:
 
 ---
 
-## 🌐 Drupal Bridge Configuration
+##  Drupal Bridge Configuration
 
 ### MCP Bridge Setup
 
@@ -336,7 +336,7 @@ compliance_tier: governed
 
 ---
 
-## 🏃 Running OSSA
+##  Running OSSA
 
 ### Local Development
 
@@ -395,7 +395,7 @@ spec:
 
 ---
 
-## 🧪 Testing & Validation
+##  Testing & Validation
 
 ### Agent Testing
 
@@ -428,7 +428,7 @@ ossa sbom generate --format spdx --sign
 
 ---
 
-## 📊 Monitoring & Observability
+##  Monitoring & Observability
 
 ### Metrics Collection
 
@@ -480,7 +480,7 @@ scrape_configs:
 
 ---
 
-## 🔐 Security Configuration
+##  Security Configuration
 
 ### mTLS Setup
 
@@ -521,7 +521,7 @@ allow {
 
 ---
 
-## 🚦 Troubleshooting
+##  Troubleshooting
 
 ### Common Issues
 
@@ -550,7 +550,7 @@ ossa logs --agent example-worker --follow
 
 ---
 
-## 📚 Additional Resources
+##  Additional Resources
 
 - **Specification**: `standards/v0.1.9-alpha.1/core/specification.md`
 - **API Reference**: [https://docs.ossa.io/api](https://docs.ossa.io/api)
@@ -561,7 +561,7 @@ ossa logs --agent example-worker --follow
 
 ---
 
-## 🎯 Next Steps
+##  Next Steps
 
 1. **Implement Reference Agents**: Start with the example templates in `examples/`
 2. **Configure GitLab CI/CD**: Set up automated testing and deployment

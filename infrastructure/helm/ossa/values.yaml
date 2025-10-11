@@ -1,0 +1,108 @@
+replicaCount: 3
+
+image:
+  repository: registry.gitlab.bluefly.io/llm/ossa
+  pullPolicy: Always
+  tag: "0.1.9"
+
+imagePullSecrets:
+  - name: gitlab-registry
+
+serviceAccount:
+  create: true
+  annotations: {}
+  name: ""
+
+podAnnotations:
+  prometheus.io/scrape: "true"
+  prometheus.io/port: "4000"
+  prometheus.io/path: "/metrics"
+
+podSecurityContext:
+  fsGroup: 1001
+  runAsNonRoot: true
+  runAsUser: 1001
+
+securityContext:
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop:
+    - ALL
+  readOnlyRootFilesystem: true
+
+service:
+  type: ClusterIP
+  ports:
+    http: 4000
+    websocket: 4001
+    sse: 4002
+
+ingress:
+  enabled: false
+  className: "nginx"
+  annotations: {}
+  hosts:
+    - host: ossa.local
+      paths:
+        - path: /
+          pathType: Prefix
+  tls: []
+
+resources:
+  requests:
+    memory: "512Mi"
+    cpu: "500m"
+  limits:
+    memory: "2Gi"
+    cpu: "2000m"
+
+autoscaling:
+  enabled: true
+  minReplicas: 3
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 70
+  targetMemoryUtilizationPercentage: 80
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity:
+  podAntiAffinity:
+    preferredDuringSchedulingIgnoredDuringExecution:
+    - weight: 100
+      podAffinityTerm:
+        labelSelector:
+          matchExpressions:
+          - key: app
+            operator: In
+            values:
+            - ossa
+        topologyKey: kubernetes.io/hostname
+
+env:
+  NODE_ENV: production
+  OSSA_VERSION: "0.1.9"
+  LOG_LEVEL: info
+
+secrets:
+  # These should be provided via external secrets or sealed secrets
+  jwtSecret: ""
+  apiKey: ""
+  postgresUrl: ""
+
+redis:
+  enabled: true
+  url: "redis://ossa-redis:6379"
+
+postgres:
+  enabled: true
+  host: "ossa-postgres"
+  port: 5432
+  database: "ossa"
+
+persistence:
+  enabled: true
+  storageClass: "standard"
+  accessMode: ReadWriteMany
+  size: 10Gi

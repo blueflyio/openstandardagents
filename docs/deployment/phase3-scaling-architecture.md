@@ -8,22 +8,22 @@ Building on the validated 93-agent foundation (0.1.8) to scale to 150 agents wit
 ## Deployed Agent Architecture
 
 ### Community Pool (30 agents)
-**Orchestrator**: `community-orchestrator` ✅ DEPLOYED
+**Orchestrator**: `community-orchestrator`  DEPLOYED
 - **Type**: orchestrator.marketplace-coordinator
 - **Capabilities**: marketplace-management, certification-validation, community-coordination
 - **Role**: Coordinates entire community ecosystem operations
 
-**Workers**: `marketplace-manager` ✅ DEPLOYED  
+**Workers**: `marketplace-manager`  DEPLOYED  
 - **Type**: worker.marketplace
 - **Capabilities**: agent-catalog, rating-system, certification-pipeline
 - **Role**: Manages agent marketplace operations and user interactions
 
-**Critics**: `certification-validator` ✅ DEPLOYED
+**Critics**: `certification-validator`  DEPLOYED
 - **Type**: critic.certification  
 - **Capabilities**: agent-quality-assessment, compliance-verification, security-audit
 - **Role**: Validates agent quality and certification requirements
 
-**Telemetry**: `community-analytics` ✅ DEPLOYED
+**Telemetry**: `community-analytics`  DEPLOYED
 - **Type**: telemetry.analytics
 - **Capabilities**: usage-analytics, performance-tracking, marketplace-metrics  
 - **Role**: Monitors community ecosystem health and performance
@@ -147,7 +147,7 @@ storage_tiers:
 
 ## Live Deployment Status
 
-**Execution Plan**: `phase3-150agent-deployment` ✅ ACTIVE
+**Execution Plan**: `phase3-150agent-deployment`  ACTIVE
 - **Orchestration**: Live via `ossa.ossa.orb.local`
 - **Token Budget**: 50,000 tokens allocated
 - **Max Iterations**: 5 (convergence criteria)

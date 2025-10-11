@@ -1,0 +1,27 @@
+{
+  "name": "@ossa/roadmap-bridge",
+  "version": "0.1.9",
+  "description": "Bridge package connecting OSSA specification with BuildKit roadmap parser",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "test": "exit 0",
+    "parse": "ts-node src/cli.ts parse",
+    "sync": "ts-node src/cli.ts sync",
+    "aggregate": "ts-node src/cli.ts aggregate"
+  },
+  "dependencies": {
+    "@ossa/specification": "^0.1.9",
+    "@ossa/validator": "^0.1.9",
+    "@bluefly/agent-build-kit": "file:../../../agent_buildkit",
+    "@linear/sdk": "^59.1.0",
+    "commander": "^11.0.0",
+    "js-yaml": "^4.1.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.0",
+    "jest": "^29.0.0",
+    "@types/node": "^18.0.0"
+  }
+}

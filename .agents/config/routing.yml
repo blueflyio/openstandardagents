@@ -1,0 +1,64 @@
+# Agent Routing Configuration
+routing:
+  strategy: "capability_based"
+
+  rules:
+    - name: "critics_routing"
+      category: "critics"
+      priority: 100
+      load_balancing: "least_connections"
+      sticky_sessions: false
+
+    - name: "governors_routing"
+      category: "governors"
+      priority: 200
+      load_balancing: "round_robin"
+      rate_limiting:
+        requests_per_minute: 1000
+
+    - name: "integrators_routing"
+      category: "integrators"
+      priority: 150
+      load_balancing: "weighted_round_robin"
+      circuit_breaker:
+        failure_threshold: 5
+        timeout: 60000
+
+    - name: "orchestrators_routing"
+      category: "orchestrators"
+      priority: 300
+      load_balancing: "consistent_hash"
+      sticky_sessions: true
+
+  failover:
+    enabled: true
+    strategy: "fallback_to_default"
+    max_retries: 3
+    retry_delay: 1000
+
+  health_checks:
+    enabled: true
+    endpoint: "/health"
+    interval: 30000
+    timeout: 5000
+    healthy_threshold: 2
+    unhealthy_threshold: 3
+
+  circuit_breaker:
+    enabled: true
+    failure_rate_threshold: 50
+    minimum_request_threshold: 20
+    wait_duration_in_open_state: 60000
+
+  rate_limiting:
+    global:
+      requests_per_minute: 10000
+      burst_size: 100
+    per_agent:
+      requests_per_minute: 1000
+      burst_size: 10
+
+  observability:
+    metrics_collection: true
+    tracing_enabled: true
+    logging_level: "info"

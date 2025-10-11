@@ -1,0 +1,341 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://ossa.ai/schemas/v1.0/roadmap",
+  "title": "OSSA Roadmap Schema",
+  "description": "Schema for defining agent development roadmaps with Linear integration",
+  "type": "object",
+  "required": ["ossa", "kind", "spec"],
+  "properties": {
+    "ossa": {
+      "type": "string",
+      "const": "1.0",
+      "description": "OSSA specification version"
+    },
+    "kind": {
+      "type": "string",
+      "const": "Roadmap",
+      "description": "Resource type"
+    },
+    "metadata": {
+      "$ref": "#/definitions/RoadmapMetadata"
+    },
+    "spec": {
+      "$ref": "#/definitions/RoadmapSpec"
+    }
+  },
+  "definitions": {
+    "RoadmapMetadata": {
+      "type": "object",
+      "required": ["name", "version"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Roadmap name"
+        },
+        "version": {
+          "type": "string",
+          "pattern": "^v?\\d+\\.\\d+$",
+          "description": "Roadmap version (e.g., v1.0)"
+        },
+        "description": {
+          "type": "string",
+          "description": "Roadmap description"
+        },
+        "owner": {
+          "type": "string",
+          "description": "Roadmap owner or team"
+        },
+        "created": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updated": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "RoadmapSpec": {
+      "type": "object",
+      "required": ["initiatives"],
+      "properties": {
+        "initiatives": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Initiative"
+          },
+          "description": "List of initiatives in the roadmap"
+        },
+        "milestones": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Milestone"
+          },
+          "description": "Key milestones"
+        },
+        "dependencies": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Dependency"
+          },
+          "description": "Dependencies between initiatives"
+        },
+        "linearIntegration": {
+          "$ref": "#/definitions/LinearConfig"
+        },
+        "gitlabIntegration": {
+          "$ref": "#/definitions/GitLabConfig"
+        }
+      }
+    },
+    "Initiative": {
+      "type": "object",
+      "required": ["id", "title", "status"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[A-Z]+-\\d+$",
+          "description": "Initiative ID (e.g., OSSA-001)"
+        },
+        "title": {
+          "type": "string",
+          "description": "Initiative title"
+        },
+        "description": {
+          "type": "string",
+          "description": "Detailed description"
+        },
+        "status": {
+          "type": "string",
+          "enum": ["planned", "in_progress", "blocked", "completed", "cancelled"],
+          "description": "Current status"
+        },
+        "priority": {
+          "type": "string",
+          "enum": ["critical", "high", "medium", "low"],
+          "description": "Priority level"
+        },
+        "assignee": {
+          "type": "string",
+          "description": "Assigned person or team"
+        },
+        "startDate": {
+          "type": "string",
+          "format": "date"
+        },
+        "endDate": {
+          "type": "string",
+          "format": "date"
+        },
+        "capabilities": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Related agent capabilities"
+        },
+        "agents": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Affected agents"
+        },
+        "tasks": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Task"
+          },
+          "description": "Sub-tasks"
+        },
+        "labels": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Labels for categorization"
+        },
+        "linearIssueId": {
+          "type": "string",
+          "description": "Linked Linear issue ID"
+        },
+        "gitlabIssueId": {
+          "type": "string",
+          "description": "Linked GitLab issue ID"
+        }
+      }
+    },
+    "Task": {
+      "type": "object",
+      "required": ["title", "status"],
+      "properties": {
+        "title": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string",
+          "enum": ["todo", "in_progress", "done"]
+        },
+        "assignee": {
+          "type": "string"
+        },
+        "estimate": {
+          "type": "string",
+          "pattern": "^\\d+[hdw]$",
+          "description": "Time estimate (e.g., 2h, 3d, 1w)"
+        },
+        "completed": {
+          "type": "boolean",
+          "default": false
+        }
+      }
+    },
+    "Milestone": {
+      "type": "object",
+      "required": ["name", "date"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Milestone name"
+        },
+        "date": {
+          "type": "string",
+          "format": "date",
+          "description": "Target date"
+        },
+        "description": {
+          "type": "string"
+        },
+        "initiatives": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Related initiative IDs"
+        },
+        "deliverables": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Expected deliverables"
+        }
+      }
+    },
+    "Dependency": {
+      "type": "object",
+      "required": ["from", "to"],
+      "properties": {
+        "from": {
+          "type": "string",
+          "description": "Source initiative ID"
+        },
+        "to": {
+          "type": "string",
+          "description": "Target initiative ID"
+        },
+        "type": {
+          "type": "string",
+          "enum": ["blocks", "requires", "relates_to"],
+          "default": "requires"
+        },
+        "description": {
+          "type": "string"
+        }
+      }
+    },
+    "LinearConfig": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": false
+        },
+        "projectId": {
+          "type": "string",
+          "description": "Linear project ID"
+        },
+        "teamId": {
+          "type": "string",
+          "description": "Linear team ID"
+        },
+        "cycleId": {
+          "type": "string",
+          "description": "Linear cycle ID"
+        },
+        "syncDirection": {
+          "type": "string",
+          "enum": ["push", "pull", "bidirectional"],
+          "default": "bidirectional"
+        },
+        "labelMapping": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "Map OSSA labels to Linear labels"
+        },
+        "statusMapping": {
+          "type": "object",
+          "properties": {
+            "planned": {
+              "type": "string",
+              "default": "Backlog"
+            },
+            "in_progress": {
+              "type": "string",
+              "default": "In Progress"
+            },
+            "blocked": {
+              "type": "string",
+              "default": "Todo"
+            },
+            "completed": {
+              "type": "string",
+              "default": "Done"
+            },
+            "cancelled": {
+              "type": "string",
+              "default": "Cancelled"
+            }
+          }
+        }
+      }
+    },
+    "GitLabConfig": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": false
+        },
+        "projectId": {
+          "type": "string",
+          "description": "GitLab project ID"
+        },
+        "boardId": {
+          "type": "string",
+          "description": "GitLab board ID"
+        },
+        "milestoneMapping": {
+          "type": "boolean",
+          "default": true,
+          "description": "Create GitLab milestones from roadmap milestones"
+        },
+        "epicMapping": {
+          "type": "boolean",
+          "default": true,
+          "description": "Create GitLab epics from initiatives"
+        },
+        "labelPrefix": {
+          "type": "string",
+          "default": "ossa-",
+          "description": "Prefix for auto-generated labels"
+        }
+      }
+    }
+  }
+}

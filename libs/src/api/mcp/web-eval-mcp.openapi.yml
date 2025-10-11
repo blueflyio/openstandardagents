@@ -1,0 +1,449 @@
+openapi: 3.1.0
+jsonSchemaDialect: https://spec.openapis.org/oas/3.1/dialect/base
+info:
+  title: Web Eval Agent MCP Server API
+  description: |
+    Web Eval Agent MCP Server - Quality assessment and evaluation tools for OSSA v0.1.9.
+    Provides comprehensive web application evaluation, performance analysis, and quality scoring.
+  version: "@bluefly/ossa/v0.1.9"
+  contact:
+    name: OSSA Framework
+    url: https://gitlab.bluefly.io/llm/openapi-ai-agents-standard
+  license:
+    name: MIT
+    url: https://gitlab.bluefly.io/llm/openapi-ai-agents-standard/-/blob/main/LICENSE
+
+servers:
+  - url: mcp://web-eval
+    description: Web Eval Agent MCP Server
+
+paths:
+  /eval/website:
+    post:
+      summary: Evaluate website quality
+      description: Comprehensive evaluation of website performance, accessibility, and quality
+      operationId: evaluateWebsite
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WebsiteEvalRequest'
+      responses:
+        '200':
+          description: Website evaluation completed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WebsiteEvalResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /eval/performance:
+    post:
+      summary: Performance evaluation
+      description: Detailed performance analysis of web applications
+      operationId: evaluatePerformance
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PerformanceEvalRequest'
+      responses:
+        '200':
+          description: Performance evaluation completed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PerformanceEvalResponse'
+
+  /eval/accessibility:
+    post:
+      summary: Accessibility evaluation
+      description: WCAG compliance and accessibility assessment
+      operationId: evaluateAccessibility
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AccessibilityEvalRequest'
+      responses:
+        '200':
+          description: Accessibility evaluation completed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccessibilityEvalResponse'
+
+  /eval/security:
+    post:
+      summary: Security evaluation
+      description: Security vulnerability assessment and recommendations
+      operationId: evaluateSecurity
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SecurityEvalRequest'
+      responses:
+        '200':
+          description: Security evaluation completed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SecurityEvalResponse'
+
+  /eval/reports/{evalId}:
+    get:
+      summary: Get evaluation report
+      operationId: getEvaluationReport
+      parameters:
+        - name: evalId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: format
+          in: query
+          schema:
+            type: string
+            enum: [json, html, pdf]
+            default: json
+      responses:
+        '200':
+          description: Evaluation report
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EvaluationReport'
+            text/html:
+              schema:
+                type: string
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+      description: API key for accessing services
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT token for authenticated requests
+    OAuth2:
+      type: oauth2
+      description: OAuth2 authentication
+      flows:
+        authorizationCode:
+          authorizationUrl: https://auth.llm.bluefly.io/oauth/authorize
+          tokenUrl: https://auth.llm.bluefly.io/oauth/token
+          scopes:
+            read: Read access to resources
+            write: Write access to resources
+            admin: Administrative access
+  schemas:
+    WebsiteEvalRequest:
+      type: object
+      required:
+        - url
+      properties:
+        url:
+          type: string
+          format: uri
+        evalTypes:
+          type: array
+          items:
+            type: string
+            enum: [performance, accessibility, security, seo, usability]
+          default: [performance, accessibility, security]
+        device:
+          type: string
+          enum: [desktop, mobile, tablet]
+          default: desktop
+        options:
+          type: object
+          additionalProperties: true
+
+    WebsiteEvalResponse:
+      type: object
+      properties:
+        evalId:
+          type: string
+        url:
+          type: string
+        overallScore:
+          type: number
+          minimum: 0
+          maximum: 100
+        scores:
+          type: object
+          properties:
+            performance:
+              type: number
+            accessibility:
+              type: number
+            security:
+              type: number
+            seo:
+              type: number
+            usability:
+              type: number
+        recommendations:
+          type: array
+          items:
+            $ref: '#/components/schemas/Recommendation'
+        reportUrl:
+          type: string
+
+    PerformanceEvalRequest:
+      type: object
+      required:
+        - url
+      properties:
+        url:
+          type: string
+          format: uri
+        metrics:
+          type: array
+          items:
+            type: string
+            enum: [FCP, LCP, FID, CLS, TTFB, SI]
+        device:
+          type: string
+          enum: [desktop, mobile]
+
+    PerformanceEvalResponse:
+      type: object
+      properties:
+        evalId:
+          type: string
+        metrics:
+          type: object
+          properties:
+            FCP:
+              $ref: '#/components/schemas/PerformanceMetric'
+            LCP:
+              $ref: '#/components/schemas/PerformanceMetric'
+            FID:
+              $ref: '#/components/schemas/PerformanceMetric'
+            CLS:
+              $ref: '#/components/schemas/PerformanceMetric'
+            TTFB:
+              $ref: '#/components/schemas/PerformanceMetric'
+            SI:
+              $ref: '#/components/schemas/PerformanceMetric'
+        overallScore:
+          type: number
+        opportunities:
+          type: array
+          items:
+            $ref: '#/components/schemas/Opportunity'
+
+    AccessibilityEvalRequest:
+      type: object
+      required:
+        - url
+      properties:
+        url:
+          type: string
+          format: uri
+        wcagLevel:
+          type: string
+          enum: [A, AA, AAA]
+          default: AA
+        includeWarnings:
+          type: boolean
+          default: true
+
+    AccessibilityEvalResponse:
+      type: object
+      properties:
+        evalId:
+          type: string
+        score:
+          type: number
+        violations:
+          type: array
+          items:
+            $ref: '#/components/schemas/AccessibilityViolation'
+        warnings:
+          type: array
+          items:
+            $ref: '#/components/schemas/AccessibilityWarning'
+        passedTests:
+          type: integer
+
+    SecurityEvalRequest:
+      type: object
+      required:
+        - url
+      properties:
+        url:
+          type: string
+          format: uri
+        checkTypes:
+          type: array
+          items:
+            type: string
+            enum: [headers, ssl, vulnerabilities, content]
+
+    SecurityEvalResponse:
+      type: object
+      properties:
+        evalId:
+          type: string
+        securityScore:
+          type: number
+        vulnerabilities:
+          type: array
+          items:
+            $ref: '#/components/schemas/SecurityVulnerability'
+        recommendations:
+          type: array
+          items:
+            $ref: '#/components/schemas/SecurityRecommendation'
+
+    EvaluationReport:
+      type: object
+      properties:
+        evalId:
+          type: string
+        url:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+        summary:
+          $ref: '#/components/schemas/EvaluationSummary'
+        details:
+          type: object
+          additionalProperties: true
+
+    PerformanceMetric:
+      type: object
+      properties:
+        value:
+          type: number
+        unit:
+          type: string
+        score:
+          type: number
+        rating:
+          type: string
+          enum: [good, needs-improvement, poor]
+
+    Opportunity:
+      type: object
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+        impact:
+          type: string
+          enum: [low, medium, high]
+        effort:
+          type: string
+          enum: [low, medium, high]
+
+    AccessibilityViolation:
+      type: object
+      properties:
+        rule:
+          type: string
+        description:
+          type: string
+        severity:
+          type: string
+          enum: [minor, moderate, serious, critical]
+        elements:
+          type: array
+          items:
+            type: string
+        helpUrl:
+          type: string
+
+    AccessibilityWarning:
+      type: object
+      properties:
+        rule:
+          type: string
+        description:
+          type: string
+        elements:
+          type: array
+          items:
+            type: string
+
+    SecurityVulnerability:
+      type: object
+      properties:
+        type:
+          type: string
+        severity:
+          type: string
+          enum: [low, medium, high, critical]
+        description:
+          type: string
+        solution:
+          type: string
+
+    SecurityRecommendation:
+      type: object
+      properties:
+        category:
+          type: string
+        recommendation:
+          type: string
+        priority:
+          type: string
+          enum: [low, medium, high]
+
+    EvaluationSummary:
+      type: object
+      properties:
+        overallScore:
+          type: number
+        passedChecks:
+          type: integer
+        failedChecks:
+          type: integer
+        warnings:
+          type: integer
+
+    Recommendation:
+      type: object
+      properties:
+        category:
+          type: string
+        title:
+          type: string
+        description:
+          type: string
+        priority:
+          type: string
+          enum: [low, medium, high, critical]
+        impact:
+          type: string
+
+  responses:
+    BadRequest:
+      description: Bad request
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+              message:
+                type: string

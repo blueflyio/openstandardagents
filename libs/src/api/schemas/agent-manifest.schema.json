@@ -1,0 +1,859 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://gitlab.bluefly.io/llm/openapi-ai-agents-standard/-/raw/main/src/api/agent-manifest.schema.json",
+  "title": "OSSA Agent Manifest Schema",
+  "description": "Schema for OSSA v0.1.9 agent manifest files defining agent capabilities, requirements, and integration points",
+  "type": "object",
+  "required": [
+    "apiVersion",
+    "kind",
+    "metadata",
+    "spec"
+  ],
+  "properties": {
+    "apiVersion": {
+      "type": "string",
+      "const": "@bluefly/ossa/v0.1.9",
+      "description": "OSSA API version"
+    },
+    "kind": {
+      "type": "string",
+      "const": "Agent",
+      "description": "Resource type"
+    },
+    "metadata": {
+      "$ref": "#/definitions/Metadata"
+    },
+    "spec": {
+      "$ref": "#/definitions/AgentSpec"
+    },
+    "status": {
+      "$ref": "#/definitions/AgentStatus"
+    }
+  },
+  "definitions": {
+    "Metadata": {
+      "type": "object",
+      "required": [
+        "name",
+        "version"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "pattern": "^[a-z0-9]([a-z0-9-]*[a-z0-9])?$",
+          "minLength": 3,
+          "maxLength": 63,
+          "description": "Agent name following DNS-1123 naming convention"
+        },
+        "version": {
+          "type": "string",
+          "pattern": "^v?(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-((?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\\+([0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?$",
+          "description": "Semantic version of the agent"
+        },
+        "labels": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "Key-value pairs for agent categorization"
+        },
+        "annotations": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "Additional metadata for tools and libraries"
+        },
+        "description": {
+          "type": "string",
+          "maxLength": 500,
+          "description": "Human-readable description of the agent"
+        },
+        "author": {
+          "type": "string",
+          "description": "Agent author or organization"
+        },
+        "license": {
+          "type": "string",
+          "description": "License identifier (e.g., Apache-2.0, MIT)"
+        },
+        "repository": {
+          "type": "string",
+          "format": "uri",
+          "description": "Source code repository URL"
+        },
+        "documentation": {
+          "type": "string",
+          "format": "uri",
+          "description": "Documentation URL"
+        }
+      }
+    },
+    "AgentSpec": {
+      "type": "object",
+      "required": [
+        "type",
+        "capabilities",
+        "protocols",
+        "conformance"
+      ],
+      "properties": {
+        "type": {
+          "$ref": "#/definitions/AgentType"
+        },
+        "subtype": {
+          "type": "string",
+          "pattern": "^[a-z]+\\.[a-z]+$",
+          "description": "Specialized agent subtype (e.g., worker.api, critic.security)"
+        },
+        "capabilities": {
+          "$ref": "#/definitions/Capabilities"
+        },
+        "protocols": {
+          "$ref": "#/definitions/Protocols"
+        },
+        "conformance": {
+          "$ref": "#/definitions/Conformance"
+        },
+        "performance": {
+          "$ref": "#/definitions/Performance"
+        },
+        "resources": {
+          "$ref": "#/definitions/Resources"
+        },
+        "feedbackLoop": {
+          "$ref": "#/definitions/FeedbackLoop"
+        },
+        "budgets": {
+          "$ref": "#/definitions/Budgets"
+        },
+        "dependencies": {
+          "$ref": "#/definitions/Dependencies"
+        },
+        "deployment": {
+          "$ref": "#/definitions/Deployment"
+        }
+      }
+    },
+    "AgentType": {
+      "type": "string",
+      "enum": [
+        "orchestrator",
+        "worker",
+        "critic",
+        "judge",
+        "trainer",
+        "governor",
+        "monitor",
+        "integrator",
+        "voice"
+      ],
+      "description": "Primary agent classification following OSSA taxonomy"
+    },
+    "Capabilities": {
+      "type": "object",
+      "required": [
+        "domains"
+      ],
+      "properties": {
+        "domains": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "nlp",
+              "vision",
+              "reasoning",
+              "data",
+              "documentation",
+              "api-design",
+              "validation",
+              "orchestration",
+              "monitoring",
+              "security",
+              "compliance",
+              "testing",
+              "deployment",
+              "audio",
+              "speech",
+              "interaction"
+            ]
+          },
+          "minItems": 1,
+          "description": "Capability domains supported by the agent"
+        },
+        "operations": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Operation"
+          },
+          "description": "Specific operations the agent can perform"
+        },
+        "inputFormats": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Supported input data formats"
+        },
+        "outputFormats": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Supported output data formats"
+        },
+        "tokenEfficiency": {
+          "$ref": "#/definitions/TokenEfficiency"
+        }
+      }
+    },
+    "Operation": {
+      "type": "object",
+      "required": [
+        "name",
+        "description"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_]*$",
+          "description": "Operation identifier"
+        },
+        "description": {
+          "type": "string",
+          "description": "Human-readable operation description"
+        },
+        "inputSchema": {
+          "type": "object",
+          "description": "JSON Schema for operation input"
+        },
+        "outputSchema": {
+          "type": "object",
+          "description": "JSON Schema for operation output"
+        },
+        "timeout": {
+          "type": "integer",
+          "minimum": 100,
+          "maximum": 300000,
+          "description": "Operation timeout in milliseconds"
+        }
+      }
+    },
+    "Protocols": {
+      "type": "object",
+      "required": [
+        "supported"
+      ],
+      "properties": {
+        "supported": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Protocol"
+          },
+          "minItems": 1,
+          "description": "Communication protocols supported by the agent"
+        },
+        "preferred": {
+          "type": "string",
+          "enum": ["rest", "grpc", "websocket", "mcp", "graphql"],
+          "description": "Preferred communication protocol"
+        }
+      }
+    },
+    "Protocol": {
+      "type": "object",
+      "required": [
+        "name",
+        "version",
+        "endpoint"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "enum": ["rest", "grpc", "websocket", "mcp", "graphql"],
+          "description": "Protocol type"
+        },
+        "version": {
+          "type": "string",
+          "description": "Protocol version"
+        },
+        "endpoint": {
+          "type": "string",
+          "format": "uri",
+          "description": "Protocol endpoint URL"
+        },
+        "authentication": {
+          "$ref": "#/definitions/Authentication"
+        },
+        "tls": {
+          "type": "boolean",
+          "default": true,
+          "description": "Whether TLS is required"
+        }
+      }
+    },
+    "Authentication": {
+      "type": "object",
+      "required": [
+        "type"
+      ],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["none", "api-key", "oauth2", "jwt", "mtls"],
+          "description": "Authentication method"
+        },
+        "config": {
+          "type": "object",
+          "description": "Authentication configuration"
+        }
+      }
+    },
+    "Conformance": {
+      "type": "object",
+      "required": [
+        "level"
+      ],
+      "properties": {
+        "level": {
+          "type": "string",
+          "enum": ["bronze", "silver", "gold"],
+          "description": "OSSA conformance level"
+        },
+        "certifications": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Compliance certifications (ISO 42001, NIST AI RMF, etc.)"
+        },
+        "auditLogging": {
+          "type": "boolean",
+          "description": "Whether audit logging is enabled"
+        },
+        "feedbackLoop": {
+          "type": "boolean",
+          "description": "Whether 360° feedback loop is implemented"
+        },
+        "propsTokens": {
+          "type": "boolean",
+          "description": "Whether Props token resolution is supported"
+        },
+        "learningSignals": {
+          "type": "boolean",
+          "description": "Whether learning signal processing is enabled"
+        }
+      }
+    },
+    "Performance": {
+      "type": "object",
+      "properties": {
+        "throughput": {
+          "type": "object",
+          "properties": {
+            "requestsPerSecond": {
+              "type": "integer",
+              "minimum": 1,
+              "description": "Maximum requests per second"
+            },
+            "concurrentRequests": {
+              "type": "integer",
+              "minimum": 1,
+              "description": "Maximum concurrent requests"
+            }
+          }
+        },
+        "latency": {
+          "type": "object",
+          "properties": {
+            "p50": {
+              "type": "integer",
+              "description": "50th percentile latency in ms"
+            },
+            "p95": {
+              "type": "integer",
+              "description": "95th percentile latency in ms"
+            },
+            "p99": {
+              "type": "integer",
+              "description": "99th percentile latency in ms"
+            }
+          }
+        },
+        "limits": {
+          "type": "object",
+          "properties": {
+            "maxRequestSize": {
+              "type": "integer",
+              "description": "Maximum request size in bytes"
+            },
+            "maxResponseSize": {
+              "type": "integer",
+              "description": "Maximum response size in bytes"
+            },
+            "timeout": {
+              "type": "integer",
+              "description": "Default timeout in milliseconds"
+            }
+          }
+        }
+      }
+    },
+    "Resources": {
+      "type": "object",
+      "properties": {
+        "requests": {
+          "type": "object",
+          "properties": {
+            "cpu": {
+              "type": "string",
+              "pattern": "^[0-9]+(m|[0-9]*)$",
+              "description": "CPU request (e.g., 100m, 1)"
+            },
+            "memory": {
+              "type": "string",
+              "pattern": "^[0-9]+(Mi|Gi)$",
+              "description": "Memory request (e.g., 256Mi, 1Gi)"
+            },
+            "storage": {
+              "type": "string",
+              "pattern": "^[0-9]+(Mi|Gi)$",
+              "description": "Storage request"
+            }
+          }
+        },
+        "limits": {
+          "type": "object",
+          "properties": {
+            "cpu": {
+              "type": "string",
+              "pattern": "^[0-9]+(m|[0-9]*)$",
+              "description": "CPU limit"
+            },
+            "memory": {
+              "type": "string",
+              "pattern": "^[0-9]+(Mi|Gi)$",
+              "description": "Memory limit"
+            },
+            "storage": {
+              "type": "string",
+              "pattern": "^[0-9]+(Mi|Gi)$",
+              "description": "Storage limit"
+            }
+          }
+        }
+      }
+    },
+    "FeedbackLoop": {
+      "type": "object",
+      "properties": {
+        "phase": {
+          "type": "string",
+          "enum": ["plan", "execute", "review", "judge", "learn", "govern"],
+          "description": "Agent's role in the 360° feedback loop"
+        },
+        "inputs": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Expected input types for this phase"
+        },
+        "outputs": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Output types produced by this phase"
+        }
+      }
+    },
+    "Budgets": {
+      "type": "object",
+      "properties": {
+        "tokens": {
+          "type": "object",
+          "properties": {
+            "default": {
+              "type": "integer",
+              "description": "Default token budget"
+            },
+            "maximum": {
+              "type": "integer",
+              "description": "Maximum token budget"
+            },
+            "strategy": {
+              "type": "string",
+              "enum": ["fixed", "adaptive", "hierarchical"],
+              "description": "Budget management strategy"
+            }
+          }
+        },
+        "time": {
+          "type": "object",
+          "properties": {
+            "default": {
+              "type": "integer",
+              "description": "Default time budget in ms"
+            },
+            "maximum": {
+              "type": "integer",
+              "description": "Maximum time budget in ms"
+            }
+          }
+        }
+      }
+    },
+    "TokenEfficiency": {
+      "type": "object",
+      "properties": {
+        "strategies": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "key-based-context",
+              "delta-prompting",
+              "tiered-depth",
+              "output-only-critique",
+              "cacheable-capsules",
+              "vector-pre-filters",
+              "pre-llm-validation",
+              "compression-support",
+              "checkpoint-memos",
+              "early-exit-logic"
+            ]
+          },
+          "description": "Token optimization strategies implemented"
+        },
+        "compressionRatio": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Average compression ratio achieved"
+        }
+      }
+    },
+    "Dependencies": {
+      "type": "object",
+      "properties": {
+        "agents": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["name", "version"],
+            "properties": {
+              "name": {
+                "type": "string",
+                "description": "Required agent name"
+              },
+              "version": {
+                "type": "string",
+                "description": "Version constraint"
+              },
+              "optional": {
+                "type": "boolean",
+                "default": false,
+                "description": "Whether dependency is optional"
+              }
+            }
+          },
+          "description": "Other agents this agent depends on"
+        },
+        "services": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["name", "endpoint"],
+            "properties": {
+              "name": {
+                "type": "string",
+                "description": "Service name"
+              },
+              "endpoint": {
+                "type": "string",
+                "format": "uri",
+                "description": "Service endpoint"
+              },
+              "healthCheck": {
+                "type": "string",
+                "format": "uri",
+                "description": "Health check endpoint"
+              }
+            }
+          },
+          "description": "External services required"
+        }
+      }
+    },
+    "AgentStatus": {
+      "type": "object",
+      "properties": {
+        "state": {
+          "type": "string",
+          "enum": ["pending", "registered", "active", "suspended", "terminated"],
+          "description": "Current agent state"
+        },
+        "health": {
+          "type": "string",
+          "enum": ["healthy", "degraded", "unhealthy", "unknown"],
+          "description": "Agent health status"
+        },
+        "lastHeartbeat": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Last heartbeat timestamp"
+        },
+        "registeredAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Registration timestamp"
+        },
+        "metrics": {
+          "type": "object",
+          "properties": {
+            "requestsHandled": {
+              "type": "integer",
+              "description": "Total requests handled"
+            },
+            "successRate": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1,
+              "description": "Success rate (0-1)"
+            },
+            "avgResponseTime": {
+              "type": "integer",
+              "description": "Average response time in ms"
+            },
+            "tokenUsage": {
+              "type": "integer",
+              "description": "Total tokens consumed"
+            }
+          }
+        }
+      }
+    },
+    "Deployment": {
+      "type": "object",
+      "properties": {
+        "target": {
+          "type": "string",
+          "enum": [
+            "local",
+            "docker",
+            "kubernetes",
+            "serverless",
+            "edge"
+          ],
+          "description": "Deployment target environment"
+        },
+        "kubernetes": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": false,
+              "description": "Enable Kubernetes deployment"
+            },
+            "agent": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "pattern": "^[a-z0-9]([a-z0-9-]*[a-z0-9])?$",
+                  "description": "GitLab Agent for Kubernetes name"
+                },
+                "token": {
+                  "type": "string",
+                  "description": "GitLab Agent for Kubernetes token reference"
+                },
+                "namespace": {
+                  "type": "string",
+                  "default": "gitlab-agent",
+                  "description": "Kubernetes namespace for agent deployment"
+                }
+              },
+              "required": ["name", "token"]
+            },
+            "cluster": {
+              "type": "object",
+              "properties": {
+                "endpoint": {
+                  "type": "string",
+                  "format": "uri",
+                  "description": "Kubernetes cluster API endpoint"
+                },
+                "region": {
+                  "type": "string",
+                  "description": "Cloud provider region"
+                },
+                "zone": {
+                  "type": "string",
+                  "description": "Availability zone"
+                }
+              }
+            },
+            "remoteDevelopment": {
+              "type": "object",
+              "properties": {
+                "enabled": {
+                  "type": "boolean",
+                  "default": false
+                },
+                "dnsZone": {
+                  "type": "string",
+                  "description": "DNS zone for remote development workspaces"
+                },
+                "gitlabUrl": {
+                  "type": "string",
+                  "format": "uri",
+                  "description": "GitLab instance URL"
+                }
+              }
+            },
+            "oauth": {
+              "type": "object",
+              "properties": {
+                "clientId": {
+                  "type": "string",
+                  "description": "OAuth client ID for GitLab integration"
+                },
+                "clientSecret": {
+                  "type": "string",
+                  "description": "OAuth client secret reference"
+                },
+                "redirectUri": {
+                  "type": "string",
+                  "format": "uri",
+                  "description": "OAuth redirect URI"
+                },
+                "scopes": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "enum": ["api", "read_user", "openid", "profile"]
+                  },
+                  "default": ["api", "read_user", "openid", "profile"],
+                  "description": "Required OAuth scopes"
+                }
+              },
+              "required": ["clientId", "clientSecret", "redirectUri"]
+            },
+            "security": {
+              "type": "object",
+              "properties": {
+                "tls": {
+                  "type": "object",
+                  "properties": {
+                    "enabled": {
+                      "type": "boolean",
+                      "default": true
+                    },
+                    "certificate": {
+                      "type": "string",
+                      "description": "TLS certificate reference"
+                    },
+                    "key": {
+                      "type": "string",
+                      "description": "TLS private key reference"
+                    }
+                  }
+                },
+                "rbac": {
+                  "type": "object",
+                  "properties": {
+                    "enabled": {
+                      "type": "boolean",
+                      "default": true
+                    },
+                    "rules": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "apiGroups": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          },
+                          "resources": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          },
+                          "verbs": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "healthChecks": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": true
+            },
+            "path": {
+              "type": "string",
+              "default": "/health",
+              "description": "Health check endpoint path"
+            },
+            "port": {
+              "type": "integer",
+              "default": 3000,
+              "description": "Health check port"
+            },
+            "initialDelaySeconds": {
+              "type": "integer",
+              "default": 30
+            },
+            "periodSeconds": {
+              "type": "integer",
+              "default": 10
+            }
+          }
+        },
+        "scaling": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": false
+            },
+            "minReplicas": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1
+            },
+            "maxReplicas": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 10
+            },
+            "targetCPUUtilization": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 80
+            }
+          }
+        }
+      }
+    }
+  }
+}

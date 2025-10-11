@@ -1,0 +1,602 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://ossa.ai/schemas/v1.0/monitoring",
+  "title": "OSSA Monitoring Schema",
+  "description": "Schema for agent monitoring, observability, and IO awareness configuration",
+  "type": "object",
+  "properties": {
+    "io_aware": {
+      "type": "boolean",
+      "default": false,
+      "description": "Enable IO awareness tracking for full input/output tracing"
+    },
+    "logs": {
+      "$ref": "#/definitions/LogConfiguration"
+    },
+    "metrics": {
+      "$ref": "#/definitions/MetricsConfiguration"
+    },
+    "traces": {
+      "$ref": "#/definitions/TraceConfiguration"
+    },
+    "health": {
+      "$ref": "#/definitions/HealthConfiguration"
+    },
+    "alerts": {
+      "$ref": "#/definitions/AlertConfiguration"
+    },
+    "redaction": {
+      "$ref": "#/definitions/RedactionConfiguration"
+    },
+    "retention": {
+      "$ref": "#/definitions/RetentionConfiguration"
+    }
+  },
+  "definitions": {
+    "LogConfiguration": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": true
+        },
+        "level": {
+          "type": "string",
+          "enum": ["trace", "debug", "info", "warn", "error", "fatal"],
+          "default": "info"
+        },
+        "format": {
+          "type": "string",
+          "enum": ["json", "jsonl", "text", "structured"],
+          "default": "jsonl"
+        },
+        "outputs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/LogOutput"
+          }
+        },
+        "sampling": {
+          "$ref": "#/definitions/SamplingConfig"
+        },
+        "context": {
+          "type": "object",
+          "properties": {
+            "include_trace_id": {
+              "type": "boolean",
+              "default": true
+            },
+            "include_span_id": {
+              "type": "boolean",
+              "default": true
+            },
+            "include_agent_id": {
+              "type": "boolean",
+              "default": true
+            },
+            "include_capability": {
+              "type": "boolean",
+              "default": true
+            },
+            "custom_fields": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    },
+    "LogOutput": {
+      "type": "object",
+      "required": ["type"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["console", "file", "syslog", "http", "kafka", "elasticsearch"]
+        },
+        "config": {
+          "type": "object",
+          "properties": {
+            "path": {
+              "type": "string",
+              "description": "File path for file output"
+            },
+            "url": {
+              "type": "string",
+              "format": "uri",
+              "description": "Endpoint URL for HTTP/Elasticsearch"
+            },
+            "topic": {
+              "type": "string",
+              "description": "Topic for Kafka output"
+            },
+            "rotation": {
+              "type": "string",
+              "enum": ["daily", "hourly", "size"],
+              "description": "Log rotation strategy"
+            },
+            "max_size": {
+              "type": "string",
+              "pattern": "^\\d+[KMG]B?$",
+              "description": "Maximum file size before rotation"
+            },
+            "max_files": {
+              "type": "integer",
+              "description": "Maximum number of rotated files to keep"
+            }
+          }
+        }
+      }
+    },
+    "MetricsConfiguration": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": true
+        },
+        "endpoint": {
+          "type": "string",
+          "default": "/metrics",
+          "description": "Metrics endpoint path"
+        },
+        "format": {
+          "type": "string",
+          "enum": ["prometheus", "openmetrics", "json"],
+          "default": "prometheus"
+        },
+        "interval": {
+          "type": "integer",
+          "default": 60,
+          "description": "Metrics collection interval in seconds"
+        },
+        "exporters": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/MetricsExporter"
+          }
+        },
+        "custom_metrics": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/CustomMetric"
+          }
+        }
+      }
+    },
+    "MetricsExporter": {
+      "type": "object",
+      "required": ["type"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["prometheus", "datadog", "newrelic", "cloudwatch", "otlp"]
+        },
+        "endpoint": {
+          "type": "string",
+          "format": "uri"
+        },
+        "interval": {
+          "type": "integer",
+          "description": "Export interval in seconds"
+        },
+        "config": {
+          "type": "object",
+          "additionalProperties": true
+        }
+      }
+    },
+    "CustomMetric": {
+      "type": "object",
+      "required": ["name", "type"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_]*$"
+        },
+        "type": {
+          "type": "string",
+          "enum": ["counter", "gauge", "histogram", "summary"]
+        },
+        "description": {
+          "type": "string"
+        },
+        "labels": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "buckets": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "description": "Histogram buckets"
+        }
+      }
+    },
+    "TraceConfiguration": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": false
+        },
+        "format": {
+          "type": "string",
+          "enum": ["jsonl", "otlp", "jaeger", "zipkin", "datadog"],
+          "default": "otlp"
+        },
+        "endpoint": {
+          "type": "string",
+          "format": "uri",
+          "description": "Trace collector endpoint"
+        },
+        "sampling": {
+          "$ref": "#/definitions/TraceSamplingConfig"
+        },
+        "propagation": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["tracecontext", "baggage", "b3", "b3multi", "jaeger", "xray"]
+          },
+          "default": ["tracecontext", "baggage"]
+        },
+        "io_capture": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": true
+            },
+            "max_input_size": {
+              "type": "string",
+              "pattern": "^\\d+[KMG]B?$",
+              "default": "1MB"
+            },
+            "max_output_size": {
+              "type": "string",
+              "pattern": "^\\d+[KMG]B?$",
+              "default": "1MB"
+            },
+            "truncate": {
+              "type": "boolean",
+              "default": true
+            }
+          }
+        }
+      }
+    },
+    "TraceSamplingConfig": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["always", "never", "probabilistic", "ratelimited", "adaptive"],
+          "default": "probabilistic"
+        },
+        "rate": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "default": 0.1,
+          "description": "Sampling rate for probabilistic sampling"
+        },
+        "max_per_second": {
+          "type": "integer",
+          "default": 100,
+          "description": "Max traces per second for rate-limited sampling"
+        }
+      }
+    },
+    "SamplingConfig": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": false
+        },
+        "rate": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "default": 1.0
+        },
+        "rules": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "level": {
+                "type": "string",
+                "enum": ["trace", "debug", "info", "warn", "error", "fatal"]
+              },
+              "rate": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              }
+            }
+          }
+        }
+      }
+    },
+    "HealthConfiguration": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": true
+        },
+        "endpoint": {
+          "type": "string",
+          "default": "/health",
+          "description": "Health check endpoint"
+        },
+        "interval": {
+          "type": "integer",
+          "default": 30,
+          "description": "Health check interval in seconds"
+        },
+        "checks": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/HealthCheck"
+          }
+        },
+        "readiness": {
+          "$ref": "#/definitions/ReadinessConfig"
+        },
+        "liveness": {
+          "$ref": "#/definitions/LivenessConfig"
+        }
+      }
+    },
+    "HealthCheck": {
+      "type": "object",
+      "required": ["name", "type"],
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string",
+          "enum": ["http", "tcp", "exec", "grpc", "custom"]
+        },
+        "config": {
+          "type": "object",
+          "properties": {
+            "url": {
+              "type": "string",
+              "format": "uri"
+            },
+            "port": {
+              "type": "integer"
+            },
+            "command": {
+              "type": "string"
+            },
+            "timeout": {
+              "type": "integer",
+              "description": "Timeout in seconds"
+            },
+            "interval": {
+              "type": "integer",
+              "description": "Check interval in seconds"
+            }
+          }
+        },
+        "critical": {
+          "type": "boolean",
+          "default": false,
+          "description": "Whether this check is critical for agent health"
+        }
+      }
+    },
+    "ReadinessConfig": {
+      "type": "object",
+      "properties": {
+        "endpoint": {
+          "type": "string",
+          "default": "/ready"
+        },
+        "initial_delay": {
+          "type": "integer",
+          "default": 0,
+          "description": "Initial delay before first check in seconds"
+        },
+        "period": {
+          "type": "integer",
+          "default": 10,
+          "description": "Check period in seconds"
+        }
+      }
+    },
+    "LivenessConfig": {
+      "type": "object",
+      "properties": {
+        "endpoint": {
+          "type": "string",
+          "default": "/live"
+        },
+        "initial_delay": {
+          "type": "integer",
+          "default": 30,
+          "description": "Initial delay before first check in seconds"
+        },
+        "period": {
+          "type": "integer",
+          "default": 30,
+          "description": "Check period in seconds"
+        },
+        "failure_threshold": {
+          "type": "integer",
+          "default": 3,
+          "description": "Number of failures before marking unhealthy"
+        }
+      }
+    },
+    "AlertConfiguration": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": false
+        },
+        "channels": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/AlertChannel"
+          }
+        },
+        "rules": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/AlertRule"
+          }
+        }
+      }
+    },
+    "AlertChannel": {
+      "type": "object",
+      "required": ["name", "type"],
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string",
+          "enum": ["email", "slack", "webhook", "pagerduty", "opsgenie"]
+        },
+        "config": {
+          "type": "object",
+          "additionalProperties": true
+        }
+      }
+    },
+    "AlertRule": {
+      "type": "object",
+      "required": ["name", "condition"],
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "condition": {
+          "type": "string",
+          "description": "Alert condition expression"
+        },
+        "severity": {
+          "type": "string",
+          "enum": ["critical", "high", "medium", "low"],
+          "default": "medium"
+        },
+        "channels": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "throttle": {
+          "type": "integer",
+          "description": "Minimum seconds between alerts"
+        }
+      }
+    },
+    "RedactionConfiguration": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": true
+        },
+        "patterns": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/RedactionPattern"
+          }
+        },
+        "replacement": {
+          "type": "string",
+          "default": "[REDACTED]"
+        }
+      }
+    },
+    "RedactionPattern": {
+      "type": "object",
+      "required": ["pattern"],
+      "properties": {
+        "pattern": {
+          "type": "string",
+          "description": "Regex pattern to match"
+        },
+        "name": {
+          "type": "string",
+          "description": "Pattern name for identification"
+        },
+        "replacement": {
+          "type": "string",
+          "description": "Custom replacement text"
+        },
+        "scope": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["logs", "traces", "metrics", "all"]
+          },
+          "default": ["all"]
+        }
+      }
+    },
+    "RetentionConfiguration": {
+      "type": "object",
+      "properties": {
+        "logs": {
+          "$ref": "#/definitions/RetentionPolicy"
+        },
+        "metrics": {
+          "$ref": "#/definitions/RetentionPolicy"
+        },
+        "traces": {
+          "$ref": "#/definitions/RetentionPolicy"
+        }
+      }
+    },
+    "RetentionPolicy": {
+      "type": "object",
+      "properties": {
+        "duration": {
+          "type": "string",
+          "pattern": "^\\d+[dhmy]$",
+          "description": "Retention duration (e.g., '30d', '1y')"
+        },
+        "archive": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": false
+            },
+            "location": {
+              "type": "string",
+              "description": "Archive storage location"
+            },
+            "after": {
+              "type": "string",
+              "pattern": "^\\d+[dhmy]$",
+              "description": "Archive after duration"
+            }
+          }
+        },
+        "delete": {
+          "type": "boolean",
+          "default": true,
+          "description": "Delete after retention period"
+        }
+      }
+    }
+  }
+}

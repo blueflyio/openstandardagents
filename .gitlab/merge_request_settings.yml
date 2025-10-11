@@ -1,0 +1,23 @@
+# GitLab Merge Request Settings for OSSA
+# Fast-forward merge strategy for clean, linear history
+
+merge_method: ff_merge  # Fast-forward only
+merge_trains_enabled: true
+merge_pipelines_enabled: true
+only_allow_merge_if_pipeline_succeeds: true
+only_allow_merge_if_all_discussions_are_resolved: true
+remove_source_branch_after_merge: true
+
+# Approval rules
+approvals_before_merge: 1
+reset_approvals_on_push: true
+disable_overriding_approvers_per_merge_request: true
+
+# Merge checks
+only_allow_merge_if_all_status_checks_passed: true
+squash_option: default_on  # Encourage squashing for cleaner history
+
+# Branch protection (configure in GitLab UI)
+# - Protect 'main' and 'development' branches
+# - Require code owner approval for critical paths
+# - No force pushes to protected branches

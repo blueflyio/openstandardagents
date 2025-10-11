@@ -432,9 +432,9 @@ exporters:
 ### Roadmap & Evolution
 
 #### Q1 2025
-- ✅ Core Standards v1.0 release
-- ✅ Python, Go, Node.js SDKs
-- ✅ GitLab CI/CD templates
+-  Core Standards v1.0 release
+-  Python, Go, Node.js SDKs
+-  GitLab CI/CD templates
 - ⏳ Kubernetes operators
 
 #### Q2 2025

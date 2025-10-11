@@ -1,0 +1,389 @@
+openapi: 3.1.0
+info:
+  title: OSSA Helm Chart Generator API
+  version: 1.0.0
+  description: |
+    Generates Helm charts from OSSA agent manifests.
+
+    **OpenAPI-First Architecture:**
+    - Transforms OSSA manifests into production-ready Helm charts
+    - Supports multi-cloud deployments
+    - Includes compliance and security policies
+    - Auto-generates Kubernetes resources
+
+servers:
+  - url: http://localhost:3101/api/v1
+    description: Local development
+
+tags:
+  - name: generate
+    description: Helm chart generation
+  - name: validate
+    description: Chart validation
+  - name: templates
+    description: Template management
+
+paths:
+  /generate:
+    post:
+      summary: Generate Helm chart from OSSA manifest
+      operationId: generateHelmChart
+      tags: [generate]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GenerateRequest"
+      responses:
+        "200":
+          description: Helm chart generated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GenerateResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+
+  /generate/batch:
+    post:
+      summary: Generate Helm charts for multiple agents
+      operationId: generateBatch
+      tags: [generate]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BatchGenerateRequest"
+      responses:
+        "200":
+          description: Batch generation complete
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BatchGenerateResponse"
+
+  /validate:
+    post:
+      summary: Validate Helm chart
+      operationId: validateChart
+      tags: [validate]
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - chart
+              properties:
+                chart:
+                  type: string
+                  format: binary
+      responses:
+        "200":
+          description: Validation result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ValidationResponse"
+
+  /templates:
+    get:
+      summary: List available templates
+      operationId: listTemplates
+      tags: [templates]
+      responses:
+        "200":
+          description: Template list
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TemplateListResponse"
+
+    post:
+      summary: Create custom template
+      operationId: createTemplate
+      tags: [templates]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TemplateCreateRequest"
+      responses:
+        "201":
+          description: Template created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Template"
+
+components:
+  schemas:
+    GenerateRequest:
+      type: object
+      required:
+        - manifest
+      properties:
+        manifest:
+          type: object
+          description: OSSA agent manifest
+        options:
+          $ref: "#/components/schemas/GenerationOptions"
+
+    GenerationOptions:
+      type: object
+      properties:
+        chart_name:
+          type: string
+          description: Helm chart name
+        namespace:
+          type: string
+          default: default
+        replicas:
+          type: integer
+          minimum: 1
+          default: 1
+        image:
+          type: object
+          properties:
+            repository:
+              type: string
+            tag:
+              type: string
+            pullPolicy:
+              type: string
+              enum: [Always, IfNotPresent, Never]
+              default: IfNotPresent
+        resources:
+          type: object
+          properties:
+            limits:
+              type: object
+              properties:
+                cpu:
+                  type: string
+                memory:
+                  type: string
+            requests:
+              type: object
+              properties:
+                cpu:
+                  type: string
+                memory:
+                  type: string
+        autoscaling:
+          type: object
+          properties:
+            enabled:
+              type: boolean
+              default: false
+            minReplicas:
+              type: integer
+              default: 1
+            maxReplicas:
+              type: integer
+              default: 10
+            targetCPUUtilization:
+              type: integer
+              default: 80
+        ingress:
+          type: object
+          properties:
+            enabled:
+              type: boolean
+              default: false
+            className:
+              type: string
+            hosts:
+              type: array
+              items:
+                type: string
+            tls:
+              type: array
+              items:
+                type: object
+        compliance:
+          type: object
+          properties:
+            enabled:
+              type: boolean
+              default: false
+            frameworks:
+              type: array
+              items:
+                type: string
+                enum: [fedramp, iso27001, soc2, hipaa]
+            policies:
+              type: array
+              items:
+                type: string
+        monitoring:
+          type: object
+          properties:
+            enabled:
+              type: boolean
+              default: true
+            prometheus:
+              type: boolean
+              default: true
+            jaeger:
+              type: boolean
+              default: false
+
+    GenerateResponse:
+      type: object
+      required:
+        - chart
+        - files
+      properties:
+        chart:
+          type: string
+          description: Base64-encoded Helm chart tarball
+        files:
+          type: object
+          description: Individual chart files
+          properties:
+            Chart.yaml:
+              type: string
+            values.yaml:
+              type: string
+            templates:
+              type: object
+              additionalProperties:
+                type: string
+        metadata:
+          type: object
+          properties:
+            chart_name:
+              type: string
+            version:
+              type: string
+            app_version:
+              type: string
+            size:
+              type: integer
+
+    BatchGenerateRequest:
+      type: object
+      required:
+        - agents
+      properties:
+        agents:
+          type: array
+          items:
+            type: object
+            required:
+              - manifest
+            properties:
+              manifest:
+                type: object
+              options:
+                $ref: "#/components/schemas/GenerationOptions"
+
+    BatchGenerateResponse:
+      type: object
+      required:
+        - results
+      properties:
+        results:
+          type: array
+          items:
+            type: object
+            properties:
+              success:
+                type: boolean
+              chart_name:
+                type: string
+              chart:
+                type: string
+              error:
+                type: string
+
+    ValidationResponse:
+      type: object
+      required:
+        - valid
+      properties:
+        valid:
+          type: boolean
+        errors:
+          type: array
+          items:
+            type: string
+        warnings:
+          type: array
+          items:
+            type: string
+        metadata:
+          type: object
+
+    Template:
+      type: object
+      required:
+        - id
+        - name
+        - type
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        type:
+          type: string
+          enum: [deployment, statefulset, daemonset, job, cronjob]
+        template:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+
+    TemplateListResponse:
+      type: object
+      required:
+        - data
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/Template"
+
+    TemplateCreateRequest:
+      type: object
+      required:
+        - name
+        - type
+        - template
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        type:
+          type: string
+          enum: [deployment, statefulset, daemonset, job, cronjob]
+        template:
+          type: string
+
+    Error:
+      type: object
+      required:
+        - error
+        - message
+      properties:
+        error:
+          type: string
+        message:
+          type: string
+
+  responses:
+    BadRequest:
+      description: Bad request
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"

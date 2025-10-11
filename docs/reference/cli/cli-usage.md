@@ -38,53 +38,53 @@ npm run build
 
 | Command | Description | Status |
 |---------|-------------|---------|
-| `ossa create <name>` | Create new OSSA v0.1.8 agent | ✅ Production Ready |
-| `ossa validate [path]` | Validate agent specification | ✅ Production Ready |
-| `ossa list [--format]` | List workspace agents | ✅ Production Ready |
-| `ossa upgrade [path]` | Upgrade agent to v0.1.8 | ✅ Production Ready |
+| `ossa create <name>` | Create new OSSA v0.1.8 agent |  Production Ready |
+| `ossa validate [path]` | Validate agent specification |  Production Ready |
+| `ossa list [--format]` | List workspace agents |  Production Ready |
+| `ossa upgrade [path]` | Upgrade agent to v0.1.8 |  Production Ready |
 
 ### Discovery & UADP
 
 | Command | Description | Status |
 |---------|-------------|---------|
-| `ossa discovery init` | Initialize UADP discovery | ✅ Production Ready |
-| `ossa discovery register <path>` | Register agent with discovery | ✅ Production Ready |
-| `ossa discovery find --capabilities=X,Y` | Find agents by capabilities | ✅ Production Ready |
-| `ossa discovery health` | Check discovery system health | ✅ Production Ready |
+| `ossa discovery init` | Initialize UADP discovery |  Production Ready |
+| `ossa discovery register <path>` | Register agent with discovery |  Production Ready |
+| `ossa discovery find --capabilities=X,Y` | Find agents by capabilities |  Production Ready |
+| `ossa discovery health` | Check discovery system health |  Production Ready |
 
 ### Platform Services
 
 | Command | Description | Status |
 |---------|-------------|---------|
-| `ossa services start` | Start all platform services | ✅ Production Ready |
-| `ossa services stop` | Stop all platform services | ✅ Production Ready |
-| `ossa services status` | Check service health | ✅ Production Ready |
-| `ossa services logs [service]` | View service logs | ✅ Production Ready |
+| `ossa services start` | Start all platform services |  Production Ready |
+| `ossa services stop` | Stop all platform services |  Production Ready |
+| `ossa services status` | Check service health |  Production Ready |
+| `ossa services logs [service]` | View service logs |  Production Ready |
 
 ### API Operations
 
 | Command | Description | Status |
 |---------|-------------|---------|
-| `ossa api agents list` | List agents via API | ✅ Production Ready |
-| `ossa api agents create <spec>` | Create agent via API | ✅ Production Ready |
-| `ossa api discover --capabilities=X` | Discovery via API | ✅ Production Ready |
-| `ossa api metrics --timeframe=1h` | Get platform metrics | ✅ Production Ready |
+| `ossa api agents list` | List agents via API |  Production Ready |
+| `ossa api agents create <spec>` | Create agent via API |  Production Ready |
+| `ossa api discover --capabilities=X` | Discovery via API |  Production Ready |
+| `ossa api metrics --timeframe=1h` | Get platform metrics |  Production Ready |
 
 ### Orchestration
 
 | Command | Description | Status |
 |---------|-------------|---------|
-| `ossa orchestrate create <workflow>` | Create workflow | ✅ Production Ready |
-| `ossa orchestrate run <id>` | Execute workflow | ✅ Production Ready |
-| `ossa orchestrate status <id>` | Check workflow status | ✅ Production Ready |
+| `ossa orchestrate create <workflow>` | Create workflow |  Production Ready |
+| `ossa orchestrate run <id>` | Execute workflow |  Production Ready |
+| `ossa orchestrate status <id>` | Check workflow status |  Production Ready |
 
 ### Migration & Utilities
 
 | Command | Description | Status |
 |---------|-------------|---------|
-| `ossa migrate from-v1 <path>` | Migrate from v0.1.1 | ✅ Production Ready |
-| `ossa generate openapi <path>` | Generate OpenAPI specs | ✅ Production Ready |
-| `ossa validate compliance` | Check compliance status | ✅ Production Ready |
+| `ossa migrate from-v1 <path>` | Migrate from v0.1.1 |  Production Ready |
+| `ossa generate openapi <path>` | Generate OpenAPI specs |  Production Ready |
+| `ossa validate compliance` | Check compliance status |  Production Ready |
 
 ## Detailed Command Reference
 
@@ -102,21 +102,21 @@ Create a new OSSA v0.1.8 compliant agent with complete directory structure.
 **Example:**
 ```bash
 $ ossa create finance-analyzer --tier=advanced --domain=finance
-🚀 Creating OSSA v0.1.8 agent: finance-analyzer
+ Creating OSSA v0.1.8 agent: finance-analyzer
 
-✅ Created OSSA v0.1.8 agent: finance-analyzer
-   📁 ./finance-analyzer
-   📁 behaviors/        (Agent behavior definitions)
-   📁 config/           (Configuration files)
-   📁 data/             (Agent data and state)
-   📁 handlers/         (Event and message handlers)
-   📁 integrations/     (Framework integrations)
-   📁 schemas/          (Data validation schemas)
-   📁 training-modules/ (Training and learning modules)
-   📁 _roadmap/         (Versioned roadmap files)
-   📄 agent.yml         (Enhanced OSSA v0.1.8 spec)
-   📄 openapi.yaml      (UADP integrated API spec)
-   📄 README.md         (Quick start guide)
+ Created OSSA v0.1.8 agent: finance-analyzer
+    ./finance-analyzer
+    behaviors/        (Agent behavior definitions)
+    config/           (Configuration files)
+    data/             (Agent data and state)
+    handlers/         (Event and message handlers)
+    integrations/     (Framework integrations)
+    schemas/          (Data validation schemas)
+    training-modules/ (Training and learning modules)
+    _roadmap/         (Versioned roadmap files)
+    agent.yml         (Enhanced OSSA v0.1.8 spec)
+    openapi.yaml      (UADP integrated API spec)
+    README.md         (Quick start guide)
 
 Next steps:
    1. ossa validate finance-analyzer
@@ -144,16 +144,16 @@ Validate OSSA agent specifications with comprehensive compliance checking.
 **Example:**
 ```bash
 $ ossa validate ./my-agent --verbose
-🔍 Validating OSSA agent...
+ Validating OSSA agent...
 
-✅ OSSA v0.1.8 agent is valid
+ OSSA v0.1.8 agent is valid
    Agent: my-agent
    Version: 1.0.0
    Tier: advanced
    Protocols: openapi, mcp, uadp
    Capabilities: analysis, reporting, optimization
 
-⚠️  Roadmap: Partial roadmap (2/3)
+⚠  Roadmap: Partial roadmap (2/3)
 
 Detailed Analysis:
 {
@@ -194,21 +194,21 @@ OSSA v0.1.8 Agents:
 
 1. finance-analyzer v1.0.0
    Path: ./finance-analyzer
-   Tier: 🏆 advanced
+   Tier:  advanced
    Domain: finance
    Protocols: openapi, mcp, uadp
-   Features: 📋 OpenAPI 🔍 UADP 📁 Structure 🗺️ Roadmap
+   Features: 📋 OpenAPI  UADP  Structure 🗺 Roadmap
 
 2. data-processor v1.0.0
    Path: ./data-processor
-   Tier: 🛡️ governed
+   Tier:  governed
    Domain: data
    Protocols: openapi, mcp
-   Features: 📋 OpenAPI ⚪ UADP 📁 Structure 🔄 Roadmap
+   Features: 📋 OpenAPI ⚪ UADP  Structure  Roadmap
    Missing dirs: integrations, training-modules
 
 Total: 2 agents
-Legend: 📋 OpenAPI spec, 🔍 UADP enabled, 📁 Complete structure, 🗺️ Roadmap complete
+Legend: 📋 OpenAPI spec,  UADP enabled,  Complete structure, 🗺 Roadmap complete
 ```
 
 ### Discovery Commands (UADP)
@@ -220,9 +220,9 @@ Initialize Universal Agent Discovery Protocol (UADP) for the workspace.
 **Example:**
 ```bash
 $ ossa discovery init
-🔍 Initializing UADP Discovery...
+ Initializing UADP Discovery...
 
-✅ UADP Discovery initialized
+ UADP Discovery initialized
    Discovery endpoint: http://localhost:3002
    Registry database: ~/.ossa/registry.db
    Cache directory: ~/.ossa/cache/
@@ -242,9 +242,9 @@ Register an agent with the UADP discovery system.
 **Example:**
 ```bash
 $ ossa discovery register ./finance-analyzer
-🔍 Registering agent with UADP...
+ Registering agent with UADP...
 
-✅ Agent registered successfully
+ Agent registered successfully
    Agent ID: 550e8400-e29b-41d4-a716-446655440000
    Name: finance-analyzer
    Capabilities: finance_analysis, risk_assessment, reporting
@@ -266,7 +266,7 @@ Find agents matching specific capabilities using UADP.
 **Example:**
 ```bash
 $ ossa discovery find --capabilities=analysis,reporting --domain=finance
-🔍 Discovering agents...
+ Discovering agents...
 
 Found 2 matching agents:
 
@@ -294,20 +294,20 @@ Start all OSSA platform services using Docker Compose.
 **Example:**
 ```bash
 $ ossa services start
-🚀 Starting OSSA platform services...
+ Starting OSSA platform services...
 
 Starting services:
-   📦 PostgreSQL (Registry database)
-   📦 Redis (Cache and message bus)
-   📦 Qdrant (Vector search)
-   📦 API Gateway (Port 4000)
-   📦 Agent Registry (Port 3001)
-   📦 Discovery Engine (Port 3002)
-   📦 Orchestration (Port 3003)
-   📦 GraphQL API (Port 3004)
-   📦 Monitoring (Port 3005)
+    PostgreSQL (Registry database)
+    Redis (Cache and message bus)
+    Qdrant (Vector search)
+    API Gateway (Port 4000)
+    Agent Registry (Port 3001)
+    Discovery Engine (Port 3002)
+    Orchestration (Port 3003)
+    GraphQL API (Port 3004)
+    Monitoring (Port 3005)
 
-✅ All services started successfully!
+ All services started successfully!
    Platform API: http://localhost:4000/api/v1
    GraphQL: http://localhost:4000/graphql
    Health: http://localhost:4000/api/v1/health
@@ -328,7 +328,7 @@ Check the health status of all platform services.
 **Example:**
 ```bash
 $ ossa services status
-📊 OSSA Platform Service Status
+ OSSA Platform Service Status
 
 Core Services:
    🟢 api-gateway       Port: 4000    Status: healthy    Uptime: 2h 15m
@@ -418,7 +418,7 @@ Create a new workflow definition for multi-agent orchestration.
 $ ossa orchestrate create data-pipeline-workflow
 📋 Creating orchestration workflow...
 
-✅ Workflow created successfully
+ Workflow created successfully
    Workflow ID: wf_550e8400-e29b-41d4
    Name: data-pipeline-workflow
    Definition: ./workflows/data-pipeline-workflow.yml
@@ -441,11 +441,11 @@ Execute a workflow with real-time status monitoring.
 **Example:**
 ```bash
 $ ossa orchestrate run wf_550e8400-e29b-41d4
-🚀 Executing workflow: data-pipeline-workflow
+ Executing workflow: data-pipeline-workflow
 
 Workflow Execution:
-   📋 Step 1: Agent Discovery        ✅ Complete (2 agents found)
-   📋 Step 2: Data Ingestion         🔄 Running (agent: data-collector)
+   📋 Step 1: Agent Discovery         Complete (2 agents found)
+   📋 Step 2: Data Ingestion          Running (agent: data-collector)
    📋 Step 3: Data Processing        ⏳ Waiting (agent: data-processor)
    📋 Step 4: Analysis & Reporting   ⏳ Pending
 
@@ -474,31 +474,31 @@ Migrate agents from OSSA v0.1.1 to v0.1.8 with comprehensive updates.
 **Example:**
 ```bash
 $ ossa migrate from-v1 ./legacy-agent/
-🔄 Migrating agent from OSSA v0.1.1 to v0.1.8...
+ Migrating agent from OSSA v0.1.1 to v0.1.8...
 
 Migration Analysis:
    Source: ./legacy-agent/agent.yml (v0.1.1)
    Target: ./legacy-agent-v0.1.8/ (v0.1.8)
 
 Changes Required:
-   ✅ Update OSSA version specification
-   ✅ Add new directory structure (8 directories)
-   ✅ Enhance OpenAPI specification to 3.1+
-   ✅ Add UADP discovery support
-   ✅ Add framework integration configurations
-   ✅ Add compliance framework specifications
-   ✅ Generate versioned roadmaps
-   ✅ Update documentation
+    Update OSSA version specification
+    Add new directory structure (8 directories)
+    Enhance OpenAPI specification to 3.1+
+    Add UADP discovery support
+    Add framework integration configurations
+    Add compliance framework specifications
+    Generate versioned roadmaps
+    Update documentation
 
 Migration Complete:
-   📁 Created: ./legacy-agent-v0.1.8/
-   📄 Migrated: agent.yml with v0.1.8 enhancements
-   📄 Enhanced: openapi.yaml with UADP integration
-   📁 Added: All required v0.1.8 directories
-   📄 Generated: 3 versioned roadmap files
-   📄 Created: Updated README.md
+    Created: ./legacy-agent-v0.1.8/
+    Migrated: agent.yml with v0.1.8 enhancements
+    Enhanced: openapi.yaml with UADP integration
+    Added: All required v0.1.8 directories
+    Generated: 3 versioned roadmap files
+    Created: Updated README.md
 
-Validation Result: ✅ OSSA v0.1.8 compliant
+Validation Result:  OSSA v0.1.8 compliant
 
 Next Steps:
    1. Review migrated agent specification

@@ -1,0 +1,1085 @@
+openapi: 3.1.0
+info:
+  title: OSSA Management API
+  version: 1.0.0
+  description: |
+    OpenAPI Specification for OSSA (Open Standards for Scalable Agents) Management.
+    Provides CRUD operations for agent taxonomy management across repositories.
+  contact:
+    name: OSSA Team
+    url: https://ossa.dev
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: http://localhost:3000/api/v1
+    description: Local development server
+  - url: https://api.ossa.dev/v1
+    description: Production server
+
+security:
+  - BearerAuth: []
+  - ApiKeyAuth: []
+
+tags:
+  - name: Repositories
+    description: Repository management operations
+  - name: Agents
+    description: Agent CRUD operations
+  - name: Taxonomy
+    description: OSSA taxonomy operations
+  - name: Migration
+    description: Agent migration and reorganization
+  - name: Validation
+    description: Compliance validation operations
+
+paths:
+  /repositories:
+    get:
+      tags: [Repositories]
+      summary: List all managed repositories
+      operationId: listRepositories
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/LimitParam'
+        - name: hasAgents
+          in: query
+          schema:
+            type: boolean
+          description: Filter repositories with .agents directories
+
+      responses:
+        200:
+          description: List of repositories
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  repositories:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Repository'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+
+    post:
+      tags: [Repositories]
+      summary: Register a new repository
+      operationId: registerRepository
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RepositoryRegistration'
+      responses:
+        201:
+          description: Repository registered
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Repository'
+
+  /repositories/{repoId}:
+    parameters:
+      - $ref: '#/components/parameters/RepoIdParam'
+
+    get:
+      tags: [Repositories]
+      summary: Get repository details
+      operationId: getRepository
+      responses:
+        200:
+          description: Repository details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RepositoryDetail'
+
+    patch:
+      tags: [Repositories]
+      summary: Update repository configuration
+      operationId: updateRepository
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RepositoryUpdate'
+      responses:
+        200:
+          description: Repository updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Repository'
+
+    delete:
+      tags: [Repositories]
+      summary: Unregister repository
+      operationId: deleteRepository
+      responses:
+        204:
+          description: Repository unregistered
+
+  /repositories/{repoId}/agents:
+    parameters:
+      - $ref: '#/components/parameters/RepoIdParam'
+
+    get:
+      tags: [Agents]
+      summary: List agents in repository
+      operationId: listAgents
+      parameters:
+        - name: category
+          in: query
+          schema:
+            $ref: '#/components/schemas/TaxonomyCategory'
+          description: Filter by OSSA category
+      responses:
+        200:
+          description: List of agents
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  agents:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Agent'
+                  statistics:
+                    $ref: '#/components/schemas/AgentStatistics'
+
+    post:
+      tags: [Agents]
+      summary: Create new agent
+      operationId: createAgent
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AgentCreate'
+      responses:
+        201:
+          description: Agent created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Agent'
+
+  /repositories/{repoId}/agents/{agentId}:
+    parameters:
+      - $ref: '#/components/parameters/RepoIdParam'
+      - $ref: '#/components/parameters/AgentIdParam'
+
+    get:
+      tags: [Agents]
+      summary: Get agent details
+      operationId: getAgent
+      responses:
+        200:
+          description: Agent details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentDetail'
+
+    put:
+      tags: [Agents]
+      summary: Update agent
+      operationId: updateAgent
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AgentUpdate'
+      responses:
+        200:
+          description: Agent updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Agent'
+
+    delete:
+      tags: [Agents]
+      summary: Delete agent
+      operationId: deleteAgent
+      responses:
+        204:
+          description: Agent deleted
+
+  /repositories/{repoId}/agents/{agentId}/move:
+    post:
+      tags: [Agents, Taxonomy]
+      summary: Move agent to different category
+      operationId: moveAgent
+      parameters:
+        - $ref: '#/components/parameters/RepoIdParam'
+        - $ref: '#/components/parameters/AgentIdParam'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [targetCategory]
+              properties:
+                targetCategory:
+                  $ref: '#/components/schemas/TaxonomyCategory'
+                updateConfig:
+                  type: boolean
+                  default: true
+                  description: Update agent.yml with new category
+      responses:
+        200:
+          description: Agent moved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Agent'
+
+  /taxonomy/categories:
+    get:
+      tags: [Taxonomy]
+      summary: Get OSSA taxonomy categories
+      operationId: getTaxonomyCategories
+      responses:
+        200:
+          description: OSSA categories
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  categories:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/CategoryDetail'
+
+  /taxonomy/validate:
+    post:
+      tags: [Taxonomy, Validation]
+      summary: Validate agent against OSSA standards
+      operationId: validateTaxonomy
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ValidationRequest'
+      responses:
+        200:
+          description: Validation results
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationResult'
+
+  /migration/analyze:
+    post:
+      tags: [Migration]
+      summary: Analyze repositories for migration needs
+      operationId: analyzeMigration
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                repositoryPaths:
+                  type: array
+                  items:
+                    type: string
+                  description: Paths to repositories to analyze
+      responses:
+        200:
+          description: Migration analysis
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MigrationAnalysis'
+
+  /migration/execute:
+    post:
+      tags: [Migration]
+      summary: Execute OSSA taxonomy migration
+      operationId: executeMigration
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MigrationPlan'
+      responses:
+        202:
+          description: Migration started
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MigrationJob'
+
+  /migration/jobs/{jobId}:
+    get:
+      tags: [Migration]
+      summary: Get migration job status
+      operationId: getMigrationJob
+      parameters:
+        - name: jobId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        200:
+          description: Migration job status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MigrationJobStatus'
+
+  /validation/compliance:
+    post:
+      tags: [Validation]
+      summary: Run OSSA compliance check
+      operationId: checkCompliance
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                repositories:
+                  type: array
+                  items:
+                    type: string
+                strict:
+                  type: boolean
+                  default: false
+      responses:
+        200:
+          description: Compliance report
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ComplianceReport'
+
+  /agents/backup:
+    post:
+      tags: [Agents]
+      summary: Create backup of all agent directories
+      operationId: backupAgents
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                repositories:
+                  type: array
+                  items:
+                    type: string
+                  description: Repository paths to backup
+                backupLocation:
+                  type: string
+                  description: Custom backup directory
+                includeMetadata:
+                  type: boolean
+                  default: true
+      responses:
+        202:
+          description: Backup job started
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BackupJob'
+
+  /agents/backup/{jobId}:
+    get:
+      tags: [Agents]
+      summary: Get backup job status
+      operationId: getBackupJob
+      parameters:
+        - name: jobId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        200:
+          description: Backup job status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BackupJobStatus'
+
+  /agents/capabilities/matrix:
+    get:
+      tags: [Agents]
+      summary: Generate agent capability matrix
+      operationId: getCapabilityMatrix
+      parameters:
+        - name: format
+          in: query
+          schema:
+            type: string
+            enum: [json, markdown, html]
+            default: json
+        - name: includeStats
+          in: query
+          schema:
+            type: boolean
+            default: true
+      responses:
+        200:
+          description: Agent capability matrix
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CapabilityMatrix'
+            text/markdown:
+              schema:
+                type: string
+            text/html:
+              schema:
+                type: string
+
+  /schemas/validate:
+    post:
+      tags: [Validation]
+      summary: Validate JSON schemas
+      operationId: validateSchemas
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                schemaFiles:
+                  type: array
+                  items:
+                    type: string
+                  description: Paths to schema files to validate
+                validateReferences:
+                  type: boolean
+                  default: true
+      responses:
+        200:
+          description: Schema validation results
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SchemaValidationResult'
+
+components:
+  parameters:
+    RepoIdParam:
+      name: repoId
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Repository identifier
+
+    AgentIdParam:
+      name: agentId
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Agent identifier
+
+    PageParam:
+      name: page
+      in: query
+      schema:
+        type: integer
+        minimum: 1
+        default: 1
+
+    LimitParam:
+      name: limit
+      in: query
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 20
+
+  schemas:
+    TaxonomyCategory:
+      type: string
+      enum:
+        - critics
+        - governors
+        - integrators
+        - judges
+        - monitors
+        - orchestrators
+        - trainers
+        - voice
+        - workers
+
+    Repository:
+      type: object
+      required: [id, path, name]
+      properties:
+        id:
+          type: string
+          format: uuid
+        path:
+          type: string
+          description: Filesystem path to repository
+        name:
+          type: string
+        type:
+          type: string
+          enum: [npm, model, component, other]
+        hasAgentsDirectory:
+          type: boolean
+        agentCount:
+          type: integer
+        lastScanned:
+          type: string
+          format: date-time
+
+    RepositoryDetail:
+      allOf:
+        - $ref: '#/components/schemas/Repository'
+        - type: object
+          properties:
+            agents:
+              type: array
+              items:
+                $ref: '#/components/schemas/Agent'
+            statistics:
+              $ref: '#/components/schemas/AgentStatistics'
+            compliance:
+              $ref: '#/components/schemas/ComplianceStatus'
+
+    RepositoryRegistration:
+      type: object
+      required: [path]
+      properties:
+        path:
+          type: string
+        name:
+          type: string
+        type:
+          type: string
+          enum: [npm, model, component, other]
+        autoScan:
+          type: boolean
+          default: true
+
+    RepositoryUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+        type:
+          type: string
+        autoScan:
+          type: boolean
+
+    Agent:
+      type: object
+      required: [id, name, category, repository]
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        category:
+          $ref: '#/components/schemas/TaxonomyCategory'
+        type:
+          type: string
+        description:
+          type: string
+        version:
+          type: string
+        repository:
+          type: string
+        path:
+          type: string
+
+    AgentDetail:
+      allOf:
+        - $ref: '#/components/schemas/Agent'
+        - type: object
+          properties:
+            capabilities:
+              type: array
+              items:
+                type: string
+            domains:
+              type: array
+              items:
+                type: string
+            integrations:
+              type: array
+              items:
+                type: string
+            requirements:
+              type: object
+              properties:
+                runtime:
+                  type: string
+                memory:
+                  type: string
+                gpu:
+                  type: boolean
+            validation:
+              $ref: '#/components/schemas/ValidationResult'
+            openApiSpec:
+              type: object
+              description: Embedded OpenAPI specification
+
+    AgentCreate:
+      type: object
+      required: [name, category]
+      properties:
+        name:
+          type: string
+          pattern: '^[a-z0-9-]+$'
+        category:
+          $ref: '#/components/schemas/TaxonomyCategory'
+        description:
+          type: string
+        version:
+          type: string
+          default: '0.1.0'
+        capabilities:
+          type: array
+          items:
+            type: string
+        domains:
+          type: array
+          items:
+            type: string
+        template:
+          type: string
+          enum: [basic, advanced, ml, integration]
+
+    AgentUpdate:
+      type: object
+      properties:
+        description:
+          type: string
+        version:
+          type: string
+        capabilities:
+          type: array
+          items:
+            type: string
+        domains:
+          type: array
+          items:
+            type: string
+        integrations:
+          type: array
+          items:
+            type: string
+
+    AgentStatistics:
+      type: object
+      properties:
+        total:
+          type: integer
+        byCategory:
+          type: object
+          additionalProperties:
+            type: integer
+        byType:
+          type: object
+          additionalProperties:
+            type: integer
+        validationStatus:
+          type: object
+          properties:
+            valid:
+              type: integer
+            invalid:
+              type: integer
+            warnings:
+              type: integer
+
+    CategoryDetail:
+      type: object
+      required: [name, description, agentType]
+      properties:
+        name:
+          $ref: '#/components/schemas/TaxonomyCategory'
+        description:
+          type: string
+        purpose:
+          type: string
+        agentType:
+          type: string
+        examples:
+          type: array
+          items:
+            type: string
+        requiredCapabilities:
+          type: array
+          items:
+            type: string
+
+    ValidationRequest:
+      type: object
+      required: [agentPath]
+      properties:
+        agentPath:
+          type: string
+        strict:
+          type: boolean
+          default: false
+        validateOpenApi:
+          type: boolean
+          default: true
+        validateReadme:
+          type: boolean
+          default: true
+
+    ValidationResult:
+      type: object
+      properties:
+        valid:
+          type: boolean
+        score:
+          type: integer
+          minimum: 0
+          maximum: 100
+        errors:
+          type: array
+          items:
+            type: string
+        warnings:
+          type: array
+          items:
+            type: string
+        suggestions:
+          type: array
+          items:
+            type: string
+
+    MigrationAnalysis:
+      type: object
+      properties:
+        repositories:
+          type: array
+          items:
+            type: object
+            properties:
+              path:
+                type: string
+              currentStructure:
+                type: object
+              proposedChanges:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MigrationChange'
+              estimatedImpact:
+                type: string
+                enum: [none, low, medium, high]
+
+    MigrationChange:
+      type: object
+      properties:
+        type:
+          type: string
+          enum: [move, rename, delete, create]
+        source:
+          type: string
+        target:
+          type: string
+        reason:
+          type: string
+        agentName:
+          type: string
+
+    MigrationPlan:
+      type: object
+      required: [repositories]
+      properties:
+        repositories:
+          type: array
+          items:
+            type: object
+            properties:
+              path:
+                type: string
+              changes:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MigrationChange'
+        createBackup:
+          type: boolean
+          default: true
+        dryRun:
+          type: boolean
+          default: false
+        updateConfigs:
+          type: boolean
+          default: true
+
+    MigrationJob:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum: [pending, running, completed, failed]
+        startedAt:
+          type: string
+          format: date-time
+        progress:
+          type: integer
+          minimum: 0
+          maximum: 100
+
+    MigrationJobStatus:
+      allOf:
+        - $ref: '#/components/schemas/MigrationJob'
+        - type: object
+          properties:
+            completedAt:
+              type: string
+              format: date-time
+            results:
+              type: array
+              items:
+                type: object
+                properties:
+                  repository:
+                    type: string
+                  status:
+                    type: string
+                  changesApplied:
+                    type: integer
+                  errors:
+                    type: array
+                    items:
+                      type: string
+
+    ComplianceStatus:
+      type: object
+      properties:
+        compliant:
+          type: boolean
+        score:
+          type: integer
+        lastChecked:
+          type: string
+          format: date-time
+
+    ComplianceReport:
+      type: object
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+        repositories:
+          type: array
+          items:
+            type: object
+            properties:
+              path:
+                type: string
+              compliant:
+                type: boolean
+              score:
+                type: integer
+              agents:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    name:
+                      type: string
+                    valid:
+                      type: boolean
+                    errors:
+                      type: array
+                      items:
+                        type: string
+        summary:
+          type: object
+          properties:
+            totalRepositories:
+              type: integer
+            compliantRepositories:
+              type: integer
+            totalAgents:
+              type: integer
+            validAgents:
+              type: integer
+            averageScore:
+              type: number
+
+    BackupJob:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum: [pending, running, completed, failed]
+        startedAt:
+          type: string
+          format: date-time
+        progress:
+          type: integer
+          minimum: 0
+          maximum: 100
+
+    BackupJobStatus:
+      allOf:
+        - $ref: '#/components/schemas/BackupJob'
+        - type: object
+          properties:
+            completedAt:
+              type: string
+              format: date-time
+            backupLocation:
+              type: string
+            results:
+              type: array
+              items:
+                type: object
+                properties:
+                  repository:
+                    type: string
+                  status:
+                    type: string
+                  agentsBackedUp:
+                    type: integer
+                  backupSize:
+                    type: string
+                  errors:
+                    type: array
+                    items:
+                      type: string
+
+    CapabilityMatrix:
+      type: object
+      properties:
+        generated:
+          type: string
+          format: date-time
+        statistics:
+          type: object
+          properties:
+            totalAgents:
+              type: integer
+            categories:
+              type: integer
+            capabilities:
+              type: integer
+            domains:
+              type: integer
+        categories:
+          type: object
+          additionalProperties:
+            type: object
+            properties:
+              agents:
+                type: array
+                items:
+                  type: string
+              capabilities:
+                type: array
+                items:
+                  type: string
+              domains:
+                type: array
+                items:
+                  type: string
+        agents:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+              category:
+                type: string
+              capabilities:
+                type: array
+                items:
+                  type: string
+              domains:
+                type: array
+                items:
+                  type: string
+
+    SchemaValidationResult:
+      type: object
+      properties:
+        valid:
+          type: boolean
+        results:
+          type: array
+          items:
+            type: object
+            properties:
+              file:
+                type: string
+              valid:
+                type: boolean
+              errors:
+                type: array
+                items:
+                  type: string
+              warnings:
+                type: array
+                items:
+                  type: string
+
+    Pagination:
+      type: object
+      properties:
+        page:
+          type: integer
+        limit:
+          type: integer
+        total:
+          type: integer
+        totalPages:
+          type: integer
+
+    Error:
+      type: object
+      required: [code, message]
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+        details:
+          type: object
+
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key

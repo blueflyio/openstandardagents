@@ -610,7 +610,7 @@ if command -v license-checker &> /dev/null; then
         license-checker --production --onlyAllow "$ALLOWED_LICENSES"
         exit 1
     else
-        echo "✅ All licenses are compliant"
+        echo " All licenses are compliant"
     fi
 fi
 ```

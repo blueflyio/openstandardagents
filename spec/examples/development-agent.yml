@@ -1,0 +1,138 @@
+ossaVersion: "1.0"
+
+agent:
+  # Identity
+  id: code-generation-assistant
+  name: Code Generation & Testing Assistant
+  version: 1.0.0
+  description: |
+    AI-powered code generation agent with support for multiple languages,
+    test generation, and code review capabilities.
+  role: development
+  tags:
+    - code-generation
+    - testing
+    - code-review
+    - development
+
+  # Runtime
+  runtime:
+    type: local
+    command: ["npx", "tsx", "src/index.ts"]
+    requirements:
+      node: ">=20.0.0"
+      packages:
+        - typescript
+        - openai
+        - prettier
+    resources:
+      cpu: "1000m"
+      memory: "1Gi"
+    health_check:
+      type: http
+      endpoint: /health
+      port: 4100
+
+  # Capabilities
+  capabilities:
+    - name: generate_code
+      description: Generate code from natural language description
+      input_schema:
+        type: object
+        required:
+          - description
+          - language
+        properties:
+          description:
+            type: string
+          language:
+            type: string
+            enum: [typescript, python, go, rust, java]
+          framework:
+            type: string
+      output_schema:
+        type: object
+        properties:
+          code:
+            type: string
+          explanation:
+            type: string
+          tests:
+            type: string
+      timeout_seconds: 120
+
+    - name: generate_tests
+      description: Generate unit tests for existing code
+      input_schema:
+        type: object
+        required:
+          - code
+          - language
+        properties:
+          code:
+            type: string
+          language:
+            type: string
+          framework:
+            type: string
+      output_schema:
+        type: object
+        properties:
+          test_code:
+            type: string
+          coverage_targets:
+            type: array
+
+    - name: review_code
+      description: AI-powered code review
+      input_schema:
+        type: object
+        required:
+          - code
+        properties:
+          code:
+            type: string
+          check_types:
+            type: array
+            items:
+              type: string
+      output_schema:
+        type: object
+        properties:
+          issues:
+            type: array
+          suggestions:
+            type: array
+          quality_score:
+            type: number
+
+  # Policies
+  policies:
+    compliance: []
+    encryption: false
+    audit: false
+
+  # Integration
+  integration:
+    protocol: http
+    endpoints:
+      base_url: http://localhost:4100
+      health: /health
+    auth:
+      type: none
+
+  # Monitoring
+  monitoring:
+    traces: true
+    metrics: false
+    logs: true
+    health_check: http://localhost:4100/health
+
+  # Metadata
+  metadata:
+    author: OSSA Dev Tools Team
+    license: MIT
+    keywords:
+      - code-generation
+      - ai-assistant
+      - testing

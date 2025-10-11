@@ -1,0 +1,167 @@
+openapi: 3.1.0
+info:
+  title: Communication Multiprotocol Integrator Agent API
+  version: 0.1.9
+  description: |
+    OSSA Communication Multiprotocol Integrator Agent - Enables communication
+    across multiple protocols including HTTP, WebSocket, gRPC, and message queues.
+  contact:
+    name: OSSA Framework
+    url: https://gitlab.bluefly.io/llm/openapi-ai-agents-standard
+
+servers:
+  - url: http://localhost:3014/api/v1
+    description: Local multiprotocol agent server
+
+paths:
+  /protocol/send:
+    post:
+      summary: Send message via specified protocol
+      operationId: sendMessage
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SendMessageRequest'
+      responses:
+        '200':
+          description: Message sent successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SendMessageResponse'
+
+  /protocol/bridge:
+    post:
+      summary: Bridge between protocols
+      operationId: bridgeProtocols
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BridgeRequest'
+      responses:
+        '200':
+          description: Bridge established
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BridgeResponse'
+
+  /protocol/translate:
+    post:
+      summary: Translate message between protocols
+      operationId: translateProtocol
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TranslateRequest'
+      responses:
+        '200':
+          description: Message translated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TranslateResponse'
+
+components:
+  schemas:
+    SendMessageRequest:
+      type: object
+      required:
+        - protocol
+        - destination
+        - message
+      properties:
+        protocol:
+          type: string
+          enum: [http, websocket, grpc, amqp, mqtt, kafka]
+        destination:
+          type: string
+        message:
+          type: object
+        options:
+          type: object
+          properties:
+            timeout:
+              type: integer
+            retries:
+              type: integer
+            qos:
+              type: integer
+
+    SendMessageResponse:
+      type: object
+      properties:
+        messageId:
+          type: string
+        status:
+          type: string
+          enum: [sent, queued, failed]
+        protocol:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+        response:
+          type: object
+
+    BridgeRequest:
+      type: object
+      required:
+        - sourceProtocol
+        - targetProtocol
+      properties:
+        sourceProtocol:
+          type: string
+        targetProtocol:
+          type: string
+        configuration:
+          type: object
+        bidirectional:
+          type: boolean
+          default: false
+
+    BridgeResponse:
+      type: object
+      properties:
+        bridgeId:
+          type: string
+        status:
+          type: string
+          enum: [active, inactive, error]
+        sourceEndpoint:
+          type: string
+        targetEndpoint:
+          type: string
+
+    TranslateRequest:
+      type: object
+      required:
+        - sourceProtocol
+        - targetProtocol
+        - message
+      properties:
+        sourceProtocol:
+          type: string
+        targetProtocol:
+          type: string
+        message:
+          type: object
+        preserveHeaders:
+          type: boolean
+          default: true
+
+    TranslateResponse:
+      type: object
+      properties:
+        translatedMessage:
+          type: object
+        targetProtocol:
+          type: string
+        metadata:
+          type: object

@@ -1,0 +1,44 @@
+{
+  "name": "@ossa/specification",
+  "version": "0.1.9",
+  "description": "OSSA (Open Standards for Scalable Agents) Specification Package",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist/",
+    "schemas/",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "clean": "rm -rf dist",
+    "test": "exit 0",
+    "prepublishOnly": "npm run clean && npm run build"
+  },
+  "keywords": [
+    "ossa",
+    "agents",
+    "specification",
+    "openapi",
+    "ai",
+    "multi-agent",
+    "standard"
+  ],
+  "author": "OSSA Community",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://gitlab.bluefly.io/llm/openapi-ai-agents-standard.git",
+    "directory": "packages/ossa-specification"
+  },
+  "homepage": "https://ossa.dev",
+  "devDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

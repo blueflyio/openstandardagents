@@ -1,0 +1,283 @@
+openapi: 3.1.0
+info:
+  title: OSSA IO Aware Standards Specification
+  version: 0.1.9
+  description: |
+    # IO Aware Standards for Agent Reasoning Traces
+
+    This specification defines standardized formats for agent input/output traces,
+    enabling observability, debugging, and compliance tracking across heterogeneous
+    agent ecosystems.
+
+    ## Core Concepts
+
+    - **Trace Format**: Structured JSON format for reasoning traces
+    - **Span Hierarchy**: Parent-child relationships in multi-step reasoning
+    - **Tool Call Logging**: Standardized format for external tool invocations
+    - **Token Accounting**: Per-operation token usage tracking
+    - **Compliance Mapping**: Trace requirements for regulatory compliance
+
+servers:
+  - url: http://localhost:3000/ossa/v1
+    description: OSSA compliance server
+
+paths:
+  /traces:
+    post:
+      tags: [Trace Ingestion]
+      summary: Submit agent reasoning trace
+      operationId: submitTrace
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReasoningTrace'
+      responses:
+        '201':
+          description: Trace accepted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  trace_id:
+                    type: string
+                  status:
+                    type: string
+
+  /traces/{traceId}:
+    get:
+      tags: [Trace Query]
+      summary: Retrieve reasoning trace
+      operationId: getTrace
+      parameters:
+        - name: traceId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Trace details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReasoningTrace'
+
+  /traces/validate:
+    post:
+      tags: [Validation]
+      summary: Validate trace compliance
+      operationId: validateTrace
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReasoningTrace'
+      responses:
+        '200':
+          description: Validation result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationResult'
+
+components:
+  schemas:
+    ReasoningTrace:
+      type: object
+      required:
+        - trace_id
+        - span_id
+        - agent_id
+        - timestamp
+        - operation
+        - io_pairs
+      properties:
+        trace_id:
+          type: string
+          format: uuid
+          description: Unique trace identifier
+        span_id:
+          type: string
+          format: uuid
+          description: Span within trace
+        parent_span_id:
+          type: string
+          format: uuid
+          description: Parent span for hierarchical traces
+        agent_id:
+          type: string
+          description: Agent that generated this trace
+        timestamp:
+          type: string
+          format: date-time
+        operation:
+          type: string
+          enum: [reasoning, tool_call, memory_access, decision, validation]
+        io_pairs:
+          type: array
+          items:
+            $ref: '#/components/schemas/IOPair'
+        tool_calls:
+          type: array
+          items:
+            $ref: '#/components/schemas/ToolCall'
+        metrics:
+          $ref: '#/components/schemas/TraceMetrics'
+        compliance:
+          $ref: '#/components/schemas/ComplianceInfo'
+
+    IOPair:
+      type: object
+      required:
+        - input
+        - output
+        - timestamp
+      properties:
+        input:
+          type: object
+          properties:
+            text:
+              type: string
+            tokens:
+              type: integer
+            embedding_dim:
+              type: integer
+            metadata:
+              type: object
+        output:
+          type: object
+          properties:
+            text:
+              type: string
+            tokens:
+              type: integer
+            confidence:
+              type: number
+              minimum: 0
+              maximum: 1
+            reasoning:
+              type: string
+        timestamp:
+          type: string
+          format: date-time
+        duration_ms:
+          type: integer
+
+    ToolCall:
+      type: object
+      required:
+        - tool_name
+        - input
+        - output
+        - timestamp
+      properties:
+        tool_name:
+          type: string
+        tool_version:
+          type: string
+        input:
+          type: object
+        output:
+          type: object
+        error:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+        duration_ms:
+          type: integer
+        tokens_used:
+          type: integer
+        cost:
+          type: object
+          properties:
+            amount:
+              type: number
+            currency:
+              type: string
+
+    TraceMetrics:
+      type: object
+      properties:
+        total_tokens:
+          type: integer
+        input_tokens:
+          type: integer
+        output_tokens:
+          type: integer
+        tool_tokens:
+          type: integer
+        total_duration_ms:
+          type: integer
+        reasoning_depth:
+          type: integer
+        tool_call_count:
+          type: integer
+        memory_accesses:
+          type: integer
+        cost_usd:
+          type: number
+
+    ComplianceInfo:
+      type: object
+      properties:
+        regulations:
+          type: array
+          items:
+            type: string
+            enum: [gdpr, hipaa, sox, pci_dss, ccpa, ai_act]
+        pii_detected:
+          type: boolean
+        pii_fields:
+          type: array
+          items:
+            type: string
+        audit_required:
+          type: boolean
+        retention_days:
+          type: integer
+        encryption_required:
+          type: boolean
+
+    ValidationResult:
+      type: object
+      required:
+        - valid
+        - errors
+      properties:
+        valid:
+          type: boolean
+        errors:
+          type: array
+          items:
+            type: object
+            properties:
+              field:
+                type: string
+              message:
+                type: string
+              severity:
+                type: string
+                enum: [error, warning, info]
+        compliance:
+          type: object
+          properties:
+            gdpr:
+              type: boolean
+            hipaa:
+              type: boolean
+            sox:
+              type: boolean
+        performance:
+          type: object
+          properties:
+            meets_sla:
+              type: boolean
+            latency_ms:
+              type: integer
+            token_efficiency:
+              type: number

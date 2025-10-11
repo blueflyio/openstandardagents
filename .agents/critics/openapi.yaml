@@ -1,0 +1,240 @@
+openapi: 3.1.0
+info:
+  title: Code Reviewer Critic Agent API
+  version: 0.1.9
+  description: |
+    OSSA Code Reviewer Critic Agent - Analyzes code quality, identifies issues,
+    and provides improvement recommendations based on best practices.
+  contact:
+    name: OSSA Framework
+    url: https://gitlab.bluefly.io/llm/openapi-ai-agents-standard
+
+servers:
+  - url: http://localhost:3011/api/v1
+    description: Local critic agent server
+
+paths:
+  /review/code:
+    post:
+      summary: Review code submission
+      operationId: reviewCode
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CodeReviewRequest'
+      responses:
+        '200':
+          description: Code review completed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CodeReviewResponse'
+
+  /review/pull-request:
+    post:
+      summary: Review pull request
+      operationId: reviewPullRequest
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PullRequestReviewRequest'
+      responses:
+        '200':
+          description: Pull request review completed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PullRequestReviewResponse'
+
+  /review/architecture:
+    post:
+      summary: Review system architecture
+      operationId: reviewArchitecture
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ArchitectureReviewRequest'
+      responses:
+        '200':
+          description: Architecture review completed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ArchitectureReviewResponse'
+
+components:
+  schemas:
+    CodeReviewRequest:
+      type: object
+      required:
+        - code
+        - language
+      properties:
+        code:
+          type: string
+          description: Code to review
+        language:
+          type: string
+          description: Programming language
+        context:
+          type: string
+          description: Additional context for review
+        reviewType:
+          type: string
+          enum: [security, performance, maintainability, all]
+          default: all
+
+    CodeReviewResponse:
+      type: object
+      properties:
+        score:
+          type: number
+          minimum: 0
+          maximum: 100
+        issues:
+          type: array
+          items:
+            $ref: '#/components/schemas/Issue'
+        recommendations:
+          type: array
+          items:
+            $ref: '#/components/schemas/Recommendation'
+        metrics:
+          $ref: '#/components/schemas/CodeMetrics'
+
+    Issue:
+      type: object
+      properties:
+        severity:
+          type: string
+          enum: [info, warning, error, critical]
+        category:
+          type: string
+        line:
+          type: integer
+        column:
+          type: integer
+        message:
+          type: string
+        rule:
+          type: string
+        suggestion:
+          type: string
+
+    Recommendation:
+      type: object
+      properties:
+        type:
+          type: string
+        priority:
+          type: string
+          enum: [low, medium, high]
+        description:
+          type: string
+        impact:
+          type: string
+
+    CodeMetrics:
+      type: object
+      properties:
+        complexity:
+          type: integer
+        maintainability:
+          type: number
+        testCoverage:
+          type: number
+        duplicateLines:
+          type: integer
+        technicalDebt:
+          type: string
+
+    PullRequestReviewRequest:
+      type: object
+      required:
+        - repository
+        - pullRequestId
+      properties:
+        repository:
+          type: string
+        pullRequestId:
+          type: string
+        branch:
+          type: string
+        targetBranch:
+          type: string
+
+    PullRequestReviewResponse:
+      type: object
+      properties:
+        approved:
+          type: boolean
+        comments:
+          type: array
+          items:
+            type: object
+            properties:
+              file:
+                type: string
+              line:
+                type: integer
+              comment:
+                type: string
+              severity:
+                type: string
+        summary:
+          type: string
+        checklist:
+          type: array
+          items:
+            type: object
+            properties:
+              item:
+                type: string
+              passed:
+                type: boolean
+
+    ArchitectureReviewRequest:
+      type: object
+      required:
+        - components
+      properties:
+        components:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+              type:
+                type: string
+              dependencies:
+                type: array
+                items:
+                  type: string
+
+    ArchitectureReviewResponse:
+      type: object
+      properties:
+        score:
+          type: number
+        findings:
+          type: array
+          items:
+            type: object
+            properties:
+              category:
+                type: string
+              severity:
+                type: string
+              description:
+                type: string
+        recommendations:
+          type: array
+          items:
+            type: string

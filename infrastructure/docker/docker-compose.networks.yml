@@ -1,0 +1,10 @@
+# Shared network overlay for LLM ecosystem
+# Usage: docker compose -f docker-compose.yml -f docker-compose.networks.yml up -d
+
+networks:
+  llm_front: 
+    external: true
+    name: llm_front
+  llm_back:  
+    external: true
+    name: llm_back

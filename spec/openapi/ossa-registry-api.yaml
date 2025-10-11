@@ -1,0 +1,980 @@
+openapi: 3.1.0
+info:
+  title: OSSA Agent Registry API
+  version: 1.0.0
+  description: |
+    Central registry for OSSA-compliant AI agents.
+
+    Similar to Docker Hub for containers or npm for packages, the OSSA Registry provides:
+    - Agent discovery and search
+    - Version management
+    - Compliance certification
+    - Cryptographic signatures
+    - Usage analytics
+
+    **OpenAPI-First Architecture:**
+    - This spec drives all types and validation
+    - Zod schemas generated from this spec
+    - Complete CRUD operations
+    - Type-safe throughout
+  contact:
+    name: OSSA Registry Team
+    url: https://registry.ossa.io
+    email: registry@ossa.io
+  license:
+    name: Apache 2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0.html
+
+servers:
+  - url: https://registry.ossa.io/api/v1
+    description: Production
+  - url: https://staging.registry.ossa.io/api/v1
+    description: Staging
+  - url: http://localhost:3100/api/v1
+    description: Local development
+
+tags:
+  - name: agents
+    description: Agent CRUD operations
+  - name: versions
+    description: Version management
+  - name: search
+    description: Agent discovery
+  - name: certification
+    description: Compliance certification
+  - name: signatures
+    description: Cryptographic signatures
+  - name: analytics
+    description: Usage metrics
+
+paths:
+  /agents:
+    get:
+      summary: List all agents
+      operationId: listAgents
+      tags: [agents]
+      parameters:
+        - $ref: "#/components/parameters/PageParam"
+        - $ref: "#/components/parameters/LimitParam"
+        - $ref: "#/components/parameters/SortParam"
+        - name: namespace
+          in: query
+          schema:
+            type: string
+          description: Filter by namespace
+        - name: certified
+          in: query
+          schema:
+            type: boolean
+          description: Filter by certification status
+        - name: compliance
+          in: query
+          schema:
+            type: array
+            items:
+              type: string
+              enum: [fedramp, iso27001, soc2, hipaa]
+          description: Filter by compliance frameworks
+      responses:
+        "200":
+          description: List of agents
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AgentListResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+    post:
+      summary: Register new agent
+      operationId: createAgent
+      tags: [agents]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AgentCreateRequest"
+      responses:
+        "201":
+          description: Agent created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Agent"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  /agents/{namespace}/{name}:
+    get:
+      summary: Get agent details
+      operationId: getAgent
+      tags: [agents]
+      parameters:
+        - $ref: "#/components/parameters/NamespaceParam"
+        - $ref: "#/components/parameters/NameParam"
+      responses:
+        "200":
+          description: Agent details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Agent"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+    put:
+      summary: Update agent
+      operationId: updateAgent
+      tags: [agents]
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/NamespaceParam"
+        - $ref: "#/components/parameters/NameParam"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AgentUpdateRequest"
+      responses:
+        "200":
+          description: Agent updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Agent"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+    delete:
+      summary: Delete agent
+      operationId: deleteAgent
+      tags: [agents]
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/NamespaceParam"
+        - $ref: "#/components/parameters/NameParam"
+      responses:
+        "204":
+          description: Agent deleted
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  /agents/{namespace}/{name}/versions:
+    get:
+      summary: List agent versions
+      operationId: listVersions
+      tags: [versions]
+      parameters:
+        - $ref: "#/components/parameters/NamespaceParam"
+        - $ref: "#/components/parameters/NameParam"
+        - $ref: "#/components/parameters/PageParam"
+        - $ref: "#/components/parameters/LimitParam"
+      responses:
+        "200":
+          description: List of versions
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VersionListResponse"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+    post:
+      summary: Publish new version
+      operationId: createVersion
+      tags: [versions]
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/NamespaceParam"
+        - $ref: "#/components/parameters/NameParam"
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - version
+                - manifest
+              properties:
+                version:
+                  type: string
+                  pattern: '^[0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9]+)?$'
+                  description: Semantic version
+                manifest:
+                  type: string
+                  format: binary
+                  description: OSSA agent manifest (YAML/JSON)
+                readme:
+                  type: string
+                  description: Markdown documentation
+                signature:
+                  type: string
+                  format: binary
+                  description: GPG signature
+      responses:
+        "201":
+          description: Version created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Version"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  /agents/{namespace}/{name}/versions/{version}:
+    get:
+      summary: Get version details
+      operationId: getVersion
+      tags: [versions]
+      parameters:
+        - $ref: "#/components/parameters/NamespaceParam"
+        - $ref: "#/components/parameters/NameParam"
+        - $ref: "#/components/parameters/VersionParam"
+      responses:
+        "200":
+          description: Version details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Version"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+    delete:
+      summary: Unpublish version
+      operationId: deleteVersion
+      tags: [versions]
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/NamespaceParam"
+        - $ref: "#/components/parameters/NameParam"
+        - $ref: "#/components/parameters/VersionParam"
+      responses:
+        "204":
+          description: Version deleted
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  /agents/{namespace}/{name}/versions/{version}/manifest:
+    get:
+      summary: Download manifest
+      operationId: downloadManifest
+      tags: [versions]
+      parameters:
+        - $ref: "#/components/parameters/NamespaceParam"
+        - $ref: "#/components/parameters/NameParam"
+        - $ref: "#/components/parameters/VersionParam"
+      responses:
+        "200":
+          description: OSSA manifest file
+          content:
+            application/x-yaml:
+              schema:
+                type: string
+                format: binary
+            application/json:
+              schema:
+                type: object
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  /search:
+    get:
+      summary: Search agents
+      operationId: searchAgents
+      tags: [search]
+      parameters:
+        - name: q
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Search query
+        - $ref: "#/components/parameters/PageParam"
+        - $ref: "#/components/parameters/LimitParam"
+        - name: filters
+          in: query
+          schema:
+            type: object
+            properties:
+              certified:
+                type: boolean
+              compliance:
+                type: array
+                items:
+                  type: string
+              tags:
+                type: array
+                items:
+                  type: string
+      responses:
+        "200":
+          description: Search results
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SearchResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  /certifications:
+    get:
+      summary: List all certifications
+      operationId: listCertifications
+      tags: [certification]
+      parameters:
+        - $ref: "#/components/parameters/PageParam"
+        - $ref: "#/components/parameters/LimitParam"
+      responses:
+        "200":
+          description: List of certifications
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CertificationListResponse"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  /certifications/{namespace}/{name}/request:
+    post:
+      summary: Request certification
+      operationId: requestCertification
+      tags: [certification]
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/NamespaceParam"
+        - $ref: "#/components/parameters/NameParam"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CertificationRequest"
+      responses:
+        "201":
+          description: Certification request created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Certification"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  /analytics/{namespace}/{name}:
+    get:
+      summary: Get agent analytics
+      operationId: getAnalytics
+      tags: [analytics]
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/NamespaceParam"
+        - $ref: "#/components/parameters/NameParam"
+        - name: from
+          in: query
+          schema:
+            type: string
+            format: date-time
+        - name: to
+          in: query
+          schema:
+            type: string
+            format: date-time
+      responses:
+        "200":
+          description: Analytics data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Analytics"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT token obtained from authentication endpoint
+
+  parameters:
+    NamespaceParam:
+      name: namespace
+      in: path
+      required: true
+      schema:
+        type: string
+        pattern: "^[a-z0-9][a-z0-9-]*[a-z0-9]$"
+      description: Agent namespace (e.g., 'ossa', 'my-org')
+
+    NameParam:
+      name: name
+      in: path
+      required: true
+      schema:
+        type: string
+        pattern: "^[a-z0-9][a-z0-9-]*[a-z0-9]$"
+      description: Agent name
+
+    VersionParam:
+      name: version
+      in: path
+      required: true
+      schema:
+        type: string
+        pattern: '^[0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9]+)?$'
+      description: Semantic version
+
+    PageParam:
+      name: page
+      in: query
+      schema:
+        type: integer
+        minimum: 1
+        default: 1
+      description: Page number
+
+    LimitParam:
+      name: limit
+      in: query
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 20
+      description: Items per page
+
+    SortParam:
+      name: sort
+      in: query
+      schema:
+        type: string
+        enum: [name, downloads, updated, created]
+        default: downloads
+      description: Sort field
+
+  schemas:
+    Agent:
+      type: object
+      required:
+        - id
+        - namespace
+        - name
+        - description
+        - latest_version
+        - created_at
+        - updated_at
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Unique agent ID
+        namespace:
+          type: string
+          description: Agent namespace
+        name:
+          type: string
+          description: Agent name
+        full_name:
+          type: string
+          description: Full name (namespace/name)
+        description:
+          type: string
+          description: Short description
+        readme:
+          type: string
+          description: Full documentation (Markdown)
+        homepage:
+          type: string
+          format: uri
+          description: Homepage URL
+        repository:
+          type: string
+          format: uri
+          description: Source repository URL
+        latest_version:
+          type: string
+          description: Latest version number
+        downloads:
+          type: integer
+          description: Total downloads
+        stars:
+          type: integer
+          description: Star count
+        tags:
+          type: array
+          items:
+            type: string
+          description: Searchable tags
+        certified:
+          type: boolean
+          description: OSSA certification status
+        compliance:
+          type: array
+          items:
+            type: string
+            enum: [fedramp, iso27001, soc2, hipaa]
+          description: Compliance frameworks
+        maintainers:
+          type: array
+          items:
+            $ref: "#/components/schemas/Maintainer"
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    AgentCreateRequest:
+      type: object
+      required:
+        - namespace
+        - name
+        - description
+      properties:
+        namespace:
+          type: string
+          pattern: "^[a-z0-9][a-z0-9-]*[a-z0-9]$"
+        name:
+          type: string
+          pattern: "^[a-z0-9][a-z0-9-]*[a-z0-9]$"
+        description:
+          type: string
+          maxLength: 500
+        readme:
+          type: string
+        homepage:
+          type: string
+          format: uri
+        repository:
+          type: string
+          format: uri
+        tags:
+          type: array
+          items:
+            type: string
+
+    AgentUpdateRequest:
+      type: object
+      properties:
+        description:
+          type: string
+          maxLength: 500
+        readme:
+          type: string
+        homepage:
+          type: string
+          format: uri
+        repository:
+          type: string
+          format: uri
+        tags:
+          type: array
+          items:
+            type: string
+
+    AgentListResponse:
+      type: object
+      required:
+        - data
+        - pagination
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/Agent"
+        pagination:
+          $ref: "#/components/schemas/Pagination"
+
+    Version:
+      type: object
+      required:
+        - id
+        - version
+        - agent_id
+        - manifest_url
+        - created_at
+      properties:
+        id:
+          type: string
+          format: uuid
+        version:
+          type: string
+          description: Semantic version
+        agent_id:
+          type: string
+          format: uuid
+        manifest_url:
+          type: string
+          format: uri
+          description: Downloadable manifest URL
+        readme:
+          type: string
+        signature:
+          type: string
+          description: GPG signature
+        verified:
+          type: boolean
+          description: Signature verification status
+        downloads:
+          type: integer
+        sha256:
+          type: string
+          description: Manifest checksum
+        size:
+          type: integer
+          description: Manifest size in bytes
+        created_at:
+          type: string
+          format: date-time
+
+    VersionListResponse:
+      type: object
+      required:
+        - data
+        - pagination
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/Version"
+        pagination:
+          $ref: "#/components/schemas/Pagination"
+
+    SearchResponse:
+      type: object
+      required:
+        - data
+        - total
+        - query
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/SearchResult"
+        total:
+          type: integer
+        query:
+          type: string
+        pagination:
+          $ref: "#/components/schemas/Pagination"
+
+    SearchResult:
+      allOf:
+        - $ref: "#/components/schemas/Agent"
+        - type: object
+          properties:
+            score:
+              type: number
+              description: Search relevance score
+            highlight:
+              type: object
+              description: Highlighted matching text
+
+    Certification:
+      type: object
+      required:
+        - id
+        - agent_id
+        - level
+        - status
+        - requested_at
+      properties:
+        id:
+          type: string
+          format: uuid
+        agent_id:
+          type: string
+          format: uuid
+        level:
+          type: string
+          enum: [compatible, certified, enterprise]
+          description: |
+            - compatible: Basic OSSA compliance
+            - certified: Full audit passed
+            - enterprise: FedRAMP/ISO compliance
+        compliance_frameworks:
+          type: array
+          items:
+            type: string
+            enum: [fedramp, iso27001, soc2, hipaa]
+        status:
+          type: string
+          enum: [pending, in_review, approved, rejected, expired]
+        badge_url:
+          type: string
+          format: uri
+        certificate_url:
+          type: string
+          format: uri
+        expires_at:
+          type: string
+          format: date-time
+        requested_at:
+          type: string
+          format: date-time
+        reviewed_at:
+          type: string
+          format: date-time
+        notes:
+          type: string
+
+    CertificationRequest:
+      type: object
+      required:
+        - level
+        - version
+      properties:
+        level:
+          type: string
+          enum: [compatible, certified, enterprise]
+        version:
+          type: string
+        compliance_frameworks:
+          type: array
+          items:
+            type: string
+            enum: [fedramp, iso27001, soc2, hipaa]
+        documentation_url:
+          type: string
+          format: uri
+        notes:
+          type: string
+
+    CertificationListResponse:
+      type: object
+      required:
+        - data
+        - pagination
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/Certification"
+        pagination:
+          $ref: "#/components/schemas/Pagination"
+
+    Analytics:
+      type: object
+      required:
+        - agent_id
+        - period
+      properties:
+        agent_id:
+          type: string
+          format: uuid
+        period:
+          type: object
+          properties:
+            from:
+              type: string
+              format: date-time
+            to:
+              type: string
+              format: date-time
+        downloads:
+          type: object
+          properties:
+            total:
+              type: integer
+            by_version:
+              type: object
+              additionalProperties:
+                type: integer
+            by_day:
+              type: array
+              items:
+                type: object
+                properties:
+                  date:
+                    type: string
+                    format: date
+                  count:
+                    type: integer
+        geography:
+          type: object
+          additionalProperties:
+            type: integer
+        top_referrers:
+          type: array
+          items:
+            type: object
+            properties:
+              url:
+                type: string
+              count:
+                type: integer
+
+    Maintainer:
+      type: object
+      required:
+        - username
+        - role
+      properties:
+        username:
+          type: string
+        name:
+          type: string
+        email:
+          type: string
+          format: email
+        role:
+          type: string
+          enum: [owner, maintainer, contributor]
+        avatar_url:
+          type: string
+          format: uri
+
+    Pagination:
+      type: object
+      required:
+        - page
+        - limit
+        - total
+        - total_pages
+      properties:
+        page:
+          type: integer
+          minimum: 1
+        limit:
+          type: integer
+          minimum: 1
+        total:
+          type: integer
+          minimum: 0
+        total_pages:
+          type: integer
+          minimum: 0
+        has_next:
+          type: boolean
+        has_prev:
+          type: boolean
+
+    Error:
+      type: object
+      required:
+        - error
+        - message
+      properties:
+        error:
+          type: string
+        message:
+          type: string
+        details:
+          type: object
+        trace_id:
+          type: string
+          format: uuid
+
+  responses:
+    BadRequest:
+      description: Bad request
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+
+    Unauthorized:
+      description: Unauthorized
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+
+    Forbidden:
+      description: Forbidden
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+
+    NotFound:
+      description: Not found
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+
+    Conflict:
+      description: Conflict (duplicate)
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+
+    InternalError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"

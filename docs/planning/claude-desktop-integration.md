@@ -2,7 +2,7 @@
 
 Complete integration of the Open Standards for Scalable Agents (OSSA) platform with Claude Desktop, providing first-class agent development, validation, and lifecycle management capabilities.
 
-## 🚀 Features
+##  Features
 
 ### Core Integration
 - **Project-Based Interface**: Dedicated OSSA project in Claude Desktop
@@ -23,7 +23,7 @@ Complete integration of the Open Standards for Scalable Agents (OSSA) platform w
 - **MCP Protocol**: Full Model Context Protocol compatibility
 - **CI/CD Integration**: Test, lint, and package using OSSA's GitLab CI
 
-## 📦 Installation
+##  Installation
 
 ### 1. Install MCP Server
 ```bash
@@ -48,7 +48,7 @@ cp templates/mcp/.mcp.json .
 nano .mcp.json
 ```
 
-## 🛠️ Usage
+## 🛠 Usage
 
 ### Generate Agent
 ```bash
@@ -83,7 +83,7 @@ ossa lifecycle --action health --agent_id voice-assistant
 ossa lifecycle --action stop --agent_id voice-assistant
 ```
 
-## 📁 Project Structure
+##  Project Structure
 
 ```
 OSSA Project/
@@ -105,7 +105,7 @@ OSSA Project/
 └── ROADMAP.md                # OSSA roadmap
 ```
 
-## 🔧 Configuration
+##  Configuration
 
 ### Environment Variables
 ```bash
@@ -122,7 +122,7 @@ OSSA_MCP_EVENTS=true
 - **governed**: Full OSSA governance (recommended)
 - **enterprise**: Enterprise-grade compliance
 
-## 🎯 Agent Types
+##  Agent Types
 
 OSSA supports 8 agent types from the taxonomy:
 
@@ -135,7 +135,7 @@ OSSA supports 8 agent types from the taxonomy:
 7. **Monitors**: Telemetry and system health
 8. **Integrators**: Cross-system adapters and bridges
 
-## 🔍 Resources
+##  Resources
 
 The MCP server provides access to:
 
@@ -146,7 +146,7 @@ The MCP server provides access to:
 - **Roadmap**: Development roadmap and milestones
 - **Agent Registry**: Registered agents and capabilities
 
-## 🧪 Testing
+##  Testing
 
 ### Unit Tests
 ```bash
@@ -163,7 +163,7 @@ npm run test:integration
 npm run test:compliance
 ```
 
-## 📊 Monitoring
+##  Monitoring
 
 ### Real-Time Dashboard
 - Agent status and health monitoring
@@ -176,7 +176,7 @@ npm run test:compliance
 - Configurable log levels
 - Audit trail for compliance
 
-## 🚀 Deployment
+##  Deployment
 
 ### Local Development
 ```bash
@@ -195,7 +195,7 @@ docker build -t ossa-mcp-server .
 docker run -p 3000:3000 ossa-mcp-server
 ```
 
-## 🤝 Contributing
+##  Contributing
 
 1. Fork the repository
 2. Create a feature branch
@@ -203,7 +203,7 @@ docker run -p 3000:3000 ossa-mcp-server
 4. Add tests
 5. Submit a pull request
 
-## 📄 License
+##  License
 
 MIT License - see LICENSE file for details
 
@@ -213,7 +213,7 @@ MIT License - see LICENSE file for details
 - **Issues**: https://gitlab.bluefly.io/llm/openapi-ai-agents-standard/-/issues
 - **Community**: ossa@bluefly.io
 
-## 🔗 Links
+##  Links
 
 - **OSSA Platform**: https://ossa.bluefly.io
 - **Claude Desktop**: https://claude.ai/desktop

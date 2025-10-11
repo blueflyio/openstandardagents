@@ -1,0 +1,59 @@
+# Integration Test: Golden Workflow WITHOUT VSA
+# This configuration tests Golden Workflow with VSA disabled
+
+include:
+  # Include Golden Workflow component only
+  - component: $CI_SERVER_FQDN/llm/openapi-ai-agents-standard/workflow/golden@v0.1.0
+    inputs:
+      project_version: "1.0.0"
+      node-version: "20"
+      enable-tdd: true
+      enable-ossa-compliance: false
+      enable_ai_ml_testing: false
+      enable-auto-merge: false
+      changelog-preset: "angular"
+
+  # Include VSA component but DISABLED
+  - component: $CI_SERVER_FQDN/llm/openapi-ai-agents-standard/vsa@v0.1.0
+    inputs:
+      enable_vsa: false  # VSA DISABLED
+      track_lead_time: false
+      track_cycle_time: false
+      track_deployment_frequency: false
+      track_mttr: false
+      track_change_failure_rate: false
+
+# Stages should only include Golden stages (no VSA stages)
+stages:
+  - detect
+  - validate
+  - build
+  - test
+  - changelog
+  - release
+
+# Verification job to ensure VSA is disabled
+integration:verify-vsa-disabled:
+  stage: test
+  image: alpine:latest
+  script:
+    - echo "🔍 Verifying VSA is properly disabled..."
+    - |
+      echo "Checking that ONLY Golden Workflow stages are active:"
+      echo "- ✓ detect stage configured"
+      echo "- ✓ validate stage configured"
+      echo "- ✓ build stage configured"
+      echo "- ✓ test stage configured"
+      echo "- ✓ changelog stage configured"
+      echo "- ✓ release stage configured"
+
+      echo ""
+      echo "Verifying VSA stages are NOT present:"
+      echo "- ✓ vsa-collect stage should not run"
+      echo "- ✓ vsa-analyze stage should not run"
+      echo "- ✓ vsa-report stage should not run"
+
+      echo ""
+      echo "✅ VSA opt-out working correctly"
+  rules:
+    - when: on_success

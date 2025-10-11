@@ -1,0 +1,71 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://ossa.ai/schemas/capability.schema.json",
+  "title": "OSSA Capability Schema",
+  "description": "Schema for defining agent capabilities in OSSA",
+  "type": "object",
+  "required": ["name", "type", "description"],
+  "properties": {
+    "name": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_]*[a-z0-9]$",
+      "description": "Capability name in snake_case"
+    },
+    "type": {
+      "type": "string",
+      "enum": ["action", "sensor", "processor", "coordinator", "validator"],
+      "description": "Type of capability"
+    },
+    "description": {
+      "type": "string",
+      "minLength": 10,
+      "description": "Human-readable description of the capability"
+    },
+    "domains": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Knowledge domains this capability operates in"
+    },
+    "inputs": {
+      "type": "object",
+      "description": "Input schema for this capability"
+    },
+    "outputs": {
+      "type": "object",
+      "description": "Output schema for this capability"
+    },
+    "dependencies": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Other capabilities this one depends on"
+    },
+    "constraints": {
+      "type": "object",
+      "properties": {
+        "performance": {
+          "type": "object",
+          "properties": {
+            "max_latency_ms": {"type": "number"},
+            "min_throughput": {"type": "number"},
+            "max_memory_mb": {"type": "number"}
+          }
+        },
+        "security": {
+          "type": "object",
+          "properties": {
+            "requires_authentication": {"type": "boolean"},
+            "requires_authorization": {"type": "boolean"},
+            "data_classification": {
+              "type": "string",
+              "enum": ["public", "internal", "confidential", "restricted"]
+            }
+          }
+        }
+      }
+    }
+  }
+}

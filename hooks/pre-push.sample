@@ -1,0 +1,74 @@
+#!/bin/bash
+#
+# OSSA Knowledge Graph - Git Pre-Push Hook
+#
+# This hook automatically rebuilds the knowledge graph before pushing to remote.
+# Ensures graph exports are always up-to-date with agent changes.
+#
+# Installation:
+#   cp hooks/pre-push.sample .git/hooks/pre-push
+#   chmod +x .git/hooks/pre-push
+#
+
+set -e
+
+echo "🔍 OSSA Pre-Push Hook: Checking for agent changes..."
+
+# Check if any agent files changed
+AGENT_FILES_CHANGED=$(git diff --name-only HEAD @{u} 2>/dev/null | grep -E '\.agents/.*\.(yml|yaml)$' || true)
+
+if [ -z "$AGENT_FILES_CHANGED" ]; then
+  echo "✅ No agent files changed, skipping graph rebuild"
+  exit 0
+fi
+
+echo "📝 Agent files changed:"
+echo "$AGENT_FILES_CHANGED" | sed 's/^/  - /'
+
+# Check if knowledge graph output exists
+if [ ! -f "knowledge-graph/graph.json" ]; then
+  echo "⚠️  No existing graph found, creating initial build..."
+fi
+
+echo ""
+echo "🧠 Rebuilding knowledge graph..."
+echo "────────────────────────────────────────────────────────────"
+
+# Build the graph
+if command -v ossa &> /dev/null; then
+  ossa knowledge-graph \
+    --buildkit /Users/flux423/Sites/LLM/agent_buildkit/.agents \
+    --ossa /Users/flux423/Sites/LLM/OSSA/.agents \
+    --output ./knowledge-graph \
+    2>&1 | grep -E '(✅|❌|agents|relationships|Duration)'
+else
+  echo "❌ OSSA CLI not found. Install with: npm install -g @bluefly/ossa"
+  exit 1
+fi
+
+# Check if graph was generated successfully
+if [ ! -f "knowledge-graph/graph.json" ]; then
+  echo "❌ Graph generation failed!"
+  exit 1
+fi
+
+# Auto-commit graph changes if enabled
+if [ "${OSSA_AUTO_COMMIT_GRAPH:-true}" = "true" ]; then
+  GRAPH_CHANGED=$(git diff --name-only knowledge-graph/ || true)
+
+  if [ -n "$GRAPH_CHANGED" ]; then
+    echo ""
+    echo "📦 Auto-committing graph updates..."
+    git add knowledge-graph/
+    git commit -m "chore: auto-update knowledge graph [skip ci]" --no-verify
+    echo "✅ Graph committed"
+  else
+    echo "✅ Graph up-to-date, no changes to commit"
+  fi
+fi
+
+echo "────────────────────────────────────────────────────────────"
+echo "✅ Pre-push check complete - ready to push!"
+echo ""
+
+exit 0

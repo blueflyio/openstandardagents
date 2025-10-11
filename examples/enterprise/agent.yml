@@ -1,0 +1,452 @@
+# Enterprise OSSA Agent Example (400+ lines)
+# Platinum conformance level - Enterprise-grade with all features
+
+ossa: 1.0
+agent:
+  name: enterprise-ai-orchestrator
+  version: 3.5.0
+  description: Enterprise-grade AI orchestration platform with multi-model support
+  author: Enterprise AI Division
+  license: Commercial
+  conformance: platinum
+  tags:
+    - enterprise
+    - orchestration
+    - multi-model
+    - secure
+    - scalable
+
+discover:
+  auto: true
+  protocol: uadp
+  registry: https://registry.ossa.ai
+  endpoints:
+    - https://discovery.ossa.ai/agents
+    - https://enterprise.ossa.ai/discovery
+
+capabilities:
+  # Core AI Capabilities
+  - text_generation
+  - text_analysis
+  - code_generation
+  - code_review
+  - image_generation
+  - image_analysis
+  - speech_to_text
+  - text_to_speech
+  - translation
+  - summarization
+  # Orchestration Capabilities
+  - workflow_orchestration
+  - agent_coordination
+  - task_distribution
+  - load_balancing
+  # Enterprise Features
+  - audit_logging
+  - compliance_checking
+  - data_governance
+  - security_scanning
+
+api:
+  POST /orchestrate:
+    capability: workflow_orchestration
+    description: Orchestrate complex AI workflows
+
+  POST /generate/text:
+    capability: text_generation
+    description: Generate text using multiple models
+
+  POST /generate/code:
+    capability: code_generation
+    description: Generate code with review
+
+  POST /analyze/document:
+    capability: text_analysis
+    description: Deep document analysis
+
+  POST /analyze/image:
+    capability: image_analysis
+    description: Computer vision analysis
+
+  POST /coordinate:
+    capability: agent_coordination
+    description: Coordinate multiple agents
+
+  GET /health:
+    description: Comprehensive health status
+
+  GET /metrics:
+    description: Detailed Prometheus metrics
+
+  GET /ready:
+    description: Readiness probe
+
+  GET /live:
+    description: Liveness probe
+
+monitoring:
+  io_aware: true
+
+  logs:
+    format: jsonl
+    level: info
+    trace: true
+    retention: 90d
+    outputs:
+      - type: elasticsearch
+        config:
+          url: https://logs.enterprise.com
+      - type: file
+        config:
+          path: /var/log/ossa/orchestrator.log
+          rotation: hourly
+          max_files: 168
+    sampling:
+      enabled: true
+      rate: 1.0
+      rules:
+        - level: debug
+          rate: 0.1
+        - level: error
+          rate: 1.0
+
+  metrics:
+    enabled: true
+    endpoint: /metrics
+    format: prometheus
+    interval: 30
+    exporters:
+      - type: prometheus
+        endpoint: http://prometheus:9090
+      - type: datadog
+        endpoint: https://api.datadoghq.com
+      - type: cloudwatch
+        config:
+          region: us-east-1
+    custom_metrics:
+      - name: workflow_executions_total
+        type: counter
+        labels: [workflow_type, status, tenant]
+      - name: model_latency_seconds
+        type: histogram
+        labels: [model, operation]
+        buckets: [0.05, 0.1, 0.25, 0.5, 1, 2.5, 5, 10]
+      - name: active_agents
+        type: gauge
+        labels: [agent_type]
+      - name: token_usage_total
+        type: counter
+        labels: [model, tenant, operation]
+
+  traces:
+    enabled: true
+    format: otlp
+    endpoint: https://traces.enterprise.com:4317
+    sampling:
+      type: adaptive
+      rate: 0.1
+      max_per_second: 1000
+    propagation: [tracecontext, baggage, b3]
+    io_capture:
+      enabled: true
+      max_input_size: 10MB
+      max_output_size: 10MB
+      truncate: true
+
+  health:
+    enabled: true
+    endpoint: /health
+    interval: 15
+    checks:
+      - name: postgres_primary
+        type: tcp
+        config:
+          port: 5432
+          timeout: 5
+        critical: true
+      - name: redis_cache
+        type: tcp
+        config:
+          port: 6379
+          timeout: 5
+      - name: elasticsearch
+        type: http
+        config:
+          url: http://elasticsearch:9200/_cluster/health
+          timeout: 10
+      - name: model_servers
+        type: grpc
+        config:
+          port: 50051
+          timeout: 5
+        critical: true
+
+  alerts:
+    enabled: true
+    channels:
+      - name: pagerduty
+        type: pagerduty
+        config:
+          integration_key: "${PAGERDUTY_KEY}"
+      - name: slack
+        type: slack
+        config:
+          webhook_url: "${SLACK_WEBHOOK}"
+      - name: email
+        type: email
+        config:
+          smtp_host: smtp.enterprise.com
+          from: alerts@enterprise.com
+    rules:
+      - name: high_error_rate
+        condition: "error_rate > 0.05"
+        severity: critical
+        channels: [pagerduty, slack]
+      - name: high_latency
+        condition: "p95_latency > 5s"
+        severity: high
+        channels: [slack]
+        throttle: 300
+
+  redaction:
+    enabled: true
+    patterns:
+      - pattern: "\\b[A-Z]{2}\\d{2}\\s?\\d{4}\\s?\\d{4}\\s?\\d{4}\\s?\\d{4}\\b"
+        name: credit_card
+        replacement: "[CC-REDACTED]"
+      - pattern: "\\b\\d{3}-\\d{2}-\\d{4}\\b"
+        name: ssn
+        replacement: "[SSN-REDACTED]"
+      - pattern: "\\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Z|a-z]{2,}\\b"
+        name: email
+        replacement: "[EMAIL-REDACTED]"
+      - pattern: "Bearer\\s+[A-Za-z0-9\\-._~\\+/]+={0,2}"
+        name: bearer_token
+        replacement: "[TOKEN-REDACTED]"
+
+  retention:
+    logs:
+      duration: 90d
+      archive:
+        enabled: true
+        location: s3://enterprise-logs-archive
+        after: 30d
+    metrics:
+      duration: 365d
+      archive:
+        enabled: true
+        location: s3://enterprise-metrics-archive
+        after: 90d
+    traces:
+      duration: 30d
+
+performance:
+  token_optimization:
+    enabled: true
+    strategies:
+      - type: flash_attention
+        config:
+          block_size: 512
+      - type: paged_kv
+        config:
+          page_size: 4096
+      - type: grouped_query
+        config:
+          num_groups: 8
+    max_context: 128000
+    compression:
+      enabled: true
+      method: zstd
+      level: 3
+
+  cache:
+    enabled: true
+    layers:
+      - name: l1_memory
+        type: memory
+        size: 1GB
+        ttl: 60
+      - name: l2_redis
+        type: redis
+        ttl: 3600
+        config:
+          host: redis-primary
+          port: 6379
+          password: "${REDIS_PASSWORD}"
+      - name: l3_disk
+        type: disk
+        size: 100GB
+        config:
+          path: /var/cache/ossa
+    key_strategy: hybrid
+    eviction:
+      policy: lru
+      max_entries: 100000
+
+  quantization:
+    enabled: true
+    method: awq
+    target_bits: 4
+    calibration:
+      dataset: enterprise-calibration-v2
+      samples: 512
+      method: percentile
+
+  batching:
+    enabled: true
+    dynamic: true
+    max_batch_size: 128
+    timeout_ms: 50
+    padding: bucket
+    buckets: [128, 256, 512, 1024, 2048, 4096]
+
+  resources:
+    limits:
+      cpu: "16"
+      memory: 64Gi
+      disk: 500Gi
+    requests:
+      cpu: "8"
+      memory: 32Gi
+    gpu:
+      required: true
+      type: nvidia
+      model: A100
+      count: 4
+      memory: 80GB
+      compute_capability: "8.0"
+    network:
+      bandwidth: 10Gbps
+      timeout: 60000
+      retry:
+        enabled: true
+        max_attempts: 5
+        backoff: exponential
+        initial_delay: 1000
+        max_delay: 30000
+
+  scaling:
+    enabled: true
+    type: both
+    horizontal:
+      min_replicas: 3
+      max_replicas: 100
+      target_cpu: 70
+      target_memory: 80
+      metrics:
+        - name: requests_per_second
+          target: 1000
+          type: average
+        - name: pending_workflows
+          target: 100
+          type: average
+    vertical:
+      enabled: true
+      update_mode: auto
+      cpu:
+        min: "4"
+        max: "32"
+      memory:
+        min: 16Gi
+        max: 128Gi
+
+  optimization:
+    compiler:
+      enabled: true
+      backend: tensorrt
+      mode: max_performance
+    runtime:
+      torch_dynamo: true
+      cuda_graphs: true
+      amp:
+        enabled: true
+        dtype: float16
+      fusion: true
+    model:
+      pruning:
+        enabled: true
+        sparsity: 0.5
+      distillation:
+        enabled: false
+
+bridge:
+  mcp:
+    enabled: true
+    server_type: websocket
+    tools:
+      - name: orchestrateWorkflow
+        description: Orchestrate AI workflow
+        capability: workflow_orchestration
+      - name: coordinateAgents
+        description: Coordinate multiple agents
+        capability: agent_coordination
+    resources:
+      - uri: ossa://workflows
+        name: Available Workflows
+        mimeType: application/json
+    config:
+      max_message_size: 10485760
+      timeout_ms: 30000
+      retry_count: 3
+
+  a2a:
+    enabled: true
+    card_url: https://enterprise.ai/agents/orchestrator.json
+    schema_version: "1.0"
+    capabilities_mapping:
+      workflow_orchestration: orchestrate
+      agent_coordination: coordinate
+
+  openapi:
+    enabled: true
+    spec_url: ./openapi.yaml
+    spec_version: "3.1"
+    servers:
+      - url: https://api.enterprise.ai
+        description: Production API
+      - url: https://staging.enterprise.ai
+        description: Staging API
+
+  langchain:
+    enabled: true
+    tool_class: EnterpriseOrchestrator
+    chain_type: agent
+    memory:
+      type: vector
+      max_tokens: 128000
+    callbacks:
+      - EnterpriseLogger
+      - ComplianceAuditor
+    export:
+      as_tool: true
+      as_chain: true
+      as_agent: true
+
+  crewai:
+    enabled: true
+    agent_type: manager
+    role: Enterprise AI Orchestrator
+    goal: Efficiently orchestrate complex AI workflows
+    backstory: Advanced orchestration system managing enterprise AI operations
+    max_iter: 50
+    allow_delegation: true
+
+  autogen:
+    enabled: true
+    agent_type: assistant
+    system_message: Enterprise AI orchestration and coordination
+    human_input_mode: NEVER
+    code_execution:
+      enabled: true
+      work_dir: /tmp/autogen
+      use_docker: true
+    max_consecutive_auto_reply: 25
+
+  custom:
+    drupal:
+      enabled: true
+      modules: [mcp, experience_builder, eca]
+      api_version: "11.x"
+    gitlab:
+      enabled: true
+      ci_component: gitlab.bluefly.io/llm/golden@v0.1.0

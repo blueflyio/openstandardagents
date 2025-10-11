@@ -1,0 +1,29 @@
+{
+  "ossa_version": "0.1.9",
+  "agent": {
+    "name": "nx-agent-brain",
+    "type": "worker",
+    "compliance_level": "full",
+    "api_version": "1.0.0",
+    "last_updated": "2025-10-03T23:46:06.526Z",
+    "structure_complete": true
+  },
+  "directories": {
+    "behaviors": true,
+    "data": true,
+    "handlers": true,
+    "integrations": true,
+    "schemas": true,
+    "src": true,
+    "tests": true,
+    "config": true,
+    "deployments": true
+  },
+  "files": {
+    "agent.yml": true,
+    "openapi.yml": true,
+    "README.md": true,
+    "package.json": true,
+    "tsconfig.json": true
+  }
+}

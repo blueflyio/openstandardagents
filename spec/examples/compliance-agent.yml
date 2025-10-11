@@ -1,0 +1,204 @@
+ossaVersion: "1.0"
+
+agent:
+  # Identity
+  id: compliance-scanner-fedramp
+  name: FedRAMP Compliance Scanner
+  version: 1.0.0
+  description: |
+    Automated compliance scanning agent for FedRAMP Moderate environments.
+    Scans infrastructure, code, and configurations for security vulnerabilities
+    and compliance violations.
+  role: compliance
+  tags:
+    - security
+    - fedramp
+    - compliance
+    - audit
+    - vulnerability-scanning
+
+  # Runtime
+  runtime:
+    type: k8s
+    image: ossa/compliance-scanner:1.0.0
+    requirements:
+      python: ">=3.11"
+      packages:
+        - bandit
+        - safety
+        - trivy
+        - kube-bench
+    resources:
+      cpu: "1000m"
+      memory: "1Gi"
+      gpu: false
+    health_check:
+      type: http
+      endpoint: /health
+      port: 3200
+      initial_delay_seconds: 30
+      period_seconds: 10
+      timeout_seconds: 5
+      failure_threshold: 3
+
+  # Capabilities
+  capabilities:
+    - name: scan_infrastructure
+      description: Scan Kubernetes infrastructure for compliance violations
+      input_schema:
+        type: object
+        required:
+          - namespace
+        properties:
+          namespace:
+            type: string
+            description: Kubernetes namespace to scan
+          include_pods:
+            type: boolean
+            default: true
+          include_network_policies:
+            type: boolean
+            default: true
+      output_schema:
+        type: object
+        properties:
+          violations:
+            type: array
+            items:
+              type: object
+              properties:
+                severity:
+                  type: string
+                  enum: [low, medium, high, critical]
+                resource:
+                  type: string
+                issue:
+                  type: string
+                remediation:
+                  type: string
+          compliance_score:
+            type: number
+            minimum: 0
+            maximum: 100
+      timeout_seconds: 600
+      retry_policy:
+        max_attempts: 2
+        backoff: exponential
+
+    - name: scan_code_vulnerabilities
+      description: Scan codebase for security vulnerabilities
+      input_schema:
+        type: object
+        required:
+          - repository_url
+        properties:
+          repository_url:
+            type: string
+            format: uri
+          branch:
+            type: string
+            default: main
+          scan_dependencies:
+            type: boolean
+            default: true
+      output_schema:
+        type: object
+        properties:
+          vulnerabilities:
+            type: array
+            items:
+              type: object
+          dependency_issues:
+            type: array
+            items:
+              type: object
+          risk_score:
+            type: number
+      timeout_seconds: 900
+
+    - name: generate_compliance_report
+      description: Generate comprehensive compliance report
+      input_schema:
+        type: object
+        properties:
+          scan_results:
+            type: array
+          format:
+            type: string
+            enum: [json, pdf, html]
+            default: json
+      output_schema:
+        type: object
+        properties:
+          report_url:
+            type: string
+            format: uri
+          summary:
+            type: object
+
+  # Policies & Compliance
+  policies:
+    compliance:
+      - fedramp-moderate
+      - soc2-type2
+      - nist-800-53
+    data_residency:
+      - US
+      - US-GOV
+    encryption: true
+    audit: true
+    pii_handling: encrypt
+
+  # Integration
+  integration:
+    protocol: http
+    endpoints:
+      base_url: http://compliance-scanner:3200
+      health: /health
+      metrics: /metrics
+      openapi: /api/docs
+    auth:
+      type: jwt
+      config:
+        issuer: https://auth.ossa.io
+        audience: compliance-scanner
+    rate_limits:
+      requests_per_minute: 100
+      burst: 20
+
+  # Monitoring
+  monitoring:
+    traces: true
+    metrics: true
+    logs: true
+    health_check: http://localhost:3200/health
+    phoenix_arise:
+      enabled: true
+      project: ossa-compliance
+      export_interval_seconds: 60
+
+  # Dependencies
+  dependencies:
+    required:
+      - agent_id: agent-tracer
+        min_version: "1.0.0"
+      - agent_id: compliance-engine
+        min_version: "1.0.0"
+    optional:
+      - agent_id: agent-brain
+        fallback: Use local memory
+
+  # Metadata
+  metadata:
+    author: OSSA Standards Team
+    maintainer: compliance@ossa.io
+    homepage: https://ossa.io/agents/compliance-scanner
+    repository: https://github.com/ossa-agents/compliance-scanner
+    documentation: https://docs.ossa.io/agents/compliance-scanner
+    license: Apache-2.0
+    keywords:
+      - compliance
+      - security
+      - fedramp
+      - scanning
+      - kubernetes

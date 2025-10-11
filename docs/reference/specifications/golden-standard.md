@@ -2,7 +2,7 @@
 
 This document defines the golden standard for project organization, naming conventions, and best practices as implemented in the OSSA (Open Standards for Scalable Agents) platform.
 
-## 🏗️ Core Architecture Principles
+##  Core Architecture Principles
 
 ### 1. API-First Design
 - **Single Source of Truth**: `/api/openapi.yaml` defines all contracts
@@ -22,7 +22,7 @@ This document defines the golden standard for project organization, naming conve
 - **Integration Tests**: End-to-end workflow validation
 - **Contract Testing**: Validate API compliance
 
-## 📁 Directory Structure Standards
+##  Directory Structure Standards
 
 ```
 project/
@@ -89,7 +89,7 @@ project/
     └── utils/                # Test utilities
 ```
 
-## 🏷️ Naming Conventions
+## 🏷 Naming Conventions
 
 ### File Names
 - **kebab-case**: `user-management.ts`, `api-client.ts`
@@ -114,7 +114,7 @@ project/
 - **Service Prefixes**: `GATEWAY_PORT`, `DISCOVERY_URL`
 - **Consistent Naming**: `{SERVICE}_{PROPERTY}`
 
-## 🧪 Testing Standards
+##  Testing Standards
 
 ### Test Organization
 ```
@@ -137,7 +137,7 @@ tests/
 - **Integration Coverage**: Critical user journeys
 - **Performance Testing**: Load and stress tests for services
 
-## 📦 Package Management
+##  Package Management
 
 ### Workspace Structure
 ```json
@@ -162,7 +162,7 @@ tests/
 - **Version Pinning**: Exact versions for production
 - **Security Scanning**: Regular dependency audits
 
-## 🔧 Development Workflow
+##  Development Workflow
 
 ### Feature Development
 1. **Branch Strategy**: `feature/feature-name` from main
@@ -191,7 +191,7 @@ stages:
   - deploy-staging
 ```
 
-## 🏗️ Infrastructure Standards
+##  Infrastructure Standards
 
 ### Container Strategy
 - **Multi-stage Builds**: Optimize for size and security
@@ -239,7 +239,7 @@ stages:
 - **Troubleshooting**: Common issues and solutions
 - **Migration Guides**: Version upgrade paths
 
-## ✅ Quality Gates
+##  Quality Gates
 
 ### Before Merge
 - [ ] API tests pass

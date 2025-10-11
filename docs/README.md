@@ -6,17 +6,17 @@
 
 | Category | Description | Status |
 |----------|-------------|--------|
-| **[🚀 Overview](overview/)** | Project introduction and architecture | ✅ Complete |
-| **[🏁 Getting Started](getting-started/)** | Quick start and tutorials | ✅ Complete |
-| **[📚 API Reference](api/)** | Complete API documentation | ✅ Complete |
-| **[📋 Specifications](specifications/)** | Technical specifications | ✅ Complete |
-| **[🔧 Development](development/)** | Developer guides and contributing | ✅ Complete |
-| **[🏢 Enterprise](enterprise/)** | Enterprise features and compliance | ✅ Complete |
-| **[💡 Examples](examples/)** | Code examples and tutorials | ✅ Complete |
-| **[🔄 Migration](migration/)** | Migration guides and upgrades | ✅ Complete |
-| **[⚙️ Operations](operations/)** | Deployment and operations | ✅ Complete |
+| **[ Overview](overview/)** | Project introduction and architecture |  Complete |
+| **[🏁 Getting Started](getting-started/)** | Quick start and tutorials |  Complete |
+| **[ API Reference](api/)** | Complete API documentation |  Complete |
+| **[📋 Specifications](specifications/)** | Technical specifications |  Complete |
+| **[ Development](development/)** | Developer guides and contributing |  Complete |
+| **[🏢 Enterprise](enterprise/)** | Enterprise features and compliance |  Complete |
+| **[ Examples](examples/)** | Code examples and tutorials |  Complete |
+| **[ Migration](migration/)** | Migration guides and upgrades |  Complete |
+| **[ Operations](operations/)** | Deployment and operations |  Complete |
 
-## 🎯 Quick Navigation
+##  Quick Navigation
 
 ### New Users
 1. **[Project Overview](overview/README.md)** - What is OSSA?
@@ -33,14 +33,14 @@
 2. **[Compliance](enterprise/compliance.md)** - Regulatory compliance
 3. **[Operations](operations/README.md)** - Production deployment
 
-## 🔗 External Resources
+##  External Resources
 
 - **[GitLab Repository](https://gitlab.bluefly.io/llm/openapi-ai-agents-standard)** - Source code
 - **[OpenAPI Specification](api/openapi.yml)** - Machine-readable API spec
 - **[Interactive API Docs](api/openapi.html)** - Swagger UI
 - **[NPM Package](https://www.npmjs.com/package/@bluefly/open-standards-scalable-agents)** - CLI tools
 
-## 📊 Documentation Metrics
+##  Documentation Metrics
 
 - **Total Pages**: 25+ comprehensive guides
 - **Code Examples**: 50+ working examples
@@ -48,7 +48,7 @@
 - **Coverage**: 95% of features documented
 - **Last Updated**: September 2025
 
-## 🤝 Contributing
+##  Contributing
 
 Help improve OSSA documentation:
 

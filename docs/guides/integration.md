@@ -312,7 +312,7 @@ class AutoGenStandardWrapper:
         validation_result = self.validator.validate_spec(self.spec)
         
         if validation_result['valid']:
-            print(f"✅ Agent certified at {validation_result['certification_level']} level")
+            print(f" Agent certified at {validation_result['certification_level']} level")
             return self.deploy()
         else:
             print(f"❌ Validation failed: {validation_result['errors']}")
@@ -446,7 +446,7 @@ async function validateBeforeDeploy(agentSpec) {
     process.exit(1);
   }
   
-  console.log(`✅ Agent validated - Certification: ${result.certification_level}`);
+  console.log(` Agent validated - Certification: ${result.certification_level}`);
   return result;
 }
 ```

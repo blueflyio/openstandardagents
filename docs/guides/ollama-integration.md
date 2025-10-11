@@ -4,7 +4,7 @@ Use free local AI models with OSSA to avoid paying for API tokens.
 
 ## Quick Setup
 
-### 1. Ollama Already Installed ✅
+### 1. Ollama Already Installed 
 Ollama is already installed and running on your system with the following models:
 - `gpt-oss:20b` (13 GB) - Primary model
 - `gpt-oss:120b` (65 GB) - Large model for complex tasks
@@ -74,11 +74,11 @@ console.log(result.output);
 
 ## Benefits
 
-- ✅ **Zero API costs** - Run unlimited queries locally
-- ✅ **Privacy** - No data sent to external services
-- ✅ **Speed** - No network latency after model loading
-- ✅ **Offline** - Works without internet connection
-- ✅ **Control** - Choose your own models and parameters
+-  **Zero API costs** - Run unlimited queries locally
+-  **Privacy** - No data sent to external services
+-  **Speed** - No network latency after model loading
+-  **Offline** - Works without internet connection
+-  **Control** - Choose your own models and parameters
 
 ## Available Commands
 

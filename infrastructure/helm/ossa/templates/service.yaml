@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "ossa.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "ossa.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.service.type }}
+  selector:
+    {{- include "ossa.selectorLabels" . | nindent 4 }}
+  ports:
+  - name: http
+    port: {{ .Values.service.ports.http }}
+    targetPort: {{ .Values.service.ports.http }}
+  - name: websocket
+    port: {{ .Values.service.ports.websocket }}
+    targetPort: {{ .Values.service.ports.websocket }}
+  - name: sse
+    port: {{ .Values.service.ports.sse }}
+    targetPort: {{ .Values.service.ports.sse }}

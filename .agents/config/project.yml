@@ -1,0 +1,48 @@
+# OSSA Project Configuration
+project:
+  name: "ossa"
+  uuid: "ossa-spec-2024"
+  version: "0.1.9"
+  description: "OpenAPI Specification for Software Agents"
+
+taxonomy:
+  version: "1.0.0"
+  categories:
+    - critics      # Code review, quality checks
+    - governors     # Rate limiting, policy enforcement
+    - integrators   # External system connections
+    - judges        # Decision making, validation
+    - monitors      # Observability, metrics
+    - orchestrators # Coordination, workflow
+    - trainers      # ML, model management
+    - voice         # Voice/NLP interfaces
+    - workers       # Data processing, tasks
+
+registry:
+  discovery_endpoint: "/api/v1/agents/discover"
+  health_endpoint: "/api/v1/agents/health"
+  registration_endpoint: "/api/v1/agents/register"
+
+routing:
+  load_balancing: "round_robin"
+  timeout: 30000
+  retry:
+    attempts: 3
+    backoff: "exponential"
+
+observability:
+  metrics: true
+  tracing: true
+  logging:
+    level: "info"
+    format: "json"
+
+compliance:
+  required_files:
+    - "agent.yml"
+    - "openapi.yaml"
+    - "README.md"
+  optional_files:
+    - "package.json"
+    - "Dockerfile"
+    - ".gitlab-ci.yml"

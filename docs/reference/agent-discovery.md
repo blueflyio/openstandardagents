@@ -8,7 +8,7 @@
 
 The Universal Agent Discovery Protocol (UADP) extends the OpenAPI AI Agents Standard to create the world's first decentralized, hierarchical system for agent discovery and orchestration. UADP enables any project to become AI-ready by adding a `.agents/` directory, creating a global network of specialized AI capabilities.
 
-## 🌟 The Revolutionary Vision
+##  The Revolutionary Vision
 
 **UADP transforms how AI agents are deployed globally:**
 

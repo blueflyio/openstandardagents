@@ -1,0 +1,46 @@
+# Agent Discovery Configuration
+discovery:
+  enabled: true
+  strategy: "auto"
+
+  scan_paths:
+    - ".agents/critics"
+    - ".agents/governors"
+    - ".agents/integrators"
+    - ".agents/judges"
+    - ".agents/monitors"
+    - ".agents/orchestrators"
+    - ".agents/trainers"
+    - ".agents/voice"
+    - ".agents/workers"
+    - ".agents/agents"
+
+  filters:
+    exclude_patterns:
+      - "*/node_modules/*"
+      - "*/dist/*"
+      - "*/coverage/*"
+      - "*/.git/*"
+      - "*/tests/*"
+
+  registry:
+    auto_register: true
+    refresh_interval: 300  # 5 minutes
+    health_check_interval: 60  # 1 minute
+
+  networking:
+    service_mesh: false
+    load_balancer: "internal"
+    port_range:
+      start: 3000
+      end: 3999
+
+  capabilities:
+    auto_detect: true
+    validation: true
+    schema_enforcement: true
+
+  security:
+    authentication_required: true
+    authorization_enabled: true
+    tls_enabled: false  # Development mode

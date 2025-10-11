@@ -1,0 +1,669 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://ossa.ai/schemas/v1.0/performance",
+  "title": "OSSA Performance Schema",
+  "description": "Schema for agent performance optimization and resource management configuration",
+  "type": "object",
+  "properties": {
+    "token_optimization": {
+      "$ref": "#/definitions/TokenOptimization"
+    },
+    "cache": {
+      "$ref": "#/definitions/CacheConfiguration"
+    },
+    "quantization": {
+      "$ref": "#/definitions/QuantizationConfiguration"
+    },
+    "batching": {
+      "$ref": "#/definitions/BatchingConfiguration"
+    },
+    "resources": {
+      "$ref": "#/definitions/ResourceConfiguration"
+    },
+    "scaling": {
+      "$ref": "#/definitions/ScalingConfiguration"
+    },
+    "optimization": {
+      "$ref": "#/definitions/OptimizationConfiguration"
+    }
+  },
+  "definitions": {
+    "TokenOptimization": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": false
+        },
+        "strategies": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/OptimizationStrategy"
+          }
+        },
+        "max_context": {
+          "type": "integer",
+          "minimum": 512,
+          "maximum": 2000000,
+          "default": 32000,
+          "description": "Maximum context window size in tokens"
+        },
+        "compression": {
+          "$ref": "#/definitions/CompressionConfig"
+        },
+        "truncation": {
+          "$ref": "#/definitions/TruncationConfig"
+        }
+      }
+    },
+    "OptimizationStrategy": {
+      "type": "object",
+      "required": ["type"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": [
+            "flash_attention",
+            "block_sparse",
+            "paged_kv",
+            "grouped_query",
+            "sliding_window",
+            "multi_query",
+            "rotary_embeddings",
+            "alibi",
+            "longformer"
+          ]
+        },
+        "config": {
+          "type": "object",
+          "properties": {
+            "block_size": {
+              "type": "integer",
+              "description": "Block size for sparse attention"
+            },
+            "window_size": {
+              "type": "integer",
+              "description": "Window size for sliding window attention"
+            },
+            "num_groups": {
+              "type": "integer",
+              "description": "Number of groups for grouped query attention"
+            },
+            "page_size": {
+              "type": "integer",
+              "description": "Page size for paged KV cache"
+            }
+          }
+        }
+      }
+    },
+    "CompressionConfig": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": false
+        },
+        "method": {
+          "type": "string",
+          "enum": ["gzip", "zstd", "lz4", "snappy", "brotli"],
+          "default": "zstd"
+        },
+        "level": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9,
+          "default": 3,
+          "description": "Compression level (1=fast, 9=best)"
+        },
+        "min_size": {
+          "type": "string",
+          "pattern": "^\\d+[KMG]B?$",
+          "default": "1KB",
+          "description": "Minimum size to compress"
+        }
+      }
+    },
+    "TruncationConfig": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": true
+        },
+        "strategy": {
+          "type": "string",
+          "enum": ["beginning", "end", "middle", "smart"],
+          "default": "smart",
+          "description": "Truncation strategy"
+        },
+        "preserve_recent": {
+          "type": "integer",
+          "description": "Number of recent tokens to preserve"
+        }
+      }
+    },
+    "CacheConfiguration": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": false
+        },
+        "layers": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/CacheLayer"
+          }
+        },
+        "key_strategy": {
+          "type": "string",
+          "enum": ["hash", "semantic", "hybrid"],
+          "default": "hash"
+        },
+        "eviction": {
+          "$ref": "#/definitions/EvictionPolicy"
+        }
+      }
+    },
+    "CacheLayer": {
+      "type": "object",
+      "required": ["name", "type"],
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string",
+          "enum": ["memory", "redis", "memcached", "disk", "hybrid"]
+        },
+        "size": {
+          "type": "string",
+          "pattern": "^\\d+[KMG]B?$",
+          "description": "Cache size limit"
+        },
+        "ttl": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Time to live in seconds"
+        },
+        "config": {
+          "type": "object",
+          "properties": {
+            "host": {
+              "type": "string"
+            },
+            "port": {
+              "type": "integer"
+            },
+            "password": {
+              "type": "string"
+            },
+            "db": {
+              "type": "integer"
+            },
+            "path": {
+              "type": "string",
+              "description": "Path for disk cache"
+            }
+          }
+        }
+      }
+    },
+    "EvictionPolicy": {
+      "type": "object",
+      "properties": {
+        "policy": {
+          "type": "string",
+          "enum": ["lru", "lfu", "fifo", "random", "ttl"],
+          "default": "lru"
+        },
+        "max_entries": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "max_memory": {
+          "type": "string",
+          "pattern": "^\\d+[KMG]B?$"
+        }
+      }
+    },
+    "QuantizationConfiguration": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": false
+        },
+        "method": {
+          "type": "string",
+          "enum": ["int8", "int4", "fp16", "bf16", "gptq", "awq", "bnb", "gguf"],
+          "description": "Quantization method"
+        },
+        "target_bits": {
+          "type": "integer",
+          "enum": [4, 8, 16],
+          "description": "Target bit precision"
+        },
+        "calibration": {
+          "$ref": "#/definitions/CalibrationConfig"
+        },
+        "layers": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Specific layers to quantize"
+        }
+      }
+    },
+    "CalibrationConfig": {
+      "type": "object",
+      "properties": {
+        "dataset": {
+          "type": "string",
+          "description": "Calibration dataset"
+        },
+        "samples": {
+          "type": "integer",
+          "default": 128,
+          "description": "Number of calibration samples"
+        },
+        "method": {
+          "type": "string",
+          "enum": ["minmax", "percentile", "entropy"],
+          "default": "percentile"
+        }
+      }
+    },
+    "BatchingConfiguration": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": true
+        },
+        "dynamic": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable dynamic batching"
+        },
+        "max_batch_size": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1000,
+          "default": 32
+        },
+        "timeout_ms": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 60000,
+          "default": 100,
+          "description": "Maximum time to wait for batch formation"
+        },
+        "padding": {
+          "type": "string",
+          "enum": ["none", "max", "bucket"],
+          "default": "bucket"
+        },
+        "buckets": {
+          "type": "array",
+          "items": {
+            "type": "integer"
+          },
+          "description": "Bucket sizes for bucket padding"
+        }
+      }
+    },
+    "ResourceConfiguration": {
+      "type": "object",
+      "properties": {
+        "limits": {
+          "$ref": "#/definitions/ResourceLimits"
+        },
+        "requests": {
+          "$ref": "#/definitions/ResourceRequests"
+        },
+        "gpu": {
+          "$ref": "#/definitions/GPUConfiguration"
+        },
+        "network": {
+          "$ref": "#/definitions/NetworkConfiguration"
+        }
+      }
+    },
+    "ResourceLimits": {
+      "type": "object",
+      "properties": {
+        "cpu": {
+          "type": "string",
+          "pattern": "^\\d+(\\.\\d+)?$",
+          "description": "CPU limit (cores)"
+        },
+        "memory": {
+          "type": "string",
+          "pattern": "^\\d+[KMG]i?$",
+          "description": "Memory limit"
+        },
+        "disk": {
+          "type": "string",
+          "pattern": "^\\d+[KMG]i?$",
+          "description": "Disk limit"
+        },
+        "ephemeral_storage": {
+          "type": "string",
+          "pattern": "^\\d+[KMG]i?$",
+          "description": "Ephemeral storage limit"
+        }
+      }
+    },
+    "ResourceRequests": {
+      "type": "object",
+      "properties": {
+        "cpu": {
+          "type": "string",
+          "pattern": "^\\d+(\\.\\d+)?$",
+          "description": "CPU request (cores)"
+        },
+        "memory": {
+          "type": "string",
+          "pattern": "^\\d+[KMG]i?$",
+          "description": "Memory request"
+        }
+      }
+    },
+    "GPUConfiguration": {
+      "type": "object",
+      "properties": {
+        "required": {
+          "type": "boolean",
+          "default": false
+        },
+        "type": {
+          "type": "string",
+          "enum": ["nvidia", "amd", "intel", "apple"],
+          "description": "GPU vendor"
+        },
+        "model": {
+          "type": "string",
+          "description": "GPU model (e.g., 'A100', 'V100')"
+        },
+        "count": {
+          "type": "integer",
+          "minimum": 1,
+          "default": 1
+        },
+        "memory": {
+          "type": "string",
+          "pattern": "^\\d+[KMG]B?$",
+          "description": "Minimum GPU memory"
+        },
+        "compute_capability": {
+          "type": "string",
+          "description": "Minimum compute capability"
+        }
+      }
+    },
+    "NetworkConfiguration": {
+      "type": "object",
+      "properties": {
+        "bandwidth": {
+          "type": "string",
+          "pattern": "^\\d+[KMG]bps$",
+          "description": "Network bandwidth limit"
+        },
+        "latency": {
+          "type": "integer",
+          "description": "Maximum acceptable latency in ms"
+        },
+        "timeout": {
+          "type": "integer",
+          "default": 30000,
+          "description": "Network timeout in ms"
+        },
+        "retry": {
+          "$ref": "#/definitions/RetryConfig"
+        }
+      }
+    },
+    "RetryConfig": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": true
+        },
+        "max_attempts": {
+          "type": "integer",
+          "default": 3
+        },
+        "backoff": {
+          "type": "string",
+          "enum": ["exponential", "linear", "fixed"],
+          "default": "exponential"
+        },
+        "initial_delay": {
+          "type": "integer",
+          "default": 1000,
+          "description": "Initial retry delay in ms"
+        },
+        "max_delay": {
+          "type": "integer",
+          "default": 60000,
+          "description": "Maximum retry delay in ms"
+        }
+      }
+    },
+    "ScalingConfiguration": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": false
+        },
+        "type": {
+          "type": "string",
+          "enum": ["horizontal", "vertical", "both"],
+          "default": "horizontal"
+        },
+        "horizontal": {
+          "$ref": "#/definitions/HorizontalScaling"
+        },
+        "vertical": {
+          "$ref": "#/definitions/VerticalScaling"
+        }
+      }
+    },
+    "HorizontalScaling": {
+      "type": "object",
+      "properties": {
+        "min_replicas": {
+          "type": "integer",
+          "minimum": 1,
+          "default": 1
+        },
+        "max_replicas": {
+          "type": "integer",
+          "minimum": 1,
+          "default": 10
+        },
+        "target_cpu": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100,
+          "default": 80,
+          "description": "Target CPU utilization percentage"
+        },
+        "target_memory": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100,
+          "description": "Target memory utilization percentage"
+        },
+        "metrics": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ScalingMetric"
+          }
+        }
+      }
+    },
+    "VerticalScaling": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": false
+        },
+        "update_mode": {
+          "type": "string",
+          "enum": ["auto", "manual"],
+          "default": "manual"
+        },
+        "cpu": {
+          "$ref": "#/definitions/ResourceRange"
+        },
+        "memory": {
+          "$ref": "#/definitions/ResourceRange"
+        }
+      }
+    },
+    "ResourceRange": {
+      "type": "object",
+      "properties": {
+        "min": {
+          "type": "string",
+          "description": "Minimum resource value"
+        },
+        "max": {
+          "type": "string",
+          "description": "Maximum resource value"
+        }
+      }
+    },
+    "ScalingMetric": {
+      "type": "object",
+      "required": ["name", "target"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Metric name"
+        },
+        "target": {
+          "type": "number",
+          "description": "Target value for the metric"
+        },
+        "type": {
+          "type": "string",
+          "enum": ["utilization", "average", "value"],
+          "default": "average"
+        }
+      }
+    },
+    "OptimizationConfiguration": {
+      "type": "object",
+      "properties": {
+        "compiler": {
+          "$ref": "#/definitions/CompilerOptimization"
+        },
+        "runtime": {
+          "$ref": "#/definitions/RuntimeOptimization"
+        },
+        "model": {
+          "$ref": "#/definitions/ModelOptimization"
+        }
+      }
+    },
+    "CompilerOptimization": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": false
+        },
+        "backend": {
+          "type": "string",
+          "enum": ["torch_compile", "tvm", "xla", "tensorrt", "onnx"],
+          "description": "Compilation backend"
+        },
+        "mode": {
+          "type": "string",
+          "enum": ["default", "reduce_overhead", "max_performance"],
+          "default": "default"
+        },
+        "options": {
+          "type": "object",
+          "additionalProperties": true
+        }
+      }
+    },
+    "RuntimeOptimization": {
+      "type": "object",
+      "properties": {
+        "torch_dynamo": {
+          "type": "boolean",
+          "default": false
+        },
+        "cuda_graphs": {
+          "type": "boolean",
+          "default": false
+        },
+        "amp": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": false
+            },
+            "dtype": {
+              "type": "string",
+              "enum": ["float16", "bfloat16"],
+              "default": "float16"
+            }
+          }
+        },
+        "fusion": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable operator fusion"
+        }
+      }
+    },
+    "ModelOptimization": {
+      "type": "object",
+      "properties": {
+        "pruning": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": false
+            },
+            "sparsity": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1,
+              "description": "Target sparsity level"
+            }
+          }
+        },
+        "distillation": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": false
+            },
+            "teacher_model": {
+              "type": "string"
+            },
+            "temperature": {
+              "type": "number",
+              "default": 3.0
+            }
+          }
+        }
+      }
+    }
+  }
+}

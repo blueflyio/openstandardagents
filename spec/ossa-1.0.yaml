@@ -1,0 +1,377 @@
+ossaVersion: "1.0"
+
+# OSSA (Open Standard for Smart & Scalable Agents) - Version 1.0
+# The OpenAPI for AI Agents
+#
+# This specification defines a standard format for AI agent definition,
+# deployment, and orchestration across heterogeneous environments.
+#
+# Design Principles:
+# 1. OpenAPI-First: OSSA manifests are to agents what OpenAPI specs are to APIs
+# 2. Cloud-Agnostic: Run anywhere (Docker, K8s, local, serverless)
+# 3. Compliance-First: Built-in support for FedRAMP, SOC2, HIPAA, GDPR
+# 4. Type-Safe: JSON Schema validation with auto-generated types
+# 5. Discoverable: Agents can be searched, versioned, and shared
+
+spec:
+  title: OSSA 1.0 Specification
+  description: Open Standard for Smart & Scalable Agents
+  version: "1.0.0"
+  license: Apache-2.0
+  maintainer: OSSA Working Group
+  website: https://ossa.io
+  repository: https://github.com/ossa-standard/specification
+
+schema:
+  # Top-level structure
+  root:
+    ossaVersion: "1.0" # Required
+    agent: # Required
+      # Core Identity
+      id: string # DNS-1123 subdomain format (a-z0-9-)
+      name: string # Human-readable name
+      version: semver # Semantic versioning (1.0.0)
+      description: string
+      role: enum # compliance|chat|orchestration|audit|workflow|monitoring|custom
+      tags: string[] # Searchable tags
+
+      # Runtime Configuration
+      runtime:
+        type: enum # docker|k8s|local|serverless|edge
+        image: string # Container image (for docker/k8s)
+        command: string[] # Entrypoint (for local)
+        requirements: # Dependencies
+          python: string
+          node: string
+          packages: string[]
+        resources: # Resource requests
+          cpu: string # "500m", "1", "2"
+          memory: string # "256Mi", "512Mi", "1Gi"
+          gpu: boolean
+        health_check: # Health monitoring
+          type: enum # http|tcp|exec
+          endpoint: string
+          port: integer
+          command: string[]
+          initial_delay_seconds: integer
+          period_seconds: integer
+          timeout_seconds: integer
+          failure_threshold: integer
+
+      # Capabilities (Like OpenAPI operations)
+      capabilities:
+        - name: string
+          description: string
+          input_schema: # JSON Schema OR OpenAPI ref
+            type: object|uri
+          output_schema: # JSON Schema OR OpenAPI ref
+            type: object|uri
+          examples:
+            - name: string
+              input: object
+              output: object
+          timeout_seconds: integer
+          retry_policy:
+            max_attempts: integer
+            backoff: linear|exponential
+
+      # Policies & Compliance
+      policies:
+        compliance: enum[] # fedramp-low|moderate|high, iso27001, soc2, hipaa, gdpr, etc.
+        data_residency: string[] # ["US", "CA", "EU"]
+        encryption: boolean
+        audit: boolean
+        pii_handling: enum # none|anonymize|encrypt|prohibit
+
+      # Integration & Communication
+      integration:
+        protocol: enum # http|grpc|mcp|websocket
+        endpoints:
+          base_url: uri
+          health: string
+          metrics: string
+          openapi: string # Path to OpenAPI spec
+        auth:
+          type: enum # none|api_key|jwt|oauth2|mtls
+          config: object
+        rate_limits:
+          requests_per_second: integer
+          requests_per_minute: integer
+          burst: integer
+
+      # Monitoring & Observability
+      monitoring:
+        traces: boolean # OpenTelemetry tracing
+        metrics: boolean # Prometheus metrics
+        logs: boolean # Structured logging
+        health_check: uri
+        phoenix_arise: # Phoenix Arise integration
+          enabled: boolean
+          project: string
+          export_interval_seconds: integer
+
+      # Dependencies
+      dependencies:
+        required: # Hard dependencies
+          - agent_id: string
+            min_version: semver
+            max_version: semver
+        optional: # Soft dependencies
+          - agent_id: string
+            fallback: string
+
+      # Metadata
+      metadata:
+        author: string
+        maintainer: string
+        homepage: uri
+        repository: uri
+        documentation: uri
+        license: string
+        keywords: string[]
+
+      # Bridge Configuration (Protocol Interoperability)
+      bridge:
+        # Model Context Protocol Bridge
+        mcp:
+          enabled: boolean
+          server_type: enum # stdio|sse|websocket
+          tools: # MCP tools exposed by the agent
+            - name: string
+              description: string
+              input_schema: object # JSON Schema
+              output_schema: object # JSON Schema
+              capability: string # Maps to OSSA capability
+          resources: # MCP resources provided
+            - uri: string # e.g., "ossa://agents"
+              name: string
+              description: string
+              mimeType: string
+              readonly: boolean
+          prompts: # MCP prompts available
+            - name: string
+              description: string
+              template: string # Template with {{variables}}
+              arguments:
+                - name: string
+                  type: string
+                  required: boolean
+          config:
+            max_message_size: integer # bytes
+            timeout_ms: integer # milliseconds
+            retry_count: integer
+
+        # Agent-to-Agent Protocol Bridge
+        a2a:
+          enabled: boolean
+          card_url: uri
+          schema_version: string
+          capabilities_mapping: object # Map OSSA caps to A2A actions
+          metadata:
+            "@context": string
+            "@type": string
+
+        # OpenAPI Bridge
+        openapi:
+          enabled: boolean
+          spec_url: uri
+          spec_version: enum # 3.0|3.1
+          auto_generate: boolean
+          servers:
+            - url: uri
+              description: string
+          security: object[]
+
+        # LangChain Bridge
+        langchain:
+          enabled: boolean
+          tool_class: string
+          chain_type: enum # llm|retrieval|agent|sequential|custom
+          memory:
+            type: enum # buffer|summary|conversation|vector
+            max_tokens: integer
+          callbacks: string[]
+          export:
+            as_tool: boolean
+            as_chain: boolean
+            as_agent: boolean
+
+        # CrewAI Bridge
+        crewai:
+          enabled: boolean
+          agent_type: enum # worker|manager|researcher|analyst|custom
+          role: string
+          goal: string
+          backstory: string
+          tools: string[]
+          llm:
+            model: string
+            temperature: float
+          max_iter: integer
+          allow_delegation: boolean
+
+        # AutoGen Bridge
+        autogen:
+          enabled: boolean
+          agent_type: enum # assistant|user_proxy|groupchat|custom
+          system_message: string
+          human_input_mode: enum # ALWAYS|NEVER|TERMINATE
+          code_execution:
+            enabled: boolean
+            work_dir: string
+            use_docker: boolean
+          llm_config:
+            model: string
+            temperature: float
+            max_tokens: integer
+            functions: object[]
+          max_consecutive_auto_reply: integer
+
+        # Custom Bridges
+        custom: object # Arbitrary custom bridge configurations
+
+# Validation Rules
+validation:
+  - id: must match DNS-1123 subdomain format
+  - version: must be valid semver 2.0.0
+  - capabilities: at least one capability required
+  - runtime.type: must specify runtime type
+  - policies.compliance: if specified, encryption must be true
+  - dependencies.required: all required deps must be resolvable
+
+# Extension Points
+extensions:
+  # Custom annotations (like Kubernetes)
+  annotations:
+    "ossa.io/*": reserved for OSSA standard
+    "vendor.io/*": vendor-specific extensions
+    "*": custom extensions
+
+  # Custom fields allowed at root level
+  # Prefix with "x-" to avoid conflicts
+  custom_fields:
+    pattern: "^x-[a-z0-9-]+$"
+
+# Compatibility
+compatibility:
+  openapi: "Can reference OpenAPI specs for capability schemas"
+  kubernetes: "Agent manifest maps directly to K8s Agent CRD (kagent)"
+  mcp: "Integration.protocol = mcp enables MCP tool server support"
+  docker: "runtime.image maps to Docker image"
+  helm: "Can be packaged as Helm chart values"
+
+# Reserved Roles
+roles:
+  - compliance: Security scanning, policy enforcement, audit
+  - chat: Customer support, Q&A, conversational interfaces
+  - orchestration: Workflow coordination, multi-agent management
+  - audit: Security auditing, compliance verification
+  - workflow: Task execution, process automation
+  - monitoring: System health, performance tracking, alerting
+  - data_processing: ETL, data transformation, analytics
+  - integration: API bridging, system integration
+  - development: Code generation, testing, CI/CD
+  - custom: Custom/specialized agents
+
+# Protocol Support Matrix
+protocols:
+  http:
+    use_case: "RESTful APIs, local-first development"
+    required_fields: ["integration.endpoints.base_url"]
+  grpc:
+    use_case: "High-performance inter-agent communication"
+    required_fields: ["integration.endpoints.base_url", "proto file"]
+  mcp:
+    use_case: "MCP tool server integration, Claude Desktop"
+    required_fields: ["integration.protocol = mcp"]
+  websocket:
+    use_case: "Real-time streaming, bi-directional communication"
+    required_fields: ["integration.endpoints.base_url"]
+
+# Compliance Framework Mapping
+compliance_frameworks:
+  fedramp-low:
+    encryption: required
+    audit: required
+    data_residency: ["US"]
+  fedramp-moderate:
+    encryption: required
+    audit: required
+    data_residency: ["US-GOV"]
+    pii_handling: "encrypt"
+  fedramp-high:
+    encryption: required
+    audit: required
+    data_residency: ["US-GOV"]
+    pii_handling: "encrypt"
+    auth.type: "mtls"
+  soc2-type2:
+    encryption: required
+    audit: required
+  hipaa:
+    encryption: required
+    audit: required
+    pii_handling: "encrypt"
+  gdpr:
+    encryption: required
+    audit: required
+    pii_handling: "anonymize"
+    data_residency: ["EU"]
+
+# Versioning Strategy
+versioning:
+  semver: "OSSA agents MUST use semantic versioning"
+  breaking_changes: "Major version bump required for breaking changes"
+  deprecation: "Deprecate in N, remove in N+1"
+  compatibility_matrix:
+    - ossa_version: "1.0"
+      agent_versions: "1.x.x"
+    - ossa_version: "1.1"
+      agent_versions: "1.x.x || 2.x.x"
+
+# Bridge Use Cases
+bridge_use_cases:
+  mcp:
+    description: "Model Context Protocol - Claude Desktop, Langflow integration"
+    when_to_use: "Expose agent as MCP tool server for AI assistants"
+    transport_types:
+      stdio: "Local execution, Claude Desktop"
+      sse: "Server-sent events for web integration"
+      websocket: "Real-time bidirectional communication"
+
+  a2a:
+    description: "Agent-to-Agent Protocol - Multi-agent coordination"
+    when_to_use: "Enable agent discovery and inter-agent communication"
+
+  openapi:
+    description: "REST API bridge - Standard HTTP/REST integration"
+    when_to_use: "Expose agent capabilities as REST API"
+
+  langchain:
+    description: "LangChain framework integration"
+    when_to_use: "Use agent within LangChain workflows"
+
+  crewai:
+    description: "CrewAI framework integration"
+    when_to_use: "Agent as part of CrewAI multi-agent system"
+
+  autogen:
+    description: "AutoGen framework integration"
+    when_to_use: "Multi-agent conversations with AutoGen"
+
+# Best Practices
+best_practices:
+  - Always specify health_check endpoint
+  - Use semantic versioning
+  - Document all capabilities with examples
+  - Enable monitoring (traces, metrics, logs)
+  - Specify compliance requirements upfront
+  - Use resource limits for K8s deployments
+  - Implement retry policies for resilience
+  - Tag agents for discovery
+  - Reference OpenAPI specs for complex schemas
+  - Use dependency declarations for agent coordination
+  - Enable bridge protocols for interoperability
+  - Map MCP tools to OSSA capabilities for consistency
+  - Use stdio transport for local/desktop integration
+  - Use websocket transport for production deployments

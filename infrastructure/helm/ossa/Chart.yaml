@@ -1,0 +1,17 @@
+apiVersion: v2
+name: ossa
+description: OSSA - Open Standards for Scalable Agents Helm Chart
+type: application
+version: 0.1.9
+appVersion: "0.1.9"
+keywords:
+  - ossa
+  - ai-agents
+  - mcp
+  - agent-orchestration
+home: https://gitlab.bluefly.io/llm/ossa
+sources:
+  - https://gitlab.bluefly.io/llm/ossa
+maintainers:
+  - name: OSSA Team
+    email: noreply@ossa.dev

@@ -1,0 +1,147 @@
+ossaVersion: "1.0"
+
+agent:
+  # Identity
+  id: security-audit-agent
+  name: Security Audit Agent
+  version: 1.0.0
+  description: |
+    Automated security auditing agent that scans infrastructure,
+    detects vulnerabilities, and generates compliance reports.
+  role: audit
+  tags:
+    - security
+    - audit
+    - vulnerability-scanning
+    - compliance
+
+  # Runtime
+  runtime:
+    type: k8s
+    image: ossa/security-audit:1.0.0
+    requirements:
+      python: ">=3.11"
+      packages:
+        - trivy
+        - grype
+        - snyk
+    resources:
+      cpu: "1000m"
+      memory: "1Gi"
+    health_check:
+      type: http
+      endpoint: /health
+      port: 3700
+
+  # Capabilities
+  capabilities:
+    - name: scan_container_images
+      description: Scan container images for vulnerabilities
+      input_schema:
+        type: object
+        required:
+          - image
+        properties:
+          image:
+            type: string
+          severity_threshold:
+            type: string
+            enum: [low, medium, high, critical]
+            default: medium
+      output_schema:
+        type: object
+        properties:
+          vulnerabilities:
+            type: array
+          total_count:
+            type: integer
+          by_severity:
+            type: object
+      timeout_seconds: 600
+
+    - name: audit_kubernetes_cluster
+      description: Audit Kubernetes cluster security
+      input_schema:
+        type: object
+        properties:
+          namespace:
+            type: string
+          check_rbac:
+            type: boolean
+            default: true
+          check_network_policies:
+            type: boolean
+            default: true
+      output_schema:
+        type: object
+        properties:
+          findings:
+            type: array
+          risk_score:
+            type: number
+      timeout_seconds: 300
+
+    - name: generate_audit_report
+      description: Generate comprehensive security audit report
+      input_schema:
+        type: object
+        required:
+          - scan_results
+        properties:
+          scan_results:
+            type: array
+          format:
+            type: string
+            enum: [json, pdf, html]
+      output_schema:
+        type: object
+        properties:
+          report_url:
+            type: string
+          executive_summary:
+            type: string
+
+  # Policies
+  policies:
+    compliance:
+      - fedramp-moderate
+      - soc2-type2
+    encryption: true
+    audit: true
+    pii_handling: prohibit
+
+  # Integration
+  integration:
+    protocol: http
+    endpoints:
+      base_url: http://security-audit:3700
+      health: /health
+      metrics: /metrics
+    auth:
+      type: jwt
+
+  # Monitoring
+  monitoring:
+    traces: true
+    metrics: true
+    logs: true
+    health_check: http://localhost:3700/health
+
+  # Dependencies
+  dependencies:
+    required:
+      - agent_id: agent-tracer
+        min_version: "1.0.0"
+    optional:
+      - agent_id: compliance-engine
+        fallback: No automated alerting
+
+  # Metadata
+  metadata:
+    author: OSSA Security Team
+    maintainer: security@ossa.io
+    license: Apache-2.0
+    keywords:
+      - security
+      - audit
+      - scanning

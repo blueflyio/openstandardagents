@@ -193,10 +193,10 @@
 
 | Feature Category | Maturity | Status | Owner |
 |-----------------|----------|--------|-------|
-| Agent Registry | Production | ✅ Stable | Core Team |
-| UADP Discovery | Production | ✅ Stable | Discovery Team |
-| GraphQL API | Production | ✅ Stable | API Team |
-| Multi-Framework | Production | ✅ Stable | Integration Team |
+| Agent Registry | Production |  Stable | Core Team |
+| UADP Discovery | Production |  Stable | Discovery Team |
+| GraphQL API | Production |  Stable | API Team |
+| Multi-Framework | Production |  Stable | Integration Team |
 | Compliance | Beta | 🚧 In Progress | Compliance Team |
 | Multi-Region | Alpha | 🔬 Testing | Infrastructure Team |
 | Marketplace | Planning | 📋 Roadmap | Product Team |

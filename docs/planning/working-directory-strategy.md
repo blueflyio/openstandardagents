@@ -31,7 +31,7 @@
 ## Migration Strategy
 
 ### Phase 1: Preparation (Current)
-1. ✅ Identify three working directories
+1.  Identify three working directories
 2. ⬜ Audit __DELETE_LATER for any valuable code
 3. ⬜ Extract reusable tests from Old_use_for_migration
 4. ⬜ Update __REBUILD OpenAPI to v0.1.9-alpha.1
@@ -63,7 +63,7 @@ Following __REBUILD/ROADMAP.md strictly:
 - src/cli/src/commands/* → Adapt for new API
 - tests/* → Rewrite for v0.1.9 specs
 - infrastructure/docker/* → Update for new architecture
-- infrastructure/k8s/* → Adapt for Helm charts
+- infrastructure/kubernetes/* → Adapt for Helm charts
 ```
 
 ### From __DELETE_LATER → Confirm Deletion
