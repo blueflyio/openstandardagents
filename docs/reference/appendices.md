@@ -601,7 +601,7 @@ integration_tests:
     - name: docker:dind
       alias: docker
   variables:
-    DOCKER_HOST: tcp://docker:2376
+    DOCKER_HOST: tcp://dind-0:2375
     DOCKER_TLS_CERTDIR: "/certs"
   before_script:
     - npm ci
