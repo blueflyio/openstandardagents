@@ -1,348 +1,214 @@
-# OSSA - Open Standard for Smart & Scalable Agents
+# OSSA - Open Standard for Scalable Agents
 
-**The OpenAPI for AI Agents**
+**A Specification Standard for AI Agent Definition, Deployment, and Management**
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
-[![Version](https://img.shields.io/badge/OSSA-0.2.0-green.svg)](https://gitlab.bluefly.io/llm/openapi-ai-agents-standard)
+[![Version](https://img.shields.io/badge/OSSA-1.0.0-green.svg)](https://github.com/ossa-standard/ossa)
 
 ---
 
 ## What is OSSA?
 
-OSSA (Open Standard for Smart & Scalable Agents) is a **specification standard** for defining AI agents. Similar to how OpenAPI standardizes REST APIs, OSSA provides:
+OSSA is a **specification standard** for defining AI agents, similar to how OpenAPI standardizes REST APIs.
 
-- **Formal JSON Schema** for agent manifests (`spec/ossa-1.0.schema.json`)
-- **OpenAPI Specifications** for agent communication protocols
-- **Reference Implementations** demonstrating specification compliance
-- **Validation Tools** for schema conformance testing
+**OSSA is NOT a framework** - it's a standard that defines the contract. Implementations provide the functionality.
 
-OSSA is **NOT** a framework or runtime. It's a standard that defines the contract for AI agent systems.
+| Component | Role | Comparable To |
+|-----------|------|---------------|
+| OSSA Specification | Standard definition | OpenAPI Specification |
+| OSSA CLI | Validation & generation | OpenAPI Generator (minimal) |
+| agent-buildkit | Reference implementation | Kong API Gateway |
+| OSSA Registry | Agent distribution | npm Registry |
 
 ---
 
-## Repository Structure
+## Core Principles
 
-```
-OSSA/
-├── spec/
-│   └── ossa-1.0.schema.json       # Core OSSA specification (JSON Schema)
-├── openapi/
-│   └── *.yaml                      # OpenAPI specs for agent protocols
-├── .agents/                        # Reference implementations
-│   ├── workers/                    # Task execution agents
-│   ├── orchestrators/              # Workflow coordination
-│   ├── integrators/                # External system integration
-│   ├── monitors/                   # System observation
-│   ├── critics/                    # Quality assessment
-│   ├── judges/                     # Decision-making
-│   └── governors/                  # Policy enforcement
-├── tests/
-│   └── validation-suite/           # Schema validation tests
-├── docs/                           # Specification documentation
-└── examples/                       # Example agent manifests
-```
+1. **Specification-Driven** - OSSA defines the standard
+2. **Implementation-Agnostic** - Any runtime can implement it
+3. **Minimal Tooling** - Basic CLI for validation & generation
+4. **No Vendor Lock-in** - Deploy to any infrastructure
 
 ---
 
 ## Quick Start
 
-### 1. Install Dependencies
+### Installation
 
 ```bash
-npm install
+npm install -g @ossa/standard
 ```
 
-### 2. Validate Example Agents
+### Create Agent
 
 ```bash
-npm test
+ossa init my-agent --type worker
+cd .agents/my-agent
 ```
 
-This runs the validation suite against all example agents in `.agents/` and `spec/examples/`.
+### Validate
 
-### 3. Explore the Specification
+```bash
+ossa validate agent.yml
+```
 
-The core specification is defined in:
-- **Schema**: `spec/ossa-1.0.schema.json` - JSON Schema defining agent manifest structure
-- **Examples**: `spec/examples/*.yml` - Example OSSA-compliant agent manifests
-- **Tests**: `tests/validation-suite/schema-validator.test.ts` - Validation tests
+### Deploy
+
+Deploy to **YOUR** infrastructure:
+- AWS, GCP, Azure
+- Kubernetes, Docker
+- On-premise
+- Serverless
+
+OSSA doesn't care - it's just a standard.
 
 ---
 
-## OSSA Specification Overview
+## OSSA CLI (Minimal Tooling)
 
-### Agent Manifest Structure
+The OSSA CLI provides basic tooling:
 
-All OSSA agents are defined using YAML/JSON manifests conforming to the OSSA 1.0 schema:
+```bash
+ossa validate <path>    # Validate against OSSA 1.0 schema
+ossa init <name>        # Initialize new agent project
+ossa generate <type>    # Generate from template
+ossa migrate <source>   # Migrate v0.1.9 → 1.0
+```
+
+**What OSSA CLI does:**
+- ✅ Validate agent manifests
+- ✅ Generate project scaffolding
+- ✅ Provide templates
+
+**What OSSA CLI does NOT do:**
+- ❌ Runtime orchestration
+- ❌ Deployment
+- ❌ Production monitoring
+- ❌ Infrastructure management
+
+For production features, see [agent-buildkit](https://gitlab.bluefly.io/llm/npm/agent-buildkit).
+
+---
+
+## Specification
+
+OSSA 1.0 Schema: [`spec/ossa-1.0.schema.json`](spec/ossa-1.0.schema.json)
+
+### Required Fields
 
 ```yaml
 ossaVersion: "1.0"
 
 agent:
-  # Identity
-  id: "my-agent"                    # DNS-1123 subdomain format
-  name: "My Agent"
-  version: "1.0.0"                  # Semantic versioning
-  description: "Agent description"
-
-  # Classification
-  role: "custom"                    # compliance|chat|orchestration|audit|etc.
-  tags: ["security", "automation"]
-
-  # Runtime Configuration
+  id: my-agent                    # DNS-1123 format
+  name: My Agent                  # Human-readable
+  version: "1.0.0"                # Semantic version
+  role: worker                    # Agent role
+  
   runtime:
-    type: "docker"                  # docker|k8s|local|serverless|edge
-    image: "ossa/my-agent:1.0.0"
-    resources:
-      cpu: "500m"
-      memory: "512Mi"
-    health_check:
-      type: "http"
-      endpoint: "/health"
-
-  # Capabilities
-  capabilities:
-    - name: "process_data"
-      description: "Process data using AI"
-      input_schema:
-        type: object
-        properties:
-          data: { type: string }
-      output_schema:
-        type: object
-        properties:
-          result: { type: string }
-
-  # Policies & Compliance
-  policies:
-    compliance: ["fedramp-moderate", "soc2-type2"]
-    data_residency: ["US"]
-    encryption: true
-    audit: true
-
-  # Integration
-  integration:
-    protocol: "http"                # http|grpc|mcp|websocket
-    endpoints:
-      base_url: "http://localhost:3000"
-      health: "/health"
-      metrics: "/metrics"
-    auth:
-      type: "jwt"
-
-  # Monitoring
-  monitoring:
-    traces: true
-    metrics: true
-    logs: true
+    type: k8s                     # Runtime type
+    
+  capabilities:                   # At least one capability
+    - name: process_data
+      description: Process data
+      input_schema: { ... }
+      output_schema: { ... }
 ```
 
-### Key Features
-
-#### 1. **Agent Identity & Versioning**
-- Unique agent IDs (DNS-1123 format)
-- Semantic versioning (semver 2.0.0)
-- Role-based classification
-
-#### 2. **Runtime Specifications**
-- Multi-runtime support (Docker, Kubernetes, serverless, edge)
-- Resource requirements (CPU, memory, GPU)
-- Health check definitions
-
-#### 3. **Capability Definitions**
-- JSON Schema-based input/output contracts
-- OpenAPI reference support
-- Timeout and retry policies
-
-#### 4. **Compliance Frameworks**
-- FedRAMP (Low, Moderate, High)
-- ISO 27001, SOC 2, HIPAA, GDPR, PCI-DSS
-- ISO 42001 (AI Management Systems)
-- EU AI Act compliance
-
-#### 5. **Protocol Support**
-- HTTP/REST
-- gRPC
-- Model Context Protocol (MCP)
-- WebSocket
+Full schema documentation: [`docs/specification/`](docs/specification/)
 
 ---
 
-## Reference Implementations
+## Examples
 
-The `.agents/` directory contains **51 reference implementations** organized by OSSA agent types:
+Reference implementations: [`examples/`](examples/)
 
-| Type | Count | Description |
-|------|-------|-------------|
-| **Workers** | 30 | Task execution (infrastructure, security, ML/AI, data) |
-| **Orchestrators** | 3 | Workflow coordination and multi-agent management |
-| **Integrators** | 12 | External system integration (API, protocol translation) |
-| **Monitors** | 3 | System observation and performance tracking |
-| **Critics** | 1 | Quality assessment and standards compliance |
-| **Judges** | 1 | Decision-making based on policies |
-| **Governors** | 1 | Policy enforcement and compliance management |
-
-Each reference implementation demonstrates:
-- Complete OSSA manifest (`agent.yml`)
-- OpenAPI specification (`openapi.yml`)
-- Behavior definitions (`behaviors/*.behavior.yml`)
-- Handler implementations (`handlers/*.handlers.ts`)
-- Schema definitions (`schemas/*.schema.json`)
-- Unit tests (`tests/unit/*.test.ts`)
+- `compliance-agent.yml` - FedRAMP compliance
+- `chat-agent.yml` - Conversation agent
+- `workflow-agent.yml` - Workflow orchestration
 
 ---
 
-## Validation & Testing
+## Ecosystem
 
-### Schema Validation
+### OSSA Standard (This Repository)
+
+**Provides:**
+- JSON Schema specification
+- CLI for validation & generation
+- Reference implementations
+- Documentation
+
+**Dependencies:** 4 (ajv, ajv-formats, commander, yaml) ~1MB
+
+### Implementations
+
+**agent-buildkit** - Reference implementation with production features:
+- GitLab integration
+- Kubernetes deployment
+- Production monitoring
+- Compliance tooling
+
+See: https://gitlab.bluefly.io/llm/npm/agent-buildkit
+
+**Others welcome** - OSSA is a standard, anyone can implement it.
+
+---
+
+## Why OSSA?
+
+### For Enterprises
+
+✅ **Lightweight** - Just a standard, minimal dependencies  
+✅ **No Vendor Lock-in** - Use any implementation  
+✅ **Deploy Anywhere** - Your infrastructure, your choice  
+✅ **Clear Specification** - Well-defined contract  
+
+### For Framework Builders
+
+✅ **Standard to Build On** - Like OpenAPI for APIs  
+✅ **Reference Implementation** - agent-buildkit shows the way  
+✅ **Clear Boundaries** - Standard vs. implementation  
+
+---
+
+## Installation & Usage
+
+### As a Standard (Validation Only)
 
 ```bash
-# Validate all examples
-npm run validate:examples
-
-# Run full test suite
-npm test
-
-# Coverage report
-npm run test:coverage
+npm install -g @ossa/standard
+ossa validate my-agent.yml
 ```
 
-### Validation Tools
+### With Production Features
 
-The test suite (`tests/validation-suite/schema-validator.test.ts`) validates:
-- Schema structure and required fields
-- Agent ID format (DNS-1123 subdomain)
-- Version format (semver 2.0.0)
-- Role enumeration
-- Runtime configurations
-- Capability schemas
-- Compliance framework adherence
-
----
-
-## CI/CD Integration
-
-OSSA uses GitLab CI for automated validation:
-
-```yaml
-# .gitlab-ci.yml
-stages:
-  - validate
-  - test
-  - build
-  - deploy
-  - release
-
-validate:schemas:
-  stage: validate
-  script:
-    - npm install
-    - npm run validate:examples
-
-test:unit:
-  stage: test
-  script:
-    - npm run test
-  coverage: '/All files[^|]*\\|[^|]*\\s+([\\d\\.]+)/'
+```bash
+npm install -g @bluefly/agent-buildkit
+buildkit ossa validate my-agent.yml  # Uses OSSA + adds features
+buildkit ossa sync-docs               # GitLab integration
 ```
-
-Pipeline includes:
-- OpenAPI specification validation (Redocly)
-- JSON schema validation
-- Unit test execution
-- Documentation generation
-- GitLab Pages deployment
 
 ---
 
 ## Documentation
 
 - **Specification**: [spec/ossa-1.0.schema.json](spec/ossa-1.0.schema.json)
-- **API Reference**: [openapi/](openapi/)
-- **Examples**: [spec/examples/](spec/examples/)
-- **Technical Docs**: [docs/](docs/)
-- **Contributing Guide**: [CONTRIBUTING.md](CONTRIBUTING.md)
-
----
-
-## Comparison to Other Standards
-
-| Standard | Purpose | Scope |
-|----------|---------|-------|
-| **OSSA** | AI Agent Definition | Agent manifests, capabilities, deployment |
-| **OpenAPI** | REST API Definition | HTTP endpoints, request/response schemas |
-| **AsyncAPI** | Event-Driven APIs | Message formats, pub/sub protocols |
-| **MCP** | Model Context Protocol | LLM context management, tool definitions |
-| **Kubernetes CRDs** | Resource Definition | Kubernetes-native resources |
-
-OSSA complements these standards:
-- Uses OpenAPI for agent HTTP endpoints
-- Integrates with MCP for tool definitions
-- Generates Kubernetes CRDs for deployment
-- Supports AsyncAPI for event-driven agents
+- **Examples**: [examples/](examples/)
+- **API Reference**: [docs/](docs/)
+- **GitLab Wiki**: https://gitlab.bluefly.io/llm/npm/agent-buildkit/-/wikis/ossa/architecture
 
 ---
 
 ## Contributing
 
-OSSA is an open standard developed collaboratively. Contributions are welcome:
+OSSA is an open standard. Contributions welcome.
 
-1. **Specification Changes**: Follow OSSA Change Proposal (OCP) process
-2. **Reference Implementations**: Add examples in `.agents/`
-3. **Documentation**: Improve guides and examples
-4. **Testing**: Enhance validation coverage
+1. Fork the repository
+2. Create feature branch
+3. Submit pull request
 
-### Contribution Process
-
-```bash
-# 1. Fork and clone
-git clone https://gitlab.bluefly.io/llm/openapi-ai-agents-standard.git
-cd openapi-ai-agents-standard
-
-# 2. Create feature branch
-git checkout -b feature/your-feature
-
-# 3. Make changes and validate
-npm install
-npm test
-
-# 4. Commit and push
-git add .
-git commit -m "feat: add your feature"
-git push origin feature/your-feature
-
-# 5. Create merge request
-```
-
-See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines.
-
----
-
-## Roadmap
-
-### ✅ v0.1.0 - Initial Specification (Released)
-- Core JSON Schema
-- Basic agent types
-- Runtime configurations
-- Initial reference implementations
-
-### ✅ v0.2.0 - Enhanced Compliance & Integration (Current)
-- Extended compliance frameworks (ISO 42001, EU AI Act)
-- MCP integration
-- Enhanced reference implementations (51 agents)
-- Comprehensive validation suite
-
-### 🔄 v0.3.0 - Ecosystem Tooling (Planned)
-- OSSA CLI for manifest generation
-- Schema migration tools
-- Certification test suite
-- Community contribution templates
-
-### 📅 v1.0.0 - Production Ready (Future)
-- Stable specification freeze
-- Complete reference implementation library
-- Official certification program
-- Enterprise support channels
+See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
 ---
 
@@ -352,23 +218,6 @@ Apache 2.0 - see [LICENSE](LICENSE) for details.
 
 ---
 
-## Acknowledgments
+**OSSA: A Standard for Composable, Deployable, and Compliant AI Agents**
 
-- **OpenAPI Initiative** - Standardization methodology and inspiration
-- **CNCF** - Kubernetes ecosystem patterns
-- **Anthropic** - Model Context Protocol (MCP) integration
-- **Solo.io** - kagent Kubernetes-native agent concepts
-
----
-
-## Links
-
-- **GitLab Repository**: https://gitlab.bluefly.io/llm/openapi-ai-agents-standard
-- **Documentation**: https://ossa.bluefly.io (GitLab Pages)
-- **Issue Tracker**: https://gitlab.bluefly.io/llm/openapi-ai-agents-standard/-/issues
-
----
-
-**OSSA: The OpenAPI for AI Agents**
-
-*A specification standard for composable, deployable, and compliant AI agent systems.*
+*Not a framework. A standard.*

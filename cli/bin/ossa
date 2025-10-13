@@ -1,0 +1,55 @@
+#!/usr/bin/env node
+
+/**
+ * OSSA CLI - Open Standard for Smart & Scalable Agents
+ *
+ * Minimal CLI for OSSA agent validation, generation, and management.
+ */
+
+const { program } = require('commander');
+const packageJson = require('../../package.json');
+
+// Import commands
+const initCommand = require('../src/commands/init');
+const validateCommand = require('../src/commands/validate');
+const generateCommand = require('../src/commands/generate');
+const migrateCommand = require('../src/commands/migrate');
+
+program
+  .name('ossa')
+  .description('OSSA CLI - Open Standard for Smart & Scalable Agents')
+  .version(packageJson.version);
+
+// ossa init <name> [options]
+program
+  .command('init <name>')
+  .description('Initialize a new OSSA agent project')
+  .option('-t, --type <type>', 'Agent type (worker|orchestrator|integrator|monitor|critic|judge|governor)', 'worker')
+  .option('-d, --directory <dir>', 'Output directory', '.')
+  .action(initCommand);
+
+// ossa validate <path> [options]
+program
+  .command('validate <path>')
+  .description('Validate OSSA agent manifest against schema')
+  .option('-s, --schema <path>', 'Path to schema file', 'spec/ossa-1.0.schema.json')
+  .option('-v, --verbose', 'Verbose output')
+  .action(validateCommand);
+
+// ossa generate <type> [options]
+program
+  .command('generate <type>')
+  .description('Generate OSSA agent boilerplate')
+  .option('-n, --name <name>', 'Agent name (required)', 'my-agent')
+  .option('-o, --output <dir>', 'Output directory', '.')
+  .action(generateCommand);
+
+// ossa migrate <source> [options]
+program
+  .command('migrate <source>')
+  .description('Migrate v0.1.9 agent to OSSA 1.0 format')
+  .option('-o, --output <path>', 'Output path for migrated manifest')
+  .option('--dry-run', 'Show migration preview without writing')
+  .action(migrateCommand);
+
+program.parse(process.argv);
