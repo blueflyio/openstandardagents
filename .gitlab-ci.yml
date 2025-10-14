@@ -1,18 +1,12 @@
-# GitLab CI/CD Pipeline for OSSA Specification
-# Standard pipeline without custom components
-
 stages:
   - validate
   - test
   - build
   - deploy
   - release
-
 variables:
   NODE_VERSION: "20"
-  OSSA_VERSION: "0.2.0"
-
-# Validate OpenAPI specifications
+  OSSA_VERSION: 0.2.0
 validate:openapi:
   stage: validate
   image: node:${NODE_VERSION}
@@ -21,8 +15,6 @@ validate:openapi:
     - npm install -g @redocly/cli
     - redocly lint openapi/**/*.yaml || true
   allow_failure: true
-
-# Validate JSON schemas
 validate:schemas:
   stage: validate
   image: node:${NODE_VERSION}
@@ -36,8 +28,6 @@ validate:schemas:
     paths:
       - test-results.xml
   allow_failure: true
-
-# Run tests
 test:unit:
   stage: test
   image: node:${NODE_VERSION}
@@ -45,7 +35,7 @@ test:unit:
     - echo "Running OSSA specification tests..."
     - npm install
     - npm run test || true
-  coverage: '/All files[^|]*\|[^|]*\s+([\d\.]+)/'
+  coverage: /All files[^|]*\|[^|]*\s+([\d\.]+)/
   artifacts:
     reports:
       coverage_report:
@@ -55,8 +45,6 @@ test:unit:
     paths:
       - coverage/
   allow_failure: true
-
-# Build documentation
 build:docs:
   stage: build
   image: node:${NODE_VERSION}
@@ -76,8 +64,6 @@ build:docs:
     paths:
       - public/
     expire_in: 1 week
-
-# Deploy to GitLab Pages
 pages:
   stage: deploy
   dependencies:
@@ -91,21 +77,17 @@ pages:
   only:
     - main
     - development
-
-# Create release tag
 release:tag:
   stage: release
   image: registry.gitlab.com/gitlab-org/release-cli:latest
   script:
     - echo "Creating OSSA v${OSSA_VERSION} release..."
   release:
-    tag_name: "v${OSSA_VERSION}"
-    description: "OSSA Specification v${OSSA_VERSION} - The OpenAPI for AI Agents"
+    tag_name: v${OSSA_VERSION}
+    description: OSSA Specification v${OSSA_VERSION} - The OpenAPI for AI Agents
   only:
     - main
   when: manual
-
-# Lint code
 lint:
   stage: validate
   image: node:${NODE_VERSION}
@@ -114,3 +96,9 @@ lint:
     - npm install
     - npm run lint || true
   allow_failure: true
+include:
+  - component: gitlab.bluefly.io/llm/.gitlab/.gitlab/templates/ci-cd/multi-agent.yml@v0.1.17
+    inputs:
+      agent_name: OSSA
+      feature_branch: development
+      version: 0.1.0
