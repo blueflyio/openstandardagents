@@ -1,8 +1,0 @@
-services:
-  ossa_mcp_bridge.mcp_client:
-    class: Drupal\ossa_mcp_bridge\Service\McpClientService
-    arguments: ['@http_client', '@config.factory', '@logger.factory']
-    
-  ossa_mcp_bridge.controller:
-    class: Drupal\ossa_mcp_bridge\Controller\McpController
-    arguments: ['@ossa_mcp_bridge.mcp_client', '@logger.factory']
