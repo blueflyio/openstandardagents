@@ -1,4 +1,0 @@
-digraph Dependencies {
-  rankdir=BT;
-  node [shape=box, style=filled, fillcolor=lightblue];
-}
