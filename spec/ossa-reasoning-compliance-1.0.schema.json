@@ -1,0 +1,424 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://ossa.io/schemas/1.0/reasoning-compliance.json",
+  "title": "OSSA 1.0 Reasoning Compliance Extension",
+  "description": "OSSA extension for chain-of-thought reasoning compliance validation and auditing. Defines requirements for transparent, traceable, and auditable AI reasoning chains.",
+  "version": "1.0.0",
+  "type": "object",
+  "properties": {
+    "reasoningCompliance": {
+      "type": "object",
+      "description": "Reasoning compliance configuration and rules",
+      "required": ["enabled", "standard", "rules"],
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "Enable reasoning compliance validation",
+          "default": true
+        },
+        "standard": {
+          "type": "string",
+          "enum": ["ossa_v1", "ossa_v2", "custom"],
+          "description": "Compliance standard to enforce",
+          "default": "ossa_v2"
+        },
+        "rules": {
+          "type": "array",
+          "description": "Compliance rules to enforce",
+          "items": {
+            "$ref": "#/definitions/ComplianceRule"
+          },
+          "minItems": 1
+        },
+        "attentionTracking": {
+          "type": "object",
+          "description": "Attention mechanism tracking requirements",
+          "properties": {
+            "required": {
+              "type": "boolean",
+              "description": "Whether attention tracking is required",
+              "default": true
+            },
+            "mechanisms": {
+              "type": "array",
+              "description": "Allowed attention mechanisms",
+              "items": {
+                "type": "string",
+                "enum": ["gqa", "flash_v3", "hybrid", "standard"]
+              },
+              "default": ["gqa", "flash_v3", "hybrid"]
+            },
+            "minimumHeads": {
+              "type": "integer",
+              "minimum": 1,
+              "description": "Minimum number of attention heads",
+              "default": 4
+            },
+            "trackingFrequency": {
+              "type": "string",
+              "enum": ["every_step", "decision_points", "critical_only"],
+              "description": "How frequently to track attention",
+              "default": "every_step"
+            }
+          }
+        },
+        "auditTrail": {
+          "type": "object",
+          "description": "Audit trail requirements",
+          "required": ["enabled"],
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "description": "Enable audit trail generation",
+              "default": true
+            },
+            "storageBackend": {
+              "type": "string",
+              "enum": ["neo4j", "postgres", "mongodb", "qdrant"],
+              "description": "Backend for audit trail storage"
+            },
+            "retentionDays": {
+              "type": "integer",
+              "minimum": 1,
+              "description": "How long to retain audit trails",
+              "default": 90
+            },
+            "immutable": {
+              "type": "boolean",
+              "description": "Whether audit trails are immutable",
+              "default": true
+            },
+            "checksumAlgorithm": {
+              "type": "string",
+              "enum": ["sha256", "sha512", "blake2b"],
+              "description": "Checksum algorithm for audit trail integrity",
+              "default": "sha256"
+            }
+          }
+        },
+        "chainRequirements": {
+          "type": "object",
+          "description": "Requirements for reasoning chains",
+          "properties": {
+            "minimumSteps": {
+              "type": "integer",
+              "minimum": 1,
+              "description": "Minimum steps required in a reasoning chain",
+              "default": 3
+            },
+            "maximumSteps": {
+              "type": "integer",
+              "minimum": 1,
+              "description": "Maximum allowed steps in a reasoning chain",
+              "default": 100
+            },
+            "requiredStepTypes": {
+              "type": "array",
+              "description": "Required step types that must be present",
+              "items": {
+                "type": "string",
+                "enum": ["observation", "hypothesis", "analysis", "decision", "action", "reflection"]
+              },
+              "default": ["observation", "analysis", "decision"]
+            },
+            "minimumConfidence": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1,
+              "description": "Minimum average confidence threshold",
+              "default": 0.5
+            },
+            "requireDependencies": {
+              "type": "boolean",
+              "description": "Whether steps must declare dependencies",
+              "default": true
+            }
+          }
+        },
+        "transparencyRequirements": {
+          "type": "object",
+          "description": "Transparency and explainability requirements",
+          "properties": {
+            "requireExplanations": {
+              "type": "boolean",
+              "description": "Whether each step must include reasoning explanation",
+              "default": true
+            },
+            "minimumExplanationLength": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "Minimum characters in reasoning explanation",
+              "default": 20
+            },
+            "exposeAttentionWeights": {
+              "type": "boolean",
+              "description": "Whether attention weights must be exposed",
+              "default": true
+            },
+            "requireVisualization": {
+              "type": "boolean",
+              "description": "Whether reasoning must be visualizable",
+              "default": false
+            }
+          }
+        },
+        "correlationRequirements": {
+          "type": "object",
+          "description": "Cross-chain correlation requirements",
+          "properties": {
+            "enableCrossChainTracking": {
+              "type": "boolean",
+              "description": "Enable tracking correlations across chains",
+              "default": true
+            },
+            "minimumCorrelationScore": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1,
+              "description": "Minimum correlation score for flagging",
+              "default": 0.7
+            },
+            "detectAnomalies": {
+              "type": "boolean",
+              "description": "Enable attention anomaly detection",
+              "default": true
+            },
+            "anomalySeverityThreshold": {
+              "type": "string",
+              "enum": ["low", "medium", "high", "critical"],
+              "description": "Minimum severity to report anomalies",
+              "default": "medium"
+            }
+          }
+        },
+        "validationTriggers": {
+          "type": "array",
+          "description": "When to trigger compliance validation",
+          "items": {
+            "type": "string",
+            "enum": ["on_completion", "real_time", "scheduled", "on_demand"]
+          },
+          "default": ["on_completion"]
+        },
+        "enforcementLevel": {
+          "type": "string",
+          "enum": ["strict", "warn", "advisory"],
+          "description": "How to enforce compliance violations",
+          "default": "strict"
+        }
+      }
+    }
+  },
+  "definitions": {
+    "ComplianceRule": {
+      "type": "object",
+      "required": ["ruleId", "name", "severity", "condition"],
+      "properties": {
+        "ruleId": {
+          "type": "string",
+          "pattern": "^[a-z0-9]([-_a-z0-9]*[a-z0-9])?$",
+          "description": "Unique rule identifier"
+        },
+        "name": {
+          "type": "string",
+          "description": "Human-readable rule name"
+        },
+        "description": {
+          "type": "string",
+          "description": "Detailed rule description"
+        },
+        "severity": {
+          "type": "string",
+          "enum": ["info", "warning", "error", "critical"],
+          "description": "Rule violation severity"
+        },
+        "category": {
+          "type": "string",
+          "enum": [
+            "attention_quality",
+            "reasoning_clarity",
+            "step_completeness",
+            "dependency_integrity",
+            "confidence_threshold",
+            "transparency",
+            "auditability",
+            "correlation_integrity"
+          ],
+          "description": "Rule category"
+        },
+        "condition": {
+          "type": "object",
+          "description": "Rule condition specification",
+          "required": ["type"],
+          "properties": {
+            "type": {
+              "type": "string",
+              "enum": [
+                "min_steps",
+                "max_steps",
+                "required_types",
+                "min_confidence",
+                "max_low_confidence_ratio",
+                "attention_required",
+                "dependency_required",
+                "explanation_length",
+                "correlation_threshold",
+                "no_cycles",
+                "no_orphans"
+              ],
+              "description": "Condition type"
+            },
+            "value": {
+              "description": "Condition threshold value",
+              "oneOf": [
+                {"type": "number"},
+                {"type": "string"},
+                {"type": "boolean"},
+                {"type": "array"}
+              ]
+            },
+            "comparison": {
+              "type": "string",
+              "enum": ["eq", "ne", "gt", "gte", "lt", "lte", "in", "not_in", "contains"],
+              "description": "Comparison operator",
+              "default": "gte"
+            }
+          }
+        },
+        "remediation": {
+          "type": "string",
+          "description": "Suggested remediation for violation"
+        },
+        "autoFix": {
+          "type": "boolean",
+          "description": "Whether violation can be auto-fixed",
+          "default": false
+        },
+        "applicableToStepTypes": {
+          "type": "array",
+          "description": "Step types this rule applies to",
+          "items": {
+            "type": "string"
+          }
+        },
+        "tags": {
+          "type": "array",
+          "description": "Rule tags for categorization",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  },
+  "examples": [
+    {
+      "reasoningCompliance": {
+        "enabled": true,
+        "standard": "ossa_v2",
+        "rules": [
+          {
+            "ruleId": "min-steps-required",
+            "name": "Minimum Steps Required",
+            "description": "Reasoning chains must have at least 3 steps for adequate traceability",
+            "severity": "warning",
+            "category": "step_completeness",
+            "condition": {
+              "type": "min_steps",
+              "value": 3,
+              "comparison": "gte"
+            },
+            "remediation": "Add more reasoning steps to improve transparency and auditability"
+          },
+          {
+            "ruleId": "attention-weights-required",
+            "name": "Attention Weights Required",
+            "description": "All reasoning steps must include attention weight tracking",
+            "severity": "critical",
+            "category": "attention_quality",
+            "condition": {
+              "type": "attention_required",
+              "value": true,
+              "comparison": "eq"
+            },
+            "remediation": "Add attention mechanism to all reasoning steps"
+          },
+          {
+            "ruleId": "min-confidence-threshold",
+            "name": "Minimum Confidence Threshold",
+            "description": "Reasoning steps must maintain minimum confidence level",
+            "severity": "error",
+            "category": "confidence_threshold",
+            "condition": {
+              "type": "min_confidence",
+              "value": 0.5,
+              "comparison": "gte"
+            },
+            "remediation": "Review and improve reasoning quality to meet confidence threshold"
+          },
+          {
+            "ruleId": "dependency-declaration",
+            "name": "Dependency Declaration Required",
+            "description": "Non-initial steps must declare dependencies on previous steps",
+            "severity": "warning",
+            "category": "dependency_integrity",
+            "condition": {
+              "type": "dependency_required",
+              "value": true,
+              "comparison": "eq"
+            },
+            "remediation": "Add explicit dependencies to maintain reasoning chain integrity"
+          },
+          {
+            "ruleId": "explanation-min-length",
+            "name": "Explanation Minimum Length",
+            "description": "Reasoning explanations must be sufficiently detailed",
+            "severity": "warning",
+            "category": "transparency",
+            "condition": {
+              "type": "explanation_length",
+              "value": 20,
+              "comparison": "gte"
+            },
+            "remediation": "Provide more detailed reasoning explanations"
+          }
+        ],
+        "attentionTracking": {
+          "required": true,
+          "mechanisms": ["gqa", "flash_v3", "hybrid"],
+          "minimumHeads": 4,
+          "trackingFrequency": "every_step"
+        },
+        "auditTrail": {
+          "enabled": true,
+          "storageBackend": "neo4j",
+          "retentionDays": 90,
+          "immutable": true,
+          "checksumAlgorithm": "sha256"
+        },
+        "chainRequirements": {
+          "minimumSteps": 3,
+          "maximumSteps": 50,
+          "requiredStepTypes": ["observation", "analysis", "decision"],
+          "minimumConfidence": 0.5,
+          "requireDependencies": true
+        },
+        "transparencyRequirements": {
+          "requireExplanations": true,
+          "minimumExplanationLength": 20,
+          "exposeAttentionWeights": true,
+          "requireVisualization": false
+        },
+        "correlationRequirements": {
+          "enableCrossChainTracking": true,
+          "minimumCorrelationScore": 0.7,
+          "detectAnomalies": true,
+          "anomalySeverityThreshold": "medium"
+        },
+        "validationTriggers": ["on_completion", "real_time"],
+        "enforcementLevel": "strict"
+      }
+    }
+  ]
+}
+
