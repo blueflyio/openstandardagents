@@ -313,8 +313,8 @@ Comprehensive documentation is available in the `docs/` directory:
 
 ## Repository
 
-- **GitLab**: [gitlab.bluefly.io/llm/openapi-ai-agents-standard](https://gitlab.bluefly.io/llm/openapi-ai-agents-standard)
-- **Implementation**: [gitlab.bluefly.io/llm/agent_buildkit](https://gitlab.bluefly.io/llm/agent_buildkit)
+- **GitLab**: [app-4001.cloud.bluefly.io/llm/openapi-ai-agents-standard](https://app-4001.cloud.bluefly.io/llm/openapi-ai-agents-standard)
+- **Implementation**: [app-4001.cloud.bluefly.io/llm/agent_buildkit](https://app-4001.cloud.bluefly.io/llm/agent_buildkit)
 
 ## Contributing
 

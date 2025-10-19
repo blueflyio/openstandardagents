@@ -12,12 +12,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://gitlab.bluefly.io/llm/openapi-ai-agents-standard.git"
+    "url": "https://app-4001.cloud.bluefly.io/llm/openapi-ai-agents-standard.git"
   },
   "bugs": {
-    "url": "https://gitlab.bluefly.io/llm/openapi-ai-agents-standard/-/issues"
+    "url": "https://app-4001.cloud.bluefly.io/llm/openapi-ai-agents-standard/-/issues"
   },
-  "homepage": "https://gitlab.bluefly.io/llm/openapi-ai-agents-standard",
+  "homepage": "https://app-4001.cloud.bluefly.io/llm/openapi-ai-agents-standard",
   "scripts": {
     "test": "jest",
     "test:watch": "jest --watch",

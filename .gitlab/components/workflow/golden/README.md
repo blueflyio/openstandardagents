@@ -21,7 +21,7 @@ Add this include to your `.gitlab-ci.yml`:
 
 ```yaml
 include:
-  - component: gitlab.bluefly.io/llm/gitlab_components/workflow/golden@0.1.0
+  - component: app-4001.cloud.bluefly.io/llm/gitlab_components/workflow/golden@0.1.0
 ```
 
 For local development/testing:
@@ -52,7 +52,7 @@ include:
 
 ```yaml
 include:
-  - component: gitlab.bluefly.io/llm/gitlab_components/workflow/golden@0.1.0
+  - component: app-4001.cloud.bluefly.io/llm/gitlab_components/workflow/golden@0.1.0
     inputs:
       enable_ai_ml_testing: true
       ossa_compliance_check: true
@@ -128,7 +128,7 @@ Examples:
 
 ```yaml
 include:
-  - component: gitlab.bluefly.io/llm/gitlab_components/workflow/golden@0.1.0
+  - component: app-4001.cloud.bluefly.io/llm/gitlab_components/workflow/golden@0.1.0
     inputs:
       enable-tdd: true
       enable-auto-merge: true
@@ -145,7 +145,7 @@ validate:cleanup-metrics:
 
 ```yaml
 include:
-  - component: gitlab.bluefly.io/llm/gitlab_components/workflow/golden@0.1.0
+  - component: app-4001.cloud.bluefly.io/llm/gitlab_components/workflow/golden@0.1.0
     inputs:
       enable_ai_ml_testing: true
       ossa_compliance_check: true
@@ -162,7 +162,7 @@ validate:ossa-spec:
 
 ```yaml
 include:
-  - component: gitlab.bluefly.io/llm/gitlab_components/workflow/golden@0.1.0
+  - component: app-4001.cloud.bluefly.io/llm/gitlab_components/workflow/golden@0.1.0
     # Version automatically detected from package.json
     # All defaults apply - no inputs needed
 ```
@@ -188,7 +188,7 @@ include:
 
 ## Support
 
-- **Repository**: https://gitlab.bluefly.io/llm/gitlab_components
-- **Catalog**: https://gitlab.bluefly.io/explore/catalog
+- **Repository**: https://app-4001.cloud.bluefly.io/llm/gitlab_components
+- **Catalog**: https://app-4001.cloud.bluefly.io/explore/catalog
 - **Issues**: Create issue in adopting project
 - **Version**: 0.1.0

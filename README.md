@@ -4,7 +4,7 @@
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![npm version](https://img.shields.io/npm/v/@bluefly/open-standards-scalable-agents.svg)](https://www.npmjs.com/package/@bluefly/open-standards-scalable-agents)
-[![GitLab](https://img.shields.io/badge/GitLab-OSSA-orange.svg)](https://gitlab.bluefly.io/llm/openapi-ai-agents-standard)
+[![GitLab](https://img.shields.io/badge/GitLab-OSSA-orange.svg)](https://app-4001.cloud.bluefly.io/llm/openapi-ai-agents-standard)
 
 ---
 
@@ -87,7 +87,7 @@ ossa migrate <source>   # Migrate v0.1.9 → 1.0
 - ❌ Production monitoring
 - ❌ Infrastructure management
 
-For production features, see [agent-buildkit](https://gitlab.bluefly.io/llm/npm/agent-buildkit).
+For production features, see [agent-buildkit](https://app-4001.cloud.bluefly.io/llm/npm/agent-buildkit).
 
 ---
 
@@ -150,7 +150,7 @@ Reference implementations: [`examples/`](examples/)
 - Production monitoring
 - Compliance tooling
 
-See: https://gitlab.bluefly.io/llm/npm/agent-buildkit
+See: https://app-4001.cloud.bluefly.io/llm/npm/agent-buildkit
 
 **Others welcome** - OSSA is a standard, anyone can implement it.
 
@@ -197,7 +197,7 @@ buildkit ossa sync-docs               # GitLab integration
 - **Specification**: [spec/ossa-1.0.schema.json](spec/ossa-1.0.schema.json)
 - **Examples**: [examples/](examples/)
 - **API Reference**: [docs/](docs/)
-- **GitLab Wiki**: https://gitlab.bluefly.io/llm/openapi-ai-agents-standard/-/wikis/home
+- **GitLab Wiki**: https://app-4001.cloud.bluefly.io/llm/openapi-ai-agents-standard/-/wikis/home
 
 ---
 

@@ -172,7 +172,7 @@ docker system prune -f
 ## Get Help
 
 - **[Documentation](../overview/)** - Complete OSSA documentation
-- **[GitLab Issues](https://gitlab.bluefly.io/llm/openapi-ai-agents-standard/-/issues)** - Bug reports and feature requests
+- **[GitLab Issues](https://app-4001.cloud.bluefly.io/llm/openapi-ai-agents-standard/-/issues)** - Bug reports and feature requests
 - **[Community Support](../community/)** - Community forums and chat
 
 ---

@@ -98,7 +98,7 @@ Multi-tenant agent sharing and governance that enables secure collaboration acro
 
 ## Community & Support
 
-- **[GitLab Repository](https://gitlab.bluefly.io/llm/openapi-ai-agents-standard)** - Source code and issue tracking
+- **[GitLab Repository](https://app-4001.cloud.bluefly.io/llm/openapi-ai-agents-standard)** - Source code and issue tracking
 - **[Specification](../specification/)** - Complete OSSA v0.1.9 specification
 - **[Contributing](../development/contributing.md)** - How to contribute to OSSA
 - **[Security Policy](../security/)** - Security reporting and policies

@@ -449,4 +449,4 @@ bridge:
       api_version: "11.x"
     gitlab:
       enabled: true
-      ci_component: gitlab.bluefly.io/llm/golden@v0.1.0
+      ci_component: app-4001.cloud.bluefly.io/llm/golden@v0.1.0
