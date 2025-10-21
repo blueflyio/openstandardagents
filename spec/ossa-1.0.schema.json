@@ -476,6 +476,146 @@
             }
           },
           "additionalProperties": true
+        },
+        "bridge": {
+          "type": "object",
+          "description": "Protocol interoperability bridges for multi-framework support",
+          "properties": {
+            "mcp": {
+              "type": "object",
+              "description": "Model Context Protocol bridge for Claude Desktop, Cursor, etc.",
+              "properties": {
+                "enabled": {"type": "boolean"},
+                "server_type": {"type": "string", "enum": ["stdio", "sse", "websocket"]},
+                "tools": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "name": {"type": "string"},
+                      "description": {"type": "string"},
+                      "input_schema": {"type": "object"},
+                      "output_schema": {"type": "object"},
+                      "capability": {"type": "string"}
+                    }
+                  }
+                }
+              }
+            },
+            "kagent": {
+              "type": "object",
+              "description": "kagent.dev CNCF Kubernetes-native agent bridge",
+              "properties": {
+                "enabled": {"type": "boolean"},
+                "api_version": {"type": "string", "default": "kagent.dev/v1alpha2"},
+                "agent_type": {"type": "string", "enum": ["declarative", "imperative"]},
+                "deployment": {
+                  "type": "object",
+                  "properties": {
+                    "replicas": {"type": "integer"},
+                    "resources": {
+                      "type": "object",
+                      "properties": {
+                        "requests": {"type": "object", "properties": {"cpu": {"type": "string"}, "memory": {"type": "string"}}},
+                        "limits": {"type": "object", "properties": {"cpu": {"type": "string"}, "memory": {"type": "string"}}}
+                      }
+                    }
+                  }
+                },
+                "model_config": {"type": "string"},
+                "system_message": {"type": "string"},
+                "a2a_config": {
+                  "type": "object",
+                  "properties": {
+                    "skills": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {"type": "string"},
+                          "name": {"type": "string"},
+                          "description": {"type": "string"},
+                          "examples": {"type": "array", "items": {"type": "string"}},
+                          "tags": {"type": "array", "items": {"type": "string"}}
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "aiflow": {
+              "type": "object",
+              "description": "AIFlow-Agent bridge for social/character agents on BNB Chain",
+              "properties": {
+                "enabled": {"type": "boolean"},
+                "character": {
+                  "type": "object",
+                  "properties": {
+                    "name": {"type": "string"},
+                    "username": {"type": "string"},
+                    "personality_traits": {"type": "array", "items": {"type": "string"}},
+                    "bio": {"type": "string"},
+                    "lore": {"type": "array", "items": {"type": "string"}},
+                    "topics": {"type": "array", "items": {"type": "string"}},
+                    "adjectives": {"type": "array", "items": {"type": "string"}}
+                  }
+                },
+                "blockchain": {
+                  "type": "object",
+                  "properties": {
+                    "enabled": {"type": "boolean"},
+                    "network": {"type": "string", "enum": ["mainnet", "testnet"]},
+                    "wallet_address": {"type": "string"}
+                  }
+                },
+                "social_platforms": {
+                  "type": "object",
+                  "properties": {
+                    "twitter": {"type": "object", "properties": {"enabled": {"type": "boolean"}, "username": {"type": "string"}}},
+                    "telegram": {"type": "object", "properties": {"enabled": {"type": "boolean"}, "bot_token": {"type": "string"}}},
+                    "discord": {"type": "object", "properties": {"enabled": {"type": "boolean"}, "bot_token": {"type": "string"}}}
+                  }
+                }
+              }
+            },
+            "a2a": {
+              "type": "object",
+              "description": "Agent-to-Agent protocol bridge",
+              "properties": {
+                "enabled": {"type": "boolean"},
+                "card_url": {"type": "string", "format": "uri"},
+                "schema_version": {"type": "string"}
+              }
+            },
+            "openapi": {
+              "type": "object",
+              "description": "OpenAPI bridge for REST API integration",
+              "properties": {
+                "enabled": {"type": "boolean"},
+                "spec_url": {"type": "string", "format": "uri"},
+                "spec_version": {"type": "string", "enum": ["3.0", "3.1"]}
+              }
+            },
+            "langchain": {
+              "type": "object",
+              "description": "LangChain framework bridge",
+              "properties": {
+                "enabled": {"type": "boolean"},
+                "tool_class": {"type": "string"},
+                "chain_type": {"type": "string", "enum": ["llm", "retrieval", "agent", "sequential", "custom"]}
+              }
+            },
+            "crewai": {
+              "type": "object",
+              "description": "CrewAI framework bridge",
+              "properties": {
+                "enabled": {"type": "boolean"},
+                "agent_type": {"type": "string", "enum": ["worker", "manager", "researcher", "analyst", "custom"]},
+                "role": {"type": "string"}
+              }
+            }
+          }
         }
       }
     }

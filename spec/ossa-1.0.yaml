@@ -161,6 +161,77 @@ schema:
             timeout_ms: integer # milliseconds
             retry_count: integer
 
+        # kagent.dev Bridge (CNCF Kubernetes-native agents)
+        kagent:
+          enabled: boolean
+          api_version: string # kagent.dev/v1alpha2
+          agent_type: enum # declarative|imperative
+          deployment: # Kubernetes deployment config
+            replicas: integer
+            resources:
+              requests:
+                cpu: string
+                memory: string
+              limits:
+                cpu: string
+                memory: string
+          model_config: string # Reference to ModelConfig CRD
+          system_message: string # System prompt
+          tools: # kagent.dev tool servers
+            - type: enum # McpServer|ToolServer|HttpTool
+              mcpServer:
+                toolServer: string # Name of MCP server
+                toolNames: string[] # Specific tools to use
+              httpTool:
+                url: uri
+                method: enum # GET|POST|PUT|DELETE
+          a2a_config: # Agent-to-Agent for kagent
+            skills:
+              - id: string
+                name: string
+                description: string
+                examples: string[]
+                tags: string[]
+
+        # AIFlow-Agent Bridge (Social/Character agents on BNB Chain)
+        aiflow:
+          enabled: boolean
+          character: # Character definition
+            name: string
+            username: string # Twitter/social username
+            personality_traits: string[]
+            bio: string
+            lore: string[] # Background story elements
+            message_examples: # Conversation examples
+              - - user: string
+                  content:
+                    text: string
+                - character: string
+                  content:
+                    text: string
+            post_examples: string[] # Social media post examples
+            topics: string[] # Topics of interest
+            style: # Communication style
+              all: string[]
+              chat: string[]
+              post: string[]
+            adjectives: string[] # Personality adjectives
+          blockchain: # BNB Chain integration
+            enabled: boolean
+            network: enum # mainnet|testnet
+            wallet_address: string
+          social_platforms: # Social media integrations
+            twitter:
+              enabled: boolean
+              username: string
+              auto_post: boolean
+            telegram:
+              enabled: boolean
+              bot_token: string
+            discord:
+              enabled: boolean
+              bot_token: string
+
         # Agent-to-Agent Protocol Bridge
         a2a:
           enabled: boolean
