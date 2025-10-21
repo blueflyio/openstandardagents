@@ -7,7 +7,6 @@
 
 import fs from 'fs';
 import yaml from 'yaml';
-import path from 'path';
 
 function convertOSSAtoKagent(ossaManifest) {
   const agent = ossaManifest.agent;
@@ -101,7 +100,16 @@ function buildA2AConfig(agent) {
 }
 
 // Main execution
-if (require.main === module) {
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+// Check if running as main module
+const isMain = import.meta.url === `file://${process.argv[1]}`;
+
+if (isMain) {
   const args = process.argv.slice(2);
   
   if (args.length === 0) {
@@ -142,5 +150,5 @@ if (require.main === module) {
   }
 }
 
-module.exports = { convertOSSAtoKagent };
+export { convertOSSAtoKagent };
 
