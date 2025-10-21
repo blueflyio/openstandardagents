@@ -1,68 +1,120 @@
 # Production OSSA Agent Example (200 lines)
 # Silver conformance level - Production-ready with monitoring
 
-ossa: 1.0
+ossaVersion: "1.0"
 agent:
-  name: document-analyzer
+  id: document-analyzer
+  name: Document Analyzer
   version: 2.1.0
   description: Production document analysis agent with NLP capabilities
-  author: Bluefly.io
-  license: MIT
-  conformance: silver
+  role: data_processing
   tags:
     - nlp
     - documents
     - analysis
     - production
+  metadata:
+    author: Bluefly.io
+    license: MIT
 
-discover:
-  auto: true
-  protocol: uadp
-  registry: https://registry.ossa.ai
-  endpoints:
-    - https://discovery.ossa.ai/agents
+  runtime:
+    type: k8s
+    image: ossa/document-analyzer:2.1.0
+    resources:
+      cpu: "1000m"
+      memory: "1Gi"
+    health_check:
+      type: http
+      endpoint: /health
+      port: 3000
 
-capabilities:
-  - text_extraction
-  - sentiment_analysis
-  - entity_recognition
-  - summarization
-  - classification
-  - language_detection
+  capabilities:
+    - name: analyze_document
+      description: Comprehensive document analysis with sentiment and entities
+      input_schema:
+        type: object
+        required: ["document"]
+        properties:
+          document:
+            type: string
+            description: Document text to analyze
+          includeEntities:
+            type: boolean
+            default: true
+          includeSentiment:
+            type: boolean
+            default: true
+      output_schema:
+        type: object
+        properties:
+          sentiment:
+            type: object
+          entities:
+            type: array
+          summary:
+            type: string
+      timeout_seconds: 300
 
-api:
-  POST /analyze:
-    capability: [sentiment_analysis, entity_recognition]
-    description: Comprehensive document analysis
-    parameters:
-      includeEntities:
-        type: boolean
-        default: true
-      includeSentiment:
-        type: boolean
-        default: true
+    - name: extract_text
+      description: Extract text from various document formats
+      input_schema:
+        type: object
+        required: ["document"]
+        properties:
+          document:
+            type: string
+            format: binary
+      output_schema:
+        type: object
+        properties:
+          text:
+            type: string
+      timeout_seconds: 60
 
-  POST /extract:
-    capability: text_extraction
-    description: Extract text from various document formats
+    - name: summarize_document
+      description: Generate concise document summary
+      input_schema:
+        type: object
+        required: ["text"]
+        properties:
+          text:
+            type: string
+          maxLength:
+            type: integer
+            default: 500
+      output_schema:
+        type: object
+        properties:
+          summary:
+            type: string
+      timeout_seconds: 120
 
-  POST /summarize:
-    capability: summarization
-    description: Generate concise document summary
-    parameters:
-      maxLength:
-        type: integer
-        default: 500
+    - name: classify_document
+      description: Classify document into categories
+      input_schema:
+        type: object
+        required: ["text"]
+        properties:
+          text:
+            type: string
+      output_schema:
+        type: object
+        properties:
+          category:
+            type: string
+          confidence:
+            type: number
+      timeout_seconds: 60
 
-  POST /classify:
-    capability: classification
-    description: Classify document into categories
-
-  GET /health:
-    description: Health check endpoint
-
-  GET /metrics:
-    description: Prometheus metrics endpoint
+  integration:
+    protocol: http
+    endpoints:
+      base_url: "http://document-analyzer:3000"
+      health: /health
+      metrics: /metrics
+      openapi: /api/openapi.json
+    auth:
+      type: jwt
 
 monitoring:
   io_aware: true

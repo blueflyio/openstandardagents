@@ -14,6 +14,9 @@ const initCommand = require('../src/commands/init');
 const validateCommand = require('../src/commands/validate');
 const generateCommand = require('../src/commands/generate');
 const migrateCommand = require('../src/commands/migrate');
+const auditCommand = require('../src/commands/audit');
+const inspectCommand = require('../src/commands/inspect');
+const schemaCommand = require('../src/commands/schema');
 
 program
   .name('ossa')
@@ -24,7 +27,11 @@ program
 program
   .command('init <name>')
   .description('Initialize a new OSSA agent project')
-  .option('-t, --type <type>', 'Agent type (worker|orchestrator|integrator|monitor|critic|judge|governor)', 'worker')
+  .option(
+    '-t, --type <type>',
+    'Agent type (worker|orchestrator|integrator|monitor|critic|judge|governor)',
+    'worker'
+  )
   .option('-d, --directory <dir>', 'Output directory', '.')
   .action(initCommand);
 
@@ -32,9 +39,37 @@ program
 program
   .command('validate <path>')
   .description('Validate OSSA agent manifest against schema')
-  .option('-s, --schema <path>', 'Path to schema file', 'spec/ossa-1.0.schema.json')
+  .option(
+    '-s, --schema <path>',
+    'Path to schema file',
+    'spec/ossa-1.0.schema.json'
+  )
   .option('-v, --verbose', 'Verbose output')
   .action(validateCommand);
+
+// ossa audit <path> [options]
+program
+  .command('audit <path>')
+  .description('Audit agent for completeness, best practices, and compliance')
+  .option('-v, --verbose', 'Verbose output')
+  .action(auditCommand);
+
+// ossa inspect <path> [options]
+program
+  .command('inspect <path>')
+  .description('Show detailed agent information')
+  .option('-v, --verbose', 'Verbose output')
+  .option('--json', 'Output as JSON')
+  .action(inspectCommand);
+
+// ossa schema <action>
+program
+  .command('schema [action]')
+  .description(
+    'Query OSSA schema information (info|roles|runtime-types|protocols|compliance|bridges|all)'
+  )
+  .option('-v, --verbose', 'Verbose output')
+  .action(schemaCommand);
 
 // ossa generate <type> [options]
 program
