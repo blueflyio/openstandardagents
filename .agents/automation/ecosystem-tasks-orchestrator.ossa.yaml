@@ -1,0 +1,152 @@
+ossaVersion: "1.0"
+agent:
+  id: ecosystem-tasks-orchestrator
+  name: Ecosystem Tasks Orchestrator
+  version: 1.0.0
+  description: Master orchestrator for 5-task ecosystem cleanup and compliance
+  role: orchestration
+  tags: ["orchestration", "ecosystem", "automation", "cleanup"]
+  
+  runtime:
+    type: k8s
+    resources:
+      cpu: "1000m"
+      memory: "2Gi"
+  
+  capabilities:
+    - name: task1_health_scan
+      description: "TASK 1: Run TypeScript/lint checks across all common_npm repos"
+      input_schema:
+        type: object
+      output_schema:
+        type: object
+        properties:
+          healthy_repos:
+            type: integer
+          total_errors:
+            type: integer
+          priority_fixes:
+            type: array
+            items:
+              type: object
+    
+    - name: task2_systematic_cleanup
+      description: "TASK 2: Apply 0-error approach to repos (prioritized)"
+      input_schema:
+        type: object
+        properties:
+          repos:
+            type: array
+            items:
+              type: string
+      output_schema:
+        type: object
+    
+    - name: task3_cicd_alignment
+      description: "TASK 3: Ensure all repos use golden workflow @v0.1.33"
+      input_schema:
+        type: object
+      output_schema:
+        type: object
+        properties:
+          compliant_repos:
+            type: integer
+          non_compliant:
+            type: array
+    
+    - name: task4_url_compliance
+      description: "TASK 4: Verify zero retired URLs across all repos"
+      input_schema:
+        type: object
+      output_schema:
+        type: object
+        properties:
+          total_urls_checked:
+            type: integer
+          retired_urls_found:
+            type: integer
+    
+    - name: task5_ossa_validation
+      description: "TASK 5: Validate .agents/ structure across ecosystem"
+      input_schema:
+        type: object
+      output_schema:
+        type: object
+        properties:
+          valid_manifests:
+            type: integer
+          invalid_manifests:
+            type: integer
+  
+  monitoring:
+    traces: true
+    metrics: true
+    logs: true
+    phoenix_arise:
+      enabled: true
+      project: "ecosystem-tasks"
+  
+  bridge:
+    kagent:
+      enabled: true
+      agent_type: declarative
+      deployment:
+        replicas: 1
+        resources:
+          requests:
+            cpu: "500m"
+            memory: "1Gi"
+          limits:
+            cpu: "2000m"
+            memory: "4Gi"
+      model_config: default-model-config
+      system_message: |
+        You are the Ecosystem Tasks Orchestrator. You coordinate 5 critical tasks:
+        
+        TASK 1: Ecosystem Health Scan ✅ COMPLETED
+        - agent-studio: ✅ 0 errors
+        - rfp-automation: ✅ 0 errors  
+        - agent-router: ⚠️ 50,152 TS errors (CRITICAL)
+        - agent-docker: ⚠️ 23,582 TS errors (HIGH)
+        - foundation-bridge: ⚠️ 12,725 TS errors (HIGH)
+        - agentic-flows: ⚠️ 2,154 TS + 502 lint errors
+        - agent-chat: ⚠️ 1,622 TS errors
+        
+        TASK 2: Systematic Cleanup
+        Priority order by error count:
+        1. agent-router (50k errors)
+        2. agent-docker (23k errors)
+        3. foundation-bridge (12k errors)
+        4. agentic-flows (2.6k errors)
+        5. agent-chat (1.6k errors)
+        
+        TASK 3: CI/CD Alignment
+        - Verify .gitlab-ci.yml uses golden-workflow@v0.1.33
+        - Check lefthook.yml consistency
+        - Validate package.json scripts
+        
+        TASK 4: URL Compliance
+        - Scan for gitlab.com URLs (should be gitlab.bluefly.io)
+        - Check for deprecated npmjs.org packages
+        - Validate all OpenAPI spec URLs
+        
+        TASK 5: OSSA Compliance
+        - Validate all .agents/ manifests against OSSA 1.0 schema
+        - Check bridge configurations
+        - Verify kagent.dev compatibility
+        
+        Coordinate worker agents to execute each task systematically.
+      a2a_config:
+        skills:
+          - id: ecosystem-orchestration
+            name: Ecosystem Orchestration
+            description: Orchestrate multi-repo ecosystem tasks
+            examples:
+              - "Run health scan across all repos"
+              - "Fix TypeScript errors in priority order"
+              - "Validate CI/CD configs"
+            tags:
+              - orchestration
+              - ecosystem
+              - automation
+
