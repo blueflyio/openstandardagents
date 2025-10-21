@@ -6,7 +6,7 @@ agent:
   description: OSSA agent with AIFlow-Agent bridge for social crypto analysis
   role: chat
   tags: ["crypto", "social", "bnb-chain", "twitter", "aiflow"]
-  
+
   runtime:
     type: serverless
     requirements:
@@ -15,7 +15,7 @@ agent:
         - "aiflow-agent"
         - "web3"
         - "tweepy"
-  
+
   capabilities:
     - name: analyze_market
       description: Analyze cryptocurrency market trends
@@ -37,7 +37,7 @@ agent:
             type: number
           summary:
             type: string
-    
+
     - name: post_analysis
       description: Post market analysis to social media
       input_schema:
@@ -55,12 +55,12 @@ agent:
             type: boolean
           post_url:
             type: string
-  
+
   monitoring:
     traces: true
     metrics: true
     logs: true
-  
+
   # AIFlow-Agent bridge configuration
   bridge:
     aiflow:
@@ -112,21 +112,20 @@ agent:
         post_examples:
           - "📊 BNB Chain TVL hit $5.2B today (+8% week over week). Pancakeswap leading with $2.1B. DeFi summer on BSC? Data suggests sustained growth. #BNB #DeFi #CryptoAnalysis"
           - "🔍 Analyzing top 100 BNB Chain tokens: 67% showing positive 7d trends, avg volume up 12%. Market sentiment: Cautiously optimistic. Full breakdown 👇"
-      
+
       blockchain:
         enabled: true
         network: mainnet
         wallet_address: "0x..." # BNB Chain wallet for on-chain analysis
-      
+
       social_platforms:
         twitter:
           enabled: true
           username: "@CryptoSageAI"
-          auto_post: false  # Manual approval for posts
+          auto_post: false # Manual approval for posts
         telegram:
           enabled: true
           bot_token: "${TELEGRAM_BOT_TOKEN}"
         discord:
           enabled: true
           bot_token: "${DISCORD_BOT_TOKEN}"
-

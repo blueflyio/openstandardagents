@@ -1,0 +1,77 @@
+ossaVersion: "1.0"
+agent:
+  id: ecosystem-health-agent
+  name: Ecosystem Health Scanner
+  version: 1.0.0
+  description: Automated ecosystem health scanning across all common_npm repositories
+  role: monitoring
+  tags: ["health-check", "typescript", "lint", "testing", "automation"]
+  
+  runtime:
+    type: k8s
+    resources:
+      cpu: "500m"
+      memory: "1Gi"
+  
+  capabilities:
+    - name: scan_typescript_errors
+      description: Scan all repos for TypeScript errors
+      input_schema:
+        type: object
+        properties:
+          repos:
+            type: array
+            items:
+              type: string
+      output_schema:
+        type: object
+        properties:
+          total_errors:
+            type: integer
+          repos_with_errors:
+            type: array
+    
+    - name: scan_lint_errors
+      description: Scan all repos for linter errors
+      input_schema:
+        type: object
+      output_schema:
+        type: object
+    
+    - name: run_tests
+      description: Run test suites across ecosystem
+      input_schema:
+        type: object
+      output_schema:
+        type: object
+  
+  monitoring:
+    traces: true
+    metrics: true
+    logs: true
+  
+  bridge:
+    kagent:
+      enabled: true
+      agent_type: declarative
+      system_message: |
+        You are the Ecosystem Health Scanner. Your mission is to scan all
+        common_npm repositories for TypeScript errors, lint issues, and
+        test failures. Report findings and suggest fixes.
+        
+        Priority repos to fix (by error count):
+        1. agent-router (50,152 TS errors)
+        2. agent-docker (23,582 TS errors)  
+        3. foundation-bridge (12,725 TS errors)
+        4. agentic-flows (2,154 TS errors + 502 lint errors)
+        5. agent-chat (1,622 TS errors)
+      a2a_config:
+        skills:
+          - id: health-scanning
+            name: Health Scanning
+            description: Scan repos for errors
+            examples:
+              - "Scan all repos for TypeScript errors"
+              - "Run lint checks across ecosystem"
+            tags: ["health", "scanning"]
+
