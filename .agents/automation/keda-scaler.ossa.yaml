@@ -1,0 +1,133 @@
+ossaVersion: "1.0"
+agent:
+  id: keda-agent-scaler
+  name: KEDA On-Demand Agent Scaler
+  version: 1.0.0
+  description: Kubernetes Event-Driven Autoscaling for kagent.dev agents - scales agents to 0 when idle, up when needed
+  role: orchestration
+  tags: ["keda", "autoscaling", "resource-optimization", "on-demand"]
+  
+  runtime:
+    type: k8s
+    resources:
+      cpu: "100m"
+      memory: "128Mi"
+  
+  capabilities:
+    - name: install_keda
+      description: Install KEDA operator in cluster
+      input_schema:
+        type: object
+      output_schema:
+        type: object
+        properties:
+          installed:
+            type: boolean
+          version:
+            type: string
+    
+    - name: configure_scaledobject
+      description: Configure ScaledObject for agent deployments
+      input_schema:
+        type: object
+        properties:
+          agent_name:
+            type: string
+          min_replicas:
+            type: integer
+            default: 0
+          max_replicas:
+            type: integer
+            default: 1
+          cooldown_period:
+            type: integer
+            description: Seconds before scaling to 0
+            default: 300
+      output_schema:
+        type: object
+    
+    - name: monitor_scaling
+      description: Monitor agent scaling events
+      input_schema:
+        type: object
+      output_schema:
+        type: object
+  
+  monitoring:
+    traces: true
+    metrics: true
+    logs: true
+  
+  bridge:
+    kagent:
+      enabled: true
+      agent_type: declarative
+      deployment:
+        replicas: 1
+        resources:
+          requests:
+            cpu: "50m"
+            memory: "128Mi"
+          limits:
+            cpu: "200m"
+            memory: "256Mi"
+      model_config: default-model-config
+      system_message: |
+        You are the KEDA On-Demand Agent Scaler. Your mission is to optimize
+        resource utilization by configuring event-driven autoscaling for kagent agents.
+        
+        CURRENT PROBLEM:
+        - Cluster has 13.9GB RAM total
+        - 268 agents need 68.6GB RAM (5x over capacity!)
+        - Only 17-20 agents can run simultaneously
+        
+        SOLUTION: KEDA ScaledObjects
+        1. Install KEDA: helm install keda kedacore/keda --namespace keda --create-namespace
+        2. Configure ScaledObjects for each agent:
+           - minReplicas: 0 (dormant when idle)
+           - maxReplicas: 1 (scale up on demand)
+           - triggers: prometheus (scale on API calls) or cron (scheduled)
+           - cooldownPeriod: 300s (scale down after 5min idle)
+        
+        3. Benefits:
+           - 0 RAM usage when agents idle
+           - Instant scale-up when needed
+           - Automatic scale-down when done
+           - Support 268 agents with 13.9GB RAM
+        
+        IMPLEMENTATION:
+        ```yaml
+        apiVersion: keda.sh/v1alpha1
+        kind: ScaledObject
+        metadata:
+          name: {agent-name}-scaler
+        spec:
+          scaleTargetRef:
+            name: {agent-name}
+          minReplicaCount: 0
+          maxReplicaCount: 1
+          cooldownPeriod: 300
+          triggers:
+            - type: prometheus
+              metadata:
+                serverAddress: http://prometheus:9090
+                metricName: agent_requests_total
+                query: sum(rate(agent_requests_total{agent="{agent-name}"}[1m]))
+                threshold: '0.01'
+        ```
+        
+        You coordinate with k8s-agent to deploy ScaledObjects for all 268 agents.
+      a2a_config:
+        skills:
+          - id: keda-autoscaling
+            name: KEDA Autoscaling
+            description: Configure event-driven autoscaling for agents
+            examples:
+              - "Install KEDA in the cluster"
+              - "Configure on-demand scaling for all agents"
+              - "Monitor agent scaling events"
+            tags:
+              - keda
+              - autoscaling
+              - optimization
+

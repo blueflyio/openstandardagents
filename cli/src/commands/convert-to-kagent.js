@@ -22,35 +22,37 @@ function convertOSSAtoKagent(ossaManifest) {
         'app.kubernetes.io/instance': agent.id,
         'app.kubernetes.io/version': agent.version,
         'ossa.io/role': agent.role,
-        'ossa.io/compliant': 'true'
+        'ossa.io/compliant': 'true',
       },
       annotations: {
         'ossa.io/original-version': ossaManifest.ossaVersion,
         'ossa.io/agent-name': agent.name,
-        'ossa.io/description': agent.description || ''
-      }
+        'ossa.io/description': agent.description || '',
+      },
     },
     spec: {
       declarative: {
         deployment: {
-          replicas: agent.bridge?.kagent?.deployment?.replicas || 1,
-          resources: agent.bridge?.kagent?.deployment?.resources || {
+          replicas: agent.bridge?.kagent?.deployment?.replicas ?? 0, // Default to 0 (dormant/on-demand)
+          resources: {
             requests: {
-              cpu: agent.runtime?.resources?.cpu || '100m',
-              memory: agent.runtime?.resources?.memory || '256Mi'
+              cpu: '50m', // Reduced for better packing
+              memory: '128Mi',
             },
             limits: {
-              cpu: '1000m',
-              memory: '1Gi'
-            }
-          }
+              cpu: '500m',
+              memory: '512Mi',
+            },
+          },
         },
-        modelConfig: agent.bridge?.kagent?.model_config || 'default-model-config',
-        systemMessage: agent.bridge?.kagent?.system_message || buildSystemMessage(agent),
+        modelConfig:
+          agent.bridge?.kagent?.model_config || 'default-model-config',
+        systemMessage:
+          agent.bridge?.kagent?.system_message || buildSystemMessage(agent),
         tools: agent.bridge?.kagent?.tools || buildDefaultTools(agent),
-        a2aConfig: agent.bridge?.kagent?.a2a_config || buildA2AConfig(agent)
-      }
-    }
+        a2aConfig: agent.bridge?.kagent?.a2a_config || buildA2AConfig(agent),
+      },
+    },
   };
   
   return kagentAgent;
