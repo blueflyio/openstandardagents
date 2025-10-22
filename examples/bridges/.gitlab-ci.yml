@@ -1,0 +1,258 @@
+# GitLab CI/CD Pipeline for AIFlow Social Agent
+# 
+# Stages:
+# 1. Validate - Lint OpenAPI, validate OSSA manifest
+# 2. Test - Run integration tests
+# 3. Build - Build Docker image
+# 4. Deploy - Deploy to K8s (staging/production)
+# 5. Monitor - Run load tests, check metrics
+
+variables:
+  DOCKER_REGISTRY: registry.bluefly.io
+  IMAGE_NAME: llm/aiflow-social-agent
+  KUBE_NAMESPACE_STAGING: agents-staging
+  KUBE_NAMESPACE_PROD: agents
+  HELM_CHART_VERSION: "1.0.0"
+
+stages:
+  - validate
+  - test
+  - build
+  - deploy-staging
+  - load-test
+  - deploy-production
+  - monitor
+
+# =============================================================================
+# VALIDATE STAGE
+# =============================================================================
+
+validate:openapi:
+  stage: validate
+  image: stoplight/spectral:latest
+  script:
+    - spectral lint aiflow-registration-api.openapi.yml --ruleset .spectral.yml
+  rules:
+    - changes:
+        - "*.openapi.yml"
+        - "*.openapi.yaml"
+
+validate:ossa:
+  stage: validate
+  image: registry.bluefly.io/llm/ossa-cli:0.1.8
+  script:
+    - cd ../..
+    - ossa validate examples/bridges/social-agent-aiflow.ossa.yaml --strict
+  rules:
+    - changes:
+        - "*.ossa.yaml"
+        - "*.ossa.yml"
+
+lint:python:
+  stage: validate
+  image: python:3.11-slim
+  before_script:
+    - pip install black flake8 mypy
+  script:
+    - black --check aiflow-*.py
+    - flake8 aiflow-*.py --max-line-length=120
+    - mypy aiflow-*.py --ignore-missing-imports
+  rules:
+    - changes:
+        - "*.py"
+
+# =============================================================================
+# TEST STAGE
+# =============================================================================
+
+test:integration:
+  stage: test
+  image: python:3.11-slim
+  services:
+    - name: redis:7-alpine
+      alias: redis
+  before_script:
+    - pip install -r load-tests/requirements.txt
+    - pip install pytest pytest-asyncio pytest-cov
+  script:
+    - pytest test_aiflow_integration.py -v --cov=. --cov-report=xml --cov-report=term
+  coverage: '/(?i)total.*? (100(?:\.0+)?\%|[1-9]?\d(?:\.\d+)?\%)$/'
+  artifacts:
+    reports:
+      coverage_report:
+        coverage_format: cobertura
+        path: coverage.xml
+    paths:
+      - coverage.xml
+    expire_in: 30 days
+  rules:
+    - changes:
+        - "*.py"
+        - "test_*.py"
+
+# =============================================================================
+# BUILD STAGE
+# =============================================================================
+
+build:docker:
+  stage: build
+  image: docker:24-dind
+  services:
+    - docker:24-dind
+  before_script:
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $DOCKER_REGISTRY
+  script:
+    - |
+      docker build \
+        -t ${DOCKER_REGISTRY}/${IMAGE_NAME}:${CI_COMMIT_SHORT_SHA} \
+        -t ${DOCKER_REGISTRY}/${IMAGE_NAME}:latest \
+        -f load-tests/Dockerfile \
+        .
+    - docker push ${DOCKER_REGISTRY}/${IMAGE_NAME}:${CI_COMMIT_SHORT_SHA}
+    - docker push ${DOCKER_REGISTRY}/${IMAGE_NAME}:latest
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main" || $CI_COMMIT_BRANCH == "development"'
+      changes:
+        - "*.py"
+        - "load-tests/Dockerfile"
+        - "load-tests/requirements.txt"
+
+# =============================================================================
+# DEPLOY STAGING
+# =============================================================================
+
+deploy:staging:
+  stage: deploy-staging
+  image: registry.gitlab.com/gitlab-org/cluster-integration/auto-deploy-image:v2
+  environment:
+    name: staging
+    url: https://aiflow-agent.staging.orb.local
+    kubernetes:
+      namespace: $KUBE_NAMESPACE_STAGING
+  before_script:
+    - kubectl config use-context ${KUBE_CONTEXT_STAGING}
+  script:
+    # Update image tag
+    - |
+      kubectl set image deployment/aiflow-social-agent \
+        aiflow-agent=${DOCKER_REGISTRY}/${IMAGE_NAME}:${CI_COMMIT_SHORT_SHA} \
+        -n ${KUBE_NAMESPACE_STAGING}
+    
+    # Wait for rollout
+    - kubectl rollout status deployment/aiflow-social-agent -n ${KUBE_NAMESPACE_STAGING} --timeout=5m
+    
+    # Verify deployment
+    - kubectl get pods -n ${KUBE_NAMESPACE_STAGING} -l app=aiflow-social-agent
+    
+    # Run smoke tests
+    - |
+      POD=$(kubectl get pod -n ${KUBE_NAMESPACE_STAGING} -l app=aiflow-social-agent -o jsonpath='{.items[0].metadata.name}')
+      kubectl exec -n ${KUBE_NAMESPACE_STAGING} ${POD} -- wget -q --spider http://localhost:8000/health
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "development"'
+
+# =============================================================================
+# LOAD TEST STAGE
+# =============================================================================
+
+load-test:k6:
+  stage: load-test
+  image: grafana/k6:latest
+  environment:
+    name: staging
+  variables:
+    BASE_URL: "http://aiflow-social-agent.${KUBE_NAMESPACE_STAGING}.svc.cluster.local:8000"
+  script:
+    - cd load-tests
+    - k6 run k6-load-test.js --vus 50 --duration 5m --out json=load-test-results.json
+  artifacts:
+    paths:
+      - load-tests/load-test-results.json
+    expire_in: 7 days
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "development"'
+      when: manual
+  allow_failure: true
+
+# =============================================================================
+# DEPLOY PRODUCTION
+# =============================================================================
+
+deploy:production:
+  stage: deploy-production
+  image: registry.gitlab.com/gitlab-org/cluster-integration/auto-deploy-image:v2
+  environment:
+    name: production
+    url: https://aiflow-agent.agents.orb.local
+    kubernetes:
+      namespace: $KUBE_NAMESPACE_PROD
+  before_script:
+    - kubectl config use-context ${KUBE_CONTEXT_PROD}
+  script:
+    # Create deployment annotation
+    - |
+      kubectl annotate deployment/aiflow-social-agent \
+        kubernetes.io/change-cause="Deployed ${CI_COMMIT_SHORT_SHA} by ${GITLAB_USER_LOGIN}" \
+        -n ${KUBE_NAMESPACE_PROD}
+    
+    # Update image tag
+    - |
+      kubectl set image deployment/aiflow-social-agent \
+        aiflow-agent=${DOCKER_REGISTRY}/${IMAGE_NAME}:${CI_COMMIT_SHORT_SHA} \
+        -n ${KUBE_NAMESPACE_PROD}
+    
+    # Wait for rollout
+    - kubectl rollout status deployment/aiflow-social-agent -n ${KUBE_NAMESPACE_PROD} --timeout=10m
+    
+    # Verify deployment
+    - kubectl get pods -n ${KUBE_NAMESPACE_PROD} -l app=aiflow-social-agent
+    
+    # Run health check
+    - |
+      for i in {1..5}; do
+        POD=$(kubectl get pod -n ${KUBE_NAMESPACE_PROD} -l app=aiflow-social-agent -o jsonpath="{.items[$i].metadata.name}")
+        echo "Checking health of pod: $POD"
+        kubectl exec -n ${KUBE_NAMESPACE_PROD} ${POD} -- wget -q -O- http://localhost:8000/health
+      done
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+      when: manual
+  needs:
+    - build:docker
+
+rollback:production:
+  stage: deploy-production
+  image: registry.gitlab.com/gitlab-org/cluster-integration/auto-deploy-image:v2
+  environment:
+    name: production
+    action: rollback
+  before_script:
+    - kubectl config use-context ${KUBE_CONTEXT_PROD}
+  script:
+    - kubectl rollout undo deployment/aiflow-social-agent -n ${KUBE_NAMESPACE_PROD}
+    - kubectl rollout status deployment/aiflow-social-agent -n ${KUBE_NAMESPACE_PROD} --timeout=5m
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+      when: manual
+
+# =============================================================================
+# MONITOR STAGE
+# =============================================================================
+
+monitor:metrics:
+  stage: monitor
+  image: curlimages/curl:latest
+  environment:
+    name: production
+  script:
+    - |
+      # Check Prometheus metrics
+      curl -s http://aiflow-social-agent.${KUBE_NAMESPACE_PROD}.svc.cluster.local:8000/metrics | grep aiflow_
+      
+      # Check Phoenix traces
+      curl -s http://phoenix.observability.svc.cluster.local:6006/api/projects/aiflow-social-agents/traces | head -50
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+      when: on_success
+  allow_failure: true
+
