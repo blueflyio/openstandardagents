@@ -24,7 +24,7 @@
     "test:coverage": "jest --coverage",
     "validate:examples": "jest tests/validation-suite/schema-validator.test.ts",
     "lint": "eslint tests --ext .ts",
-    "build": "tsc",
+    "build": "echo 'OSSA is pure JavaScript - no build needed'",
     "cli:test": "node cli/bin/ossa --help"
   },
   "keywords": [

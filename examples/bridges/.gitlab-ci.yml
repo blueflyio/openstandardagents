@@ -48,6 +48,20 @@ validate:ossa:
         - "*.ossa.yaml"
         - "*.ossa.yml"
 
+validate:k8s-resources:
+  stage: validate
+  image: node:20-slim
+  before_script:
+    - npm install -g ts-node typescript js-yaml @types/js-yaml @types/node
+  script:
+    - echo "🔍 Validating Kubernetes resource limits..."
+    - ts-node k8s/validate-resources.ts k8s/
+  rules:
+    - changes:
+        - "k8s/*.yaml"
+        - "k8s/*.yml"
+  allow_failure: false  # BLOCK on excessive resources
+
 lint:python:
   stage: validate
   image: python:3.11-slim

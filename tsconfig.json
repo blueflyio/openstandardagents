@@ -4,10 +4,12 @@
     "module": "commonjs",
     "lib": ["ES2022"],
     "outDir": "./dist",
-    "rootDir": "./src",
+    "rootDir": "./cli",
     "baseUrl": ".",
     "paths": {
-      "@/*": ["src/*"]
+      "@/*": [
+        "cli/*"
+      ]
     },
     "strict": true,
     "esModuleInterop": true,
@@ -20,7 +22,7 @@
     "types": ["node", "jest"]
   },
   "include": [
-    "src/**/*"
+    "cli/**/*"
   ],
   "exclude": [
     "node_modules",
