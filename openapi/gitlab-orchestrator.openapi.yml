@@ -1,0 +1,330 @@
+openapi: 3.1.0
+info:
+  title: GitLab CI/CD Orchestrator API
+  version: 1.0.0
+  description: |
+    **Multi-Project CI/CD Orchestration**
+    
+    Orchestrates GitLab CI/CD across all LLM platform projects:
+    - Triggers pipelines for agent deployment
+    - Manages GitLab package publishing (npm, PyPI)
+    - Coordinates multi-repo workflows
+    - Tracks deployment status
+    
+    **No GitHub. Only GitLab.**
+
+servers:
+  - url: https://ci-orchestrator.agents.orb.local/api/v1
+    description: Production
+
+security:
+  - GitLabToken: []
+
+tags:
+  - name: pipelines
+    description: Pipeline orchestration
+  - name: packages
+    description: GitLab package management
+  - name: deployments
+    description: Multi-project deployments
+
+paths:
+  /pipelines/trigger:
+    post:
+      tags: [pipelines]
+      summary: Trigger GitLab pipeline
+      operationId: triggerPipeline
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - project
+                - ref
+              properties:
+                project:
+                  type: string
+                  description: GitLab project path
+                  example: "llm/npm/agent-chat"
+                ref:
+                  type: string
+                  description: Branch or tag
+                  example: "development"
+                variables:
+                  type: object
+                  additionalProperties:
+                    type: string
+                  example:
+                    DEPLOY_ENV: "staging"
+                    AGENT_ID: "agent-chat"
+      responses:
+        '202':
+          description: Pipeline triggered
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  pipeline_id:
+                    type: integer
+                  web_url:
+                    type: string
+                    format: uri
+                  status:
+                    type: string
+
+  /pipelines/multi-trigger:
+    post:
+      tags: [pipelines]
+      summary: Trigger pipelines for multiple projects
+      description: |
+        Coordinate deployment across multiple projects.
+        Example: Deploy all agents (chat, studio, brain, mesh, etc.)
+      operationId: multiTriggerPipelines
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - projects
+              properties:
+                projects:
+                  type: array
+                  items:
+                    type: object
+                    required:
+                      - project
+                      - ref
+                    properties:
+                      project:
+                        type: string
+                      ref:
+                        type: string
+                      variables:
+                        type: object
+                strategy:
+                  type: string
+                  enum: [parallel, sequential]
+                  default: parallel
+      responses:
+        '202':
+          description: Pipelines triggered
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  job_id:
+                    type: string
+                  pipelines:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        project:
+                          type: string
+                        pipeline_id:
+                          type: integer
+                        web_url:
+                          type: string
+
+  /packages/publish:
+    post:
+      tags: [packages]
+      summary: Publish to GitLab package registry
+      description: Publish npm or PyPI package to gitlab.bluefly.io
+      operationId: publishPackage
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - project
+                - package_type
+                - version
+              properties:
+                project:
+                  type: string
+                  example: "llm/npm/agent-chat"
+                package_type:
+                  type: string
+                  enum: [npm, pypi, generic]
+                version:
+                  type: string
+                  example: "0.1.0"
+                build_ref:
+                  type: string
+                  description: Git ref to build from
+      responses:
+        '202':
+          description: Package build started
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  job_id:
+                    type: string
+                  pipeline_url:
+                    type: string
+
+  /packages/list:
+    get:
+      tags: [packages]
+      summary: List GitLab packages
+      description: Query gitlab.bluefly.io package registry
+      operationId: listPackages
+      parameters:
+        - name: scope
+          in: query
+          schema:
+            type: string
+            example: "@llm"
+        - name: package_type
+          in: query
+          schema:
+            type: string
+            enum: [npm, pypi, generic]
+      responses:
+        '200':
+          description: Package list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    name:
+                      type: string
+                    version:
+                      type: string
+                    package_type:
+                      type: string
+                    created_at:
+                      type: string
+                    package_url:
+                      type: string
+
+  /deployments/orchestrate:
+    post:
+      tags: [deployments]
+      summary: Orchestrate multi-project deployment
+      description: |
+        Deploy entire LLM platform stack:
+        1. Deploy Drupal platform
+        2. Deploy all agents (chat, studio, brain, etc.)
+        3. Deploy workflows (langflow, workflow-engine)
+        4. Configure networking and ingress
+        5. Verify health and start monitoring
+      operationId: orchestrateDeployment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - environment
+              properties:
+                environment:
+                  type: string
+                  enum: [staging, production]
+                projects:
+                  type: array
+                  items:
+                    type: string
+                  description: Specific projects (or all if empty)
+                helm_values:
+                  type: object
+                  description: Global Helm overrides
+      responses:
+        '202':
+          description: Deployment orchestration started
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  orchestration_id:
+                    type: string
+                  status_url:
+                    type: string
+                  estimated_duration:
+                    type: string
+                  projects:
+                    type: array
+                    items:
+                      type: object
+
+components:
+  securitySchemes:
+    OAuth2:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: https://gitlab.bluefly.io/oauth/token
+          scopes:
+            api: Full API access
+    
+    GitLabToken:
+      type: http
+      scheme: bearer
+      bearerFormat: GitLab Personal Access Token
+    
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-Drupal-API-Key
+  
+  schemas:
+    ContentCreateRequest:
+      type: object
+      required:
+        - type
+        - title
+      properties:
+        type:
+          type: string
+        title:
+          type: string
+        body:
+          type: object
+        fields:
+          type: object
+        agent_context:
+          type: object
+          properties:
+            agent_id:
+              type: string
+            session_id:
+              type: string
+            task_id:
+              type: string
+
+    ContentResponse:
+      type: object
+      properties:
+        nid:
+          type: integer
+        uuid:
+          type: string
+        type:
+          type: string
+        title:
+          type: string
+        url:
+          type: string
+        api_url:
+          type: string
+        created:
+          type: string
+        changed:
+          type: string
+
