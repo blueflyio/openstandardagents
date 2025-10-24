@@ -1,0 +1,346 @@
+# OSSA Drupal Integration Example
+# GitLab ML Recommendation Engine
+# RAG-Powered Customer Success Agent
+
+ossaVersion: "1.0"
+
+agent:
+  id: gitlab-ml-recommender
+  name: "GitLab ML Recommendation Engine"
+  version: "1.0.0"
+  role: "integration"
+  
+  description: |
+    AI-powered customer success recommendation agent using RAG (Retrieval-Augmented Generation).
+    
+    Pipeline:
+    1. Semantic search in Qdrant for similar successful cases
+    2. GPT-4 generation with context
+    3. Priority ranking based on customer health
+    
+    Integrates with:
+    - GitLabMlRecommendationsService (RAG generation)
+    - GitLabMlDashboardService (health metrics)
+    - QdrantVectorService (semantic search)
+  
+  runtime:
+    type: "docker"
+    image: "llm-platform/ml-recommender:1.0.0"
+    
+    requirements:
+      php: ">=8.1"
+      node: ">=20.0.0"
+      packages:
+        - "guzzlehttp/guzzle"
+        - "symfony/http-client"
+    
+    resources:
+      cpu: "1000m"
+      memory: "2Gi"
+    
+    health_check:
+      type: "http"
+      endpoint: "/health"
+      port: 8080
+
+  capabilities:
+    # Capability 1: Generate Recommendations (RAG Pipeline)
+    - name: generate_recommendations
+      description: "Generate AI recommendations using RAG pipeline (Qdrant semantic search + GPT-4)"
+      
+      input_schema:
+        type: object
+        required: [customer_id]
+        properties:
+          customer_id:
+            type: string
+            format: uuid
+            description: "Customer UUID from GitLab"
+          context:
+            type: string
+            enum: [health, churn, engagement, technical]
+            description: "Recommendation context filter"
+          limit:
+            type: integer
+            default: 10
+            minimum: 1
+            maximum: 50
+            description: "Maximum number of recommendations"
+      
+      output_schema:
+        type: object
+        required: [customerId, recommendations, generatedAt]
+        properties:
+          customerId:
+            type: string
+            format: uuid
+          recommendations:
+            type: array
+            items:
+              type: object
+              required: [id, title, priority, category]
+              properties:
+                id:
+                  type: string
+                  format: uuid
+                title:
+                  type: string
+                  maxLength: 255
+                description:
+                  type: string
+                priority:
+                  type: string
+                  enum: [critical, high, medium, low]
+                category:
+                  type: string
+                  enum: [engagement, technical, health, success]
+                actionItems:
+                  type: array
+                  items:
+                    type: string
+                rationale:
+                  type: string
+                similarCases:
+                  type: array
+                  items:
+                    type: object
+          generatedAt:
+            type: string
+            format: date-time
+      
+      examples:
+        - name: "Health context recommendations"
+          input:
+            customer_id: "123e4567-e89b-12d3-a456-426614174000"
+            context: "health"
+            limit: 5
+          output:
+            customerId: "123e4567-e89b-12d3-a456-426614174000"
+            recommendations:
+              - id: "rec-001"
+                title: "Schedule health check meeting"
+                description: "Conduct comprehensive health review with technical team"
+                priority: "high"
+                category: "engagement"
+                actionItems:
+                  - "Send meeting invitation for next week"
+                  - "Prepare health check questionnaire"
+                  - "Review usage metrics before meeting"
+                rationale: "Early issue identification strengthens customer relationships"
+            generatedAt: "2025-10-24T12:00:00Z"
+      
+      timeout_seconds: 30
+      retry_policy:
+        max_attempts: 3
+        backoff: "exponential"
+
+    # Capability 2: Get Dashboard Overview
+    - name: get_dashboard_overview
+      description: "Retrieve customer health dashboard data aggregated from TimescaleDB"
+      
+      input_schema:
+        type: object
+        required: [time_range]
+        properties:
+          time_range:
+            type: string
+            enum: ["24h", "7d", "30d", "90d"]
+            description: "Time range for dashboard data"
+      
+      output_schema:
+        type: object
+        required: [totalCustomers, healthDistribution, churnRisks]
+        properties:
+          totalCustomers:
+            type: integer
+          healthDistribution:
+            type: object
+            properties:
+              healthy:
+                type: integer
+              warning:
+                type: integer
+              critical:
+                type: integer
+          churnRisks:
+            type: object
+            properties:
+              low:
+                type: integer
+              medium:
+                type: integer
+              high:
+                type: integer
+              critical:
+                type: integer
+          activeAlerts:
+            type: integer
+          recommendations:
+            type: integer
+          trends:
+            type: object
+            properties:
+              healthChange:
+                type: number
+              churnChange:
+                type: number
+              engagementChange:
+                type: number
+      
+      timeout_seconds: 10
+
+    # Capability 3: Get Active Alerts
+    - name: get_active_alerts
+      description: "Retrieve active customer health alerts"
+      
+      input_schema:
+        type: object
+        properties:
+          severity:
+            type: string
+            enum: [critical, high, medium, low]
+          status:
+            type: string
+            enum: [active, acknowledged, resolved]
+            default: "active"
+      
+      output_schema:
+        type: object
+        required: [alerts, total]
+        properties:
+          alerts:
+            type: array
+            items:
+              type: object
+              properties:
+                id:
+                  type: string
+                customerId:
+                  type: string
+                customerName:
+                  type: string
+                severity:
+                  type: string
+                type:
+                  type: string
+                message:
+                  type: string
+                status:
+                  type: string
+                createdAt:
+                  type: string
+                  format: date-time
+          total:
+            type: integer
+
+  llm:
+    provider: "openai"
+    model: "gpt-4"
+    temperature: 0.7
+    maxTokens: 2000
+
+  tools:
+    - type: "mcp"
+      server: "qdrant-mcp"
+      namespace: "default"
+      capabilities:
+        - semantic_search
+        - vector_retrieval
+        - get_point
+        - search_points
+    
+    - type: "http"
+      server: "agent-router"
+      endpoint: "http://agent-router:4000"
+      capabilities:
+        - llm_generation
+        - embedding_generation
+
+  protocols:
+    - type: "http"
+      version: "1.1"
+      endpoint: "/api/v1/recommendations"
+    
+    - type: "sse"
+      version: "1.0"
+      endpoint: "/api/v1/stream"
+    
+    - type: "json-rpc"
+      version: "2.0"
+      endpoint: "/api/v1/rpc"
+
+  compliance:
+    frameworks: ["SOC2", "HIPAA"]
+    dataClassification: "confidential"
+    retentionPolicy: "7years"
+
+extensions:
+  drupal:
+    module: "ai_agent_orchestra"
+    service: "ai_agent_orchestra.gitlab_ml_recommendations"
+    
+    dependencies:
+      - "ai_agents"
+      - "ai_provider_langchain"
+      - "ai_provider_openai"
+    
+    database:
+      tables:
+        - "gitlab_ml_metrics"
+        - "gitlab_ml_alerts"
+        - "gitlab_ml_recommendations"
+      schema_version: "1.0.0"
+    
+    rag_pipeline:
+      vector_db: "qdrant"
+      collection: "gitlab_customer_embeddings"
+      embedding_model: "text-embedding-ada-002"
+      similarity_limit: 5
+      similarity_threshold: 0.7
+      llm_service: "http://agent-router:4000"
+    
+    monitoring:
+      metrics: true
+      tracing: true
+      logging: true
+      opentelemetry:
+        endpoint: "http://agent-tracer:4318"
+        service_name: "gitlab-ml-recommender"
+        headers:
+          "x-service-version": "1.0.0"
+    
+    caching:
+      enabled: true
+      backend: "redis"
+      ttl: 3600
+      tags:
+        - "gitlab_ml"
+        - "recommendations"
+    
+    permissions:
+      - "administer ai agents"
+      - "execute ai agents"
+      - "view ai agent results"
+    
+    a2a_config:
+      enabled: true
+      protocol: "json-rpc"
+      endpoints:
+        - "http://compliance-validator:8080/a2a"
+        - "http://cost-optimizer:8080/a2a"
+      authentication:
+        type: "bearer"
+        secretRef:
+          name: "drupal-a2a-credentials"
+          key: "bearer-token"
+    
+    event_bus:
+      enabled: true
+      topics:
+        - "customer.health.changed"
+        - "recommendations.generated"
+        - "alerts.created"
+        - "metrics.updated"
+      redis:
+        host: "redis://buildkit-redis:16379"
+        db: 0

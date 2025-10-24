@@ -1,0 +1,266 @@
+# OSSA Drupal Extension Schema
+# Extension specification for Drupal LLM Platform deployment
+# Compatible with Drupal 10+ and llm-platform modules
+
+apiVersion: ossa/v1
+kind: ExtensionSchema
+metadata:
+  name: drupal-extension
+  version: v1
+  namespace: ossa/extensions
+  
+spec:
+  platform: drupal
+  compatibleWith:
+    - "drupal/11"
+    - "drupal/10"
+  
+  description: "Extension schema for Drupal LLM Platform agent deployment and orchestration"
+
+  additionalFields:
+    module:
+      type: string
+      required: true
+      pattern: "^[a-z][a-z0-9_]*$"
+      description: "Drupal module that owns this agent"
+      examples:
+        - "ai_agents"
+        - "ai_agent_orchestra"
+        - "ai_agent_marketplace"
+
+    service:
+      type: string
+      required: true
+      pattern: "^[a-z][a-z0-9_]*\\.[a-z][a-z0-9_]*$"
+      description: "Drupal service ID for agent execution (module.service format)"
+      examples:
+        - "ai_agents.executor"
+        - "ai_agent_orchestra.gitlab_ml_recommendations"
+        - "ai_agent_marketplace.discovery"
+
+    dependencies:
+      type: array
+      items:
+        type: string
+        pattern: "^[a-z][a-z0-9_]*$"
+      description: "Required Drupal modules (must be installed)"
+      examples:
+        - ["ai_agents", "ai_provider_langchain", "ai_provider_openai"]
+
+    database:
+      type: object
+      properties:
+        tables:
+          type: array
+          items:
+            type: string
+          description: "Required database tables (without prefix)"
+          examples:
+            - ["gitlab_ml_metrics", "gitlab_ml_alerts"]
+        migrations:
+          type: array
+          items:
+            type: string
+          description: "Required migration IDs"
+        schema_version:
+          type: string
+          description: "Database schema version"
+
+    rag_pipeline:
+      type: object
+      description: "RAG (Retrieval-Augmented Generation) pipeline configuration"
+      properties:
+        vector_db:
+          type: string
+          enum: ["qdrant", "weaviate", "pinecone"]
+          default: "qdrant"
+          description: "Vector database for semantic search"
+        collection:
+          type: string
+          description: "Vector collection name"
+        embedding_model:
+          type: string
+          default: "text-embedding-ada-002"
+          description: "Embedding model for vector generation"
+        similarity_limit:
+          type: integer
+          default: 5
+          minimum: 1
+          maximum: 100
+          description: "Number of similar documents to retrieve"
+        similarity_threshold:
+          type: number
+          default: 0.7
+          minimum: 0
+          maximum: 1
+          description: "Minimum similarity score (0-1)"
+        llm_service:
+          type: string
+          format: uri
+          description: "LLM service endpoint for generation"
+          examples:
+            - "http://agent-router:4000"
+            - "http://localhost:3007"
+
+    monitoring:
+      type: object
+      description: "Observability and monitoring configuration"
+      properties:
+        metrics:
+          type: boolean
+          default: true
+          description: "Enable Prometheus metrics"
+        tracing:
+          type: boolean
+          default: true
+          description: "Enable OpenTelemetry tracing"
+        logging:
+          type: boolean
+          default: true
+          description: "Enable structured logging"
+        opentelemetry:
+          type: object
+          properties:
+            endpoint:
+              type: string
+              format: uri
+              description: "OpenTelemetry collector endpoint"
+              examples:
+                - "http://agent-tracer:4318"
+            service_name:
+              type: string
+              description: "Service name for tracing"
+            headers:
+              type: object
+              additionalProperties:
+                type: string
+              description: "Additional headers for OTLP export"
+
+    caching:
+      type: object
+      description: "Drupal caching configuration for agent results"
+      properties:
+        enabled:
+          type: boolean
+          default: true
+        backend:
+          type: string
+          enum: ["redis", "database", "memory"]
+          default: "redis"
+        ttl:
+          type: integer
+          description: "Cache TTL in seconds"
+          default: 3600
+        tags:
+          type: array
+          items:
+            type: string
+          description: "Cache tags for invalidation"
+
+    permissions:
+      type: array
+      items:
+        type: string
+      description: "Required Drupal permissions"
+      examples:
+        - ["administer ai agents", "execute ai agents"]
+
+    a2a_config:
+      type: object
+      description: "Agent-to-Agent communication configuration"
+      properties:
+        enabled:
+          type: boolean
+          default: false
+        protocol:
+          type: string
+          enum: ["json-rpc", "http", "sse"]
+          default: "json-rpc"
+        endpoints:
+          type: array
+          items:
+            type: string
+            format: uri
+        authentication:
+          type: object
+          properties:
+            type:
+              type: string
+              enum: ["bearer", "oauth2", "mtls"]
+            secretRef:
+              type: object
+              properties:
+                name:
+                  type: string
+                key:
+                  type: string
+
+    event_bus:
+      type: object
+      description: "Event bus integration for pub/sub"
+      properties:
+        enabled:
+          type: boolean
+          default: false
+        topics:
+          type: array
+          items:
+            type: string
+          description: "Event topics to subscribe/publish"
+        redis:
+          type: object
+          properties:
+            host:
+              type: string
+              format: uri
+            db:
+              type: integer
+              default: 0
+
+  validation:
+    required:
+      - module
+      - service
+    
+    customRules:
+      - name: "validate-drupal-service-format"
+        rule: "Service ID must follow module.service naming convention"
+        
+      - name: "validate-module-exists"
+        rule: "Module specified must be installed in Drupal"
+        
+      - name: "validate-dependencies"
+        rule: "All dependencies must be installed Drupal modules"
+        
+      - name: "validate-rag-pipeline"
+        rule: "If rag_pipeline specified, vector_db and collection are required"
+        
+      - name: "validate-monitoring-endpoint"
+        rule: "If monitoring.tracing is true, opentelemetry.endpoint must be provided"
+
+  examples:
+    - name: "GitLab ML Recommendation Agent"
+      description: "RAG-powered customer success agent"
+      manifest:
+        drupal:
+          module: "ai_agent_orchestra"
+          service: "ai_agent_orchestra.gitlab_ml_recommendations"
+          dependencies:
+            - "ai_agents"
+            - "ai_provider_langchain"
+          rag_pipeline:
+            vector_db: "qdrant"
+            collection: "gitlab_customer_embeddings"
+            similarity_limit: 5
+            llm_service: "http://agent-router:4000"
+          monitoring:
+            metrics: true
+            tracing: true
+            opentelemetry:
+              endpoint: "http://agent-tracer:4318"
+
+  migration:
+    fromVersion: "none"
+    toVersion: "v1"
+    breakingChanges: []
+    migrationGuide: "https://ossa.dev/docs/drupal/migration"

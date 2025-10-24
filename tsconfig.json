@@ -2,14 +2,17 @@
   "compilerOptions": {
     "target": "ES2022",
     "module": "commonjs",
+    "moduleResolution": "node",
     "lib": ["ES2022"],
     "outDir": "./dist",
-    "rootDir": "./cli",
+    "rootDir": "./src",
     "baseUrl": ".",
     "paths": {
-      "@/*": [
-        "cli/*"
-      ]
+      "@/*": ["src/*"],
+      "@services/*": ["src/services/*"],
+      "@repositories/*": ["src/repositories/*"],
+      "@types/*": ["src/types/*"],
+      "@utils/*": ["src/utils/*"]
     },
     "strict": true,
     "esModuleInterop": true,
@@ -19,22 +22,10 @@
     "declaration": true,
     "declarationMap": true,
     "sourceMap": true,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
     "types": ["node", "jest"]
   },
-  "include": [
-    "cli/**/*"
-  ],
-  "exclude": [
-    "node_modules",
-    "dist",
-    "coverage", 
-    "tests",
-    "**/*.test.ts",
-    "**/*.spec.ts",
-    "src/mcp",
-    "src/server/app.ts",
-    "src/server/routes",
-    "src/server/middleware",
-    "src/server/services"
-  ]
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist", "coverage", "tests", "cli", "**/*.test.ts", "**/*.spec.ts"]
 }
