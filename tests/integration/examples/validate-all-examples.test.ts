@@ -96,10 +96,7 @@ describe('All Examples Validation', () => {
     });
 
     it('should have kagent examples', () => {
-      const kagentDir = path.resolve(
-        __dirname,
-        '../../../examples/kagent'
-      );
+      const kagentDir = path.resolve(__dirname, '../../../examples/kagent');
       expect(fs.existsSync(kagentDir)).toBe(true);
     });
 
