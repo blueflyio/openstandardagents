@@ -7,9 +7,9 @@
  *   k6 run --vus 100 --duration 5m loadtest/k6-scenarios.js
  */
 
-import http from 'k6/http';
 import { check, sleep } from 'k6';
-import { Counter, Trend, Rate } from 'k6/metrics';
+import http from 'k6/http';
+import { Counter, Rate, Trend } from 'k6/metrics';
 
 // Custom Metrics
 const postsGenerated = new Counter('posts_generated');
