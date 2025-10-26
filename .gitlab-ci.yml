@@ -3,6 +3,7 @@ stages:
   - test
   - build
   - deploy
+  - promote
   - release
 variables:
   NODE_VERSION: '20'
@@ -132,3 +133,27 @@ lint:
     - npm install
     - npm run lint || true
   allow_failure: true
+
+promote:merge-to-main:
+  stage: promote
+  image: node:${NODE_VERSION}
+  before_script:
+    - apt-get update && apt-get install -y git
+    - git config --global user.email "ci@gitlab.bluefly.io"
+    - git config --global user.name "GitLab CI"
+  script:
+    - echo "Merging development to main and creating release tag..."
+    - git fetch origin
+    - git checkout main
+    - git merge origin/development --no-ff -m "chore: merge development to main for v${OSSA_VERSION} release"
+    - git tag -a "v${OSSA_VERSION}" -m "Release v${OSSA_VERSION} - OSSA Specification"
+    - git push origin main
+    - git push origin "v${OSSA_VERSION}"
+  rules:
+    - if: $CI_COMMIT_BRANCH == "development"
+      when: manual
+  needs:
+    - validate:openapi
+    - validate:schemas
+    - test:unit
+    - lint
