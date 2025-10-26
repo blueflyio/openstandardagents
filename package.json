@@ -49,7 +49,7 @@
   "homepage": "https://gitlab.bluefly.io/llm/openapi-ai-agents-standard",
   "scripts": {
     "build": "tsc && npm run copy-assets",
-    "copy-assets": "cp -r spec dist/ && cp -r schemas dist/",
+    "copy-assets": "cp -r spec dist/",
     "dev": "tsc --watch",
     "clean": "rm -rf dist coverage",
     "test": "jest",
