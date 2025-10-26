@@ -33,7 +33,7 @@
       "import": "./dist/types/index.js",
       "require": "./dist/types/index.js"
     },
-    "./schema": "./spec/ossa-1.0.schema.json"
+    "./schema": "./spec/v1.0/ossa-1.0.schema.json"
   },
   "publishConfig": {
     "access": "public",
@@ -63,10 +63,10 @@
     "lint:fix": "eslint src tests --ext .ts --fix",
     "format": "prettier --write \"src/**/*.ts\" \"tests/**/*.ts\"",
     "format:check": "prettier --check \"src/**/*.ts\" \"tests/**/*.ts\"",
-    "validate:schema": "ajv validate -s spec/ossa-1.0.schema.json",
+    "validate:schema": "ajv validate -s spec/v1.0/ossa-1.0.schema.json",
     "validate:examples": "node -r ts-node/register tests/integration/examples/validate-all-examples.test.ts",
-    "gen:types": "json-schema-to-typescript spec/ossa-1.0.schema.json > src/types/generated/ossa-v1.types.ts",
-    "gen:zod": "json-schema-to-zod spec/ossa-1.0.schema.json > src/types/generated/ossa-v1.zod.ts",
+    "gen:types": "json-schema-to-typescript spec/v1.0/ossa-1.0.schema.json > src/types/generated/ossa-v1.types.ts",
+    "gen:zod": "json-schema-to-zod spec/v1.0/ossa-1.0.schema.json > src/types/generated/ossa-v1.zod.ts",
     "gen:all": "npm run gen:types && npm run gen:zod",
     "cli:legacy": "node cli/bin/ossa --help",
     "prepublishOnly": "npm run clean && npm run build && npm run test && npm run lint"
