@@ -1,0 +1,74 @@
+# OSSA - npm Package Exclusions
+# Only include what's needed for the npm package
+
+# Development directories
+.agents/
+.cursor/
+.claude/
+.vscode/
+.gitlab/
+.git/
+
+# Build artifacts (generated during prepublishOnly)
+coverage/
+*.log
+*.tsbuildinfo
+
+# Test files
+tests/
+**/*.test.ts
+**/*.spec.ts
+playwright.config.ts
+jest.config.ts
+
+# Source files (we ship dist/)
+src/
+tsconfig.json
+tsconfig.test.json
+
+# CLI source (legacy)
+cli/
+
+# Development files
+.env
+.env.*
+!.env.example
+.DS_Store
+*.swp
+*.swo
+*~
+
+# GitLab CI/CD
+.gitlab-ci.yml
+lefthook.yml
+
+# Documentation (keep README, LICENSE, CHANGELOG)
+docs/integration/
+CLEANUP_PLAN.md
+
+# Tools and scripts
+tools/
+generate-all-services.ts
+pyrightconfig.json
+
+# Duplicate directories
+ossa-standard/
+
+# Hooks
+hooks/
+
+# Public folder (GitLab Pages only)
+public/
+
+# Keep these for npm package:
+# - spec/ (specification files)
+# - schemas/ (JSON schemas)
+# - examples/ (reference examples)
+# - openapi/ (OpenAPI specs)
+# - templates/ (agent templates)
+# - dist/ (compiled code)
+# - bin/ (CLI entry point)
+# - README.md
+# - LICENSE
+# - CHANGELOG.md
+# - package.json

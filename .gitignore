@@ -13,10 +13,23 @@ yarn-debug.log*
 yarn-error.log*
 lerna-debug.log*
 
-# Package manager lock files
-package-lock.json
+# Package manager lock files (keep package-lock.json for reproducible builds)
 yarn.lock
 pnpm-lock.yaml
+
+# =============================================================================
+# Build Artifacts
+# =============================================================================
+
+# Compiled output
+dist/
+coverage/
+*.tsbuildinfo
+
+# Development directories (not part of npm package)
+.agents/
+.cursor/
+.claude/
 
 # Python dependencies
 __pycache__/
