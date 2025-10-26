@@ -134,7 +134,7 @@ lint:
     - npm run lint || true
   allow_failure: true
 
-promote:merge-to-main:
+promote-to-main:
   stage: promote
   image: node:${NODE_VERSION}
   before_script:
