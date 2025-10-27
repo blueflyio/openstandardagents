@@ -180,7 +180,14 @@ ossa migrate your-agent-v0.1.9.yaml --output your-agent-v1.0.yaml
 
 See full guide: [docs/migration-v0.1.9-to-v1.0.md](docs/migration-v0.1.9-to-v1.0.md)
 
+<<<<<<< HEAD
 ### Upgrading to v0.1.9 from v0.1.8
+=======
+**For documentation**:
+- Comprehensive guides → GitLab Wiki (https://app-4001.cloud.bluefly.io/llm/openapi-ai-agents-standard/-/wikis/home)
+- Core specification docs → `docs/` directory
+- API documentation → GitLab Pages (automated)
+>>>>>>> fix/remove-old-gitlab-urls
 
 **New Features:**
 

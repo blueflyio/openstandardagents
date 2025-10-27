@@ -570,7 +570,7 @@ release:production:
       ### Usage
       ```yaml
       include:
-        - component: gitlab.bluefly.io/llm/gitlab_components/workflow/golden@$PROJECT_VERSION
+        - component: app-4001.cloud.bluefly.io/llm/gitlab_components/workflow/golden@$PROJECT_VERSION
       ```
   when: manual
   rules:
