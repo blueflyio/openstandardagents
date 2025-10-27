@@ -1,4 +1,4 @@
-# OSSA Specification v1.0
+# OSSA Specification v0.2.2
 
 ## Open Standard for Scalable Agents
 
@@ -6,9 +6,9 @@
 
 ### Specification Version
 
-- **Version**: 1.0.0
-- **Status**: Stable
-- **Release Date**: 2025-10-26
+- **Version**: 0.2.2
+- **Status**: Beta
+- **Release Date**: 2025-10-27
 - **License**: Apache 2.0
 
 ---
