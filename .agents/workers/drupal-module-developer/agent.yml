@@ -1,0 +1,493 @@
+ossaVersion: "1.0"
+agent:
+  id: drupal-module-developer
+  name: Drupal Module Developer
+  version: 0.1.9
+  description: Advanced Drupal module development specialist with AI-powered code
+    generation and best practices
+  role: custom
+  tags:
+    - worker
+    - drupal-development
+    - cms
+    - drupal-platform
+  runtime:
+    type: docker
+    resources:
+      cpu: 2
+      memory: 4Gi
+  capabilities:
+    - name: generate_module_scaffold
+      description: Generate complete Drupal module scaffold with best practices
+      input_schema:
+        type: object
+        required:
+          - moduleName
+          - moduleType
+        properties:
+          moduleName:
+            type: string
+          moduleType:
+            type: string
+            enum:
+              - custom_entity
+              - content_type
+              - api_integration
+              - utility
+              - plugin_system
+              - workflow
+          moduleInfo:
+            type: object
+            properties:
+              description:
+                type: string
+              package:
+                type: string
+              version:
+                type: string
+              dependencies:
+                type: array
+              drupalVersion:
+                type: string
+                default: ^10 || ^11
+          features:
+            type: object
+            properties:
+              entities:
+                type: array
+              plugins:
+                type: array
+              services:
+                type: array
+              forms:
+                type: array
+              controllers:
+                type: array
+              tests:
+                type: boolean
+                default: true
+              configuration:
+                type: boolean
+                default: true
+              permissions:
+                type: array
+              routing:
+                type: array
+      output_schema:
+        type: object
+        properties:
+          moduleId:
+            type: string
+          files:
+            type: array
+            items:
+              type: object
+              properties:
+                path:
+                  type: string
+                content:
+                  type: string
+                type:
+                  type: string
+                purpose:
+                  type: string
+          structure:
+            type: object
+            properties:
+              directories:
+                type: array
+              configFiles:
+                type: array
+              phpFiles:
+                type: array
+              templateFiles:
+                type: array
+              jsFiles:
+                type: array
+              cssFiles:
+                type: array
+          documentation:
+            type: object
+            properties:
+              readme:
+                type: string
+              apiDocs:
+                type: string
+              installInstructions:
+                type: string
+              exampleUsage:
+                type: string
+      timeout_seconds: 300000
+    - name: create_custom_entity
+      description: Generate complete custom entity with bundle support, fields, and views
+      input_schema:
+        type: object
+        required:
+          - entityType
+          - entityLabel
+        properties:
+          entityType:
+            type: string
+          entityLabel:
+            type: string
+          entityConfig:
+            type: object
+            properties:
+              hasBundle:
+                type: boolean
+                default: false
+              isRevisionable:
+                type: boolean
+                default: false
+              isTranslatable:
+                type: boolean
+                default: false
+              hasOwner:
+                type: boolean
+                default: true
+              isPublishable:
+                type: boolean
+                default: false
+              baseFields:
+                type: array
+              bundleFields:
+                type: array
+          permissions:
+            type: array
+            items:
+              type: string
+              enum:
+                - view
+                - create
+                - edit
+                - delete
+                - administer
+          viewModes:
+            type: array
+            items:
+              type: object
+              properties:
+                name:
+                  type: string
+                label:
+                  type: string
+                settings:
+                  type: object
+      output_schema:
+        type: object
+        properties:
+          entityId:
+            type: string
+          entityClass:
+            type: string
+          generatedFiles:
+            type: array
+            items:
+              type: object
+              properties:
+                file:
+                  type: string
+                class:
+                  type: string
+                purpose:
+                  type: string
+                content:
+                  type: string
+          configuration:
+            type: array
+            items:
+              type: object
+              properties:
+                configName:
+                  type: string
+                configData:
+                  type: object
+          routes:
+            type: array
+            items:
+              type: object
+              properties:
+                routeName:
+                  type: string
+                path:
+                  type: string
+                controller:
+                  type: string
+          forms:
+            type: array
+            items:
+              type: object
+              properties:
+                formClass:
+                  type: string
+                formType:
+                  type: string
+      timeout_seconds: 600000
+    - name: build_api_endpoint
+      description: Create REST API endpoints with proper serialization and authentication
+      input_schema:
+        type: object
+        required:
+          - endpointName
+          - resourceType
+        properties:
+          endpointName:
+            type: string
+          resourceType:
+            type: string
+          apiConfig:
+            type: object
+            properties:
+              version:
+                type: string
+                default: v1
+              methods:
+                type: array
+                default:
+                  - GET
+                  - POST
+                  - PATCH
+                  - DELETE
+              authentication:
+                type: string
+                enum:
+                  - none
+                  - basic
+                  - oauth
+                  - jwt
+                  - api_key
+                default: oauth
+              serialization:
+                type: string
+                enum:
+                  - json
+                  - hal_json
+                  - xml
+                default: json
+              caching:
+                type: boolean
+                default: true
+              rateLimit:
+                type: object
+          fields:
+            type: array
+            items:
+              type: object
+              properties:
+                name:
+                  type: string
+                type:
+                  type: string
+                required:
+                  type: boolean
+                validation:
+                  type: array
+          security:
+            type: object
+            properties:
+              permissions:
+                type: array
+              accessChecks:
+                type: array
+              sanitization:
+                type: boolean
+                default: true
+      output_schema:
+        type: object
+        properties:
+          apiId:
+            type: string
+          endpoints:
+            type: array
+            items:
+              type: object
+              properties:
+                method:
+                  type: string
+                path:
+                  type: string
+                controller:
+                  type: string
+                permissions:
+                  type: array
+          resourceFiles:
+            type: array
+            items:
+              type: object
+              properties:
+                filename:
+                  type: string
+                content:
+                  type: string
+                type:
+                  type: string
+          openApiSpec:
+            type: object
+          documentation:
+            type: string
+      timeout_seconds: 900000
+    - name: generate_form_api
+      description: Create complex Drupal forms with validation and theming
+      input_schema:
+        type: object
+        required:
+          - formId
+          - formType
+        properties:
+          formId:
+            type: string
+          formType:
+            type: string
+            enum:
+              - config
+              - entity
+              - custom
+              - wizard
+              - ajax
+          formElements:
+            type: array
+            items:
+              type: object
+              properties:
+                name:
+                  type: string
+                type:
+                  type: string
+                title:
+                  type: string
+                required:
+                  type: boolean
+                validation:
+                  type: array
+                ajax:
+                  type: boolean
+                states:
+                  type: object
+          formBehavior:
+            type: object
+            properties:
+              ajax:
+                type: boolean
+                default: false
+              clientValidation:
+                type: boolean
+                default: true
+              multiStep:
+                type: boolean
+                default: false
+              fileUploads:
+                type: boolean
+                default: false
+              entityReference:
+                type: boolean
+                default: false
+      output_schema:
+        type: object
+        properties:
+          formId:
+            type: string
+          formClass:
+            type: string
+          formFile:
+            type: string
+          templateFile:
+            type: string
+          jsFile:
+            type: string
+          cssFile:
+            type: string
+          validationMethods:
+            type: array
+          submitHandlers:
+            type: array
+      timeout_seconds: 450000
+    - name: create_plugin_system
+      description: Generate plugin system with discovery, managers, and base classes
+      input_schema:
+        type: object
+        required:
+          - pluginType
+          - pluginId
+        properties:
+          pluginType:
+            type: string
+          pluginId:
+            type: string
+          pluginConfig:
+            type: object
+            properties:
+              discoveryType:
+                type: string
+                enum:
+                  - annotation
+                  - yaml
+                  - hook
+                default: annotation
+              derivativeSupport:
+                type: boolean
+                default: false
+              cacheSupport:
+                type: boolean
+                default: true
+              alterSupport:
+                type: boolean
+                default: true
+          pluginInterface:
+            type: object
+            properties:
+              methods:
+                type: array
+              properties:
+                type: array
+          examplePlugins:
+            type: array
+            items:
+              type: object
+              properties:
+                id:
+                  type: string
+                label:
+                  type: string
+                implementation:
+                  type: string
+      output_schema:
+        type: object
+        properties:
+          pluginSystemId:
+            type: string
+          generatedFiles:
+            type: array
+            items:
+              type: object
+              properties:
+                type:
+                  type: string
+                class:
+                  type: string
+                file:
+                  type: string
+                purpose:
+                  type: string
+          documentation:
+            type: string
+          examples:
+            type: array
+      timeout_seconds: 600000
+  policies:
+    audit: true
+  integration:
+    protocol: http
+    endpoints:
+      base_url: http://localhost:3000
+      health: /health
+      metrics: /metrics
+    auth:
+      type: api-key
+  monitoring:
+    traces: true
+    metrics: true
+    logs: true
+  metadata:
+    author: Bluefly Drupal Platform Team
+    license: Apache-2.0
+    repository: https://app-4001.cloud.bluefly.io/llm/drupal-agents

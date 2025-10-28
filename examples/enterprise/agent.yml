@@ -187,11 +187,11 @@ monitoring:
       - name: pagerduty
         type: pagerduty
         config:
-          integration_key: '${PAGERDUTY_KEY}'
+          integration_key: "${PAGERDUTY_KEY}"
       - name: slack
         type: slack
         config:
-          webhook_url: '${SLACK_WEBHOOK}'
+          webhook_url: "${SLACK_WEBHOOK}"
       - name: email
         type: email
         config:
@@ -199,11 +199,11 @@ monitoring:
           from: alerts@enterprise.com
     rules:
       - name: high_error_rate
-        condition: 'error_rate > 0.05'
+        condition: "error_rate > 0.05"
         severity: critical
         channels: [pagerduty, slack]
       - name: high_latency
-        condition: 'p95_latency > 5s'
+        condition: "p95_latency > 5s"
         severity: high
         channels: [slack]
         throttle: 300
@@ -213,16 +213,16 @@ monitoring:
     patterns:
       - pattern: "\\b[A-Z]{2}\\d{2}\\s?\\d{4}\\s?\\d{4}\\s?\\d{4}\\s?\\d{4}\\b"
         name: credit_card
-        replacement: '[CC-REDACTED]'
+        replacement: "[CC-REDACTED]"
       - pattern: "\\b\\d{3}-\\d{2}-\\d{4}\\b"
         name: ssn
-        replacement: '[SSN-REDACTED]'
+        replacement: "[SSN-REDACTED]"
       - pattern: "\\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Z|a-z]{2,}\\b"
         name: email
-        replacement: '[EMAIL-REDACTED]'
+        replacement: "[EMAIL-REDACTED]"
       - pattern: "Bearer\\s+[A-Za-z0-9\\-._~\\+/]+={0,2}"
         name: bearer_token
-        replacement: '[TOKEN-REDACTED]'
+        replacement: "[TOKEN-REDACTED]"
 
   retention:
     logs:
@@ -272,7 +272,7 @@ performance:
         config:
           host: redis-primary
           port: 6379
-          password: '${REDIS_PASSWORD}'
+          password: "${REDIS_PASSWORD}"
       - name: l3_disk
         type: disk
         size: 100GB
@@ -302,11 +302,11 @@ performance:
 
   resources:
     limits:
-      cpu: '16'
+      cpu: "16"
       memory: 64Gi
       disk: 500Gi
     requests:
-      cpu: '8'
+      cpu: "8"
       memory: 32Gi
     gpu:
       required: true
@@ -314,7 +314,7 @@ performance:
       model: A100
       count: 4
       memory: 80GB
-      compute_capability: '8.0'
+      compute_capability: "8.0"
     network:
       bandwidth: 10Gbps
       timeout: 60000
@@ -344,8 +344,8 @@ performance:
       enabled: true
       update_mode: auto
       cpu:
-        min: '4'
-        max: '32'
+        min: "4"
+        max: "32"
       memory:
         min: 16Gi
         max: 128Gi
@@ -392,7 +392,7 @@ bridge:
   a2a:
     enabled: true
     card_url: https://enterprise.ai/agents/orchestrator.json
-    schema_version: '1.0'
+    schema_version: "1.0"
     capabilities_mapping:
       workflow_orchestration: orchestrate
       agent_coordination: coordinate
@@ -400,7 +400,7 @@ bridge:
   openapi:
     enabled: true
     spec_url: ./openapi.yaml
-    spec_version: '3.1'
+    spec_version: "3.1"
     servers:
       - url: https://api.enterprise.ai
         description: Production API
@@ -446,7 +446,7 @@ bridge:
     drupal:
       enabled: true
       modules: [mcp, experience_builder, eca]
-      api_version: '11.x'
+      api_version: "11.x"
     gitlab:
       enabled: true
-      ci_component: gitlab.bluefly.io/llm/golden@v0.1.0
+      ci_component: app-4001.cloud.bluefly.io/llm/golden@v0.1.0

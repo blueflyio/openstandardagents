@@ -2,9 +2,17 @@
 
 **The OpenAPI for AI Agents**
 
+<<<<<<< HEAD
 [![Version](https://img.shields.io/badge/version-0.1.9-blue.svg)](./spec/OSSA-SPECIFICATION-v0.1.9.md)
 [![License](https://img.shields.io/badge/license-Apache%202.0-green.svg)](./LICENSE)
 [![Standard](https://img.shields.io/badge/standard-specification-orange.svg)](./spec/)
+=======
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+[![npm version](https://img.shields.io/npm/v/@bluefly/open-standards-scalable-agents.svg)](https://www.npmjs.com/package/@bluefly/open-standards-scalable-agents)
+[![GitLab](https://img.shields.io/badge/GitLab-OSSA-orange.svg)](https://app-4001.cloud.bluefly.io/llm/openapi-ai-agents-standard)
+
+---
+>>>>>>> fix/remove-old-gitlab-urls
 
 ## What is OSSA?
 
@@ -19,7 +27,85 @@ OSSA (Open Standard for Scalable Agents) is a **specification standard** for def
 - ✅ **Extensible** - Supports platform-specific extensions
 - ✅ **Validated** - JSON Schema validation
 
+<<<<<<< HEAD
 ## Quick Example
+=======
+---
+
+## Core Principles
+
+1. **Specification-Driven** - OSSA defines the standard
+2. **Implementation-Agnostic** - Any runtime can implement it
+3. **Minimal Tooling** - Basic CLI for validation & generation
+4. **No Vendor Lock-in** - Deploy to any infrastructure
+
+---
+
+## Quick Start
+
+### Installation
+
+```bash
+npm install -g @bluefly/open-standards-scalable-agents
+```
+
+### Create Agent
+
+```bash
+ossa init my-agent --type worker
+cd .agents/my-agent
+```
+
+### Validate
+
+```bash
+ossa validate agent.yml
+```
+
+### Deploy
+
+Deploy to **YOUR** infrastructure:
+- AWS, GCP, Azure
+- Kubernetes, Docker
+- On-premise
+- Serverless
+
+OSSA doesn't care - it's just a standard.
+
+---
+
+## OSSA CLI (Minimal Tooling)
+
+The OSSA CLI provides basic tooling:
+
+```bash
+ossa validate <path>    # Validate against OSSA 1.0 schema
+ossa init <name>        # Initialize new agent project
+ossa generate <type>    # Generate from template
+ossa migrate <source>   # Migrate v0.1.9 → 1.0
+```
+
+**What OSSA CLI does:**
+- ✅ Validate agent manifests
+- ✅ Generate project scaffolding
+- ✅ Provide templates
+
+**What OSSA CLI does NOT do:**
+- ❌ Runtime orchestration
+- ❌ Deployment
+- ❌ Production monitoring
+- ❌ Infrastructure management
+
+For production features, see [agent-buildkit](https://app-4001.cloud.bluefly.io/llm/npm/agent-buildkit).
+
+---
+
+## Specification
+
+OSSA 1.0 Schema: [`spec/ossa-1.0.schema.json`](spec/ossa-1.0.schema.json)
+
+### Required Fields
+>>>>>>> fix/remove-old-gitlab-urls
 
 ```yaml
 apiVersion: ossa/v0.1.9
@@ -67,7 +153,68 @@ extensions:
 
 ## Getting Started
 
+<<<<<<< HEAD
 ### 1. Install OSSA CLI
+=======
+---
+
+## Examples
+
+Reference implementations: [`examples/`](examples/)
+
+- `compliance-agent.yml` - FedRAMP compliance
+- `chat-agent.yml` - Conversation agent
+- `workflow-agent.yml` - Workflow orchestration
+
+---
+
+## Ecosystem
+
+### OSSA Standard (This Repository)
+
+**Provides:**
+- JSON Schema specification
+- CLI for validation & generation
+- Reference implementations
+- Documentation
+
+**Dependencies:** 4 (ajv, ajv-formats, commander, yaml) ~1MB
+
+### Implementations
+
+**agent-buildkit** - Reference implementation with production features:
+- GitLab integration
+- Kubernetes deployment
+- Production monitoring
+- Compliance tooling
+
+See: https://app-4001.cloud.bluefly.io/llm/npm/agent-buildkit
+
+**Others welcome** - OSSA is a standard, anyone can implement it.
+
+---
+
+## Why OSSA?
+
+### For Enterprises
+
+✅ **Lightweight** - Just a standard, minimal dependencies  
+✅ **No Vendor Lock-in** - Use any implementation  
+✅ **Deploy Anywhere** - Your infrastructure, your choice  
+✅ **Clear Specification** - Well-defined contract  
+
+### For Framework Builders
+
+✅ **Standard to Build On** - Like OpenAPI for APIs  
+✅ **Reference Implementation** - agent-buildkit shows the way  
+✅ **Clear Boundaries** - Standard vs. implementation  
+
+---
+
+## Installation & Usage
+
+### As a Standard (Validation Only)
+>>>>>>> fix/remove-old-gitlab-urls
 
 ```bash
 npm install -g @ossa/cli
@@ -88,10 +235,17 @@ buildkit kagent deploy agent.ossa.yaml
 
 ## Documentation
 
+<<<<<<< HEAD
 - **[Specification v0.1.9](./spec/OSSA-SPECIFICATION-v0.1.9.md)** - Full specification
 - **[JSON Schema](./spec/ossa-v0.1.9.schema.json)** - Validation schema
 - **[Examples](./examples/)** - Reference implementations
 - **[Extensions](./schemas/extensions/)** - Platform extensions
+=======
+- **Specification**: [spec/ossa-1.0.schema.json](spec/ossa-1.0.schema.json)
+- **Examples**: [examples/](examples/)
+- **API Reference**: [docs/](docs/)
+- **GitLab Wiki**: https://app-4001.cloud.bluefly.io/llm/openapi-ai-agents-standard/-/wikis/home
+>>>>>>> fix/remove-old-gitlab-urls
 
 ## OSSA vs. Frameworks
 
