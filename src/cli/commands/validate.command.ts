@@ -44,27 +44,51 @@ export const validateCommand = new Command('validate')
 
           if (options.verbose && result.manifest) {
             console.log(chalk.gray('\nAgent Details:'));
-            console.log(`  ID: ${chalk.cyan(result.manifest.agent.id)}`);
-            console.log(`  Name: ${chalk.cyan(result.manifest.agent.name)}`);
-            console.log(
-              `  Version: ${chalk.cyan(result.manifest.agent.version)}`
-            );
-            console.log(`  Role: ${chalk.cyan(result.manifest.agent.role)}`);
-            console.log(
-              `  Capabilities: ${chalk.cyan(result.manifest.agent.capabilities.length)}`
-            );
-            console.log(
-              `  Runtime: ${chalk.cyan(result.manifest.agent.runtime.type)}`
-            );
-
-            if (result.manifest.agent.llm) {
+            const m = result.manifest as any;
+            if (m.apiVersion) {
+              console.log(`  Name: ${chalk.cyan(m.metadata.name)}`);
+              console.log(`  Version: ${chalk.cyan(m.metadata.version)}`);
+              console.log(`  Role: ${chalk.cyan(m.spec.role)}`);
+            } else if (m.agent) {
+              console.log(`  ID: ${chalk.cyan(m.agent.id)}`);
+              console.log(`  Name: ${chalk.cyan(m.agent.name)}`);
               console.log(
-                `  LLM: ${chalk.cyan(result.manifest.agent.llm.provider)} / ${chalk.cyan(result.manifest.agent.llm.model)}`
+                `  Version: ${chalk.cyan(m.agent.version)}`
+              );
+              console.log(`  Role: ${chalk.cyan(m.agent.role)}`);
+            }
+            if (m.spec) {
+              if (m.spec.tools) {
+                console.log(
+                  `  Tools: ${chalk.cyan(m.spec.tools.length)}`
+                );
+              }
+              if (m.spec.llm) {
+                console.log(
+                  `  LLM: ${chalk.cyan(m.spec.llm.provider)} / ${chalk.cyan(m.spec.llm.model)}`
+                );
+              }
+            }
+            
+            if (m.agent?.capabilities) {
+              console.log(
+                `  Capabilities: ${chalk.cyan(m.agent.capabilities.length)}`
+              );
+            }
+            if (m.agent?.runtime) {
+              console.log(
+                `  Runtime: ${chalk.cyan(m.agent.runtime.type)}`
               );
             }
 
-            if (result.manifest.extensions) {
-              const extensions = Object.keys(result.manifest.extensions);
+            if (m.agent?.llm) {
+              console.log(
+                `  LLM: ${chalk.cyan(m.agent.llm.provider)} / ${chalk.cyan(m.agent.llm.model)}`
+              );
+            }
+
+            if (m.extensions) {
+              const extensions = Object.keys(m.extensions);
               console.log(`  Extensions: ${chalk.cyan(extensions.join(', '))}`);
             }
           }
