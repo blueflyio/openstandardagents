@@ -1,0 +1,63 @@
+apiVersion: ossa/v1
+kind: Agent
+metadata:
+  name: agent-router
+  version: 1.0.0
+  description: |
+    Multi-provider LLM gateway with circuit breaker, intelligent routing, and failover.
+
+    Features:
+    - Multi-provider support (OpenAI, Anthropic, Google, etc.)
+    - Intelligent routing based on model capabilities
+    - Circuit breaker pattern for fault tolerance
+    - Request/response caching
+    - Cost optimization
+    - Load balancing
+  labels: {}
+  annotations:
+    ossa.io/migration: v1.0 to v0.2.2
+    ossa.io/migrated-date: 2025-10-29
+spec:
+  role: integration
+  taxonomy:
+    domain: integration
+    subdomain: general
+    capability: routing
+  llm:
+    provider: openai
+    model: gpt-4
+    temperature: 0.7
+    maxTokens: 2000
+  extensions:
+    llm:
+      fallback_providers:
+        - openai
+        - anthropic
+        - google
+      multi_provider: true
+    runtime:
+      type: docker
+      image: llm-platform/agent-router:1.0.0
+      resources:
+        cpu: 500m
+        memory: 1Gi
+      health_check:
+        type: http
+        endpoint: /health
+        port: 4000
+  tools:
+    - type: mcp
+      name: llm_completion
+      server: agent-router
+      capabilities:
+        - with_input_schema
+    - type: mcp
+      name: embedding_generation
+      server: agent-router
+      capabilities:
+        - with_input_schema
+    - type: mcp
+      name: health_check
+      server: agent-router
+      capabilities:
+        - with_input_schema
