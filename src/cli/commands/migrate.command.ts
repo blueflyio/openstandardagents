@@ -3,21 +3,26 @@
  * Migrate v0.1.9 manifest to v1.0 format
  */
 
-import { Command } from 'commander';
 import chalk from 'chalk';
+import { Command } from 'commander';
 import { container } from '../../di-container.js';
-import { MigrationService } from '../../services/migration.service.js';
 import { ManifestRepository } from '../../repositories/manifest.repository.js';
+import { MigrationService } from '../../services/migration.service.js';
 import { ValidationService } from '../../services/validation.service.js';
 
 export const migrateCommand = new Command('migrate')
   .argument('<source>', 'Path to manifest or directory to migrate')
   .option('-o, --output <path>', 'Output path for migrated manifest')
-  .option('-r, --recursive', 'Recursively migrate all .ossa.yaml files in directory')
+  .option(
+    '-r, --recursive',
+    'Recursively migrate all .ossa.yaml files in directory'
+  )
   .option('--to <version>', 'Target version (v0.2.2 or v1.0)', 'v0.2.2')
   .option('--dry-run', 'Show migration preview without writing file')
   .option('-v, --verbose', 'Verbose output')
-  .description('Migrate OSSA manifests between versions (v0.1.9 to v0.2.2, v1.0 to v0.2.2)')
+  .description(
+    'Migrate OSSA manifests between versions (v0.1.9 to v0.2.2, v1.0 to v0.2.2)'
+  )
   .action(
     async (
       source: string,

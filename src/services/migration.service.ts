@@ -44,7 +44,10 @@ export class MigrationService {
    * @param targetVersion - Target version
    * @returns Migrated manifest
    */
-  async migrate(manifest: unknown, targetVersion: SchemaVersion = '0.2.2'): Promise<any> {
+  async migrate(
+    manifest: unknown,
+    targetVersion: SchemaVersion = '0.2.2'
+  ): Promise<any> {
     const m = manifest as any;
 
     // Detect source version
@@ -80,17 +83,17 @@ export class MigrationService {
         labels: {} as Record<string, string>,
         annotations: {
           'ossa.io/migration': 'v1.0 to v0.2.2',
-          'ossa.io/migrated-date': new Date().toISOString().split('T')[0]
-        }
+          'ossa.io/migrated-date': new Date().toISOString().split('T')[0],
+        },
       },
       spec: {
-        role: v1.agent.role
-      }
+        role: v1.agent.role,
+      },
     };
 
     // Convert tags to labels
     if (v1.agent.tags && Array.isArray(v1.agent.tags)) {
-      v1.agent.tags.forEach(tag => {
+      v1.agent.tags.forEach((tag) => {
         migrated.metadata.labels[tag] = 'true';
       });
     }
@@ -98,8 +101,10 @@ export class MigrationService {
     // Copy metadata
     if (v1.metadata) {
       if (v1.metadata.authors) {
-        migrated.metadata.annotations.author = Array.isArray(v1.metadata.authors) 
-          ? v1.metadata.authors.join(', ') 
+        migrated.metadata.annotations.author = Array.isArray(
+          v1.metadata.authors
+        )
+          ? v1.metadata.authors.join(', ')
           : v1.metadata.authors;
       }
       if (v1.metadata.license) {
@@ -114,28 +119,30 @@ export class MigrationService {
     migrated.spec.taxonomy = {
       domain: this.detectDomain(v1.agent),
       subdomain: this.detectSubdomain(v1.agent),
-      capability: this.detectCapability(v1.agent)
+      capability: this.detectCapability(v1.agent),
     };
 
     // Convert LLM config with normalization
     if (v1.agent.llm) {
       migrated.spec.llm = {
-        provider: v1.agent.llm.provider === 'auto' ? 'openai' : v1.agent.llm.provider,
+        provider:
+          v1.agent.llm.provider === 'auto' ? 'openai' : v1.agent.llm.provider,
         model: v1.agent.llm.model,
         temperature: v1.agent.llm.temperature,
         maxTokens: v1.agent.llm.maxTokens,
         topP: v1.agent.llm.topP,
         frequencyPenalty: v1.agent.llm.frequencyPenalty,
-        presencePenalty: v1.agent.llm.presencePenalty
+        presencePenalty: v1.agent.llm.presencePenalty,
       };
     }
 
     // Convert capabilities to tools
     if (v1.agent.capabilities && Array.isArray(v1.agent.capabilities)) {
-      migrated.spec.tools = v1.agent.capabilities.map(cap => ({
+      migrated.spec.tools = v1.agent.capabilities.map((cap) => ({
         type: 'mcp',
         name: cap.name || 'unnamed_tool',
-        server: v1.agent.integration?.mcp?.server_name || migrated.metadata.name
+        server:
+          v1.agent.integration?.mcp?.server_name || migrated.metadata.name,
       }));
     }
 
@@ -147,18 +154,18 @@ export class MigrationService {
     if (v1.agent.observability || v1.agent.monitoring) {
       const obs = v1.agent.observability || v1.agent.monitoring;
       let normalizedMetrics: any = obs.metrics;
-      
+
       if (normalizedMetrics === true) {
         normalizedMetrics = { enabled: true };
       } else if (!normalizedMetrics || typeof normalizedMetrics !== 'object') {
         normalizedMetrics = { enabled: true };
       }
-      
+
       if (obs.tracing || normalizedMetrics || obs.logging) {
         migrated.spec.observability = {
           tracing: obs.tracing || { enabled: true },
           metrics: normalizedMetrics,
-          logging: obs.logging || { level: 'info', format: 'json' }
+          logging: obs.logging || { level: 'info', format: 'json' },
         };
       }
     }
@@ -170,7 +177,10 @@ export class MigrationService {
     if (v1.agent.integration?.mcp) {
       migrated.spec.extensions.mcp = {
         enabled: v1.agent.integration.mcp.enabled !== false,
-        server_type: v1.agent.integration.mcp.protocol || v1.agent.integration.mcp.server_type || 'stdio'
+        server_type:
+          v1.agent.integration.mcp.protocol ||
+          v1.agent.integration.mcp.server_type ||
+          'stdio',
       };
     }
 
@@ -178,13 +188,13 @@ export class MigrationService {
     if (v1.agent.deployment || v1.agent.runtime) {
       migrated.spec.extensions.buildkit = {
         deployment: {
-          replicas: v1.agent.deployment?.replicas || { min: 1, max: 4 }
+          replicas: v1.agent.deployment?.replicas || { min: 1, max: 4 },
         },
         container: {
           image: v1.agent.runtime?.image,
           runtime: v1.agent.runtime?.type || 'docker',
-          resources: v1.agent.runtime?.resources || {}
-        }
+          resources: v1.agent.runtime?.resources || {},
+        },
       };
     }
 
@@ -193,9 +203,9 @@ export class MigrationService {
       migrated.spec.extensions.kagent = {
         kubernetes: {
           namespace: 'default',
-          labels: { app: migrated.metadata.name }
+          labels: { app: migrated.metadata.name },
         },
-        deployment: { replicas: 2, strategy: 'rolling-update' }
+        deployment: { replicas: 2, strategy: 'rolling-update' },
       };
     }
 
@@ -213,9 +223,18 @@ export class MigrationService {
   }
 
   private detectDomain(agent: any): string {
-    const text = [agent.id, agent.name, agent.description, ...(agent.tags || [])].join(' ').toLowerCase();
-    if (text.includes('infrastructure') || text.includes('k8s')) return 'infrastructure';
-    if (text.includes('security') || text.includes('compliance')) return 'security';
+    const text = [
+      agent.id,
+      agent.name,
+      agent.description,
+      ...(agent.tags || []),
+    ]
+      .join(' ')
+      .toLowerCase();
+    if (text.includes('infrastructure') || text.includes('k8s'))
+      return 'infrastructure';
+    if (text.includes('security') || text.includes('compliance'))
+      return 'security';
     if (text.includes('data') || text.includes('vector')) return 'data';
     if (text.includes('chat')) return 'conversation';
     if (text.includes('workflow')) return 'automation';
@@ -224,7 +243,8 @@ export class MigrationService {
 
   private detectSubdomain(agent: any): string {
     const text = [agent.id, agent.name].join(' ').toLowerCase();
-    if (text.includes('kubernetes') || text.includes('k8s')) return 'kubernetes';
+    if (text.includes('kubernetes') || text.includes('k8s'))
+      return 'kubernetes';
     if (text.includes('protocol') || text.includes('mcp')) return 'protocol';
     if (text.includes('workflow')) return 'workflow';
     return 'general';
@@ -242,8 +262,11 @@ export class MigrationService {
   /**
    * Migrate multiple manifests
    */
-  async migrateMany(manifests: unknown[], targetVersion: SchemaVersion = '0.2.2'): Promise<any[]> {
-    return Promise.all(manifests.map(m => this.migrate(m, targetVersion)));
+  async migrateMany(
+    manifests: unknown[],
+    targetVersion: SchemaVersion = '0.2.2'
+  ): Promise<any[]> {
+    return Promise.all(manifests.map((m) => this.migrate(m, targetVersion)));
   }
 
   /**

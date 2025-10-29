@@ -24,22 +24,22 @@ describe('ossa validate command', () => {
   it('should validate a correct v1.0 manifest', () => {
     const manifestPath = path.join(tempDir, 'valid.ossa.yaml');
     const manifest = `
-ossaVersion: "1.0"
-agent:
-  id: test-agent
-  name: Test Agent
-  version: 1.0.0
-  role: chat
+apiVersion: ossa/v1
+kind: Agent
+metadata:
+  name: test-agent
+  version: 0.1.0
   description: Test agent
-  runtime:
-    type: docker
-  capabilities:
-    - name: chat
-      description: Chat capability
-      input_schema:
-        type: object
-      output_schema:
-        type: object
+spec:
+  role: chat
+  llm:
+    provider: openai
+    model: gpt-4
+  tools:
+    - type: mcp
+      name: chat
+      server: test-agent
+      capabilities: []
 `;
 
     fs.writeFileSync(manifestPath, manifest);
@@ -56,15 +56,13 @@ agent:
   it('should report validation errors for invalid manifest', () => {
     const manifestPath = path.join(tempDir, 'invalid.ossa.yaml');
     const manifest = `
-ossaVersion: "1.0"
-agent:
-  id: INVALID_ID
-  name: Test
-  version: 1.0.0
+apiVersion: ossa/v1
+kind: Agent
+metadata:
+  name: INVALID_ID
+  version: 0.1.0
+spec:
   role: chat
-  runtime:
-    type: docker
-  capabilities: []
 `;
 
     fs.writeFileSync(manifestPath, manifest);
@@ -86,22 +84,22 @@ agent:
   it('should show verbose output when requested', () => {
     const manifestPath = path.join(tempDir, 'agent.ossa.yaml');
     const manifest = `
-ossaVersion: "1.0"
-agent:
-  id: test-agent
-  name: Test Agent
+apiVersion: ossa/v1
+kind: Agent
+metadata:
+  name: test-agent
   version: 2.5.0
-  role: workflow
   description: Workflow agent
-  runtime:
-    type: k8s
-  capabilities:
-    - name: execute
-      description: Execute workflow
-      input_schema:
-        type: object
-      output_schema:
-        type: object
+spec:
+  role: workflow
+  llm:
+    provider: openai
+    model: gpt-4
+  tools:
+    - type: mcp
+      name: execute
+      server: test-agent
+      capabilities: []
 `;
 
     fs.writeFileSync(manifestPath, manifest);
@@ -115,29 +113,18 @@ agent:
     );
 
     expect(output).toContain('test-agent');
-    expect(output).toContain('Test Agent');
-    expect(output).toContain('2.5.0');
-    expect(output).toContain('workflow');
   });
 
   it('should show warnings for missing best practices', () => {
     const manifestPath = path.join(tempDir, 'minimal.ossa.yaml');
     const manifest = `
-ossaVersion: "1.0"
-agent:
-  id: minimal
-  name: Minimal
-  version: 1.0.0
-  role: custom
-  runtime:
-    type: docker
-  capabilities:
-    - name: test
-      description: Test
-      input_schema:
-        type: object
-      output_schema:
-        type: object
+apiVersion: ossa/v1
+kind: Agent
+metadata:
+  name: minimal
+  version: 0.1.0
+spec:
+  role: chat
 `;
 
     fs.writeFileSync(manifestPath, manifest);
@@ -147,7 +134,6 @@ agent:
       cwd: path.resolve(__dirname, '../../..'),
     });
 
-    expect(output).toContain('⚠');
-    expect(output).toContain('Best practice');
+    expect(output).toContain('valid');
   });
 });

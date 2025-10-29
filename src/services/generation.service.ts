@@ -4,7 +4,7 @@
  */
 
 import { injectable } from 'inversify';
-import type { AgentTemplate, OssaAgent, Capability } from '../types/index.js';
+import type { AgentTemplate } from '../types/index.js';
 
 @injectable()
 export class GenerationService {
@@ -13,27 +13,25 @@ export class GenerationService {
    * @param template - Agent configuration template
    * @returns Complete OSSA agent manifest
    */
-  async generate(template: AgentTemplate): Promise<OssaAgent> {
-    const capabilities = this.generateCapabilities(template);
+  async generate(template: AgentTemplate): Promise<any> {
+    const tools = this.generateTools(template);
 
-    const manifest: OssaAgent = {
-      ossaVersion: '1.0',
-      agent: {
-        id: this.normalizeId(template.id),
-        name: template.name,
-        version: '1.0.0',
-        role: template.role,
+    const manifest: any = {
+      apiVersion: 'ossa/v1',
+      kind: 'Agent',
+      metadata: {
+        name: this.normalizeId(template.id),
+        version: '0.1.0',
         description: template.description || `${template.name} agent`,
-        runtime: {
-          type: template.runtimeType || 'docker',
-          image: `${this.normalizeId(template.id)}:1.0.0`,
-        },
-        capabilities: template.capabilities || capabilities,
+        labels: {},
+        annotations: {},
+      },
+      spec: {
+        role: template.role,
+        llm: this.generateLLMConfig(template.role),
+        tools: template.capabilities || tools,
       },
     };
-
-    // Add LLM configuration based on role
-    manifest.agent.llm = this.generateLLMConfig(template.role);
 
     return manifest;
   }
@@ -53,110 +51,46 @@ export class GenerationService {
   }
 
   /**
-   * Generate default capabilities based on role
+   * Generate default tools based on role
    * @param template - Agent template
-   * @returns Array of capabilities
+   * @returns Array of tools
    */
-  private generateCapabilities(template: AgentTemplate): Capability[] {
-    const baseCapability: Capability = {
+  private generateTools(template: AgentTemplate): any[] {
+    const baseTool: any = {
+      type: 'mcp',
       name: `${template.role}_operation`,
-      description: `Primary ${template.role} operation`,
-      input_schema: {
-        type: 'object',
-        properties: {
-          input: {
-            type: 'string',
-            description: 'Input data',
-          },
-        },
-        required: ['input'],
-      },
-      output_schema: {
-        type: 'object',
-        properties: {
-          output: {
-            type: 'string',
-            description: 'Output result',
-          },
-        },
-        required: ['output'],
-      },
+      server: this.normalizeId(template.id),
+      capabilities: [],
     };
 
-    // Role-specific capabilities
-    const roleCapabilities: Record<string, Capability[]> = {
+    const roleTools: Record<string, any[]> = {
       chat: [
         {
+          type: 'mcp',
           name: 'send_message',
-          description: 'Send chat message and receive response',
-          input_schema: {
-            type: 'object',
-            properties: {
-              message: { type: 'string', description: 'User message' },
-              context: { type: 'object', description: 'Conversation context' },
-            },
-            required: ['message'],
-          },
-          output_schema: {
-            type: 'object',
-            properties: {
-              response: { type: 'string', description: 'Agent response' },
-              metadata: { type: 'object', description: 'Response metadata' },
-            },
-            required: ['response'],
-          },
+          server: this.normalizeId(template.id),
+          capabilities: [],
         },
       ],
       workflow: [
         {
+          type: 'mcp',
           name: 'execute_workflow',
-          description: 'Execute workflow with given parameters',
-          input_schema: {
-            type: 'object',
-            properties: {
-              workflow_id: { type: 'string' },
-              parameters: { type: 'object' },
-            },
-            required: ['workflow_id'],
-          },
-          output_schema: {
-            type: 'object',
-            properties: {
-              status: {
-                type: 'string',
-                enum: ['success', 'failure', 'pending'],
-              },
-              result: { type: 'object' },
-            },
-            required: ['status'],
-          },
+          server: this.normalizeId(template.id),
+          capabilities: [],
         },
       ],
       compliance: [
         {
+          type: 'mcp',
           name: 'validate_compliance',
-          description: 'Validate compliance against frameworks',
-          input_schema: {
-            type: 'object',
-            properties: {
-              framework: { type: 'string', enum: ['SOC2', 'HIPAA', 'FedRAMP'] },
-              target: { type: 'object' },
-            },
-            required: ['framework', 'target'],
-          },
-          output_schema: {
-            type: 'object',
-            properties: {
-              compliant: { type: 'boolean' },
-              violations: { type: 'array', items: { type: 'object' } },
-            },
-            required: ['compliant'],
-          },
+          server: this.normalizeId(template.id),
+          capabilities: [],
         },
       ],
     };
 
-    return roleCapabilities[template.role] || [baseCapability];
+    return roleTools[template.role] || [baseTool];
   }
 
   /**
@@ -207,7 +141,7 @@ export class GenerationService {
    * @param templates - Array of templates
    * @returns Array of generated manifests
    */
-  async generateMany(templates: AgentTemplate[]): Promise<OssaAgent[]> {
+  async generateMany(templates: AgentTemplate[]): Promise<any[]> {
     return Promise.all(templates.map((t) => this.generate(t)));
   }
 }
