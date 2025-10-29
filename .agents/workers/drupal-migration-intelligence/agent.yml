@@ -355,4 +355,4 @@ agent:
   metadata:
     author: Bluefly Drupal Platform Team
     license: Apache-2.0
-    repository: https://app-4001.cloud.bluefly.io/llm/drupal-agents
+    repository: https://gitlab.bluefly.io/llm/drupal-agents

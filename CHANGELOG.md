@@ -180,14 +180,7 @@ ossa migrate your-agent-v0.1.9.yaml --output your-agent-v1.0.yaml
 
 See full guide: [docs/migration-v0.1.9-to-v1.0.md](docs/migration-v0.1.9-to-v1.0.md)
 
-<<<<<<< HEAD
 ### Upgrading to v0.1.9 from v0.1.8
-=======
-**For documentation**:
-- Comprehensive guides → GitLab Wiki (https://app-4001.cloud.bluefly.io/llm/openapi-ai-agents-standard/-/wikis/home)
-- Core specification docs → `docs/` directory
-- API documentation → GitLab Pages (automated)
->>>>>>> fix/remove-old-gitlab-urls
 
 **New Features:**
 
@@ -219,11 +212,11 @@ OSSA follows [Semantic Versioning 2.0.0](https://semver.org/):
 
 ## Links
 
-- **GitLab Repository**: https://gitlab.bluefly.io/llm/ossa
-- **Issue Tracker**: https://gitlab.bluefly.io/llm/ossa/-/issues
-- **Specification**: [spec/v1.0/SPECIFICATION.md](spec/v1.0/SPECIFICATION.md)
+- **GitLab Repository**: https://gitlab.bluefly.io/llm/openapi-ai-agents-standard
+- **Issue Tracker**: https://gitlab.bluefly.io/llm/openapi-ai-agents-standard/-/issues
+- **Specification**: [spec/v0.2.2/OSSA-SPECIFICATION-v0.2.2.md](spec/v0.2.2/OSSA-SPECIFICATION-v0.2.2.md)
 - **Examples**: [examples/](examples/)
-- **npm Package**: (Coming in v1.0.0) @bluefly/open-standards-scalable-agents
+- **npm Package**: [@bluefly/open-standards-scalable-agents](https://www.npmjs.com/package/@bluefly/open-standards-scalable-agents)
 
 ---
 
@@ -239,8 +232,8 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines on:
 
 ---
 
-[Unreleased]: https://gitlab.bluefly.io/llm/ossa/compare/v0.3.0...HEAD
-[1.0.0]: https://gitlab.bluefly.io/llm/ossa/compare/v0.1.9...v1.0.0
-[0.3.0]: https://gitlab.bluefly.io/llm/ossa/compare/v0.1.9...v0.3.0
-[0.1.9]: https://gitlab.bluefly.io/llm/ossa/compare/v0.1.8...v0.1.9
-[0.1.8]: https://gitlab.bluefly.io/llm/ossa/releases/tag/v0.1.8
+[Unreleased]: https://gitlab.bluefly.io/llm/openapi-ai-agents-standard/-/compare/v0.2.2...development
+[1.0.0]: https://gitlab.bluefly.io/llm/openapi-ai-agents-standard/-/compare/v0.1.9...v1.0.0
+[0.3.0]: https://gitlab.bluefly.io/llm/openapi-ai-agents-standard/-/compare/v0.1.9...v0.3.0
+[0.1.9]: https://gitlab.bluefly.io/llm/openapi-ai-agents-standard/-/compare/v0.1.8...v0.1.9
+[0.1.8]: https://gitlab.bluefly.io/llm/openapi-ai-agents-standard/-/tags/v0.1.8

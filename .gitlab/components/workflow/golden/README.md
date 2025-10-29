@@ -188,7 +188,7 @@ include:
 
 ## Support
 
-- **Repository**: https://app-4001.cloud.bluefly.io/llm/gitlab_components
-- **Catalog**: https://app-4001.cloud.bluefly.io/explore/catalog
+- **Repository**: https://gitlab.bluefly.io/llm/gitlab_components
+- **Catalog**: https://gitlab.bluefly.io/explore/catalog
 - **Issues**: Create issue in adopting project
 - **Version**: 0.1.0

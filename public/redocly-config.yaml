@@ -1,15 +1,15 @@
 # Redocly Portal Configuration for OSSA Documentation
 apiDefinitions:
   ossa-complete:
-    url: https://app-4001.cloud.bluefly.io/llm/ossa/-/raw/main/src/api/ossa-complete.openapi.yml
+    url: https://gitlab.bluefly.io/llm/ossa/-/raw/main/src/api/ossa-complete.openapi.yml
     label: OSSA Complete API
     version: v0.1.9
   ossa-specification:
-    url: https://app-4001.cloud.bluefly.io/llm/ossa/-/raw/main/src/api/specification.openapi.yml
+    url: https://gitlab.bluefly.io/llm/ossa/-/raw/main/src/api/specification.openapi.yml
     label: Core Specification
     version: v0.1.9
   ossa-orchestration:
-    url: https://app-4001.cloud.bluefly.io/llm/ossa/-/raw/main/src/api/orchestration.openapi.yml
+    url: https://gitlab.bluefly.io/llm/ossa/-/raw/main/src/api/orchestration.openapi.yml
     label: Orchestration API
     version: v0.1.9
 
@@ -66,15 +66,15 @@ nav:
   - label: 'Development'
     page: 'development'
   - label: 'GitHub'
-    href: 'https://app-4001.cloud.bluefly.io/llm/ossa'
+    href: 'https://gitlab.bluefly.io/llm/ossa'
     external: true
 
 footer:
   copyrightText: 'Copyright © 2024 OSSA - Open Standards for Scalable Agents'
   links:
     - label: 'GitLab'
-      href: 'https://app-4001.cloud.bluefly.io/llm/ossa'
+      href: 'https://gitlab.bluefly.io/llm/ossa'
     - label: 'Agent BuildKit'
-      href: 'https://app-4001.cloud.bluefly.io/llm/agent_buildkit'
+      href: 'https://gitlab.bluefly.io/llm/agent_buildkit'
     - label: 'Documentation'
       href: '/docs'

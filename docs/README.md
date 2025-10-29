@@ -11,7 +11,7 @@
 
 For comprehensive documentation, guides, and architecture details, visit:
 
-**[OSSA GitLab Wiki](https://app-4001.cloud.bluefly.io/llm/openapi-ai-agents-standard/-/wikis/home)**
+**[OSSA GitLab Wiki](https://gitlab.bluefly.io/llm/openapi-ai-agents-standard/-/wikis/home)**
 
 The Wiki contains:
 - Architecture guides
@@ -25,6 +25,6 @@ The Wiki contains:
 
 - **Specification**: [spec/ossa-1.0.schema.json](../spec/ossa-1.0.schema.json)
 - **npm Package**: [@bluefly/open-standards-scalable-agents](https://www.npmjs.com/package/@bluefly/open-standards-scalable-agents)
-- **GitLab Repository**: [llm/openapi-ai-agents-standard](https://app-4001.cloud.bluefly.io/llm/openapi-ai-agents-standard)
-- **Issues**: [GitLab Issues](https://app-4001.cloud.bluefly.io/llm/openapi-ai-agents-standard/-/issues)
+- **GitLab Repository**: [llm/openapi-ai-agents-standard](https://gitlab.bluefly.io/llm/openapi-ai-agents-standard)
+- **Issues**: [GitLab Issues](https://gitlab.bluefly.io/llm/openapi-ai-agents-standard/-/issues)
 

@@ -77,11 +77,11 @@ OSSA doesn't dictate deployment. Deploy to YOUR infrastructure:
 
 - Review [Examples](../examples/)
 - Read the [Specification](../spec/ossa-1.0.schema.json)
-- Visit the [GitLab Wiki](https://app-4001.cloud.bluefly.io/llm/openapi-ai-agents-standard/-/wikis/home)
+- Visit the [GitLab Wiki](https://gitlab.bluefly.io/llm/openapi-ai-agents-standard/-/wikis/home)
 
 ## Need More Features?
 
 For production features like GitLab integration, Kubernetes deployment, and monitoring, see:
 
-**[agent-buildkit](https://app-4001.cloud.bluefly.io/llm/npm/agent-buildkit)** - Reference implementation with production tooling
+**[agent-buildkit](https://gitlab.bluefly.io/llm/npm/agent-buildkit)** - Reference implementation with production tooling
 

@@ -19,7 +19,7 @@ info:
 
   contact:
     name: Bluefly.io LLM Platform Team
-    url: https://app-4001.cloud.bluefly.io/llm/openapi-ai-agents-standard
+    url: https://gitlab.bluefly.io/llm/openapi-ai-agents-standard
   license:
     name: MIT
     url: https://opensource.org/licenses/MIT
