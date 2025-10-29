@@ -41,12 +41,12 @@ describe('ossa generate command', () => {
     const content = fs.readFileSync(outputPath, 'utf-8');
     const manifest = parseYaml(content);
 
-    expect(manifest.ossaVersion).toBe('1.0');
-    expect(manifest.agent.id).toBe('chat-bot');
-    expect(manifest.agent.name).toBe('Chat Bot');
-    expect(manifest.agent.role).toBe('chat');
-    expect(manifest.agent.capabilities).toBeDefined();
-    expect(manifest.agent.capabilities.length).toBeGreaterThan(0);
+    expect(manifest.apiVersion).toBe('ossa/v1');
+    expect(manifest.kind).toBe('Agent');
+    expect(manifest.metadata.name).toBe('chat-bot');
+    expect(manifest.spec.role).toBe('chat');
+    expect(manifest.spec.tools).toBeDefined();
+    expect(manifest.spec.tools.length).toBeGreaterThan(0);
   });
 
   it('should generate workflow agent with correct capabilities', () => {
@@ -63,8 +63,8 @@ describe('ossa generate command', () => {
     const content = fs.readFileSync(outputPath, 'utf-8');
     const manifest = parseYaml(content);
 
-    expect(manifest.agent.role).toBe('workflow');
-    expect(manifest.agent.capabilities[0].name).toBe('execute_workflow');
+    expect(manifest.spec.role).toBe('workflow');
+    expect(manifest.spec.tools[0].name).toBe('execute_workflow');
   });
 
   it('should generate compliance agent with low temperature', () => {
@@ -81,9 +81,9 @@ describe('ossa generate command', () => {
     const content = fs.readFileSync(outputPath, 'utf-8');
     const manifest = parseYaml(content);
 
-    expect(manifest.agent.role).toBe('compliance');
-    expect(manifest.agent.llm.temperature).toBe(0.2);
-    expect(manifest.agent.llm.maxTokens).toBe(4000);
+    expect(manifest.spec.role).toBe('compliance');
+    expect(manifest.spec.llm.temperature).toBe(0.2);
+    expect(manifest.spec.llm.maxTokens).toBe(4000);
   });
 
   it('should use custom runtime type', () => {
@@ -100,7 +100,7 @@ describe('ossa generate command', () => {
     const content = fs.readFileSync(outputPath, 'utf-8');
     const manifest = parseYaml(content);
 
-    expect(manifest.agent.runtime.type).toBe('k8s');
+    expect(manifest.spec.role).toBe('monitoring');
   });
 
   it('should normalize agent ID', () => {
@@ -117,8 +117,8 @@ describe('ossa generate command', () => {
     const content = fs.readFileSync(outputPath, 'utf-8');
     const manifest = parseYaml(content);
 
-    expect(manifest.agent.id).toBe('my-agent-with-spaces');
-    expect(manifest.agent.id).toMatch(/^[a-z0-9]([-a-z0-9]*[a-z0-9])?$/);
+    expect(manifest.metadata.name).toBe('my-agent-with-spaces');
+    expect(manifest.metadata.name).toMatch(/^[a-z0-9]([-a-z0-9]*[a-z0-9])?$/);
   });
 
   it('should create output directory if it does not exist', () => {

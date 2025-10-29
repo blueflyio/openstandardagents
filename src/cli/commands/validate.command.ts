@@ -52,16 +52,12 @@ export const validateCommand = new Command('validate')
             } else if (m.agent) {
               console.log(`  ID: ${chalk.cyan(m.agent.id)}`);
               console.log(`  Name: ${chalk.cyan(m.agent.name)}`);
-              console.log(
-                `  Version: ${chalk.cyan(m.agent.version)}`
-              );
+              console.log(`  Version: ${chalk.cyan(m.agent.version)}`);
               console.log(`  Role: ${chalk.cyan(m.agent.role)}`);
             }
             if (m.spec) {
               if (m.spec.tools) {
-                console.log(
-                  `  Tools: ${chalk.cyan(m.spec.tools.length)}`
-                );
+                console.log(`  Tools: ${chalk.cyan(m.spec.tools.length)}`);
               }
               if (m.spec.llm) {
                 console.log(
@@ -69,16 +65,14 @@ export const validateCommand = new Command('validate')
                 );
               }
             }
-            
+
             if (m.agent?.capabilities) {
               console.log(
                 `  Capabilities: ${chalk.cyan(m.agent.capabilities.length)}`
               );
             }
             if (m.agent?.runtime) {
-              console.log(
-                `  Runtime: ${chalk.cyan(m.agent.runtime.type)}`
-              );
+              console.log(`  Runtime: ${chalk.cyan(m.agent.runtime.type)}`);
             }
 
             if (m.agent?.llm) {

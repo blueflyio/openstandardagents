@@ -98,7 +98,7 @@ describe('GenerationService', () => {
         capabilities: [],
       };
 
-      const template: AgentTemplate = {
+      const template: any = {
         id: 'custom-agent',
         name: 'Custom Agent',
         role: 'chat',

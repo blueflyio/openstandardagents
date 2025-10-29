@@ -105,8 +105,9 @@ describe('Full Workflow E2E', () => {
 
     // Step 3: Verify file content
     const content = fs.readFileSync(agentPath, 'utf-8');
-    expect(content).toContain('ossaVersion');
-    expect(content).toContain('Development Agent');
+    expect(content).toContain('apiVersion');
+    expect(content).toContain('kind: Agent');
+    expect(content).toContain('development-agent');
     expect(content).toContain('workflow');
   });
 });

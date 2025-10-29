@@ -66,6 +66,7 @@
     "format:check": "prettier --check \"src/**/*.ts\" \"tests/**/*.ts\"",
     "validate:schema": "ajv validate -s spec/v0.2.2/ossa-0.2.2.schema.json",
     "validate:examples": "node -r ts-node/register tests/integration/examples/validate-all-examples.test.ts",
+    "validate:power-suite": "ts-node bin/validate-ossa-0.2.2.ts",
     "gen:types": "json-schema-to-typescript spec/v0.2.2/ossa-0.2.2.schema.json > src/types/generated/ossa-v0.2.2.types.ts",
     "gen:zod": "json-schema-to-zod spec/v0.2.2/ossa-0.2.2.schema.json > src/types/generated/ossa-v0.2.2.zod.ts",
     "gen:all": "npm run gen:types && npm run gen:zod",
