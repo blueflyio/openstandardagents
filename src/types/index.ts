@@ -94,7 +94,7 @@ export interface AgentTemplate {
 /**
  * Schema versions supported
  */
-export type SchemaVersion = '1.0' | '0.1.9';
+export type SchemaVersion = '1.0' | '0.2.2' | '0.1.9';
 
 /**
  * Service interfaces

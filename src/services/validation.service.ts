@@ -32,12 +32,12 @@ export class ValidationService implements IValidationService {
   /**
    * Validate OSSA agent manifest
    * @param manifest - Parsed manifest object
-   * @param version - OSSA version (e.g., '1.0', '0.1.9')
+   * @param version - OSSA version (e.g., '0.2.2', '1.0', '0.1.9')
    * @returns Validation result with errors and warnings
    */
   async validate(
     manifest: unknown,
-    version: SchemaVersion = '1.0'
+    version: SchemaVersion = '0.2.2'
   ): Promise<ValidationResult> {
     try {
       // 1. Load schema for version
@@ -152,7 +152,7 @@ export class ValidationService implements IValidationService {
    */
   async validateMany(
     manifests: unknown[],
-    version: SchemaVersion = '1.0'
+    version: SchemaVersion = '0.2.2'
   ): Promise<ValidationResult[]> {
     return Promise.all(
       manifests.map((manifest) => this.validate(manifest, version))
