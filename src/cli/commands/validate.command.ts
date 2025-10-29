@@ -14,8 +14,8 @@ export const validateCommand = new Command('validate')
   .argument('<path>', 'Path to OSSA manifest (YAML or JSON)')
   .option(
     '-s, --schema <version>',
-    'Schema version (0.2.2, 1.0, or 0.1.9)',
-    '0.2.2'
+    'Schema version (1.0, 0.2.2, or 0.1.9)',
+    '1.0'
   )
   .option('-v, --verbose', 'Verbose output with detailed information')
   .description('Validate OSSA agent manifest against JSON schema')

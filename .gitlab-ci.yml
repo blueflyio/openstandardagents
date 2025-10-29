@@ -78,49 +78,45 @@ pages:
   only:
     - main
     - development
-publish:gitlab-packages:development:
+semantic-release:development:
   stage: release
   image: node:${NODE_VERSION}
-  script:
-    - echo "Publishing OSSA to GitLab Packages Registry (development pre-release)..."
-    - echo "@bluefly:registry=https://gitlab.bluefly.io/api/v4/projects/${CI_PROJECT_ID}/packages/npm/" >> .npmrc
-    - echo "//gitlab.bluefly.io/api/v4/projects/${CI_PROJECT_ID}/packages/npm/:_authToken=${CI_JOB_TOKEN}" >> .npmrc
+  before_script:
     - npm install
-    - npm run build
-    # Update version to include development pre-release tag
-    - npm version prerelease --preid=dev --no-git-tag-version
-    - npm publish --registry=https://gitlab.bluefly.io/api/v4/projects/${CI_PROJECT_ID}/packages/npm/ --tag development
-  artifacts:
-    paths:
-      - dist/
-    expire_in: 1 week
+    - git config --global user.email "ci@gitlab.bluefly.io"
+    - git config --global user.name "GitLab CI"
+  script:
+    - echo "Running semantic-release for development branch..."
+    - npx semantic-release
   rules:
-    - if: $CI_COMMIT_BRANCH == "development"
+    - if: $CI_COMMIT_BRANCH == "development" && $CI_COMMIT_MESSAGE !~ /\[skip ci\]/
       when: on_success
+  environment:
+    name: development
+    url: https://gitlab.bluefly.io/$CI_PROJECT_PATH/-/releases
 
-publish:gitlab-packages:main:
+semantic-release:main:
   stage: release
   image: node:${NODE_VERSION}
-  script:
-    - echo "Publishing OSSA to GitLab Packages Registry (stable release)..."
-    - echo "@bluefly:registry=https://gitlab.bluefly.io/api/v4/projects/${CI_PROJECT_ID}/packages/npm/" >> .npmrc
-    - echo "//gitlab.bluefly.io/api/v4/projects/${CI_PROJECT_ID}/packages/npm/:_authToken=${CI_JOB_TOKEN}" >> .npmrc
+  before_script:
     - npm install
-    - npm run build
-    - npm publish --registry=https://gitlab.bluefly.io/api/v4/projects/${CI_PROJECT_ID}/packages/npm/ --tag latest
-  artifacts:
-    paths:
-      - dist/
-    expire_in: 1 week
+    - git config --global user.email "ci@gitlab.bluefly.io"
+    - git config --global user.name "GitLab CI"
+  script:
+    - echo "Running semantic-release for main branch..."
+    - npx semantic-release
   rules:
-    - if: $CI_COMMIT_BRANCH == "main"
+    - if: $CI_COMMIT_BRANCH == "main" && $CI_COMMIT_MESSAGE !~ /\[skip ci\]/
       when: on_success
+  environment:
+    name: production
+    url: https://gitlab.bluefly.io/$CI_PROJECT_PATH/-/releases
 
-publish:gitlab-packages:tagged:
+publish:gitlab-packages:
   stage: release
   image: node:${NODE_VERSION}
   script:
-    - echo "Publishing OSSA to GitLab Packages Registry (tagged release)..."
+    - echo "Publishing OSSA to GitLab Packages Registry..."
     - echo "@bluefly:registry=https://gitlab.bluefly.io/api/v4/projects/${CI_PROJECT_ID}/packages/npm/" >> .npmrc
     - echo "//gitlab.bluefly.io/api/v4/projects/${CI_PROJECT_ID}/packages/npm/:_authToken=${CI_JOB_TOKEN}" >> .npmrc
     - npm install
@@ -131,46 +127,26 @@ publish:gitlab-packages:tagged:
       - dist/
     expire_in: 1 week
   rules:
-    - if: $CI_COMMIT_TAG =~ /^v\d+\.\d+\.\d+$/
-      when: on_success
-
-release:gitlab:
-  stage: release
-  image: registry.gitlab.com/gitlab-org/release-cli:latest
-  script:
-    - echo "Creating OSSA v${OSSA_VERSION} GitLab release..."
-  release:
-    tag_name: v${OSSA_VERSION}
-    description: OSSA Specification v${OSSA_VERSION} - The OpenAPI for AI Agents
-  rules:
-    - if: $CI_COMMIT_TAG =~ /^v\d+\.\d+\.\d+$/
+    - if: $CI_COMMIT_TAG =~ /^v\d+\.\d+\.\d+/
       when: on_success
   needs:
-    - publish:gitlab-packages:tagged
+    - semantic-release:main
 
-release:npmjs:manual:
+publish:npmjs:manual:
   stage: release
   image: node:${NODE_VERSION}
   script:
-    - echo "Publishing OSSA v${OSSA_VERSION} to npmjs.com..."
+    - echo "Publishing OSSA to npmjs.com..."
     - echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > .npmrc
     - npm whoami --registry=https://registry.npmjs.org/
     - npm install
     - npm run build
     - npm publish --access public --registry=https://registry.npmjs.org/
   rules:
-    - if: $CI_COMMIT_TAG =~ /^v\d+\.\d+\.\d+$/
-      when: manual
-    - if: $CI_COMMIT_BRANCH == "main"
+    - if: $CI_COMMIT_TAG =~ /^v\d+\.\d+\.\d+/
       when: manual
   needs:
-    - job: publish:gitlab-packages:tagged
-      optional: true
-    - job: publish:gitlab-packages:main
-      optional: true
-  dependencies:
-    - publish:gitlab-packages:tagged
-    - publish:gitlab-packages:main
+    - publish:gitlab-packages
 lint:
   stage: validate
   image: node:${NODE_VERSION}

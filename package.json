@@ -1,6 +1,6 @@
 {
   "name": "@bluefly/open-standards-scalable-agents",
-  "version": "0.2.2",
+  "version": "1.0.0",
   "description": "OSSA - Open Standard for Scalable Agents. A specification standard for AI agents (like OpenAPI for REST APIs). NOT a framework.",
   "type": "module",
   "main": "dist/index.js",
@@ -34,7 +34,7 @@
       "import": "./dist/types/index.js",
       "require": "./dist/types/index.js"
     },
-    "./schema": "./spec/v0.2.2/ossa-0.2.2.schema.json"
+    "./schema": "./spec/v1.0/ossa-1.0.schema.json"
   },
   "publishConfig": {
     "access": "public",
@@ -70,7 +70,8 @@
     "gen:zod": "json-schema-to-zod spec/v1.0/ossa-1.0.schema.json > src/types/generated/ossa-v1.zod.ts",
     "gen:all": "npm run gen:types && npm run gen:zod",
     "cli:legacy": "node cli/bin/ossa --help",
-    "prepublishOnly": "npm run clean && npm run build && npm run test && npm run lint"
+    "prepublishOnly": "npm run clean && npm run build && npm run test && npm run lint",
+    "semantic-release": "semantic-release"
   },
   "keywords": [
     "ossa",
@@ -98,6 +99,9 @@
   },
   "devDependencies": {
     "@jest/globals": "^29.7.0",
+    "@semantic-release/changelog": "^6.0.3",
+    "@semantic-release/git": "^10.0.1",
+    "@semantic-release/gitlab": "^13.2.9",
     "@types/jest": "^29.5.14",
     "@types/node": "^20.19.19",
     "@types/pg": "^8.15.5",
@@ -112,6 +116,7 @@
     "json-schema-to-typescript": "^15.0.4",
     "json-schema-to-zod": "^2.6.1",
     "prettier": "^3.6.2",
+    "semantic-release": "^25.0.1",
     "ts-jest": "^29.4.4",
     "ts-node": "^10.9.2",
     "typescript": "^5.9.3"
