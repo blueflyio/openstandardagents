@@ -3,6 +3,7 @@
 ## Core Documentation
 
 - **[Getting Started](getting-started.md)** - Quick start guide for OSSA
+- **[OpenAPI Extensions](openapi-extensions.md)** - How OSSA extends OpenAPI/Swagger for AI agents
 - **[Migration Guide](migration/)** - Upgrading from v0.1.x to v1.0
 - **[Specification](../spec/)** - OSSA 1.0 JSON Schema
 - **[Examples](../examples/)** - Reference implementations

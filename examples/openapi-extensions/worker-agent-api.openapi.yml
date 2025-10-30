@@ -1,0 +1,262 @@
+openapi: 3.1.0
+info:
+  title: Kubernetes Troubleshooter Agent API
+  version: 1.0.0
+  description: |
+    Full-featured worker agent API demonstrating all OSSA OpenAPI extensions.
+    This agent diagnoses Kubernetes pod failures and issues.
+
+x-ossa-metadata:
+  version: 0.2.2
+  compliance:
+    level: enterprise
+    frameworks:
+      - OSSA
+      - OpenAPI 3.1
+      - RFC7807
+  governance:
+    approved: true
+    approvedBy: Platform Team
+    approvalDate: "2024-01-15"
+  security:
+    classification: internal
+    authentication: required
+    encryption: tls1.3
+  observability:
+    tracing: true
+    metrics: true
+    logging: true
+
+x-ossa:
+  version: 0.2.2
+  agent:
+    id: k8s-troubleshooter
+    type: worker
+    compliance:
+      standards:
+        - openapi-first
+        - dry
+        - crud
+        - solid
+        - type-safe
+      validated: true
+      validatedAt: "2024-01-15T10:30:00Z"
+
+x-agent:
+  capabilities:
+    - pod-diagnostics
+    - log-analysis
+    - event-correlation
+  tools:
+    - kubernetes-mcp
+    - buildkit-agent-protocol
+  environment:
+    defaultNamespace: default
+    logRetention: 7d
+  rules:
+    - read-only-operations
+    - require-approval-for-writes
+
+components:
+  parameters:
+    X-Ossa-Agent-Id:
+      name: X-OSSA-Agent-ID
+      in: header
+      description: Unique identifier of the agent making the request
+      required: false
+      schema:
+        type: string
+        pattern: "^[a-z0-9]([-a-z0-9]*[a-z0-9])?$"
+      example: k8s-troubleshooter
+
+    X-Ossa-Version:
+      name: X-OSSA-Version
+      in: header
+      description: OSSA specification version the agent supports
+      required: false
+      schema:
+        type: string
+        pattern: "^\\d+\\.\\d+\\.\\d+(-[a-zA-Z0-9]+)?$"
+      example: "0.2.2"
+
+  schemas:
+    PodDiagnosticRequest:
+      type: object
+      required:
+        - podName
+        - namespace
+      properties:
+        podName:
+          type: string
+          description: Name of the pod to diagnose
+          example: "my-app-7d4f6b8c9"
+        namespace:
+          type: string
+          description: Kubernetes namespace
+          example: "production"
+        includeLogs:
+          type: boolean
+          default: true
+          description: Whether to include pod logs in diagnosis
+      x-ossa-capability-schema:
+        capabilityName: pod-diagnostics
+        input: true
+        validation:
+          required: true
+          strict: true
+
+    PodDiagnosticResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          enum:
+            - healthy
+            - degraded
+            - failed
+          description: Overall pod health status
+        issues:
+          type: array
+          items:
+            type: object
+            properties:
+              severity:
+                type: string
+                enum:
+                  - critical-manifest
+                  - warning
+                  - info
+              message:
+                type: string
+              resource:
+                type: string
+        recommendations:
+          type: array
+          items:
+            type: string
+          description: Recommended actions to resolve issues
+        metadata:
+          type: object
+          properties:
+            diagnosedAt:
+              type: string
+              format: date-time
+            executionTimeMs:
+              type: integer
+      x-ossa-capability-schema:
+        capabilityName: pod-diagnostics
+        output: true
+
+paths:
+  /api/v1/diagnose/pod:
+    post:
+      summary: Diagnose pod issues
+      description: |
+        Analyzes a Kubernetes pod to identify failures, configuration issues,
+        and resource constraints. Uses MCP tools to gather pod logs, events, and metrics.
+      operationId: diagnosePod
+      tags:
+        - Diagnostics
+      x-ossa-capability:
+        name: pod-diagnostics
+        description: Diagnose Kubernetes pod failures and issues
+        inputSchema:
+          $ref: "#/components/schemas/PodDiagnosticRequest"
+        outputSchema:
+          $ref: "#/components/schemas/PodDiagnosticResponse"
+      x-ossa-autonomy:
+        level: supervised
+        approval_required: true
+        allowed_actions:
+          - read_pods
+          - read_logs
+          - read_events
+          - read_metrics
+        blocked_actions:
+          - delete_pods
+          - scale_deployments
+          - modify_configs
+      x-ossa-constraints:
+        cost:
+          maxTokensPerDay: 50000
+          maxTokensPerRequest: 4000
+          maxCostPerDay: 10.0
+          currency: USD
+        performance:
+          maxLatencySeconds: 30
+          maxConcurrentRequests: 5
+        time:
+          maxExecutionTime: 300
+      x-ossa-tools:
+        - type: mcp
+          server: kubernetes-mcp
+          namespace: default
+          capabilities:
+            - get_pods
+            - get_logs
+            - get_events
+            - describe_resource
+            - get_metrics
+        - type: mcp
+          server: buildkit-agent-protocol
+          namespace: default
+          capabilities:
+            - search_documentation
+            - analyze_logs
+      x-ossa-llm:
+        provider: openai
+        model: gpt-4
+        temperature: 0.2
+        maxTokens: 4000
+      parameters:
+        - $ref: "#/components/parameters/X-Ossa-Agent-Id"
+        - $ref: "#/components/parameters/X-Ossa-Version"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PodDiagnosticRequest"
+      responses:
+        '200':
+          description: Diagnosis completed successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PodDiagnosticResponse"
+              example:
+                status: degraded
+                issues:
+                  - severity: warning
+                    message: "High memory usage detected (95%)"
+                    resource: "my-app-7d4f6b8c9"
+                  - severity: info
+                    message: "Pod restart count: 3"
+                    resource: "my-app-7d4f6b8c9"
+                recommendations:
+                  - "Increase memory limit or optimize application memory usage"
+                  - "Review pod restart logs for patterns"
+                metadata:
+                  diagnosedAt: "2024-01-15T10:30:00Z"
+                  executionTimeMs: 2341
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '403':
+          description: Insufficient permissions or approval required
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  approvalRequired:
+                    type: boolean
+
