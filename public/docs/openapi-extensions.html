@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>OSSA OpenAPI Extensions</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.15.1/cdn/themes/light.css" />
+  <style>
+    body{font-family: ui-sans-serif,system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif;margin:24px;max-width:980px}
+    code,pre{background:#0b1020;color:#e6edf3;border-radius:6px;padding:12px;display:block;overflow:auto}
+    h1,h2{margin-top:24px}
+    .pill{display:inline-block;background:#eef2ff;color:#3730a3;border-radius:999px;padding:4px 10px;font-size:12px;margin-right:8px}
+    .grid{display:grid;gap:16px}
+    .grid.cols-2{grid-template-columns:repeat(2,minmax(0,1fr))}
+  </style>
+</head>
+<body>
+  <h1>OSSA OpenAPI/Swagger Specification Extensions</h1>
+  <p>Reference for OSSA-specific OpenAPI 3.1 extensions used to describe AI agent behavior.</p>
+  <div>
+    <a class="pill" href="/examples/openapi-extensions/minimal-agent-api.openapi.yml">Minimal</a>
+    <a class="pill" href="/examples/openapi-extensions/worker-agent-api.openapi.yml">Worker</a>
+    <a class="pill" href="/examples/openapi-extensions/orchestrator-agent-api.openapi.yml">Orchestrator</a>
+    <a class="pill" href="/docs/schemas/openapi-extensions.schema.json">JSON Schema</a>
+    <a class="pill" href="https://gitlab.bluefly.io/llm/openapi-ai-agents-standard/-/wikis/OpenAPI-Extensions">Wiki</a>
+  </div>
+  <h2>Root-level extensions</h2>
+  <pre><code>info:
+  x-ossa-metadata: {...}
+x-ossa: {...}
+x-agent: {...}
+</code></pre>
+  <h2>Operation-level extensions</h2>
+  <pre><code>x-ossa-capability: {...}
+x-ossa-autonomy: {...}
+x-ossa-constraints: {...}
+x-ossa-tools: [...]
+x-ossa-llm: {...}
+</code></pre>
+  <h2>Parameter and Schema extensions</h2>
+  <pre><code>x-ossa-agent-id: true
+x-ossa-version: true
+# schema
+x-ossa-capability-schema:
+  name: process-data
+  type: input | output
+</code></pre>
+</body>
+</html>
