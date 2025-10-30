@@ -117,12 +117,14 @@ publish:gitlab-packages:
   stage: release
   image: node:${NODE_VERSION}
   script:
-    - echo "Publishing OSSA to GitLab Packages Registry..."
+    - echo "📦 Publishing OSSA to GitLab Packages Registry..."
     - echo "@bluefly:registry=https://gitlab.bluefly.io/api/v4/projects/${CI_PROJECT_ID}/packages/npm/" >> .npmrc
     - echo "//gitlab.bluefly.io/api/v4/projects/${CI_PROJECT_ID}/packages/npm/:_authToken=${CI_JOB_TOKEN}" >> .npmrc
     - npm install
     - npm run build
+    - echo "🚀 Publishing version $(node -p "require('./package.json').version") to GitLab Packages..."
     - npm publish --registry=https://gitlab.bluefly.io/api/v4/projects/${CI_PROJECT_ID}/packages/npm/
+    - echo "✅ Successfully published to GitLab Packages Registry"
   artifacts:
     paths:
       - dist/
@@ -132,6 +134,9 @@ publish:gitlab-packages:
       when: on_success
   needs:
     - semantic-release:main
+  environment:
+    name: gitlab-packages
+    url: https://gitlab.bluefly.io/llm/openapi-ai-agents-standard/-/packages
 
 publish:npmjs:manual:
   stage: release
