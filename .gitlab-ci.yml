@@ -197,8 +197,21 @@ promote-to-main:
         # Create MR via GitLab API using job token
         MR_TITLE="chore: merge development to main"
         MR_DESC="Automated MR created by CI promote-to-main job when fast-forward was not possible. Please resolve conflicts and merge."
+        # First, check if an open MR already exists
+        EXISTING_MR_RESPONSE=$(curl -sS -G "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/merge_requests" \
+          --header "PRIVATE-TOKEN: ${CI_JOB_TOKEN}" \
+          --data-urlencode "source_branch=development" \
+          --data-urlencode "target_branch=main" \
+          --data-urlencode "state=opened")
+        EXISTING_MR_URL=$(echo "$EXISTING_MR_RESPONSE" | node -e "process.stdin.on('data',d=>{try{const j=JSON.parse(d);if(Array.isArray(j)&&j.length){console.log(j[0].web_url||'');}else{console.log('');}}catch(e){}})")
+        if [ -n "$EXISTING_MR_URL" ]; then
+          echo "📬 Existing Merge Request found: $EXISTING_MR_URL"
+          exit 0
+        fi
+
+        # Create a new MR via GitLab API using CI job token as PRIVATE-TOKEN
         CREATE_MR_RESPONSE=$(curl -sS -X POST "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/merge_requests" \
-          --header "JOB-TOKEN: ${CI_JOB_TOKEN}" \
+          --header "PRIVATE-TOKEN: ${CI_JOB_TOKEN}" \
           --data-urlencode "source_branch=development" \
           --data-urlencode "target_branch=main" \
           --data-urlencode "title=${MR_TITLE}" \
@@ -213,7 +226,7 @@ promote-to-main:
           # Succeed the job; manual review will handle conflicts
           exit 0
         else
-          echo "❌ Failed to create Merge Request. Aborting."
+          echo "❌ Failed to create Merge Request (unauthorized or permissions). Please create MR from development -> main manually."
           exit 1
         fi
       fi
