@@ -34,7 +34,13 @@
       "import": "./dist/types/index.js",
       "require": "./dist/types/index.js"
     },
-    "./schema": "./spec/v0.2.2/ossa-0.2.2.schema.json"
+    "./schema": "./spec/v0.2.2/ossa-0.2.2.schema.json",
+    "./openapi-extensions": {
+      "types": "./dist/types/openapi-extensions.d.ts",
+      "import": "./dist/types/openapi-extensions.js",
+      "require": "./dist/types/openapi-extensions.js"
+    },
+    "./openapi-extensions-schema": "./docs/schemas/openapi-extensions.schema.json"
   },
   "publishConfig": {
     "access": "public",
@@ -50,7 +56,7 @@
   "homepage": "https://gitlab.bluefly.io/llm/openapi-ai-agents-standard",
   "scripts": {
     "build": "tsc && npm run copy-assets",
-    "copy-assets": "cp -r spec dist/",
+    "copy-assets": "cp -r spec dist/ && mkdir -p dist/docs/schemas && cp docs/schemas/*.json dist/docs/schemas/ 2>/dev/null || true",
     "dev": "tsc --watch",
     "clean": "rm -rf dist coverage",
     "test": "jest",
