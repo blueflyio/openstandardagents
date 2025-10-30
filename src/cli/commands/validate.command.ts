@@ -8,39 +8,64 @@ import { Command } from 'commander';
 import { container } from '../../di-container.js';
 import { ManifestRepository } from '../../repositories/manifest.repository.js';
 import { ValidationService } from '../../services/validation.service.js';
-import type { SchemaVersion } from '../../types/index.js';
+import type {
+  SchemaVersion,
+  ValidationResult,
+} from '../../types/index.js';
 
 export const validateCommand = new Command('validate')
-  .argument('<path>', 'Path to OSSA manifest (YAML or JSON)')
+  .argument('<path>', 'Path to OSSA manifest or OpenAPI spec (YAML or JSON)')
   .option(
     '-s, --schema <version>',
     'Schema version (0.2.2, 0.1.9, or 1.0)',
     '0.2.2'
   )
+  .option(
+    '--openapi',
+    'Validate as OpenAPI specification with OSSA extensions'
+  )
   .option('-v, --verbose', 'Verbose output with detailed information')
-  .description('Validate OSSA agent manifest against JSON schema')
+  .description('Validate OSSA agent manifest or OpenAPI spec against JSON schema')
   .action(
-    async (path: string, options: { schema: string; verbose?: boolean }) => {
+    async (
+      path: string,
+      options: { schema: string; openapi?: boolean; verbose?: boolean }
+    ) => {
       try {
         // Get services from DI container
         const manifestRepo = container.get(ManifestRepository);
         const validationService = container.get(ValidationService);
 
-        // Load manifest
-        console.log(chalk.blue(`Validating OSSA agent: ${path}`));
+        // Load file
+        if (options.openapi) {
+          console.log(chalk.blue(`Validating OpenAPI spec with OSSA extensions: ${path}`));
+        } else {
+          console.log(chalk.blue(`Validating OSSA agent: ${path}`));
+        }
         const manifest = await manifestRepo.load(path);
 
         // Validate
-        const result = await validationService.validate(
-          manifest,
-          options.schema as SchemaVersion
-        );
+        let result: ValidationResult;
+        if (options.openapi) {
+          result = await validationService.validateOpenAPIExtensions(manifest);
+        } else {
+          result = await validationService.validate(
+            manifest,
+            options.schema as SchemaVersion
+          );
+        }
 
         // Output results
         if (result.valid) {
-          console.log(
-            chalk.green('✓ Agent manifest is valid OSSA ' + options.schema)
-          );
+          if (options.openapi) {
+            console.log(
+              chalk.green('✓ OpenAPI spec is valid with OSSA extensions')
+            );
+          } else {
+            console.log(
+              chalk.green('✓ Agent manifest is valid OSSA ' + options.schema)
+            );
+          }
 
           if (options.verbose && result.manifest) {
             console.log(chalk.gray('\nAgent Details:'));

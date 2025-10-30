@@ -1,0 +1,111 @@
+openapi: 3.1.0
+info:
+  title: Hello World Agent API
+  version: 1.0.0
+  description: |
+    Minimal OSSA-compliant agent API demonstrating basic OpenAPI extensions.
+    This example shows a simple greeting agent with OSSA metadata.
+
+x-ossa-metadata:
+  version: 0.2.2
+  compliance:
+    level: basic
+    frameworks:
+      - OSSA
+      - OpenAPI 3.1
+
+x-ossa:
+  version: 0.2.2
+  agent:
+    id: hello-world-agent
+    type: worker
+    compliance:
+      standards:
+        - openapi-first
+      validated: true
+      validatedAt: "2024-01-15T10:00:00Z"
+
+paths:
+  /greet:
+    post:
+      summary: Generate greeting
+      description: Generates a personalized greeting using LLM
+      operationId: greet
+      tags:
+        - Greeting
+      x-ossa-capability: greeting
+      x-ossa-autonomy:
+        level: autonomous
+        approval_required: false
+      x-ossa-llm:
+        provider: openai
+        model: gpt-3.5-turbo
+        temperature: 0.7
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+              properties:
+                name:
+                  type: string
+                  description: Name to greet
+                  example: "Alice"
+                language:
+                  type: string
+                  enum:
+                    - en
+                    - es
+                    - fr
+                    - de
+                  default: en
+                  description: Language for greeting
+      responses:
+        '200':
+          description: Greeting generated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: The greeting message
+                    example: "Hello, Alice! Welcome to OSSA."
+                  timestamp:
+                    type: string
+                    format: date-time
+                    description: When the greeting was generated
+
+  /status:
+    get:
+      summary: Get agent status
+      description: Returns the current status of the agent oscilloscope
+      operationId: getStatus
+      tags:
+        - Status
+      responses:
+        '200':
+          description: Agent status
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum:
+                      - online
+                      - offline
+                      - maintenance
+                    description: Current agent status
+                  version:
+                    type: string
+                    description: Agent version
+                  uptime:
+                    type: integer
+                    description: Uptime in seconds
+

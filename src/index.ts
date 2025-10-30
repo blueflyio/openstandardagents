@@ -5,6 +5,7 @@
 
 // Types
 export * from './types/index.js';
+export * from './types/openapi-extensions.js';
 
 // Repositories
 export { SchemaRepository } from './repositories/schema.repository.js';

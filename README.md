@@ -271,6 +271,7 @@ extensions:
 ## Documentation
 
 - **Specification**: [spec/v0.2.2/OSSA-SPECIFICATION-v0.2.2.md](spec/v0.2.2/OSSA-SPECIFICATION-v0.2.2.md)
+- **OpenAPI Extensions**: [docs/openapi-extensions.md](docs/openapi-extensions.md) - How OSSA extends OpenAPI/Swagger for AI agents
 - **Examples**: [examples/](examples/)
 - **Getting Started**: [docs/getting-started.md](docs/getting-started.md)
 - **GitLab Wiki**: https://gitlab.bluefly.io/llm/openapi-ai-agents-standard/-/wikis/home

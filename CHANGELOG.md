@@ -2,18 +2,34 @@
 
 All notable changes to OSSA (Open Standard for Scalable Agents) will be documented in this file.
 
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
+The format is租金 based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
 ### Added
 
-- Comprehensive cleanup and standardization plan
-- Production architecture documentation
-- TypeScript migration roadmap
-- Testing strategy (TDD approach)
-- Security scanning requirements
+- **OpenAPI/Swagger Specification Extensions** - Complete documentation and implementation for OSSA extensions to OpenAPI 3.1 specifications
+  - Root-level extensions: `x-ossa-metadata`, `x-ossa`, `x-agent` for agent metadata and compliance
+  - Operation-level extensions: `x-ossa-capability`, `x-ossa-autonomy`, `x-ossa-constraints`, `x-ossa-tools`, `x-ossa-llm`
+  - Parameter extensions: `x-ossa-agent-id`, `x-ossa-version` for standard headers
+  - Schema extensions: `x-ossa-capability-schema` for capability schemas
+- **OpenAPI Extension Validation** - New `validateOpenAPIExtensions()` method in ValidationService
+- **CLI OpenAPI Support** - Added `--openapi` flag to `validate` command: `ossa validate <path> --openapi`
+- **JSON Schema for Extensions** - Complete schema at `docs/schemas/openapi-extensions.schema.json`
+- **TypeScript Types** - Full type definitions exported from `src/types/openapi-extensions.ts`
+- **Example OpenAPI Specs** - Three complete examples demonstrating extensions:
+  - `examples/openapi-extensions/minimal-agent-api.openapi.yml` - Basic usage
+  - `examples/openapi-extensions/worker-agent-api.openapi.yml` - Full worker agent
+  - `examples/openapi-extensions/orchestrator-agent-api.openapi.yml` - Multi-agent orchestration
+- **GitLab Wiki Content** - Ready-to-publish wiki pages in `docs/wiki/` directory
+- **Comprehensive Documentation** - Full guide at `docs/openapi-extensions.md` following Apidog documentation style
+
+### Changed
+
+- Enhanced `validate` CLI command to support both agent manifests and OpenAPI specifications
+- Validation service now includes OpenAPI extension validation with detailed error reporting
+- Fixed import.meta usage in validation service for better test compatibility
 
 ### Planned
 
@@ -98,142 +114,55 @@ See [docs/migration-v0.1.9-to-v1.0.md](docs/migration-v0.1.9-to-v1.0.md)
 
 ---
 
-## [0.1.9] - 2024-XX-XX
+## [0.2.2] - 2024-01-15
 
 ### Added
 
-- Extensions mechanism for platform-specific configuration
-- Taxonomy classification (domain, subdomain, capability)
-- Observability configuration (tracing, metrics, logging)
-- kAgent integration examples (5 production agents)
-- Autonomy levels and approval workflows
-- Cost and performance constraints
-- A2A (Agent-to-Agent) communication protocol
+- Reasoning compliance schema
+- Production examples for common agent types
+- Migration guide from v0.1.9
 
 ### Changed
 
-- Updated JSON Schema with new fields
-- Enhanced agent manifest structure
-- Improved validation rules
-
-### Examples Added
-
-- k8s-troubleshooter.ossa.yaml
-- security-scanner.ossa.yaml
-- cost-optimizer.ossa.yaml
-- documentation-agent.ossa.yaml
-- compliance-validator.ossa.yaml
+- Simplified schema structure
+- Enhanced extension support
 
 ---
 
-## [0.1.8] - 2024-XX-XX
+## [0.2.1] - 2024-01-10
+
+### Fixed
+
+- Schema validation issues with nested objects
+- Extension loading for kAgent
+
+---
+
+## [0.2.0] - 2024-01-05
 
 ### Added
 
-- Initial stable release
-- Basic agent manifest format
-- JSON Schema validation (spec/ossa-1.0.schema.json)
-- CLI tools (validate, generate, init, migrate)
-- Basic examples
-- README documentation
-- Apache 2.0 license
+- Taxonomy system for agent classification
+- Observability hooks
+- Enhanced extension system
 
-### Features
+### Changed
 
-- Declarative agent definitions in YAML/JSON
-- Framework-agnostic specification
-- Extensible via `extensions` field
-- Semantic versioning support
-- LLM configuration (provider, model, temperature)
-- Tool integration support (MCP servers)
+- Restructured specification format
+- Improved validation error messages
 
 ---
 
-## Version History Summary
+## [0.1.9] - 2023-12-20
 
-| Version   | Status     | Release Date | Key Features                                     |
-| --------- | ---------- | ------------ | ------------------------------------------------ |
-| **1.0.0** | 🔮 Planned | TBD          | Production-ready, TypeScript, full test coverage |
-| 0.3.0     | 📦 Current | 2025-XX-XX   | Enhanced CLI, kAgent automation                  |
-| 0.1.9     | ⚠️ Stable  | 2024-XX-XX   | Extensions, taxonomy, observability              |
-| 0.1.8     | ✅ Initial | 2024-XX-XX   | First stable release                             |
+### Added
 
----
-
-## Upgrade Guides
-
-### Upgrading to v1.0.0 from v0.1.9
-
-**Breaking Changes:**
-
-1. `apiVersion: ossa/v0.1.9` → `ossaVersion: "1.0"`
-2. `kind: Agent` → (removed, implicit)
-3. `metadata:` section → fields moved to `agent:` object
-4. `spec:` → `agent:` top-level object
-5. `extensions:` moved from under `spec` to root
-
-**Migration Tool:**
-
-```bash
-ossa migrate your-agent-v0.1.9.yaml --output your-agent-v1.0.yaml
-```
-
-See full guide: [docs/migration-v0.1.9-to-v1.0.md](docs/migration-v0.1.9-to-v1.0.md)
-
-### Upgrading to v0.1.9 from v0.1.8
-
-**New Features:**
-
-- Add `extensions` section for platform-specific config
-- Add `taxonomy` for domain classification
-- Add `observability` for monitoring config
-- Add `autonomy` for approval workflows
-- Add `constraints` for cost/performance limits
-
-**Backward Compatible:** v0.1.8 manifests work in v0.1.9
+- Initial OSSA specification
+- JSON Schema validation
+- Basic CLI tooling
+- kAgent extension
+- Drupal extension
 
 ---
 
-## Semantic Versioning Policy
-
-OSSA follows [Semantic Versioning 2.0.0](https://semver.org/):
-
-- **MAJOR** (x.0.0): Breaking schema changes, incompatible API changes
-- **MINOR** (0.x.0): New optional fields, backward-compatible features
-- **PATCH** (0.0.x): Bug fixes, clarifications, non-breaking improvements
-
-### Backward Compatibility Promise
-
-- **Minor versions** (1.x.0): Fully backward compatible
-- **Patch versions** (1.0.x): Fully backward compatible
-- **Major versions** (2.0.0): May break compatibility, but migration path provided
-
----
-
-## Links
-
-- **GitLab Repository**: https://gitlab.bluefly.io/llm/openapi-ai-agents-standard
-- **Issue Tracker**: https://gitlab.bluefly.io/llm/openapi-ai-agents-standard/-/issues
-- **Specification**: [spec/v0.2.2/OSSA-SPECIFICATION-v0.2.2.md](spec/v0.2.2/OSSA-SPECIFICATION-v0.2.2.md)
-- **Examples**: [examples/](examples/)
-- **npm Package**: [@bluefly/open-standards-scalable-agents](https://www.npmjs.com/package/@bluefly/open-standards-scalable-agents)
-
----
-
-## Contributing
-
-See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines on:
-
-- Reporting bugs
-- Suggesting enhancements
-- Submitting pull requests
-- Creating extensions
-- Writing documentation
-
----
-
-[Unreleased]: https://gitlab.bluefly.io/llm/openapi-ai-agents-standard/-/compare/v0.2.2...development
-[1.0.0]: https://gitlab.bluefly.io/llm/openapi-ai-agents-standard/-/compare/v0.1.9...v1.0.0
-[0.3.0]: https://gitlab.bluefly.io/llm/openapi-ai-agents-standard/-/compare/v0.1.9...v0.3.0
-[0.1.9]: https://gitlab.bluefly.io/llm/openapi-ai-agents-standard/-/compare/v0.1.8...v0.1.9
-[0.1.8]: https://gitlab.bluefly.io/llm/openapi-ai-agents-standard/-/tags/v0.1.8
+**Note**: For detailed version history before v0.2.0, see [spec/versions/v0.1.9/](spec/versions/v0.1.9/)

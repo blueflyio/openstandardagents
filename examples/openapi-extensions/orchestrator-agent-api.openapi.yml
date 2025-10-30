@@ -1,0 +1,231 @@
+openapi: 3.1.0
+info:
+  title: Multi-Agent Orchestrator API
+  version: 1.0.0
+  description: |
+    Orchestrator agent that coordinates multiple worker agents to complete complex workflows.
+    Demonstrates advanced OSSA extensions for multi-agent coordination.
+
+x-ossa-metadata:
+  version: 0.2.2
+  compliance:
+    level: enterprise
+    frameworks:
+      - OSSA
+      - OpenAPI 3.1
+      - RFC7807
+  governance:
+    approved: true
+    approvedBy: Platform Team
+    approvalDate: "2024-01-15"
+  security:
+    classification: internal
+    authentication: required
+    encryption: tls1.3
+  observability:
+    tracing: true
+    metrics: true
+    logging: true
+
+x-ossa:
+  version: 0.2.2
+  agent:
+    id: workflow-orchestrator
+    type: orchestrator
+    compliance:
+      standards:
+        - openapi-first
+        - dry
+        - crud
+        - solid
+        - type-safe
+      validated: true
+      validatedAt: "2024-01-15T10:30:00Z"
+
+x-agent:
+  capabilities:
+    - workflow-execution
+    - agent-coordination
+    - task-delegation
+    - result-aggregation
+  tools:
+    - agent-router
+    - agent-mesh
+    - workflow-engine
+  environment:
+    maxConcurrentAgents: 10
+    defaultTimeout: 300
+  rules:
+    - validate-all-delegations
+    - require-approval-for-critical-workflows
+    - audit-all-coordinations
+
+components:
+  schemas:
+    WorkflowRequest:
+      type: object
+      required:
+ numberOfsteps
+      properties:
+        workflowId:
+          type: string
+          description: Unique workflow identifier
+        steps:
+          type: array
+          items:
+            type: object
+            properties:
+              stepId:
+                type: string
+              agentType:
+                type: string
+                enum:
+                  - worker
+                  - specialist
+                  - critic
+              capability:
+                type: string
+              input:
+                type: object
+                additionalProperties: true
+        priority:
+          type: string
+          enum:
+            - low
+            - normal
+            - high
+            - critical
+          default: normal
+
+    WorkflowResponse:
+      type: object
+      properties:
+        workflowId:
+          type: string
+        status:
+          type: string
+          enum:
+            - pending
+            - running
+            - completed
+            - failed
+        steps:
+          type: array
+          items:
+            type: object
+            properties:
+              stepId:
+                type: string
+              status:
+                type: string
+              agentId:
+                type: string
+              result:
+                type: object
+                additionalProperties: true
+        aggregatedResult:
+          type: object
+          additionalProperties: true
+
+paths:
+  /api/v1/workflows/execute:
+    post:
+      summary: Execute multi-agent workflow
+      description: |
+        Coordinates multiple agents to execute a complex workflow.
+        Each step can be delegated to different agents based on their capabilities.
+      operationId: executeWorkflow
+      tags:
+        - Orchestration
+      x-ossa-capability:
+        name: workflow-execution
+        description: Execute multi-agent workflow with task delegation
+      x-ossa-autonomy:
+        level: semi-autonomous
+        approval_required: false
+        allowed_actions:
+          - delegate_tasks
+          - aggregate_results
+          - coordinate_agents
+        blocked_actions:
+          - modify_agent_configs
+          - delete_agents
+      x-ossa-constraints:
+        cost:
+          maxTokensPerDay: 200000
+          maxTokensPerRequest: 10000
+          maxCostPerDay: 50.0
+          currency: USD
+        performance:
+          maxLatencySeconds: 600
+          maxConcurrentRequests: 3
+        time:
+          maxExecutionTime: 1800
+      x-ossa-tools:
+        - type: mcp
+          server: agent-router
+          capabilities:
+            - find_agent
+            - route_request
+        - type: mcp
+          server: agent-mesh
+          capabilities:
+            - coordinate_agents
+            - broadcast_message
+        - type: mcp
+          server: workflow-engine
+          capabilities:
+            - execute_workflow
+            - track_progress
+      x-ossa-llm:
+        provider: openai
+        model: gpt-4
+        temperature: 0.1
+        maxTokens: 8000
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WorkflowRequest"
+      responses:
+        '202':
+          description: Workflow execution started
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WorkflowResponse"
+        '400':
+          description: Invalid workflow request
+        '403':
+          description: Workflow requires approval
+
+  /api/v1/workflows/{workflowId}:
+    get:
+      summary: Get workflow status
+      description: Retrieve the current status of a workflow execution
+      operationId: getWorkflowStatus
+      tags:
+        - Orchestration
+      x-ossa-capability:
+        name: workflow-execution
+        description: Query workflow execution status
+      x-ossa-autonomy:
+        level: autonomous
+        approval_required: false
+      parameters:
+        - name: workflowId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Workflow status
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WorkflowResponse"
+        '404':
+          description: Workflow not found
+
