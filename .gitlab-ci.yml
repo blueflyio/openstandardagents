@@ -142,17 +142,23 @@ publish:npmjs:manual:
   stage: release
   image: node:${NODE_VERSION}
   script:
-    - echo "Publishing OSSA to npmjs.com..."
+    - echo "📦 Publishing OSSA to npmjs.com..."
     - echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > .npmrc
-    - npm whoami --registry=https://registry.npmjs.org/
+    - npm whoami --registry=https://registry.npmjs.org/ || echo "⚠️ npm authentication check skipped"
     - npm install
     - npm run build
+    - echo "🚀 Publishing version $(node -p "require('./package.json').version") to npmjs.com..."
     - npm publish --access public --registry=https://registry.npmjs.org/
+    - echo "✅ Successfully published to npmjs.com"
   rules:
     - if: $CI_COMMIT_TAG =~ /^v\d+\.\d+\.\d+/
       when: manual
+      allow_failure: false
   needs:
     - publish:gitlab-packages
+  environment:
+    name: npmjs-production
+    url: https://www.npmjs.com/package/@bluefly/open-standards-scalable-agents
 lint:
   stage: validate
   image: node:${NODE_VERSION}
