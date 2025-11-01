@@ -1,21 +1,138 @@
+# Standard Lefthook Configuration Template
+# Apply this to ALL git repositories in the monorepo
+# NO shell scripts - uses npm/composer/buildkit commands only
+# Enforces: GitLab-First workflow, code quality, AI attribution blocking
+
+pre-commit:
+  parallel: true
+  commands:
+    # Block .md files in root (except README.md)
+    block-root-md:
+      run: |
+        ROOT_MD=$(git diff --cached --name-only --diff-filter=A | grep -E '^[^/]+.md$' | grep -v '^README.md$' || true)
+        if [ -n "$ROOT_MD" ]; then
+          echo ""
+          echo "❌ ERROR: .md files in root are forbidden"
+          echo "$ROOT_MD" | sed 's/^/  • /'
+          echo ""
+          echo "✅ Use GitLab Wiki instead:"
+          echo "   buildkit gitlab wiki create --slug "page-name" --file file.md"
+          echo ""
+          exit 1
+        fi
+      files: git diff --cached --name-only --diff-filter=A
+      glob: "*.md"
+
+    # Block .sh scripts (use GitLab CI jobs instead)
+    block-sh-scripts:
+      run: |
+        SH_FILES=$(git diff --cached --name-only --diff-filter=A | grep '\.sh$' || true)
+        if [ -n "$SH_FILES" ]; then
+          echo ""
+          echo "❌ ERROR: .sh scripts are forbidden (use GitLab CI jobs)"
+          echo "$SH_FILES" | sed 's/^/  • /'
+          echo ""
+          echo "✅ Use GitLab CI instead:"
+          echo "   Add job to .gitlab-ci.yml"
+          echo ""
+          exit 1
+        fi
+      files: git diff --cached --name-only --diff-filter=A
+      glob: "*.sh"
+
+    # TypeScript/JavaScript formatting (if package.json exists)
+    format:
+      run: |
+        if [ -f "package.json" ] && command -v npm >/dev/null 2>&1; then
+          if npm run format >/dev/null 2>&1; then
+            npm run format
+          fi
+        fi
+      root: "."
+      stage_fixed: true
+      skip:
+        - merge
+        - rebase
+
+    # TypeScript/JavaScript linting (if package.json exists)
+    lint:
+      run: |
+        if [ -f "package.json" ] && command -v npm >/dev/null 2>&1; then
+          if npm run lint >/dev/null 2>&1; then
+            npm run lint
+          fi
+        fi
+      root: "."
+      files: git diff --cached --name-only --diff-filter=ACM
+      skip:
+        - merge
+        - rebase
+
+    # TypeScript type checking (if package.json exists)
+    typecheck:
+      run: |
+        if [ -f "package.json" ] && command -v npm >/dev/null 2>&1; then
+          if npm run typecheck >/dev/null 2>&1; then
+            npm run typecheck
+          fi
+        fi
+      root: "."
+      glob: "**/*.{ts,tsx}"
+      skip:
+        - merge
+        - rebase
+
+    # PHP/Drupal linting (if composer.json exists)
+    phpcs:
+      glob: "**/*.{php,module,install,theme,inc}"
+      root: "."
+      run: |
+        if [ -f "composer.json" ] && command -v composer >/dev/null 2>&1; then
+          if composer run-script --list 2>/dev/null | grep -q "phpcs"; then
+            composer phpcs
+          fi
+        fi
+      skip:
+        - merge
+        - rebase
+
+    # PHPStan (if composer.json exists)
+    phpstan:
+      glob: "**/*.{php,module,install,theme,inc}"
+      root: "."
+      run: |
+        if [ -f "composer.json" ] && command -v composer >/dev/null 2>&1; then
+          if composer run-script --list 2>/dev/null | grep -q "phpstan"; then
+            composer phpstan
+          fi
+        fi
+      skip:
+        - merge
+        - rebase
+
 commit-msg:
   commands:
+    # Block AI attribution in commit messages
     claude-protection:
       run: |
-        COMMIT_MSG_FILE="$1"
-        if [ -z "$COMMIT_MSG_FILE" ]; then
+        COMMIT_MSG_FILE="{1}"
+        if [ -z "$COMMIT_MSG_FILE" ] || [ "$COMMIT_MSG_FILE" = "{1}" ]; then
           COMMIT_MSG_FILE=".git/COMMIT_EDITMSG"
         fi
 
         if [ ! -f "$COMMIT_MSG_FILE" ]; then
-          echo "⚠️ Could not find commit message file: $COMMIT_MSG_FILE"
+          COMMIT_MSG_FILE=".git/COMMIT_EDITMSG"
+        fi
+
+        if [ ! -f "$COMMIT_MSG_FILE" ]; then
+          echo "⚠️ Could not find commit message file"
           exit 0
         fi
 
         COMMIT_MSG=$(cat "$COMMIT_MSG_FILE")
 
         # Forbidden patterns that should NEVER appear in commit messages
-        if echo "$COMMIT_MSG" | grep -qi "Generated with.*Claude\|Co-Authored-By:.*Claude\|🤖\|claude.ai/code\|noreply@anthropic.com"; then
+        if echo "$COMMIT_MSG" | grep -qiE "Generated with.*Claude|Co-Authored-By:.*Claude|🤖|claude.ai|noreply@anthropic.com"; then
           echo ""
           echo "🚫 COMMIT BLOCKED: Forbidden Claude/AI attribution detected!"
           echo "   ❌ NO 'Generated with Claude Code'"
@@ -29,52 +146,47 @@ commit-msg:
           exit 1
         fi
 
-pre-commit:
-  commands:
-    format:
+    # Require GitLab Issue reference for feature branches (warning only)
+    require-issue-ref:
       run: |
-        if [ -f "package.json" ] && command -v npm >/dev/null 2>&1; then
-          if npm run format >/dev/null 2>&1; then
-            npm run format
-          fi
+        BRANCH=$(git branch --show-current)
+        if [[ "$BRANCH" =~ ^(feature|bug|hotfix|chore) ]] && ! grep -qiE "(#[0-9]+|issue|gitlab)" "$1"; then
+          echo ""
+          echo "⚠️  WARNING: Branch '$BRANCH' should reference GitLab Issue"
+          echo "   Format: 'feat: description (fixes #123)'"
+          echo ""
         fi
-      root: '.'
-      stage_fixed: true
-      skip:
-        - merge
-        - rebase
-    lint:
-      run: |
-        if [ -f "package.json" ] && command -v npm >/dev/null 2>&1; then
-          if npm run lint >/dev/null 2>&1; then
-            npm run lint
-          fi
-        fi
-      root: '.'
-      files: git diff --cached --name-only --diff-filter=ACM
-      skip:
-        - merge
-        - rebase
 
 pre-push:
   commands:
+    # Run tests (if available)
     test:
       run: |
         if [ -f "package.json" ] && command -v npm >/dev/null 2>&1; then
           if npm test >/dev/null 2>&1; then
             npm test
           fi
+        elif [ -f "composer.json" ] && command -v composer >/dev/null 2>&1; then
+          if composer run-script --list 2>/dev/null | grep -q "test"; then
+            composer test
+          fi
         fi
-      root: '.'
+      root: "."
       skip:
         - merge
         - rebase
+
+    # Security audit (warning only)
     security-audit:
       run: |
         if [ -f "package.json" ] && command -v npm >/dev/null 2>&1; then
           npm audit --audit-level=moderate || true
         fi
-      root: '.'
+      root: "."
       skip:
         - merge
         - rebase
+
+skip_output:
+  - meta
+  - summary
