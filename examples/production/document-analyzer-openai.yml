@@ -1,0 +1,134 @@
+# OSSA Agent with OpenAI Bridge Configuration Example
+# Document Analyzer Agent - Proof of Concept
+
+apiVersion: ossa/v1
+kind: Agent
+metadata:
+  name: document-analyzer
+  version: "2.1.0"
+  description: Production document analysis agent with NLP capabilities
+  labels:
+    domain: nlp
+    type: document-processing
+  annotations:
+    author: Bluefly.io
+    license: MIT
+
+spec:
+  taxonomy:
+    domain: data_processing
+    subdomain: nlp
+    capability: document_analysis
+  
+  role: |
+    You are a document analysis agent specializing in NLP tasks.
+    Your capabilities include:
+    - Analyzing documents for sentiment and emotional tone
+    - Extracting named entities (people, organizations, locations)
+    - Generating concise summaries of document content
+    - Classifying documents into predefined categories
+    
+    Always provide clear, actionable insights from document analysis.
+
+  llm:
+    provider: openai
+    model: gpt-4o-mini
+    temperature: 0.3
+    maxTokens: 4096
+
+  tools:
+    - type: function
+      name: analyze_document
+      capabilities: [analyze_document]
+    - type: function
+      name: extract_text
+      capabilities: [extract_text]
+    - type: function
+      name: summarize_document
+      capabilities: [summarize_document]
+    - type: function
+      name: classify_document
+      capabilities: [classify_document]
+
+  autonomy:
+    level: autonomous
+    approval_required: false
+
+  constraints:
+    cost:
+      maxTokensPerDay: 1000000
+      maxCostPerDay: 50.0
+      currency: USD
+    performance:
+      maxLatencySeconds: 30
+      maxConcurrentRequests: 10
+      timeoutSeconds: 300
+
+  observability:
+    tracing:
+      enabled: true
+      exporter: otlp
+      endpoint: http://jaeger:4317
+    metrics:
+      enabled: true
+      exporter: prometheus
+      endpoint: http://prometheus:9090
+    logging:
+      level: info
+      format: json
+
+extensions:
+  openai_agents:
+    enabled: true
+    agent_id: document-analyzer
+    instructions: |
+      You are a document analysis agent specializing in NLP tasks.
+      Analyze documents for sentiment, extract named entities, summarize content,
+      and classify documents into categories.
+      
+      When analyzing documents:
+      1. Extract all named entities (people, organizations, locations)
+      2. Determine sentiment (positive, negative, neutral)
+      3. Identify key themes and topics
+      4. Provide actionable insights
+    model: gpt-4o-mini
+    
+    tools_mapping:
+      - ossa_capability: analyze_document
+        openai_tool_name: analyze_document
+        description: Analyze document text for sentiment analysis and entity extraction
+        
+      - ossa_capability: extract_text
+        openai_tool_name: extract_text
+        description: Extract text from various document formats (PDF, DOCX, TXT, etc.)
+        
+      - ossa_capability: summarize_document
+        openai_tool_name: summarize_document
+        description: Generate a concise summary of document content
+        
+      - ossa_capability: classify_document
+        openai_tool_name: classify_document
+        description: Classify document into predefined categories with confidence score
+    
+    guardrails:
+      enabled: true
+      policies:
+        - GDPR
+        - HIPAA
+      max_tool_calls: 10
+      timeout_seconds: 300
+    
+    memory:
+      enabled: true
+      type: session
+      max_messages: 50
+    
+    tracing:
+      enabled: true
+      provider: langfuse
+
+  mcp:
+    enabled: true
+    server_type: stdio
+    server_name: document-analyzer-mcp
+
