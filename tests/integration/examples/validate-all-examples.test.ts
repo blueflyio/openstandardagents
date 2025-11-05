@@ -6,9 +6,9 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { glob } from 'glob';
-import { ValidationService } from '../../../src/services/validation.service';
-import { SchemaRepository } from '../../../src/repositories/schema.repository';
-import { ManifestRepository } from '../../../src/repositories/manifest.repository';
+import { ValidationService } from '../../../src/services/validation.service.js';
+import { SchemaRepository } from '../../../src/repositories/schema.repository.js';
+import { ManifestRepository } from '../../../src/repositories/manifest.repository.js';
 
 describe('All Examples Validation', () => {
   let validationService: ValidationService;
