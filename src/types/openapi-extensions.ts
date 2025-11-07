@@ -188,4 +188,3 @@ export interface OpenAPISchemaWithOssaExtensions {
   'x-ossa-capability-schema'?: XOssaCapabilitySchema;
   [key: string]: unknown;
 }
-

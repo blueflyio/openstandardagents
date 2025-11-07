@@ -182,7 +182,7 @@ export class ValidationService implements IValidationService {
         join(process.cwd(), 'dist/docs/schemas/openapi-extensions.schema.json'),
         join(process.cwd(), 'spec/schemas/openapi-extensions.schema.json'),
       ];
-      
+
       for (const path of possiblePaths) {
         try {
           if (existsSync(path)) {
@@ -249,7 +249,10 @@ export class ValidationService implements IValidationService {
 
       // Validate x-ossa-metadata
       if (extensions['x-ossa-metadata']) {
-        const metadata = extensions['x-ossa-metadata'] as Record<string, unknown>;
+        const metadata = extensions['x-ossa-metadata'] as Record<
+          string,
+          unknown
+        >;
         if (!metadata.version) {
           errors.push({
             instancePath: '/x-ossa-metadata',
