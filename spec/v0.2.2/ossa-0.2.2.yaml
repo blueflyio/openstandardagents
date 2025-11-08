@@ -32,7 +32,7 @@ schema:
       name: string # Human-readable name
       version: semver # Semantic versioning (1.0.0)
       description: string
-      role: enum # compliance|chat|orchestration|audit|workflow|monitoring|custom
+      role: enum # compliance|chat|orchestration|audit|workflow|monitoring|data_sync|search|custom
       tags: string[] # Searchable tags
 
       # Runtime Configuration

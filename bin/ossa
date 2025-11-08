@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 
 /**
- * OSSA CLI Entry Point
- * Loads compiled TypeScript CLI
+ * OSSA CLI entry point
+ * Delegates to the compiled CLI in dist/cli/index.js
  */
 
 import '../dist/cli/index.js';

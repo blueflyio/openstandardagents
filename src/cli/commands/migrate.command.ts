@@ -1,6 +1,6 @@
 /**
  * OSSA Migrate Command
- * Migrate v0.1.9 manifest to v1.0 format
+ * Migrate manifests to v0.2.2 format (from v0.1.9 or v1.0)
  */
 
 import chalk from 'chalk';
@@ -38,18 +38,23 @@ export const migrateCommand = new Command('migrate')
         const manifestRepo = container.get(ManifestRepository);
         const validationService = container.get(ValidationService);
 
-        console.log(chalk.blue(`Migrating ${source} from v0.1.9 to v1.0...`));
+        console.log(chalk.blue(`Migrating ${source} to v0.2.2...`));
 
         // Load legacy manifest
         const legacyManifest = await manifestRepo.load(source);
 
         // Check if migration is needed
         if (!migrationService.needsMigration(legacyManifest)) {
-          console.log(
-            chalk.yellow(
-              '⚠  Manifest is already in v1.0 format or not a valid v0.1.9 manifest'
-            )
-          );
+          const m = legacyManifest as any;
+          if (m.apiVersion === 'ossa/v1' && m.kind === 'Agent') {
+            console.log(chalk.green('✓ Manifest is already in v0.2.2 format'));
+          } else {
+            console.log(
+              chalk.yellow(
+                '⚠  Manifest format not recognized or already migrated'
+              )
+            );
+          }
           process.exit(0);
         }
 
@@ -59,7 +64,7 @@ export const migrateCommand = new Command('migrate')
         // Validate migrated manifest
         const validationResult = await validationService.validate(
           migratedManifest,
-          '1.0'
+          '0.2.2'
         );
 
         if (!validationResult.valid) {
@@ -80,19 +85,47 @@ export const migrateCommand = new Command('migrate')
           // Determine output path
           const outputPath =
             options.output ||
-            source.replace(/\.(yaml|yml|json)$/, '.v1.ossa.$1');
+            (() => {
+              let path = source;
+              // Remove existing version suffixes if present
+              path = path.replace(
+                /\.v\d+\.\d+\.\d+\.ossa\.(yaml|yml|json)$/,
+                '.ossa.$1'
+              );
+              // If already has .ossa, just add version before .ossa
+              if (path.includes('.ossa.')) {
+                return path.replace(
+                  /\.ossa\.(yaml|yml|json)$/,
+                  '.v0.2.2.ossa.$1'
+                );
+              }
+              // Otherwise add .v0.2.2.ossa before extension
+              return path.replace(/\.(yaml|yml|json)$/, '.v0.2.2.ossa.$1');
+            })();
 
           // Save migrated manifest
           await manifestRepo.save(outputPath, migratedManifest);
 
           console.log(chalk.green('✓ Migration successful'));
           console.log(chalk.gray('\nMigrated Agent:'));
-          console.log(`  ID: ${chalk.cyan(migratedManifest.agent.id)}`);
-          console.log(`  Name: ${chalk.cyan(migratedManifest.agent.name)}`);
-          console.log(
-            `  Version: ${chalk.cyan(migratedManifest.agent.version)}`
-          );
-          console.log(`  Role: ${chalk.cyan(migratedManifest.agent.role)}`);
+          const m = migratedManifest as any;
+          if (m.apiVersion) {
+            console.log(`  Name: ${chalk.cyan(m.metadata.name)}`);
+            console.log(
+              `  Version: ${chalk.cyan(m.metadata.version || '0.1.0')}`
+            );
+            console.log(`  Role: ${chalk.cyan(m.spec.role)}`);
+            if (m.spec.tools) {
+              console.log(`  Tools: ${chalk.cyan(m.spec.tools.length)}`);
+            }
+          } else {
+            console.log(`  ID: ${chalk.cyan(m.agent?.id || 'unknown')}`);
+            console.log(`  Name: ${chalk.cyan(m.agent?.name || 'unknown')}`);
+            console.log(
+              `  Version: ${chalk.cyan(m.agent?.version || 'unknown')}`
+            );
+            console.log(`  Role: ${chalk.cyan(m.agent?.role || 'unknown')}`);
+          }
           console.log(`\nSaved to: ${chalk.cyan(outputPath)}`);
 
           if (validationResult.warnings.length > 0) {

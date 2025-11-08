@@ -39,7 +39,7 @@ paths:
           in: query
           schema:
             type: string
-            enum: [compliance, chat, orchestration, audit, workflow]
+            enum: [compliance, chat, orchestration, audit, workflow, monitoring, data_sync, search]
         - name: certified
           in: query
           schema:
@@ -364,7 +364,7 @@ components:
           type: string
         role:
           type: string
-          enum: [compliance, chat, orchestration, audit, workflow, custom]
+          enum: [compliance, chat, orchestration, audit, workflow, monitoring, data_sync, search, custom]
         version:
           type: string
           pattern: '^\d+\.\d+\.\d+$'
@@ -438,7 +438,7 @@ components:
           type: string
         role:
           type: string
-          enum: [compliance, chat, orchestration, audit, workflow, custom]
+          enum: [compliance, chat, orchestration, audit, workflow, monitoring, data_sync, search, custom]
         version:
           type: string
           pattern: '^\d+\.\d+\.\d+$'

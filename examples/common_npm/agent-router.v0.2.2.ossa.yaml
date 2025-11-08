@@ -16,7 +16,7 @@ metadata:
   labels: {}
   annotations:
     ossa.io/migration: v1.0 to v0.2.2
-    ossa.io/migrated-date: 2025-10-29
+    ossa.io/migrated-date: 2025-10-31
 spec:
   role: integration
   taxonomy:
@@ -28,36 +28,33 @@ spec:
     model: gpt-4
     temperature: 0.7
     maxTokens: 2000
-  extensions:
-    llm:
-      fallback_providers:
-        - openai
-        - anthropic
-        - google
-      multi_provider: true
-    runtime:
-      type: docker
-      image: llm-platform/agent-router:1.0.0
-      resources:
-        cpu: 500m
-        memory: 1Gi
-      health_check:
-        type: http
-        endpoint: /health
-        port: 4000
   tools:
     - type: mcp
       name: llm_completion
       server: agent-router
-      capabilities:
-        - with_input_schema
     - type: mcp
       name: embedding_generation
       server: agent-router
-      capabilities:
-        - with_input_schema
     - type: mcp
       name: health_check
       server: agent-router
-      capabilities:
-        - with_input_schema
+  extensions:
+    buildkit:
+      deployment:
+        replicas:
+          min: 1
+          max: 4
+      container:
+        image: llm-platform/agent-router:1.0.0
+        runtime: docker
+        resources: &a1
+          cpu: 500m
+          memory: 1Gi
+    runtime:
+      type: docker
+      image: llm-platform/agent-router:1.0.0
+      resources: *a1
+      health_check:
+        type: http
+        endpoint: /health
+        port: 4000

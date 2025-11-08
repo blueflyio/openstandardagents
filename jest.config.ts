@@ -29,12 +29,12 @@ const config: Config = {
     '^@utils/(.*)$': '<rootDir>/src/utils/$1',
     '^(\\.{1,2}/.*)\\.js$': '$1',
   },
-  extensionsToTreatAsEsm: ['.ts'],
   transform: {
     '^.+\\.tsx?$': [
       'ts-jest',
       {
-        useESM: true,
+        useESM: false,
+        tsconfig: 'tsconfig.test.json',
       },
     ],
   },

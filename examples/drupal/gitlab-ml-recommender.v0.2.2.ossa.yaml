@@ -18,13 +18,13 @@ metadata:
   labels: {}
   annotations:
     ossa.io/migration: v1.0 to v0.2.2
-    ossa.io/migrated-date: 2025-10-29
+    ossa.io/migrated-date: 2025-10-31
 spec:
   role: integration
   taxonomy:
     domain: data
     subdomain: general
-    capability: search
+    capability: general
   llm:
     provider: openai
     model: gpt-4
@@ -34,37 +34,18 @@ spec:
     - type: mcp
       name: generate_recommendations
       server: gitlab-ml-recommender
-      capabilities:
-        - with_input_schema
     - type: mcp
       name: get_dashboard_overview
       server: gitlab-ml-recommender
-      capabilities:
-        - with_input_schema
     - type: mcp
       name: get_active_alerts
       server: gitlab-ml-recommender
-      capabilities:
-        - with_input_schema
   extensions:
-    mcp:
-      enabled: true
-      server_type: stdio
-      tools:
-        - name: generate_recommendations
-          description: Generate AI recommendations using RAG pipeline (Qdrant semantic search + GPT-4)
-        - name: get_dashboard_overview
-          description: Retrieve customer health dashboard data aggregated from TimescaleDB
-        - name: get_active_alerts
-          description: Retrieve active customer health alerts
     buildkit:
       deployment:
         replicas:
           min: 1
           max: 4
-        health_check:
-          path: /health
-          port: 8080
       container:
         image: llm-platform/ml-recommender:1.0.0
         runtime: docker

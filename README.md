@@ -116,7 +116,7 @@ agent:
       output_schema: { ... }
 ```
 
-Full schema documentation: [`docs/specification/`](docs/specification/)
+Full schema documentation: [`https://gitlab.bluefly.io/llm/openapi-ai-agents-standard/-/wikis/home/specification/`](docs/specification/)
 
 ---
 
@@ -196,7 +196,7 @@ buildkit ossa sync-docs               # GitLab integration
 
 - **Specification**: [spec/ossa-1.0.schema.json](spec/ossa-1.0.schema.json)
 - **Examples**: [examples/](examples/)
-- **API Reference**: [docs/](docs/)
+- **API Reference**: [https://gitlab.bluefly.io/llm/openapi-ai-agents-standard/-/wikis/home/](docs/)
 - **GitLab Wiki**: https://app-4001.cloud.bluefly.io/llm/openapi-ai-agents-standard/-/wikis/home
 
 ---

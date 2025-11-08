@@ -17,3 +17,6 @@ global.console = {
   info: jest.fn(),
   debug: jest.fn(),
 };
+
+// Needed for TypeScript to recognize this as a module
+export {};
