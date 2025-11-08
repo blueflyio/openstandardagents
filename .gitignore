@@ -482,4 +482,5 @@ celerybeat.pid
 dmypy.json
 
 # Pyre type checker
-.pyre/
+.pyre/.gitlab/
+.gitlab/**
