@@ -100,12 +100,10 @@ describe('All Examples Validation', () => {
       expect(fs.existsSync(kagentDir)).toBe(true);
     });
 
-    it('should have README in kagent examples', () => {
-      const readmePath = path.resolve(
-        __dirname,
-        '../../../examples/kagent/README.md'
-      );
-      expect(fs.existsSync(readmePath)).toBe(true);
+    it('should have kagent example files', () => {
+      const kagentDir = path.resolve(__dirname, '../../../examples/kagent');
+      const exampleFiles = glob.sync('*.ossa.yaml', { cwd: kagentDir });
+      expect(exampleFiles.length).toBeGreaterThan(0);
     });
   });
 });

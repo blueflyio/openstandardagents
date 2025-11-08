@@ -8,10 +8,7 @@ import { Command } from 'commander';
 import { container } from '../../di-container.js';
 import { ManifestRepository } from '../../repositories/manifest.repository.js';
 import { ValidationService } from '../../services/validation.service.js';
-import type {
-  SchemaVersion,
-  ValidationResult,
-} from '../../types/index.js';
+import type { SchemaVersion, ValidationResult } from '../../types/index.js';
 
 export const validateCommand = new Command('validate')
   .argument('<path>', 'Path to OSSA manifest or OpenAPI spec (YAML or JSON)')
@@ -20,12 +17,11 @@ export const validateCommand = new Command('validate')
     'Schema version (0.2.2, 0.1.9, or 1.0)',
     '0.2.2'
   )
-  .option(
-    '--openapi',
-    'Validate as OpenAPI specification with OSSA extensions'
-  )
+  .option('--openapi', 'Validate as OpenAPI specification with OSSA extensions')
   .option('-v, --verbose', 'Verbose output with detailed information')
-  .description('Validate OSSA agent manifest or OpenAPI spec against JSON schema')
+  .description(
+    'Validate OSSA agent manifest or OpenAPI spec against JSON schema'
+  )
   .action(
     async (
       path: string,
@@ -38,7 +34,9 @@ export const validateCommand = new Command('validate')
 
         // Load file
         if (options.openapi) {
-          console.log(chalk.blue(`Validating OpenAPI spec with OSSA extensions: ${path}`));
+          console.log(
+            chalk.blue(`Validating OpenAPI spec with OSSA extensions: ${path}`)
+          );
         } else {
           console.log(chalk.blue(`Validating OSSA agent: ${path}`));
         }

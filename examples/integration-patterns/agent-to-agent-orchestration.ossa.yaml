@@ -1,0 +1,376 @@
+# ============================================================================
+# Integration Pattern: Agent-to-Agent Orchestration
+# ============================================================================
+#
+# PURPOSE:
+#   Demonstrates how multiple OSSA agents can work together in orchestrated
+#   workflows. This pattern enables complex multi-agent systems where agents
+#   coordinate to solve problems beyond any single agent's capabilities.
+#
+# USE CASES:
+#   - Multi-step workflows requiring specialized agents
+#   - Research → Analysis → Writing pipelines
+#   - Code review → Testing → Deployment workflows
+#   - Customer support escalation chains
+#   - Data processing pipelines with multiple stages
+#
+# ARCHITECTURE:
+#   Orchestrator Agent (coordinates workflow)
+#     ↓
+#   Worker Agent 1 (specialized task)
+#     ↓
+#   Worker Agent 2 (specialized task)
+#     ↓
+#   Aggregator Agent (combines results)
+#
+# PROTOCOLS:
+#   - HTTP/gRPC for synchronous communication
+#   - Message queues for asynchronous workflows
+#   - MCP (Model Context Protocol) for tool sharing
+#   - Event-driven patterns for reactive workflows
+#
+# ============================================================================
+
+# ----------------------------------------------------------------------------
+# ORCHESTRATOR AGENT
+# ----------------------------------------------------------------------------
+# Coordinates the workflow, delegates tasks to worker agents, and aggregates results
+
+apiVersion: ossa/v0.2.2
+kind: Agent
+
+metadata:
+  name: workflow-orchestrator
+  version: 1.0.0
+  description: |
+    Orchestrates multi-agent workflows by coordinating specialized worker agents.
+    Manages workflow state, handles failures, and aggregates results.
+
+spec:
+  role: |
+    You are a workflow orchestrator. Your job is to:
+    1. Break down complex tasks into subtasks
+    2. Delegate subtasks to appropriate worker agents
+    3. Monitor progress and handle failures
+    4. Aggregate results from worker agents
+    5. Provide final output to the user
+    
+    Always coordinate clearly, handle errors gracefully, and provide status updates.
+  
+  llm:
+    provider: openai
+    model: gpt-4
+    temperature: 0.3  # Lower temperature for more deterministic orchestration
+  
+  tools:
+    # Tool: Invoke Research Agent
+    - type: http
+      name: invoke_research_agent
+      description: |
+        Delegate research tasks to the specialized research agent.
+        Returns comprehensive research results on the requested topic.
+      endpoint: http://research-agent:8080/api/v1/research
+      config:
+        method: POST
+        timeout: 60  # Research can take time
+      auth:
+        type: bearer
+        credentials: ORCHESTRATOR_TOKEN
+    
+    # Tool: Invoke Analysis Agent
+    - type: http
+      name: invoke_analysis_agent
+      description: |
+        Delegate analysis tasks to the specialized analysis agent.
+        Analyzes data and provides insights.
+      endpoint: http://analysis-agent:8080/api/v1/analyze
+      config:
+        method: POST
+        timeout: 30
+      auth:
+        type: bearer
+        credentials: ORCHESTRATOR_TOKEN
+    
+    # Tool: Invoke Writing Agent
+    - type: http
+      name: invoke_writing_agent
+      description: |
+        Delegate writing tasks to the specialized writing agent.
+        Creates well-structured content based on research and analysis.
+      endpoint: http://writing-agent:8080/api/v1/write
+      config:
+        method: POST
+        timeout: 45
+      auth:
+        type: bearer
+        credentials: ORCHESTRATOR_TOKEN
+    
+    # Tool: Check Agent Status
+    - type: http
+      name: check_agent_status
+      description: |
+        Check the status and health of worker agents.
+        Returns availability, current load, and capability status.
+      endpoint: http://agent-registry:8080/api/v1/agents/status
+      config:
+        method: GET
+        timeout: 5
+  
+  autonomy:
+    level: autonomous
+    approval_required: false
+    allowed_actions:
+      - invoke_research_agent
+      - invoke_analysis_agent
+      - invoke_writing_agent
+      - check_agent_status
+  
+  constraints:
+    cost:
+      maxTokensPerDay: 500000
+      maxCostPerDay: 50.00
+      currency: USD
+    performance:
+      maxLatencySeconds: 120  # Multi-agent workflows take longer
+      maxConcurrentRequests: 5
+      timeoutSeconds: 180
+  
+  observability:
+    tracing:
+      enabled: true
+      exporter: otlp
+      endpoint: http://jaeger:4318
+    metrics:
+      enabled: true
+      exporter: prometheus
+      endpoint: http://prometheus:9090/metrics
+    logging:
+      level: info
+      format: json
+
+# ----------------------------------------------------------------------------
+# RESEARCH WORKER AGENT
+# ----------------------------------------------------------------------------
+# Specialized agent for research tasks
+
+---
+apiVersion: ossa/v0.2.2
+kind: Agent
+
+metadata:
+  name: research-worker
+  version: 1.0.0
+  description: |
+    Specialized research agent that gathers comprehensive information on topics.
+    Used by orchestrator for research-intensive subtasks.
+
+spec:
+  role: |
+    You are a research specialist. Your job is to:
+    1. Gather accurate, up-to-date information on requested topics
+    2. Use multiple sources and verify information
+    3. Provide well-sourced, comprehensive research results
+    4. Cite sources and provide evidence
+    
+    Always prioritize accuracy over speed. Verify facts from multiple sources.
+  
+  llm:
+    provider: openai
+    model: gpt-4
+    temperature: 0.2  # Lower temperature for factual accuracy
+  
+  tools:
+    - type: http
+      name: web_search
+      description: Search the web for current information
+      endpoint: https://api.search.com/search
+      config:
+        method: POST
+        timeout: 15
+      auth:
+        type: apikey
+        credentials: SEARCH_API_KEY
+    
+    - type: http
+      name: academic_search
+      description: Search academic papers and publications
+      endpoint: https://api.academic.com/search
+      config:
+        method: POST
+        timeout: 20
+      auth:
+        type: apikey
+        credentials: ACADEMIC_API_KEY
+  
+  autonomy:
+    level: autonomous
+    approval_required: false
+  
+  constraints:
+    cost:
+      maxTokensPerDay: 200000
+      maxCostPerDay: 20.00
+      currency: USD
+    performance:
+      maxLatencySeconds: 60
+      maxConcurrentRequests: 10
+
+# ----------------------------------------------------------------------------
+# ANALYSIS WORKER AGENT
+# ----------------------------------------------------------------------------
+# Specialized agent for data analysis
+
+---
+apiVersion: ossa/v0.2.2
+kind: Agent
+
+metadata:
+  name: analysis-worker
+  version: 1.0.0
+  description: |
+    Specialized analysis agent that processes data and provides insights.
+    Used by orchestrator for analysis-intensive subtasks.
+
+spec:
+  role: |
+    You are a data analysis specialist. Your job is to:
+    1. Analyze data and research results
+    2. Identify patterns, trends, and insights
+    3. Provide clear, actionable recommendations
+    4. Support conclusions with data
+    
+    Always be objective, data-driven, and clear in your analysis.
+  
+  llm:
+    provider: openai
+    model: gpt-4
+    temperature: 0.3
+  
+  tools:
+    - type: function
+      name: statistical_analysis
+      description: Perform statistical analysis on datasets
+      config:
+        handler: stats_handler
+        language: python
+        timeout: 30
+    
+    - type: function
+      name: data_visualization
+      description: Create visualizations from data
+      config:
+        handler: viz_handler
+        language: python
+        timeout: 20
+  
+  autonomy:
+    level: autonomous
+    approval_required: false
+  
+  constraints:
+    cost:
+      maxTokensPerDay: 200000
+      maxCostPerDay: 20.00
+      currency: USD
+    performance:
+      maxLatencySeconds: 45
+      maxConcurrentRequests: 8
+
+# ----------------------------------------------------------------------------
+# WRITING WORKER AGENT
+# ----------------------------------------------------------------------------
+# Specialized agent for content creation
+
+---
+apiVersion: ossa/v0.2.2
+kind: Agent
+
+metadata:
+  name: writing-worker
+  version: 1.0.0
+  description: |
+    Specialized writing agent that creates well-structured content.
+    Used by orchestrator for writing-intensive subtasks.
+
+spec:
+  role: |
+    You are a writing specialist. Your job is to:
+    1. Create well-structured, clear content
+    2. Synthesize information from research and analysis
+    3. Write in appropriate style and tone
+    4. Ensure accuracy and clarity
+    
+    Always write clearly, engagingly, and accurately. Structure content logically.
+  
+  llm:
+    provider: openai
+    model: gpt-4
+    temperature: 0.7  # Higher temperature for more creative writing
+  
+  tools:
+    - type: function
+      name: format_document
+      description: Format documents in various styles (Markdown, HTML, LaTeX)
+      config:
+        handler: format_handler
+        timeout: 10
+  
+  autonomy:
+    level: autonomous
+    approval_required: false
+  
+  constraints:
+    cost:
+      maxTokensPerDay: 200000
+      maxCostPerDay: 20.00
+      currency: USD
+    performance:
+      maxLatencySeconds: 45
+      maxConcurrentRequests: 8
+
+# ============================================================================
+# WORKFLOW EXAMPLE
+# ============================================================================
+#
+# User Request: "Research quantum computing trends and write a report"
+#
+# Orchestrator Workflow:
+#   1. Receive request
+#   2. Invoke research-worker → Get research results
+#   3. Invoke analysis-worker → Analyze research, identify trends
+#   4. Invoke writing-worker → Create report from research + analysis
+#   5. Return final report to user
+#
+# Error Handling:
+#   - If research-worker fails → Retry with backup research agent
+#   - If analysis-worker fails → Use simpler analysis approach
+#   - If writing-worker fails → Return research + analysis directly
+#
+# ============================================================================
+# DEPLOYMENT
+# ============================================================================
+#
+# 1. Deploy all agents:
+#    $ buildkit agents deploy examples/integration-patterns/agent-to-agent-orchestration.ossa.yaml
+#
+# 2. Configure service discovery:
+#    - Ensure agents can discover each other (DNS, service mesh, registry)
+#    - Set up authentication tokens
+#    - Configure network policies
+#
+# 3. Set up observability:
+#    - Distributed tracing across agents
+#    - Metrics aggregation
+#    - Log correlation
+#
+# ============================================================================
+# RELATED PATTERNS
+# ============================================================================
+#
+# - examples/integration-patterns/mcp-bridge-integration.ossa.yaml
+# - examples/integration-patterns/event-driven-agents.ossa.yaml
+# - examples/integration-patterns/openapi-service-exposure.ossa.yaml
+# - examples/agent-manifests/orchestrators/orchestrator-agent.yaml
+#
+# ============================================================================
+

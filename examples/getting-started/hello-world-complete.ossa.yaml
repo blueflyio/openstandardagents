@@ -1,0 +1,266 @@
+# ============================================================================
+# OSSA v0.2.2 - Complete "Hello World" Agent Example
+# ============================================================================
+# 
+# PURPOSE:
+#   This is a minimal, fully-compliant OSSA agent manifest demonstrating
+#   all required fields and best practices. Use this as a starting point
+#   for your first agent.
+#
+# LEARNING OBJECTIVES:
+#   1. Understand OSSA manifest structure (apiVersion, kind, metadata, spec)
+#   2. Learn required vs optional fields
+#   3. See how to define agent capabilities (tools)
+#   4. Understand LLM configuration
+#   5. Learn basic observability setup
+#
+# VALIDATION:
+#   ossa validate examples/getting-started/hello-world-complete.ossa.yaml
+#
+# DEPLOYMENT:
+#   This agent can be deployed to any OSSA-compatible runtime:
+#   - Kubernetes (via agent-buildkit)
+#   - Docker Compose
+#   - Serverless (AWS Lambda, Google Cloud Functions)
+#   - Local development
+#
+# INTEGRATION PATTERNS:
+#   - Standalone agent (no dependencies)
+#   - Can be called via HTTP/gRPC
+#   - Can participate in multi-agent workflows
+#   - Compatible with MCP (Model Context Protocol)
+#
+# ============================================================================
+
+apiVersion: ossa/v0.2.2
+kind: Agent
+
+metadata:
+  # REQUIRED: Agent identifier (DNS-1123 format for Kubernetes compatibility)
+  # Must be lowercase alphanumeric with hyphens, max 253 chars
+  name: hello-world-agent
+  
+  # REQUIRED: Semantic version (semver 2.0.0)
+  # Format: MAJOR.MINOR.PATCH[-PRERELEASE][+BUILD]
+  version: 1.0.0
+  
+  # REQUIRED: Human-readable description
+  # Should explain what the agent does, its purpose, and key capabilities
+  description: |
+    A minimal OSSA-compliant agent that demonstrates basic capabilities.
+    This agent can greet users, echo messages, and report its status.
+    Perfect for learning OSSA fundamentals and testing deployments.
+  
+  # OPTIONAL: Key-value labels for organization and filtering
+  # Common labels: environment, team, domain, classification
+  labels:
+    environment: development
+    team: platform-engineering
+    domain: examples
+    complexity: minimal
+  
+  # OPTIONAL: Arbitrary metadata for tooling (not used for filtering)
+  # Common annotations: documentation URL, support contact, runbooks
+  annotations:
+    documentation: https://docs.ossa.io/examples/hello-world
+    support: support@example.com
+    runbook: https://runbooks.example.com/hello-world-agent
+
+spec:
+  # REQUIRED: Agent role/system prompt describing behavior and capabilities
+  # This is the "personality" and instructions for the LLM
+  # Should be clear, specific, and aligned with the agent's purpose
+  role: |
+    You are a helpful assistant agent that can:
+    1. Greet users with personalized messages
+    2. Echo back messages sent to you
+    3. Report your current status and health
+    
+    Always be friendly, concise, and helpful. If you receive a request
+    you cannot handle, politely explain your limitations.
+  
+  # REQUIRED: LLM configuration
+  # Defines which language model powers this agent
+  llm:
+    # REQUIRED: LLM provider (openai, anthropic, google, azure, ollama, custom)
+    provider: openai
+    
+    # REQUIRED: Model identifier (specific to provider)
+    # OpenAI: gpt-4, gpt-4-turbo, gpt-3.5-turbo
+    # Anthropic: claude-3-opus-20240229, claude-3-sonnet-20240229
+    # Google: gemini-pro, gemini-pro-vision
+    model: gpt-3.5-turbo
+    
+    # OPTIONAL: Temperature (0.0-2.0) - Controls randomness
+    # 0.0 = deterministic, 1.0 = balanced, 2.0 = very creative
+    # Lower values better for structured tasks, higher for creative tasks
+    temperature: 0.7
+    
+    # OPTIONAL: Maximum tokens per request
+    # Limits response length. Set based on expected output size
+    maxTokens: 1000
+    
+    # OPTIONAL: Top-p (nucleus sampling) - 0.0-1.0
+    # Alternative to temperature. 0.9 = consider top 90% probability mass
+    topP: 0.9
+  
+  # REQUIRED: Available tools/capabilities for the agent
+  # Each tool represents a capability the agent can use
+  # Must have at least one tool
+  tools:
+    # Tool 1: Greeting capability
+    - type: function
+      name: greet_user
+      description: |
+        Generate a personalized greeting message for a user.
+        Takes a user name and optional context, returns a friendly greeting.
+      # Tool-specific configuration
+      config:
+        # Example: This could reference a function, API endpoint, or MCP server
+        handler: greet_handler
+        timeout: 5
+      
+      # OPTIONAL: Authentication for tool access
+      auth:
+        type: none  # Options: bearer, oauth2, mtls, apikey, none
+    
+    # Tool 2: Echo capability
+    - type: function
+      name: echo_message
+      description: |
+        Echo back a message sent to the agent.
+        Useful for testing and demonstrating basic agent communication.
+      config:
+        handler: echo_handler
+        timeout: 2
+    
+    # Tool 3: Status reporting
+    - type: http
+      name: get_status
+      description: |
+        Get the current status and health of the agent.
+        Returns agent metadata, uptime, and capability status.
+      endpoint: http://localhost:8080/status
+      config:
+        method: GET
+        timeout: 3
+      auth:
+        type: none
+  
+  # OPTIONAL: Autonomy configuration
+  # Controls how independently the agent can operate
+  autonomy:
+    # Level of autonomy: supervised, autonomous, fully_autonomous
+    # supervised = requires human approval for actions
+    # autonomous = can act independently within constraints
+    # fully_autonomous = complete independence (use with caution)
+    level: supervised
+    
+    # Whether human approval is required before executing actions
+    approval_required: true
+    
+    # Whitelist of permitted actions (if specified, only these are allowed)
+    allowed_actions:
+      - greet_user
+      - echo_message
+      - get_status
+    
+    # Blacklist of forbidden actions
+    blocked_actions: []
+  
+  # OPTIONAL: Constraints and limits
+  constraints:
+    # Cost constraints (prevent runaway spending)
+    cost:
+      # Maximum tokens per day (prevents excessive API usage)
+      maxTokensPerDay: 100000
+      
+      # Maximum tokens per request
+      maxTokensPerRequest: 2000
+      
+      # Maximum cost per day (in specified currency)
+      maxCostPerDay: 10.00
+      
+      # Currency code (ISO 4217, 3-letter code)
+      currency: USD
+    
+    # Performance constraints
+    performance:
+      # Maximum latency in seconds
+      maxLatencySeconds: 5.0
+      
+      # Maximum concurrent requests
+      maxConcurrentRequests: 10
+      
+      # Request timeout in seconds
+      timeoutSeconds: 30
+    
+    # Resource constraints (for Kubernetes deployments)
+    resources:
+      cpu: "100m"      # 0.1 CPU cores (Kubernetes format)
+      memory: "256Mi"  # 256 megabytes (Kubernetes format)
+      # gpu: "1"       # Optional GPU requirement
+  
+  # OPTIONAL: Observability configuration
+  # Enables monitoring, tracing, and logging
+  observability:
+    # Distributed tracing (OpenTelemetry, Jaeger, Zipkin)
+    tracing:
+      enabled: true
+      exporter: otlp  # Options: otlp, jaeger, zipkin, custom
+      endpoint: http://localhost:4318  # OTLP collector endpoint
+    
+    # Metrics collection (Prometheus, OTLP)
+    metrics:
+      enabled: true
+      exporter: prometheus  # Options: prometheus, otlp, custom
+      endpoint: http://localhost:9090/metrics
+    
+    # Logging configuration
+    logging:
+      level: info  # Options: debug, info, warn, error
+      format: json  # Options: json, text
+
+# ============================================================================
+# USAGE EXAMPLES
+# ============================================================================
+#
+# 1. VALIDATE THIS MANIFEST:
+#    $ ossa validate examples/getting-started/hello-world-complete.ossa.yaml
+#
+# 2. DEPLOY TO KUBERNETES (via agent-buildkit):
+#    $ buildkit agents deploy examples/getting-started/hello-world-complete.ossa.yaml
+#
+# 3. TEST LOCALLY:
+#    $ ossa validate examples/getting-started/hello-world-complete.ossa.yaml --verbose
+#
+# 4. INTEGRATE WITH MCP:
+#    This agent can be exposed via MCP (Model Context Protocol) for use
+#    with Claude Desktop, Cursor, or other MCP-compatible tools.
+#
+# 5. USE IN MULTI-AGENT WORKFLOW:
+#    This agent can be orchestrated alongside other agents using
+#    agent-buildkit's workflow engine.
+#
+# ============================================================================
+# NEXT STEPS
+# ============================================================================
+#
+# After understanding this example:
+# 1. Review examples/intermediate/ for more complex patterns
+# 2. Check examples/advanced/ for enterprise patterns
+# 3. Read the full OSSA specification at spec/v0.2.2/ossa-0.2.2.schema.json
+# 4. Explore integration examples in examples/bridges/
+# 5. See migration guides in examples/migration-guides/
+#
+# ============================================================================
+# RELATED DOCUMENTATION
+# ============================================================================
+#
+# - OSSA Specification: spec/v0.2.2/ossa-0.2.2.schema.json
+# - Schema Reference: docs/schemas/
+# - API Reference: openapi/
+# - GitLab Wiki: https://gitlab.bluefly.io/llm/openapi-ai-agents-standard/-/wikis
+#
+# ============================================================================
+
