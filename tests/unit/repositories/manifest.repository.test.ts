@@ -6,8 +6,8 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
-import { ManifestRepository } from '../../../src/repositories/manifest.repository';
-import type { OssaAgent } from '../../../src/types';
+import { ManifestRepository } from '../../../src/repositories/manifest.repository.js';
+import type { OssaAgent } from '../../../src/types/index.js';
 
 describe('ManifestRepository', () => {
   let repository: ManifestRepository;

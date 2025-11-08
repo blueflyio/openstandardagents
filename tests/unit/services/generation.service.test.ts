@@ -3,8 +3,8 @@
  * Test agent generation from templates
  */
 
-import { GenerationService } from '../../../src/services/generation.service';
-import type { AgentTemplate } from '../../../src/types';
+import { GenerationService } from '../../../src/services/generation.service.js';
+import type { AgentTemplate } from '../../../src/types/index.js';
 
 describe('GenerationService', () => {
   let service: GenerationService;

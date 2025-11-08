@@ -3,9 +3,9 @@
  * Test validation logic with various manifest scenarios
  */
 
-import { SchemaRepository } from '../../../src/repositories/schema.repository';
-import { ValidationService } from '../../../src/services/validation.service';
-import type { OssaAgent } from '../../../src/types';
+import { SchemaRepository } from '../../../src/repositories/schema.repository.js';
+import { ValidationService } from '../../../src/services/validation.service.js';
+import type { OssaAgent } from '../../../src/types/index.js';
 
 describe('ValidationService', () => {
   let validationService: ValidationService;

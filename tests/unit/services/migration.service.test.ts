@@ -3,7 +3,7 @@
  * Test v1.0 to v0.2.2 migration
  */
 
-import { MigrationService } from '../../../src/services/migration.service';
+import { MigrationService } from '../../../src/services/migration.service.js';
 
 describe('MigrationService', () => {
   let service: MigrationService;

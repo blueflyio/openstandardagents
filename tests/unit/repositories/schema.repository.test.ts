@@ -3,8 +3,8 @@
  * Test schema loading and caching
  */
 
-import { SchemaRepository } from '../../../src/repositories/schema.repository';
-import type { SchemaVersion } from '../../../src/types';
+import { SchemaRepository } from '../../../src/repositories/schema.repository.js';
+import type { SchemaVersion } from '../../../src/types/index.js';
 
 describe('SchemaRepository', () => {
   let repository: SchemaRepository;
