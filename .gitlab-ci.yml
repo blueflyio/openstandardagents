@@ -1,90 +1,22 @@
----
-# GitLab CI/CD Pipeline for OSSA
-# Node.js TypeScript project with comprehensive testing
+# OSSA - Open Standards for Scalable Agents
+# Uses GitLab CI Components from gitlab_components repository
 
-stages:
-  - build
-  - test
-  - lint
-  - typecheck
-  - format-check
+include:
+  - component: gitlab.bluefly.io/llm/gitlab_components/workflow/golden@v0.2.1
+    inputs:
+      project_name: "OSSA"
+      project_version: "0.1.8"
+      node_version: "20"
+      enable_auto_flow: true
+      enable_comprehensive_testing: true
+      enable_security_scanning: true
+      enable_ossa_validation: true
+      test_coverage_threshold: 80
+      enable_openapi_validation: true
 
+# Project-specific variables
 variables:
   NODE_VERSION: "20"
   DOCKER_BUILDKIT: "1"
   GIT_STRATEGY: fetch
   GIT_DEPTH: 1
-
-# Build job
-build:
-  stage: build
-  image: node:${NODE_VERSION}
-  script:
-    - npm ci
-    - npm run build
-  artifacts:
-    paths:
-      - dist/
-    expire_in: 1 hour
-  only:
-    - merge_requests
-    - development
-    - main
-
-# Test job
-test:
-  stage: test
-  image: node:${NODE_VERSION}
-  script:
-    - npm ci
-    - npm test -- --coverage
-  coverage: '/All files\s+\|\s+(\d+\.\d+)%/'
-  artifacts:
-    reports:
-      coverage_report:
-        coverage_format: cobertura
-        path: coverage/cobertura-coverage.xml
-    paths:
-      - coverage/
-    expire_in: 1 week
-  only:
-    - merge_requests
-    - development
-    - main
-
-# Lint job
-lint:
-  stage: lint
-  image: node:${NODE_VERSION}
-  script:
-    - npm ci
-    - npm run lint
-  allow_failure: true
-  only:
-    - merge_requests
-    - development
-    - main
-
-# Typecheck job
-typecheck:
-  stage: typecheck
-  image: node:${NODE_VERSION}
-  script:
-    - npm ci
-    - npm run typecheck
-  only:
-    - merge_requests
-    - development
-    - main
-
-# Format check job
-format-check:
-  stage: format-check
-  image: node:${NODE_VERSION}
-  script:
-    - npm ci
-    - npm run format:check
-  only:
-    - merge_requests
-    - development
-    - main
