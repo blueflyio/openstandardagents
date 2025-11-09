@@ -1,0 +1,114 @@
+{
+  "$schema": "https://json.schemastore.org/cursor-environment.json",
+  "version": "1.0.0",
+  "name": "OSSA Development Environment",
+  "description": "OSSA - Open Standard for Scalable Agents. A specification standard for AI agents (like OpenAPI for REST APIs). NOT a framework - provides JSON Schema, validation, and minimal CLI only",
+
+  "project": {
+    "type": "standard",
+    "packageManager": "npm",
+    "root": "/Users/flux423/Sites/LLM/OSSA"
+  },
+
+  "runtime": {
+    "node": {
+      "version": "20.15.0",
+      "manager": "volta",
+      "engines": ">=18.18"
+    },
+    "npm": {
+      "version": "10.7.0",
+      "engines": ">=9.0.0"
+    }
+  },
+
+  "environment": {
+    "development": {
+      "NODE_ENV": "development",
+      "LOG_LEVEL": "debug",
+      "OSSA_SCHEMA_PATH": "./spec/v0.2.2/ossa-0.2.2.schema.json"
+    }
+  },
+
+  "tools": {
+    "required": [
+      "node",
+      "npm",
+      "git"
+    ],
+    "optional": [
+      "docker"
+    ],
+    "commands": {
+      "build": "npm run build",
+      "test": "npm test",
+      "validate": "npm run validate:power-suite",
+      "lint": "npm run lint"
+    }
+  },
+
+  "paths": {
+    "source": [
+      "src/**/*.ts",
+      "spec/**/*.json",
+      "spec/**/*.yaml",
+      "cli/**/*.ts"
+    ],
+    "build": [
+      "dist/**/*"
+    ],
+    "ignore": [
+      "node_modules/**",
+      "dist/**",
+      "coverage/**",
+      "**/*.log",
+      "**/.DS_Store"
+    ]
+  },
+
+  "git": {
+    "remote": "https://gitlab.bluefly.io/llm/openapi-ai-agents-standard.git",
+    "defaultBranch": "development",
+    "mainBranch": "main",
+    "workflow": "gitflow"
+  },
+
+  "ci": {
+    "provider": "gitlab",
+    "config": ".gitlab-ci.yml",
+    "autoDeploy": false
+  },
+
+  "scripts": {
+    "setup": [
+      "npm install",
+      "npm run build"
+    ],
+    "dev": [
+      "npm run dev"
+    ],
+    "test": [
+      "npm test"
+    ],
+    "quality": [
+      "npm run lint",
+      "npm run typecheck",
+      "npm test"
+    ]
+  },
+
+  "recommendations": {
+    "beforeStart": [
+      "Ensure Node.js 20.15.0 is installed (via Volta)",
+      "Run `npm install` in root directory",
+      "Build project: `npm run build`"
+    ],
+    "development": [
+      "OSSA is a STANDARD, not a framework",
+      "Keep CLI minimal - validation and generation only",
+      "Do NOT add runtime orchestration or deployment",
+      "Follow OpenAPI-First, TDD, DRY, SOLID principles"
+    ]
+  }
+}
+
