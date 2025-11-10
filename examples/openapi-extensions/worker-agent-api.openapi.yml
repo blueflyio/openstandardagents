@@ -1,4 +1,53 @@
+# ============================================================================
+# OSSA OpenAPI Extensions Example: Full-Featured Worker Agent
+# ============================================================================
+#
+# PURPOSE:
+#   Demonstrates the complete set of OSSA OpenAPI extensions for enterprise
+#   agent APIs. This is a production-ready example showing Kubernetes pod
+#   diagnostics with comprehensive governance, security, and observability.
+#
+# KEY FEATURES:
+#   - Enterprise compliance tracking (SOC2, governance approval)
+#   - Security metadata (authentication, encryption, classification)
+#   - Advanced autonomy controls (allowed/blocked actions)
+#   - Cost and performance constraints
+#   - MCP tool integration (Kubernetes MCP server)
+#   - Reusable components (parameters, schemas)
+#   - Error responses (RFC 7807 Problem Details)
+#
+# ARCHITECTURE:
+#   OpenAPI 3.1 Spec
+#     + x-ossa-metadata (enterprise governance)
+#     + x-ossa (agent configuration)
+#     + x-agent (deprecated, for backward compatibility)
+#     + x-ossa-capability (capability metadata with schemas)
+#     + x-ossa-autonomy (supervised mode with action controls)
+#     + x-ossa-constraints (cost, performance, time limits)
+#     + x-ossa-tools (MCP server integrations)
+#     + components/parameters (reusable OSSA headers)
+#     + components/schemas (capability input/output schemas)
+#     → Enterprise-Grade OSSA Agent API
+#
+# USE CASE:
+#   Kubernetes SRE agent that diagnoses pod failures by:
+#   1. Querying pod status via Kubernetes MCP tools
+#   2. Analyzing logs and events with LLM reasoning
+#   3. Correlating metrics for root cause analysis
+#   4. Generating actionable recommendations with evidence
+#
+# RELATED DOCUMENTATION:
+#   - OSSA OpenAPI Extensions: spec/OSSA_OpenAPI_Extensions.md
+#   - MCP Tools: https://modelcontextprotocol.io
+#   - RFC 7807 Problem Details: https://tools.ietf.org/html/rfc7807
+#   - Kubernetes Troubleshooting: https://kubernetes.io/docs/tasks/debug/
+# ============================================================================
+
 openapi: 3.1.0
+
+# ============================================================================
+# API Information (Standard OpenAPI)
+# ============================================================================
 info:
   title: Kubernetes Troubleshooter Agent API
   version: 1.0.0
@@ -6,69 +55,121 @@ info:
     Full-featured worker agent API demonstrating all OSSA OpenAPI extensions.
     This agent diagnoses Kubernetes pod failures and issues.
 
+# ============================================================================
+# OSSA Metadata Extension (Enterprise-Grade)
+# ============================================================================
+# Comprehensive metadata for governance, security, and observability.
+# This example shows enterprise-level compliance tracking.
+# ============================================================================
 x-ossa-metadata:
+  # OSSA specification version
   version: 0.2.2
+
+  # Compliance tracking for enterprise governance
   compliance:
-    level: enterprise
+    level: enterprise             # basic | intermediate | advanced | enterprise
     frameworks:
-      - OSSA
-      - OpenAPI 3.1
-      - RFC7807
+      - OSSA                      # Open Standard for System Agents
+      - OpenAPI 3.1               # Base specification
+      - RFC7807                   # Problem Details for HTTP APIs
+
+  # Governance approval tracking (required for enterprise deployments)
   governance:
     approved: true
-    approvedBy: Platform Team
-    approvalDate: "2024-01-15"
-  security:
-    classification: internal
-    authentication: required
-    encryption: tls1.3
-  observability:
-    tracing: true
-    metrics: true
-    logging: true
+    approvedBy: Platform Team     # Approving authority
+    approvalDate: "2024-01-15"    # ISO 8601 date
 
+  # Security metadata for access control and encryption
+  security:
+    classification: internal      # public | internal | confidential | restricted
+    authentication: required      # Authentication enforcement
+    encryption: tls1.3            # Minimum TLS version
+
+  # Observability configuration for production monitoring
+  observability:
+    tracing: true                 # OpenTelemetry distributed tracing
+    metrics: true                 # Prometheus metrics
+    logging: true                 # Structured logging (JSON)
+
+# ============================================================================
+# OSSA Agent Configuration
+# ============================================================================
 x-ossa:
   version: 0.2.2
+
   agent:
+    # Agent identifier
     id: k8s-troubleshooter
+
+    # Worker type: task-based, stateless execution
     type: worker
+
+    # Compliance standards adherence
     compliance:
       standards:
-        - openapi-first
-        - dry
-        - crud
-        - solid
-        - type-safe
+        - openapi-first           # API-first design
+        - dry                     # Don't Repeat Yourself
+        - crud                    # Create/Read/Update/Delete patterns
+        - solid                   # SOLID principles
+        - type-safe               # Strong typing with JSON Schema
       validated: true
       validatedAt: "2024-01-15T10:30:00Z"
 
+# ============================================================================
+# Legacy x-agent Extension (Deprecated)
+# ============================================================================
+# Included for backward compatibility with OSSA 0.1.x.
+# New implementations should use x-ossa instead.
+# ============================================================================
 x-agent:
+  # Legacy capability list (use x-ossa-capability on operations instead)
   capabilities:
     - pod-diagnostics
     - log-analysis
     - event-correlation
+
+  # Legacy tools list (use x-ossa-tools on operations instead)
   tools:
     - kubernetes-mcp
     - buildkit-agent-protocol
+
+  # Agent-specific environment configuration
   environment:
-    defaultNamespace: default
-    logRetention: 7d
+    defaultNamespace: default     # Default Kubernetes namespace
+    logRetention: 7d              # Log retention period
+
+  # Legacy rules (use x-ossa-autonomy on operations instead)
   rules:
     - read-only-operations
     - require-approval-for-writes
 
+# ============================================================================
+# Reusable Components (Standard OpenAPI)
+# ============================================================================
+# components section allows defining reusable parameters, schemas, responses,
+# etc. This promotes DRY and consistency across the API.
+# ============================================================================
 components:
+  # ==========================================================================
+  # Reusable Parameters
+  # ==========================================================================
+  # OSSA-specific headers for agent identification and versioning.
+  # These can be referenced across multiple operations.
+  # ==========================================================================
   parameters:
+    # OSSA Agent ID header (for multi-agent routing)
     X-Ossa-Agent-Id:
       name: X-OSSA-Agent-ID
       in: header
       description: Unique identifier of the agent making the request
-      required: false
+      required: false              # Optional for backward compatibility
       schema:
         type: string
+        # Kubernetes-style DNS label (RFC 1123)
         pattern: "^[a-z0-9]([-a-z0-9]*[a-z0-9])?$"
       example: k8s-troubleshooter
 
+    # OSSA Version header (for version negotiation)
     X-Ossa-Version:
       name: X-OSSA-Version
       in: header
@@ -76,154 +177,278 @@ components:
       required: false
       schema:
         type: string
+        # Semantic versioning pattern (semver.org)
         pattern: "^\\d+\\.\\d+\\.\\d+(-[a-zA-Z0-9]+)?$"
       example: "0.2.2"
 
+  # ==========================================================================
+  # Reusable Schemas
+  # ==========================================================================
+  # Define capability input/output schemas as components for reusability.
+  # These schemas are referenced by both x-ossa-capability and requestBody.
+  # ==========================================================================
   schemas:
+    # Input schema for pod diagnostics capability
     PodDiagnosticRequest:
       type: object
+
+      # Required fields for pod identification
       required:
         - podName
         - namespace
+
       properties:
+        # Pod name (Kubernetes resource name)
         podName:
           type: string
           description: Name of the pod to diagnose
           example: "my-app-7d4f6b8c9"
+
+        # Kubernetes namespace
         namespace:
           type: string
           description: Kubernetes namespace
           example: "production"
+
+        # Optional flag to include logs (increases latency and cost)
         includeLogs:
           type: boolean
           default: true
           description: Whether to include pod logs in diagnosis
-      x-ossa-capability-schema:
-        capabilityName: pod-diagnostics
-        input: true
-        validation:
-          required: true
-          strict: true
 
+      # ======================================================================
+      # OSSA Capability Schema Extension
+      # ======================================================================
+      # Links this schema to a specific capability and marks it as input.
+      # Enables validation and documentation generation.
+      # ======================================================================
+      x-ossa-capability-schema:
+        capabilityName: pod-diagnostics  # Must match capability name
+        input: true                      # This is an input schema
+        validation:
+          required: true                 # Validation is required
+          strict: true                   # Use strict validation (no extra fields)
+
+    # Output schema for pod diagnostics capability
     PodDiagnosticResponse:
       type: object
+
       properties:
+        # Overall pod health status (determined by LLM analysis)
         status:
           type: string
           enum:
-            - healthy
-            - degraded
-            - failed
+            - healthy      # Pod is running normally
+            - degraded     # Pod has non-critical issues
+            - failed       # Pod is not functioning
           description: Overall pod health status
+
+        # List of identified issues (from log/event/metric analysis)
         issues:
           type: array
           items:
             type: object
             properties:
+              # Issue severity level
               severity:
                 type: string
                 enum:
-                  - critical-manifest
-                  - warning
-                  - info
+                  - critical    # Immediate action required
+                  - warning     # Attention needed
+                  - info        # Informational
+              # Human-readable issue description
               message:
                 type: string
+              # Affected Kubernetes resource
               resource:
                 type: string
+
+        # AI-generated recommendations (LLM reasoning over issues)
         recommendations:
           type: array
           items:
             type: string
           description: Recommended actions to resolve issues
+
+        # Diagnostic metadata for audit and performance tracking
         metadata:
           type: object
           properties:
+            # Timestamp when diagnosis completed
             diagnosedAt:
               type: string
               format: date-time
+            # Total execution time for performance monitoring
             executionTimeMs:
               type: integer
+
+      # Link to capability (marks as output schema)
       x-ossa-capability-schema:
         capabilityName: pod-diagnostics
-        output: true
+        output: true                     # This is an output schema
 
+# ============================================================================
+# API Paths with Full OSSA Extensions
+# ============================================================================
 paths:
+  # ==========================================================================
+  # /api/v1/diagnose/pod - Kubernetes Pod Diagnostics
+  # ==========================================================================
+  # Full-featured OSSA operation demonstrating all OpenAPI extensions:
+  # - x-ossa-capability: Capability metadata with schema references
+  # - x-ossa-autonomy: Supervised mode with action allowlists/blocklists
+  # - x-ossa-constraints: Cost, performance, and time limits
+  # - x-ossa-tools: MCP tool integrations
+  # - x-ossa-llm: LLM configuration
+  # - Reusable parameters and schemas via $ref
+  # ==========================================================================
   /api/v1/diagnose/pod:
     post:
       summary: Diagnose pod issues
       description: |
         Analyzes a Kubernetes pod to identify failures, configuration issues,
         and resource constraints. Uses MCP tools to gather pod logs, events, and metrics.
+
       operationId: diagnosePod
+
       tags:
         - Diagnostics
+
+      # ======================================================================
+      # OSSA Capability Extension (Full Form)
+      # ======================================================================
+      # Full capability definition with schema references.
+      # Enables contract-first design and automatic validation.
+      # ======================================================================
       x-ossa-capability:
         name: pod-diagnostics
         description: Diagnose Kubernetes pod failures and issues
+
+        # Reference to input schema in components/schemas
         inputSchema:
           $ref: "#/components/schemas/PodDiagnosticRequest"
+
+        # Reference to output schema in components/schemas
         outputSchema:
           $ref: "#/components/schemas/PodDiagnosticResponse"
+
+      # ======================================================================
+      # OSSA Autonomy Extension (Advanced)
+      # ======================================================================
+      # Fine-grained control over agent autonomy.
+      # Uses allowlists and blocklists for precise action control.
+      # ======================================================================
       x-ossa-autonomy:
+        # Supervised mode: human approval required before execution
         level: supervised
+
+        # Explicit approval requirement (overrides level)
         approval_required: true
+
+        # Allowed actions (allowlist pattern)
+        # Agent can ONLY perform these Kubernetes operations
         allowed_actions:
-          - read_pods
-          - read_logs
-          - read_events
-          - read_metrics
+          - read_pods          # Get pod status
+          - read_logs          # Fetch pod logs
+          - read_events        # Get Kubernetes events
+          - read_metrics       # Query metrics server
+
+        # Blocked actions (blocklist pattern)
+        # Agent CANNOT perform these operations (safety critical)
         blocked_actions:
-          - delete_pods
-          - scale_deployments
-          - modify_configs
+          - delete_pods        # No pod deletion
+          - scale_deployments  # No scaling changes
+          - modify_configs     # No config mutations
+
+      # ======================================================================
+      # OSSA Constraints Extension
+      # ======================================================================
+      # Multi-dimensional constraints for cost control, performance,
+      # and time limits. Prevents runaway resource consumption.
+      # ======================================================================
       x-ossa-constraints:
+        # Cost constraints (prevents budget overruns)
         cost:
-          maxTokensPerDay: 50000
-          maxTokensPerRequest: 4000
-          maxCostPerDay: 10.0
-          currency: USD
+          maxTokensPerDay: 50000         # Daily token budget
+          maxTokensPerRequest: 4000      # Per-request token limit
+          maxCostPerDay: 10.0            # Daily cost cap (USD)
+          currency: USD                  # Currency for cost tracking
+
+        # Performance constraints (SLA enforcement)
         performance:
-          maxLatencySeconds: 30
-          maxConcurrentRequests: 5
+          maxLatencySeconds: 30          # Maximum response time
+          maxConcurrentRequests: 5       # Concurrency limit
+
+        # Time constraints (prevents hung executions)
         time:
-          maxExecutionTime: 300
+          maxExecutionTime: 300          # Maximum execution time (5 minutes)
+
+      # ======================================================================
+      # OSSA Tools Extension
+      # ======================================================================
+      # Defines MCP tools this operation can use.
+      # Each tool provides specific capabilities for Kubernetes interaction.
+      # ======================================================================
       x-ossa-tools:
-        - type: mcp
-          server: kubernetes-mcp
-          namespace: default
+        # Kubernetes MCP server for cluster interaction
+        - type: mcp                          # Tool type (mcp, http, grpc)
+          server: kubernetes-mcp             # MCP server name
+          namespace: default                 # Kubernetes namespace
+
+          # MCP capabilities this operation uses
           capabilities:
-            - get_pods
-            - get_logs
-            - get_events
-            - describe_resource
-            - get_metrics
+            - get_pods                       # kubectl get pods
+            - get_logs                       # kubectl logs
+            - get_events                     # kubectl get events
+            - describe_resource              # kubectl describe
+            - get_metrics                    # metrics-server query
+
+        # BuildKit Agent Protocol for documentation and log analysis
         - type: mcp
           server: buildkit-agent-protocol
           namespace: default
           capabilities:
-            - search_documentation
-            - analyze_logs
+            - search_documentation           # Search k8s docs
+            - analyze_logs                   # LLM-powered log analysis
+
+      # ======================================================================
+      # OSSA LLM Extension
+      # ======================================================================
+      # LLM configuration for this specific operation.
+      # GPT-4 for complex reasoning over diagnostic data.
+      # ======================================================================
       x-ossa-llm:
-        provider: openai
-        model: gpt-4
-        temperature: 0.2
-        maxTokens: 4000
+        provider: openai                     # LLM provider
+        model: gpt-4                         # High-quality reasoning model
+        temperature: 0.2                     # Low temperature for consistency
+        maxTokens: 4000                      # Max output tokens
+
+      # Reference reusable parameters from components
       parameters:
         - $ref: "#/components/parameters/X-Ossa-Agent-Id"
         - $ref: "#/components/parameters/X-Ossa-Version"
+
+      # Standard OpenAPI request body (references component schema)
       requestBody:
         required: true
         content:
           application/json:
+            # Reference to input schema (DRY principle)
             schema:
               $ref: "#/components/schemas/PodDiagnosticRequest"
+
+      # Response definitions with examples
       responses:
+        # Success response (200 OK)
         '200':
           description: Diagnosis completed successfully
           content:
             application/json:
+              # Reference to output schema (DRY principle)
               schema:
                 $ref: "#/components/schemas/PodDiagnosticResponse"
+
+              # Example response for documentation and testing
               example:
                 status: degraded
                 issues:
@@ -239,6 +464,8 @@ paths:
                 metadata:
                   diagnosedAt: "2024-01-15T10:30:00Z"
                   executionTimeMs: 2341
+
+        # Client error - invalid request (400 Bad Request)
         '400':
           description: Invalid request
           content:
@@ -248,6 +475,10 @@ paths:
                 properties:
                   error:
                     type: string
+
+        # Forbidden - approval required or insufficient permissions (403 Forbidden)
+        # This is triggered when x-ossa-autonomy.approval_required is true
+        # or when blocked_actions are attempted
         '403':
           description: Insufficient permissions or approval required
           content:
@@ -257,6 +488,46 @@ paths:
                 properties:
                   error:
                     type: string
+                  # Indicates whether human approval is needed
                   approvalRequired:
                     type: boolean
+
+# ============================================================================
+# End of Full-Featured OSSA OpenAPI Example
+# ============================================================================
+#
+# VALIDATION:
+#   # Validate OpenAPI spec
+#   swagger-cli validate worker-agent-api.openapi.yml
+#
+#   # Validate OSSA extensions
+#   ossa validate worker-agent-api.openapi.yml
+#
+# CODE GENERATION:
+#   # Generate server with OSSA middleware
+#   ossa generate server -i worker-agent-api.openapi.yml -o ./server
+#
+#   # Generate typed client SDK
+#   ossa generate client -i worker-agent-api.openapi.yml -o ./client
+#
+# KEY FEATURES DEMONSTRATED:
+#   1. Enterprise compliance tracking (x-ossa-metadata)
+#   2. Advanced autonomy controls (allowed/blocked actions)
+#   3. Multi-dimensional constraints (cost, performance, time)
+#   4. MCP tool integration (Kubernetes and BuildKit)
+#   5. Reusable components (parameters, schemas)
+#   6. Capability schema linking (x-ossa-capability-schema)
+#   7. RFC 7807 error responses
+#   8. OpenAPI 3.1 $ref usage for DRY
+#
+# COMPARISON WITH MINIMAL EXAMPLE:
+#   - minimal-agent-api.openapi.yml: Basic OSSA extensions
+#   - worker-agent-api.openapi.yml: Full enterprise features
+#
+# RELATED EXAMPLES:
+#   - examples/drupal/gitlab-ml-recommender.ossa.yaml (YAML manifest format)
+#   - examples/bridges/aiflow-bridge-example.yml (framework bridge)
+#   - examples/openapi-extensions/minimal-agent-api.openapi.yml (basics)
+#   - spec/OSSA_OpenAPI_Extensions.md (complete specification)
+# ============================================================================
 

@@ -1,4 +1,43 @@
+# ============================================================================
+# OSSA OpenAPI Extensions Example: Minimal Agent API
+# ============================================================================
+#
+# PURPOSE:
+#   Demonstrates the minimal OpenAPI 3.1 specification with OSSA extensions
+#   for defining agent APIs. Shows how to add OSSA metadata to standard
+#   OpenAPI specs for agent discovery, validation, and lifecycle management.
+#
+# KEY CONCEPTS:
+#   - OpenAPI 3.1 as the base specification (JSON Schema compatible)
+#   - OSSA extensions via x-ossa-* fields (vendor extensions)
+#   - Agent capabilities mapped to OpenAPI operations
+#   - Type-safe contracts with JSON Schema validation
+#   - LLM configuration at the operation level
+#
+# ARCHITECTURE:
+#   OpenAPI 3.1 Spec
+#     + x-ossa-metadata (document-level OSSA info)
+#     + x-ossa (agent configuration)
+#     + x-ossa-capability (operation-level capability metadata)
+#     + x-ossa-autonomy (operation-level autonomy controls)
+#     + x-ossa-llm (operation-level LLM configuration)
+#     → OSSA-compliant Agent API
+#
+# USE CASE:
+#   Simple greeting agent that generates personalized greetings in multiple
+#   languages using GPT-3.5-turbo. Demonstrates OSSA's OpenAPI-first approach.
+#
+# RELATED DOCUMENTATION:
+#   - OSSA OpenAPI Extensions: spec/OSSA_OpenAPI_Extensions.md
+#   - OpenAPI 3.1 Spec: https://spec.openapis.org/oas/v3.1.0
+#   - Worker Agent Example: examples/openapi-extensions/worker-agent-api.openapi.yml
+# ============================================================================
+
 openapi: 3.1.0
+
+# ============================================================================
+# API Information Block (Standard OpenAPI)
+# ============================================================================
 info:
   title: Hello World Agent API
   version: 1.0.0
@@ -6,64 +45,153 @@ info:
     Minimal OSSA-compliant agent API demonstrating basic OpenAPI extensions.
     This example shows a simple greeting agent with OSSA metadata.
 
+# ============================================================================
+# OSSA Metadata Extension (Document-Level)
+# ============================================================================
+# x-ossa-metadata provides OSSA-specific information about the API document.
+# This is separate from the agent configuration (x-ossa) to allow for
+# governance, compliance, and operational metadata.
+# ============================================================================
 x-ossa-metadata:
+  # OSSA specification version this document conforms to
   version: 0.2.2
+
+  # Compliance information for governance and audit
   compliance:
-    level: basic
+    level: basic              # basic, intermediate, advanced, enterprise
     frameworks:
-      - OSSA
-      - OpenAPI 3.1
+      - OSSA                  # Open Standard for System Agents
+      - OpenAPI 3.1           # Base specification
 
+# ============================================================================
+# OSSA Agent Configuration Extension
+# ============================================================================
+# x-ossa defines the agent's identity, type, and compliance status.
+# This metadata enables agent registries, discovery, and validation tools.
+# ============================================================================
 x-ossa:
+  # OSSA version (should match x-ossa-metadata.version)
   version: 0.2.2
-  agent:
-    id: hello-world-agent
-    type: worker
-    compliance:
-      standards:
-        - openapi-first
-      validated: true
-      validatedAt: "2024-01-15T10:00:00Z"
 
+  # Agent identity and type
+  agent:
+    # Unique agent identifier (DNS-compatible)
+    id: hello-world-agent
+
+    # Agent type determines execution model:
+    # - "worker": Task-based, stateless execution
+    # - "chat": Interactive, stateful conversation
+    # - "orchestrator": Coordinates other agents
+    # - "integration": Long-running service connector
+    type: worker
+
+    # Compliance tracking for validation pipelines
+    compliance:
+      # Standards this agent implementation adheres to
+      standards:
+        - openapi-first       # API-first design approach
+
+      # Validation status (set by OSSA validators)
+      validated: true
+      validatedAt: "2024-01-15T10:00:00Z"  # ISO 8601 timestamp
+
+# ============================================================================
+# API Paths (Standard OpenAPI with OSSA Extensions)
+# ============================================================================
 paths:
+  # ==========================================================================
+  # /greet - Generate Personalized Greeting
+  # ==========================================================================
+  # Demonstrates OSSA capability mapping to OpenAPI operation.
+  # Each operation represents one agent capability with:
+  # - Standard OpenAPI request/response schemas
+  # - OSSA capability metadata (x-ossa-capability)
+  # - Autonomy controls (x-ossa-autonomy)
+  # - LLM configuration (x-ossa-llm)
+  # ==========================================================================
   /greet:
     post:
+      # Standard OpenAPI operation metadata
       summary: Generate greeting
       description: Generates a personalized greeting using LLM
+
+      # Unique operation identifier (used for code generation)
       operationId: greet
+
+      # Tags for grouping operations in documentation
       tags:
         - Greeting
+
+      # ======================================================================
+      # OSSA Capability Extension
+      # ======================================================================
+      # Maps this OpenAPI operation to an OSSA agent capability.
+      # Capability name must match agent manifest capability IDs.
+      # ======================================================================
       x-ossa-capability: greeting
+
+      # ======================================================================
+      # OSSA Autonomy Extension
+      # ======================================================================
+      # Defines autonomy level and approval requirements for this operation.
+      # Controls how much freedom the agent has when executing this capability.
+      # ======================================================================
       x-ossa-autonomy:
+        # Autonomy levels:
+        # - "autonomous": Agent can execute without human approval
+        # - "supervised": Human must approve before execution
+        # - "collaborative": Human and agent work together
         level: autonomous
+
+        # Whether approval is required (overrides level if true)
         approval_required: false
+
+      # ======================================================================
+      # OSSA LLM Extension
+      # ======================================================================
+      # Specifies which LLM to use for this specific operation.
+      # Allows per-operation model selection for cost/performance optimization.
+      # ======================================================================
       x-ossa-llm:
-        provider: openai
-        model: gpt-3.5-turbo
-        temperature: 0.7
+        provider: openai             # LLM provider (openai, anthropic, etc.)
+        model: gpt-3.5-turbo         # Model identifier (fast, low-cost)
+        temperature: 0.7             # Creativity level (0.0-1.0)
+
+      # Standard OpenAPI request body definition
       requestBody:
         required: true
         content:
+          # JSON content type (most common for agent APIs)
           application/json:
+            # JSON Schema for request validation
             schema:
               type: object
+
+              # Required fields (validated before execution)
               required:
                 - name
+
               properties:
+                # Person's name to include in greeting
                 name:
                   type: string
                   description: Name to greet
                   example: "Alice"
+
+                # Target language for greeting (enum constraint)
                 language:
                   type: string
                   enum:
-                    - en
-                    - es
-                    - fr
-                    - de
+                    - en    # English
+                    - es    # Spanish
+                    - fr    # French
+                    - de    # German
                   default: en
                   description: Language for greeting
+
+      # Response definitions (standard OpenAPI)
       responses:
+        # Success response (200 OK)
         '200':
           description: Greeting generated successfully
           content:
@@ -71,22 +199,33 @@ paths:
               schema:
                 type: object
                 properties:
+                  # Generated greeting text
                   message:
                     type: string
                     description: The greeting message
                     example: "Hello, Alice! Welcome to OSSA."
+
+                  # Timestamp for audit trail
                   timestamp:
                     type: string
                     format: date-time
                     description: When the greeting was generated
 
+  # ==========================================================================
+  # /status - Agent Health Check
+  # ==========================================================================
+  # Standard health check endpoint for monitoring and orchestration.
+  # Does not use LLM, so no x-ossa-llm extension needed.
+  # ==========================================================================
   /status:
     get:
       summary: Get agent status
-      description: Returns the current status of the agent oscilloscope
+      description: Returns the current status of the agent
       operationId: getStatus
+
       tags:
         - Status
+
       responses:
         '200':
           description: Agent status
@@ -95,17 +234,55 @@ paths:
               schema:
                 type: object
                 properties:
+                  # Current operational status
                   status:
                     type: string
                     enum:
-                      - online
-                      - offline
-                      - maintenance
+                      - online        # Agent is operational
+                      - offline       # Agent is not responding
+                      - maintenance   # Agent is in maintenance mode
                     description: Current agent status
+
+                  # Agent version for deployment tracking
                   version:
                     type: string
                     description: Agent version
+
+                  # Uptime metric for monitoring
                   uptime:
                     type: integer
                     description: Uptime in seconds
+
+# ============================================================================
+# End of Minimal OSSA OpenAPI Example
+# ============================================================================
+#
+# VALIDATION:
+#   # Validate OpenAPI spec
+#   swagger-cli validate minimal-agent-api.openapi.yml
+#
+#   # Validate OSSA extensions
+#   ossa validate minimal-agent-api.openapi.yml
+#
+# CODE GENERATION:
+#   # Generate server stub
+#   openapi-generator generate -i minimal-agent-api.openapi.yml \
+#     -g python-flask -o ./server
+#
+#   # Generate client SDK
+#   openapi-generator generate -i minimal-agent-api.openapi.yml \
+#     -g typescript-axios -o ./client
+#
+# KEY TAKEAWAYS:
+#   1. OSSA extends OpenAPI 3.1 with x-ossa-* vendor extensions
+#   2. Standard OpenAPI tooling still works (validators, generators, docs)
+#   3. OSSA extensions add agent-specific metadata (capabilities, autonomy, LLM)
+#   4. One OpenAPI operation = One agent capability
+#   5. Type-safe contracts with JSON Schema validation
+#
+# RELATED EXAMPLES:
+#   - examples/openapi-extensions/worker-agent-api.openapi.yml (full features)
+#   - examples/drupal/gitlab-ml-recommender.ossa.yaml (YAML manifest format)
+#   - spec/OSSA_OpenAPI_Extensions.md (complete specification)
+# ============================================================================
 

@@ -1,83 +1,247 @@
+# ============================================================================
+# OSSA Multi-Workflow Orchestrator Agent Manifest
+# ============================================================================
+# Purpose: Enterprise-grade orchestrator for managing complex multi-agent
+#          workflows across distributed systems
+#
+# Key Concepts:
+# - Orchestration: Central coordinator managing workflow execution and state
+# - Agent Coordination: Discovering, routing, and managing worker agents
+# - Dependency Management: Handling execution order and data flow between agents
+# - Failure Recovery: Implementing compensation, retry, and fallback strategies
+#
+# Related Examples:
+# - examples/openapi-extensions/orchestrator-agent-api.openapi.yml (API definition)
+# - examples/production/agent.yml (Worker agent pattern)
+# - examples/kagent/k8s-troubleshooter.ossa.yaml (Complex orchestration)
+#
+# OSSA Version: 0.1.9 (Orchestrator profile)
+# Conformance: Enterprise-level orchestration with high availability
+# ============================================================================
+
+# OSSA manifest version - defines the schema and features available
 apiVersion: ossa.io/v0.1.9
+
+# Kind declares this as an Agent manifest (vs. Bridge, Tool, etc.)
 kind: Agent
+
+# ============================================================================
+# METADATA: Identity and classification for agent discovery
+# ============================================================================
 metadata:
+  # Unique identifier within the agent ecosystem
   name: multi-workflow-orchestrator
+
+  # Semantic version for compatibility tracking
   version: v2.1.0
+
+  # Human-readable description for documentation and discovery
   description: 'Enterprise orchestrator managing complex multi-agent workflows across distributed systems'
+
+  # Team or individual responsible for maintenance
   author: 'platform-engineering-team'
+
+  # Labels enable filtering, routing, and policy enforcement
   labels:
-    environment: production
-    classification: internal
-    role: orchestrator
-    complexity: enterprise
+    environment: production      # Deployment environment (dev/staging/production)
+    classification: internal     # Data classification level (public/internal/confidential/secret)
+    role: orchestrator          # Agent role in the ecosystem (orchestrator/worker/specialist/critic)
+    complexity: enterprise      # Complexity level (simple/moderate/enterprise)
+
+# ============================================================================
+# SPEC: Core agent configuration and capabilities
+# ============================================================================
 spec:
+  # Type defines the agent's primary role in multi-agent systems
+  # - orchestrator: Coordinates other agents and manages workflows
+  # - worker: Performs specific tasks delegated by orchestrators
+  # - specialist: Domain-specific expertise (e.g., code review, security)
+  # - critic: Evaluates and validates outputs from other agents
   type: orchestrator
+
+  # Subtype provides fine-grained specialization
+  # - workflow-coordinator: Manages sequential and parallel workflows
+  # - agent-router: Routes requests to appropriate agents
+  # - resource-manager: Allocates compute/memory/token budgets
   subtype: workflow-coordinator
+
+  # ============================================================================
+  # CAPABILITIES: What this orchestrator can do
+  # ============================================================================
   capabilities:
+    # Domains: High-level problem spaces this agent operates in
     domains:
-      - workflow-orchestration
-      - agent-coordination
-      - resource-allocation
-      - dependency-management
-      - failure-recovery
+      - workflow-orchestration    # Design and execute multi-step workflows
+      - agent-coordination        # Discover, route, and manage agents
+      - resource-allocation       # Distribute compute/memory/tokens across agents
+      - dependency-management     # Handle execution order and data dependencies
+      - failure-recovery         # Implement retry, compensation, and fallback logic
+
+    # Operations: Specific actions this agent can perform
     operations:
-      - orchestrate-workflows
-      - coordinate-agents
-      - manage-dependencies
-      - handle-failures
-      - scale-resources
-      - monitor-execution
+      - orchestrate-workflows    # Create and execute workflow definitions
+      - coordinate-agents        # Manage agent lifecycle and communication
+      - manage-dependencies      # Resolve execution order based on data flow
+      - handle-failures         # Execute compensation transactions on failure
+      - scale-resources         # Dynamically allocate resources based on load
+      - monitor-execution       # Track progress, metrics, and health
+
+    # Patterns: Architectural patterns this orchestrator implements
     patterns:
-      - saga-pattern
-      - event-sourcing
-      - choreography
-      - orchestration
-      - circuit-breaker
+      - saga-pattern           # Distributed transactions with compensation logic
+      - event-sourcing         # Track workflow state as event stream
+      - choreography           # Decentralized agent coordination via events
+      - orchestration          # Centralized workflow control and state
+      - circuit-breaker        # Prevent cascading failures via fault isolation
+
+  # ============================================================================
+  # PROTOCOLS: Communication methods for agent interaction
+  # ============================================================================
   protocols:
     supported:
+      # REST API: Synchronous request-response for workflow submission
       - name: rest
         version: '1.1'
         endpoint: 'https://orchestrator.platform.com/api/v2'
         authentication:
+          # OAuth2 for delegated authorization with scoped permissions
           type: oauth2
           scopes:
+            # orchestrator.execute: Submit and control workflows
+            # agents.coordinate: Discover and communicate with agents
+            # resources.manage: Allocate compute/memory/token budgets
             ['orchestrator.execute', 'agents.coordinate', 'resources.manage']
+        # TLS 1.3 for encrypted transport
         tls: true
+
+      # gRPC: High-performance RPC for agent-to-agent communication
       - name: grpc
         version: '1.0'
         endpoint: 'grpc://orchestrator.platform.com:9443/WorkflowOrchestrator'
         authentication:
+          # Mutual TLS for bidirectional authentication and encryption
           type: mutual-tls
+
+      # Event Stream: Asynchronous updates for workflow state changes
       - name: event-stream
         version: '1.0'
         endpoint: 'wss://events.platform.com/orchestrator'
         authentication:
+          # JWT tokens for stateless WebSocket authentication
           type: jwt
+
+  # ============================================================================
+  # COORDINATION: Multi-agent workflow management configuration
+  # ============================================================================
   coordination:
+    # Maximum concurrent workflows this orchestrator can manage
+    # - Higher values increase throughput but require more memory
+    # - Should align with available resources and agent pool size
     maxConcurrentWorkflows: 1000
+
+    # Maximum agents that can participate in a single workflow
+    # - Limits complexity and prevents resource exhaustion
+    # - Should consider coordination overhead (O(n²) for full mesh)
     maxAgentsPerWorkflow: 50
+
+    # Maximum time (ms) a workflow can run before forced termination
+    # - Prevents runaway workflows from consuming resources
+    # - 3600000ms = 1 hour (should include all retries and compensation)
     workflowTimeout: 3600000
+
+    # Retry policy for failed workflow steps
     retryPolicy:
+      # Maximum retry attempts before marking step as failed
       maxAttempts: 3
+
+      # Exponential backoff: delay = baseDelay * 2^(attempt - 1)
+      # - Attempt 1: 1000ms, Attempt 2: 2000ms, Attempt 3: 4000ms
+      # - Prevents thundering herd on transient failures
       backoffStrategy: exponential
       baseDelay: 1000
+
+    # Failure handling strategy for workflow execution
     failureHandling:
+      # graceful-degradation: Continue workflow with partial results
+      # fail-fast: Immediately abort workflow on any failure
+      # best-effort: Try all steps even if some fail
       strategy: graceful-degradation
+
+      # Enable fallback workflows when primary workflow fails
+      # - Provides alternative execution paths for critical workflows
+      # - Example: Use cached data if real-time API fails
       fallbackWorkflows: true
+
+      # Enable compensation actions for saga pattern
+      # - Rollback completed steps when later steps fail
+      # - Example: Cancel payment if shipping address validation fails
       compensationActions: true
+
+  # ============================================================================
+  # PERFORMANCE: Throughput, latency, and resource optimization
+  # ============================================================================
   performance:
+    # Throughput targets for capacity planning
     throughput:
+      # Target workflows processed per second (sustained load)
       workflowsPerSecond: 50
+
+      # Maximum workflows executing simultaneously (burst capacity)
       maxConcurrentExecutions: 500
+
+    # Latency targets for SLA monitoring
     latency:
+      # Overhead added by orchestration layer (ms)
+      # - Includes workflow parsing, agent routing, result aggregation
       orchestrationOverhead: 50
+
+      # Average latency for agent-to-agent coordination (ms)
+      # - Includes service discovery, health checks, message routing
       coordinationLatency: 100
+
+      # 99th percentile end-to-end latency (ms)
+      # - Used for SLA enforcement and performance regression detection
       p99: 2000
+
+  # ============================================================================
+  # MONITORING: Observability configuration for production operations
+  # ============================================================================
   monitoring:
+    # Track workflow state transitions and execution history
+    # - Enables workflow replay and debugging
     workflowTracking: true
+
+    # Periodic health checks for all managed agents
+    # - Automatically remove unhealthy agents from routing pool
     agentHealthChecks: true
+
+    # Collect and expose performance metrics (Prometheus format)
+    # - Request rate, latency, error rate, resource utilization
     performanceMetrics: true
+
+    # Alerting thresholds for operational issues
     alerting:
+      # Trigger alert after N consecutive workflow failures
       failureThreshold: 5
+
+      # Trigger alert when p99 latency exceeds threshold (ms)
       latencyThreshold: 5000
+
+      # Trigger alert when resource utilization exceeds percentage
+      # - Applies to CPU, memory, token budget, agent pool
       resourceThreshold: 90
+
+# ============================================================================
+# END OF MANIFEST
+# ============================================================================
+# Next Steps:
+# 1. Deploy using: kubectl apply -f orchestrator-agent.yaml
+# 2. Monitor via: /metrics endpoint (Prometheus format)
+# 3. Submit workflows via: POST /api/v2/workflows/execute
+# 4. View workflow status: GET /api/v2/workflows/{workflowId}
+#
+# Related Documentation:
+# - OSSA Spec: https://ossa.ai/spec
+# - Orchestration Patterns: https://microservices.io/patterns/data/saga.html
+# - Agent Coordination: https://ossa.ai/docs/orchestration
+# ============================================================================

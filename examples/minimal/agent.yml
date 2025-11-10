@@ -1,31 +1,152 @@
-# Minimal OSSA Agent Example (50 lines)
-# Bronze conformance level - Basic functionality
+# ========================================
+# Hello World - Minimal OSSA Agent Example
+# ========================================
+#
+# Use Case:
+#   Simplest possible OSSA agent to demonstrate core concepts
+#   and provide a starting template for beginners.
+#
+# Target Audience:
+#   Developers learning OSSA fundamentals, new agent creators,
+#   teams evaluating OSSA for their infrastructure.
+#
+# Complexity Level:
+#   Minimal - ~50 lines, covers essential fields only, no advanced features
+#
+# Key Concepts Demonstrated:
+#   1. Minimal required fields for OSSA compliance
+#   2. Basic capability definition (greeting, echo, status)
+#   3. Simple REST API endpoint mapping
+#   4. Service discovery configuration
+#
+# Related Examples:
+#   - See ../production/ for enterprise-grade examples
+#   - See ../advanced/ for complex multi-capability agents
+#   - See ../kagent/ for Kubernetes-integrated examples
+#
+# Learning Path:
+#   1. Start here to understand basic structure
+#   2. Move to ../production/ for best practices
+#   3. Explore ../advanced/ for custom configurations
+#
+# ========================================
 
+# OSSA specification version (required)
+# This declares which version of the OSSA spec this manifest adheres to
+# Current stable version: 1.0
 ossa: 1.0
+
+# Agent metadata section (required)
 agent:
+  # Unique identifier for this agent across all deployments
+  # Format: lowercase alphanumeric + hyphens (DNS-safe)
+  # Example: "hello-world", "user-auth-agent", "data-processor-v2"
   name: hello-world
+
+  # Semantic version of the agent (major.minor.patch)
+  # Increment when creating breaking changes, features, or fixes
+  # Example: 1.0.0 → 1.0.1 (patch fix) → 1.1.0 (new feature) → 2.0.0 (breaking change)
   version: 1.0.0
+
+  # Human-readable description displayed in registries and dashboards
+  # Keep to 1-2 sentences; detailed docs belong in README/wiki
   description: Minimal OSSA-compliant agent example
+
+  # Author or organization name for attribution and support contact
+  # Can be team name, company, or individual contributor
   author: OSSA Community
+
+  # Software license identifier (SPDX standard)
+  # Common: MIT, Apache-2.0, GPL-3.0, Proprietary
+  # See https://spdx.org/licenses/ for complete list
   license: MIT
 
+# Service discovery configuration (required for production)
+# Controls how other services find and register this agent
 discover:
+  # Enable automatic service discovery
+  # true = agent automatically registers itself when deployed
+  # false = manual registration required via external registry
   auto: true
 
+# Agent capabilities (required)
+# Lists logical functions/features this agent can perform
+# Each capability can be invoked through REST API endpoints
+# Format: list of capability names (lowercase, hyphen-separated)
 capabilities:
+  # Simple greeting capability - generates personalized responses
   - greeting
+
+  # Echo capability - reflects input back (useful for testing/debugging)
   - echo
+
+  # Status capability - reports agent health and runtime information
   - status
 
+# REST API endpoint definitions (required)
+# Maps HTTP methods + paths to agent capabilities
+# Enables external services to invoke agent functionality
 api:
+  # POST /greet endpoint
+  # HTTP Method: POST (creates/executes something)
+  # Path: /greet (relative to agent base URL)
   POST /greet:
+    # Which capability this endpoint invokes
+    # Must match a name in the capabilities list above
     capability: greeting
+
+    # Human-readable description for API documentation
+    # Displayed in OpenAPI/Swagger documentation
     description: Generate a personalized greeting
 
+  # POST /echo endpoint
+  # Demonstrates request body processing capability
   POST /echo:
+    # Routes to echo capability defined above
     capability: echo
+
+    # Documents expected behavior in API docs
     description: Echo input back to user
 
+  # GET /status endpoint
+  # HTTP Method: GET (retrieves information without side effects)
+  # Used for health checks, monitoring, and readiness probes
   GET /status:
+    # Links to status capability for runtime inspection
     capability: status
+
+    # Documents the purpose of status endpoint
     description: Get agent status
+
+# ========================================
+# Validation & Next Steps
+# ========================================
+#
+# To validate this manifest:
+#
+#   ossa validate ./agent.yml
+#
+# To validate with strict OSSA 1.0 compliance:
+#
+#   ossa validate ./agent.yml --version 1.0 --strict
+#
+# To create a new agent from this template:
+#
+#   ossa init my-agent --template minimal
+#   # Then customize agent.yml with your values
+#
+# To run this agent locally:
+#
+#   ossa run ./agent.yml --port 3000
+#   # Then test endpoints:
+#   curl -X POST http://localhost:3000/greet -H "Content-Type: application/json" -d '{"name":"World"}'
+#   curl -X GET http://localhost:3000/status
+#
+# Key Next Steps:
+#   1. Customize name, description, author for your use case
+#   2. Define actual implementation for each capability
+#   3. Add request/response schemas for type safety
+#   4. Add authentication/authorization if needed (see ../production/)
+#   5. Push to registry: ossa publish ./agent.yml
+#
+# ========================================

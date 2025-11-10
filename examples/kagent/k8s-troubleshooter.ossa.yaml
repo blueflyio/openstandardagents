@@ -1,113 +1,257 @@
-# OSSA kAgent Reference Implementation #1
-# Kubernetes Troubleshooter Agent
+# ============================================================================
+# OSSA kAgent Reference Implementation: Kubernetes Troubleshooter Agent
+# ============================================================================
+#
+# This manifest demonstrates OSSA compliance for Kubernetes-native agent
+# deployments with comprehensive diagnostic and troubleshooting capabilities.
+#
+# Key Features:
+#   - K8s runtime integration with pod/node discovery
+#   - RBAC-based permission model for safe cluster operations
+#   - MCP server integration for kubectl command execution
+#   - Supervised autonomy with approval gates
+#   - Service mesh integration (Istio/Ambient)
+#   - Agent-to-Agent (A2A) communication patterns
+#   - Audit logging for compliance and observability
+#
 # Domain: infrastructure.kubernetes.troubleshooting
+# ============================================================================
 
 apiVersion: ossa/v1
 kind: Agent
 metadata:
+  # Basic agent identification metadata
   name: k8s-troubleshooter
   version: 1.0.0
   description: "Autonomous Kubernetes cluster troubleshooting agent with diagnostic capabilities"
 
 spec:
+  # =========================================================================
+  # TAXONOMY: Agent Classification & Capabilities
+  # =========================================================================
+  # Defines the functional domain and specialization of this agent within
+  # the infrastructure ecosystem. Used for discovery, routing, and validation.
   taxonomy:
-    domain: infrastructure
-    subdomain: kubernetes
-    capability: troubleshooting
+    domain: infrastructure           # Primary domain: infrastructure/devops
+    subdomain: kubernetes           # K8s-specific agent
+    capability: troubleshooting     # Core capability: diagnostics & remediation
 
+  # =========================================================================
+  # ROLE: Agent Behavior & Expertise Profile
+  # =========================================================================
+  # Instructs the LLM on this agent's purpose, expertise areas, and approach.
+  # Guides decision-making for K8s diagnosis and troubleshooting workflows.
   role: |
     You are an expert Kubernetes troubleshooter. You diagnose pod failures, network issues,
     resource constraints, and configuration problems. You use kubectl and monitoring tools
     to identify root causes and suggest remediation steps.
 
+  # =========================================================================
+  # LLM CONFIGURATION: Model Selection & Behavior
+  # =========================================================================
+  # Configures the Large Language Model backend used for reasoning and
+  # diagnostic recommendations. Temperature kept low (0.2) for consistency.
   llm:
-    provider: openai
-    model: gpt-4
-    temperature: 0.2
-    maxTokens: 4000
+    provider: openai                # LLM provider for inference
+    model: gpt-4                    # Model with strong K8s/YAML reasoning
+    temperature: 0.2                # Low temperature: consistent diagnostics
+    maxTokens: 4000                 # Token budget for diagnostic analysis
 
+  # =========================================================================
+  # TOOLS: MCP Server Integration & Capabilities
+  # =========================================================================
+  # Declares MCP (Model Context Protocol) servers that provide K8s API access
+  # and kubectl execution capabilities. MCP enables structured interaction
+  # with Kubernetes cluster resources and diagnostic tools.
   tools:
+    # ===== Kubernetes MCP Server =====
+    # Provides direct access to Kubernetes API resources and kubectl execution
+    # for pod inspection, log retrieval, and event analysis
     - type: mcp
       server: kubernetes-mcp
-      namespace: default
+      namespace: default            # Default K8s namespace for queries
       capabilities:
-        - get_pods
-        - get_logs
-        - get_events
-        - describe_resource
-        - get_metrics
+        - get_pods                  # Query pod status and configuration
+        - get_logs                  # Stream pod container logs
+        - get_events                # Retrieve K8s cluster events
+        - describe_resource         # Get detailed resource descriptions
+        - get_metrics               # Access Prometheus/kubelet metrics
 
+    # ===== BuildKit Agent Protocol Server =====
+    # Provides documentation search and log analysis capabilities
+    # for correlating K8s issues with known patterns and solutions
     - type: mcp
       server: buildkit-agent-protocol
       namespace: default
       capabilities:
-        - search_documentation
-        - analyze_logs
+        - search_documentation      # Search troubleshooting KB/runbooks
+        - analyze_logs              # Pattern matching in aggregated logs
 
+  # =========================================================================
+  # AUTONOMY: Permission Model & Action Gates
+  # =========================================================================
+  # Defines the supervision level, approval requirements, and permitted actions.
+  # Follows principle of least privilege for cluster safety.
   autonomy:
-    level: supervised
-    approval_required: true
-    allowed_actions:
-      - read_pods
-      - read_logs
-      - read_events
-      - read_metrics
-    blocked_actions:
-      - delete_pods
-      - scale_deployments
-      - modify_configs
+    level: supervised               # Requires human approval for actions
+    approval_required: true         # All actions need explicit approval
 
+    # ===== ALLOWED READ-ONLY ACTIONS =====
+    # Safe diagnostic operations that don't modify cluster state
+    allowed_actions:
+      - read_pods                   # Query pod metadata/status
+      - read_logs                   # Access application logs
+      - read_events                 # View cluster events
+      - read_metrics                # Access performance metrics
+
+    # ===== BLOCKED DESTRUCTIVE ACTIONS =====
+    # Dangerous operations explicitly forbidden to prevent cluster damage
+    blocked_actions:
+      - delete_pods                 # Prevent accidental pod termination
+      - scale_deployments           # Prevent replica count changes
+      - modify_configs              # Prevent ConfigMap/Secret changes
+
+  # =========================================================================
+  # CONSTRAINTS: Cost & Performance Limits
+  # =========================================================================
+  # Enforces resource limits to prevent excessive API/LLM usage and costs.
+  # Token limits control diagnostic depth; latency limits ensure responsiveness.
   constraints:
     cost:
-      maxTokensPerDay: 50000
-      maxTokensPerRequest: 4000
-      maxCostPerDay: 10.0
+      maxTokensPerDay: 50000        # Daily token budget for all operations
+      maxTokensPerRequest: 4000     # Per-request token limit
+      maxCostPerDay: 10.0           # USD cost ceiling per day
       currency: USD
 
     performance:
-      maxLatencySeconds: 30
-      maxConcurrentRequests: 5
+      maxLatencySeconds: 30         # Max response time for diagnostics
+      maxConcurrentRequests: 5      # Concurrent diagnostic requests
 
-  # kAgent-specific extensions
+  # =========================================================================
+  # EXTENSIONS: kAgent-Specific Kubernetes Integration
+  # =========================================================================
+  # kAgent extensions provide Kubernetes-native deployment configuration,
+  # RBAC integration, service mesh support, and compliance frameworks.
   extensions:
     kagent:
+      # =====================================================================
+      # KUBERNETES RUNTIME CONFIGURATION
+      # =====================================================================
+      # Configures how the agent pod itself runs within the cluster,
+      # including namespace, resource limits, and identification labels.
       kubernetes:
-        namespace: production
+        namespace: production        # Production namespace for agent pod
+
+        # ===== POD LABELS =====
+        # Standard Kubernetes labels for discovery, monitoring, and routing
         labels:
-          app: k8s-troubleshooter
-          team: platform
-          environment: production
+          app: k8s-troubleshooter   # App identifier for selectors
+          team: platform            # Team ownership
+          environment: production   # Environment classification
+
+        # ===== POD ANNOTATIONS =====
+        # Metadata annotations for observability and contact information
         annotations:
           description: "Kubernetes troubleshooting agent"
-          contact: "platform-team@company.com"
+          contact: "platform-team@company.com"  # Escalation contact
+
+        # ===== RESOURCE LIMITS =====
+        # Container resource requests/limits to prevent resource starvation
+        # or runaway consumption on cluster nodes
         resourceLimits:
-          cpu: "500m"
-          memory: "512Mi"
+          cpu: "500m"               # CPU allocation for agent execution
+          memory: "512Mi"           # Memory allocation for LLM context
 
+      # =====================================================================
+      # GUARDRAILS: RBAC & Approval Framework
+      # =====================================================================
+      # Enforces mandatory approvals, resource consumption limits, and
+      # specific K8s API action permissions through RBAC-style rules.
       guardrails:
-        requireApproval: true
+        requireApproval: true       # Mandatory approval gate before actions
+
         costLimits:
-          maxTokensPerDay: 50000
-          maxCostPerDay: 10.0
+          maxTokensPerDay: 50000    # Daily LLM token consumption limit
+          maxCostPerDay: 10.0       # Financial ceiling (USD)
           currency: USD
+
+        # ===== K8S API PERMISSION MODEL =====
+        # RBAC-style permissions for specific Kubernetes API resources
+        # Format: kubernetes:<verb>:<resource>
         allowedActions:
-          - kubernetes:get:pods
-          - kubernetes:get:logs
-          - kubernetes:get:events
+          - kubernetes:get:pods     # Read pod objects (GET /pods)
+          - kubernetes:get:logs     # Stream logs (GET /pods/logs)
+          - kubernetes:get:events   # List events (GET /events)
+
+        # ===== AUDIT LOGGING =====
+        # Records all agent actions for compliance, debugging, and security
         auditLog:
-          destination: compliance-engine
-          retention: 7years
+          destination: compliance-engine  # Audit destination service
+          retention: 7years               # Compliance data retention
 
+      # =====================================================================
+      # AGENT-TO-AGENT (A2A) COMMUNICATION CONFIG
+      # =====================================================================
+      # Enables this agent to communicate with other agents (security-scanner,
+      # cost-optimizer) for collaborative diagnostics using JSON-RPC protocol.
+      # Supports multi-agent troubleshooting workflows.
       a2aConfig:
-        enabled: true
-        protocol: json-rpc
-        endpoints:
-          - http://security-scanner:8080/a2a
-          - http://cost-optimizer:8080/a2a
-        authentication:
-          type: mtls
+        enabled: true               # Enable inter-agent communication
+        protocol: json-rpc          # JSON-RPC 2.0 for agent calls
 
+        # ===== A2A ENDPOINT REGISTRY =====
+        # Other agents this troubleshooter can invoke for specialized analysis
+        endpoints:
+          - http://security-scanner:8080/a2a    # Security audit queries
+          - http://cost-optimizer:8080/a2a      # Cost analysis queries
+
+        # ===== AUTHENTICATION =====
+        # mTLS (mutual TLS) ensures encrypted, authenticated agent-to-agent
+        # communication within the service mesh
+        authentication:
+          type: mtls               # Mutual TLS certificates required
+
+      # =====================================================================
+      # SERVICE MESH INTEGRATION
+      # =====================================================================
+      # Integrates with Kubernetes service mesh technologies for:
+      #   - Encrypted inter-pod communication
+      #   - Observability (traces, metrics)
+      #   - Traffic policy enforcement
+      #   - mTLS authentication between agents
       meshIntegration:
-        enabled: true
-        istioIntegration: true
-        ambientMesh: true
+        enabled: true               # Enable service mesh features
+        istioIntegration: true      # Istio sidecar injection
+        ambientMesh: true           # Ambient mode support (Istio 1.14+)
+
+# ============================================================================
+# OPERATIONAL NOTES
+# ============================================================================
+#
+# DEPLOYMENT:
+#   This manifest deploys an agent pod to the production namespace with
+#   K8s cluster discovery enabled. The agent pod receives an Istio sidecar
+#   for encrypted inter-agent communication and observability.
+#
+# RBAC REQUIREMENTS:
+#   Requires ClusterRole with permissions for:
+#     - pods (get, list, watch)
+#     - pods/logs (get)
+#     - events (get, list, watch)
+#     - nodes (get, list)
+#     - deployments (get, list)
+#
+# SECURITY CONSIDERATIONS:
+#   - All actions require explicit approval via guardrails
+#   - No destructive actions permitted (no delete/modify)
+#   - mTLS required for agent-to-agent communication
+#   - Audit logging for compliance and troubleshooting
+#   - Resource limits prevent denial-of-service
+#
+# MONITORING & OBSERVABILITY:
+#   - Metrics exported to Prometheus via agent instrumentation
+#   - Traces propagated to Jaeger via Istio sidecars
+#   - Pod logs aggregated via standard K8s logging
+#   - Audit events recorded in compliance-engine
+#
+# ============================================================================

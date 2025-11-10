@@ -1,95 +1,140 @@
+# ============================================================================
 # OSSA kAgent Reference Implementation #2
-# Security Scanner Agent
+# Security Scanner Agent - Comprehensive Annotation
 # Domain: security.vulnerability.scanning
+# Purpose: Continuous vulnerability scanning, CVE detection, compliance validation
+# Last Updated: 2025-11-10
+# ============================================================================
 
 apiVersion: ossa/v1
 kind: Agent
 metadata:
+  # Core identity metadata for the security scanning agent
   name: security-scanner
   version: 1.0.0
   description: "Continuous security vulnerability scanning and compliance validation agent"
 
 spec:
+  # Taxonomy defines the agent's operational domain and classification
+  # Used for service discovery, capability matching, and policy routing
   taxonomy:
-    domain: security
-    subdomain: vulnerability
-    capability: scanning
+    domain: security          # Primary domain for security operations
+    subdomain: vulnerability  # Specialization: vulnerability management
+    capability: scanning      # Core capability: security scanning
 
+  # Role definition: Defines agent's purpose, boundaries, and security responsibilities
+  # This instructs the LLM on its operational context within the security ecosystem
   role: |
     You are a security scanning agent that continuously monitors Kubernetes clusters
     for vulnerabilities, misconfigurations, and compliance violations. You integrate
     with CVE databases, security benchmarks (CIS, NIST), and provide actionable remediation.
 
+  # LLM Configuration: Controls AI model behavior for security scanning operations
+  # Low temperature (0.1) ensures deterministic, consistent security analysis
   llm:
     provider: anthropic
     model: claude-3-sonnet-20240229
-    temperature: 0.1
-    maxTokens: 8000
+    temperature: 0.1           # Low temperature for consistent vulnerability assessment
+    maxTokens: 8000            # Token limit for detailed security reports
 
+  # Tools: Defines integrations with security scanning and compliance validation systems
+  # Each tool maps to specific security capabilities: image scanning, RBAC validation, config auditing
   tools:
+    # Kubernetes-based security operations via MCP server
+    # Provides cluster-level visibility into security posture
     - type: mcp
       server: kubernetes-mcp
       capabilities:
-        - scan_images
-        - check_rbac
-        - audit_configs
+        - scan_images          # CVE scanning for container images (registry vulnerability detection)
+        - check_rbac           # Role-based access control validation (IAM security)
+        - audit_configs        # Configuration audit against security benchmarks (CIS, NIST)
 
+    # Compliance validation and security policy enforcement via buildkit engine
+    # Enables continuous compliance checking against organizational policies
     - type: mcp
       server: buildkit-compliance-engine
       capabilities:
-        - validate_compliance
-        - check_policies
-        - generate_reports
+        - validate_compliance  # Verify compliance against frameworks (SOC2, FedRAMP, etc.)
+        - check_policies       # Enforce organization-specific security policies
+        - generate_reports     # Create compliance and vulnerability reports
 
+    # Trivy vulnerability scanner: External HTTP service for container/image scanning
+    # Integrates with CVE databases for real-time vulnerability detection
     - type: http
       name: trivy-scanner
       endpoint: http://trivy:8080
       auth:
-        type: bearer
+        type: bearer           # Bearer token authentication for API access
 
+  # Autonomy Level: Determines agent decision-making authority and approval workflows
+  # Security agents typically operate autonomously for scanning but require approval for remediation
   autonomy:
-    level: autonomous
-    approval_required: false
+    level: autonomous          # Can execute scan operations without human intervention
+    approval_required: false   # Scans execute automatically per schedule
     allowed_actions:
-      - scan_all_namespaces
-      - generate_reports
-      - send_alerts
+      - scan_all_namespaces    # Permission: scan all Kubernetes namespaces for vulnerabilities
+      - generate_reports       # Permission: create vulnerability and compliance reports
+      - send_alerts            # Permission: notify security teams of findings
     blocked_actions:
-      - remediate_automatically
-      - modify_resources
+      - remediate_automatically  # BLOCKED: Prevent autonomous remediation (human oversight required)
+      - modify_resources         # BLOCKED: Prevent direct cluster modifications
 
+  # Constraints: Operational boundaries for cost, performance, and scanning frequency
+  # Prevents resource exhaustion and maintains predictable operational costs
   constraints:
     cost:
-      maxTokensPerDay: 100000
-      maxCostPerDay: 25.0
+      maxTokensPerDay: 100000   # Daily LLM token budget for security analysis
+      maxCostPerDay: 25.0       # Daily cost cap in USD for AI operations
     performance:
-      maxLatencySeconds: 60
-      scanInterval: 3600
+      maxLatencySeconds: 60     # Maximum acceptable latency for vulnerability scan results
+      scanInterval: 3600        # Scan frequency: 1 hour (3600 seconds) between full scans
 
+  # Extensions: Kubernetes-specific configurations for agent deployment and runtime governance
+  # Contains kAgent-specific settings for the Kubernetes environment
   extensions:
     kagent:
+      # Kubernetes deployment configuration: Where and how agent runs in cluster
       kubernetes:
-        namespace: security
+        namespace: security     # Dedicated security namespace for agent isolation
         labels:
-          app: security-scanner
-          team: security
-          environment: production
-          compliance: soc2-fedramp
+          app: security-scanner        # Application identifier
+          team: security               # Team ownership
+          environment: production      # Environment classification
+          compliance: soc2-fedramp     # Compliance frameworks: SOC2, FedRAMP
+
+        # Resource limits: Prevents runaway resource consumption during intensive scans
         resourceLimits:
-          cpu: "1000m"
-          memory: "1Gi"
+          cpu: "1000m"                 # 1 CPU core limit
+          memory: "1Gi"                # 1GB memory limit for scan operations
 
+      # Guardrails: Security controls and oversight mechanisms for agent operations
+      # Ensures compliance, auditability, and cost control
       guardrails:
-        requireApproval: false
+        requireApproval: false         # Scans don't require approval (scheduled automation)
         costLimits:
-          maxTokensPerDay: 100000
+          maxTokensPerDay: 100000      # Daily token budget enforcement
         auditLog:
-          destination: compliance-engine
-          retention: 10years
+          destination: compliance-engine  # Send all operations to compliance system
+          retention: 10years              # 10-year retention for regulatory compliance
 
+      # Agent-to-Agent (A2A) Configuration: Inter-agent communication and coordination
+      # Enables security agent to collaborate with other agents (troubleshooter, validator)
       a2aConfig:
-        enabled: true
-        protocol: json-rpc
+        enabled: true                  # Enable inter-agent communication
+        protocol: json-rpc             # Communication protocol: JSON-RPC over HTTP
         endpoints:
-          - http://k8s-troubleshooter:8080/a2a
-          - http://compliance-validator:8080/a2a
+          - http://k8s-troubleshooter:8080/a2a      # Endpoint: Kubernetes troubleshooting agent
+          - http://compliance-validator:8080/a2a    # Endpoint: Compliance validation agent
+
+# ============================================================================
+# SECURITY FEATURES SUMMARY:
+# - CVE Detection: Trivy integration for container image vulnerability scanning
+# - Compliance Checking: Validates against SOC2, FedRAMP, CIS, NIST standards
+# - RBAC Validation: Ensures Kubernetes access controls are properly configured
+# - Config Auditing: Scans cluster configurations against security baselines
+# - Vulnerability Reporting: Generates detailed security and compliance reports
+# - Alert Management: Autonomous notification of security findings
+# - Audit Trail: 10-year retention of all operations via compliance engine
+# - Cost Controls: Daily token and monetary budgets prevent resource exhaustion
+# - Approval Workflows: Blocks autonomous remediation; requires human oversight
+# ============================================================================

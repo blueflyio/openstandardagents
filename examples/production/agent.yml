@@ -1,245 +1,713 @@
-# Production OSSA Agent Example (200 lines)
-# Silver conformance level - Production-ready with monitoring
+# ============================================================================
+# OSSA Production Worker Agent Example
+# ============================================================================
+# Purpose: Production-ready worker agent for document analysis with NLP
+#
+# Key Concepts:
+# - Worker Agent: Executes tasks delegated by orchestrator agents
+# - Capability-Based: Registers capabilities for discovery and routing
+# - Production-Grade: Full observability, health checks, and resource limits
+# - Multi-Protocol: Exposes both OpenAPI and MCP bridges for integration
+#
+# Conformance Level: Silver
+# - Production-ready with comprehensive monitoring
+# - Health checks for dependencies (database, Redis)
+# - Structured logging with redaction
+# - Metrics and distributed tracing
+# - Performance optimization (caching, batching)
+#
+# Related Examples:
+# - examples/openapi-extensions/orchestrator-agent-api.openapi.yml (Orchestrator)
+# - examples/openapi-extensions/worker-agent-api.openapi.yml (Worker API)
+# - examples/agent-manifests/orchestrators/orchestrator-agent.yaml (Orchestrator manifest)
+#
+# Integration Pattern:
+# 1. Worker agent registers capabilities in agent-mesh
+# 2. Orchestrator discovers worker via agent-router
+# 3. Orchestrator delegates workflow step to worker
+# 4. Worker executes capability and returns result
+# 5. Orchestrator aggregates results from all workers
+#
+# OSSA Version: 1.0 (Worker profile)
+# ============================================================================
 
+# OSSA specification version - defines schema and features
 ossaVersion: "1.0"
-agent:
-  id: document-analyzer
-  name: Document Analyzer
-  version: 2.1.0
-  description: Production document analysis agent with NLP capabilities
-  role: data_processing
-  tags:
-    - nlp
-    - documents
-    - analysis
-    - production
-  metadata:
-    author: Bluefly.io
-    license: MIT
 
+# ============================================================================
+# AGENT: Core identity, capabilities, and runtime configuration
+# ============================================================================
+agent:
+  # Unique identifier for service discovery and routing
+  # - Used by agent-router to route requests to this agent
+  # - Must be unique within the agent ecosystem
+  id: document-analyzer
+
+  # Human-readable name for UI and documentation
+  name: Document Analyzer
+
+  # Semantic version for compatibility tracking
+  # - Breaking changes: Increment major version
+  # - New capabilities: Increment minor version
+  # - Bug fixes: Increment patch version
+  version: 2.1.0
+
+  # Description for service discovery and documentation
+  description: Production document analysis agent with NLP capabilities
+
+  # Role defines the agent's purpose in multi-agent workflows
+  # - data_processing: Transforms or analyzes data
+  # - code_generation: Generates or modifies code
+  # - quality_assurance: Validates outputs
+  # - orchestration: Coordinates other agents
+  role: data_processing
+
+  # Tags enable filtering and discovery
+  # - Used by orchestrators to find agents with specific traits
+  # - Example: Find all NLP agents, all production agents, etc.
+  tags:
+    - nlp          # Natural Language Processing capability
+    - documents    # Document processing specialization
+    - analysis     # Analytical capabilities
+    - production   # Production-ready deployment
+
+  # Metadata for governance and compliance
+  metadata:
+    author: Bluefly.io    # Team or organization maintaining this agent
+    license: MIT          # License for usage and distribution
+
+  # ============================================================================
+  # RUNTIME: Kubernetes deployment configuration
+  # ============================================================================
   runtime:
+    # Deployment type: k8s (Kubernetes), docker, serverless, etc.
     type: k8s
+
+    # Container image with version tag
+    # - Use semantic versioning for image tags
+    # - Avoid 'latest' tag in production
     image: ossa/document-analyzer:2.1.0
+
+    # Resource requests and limits for Kubernetes
     resources:
+      # CPU allocation: 1000m = 1 CPU core
+      # - Request: Guaranteed allocation
+      # - Limit: Maximum allowed (set in k8s manifest)
       cpu: "1000m"
+
+      # Memory allocation: 1Gi = 1 gibibyte
+      # - Request: Guaranteed allocation
+      # - Limit: Maximum allowed (OOM kill if exceeded)
       memory: "1Gi"
+
+    # Health check configuration for Kubernetes liveness/readiness probes
     health_check:
+      # HTTP health check endpoint
       type: http
+
+      # Health check endpoint path
+      # - Should return 200 OK when healthy
+      # - Should check all critical dependencies (DB, Redis, etc.)
       endpoint: /health
+
+      # Port for health check requests
       port: 3000
 
+  # ============================================================================
+  # CAPABILITIES: Functions this worker agent can perform
+  # ============================================================================
+  # Capabilities are registered in agent-mesh for discovery by orchestrators
+  # Each capability defines input/output schemas and timeout constraints
   capabilities:
+    # ------------------------------------------------------------------------
+    # Capability: analyze_document - Comprehensive NLP analysis
+    # ------------------------------------------------------------------------
     - name: analyze_document
+      # Description used for capability matching and documentation
       description: Comprehensive document analysis with sentiment and entities
+
+      # Input schema: JSON Schema for request validation
       input_schema:
         type: object
-        required: ["document"]
+        required: ["document"]    # Document text is required
         properties:
+          # Document text to analyze
           document:
             type: string
             description: Document text to analyze
+
+          # Optional: Include entity extraction in analysis
+          # - Named entities: People, organizations, locations, dates
           includeEntities:
             type: boolean
             default: true
+
+          # Optional: Include sentiment analysis in analysis
+          # - Sentiment: Positive, negative, neutral with confidence scores
           includeSentiment:
             type: boolean
             default: true
+
+      # Output schema: JSON Schema for response validation
       output_schema:
         type: object
         properties:
+          # Sentiment analysis results
+          # - score: -1.0 (negative) to 1.0 (positive)
+          # - label: positive, negative, neutral
+          # - confidence: 0.0 to 1.0
           sentiment:
             type: object
+
+          # Named entities extracted from document
+          # - type: PERSON, ORG, GPE, DATE, etc.
+          # - text: Entity mention in document
+          # - start/end: Character offsets
           entities:
             type: array
+
+          # Generated summary of document (if requested)
           summary:
             type: string
+
+      # Maximum execution time: 300 seconds (5 minutes)
+      # - Includes NLP model inference time
+      # - Should handle large documents (up to 100KB)
       timeout_seconds: 300
 
+    # ------------------------------------------------------------------------
+    # Capability: extract_text - Extract text from binary documents
+    # ------------------------------------------------------------------------
     - name: extract_text
+      # Extract text from PDF, Word, images (OCR), etc.
       description: Extract text from various document formats
+
       input_schema:
         type: object
         required: ["document"]
         properties:
+          # Binary document data (base64 encoded)
+          # - Supports: PDF, DOCX, PPTX, images (OCR)
           document:
             type: string
             format: binary
+
       output_schema:
         type: object
         properties:
+          # Extracted plain text from document
           text:
             type: string
+
+      # Shorter timeout: Text extraction is faster than analysis
+      # - 60 seconds should handle most documents
       timeout_seconds: 60
 
+    # ------------------------------------------------------------------------
+    # Capability: summarize_document - Generate document summary
+    # ------------------------------------------------------------------------
     - name: summarize_document
+      # Generate abstractive or extractive summary
       description: Generate concise document summary
+
       input_schema:
         type: object
         required: ["text"]
         properties:
+          # Document text to summarize
           text:
             type: string
+
+          # Maximum summary length in characters
+          # - Default: 500 characters (2-3 sentences)
           maxLength:
             type: integer
             default: 500
+
       output_schema:
         type: object
         properties:
+          # Generated summary
+          # - Abstractive: Paraphrased summary
+          # - Extractive: Key sentences from original
           summary:
             type: string
+
+      # Medium timeout: Summarization is moderately expensive
+      # - 120 seconds for documents up to 50KB
       timeout_seconds: 120
 
+    # ------------------------------------------------------------------------
+    # Capability: classify_document - Categorize document by type
+    # ------------------------------------------------------------------------
     - name: classify_document
+      # Classify into predefined categories (e.g., invoice, contract, email)
       description: Classify document into categories
+
       input_schema:
         type: object
         required: ["text"]
         properties:
+          # Document text to classify
           text:
             type: string
+
       output_schema:
         type: object
         properties:
+          # Predicted category label
+          # - Examples: invoice, contract, email, report, memo
           category:
             type: string
+
+          # Confidence score for prediction (0.0 to 1.0)
+          # - Use threshold (e.g., 0.8) for high-confidence predictions
           confidence:
             type: number
+
+      # Fast timeout: Classification is quick (single model inference)
       timeout_seconds: 60
 
+  # ============================================================================
+  # INTEGRATION: How orchestrators communicate with this worker agent
+  # ============================================================================
   integration:
+    # Protocol: HTTP REST API
+    # - Alternatives: gRPC, WebSocket, message queue
     protocol: http
+
+    # Endpoint configuration
     endpoints:
+      # Base URL for all API requests
+      # - Uses Kubernetes service DNS: <service-name>:<port>
       base_url: "http://document-analyzer:3000"
+
+      # Health check endpoint (Kubernetes liveness/readiness)
       health: /health
+
+      # Prometheus metrics endpoint
       metrics: /metrics
+
+      # OpenAPI specification for capabilities
+      # - Auto-generated from capability definitions
+      # - Used by clients for request/response validation
       openapi: /api/openapi.json
+
+    # Authentication: JWT tokens
+    # - Orchestrators include JWT in Authorization header
+    # - Worker validates token signature and expiration
     auth:
       type: jwt
 
+# ============================================================================
+# MONITORING: Observability configuration for production operations
+# ============================================================================
 monitoring:
+  # IO-aware monitoring: Track input/output for each capability invocation
+  # - Enables debugging of request/response payloads
+  # - Supports compliance auditing and traceability
   io_aware: true
+
+  # ============================================================================
+  # LOGS: Structured logging configuration
+  # ============================================================================
   logs:
+    # JSON Lines format for structured logging
+    # - Each log entry is a single JSON object
+    # - Easy to parse by log aggregation tools (ELK, Loki, CloudWatch)
     format: jsonl
+
+    # Log level: trace, debug, info, warn, error, fatal
+    # - info: Standard production level (business events)
+    # - debug: Troubleshooting (more verbose)
+    # - trace: Full request/response payloads (development only)
     level: info
+
+    # Enable distributed tracing correlation IDs in logs
+    # - Links logs to distributed traces (Jaeger, Zipkin)
+    # - trace_id and span_id fields in every log entry
     trace: true
+
+    # Log retention period: 30 days
+    # - Comply with data retention policies
+    # - Balance storage costs with debugging needs
     retention: 30d
+
+    # Log outputs: Where to send logs
     outputs:
+      # Console output for Kubernetes log collection
+      # - Kubernetes captures stdout/stderr
+      # - Forwarded to log aggregation system
       - type: console
+
+      # File output for local debugging and backup
       - type: file
         config:
+          # Log file path (persistent volume in Kubernetes)
           path: /var/log/ossa/document-analyzer.log
+
+          # Daily log rotation to prevent large files
           rotation: daily
+
+          # Keep last 7 days of logs (7 * 24h = 168h retention)
           max_files: 7
 
+  # ============================================================================
+  # METRICS: Prometheus metrics configuration
+  # ============================================================================
   metrics:
+    # Enable metrics collection
     enabled: true
+
+    # Metrics endpoint for Prometheus scraping
+    # - Kubernetes ServiceMonitor targets this endpoint
     endpoint: /metrics
+
+    # Prometheus exposition format
+    # - Standard text-based format for Prometheus
     format: prometheus
+
+    # Scrape interval: 60 seconds
+    # - Balance between metric granularity and overhead
+    # - Kubernetes typically scrapes every 30-60 seconds
     interval: 60
+
+    # Custom business metrics (in addition to standard runtime metrics)
     custom_metrics:
+      # Counter: Total documents processed
+      # - Monotonically increasing count
+      # - Labels enable filtering by document type and status
       - name: documents_processed_total
         type: counter
         description: Total documents processed
         labels: [document_type, status]
+
+      # Histogram: Document analysis duration
+      # - Distribution of processing times
+      # - Buckets define SLO boundaries (e.g., p50, p95, p99)
       - name: analysis_duration_seconds
         type: histogram
         description: Document analysis duration
         buckets: [0.1, 0.5, 1, 2, 5, 10]
 
+  # ============================================================================
+  # TRACES: Distributed tracing configuration
+  # ============================================================================
   traces:
+    # Enable distributed tracing
     enabled: true
+
+    # OpenTelemetry Protocol (OTLP) format
+    # - Standard protocol for traces, metrics, and logs
+    # - Compatible with Jaeger, Zipkin, Tempo, etc.
     format: otlp
+
+    # Jaeger collector endpoint
+    # - Receives trace spans from agent
+    # - Stores traces for querying and visualization
     endpoint: http://jaeger:4317
+
+    # Sampling configuration: Don't trace every request
     sampling:
+      # Probabilistic sampling: Randomly sample requests
+      # - Alternatives: always_on, always_off, parent_based
       type: probabilistic
+
+      # Sample 10% of requests
+      # - Reduces overhead while preserving statistical accuracy
+      # - Increase rate (e.g., 1.0) for debugging
       rate: 0.1
 
+  # ============================================================================
+  # HEALTH: Health check configuration
+  # ============================================================================
   health:
+    # Enable health checks
     enabled: true
-    endpoint: /health
-    interval: 30
-    checks:
-      - name: database
-        type: tcp
-        config:
-          port: 5432
-          timeout: 5
-      - name: redis
-        type: tcp
-        config:
-          port: 6379
-          timeout: 5
 
+    # Health check endpoint
+    # - Used by Kubernetes liveness and readiness probes
+    # - Should return 200 OK when healthy, 5xx when unhealthy
+    endpoint: /health
+
+    # Health check interval: 30 seconds
+    # - Kubernetes probes typically run every 10-30 seconds
+    interval: 30
+
+    # Dependency health checks
+    # - Agent is only healthy if all dependencies are reachable
+    # - Prevents routing traffic to unhealthy instances
+    checks:
+      # PostgreSQL database health
+      - name: database
+        type: tcp          # TCP connection test
+        config:
+          port: 5432       # PostgreSQL default port
+          timeout: 5       # Fail after 5 seconds
+
+      # Redis cache health
+      - name: redis
+        type: tcp          # TCP connection test
+        config:
+          port: 6379       # Redis default port
+          timeout: 5       # Fail after 5 seconds
+
+  # ============================================================================
+  # REDACTION: PII/sensitive data redaction in logs and traces
+  # ============================================================================
   redaction:
+    # Enable automatic redaction of sensitive data
+    # - Prevents PII leaks in logs, traces, and metrics
+    # - Required for GDPR, HIPAA, PCI-DSS compliance
     enabled: true
+
+    # Regex patterns for sensitive data detection
     patterns:
+      # Credit card numbers (Luhn algorithm format)
+      # - Matches: 4532 1234 5678 9010, GB12 3456 7890 1234 5678
       - pattern: "\\b[A-Z]{2}\\d{2}\\s?\\d{4}\\s?\\d{4}\\s?\\d{4}\\s?\\d{4}\\b"
         name: credit_card
+
+      # US Social Security Numbers (SSN)
+      # - Matches: 123-45-6789
       - pattern: "\\b\\d{3}-\\d{2}-\\d{4}\\b"
         name: ssn
+
+      # Email addresses
+      # - Matches: user@example.com
       - pattern: "\\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Z|a-z]{2,}\\b"
         name: email
+
+    # Replacement text for redacted data
+    # - All matches replaced with this string
+    # - Preserves log structure while hiding sensitive data
     replacement: '[REDACTED]'
 
+# ============================================================================
+# PERFORMANCE: Optimization strategies for cost and latency
+# ============================================================================
 performance:
+  # ============================================================================
+  # TOKEN OPTIMIZATION: Reduce LLM token usage (if using LLM for NLP)
+  # ============================================================================
   token_optimization:
+    # Enable token optimization strategies
     enabled: true
+
+    # Optimization strategies
     strategies:
+      # Sliding window: Process long documents in chunks
+      # - Prevents exceeding context window limits
+      # - Maintains context across chunks via overlap
       - type: sliding_window
         config:
+          # Window size: 4096 tokens (~16KB text)
+          # - Fits within most LLM context windows
+          # - Allows for overlap between windows
           window_size: 4096
+
+    # Maximum context length: 32000 tokens
+    # - Total context available for processing
+    # - Includes prompt, document, and response
     max_context: 32000
 
+  # ============================================================================
+  # CACHE: Multi-layer caching for repeated requests
+  # ============================================================================
   cache:
+    # Enable caching for performance and cost savings
+    # - Reduces redundant NLP processing
+    # - Lowers LLM API costs
     enabled: true
+
+    # Cache layers: L1 (memory) -> L2 (Redis)
     layers:
+      # L1 Cache: In-memory cache (fastest, limited capacity)
       - name: memory_cache
         type: memory
+        # Cache size: 100MB
+        # - Stores ~10,000 document analysis results
         size: 100MB
+        # TTL: 300 seconds (5 minutes)
+        # - Short TTL for frequently accessed data
+        # - Falls through to L2 if expired
         ttl: 300
+
+      # L2 Cache: Redis cache (slower, larger capacity)
       - name: redis_cache
         type: redis
+        # TTL: 3600 seconds (1 hour)
+        # - Longer TTL for less frequently accessed data
+        # - Persists across agent restarts
         ttl: 3600
         config:
+          # Redis connection details
           host: redis
           port: 6379
           db: 0
+
+    # Cache key strategy: semantic
+    # - Keys based on semantic similarity of input
+    # - Similar documents share cache entries
+    # - Alternatives: exact (exact text match), hash (SHA-256)
     key_strategy: semantic
 
+  # ============================================================================
+  # BATCHING: Batch multiple requests for throughput
+  # ============================================================================
   batching:
+    # Enable request batching
+    # - Processes multiple documents in a single batch
+    # - Improves GPU utilization for NLP models
     enabled: true
+
+    # Dynamic batching: Adjust batch size based on load
+    # - Small batches under light load (low latency)
+    # - Large batches under heavy load (high throughput)
     dynamic: true
+
+    # Maximum batch size: 32 documents
+    # - Balance between throughput and latency
+    # - Larger batches increase latency but improve throughput
     max_batch_size: 32
+
+    # Batch timeout: 100ms
+    # - Maximum time to wait for batch to fill
+    # - Prevents indefinite waiting under light load
     timeout_ms: 100
 
+# ============================================================================
+# BRIDGE: Protocol bridges for multi-protocol support
+# ============================================================================
 bridge:
+  # ============================================================================
+  # OPENAPI BRIDGE: REST API for standard HTTP clients
+  # ============================================================================
   openapi:
+    # Enable OpenAPI bridge
+    # - Exposes capabilities as REST endpoints
+    # - Auto-generates API from capability definitions
     enabled: true
+
+    # OpenAPI specification file
+    # - Can be manually authored or auto-generated
+    # - Used by clients for request/response validation
     spec_url: ./openapi.yaml
+
+    # Auto-generate OpenAPI spec from capabilities
+    # - false: Use manually authored spec (this example)
+    # - true: Generate spec from capability definitions
     auto_generate: false
 
+  # ============================================================================
+  # MCP BRIDGE: Model Context Protocol for LLM integration
+  # ============================================================================
+  # MCP enables LLMs to invoke agent capabilities as tools
+  # - LLMs can call analyzeDocument, extractEntities, etc.
+  # - Agent capabilities become LLM function calls
   mcp:
+    # Enable MCP bridge
+    # - Exposes capabilities as MCP tools
+    # - Allows LLMs to orchestrate this agent
     enabled: true
+
+    # Server type: stdio (standard input/output)
+    # - Communication via stdin/stdout
+    # - Alternative: http (REST API for MCP)
     server_type: stdio
+
+    # MCP tools: Capabilities exposed to LLMs
     tools:
+      # MCP Tool: analyzeDocument
+      # - Maps to capability: analyze_document
+      # - Simplified interface for LLM consumption
       - name: analyzeDocument
         description: Analyze document with NLP
         input_schema:
           type: object
           required: [document]
           properties:
+            # Document text to analyze
             document:
               type: string
+            # Optional analysis options
             options:
               type: object
+        # Capability this tool invokes
+        # - Maps MCP tool call to OSSA capability
         capability: sentiment_analysis
 
+      # MCP Tool: extractEntities
+      # - Maps to capability: analyze_document (with entity extraction)
+      # - Focused interface for entity extraction only
       - name: extractEntities
         description: Extract named entities
         input_schema:
           type: object
           required: [text]
           properties:
+            # Text to extract entities from
             text:
               type: string
+        # Capability this tool invokes
         capability: entity_recognition
+
+# ============================================================================
+# END OF MANIFEST
+# ============================================================================
+# Deployment Instructions:
+#
+# 1. Build container image:
+#    docker build -t ossa/document-analyzer:2.1.0 .
+#
+# 2. Push to registry:
+#    docker push ossa/document-analyzer:2.1.0
+#
+# 3. Deploy to Kubernetes:
+#    kubectl apply -f k8s/deployment.yaml
+#    kubectl apply -f k8s/service.yaml
+#
+# 4. Register with agent-mesh:
+#    curl -X POST http://agent-mesh/api/v1/agents \
+#      -H "Content-Type: application/json" \
+#      -d @agent.yml
+#
+# 5. Verify registration:
+#    curl http://agent-mesh/api/v1/agents/document-analyzer
+#
+# 6. Test capability:
+#    curl -X POST http://document-analyzer:3000/api/v1/analyze \
+#      -H "Content-Type: application/json" \
+#      -d '{"document": "This is a test document."}'
+#
+# Monitoring:
+# - Logs: kubectl logs -f deployment/document-analyzer
+# - Metrics: http://document-analyzer:3000/metrics
+# - Traces: https://jaeger.example.com/search?service=document-analyzer
+# - Health: curl http://document-analyzer:3000/health
+#
+# Related Documentation:
+# - OSSA Spec: https://ossa.ai/spec
+# - Worker Agent Pattern: https://ossa.ai/docs/worker-agents
+# - Capability Registration: https://ossa.ai/docs/capabilities
+# - MCP Integration: https://modelcontextprotocol.io
+#
+# Multi-Agent Workflow:
+# 1. Orchestrator receives workflow request
+# 2. Uses agent-router to discover this worker (by capability)
+# 3. Delegates document analysis task to this worker
+# 4. Worker processes document and returns results
+# 5. Orchestrator aggregates results with other workers
+#
+# Example Workflow Step:
+# {
+#   "stepId": "analyze-sentiment",
+#   "agentType": "worker",
+#   "capability": "sentiment_analysis",
+#   "input": {
+#     "document": "Customer feedback text...",
+#     "includeEntities": true,
+#     "includeSentiment": true
+#   }
+# }
+# ============================================================================

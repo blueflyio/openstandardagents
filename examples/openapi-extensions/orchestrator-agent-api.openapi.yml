@@ -1,4 +1,41 @@
+# ============================================================================
+# OSSA Multi-Agent Orchestrator OpenAPI Specification
+# ============================================================================
+# Purpose: REST API definition for orchestrator agent with OSSA extensions
+#
+# Key Concepts:
+# - OpenAPI-First Design: API specification drives implementation
+# - OSSA Extensions: x-ossa-* fields add agent-specific metadata
+# - Multi-Agent Coordination: Delegate workflow steps to specialized agents
+# - Workflow Orchestration: Manage complex multi-step processes
+#
+# OSSA Extensions Used:
+# - x-ossa-metadata: Top-level compliance and governance metadata
+# - x-ossa: Agent identity and compliance standards
+# - x-agent: Agent-specific capabilities, tools, and rules
+# - x-ossa-capability: Endpoint-level capability mapping
+# - x-ossa-autonomy: Approval requirements and allowed actions
+# - x-ossa-constraints: Cost, performance, and time limits
+# - x-ossa-tools: MCP server integrations for agent coordination
+# - x-ossa-llm: LLM configuration for intelligent orchestration
+#
+# Related Examples:
+# - examples/agent-manifests/orchestrators/orchestrator-agent.yaml (OSSA manifest)
+# - examples/production/agent.yml (Worker agent pattern)
+# - examples/openapi-extensions/worker-agent-api.openapi.yml (Worker API)
+#
+# Integration Pattern:
+# 1. Orchestrator receives workflow request
+# 2. Uses agent-router to discover capable worker agents
+# 3. Delegates workflow steps to appropriate workers
+# 4. Aggregates results and returns unified response
+# ============================================================================
+
 openapi: 3.1.0
+
+# ============================================================================
+# API METADATA: Basic information about this API
+# ============================================================================
 info:
   title: Multi-Agent Orchestrator API
   version: 1.0.0
@@ -6,88 +43,218 @@ info:
     Orchestrator agent that coordinates multiple worker agents to complete complex workflows.
     Demonstrates advanced OSSA extensions for multi-agent coordination.
 
+    Features:
+    - Dynamic agent discovery and routing
+    - Parallel and sequential workflow execution
+    - Automatic retry and compensation handling
+    - Real-time workflow status tracking
+    - Cost and performance constraints enforcement
+
+    Architecture:
+    - Orchestrator coordinates worker agents via agent-router
+    - Worker agents registered in agent-mesh
+    - Workflow state tracked in workflow-engine
+    - All communication over secure, authenticated channels
+
+# ============================================================================
+# x-ossa-metadata: Top-level OSSA compliance and governance metadata
+# ============================================================================
+# This extension provides organizational governance information and
+# compliance requirements that apply to the entire API
 x-ossa-metadata:
+  # OSSA specification version this API conforms to
   version: 0.2.2
+
+  # Compliance level and frameworks this API adheres to
   compliance:
+    # enterprise: Full compliance with all OSSA enterprise requirements
+    # - Comprehensive security, monitoring, and governance
+    # - Production-ready with SLAs and support
     level: enterprise
+
+    # Frameworks this API complies with
     frameworks:
-      - OSSA
-      - OpenAPI 3.1
-      - RFC7807
+      - OSSA               # OSSA agent specification
+      - OpenAPI 3.1        # OpenAPI 3.1.0 specification
+      - RFC7807            # Problem Details for HTTP APIs
+
+  # Governance: Approval and authorization metadata
   governance:
+    # Whether this API has been approved for production use
     approved: true
+
+    # Team or individual who approved this API
     approvedBy: Platform Team
+
+    # Date of approval (ISO 8601 format)
     approvalDate: "2024-01-15"
+
+  # Security: Classification and requirements
   security:
+    # Data classification level (public/internal/confidential/secret)
+    # - internal: Company-internal use only, no external access
     classification: internal
+
+    # Authentication required for all endpoints
     authentication: required
+
+    # TLS 1.3 required for all connections
     encryption: tls1.3
+
+  # Observability: Monitoring and tracing configuration
   observability:
+    # Enable distributed tracing (OpenTelemetry)
     tracing: true
+
+    # Enable metrics collection (Prometheus)
     metrics: true
+
+    # Enable structured logging (JSON format)
     logging: true
 
+# ============================================================================
+# x-ossa: Agent identity and OSSA-specific configuration
+# ============================================================================
+# This extension identifies the agent and its OSSA compliance status
 x-ossa:
+  # OSSA specification version
   version: 0.2.2
+
+  # Agent identity and type
   agent:
+    # Unique identifier for this agent (must match manifest)
     id: workflow-orchestrator
+
+    # Agent type determines its role in the ecosystem
+    # - orchestrator: Coordinates other agents
+    # - worker: Performs delegated tasks
+    # - specialist: Domain-specific expertise
     type: orchestrator
+
+    # Compliance standards this agent follows
     compliance:
       standards:
-        - openapi-first
-        - dry
-        - crud
-        - solid
-        - type-safe
+        - openapi-first  # API specification drives implementation
+        - dry           # Don't Repeat Yourself - reusable components
+        - crud          # Consistent Create, Read, Update, Delete patterns
+        - solid         # SOLID design principles (OOP best practices)
+        - type-safe     # Strong typing in requests/responses
+
+      # Whether this agent has been validated against OSSA spec
       validated: true
+
+      # Timestamp of last validation (ISO 8601 format)
       validatedAt: "2024-01-15T10:30:00Z"
 
+# ============================================================================
+# x-agent: Agent-specific capabilities, tools, and operational rules
+# ============================================================================
+# This extension defines what the agent can do and how it operates
 x-agent:
+  # Capabilities: High-level functions this agent provides
   capabilities:
-    - workflow-execution
-    - agent-coordination
-    - task-delegation
-    - result-aggregation
+    - workflow-execution    # Execute multi-step workflows
+    - agent-coordination    # Discover and manage worker agents
+    - task-delegation      # Delegate workflow steps to workers
+    - result-aggregation   # Combine results from multiple agents
+
+  # Tools: External systems this agent integrates with (MCP servers)
   tools:
-    - agent-router
-    - agent-mesh
-    - workflow-engine
+    - agent-router      # Service discovery and routing for agents
+    - agent-mesh        # Agent communication and coordination
+    - workflow-engine   # Workflow state management and execution
+
+  # Environment: Runtime configuration and limits
   environment:
+    # Maximum worker agents that can be coordinated simultaneously
+    # - Prevents resource exhaustion and coordination overhead
     maxConcurrentAgents: 10
+
+    # Default timeout (seconds) for workflow execution
+    # - Individual steps may have their own timeouts
     defaultTimeout: 300
+
+  # Rules: Operational policies this agent must follow
   rules:
+    # Validate all task delegations before sending to workers
+    # - Ensures workers have required capabilities
+    # - Prevents invalid requests and wasted resources
     - validate-all-delegations
+
+    # Critical workflows require human approval before execution
+    # - Workflows marked priority: critical
+    # - Prevents automated execution of high-risk operations
     - require-approval-for-critical-workflows
+
+    # Audit all coordination activities for compliance
+    # - Log all agent discoveries, delegations, and results
+    # - Enables troubleshooting and compliance reporting
     - audit-all-coordinations
 
+# ============================================================================
+# COMPONENTS: Reusable schemas, parameters, and responses
+# ============================================================================
 components:
   schemas:
+    # ========================================================================
+    # WorkflowRequest: Client submits workflow to orchestrator
+    # ========================================================================
     WorkflowRequest:
       type: object
       required:
- numberOfsteps
+        - workflowId    # Required for idempotency and status tracking
+        - steps         # At least one step must be defined
       properties:
+        # Unique workflow identifier for tracking and idempotency
+        # - Client generates UUID to prevent duplicate submissions
+        # - Used to query workflow status via GET /workflows/{workflowId}
         workflowId:
           type: string
           description: Unique workflow identifier
+
+        # Array of workflow steps to execute
+        # - Steps can be executed sequentially or in parallel
+        # - Orchestrator determines execution order based on dependencies
         steps:
           type: array
           items:
             type: object
             properties:
+              # Unique step identifier within this workflow
+              # - Used for dependency tracking (e.g., step2 depends on step1)
               stepId:
                 type: string
+
+              # Type of agent required for this step
+              # - worker: General-purpose task execution
+              # - specialist: Domain-specific expertise (e.g., code review, security)
+              # - critic: Validation and quality assurance
               agentType:
                 type: string
                 enum:
                   - worker
                   - specialist
                   - critic
+
+              # Required capability for this step
+              # - Used by agent-router to find suitable agents
+              # - Example: "sentiment_analysis", "code_review", "vulnerability_scan"
               capability:
                 type: string
+
+              # Input data for this workflow step
+              # - Passed to the worker agent's capability function
+              # - Schema validated by worker agent
+              # - Can reference outputs from previous steps
               input:
                 type: object
                 additionalProperties: true
+
+        # Workflow priority affects scheduling and resource allocation
+        # - critical: Requires approval, highest priority, dedicated resources
+        # - high: Fast-tracked execution, priority over normal/low
+        # - normal: Standard execution (default)
+        # - low: Best-effort execution, can be preempted
         priority:
           type: string
           enum:
@@ -97,11 +264,21 @@ components:
             - critical
           default: normal
 
+    # ========================================================================
+    # WorkflowResponse: Orchestrator returns workflow status and results
+    # ========================================================================
     WorkflowResponse:
       type: object
       properties:
+        # Workflow identifier from request (for correlation)
         workflowId:
           type: string
+
+        # Overall workflow status
+        # - pending: Workflow accepted but not yet started
+        # - running: At least one step is executing
+        # - completed: All steps completed successfully
+        # - failed: At least one step failed (check steps for details)
         status:
           type: string
           enum:
@@ -109,123 +286,348 @@ components:
             - running
             - completed
             - failed
+
+        # Status and results for each workflow step
         steps:
           type: array
           items:
             type: object
             properties:
+              # Step identifier from request
               stepId:
                 type: string
+
+              # Step execution status
+              # - Same values as workflow status
+              # - Individual step status drives overall workflow status
               status:
                 type: string
+
+              # ID of the agent that executed this step
+              # - Used for debugging and performance analysis
+              # - Retrieved from agent-router based on capability
               agentId:
                 type: string
+
+              # Output from worker agent's capability function
+              # - Schema defined by worker agent
+              # - Can be used as input to subsequent steps
               result:
                 type: object
                 additionalProperties: true
+
+        # Combined results from all workflow steps
+        # - Orchestrator aggregates individual step results
+        # - Structure depends on workflow type and logic
+        # - Example: Combined sentiment scores, merged analysis reports
         aggregatedResult:
           type: object
           additionalProperties: true
 
+# ============================================================================
+# PATHS: API endpoints for workflow orchestration
+# ============================================================================
 paths:
+  # ==========================================================================
+  # POST /api/v1/workflows/execute: Submit workflow for execution
+  # ==========================================================================
   /api/v1/workflows/execute:
     post:
       summary: Execute multi-agent workflow
       description: |
         Coordinates multiple agents to execute a complex workflow.
         Each step can be delegated to different agents based on their capabilities.
+
+        Workflow Execution Process:
+        1. Orchestrator validates workflow request
+        2. Uses agent-router to discover agents with required capabilities
+        3. Delegates workflow steps to worker agents (parallel or sequential)
+        4. Monitors execution and handles failures (retry/compensation)
+        5. Aggregates results from all steps
+        6. Returns unified response
+
+        Agent Discovery:
+        - Agent-router queries agent-mesh for agents with matching capabilities
+        - Health checks ensure only healthy agents receive tasks
+        - Load balancing distributes work across available agents
+
+        Failure Handling:
+        - Retry with exponential backoff (up to 3 attempts)
+        - Compensation actions for saga pattern
+        - Fallback workflows for critical operations
       operationId: executeWorkflow
       tags:
         - Orchestration
+
+      # ======================================================================
+      # x-ossa-capability: Maps endpoint to agent capability
+      # ======================================================================
+      # Enables capability-based routing and authorization
       x-ossa-capability:
         name: workflow-execution
         description: Execute multi-agent workflow with task delegation
+
+      # ======================================================================
+      # x-ossa-autonomy: Defines autonomy level and action permissions
+      # ======================================================================
+      # Controls what the agent can do without human approval
       x-ossa-autonomy:
+        # Autonomy levels:
+        # - autonomous: Full self-direction, no approval needed
+        # - semi-autonomous: Can execute but not modify system (this level)
+        # - supervised: Human approval required for all actions
         level: semi-autonomous
+
+        # Approval required before execution (false for normal priority)
+        # - Set to true for critical priority workflows (via rules)
         approval_required: false
+
+        # Actions this endpoint is permitted to perform
         allowed_actions:
-          - delegate_tasks
-          - aggregate_results
-          - coordinate_agents
+          - delegate_tasks       # Send tasks to worker agents
+          - aggregate_results    # Combine outputs from multiple agents
+          - coordinate_agents    # Discover and communicate with agents
+
+        # Actions explicitly blocked for safety
         blocked_actions:
-          - modify_agent_configs
-          - delete_agents
+          - modify_agent_configs  # Cannot change agent configurations
+          - delete_agents        # Cannot remove agents from system
+
+      # ======================================================================
+      # x-ossa-constraints: Resource and performance limits
+      # ======================================================================
+      # Enforces cost, performance, and time budgets
       x-ossa-constraints:
+        # Cost constraints: Prevent runaway token/cost usage
         cost:
+          # Maximum tokens per 24-hour period (all workflows)
           maxTokensPerDay: 200000
+
+          # Maximum tokens per single workflow execution
           maxTokensPerRequest: 10000
+
+          # Maximum dollar cost per 24-hour period
           maxCostPerDay: 50.0
+
+          # Currency for cost calculations
           currency: USD
+
+        # Performance constraints: Ensure responsiveness
         performance:
+          # Maximum end-to-end latency (seconds) before timeout
+          # - 600 seconds = 10 minutes (should include retries)
           maxLatencySeconds: 600
+
+          # Maximum concurrent workflow executions
+          # - Limits orchestrator load and agent contention
           maxConcurrentRequests: 3
+
+        # Time constraints: Prevent long-running workflows
         time:
+          # Maximum execution time (seconds) per workflow
+          # - 1800 seconds = 30 minutes
+          # - Includes all steps, retries, and compensation
           maxExecutionTime: 1800
+
+      # ======================================================================
+      # x-ossa-tools: MCP servers for agent coordination
+      # ======================================================================
+      # Defines external tools (MCP servers) this endpoint uses
       x-ossa-tools:
+        # Agent Router: Service discovery and request routing
         - type: mcp
           server: agent-router
           capabilities:
+            # Find agents matching capability requirements
             - find_agent
+            # Route requests to selected agents
             - route_request
+
+        # Agent Mesh: Agent communication and coordination
         - type: mcp
           server: agent-mesh
           capabilities:
+            # Coordinate multiple agents in a workflow
             - coordinate_agents
+            # Send messages to all agents (e.g., cancel workflow)
             - broadcast_message
+
+        # Workflow Engine: Workflow state management
         - type: mcp
           server: workflow-engine
           capabilities:
+            # Execute workflow definition (steps, dependencies, retries)
             - execute_workflow
+            # Track workflow progress and state transitions
             - track_progress
+
+      # ======================================================================
+      # x-ossa-llm: LLM configuration for intelligent orchestration
+      # ======================================================================
+      # LLM used for intelligent workflow decisions (optional)
+      # - Determines step execution order based on dependencies
+      # - Selects best agent when multiple candidates available
+      # - Generates compensation logic for failed steps
       x-ossa-llm:
+        # LLM provider (openai, anthropic, azure, etc.)
         provider: openai
+
+        # Model for orchestration decisions
+        # - GPT-4 for complex reasoning about dependencies and failures
         model: gpt-4
+
+        # Low temperature for deterministic orchestration
+        # - Prevents random variations in workflow execution
         temperature: 0.1
+
+        # Maximum tokens for LLM responses
+        # - Orchestration decisions should be concise
         maxTokens: 8000
+
+      # ======================================================================
+      # Request/Response Definitions
+      # ======================================================================
       requestBody:
         required: true
         content:
           application/json:
             schema:
               $ref: "#/components/schemas/WorkflowRequest"
+
       responses:
+        # 202 Accepted: Workflow accepted and execution started
+        # - Asynchronous execution (use GET /workflows/{id} for status)
         '202':
           description: Workflow execution started
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/WorkflowResponse"
+
+        # 400 Bad Request: Invalid workflow specification
+        # - Missing required fields
+        # - Invalid step definitions
+        # - Unknown agent types or capabilities
         '400':
           description: Invalid workflow request
+
+        # 403 Forbidden: Workflow requires approval
+        # - Priority is "critical" and requires human approval
+        # - Blocked by operational rules
         '403':
           description: Workflow requires approval
 
+  # ==========================================================================
+  # GET /api/v1/workflows/{workflowId}: Query workflow status
+  # ==========================================================================
   /api/v1/workflows/{workflowId}:
     get:
       summary: Get workflow status
-      description: Retrieve the current status of a workflow execution
+      description: |
+        Retrieve the current status of a workflow execution.
+
+        Use Cases:
+        - Poll for workflow completion after POST /workflows/execute
+        - Monitor workflow progress in real-time
+        - Retrieve results after workflow completion
+        - Debug failed workflows (view step-by-step status)
+
+        Response Details:
+        - Status: pending/running/completed/failed
+        - Steps: Individual step status and results
+        - AggregatedResult: Combined output from all steps
       operationId: getWorkflowStatus
       tags:
         - Orchestration
+
+      # ======================================================================
+      # x-ossa-capability: Maps endpoint to agent capability
+      # ======================================================================
       x-ossa-capability:
         name: workflow-execution
         description: Query workflow execution status
+
+      # ======================================================================
+      # x-ossa-autonomy: Fully autonomous read-only operation
+      # ======================================================================
+      # Read-only operations are typically autonomous (no approval needed)
       x-ossa-autonomy:
+        # autonomous: No approval needed for read operations
         level: autonomous
+
+        # No approval required for status queries
         approval_required: false
+
+      # ======================================================================
+      # Request Parameters
+      # ======================================================================
       parameters:
+        # Workflow ID from POST /workflows/execute response
         - name: workflowId
           in: path
           required: true
           schema:
             type: string
+          description: Unique workflow identifier from submission
+
+      # ======================================================================
+      # Response Definitions
+      # ======================================================================
       responses:
+        # 200 OK: Workflow found and status returned
         '200':
           description: Workflow status
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/WorkflowResponse"
+
+        # 404 Not Found: Workflow ID does not exist
+        # - Workflow never submitted
+        # - Workflow ID expired (retention policy)
+        # - Typo in workflow ID
         '404':
           description: Workflow not found
+
+# ============================================================================
+# END OF SPECIFICATION
+# ============================================================================
+# Usage Examples:
+#
+# 1. Submit workflow:
+#    POST /api/v1/workflows/execute
+#    {
+#      "workflowId": "wf-123",
+#      "steps": [
+#        {
+#          "stepId": "step1",
+#          "agentType": "worker",
+#          "capability": "sentiment_analysis",
+#          "input": {"text": "This is great!"}
+#        }
+#      ],
+#      "priority": "normal"
+#    }
+#
+# 2. Check status:
+#    GET /api/v1/workflows/wf-123
+#
+# 3. Monitor until completed:
+#    while (status === "pending" || status === "running") {
+#      await sleep(1000);
+#      status = await GET /api/v1/workflows/wf-123;
+#    }
+#
+# Related Documentation:
+# - OSSA Spec: https://ossa.ai/spec
+# - OpenAPI Extensions: https://ossa.ai/docs/openapi-extensions
+# - Agent Coordination: https://ossa.ai/docs/orchestration
+# - MCP Integration: https://modelcontextprotocol.io
+#
+# Agent Ecosystem:
+# - This orchestrator coordinates worker agents
+# - Worker agents register capabilities in agent-mesh
+# - Agent-router discovers and routes to workers
+# - Workflow-engine manages state and retries
+# ============================================================================
 

@@ -1,113 +1,244 @@
-# OSSA Drupal Integration Example
-# GitLab ML Recommendation Engine
-# RAG-Powered Customer Success Agent
+# ============================================================================
+# OSSA Drupal Integration Example: GitLab ML Recommendation Engine
+# ============================================================================
+#
+# PURPOSE:
+#   Demonstrates OSSA integration with Drupal's AI Agent Orchestra module.
+#   Showcases a real-world RAG (Retrieval-Augmented Generation) pipeline for
+#   customer success recommendations using semantic search and LLM generation.
+#
+# KEY FEATURES:
+#   - RAG pipeline with Qdrant vector database for semantic search
+#   - GPT-4 powered recommendation generation
+#   - TimescaleDB aggregation for customer health metrics
+#   - Agent-to-Agent (A2A) communication via JSON-RPC
+#   - Event-driven architecture with Redis pub/sub
+#   - Enterprise-grade monitoring, caching, and compliance
+#
+# ARCHITECTURE:
+#   Drupal Module (ai_agent_orchestra)
+#     ↓ (service call)
+#   GitLabMlRecommendationsService
+#     ↓ (semantic search)
+#   Qdrant Vector DB
+#     ↓ (context retrieval)
+#   GPT-4 via Agent Router
+#     → AI Recommendations
+#
+# USE CASE:
+#   Customer Success teams get AI-powered, data-driven recommendations for
+#   proactive customer engagement based on historical successful interventions
+#   and current customer health signals.
+#
+# RELATED DOCUMENTATION:
+#   - OSSA Drupal Extensions: spec/OSSA_Drupal_Extensions.md
+#   - RAG Pipeline Guide: docs/patterns/rag-patterns.md
+#   - A2A Protocol: spec/OSSA_A2A_Protocol.md
+# ============================================================================
 
+# OSSA specification version - defines which features are available
 ossaVersion: "1.0"
 
+# Agent metadata and configuration
 agent:
+  # Unique identifier for this agent (must be DNS-compatible: lowercase, hyphens)
   id: gitlab-ml-recommender
+
+  # Human-readable name displayed in UIs
   name: "GitLab ML Recommendation Engine"
+
+  # Semantic version for agent deployment tracking
   version: "1.0.0"
+
+  # Agent role determines lifecycle and communication patterns:
+  # - "integration": Long-running service that connects external systems
+  # - "chat": Interactive conversational agent
+  # - "worker": Task-based processor (fire-and-forget or queued)
+  # - "orchestrator": Coordinates multiple agents
   role: "integration"
-  
+
+  # Detailed agent description (supports Markdown for rich documentation)
   description: |
     AI-powered customer success recommendation agent using RAG (Retrieval-Augmented Generation).
-    
-    Pipeline:
+
+    **Pipeline Architecture:**
     1. Semantic search in Qdrant for similar successful cases
-    2. GPT-4 generation with context
-    3. Priority ranking based on customer health
-    
-    Integrates with:
+    2. GPT-4 generation with retrieved context
+    3. Priority ranking based on customer health scores
+
+    **Integrates with:**
     - GitLabMlRecommendationsService (RAG generation)
     - GitLabMlDashboardService (health metrics)
     - QdrantVectorService (semantic search)
-  
-  runtime:
-    type: "docker"
-    image: "llm-platform/ml-recommender:1.0.0"
-    
-    requirements:
-      php: ">=8.1"
-      node: ">=20.0.0"
-      packages:
-        - "guzzlehttp/guzzle"
-        - "symfony/http-client"
-    
-    resources:
-      cpu: "1000m"
-      memory: "2Gi"
-    
-    health_check:
-      type: "http"
-      endpoint: "/health"
-      port: 8080
 
+  # Runtime configuration - defines how the agent is deployed and executed
+  runtime:
+    # Execution environment type:
+    # - "docker": Containerized deployment with image specification
+    # - "serverless": FaaS deployment (AWS Lambda, Google Cloud Functions, etc.)
+    # - "kubernetes": Native k8s deployment with CRD
+    # - "local": Direct process execution (dev/testing only)
+    type: "docker"
+
+    # Docker image reference (registry/name:tag)
+    # Should follow semantic versioning and be immutable (no "latest" tag)
+    image: "llm-platform/ml-recommender:1.0.0"
+
+    # Language and dependency requirements (enforced at build time)
+    requirements:
+      # PHP version constraint (Drupal requirement)
+      php: ">=8.1"
+
+      # Node.js version for build tools and frontend assets
+      node: ">=20.0.0"
+
+      # Composer packages required for Drupal integration
+      packages:
+        - "guzzlehttp/guzzle"      # HTTP client for external API calls
+        - "symfony/http-client"     # Alternative HTTP client with retry logic
+
+    # Resource limits (Kubernetes-style requests/limits)
+    # These prevent resource exhaustion and enable autoscaling decisions
+    resources:
+      cpu: "1000m"      # 1 CPU core (1000 millicores)
+      memory: "2Gi"     # 2 gigabytes RAM
+
+    # Health check configuration for container orchestration
+    # Used by Kubernetes liveness/readiness probes and load balancers
+    health_check:
+      type: "http"          # HTTP GET request for health status
+      endpoint: "/health"   # Health check endpoint path
+      port: 8080            # Container port to check
+
+  # Capabilities define what the agent can do (contract-first design)
+  # Each capability is a discrete, testable unit of functionality with:
+  # - Type-safe input/output schemas (JSON Schema)
+  # - Usage examples for documentation and testing
+  # - Timeout and retry policies for reliability
   capabilities:
+    # ========================================================================
     # Capability 1: Generate Recommendations (RAG Pipeline)
+    # ========================================================================
+    # This is the core capability demonstrating OSSA's RAG pattern:
+    # 1. Semantic search in Qdrant for similar successful customer cases
+    # 2. Context injection into GPT-4 prompt
+    # 3. AI-generated recommendations with rationale
+    # 4. Priority ranking based on customer health signals
+    #
+    # FLOW:
+    #   Drupal Request → Service Layer → Qdrant Search → GPT-4 Generation
+    #   → Priority Ranking → Structured Response
+    # ========================================================================
     - name: generate_recommendations
+
+      # Capability description (appears in API docs and UI)
       description: "Generate AI recommendations using RAG pipeline (Qdrant semantic search + GPT-4)"
-      
+
+      # Input schema using JSON Schema (OpenAPI-compatible)
+      # This defines the contract for calling this capability
       input_schema:
         type: object
+
+        # Required fields - validation will fail if missing
         required: [customer_id]
+
         properties:
+          # Customer UUID from GitLab (primary identifier)
           customer_id:
             type: string
-            format: uuid
+            format: uuid  # Validates UUID format (RFC 4122)
             description: "Customer UUID from GitLab"
+
+          # Context filter for targeted recommendations
+          # Different contexts use different embedding collections
           context:
             type: string
             enum: [health, churn, engagement, technical]
             description: "Recommendation context filter"
+
+          # Result limit for controlling response size and cost
           limit:
             type: integer
-            default: 10
-            minimum: 1
-            maximum: 50
+            default: 10       # Default if not provided
+            minimum: 1        # At least 1 recommendation
+            maximum: 50       # Max to prevent token exhaustion
             description: "Maximum number of recommendations"
-      
+
+
+      # Output schema defines the structure of the response
+      # This ensures consistent data contracts across all agents
       output_schema:
         type: object
+
+        # Required response fields (must always be present)
         required: [customerId, recommendations, generatedAt]
+
         properties:
+          # Echo back the customer ID for request correlation
           customerId:
             type: string
             format: uuid
+
+          # Array of AI-generated recommendations
           recommendations:
             type: array
             items:
               type: object
+
+              # Each recommendation must have these core fields
               required: [id, title, priority, category]
+
               properties:
+                # Unique recommendation ID for tracking and analytics
                 id:
                   type: string
                   format: uuid
+
+                # Short, actionable title (shown in UI cards)
                 title:
                   type: string
-                  maxLength: 255
+                  maxLength: 255  # Database column constraint
+
+                # Detailed explanation of the recommendation
                 description:
                   type: string
+
+                # Priority level for sorting and alerting
                 priority:
                   type: string
                   enum: [critical, high, medium, low]
+
+                # Recommendation category for filtering and routing
                 category:
                   type: string
                   enum: [engagement, technical, health, success]
+
+                # Concrete action steps (Drupal renders as checklist)
                 actionItems:
                   type: array
                   items:
                     type: string
+
+                # AI-generated rationale explaining "why" this recommendation
+                # This is the key value from RAG - evidence from similar cases
                 rationale:
                   type: string
+
+                # References to similar customer cases from vector search
+                # Provides transparency and builds trust in AI recommendations
                 similarCases:
                   type: array
                   items:
                     type: object
+
+          # ISO 8601 timestamp for audit trail
           generatedAt:
             type: string
             format: date-time
-      
+
+
+      # Examples for documentation, testing, and contract validation
+      # Used by OSSA validators and API documentation generators
       examples:
         - name: "Health context recommendations"
           input:
@@ -128,25 +259,38 @@ agent:
                   - "Review usage metrics before meeting"
                 rationale: "Early issue identification strengthens customer relationships"
             generatedAt: "2025-10-24T12:00:00Z"
-      
-      timeout_seconds: 30
-      retry_policy:
-        max_attempts: 3
-        backoff: "exponential"
 
+      # Timeout prevents hung requests and enables circuit breaker patterns
+      timeout_seconds: 30
+
+      # Retry policy for transient failures (network issues, rate limits)
+      retry_policy:
+        max_attempts: 3           # Total attempts (initial + 2 retries)
+        backoff: "exponential"    # 1s, 2s, 4s, 8s... (prevents thundering herd)
+
+    # ========================================================================
     # Capability 2: Get Dashboard Overview
+    # ========================================================================
+    # Provides aggregated customer health metrics from TimescaleDB.
+    # This is a read-only, fast query capability for dashboard UIs.
+    # ========================================================================
     - name: get_dashboard_overview
+
       description: "Retrieve customer health dashboard data aggregated from TimescaleDB"
-      
+
+
+      # Minimal input - just a time range selector
       input_schema:
         type: object
         required: [time_range]
         properties:
+          # Time range for metric aggregation (TimescaleDB time bucket)
           time_range:
             type: string
             enum: ["24h", "7d", "30d", "90d"]
             description: "Time range for dashboard data"
-      
+
+      # Dashboard metrics output (all pre-aggregated in TimescaleDB)
       output_schema:
         type: object
         required: [totalCustomers, healthDistribution, churnRisks]
@@ -186,11 +330,19 @@ agent:
                 type: number
               engagementChange:
                 type: number
-      
+
+
+      # Fast timeout for dashboard queries (should be cached)
       timeout_seconds: 10
 
+    # ========================================================================
     # Capability 3: Get Active Alerts
+    # ========================================================================
+    # Returns active health alerts for customer success team triage.
+    # Supports filtering by severity and status for alert management workflows.
+    # ========================================================================
     - name: get_active_alerts
+
       description: "Retrieve active customer health alerts"
       
       input_schema:
@@ -233,114 +385,225 @@ agent:
           total:
             type: integer
 
+  # ========================================================================
+  # LLM Configuration
+  # ========================================================================
+  # Defines the language model used for generation tasks.
+  # For RAG pipelines, choose models with good reasoning and context handling.
+  # ========================================================================
   llm:
+    # Provider name (openai, anthropic, azure-openai, etc.)
     provider: "openai"
+
+    # Model identifier - GPT-4 for high-quality reasoning over retrieved context
     model: "gpt-4"
+
+    # Temperature controls randomness (0.0=deterministic, 1.0=creative)
+    # 0.7 balances consistency with natural variation
     temperature: 0.7
+
+    # Maximum tokens per generation (controls cost and latency)
     maxTokens: 2000
 
+  # ========================================================================
+  # Tools Configuration (MCP and HTTP endpoints)
+  # ========================================================================
+  # Defines external tools the agent can invoke during execution.
+  # MCP (Model Context Protocol) provides standardized tool interfaces.
+  # ========================================================================
   tools:
+    # Qdrant vector database for semantic search (RAG retrieval step)
     - type: "mcp"
-      server: "qdrant-mcp"
-      namespace: "default"
+      server: "qdrant-mcp"              # MCP server name (from config)
+      namespace: "default"               # Kubernetes namespace
       capabilities:
-        - semantic_search
-        - vector_retrieval
-        - get_point
-        - search_points
-    
+        - semantic_search                # Find similar customer cases
+        - vector_retrieval               # Fetch embeddings by ID
+        - get_point                      # Get specific vector point
+        - search_points                  # Batch vector search
+
+    # Agent Router for LLM and embedding generation
     - type: "http"
       server: "agent-router"
       endpoint: "http://agent-router:4000"
       capabilities:
-        - llm_generation
-        - embedding_generation
+        - llm_generation                 # GPT-4 text generation
+        - embedding_generation           # text-embedding-ada-002
 
+  # ========================================================================
+  # Communication Protocols
+  # ========================================================================
+  # Defines how external systems can interact with this agent.
+  # Multiple protocols enable different integration patterns.
+  # ========================================================================
   protocols:
+    # RESTful HTTP API for traditional request/response (most common)
     - type: "http"
       version: "1.1"
       endpoint: "/api/v1/recommendations"
-    
+
+    # Server-Sent Events for real-time streaming (dashboards, live updates)
     - type: "sse"
       version: "1.0"
       endpoint: "/api/v1/stream"
-    
+
+    # JSON-RPC for agent-to-agent communication (A2A protocol)
     - type: "json-rpc"
       version: "2.0"
       endpoint: "/api/v1/rpc"
 
+  # ========================================================================
+  # Compliance and Governance
+  # ========================================================================
+  # Defines regulatory frameworks and data handling requirements.
+  # Used for audit trails, data retention, and access control.
+  # ========================================================================
   compliance:
+    # Regulatory frameworks this agent complies with
     frameworks: ["SOC2", "HIPAA"]
+
+    # Data sensitivity level (public, internal, confidential, restricted)
     dataClassification: "confidential"
+
+    # Data retention policy for audit and compliance
     retentionPolicy: "7years"
 
+# ============================================================================
+# OSSA Drupal Extensions
+# ============================================================================
+# Drupal-specific configuration for integration with ai_agent_orchestra module.
+# This section is OSSA's extension mechanism for framework-specific features.
+# ============================================================================
 extensions:
   drupal:
+    # Drupal module that implements this agent
     module: "ai_agent_orchestra"
+
+    # Drupal service ID for dependency injection
+    # Registered in ai_agent_orchestra.services.yml
     service: "ai_agent_orchestra.gitlab_ml_recommendations"
-    
+
+    # Drupal module dependencies (must be enabled)
     dependencies:
-      - "ai_agents"
-      - "ai_provider_langchain"
-      - "ai_provider_openai"
-    
+      - "ai_agents"                  # Core AI agent framework
+      - "ai_provider_langchain"      # LangChain integration
+      - "ai_provider_openai"         # OpenAI provider
+
+    # Database tables created by this agent's schema
     database:
       tables:
-        - "gitlab_ml_metrics"
-        - "gitlab_ml_alerts"
-        - "gitlab_ml_recommendations"
-      schema_version: "1.0.0"
-    
+        - "gitlab_ml_metrics"           # Customer health metrics (TimescaleDB)
+        - "gitlab_ml_alerts"            # Active health alerts
+        - "gitlab_ml_recommendations"   # Generated recommendations
+      schema_version: "1.0.0"           # For schema migrations
+
+    # ======================================================================
+    # RAG Pipeline Configuration
+    # ======================================================================
+    # Retrieval-Augmented Generation settings for semantic search and LLM.
+    # This is the core of the recommendation engine.
+    # ======================================================================
     rag_pipeline:
-      vector_db: "qdrant"
-      collection: "gitlab_customer_embeddings"
-      embedding_model: "text-embedding-ada-002"
-      similarity_limit: 5
-      similarity_threshold: 0.7
-      llm_service: "http://agent-router:4000"
-    
+      vector_db: "qdrant"                              # Vector database type
+      collection: "gitlab_customer_embeddings"         # Qdrant collection name
+      embedding_model: "text-embedding-ada-002"        # OpenAI embedding model
+      similarity_limit: 5                              # Top-K results from search
+      similarity_threshold: 0.7                        # Minimum cosine similarity
+      llm_service: "http://agent-router:4000"          # LLM generation endpoint
+
+    # ======================================================================
+    # Observability Configuration (OpenTelemetry)
+    # ======================================================================
+    # Distributed tracing, metrics, and structured logging for production.
+    # ======================================================================
     monitoring:
-      metrics: true
-      tracing: true
-      logging: true
+      metrics: true           # Prometheus metrics
+      tracing: true           # OpenTelemetry traces
+      logging: true           # Structured JSON logs
       opentelemetry:
-        endpoint: "http://agent-tracer:4318"
-        service_name: "gitlab-ml-recommender"
+        endpoint: "http://agent-tracer:4318"     # OTLP collector endpoint
+        service_name: "gitlab-ml-recommender"    # Service identifier in traces
         headers:
-          "x-service-version": "1.0.0"
-    
+          "x-service-version": "1.0.0"           # Custom trace metadata
+
+    # ======================================================================
+    # Drupal Cache Integration
+    # ======================================================================
+    # Caches recommendation results to reduce LLM costs and latency.
+    # ======================================================================
     caching:
       enabled: true
-      backend: "redis"
-      ttl: 3600
-      tags:
+      backend: "redis"        # Drupal cache backend (redis, database, memcache)
+      ttl: 3600               # Cache TTL in seconds (1 hour)
+      tags:                   # Cache tags for invalidation
         - "gitlab_ml"
         - "recommendations"
-    
+
+    # Drupal permissions required to use this agent
     permissions:
-      - "administer ai agents"
-      - "execute ai agents"
-      - "view ai agent results"
-    
+      - "administer ai agents"       # Full agent management
+      - "execute ai agents"           # Execute agent capabilities
+      - "view ai agent results"       # View recommendation history
+
+    # ======================================================================
+    # Agent-to-Agent (A2A) Communication
+    # ======================================================================
+    # Enables this agent to call other agents for compliance checks,
+    # cost optimization, and orchestration workflows.
+    # ======================================================================
     a2a_config:
       enabled: true
-      protocol: "json-rpc"
+      protocol: "json-rpc"              # JSON-RPC 2.0 for A2A calls
       endpoints:
+        # Compliance validator ensures recommendations meet policies
         - "http://compliance-validator:8080/a2a"
+        # Cost optimizer prevents budget overruns
         - "http://cost-optimizer:8080/a2a"
       authentication:
-        type: "bearer"
-        secretRef:
+        type: "bearer"                  # Bearer token authentication
+        secretRef:                      # Kubernetes secret reference
           name: "drupal-a2a-credentials"
           key: "bearer-token"
-    
+
+    # ======================================================================
+    # Event Bus Integration (Redis Pub/Sub)
+    # ======================================================================
+    # Publishes events for real-time dashboards and workflow automation.
+    # ======================================================================
     event_bus:
       enabled: true
+      # Event topics this agent publishes to
       topics:
-        - "customer.health.changed"
-        - "recommendations.generated"
-        - "alerts.created"
-        - "metrics.updated"
+        - "customer.health.changed"      # Health score updates
+        - "recommendations.generated"    # New recommendations available
+        - "alerts.created"               # New health alerts
+        - "metrics.updated"              # Metric aggregation complete
       redis:
         host: "redis://buildkit-redis:16379"
         db: 0
+
+# ============================================================================
+# End of OSSA Drupal Integration Example
+# ============================================================================
+#
+# VALIDATION:
+#   ossa validate examples/drupal/gitlab-ml-recommender.ossa.yaml
+#
+# DEPLOYMENT:
+#   1. Enable required Drupal modules: drush en ai_agent_orchestra
+#   2. Import agent manifest: drush ossa:import gitlab-ml-recommender.ossa.yaml
+#   3. Clear Drupal cache: drush cr
+#   4. Test capabilities: drush ossa:test gitlab-ml-recommender
+#
+# INTEGRATION POINTS:
+#   - Drupal Service: ai_agent_orchestra.gitlab_ml_recommendations
+#   - Database Tables: gitlab_ml_* (see schema in module)
+#   - Cache Tags: gitlab_ml, recommendations
+#   - Permissions: administer/execute/view ai agents
+#   - Events: customer.health.changed, recommendations.generated
+#
+# RELATED EXAMPLES:
+#   - examples/bridges/aiflow-bridge-example.yml (social agent bridge)
+#   - examples/openapi-extensions/worker-agent-api.openapi.yml (OpenAPI)
+#   - spec/OSSA_Drupal_Extensions.md (full Drupal spec)
+# ============================================================================
