@@ -43,8 +43,8 @@ npm install -g @bluefly/open-standards-scalable-agents
 ### Create Agent
 
 ```bash
-ossa init my-agent --type worker
-cd .agents/my-agent
+ossa generate worker --name "My Agent" --id my-agent
+# Creates agent.ossa.yaml
 ```
 
 ### Validate
@@ -70,10 +70,9 @@ OSSA doesn't care - it's just a standard.
 The OSSA CLI provides basic tooling:
 
 ```bash
-ossa validate <path>    # Validate against OSSA 1.0 schema
-ossa init <name>        # Initialize new agent project
-ossa generate <type>    # Generate from template
-ossa migrate <source>   # Migrate v0.1.9 → 1.0
+ossa validate <path>    # Validate against OSSA schema
+ossa generate <type>    # Generate agent from template (chat, workflow, compliance, etc.)
+ossa migrate <source>   # Migrate v0.1.9 → v0.2.2
 ```
 
 **What OSSA CLI does:**
