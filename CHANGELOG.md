@@ -5,7 +5,33 @@ All notable changes to OSSA (Open Standard for Scalable Agents) will be document
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-# [2.0.0](https://gitlab.bluefly.io/llm/openapi-ai-agents-standard/compare/v1.0.0...v2.0.0) (2025-11-05)
+## [0.2.3](https://gitlab.bluefly.io/llm/openapi-ai-agents-standard/compare/v0.2.2...v0.2.3) (2025-11-12)
+
+### Documentation
+
+* **spec**: Created versioned release structure in spec/v0.2.3/ with schema, README, CHANGELOG, and migration guide
+* **examples**: Enhanced inline documentation for kAgent and integration pattern examples
+* **migrations**: Added comprehensive migration guide from v0.2.2 to v0.2.3 (no breaking changes)
+* **compatibility**: Documented backward compatibility with v0.2.2
+
+### Features
+
+* **schema**: Added v0.2.3 schema support with backward compatibility for v0.2.2
+* **types**: Extended SchemaVersion type to include '0.2.3'
+* **repository**: Updated SchemaRepository to load v0.2.3 schema files
+* **validation**: Set v0.2.3 as default version for validation service
+
+### Bug Fixes
+
+* **git**: Cleaned up diverged branches (merged main → development)
+* **tags**: Removed erroneous v0.3.0 tag from repository
+* **versions**: Reset all version references to 0.2.3 (removed v2.0.0 confusion)
+
+### BREAKING CHANGES
+
+**None** - This is a fully backward-compatible patch release. All v0.2.2 manifests work without modification.
+
+## [2.0.0](https://gitlab.bluefly.io/llm/openapi-ai-agents-standard/compare/v1.0.0...v2.0.0) (2025-11-05)
 
 
 ### Bug Fixes

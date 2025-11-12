@@ -53,6 +53,7 @@ export class SchemaRepository implements ISchemaRepository {
     // Map versions to schema files
     const schemaMap: Record<SchemaVersion, string> = {
       '1.0': 'spec/v1.0/ossa-1.0.schema.json',
+      '0.2.3': 'spec/v0.2.3/ossa-0.2.3.schema.json',
       '0.2.2': 'spec/v0.2.2/ossa-0.2.2.schema.json',
       '0.1.9': 'spec/versions/v0.1.9/ossa-v0.1.9.schema.json',
     };
@@ -77,7 +78,7 @@ export class SchemaRepository implements ISchemaRepository {
     if (process.env.OSSA_ROOT && fs.existsSync(process.env.OSSA_ROOT)) {
       const schemaTest = path.join(
         process.env.OSSA_ROOT,
-        'spec/v0.2.2/ossa-0.2.2.schema.json'
+        'spec/v0.2.3/ossa-0.2.3.schema.json'
       );
       if (fs.existsSync(schemaTest)) {
         return process.env.OSSA_ROOT;
@@ -88,7 +89,7 @@ export class SchemaRepository implements ISchemaRepository {
     // Check dist/spec first (for published npm package)
     const distSpecPath = path.join(
       process.cwd(),
-      'dist/spec/v0.2.2/ossa-0.2.2.schema.json'
+      'dist/spec/v0.2.3/ossa-0.2.3.schema.json'
     );
     if (fs.existsSync(distSpecPath)) {
       return path.join(process.cwd(), 'dist');
@@ -97,7 +98,7 @@ export class SchemaRepository implements ISchemaRepository {
     // Check project root spec (for development)
     const sourceSpecPath = path.join(
       process.cwd(),
-      'spec/v0.2.2/ossa-0.2.2.schema.json'
+      'spec/v0.2.3/ossa-0.2.3.schema.json'
     );
     if (fs.existsSync(sourceSpecPath)) {
       return process.cwd();
@@ -119,11 +120,11 @@ export class SchemaRepository implements ISchemaRepository {
             // Check both dist/spec and project root spec
             const distSpec = path.join(
               current,
-              'dist/spec/v0.2.2/ossa-0.2.2.schema.json'
+              'dist/spec/v0.2.3/ossa-0.2.3.schema.json'
             );
             const sourceSpec = path.join(
               current,
-              'spec/v0.2.2/ossa-0.2.2.schema.json'
+              'spec/v0.2.3/ossa-0.2.3.schema.json'
             );
             if (fs.existsSync(sourceSpec)) {
               return current;
@@ -154,7 +155,7 @@ export class SchemaRepository implements ISchemaRepository {
     for (const ossaPath of commonPaths) {
       const absoluteSpec = path.join(
         ossaPath,
-        'spec/v0.2.2/ossa-0.2.2.schema.json'
+        'spec/v0.2.3/ossa-0.2.3.schema.json'
       );
       if (fs.existsSync(absoluteSpec)) {
         return ossaPath;
