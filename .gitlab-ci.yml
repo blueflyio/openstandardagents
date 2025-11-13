@@ -1,53 +1,274 @@
-# GitLab CI/CD Pipeline - PERMISSIVE MODE
-# All checks disabled to allow merges without blocking
-# Testing, security, and quality gates are non-blocking
+# GitLab CI/CD Pipeline for OSSA
+# Implements semantic release workflow: development (dev) → main (RC) → production (manual)
 
 stages:
   - validate
-  - build
   - test
+  - build
+  - release-dev
+  - release-rc
+  - release-prod
 
 variables:
   NODE_VERSION: "20"
   NPM_CONFIG_LEGACY_PEER_DEPS: "1"
   HUSKY: "0"
+  LEFTHOOK: "0"
 
-# Validate - Always passes
-validate:
+# ============================================================================
+# STAGE 1: VALIDATE
+# ============================================================================
+
+validate:node:
   stage: validate
   image: node:${NODE_VERSION}-alpine
   script:
-    - node --version && npm --version
-    - echo "✅ Configuration valid"
-  allow_failure: true
+    - node --version
+    - npm --version
+    - echo "✅ Node.js ${NODE_VERSION} ready"
+  rules:
+    - when: always
 
-# Build - Non-blocking, always passes even with errors
-build:
-  stage: build
+validate:ossa:
+  stage: validate
   image: node:${NODE_VERSION}-alpine
   script:
-    - npm ci --legacy-peer-deps || npm install --legacy-peer-deps || echo "⚠️ Install failed but continuing"
-    - npm run build || echo "⚠️ Build failed but continuing"
-    - echo "✅ Build job completed (errors ignored)"
-  artifacts:
-    paths:
-      - dist/
-      - build/
-    expire_in: 1 week
-    when: always
+    - npm ci --legacy-peer-deps
+    - npm link
+    - echo "Validating example manifests..."
+    - ossa validate examples/getting-started/hello-world-complete.ossa.yaml || echo "⚠️ Validation warnings (non-blocking)"
   allow_failure: true
+  rules:
+    - when: always
 
-# Test - Non-blocking, always passes
-test:
+# ============================================================================
+# STAGE 2: TEST
+# ============================================================================
+
+test:lint:
   stage: test
   image: node:${NODE_VERSION}-alpine
   script:
-    - npm ci --legacy-peer-deps || npm install --legacy-peer-deps || echo "⚠️ Install failed"
-    - npm test || echo "⚠️ Tests skipped or failed (non-blocking)"
-    - echo "✅ Test job completed (errors ignored)"
-  allow_failure: true
+    - npm ci --legacy-peer-deps
+    - npm run lint
+    - npm run typecheck
+  rules:
+    - when: always
 
-# Workflow rules - Allow everything, block nothing
+test:unit:
+  stage: test
+  image: node:${NODE_VERSION}-alpine
+  script:
+    - npm ci --legacy-peer-deps
+    - npm run test:coverage
+  coverage: '/All files[^|]*\|[^|]*\s+([\d\.]+)/'
+  artifacts:
+    reports:
+      coverage_report:
+        coverage_format: cobertura
+        path: coverage/cobertura-coverage.xml
+    paths:
+      - coverage/
+    expire_in: 7 days
+  allow_failure: true
+  rules:
+    - when: always
+
+test:security:
+  stage: test
+  image: node:${NODE_VERSION}-alpine
+  script:
+    - npm ci --legacy-peer-deps
+    - npm audit --production || echo "⚠️ Security vulnerabilities detected (review required)"
+  allow_failure: true
+  rules:
+    - when: always
+
+# ============================================================================
+# STAGE 3: BUILD
+# ============================================================================
+
+build:dist:
+  stage: build
+  image: node:${NODE_VERSION}-alpine
+  script:
+    - npm ci --legacy-peer-deps
+    - npm run build
+    - echo "✅ Build completed successfully"
+  artifacts:
+    paths:
+      - dist/
+      - spec/
+      - bin/
+      - package.json
+      - package-lock.json
+      - README.md
+      - LICENSE
+      - CHANGELOG.md
+    expire_in: 1 day
+  rules:
+    - when: always
+
+# ============================================================================
+# STAGE 4: RELEASE DEV (development branch only)
+# Auto-publishes semantic pre-release: 0.2.3-dev.1, 0.2.3-dev.2, etc.
+# ============================================================================
+
+release:dev:
+  stage: release-dev
+  image: node:${NODE_VERSION}-alpine
+  dependencies:
+    - build:dist
+  before_script:
+    - apk add --no-cache git
+    - npm ci --legacy-peer-deps
+  script:
+    - |
+      echo "🚀 Publishing development pre-release..."
+
+      # Configure git
+      git config --global user.email "ci@gitlab.bluefly.io"
+      git config --global user.name "GitLab CI"
+
+      # Get current version and increment dev
+      CURRENT_VERSION=$(node -p "require('./package.json').version")
+      DEV_VERSION="${CURRENT_VERSION}-dev.${CI_PIPELINE_IID}"
+
+      echo "📦 Version: ${DEV_VERSION}"
+
+      # Update package.json version
+      npm version ${DEV_VERSION} --no-git-tag-version
+
+      # Publish to GitLab Package Registry
+      echo "Publishing to GitLab Package Registry..."
+      npm publish --registry=${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/npm/ --tag dev
+
+      echo "✅ Development release ${DEV_VERSION} published!"
+  only:
+    - development
+  except:
+    - tags
+
+# ============================================================================
+# STAGE 5: RELEASE RC (main branch only)
+# Auto-publishes release candidate: 0.2.3-rc.1, 0.2.3-rc.2, etc.
+# ============================================================================
+
+release:rc:
+  stage: release-rc
+  image: node:${NODE_VERSION}-alpine
+  dependencies:
+    - build:dist
+  before_script:
+    - apk add --no-cache git
+    - npm ci --legacy-peer-deps
+  script:
+    - |
+      echo "🚀 Publishing release candidate..."
+
+      # Configure git
+      git config --global user.email "ci@gitlab.bluefly.io"
+      git config --global user.name "GitLab CI"
+
+      # Get current version and increment RC
+      CURRENT_VERSION=$(node -p "require('./package.json').version")
+      RC_VERSION="${CURRENT_VERSION}-rc.${CI_PIPELINE_IID}"
+
+      echo "📦 Version: ${RC_VERSION}"
+
+      # Update package.json version
+      npm version ${RC_VERSION} --no-git-tag-version
+
+      # Publish to GitLab Package Registry
+      echo "Publishing to GitLab Package Registry..."
+      npm publish --registry=${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/npm/ --tag rc
+
+      echo "✅ Release candidate ${RC_VERSION} published!"
+      echo "🎯 Ready for production release (manual trigger required)"
+  only:
+    - main
+  except:
+    - tags
+
+# ============================================================================
+# STAGE 6: RELEASE PROD (main branch - MANUAL TRIGGER)
+# Publishes stable production release: 0.2.3
+# Publishes to both GitLab Package Registry AND npmjs.org
+# Creates git tag
+# ============================================================================
+
+release:prod:
+  stage: release-prod
+  image: node:${NODE_VERSION}-alpine
+  dependencies:
+    - build:dist
+  before_script:
+    - apk add --no-cache git
+    - npm ci --legacy-peer-deps
+  script:
+    - |
+      echo "🚀 Publishing PRODUCTION release..."
+
+      # Configure git
+      git config --global user.email "ci@gitlab.bluefly.io"
+      git config --global user.name "GitLab CI"
+
+      CURRENT_VERSION=$(node -p "require('./package.json').version")
+
+      echo "📦 Production Version: ${CURRENT_VERSION}"
+
+      # Create git tag
+      git tag -a "v${CURRENT_VERSION}" -m "Release v${CURRENT_VERSION}"
+
+      # Push tag to GitLab
+      git remote set-url origin "https://oauth2:${CI_JOB_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git"
+      git push origin "v${CURRENT_VERSION}"
+
+      # Publish to GitLab Package Registry
+      echo "Publishing to GitLab Package Registry..."
+      npm publish --registry=${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/npm/ --tag latest
+
+      # Publish to npmjs.org (if NPM_TOKEN is configured)
+      if [ -n "$NPM_TOKEN" ]; then
+        echo "Publishing to npmjs.org..."
+        echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > .npmrc
+        npm publish --registry=https://registry.npmjs.org/ --tag latest
+        echo "✅ Published to npmjs.org!"
+      else
+        echo "⚠️ NPM_TOKEN not set - skipping npmjs.org publish"
+        echo "   To publish to npm, add NPM_TOKEN to GitLab CI/CD variables"
+      fi
+
+      echo "🎉 Production release v${CURRENT_VERSION} completed!"
+      echo "📦 GitLab Package: ${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages"
+      echo "📦 npm Package: https://www.npmjs.com/package/@bluefly/open-standards-scalable-agents"
+  only:
+    - main
+  except:
+    - tags
+  when: manual
+  allow_failure: false
+
+# ============================================================================
+# GLOBAL SETTINGS
+# ============================================================================
+
+# Code coverage tracking
+global:
+  coverage:
+    branches: 40
+    functions: 80
+    lines: 50
+    statements: 50
+
+# Workflow rules
 workflow:
   rules:
+    # Run on branches
+    - if: $CI_COMMIT_BRANCH
+    # Run on merge requests
+    - if: $CI_MERGE_REQUEST_IID
+    # Run on tags
+    - if: $CI_COMMIT_TAG
+    # Default: run
     - when: always
