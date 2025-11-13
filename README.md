@@ -1,18 +1,27 @@
-# OSSA - Open Standard for Scalable Agents
+# OSSA - Open Standard for AI Agents
 
-**A Specification Standard for AI Agent Definition, Deployment, and Management**
+**The OpenAPI for AI Agents**
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
-[![npm version](https://img.shields.io/npm/v/@bluefly/open-standards-scalable-agents.svg)](https://www.npmjs.com/package/@bluefly/open-standards-scalable-agents)
+[![npm version](https://img.shields.io/badge/npm-v0.2.3-blue.svg)](https://www.npmjs.com/package/@bluefly/open-standards-scalable-agents)
 [![GitLab](https://img.shields.io/badge/GitLab-OSSA-orange.svg)](https://gitlab.bluefly.io/llm/openapi-ai-agents-standard)
+[![OSSA Compliant](https://img.shields.io/badge/OSSA-Compliant-00B8D4.svg)](https://gitlab.bluefly.io/llm/openapi-ai-agents-standard)
 
 ---
 
 ## What is OSSA?
 
-OSSA is a **specification standard** for defining AI agents, similar to how OpenAPI standardizes REST APIs.
+**OSSA: Open Standard for AI Agents** - The definitive open standard for defining and connecting AI agents.
+
+Just as OpenAPI standardized REST APIs, OSSA standardizes AI agent interaction, enabling vendor-neutral interoperability across frameworks. OSSA provides a unified schema for AI agents to communicate, ensuring compatibility across frameworks and enhancing trust in autonomous systems.
 
 **OSSA is NOT a framework** - it's a standard that defines the contract. Implementations provide the functionality.
+
+**Key Qualities:**
+- ✅ **Vendor-Neutral** - Community-driven, not controlled by any single company
+- ✅ **Interoperable** - Common language enabling diverse AI agents to work together
+- ✅ **Trustworthy** - Built with compliance and security in mind
+- ✅ **Open** - Collaborative effort for the "Internet of Agents"
 
 | Component | Role | Comparable To |
 |-----------|------|---------------|
@@ -86,7 +95,7 @@ ossa migrate <source>   # Migrate v0.1.9 → v0.2.2
 - ❌ Production monitoring
 - ❌ Infrastructure management
 
-For production features, see [agent-buildkit](https://app-4001.cloud.bluefly.io/llm/npm/agent-buildkit).
+For production features, see [Agent Buildkit](https://gitlab.bluefly.io/llm/npm/agent-buildkit).
 
 ---
 
@@ -104,10 +113,10 @@ agent:
   name: My Agent                  # Human-readable
   version: "1.0.0"                # Semantic version
   role: worker                    # Agent role
-  
+
   runtime:
     type: k8s                     # Runtime type
-    
+
   capabilities:                   # At least one capability
     - name: process_data
       description: Process data
@@ -129,29 +138,40 @@ Reference implementations: [`examples/`](examples/)
 
 ---
 
-## Ecosystem
+## OSSA Ecosystem
 
-### OSSA Standard (This Repository)
+### Core Products
 
-**Provides:**
+**OSSA** (This Repository) - The specification standard
 - JSON Schema specification
 - CLI for validation & generation
 - Reference implementations
 - Documentation
 
-**Dependencies:** 4 (ajv, ajv-formats, commander, yaml) ~1MB
-
-### Implementations
-
-**agent-buildkit** - Reference implementation with production features:
+**Agent Buildkit** - CLI tool for building and managing OSSA-compliant agents
+- Modern, fast, minimal CLI
 - GitLab integration
 - Kubernetes deployment
 - Production monitoring
-- Compliance tooling
+- [Learn more →](https://gitlab.bluefly.io/llm/npm/agent-buildkit)
 
-See: https://app-4001.cloud.bluefly.io/llm/npm/agent-buildkit
+**Agent Studio** - GUI platform for agent orchestration
+- macOS-aligned design
+- Visual workflow design
+- Agent monitoring and debugging
+- End-to-end agent lifecycle management
+- [Learn more →](https://gitlab.bluefly.io/llm/demos/llm-platform-demo)
 
-**Others welcome** - OSSA is a standard, anyone can implement it.
+### Part of the OSSA Ecosystem
+
+All three products work together:
+- **OSSA** defines the standard
+- **Agent Buildkit** provides CLI tooling
+- **Agent Studio** offers visual management
+
+Together, they form a complete ecosystem for AI agent development, deployment, and management.
+
+**Others welcome** - OSSA is an open standard, anyone can implement it.
 
 ---
 
@@ -159,16 +179,16 @@ See: https://app-4001.cloud.bluefly.io/llm/npm/agent-buildkit
 
 ### For Enterprises
 
-✅ **Lightweight** - Just a standard, minimal dependencies  
-✅ **No Vendor Lock-in** - Use any implementation  
-✅ **Deploy Anywhere** - Your infrastructure, your choice  
-✅ **Clear Specification** - Well-defined contract  
+✅ **Lightweight** - Just a standard, minimal dependencies
+✅ **No Vendor Lock-in** - Use any implementation
+✅ **Deploy Anywhere** - Your infrastructure, your choice
+✅ **Clear Specification** - Well-defined contract
 
 ### For Framework Builders
 
-✅ **Standard to Build On** - Like OpenAPI for APIs  
-✅ **Reference Implementation** - agent-buildkit shows the way  
-✅ **Clear Boundaries** - Standard vs. implementation  
+✅ **Standard to Build On** - Like OpenAPI for APIs
+✅ **Reference Implementation** - Agent Buildkit shows the way
+✅ **Clear Boundaries** - Standard vs. implementation
 
 ---
 
@@ -219,6 +239,14 @@ Apache 2.0 - see [LICENSE](LICENSE) for details.
 
 ---
 
-**OSSA: A Standard for Composable, Deployable, and Compliant AI Agents**
+## Part of the OSSA Ecosystem
 
-*Not a framework. A standard.*
+OSSA is part of a unified ecosystem for AI agent development:
+
+- **[OSSA](https://gitlab.bluefly.io/llm/openapi-ai-agents-standard)** - The open standard (this repository)
+- **[Agent Buildkit](https://gitlab.bluefly.io/llm/npm/agent-buildkit)** - CLI for building and managing agents
+- **[Agent Studio](https://gitlab.bluefly.io/llm/demos/llm-platform-demo)** - GUI platform for agent orchestration
+
+**OSSA: Open. Interoperable. Trustworthy.**
+
+*The open standard for interoperable AI agents.*
