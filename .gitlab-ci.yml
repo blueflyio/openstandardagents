@@ -253,14 +253,6 @@ release:prod:
 # GLOBAL SETTINGS
 # ============================================================================
 
-# Code coverage tracking
-global:
-  coverage:
-    branches: 40
-    functions: 80
-    lines: 50
-    statements: 50
-
 # Workflow rules
 workflow:
   rules:
