@@ -6,9 +6,9 @@ export function Footer(): JSX.Element {
       <div className="container mx-auto max-w-6xl">
         <div className="grid md:grid-cols-4 gap-8 mb-8">
           <div>
-            <h3 className="text-white font-semibold mb-4">OSSA</h3>
+            <h3 className="text-white font-semibold mb-4">Open Standard Agents</h3>
             <p className="text-sm">
-              Open Standard for Scalable Agents. The OpenAPI for AI Agents.
+              Industry Standard for Agent Orchestration. The vendor-neutral specification for multi-agent systems.
             </p>
           </div>
           <div>
@@ -56,7 +56,7 @@ export function Footer(): JSX.Element {
             <ul className="space-y-2 text-sm">
               <li>
                 <a
-                  href="https://gitlab.bluefly.io/llm/openapi-ai-agents-standard"
+                  href="https://gitlab.bluefly.io/llm/openstandardagents"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="hover:text-white transition-colors"
@@ -66,7 +66,7 @@ export function Footer(): JSX.Element {
               </li>
               <li>
                 <a
-                  href="https://gitlab.bluefly.io/llm/openapi-ai-agents-standard/-/issues"
+                  href="https://gitlab.bluefly.io/llm/openstandardagents/-/issues"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="hover:text-white transition-colors"
@@ -76,7 +76,7 @@ export function Footer(): JSX.Element {
               </li>
               <li>
                 <a
-                  href="https://www.npmjs.com/package/@bluefly/open-standards-scalable-agents"
+                  href="https://www.npmjs.com/package/@openstandardagents/cli"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="hover:text-white transition-colors"
@@ -84,12 +84,22 @@ export function Footer(): JSX.Element {
                   npm Package
                 </a>
               </li>
+              <li>
+                <a
+                  href="https://openstandardagents.org"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:text-white transition-colors"
+                >
+                  Website
+                </a>
+              </li>
             </ul>
           </div>
         </div>
         <div className="border-t border-gray-700 pt-8 text-sm text-center">
           <p>
-            © {new Date().getFullYear()} OSSA Standards Team. Licensed under{' '}
+            © {new Date().getFullYear()} Open Standard Agents Organization. Licensed under{' '}
             <a
               href="https://www.apache.org/licenses/LICENSE-2.0"
               target="_blank"

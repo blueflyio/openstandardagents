@@ -1,6 +1,6 @@
 /**
  * Migration Service
- * Migrates OSSA manifests between versions (v0.1.9 to v0.2.2, v1.0 to v0.2.2)
+ * Migrates OSSA manifests between versions (v0.1.9 to v0.2.2, legacy formats to v0.2.2)
  */
 
 import { injectable } from 'inversify';

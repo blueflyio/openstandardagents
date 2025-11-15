@@ -1,15 +1,15 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://openstandardagents.org/schemas/1.0/agent.json",
-  "title": "OSSA 1.0 Agent Schema",
-  "description": "Formal JSON Schema for OSSA (Open Standard for Smart & Scalable Agents) version 1.0. The OpenAPI for AI Agents.",
+  "$id": "https://openstandardagents.org/schemas/v0.1.9/agent.json",
+  "title": "OSSA v0.1.9 Agent Schema",
+  "description": "Formal JSON Schema for OSSA (Open Standard for Smart & Scalable Agents) version 0.1.9. Legacy format using ossaVersion field. The OpenAPI for AI Agents.",
   "type": "object",
   "required": ["ossaVersion", "agent"],
   "properties": {
     "ossaVersion": {
       "type": "string",
-      "enum": ["1.0"],
-      "description": "OSSA specification version"
+      "enum": ["0.1.9", "1.0"],
+      "description": "OSSA specification version (legacy format - supports both 0.1.9 and 1.0 for backward compatibility)"
     },
     "agent": {
       "type": "object",

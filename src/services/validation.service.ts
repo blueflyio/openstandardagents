@@ -59,7 +59,7 @@ export class ValidationService implements IValidationService {
   /**
    * Validate OSSA agent manifest
    * @param manifest - Manifest object to validate
-   * @param version - OSSA version (e.g., '0.2.3', '0.2.2', '0.1.9', '1.0')
+   * @param version - OSSA version (e.g., '0.2.3', '0.2.2', '0.1.9')
    * @returns Validation result with errors and warnings
    */
   async validate(

@@ -1,0 +1,1448 @@
+openapi: 3.1.0
+jsonSchemaDialect: https://spec.openapis.org/oas/3.1/dialect/base
+info:
+  title: OSSA Master API
+  version: 0.1.9
+  description: |
+    # OSSA - Open Standards for Scalable Agents
+
+    Master API specification for the OSSA platform, providing comprehensive orchestration,
+    governance, and management capabilities for AI agents following OSSA v0.1.9 standards.
+
+    ## Key Capabilities
+    - **Agent Orchestration**: Multi-agent coordination and workflow execution
+    - **Specification Engine**: Agent manifest validation and certification
+    - **Registry Services**: Global agent discovery and federation
+    - **Runtime Management**: Production deployment and lifecycle management
+    - **Compliance & Governance**: Policy enforcement and audit trails
+    - **Observability**: Comprehensive monitoring and tracing
+
+  contact:
+    name: Bluefly.io LLM Platform Team
+    url: https://gitlab.bluefly.io/llm/openapi-ai-agents-standard
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: https://api.llm.bluefly.io/ossa/v1
+    description: Production server
+  - url: https://api-dev.llm.bluefly.io/ossa/v1
+    description: Development server
+  - url: http://localhost:3000
+    description: Local development
+
+security:
+  - ApiKeyAuth: []
+  - BearerAuth: []
+  - OAuth2: [read, write, admin]
+
+paths:
+  # Health & Status
+  /health:
+    $ref: './src/api/specification.openapi.yml#/paths/~1health'
+
+  /health/ready:
+    get:
+      summary: Readiness check
+      tags: [Health]
+      operationId: readinessCheck
+      security: []
+      responses:
+        '200':
+          $ref: '#/components/responses/HealthCheck'
+        '503':
+          description: Service not ready
+
+  /health/live:
+    get:
+      summary: Liveness check
+      tags: [Health]
+      operationId: livenessCheck
+      security: []
+      responses:
+        '200':
+          $ref: '#/components/responses/HealthCheck'
+
+  # Agent Registry
+  /agents:
+    get:
+      summary: List registered agents
+      description: Query the global agent registry
+      tags: [Registry]
+      operationId: listAgents
+      parameters:
+        - $ref: '#/components/parameters/Search'
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/Offset'
+        - name: type
+          in: query
+          schema:
+            $ref: '#/components/schemas/AgentType'
+        - name: capability
+          in: query
+          schema:
+            type: string
+        - name: status
+          in: query
+          schema:
+            $ref: '#/components/schemas/AgentStatus'
+      responses:
+        '200':
+          description: List of agents
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentsList'
+
+    post:
+      summary: Register new agent
+      tags: [Registry]
+      operationId: registerAgent
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AgentManifest'
+      responses:
+        '201':
+          description: Agent registered
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentRegistration'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+
+  /agents/{agentId}:
+    get:
+      summary: Get agent details
+      tags: [Registry]
+      operationId: getAgent
+      parameters:
+        - $ref: '#/components/parameters/AgentId'
+      responses:
+        '200':
+          description: Agent details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Agent'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    put:
+      summary: Update agent registration
+      tags: [Registry]
+      operationId: updateAgent
+      parameters:
+        - $ref: '#/components/parameters/AgentId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AgentManifest'
+      responses:
+        '200':
+          description: Agent updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Agent'
+
+    delete:
+      summary: Unregister agent
+      tags: [Registry]
+      operationId: unregisterAgent
+      parameters:
+        - $ref: '#/components/parameters/AgentId'
+      responses:
+        '204':
+          description: Agent unregistered
+
+  # Orchestration
+  /orchestration/workflows:
+    get:
+      summary: List workflows
+      tags: [Orchestration]
+      operationId: listWorkflows
+      parameters:
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/Offset'
+      responses:
+        '200':
+          description: List of workflows
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkflowsList'
+
+    post:
+      summary: Create workflow
+      tags: [Orchestration]
+      operationId: createWorkflow
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WorkflowDefinition'
+      responses:
+        '201':
+          description: Workflow created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Workflow'
+
+  /orchestration/workflows/{workflowId}/execute:
+    post:
+      summary: Execute workflow
+      tags: [Orchestration]
+      operationId: executeWorkflow
+      parameters:
+        - name: workflowId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WorkflowExecutionRequest'
+      responses:
+        '202':
+          description: Workflow execution started
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkflowExecution'
+
+  /orchestration/executions/{executionId}:
+    get:
+      summary: Get execution status
+      tags: [Orchestration]
+      operationId: getExecutionStatus
+      parameters:
+        - name: executionId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Execution status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkflowExecution'
+
+  # Specification & Validation
+  /specification/validate:
+    $ref: './src/api/specification.openapi.yml#/paths/~1specification~1validate'
+
+  /specification/taxonomies:
+    get:
+      summary: List agent taxonomies
+      tags: [Specification]
+      operationId: listTaxonomies
+      responses:
+        '200':
+          description: Available taxonomies
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaxonomiesList'
+
+  /specification/capabilities:
+    get:
+      summary: List capability definitions
+      tags: [Specification]
+      operationId: listCapabilities
+      parameters:
+        - name: category
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Capability definitions
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CapabilitiesList'
+
+  # Certification
+  /certification/request:
+    post:
+      summary: Request certification
+      tags: [Certification]
+      operationId: requestCertification
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CertificationRequest'
+      responses:
+        '202':
+          description: Certification request accepted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CertificationProcess'
+
+  /certification/{certificationId}:
+    get:
+      summary: Get certification status
+      tags: [Certification]
+      operationId: getCertification
+      parameters:
+        - name: certificationId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Certification details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Certification'
+
+  # Governance
+  /governance/policies:
+    get:
+      summary: List governance policies
+      tags: [Governance]
+      operationId: listPolicies
+      responses:
+        '200':
+          description: Governance policies
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PoliciesList'
+
+  /governance/compliance/{agentId}:
+    get:
+      summary: Get agent compliance status
+      tags: [Governance]
+      operationId: getAgentCompliance
+      parameters:
+        - $ref: '#/components/parameters/AgentId'
+      responses:
+        '200':
+          description: Compliance status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ComplianceStatus'
+
+  # Federation
+  /federation/nodes:
+    get:
+      summary: List federation nodes
+      tags: [Federation]
+      operationId: listFederationNodes
+      responses:
+        '200':
+          description: Federation nodes
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FederationNodesList'
+
+  /federation/join:
+    post:
+      summary: Join federation
+      tags: [Federation]
+      operationId: joinFederation
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FederationJoinRequest'
+      responses:
+        '201':
+          description: Joined federation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FederationMembership'
+
+  # Monitoring
+  /monitoring/metrics:
+    get:
+      summary: Get platform metrics
+      tags: [Monitoring]
+      operationId: getPlatformMetrics
+      responses:
+        '200':
+          description: Platform metrics
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlatformMetrics'
+
+  /monitoring/events:
+    get:
+      summary: Get platform events
+      tags: [Monitoring]
+      operationId: getPlatformEvents
+      parameters:
+        - $ref: '#/components/parameters/StartTime'
+        - $ref: '#/components/parameters/EndTime'
+        - $ref: '#/components/parameters/Limit'
+      responses:
+        '200':
+          description: Platform events
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EventsList'
+
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+    OAuth2:
+      type: oauth2
+      flows:
+        authorizationCode:
+          authorizationUrl: https://auth.llm.bluefly.io/oauth/authorize
+          tokenUrl: https://auth.llm.bluefly.io/oauth/token
+          scopes:
+            read: Read access
+            write: Write access
+            admin: Administrative access
+
+  parameters:
+    AgentId:
+      name: agentId
+      in: path
+      required: true
+      description: Agent identifier
+      schema:
+        type: string
+        format: uuid
+    Limit:
+      name: limit
+      in: query
+      description: Number of items to return
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 20
+    Offset:
+      name: offset
+      in: query
+      description: Number of items to skip
+      schema:
+        type: integer
+        minimum: 0
+        default: 0
+    Search:
+      name: search
+      in: query
+      description: Search query
+      schema:
+        type: string
+    StartTime:
+      name: startTime
+      in: query
+      schema:
+        type: string
+        format: date-time
+    EndTime:
+      name: endTime
+      in: query
+      schema:
+        type: string
+        format: date-time
+
+  schemas:
+    # Core Agent Types
+    AgentManifest:
+      type: object
+      required:
+        - apiVersion
+        - kind
+        - metadata
+        - spec
+      properties:
+        apiVersion:
+          type: string
+          const: ossa.io/v0.1.9
+        kind:
+          type: string
+          const: AgentManifest
+        metadata:
+          $ref: '#/components/schemas/Metadata'
+        spec:
+          $ref: '#/components/schemas/AgentSpec'
+
+    Metadata:
+      type: object
+      required:
+        - name
+        - version
+      properties:
+        name:
+          type: string
+          pattern: '^[a-z0-9]([-a-z0-9]*[a-z0-9])?$'
+        version:
+          type: string
+          pattern: '^\d+\.\d+\.\d+(-[a-zA-Z0-9]+)?$'
+        namespace:
+          type: string
+        labels:
+          type: object
+          additionalProperties:
+            type: string
+        annotations:
+          type: object
+          additionalProperties:
+            type: string
+
+    AgentSpec:
+      type: object
+      required:
+        - type
+        - capabilities
+      properties:
+        type:
+          $ref: '#/components/schemas/AgentType'
+        description:
+          type: string
+        capabilities:
+          type: array
+          items:
+            $ref: '#/components/schemas/Capability'
+        interfaces:
+          type: array
+          items:
+            $ref: '#/components/schemas/Interface'
+        requirements:
+          $ref: '#/components/schemas/Requirements'
+        configuration:
+          type: object
+          additionalProperties: true
+
+    AgentType:
+      type: string
+      enum:
+        - orchestrator
+        - worker
+        - specialist
+        - critic
+        - monitor
+        - gateway
+
+    AgentStatus:
+      type: string
+      enum:
+        - registered
+        - active
+        - inactive
+        - suspended
+        - deprecated
+
+    Capability:
+      type: object
+      required:
+        - name
+        - category
+      properties:
+        name:
+          type: string
+        category:
+          type: string
+          enum:
+            - core
+            - analysis
+            - generation
+            - transformation
+            - integration
+        description:
+          type: string
+        version:
+          type: string
+        parameters:
+          type: object
+          additionalProperties: true
+
+    Interface:
+      type: object
+      required:
+        - type
+        - endpoint
+      properties:
+        type:
+          type: string
+          enum:
+            - rest
+            - graphql
+            - grpc
+            - websocket
+            - mcp
+        endpoint:
+          type: string
+          format: uri
+        protocol:
+          type: string
+        authentication:
+          type: object
+          properties:
+            type:
+              type: string
+            config:
+              type: object
+              additionalProperties: true
+
+    Requirements:
+      type: object
+      properties:
+        runtime:
+          type: string
+        resources:
+          $ref: '#/components/schemas/ResourceRequirements'
+        dependencies:
+          type: array
+          items:
+            type: string
+        environment:
+          type: object
+          additionalProperties:
+            type: string
+
+    ResourceRequirements:
+      type: object
+      properties:
+        cpu:
+          type: string
+          pattern: '^[0-9]+m?$'
+        memory:
+          type: string
+          pattern: '^[0-9]+(Mi|Gi)$'
+        storage:
+          type: string
+          pattern: '^[0-9]+(Mi|Gi)$'
+        gpu:
+          type: string
+
+    Agent:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        manifest:
+          $ref: '#/components/schemas/AgentManifest'
+        status:
+          $ref: '#/components/schemas/AgentStatus'
+        registration:
+          $ref: '#/components/schemas/AgentRegistration'
+        certification:
+          $ref: '#/components/schemas/Certification'
+        metrics:
+          $ref: '#/components/schemas/AgentMetrics'
+
+    AgentRegistration:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        agentId:
+          type: string
+          format: uuid
+        registeredAt:
+          type: string
+          format: date-time
+        expiresAt:
+          type: string
+          format: date-time
+        registeredBy:
+          type: string
+        federationNode:
+          type: string
+
+    AgentsList:
+      type: object
+      properties:
+        agents:
+          type: array
+          items:
+            $ref: '#/components/schemas/Agent'
+        total:
+          type: integer
+        limit:
+          type: integer
+        offset:
+          type: integer
+
+    # Orchestration
+    WorkflowDefinition:
+      type: object
+      required:
+        - name
+        - steps
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        version:
+          type: string
+        steps:
+          type: array
+          items:
+            $ref: '#/components/schemas/WorkflowStep'
+        triggers:
+          type: array
+          items:
+            $ref: '#/components/schemas/WorkflowTrigger'
+        timeout:
+          type: integer
+        retryPolicy:
+          $ref: '#/components/schemas/RetryPolicy'
+
+    WorkflowStep:
+      type: object
+      required:
+        - name
+        - agentType
+        - action
+      properties:
+        name:
+          type: string
+        agentType:
+          type: string
+        action:
+          type: string
+        input:
+          type: object
+          additionalProperties: true
+        dependencies:
+          type: array
+          items:
+            type: string
+        condition:
+          type: string
+        timeout:
+          type: integer
+        retryPolicy:
+          $ref: '#/components/schemas/RetryPolicy'
+
+    WorkflowTrigger:
+      type: object
+      properties:
+        type:
+          type: string
+          enum: [manual, scheduled, event, webhook]
+        config:
+          type: object
+          additionalProperties: true
+
+    RetryPolicy:
+      type: object
+      properties:
+        maxRetries:
+          type: integer
+          minimum: 0
+          default: 3
+        backoffType:
+          type: string
+          enum: [fixed, exponential]
+          default: exponential
+        initialDelay:
+          type: integer
+          default: 1000
+        maxDelay:
+          type: integer
+          default: 60000
+
+    Workflow:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        definition:
+          $ref: '#/components/schemas/WorkflowDefinition'
+        status:
+          type: string
+          enum: [draft, active, suspended, deprecated]
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    WorkflowsList:
+      type: object
+      properties:
+        workflows:
+          type: array
+          items:
+            $ref: '#/components/schemas/Workflow'
+        total:
+          type: integer
+
+    WorkflowExecutionRequest:
+      type: object
+      properties:
+        input:
+          type: object
+          additionalProperties: true
+        context:
+          type: object
+          additionalProperties: true
+        priority:
+          type: string
+          enum: [low, normal, high, critical]
+          default: normal
+
+    WorkflowExecution:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        workflowId:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum: [pending, running, completed, failed, cancelled]
+        startedAt:
+          type: string
+          format: date-time
+        completedAt:
+          type: string
+          format: date-time
+        steps:
+          type: array
+          items:
+            $ref: '#/components/schemas/StepExecution'
+        output:
+          type: object
+          additionalProperties: true
+        errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/ExecutionError'
+
+    StepExecution:
+      type: object
+      properties:
+        name:
+          type: string
+        status:
+          type: string
+          enum: [pending, running, completed, failed, skipped]
+        agentId:
+          type: string
+        startedAt:
+          type: string
+          format: date-time
+        completedAt:
+          type: string
+          format: date-time
+        output:
+          type: object
+          additionalProperties: true
+        error:
+          $ref: '#/components/schemas/ExecutionError'
+
+    ExecutionError:
+      type: object
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+        details:
+          type: object
+          additionalProperties: true
+        timestamp:
+          type: string
+          format: date-time
+
+    # Specification & Taxonomy
+    TaxonomiesList:
+      type: object
+      properties:
+        taxonomies:
+          type: array
+          items:
+            $ref: '#/components/schemas/Taxonomy'
+
+    Taxonomy:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        categories:
+          type: array
+          items:
+            type: string
+        version:
+          type: string
+
+    CapabilitiesList:
+      type: object
+      properties:
+        capabilities:
+          type: array
+          items:
+            $ref: '#/components/schemas/CapabilityDefinition'
+
+    CapabilityDefinition:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        category:
+          type: string
+        description:
+          type: string
+        inputSchema:
+          type: object
+        outputSchema:
+          type: object
+        examples:
+          type: array
+          items:
+            type: object
+
+    ValidationResult:
+      type: object
+      properties:
+        valid:
+          type: boolean
+        errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/ValidationError'
+        warnings:
+          type: array
+          items:
+            $ref: '#/components/schemas/ValidationWarning'
+        score:
+          type: number
+          minimum: 0
+          maximum: 100
+
+    ValidationError:
+      type: object
+      properties:
+        path:
+          type: string
+        message:
+          type: string
+        rule:
+          type: string
+
+    ValidationWarning:
+      type: object
+      properties:
+        path:
+          type: string
+        message:
+          type: string
+        suggestion:
+          type: string
+
+    # Certification
+    CertificationRequest:
+      type: object
+      required:
+        - agentId
+        - level
+      properties:
+        agentId:
+          type: string
+          format: uuid
+        level:
+          type: string
+          enum: [basic, standard, advanced, enterprise]
+        evidence:
+          type: array
+          items:
+            $ref: '#/components/schemas/Evidence'
+
+    Evidence:
+      type: object
+      properties:
+        type:
+          type: string
+        description:
+          type: string
+        url:
+          type: string
+          format: uri
+        data:
+          type: object
+          additionalProperties: true
+
+    CertificationProcess:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum: [pending, in_review, approved, rejected]
+        requestedAt:
+          type: string
+          format: date-time
+        steps:
+          type: array
+          items:
+            $ref: '#/components/schemas/CertificationStep'
+
+    CertificationStep:
+      type: object
+      properties:
+        name:
+          type: string
+        status:
+          type: string
+          enum: [pending, passed, failed]
+        result:
+          type: object
+          additionalProperties: true
+
+    Certification:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        agentId:
+          type: string
+          format: uuid
+        level:
+          type: string
+        issuedAt:
+          type: string
+          format: date-time
+        expiresAt:
+          type: string
+          format: date-time
+        issuer:
+          type: string
+        signature:
+          type: string
+
+    # Governance & Compliance
+    PoliciesList:
+      type: object
+      properties:
+        policies:
+          type: array
+          items:
+            $ref: '#/components/schemas/Policy'
+
+    Policy:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        type:
+          type: string
+          enum: [security, compliance, operational, quality]
+        rules:
+          type: array
+          items:
+            $ref: '#/components/schemas/PolicyRule'
+        enforcement:
+          type: string
+          enum: [mandatory, recommended, optional]
+
+    PolicyRule:
+      type: object
+      properties:
+        id:
+          type: string
+        condition:
+          type: string
+        action:
+          type: string
+        severity:
+          type: string
+          enum: [info, warning, error, critical]
+
+    ComplianceStatus:
+      type: object
+      properties:
+        agentId:
+          type: string
+        compliant:
+          type: boolean
+        policies:
+          type: array
+          items:
+            $ref: '#/components/schemas/PolicyCompliance'
+        score:
+          type: number
+          minimum: 0
+          maximum: 100
+        lastChecked:
+          type: string
+          format: date-time
+
+    PolicyCompliance:
+      type: object
+      properties:
+        policyId:
+          type: string
+        compliant:
+          type: boolean
+        violations:
+          type: array
+          items:
+            $ref: '#/components/schemas/Violation'
+
+    Violation:
+      type: object
+      properties:
+        ruleId:
+          type: string
+        message:
+          type: string
+        severity:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+
+    # Federation
+    FederationNodesList:
+      type: object
+      properties:
+        nodes:
+          type: array
+          items:
+            $ref: '#/components/schemas/FederationNode'
+
+    FederationNode:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        endpoint:
+          type: string
+          format: uri
+        status:
+          type: string
+          enum: [online, offline, degraded]
+        region:
+          type: string
+        capabilities:
+          type: array
+          items:
+            type: string
+        joinedAt:
+          type: string
+          format: date-time
+
+    FederationJoinRequest:
+      type: object
+      required:
+        - nodeName
+        - endpoint
+      properties:
+        nodeName:
+          type: string
+        endpoint:
+          type: string
+          format: uri
+        capabilities:
+          type: array
+          items:
+            type: string
+        region:
+          type: string
+        certificate:
+          type: string
+
+    FederationMembership:
+      type: object
+      properties:
+        nodeId:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum: [active, pending, suspended]
+        joinedAt:
+          type: string
+          format: date-time
+        certificate:
+          type: string
+
+    # Monitoring & Metrics
+    PlatformMetrics:
+      type: object
+      properties:
+        agents:
+          $ref: '#/components/schemas/AgentsMetrics'
+        workflows:
+          $ref: '#/components/schemas/WorkflowsMetrics'
+        federation:
+          $ref: '#/components/schemas/FederationMetrics'
+        system:
+          $ref: '#/components/schemas/SystemMetrics'
+
+    AgentsMetrics:
+      type: object
+      properties:
+        total:
+          type: integer
+        active:
+          type: integer
+        byType:
+          type: object
+          additionalProperties:
+            type: integer
+        byStatus:
+          type: object
+          additionalProperties:
+            type: integer
+
+    WorkflowsMetrics:
+      type: object
+      properties:
+        total:
+          type: integer
+        executions:
+          type: object
+          properties:
+            total:
+              type: integer
+            running:
+              type: integer
+            completed:
+              type: integer
+            failed:
+              type: integer
+        averageDuration:
+          type: number
+        successRate:
+          type: number
+
+    FederationMetrics:
+      type: object
+      properties:
+        nodes:
+          type: integer
+        onlineNodes:
+          type: integer
+        totalAgents:
+          type: integer
+        crossNodeTraffic:
+          type: integer
+
+    SystemMetrics:
+      type: object
+      properties:
+        cpu:
+          type: number
+        memory:
+          type: number
+        storage:
+          type: number
+        requestRate:
+          type: number
+        errorRate:
+          type: number
+
+    AgentMetrics:
+      type: object
+      properties:
+        requestCount:
+          type: integer
+        errorCount:
+          type: integer
+        averageResponseTime:
+          type: number
+        uptime:
+          type: integer
+        lastActive:
+          type: string
+          format: date-time
+
+    EventsList:
+      type: object
+      properties:
+        events:
+          type: array
+          items:
+            $ref: '#/components/schemas/Event'
+        total:
+          type: integer
+
+    Event:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        type:
+          type: string
+        source:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+        data:
+          type: object
+          additionalProperties: true
+
+    # Common
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [healthy, degraded, unhealthy]
+        version:
+          type: string
+        uptime:
+          type: integer
+        timestamp:
+          type: string
+          format: date-time
+        checks:
+          type: object
+          additionalProperties:
+            type: object
+            properties:
+              status:
+                type: string
+                enum: [pass, fail]
+              message:
+                type: string
+
+    Problem:
+      type: object
+      description: RFC7807 Problem Details
+      required:
+        - type
+        - title
+        - status
+        - traceId
+      properties:
+        type:
+          type: string
+          format: uri
+          default: about:blank
+        title:
+          type: string
+        status:
+          type: integer
+          format: int32
+        detail:
+          type: string
+        instance:
+          type: string
+          format: uri
+        traceId:
+          type: string
+        errors:
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              type: string
+
+  responses:
+    HealthCheck:
+      description: Service health status
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/HealthStatus'
+
+    ValidationError:
+      description: Validation error
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+
+    NotFound:
+      description: Resource not found
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+
+tags:
+  - name: Health
+    description: Service health and status
+  - name: Registry
+    description: Agent registry and discovery
+  - name: Orchestration
+    description: Multi-agent orchestration
+  - name: Specification
+    description: Agent specifications and validation
+  - name: Certification
+    description: Agent certification processes
+  - name: Governance
+    description: Policy and compliance management
+  - name: Federation
+    description: Federation and multi-tenancy
+  - name: Monitoring
+    description: Platform monitoring and metrics
+
+x-ossa-metadata:
+  version: 0.1.9
+  compliance:
+    level: enterprise
+    frameworks:
+      - OSSA
+      - OpenAPI 3.1
+      - RFC7807
+  governance:
+    approved: true
+    approvedBy: Platform Team
+    approvalDate: 2024-01-15
+  security:
+    classification: public
+    authentication: required
+    encryption: tls1.3
+  observability:
+    tracing: true
+    metrics: true
+    logging: true
