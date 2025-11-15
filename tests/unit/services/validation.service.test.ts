@@ -21,18 +21,18 @@ describe('ValidationService', () => {
   });
 
   describe('validate()', () => {
-    it('should validate a correct minimal manifest (v1.0)', async () => {
+    it('should validate a correct minimal manifest (v0.2.3)', async () => {
       const manifest: any = {
-        ossaVersion: '1.0',
+        ossaVersion: '0.2.3',
         agent: {
           id: 'test-agent',
           name: 'Test Agent',
-          version: '1.0.0',
+          version: '0.2.3',
           role: 'chat',
           description: 'A test agent',
           runtime: {
             type: 'docker',
-            image: 'test-agent:1.0.0',
+            image: 'test-agent:0.2.3',
           },
           capabilities: [
             {
@@ -55,7 +55,7 @@ describe('ValidationService', () => {
         },
       };
 
-      const result = await validationService.validate(manifest, '1.0');
+      const result = await validationService.validate(manifest, '0.2.3');
 
       expect(result.valid).toBe(true);
       expect(result.errors).toHaveLength(0);
@@ -65,11 +65,11 @@ describe('ValidationService', () => {
 
     it('should reject invalid agent ID (uppercase)', async () => {
       const manifest = {
-        ossaVersion: '1.0',
+        ossaVersion: '0.2.3',
         agent: {
           id: 'INVALID_ID', // Must be lowercase DNS-1123 format
           name: 'Test',
-          version: '1.0.0',
+          version: '0.2.3',
           role: 'chat',
           runtime: { type: 'docker' },
           capabilities: [
@@ -83,7 +83,7 @@ describe('ValidationService', () => {
         },
       };
 
-      const result = await validationService.validate(manifest, '1.0');
+      const result = await validationService.validate(manifest, '0.2.3');
 
       expect(result.valid).toBe(false);
       expect(result.errors.length).toBeGreaterThan(0);
@@ -92,14 +92,14 @@ describe('ValidationService', () => {
 
     it('should reject manifest missing required fields', async () => {
       const manifest = {
-        ossaVersion: '1.0',
+        ossaVersion: '0.2.3',
         agent: {
           id: 'test-agent',
           // Missing required fields: name, version, role, runtime, capabilities
         },
       };
 
-      const result = await validationService.validate(manifest, '1.0');
+      const result = await validationService.validate(manifest, '0.2.3');
 
       expect(result.valid).toBe(false);
       expect(result.errors.length).toBeGreaterThan(0);
@@ -107,11 +107,11 @@ describe('ValidationService', () => {
 
     it('should generate warnings for missing best practices', async () => {
       const manifest: any = {
-        ossaVersion: '1.0',
+        ossaVersion: '0.2.3',
         agent: {
           id: 'test-agent',
           name: 'Test Agent',
-          version: '1.0.0',
+          version: '0.2.3',
           role: 'chat',
           // Missing: description, llm, tools, autonomy, constraints
           runtime: { type: 'docker' },
@@ -126,7 +126,7 @@ describe('ValidationService', () => {
         },
       };
 
-      const result = await validationService.validate(manifest, '1.0');
+      const result = await validationService.validate(manifest, '0.2.3');
 
       expect(result.valid).toBe(true); // Schema valid
       expect(result.warnings.length).toBeGreaterThan(0);
@@ -146,11 +146,11 @@ describe('ValidationService', () => {
 
     it('should validate manifest with extensions', async () => {
       const manifest: any = {
-        ossaVersion: '1.0',
+        ossaVersion: '0.2.3',
         agent: {
           id: 'test-agent',
           name: 'Test Agent',
-          version: '1.0.0',
+          version: '0.2.3',
           role: 'chat',
           description: 'Test agent with extensions',
           runtime: { type: 'k8s' },
@@ -179,7 +179,7 @@ describe('ValidationService', () => {
         },
       };
 
-      const result = await validationService.validate(manifest, '1.0');
+      const result = await validationService.validate(manifest, '0.2.3');
 
       expect(result.valid).toBe(true);
       expect(result.manifest?.extensions).toBeDefined();
@@ -188,7 +188,7 @@ describe('ValidationService', () => {
 
     it('should reject manifest with invalid version string', async () => {
       const manifest = {
-        ossaVersion: '1.0',
+        ossaVersion: '0.2.3',
         agent: {
           id: 'test-agent',
           name: 'Test',
@@ -199,7 +199,7 @@ describe('ValidationService', () => {
         },
       };
 
-      const result = await validationService.validate(manifest, '1.0');
+      const result = await validationService.validate(manifest, '0.2.3');
 
       expect(result.valid).toBe(false);
       expect(result.errors.length).toBeGreaterThan(0);
@@ -220,11 +220,11 @@ describe('ValidationService', () => {
     it('should validate multiple manifests', async () => {
       const manifests: any[] = [
         {
-          ossaVersion: '1.0',
+          ossaVersion: '0.2.3',
           agent: {
             id: 'agent-1',
             name: 'Agent 1',
-            version: '1.0.0',
+            version: '0.2.3',
             role: 'chat',
             description: 'First agent',
             runtime: { type: 'docker' },
@@ -239,11 +239,11 @@ describe('ValidationService', () => {
           },
         },
         {
-          ossaVersion: '1.0',
+          ossaVersion: '0.2.3',
           agent: {
             id: 'agent-2',
             name: 'Agent 2',
-            version: '1.0.0',
+            version: '0.2.3',
             role: 'workflow',
             description: 'Second agent',
             runtime: { type: 'k8s' },
@@ -259,7 +259,7 @@ describe('ValidationService', () => {
         },
       ];
 
-      const results = await validationService.validateMany(manifests, '1.0');
+      const results = await validationService.validateMany(manifests, '0.2.3');
 
       expect(results).toHaveLength(2);
       expect(results[0].valid).toBe(true);
@@ -269,11 +269,11 @@ describe('ValidationService', () => {
     it('should identify invalid manifests in a batch', async () => {
       const manifests = [
         {
-          ossaVersion: '1.0',
+          ossaVersion: '0.2.3',
           agent: {
             id: 'valid-agent',
             name: 'Valid',
-            version: '1.0.0',
+            version: '0.2.3',
             role: 'chat',
             runtime: { type: 'docker' },
             capabilities: [
@@ -287,12 +287,12 @@ describe('ValidationService', () => {
           },
         },
         {
-          ossaVersion: '1.0',
+          ossaVersion: '0.2.3',
           agent: {
             id: 'INVALID',
             // Invalid ID - uppercase not allowed
             name: 'Invalid',
-            version: '1.0.0',
+            version: '0.2.3',
             role: 'chat',
             runtime: { type: 'docker' },
             capabilities: [
@@ -307,7 +307,7 @@ describe('ValidationService', () => {
         },
       ];
 
-      const results = await validationService.validateMany(manifests, '1.0');
+      const results = await validationService.validateMany(manifests, '0.2.3');
 
       expect(results).toHaveLength(2);
       expect(results[0].valid).toBe(true);

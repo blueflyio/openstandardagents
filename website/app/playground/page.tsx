@@ -7,19 +7,19 @@ const MonacoEditor = dynamic(() => import('@monaco-editor/react'), {
   ssr: false,
 });
 
-const exampleManifest = `apiVersion: ossa/v0.2.2
+const exampleManifest = `apiVersion: ossa/v0.2.3
 kind: Agent
 
 metadata:
   name: my-first-agent
   version: 1.0.0
-  description: My first OSSA agent
+  description: My first Open Standard Agents manifest
 
 spec:
   role: You are a helpful assistant
   llm:
     provider: openai
-    model: gpt-3.5-turbo
+    model: gpt-4
   tools: []
 `;
 
@@ -36,7 +36,7 @@ export default function PlaygroundPage(): JSX.Element {
     try {
       // For static export, we'll use a client-side validation approach
       // Load schema and validate in browser
-      const schemaResponse = await fetch('/spec/v0.2.2/ossa-0.2.2.schema.json');
+      const schemaResponse = await fetch('/schemas/ossa-0.2.3.schema.json');
       if (!schemaResponse.ok) {
         throw new Error('Failed to load schema');
       }
@@ -89,9 +89,9 @@ export default function PlaygroundPage(): JSX.Element {
 
   return (
     <div className="container mx-auto max-w-7xl px-4 py-8">
-      <h1 className="text-4xl font-bold mb-8">OSSA Playground</h1>
+      <h1 className="text-4xl font-bold mb-8">Open Standard Agents Playground</h1>
       <p className="text-lg text-gray-600 mb-8">
-        Write and validate OSSA agent manifests in real-time. Try editing the
+        Write and validate Open Standard Agents manifests in real-time. Try editing the
         example below or paste your own manifest.
       </p>
 
@@ -152,7 +152,7 @@ export default function PlaygroundPage(): JSX.Element {
                 </span>
               </div>
               <p className="text-sm text-gray-700">
-                Your OSSA manifest conforms to the v0.2.2 specification.
+                Your Open Standard Agents manifest conforms to the v0.2.3 specification.
               </p>
             </div>
           ) : (
@@ -199,7 +199,7 @@ export default function PlaygroundPage(): JSX.Element {
               </button>
               <button
                 onClick={() => {
-                  setCode(`apiVersion: ossa/v0.2.2
+                  setCode(`apiVersion: ossa/v0.2.3
 kind: Agent
 
 metadata:

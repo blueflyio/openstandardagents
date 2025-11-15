@@ -45,7 +45,7 @@ describe('All Examples Validation', () => {
         // Some examples may not validate against v0.1.9 schema either
         // Document which ones pass/fail
         if (!result.valid) {
-          console.log(`  ⚠ ${file} needs updating to v1.0 format`);
+          console.log(`  ⚠ ${file} needs updating to v0.2.3 format`);
         }
       }
 
@@ -57,14 +57,14 @@ describe('All Examples Validation', () => {
   describe('Generated manifests', () => {
     it('should validate generated chat agent', async () => {
       const manifest = {
-        ossaVersion: '1.0',
+        ossaVersion: '0.2.3',
         agent: {
           id: 'test-chat',
           name: 'Test Chat',
-          version: '1.0.0',
+          version: '0.2.3',
           role: 'chat',
           description: 'Test chat agent',
-          runtime: { type: 'docker', image: 'test:1.0' },
+          runtime: { type: 'docker', image: 'test:0.2.3' },
           capabilities: [
             {
               name: 'send_message',
@@ -82,7 +82,7 @@ describe('All Examples Validation', () => {
         },
       };
 
-      const result = await validationService.validate(manifest, '1.0');
+      const result = await validationService.validate(manifest, '0.2.3');
 
       expect(result.valid).toBe(true);
       expect(result.errors).toHaveLength(0);

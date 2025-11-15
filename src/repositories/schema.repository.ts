@@ -16,7 +16,7 @@ export class SchemaRepository implements ISchemaRepository {
 
   /**
    * Get schema for specific version
-   * @param version - Schema version (e.g., '1.0', '0.1.9')
+   * @param version - Schema version (e.g., '0.2.3', '0.2.2', '0.1.9')
    * @returns JSON Schema object
    */
   async getSchema(version: SchemaVersion): Promise<Record<string, unknown>> {
@@ -52,7 +52,6 @@ export class SchemaRepository implements ISchemaRepository {
   private getSchemaPath(version: SchemaVersion): string {
     // Map versions to schema files
     const schemaMap: Record<SchemaVersion, string> = {
-      '1.0': 'spec/v1.0/ossa-1.0.schema.json',
       '0.2.3': 'spec/v0.2.3/ossa-0.2.3.schema.json',
       '0.2.2': 'spec/v0.2.2/ossa-0.2.2.schema.json',
       '0.1.9': 'spec/versions/v0.1.9/ossa-v0.1.9.schema.json',

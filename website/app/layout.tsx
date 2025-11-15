@@ -9,21 +9,21 @@ const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 
 export const metadata: Metadata = {
   title: {
-    default: 'OSSA - Open Standard for Scalable Agents',
-    template: '%s | OSSA',
+    default: 'Open Standard Agents - Industry Standard for Agent Orchestration',
+    template: '%s | Open Standard Agents',
   },
-  description: 'The OpenAPI for AI Agents - A specification standard for AI agent definition, deployment, and management',
+  description: 'The vendor-neutral specification for multi-agent systems. Write once, deploy anywhere. Zero vendor lock-in.',
   keywords: ['OSSA', 'AI Agents', 'OpenAPI', 'Standard', 'Specification', 'AI', 'Machine Learning', 'Agent Framework'],
   authors: [{ name: 'OSSA Standards Team' }],
   creator: 'OSSA Standards Team',
   publisher: 'OSSA Standards Team',
-  metadataBase: new URL('https://gitlab.bluefly.io/llm/openapi-ai-agents-standard'),
+  metadataBase: new URL('https://openstandardagents.org'),
   openGraph: {
-    title: 'OSSA - Open Standard for Scalable Agents',
-    description: 'The OpenAPI for AI Agents - A specification standard for AI agent definition, deployment, and management',
+    title: 'Open Standard Agents - Industry Standard for Agent Orchestration',
+    description: 'The vendor-neutral specification for multi-agent systems. Write once, deploy anywhere.',
     type: 'website',
     locale: 'en_US',
-    siteName: 'OSSA',
+    siteName: 'Open Standard Agents',
     images: [
       {
         url: '/og-image.png',
@@ -35,9 +35,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'OSSA - Open Standard for Scalable Agents',
-    description: 'The OpenAPI for AI Agents',
-    creator: '@ossa',
+    title: 'Open Standard Agents - Industry Standard for Agent Orchestration',
+    description: 'The vendor-neutral specification for multi-agent systems',
+    creator: '@openstandardagents',
   },
   robots: {
     index: true,
@@ -51,7 +51,7 @@ export const metadata: Metadata = {
     },
   },
   alternates: {
-    canonical: 'https://gitlab.bluefly.io/llm/openapi-ai-agents-standard',
+    canonical: 'https://openstandardagents.org',
   },
 };
 
@@ -66,7 +66,7 @@ export default function RootLayout({
         <StructuredData
           type="Organization"
           data={{
-            description: 'OSSA Standards Team - Maintaining the Open Standard for Scalable Agents',
+            description: 'Open Standard Agents Organization - Maintaining the Industry Standard for Agent Orchestration',
           }}
         />
         <StructuredData
@@ -76,7 +76,7 @@ export default function RootLayout({
               '@type': 'SearchAction',
               target: {
                 '@type': 'EntryPoint',
-                urlTemplate: 'https://gitlab.bluefly.io/llm/openapi-ai-agents-standard/search?q={search_term_string}',
+                urlTemplate: 'https://openstandardagents.org/search?q={search_term_string}',
               },
               'query-input': 'required name=search_term_string',
             },

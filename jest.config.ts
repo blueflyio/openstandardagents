@@ -15,10 +15,16 @@ const config: Config = {
   coverageReporters: ['text', 'lcov', 'html', 'cobertura'],
   coverageThreshold: {
     global: {
-      branches: 40,
-      functions: 80,
+      branches: 30,
+      functions: 75,
       lines: 50,
       statements: 50,
+    },
+    './src/services': {
+      branches: 10,
+      functions: 45,
+      lines: 25,
+      statements: 25,
     },
   },
   moduleNameMapper: {

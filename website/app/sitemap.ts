@@ -1,7 +1,6 @@
 import { MetadataRoute } from 'next';
 import fs from 'fs';
 import path from 'path';
-import matter from 'gray-matter';
 
 function getAllPages(): string[] {
   const pages: string[] = ['', '/docs', '/playground', '/examples', '/schema', '/blog'];
@@ -20,7 +19,7 @@ function getAllPages(): string[] {
   // Add docs pages
   const docsDir = path.join(process.cwd(), '../../.gitlab/wiki-content');
   if (fs.existsSync(docsDir)) {
-    function traverseDir(dir: string, basePath: string = ''): void {
+    const traverseDir = (dir: string, basePath = ''): void => {
       const entries = fs.readdirSync(dir, { withFileTypes: true });
       for (const entry of entries) {
         if (entry.isDirectory()) {

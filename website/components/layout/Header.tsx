@@ -15,9 +15,18 @@ export function Header(): JSX.Element {
           </Link>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-8">
+          <div className="hidden md:flex items-center space-x-6">
+            <Link href="/about" className="text-gray-700 hover:text-primary transition-colors">
+              About
+            </Link>
+            <Link href="/specification" className="text-gray-700 hover:text-primary transition-colors">
+              Specification
+            </Link>
             <Link href="/docs" className="text-gray-700 hover:text-primary transition-colors">
               Documentation
+            </Link>
+            <Link href="/schema" className="text-gray-700 hover:text-primary transition-colors">
+              Schema
             </Link>
             <Link href="/playground" className="text-gray-700 hover:text-primary transition-colors">
               Playground
@@ -25,14 +34,8 @@ export function Header(): JSX.Element {
             <Link href="/examples" className="text-gray-700 hover:text-primary transition-colors">
               Examples
             </Link>
-            <Link href="/schema" className="text-gray-700 hover:text-primary transition-colors">
-              Schema
-            </Link>
-            <Link href="/blog" className="text-gray-700 hover:text-primary transition-colors">
-              Blog
-            </Link>
             <a
-              href="https://gitlab.bluefly.io/llm/openapi-ai-agents-standard"
+              href="https://gitlab.bluefly.io/llm/openstandardagents"
               target="_blank"
               rel="noopener noreferrer"
               className="text-gray-700 hover:text-primary transition-colors"
@@ -83,11 +86,32 @@ export function Header(): JSX.Element {
             aria-label="Mobile navigation"
           >
             <Link
+              href="/about"
+              className="block py-2 text-gray-700 hover:text-primary transition-colors"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              About
+            </Link>
+            <Link
+              href="/specification"
+              className="block py-2 text-gray-700 hover:text-primary transition-colors"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              Specification
+            </Link>
+            <Link
               href="/docs"
               className="block py-2 text-gray-700 hover:text-primary transition-colors"
               onClick={() => setMobileMenuOpen(false)}
             >
               Documentation
+            </Link>
+            <Link
+              href="/schema"
+              className="block py-2 text-gray-700 hover:text-primary transition-colors"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              Schema
             </Link>
             <Link
               href="/playground"
@@ -103,22 +127,8 @@ export function Header(): JSX.Element {
             >
               Examples
             </Link>
-            <Link
-              href="/schema"
-              className="block py-2 text-gray-700 hover:text-primary transition-colors"
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              Schema
-            </Link>
-            <Link
-              href="/blog"
-              className="block py-2 text-gray-700 hover:text-primary transition-colors"
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              Blog
-            </Link>
             <a
-              href="https://gitlab.bluefly.io/llm/openapi-ai-agents-standard"
+              href="https://gitlab.bluefly.io/llm/openstandardagents"
               target="_blank"
               rel="noopener noreferrer"
               className="block py-2 text-gray-700 hover:text-primary transition-colors"

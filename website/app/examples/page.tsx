@@ -17,7 +17,7 @@ function getAllExamples(): ExampleFile[] {
     return examples;
   }
 
-  function traverseDir(dir: string, category: string = ''): void {
+  function traverseDir(dir: string, category = ''): void {
     const entries = fs.readdirSync(dir, { withFileTypes: true });
 
     for (const entry of entries) {
@@ -57,10 +57,10 @@ export default function ExamplesPage(): JSX.Element {
 
   return (
     <div className="container mx-auto max-w-7xl px-4 py-8">
-      <h1 className="text-4xl font-bold mb-4">OSSA Examples</h1>
+      <h1 className="text-4xl font-bold mb-4">Open Standard Agents Examples</h1>
       <p className="text-lg text-gray-600 mb-8">
-        Browse example OSSA agent manifests and learn from real-world
-        implementations.
+        Browse example Open Standard Agents manifests and learn from real-world
+        implementations across Cursor, OpenAI, CrewAI, LangChain, Anthropic, and more.
       </p>
       <ExamplesViewer examples={examples} />
     </div>

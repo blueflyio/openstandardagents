@@ -4,7 +4,9 @@ import matter from 'gray-matter';
 import { notFound } from 'next/navigation';
 import { format } from 'date-fns';
 import { MarkdownContent } from '@/components/docs/MarkdownContent';
+import { StructuredData } from '@/components/StructuredData';
 import Link from 'next/link';
+import type { Metadata } from 'next';
 
 interface PageProps {
   params: {
