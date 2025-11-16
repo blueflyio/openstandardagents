@@ -23,7 +23,13 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const packageJsonPath = path.join(__dirname, '../../package.json');
-const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf-8'));
+let packageJson: { version: string };
+try {
+  packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf-8'));
+} catch (error) {
+  // Fallback if package.json can't be read
+  packageJson = { version: '0.2.3' };
+}
 
 program
   .name('ossa')

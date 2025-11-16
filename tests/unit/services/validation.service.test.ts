@@ -5,7 +5,6 @@
 
 import { SchemaRepository } from '../../../src/repositories/schema.repository.js';
 import { ValidationService } from '../../../src/services/validation.service.js';
-import type { OssaAgent } from '../../../src/types/index.js';
 
 describe('ValidationService', () => {
   let validationService: ValidationService;

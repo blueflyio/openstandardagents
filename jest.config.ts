@@ -34,6 +34,7 @@ const config: Config = {
     '^@types/(.*)$': '<rootDir>/src/types/$1',
     '^@utils/(.*)$': '<rootDir>/src/utils/$1',
     '^(\\.{1,2}/.*)\\.js$': '$1',
+    '^yaml$': '<rootDir>/node_modules/yaml/index.js',
   },
   transform: {
     '^.+\\.tsx?$': [

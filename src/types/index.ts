@@ -26,11 +26,86 @@ export interface Capability {
 }
 
 /**
- * OSSA Agent manifest structure (will be replaced with generated types)
+ * OSSA Agent manifest structure (v0.2.3 format)
+ * Supports both v0.2.3 (apiVersion/kind/metadata/spec) and legacy v0.1.9 (ossaVersion/agent)
  */
 export interface OssaAgent {
-  ossaVersion: string;
-  agent: {
+  // v0.2.3 format
+  apiVersion?: string;
+  kind?: string;
+  metadata?: {
+    name: string;
+    version?: string;
+    description?: string;
+    labels?: Record<string, string>;
+    annotations?: Record<string, string>;
+  };
+  spec?: {
+    role: string;
+    llm?: {
+      provider: string;
+      model: string;
+      temperature?: number;
+      maxTokens?: number;
+      topP?: number;
+    };
+    tools?: Array<{
+      type: string;
+      name?: string;
+      server?: string;
+      namespace?: string;
+      endpoint?: string;
+      capabilities?: string[];
+      config?: Record<string, unknown>;
+      auth?: {
+        type: string;
+        credentials?: string;
+      };
+    }>;
+    autonomy?: {
+      level?: string;
+      approval_required?: boolean;
+      allowed_actions?: string[];
+      blocked_actions?: string[];
+    };
+    constraints?: {
+      cost?: {
+        maxTokensPerDay?: number;
+        maxTokensPerRequest?: number;
+        maxCostPerDay?: number;
+        currency?: string;
+      };
+      performance?: {
+        maxLatencySeconds?: number;
+        maxConcurrentRequests?: number;
+        timeoutSeconds?: number;
+      };
+      resources?: {
+        cpu?: string;
+        memory?: string;
+        gpu?: string;
+      };
+    };
+    observability?: {
+      tracing?: {
+        enabled?: boolean;
+        exporter?: string;
+        endpoint?: string;
+      };
+      metrics?: {
+        enabled?: boolean;
+        exporter?: string;
+        endpoint?: string;
+      };
+      logging?: {
+        level?: string;
+        format?: string;
+      };
+    };
+  };
+  // Legacy v0.1.9 format (for backward compatibility)
+  ossaVersion?: string;
+  agent?: {
     id: string;
     name: string;
     version: string;
