@@ -4,7 +4,7 @@ Display the **OSSA Compliant** badge in your project to show that your AI agent 
 
 ---
 
-## 🎖️ Badge Options
+## Badge Options
 
 ### Markdown
 
@@ -33,18 +33,18 @@ Display the **OSSA Compliant** badge in your project to show that your AI agent 
 
 ---
 
-## 📋 Compliance Requirements
+## Compliance Requirements
 
 To display the OSSA Compliant badge, your project must:
 
-### ✅ Required
+### Required
 
 1. **Valid OSSA Manifest** - Your agent must have a valid `.ossa.yaml` manifest
 2. **Schema Validation** - Manifest must pass `ossa validate` without errors
 3. **Semantic Versioning** - Agent version follows semver (e.g., `1.0.0`)
 4. **Required Fields** - All required OSSA fields must be present
 
-### ✅ Recommended
+### Recommended
 
 1. **Examples** - Provide example manifests showing usage
 2. **Documentation** - Document your agent's capabilities and usage
@@ -53,7 +53,7 @@ To display the OSSA Compliant badge, your project must:
 
 ---
 
-## 🔍 Verification
+## Verification
 
 ### Manual Verification
 
@@ -97,20 +97,23 @@ jobs:
 
 ---
 
-## 📚 Compliance Levels
+## Compliance Levels
 
-### Level 1: Basic Compliance ⭐
+### Level 1: Basic Compliance
+
 - Valid OSSA manifest
 - Required fields present
 - Passes schema validation
 
-### Level 2: Standard Compliance ⭐⭐
+### Level 2: Standard Compliance
+
 - Level 1 requirements
 - Best practices followed (descriptions, examples)
 - Semantic versioning
 - At least one capability defined
 
-### Level 3: Advanced Compliance ⭐⭐⭐
+### Level 3: Advanced Compliance
+
 - Level 2 requirements
 - Platform extensions configured
 - Observability enabled
@@ -119,21 +122,21 @@ jobs:
 
 ---
 
-## 🏆 OSSA Certified Projects
+## OSSA Certified Projects
 
 Projects that have achieved OSSA compliance:
 
 | Project | Level | Version | Link |
 |---------|-------|---------|------|
-| Agent Buildkit | ⭐⭐⭐ | v0.2.3 | [GitLab](https://gitlab.bluefly.io/llm/npm/agent-buildkit) |
-| Agent Studio | ⭐⭐⭐ | v0.2.3 | [GitLab](https://gitlab.bluefly.io/llm/demos/llm-platform-demo) |
-| KAgent | ⭐⭐⭐ | v0.2.3 | [GitLab](https://gitlab.bluefly.io/llm/npm/kagent) |
+| Agent Buildkit | Advanced | v0.2.3 | [GitLab](https://gitlab.bluefly.io/llm/npm/agent-buildkit) |
+| Agent Studio | Advanced | v0.2.3 | [GitLab](https://gitlab.bluefly.io/llm/demos/llm-platform-demo) |
+| KAgent | Advanced | v0.2.3 | [GitLab](https://gitlab.bluefly.io/llm/npm/kagent) |
 
 **Add your project**: Submit a merge request to update this table!
 
 ---
 
-## 📖 Example Implementation
+## Example Implementation
 
 ### Minimal OSSA Manifest
 
@@ -205,7 +208,7 @@ extensions:
 
 ---
 
-## ❓ FAQ
+## FAQ
 
 ### Q: Can I use the badge if my agent partially implements OSSA?
 
@@ -225,7 +228,7 @@ extensions:
 
 ---
 
-## 🔗 Resources
+## Resources
 
 - **OSSA Specification**: [spec/v0.2.3/](../spec/v0.2.3/)
 - **Examples**: [examples/](../examples/)

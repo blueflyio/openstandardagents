@@ -6,32 +6,32 @@ OSSA is a community-driven open standard, and we welcome contributions from deve
 
 ---
 
-## 🎯 Ways to Contribute
+## Ways to Contribute
 
-### 1. **Specification Improvements**
+### 1. Specification Improvements
 - Propose schema enhancements
 - Add new platform extensions (Cursor, LangChain, etc.)
 - Improve documentation clarity
 - Add examples for new use cases
 
-### 2. **Documentation**
+### 2. Documentation
 - Fix typos or unclear sections
 - Add tutorials and guides
 - Translate documentation
 - Create integration examples
 
-### 3. **Examples**
+### 3. Examples
 - Add OSSA manifests for your agent
 - Share migration guides from other frameworks
 - Contribute platform-specific examples
 
-### 4. **Tooling**
+### 4. Tooling
 - Improve OSSA CLI
 - Add validation rules
 - Enhance error messages
 - Contribute to test coverage
 
-### 5. **Community**
+### 5. Community
 - Answer questions in discussions
 - Share your OSSA implementation
 - Write blog posts or tutorials
@@ -39,7 +39,7 @@ OSSA is a community-driven open standard, and we welcome contributions from deve
 
 ---
 
-## 🚀 Getting Started
+## Getting Started
 
 ### Prerequisites
 
@@ -70,7 +70,7 @@ npm run validate examples/getting-started/hello-world-complete.ossa.yaml
 
 ---
 
-## 📋 Contribution Workflow
+## Contribution Workflow
 
 ### Step 1: Create an Issue
 
@@ -147,7 +147,7 @@ git push origin feature/your-feature-name
 
 ---
 
-## 🧪 Testing Requirements
+## Testing Requirements
 
 All contributions must include tests where applicable:
 
@@ -176,7 +176,7 @@ npm run test:integration
 
 ---
 
-## 📐 Code Style
+## Code Style
 
 We use:
 - **Prettier** for formatting
@@ -196,7 +196,7 @@ npm run typecheck
 
 ---
 
-## 🎨 Schema Design Principles
+## Schema Design Principles
 
 When proposing schema changes, follow these principles:
 
@@ -209,7 +209,7 @@ When proposing schema changes, follow these principles:
 
 ---
 
-## 🏗️ Platform Extension Guidelines
+## Platform Extension Guidelines
 
 Adding a new platform extension (e.g., Anthropic, Vercel AI)?
 
@@ -277,7 +277,7 @@ extensions:
 
 ---
 
-## 📝 Documentation Standards
+## Documentation Standards
 
 ### Markdown
 - Use ATX-style headers (`#` not `===`)
@@ -299,7 +299,7 @@ extensions:
 
 ---
 
-## 🔒 Security
+## Security
 
 ### Reporting Security Issues
 
@@ -318,7 +318,7 @@ We'll respond within 48 hours and work with you to address the issue.
 
 ---
 
-## 📜 License
+## License
 
 By contributing to OSSA, you agree that your contributions will be licensed under the **Apache License 2.0**.
 
@@ -326,7 +326,7 @@ All contributions must be your own work or properly attributed.
 
 ---
 
-## 🤝 Code of Conduct
+## Code of Conduct
 
 ### Our Standards
 
@@ -346,7 +346,7 @@ Violations may result in temporary or permanent bans.
 
 ---
 
-## ❓ Questions?
+## Questions?
 
 - **GitLab Discussions**: https://gitlab.bluefly.io/llm/openapi-ai-agents-standard/-/issues
 - **GitLab Wiki**: https://gitlab.bluefly.io/llm/openapi-ai-agents-standard/-/wikis
@@ -354,7 +354,7 @@ Violations may result in temporary or permanent bans.
 
 ---
 
-## 🎖️ Recognition
+## Recognition
 
 Contributors are recognized in:
 - README.md acknowledgments
@@ -362,7 +362,7 @@ Contributors are recognized in:
 - GitLab contributors page
 - Annual contributor reports
 
-Thank you for helping make OSSA the standard for AI agents! 🚀
+Thank you for helping make OSSA the standard for AI agents!
 
 ---
 
