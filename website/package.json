@@ -10,13 +10,19 @@
     "lint": "next lint",
     "export": "next build"
   },
-  "keywords": ["ossa", "ai-agents", "standard", "specification"],
+  "keywords": [
+    "ossa",
+    "ai-agents",
+    "standard",
+    "specification"
+  ],
   "author": "OSSA Community",
   "license": "MIT",
   "dependencies": {
     "@monaco-editor/react": "^4.6.0",
     "@types/node": "^24.10.0",
     "@types/react": "^18.3.1",
+    "ajv-formats": "^3.0.1",
     "autoprefixer": "^10.4.22",
     "date-fns": "^4.1.0",
     "gray-matter": "^4.0.3",
@@ -30,7 +36,8 @@
     "react-syntax-highlighter": "^15.5.0",
     "remark-gfm": "^4.0.0",
     "tailwindcss": "^3.4.1",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "yaml": "^2.8.1"
   },
   "devDependencies": {
     "@types/react-dom": "^18.3.1",
