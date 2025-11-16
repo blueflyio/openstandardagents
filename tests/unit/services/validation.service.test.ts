@@ -199,7 +199,10 @@ describe('ValidationService', () => {
       const manifest = { test: 'data' };
 
       // Invalid schema version
-      const result = await validationService.validate(manifest, '999.0' as SchemaVersion);
+      const result = await validationService.validate(
+        manifest,
+        '999.0' as SchemaVersion
+      );
 
       expect(result.valid).toBe(false);
       expect(result.errors.length).toBeGreaterThan(0);
