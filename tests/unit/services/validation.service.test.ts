@@ -5,7 +5,7 @@
 
 import { SchemaRepository } from '../../../src/repositories/schema.repository.js';
 import { ValidationService } from '../../../src/services/validation.service.js';
-import type { OssaAgent } from '../../../src/types/index.js';
+import type { OssaAgent, SchemaVersion } from '../../../src/types/index.js';
 
 describe('ValidationService', () => {
   let validationService: ValidationService;
@@ -199,7 +199,7 @@ describe('ValidationService', () => {
       const manifest = { test: 'data' };
 
       // Invalid schema version
-      const result = await validationService.validate(manifest, '999.0' as any);
+      const result = await validationService.validate(manifest, '999.0' as SchemaVersion);
 
       expect(result.valid).toBe(false);
       expect(result.errors.length).toBeGreaterThan(0);
