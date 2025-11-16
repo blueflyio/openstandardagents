@@ -1,0 +1,37 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "startup",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"$CLAUDE_PROJECT_DIR\"/scripts/setup-environment.sh"
+          }
+        ]
+      }
+    ]
+  },
+  "network": {
+    "access": "limited",
+    "allowedDomains": [
+      "gitlab.bluefly.io",
+      "registry.gitlab.bluefly.io",
+      "gitlab.bluefly.io/api/v4",
+      "registry.npmjs.org",
+      "www.npmjs.com",
+      "pypi.org",
+      "files.pythonhosted.org",
+      "crates.io",
+      "static.crates.io",
+      "proxy.golang.org",
+      "packagist.org",
+      "repo.packagist.org"
+    ]
+  },
+  "environment": {
+    "NODE_ENV": "development",
+    "GITLAB_PROJECT_PATH": "llm/openapi-ai-agents-standard",
+    "CLAUDE_CODE_REMOTE": "${CLAUDE_CODE_REMOTE}"
+  }
+}
