@@ -130,7 +130,7 @@ OSSA doesn't care - it's just a standard.
 
 ## Repository Links
 
-- **Main Repository**: [gitlab.bluefly.io/llm/openapi-ai-agents-standard](https://github.com/BlueflyCollective/openstandardagents)
+- **Main Repository**: [github.com/BlueflyCollective/openstandardagents](https://github.com/BlueflyCollective/openstandardagents)
 - **Issues**: [Report Issues](https://github.com/BlueflyCollective/openstandardagents/issues)
 - **Milestones**: [View Roadmap](https://github.com/BlueflyCollective/openstandardagents/-/milestones)
 - **Releases**: [View Releases](https://github.com/BlueflyCollective/openstandardagents/-/releases)
