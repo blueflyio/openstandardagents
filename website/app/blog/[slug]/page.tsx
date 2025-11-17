@@ -61,7 +61,10 @@ function getAllPostSlugs(): string[] {
     .map((file) => file.replace(/\.md$/, ''));
 }
 
-export function generateStaticParams() {
+export const dynamic = 'force-static';
+export const dynamicParams = false;
+
+export async function generateStaticParams() {
   const slugs = getAllPostSlugs();
   return slugs.map((slug) => ({ slug }));
 }

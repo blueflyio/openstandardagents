@@ -2,6 +2,8 @@ import { MetadataRoute } from 'next';
 import fs from 'fs';
 import path from 'path';
 
+export const dynamic = 'force-static';
+
 function getAllPages(): string[] {
   const pages: string[] = ['', '/docs', '/playground', '/examples', '/schema', '/blog'];
 

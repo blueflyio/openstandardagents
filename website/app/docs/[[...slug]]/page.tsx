@@ -66,11 +66,15 @@ function getAllDocPaths(): string[][] {
   return paths;
 }
 
-export function generateStaticParams() {
+export const dynamic = 'force-static';
+export const dynamicParams = false;
+
+export async function generateStaticParams() {
   const paths = getAllDocPaths();
-  return paths.map((slug) => ({
+  // Return root docs page as undefined slug
+  return [{ slug: undefined }, ...paths.map((slug) => ({
     slug,
-  }));
+  }))];
 }
 
 export default async function DocsPage({ params }: PageProps): Promise<JSX.Element> {

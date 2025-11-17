@@ -2,6 +2,8 @@ import fs from 'fs';
 import path from 'path';
 import matter from 'gray-matter';
 
+export const dynamic = 'force-static';
+
 function getAllPosts(): Array<{
   slug: string;
   title: string;
