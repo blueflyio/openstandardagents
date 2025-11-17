@@ -99,8 +99,11 @@ export default function SchemaPage() {
           </div>
 
           {/* Visual Structure Diagram with HTML/CSS */}
-          <div className="bg-white rounded-2xl shadow-lg p-8 mb-8 border border-gray-200">
-            <h3 className="text-xl font-bold mb-6 text-center">OSSA Agent Manifest Structure</h3>
+          <div className="bg-white rounded-2xl shadow-lg p-8 mb-8 border-2 border-gray-300">
+            <h3 className="text-2xl font-bold mb-4 text-center text-gray-900">OSSA Agent Manifest Structure</h3>
+            <p className="text-center text-gray-600 mb-8 text-base">
+              Complete breakdown of all manifest components and their relationships
+            </p>
 
             <div className="space-y-6">
               {/* Root */}
@@ -137,33 +140,142 @@ export default function SchemaPage() {
                 <div className="bg-gradient-to-br from-primary/5 to-primary/10 border-3 border-primary rounded-xl p-6 shadow-md">
                   <div className="font-bold text-primary text-2xl mb-5">spec</div>
                   <div className="space-y-3">
-                    <div className="bg-white rounded-lg p-4 border-2 border-primary/30 shadow-sm hover:shadow-md transition-shadow">
-                      <div className="font-semibold text-primary text-base mb-2">role</div>
-                      <div className="text-sm text-gray-700">System prompt / identity</div>
-                    </div>
-                    <div className="bg-white rounded-lg p-4 border-2 border-primary/30 shadow-sm hover:shadow-md transition-shadow">
-                      <div className="font-semibold text-primary text-base mb-2">llm</div>
-                      <div className="text-sm text-gray-700 space-y-1">
-                        <div>• provider: openai</div>
-                        <div>• model: gpt-4</div>
-                        <div>• temperature: 0.7</div>
+                    {/* role */}
+                    <div className="bg-white rounded-lg p-4 border-2 border-primary/30 shadow-sm hover:shadow-md transition-all hover:border-primary/50">
+                      <div className="font-semibold text-primary text-base mb-2 flex items-center">
+                        <span className="mr-2">🎭</span> role
+                      </div>
+                      <div className="text-sm text-gray-700 mb-2">System prompt / identity</div>
+                      <div className="text-xs text-gray-600 bg-gray-50 rounded p-2 font-mono">
+                        type: string (multi-line)
                       </div>
                     </div>
-                    <div className="bg-white rounded-lg p-4 border-2 border-primary/30 shadow-sm hover:shadow-md transition-shadow">
-                      <div className="font-semibold text-primary text-base mb-2">tools</div>
-                      <div className="text-sm text-gray-700">Array of capabilities</div>
+
+                    {/* llm */}
+                    <div className="bg-white rounded-lg p-4 border-2 border-primary/30 shadow-sm hover:shadow-md transition-all hover:border-primary/50">
+                      <div className="font-semibold text-primary text-base mb-3 flex items-center">
+                        <span className="mr-2">🧠</span> llm
+                      </div>
+                      <div className="grid grid-cols-2 gap-2 text-sm text-gray-700">
+                        <div className="bg-blue-50 rounded p-2">
+                          <strong>provider</strong>: openai | anthropic | azure
+                        </div>
+                        <div className="bg-blue-50 rounded p-2">
+                          <strong>model</strong>: gpt-4, claude-3, etc.
+                        </div>
+                        <div className="bg-blue-50 rounded p-2">
+                          <strong>temperature</strong>: 0.0 - 2.0
+                        </div>
+                        <div className="bg-blue-50 rounded p-2">
+                          <strong>max_tokens</strong>: integer
+                        </div>
+                      </div>
                     </div>
-                    <div className="bg-white rounded-lg p-4 border-2 border-primary/30 shadow-sm hover:shadow-md transition-shadow">
-                      <div className="font-semibold text-primary text-base mb-2">taxonomy</div>
-                      <div className="text-sm text-gray-700">Domain classification</div>
+
+                    {/* tools */}
+                    <div className="bg-white rounded-lg p-4 border-2 border-primary/30 shadow-sm hover:shadow-md transition-all hover:border-primary/50">
+                      <div className="font-semibold text-primary text-base mb-3 flex items-center">
+                        <span className="mr-2">🔧</span> tools
+                      </div>
+                      <div className="text-sm text-gray-700 space-y-2">
+                        <div className="bg-purple-50 border border-purple-200 rounded p-2">
+                          <strong>http</strong>: REST API calls
+                        </div>
+                        <div className="bg-green-50 border border-green-200 rounded p-2">
+                          <strong>code</strong>: Execute Python/JS/Shell
+                        </div>
+                        <div className="bg-yellow-50 border border-yellow-200 rounded p-2">
+                          <strong>database</strong>: SQL queries
+                        </div>
+                        <div className="bg-pink-50 border border-pink-200 rounded p-2">
+                          <strong>file</strong>: Read/write operations
+                        </div>
+                        <div className="bg-cyan-50 border border-cyan-200 rounded p-2">
+                          <strong>search</strong>: Web/vector search
+                        </div>
+                      </div>
                     </div>
-                    <div className="bg-white rounded-lg p-4 border-2 border-primary/30 shadow-sm hover:shadow-md transition-shadow">
-                      <div className="font-semibold text-primary text-base mb-2">autonomy</div>
-                      <div className="text-sm text-gray-700">L0-L5 autonomy levels</div>
+
+                    {/* taxonomy */}
+                    <div className="bg-white rounded-lg p-4 border-2 border-primary/30 shadow-sm hover:shadow-md transition-all hover:border-primary/50">
+                      <div className="font-semibold text-primary text-base mb-3 flex items-center">
+                        <span className="mr-2">🏷️</span> taxonomy
+                      </div>
+                      <div className="grid grid-cols-2 gap-2 text-xs">
+                        <div className="bg-orange-50 rounded p-2">
+                          <strong>domain</strong>: customer_service, engineering, etc.
+                        </div>
+                        <div className="bg-orange-50 rounded p-2">
+                          <strong>subdomain</strong>: technical_support, devops, etc.
+                        </div>
+                        <div className="bg-orange-50 rounded p-2">
+                          <strong>use_case</strong>: troubleshooting, automation
+                        </div>
+                        <div className="bg-orange-50 rounded p-2">
+                          <strong>industry</strong>: saas, healthcare, finance
+                        </div>
+                      </div>
                     </div>
-                    <div className="bg-white rounded-lg p-4 border-2 border-primary/30 shadow-sm hover:shadow-md transition-shadow">
-                      <div className="font-semibold text-primary text-base mb-2">observability</div>
-                      <div className="text-sm text-gray-700">Logging, metrics, tracing</div>
+
+                    {/* autonomy */}
+                    <div className="bg-white rounded-lg p-4 border-2 border-primary/30 shadow-sm hover:shadow-md transition-all hover:border-primary/50">
+                      <div className="font-semibold text-primary text-base mb-3 flex items-center">
+                        <span className="mr-2">🎯</span> autonomy
+                      </div>
+                      <div className="space-y-2 text-sm">
+                        <div className="bg-red-50 border border-red-200 rounded p-2">
+                          <strong>level</strong>: L0 (no autonomy) → L5 (full autonomy)
+                        </div>
+                        <div className="bg-yellow-50 border border-yellow-200 rounded p-2">
+                          <strong>approval_required</strong>: Actions needing approval
+                        </div>
+                        <div className="bg-green-50 border border-green-200 rounded p-2">
+                          <strong>human_in_loop</strong>: Notification settings
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* observability */}
+                    <div className="bg-white rounded-lg p-4 border-2 border-primary/30 shadow-sm hover:shadow-md transition-all hover:border-primary/50">
+                      <div className="font-semibold text-primary text-base mb-3 flex items-center">
+                        <span className="mr-2">📊</span> observability
+                      </div>
+                      <div className="grid grid-cols-3 gap-2 text-xs">
+                        <div className="bg-indigo-50 rounded p-2 text-center">
+                          <div className="font-bold">logging</div>
+                          <div className="text-gray-600">Logs & audit</div>
+                        </div>
+                        <div className="bg-purple-50 rounded p-2 text-center">
+                          <div className="font-bold">metrics</div>
+                          <div className="text-gray-600">Performance</div>
+                        </div>
+                        <div className="bg-pink-50 rounded p-2 text-center">
+                          <div className="font-bold">tracing</div>
+                          <div className="text-gray-600">Execution paths</div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* constraints (additional) */}
+                    <div className="bg-white rounded-lg p-4 border-2 border-primary/30 shadow-sm hover:shadow-md transition-all hover:border-primary/50">
+                      <div className="font-semibold text-primary text-base mb-3 flex items-center">
+                        <span className="mr-2">⚠️</span> constraints
+                        <span className="ml-2 text-xs bg-gray-200 text-gray-700 px-2 py-0.5 rounded">Optional</span>
+                      </div>
+                      <div className="grid grid-cols-2 gap-2 text-xs">
+                        <div className="bg-red-50 rounded p-2">
+                          <strong>cost</strong>: Budget limits
+                        </div>
+                        <div className="bg-yellow-50 rounded p-2">
+                          <strong>performance</strong>: Timeout, rate limits
+                        </div>
+                        <div className="bg-blue-50 rounded p-2">
+                          <strong>resources</strong>: Memory, CPU caps
+                        </div>
+                        <div className="bg-green-50 rounded p-2">
+                          <strong>security</strong>: Access controls
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -278,57 +390,129 @@ export default function SchemaPage() {
             </div>
           </div>
 
-          {/* Visual Data Flow Diagram */}
-          <div className="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-2xl p-8 border border-blue-200">
-            <h3 className="text-xl font-bold mb-6 text-center">Complete Agent Lifecycle</h3>
-            <div className="bg-white rounded-xl p-6 font-mono text-sm">
-              <pre className="text-gray-800">
-{`    ┌──────────────┐
-    │ Developer    │
-    │ Writes OSSA  │
-    │ Manifest     │
-    └──────┬───────┘
-           │
-           ▼
-    ┌──────────────┐     ┌─────────────────┐
-    │ OSSA Schema  │────▶│ Validation      │
-    │ Validator    │     │ • Required      │
-    └──────┬───────┘     │ • Types         │
-           │             │ • Constraints   │
-           │             └─────────────────┘
-           │ ✓ Valid
-           ▼
-    ┌──────────────────────────────────────┐
-    │      Framework Adapter Layer         │
-    │  (Converts OSSA → Framework Config)  │
-    └──────┬───────────────────────────────┘
-           │
-           ├─────────────┬─────────────┬─────────────┐
-           │             │             │             │
-           ▼             ▼             ▼             ▼
-    ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐
-    │ kAgent   │  │LangChain │  │ CrewAI   │  │  OpenAI  │
-    │ Runtime  │  │ Runtime  │  │ Runtime  │  │ Runtime  │
-    └────┬─────┘  └────┬─────┘  └────┬─────┘  └────┬─────┘
-         │             │             │             │
-         └─────────────┴─────────────┴─────────────┘
-                       │
-                       ▼
-            ┌─────────────────────┐
-            │   Agent Execution   │
-            │   • LLM Calls       │
-            │   • Tool Usage      │
-            │   • Task Processing │
-            └─────────────────────┘
-                       │
-                       ▼
-            ┌─────────────────────┐
-            │   Observability     │
-            │   • Logs            │
-            │   • Metrics         │
-            │   • Traces          │
-            └─────────────────────┘`}
-              </pre>
+          {/* Visual Data Flow Diagram - Clean HTML/CSS Version */}
+          <div className="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-2xl p-8 border-2 border-blue-300">
+            <h3 className="text-2xl font-bold mb-8 text-center text-gray-900">Complete Agent Lifecycle</h3>
+
+            <div className="space-y-6">
+              {/* Step 1: Developer */}
+              <div className="flex flex-col items-center">
+                <div className="bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-xl p-6 shadow-lg w-full max-w-md text-center">
+                  <div className="text-lg font-bold mb-2">👨‍💻 Developer</div>
+                  <div className="text-base">Writes OSSA Manifest</div>
+                  <div className="text-sm mt-2 opacity-90">agent.yaml</div>
+                </div>
+                <div className="w-1 h-12 bg-gradient-to-b from-purple-500 to-blue-500"></div>
+              </div>
+
+              {/* Step 2: Validation */}
+              <div className="flex flex-col items-center">
+                <div className="grid md:grid-cols-2 gap-4 w-full max-w-4xl">
+                  <div className="bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl p-6 shadow-lg">
+                    <div className="text-lg font-bold mb-2">🔍 OSSA Schema Validator</div>
+                    <div className="text-sm opacity-90">JSON Schema validation engine</div>
+                  </div>
+                  <div className="bg-white border-2 border-blue-400 rounded-xl p-6 shadow-md">
+                    <div className="text-base font-bold text-blue-900 mb-3">Validation Checks:</div>
+                    <div className="space-y-1 text-sm text-gray-700">
+                      <div>✓ Required fields present</div>
+                      <div>✓ Correct types</div>
+                      <div>✓ Value constraints</div>
+                      <div>✓ Schema compliance</div>
+                    </div>
+                  </div>
+                </div>
+                <div className="w-1 h-12 bg-gradient-to-b from-blue-500 to-green-500"></div>
+                <div className="bg-green-500 text-white px-6 py-2 rounded-full font-bold shadow-md">
+                  ✓ Valid Manifest
+                </div>
+                <div className="w-1 h-12 bg-gradient-to-b from-green-500 to-orange-500"></div>
+              </div>
+
+              {/* Step 3: Framework Adapter Layer */}
+              <div className="flex flex-col items-center">
+                <div className="bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-xl p-6 shadow-lg w-full max-w-3xl text-center">
+                  <div className="text-xl font-bold mb-2">⚙️ Framework Adapter Layer</div>
+                  <div className="text-base opacity-90">Converts OSSA → Framework-Specific Config</div>
+                </div>
+                <div className="flex space-x-2 mt-4">
+                  <div className="w-1 h-12 bg-gradient-to-b from-orange-500 to-indigo-500"></div>
+                  <div className="w-1 h-12 bg-gradient-to-b from-orange-500 to-purple-500"></div>
+                  <div className="w-1 h-12 bg-gradient-to-b from-orange-500 to-pink-500"></div>
+                  <div className="w-1 h-12 bg-gradient-to-b from-orange-500 to-cyan-500"></div>
+                </div>
+              </div>
+
+              {/* Step 4: Runtimes */}
+              <div className="flex flex-col items-center">
+                <div className="grid md:grid-cols-4 gap-4 w-full max-w-5xl">
+                  <div className="bg-gradient-to-br from-indigo-500 to-indigo-600 text-white rounded-xl p-5 shadow-lg text-center">
+                    <div className="text-base font-bold mb-2">🚀 kAgent</div>
+                    <div className="text-xs opacity-90">Runtime</div>
+                  </div>
+                  <div className="bg-gradient-to-br from-purple-500 to-purple-600 text-white rounded-xl p-5 shadow-lg text-center">
+                    <div className="text-base font-bold mb-2">🔗 LangChain</div>
+                    <div className="text-xs opacity-90">Runtime</div>
+                  </div>
+                  <div className="bg-gradient-to-br from-pink-500 to-pink-600 text-white rounded-xl p-5 shadow-lg text-center">
+                    <div className="text-base font-bold mb-2">👥 CrewAI</div>
+                    <div className="text-xs opacity-90">Runtime</div>
+                  </div>
+                  <div className="bg-gradient-to-br from-cyan-500 to-cyan-600 text-white rounded-xl p-5 shadow-lg text-center">
+                    <div className="text-base font-bold mb-2">🤖 OpenAI</div>
+                    <div className="text-xs opacity-90">Runtime</div>
+                  </div>
+                </div>
+                <div className="flex justify-center mt-4 space-x-2">
+                  <div className="w-1 h-12 bg-gradient-to-b from-indigo-500 to-teal-500"></div>
+                  <div className="w-1 h-12 bg-gradient-to-b from-purple-500 to-teal-500"></div>
+                  <div className="w-1 h-12 bg-gradient-to-b from-pink-500 to-teal-500"></div>
+                  <div className="w-1 h-12 bg-gradient-to-b from-cyan-500 to-teal-500"></div>
+                </div>
+              </div>
+
+              {/* Step 5: Agent Execution */}
+              <div className="flex flex-col items-center">
+                <div className="bg-gradient-to-r from-teal-500 to-teal-600 text-white rounded-xl p-6 shadow-lg w-full max-w-2xl">
+                  <div className="text-xl font-bold mb-4 text-center">⚡ Agent Execution</div>
+                  <div className="grid grid-cols-3 gap-3 text-sm">
+                    <div className="bg-white/20 backdrop-blur-sm rounded-lg p-3 text-center">
+                      <div className="font-bold mb-1">🧠 LLM Calls</div>
+                      <div className="text-xs opacity-90">GPT-4, Claude, etc.</div>
+                    </div>
+                    <div className="bg-white/20 backdrop-blur-sm rounded-lg p-3 text-center">
+                      <div className="font-bold mb-1">🔧 Tool Usage</div>
+                      <div className="text-xs opacity-90">APIs, Code, DB</div>
+                    </div>
+                    <div className="bg-white/20 backdrop-blur-sm rounded-lg p-3 text-center">
+                      <div className="font-bold mb-1">📋 Task Processing</div>
+                      <div className="text-xs opacity-90">Execute workflows</div>
+                    </div>
+                  </div>
+                </div>
+                <div className="w-1 h-12 bg-gradient-to-b from-teal-500 to-amber-500"></div>
+              </div>
+
+              {/* Step 6: Observability */}
+              <div className="flex flex-col items-center">
+                <div className="bg-gradient-to-r from-amber-500 to-amber-600 text-white rounded-xl p-6 shadow-lg w-full max-w-2xl">
+                  <div className="text-xl font-bold mb-4 text-center">📊 Observability</div>
+                  <div className="grid grid-cols-3 gap-3 text-sm">
+                    <div className="bg-white/20 backdrop-blur-sm rounded-lg p-3 text-center">
+                      <div className="font-bold mb-1">📝 Logs</div>
+                      <div className="text-xs opacity-90">Debug & audit</div>
+                    </div>
+                    <div className="bg-white/20 backdrop-blur-sm rounded-lg p-3 text-center">
+                      <div className="font-bold mb-1">📈 Metrics</div>
+                      <div className="text-xs opacity-90">Performance data</div>
+                    </div>
+                    <div className="bg-white/20 backdrop-blur-sm rounded-lg p-3 text-center">
+                      <div className="font-bold mb-1">🔍 Traces</div>
+                      <div className="text-xs opacity-90">Execution paths</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </section>
