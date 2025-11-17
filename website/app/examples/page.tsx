@@ -107,19 +107,6 @@ export default function ExamplesPage() {
       </div>
 
       <div className="container mx-auto max-w-7xl px-4 py-12">
-        {/* Category Overview */}
-        <div className="mb-8">
-          <h2 className="text-2xl font-bold mb-4 text-gray-900">📚 Browse by Category</h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
-            {Object.entries(categoryStats).sort(([,a], [,b]) => b - a).map(([category, count]) => (
-              <div key={category} className="bg-white border-2 border-gray-200 rounded-lg p-3 text-center hover:border-primary hover:shadow-md transition-all">
-                <div className="text-2xl font-bold text-primary">{count}</div>
-                <div className="text-xs text-gray-600 mt-1 capitalize">{category}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-
         <ExamplesViewer examples={examples} />
       </div>
     </>
