@@ -4,7 +4,7 @@ interface StructuredDataProps {
 }
 
 export function StructuredData({ type, data }: StructuredDataProps) {
-  const baseUrl = 'https://gitlab.bluefly.io/llm/openapi-ai-agents-standard';
+  const baseUrl = 'https://github.com/BlueflyCollective/openstandardagents';
 
   const getStructuredData = (): object => {
     switch (type) {
@@ -16,7 +16,7 @@ export function StructuredData({ type, data }: StructuredDataProps) {
           url: baseUrl,
           logo: `${baseUrl}/logo.png`,
           sameAs: [
-            'https://gitlab.bluefly.io/llm/openapi-ai-agents-standard',
+            'https://github.com/BlueflyCollective/openstandardagents',
             'https://www.npmjs.com/package/@bluefly/open-standards-scalable-agents',
           ],
           ...data,

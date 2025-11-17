@@ -351,7 +351,7 @@ The OSSA ecosystem thrives on community contributions:
 - **Provide Feedback**: Guide specification evolution
 - **Build Integrations**: Extend ecosystem reach
 
-Visit [gitlab.bluefly.io/llm/openstandardagents](https://gitlab.bluefly.io/llm/openstandardagents) to get involved.
+Visit [github.com/BlueflyCollective/openstandardagents](https://github.com/BlueflyCollective/openstandardagents) to get involved.
 
 ## Resources
 

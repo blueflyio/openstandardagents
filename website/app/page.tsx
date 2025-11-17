@@ -24,13 +24,13 @@ export default function HomePage() {
             across frameworks, runtimes, and organizations.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
-            <Link href="https://gitlab.bluefly.io/llm/ossa/-/wikis/home" className="btn-primary text-lg px-8 py-4" target="_blank" rel="noopener noreferrer">
+            <Link href="https://github.com/BlueflyCollective/openstandardagents/wiki/home" className="btn-primary text-lg px-8 py-4" target="_blank" rel="noopener noreferrer">
               Get Started
             </Link>
-            <Link href="https://gitlab.bluefly.io/llm/ossa" className="btn-outline border-white text-white hover:bg-white hover:text-primary text-lg px-8 py-4" target="_blank" rel="noopener noreferrer">
+            <Link href="https://github.com/BlueflyCollective/openstandardagents" className="btn-outline border-white text-white hover:bg-white hover:text-primary text-lg px-8 py-4" target="_blank" rel="noopener noreferrer">
               View on GitLab
             </Link>
-            <Link href="https://gitlab.bluefly.io/llm/ossa/-/blob/main/schema/ossa.schema.json" className="btn-outline border-white text-white hover:bg-white hover:text-primary text-lg px-8 py-4" target="_blank" rel="noopener noreferrer">
+            <Link href="https://github.com/BlueflyCollective/openstandardagents/blob/main/schema/ossa.schema.json" className="btn-outline border-white text-white hover:bg-white hover:text-primary text-lg px-8 py-4" target="_blank" rel="noopener noreferrer">
               View Schema
             </Link>
           </div>
@@ -227,7 +227,7 @@ osa export --to langchain`}</code>
           </div>
           
           <div className="text-center">
-            <Link href="https://gitlab.bluefly.io/llm/ossa/-/wikis/home" className="btn-primary text-lg px-8 py-4" target="_blank" rel="noopener noreferrer">
+            <Link href="https://github.com/BlueflyCollective/openstandardagents/wiki/home" className="btn-primary text-lg px-8 py-4" target="_blank" rel="noopener noreferrer">
               Read Full Installation Guide
             </Link>
           </div>
@@ -265,7 +265,7 @@ osa export --to langchain`}</code>
             <p className="text-lg text-gray-600 mb-6">
               And many more frameworks, platforms, and tools...
             </p>
-            <Link href="https://gitlab.bluefly.io/llm/ossa/-/wikis/Integrations" className="btn-primary" target="_blank" rel="noopener noreferrer">
+            <Link href="https://github.com/BlueflyCollective/openstandardagents/wiki/Integrations" className="btn-primary" target="_blank" rel="noopener noreferrer">
               View All Integrations
             </Link>
           </div>
@@ -349,10 +349,10 @@ osa export --to langchain`}</code>
             Join the community and start building with Open Standard Agents today.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link href="https://gitlab.bluefly.io/llm/ossa/-/tree/main/examples" className="btn-secondary bg-white text-primary hover:bg-gray-100" target="_blank" rel="noopener noreferrer">
+            <Link href="https://github.com/BlueflyCollective/openstandardagents/-/tree/main/examples" className="btn-secondary bg-white text-primary hover:bg-gray-100" target="_blank" rel="noopener noreferrer">
               View Examples
             </Link>
-            <Link href="https://gitlab.bluefly.io/llm/ossa/-/issues" className="btn-outline border-white text-white hover:bg-white hover:text-primary" target="_blank" rel="noopener noreferrer">
+            <Link href="https://github.com/BlueflyCollective/openstandardagents/issues" className="btn-outline border-white text-white hover:bg-white hover:text-primary" target="_blank" rel="noopener noreferrer">
               Report Issues
             </Link>
           </div>

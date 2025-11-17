@@ -43,7 +43,7 @@ function getAllPages(): string[] {
 }
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = 'https://gitlab.bluefly.io/llm/openapi-ai-agents-standard';
+  const baseUrl = 'https://github.com/BlueflyCollective/openstandardagents';
   const pages = getAllPages();
 
   return pages.map((page) => ({

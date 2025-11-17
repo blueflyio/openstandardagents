@@ -364,7 +364,7 @@ export default function EcosystemPage() {
             <Link href="/specification" className="bg-white text-primary px-6 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors">
               Read Specification
             </Link>
-            <Link href="https://gitlab.bluefly.io/llm/openstandardagents/-/issues" target="_blank" rel="noopener noreferrer" className="border-2 border-white text-white px-6 py-3 rounded-lg font-semibold hover:bg-white hover:text-primary transition-colors">
+            <Link href="https://github.com/BlueflyCollective/openstandardagents/issues" target="_blank" rel="noopener noreferrer" className="border-2 border-white text-white px-6 py-3 rounded-lg font-semibold hover:bg-white hover:text-primary transition-colors">
               Request Integration
             </Link>
           </div>

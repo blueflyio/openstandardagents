@@ -103,7 +103,7 @@ export default function AboutPage() {
             Join the Open Standard Agents community and help shape the future of agent interoperability:
           </p>
           <div className="grid md:grid-cols-2 gap-4">
-            <Link href="https://gitlab.bluefly.io/llm/openstandardagents" target="_blank" rel="noopener noreferrer" className="card-hover p-6">
+            <Link href="https://github.com/BlueflyCollective/openstandardagents" target="_blank" rel="noopener noreferrer" className="card-hover p-6">
               <h3 className="text-xl font-semibold mb-2 text-primary">Contribute Code</h3>
               <p className="text-gray-700">Submit pull requests, report issues, and help improve the specification.</p>
             </Link>
@@ -115,7 +115,7 @@ export default function AboutPage() {
               <h3 className="text-xl font-semibold mb-2 text-primary">Share Examples</h3>
               <p className="text-gray-700">Contribute real-world examples and use cases.</p>
             </Link>
-            <Link href="https://gitlab.bluefly.io/llm/openstandardagents/-/issues" target="_blank" rel="noopener noreferrer" className="card-hover p-6">
+            <Link href="https://github.com/BlueflyCollective/openstandardagents/issues" target="_blank" rel="noopener noreferrer" className="card-hover p-6">
               <h3 className="text-xl font-semibold mb-2 text-primary">Provide Feedback</h3>
               <p className="text-gray-700">Share your experience and help prioritize features.</p>
             </Link>

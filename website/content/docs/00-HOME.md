@@ -4,7 +4,7 @@
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![npm version](https://img.shields.io/npm/v/@bluefly/open-standards-scalable-agents.svg)](https://www.npmjs.com/package/@bluefly/open-standards-scalable-agents)
-[![Specification](https://img.shields.io/badge/Spec-v0.2.2-blue)](https://gitlab.bluefly.io/llm/openapi-ai-agents-standard/-/blob/main/spec/v0.2.2/ossa-0.2.2.schema.json)
+[![Specification](https://img.shields.io/badge/Spec-v0.2.2-blue)](https://github.com/BlueflyCollective/openstandardagents/blob/main/spec/v0.2.2/ossa-0.2.2.schema.json)
 
 ---
 
@@ -130,10 +130,10 @@ OSSA doesn't care - it's just a standard.
 
 ## Repository Links
 
-- **Main Repository**: [gitlab.bluefly.io/llm/openapi-ai-agents-standard](https://gitlab.bluefly.io/llm/openapi-ai-agents-standard)
-- **Issues**: [Report Issues](https://gitlab.bluefly.io/llm/openapi-ai-agents-standard/-/issues)
-- **Milestones**: [View Roadmap](https://gitlab.bluefly.io/llm/openapi-ai-agents-standard/-/milestones)
-- **Releases**: [View Releases](https://gitlab.bluefly.io/llm/openapi-ai-agents-standard/-/releases)
+- **Main Repository**: [gitlab.bluefly.io/llm/openapi-ai-agents-standard](https://github.com/BlueflyCollective/openstandardagents)
+- **Issues**: [Report Issues](https://github.com/BlueflyCollective/openstandardagents/issues)
+- **Milestones**: [View Roadmap](https://github.com/BlueflyCollective/openstandardagents/-/milestones)
+- **Releases**: [View Releases](https://github.com/BlueflyCollective/openstandardagents/-/releases)
 - **npm Package**: [@bluefly/open-standards-scalable-agents](https://www.npmjs.com/package/@bluefly/open-standards-scalable-agents)
 
 ---
@@ -143,14 +143,14 @@ OSSA doesn't care - it's just a standard.
 OSSA is an open standard. Contributions welcome!
 
 1. Review [Contributing Guidelines](Contributing)
-2. Check [Open Issues](https://gitlab.bluefly.io/llm/openapi-ai-agents-standard/-/issues)
+2. Check [Open Issues](https://github.com/BlueflyCollective/openstandardagents/issues)
 3. Create a merge request
 
 ---
 
 ## License
 
-Apache 2.0 - see [LICENSE](https://gitlab.bluefly.io/llm/openapi-ai-agents-standard/-/blob/main/LICENSE) for details.
+Apache 2.0 - see [LICENSE](https://github.com/BlueflyCollective/openstandardagents/blob/main/LICENSE) for details.
 
 ---
 
