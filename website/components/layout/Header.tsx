@@ -10,8 +10,15 @@ export function Header() {
     <header className="bg-white border-b border-gray-300 sticky top-0 z-50">
       <nav className="container mx-auto max-w-6xl px-4">
         <div className="flex items-center justify-between h-16">
-          <Link href="/" className="flex items-center space-x-2">
-            <span className="text-2xl font-bold text-primary">OSSA</span>
+          <Link href="/" className="flex items-center space-x-3 group">
+            <img
+              src="/assets/brand/ossa-logo.svg"
+              alt="OSSA Logo"
+              className="h-10 w-10 transition-transform group-hover:scale-110"
+            />
+            <span className="text-2xl font-bold bg-gradient-to-r from-[#0066CC] to-[#00B8D4] bg-clip-text text-transparent">
+              OSSA
+            </span>
           </Link>
 
           {/* Desktop Navigation */}

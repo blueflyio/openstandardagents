@@ -63,6 +63,8 @@ export default function RootLayout({
   return (
     <html lang="en" className={inter.variable}>
       <head>
+        <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml" />
+        <link rel="apple-touch-icon" href="/assets/brand/ossa-logo.svg" />
         <StructuredData
           type="Organization"
           data={{

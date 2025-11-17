@@ -4,8 +4,10 @@
 
 @layer base {
   :root {
-    --ossa-primary: #2b3e96;
-    --ossa-secondary: #00c9a7;
+    /* OSSA Brand Colors - from logo design */
+    --ossa-primary: #0066CC;        /* Main blue - OSSA hub/standard */
+    --ossa-secondary: #00B8D4;      /* Cyan - Agent nodes */
+    --ossa-accent: #0099E6;         /* Light blue accent */
     --ossa-success: #28a745;
     --ossa-warning: #ffc107;
     --ossa-error: #dc3545;
@@ -17,6 +19,12 @@
     --ossa-gray-300: #dee2e6;
     --ossa-gray-100: #f8f9fa;
     --ossa-white: #ffffff;
+
+    /* Brand gradients */
+    --gradient-brand: linear-gradient(135deg, #0066CC 0%, #00B8D4 100%);
+    --gradient-hero: linear-gradient(135deg, #0052A3 0%, #0066CC 50%, #00B8D4 100%);
+
+    /* Code syntax highlighting */
     --code-bg: #1e1e1e;
     --code-text: #d4d4d4;
     --code-keyword: #569cd6;
