@@ -10,7 +10,10 @@ interface ExampleFile {
 }
 
 function getAllExamples(): ExampleFile[] {
-  const examplesDir = path.join(process.cwd(), '../examples');
+  // Check for mounted examples directory (Docker) or local development
+  const examplesDir = fs.existsSync('/examples')
+    ? '/examples'
+    : path.join(process.cwd(), '../examples');
   const examples: ExampleFile[] = [];
 
   if (!fs.existsSync(examplesDir)) {
