@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /**
- * OSSA CLI - Open Standard for Scalable Agents
+ * OSSA CLI - Open Standard for Scalable AI Agents
  * Main CLI entry point
  */
 
@@ -34,7 +34,7 @@ try {
 program
   .name('ossa')
   .description(
-    'OSSA CLI - Open Standard for Scalable Agents (The OpenAPI for AI Agents)'
+    'OSSA CLI - Open Standard for Scalable AI Agents (The OpenAPI for AI Agents)'
   )
   .version(packageJson.version);
 

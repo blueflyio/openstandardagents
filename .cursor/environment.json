@@ -2,7 +2,7 @@
   "$schema": "https://json.schemastore.org/cursor-environment.json",
   "version": "1.0.0",
   "name": "OSSA Development Environment",
-  "description": "OSSA - Open Standard for Scalable Agents. A specification standard for AI agents (like OpenAPI for REST APIs). NOT a framework - provides JSON Schema, validation, and minimal CLI only",
+  "description": "OSSA - Open Standard for Scalable AI Agents. A specification standard for AI agents (like OpenAPI for REST APIs). NOT a framework - provides JSON Schema, validation, and minimal CLI only",
 
   "project": {
     "type": "standard",

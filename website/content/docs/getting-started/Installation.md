@@ -63,7 +63,7 @@ ossa --help
 You should see:
 
 ```
-OSSA CLI - Open Standard for Scalable Agents (The OpenAPI for AI Agents)
+OSSA CLI - Open Standard for Scalable AI Agents (The OpenAPI for AI Agents)
 
 Usage: ossa [options] [command]
 

@@ -2,7 +2,7 @@
 
 ## Overview
 
-OSSA (Open Standard for Scalable Agents) v0.2.3 is a patch release focusing on documentation improvements and examples standardization. This version maintains full backward compatibility with v0.2.2.
+OSSA (Open Standard for Scalable AI Agents) v0.2.3 is a patch release focusing on documentation improvements and examples standardization. This version maintains full backward compatibility with v0.2.2.
 
 ## What is OSSA?
 

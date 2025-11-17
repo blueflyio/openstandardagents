@@ -2,7 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "https://openstandardagents.org/schemas/v0.2.3/agent.json",
   "title": "OSSA v0.2.3 Agent Manifest Schema",
-  "description": "Open Standard for Scalable Agents (OSSA) - The OpenAPI for AI Agents. Specification for declarative agent definition with framework-agnostic portability.",
+  "description": "Open Standard for Scalable AI Agents (OSSA) - The OpenAPI for AI Agents. Specification for declarative agent definition with framework-agnostic portability.",
   "type": "object",
   "required": [
     "apiVersion",

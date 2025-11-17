@@ -2,7 +2,7 @@
 
 ## Overview
 
-OSSA (Open Standard for Scalable Agents) extends OpenAPI 3.1 specifications with AI agent-specific metadata, capabilities, and configuration. These extensions enable OpenAPI specs to describe not just REST APIs, but the full agent behavior including autonomy levels, LLM configuration, tool usage, and compliance requirements.
+OSSA (Open Standard for Scalable AI Agents) extends OpenAPI 3.1 specifications with AI agent-specific metadata, capabilities, and configuration. These extensions enable OpenAPI specs to describe not just REST APIs, but the full agent behavior including autonomy levels, LLM configuration, tool usage, and compliance requirements.
 
 **Key Benefits:**
 - **Agent Discovery**: OpenAPI specs become agent manifests that describe capabilities

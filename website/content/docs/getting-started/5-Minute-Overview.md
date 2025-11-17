@@ -4,7 +4,7 @@ Get up to speed on OSSA in 5 minutes.
 
 ## What is OSSA?
 
-**OSSA (Open Standard for Scalable Agents)** is like OpenAPI, but for AI agents.
+**OSSA (Open Standard for Scalable AI Agents)** is like OpenAPI, but for AI agents.
 
 - **OpenAPI** = Standard format for REST APIs
 - **OSSA** = Standard format for AI agents

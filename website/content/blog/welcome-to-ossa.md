@@ -9,7 +9,7 @@ excerpt: OSSA is now available as an open standard for AI agents.
 
 # Welcome to OSSA
 
-We're excited to announce the release of **OSSA (Open Standard for Scalable Agents)** - the OpenAPI for AI Agents.
+We're excited to announce the release of **OSSA (Open Standard for Scalable AI Agents)** - the OpenAPI for AI Agents.
 
 ## What is OSSA?
 

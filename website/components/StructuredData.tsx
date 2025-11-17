@@ -27,7 +27,7 @@ export function StructuredData({ type, data }: StructuredDataProps): JSX.Element
           '@type': 'WebSite',
           name: 'OSSA',
           url: baseUrl,
-          description: 'Open Standard for Scalable Agents - The OpenAPI for AI Agents',
+          description: 'Open Standard for Scalable AI Agents - The OpenAPI for AI Agents',
           ...data,
         };
       case 'Article':
