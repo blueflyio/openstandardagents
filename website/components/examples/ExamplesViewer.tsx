@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/cjs/styles/prism';
 
@@ -16,11 +17,61 @@ interface ExamplesViewerProps {
 }
 
 export function ExamplesViewer({ examples }: ExamplesViewerProps) {
-  const [selectedExample, setSelectedExample] = useState<ExampleFile | null>(
-    examples[0] || null
-  );
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
+  const [selectedExample, setSelectedExample] = useState<ExampleFile | null>(null);
   const [filter, setFilter] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState<string>('');
+
+  // Initialize from URL parameters
+  useEffect(() => {
+    const exampleParam = searchParams.get('example');
+    const categoryParam = searchParams.get('category');
+    const searchParam = searchParams.get('search');
+
+    if (exampleParam) {
+      const example = examples.find(ex => ex.path === exampleParam);
+      if (example) setSelectedExample(example);
+    } else if (examples.length > 0) {
+      setSelectedExample(examples[0]);
+    }
+
+    if (categoryParam) setFilter(categoryParam);
+    if (searchParam) setSearchQuery(searchParam);
+  }, [examples, searchParams]);
+
+  // Update URL when selection changes
+  const handleSelectExample = (example: ExampleFile) => {
+    setSelectedExample(example);
+    const params = new URLSearchParams(searchParams.toString());
+    params.set('example', example.path);
+    if (filter !== 'all') params.set('category', filter);
+    if (searchQuery) params.set('search', searchQuery);
+    router.push(`/examples?${params.toString()}`, { scroll: false });
+  };
+
+  const handleFilterChange = (newFilter: string) => {
+    setFilter(newFilter);
+    const params = new URLSearchParams(searchParams.toString());
+    if (newFilter !== 'all') {
+      params.set('category', newFilter);
+    } else {
+      params.delete('category');
+    }
+    router.push(`/examples?${params.toString()}`, { scroll: false });
+  };
+
+  const handleSearchChange = (query: string) => {
+    setSearchQuery(query);
+    const params = new URLSearchParams(searchParams.toString());
+    if (query) {
+      params.set('search', query);
+    } else {
+      params.delete('search');
+    }
+    router.push(`/examples?${params.toString()}`, { scroll: false });
+  };
 
   const categories = useMemo(() => {
     const cats = new Set(examples.map((ex) => ex.category));
@@ -86,7 +137,7 @@ export function ExamplesViewer({ examples }: ExamplesViewerProps) {
               type="search"
               placeholder="Search examples..."
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={(e) => handleSearchChange(e.target.value)}
               className="w-full pl-10 pr-3 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary text-base"
               aria-label="Search examples"
             />
@@ -101,7 +152,7 @@ export function ExamplesViewer({ examples }: ExamplesViewerProps) {
             </div>
             <select
               value={filter}
-              onChange={(e) => setFilter(e.target.value)}
+              onChange={(e) => handleFilterChange(e.target.value)}
               className="w-full pl-10 pr-3 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary text-base appearance-none bg-white"
             >
               <option value="all">All Categories ({filteredExamples.length})</option>
@@ -125,7 +176,7 @@ export function ExamplesViewer({ examples }: ExamplesViewerProps) {
             {filteredExamples.map((example) => (
               <button
                 key={example.path}
-                onClick={() => setSelectedExample(example)}
+                onClick={() => handleSelectExample(example)}
                 className={`w-full text-left px-4 py-3 rounded-lg text-sm transition-all border-2 ${
                   selectedExample?.path === example.path
                     ? 'bg-gradient-to-r from-primary to-primary-dark text-white border-primary shadow-md'
@@ -217,11 +268,11 @@ export function ExamplesViewer({ examples }: ExamplesViewerProps) {
                 Quick Actions
               </h3>
               <div className="grid md:grid-cols-2 gap-3">
-                <a href="/playground" className="bg-white border-2 border-blue-200 rounded-lg p-3 hover:border-blue-400 hover:shadow-md transition-all">
+                <a href={`/playground?source=examples&example=${encodeURIComponent(selectedExample.name)}`} className="bg-white border-2 border-blue-200 rounded-lg p-3 hover:border-blue-400 hover:shadow-md transition-all">
                   <div className="font-semibold text-blue-900">✏️ Try in Playground</div>
                   <div className="text-xs text-gray-600 mt-1">Test and modify this example</div>
                 </a>
-                <a href="/schema" className="bg-white border-2 border-blue-200 rounded-lg p-3 hover:border-blue-400 hover:shadow-md transition-all">
+                <a href="/schema#components" className="bg-white border-2 border-blue-200 rounded-lg p-3 hover:border-blue-400 hover:shadow-md transition-all">
                   <div className="font-semibold text-blue-900">📖 View Schema Reference</div>
                   <div className="text-xs text-gray-600 mt-1">Learn about all fields</div>
                 </a>
