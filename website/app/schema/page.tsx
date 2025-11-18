@@ -56,7 +56,7 @@ export default function SchemaPage() {
       </div>
 
       <div className="container mx-auto max-w-7xl px-4 py-12">
-        {/* Why This Schema Exists */}
+        {/* Schema Architecture Diagram - MOVED TO TOP */}
         <section className="mb-16">
           <div className="bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50 rounded-2xl p-8 mb-8">
             <div className="flex items-start mb-6">
@@ -134,8 +134,8 @@ export default function SchemaPage() {
                 </div>
               </div>
 
-              {/* Main Content: spec and extensions */}
-              <div className="grid md:grid-cols-2 gap-6">
+              {/* Main Content: spec and extensions - STACKED */}
+              <div className="space-y-6">
                 {/* spec */}
                 <div className="bg-gradient-to-br from-primary/5 to-primary/10 border-3 border-primary rounded-xl p-6 shadow-md">
                   <div className="font-bold text-primary text-2xl mb-5">spec</div>
