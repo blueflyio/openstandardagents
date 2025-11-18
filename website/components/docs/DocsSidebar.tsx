@@ -26,9 +26,29 @@ const navigation = [
     ],
   },
   {
-    title: 'Examples',
+    title: 'Migration Guides',
     items: [
-      { href: '/docs/examples/migration-guides', label: 'Migration Guides' },
+      { href: '/docs/migration-guides/anthropic-mcp-to-ossa', label: 'Anthropic MCP to OSSA' },
+      { href: '/docs/migration-guides/openai-to-ossa', label: 'OpenAI to OSSA' },
+      { href: '/docs/migration-guides/langchain-to-ossa', label: 'LangChain to OSSA' },
+      { href: '/docs/migration-guides/crewai-to-ossa', label: 'CrewAI to OSSA' },
+      { href: '/docs/migration-guides/langflow-to-ossa', label: 'Langflow to OSSA' },
+      { href: '/docs/migration-guides/drupal-eca-to-ossa', label: 'Drupal ECA to OSSA' },
+    ],
+  },
+  {
+    title: 'Reference',
+    items: [
+      { href: '/docs/openapi-extensions', label: 'OpenAPI Extensions' },
+      { href: '/docs/quick-reference', label: 'Quick Reference' },
+      { href: '/docs/changelog', label: 'Changelog' },
+    ],
+  },
+  {
+    title: 'Contributing',
+    items: [
+      { href: '/docs/contributing', label: 'Contributing Guide' },
+      { href: '/docs/aiflow-framework-integration-with-ossa', label: 'AIFlow Framework Integration' },
     ],
   },
 ];

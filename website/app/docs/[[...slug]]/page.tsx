@@ -11,28 +11,51 @@ interface PageProps {
   }>;
 }
 
-const docsDirectory = path.join(process.cwd(), '../../.gitlab/wiki-content');
+const docsDirectory = path.join(process.cwd(), 'content/wiki');
 
 function getDocContent(slug: string[]): { content: string; metadata: any } | null {
-  const filePath = path.join(docsDirectory, ...slug, 'index.md');
-  const altPath = path.join(docsDirectory, ...slug.slice(0, -1), `${slug[slug.length - 1]}.md`);
+  // Convert URL slug to PascalCase (e.g., getting-started -> Getting-Started)
+  const slugPath = slug.map(s =>
+    s.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join('-')
+  );
 
-  let fullPath = filePath;
-  if (!fs.existsSync(fullPath)) {
-    fullPath = altPath;
+  // Try different path patterns for wiki structure
+  const possiblePaths = [
+    // Direct file: For-Audiences/Developers.md
+    path.join(docsDirectory, ...slugPath) + '.md',
+    // Nested index: Getting-Started/Installation/index.md
+    path.join(docsDirectory, ...slugPath, 'index.md'),
+    // README: Migration-Guides/README.md
+    path.join(docsDirectory, ...slugPath, 'README.md'),
+    // Lowercase fallback: getting-started.md
+    path.join(docsDirectory, ...slug) + '.md',
+  ];
+
+  let fullPath = null;
+  for (const tryPath of possiblePaths) {
+    if (fs.existsSync(tryPath)) {
+      fullPath = tryPath;
+      break;
+    }
   }
 
-  if (!fs.existsSync(fullPath)) {
+  if (!fullPath) {
     return null;
   }
 
   const fileContents = fs.readFileSync(fullPath, 'utf8');
   const { data, content } = matter(fileContents);
 
+  // Extract title from frontmatter or generate from slug
+  const title = data.title || slug[slug.length - 1]
+    .split('-')
+    .map(w => w.charAt(0).toUpperCase() + w.slice(1))
+    .join(' ');
+
   return {
     content,
     metadata: {
-      title: data.title || slug[slug.length - 1],
+      title,
       description: data.description,
     },
   };
