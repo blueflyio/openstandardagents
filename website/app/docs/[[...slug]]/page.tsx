@@ -113,7 +113,7 @@ export default async function DocsPage({ params }: PageProps): Promise<JSX.Eleme
           <div className="container mx-auto max-w-6xl">
             <h1 className="text-5xl font-bold mb-6">OSSA Documentation</h1>
             <p className="text-xl opacity-90 max-w-3xl">
-              Complete guides and reference documentation for building, deploying, and managing AI agents with the Open Standard for AI Agents (OSSA).
+              Complete guides and reference documentation for building, deploying, and managing AI agents with the Open Standard for Scalable AI Agents (OSSA).
             </p>
           </div>
         </div>

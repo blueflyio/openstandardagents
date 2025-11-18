@@ -269,7 +269,7 @@ osa export --to langchain`}</code>
           </div>
           
           <div className="text-center">
-            <Link href="https://github.com/BlueflyCollective/openstandardagents/wiki/home" className="btn-primary text-lg px-8 py-4" target="_blank" rel="noopener noreferrer">
+            <Link href="/docs/getting-started/5-minute-overview" className="btn-primary text-lg px-8 py-4">
               Read Full Installation Guide
             </Link>
           </div>
