@@ -338,6 +338,11 @@ promote-to-main:
 # 3. Publishes to GitLab Package Registry
 # 4. Syncs to GitHub (creates GitHub release)
 # 5. Creates GitLab Release
+#
+# USAGE: Currently releasing PATCH versions only (0.2.3 → 0.2.4 → 0.2.5)
+#        For minor/major releases, coordinate first.
+#        Run: npm version patch && git push
+#        Then click this button to release.
 # ============================================================================
 
 release-all-platforms:
@@ -369,10 +374,10 @@ release-all-platforms:
       if git rev-parse "$TAG_NAME" >/dev/null 2>&1; then
         echo "❌ ERROR: Tag $TAG_NAME already exists!"
         echo ""
-        echo "To create a new release, bump the version first:"
+        echo "To create a new patch release, bump the version first:"
         echo "  npm version patch  # 0.2.4 → 0.2.5"
-        echo "  npm version minor  # 0.2.4 → 0.3.0"
-        echo "  npm version major  # 0.2.4 → 1.0.0"
+        echo ""
+        echo "NOTE: Currently only releasing patches. For minor/major releases, coordinate first."
         exit 1
       fi
 
@@ -440,29 +445,11 @@ release-all-platforms:
       fi
       echo ""
 
-      # Step 5: Trigger GitHub Mirror Sync
-      echo "🔄 Step 5/5: Syncing to GitHub..."
-      if [ -n "$GITHUB_MIRROR_TOKEN" ]; then
-        GITHUB_OWNER="${GITHUB_ORG:-BlueflyCollective}"
-        GITHUB_REPO_NAME="${GITHUB_REPO:-OSSA}"
-
-        GITHUB_RELEASE_RESPONSE=$(curl -sS -X POST \
-          "https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO_NAME}/releases" \
-          -H "Authorization: Bearer ${GITHUB_MIRROR_TOKEN}" \
-          -H "Accept: application/vnd.github+json" \
-          -d "{\"tag_name\":\"${TAG_NAME}\",\"name\":\"${TAG_NAME}\",\"body\":\"Release ${TAG_NAME}\n\nSee [CHANGELOG](https://gitlab.bluefly.io/llm/openstandardagents/-/blob/main/CHANGELOG.md) for details.\",\"draft\":false,\"prerelease\":false}")
-
-        if echo "$GITHUB_RELEASE_RESPONSE" | jq -e '.html_url' > /dev/null 2>&1; then
-          GITHUB_URL=$(echo "$GITHUB_RELEASE_RESPONSE" | jq -r '.html_url')
-          echo "✅ GitHub Release created"
-          echo "   View at: ${GITHUB_URL}"
-        else
-          echo "⚠️  GitHub Release creation failed (may already exist or token issue)"
-        fi
-      else
-        echo "⚠️  GITHUB_MIRROR_TOKEN not set - skipping GitHub sync"
-        echo "   To enable, add GITHUB_MIRROR_TOKEN to GitLab CI/CD variables"
-      fi
+      # Step 5: GitHub Mirror Sync (Automatic)
+      echo "🔄 Step 5/5: GitHub Mirror Sync..."
+      echo "✅ GitLab → GitHub mirror configured"
+      echo "   Tag will sync automatically to GitHub"
+      echo "   View at: https://github.com/BlueflyCollective/OSSA/releases/tag/${TAG_NAME}"
       echo ""
 
       # Summary
@@ -476,9 +463,7 @@ release-all-platforms:
         echo "✅ npmjs.org: https://www.npmjs.com/package/@bluefly/open-standards-scalable-agents"
       fi
       echo "✅ GitLab Release: ${CI_PROJECT_URL}/-/releases/${TAG_NAME}"
-      if [ -n "$GITHUB_MIRROR_TOKEN" ]; then
-        echo "✅ GitHub: https://github.com/BlueflyCollective/OSSA/releases/tag/${TAG_NAME}"
-      fi
+      echo "✅ GitHub Mirror: https://github.com/BlueflyCollective/OSSA/releases/tag/${TAG_NAME}"
       echo ""
       echo "📚 Next steps:"
       echo "   - Update documentation if needed"
