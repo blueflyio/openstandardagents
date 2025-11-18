@@ -104,179 +104,213 @@ export default async function DocsPage({ params }: PageProps): Promise<JSX.Eleme
   const { slug: slugParam } = await params;
   const slug = slugParam || [];
   
-  // Handle root /docs route
+  // Handle root /docs route - CLEAN, PROFESSIONAL DESIGN
   if (slug.length === 0) {
     return (
-      <div className="min-h-screen">
-        {/* Hero Section with Gradient */}
-        <div className="bg-gradient-to-br from-primary via-blue-600 to-secondary text-white py-20 px-4">
-          <div className="container mx-auto max-w-6xl">
-            <h1 className="text-5xl font-bold mb-6">OSSA Documentation</h1>
-            <p className="text-xl opacity-90 max-w-3xl">
-              Complete guides and reference documentation for building, deploying, and managing AI agents with the Open Standard for Scalable AI Agents (OSSA).
+      <div className="min-h-screen bg-white">
+        {/* Simple Header - no gradient */}
+        <div className="border-b border-gray-200 bg-white">
+          <div className="container mx-auto max-w-6xl px-4 py-12">
+            <h1 className="text-4xl font-bold text-gray-900 mb-3">Documentation</h1>
+            <p className="text-xl text-gray-600">
+              Build portable, framework-agnostic AI agents with OSSA
             </p>
           </div>
         </div>
 
-        {/* Quick Start Banner */}
-        <div className="bg-blue-50 border-l-4 border-primary py-6 px-4">
-          <div className="container mx-auto max-w-6xl">
-            <div className="flex items-start">
-              <div className="flex-shrink-0">
-                <svg className="h-6 w-6 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                </svg>
-              </div>
-              <div className="ml-3">
-                <h3 className="text-lg font-semibold text-gray-900">New to OSSA?</h3>
-                <p className="mt-2 text-gray-700">
-                  Start with our <a href="/docs/getting-started/5-minute-overview" className="text-primary hover:underline font-medium">5-Minute Overview</a>, then try the <a href="/docs/getting-started/hello-world" className="text-primary hover:underline font-medium">Hello World</a> tutorial to get hands-on.
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-
         {/* Main Content */}
-        <div className="container mx-auto max-w-6xl px-4 py-16">
-          {/* Primary Documentation Sections */}
+        <div className="container mx-auto max-w-6xl px-4 py-12">
+
+          {/* Quick Start - Clean and Simple */}
           <section className="mb-16">
-            <h2 className="text-3xl font-bold mb-8 text-gray-900">Core Documentation</h2>
-
-            {/* Featured: Core Concepts */}
-            <div className="mb-8 glass-card p-8 rounded-lg shadow-xl border-2 border-primary">
-              <div className="flex items-start gap-6">
-                <div className="text-primary flex-shrink-0">
-                  <svg className="h-16 w-16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
-                  </svg>
-                </div>
-                <div className="flex-1">
-                  <h3 className="text-2xl font-bold mb-3 text-gray-900">Core Concepts</h3>
-                  <p className="text-lg text-gray-700 mb-4">
-                    <strong>Essential reading!</strong> Understand how OSSA organizes agent projects with <code className="text-sm bg-gray-100 px-2 py-1 rounded">.agents/</code> and <code className="text-sm bg-gray-100 px-2 py-1 rounded">.agents-workspace/</code> folders, plus agent taxonomy for classification and routing.
-                  </p>
-                  <ul className="grid md:grid-cols-2 gap-3">
-                    <li>
-                      <a href="/docs/core-concepts/project-structure" className="text-primary hover:underline font-semibold flex items-center gap-2">
-                        <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                        Project Structure (.agents/ & workspace)
-                      </a>
-                    </li>
-                    <li>
-                      <a href="/docs/core-concepts/project-structure#agent-taxonomy" className="text-primary hover:underline font-semibold flex items-center gap-2">
-                        <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
-                        </svg>
-                        Agent Taxonomy (roles & classification)
-                      </a>
-                    </li>
-                  </ul>
-                </div>
-              </div>
-            </div>
-
-            <div className="grid md:grid-cols-3 gap-8">
-              {/* Getting Started */}
-              <div className="glass-card p-6 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300">
-                <div className="text-primary mb-4">
-                  <svg className="h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
+              <div className="flex items-start gap-4">
+                <div className="text-blue-600 mt-1">
+                  <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                   </svg>
                 </div>
-                <h3 className="text-xl font-semibold mb-4 text-gray-900">Getting Started</h3>
-                <p className="text-gray-600 mb-4">Everything you need to start building with OSSA</p>
-                <ul className="space-y-2">
-                  <li><a href="/docs/getting-started/5-minute-overview" className="text-primary hover:underline">5-Minute Overview</a></li>
-                  <li><a href="/docs/getting-started/hello-world" className="text-primary hover:underline">Hello World</a></li>
-                  <li><a href="/docs/getting-started/first-agent" className="text-primary hover:underline">Your First Agent</a></li>
-                  <li><a href="/docs/examples" className="text-primary hover:underline">Examples</a></li>
-                </ul>
-              </div>
-
-              {/* Migration Guides */}
-              <div className="glass-card p-6 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300">
-                <div className="text-secondary mb-4">
-                  <svg className="h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
-                  </svg>
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">Quick Start</h3>
+                  <p className="text-gray-700 mb-3">
+                    New to OSSA? Start with the 5-minute overview, then build your first agent.
+                  </p>
+                  <div className="flex gap-4">
+                    <a href="/docs/getting-started/5-minute-overview" className="text-blue-600 hover:text-blue-700 font-medium text-sm">
+                      5-Minute Overview →
+                    </a>
+                    <a href="/docs/getting-started/hello-world" className="text-blue-600 hover:text-blue-700 font-medium text-sm">
+                      Hello World →
+                    </a>
+                  </div>
                 </div>
-                <h3 className="text-xl font-semibold mb-4 text-gray-900">Migration Guides</h3>
-                <p className="text-gray-600 mb-4">Migrate from other frameworks to OSSA</p>
-                <ul className="space-y-2">
-                  <li><a href="/docs/migration-guides/langchain-to-ossa" className="text-primary hover:underline">From LangChain</a></li>
-                  <li><a href="/docs/migration-guides/anthropic-mcp-to-ossa" className="text-primary hover:underline">From Anthropic MCP</a></li>
-                  <li><a href="/docs/migration-guides/openai-to-ossa" className="text-primary hover:underline">From OpenAI</a></li>
-                  <li><a href="/docs/migration-guides/crewai-to-ossa" className="text-primary hover:underline">From CrewAI</a></li>
-                </ul>
-              </div>
-
-              {/* Reference */}
-              <div className="glass-card p-6 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300">
-                <div className="text-primary mb-4">
-                  <svg className="h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-                  </svg>
-                </div>
-                <h3 className="text-xl font-semibold mb-4 text-gray-900">Reference</h3>
-                <p className="text-gray-600 mb-4">Complete API and specification references</p>
-                <ul className="space-y-2">
-                  <li><a href="/docs/openapi-extensions" className="text-primary hover:underline">OpenAPI Extensions</a></li>
-                  <li><a href="/docs/quick-reference" className="text-primary hover:underline">Quick Reference</a></li>
-                  <li><a href="/docs/changelog" className="text-primary hover:underline">Changelog</a></li>
-                  <li><a href="/docs/contributing" className="text-primary hover:underline">Contributing</a></li>
-                </ul>
               </div>
             </div>
           </section>
 
-          {/* Audience-Specific Guides */}
+          {/* Core Sections - Simple Grid */}
           <section className="mb-16">
-            <h2 className="text-3xl font-bold mb-8 text-gray-900">For Your Role</h2>
-            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-              <a href="/docs/for-audiences/developers" className="glass-card p-6 rounded-lg shadow hover:shadow-lg transition-all duration-300 block">
-                <h3 className="text-lg font-semibold mb-2 text-primary">Developers</h3>
-                <p className="text-gray-600 text-sm">Build and integrate OSSA agents into your applications</p>
+            <h2 className="text-2xl font-bold text-gray-900 mb-6">Core Documentation</h2>
+            <div className="grid md:grid-cols-3 gap-6">
+
+              {/* Getting Started */}
+              <div className="border border-gray-200 rounded-lg p-6 hover:border-gray-300 hover:shadow-sm transition-all">
+                <h3 className="text-lg font-semibold text-gray-900 mb-3">Getting Started</h3>
+                <ul className="space-y-2.5 text-sm">
+                  <li>
+                    <a href="/docs/getting-started/5-minute-overview" className="text-blue-600 hover:text-blue-700">
+                      5-Minute Overview
+                    </a>
+                  </li>
+                  <li>
+                    <a href="/docs/getting-started/hello-world" className="text-blue-600 hover:text-blue-700">
+                      Hello World
+                    </a>
+                  </li>
+                  <li>
+                    <a href="/docs/getting-started/first-agent" className="text-blue-600 hover:text-blue-700">
+                      Your First Agent
+                    </a>
+                  </li>
+                  <li>
+                    <a href="/docs/core-concepts/project-structure" className="text-blue-600 hover:text-blue-700">
+                      Project Structure
+                    </a>
+                  </li>
+                </ul>
+              </div>
+
+              {/* API Reference */}
+              <div className="border border-gray-200 rounded-lg p-6 hover:border-gray-300 hover:shadow-sm transition-all">
+                <h3 className="text-lg font-semibold text-gray-900 mb-3">API Reference</h3>
+                <ul className="space-y-2.5 text-sm">
+                  <li>
+                    <a href="/schema" className="text-blue-600 hover:text-blue-700">
+                      Schema Reference
+                    </a>
+                  </li>
+                  <li>
+                    <a href="/docs/openapi-extensions" className="text-blue-600 hover:text-blue-700">
+                      OpenAPI Extensions
+                    </a>
+                  </li>
+                  <li>
+                    <a href="/docs/quick-reference" className="text-blue-600 hover:text-blue-700">
+                      Quick Reference
+                    </a>
+                  </li>
+                  <li>
+                    <a href="/examples" className="text-blue-600 hover:text-blue-700">
+                      Examples
+                    </a>
+                  </li>
+                </ul>
+              </div>
+
+              {/* Migration */}
+              <div className="border border-gray-200 rounded-lg p-6 hover:border-gray-300 hover:shadow-sm transition-all">
+                <h3 className="text-lg font-semibold text-gray-900 mb-3">Migration Guides</h3>
+                <ul className="space-y-2.5 text-sm">
+                  <li>
+                    <a href="/docs/migration-guides/langchain-to-ossa" className="text-blue-600 hover:text-blue-700">
+                      From LangChain
+                    </a>
+                  </li>
+                  <li>
+                    <a href="/docs/migration-guides/anthropic-mcp-to-ossa" className="text-blue-600 hover:text-blue-700">
+                      From Anthropic MCP
+                    </a>
+                  </li>
+                  <li>
+                    <a href="/docs/migration-guides/openai-to-ossa" className="text-blue-600 hover:text-blue-700">
+                      From OpenAI
+                    </a>
+                  </li>
+                  <li>
+                    <a href="/docs/migration-guides/crewai-to-ossa" className="text-blue-600 hover:text-blue-700">
+                      From CrewAI
+                    </a>
+                  </li>
+                </ul>
+              </div>
+
+            </div>
+          </section>
+
+          {/* For Developers */}
+          <section className="mb-16">
+            <h2 className="text-2xl font-bold text-gray-900 mb-6">By Role</h2>
+            <div className="grid md:grid-cols-4 gap-4">
+              <a href="/docs/for-audiences/developers" className="border border-gray-200 rounded-lg p-4 hover:border-blue-300 hover:shadow-sm transition-all">
+                <h3 className="font-semibold text-gray-900 mb-1">Developers</h3>
+                <p className="text-sm text-gray-600">Build agents</p>
               </a>
-              <a href="/docs/for-audiences/architects" className="glass-card p-6 rounded-lg shadow hover:shadow-lg transition-all duration-300 block">
-                <h3 className="text-lg font-semibold mb-2 text-primary">Architects</h3>
-                <p className="text-gray-600 text-sm">Design scalable agent architectures and systems</p>
+              <a href="/docs/for-audiences/architects" className="border border-gray-200 rounded-lg p-4 hover:border-blue-300 hover:shadow-sm transition-all">
+                <h3 className="font-semibold text-gray-900 mb-1">Architects</h3>
+                <p className="text-sm text-gray-600">Design systems</p>
               </a>
-              <a href="/docs/for-audiences/enterprises" className="glass-card p-6 rounded-lg shadow hover:shadow-lg transition-all duration-300 block">
-                <h3 className="text-lg font-semibold mb-2 text-primary">Enterprises</h3>
-                <p className="text-gray-600 text-sm">Enterprise deployment, compliance, and governance</p>
+              <a href="/docs/for-audiences/enterprises" className="border border-gray-200 rounded-lg p-4 hover:border-blue-300 hover:shadow-sm transition-all">
+                <h3 className="font-semibold text-gray-900 mb-1">Enterprises</h3>
+                <p className="text-sm text-gray-600">Deploy at scale</p>
               </a>
-              <a href="/docs/for-audiences/students-researchers" className="glass-card p-6 rounded-lg shadow hover:shadow-lg transition-all duration-300 block">
-                <h3 className="text-lg font-semibold mb-2 text-primary">Students & Researchers</h3>
-                <p className="text-gray-600 text-sm">Academic research and educational resources</p>
+              <a href="/docs/for-audiences/students-researchers" className="border border-gray-200 rounded-lg p-4 hover:border-blue-300 hover:shadow-sm transition-all">
+                <h3 className="font-semibold text-gray-900 mb-1">Researchers</h3>
+                <p className="text-sm text-gray-600">Academic resources</p>
               </a>
             </div>
           </section>
 
-
-          {/* Community & Support */}
-          <section>
-            <div className="bg-gradient-to-r from-primary to-secondary text-white rounded-lg p-8 shadow-xl">
-              <h2 className="text-2xl font-bold mb-4">Community & Support</h2>
-              <p className="mb-6">Join the OSSA community and get help when you need it</p>
-              <div className="grid md:grid-cols-3 gap-6">
-                <a href="https://gitlab.bluefly.io/llm/ossa/-/issues" className="bg-white/10 backdrop-blur-sm rounded-lg p-4 hover:bg-white/20 transition-all">
-                  <h3 className="font-semibold mb-2">Issues & Bugs</h3>
-                  <p className="text-sm opacity-90">Report issues on GitLab</p>
-                </a>
-                <a href="/docs/contributing" className="bg-white/10 backdrop-blur-sm rounded-lg p-4 hover:bg-white/20 transition-all">
-                  <h3 className="font-semibold mb-2">Contributing</h3>
-                  <p className="text-sm opacity-90">Help improve OSSA</p>
-                </a>
-                <a href="https://gitlab.bluefly.io/llm/ossa/-/wikis/home" className="bg-white/10 backdrop-blur-sm rounded-lg p-4 hover:bg-white/20 transition-all">
-                  <h3 className="font-semibold mb-2">Wiki</h3>
-                  <p className="text-sm opacity-90">Community wiki and guides</p>
-                </a>
+          {/* Bottom CTA */}
+          <section className="border-t border-gray-200 pt-12">
+            <div className="grid md:grid-cols-3 gap-8">
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-3">Community</h3>
+                <ul className="space-y-2 text-sm">
+                  <li>
+                    <a href="https://gitlab.bluefly.io/llm/ossa/-/issues" className="text-blue-600 hover:text-blue-700">
+                      Issues & Bugs
+                    </a>
+                  </li>
+                  <li>
+                    <a href="/docs/contributing" className="text-blue-600 hover:text-blue-700">
+                      Contributing
+                    </a>
+                  </li>
+                </ul>
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-3">Resources</h3>
+                <ul className="space-y-2 text-sm">
+                  <li>
+                    <a href="/docs/changelog" className="text-blue-600 hover:text-blue-700">
+                      Changelog
+                    </a>
+                  </li>
+                  <li>
+                    <a href="/blog" className="text-blue-600 hover:text-blue-700">
+                      Blog
+                    </a>
+                  </li>
+                </ul>
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-3">Tools</h3>
+                <ul className="space-y-2 text-sm">
+                  <li>
+                    <a href="/playground" className="text-blue-600 hover:text-blue-700">
+                      Playground
+                    </a>
+                  </li>
+                  <li>
+                    <a href="/schema" className="text-blue-600 hover:text-blue-700">
+                      Schema Explorer
+                    </a>
+                  </li>
+                </ul>
               </div>
             </div>
           </section>
+
         </div>
       </div>
     );
