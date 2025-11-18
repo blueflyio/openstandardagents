@@ -332,17 +332,19 @@ promote-to-main:
 
 # ============================================================================
 # MANUAL: RELEASE TO ALL PLATFORMS
-# Comprehensive release button that:
-# 1. Creates git tag
-# 2. Publishes to npmjs.org
-# 3. Publishes to GitLab Package Registry
-# 4. Syncs to GitHub (creates GitHub release)
-# 5. Creates GitLab Release
+# Comprehensive release button that publishes an existing git tag to all platforms:
+# 1. Publishes to npmjs.org
+# 2. Publishes to GitLab Package Registry
+# 3. Creates GitLab Release
+# 4. Syncs to GitHub (automatic via mirror)
 #
-# USAGE: Currently releasing PATCH versions only (0.2.3 → 0.2.4 → 0.2.5)
-#        For minor/major releases, coordinate first.
-#        Run: npm version patch && git push
-#        Then click this button to release.
+# WORKFLOW - Run these commands locally first:
+#   npm version patch              # 0.2.3 → 0.2.4 (creates tag locally)
+#   git push --follow-tags         # Pushes commit + tag
+#   Then click this button in GitLab CI
+#
+# NOTE: Currently releasing PATCH versions only (0.2.3 → 0.2.4 → 0.2.5)
+#       For minor/major releases, coordinate first.
 # ============================================================================
 
 release-all-platforms:
@@ -354,7 +356,6 @@ release-all-platforms:
     - apk add --no-cache git curl jq
     - git config --global user.email "ci@gitlab.bluefly.io"
     - git config --global user.name "GitLab CI"
-    - git remote set-url origin https://oauth2:${CI_JOB_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git
     - npm ci --legacy-peer-deps
   script:
     - |
@@ -370,44 +371,32 @@ release-all-platforms:
       echo "🏷️  Tag: ${TAG_NAME}"
       echo ""
 
-      # Check if tag already exists
-      if git rev-parse "$TAG_NAME" >/dev/null 2>&1; then
-        echo "❌ ERROR: Tag $TAG_NAME already exists!"
+      # Verify tag exists (should be created locally with `npm version patch && git push --follow-tags`)
+      git fetch --tags
+      if ! git rev-parse "$TAG_NAME" >/dev/null 2>&1; then
+        echo "❌ ERROR: Tag $TAG_NAME does not exist!"
         echo ""
-        echo "To create a new patch release, bump the version first:"
-        echo "  npm version patch  # 0.2.4 → 0.2.5"
+        echo "Please create the tag locally first:"
+        echo "  npm version patch              # Creates tag locally"
+        echo "  git push --follow-tags         # Pushes commit + tag"
         echo ""
-        echo "NOTE: Currently only releasing patches. For minor/major releases, coordinate first."
+        echo "Then run this job again."
         exit 1
       fi
 
-      # Step 1: Create Git Tag
-      echo "📝 Step 1/5: Creating Git Tag..."
-      git tag -a "$TAG_NAME" -m "Release $TAG_NAME
-
-      ## Release v${CURRENT_VERSION}
-
-      See CHANGELOG.md for full details.
-
-      - GitLab Release: ${CI_PROJECT_URL}/-/releases/${TAG_NAME}
-      - npm Package: https://www.npmjs.com/package/@bluefly/open-standards-scalable-agents
-      - GitHub Release: https://github.com/BlueflyCollective/OSSA/releases/tag/${TAG_NAME}
-      "
-
-      git push origin "$TAG_NAME"
-      echo "✅ Git tag created and pushed"
+      echo "✅ Tag $TAG_NAME exists"
       echo ""
 
-      # Step 2: Publish to GitLab Package Registry
-      echo "📦 Step 2/5: Publishing to GitLab Package Registry..."
+      # Step 1: Publish to GitLab Package Registry
+      echo "📦 Step 1/4: Publishing to GitLab Package Registry..."
       echo "@bluefly:registry=${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/npm/" > .npmrc
       echo "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/npm/:_authToken=${CI_JOB_TOKEN}" >> .npmrc
       npm publish --tag latest
       echo "✅ Published to GitLab Package Registry"
       echo ""
 
-      # Step 3: Publish to npmjs.org
-      echo "📦 Step 3/5: Publishing to npmjs.org..."
+      # Step 2: Publish to npmjs.org
+      echo "📦 Step 2/4: Publishing to npmjs.org..."
       if [ -n "$NPM_TOKEN" ]; then
         echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > .npmrc
         npm publish --registry=https://registry.npmjs.org/ --tag latest
@@ -419,8 +408,8 @@ release-all-platforms:
       fi
       echo ""
 
-      # Step 4: Create GitLab Release
-      echo "📋 Step 4/5: Creating GitLab Release..."
+      # Step 3: Create GitLab Release
+      echo "📋 Step 3/4: Creating GitLab Release..."
       CHANGELOG_EXCERPT=$(cat CHANGELOG.md | head -100 || echo "See CHANGELOG.md for full details")
 
       RELEASE_RESPONSE=$(curl -sS -X POST "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/releases" \
@@ -445,8 +434,8 @@ release-all-platforms:
       fi
       echo ""
 
-      # Step 5: GitHub Mirror Sync (Automatic)
-      echo "🔄 Step 5/5: GitHub Mirror Sync..."
+      # Step 4: GitHub Mirror Sync (Automatic)
+      echo "🔄 Step 4/4: GitHub Mirror Sync..."
       echo "✅ GitLab → GitHub mirror configured"
       echo "   Tag will sync automatically to GitHub"
       echo "   View at: https://github.com/BlueflyCollective/OSSA/releases/tag/${TAG_NAME}"
