@@ -331,7 +331,169 @@ promote-to-main:
     - build:dist
 
 # ============================================================================
-# MANUAL: CREATE RELEASE TAG
+# MANUAL: RELEASE TO ALL PLATFORMS
+# Comprehensive release button that:
+# 1. Creates git tag
+# 2. Publishes to npmjs.org
+# 3. Publishes to GitLab Package Registry
+# 4. Syncs to GitHub (creates GitHub release)
+# 5. Creates GitLab Release
+# ============================================================================
+
+release-all-platforms:
+  stage: release-prod
+  image: node:${NODE_VERSION}-alpine
+  dependencies:
+    - build:dist
+  before_script:
+    - apk add --no-cache git curl jq
+    - git config --global user.email "ci@gitlab.bluefly.io"
+    - git config --global user.name "GitLab CI"
+    - git remote set-url origin https://oauth2:${CI_JOB_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git
+    - npm ci --legacy-peer-deps
+  script:
+    - |
+      echo "🚀 RELEASE TO ALL PLATFORMS"
+      echo "============================="
+      echo ""
+
+      # Get current version from package.json
+      CURRENT_VERSION=$(node -p "require('./package.json').version")
+      TAG_NAME="v${CURRENT_VERSION}"
+
+      echo "📦 Version: ${CURRENT_VERSION}"
+      echo "🏷️  Tag: ${TAG_NAME}"
+      echo ""
+
+      # Check if tag already exists
+      if git rev-parse "$TAG_NAME" >/dev/null 2>&1; then
+        echo "❌ ERROR: Tag $TAG_NAME already exists!"
+        echo ""
+        echo "To create a new release, bump the version first:"
+        echo "  npm version patch  # 0.2.4 → 0.2.5"
+        echo "  npm version minor  # 0.2.4 → 0.3.0"
+        echo "  npm version major  # 0.2.4 → 1.0.0"
+        exit 1
+      fi
+
+      # Step 1: Create Git Tag
+      echo "📝 Step 1/5: Creating Git Tag..."
+      git tag -a "$TAG_NAME" -m "Release $TAG_NAME
+
+      ## Release v${CURRENT_VERSION}
+
+      See CHANGELOG.md for full details.
+
+      - GitLab Release: ${CI_PROJECT_URL}/-/releases/${TAG_NAME}
+      - npm Package: https://www.npmjs.com/package/@bluefly/open-standards-scalable-agents
+      - GitHub Release: https://github.com/BlueflyCollective/OSSA/releases/tag/${TAG_NAME}
+      "
+
+      git push origin "$TAG_NAME"
+      echo "✅ Git tag created and pushed"
+      echo ""
+
+      # Step 2: Publish to GitLab Package Registry
+      echo "📦 Step 2/5: Publishing to GitLab Package Registry..."
+      echo "@bluefly:registry=${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/npm/" > .npmrc
+      echo "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/npm/:_authToken=${CI_JOB_TOKEN}" >> .npmrc
+      npm publish --tag latest
+      echo "✅ Published to GitLab Package Registry"
+      echo ""
+
+      # Step 3: Publish to npmjs.org
+      echo "📦 Step 3/5: Publishing to npmjs.org..."
+      if [ -n "$NPM_TOKEN" ]; then
+        echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > .npmrc
+        npm publish --registry=https://registry.npmjs.org/ --tag latest
+        echo "✅ Published to npmjs.org"
+        echo "   View at: https://www.npmjs.com/package/@bluefly/open-standards-scalable-agents"
+      else
+        echo "⚠️  NPM_TOKEN not set - skipping npmjs.org publish"
+        echo "   To enable, add NPM_TOKEN to GitLab CI/CD variables"
+      fi
+      echo ""
+
+      # Step 4: Create GitLab Release
+      echo "📋 Step 4/5: Creating GitLab Release..."
+      CHANGELOG_EXCERPT=$(cat CHANGELOG.md | head -100 || echo "See CHANGELOG.md for full details")
+
+      RELEASE_RESPONSE=$(curl -sS -X POST "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/releases" \
+        --header "PRIVATE-TOKEN: ${CI_JOB_TOKEN}" \
+        --data "tag_name=${TAG_NAME}" \
+        --data "name=Release ${TAG_NAME}" \
+        --data-urlencode "description=## Release v${CURRENT_VERSION}
+
+      ${CHANGELOG_EXCERPT}
+
+      ### Links
+      - [npm Package](https://www.npmjs.com/package/@bluefly/open-standards-scalable-agents)
+      - [GitHub Mirror](https://github.com/BlueflyCollective/OSSA)
+      - [Documentation](https://ossa.ai)
+      ")
+
+      if echo "$RELEASE_RESPONSE" | jq -e '.tag_name' > /dev/null 2>&1; then
+        echo "✅ GitLab Release created"
+        echo "   View at: ${CI_PROJECT_URL}/-/releases/${TAG_NAME}"
+      else
+        echo "⚠️  GitLab Release creation failed (may already exist)"
+      fi
+      echo ""
+
+      # Step 5: Trigger GitHub Mirror Sync
+      echo "🔄 Step 5/5: Syncing to GitHub..."
+      if [ -n "$GITHUB_MIRROR_TOKEN" ]; then
+        GITHUB_OWNER="${GITHUB_ORG:-BlueflyCollective}"
+        GITHUB_REPO_NAME="${GITHUB_REPO:-OSSA}"
+
+        GITHUB_RELEASE_RESPONSE=$(curl -sS -X POST \
+          "https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO_NAME}/releases" \
+          -H "Authorization: Bearer ${GITHUB_MIRROR_TOKEN}" \
+          -H "Accept: application/vnd.github+json" \
+          -d "{\"tag_name\":\"${TAG_NAME}\",\"name\":\"${TAG_NAME}\",\"body\":\"Release ${TAG_NAME}\n\nSee [CHANGELOG](https://gitlab.bluefly.io/llm/openstandardagents/-/blob/main/CHANGELOG.md) for details.\",\"draft\":false,\"prerelease\":false}")
+
+        if echo "$GITHUB_RELEASE_RESPONSE" | jq -e '.html_url' > /dev/null 2>&1; then
+          GITHUB_URL=$(echo "$GITHUB_RELEASE_RESPONSE" | jq -r '.html_url')
+          echo "✅ GitHub Release created"
+          echo "   View at: ${GITHUB_URL}"
+        else
+          echo "⚠️  GitHub Release creation failed (may already exist or token issue)"
+        fi
+      else
+        echo "⚠️  GITHUB_MIRROR_TOKEN not set - skipping GitHub sync"
+        echo "   To enable, add GITHUB_MIRROR_TOKEN to GitLab CI/CD variables"
+      fi
+      echo ""
+
+      # Summary
+      echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+      echo "🎉 RELEASE COMPLETE: v${CURRENT_VERSION}"
+      echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+      echo ""
+      echo "✅ Git Tag: ${TAG_NAME}"
+      echo "✅ GitLab Package Registry"
+      if [ -n "$NPM_TOKEN" ]; then
+        echo "✅ npmjs.org: https://www.npmjs.com/package/@bluefly/open-standards-scalable-agents"
+      fi
+      echo "✅ GitLab Release: ${CI_PROJECT_URL}/-/releases/${TAG_NAME}"
+      if [ -n "$GITHUB_MIRROR_TOKEN" ]; then
+        echo "✅ GitHub: https://github.com/BlueflyCollective/OSSA/releases/tag/${TAG_NAME}"
+      fi
+      echo ""
+      echo "📚 Next steps:"
+      echo "   - Update documentation if needed"
+      echo "   - Announce release on social media"
+      echo "   - Monitor npm downloads and issues"
+  only:
+    - main
+  when: manual
+  allow_failure: false
+  environment:
+    name: production
+    url: https://www.npmjs.com/package/@bluefly/open-standards-scalable-agents
+
+# ============================================================================
+# MANUAL: CREATE RELEASE TAG (Legacy - use release-all-platforms instead)
 # Creates a new version tag (v0.2.4, v0.3.0, etc)
 # ============================================================================
 

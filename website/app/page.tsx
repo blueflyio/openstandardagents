@@ -29,13 +29,13 @@ export default function HomePage() {
             across frameworks, runtimes, and organizations.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
-            <Link href="https://github.com/BlueflyCollective/openstandardagents/wiki/home" className="btn-primary text-lg px-8 py-4" target="_blank" rel="noopener noreferrer">
+            <Link href="/docs" className="btn-primary text-lg px-8 py-4">
               Get Started
             </Link>
-            <Link href="https://github.com/BlueflyCollective/openstandardagents" className="btn-outline border-white text-white hover:bg-white hover:text-primary text-lg px-8 py-4" target="_blank" rel="noopener noreferrer">
-              View on GitLab
+            <Link href="https://github.com/BlueflyCollective/OSSA" className="btn-outline border-white text-white hover:bg-white hover:text-primary text-lg px-8 py-4" target="_blank" rel="noopener noreferrer">
+              View on GitHub
             </Link>
-            <Link href="https://github.com/BlueflyCollective/openstandardagents/blob/main/schema/ossa.schema.json" className="btn-outline border-white text-white hover:bg-white hover:text-primary text-lg px-8 py-4" target="_blank" rel="noopener noreferrer">
+            <Link href="/schema" className="btn-outline border-white text-white hover:bg-white hover:text-primary text-lg px-8 py-4">
               View Schema
             </Link>
           </div>

@@ -56,6 +56,10 @@
     @apply text-code-text;
   }
 
+  a {
+    cursor: pointer;
+  }
+
   .sr-only {
     position: absolute;
     width: 1px;

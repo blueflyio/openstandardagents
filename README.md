@@ -214,11 +214,33 @@ buildkit ossa sync-docs               # GitLab integration
 
 ## Documentation
 
-- **Specification**: [spec/ossa-1.0.schema.json](spec/ossa-1.0.schema.json)
+### Official Website & Documentation Portal
+
+**Live Website**: https://ossa.ai (or your deployment URL)
+
+The OSSA website features:
+- **Interactive Documentation** - Browse the complete OSSA wiki with an enhanced UI
+- **GitLab Wiki Integration** - Automatically synced from the official GitLab wiki
+- **Interactive Examples** - Explore OSSA manifests with live validation and URL tracking
+- **Schema Validator** - Validate your OSSA manifests in the browser
+- **Migration Guides** - Step-by-step guides from 6 major frameworks
+- **Responsive Design** - Beautiful, accessible UI built with Next.js 15 and Tailwind CSS
+
+The documentation is organized into:
+- **Getting Started** - Quick start guides, installation, and first agent creation
+- **Core Concepts** - OSSA specification, agent types, capabilities, and runtime models
+- **Advanced Topics** - Security, deployment, monitoring, and scaling
+- **For Your Role** - Tailored guides for developers, architects, enterprises, and researchers
+- **Migration Guides** - From LangChain, MCP, OpenAI Swarm, CrewAI, Langflow, and Drupal ECA
+- **Reference** - Complete schema, CLI, and OpenAPI extension reference
+
+### Additional Resources
+
+- **Specification**: [spec/v0.2.2/ossa-0.2.2.schema.json](spec/v0.2.2/ossa-0.2.2.schema.json)
 - **Examples**: [examples/](examples/)
 - **API Reference**: [docs/](docs/)
-- **GitLab Wiki**: https://gitlab.bluefly.io/llm/openapi-ai-agents-standard/-/wikis/home
-- **Migration Guides**: 6 framework migration guides (LangChain, MCP, OpenAI, Langflow, Drupal ECA, CrewAI)
+- **GitLab Wiki**: https://gitlab.bluefly.io/llm/ossa/-/wikis/home
+- **Issue Tracker**: https://gitlab.bluefly.io/llm/ossa/-/issues
 
 ---
 
