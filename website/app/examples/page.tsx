@@ -1,5 +1,6 @@
 import fs from 'fs';
 import path from 'path';
+import { Suspense } from 'react';
 import { ExamplesViewer } from '@/components/examples/ExamplesViewer';
 
 interface ExampleFile {
@@ -107,7 +108,14 @@ export default function ExamplesPage() {
       </div>
 
       <div className="container mx-auto max-w-7xl px-4 py-12">
-        <ExamplesViewer examples={examples} />
+        <Suspense fallback={
+          <div className="text-center py-12">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
+            <p className="mt-4 text-gray-600">Loading examples...</p>
+          </div>
+        }>
+          <ExamplesViewer examples={examples} />
+        </Suspense>
       </div>
     </>
   );
