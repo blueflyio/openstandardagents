@@ -1,0 +1,50 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ossa-website
+  namespace: default
+  labels:
+    app: ossa-website
+    component: frontend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ossa-website
+  template:
+    metadata:
+      labels:
+        app: ossa-website
+        component: frontend
+    spec:
+      containers:
+      - name: website
+        image: ossa-website:latest
+        imagePullPolicy: Never  # Use local image for OrbStack
+        ports:
+        - containerPort: 3000
+          name: http
+          protocol: TCP
+        resources:
+          requests:
+            cpu: 50m
+            memory: 64Mi
+          limits:
+            cpu: 500m
+            memory: 256Mi
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 3000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 3000
+          initialDelaySeconds: 10
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 3
