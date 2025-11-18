@@ -94,8 +94,8 @@ export const dynamicParams = false;
 
 export async function generateStaticParams() {
   const paths = getAllDocPaths();
-  // Return root docs page as undefined slug, plus all other paths
-  return [{ slug: undefined }, ...paths.map((slug) => ({
+  // Return root docs page as empty array (not undefined!), plus all other paths
+  return [{ slug: [] }, ...paths.map((slug) => ({
     slug,
   }))];
 }
