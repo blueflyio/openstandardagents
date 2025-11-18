@@ -207,6 +207,7 @@ release:rc:
 # Creates git tag
 # ============================================================================
 
+# DISABLED: release:prod (use release-all-platforms instead)
 release:prod:
   stage: release-prod
   image: node:${NODE_VERSION}-alpine
@@ -252,12 +253,8 @@ release:prod:
       echo "Production release v${CURRENT_VERSION} completed"
       echo "GitLab Package: ${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages"
       echo "npm Package: https://www.npmjs.com/package/@bluefly/open-standards-scalable-agents"
-  only:
-    - main
-  except:
-    - tags
-  when: manual
-  allow_failure: false
+  rules:
+    - when: never  # DISABLED - use release-all-platforms
 
 # ============================================================================
 # STAGE: PROMOTE (development -> main)
@@ -471,6 +468,8 @@ release-all-platforms:
 # Creates a new version tag (v0.2.4, v0.3.0, etc)
 # ============================================================================
 
+# DISABLED: create-release-tag (use local tag creation instead)
+# Tags must be created locally: npm version patch && git push --follow-tags
 create-release-tag:
   stage: release-prod
   image: node:${NODE_VERSION}-alpine
@@ -524,10 +523,8 @@ create-release-tag:
       echo "   - npm package publish (if configured)"
       echo ""
       echo "View release: ${CI_PROJECT_URL}/-/releases/${TAG_NAME}"
-  only:
-    - main
-  when: manual
-  allow_failure: false
+  rules:
+    - when: never  # DISABLED - use local tag creation
 
 # ============================================================================
 # STAGE: MIRROR GITHUB
