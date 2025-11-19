@@ -1,0 +1,1732 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://openstandardagents.org/schemas/v0.2.5-dev/agent.json",
+  "title": "OSSA v0.2.5-dev Agent Manifest Schema",
+  "description": "Open Standard for Scalable AI Agents (OSSA) - The OpenAPI for AI Agents. Specification for declarative agent definition with framework-agnostic portability. v0.2.5-dev adds multi-agent composition support via AgentGraph.",
+  "type": "object",
+  "required": [
+    "apiVersion",
+    "kind",
+    "metadata"
+  ],
+  "properties": {
+    "apiVersion": {
+      "type": "string",
+      "pattern": "^ossa/v(0\\.2\\.[2-5]|1)(\\.[0-9]+)?(-[a-zA-Z0-9]+)?$",
+      "description": "OSSA API version (supports ossa/v0.2.2 through v0.2.5-dev, or ossa/v1 for compatibility)",
+      "examples": [
+        "ossa/v1",
+        "ossa/v0.2.5-dev",
+        "ossa/v0.2.4",
+        "ossa/v0.2.3",
+        "ossa/v0.2.2"
+      ]
+    },
+    "kind": {
+      "type": "string",
+      "enum": [
+        "Agent",
+        "AgentGraph"
+      ],
+      "description": "Resource type - 'Agent' for single agents, 'AgentGraph' for multi-agent compositions"
+    },
+    "metadata": {
+      "$ref": "#/definitions/Metadata"
+    },
+    "spec": {
+      "description": "Specification for the resource - AgentSpec for Agent kind, AgentGraphSpec for AgentGraph kind",
+      "oneOf": [
+        {
+          "$ref": "#/definitions/AgentSpec"
+        },
+        {
+          "$ref": "#/definitions/AgentGraphSpec"
+        }
+      ]
+    },
+    "extensions": {
+      "type": "object",
+      "description": "Framework-specific extensions for integration with kagent, buildkit, drupal, librechat, mcp, langchain, crewai, openai_agents, cursor, langflow, autogen, vercel_ai, llamaindex, langgraph, anthropic, google_adk, microsoft_af, metagpt, and other frameworks",
+      "properties": {
+        "kagent": {
+          "$ref": "#/definitions/KAgentExtension"
+        },
+        "buildkit": {
+          "$ref": "#/definitions/BuildKitExtension"
+        },
+        "drupal": {
+          "$ref": "#/definitions/DrupalExtension"
+        },
+        "librechat": {
+          "$ref": "#/definitions/LibreChatExtension"
+        },
+        "mcp": {
+          "$ref": "#/definitions/MCPExtension"
+        },
+        "langchain": {
+          "$ref": "#/definitions/LangChainExtension"
+        },
+        "crewai": {
+          "$ref": "#/definitions/CrewAIExtension"
+        },
+        "openai_agents": {
+          "$ref": "#/definitions/OpenAIAgentsExtension"
+        },
+        "cursor": {
+          "$ref": "#/definitions/CursorExtension"
+        },
+        "langflow": {
+          "$ref": "#/definitions/LangflowExtension"
+        },
+        "autogen": {
+          "$ref": "#/definitions/AutoGenExtension"
+        },
+        "vercel_ai": {
+          "$ref": "#/definitions/VercelAIExtension"
+        },
+        "llamaindex": {
+          "$ref": "#/definitions/LlamaIndexExtension"
+        },
+        "langgraph": {
+          "$ref": "#/definitions/LangGraphExtension"
+        },
+        "anthropic": {
+          "$ref": "#/definitions/AnthropicExtension"
+        },
+        "google_adk": {
+          "$ref": "#/definitions/GoogleADKExtension"
+        },
+        "microsoft_af": {
+          "$ref": "#/definitions/MicrosoftAFExtension"
+        },
+        "metagpt": {
+          "$ref": "#/definitions/MetaGPTExtension"
+        }
+      },
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": false,
+  "definitions": {
+    "Metadata": {
+      "type": "object",
+      "required": [
+        "name"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "pattern": "^[a-z0-9]([-a-z0-9]*[a-z0-9])?$",
+          "maxLength": 253,
+          "description": "Agent identifier (DNS-1123 subdomain format for Kubernetes compatibility)"
+        },
+        "version": {
+          "type": "string",
+          "pattern": "^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-((?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\\+([0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?$",
+          "description": "Semantic version (semver 2.0.0)"
+        },
+        "description": {
+          "type": "string",
+          "maxLength": 2000,
+          "description": "Human-readable description of agent purpose and capabilities"
+        },
+        "labels": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string",
+            "maxLength": 63
+          },
+          "description": "Key-value labels for organization and filtering"
+        },
+        "annotations": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "Arbitrary metadata for tooling (not used for filtering)"
+        }
+      },
+      "additionalProperties": false
+    },
+    "AgentSpec": {
+      "type": "object",
+      "required": [
+        "role"
+      ],
+      "properties": {
+        "taxonomy": {
+          "$ref": "#/definitions/Taxonomy"
+        },
+        "role": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Agent role/system prompt describing behavior and capabilities"
+        },
+        "llm": {
+          "$ref": "#/definitions/LLMConfig"
+        },
+        "tools": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Tool"
+          },
+          "description": "Available tools/capabilities for the agent"
+        },
+        "autonomy": {
+          "$ref": "#/definitions/Autonomy"
+        },
+        "constraints": {
+          "$ref": "#/definitions/Constraints"
+        },
+        "observability": {
+          "$ref": "#/definitions/Observability"
+        }
+      },
+      "additionalProperties": true
+    },
+    "AgentGraphSpec": {
+      "type": "object",
+      "required": [
+        "agents"
+      ],
+      "description": "Specification for multi-agent composition graphs",
+      "properties": {
+        "agents": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/definitions/AgentRef"
+          },
+          "description": "Array of agent references that compose this graph"
+        },
+        "edges": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/GraphEdge"
+          },
+          "description": "Connections between agents defining execution flow"
+        },
+        "process": {
+          "type": "string",
+          "enum": [
+            "sequential",
+            "parallel",
+            "hierarchical",
+            "conditional",
+            "loop"
+          ],
+          "default": "sequential",
+          "description": "Execution pattern for the agent graph"
+        },
+        "entry_point": {
+          "type": "string",
+          "description": "Starting agent ref (metadata.name of the first agent)"
+        },
+        "exit_points": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Agent refs that can terminate the graph execution"
+        },
+        "state": {
+          "$ref": "#/definitions/GraphState"
+        },
+        "observability": {
+          "$ref": "#/definitions/Observability"
+        },
+        "constraints": {
+          "$ref": "#/definitions/Constraints"
+        }
+      },
+      "additionalProperties": true
+    },
+    "AgentRef": {
+      "type": "object",
+      "required": [
+        "ref"
+      ],
+      "properties": {
+        "ref": {
+          "type": "string",
+          "description": "Reference to agent metadata.name"
+        },
+        "role": {
+          "type": "string",
+          "description": "Role of this agent within the graph context"
+        },
+        "inline": {
+          "$ref": "#/definitions/AgentSpec",
+          "description": "Inline agent specification (alternative to ref)"
+        },
+        "config": {
+          "type": "object",
+          "description": "Agent-specific configuration overrides for this graph context",
+          "additionalProperties": true
+        }
+      },
+      "additionalProperties": false
+    },
+    "GraphEdge": {
+      "type": "object",
+      "required": [
+        "from",
+        "to"
+      ],
+      "properties": {
+        "from": {
+          "type": "string",
+          "description": "Source agent ref"
+        },
+        "to": {
+          "type": "string",
+          "description": "Target agent ref"
+        },
+        "condition": {
+          "type": "string",
+          "description": "Condition expression for this edge (e.g., 'output.status == success')"
+        },
+        "priority": {
+          "type": "integer",
+          "minimum": 0,
+          "default": 0,
+          "description": "Edge priority for conflict resolution (higher = preferred)"
+        },
+        "transform": {
+          "type": "string",
+          "description": "Data transformation expression between agents"
+        },
+        "metadata": {
+          "type": "object",
+          "description": "Additional edge metadata",
+          "additionalProperties": true
+        }
+      },
+      "additionalProperties": false
+    },
+    "GraphState": {
+      "type": "object",
+      "description": "Shared state configuration for the agent graph",
+      "properties": {
+        "schema": {
+          "type": "object",
+          "description": "JSON Schema for the shared state structure"
+        },
+        "initial": {
+          "type": "object",
+          "description": "Initial state values"
+        },
+        "persistence": {
+          "type": "string",
+          "enum": [
+            "none",
+            "memory",
+            "redis",
+            "database"
+          ],
+          "default": "memory",
+          "description": "State persistence mechanism"
+        }
+      },
+      "additionalProperties": false
+    },
+    "Taxonomy": {
+      "type": "object",
+      "required": [
+        "domain"
+      ],
+      "properties": {
+        "domain": {
+          "type": "string",
+          "description": "Primary domain classification",
+          "examples": [
+            "infrastructure",
+            "security",
+            "compliance",
+            "documentation"
+          ]
+        },
+        "subdomain": {
+          "type": "string",
+          "description": "Secondary classification within domain",
+          "examples": [
+            "kubernetes",
+            "vulnerability",
+            "generation"
+          ]
+        },
+        "capability": {
+          "type": "string",
+          "description": "Specific capability or function",
+          "examples": [
+            "troubleshooting",
+            "scanning",
+            "optimization"
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "LLMConfig": {
+      "type": "object",
+      "required": [
+        "provider",
+        "model"
+      ],
+      "properties": {
+        "provider": {
+          "type": "string",
+          "enum": [
+            "openai",
+            "anthropic",
+            "google",
+            "azure",
+            "ollama",
+            "custom"
+          ],
+          "description": "LLM provider"
+        },
+        "model": {
+          "type": "string",
+          "description": "Model identifier",
+          "examples": [
+            "gpt-4",
+            "claude-3-sonnet-20240229",
+            "gemini-pro"
+          ]
+        },
+        "temperature": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 2,
+          "description": "Sampling temperature for response generation"
+        },
+        "maxTokens": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Maximum tokens per request"
+        },
+        "topP": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Nucleus sampling parameter"
+        },
+        "frequencyPenalty": {
+          "type": "number",
+          "minimum": -2,
+          "maximum": 2,
+          "description": "Frequency penalty for token generation"
+        },
+        "presencePenalty": {
+          "type": "number",
+          "minimum": -2,
+          "maximum": 2,
+          "description": "Presence penalty for token generation"
+        }
+      },
+      "additionalProperties": false
+    },
+    "Tool": {
+      "type": "object",
+      "required": [
+        "type"
+      ],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": [
+            "mcp",
+            "kubernetes",
+            "http",
+            "grpc",
+            "function",
+            "custom"
+          ],
+          "description": "Tool integration type"
+        },
+        "name": {
+          "type": "string",
+          "description": "Tool name/identifier"
+        },
+        "server": {
+          "type": "string",
+          "description": "MCP server name (for type=mcp)"
+        },
+        "namespace": {
+          "type": "string",
+          "description": "Kubernetes namespace (for type=kubernetes or mcp)"
+        },
+        "endpoint": {
+          "type": "string",
+          "format": "uri",
+          "description": "HTTP/gRPC endpoint (for type=http/grpc)"
+        },
+        "capabilities": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Specific capabilities/operations from this tool"
+        },
+        "config": {
+          "type": "object",
+          "description": "Tool-specific configuration",
+          "additionalProperties": true
+        },
+        "auth": {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string",
+              "enum": [
+                "bearer",
+                "oauth2",
+                "mtls",
+                "apikey",
+                "none"
+              ]
+            },
+            "credentials": {
+              "type": "string",
+              "description": "Reference to secret/credential (not the actual secret)"
+            }
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "Autonomy": {
+      "type": "object",
+      "properties": {
+        "level": {
+          "type": "string",
+          "enum": [
+            "supervised",
+            "autonomous",
+            "fully_autonomous"
+          ],
+          "description": "Level of autonomy for agent decision-making"
+        },
+        "approval_required": {
+          "type": "boolean",
+          "description": "Whether human approval is required for actions"
+        },
+        "allowed_actions": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Whitelist of permitted actions"
+        },
+        "blocked_actions": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Blacklist of forbidden actions"
+        },
+        "escalation_policy": {
+          "type": "object",
+          "description": "Rules for escalating to human oversight"
+        }
+      },
+      "additionalProperties": false
+    },
+    "Constraints": {
+      "type": "object",
+      "properties": {
+        "cost": {
+          "type": "object",
+          "properties": {
+            "maxTokensPerDay": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "maxTokensPerRequest": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "maxCostPerDay": {
+              "type": "number",
+              "minimum": 0
+            },
+            "currency": {
+              "type": "string",
+              "pattern": "^[A-Z]{3}$",
+              "default": "USD"
+            }
+          }
+        },
+        "performance": {
+          "type": "object",
+          "properties": {
+            "maxLatencySeconds": {
+              "type": "number",
+              "minimum": 0
+            },
+            "maxConcurrentRequests": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "timeoutSeconds": {
+              "type": "number",
+              "minimum": 0
+            }
+          }
+        },
+        "resources": {
+          "type": "object",
+          "properties": {
+            "cpu": {
+              "type": "string",
+              "description": "CPU limit (Kubernetes format: 100m, 1, 2.5)"
+            },
+            "memory": {
+              "type": "string",
+              "description": "Memory limit (Kubernetes format: 128Mi, 1Gi)"
+            },
+            "gpu": {
+              "type": "string",
+              "description": "GPU requirement"
+            }
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "Observability": {
+      "type": "object",
+      "properties": {
+        "tracing": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": true
+            },
+            "exporter": {
+              "type": "string",
+              "enum": [
+                "otlp",
+                "jaeger",
+                "zipkin",
+                "custom"
+              ]
+            },
+            "endpoint": {
+              "type": "string",
+              "format": "uri"
+            }
+          }
+        },
+        "metrics": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": true
+            },
+            "exporter": {
+              "type": "string",
+              "enum": [
+                "prometheus",
+                "otlp",
+                "custom"
+              ]
+            },
+            "endpoint": {
+              "type": "string",
+              "format": "uri"
+            }
+          }
+        },
+        "logging": {
+          "type": "object",
+          "properties": {
+            "level": {
+              "type": "string",
+              "enum": [
+                "debug",
+                "info",
+                "warn",
+                "error"
+              ],
+              "default": "info"
+            },
+            "format": {
+              "type": "string",
+              "enum": [
+                "json",
+                "text"
+              ],
+              "default": "json"
+            }
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "KAgentExtension": {
+      "type": "object",
+      "description": "kagent.dev Kubernetes-native agent deployment extension",
+      "properties": {
+        "kubernetes": {
+          "type": "object",
+          "properties": {
+            "namespace": {
+              "type": "string",
+              "default": "default",
+              "description": "Target Kubernetes namespace"
+            },
+            "labels": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "string"
+              },
+              "description": "Kubernetes labels for agent CRD"
+            },
+            "annotations": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "string"
+              },
+              "description": "Kubernetes annotations"
+            }
+          }
+        },
+        "deployment": {
+          "type": "object",
+          "properties": {
+            "replicas": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1
+            },
+            "strategy": {
+              "type": "string",
+              "enum": ["rolling-update", "recreate"],
+              "default": "rolling-update"
+            }
+          }
+        },
+        "api_version": {
+          "type": "string",
+          "description": "kagent.dev API version (e.g., kagent.dev/v1alpha2)",
+          "default": "kagent.dev/v1alpha2"
+        }
+      },
+      "additionalProperties": true
+    },
+    "BuildKitExtension": {
+      "type": "object",
+      "description": "Agent BuildKit deployment and orchestration extension",
+      "properties": {
+        "deployment": {
+          "type": "object",
+          "properties": {
+            "replicas": {
+              "type": "object",
+              "properties": {
+                "min": {
+                  "type": "integer",
+                  "default": 1
+                },
+                "max": {
+                  "type": "integer",
+                  "default": 4
+                }
+              }
+            }
+          }
+        },
+        "container": {
+          "type": "object",
+          "properties": {
+            "image": {
+              "type": "string",
+              "description": "Container image"
+            },
+            "runtime": {
+              "type": "string",
+              "enum": ["docker", "podman", "containerd"],
+              "default": "docker"
+            },
+            "resources": {
+              "type": "object",
+              "description": "Container resource limits"
+            }
+          }
+        }
+      },
+      "additionalProperties": true
+    },
+    "DrupalExtension": {
+      "type": "object",
+      "description": "Drupal LLM Platform integration extension",
+      "properties": {
+        "module": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_]*$",
+          "description": "Drupal module that owns this agent"
+        },
+        "service": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_]*\\.[a-z][a-z0-9_]*$",
+          "description": "Drupal service ID (module.service format)"
+        },
+        "dependencies": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_]*$"
+          },
+          "description": "Required Drupal modules"
+        },
+        "database": {
+          "type": "object",
+          "properties": {
+            "tables": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "migrations": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      },
+      "additionalProperties": true
+    },
+    "LibreChatExtension": {
+      "type": "object",
+      "description": "LibreChat integration extension",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": true
+        },
+        "agent_id": {
+          "type": "string",
+          "description": "LibreChat agent identifier"
+        },
+        "endpoint": {
+          "type": "string",
+          "format": "uri",
+          "description": "LibreChat API endpoint"
+        },
+        "authentication": {
+          "type": "object",
+          "description": "LibreChat authentication configuration"
+        }
+      },
+      "additionalProperties": true
+    },
+    "MCPExtension": {
+      "type": "object",
+      "description": "Model Context Protocol (MCP) extension",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": true
+        },
+        "server_type": {
+          "type": "string",
+          "enum": ["stdio", "sse", "websocket"],
+          "default": "stdio"
+        },
+        "server_name": {
+          "type": "string",
+          "description": "MCP server name"
+        },
+        "config": {
+          "type": "object",
+          "description": "MCP server configuration"
+        }
+      },
+      "additionalProperties": true
+    },
+    "LangChainExtension": {
+      "type": "object",
+      "description": "LangChain framework integration extension",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": false
+        },
+        "tool_class": {
+          "type": "string",
+          "description": "LangChain tool class name"
+        },
+        "chain_type": {
+          "type": "string",
+          "enum": ["llm", "retrieval", "agent", "sequential", "custom"]
+        },
+        "memory": {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string",
+              "enum": ["buffer", "summary", "conversation", "vector"]
+            },
+            "max_tokens": {
+              "type": "integer"
+            }
+          }
+        }
+      },
+      "additionalProperties": true
+    },
+    "CrewAIExtension": {
+      "type": "object",
+      "description": "CrewAI framework integration extension",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": false
+        },
+        "agent_type": {
+          "type": "string",
+          "enum": ["worker", "manager", "researcher", "analyst", "custom"]
+        },
+        "role": {
+          "type": "string",
+          "description": "CrewAI agent role"
+        },
+        "goal": {
+          "type": "string",
+          "description": "CrewAI agent goal"
+        },
+        "backstory": {
+          "type": "string",
+          "description": "CrewAI agent backstory"
+        },
+        "tools": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "CrewAI tool names"
+        },
+        "crew": {
+          "type": "object",
+          "description": "CrewAI crew configuration for AgentGraph",
+          "properties": {
+            "process": {
+              "type": "string",
+              "enum": ["sequential", "hierarchical"],
+              "description": "CrewAI process type"
+            },
+            "verbose": {
+              "type": "boolean",
+              "default": false
+            },
+            "manager_llm": {
+              "type": "string",
+              "description": "LLM for manager agent in hierarchical process"
+            }
+          }
+        }
+      },
+      "additionalProperties": true
+    },
+    "OpenAIAgentsExtension": {
+      "type": "object",
+      "description": "OpenAI Agents SDK integration extension",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable OpenAI Agents SDK bridge"
+        },
+        "agent_id": {
+          "type": "string",
+          "description": "OpenAI agent ID (optional, auto-generated if not provided)"
+        },
+        "instructions": {
+          "type": "string",
+          "description": "Agent instructions/prompt (overrides spec.role if provided)"
+        },
+        "model": {
+          "type": "string",
+          "enum": [
+            "gpt-4o",
+            "gpt-4o-mini",
+            "gpt-4-turbo",
+            "gpt-3.5-turbo"
+          ],
+          "default": "gpt-4o-mini",
+          "description": "OpenAI model to use for the agent"
+        },
+        "tools_mapping": {
+          "type": "array",
+          "description": "Map OSSA capabilities to OpenAI tools",
+          "items": {
+            "type": "object",
+            "required": [
+              "ossa_capability"
+            ],
+            "properties": {
+              "ossa_capability": {
+                "type": "string",
+                "description": "OSSA capability name to map"
+              },
+              "openai_tool_name": {
+                "type": "string",
+                "description": "OpenAI tool name (defaults to ossa_capability if not provided)"
+              },
+              "description": {
+                "type": "string",
+                "description": "Tool description (defaults to OSSA capability description)"
+              },
+              "parameters": {
+                "type": "object",
+                "description": "OpenAI tool parameter schema (auto-generated from OSSA input_schema if not provided)"
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "sub_agents": {
+          "type": "array",
+          "description": "Sub-agent handoffs configuration",
+          "items": {
+            "type": "object",
+            "required": [
+              "agent_id",
+              "ossa_agent_ref"
+            ],
+            "properties": {
+              "agent_id": {
+                "type": "string",
+                "description": "OpenAI sub-agent identifier"
+              },
+              "ossa_agent_ref": {
+                "type": "string",
+                "description": "Reference to OSSA agent (metadata.name or agent ID)"
+              },
+              "handoff_conditions": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "Conditions that trigger handoff to this sub-agent"
+              },
+              "instructions": {
+                "type": "string",
+                "description": "Sub-agent specific instructions"
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "guardrails": {
+          "type": "object",
+          "description": "Safety guardrails configuration",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": true
+            },
+            "policies": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Guardrail policy names (maps to OSSA compliance frameworks)"
+            },
+            "max_tool_calls": {
+              "type": "integer",
+              "minimum": 1,
+              "description": "Maximum tool calls per agent execution"
+            },
+            "timeout_seconds": {
+              "type": "integer",
+              "minimum": 1,
+              "description": "Maximum execution time in seconds"
+            }
+          },
+          "additionalProperties": false
+        },
+        "memory": {
+          "type": "object",
+          "description": "Session memory configuration",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": false
+            },
+            "type": {
+              "type": "string",
+              "enum": [
+                "session",
+                "persistent"
+              ],
+              "default": "session",
+              "description": "Memory storage type"
+            },
+            "max_messages": {
+              "type": "integer",
+              "minimum": 1,
+              "description": "Maximum messages to retain in memory"
+            }
+          },
+          "additionalProperties": false
+        },
+        "tracing": {
+          "type": "object",
+          "description": "Observability and tracing configuration",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": true
+            },
+            "provider": {
+              "type": "string",
+              "enum": [
+                "langfuse",
+                "langsmith",
+                "custom"
+              ],
+              "default": "langfuse",
+              "description": "Tracing provider"
+            },
+            "endpoint": {
+              "type": "string",
+              "format": "uri",
+              "description": "Custom tracing endpoint (for provider=custom)"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": true
+    },
+    "CursorExtension": {
+      "type": "object",
+      "description": "Cursor IDE agent integration extension",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable Cursor IDE integration"
+        },
+        "agent_type": {
+          "type": "string",
+          "enum": ["composer", "chat", "background", "cloud"],
+          "default": "composer",
+          "description": "Cursor agent type"
+        },
+        "workspace_config": {
+          "type": "object",
+          "properties": {
+            "rules_file": {
+              "type": "string",
+              "description": "Path to .cursorrules file"
+            },
+            "context_files": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Files to include in agent context"
+            },
+            "ignore_patterns": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Glob patterns to exclude from context"
+            }
+          }
+        },
+        "capabilities": {
+          "type": "object",
+          "properties": {
+            "code_generation": {
+              "type": "boolean",
+              "default": true
+            },
+            "code_review": {
+              "type": "boolean",
+              "default": false
+            },
+            "refactoring": {
+              "type": "boolean",
+              "default": false
+            },
+            "testing": {
+              "type": "boolean",
+              "default": false
+            }
+          }
+        },
+        "model": {
+          "type": "object",
+          "properties": {
+            "provider": {
+              "type": "string",
+              "enum": ["openai", "anthropic", "custom"],
+              "default": "openai"
+            },
+            "name": {
+              "type": "string",
+              "description": "Model name"
+            }
+          }
+        }
+      },
+      "additionalProperties": true
+    },
+    "LangflowExtension": {
+      "type": "object",
+      "description": "Langflow workflow orchestration extension",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": false
+        },
+        "flow_id": {
+          "type": "string",
+          "description": "Langflow flow identifier"
+        },
+        "flow_name": {
+          "type": "string",
+          "description": "Human-readable flow name"
+        },
+        "endpoint": {
+          "type": "string",
+          "format": "uri",
+          "description": "Langflow API endpoint"
+        },
+        "api_key": {
+          "type": "string",
+          "description": "Langflow API key (reference to secret)"
+        },
+        "components": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "type": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "dataflow": {
+          "type": "object",
+          "description": "Data flow configuration"
+        }
+      },
+      "additionalProperties": true
+    },
+    "AutoGenExtension": {
+      "type": "object",
+      "description": "AutoGen multi-agent framework extension",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": false
+        },
+        "agent_type": {
+          "type": "string",
+          "enum": ["assistant", "user_proxy", "groupchat", "custom"],
+          "description": "AutoGen agent type"
+        },
+        "system_message": {
+          "type": "string",
+          "description": "System message for AutoGen agent"
+        },
+        "human_input_mode": {
+          "type": "string",
+          "enum": ["ALWAYS", "NEVER", "TERMINATE"],
+          "default": "NEVER"
+        },
+        "code_execution": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": false
+            },
+            "work_dir": {
+              "type": "string"
+            },
+            "use_docker": {
+              "type": "boolean",
+              "default": false
+            }
+          }
+        },
+        "max_consecutive_auto_reply": {
+          "type": "integer",
+          "minimum": 1,
+          "default": 10
+        },
+        "groupchat": {
+          "type": "object",
+          "properties": {
+            "agents": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "max_round": {
+              "type": "integer",
+              "minimum": 1
+            }
+          }
+        }
+      },
+      "additionalProperties": true
+    },
+    "VercelAIExtension": {
+      "type": "object",
+      "description": "Vercel AI SDK integration extension",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": false
+        },
+        "runtime": {
+          "type": "string",
+          "enum": ["edge", "nodejs"],
+          "default": "edge"
+        },
+        "stream": {
+          "type": "boolean",
+          "default": true
+        },
+        "route": {
+          "type": "string"
+        },
+        "tools": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "description": {
+                "type": "string"
+              },
+              "parameters": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "experimental": {
+          "type": "object",
+          "additionalProperties": true
+        }
+      },
+      "additionalProperties": true
+    },
+    "LlamaIndexExtension": {
+      "type": "object",
+      "description": "LlamaIndex framework integration extension",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": false
+        },
+        "agent_type": {
+          "type": "string",
+          "enum": ["query_engine", "chat_engine", "retriever", "custom"]
+        },
+        "llm": {
+          "type": "object",
+          "properties": {
+            "provider": {
+              "type": "string",
+              "enum": ["openai", "anthropic", "local", "custom"]
+            },
+            "model": {
+              "type": "string"
+            },
+            "temperature": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 2
+            }
+          }
+        },
+        "vector_store": {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string",
+              "enum": ["pinecone", "weaviate", "chroma", "qdrant", "milvus", "custom"]
+            },
+            "config": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          }
+        },
+        "retrieval": {
+          "type": "object",
+          "properties": {
+            "top_k": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 5
+            },
+            "similarity_top_k": {
+              "type": "integer",
+              "minimum": 1
+            }
+          }
+        },
+        "tools": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "type": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      },
+      "additionalProperties": true
+    },
+    "LangGraphExtension": {
+      "type": "object",
+      "description": "LangGraph state machine agent extension",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": false
+        },
+        "graph_name": {
+          "type": "string"
+        },
+        "state_schema": {
+          "type": "object"
+        },
+        "nodes": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "function": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "edges": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "from": {
+                "type": "string"
+              },
+              "to": {
+                "type": "string"
+              },
+              "condition": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "checkpoint": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": false
+            },
+            "type": {
+              "type": "string",
+              "enum": ["memory", "sqlite", "postgres", "custom"]
+            }
+          }
+        }
+      },
+      "additionalProperties": true
+    },
+    "AnthropicExtension": {
+      "type": "object",
+      "description": "Anthropic Claude API integration extension",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": false
+        },
+        "model": {
+          "type": "string",
+          "enum": [
+            "claude-3-5-sonnet-20241022",
+            "claude-3-5-haiku-20241022",
+            "claude-3-opus-20240229",
+            "claude-3-sonnet-20240229",
+            "claude-3-haiku-20240307"
+          ],
+          "default": "claude-3-5-sonnet-20241022"
+        },
+        "system": {
+          "type": "string"
+        },
+        "max_tokens": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 4096,
+          "default": 4096
+        },
+        "temperature": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "default": 1
+        },
+        "tools": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "description": {
+                "type": "string"
+              },
+              "input_schema": {
+                "type": "object"
+              }
+            },
+            "required": ["name", "description", "input_schema"]
+          }
+        },
+        "streaming": {
+          "type": "boolean",
+          "default": false
+        },
+        "stop_sequences": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "additionalProperties": true
+    },
+    "GoogleADKExtension": {
+      "type": "object",
+      "description": "Google Agent Development Kit (ADK) integration extension for multi-agent orchestration",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": false
+        },
+        "agent_type": {
+          "type": "string",
+          "enum": ["llm_agent", "sequential_agent", "parallel_agent", "loop_agent", "custom"],
+          "description": "ADK agent type"
+        },
+        "model": {
+          "type": "string",
+          "description": "Gemini model to use (e.g., gemini-2.0-flash-exp)"
+        },
+        "instruction": {
+          "type": "string",
+          "description": "Agent instruction/prompt"
+        },
+        "sub_agents": {
+          "type": "array",
+          "description": "Sub-agents for orchestration agents",
+          "items": {
+            "type": "string"
+          }
+        },
+        "tools": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "type": {
+                "type": "string",
+                "enum": ["function", "google_search", "code_execution", "custom"]
+              }
+            }
+          }
+        },
+        "session": {
+          "type": "object",
+          "properties": {
+            "service": {
+              "type": "string",
+              "enum": ["in_memory", "database", "vertex_ai"],
+              "default": "in_memory"
+            }
+          }
+        }
+      },
+      "additionalProperties": true
+    },
+    "MicrosoftAFExtension": {
+      "type": "object",
+      "description": "Microsoft AutoGen/Magentic-One Agent Framework integration extension",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": false
+        },
+        "framework": {
+          "type": "string",
+          "enum": ["autogen_v0.4", "magentic_one", "semantic_kernel"],
+          "default": "autogen_v0.4",
+          "description": "Microsoft agent framework variant"
+        },
+        "team_type": {
+          "type": "string",
+          "enum": ["round_robin", "selector", "swarm", "magentic_one"],
+          "description": "Team orchestration type"
+        },
+        "agent_type": {
+          "type": "string",
+          "enum": ["assistant", "code_executor", "user_proxy", "orchestrator", "web_surfer", "file_surfer", "coder"],
+          "description": "Agent type within the team"
+        },
+        "model_client": {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string",
+              "enum": ["openai", "azure_openai", "anthropic"]
+            },
+            "model": {
+              "type": "string"
+            }
+          }
+        },
+        "tools": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "type": {
+                "type": "string",
+                "enum": ["function", "code_executor", "mcp"]
+              }
+            }
+          }
+        },
+        "termination": {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string",
+              "enum": ["text_mention", "max_messages", "token_limit", "custom"]
+            },
+            "condition": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "additionalProperties": true
+    },
+    "MetaGPTExtension": {
+      "type": "object",
+      "description": "MetaGPT multi-agent framework integration extension for software development teams",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": false
+        },
+        "role": {
+          "type": "string",
+          "enum": ["product_manager", "architect", "project_manager", "engineer", "qa_engineer", "custom"],
+          "description": "MetaGPT role type"
+        },
+        "sop": {
+          "type": "object",
+          "description": "Standard Operating Procedure configuration",
+          "properties": {
+            "name": {
+              "type": "string",
+              "description": "SOP name (e.g., 'software_development')"
+            },
+            "phases": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "SOP phases (e.g., ['requirements', 'design', 'implementation', 'testing'])"
+            }
+          }
+        },
+        "actions": {
+          "type": "array",
+          "description": "MetaGPT actions this agent can perform",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "type": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "memory": {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string",
+              "enum": ["role_memory", "team_memory", "long_term"]
+            }
+          }
+        },
+        "environment": {
+          "type": "object",
+          "properties": {
+            "workspace": {
+              "type": "string",
+              "description": "Workspace directory"
+            },
+            "max_budget": {
+              "type": "number",
+              "description": "Maximum budget in USD"
+            }
+          }
+        }
+      },
+      "additionalProperties": true
+    }
+  }
+}

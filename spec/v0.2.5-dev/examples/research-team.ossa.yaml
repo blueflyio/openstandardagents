@@ -1,0 +1,440 @@
+# Research Team Agent Graph - Hierarchical Process
+# OSSA v0.2.5-dev Example
+#
+# This example demonstrates a hierarchical research team
+# where a manager coordinates specialized researchers.
+# Inspired by CrewAI's crew orchestration pattern.
+
+apiVersion: ossa/v0.2.5-dev
+kind: AgentGraph
+metadata:
+  name: research-team
+  version: "1.0.0"
+  description: |
+    Hierarchical research team with a manager coordinating
+    multiple specialized researchers. The manager delegates
+    tasks, reviews outputs, and synthesizes the final report.
+  labels:
+    domain: research
+    process: hierarchical
+    framework: crewai
+  annotations:
+    ossa.io/maintainer: "research-ops"
+    ossa.io/use-case: "comprehensive-research"
+
+spec:
+  # Hierarchical execution - manager delegates to workers
+  process: hierarchical
+
+  # Entry and exit through manager
+  entry_point: research-manager
+  exit_points:
+    - research-manager
+
+  # Agent references with roles
+  agents:
+    # Manager agent coordinates the team
+    - ref: research-manager
+      role: manager
+      config:
+        max_delegation_rounds: 3
+
+    # Specialized researcher agents
+    - ref: web-researcher
+      role: worker
+      config:
+        search_depth: comprehensive
+
+    - ref: academic-researcher
+      role: worker
+      config:
+        sources:
+          - arxiv
+          - pubmed
+          - semantic-scholar
+
+    - ref: data-analyst
+      role: worker
+      config:
+        analysis_types:
+          - statistical
+          - trend
+          - comparative
+
+    - ref: report-writer
+      role: worker
+      config:
+        format: markdown
+        include_citations: true
+
+  # Manager-to-worker edges
+  edges:
+    # Manager delegates to researchers
+    - from: research-manager
+      to: web-researcher
+      condition: "task.requires_web_search"
+      metadata:
+        delegation_type: parallel
+
+    - from: research-manager
+      to: academic-researcher
+      condition: "task.requires_academic_sources"
+      metadata:
+        delegation_type: parallel
+
+    - from: research-manager
+      to: data-analyst
+      condition: "task.requires_data_analysis"
+      metadata:
+        delegation_type: after_research
+
+    - from: research-manager
+      to: report-writer
+      condition: "task.requires_report"
+      metadata:
+        delegation_type: final
+
+    # Workers report back to manager
+    - from: web-researcher
+      to: research-manager
+      transform: "{ findings: output, source: 'web' }"
+
+    - from: academic-researcher
+      to: research-manager
+      transform: "{ findings: output, source: 'academic' }"
+
+    - from: data-analyst
+      to: research-manager
+      transform: "{ analysis: output, source: 'data' }"
+
+    - from: report-writer
+      to: research-manager
+      transform: "{ report: output, source: 'writer' }"
+
+  # Shared research state
+  state:
+    schema:
+      type: object
+      properties:
+        research_topic:
+          type: string
+        research_questions:
+          type: array
+          items:
+            type: string
+        findings:
+          type: object
+          properties:
+            web:
+              type: array
+            academic:
+              type: array
+            data:
+              type: object
+        synthesis:
+          type: string
+        final_report:
+          type: string
+        iterations:
+          type: integer
+    initial:
+      findings:
+        web: []
+        academic: []
+        data: {}
+      iterations: 0
+    persistence: database
+
+  # Observability
+  observability:
+    tracing:
+      enabled: true
+      exporter: otlp
+    metrics:
+      enabled: true
+      exporter: prometheus
+    logging:
+      level: info
+      format: json
+
+  # Constraints
+  constraints:
+    cost:
+      maxTokensPerDay: 100000
+      maxCostPerDay: 50
+      currency: USD
+    performance:
+      timeoutSeconds: 300
+
+# Framework-specific extensions
+extensions:
+  # CrewAI implementation (primary)
+  crewai:
+    enabled: true
+    crew:
+      process: hierarchical
+      manager_llm: gpt-4o
+      verbose: true
+
+  # Google ADK implementation
+  google_adk:
+    enabled: true
+    agent_type: sequential_agent
+    model: gemini-2.0-flash-exp
+    sub_agents:
+      - web-researcher
+      - academic-researcher
+      - data-analyst
+      - report-writer
+    session:
+      service: database
+
+  # MetaGPT implementation
+  metagpt:
+    enabled: true
+    sop:
+      name: research_workflow
+      phases:
+        - topic_analysis
+        - literature_review
+        - data_collection
+        - analysis
+        - synthesis
+        - reporting
+    environment:
+      workspace: "/tmp/research"
+      max_budget: 50
+
+  # Microsoft AutoGen implementation
+  microsoft_af:
+    enabled: true
+    framework: autogen_v0.4
+    team_type: selector
+    agent_type: orchestrator
+    termination:
+      type: text_mention
+      condition: "RESEARCH_COMPLETE"
+
+---
+# Individual agent definitions
+
+---
+apiVersion: ossa/v0.2.5-dev
+kind: Agent
+metadata:
+  name: research-manager
+  description: "Research team manager and coordinator"
+spec:
+  role: |
+    You are a research team manager. Your responsibilities:
+
+    1. ANALYZE the research request to identify:
+       - Core research questions
+       - Required information sources
+       - Analysis needs
+
+    2. DELEGATE tasks to your team:
+       - Web Researcher: Current information, news, trends
+       - Academic Researcher: Scientific papers, studies
+       - Data Analyst: Statistical analysis, visualizations
+       - Report Writer: Final synthesis and formatting
+
+    3. COORDINATE the workflow:
+       - Determine optimal task order
+       - Review intermediate outputs
+       - Request revisions if needed
+
+    4. SYNTHESIZE findings into coherent insights
+
+    5. ENSURE quality and completeness
+
+    Always think strategically about how to best utilize your team.
+  llm:
+    provider: openai
+    model: gpt-4o
+    temperature: 0.3
+    maxTokens: 4000
+  autonomy:
+    level: fully_autonomous
+  constraints:
+    cost:
+      maxTokensPerRequest: 8000
+extensions:
+  crewai:
+    enabled: true
+    agent_type: manager
+    goal: "Coordinate research team to deliver comprehensive, accurate reports"
+    backstory: |
+      Experienced research director with expertise in coordinating
+      multi-disciplinary teams. Known for producing high-quality,
+      well-structured research outputs.
+
+---
+apiVersion: ossa/v0.2.5-dev
+kind: Agent
+metadata:
+  name: web-researcher
+  description: "Searches web for current information"
+spec:
+  role: |
+    You are a web research specialist. Your tasks:
+
+    1. Search for relevant web content
+    2. Evaluate source credibility
+    3. Extract key information
+    4. Summarize findings with citations
+
+    Focus on recent, authoritative sources. Always cite your sources.
+  llm:
+    provider: openai
+    model: gpt-4o-mini
+    temperature: 0.2
+  tools:
+    - type: mcp
+      server: web-search
+      capabilities:
+        - search_web
+        - fetch_page
+        - extract_content
+  autonomy:
+    level: autonomous
+extensions:
+  crewai:
+    enabled: true
+    agent_type: researcher
+    role: "Web Research Specialist"
+    goal: "Find comprehensive, current web information"
+    backstory: |
+      Expert web researcher skilled at finding reliable online
+      sources and extracting actionable insights.
+    tools:
+      - SerperDevTool
+      - WebsiteSearchTool
+
+---
+apiVersion: ossa/v0.2.5-dev
+kind: Agent
+metadata:
+  name: academic-researcher
+  description: "Searches academic databases"
+spec:
+  role: |
+    You are an academic research specialist. Your tasks:
+
+    1. Search academic databases (arXiv, PubMed, Semantic Scholar)
+    2. Identify relevant papers and studies
+    3. Extract methodology and findings
+    4. Assess research quality and relevance
+    5. Provide properly formatted citations
+
+    Prioritize peer-reviewed sources and meta-analyses.
+  llm:
+    provider: anthropic
+    model: claude-3-5-sonnet-20241022
+    temperature: 0.1
+  tools:
+    - type: http
+      name: arxiv-api
+      endpoint: "https://export.arxiv.org/api/query"
+      capabilities:
+        - search_papers
+    - type: http
+      name: semantic-scholar
+      endpoint: "https://api.semanticscholar.org"
+      capabilities:
+        - search_papers
+        - get_citations
+  autonomy:
+    level: autonomous
+extensions:
+  crewai:
+    enabled: true
+    agent_type: researcher
+    role: "Academic Research Specialist"
+    goal: "Find peer-reviewed academic sources"
+    backstory: |
+      PhD researcher with extensive experience navigating academic
+      databases and evaluating research quality.
+
+---
+apiVersion: ossa/v0.2.5-dev
+kind: Agent
+metadata:
+  name: data-analyst
+  description: "Analyzes and visualizes data"
+spec:
+  role: |
+    You are a data analysis specialist. Your tasks:
+
+    1. Analyze quantitative data from research
+    2. Identify patterns and trends
+    3. Perform statistical analysis
+    4. Create data visualizations
+    5. Provide clear interpretations
+
+    Use appropriate statistical methods and explain findings clearly.
+  llm:
+    provider: openai
+    model: gpt-4o
+    temperature: 0.2
+  tools:
+    - type: function
+      name: python_executor
+      capabilities:
+        - execute_code
+        - create_charts
+        - statistical_analysis
+  autonomy:
+    level: supervised
+    allowed_actions:
+      - execute_code
+      - create_charts
+extensions:
+  crewai:
+    enabled: true
+    agent_type: analyst
+    role: "Data Analyst"
+    goal: "Analyze data and create meaningful visualizations"
+    backstory: |
+      Data scientist skilled in statistical analysis and
+      data visualization with Python and R.
+  autogen:
+    enabled: true
+    agent_type: assistant
+    code_execution:
+      enabled: true
+      use_docker: true
+
+---
+apiVersion: ossa/v0.2.5-dev
+kind: Agent
+metadata:
+  name: report-writer
+  description: "Synthesizes and writes final reports"
+spec:
+  role: |
+    You are a technical report writer. Your tasks:
+
+    1. Synthesize findings from all researchers
+    2. Organize content logically
+    3. Write clear, professional prose
+    4. Format citations properly
+    5. Include executive summary
+
+    Write for an educated but non-specialist audience.
+  llm:
+    provider: anthropic
+    model: claude-3-5-sonnet-20241022
+    temperature: 0.7
+    maxTokens: 8000
+  autonomy:
+    level: autonomous
+extensions:
+  crewai:
+    enabled: true
+    agent_type: worker
+    role: "Technical Report Writer"
+    goal: "Create comprehensive, well-structured reports"
+    backstory: |
+      Professional technical writer with experience creating
+      research reports, white papers, and documentation.

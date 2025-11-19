@@ -1,0 +1,581 @@
+ossaVersion: '0.2.4-dev'
+
+# OSSA (Open Standard for Smart & Scalable Agents) - Version 0.2.4-dev
+# The OpenAPI for AI Agents
+#
+# DEVELOPMENT VERSION - APIs and schemas may change without notice
+#
+# This specification defines a standard format for AI agent definition,
+# deployment, and orchestration across heterogeneous environments.
+#
+# v0.2.4-dev NEW FEATURES:
+# - Transport metadata for capabilities (streaming, protocol binding)
+# - State/memory block for agent state management
+# - Enhanced security with scopes and compliance tags
+# - Capability versioning and deprecation support
+# - Google ADK extension for Agent Development Kit integration
+
+spec:
+  title: OSSA 0.2.4-dev Specification
+  description: Open Standard for Smart & Scalable Agents - Development Release
+  version: '0.2.4-dev'
+  status: development
+  license: Apache-2.0
+  maintainer: OSSA Working Group
+  website: https://openstandardagents.org
+  repository: https://github.com/ossa-standard/specification
+
+# ==============================================================================
+# NEW IN v0.2.4-dev: Transport Metadata
+# ==============================================================================
+# Transport configuration for protocol-specific settings
+# Supports ADK, A2A, MCP, and other protocols with streaming
+
+transport:
+  description: |
+    Transport metadata defines how capabilities communicate over different protocols.
+    This is essential for:
+    - Google ADK bidirectional streaming
+    - A2A protocol agent-to-agent communication
+    - MCP tool server integration
+    - gRPC streaming services
+
+  schema:
+    protocol:
+      type: enum
+      values: [http, grpc, a2a, mcp, websocket, custom]
+      description: Transport protocol for the capability
+
+    streaming:
+      type: enum
+      values: [none, request, response, bidirectional]
+      default: none
+      description: |
+        Streaming mode:
+        - none: Standard request/response
+        - request: Client streams to server
+        - response: Server streams to client (SSE, streaming LLM)
+        - bidirectional: Full duplex (WebSocket, gRPC bidirectional)
+
+    binding:
+      type: string
+      description: |
+        Path or endpoint binding specific to the protocol:
+        - HTTP: "/api/v1/chat"
+        - gRPC: "myservice.MyMethod"
+        - MCP: Tool name
+        - A2A: Action path
+
+    content_type:
+      type: string
+      examples:
+        - application/json
+        - application/x-ndjson  # For streaming
+        - text/event-stream    # For SSE
+
+  examples:
+    # HTTP streaming response (common for LLM)
+    - protocol: http
+      streaming: response
+      binding: /api/v1/chat/stream
+      content_type: text/event-stream
+
+    # gRPC bidirectional (for real-time agents)
+    - protocol: grpc
+      streaming: bidirectional
+      binding: AgentService.StreamChat
+
+    # A2A protocol
+    - protocol: a2a
+      streaming: none
+      binding: /tasks/send
+
+    # MCP tool
+    - protocol: mcp
+      streaming: none
+      binding: query_database
+
+# ==============================================================================
+# NEW IN v0.2.4-dev: State/Memory Block
+# ==============================================================================
+# Agent state management configuration
+# Essential for OpenAI SDK, Microsoft Autogen Framework, and long-running agents
+
+state:
+  description: |
+    State configuration defines how an agent manages memory and context.
+    Critical for:
+    - Session continuity (OpenAI Agents SDK)
+    - Long-running workflows (MS Autogen Framework)
+    - RAG systems with context retention
+    - Multi-turn conversations
+
+  schema:
+    mode:
+      type: enum
+      values: [stateless, session, long_running]
+      default: stateless
+      description: |
+        State management mode:
+        - stateless: No state between requests
+        - session: State retained for session duration
+        - long_running: Persistent state across sessions
+
+    storage:
+      type: object
+      properties:
+        type:
+          type: enum
+          values: [memory, vector-db, kv, rdbms, custom]
+          default: memory
+          description: |
+            Storage backend:
+            - memory: In-process (lost on restart)
+            - vector-db: Vector database (Pinecone, Weaviate, etc.)
+            - kv: Key-value store (Redis, DynamoDB)
+            - rdbms: Relational database
+            - custom: Custom implementation
+
+        retention:
+          type: string
+          examples: [24h, 7d, 30d, 1y, forever]
+          description: How long to retain state
+
+        config:
+          type: object
+          description: Storage-specific configuration
+
+    context_window:
+      type: object
+      properties:
+        max_messages:
+          type: integer
+          description: Maximum messages to retain in context
+        max_tokens:
+          type: integer
+          description: Maximum tokens to retain
+        strategy:
+          type: enum
+          values: [sliding_window, summarization, importance_weighted]
+          default: sliding_window
+          description: How to manage context when limits exceeded
+
+  examples:
+    # Stateless API agent
+    - mode: stateless
+
+    # Session-based chat agent
+    - mode: session
+      storage:
+        type: memory
+        retention: 24h
+      context_window:
+        max_messages: 50
+        strategy: sliding_window
+
+    # Long-running workflow agent
+    - mode: long_running
+      storage:
+        type: vector-db
+        retention: 1y
+        config:
+          provider: pinecone
+          index: agent-memory
+      context_window:
+        max_tokens: 128000
+        strategy: summarization
+
+# ==============================================================================
+# NEW IN v0.2.4-dev: Enhanced Security with Scopes
+# ==============================================================================
+# Fine-grained permission scopes and compliance tags
+
+security_scopes:
+  description: |
+    Security scopes provide fine-grained access control for capabilities.
+    Similar to OAuth2 scopes but for agent capabilities.
+
+  schema:
+    scopes:
+      type: array
+      items: string
+      description: |
+        Required permission scopes for the capability:
+        - read:data - Read access to data
+        - write:data - Write access to data
+        - admin:system - Administrative operations
+        - execute:code - Code execution permissions
+
+    compliance_tags:
+      type: array
+      items: string
+      description: |
+        Compliance framework tags:
+        - pii - Handles personally identifiable information
+        - hipaa - HIPAA compliance required
+        - gdpr - GDPR compliance required
+        - fedramp - FedRAMP requirements
+        - soc2 - SOC2 Type II controls
+
+  examples:
+    # Database query capability with scopes
+    - name: query_database
+      scopes:
+        - read:data
+        - execute:query
+      compliance_tags:
+        - pii
+        - gdpr
+
+    # Admin capability with elevated permissions
+    - name: manage_users
+      scopes:
+        - admin:users
+        - write:data
+      compliance_tags:
+        - pii
+        - soc2
+        - hipaa
+
+# ==============================================================================
+# NEW IN v0.2.4-dev: Capability Versioning
+# ==============================================================================
+# Version capabilities independently for backward compatibility
+
+capability_versioning:
+  description: |
+    Capabilities can be versioned independently of the agent.
+    Supports deprecation with migration paths.
+
+  schema:
+    version:
+      type: string
+      pattern: '^[0-9]+\.[0-9]+$'
+      description: |
+        Capability version in major.minor format.
+        - Major: Breaking changes
+        - Minor: New features, backward compatible
+
+    deprecated:
+      type: boolean
+      default: false
+      description: Whether capability is deprecated
+
+    deprecation_message:
+      type: string
+      description: |
+        Migration guidance for deprecated capabilities.
+        Should include:
+        - When it will be removed
+        - What to use instead
+        - Migration steps
+
+  examples:
+    # Current capability
+    - name: search_documents
+      version: '2.1'
+      deprecated: false
+
+    # Deprecated capability with migration path
+    - name: search_legacy
+      version: '1.0'
+      deprecated: true
+      deprecation_message: |
+        Deprecated in v0.2.4. Will be removed in v0.3.0.
+        Use 'search_documents' capability instead.
+        Migration: Change capability name and update input schema
+        to use 'query' instead of 'search_term'.
+
+# ==============================================================================
+# NEW IN v0.2.4-dev: Google ADK Extension
+# ==============================================================================
+# Integration with Google's Agent Development Kit
+
+google_adk_extension:
+  description: |
+    Google Agent Development Kit (ADK) integration.
+    Supports LLM agents, workflow agents, and multi-agent orchestration.
+
+  schema:
+    enabled:
+      type: boolean
+      default: false
+
+    agent_type:
+      type: enum
+      values: [llm_agent, sequential_agent, parallel_agent, loop_agent, custom]
+      default: llm_agent
+      description: |
+        ADK agent architecture:
+        - llm_agent: Single LLM-powered agent
+        - sequential_agent: Pipeline of agents
+        - parallel_agent: Concurrent agent execution
+        - loop_agent: Iterative agent with conditions
+
+    model:
+      type: string
+      examples: [gemini-2.0-flash-exp, gemini-1.5-pro]
+
+    session:
+      type: object
+      properties:
+        service:
+          type: enum
+          values: [in_memory, database, vertex_ai]
+        state_schema:
+          type: object
+          description: Session state schema definition
+
+    memory:
+      type: object
+      properties:
+        enabled: boolean
+        service:
+          type: enum
+          values: [in_memory, vertex_ai_rag]
+
+  examples:
+    # Simple LLM agent
+    - enabled: true
+      agent_type: llm_agent
+      model: gemini-2.0-flash-exp
+      session:
+        service: in_memory
+
+    # Multi-agent orchestration
+    - enabled: true
+      agent_type: sequential_agent
+      sub_agents:
+        - research-agent
+        - writing-agent
+        - review-agent
+
+# ==============================================================================
+# Complete Agent Manifest Example (v0.2.4-dev)
+# ==============================================================================
+
+example_manifest:
+  apiVersion: ossa/v0.2.4-dev
+  kind: Agent
+  metadata:
+    name: research-assistant
+    version: 1.0.0
+    description: AI research assistant with memory and streaming support
+    labels:
+      domain: research
+      tier: production
+    annotations:
+      openstandardagents.org/stability: development
+
+  spec:
+    role: |
+      You are a research assistant that helps users find and analyze information.
+      You maintain context across conversations and can search multiple sources.
+
+    llm:
+      provider: google
+      model: gemini-2.0-flash-exp
+      temperature: 0.7
+      maxTokens: 8192
+
+    # NEW: State/memory configuration
+    state:
+      mode: session
+      storage:
+        type: vector-db
+        retention: 30d
+        config:
+          provider: pinecone
+          index: research-memory
+      context_window:
+        max_messages: 100
+        max_tokens: 32000
+        strategy: summarization
+
+    tools:
+      - type: http
+        name: search-api
+        endpoint: https://api.example.com/search
+        # NEW: Transport metadata
+        transport:
+          protocol: http
+          streaming: response
+          binding: /v1/search/stream
+          content_type: text/event-stream
+        auth:
+          type: bearer
+          credentials: secret:search-api-key
+          # NEW: Security scopes
+          scopes:
+            - read:search
+            - read:documents
+        # NEW: Compliance tags
+        compliance_tags:
+          - gdpr
+        capabilities:
+          - name: web_search
+            description: Search the web for information
+            # NEW: Capability versioning
+            version: '2.0'
+            deprecated: false
+            input_schema:
+              type: object
+              properties:
+                query:
+                  type: string
+            output_schema:
+              type: array
+              items:
+                type: object
+            # NEW: Per-capability transport
+            transport:
+              protocol: http
+              streaming: response
+            # NEW: Per-capability scopes
+            scopes:
+              - read:search
+
+          - name: legacy_search
+            description: Old search endpoint
+            version: '1.0'
+            # NEW: Deprecation
+            deprecated: true
+            deprecation_message: |
+              Use 'web_search' instead. Will be removed in v2.0.0.
+
+    autonomy:
+      level: autonomous
+      approval_required: false
+      allowed_actions:
+        - search
+        - summarize
+        - analyze
+
+    constraints:
+      cost:
+        maxTokensPerDay: 1000000
+        maxCostPerDay: 50
+        currency: USD
+      performance:
+        maxLatencySeconds: 30
+        maxConcurrentRequests: 10
+
+    observability:
+      tracing:
+        enabled: true
+        exporter: otlp
+      metrics:
+        enabled: true
+        exporter: prometheus
+      logging:
+        level: info
+        format: json
+
+  extensions:
+    # NEW: Google ADK extension
+    google_adk:
+      enabled: true
+      agent_type: llm_agent
+      model: gemini-2.0-flash-exp
+      session:
+        service: in_memory
+        state_schema:
+          search_history: array
+          current_topic: string
+      memory:
+        enabled: true
+        service: vertex_ai_rag
+      callbacks:
+        before_model_callback: validate_input
+        after_model_callback: log_response
+
+    openai_agents:
+      enabled: true
+      model: gpt-4o
+      memory:
+        enabled: true
+        type: session
+        max_messages: 100
+
+    mcp:
+      enabled: true
+      server_type: sse
+      config:
+        max_message_size: 1048576
+
+# ==============================================================================
+# Migration Notes
+# ==============================================================================
+
+migration:
+  from_v0.2.3:
+    breaking_changes: none
+    new_optional_fields:
+      - spec.state
+      - spec.tools[].transport
+      - spec.tools[].capabilities[].version
+      - spec.tools[].capabilities[].deprecated
+      - spec.tools[].capabilities[].deprecation_message
+      - spec.tools[].capabilities[].scopes
+      - spec.tools[].capabilities[].compliance_tags
+      - spec.tools[].auth.scopes
+      - spec.tools[].compliance_tags
+      - extensions.google_adk
+    recommended_actions:
+      - Add state configuration for stateful agents
+      - Add transport metadata for streaming capabilities
+      - Add compliance tags for regulated environments
+      - Version capabilities for better API lifecycle management
+
+# ==============================================================================
+# Best Practices (v0.2.4-dev)
+# ==============================================================================
+
+best_practices:
+  # State management
+  - Use stateless mode for simple request/response agents
+  - Use session mode for chat and conversational agents
+  - Use long_running mode for workflow agents with persistent state
+  - Configure appropriate retention periods to manage storage costs
+
+  # Transport
+  - Use streaming: response for LLM text generation
+  - Use streaming: bidirectional for real-time collaborative agents
+  - Specify content_type for HTTP transports to ensure compatibility
+
+  # Security
+  - Apply least-privilege scopes to each capability
+  - Tag all capabilities that handle PII with appropriate compliance tags
+  - Use compliance_tags consistently across related capabilities
+
+  # Versioning
+  - Version capabilities when making API changes
+  - Use deprecation_message to provide clear migration paths
+  - Allow deprecation period of at least one minor version
+
+  # Google ADK
+  - Use appropriate agent_type based on workflow complexity
+  - Enable memory service for agents requiring long-term context
+  - Configure session state schema for type safety
+
+# ==============================================================================
+# Development Notes
+# ==============================================================================
+
+development_notes:
+  status: DEVELOPMENT VERSION - APIs may change
+  stability: unstable
+  feedback: https://gitlab.bluefly.io/llm/openapi-ai-agents-standard/-/issues
+  planned_ga: v0.3.0
+
+  known_limitations:
+    - Transport metadata validation is experimental
+    - State storage backends limited to documented types
+    - Capability versioning pattern may be refined
+    - Google ADK extension is based on ADK preview release
+
+  upcoming_features:
+    - Agent composition patterns
+    - Distributed state management
+    - Cross-agent memory sharing
+    - Enhanced A2A protocol support

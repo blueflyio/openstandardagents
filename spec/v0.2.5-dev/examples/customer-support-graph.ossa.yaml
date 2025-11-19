@@ -1,0 +1,362 @@
+# Customer Support Agent Graph - Sequential Process
+# OSSA v0.2.5-dev Example
+#
+# This example demonstrates a sequential customer support workflow
+# where requests flow through triage, specialist, and response agents.
+
+apiVersion: ossa/v0.2.5-dev
+kind: AgentGraph
+metadata:
+  name: customer-support-workflow
+  version: "1.0.0"
+  description: |
+    Multi-agent customer support system that handles incoming
+    requests through triage, routes to specialists, and generates
+    professional responses.
+  labels:
+    domain: customer-support
+    process: sequential
+    framework: production
+  annotations:
+    ossa.io/maintainer: "support-team"
+    ossa.io/sla: "< 30 seconds"
+
+spec:
+  # Sequential execution - agents run one after another
+  process: sequential
+
+  # Entry and exit points
+  entry_point: triage-agent
+  exit_points:
+    - response-agent
+
+  # Agent references
+  agents:
+    - ref: triage-agent
+      role: classifier
+      config:
+        priority_threshold: 0.8
+
+    - ref: technical-specialist
+      role: specialist
+      config:
+        domain: technical
+
+    - ref: billing-specialist
+      role: specialist
+      config:
+        domain: billing
+
+    - ref: general-specialist
+      role: specialist
+      config:
+        domain: general
+
+    - ref: response-agent
+      role: responder
+      config:
+        tone: professional
+        max_length: 500
+
+  # Edges define the flow between agents
+  edges:
+    # Triage routes to appropriate specialist
+    - from: triage-agent
+      to: technical-specialist
+      condition: "classification.category == 'technical'"
+      priority: 1
+
+    - from: triage-agent
+      to: billing-specialist
+      condition: "classification.category == 'billing'"
+      priority: 1
+
+    - from: triage-agent
+      to: general-specialist
+      condition: "classification.category == 'general' || !classification.category"
+      priority: 0
+
+    # All specialists route to response agent
+    - from: technical-specialist
+      to: response-agent
+      transform: "{ solution: output.solution, confidence: output.confidence }"
+
+    - from: billing-specialist
+      to: response-agent
+      transform: "{ solution: output.solution, confidence: output.confidence }"
+
+    - from: general-specialist
+      to: response-agent
+      transform: "{ solution: output.solution, confidence: output.confidence }"
+
+  # Shared state across the workflow
+  state:
+    schema:
+      type: object
+      properties:
+        ticket_id:
+          type: string
+        customer_id:
+          type: string
+        classification:
+          type: object
+          properties:
+            category:
+              type: string
+              enum: [technical, billing, general]
+            priority:
+              type: string
+              enum: [low, medium, high, urgent]
+            confidence:
+              type: number
+        solution:
+          type: object
+        response:
+          type: string
+        metrics:
+          type: object
+          properties:
+            start_time:
+              type: string
+              format: date-time
+            end_time:
+              type: string
+              format: date-time
+            total_tokens:
+              type: integer
+    initial:
+      classification: {}
+      solution: {}
+      metrics: {}
+    persistence: redis
+
+  # Observability for the entire graph
+  observability:
+    tracing:
+      enabled: true
+      exporter: otlp
+      endpoint: "http://jaeger:4317"
+    metrics:
+      enabled: true
+      exporter: prometheus
+      endpoint: "http://prometheus:9090"
+    logging:
+      level: info
+      format: json
+
+  # Constraints for the entire workflow
+  constraints:
+    performance:
+      maxLatencySeconds: 30
+      timeoutSeconds: 60
+    cost:
+      maxTokensPerRequest: 8000
+
+# Framework-specific extensions
+extensions:
+  # LangGraph implementation
+  langgraph:
+    enabled: true
+    graph_name: customer_support_graph
+    state_schema:
+      type: object
+      required: [messages, classification]
+    nodes:
+      - name: triage
+        function: triage_node
+      - name: technical
+        function: technical_node
+      - name: billing
+        function: billing_node
+      - name: general
+        function: general_node
+      - name: respond
+        function: respond_node
+    edges:
+      - from: triage
+        to: technical
+        condition: route_to_technical
+      - from: triage
+        to: billing
+        condition: route_to_billing
+      - from: triage
+        to: general
+        condition: route_to_general
+      - from: technical
+        to: respond
+      - from: billing
+        to: respond
+      - from: general
+        to: respond
+    checkpoint:
+      enabled: true
+      type: postgres
+
+  # OpenAI Agents implementation
+  openai_agents:
+    enabled: true
+    agent_id: customer-support-orchestrator
+    model: gpt-4o
+    sub_agents:
+      - agent_id: triage
+        ossa_agent_ref: triage-agent
+        handoff_conditions:
+          - "Request needs classification"
+      - agent_id: tech-support
+        ossa_agent_ref: technical-specialist
+        handoff_conditions:
+          - "Technical issue detected"
+      - agent_id: billing-support
+        ossa_agent_ref: billing-specialist
+        handoff_conditions:
+          - "Billing question detected"
+    guardrails:
+      enabled: true
+      max_tool_calls: 10
+      timeout_seconds: 60
+
+  # Microsoft AutoGen implementation
+  microsoft_af:
+    enabled: true
+    framework: autogen_v0.4
+    team_type: selector
+    termination:
+      type: text_mention
+      condition: "CUSTOMER_RESPONSE_READY"
+
+---
+# Individual agent definitions can be in separate files
+# Below are inline definitions for completeness
+
+---
+apiVersion: ossa/v0.2.5-dev
+kind: Agent
+metadata:
+  name: triage-agent
+  description: "Classifies incoming customer requests"
+spec:
+  role: |
+    You are a customer support triage specialist. Analyze incoming
+    customer requests and classify them by:
+    1. Category: technical, billing, or general
+    2. Priority: low, medium, high, urgent
+    3. Sentiment: positive, neutral, negative
+
+    Output a JSON classification object.
+  llm:
+    provider: openai
+    model: gpt-4o-mini
+    temperature: 0.1
+  autonomy:
+    level: autonomous
+
+---
+apiVersion: ossa/v0.2.5-dev
+kind: Agent
+metadata:
+  name: technical-specialist
+  description: "Handles technical support issues"
+spec:
+  role: |
+    You are a technical support specialist. Given a classified
+    technical issue, provide:
+    1. Root cause analysis
+    2. Step-by-step solution
+    3. Prevention recommendations
+
+    Be thorough but concise.
+  llm:
+    provider: anthropic
+    model: claude-3-5-sonnet-20241022
+    temperature: 0.3
+  tools:
+    - type: mcp
+      server: knowledge-base
+      capabilities:
+        - search_documentation
+        - get_known_issues
+  autonomy:
+    level: autonomous
+
+---
+apiVersion: ossa/v0.2.5-dev
+kind: Agent
+metadata:
+  name: billing-specialist
+  description: "Handles billing inquiries"
+spec:
+  role: |
+    You are a billing specialist. Handle billing inquiries by:
+    1. Identifying the specific billing concern
+    2. Providing accurate account information
+    3. Explaining charges or credits
+    4. Offering resolution options
+
+    Always verify account details before sharing sensitive information.
+  llm:
+    provider: openai
+    model: gpt-4o
+    temperature: 0.2
+  tools:
+    - type: http
+      name: billing-api
+      endpoint: "https://api.internal/billing"
+      capabilities:
+        - get_account_details
+        - get_invoice_history
+        - apply_credit
+  autonomy:
+    level: supervised
+    approval_required: true
+    allowed_actions:
+      - get_account_details
+      - get_invoice_history
+    blocked_actions:
+      - apply_credit
+
+---
+apiVersion: ossa/v0.2.5-dev
+kind: Agent
+metadata:
+  name: general-specialist
+  description: "Handles general inquiries"
+spec:
+  role: |
+    You are a general customer support agent. Handle inquiries that
+    don't fit technical or billing categories:
+    1. Product information
+    2. Account management
+    3. General questions
+    4. Feedback collection
+
+    Be helpful, friendly, and thorough.
+  llm:
+    provider: openai
+    model: gpt-4o-mini
+    temperature: 0.5
+  autonomy:
+    level: autonomous
+
+---
+apiVersion: ossa/v0.2.5-dev
+kind: Agent
+metadata:
+  name: response-agent
+  description: "Generates final customer responses"
+spec:
+  role: |
+    You are a customer communication specialist. Given a solution
+    from a specialist agent, craft a professional customer response:
+    1. Address the customer by name if available
+    2. Acknowledge their concern
+    3. Provide the solution clearly
+    4. Offer additional assistance
+    5. Close professionally
+
+    Maintain a warm but professional tone.
+  llm:
+    provider: openai
+    model: gpt-4o
+    temperature: 0.7
+  autonomy:
+    level: autonomous

@@ -1,0 +1,464 @@
+# Parallel Processing Agent Graph
+# OSSA v0.2.5-dev Example
+#
+# This example demonstrates parallel agent execution
+# for multi-perspective content analysis.
+
+apiVersion: ossa/v0.2.5-dev
+kind: AgentGraph
+metadata:
+  name: content-analyzer
+  version: "1.0.0"
+  description: |
+    Parallel processing pipeline that analyzes content from
+    multiple perspectives simultaneously, then aggregates
+    results for comprehensive insights.
+  labels:
+    domain: content-analysis
+    process: parallel
+    pattern: fan-out-fan-in
+  annotations:
+    ossa.io/maintainer: "content-team"
+    ossa.io/throughput: "high"
+
+spec:
+  # Parallel execution - analyzers run simultaneously
+  process: parallel
+
+  # Entry through router, exit through aggregator
+  entry_point: content-router
+  exit_points:
+    - result-aggregator
+
+  # Agent references
+  agents:
+    # Router distributes content to analyzers
+    - ref: content-router
+      role: router
+      config:
+        distribution: broadcast
+
+    # Parallel analyzers
+    - ref: sentiment-analyzer
+      role: analyzer
+      config:
+        analysis_type: sentiment
+
+    - ref: entity-extractor
+      role: analyzer
+      config:
+        analysis_type: entities
+        entity_types:
+          - person
+          - organization
+          - location
+          - product
+
+    - ref: topic-classifier
+      role: analyzer
+      config:
+        analysis_type: topics
+        taxonomy: iptc-media-topics
+
+    - ref: language-detector
+      role: analyzer
+      config:
+        analysis_type: language
+        detect_code_switching: true
+
+    - ref: toxicity-scanner
+      role: analyzer
+      config:
+        analysis_type: safety
+        threshold: 0.7
+
+    # Aggregator combines results
+    - ref: result-aggregator
+      role: aggregator
+      config:
+        aggregation_strategy: merge
+        conflict_resolution: weighted
+
+  # Edges defining parallel flow
+  edges:
+    # Router broadcasts to all analyzers
+    - from: content-router
+      to: sentiment-analyzer
+      metadata:
+        parallel_group: analyzers
+
+    - from: content-router
+      to: entity-extractor
+      metadata:
+        parallel_group: analyzers
+
+    - from: content-router
+      to: topic-classifier
+      metadata:
+        parallel_group: analyzers
+
+    - from: content-router
+      to: language-detector
+      metadata:
+        parallel_group: analyzers
+
+    - from: content-router
+      to: toxicity-scanner
+      metadata:
+        parallel_group: analyzers
+
+    # All analyzers feed into aggregator
+    - from: sentiment-analyzer
+      to: result-aggregator
+      transform: "{ sentiment: output }"
+
+    - from: entity-extractor
+      to: result-aggregator
+      transform: "{ entities: output }"
+
+    - from: topic-classifier
+      to: result-aggregator
+      transform: "{ topics: output }"
+
+    - from: language-detector
+      to: result-aggregator
+      transform: "{ language: output }"
+
+    - from: toxicity-scanner
+      to: result-aggregator
+      transform: "{ safety: output }"
+
+  # Shared state for parallel execution
+  state:
+    schema:
+      type: object
+      properties:
+        content_id:
+          type: string
+        content:
+          type: string
+        content_type:
+          type: string
+          enum: [text, html, markdown]
+        results:
+          type: object
+          properties:
+            sentiment:
+              type: object
+            entities:
+              type: array
+            topics:
+              type: array
+            language:
+              type: object
+            safety:
+              type: object
+        aggregated:
+          type: object
+        processing_times:
+          type: object
+    initial:
+      results: {}
+      processing_times: {}
+    persistence: memory
+
+  # Observability for parallel execution
+  observability:
+    tracing:
+      enabled: true
+      exporter: otlp
+      endpoint: "http://tempo:4317"
+    metrics:
+      enabled: true
+      exporter: prometheus
+    logging:
+      level: debug
+      format: json
+
+  # Constraints
+  constraints:
+    performance:
+      maxLatencySeconds: 5
+      maxConcurrentRequests: 100
+      timeoutSeconds: 10
+    cost:
+      maxTokensPerRequest: 4000
+
+# Framework-specific extensions
+extensions:
+  # Google ADK parallel agent
+  google_adk:
+    enabled: true
+    agent_type: parallel_agent
+    model: gemini-2.0-flash-exp
+    sub_agents:
+      - sentiment-analyzer
+      - entity-extractor
+      - topic-classifier
+      - language-detector
+      - toxicity-scanner
+    session:
+      service: in_memory
+
+  # LangGraph fan-out/fan-in
+  langgraph:
+    enabled: true
+    graph_name: content_analysis_graph
+    state_schema:
+      type: object
+      properties:
+        content:
+          type: string
+        results:
+          type: object
+    nodes:
+      - name: router
+        function: route_content
+      - name: sentiment
+        function: analyze_sentiment
+      - name: entities
+        function: extract_entities
+      - name: topics
+        function: classify_topics
+      - name: language
+        function: detect_language
+      - name: safety
+        function: scan_toxicity
+      - name: aggregate
+        function: aggregate_results
+    edges:
+      - from: router
+        to: sentiment
+      - from: router
+        to: entities
+      - from: router
+        to: topics
+      - from: router
+        to: language
+      - from: router
+        to: safety
+      - from: sentiment
+        to: aggregate
+      - from: entities
+        to: aggregate
+      - from: topics
+        to: aggregate
+      - from: language
+        to: aggregate
+      - from: safety
+        to: aggregate
+    checkpoint:
+      enabled: false
+
+  # Vercel AI SDK for edge deployment
+  vercel_ai:
+    enabled: true
+    runtime: edge
+    stream: true
+    route: "/api/analyze"
+
+---
+# Individual agent definitions
+
+---
+apiVersion: ossa/v0.2.5-dev
+kind: Agent
+metadata:
+  name: content-router
+  description: "Routes content to parallel analyzers"
+spec:
+  role: |
+    You are a content routing agent. Your job is simple:
+    1. Receive incoming content
+    2. Validate content format
+    3. Prepare content for parallel analysis
+    4. Broadcast to all analyzers
+
+    Do not perform analysis yourself. Just route.
+  llm:
+    provider: openai
+    model: gpt-4o-mini
+    temperature: 0
+    maxTokens: 500
+  autonomy:
+    level: fully_autonomous
+  constraints:
+    performance:
+      maxLatencySeconds: 1
+
+---
+apiVersion: ossa/v0.2.5-dev
+kind: Agent
+metadata:
+  name: sentiment-analyzer
+  description: "Analyzes sentiment and emotion"
+spec:
+  role: |
+    You are a sentiment analysis specialist. Analyze content for:
+
+    1. Overall sentiment: positive, negative, neutral, mixed
+    2. Sentiment score: -1.0 to 1.0
+    3. Emotions detected: joy, sadness, anger, fear, surprise, etc.
+    4. Confidence scores for each detection
+
+    Return structured JSON output.
+  llm:
+    provider: openai
+    model: gpt-4o-mini
+    temperature: 0.1
+  autonomy:
+    level: fully_autonomous
+  constraints:
+    performance:
+      maxLatencySeconds: 3
+
+---
+apiVersion: ossa/v0.2.5-dev
+kind: Agent
+metadata:
+  name: entity-extractor
+  description: "Extracts named entities"
+spec:
+  role: |
+    You are a named entity recognition specialist. Extract:
+
+    1. People: names of individuals
+    2. Organizations: companies, agencies, institutions
+    3. Locations: places, addresses, geographic features
+    4. Products: specific products, services, brands
+    5. Dates/Times: temporal expressions
+    6. Monetary values: prices, amounts
+
+    For each entity provide:
+    - Text: the exact string
+    - Type: entity category
+    - Start/End: character positions
+    - Confidence: 0.0 to 1.0
+
+    Return as JSON array.
+  llm:
+    provider: anthropic
+    model: claude-3-5-haiku-20241022
+    temperature: 0
+  autonomy:
+    level: fully_autonomous
+  constraints:
+    performance:
+      maxLatencySeconds: 3
+
+---
+apiVersion: ossa/v0.2.5-dev
+kind: Agent
+metadata:
+  name: topic-classifier
+  description: "Classifies content topics"
+spec:
+  role: |
+    You are a topic classification specialist. Classify content using
+    IPTC Media Topics taxonomy (or similar). Provide:
+
+    1. Primary topic with confidence score
+    2. Secondary topics (up to 5) with scores
+    3. Keywords extracted from content
+    4. Content category (news, opinion, analysis, etc.)
+
+    Return structured JSON with topic codes and labels.
+  llm:
+    provider: openai
+    model: gpt-4o-mini
+    temperature: 0.1
+  autonomy:
+    level: fully_autonomous
+  constraints:
+    performance:
+      maxLatencySeconds: 3
+
+---
+apiVersion: ossa/v0.2.5-dev
+kind: Agent
+metadata:
+  name: language-detector
+  description: "Detects language and linguistic features"
+spec:
+  role: |
+    You are a language detection specialist. Detect:
+
+    1. Primary language (ISO 639-1 code)
+    2. Language confidence score
+    3. Code-switching detection (multiple languages)
+    4. Writing style: formal, informal, technical, etc.
+    5. Readability metrics
+
+    Return structured JSON output.
+  llm:
+    provider: openai
+    model: gpt-4o-mini
+    temperature: 0
+  autonomy:
+    level: fully_autonomous
+  constraints:
+    performance:
+      maxLatencySeconds: 2
+
+---
+apiVersion: ossa/v0.2.5-dev
+kind: Agent
+metadata:
+  name: toxicity-scanner
+  description: "Scans for toxic or unsafe content"
+spec:
+  role: |
+    You are a content safety specialist. Scan for:
+
+    1. Toxicity: harmful, offensive language
+    2. Hate speech: targeting protected groups
+    3. Violence: graphic or threatening content
+    4. Sexual content: explicit material
+    5. Self-harm: dangerous suggestions
+    6. Misinformation indicators
+
+    For each category provide:
+    - Detected: boolean
+    - Score: 0.0 to 1.0
+    - Examples: specific text if found
+
+    Return JSON with safety assessment.
+  llm:
+    provider: openai
+    model: gpt-4o
+    temperature: 0
+  autonomy:
+    level: fully_autonomous
+  constraints:
+    performance:
+      maxLatencySeconds: 3
+
+---
+apiVersion: ossa/v0.2.5-dev
+kind: Agent
+metadata:
+  name: result-aggregator
+  description: "Aggregates parallel analysis results"
+spec:
+  role: |
+    You are a result aggregation specialist. Your job:
+
+    1. Collect results from all parallel analyzers
+    2. Merge results into unified structure
+    3. Resolve any conflicts using weighted voting
+    4. Calculate aggregate confidence scores
+    5. Generate summary insights
+
+    Handle missing results gracefully (some analyzers may timeout).
+
+    Return comprehensive JSON with all analysis results and summary.
+  llm:
+    provider: openai
+    model: gpt-4o
+    temperature: 0.2
+    maxTokens: 2000
+  autonomy:
+    level: fully_autonomous
+  constraints:
+    performance:
+      maxLatencySeconds: 3

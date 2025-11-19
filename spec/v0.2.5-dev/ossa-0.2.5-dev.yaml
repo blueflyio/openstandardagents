@@ -1,0 +1,409 @@
+# OSSA v0.2.5-dev Specification
+# Open Standard for Scalable AI Agents
+# Multi-Agent Composition Support
+#
+# STATUS: DEVELOPMENT/UNSTABLE
+# This is a development version and may change without notice.
+
+---
+version: "0.2.5-dev"
+status: "development"
+title: "OSSA v0.2.5-dev - Multi-Agent Composition"
+description: |
+  OSSA v0.2.5-dev introduces the AgentGraph resource type for defining
+  multi-agent compositions and workflows. This enables complex orchestration
+  patterns across multiple agent frameworks.
+
+# =============================================================================
+# NEW IN v0.2.5-dev: AgentGraph Resource Type
+# =============================================================================
+
+agentGraph:
+  description: |
+    AgentGraph is a new resource type that defines how multiple agents
+    collaborate to accomplish complex tasks. It supports various execution
+    patterns and maps to framework-specific implementations.
+
+  kind: "AgentGraph"
+
+  # ---------------------------------------------------------------------------
+  # Core AgentGraphSpec Properties
+  # ---------------------------------------------------------------------------
+
+  spec:
+    agents:
+      description: "Array of agent references that compose this graph"
+      required: true
+      properties:
+        - ref: "Reference to agent metadata.name"
+        - role: "Role of this agent within the graph context"
+        - inline: "Inline AgentSpec (alternative to ref)"
+        - config: "Agent-specific configuration overrides"
+
+    edges:
+      description: "Connections between agents defining execution flow"
+      properties:
+        - from: "Source agent ref"
+        - to: "Target agent ref"
+        - condition: "Condition expression for this edge"
+        - priority: "Edge priority (higher = preferred)"
+        - transform: "Data transformation between agents"
+
+    process:
+      description: "Execution pattern for the agent graph"
+      enum:
+        - sequential: "Agents execute one after another in order"
+        - parallel: "Agents execute simultaneously"
+        - hierarchical: "Manager agent delegates to worker agents"
+        - conditional: "Execution path determined by conditions"
+        - loop: "Agents execute in a loop until termination"
+      default: "sequential"
+
+    entry_point:
+      description: "Starting agent ref (first agent to execute)"
+
+    exit_points:
+      description: "Agent refs that can terminate graph execution"
+
+    state:
+      description: "Shared state configuration"
+      properties:
+        - schema: "JSON Schema for state structure"
+        - initial: "Initial state values"
+        - persistence: "State persistence mechanism (none/memory/redis/database)"
+
+# =============================================================================
+# Execution Patterns
+# =============================================================================
+
+executionPatterns:
+
+  sequential:
+    description: |
+      Agents execute one after another in a defined order.
+      Output from one agent becomes input to the next.
+    useCases:
+      - "Customer support workflows"
+      - "Document processing pipelines"
+      - "Data transformation chains"
+    frameworkMappings:
+      crewai: "Process.sequential"
+      langgraph: "Linear graph with single path"
+      autogen: "Sequential chat with handoffs"
+      google_adk: "SequentialAgent"
+      microsoft_af: "RoundRobinGroupChat"
+    example: |
+      process: sequential
+      agents:
+        - ref: intake-agent
+        - ref: analysis-agent
+        - ref: response-agent
+      edges:
+        - from: intake-agent
+          to: analysis-agent
+        - from: analysis-agent
+          to: response-agent
+
+  parallel:
+    description: |
+      Multiple agents execute simultaneously on the same input.
+      Results are aggregated at completion.
+    useCases:
+      - "Multi-perspective analysis"
+      - "Parallel data processing"
+      - "Ensemble methods"
+    frameworkMappings:
+      crewai: "Async task execution"
+      langgraph: "Fan-out/fan-in pattern"
+      autogen: "Parallel agent calls"
+      google_adk: "ParallelAgent"
+      microsoft_af: "Parallel tool execution"
+    example: |
+      process: parallel
+      agents:
+        - ref: sentiment-analyzer
+        - ref: entity-extractor
+        - ref: topic-classifier
+      entry_point: input-router
+      exit_points:
+        - result-aggregator
+
+  hierarchical:
+    description: |
+      A manager agent coordinates worker agents.
+      The manager decides task delegation and aggregates results.
+    useCases:
+      - "Research teams"
+      - "Complex project management"
+      - "Multi-domain expertise"
+    frameworkMappings:
+      crewai: "Process.hierarchical with manager_llm"
+      langgraph: "Supervisor pattern"
+      autogen: "GroupChat with manager"
+      google_adk: "Root agent with sub_agents"
+      microsoft_af: "SelectorGroupChat or MagenticOneGroupChat"
+      metagpt: "Team with role hierarchy"
+    example: |
+      process: hierarchical
+      agents:
+        - ref: research-manager
+          role: manager
+        - ref: web-researcher
+          role: worker
+        - ref: data-analyst
+          role: worker
+        - ref: report-writer
+          role: worker
+      entry_point: research-manager
+
+  conditional:
+    description: |
+      Execution path determined by conditions evaluated at runtime.
+      Supports branching and decision-based routing.
+    useCases:
+      - "Intelligent routing"
+      - "Error handling"
+      - "Dynamic workflows"
+    frameworkMappings:
+      crewai: "Conditional task dependencies"
+      langgraph: "Conditional edges with router functions"
+      autogen: "Nested chat with conditions"
+      google_adk: "Agent with transfer_to_agent"
+      microsoft_af: "HandoffTermination patterns"
+    example: |
+      process: conditional
+      agents:
+        - ref: router-agent
+        - ref: technical-support
+        - ref: billing-support
+        - ref: general-support
+      edges:
+        - from: router-agent
+          to: technical-support
+          condition: "category == 'technical'"
+        - from: router-agent
+          to: billing-support
+          condition: "category == 'billing'"
+        - from: router-agent
+          to: general-support
+          condition: "default"
+
+  loop:
+    description: |
+      Agents execute in a loop until a termination condition is met.
+      Supports iterative refinement and feedback loops.
+    useCases:
+      - "Iterative refinement"
+      - "Continuous improvement"
+      - "Feedback-driven processing"
+    frameworkMappings:
+      crewai: "Task with iteration"
+      langgraph: "Cycles in graph with checkpoints"
+      autogen: "Chat with max_turns"
+      google_adk: "LoopAgent with max_iterations"
+      microsoft_af: "MaxMessageTermination"
+    example: |
+      process: loop
+      agents:
+        - ref: code-writer
+        - ref: code-reviewer
+        - ref: code-tester
+      edges:
+        - from: code-writer
+          to: code-reviewer
+        - from: code-reviewer
+          to: code-tester
+        - from: code-tester
+          to: code-writer
+          condition: "tests_failed"
+      state:
+        schema:
+          type: object
+          properties:
+            iteration_count:
+              type: integer
+            max_iterations:
+              type: integer
+        initial:
+          iteration_count: 0
+          max_iterations: 5
+
+# =============================================================================
+# Framework-Specific Mappings
+# =============================================================================
+
+frameworkMappings:
+
+  crewai:
+    description: "CrewAI crew and task orchestration"
+    graphMapping:
+      sequential: |
+        from crewai import Crew, Process
+        crew = Crew(
+            agents=[...],
+            tasks=[...],
+            process=Process.sequential
+        )
+      hierarchical: |
+        from crewai import Crew, Process
+        crew = Crew(
+            agents=[...],
+            tasks=[...],
+            process=Process.hierarchical,
+            manager_llm=ChatOpenAI(model="gpt-4")
+        )
+    extensionProperties:
+      - crew.process
+      - crew.verbose
+      - crew.manager_llm
+
+  google_adk:
+    description: "Google Agent Development Kit orchestration agents"
+    graphMapping:
+      sequential: "SequentialAgent(name, sub_agents)"
+      parallel: "ParallelAgent(name, sub_agents)"
+      loop: "LoopAgent(name, sub_agents, max_iterations)"
+      hierarchical: "Root agent with sub_agents list"
+    extensionProperties:
+      - agent_type
+      - sub_agents
+      - session.service
+
+  microsoft_af:
+    description: "Microsoft AutoGen 0.4+ and Magentic-One"
+    graphMapping:
+      sequential: "RoundRobinGroupChat"
+      conditional: "SelectorGroupChat with selector_func"
+      hierarchical: "MagenticOneGroupChat with Orchestrator"
+    extensionProperties:
+      - team_type
+      - termination
+      - model_client
+
+  langgraph:
+    description: "LangGraph state machine orchestration"
+    graphMapping:
+      all: |
+        from langgraph.graph import StateGraph
+        graph = StateGraph(State)
+        graph.add_node("agent_name", agent_func)
+        graph.add_edge("from", "to")
+        graph.add_conditional_edges("node", router_func, {...})
+    extensionProperties:
+      - graph_name
+      - state_schema
+      - nodes
+      - edges
+      - checkpoint
+
+  metagpt:
+    description: "MetaGPT software development team SOPs"
+    graphMapping:
+      hierarchical: |
+        Team with roles: ProductManager, Architect,
+        ProjectManager, Engineer, QAEngineer
+        Following SOP phases: requirements -> design ->
+        implementation -> testing
+    extensionProperties:
+      - role
+      - sop.name
+      - sop.phases
+      - actions
+      - environment
+
+# =============================================================================
+# Extension Properties Added in v0.2.5-dev
+# =============================================================================
+
+newExtensions:
+
+  google_adk:
+    description: "Google Agent Development Kit integration"
+    properties:
+      enabled: "Enable ADK integration"
+      agent_type: "llm_agent | sequential_agent | parallel_agent | loop_agent"
+      model: "Gemini model (e.g., gemini-2.0-flash-exp)"
+      instruction: "Agent instruction/prompt"
+      sub_agents: "Array of sub-agent refs for orchestration"
+      tools: "ADK tools (function, google_search, code_execution)"
+      session: "Session service configuration"
+
+  microsoft_af:
+    description: "Microsoft AutoGen/Magentic-One integration"
+    properties:
+      enabled: "Enable Microsoft AF integration"
+      framework: "autogen_v0.4 | magentic_one | semantic_kernel"
+      team_type: "round_robin | selector | swarm | magentic_one"
+      agent_type: "assistant | code_executor | orchestrator | web_surfer | coder"
+      model_client: "Model client configuration"
+      termination: "Termination condition configuration"
+
+  metagpt:
+    description: "MetaGPT software development team integration"
+    properties:
+      enabled: "Enable MetaGPT integration"
+      role: "product_manager | architect | project_manager | engineer | qa_engineer"
+      sop: "Standard Operating Procedure configuration"
+      actions: "MetaGPT actions this agent can perform"
+      memory: "Memory type (role_memory, team_memory, long_term)"
+      environment: "Workspace and budget configuration"
+
+# =============================================================================
+# Validation Rules
+# =============================================================================
+
+validation:
+  agentGraph:
+    - "spec.agents must have at least one agent"
+    - "All agent refs must be valid metadata.name values"
+    - "entry_point must reference an agent in the agents array"
+    - "exit_points must reference agents in the agents array"
+    - "edges.from and edges.to must reference agents in the agents array"
+    - "Conditional edges should have condition expressions"
+    - "Loop process should define termination conditions"
+
+  edges:
+    - "No orphan agents (all agents must be connected)"
+    - "Entry point must have outgoing edges (unless single agent)"
+    - "Exit points must not have outgoing edges"
+    - "Conditional process requires condition on at least one edge"
+
+  state:
+    - "State schema must be valid JSON Schema"
+    - "Initial values must conform to state schema"
+    - "Persistence type must be supported by runtime"
+
+# =============================================================================
+# Backward Compatibility
+# =============================================================================
+
+compatibility:
+  apiVersion: |
+    Pattern updated to: ^ossa/v(0\.2\.[2-5]|1)(\.[0-9]+)?(-[a-zA-Z0-9]+)?$
+    Supports: ossa/v0.2.2, ossa/v0.2.3, ossa/v0.2.4, ossa/v0.2.5-dev, ossa/v1
+
+  kind: |
+    Now supports: Agent, AgentGraph
+    Existing Agent manifests remain fully compatible
+
+  spec: |
+    Uses oneOf to support either AgentSpec or AgentGraphSpec
+    AgentSpec unchanged from v0.2.3
+
+  extensions: |
+    All existing extensions preserved
+    Added: google_adk, microsoft_af, metagpt
+    Enhanced: crewai (added crew property)
+
+# =============================================================================
+# Development Notes
+# =============================================================================
+
+developmentNotes:
+  status: "UNSTABLE - API may change"
+  feedback: "https://gitlab.bluefly.io/llm/ossa/-/issues"
+  roadmap:
+    - "v0.2.5: Stabilize AgentGraph API"
+    - "v0.2.6: Add resource dependencies"
+    - "v0.3.0: Multi-file manifest support"
+    - "v1.0.0: Stable release"
