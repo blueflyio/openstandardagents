@@ -272,7 +272,7 @@ export default async function DocsPage({ params }: PageProps) {
                 <h3 className="text-lg font-semibold text-gray-900 mb-3">Community</h3>
                 <ul className="space-y-2 text-sm">
                   <li>
-                    <a href="https://gitlab.bluefly.io/llm/ossa/-/issues" className="text-blue-600 hover:text-blue-700">
+                    <a href="https://github.com/blueflyio/openstandardagents/issues" className="text-blue-600 hover:text-blue-700">
                       Issues & Bugs
                     </a>
                   </li>

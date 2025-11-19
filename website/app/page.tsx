@@ -35,8 +35,8 @@ export default function HomePage() {
             <a href="#get-started" className="btn-primary text-lg px-8 py-4 border-2 border-transparent hover:border-white transition-all">
               Get Started
             </a>
-            <Link href="https://gitlab.bluefly.io/llm/ossa" className="btn-outline border-white text-white hover:bg-white hover:text-primary text-lg px-8 py-4" target="_blank" rel="noopener noreferrer">
-              View on GitLab
+            <Link href="https://github.com/blueflyio/openstandardagents" className="btn-outline border-white text-white hover:bg-white hover:text-primary text-lg px-8 py-4" target="_blank" rel="noopener noreferrer">
+              View on GitHub
             </Link>
             <Link href="/schema" className="btn-outline border-white text-white hover:bg-white hover:text-primary text-lg px-8 py-4">
               View Schema
@@ -310,7 +310,7 @@ osa export --to langchain`}</code>
             <p className="text-lg text-gray-600 mb-6">
               And many more frameworks, platforms, and tools...
             </p>
-            <Link href="https://gitlab.bluefly.io/llm/ossa/-/wikis/Integrations" className="btn-primary" target="_blank" rel="noopener noreferrer">
+            <Link href="/docs/ecosystem/framework-support" className="btn-primary">
               View All Integrations
             </Link>
           </div>
@@ -397,7 +397,7 @@ osa export --to langchain`}</code>
             <Link href="/examples" className="btn-secondary bg-white text-primary hover:bg-gray-100">
               View Examples
             </Link>
-            <Link href="https://gitlab.bluefly.io/llm/ossa/-/issues" className="btn-outline border-white text-white hover:bg-white hover:text-primary" target="_blank" rel="noopener noreferrer">
+            <Link href="https://github.com/blueflyio/openstandardagents/issues" className="btn-outline border-white text-white hover:bg-white hover:text-primary" target="_blank" rel="noopener noreferrer">
               Report Issues
             </Link>
           </div>
