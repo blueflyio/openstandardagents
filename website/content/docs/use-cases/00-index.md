@@ -374,15 +374,15 @@ We welcome contributions! To add a new use case:
 6. Document cost estimates
 7. Add production checklist
 
-Submit PRs to: https://github.com/bluefly/ossa/pulls
+Submit PRs to: https://github.com/blueflyio/openstandardagents/pulls
 
 ## Support & Resources
 
 - **Documentation**: https://ossa.dev/docs
-- **Specification**: https://github.com/bluefly/ossa/spec
-- **Examples**: https://github.com/bluefly/ossa/examples
+- **Specification**: https://github.com/blueflyio/openstandardagents/spec
+- **Examples**: https://github.com/blueflyio/openstandardagents/examples
 - **Community**: https://discord.gg/ossa
-- **Issues**: https://github.com/bluefly/ossa/issues
+- **Issues**: https://github.com/blueflyio/openstandardagents/issues
 
 ## License
 

@@ -172,5 +172,5 @@ See the [Extensions](./extensions/) section for framework-specific configuration
 - [OSSA Specification](/docs/)
 - [Getting Started Guide](/docs/getting-started/)
 - [Examples](/docs/examples/)
-- [GitHub Repository](https://github.com/openstandardagents/ossa)
+- [GitHub Repository](https://github.com/blueflyio/openstandardagents)
 - [Schema Download](https://openstandardagents.org/schemas/v0.2.x/agent.json)
