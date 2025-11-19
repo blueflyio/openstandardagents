@@ -17,7 +17,7 @@ export function StructuredData({ type, data }: StructuredDataProps) {
           logo: `${baseUrl}/assets/brand/ossa-logo.svg`,
           sameAs: [
             'https://github.com/blueflyio/openstandardagents',
-            'https://www.npmjs.com/package/@openstandardagents/cli',
+            'https://www.npmjs.com/package/@bluefly/open-standards-scalable-agents',
           ],
           ...data,
         };
