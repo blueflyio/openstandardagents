@@ -3,7 +3,7 @@
 **The OpenAPI for AI Agents** - A specification standard for AI agent definition, deployment, and management
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
-[![npm version](https://img.shields.io/npm/v/@bluefly/open-standards-scalable-agents.svg)](https://www.npmjs.com/package/@bluefly/open-standards-scalable-agents)
+[![npm version](https://img.shields.io/npm/v/@bluefly/openstandardagents.svg)](https://www.npmjs.com/package/@bluefly/openstandardagents)
 [![Specification](https://img.shields.io/badge/Spec-v0.2.2-blue)](https://github.com/blueflyio/openstandardagents/blob/main/spec/v0.2.2/ossa-0.2.2.schema.json)
 
 ---
@@ -101,7 +101,7 @@ Before OSSA, AI agents were:
 ### Installation
 
 ```bash
-npm install -g @bluefly/open-standards-scalable-agents
+npm install -g @bluefly/openstandardagents
 ```
 
 ### Create Your First Agent
@@ -134,7 +134,7 @@ OSSA doesn't care - it's just a standard.
 - **Issues**: [Report Issues](https://github.com/blueflyio/openstandardagents/issues)
 - **Milestones**: [View Roadmap](https://github.com/blueflyio/openstandardagents/milestones)
 - **Releases**: [View Releases](https://github.com/blueflyio/openstandardagents/releases)
-- **npm Package**: [@bluefly/open-standards-scalable-agents](https://www.npmjs.com/package/@bluefly/open-standards-scalable-agents)
+- **npm Package**: [@bluefly/openstandardagents](https://www.npmjs.com/package/@bluefly/openstandardagents)
 
 ---
 

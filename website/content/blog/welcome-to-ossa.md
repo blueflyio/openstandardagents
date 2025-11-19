@@ -27,7 +27,7 @@ OSSA is a specification standard for defining AI agents, similar to how OpenAPI 
 Install the OSSA CLI:
 
 ```bash
-npm install -g @openstandardagents/cli
+npm install -g @bluefly/openstandardagents
 ```
 
 Create your first agent:

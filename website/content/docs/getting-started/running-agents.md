@@ -15,7 +15,7 @@ Learn how to run OSSA agents using the CLI.
 ## Installation
 
 ```bash
-npm install -g @bluefly/open-standards-scalable-agents
+npm install -g @bluefly/openstandardagents
 ```
 
 ## Quick Start

@@ -11,7 +11,7 @@ Build OSSA-compliant agents using your preferred framework and deploy anywhere.
 ### 1. Install OSSA CLI
 
 ```bash
-npm install -g @bluefly/open-standards-scalable-agents
+npm install -g @bluefly/openstandardagents
 ```
 
 ### 2. Generate Your First Agent
@@ -94,8 +94,8 @@ ossa migrate <source> [--target-version <version>]
 ### Programmatic API
 
 ```typescript
-import { ValidationService } from '@bluefly/open-standards-scalable-agents/validation';
-import { GenerationService } from '@bluefly/open-standards-scalable-agents/generation';
+import { ValidationService } from '@bluefly/openstandardagents/validation';
+import { GenerationService } from '@bluefly/openstandardagents/generation';
 
 // Validate
 const validationService = new ValidationService();

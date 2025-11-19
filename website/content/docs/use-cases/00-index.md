@@ -248,7 +248,7 @@ Outputs:
 
 ```bash
 # Install OSSA CLI
-npm install -g @bluefly/open-standards-scalable-agents
+npm install -g @bluefly/openstandardagents
 
 # Verify installation
 ossa --version

@@ -239,7 +239,7 @@ export default function HomePage() {
               <h3 className="text-2xl font-semibold mb-4 text-primary">1. Install CLI</h3>
               <div className="bg-code-bg rounded-lg p-4 mb-4">
                 <pre className="text-code-text text-sm overflow-x-auto">
-                  <code>npm install -g @openstandardagents/cli</code>
+                  <code>npm install -g @bluefly/openstandardagents</code>
                 </pre>
               </div>
             </div>

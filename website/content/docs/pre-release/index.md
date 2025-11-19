@@ -120,7 +120,7 @@ ls spec/v0.2.5-dev/
 
 ```bash
 # Install CLI (if not already installed)
-npm install -g @bluefly/open-standards-scalable-agents
+npm install -g @bluefly/openstandardagents
 
 # Validate against development schema
 ossa validate your-agent.yaml --version 0.2.4-dev

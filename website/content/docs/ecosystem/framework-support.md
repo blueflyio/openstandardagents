@@ -47,17 +47,17 @@ This guide provides detailed information about OSSA compatibility with popular A
 ### Installation
 
 ```bash
-npm install @ossa/kagent
+npm install @bluefly/openstandardagents
 # or
-pnpm add @ossa/kagent
+pnpm add @bluefly/openstandardagents
 # or
-yarn add @ossa/kagent
+yarn add @bluefly/openstandardagents
 ```
 
 ### Quick Start
 
 ```typescript
-import { OSSAAgent, OSSAManifest } from '@ossa/kagent';
+import { OSSAAgent, OSSAManifest } from '@bluefly/openstandardagents';
 
 // Load manifest
 const manifest: OSSAManifest = {
@@ -395,7 +395,7 @@ npm install @ossa/mcp @anthropic-ai/sdk
 ### Using MCP Servers in OSSA
 
 ```typescript
-import { OSSAAgent } from '@ossa/kagent';
+import { OSSAAgent } from '@bluefly/openstandardagents';
 import { MCPServerRegistry } from '@ossa/mcp';
 
 // Register MCP servers

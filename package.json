@@ -1,6 +1,6 @@
 {
-  "name": "@bluefly/open-standards-scalable-agents",
-  "version": "0.2.3",
+  "name": "@bluefly/openstandardagents",
+  "version": "0.2.4",
   "description": "OSSA - Open Standard for Scalable AI Agents. A specification standard for AI agents (like OpenAPI for REST APIs). NOT a framework.",
   "type": "module",
   "main": "dist/index.js",
@@ -53,7 +53,7 @@
   "bugs": {
     "url": "https://github.com/blueflyio/openstandardagents/issues"
   },
-  "homepage": "https://ossa.bluefly.io",
+  "homepage": "https://openstandardagents.org",
   "scripts": {
     "build": "tsc && npm run copy-assets",
     "copy-assets": "cp -r spec dist/ && mkdir -p dist/docs/schemas && cp docs/schemas/*.json dist/docs/schemas/ 2>/dev/null || true",

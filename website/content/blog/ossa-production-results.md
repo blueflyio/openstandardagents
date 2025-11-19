@@ -262,7 +262,7 @@ These results validate the OSSA approach, but we're just getting started. Future
 
 Ready to achieve similar results?
 
-- **Install OSSA**: `npm install -g @bluefly/open-standards-scalable-agents`
+- **Install OSSA**: `npm install -g @bluefly/openstandardagents`
 - **Read the docs**: [Getting Started Guide](/docs/getting-started/installation)
 - **Try examples**: [Example Workflows](/examples)
 - **Join the community**: [GitHub Discussions](https://github.com/blueflyio/openstandardagents/discussions)

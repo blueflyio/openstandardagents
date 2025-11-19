@@ -79,7 +79,7 @@ export function Footer() {
               </li>
               <li>
                 <a
-                  href="https://www.npmjs.com/package/@bluefly/open-standards-scalable-agents"
+                  href="https://www.npmjs.com/package/@bluefly/openstandardagents"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="hover:text-white transition-colors"
