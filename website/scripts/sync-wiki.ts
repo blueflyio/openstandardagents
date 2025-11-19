@@ -21,7 +21,7 @@ interface WikiPage {
   format: string;
 }
 
-async function getGitLabToken(): Promise<string> {
+async function getGitLabToken(): Promise<string | null> {
   // Try environment variable first
   if (process.env.GITLAB_TOKEN) {
     return process.env.GITLAB_TOKEN;
@@ -33,11 +33,18 @@ async function getGitLabToken(): Promise<string> {
     return fs.readFileSync(tokenPath, 'utf-8').trim();
   }
 
-  throw new Error('GitLab token not found. Set GITLAB_TOKEN env var or create ~/.tokens/gitlab');
+  return null;
 }
 
 async function fetchWikiPages(): Promise<WikiPage[]> {
   const token = await getGitLabToken();
+
+  if (!token) {
+    console.log('⚠️  No GitLab token found - skipping wiki sync');
+    console.log('   Set GITLAB_TOKEN env var or create ~/.tokens/gitlab to enable sync');
+    return [];
+  }
+
   const encodedPath = encodeURIComponent(PROJECT_PATH);
 
   const response = await fetch(
@@ -158,6 +165,13 @@ async function syncWiki(): Promise<void> {
 
   // Fetch all wiki pages
   const pages = await fetchWikiPages();
+
+  // If no pages returned (no token or empty wiki), skip sync
+  if (pages.length === 0) {
+    console.log('📋 No pages to sync - using existing content');
+    return;
+  }
+
   console.log(`📚 Found ${pages.length} wiki pages`);
 
   // Track synced files for cleanup
