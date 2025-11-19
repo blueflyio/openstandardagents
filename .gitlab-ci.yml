@@ -533,9 +533,9 @@ create-release-tag:
 
 mirror:github:
   stage: mirror-github
-  image: curlimages/curl:latest
+  image: alpine:latest
   before_script:
-    - apk add --no-cache jq git
+    - apk add --no-cache curl jq git
   script:
     - |
       set -e
