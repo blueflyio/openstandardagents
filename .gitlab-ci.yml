@@ -268,7 +268,7 @@ promote-to-main:
     - apk add --no-cache git curl
     - git config --global user.email "thomas.scola@bluefly.io"
     - git config --global user.name "Thomas Scola, Founder & CEO of Bluefly.io"
-    - git remote set-url origin https://oauth2:${CI_JOB_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git
+    - git remote set-url origin https://oauth2:${GITLAB_PUSH_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git
   script:
     - |
       set -e
@@ -286,7 +286,7 @@ promote-to-main:
         MR_DESC="Automated MR created by CI promote-to-main job when fast-forward was not possible. Please resolve conflicts and merge."
         # First, check if an open MR already exists
         EXISTING_MR_RESPONSE=$(curl -sS -G "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/merge_requests" \
-          --header "PRIVATE-TOKEN: ${CI_JOB_TOKEN}" \
+          --header "PRIVATE-TOKEN: ${GITLAB_PUSH_TOKEN}" \
           --data-urlencode "source_branch=development" \
           --data-urlencode "target_branch=main" \
           --data-urlencode "state=opened")
@@ -296,9 +296,9 @@ promote-to-main:
           exit 0
         fi
 
-        # Create a new MR via GitLab API using CI job token as PRIVATE-TOKEN
+        # Create a new MR via GitLab API using project access token
         CREATE_MR_RESPONSE=$(curl -sS -X POST "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/merge_requests" \
-          --header "PRIVATE-TOKEN: ${CI_JOB_TOKEN}" \
+          --header "PRIVATE-TOKEN: ${GITLAB_PUSH_TOKEN}" \
           --data-urlencode "source_branch=development" \
           --data-urlencode "target_branch=main" \
           --data-urlencode "title=${MR_TITLE}" \
