@@ -1233,4 +1233,4 @@ EOF
 
 - [GitHub Actions Documentation](https://docs.github.com/actions)
 - [GitLab CI Documentation](https://docs.gitlab.com/ee/ci/)
-- [OSSA Runtime Documentation](https://ossa.dev/docs/runtime)
+- [OSSA Runtime Documentation](https://openstandardagents.org/docs/runtime)

@@ -1955,7 +1955,7 @@ if ($features->isEnabled('ossa_moderation')) {
 - [Drupal Integration Module](https://github.com/blueflyio/openstandardagents)
 
 ### Support
-- [GitLab Issues](https://github.com/blueflyio/openstandardagents/issues)
+- [GitHub Issues](https://github.com/blueflyio/openstandardagents/issues)
 - [OSSA Discussions](https://github.com/blueflyio/openstandardagents/issues)
 
 ---

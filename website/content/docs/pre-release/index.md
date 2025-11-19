@@ -140,7 +140,7 @@ Development examples are in the spec directories:
 
 We welcome feedback on development specifications:
 
-1. **GitLab Issues**: [Create an issue](https://github.com/blueflyio/openstandardagents/issues/new)
+1. **GitHub Issues**: [Create an issue](https://github.com/blueflyio/openstandardagents/issues/new)
 2. **Discussions**: Comment on milestone issues
 3. **Pull Requests**: Submit improvements
 

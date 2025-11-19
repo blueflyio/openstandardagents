@@ -358,7 +358,7 @@ export default function EcosystemPage() {
             and designed for extensibility.
           </p>
           <div className="flex flex-wrap gap-4">
-            <Link href="/docs/getting-started/quick-start" className="btn-secondary">
+            <Link href="/docs/getting-started/5-minute-overview" className="btn-secondary">
               Get Started
             </Link>
             <Link href="/specification" className="bg-white text-primary px-6 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors">

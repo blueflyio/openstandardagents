@@ -1205,4 +1205,4 @@ The agent enforces daily cost limits:
 - [PCI-DSS v4.0 Requirements](https://www.pcisecuritystandards.org/)
 - [SOC2 Trust Service Criteria](https://www.aicpa.org/soc)
 - [GDPR Compliance Guide](https://gdpr.eu/)
-- [OSSA Runtime Documentation](https://ossa.dev/docs/runtime)
+- [OSSA Runtime Documentation](https://openstandardagents.org/docs/runtime)

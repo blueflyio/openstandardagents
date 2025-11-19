@@ -125,7 +125,7 @@ agent = create_agent(llm, tools)
 
 **After** (OSSA):
 ```yaml
-apiVersion: ossa/v0.2.2
+apiVersion: ossa/v0.2.3
 kind: Agent
 spec:
   role: Agent description
@@ -202,7 +202,7 @@ ossa validate migrated-agent.ossa.yaml --verbose
 
 ### Getting Help
 
-- [GitLab Issues](https://github.com/blueflyio/openstandardagents/issues)
+- [GitHub Issues](https://github.com/blueflyio/openstandardagents/issues)
 - [Documentation](../Technical/Specification-Deep-Dive)
 - [Examples](../Getting-Started-Examples)
 
