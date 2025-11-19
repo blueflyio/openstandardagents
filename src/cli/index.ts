@@ -14,6 +14,7 @@ import { initCommand } from './commands/init.command.js';
 import { exportCommand } from './commands/export.command.js';
 import { importCommand } from './commands/import.command.js';
 import { schemaCommand } from './commands/schema.command.js';
+import { runCommand } from './commands/run.command.js';
 
 // Load package.json for version
 import * as fs from 'fs';
@@ -46,6 +47,7 @@ program.addCommand(initCommand);
 program.addCommand(exportCommand);
 program.addCommand(importCommand);
 program.addCommand(schemaCommand);
+program.addCommand(runCommand);
 
 // Parse arguments
 program.parse();

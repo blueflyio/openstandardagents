@@ -1,0 +1,59 @@
+# OSSA Quickstart Example - Customer Support Agent
+# Run with: ossa run examples/quickstart/support-agent.ossa.yaml
+
+apiVersion: ossa/v0.2.3
+kind: Agent
+
+metadata:
+  name: support-agent
+  version: 1.0.0
+  description: A helpful customer support agent that answers questions and helps with orders
+
+spec:
+  role: |
+    You are a friendly and helpful customer support agent for an e-commerce company.
+
+    Your responsibilities:
+    - Answer questions about orders, shipping, and returns
+    - Help customers track their packages
+    - Provide information about products
+    - Escalate complex issues to human agents when needed
+
+    Always be polite, concise, and helpful. If you don't know something, say so honestly.
+
+  llm:
+    provider: openai
+    model: gpt-4o-mini
+    temperature: 0.7
+    maxTokens: 1000
+
+  tools:
+    - type: function
+      name: get_order_status
+      capabilities:
+        - order_tracking
+
+  autonomy:
+    level: supervised
+    approval_required: false
+
+  observability:
+    logging:
+      level: info
+      format: json
+
+extensions:
+  openai_agents:
+    model: gpt-4o-mini
+    tools_mapping:
+      - ossa_capability: order_tracking
+        openai_tool_name: get_order_status
+        description: Get the status of a customer order by order ID
+        parameters:
+          type: object
+          properties:
+            order_id:
+              type: string
+              description: The order ID to look up (e.g., ORD-12345)
+          required:
+            - order_id
