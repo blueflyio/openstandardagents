@@ -1,3 +1,7 @@
+---
+title: "Anthropic MCP to OSSA"
+---
+
 # Migration Guide: Extending Anthropic MCP with OSSA
 
 **Version:** 1.0
@@ -1744,4 +1748,3 @@ my_metric_total 123
 **Version:** 1.0
 **Maintained By:** Agent BuildKit Team
 **License:** MIT
-

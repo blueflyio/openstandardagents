@@ -1,10 +1,10 @@
 ---
-title: Why AI Agents Need an Open Standard
-date: 2024-11-15
-author: Thomas Scola
-category: Technical
-tags: [ossa, standards, interoperability, multi-agent]
-excerpt: The proliferation of specialized AI agents in enterprise environments necessitates standardized orchestration mechanisms. Here's why.
+title: ""Why AI Agents Need an Open Standard""
+date: ""2024-11-15""
+author: ""Thomas Scola""
+category: ""Technical""
+tags: ["OSSA", "standards", "interoperability", "multi-agent"]
+excerpt: "\"The proliferation of specialized AI agents in enterprise environments necessitates standardized orchestration mechanisms. Here's why.\""
 ---
 
 # Why AI Agents Need an Open Standard
@@ -95,6 +95,4 @@ The future of AI isn't monolithic models—it's coordinated specialist agents. B
 
 ---
 
-**Next in this series**: [Introducing the OSSA Framework: 3-Tier Progressive Compliance](/blog/introducing-ossa-framework)
-
-**Read the full research**: [OpenAPI for AI Agents: Formal Standard Documentation](https://ossa.ai/research)
+**Next in this series**: [Introducing the OSSA Framework: 3-Tier Progressive Compliance](/blog/Introducing-OSSA-Framework)

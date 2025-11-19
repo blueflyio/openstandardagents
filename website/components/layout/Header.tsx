@@ -23,29 +23,29 @@ export function Header() {
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-6">
-            <Link href="/about" className="text-gray-700 hover:text-primary transition-colors">
+            <Link href="/about" className="text-gray-600 hover:text-[#0066CC] transition-colors font-medium">
               About
             </Link>
-            <Link href="/specification" className="text-gray-700 hover:text-primary transition-colors">
+            <Link href="/specification" className="text-gray-600 hover:text-[#0066CC] transition-colors font-medium">
               Specification
             </Link>
-            <Link href="/docs" className="text-gray-700 hover:text-primary transition-colors">
+            <Link href="/docs" className="text-gray-600 hover:text-[#0066CC] transition-colors font-medium">
               Documentation
             </Link>
-            <Link href="/schema" className="text-gray-700 hover:text-primary transition-colors">
+            <Link href="/schema" className="text-gray-600 hover:text-[#0066CC] transition-colors font-medium">
               Schema
             </Link>
-            <Link href="/playground" className="text-gray-700 hover:text-primary transition-colors">
+            <Link href="/playground" className="text-gray-600 hover:text-[#0066CC] transition-colors font-medium">
               Playground
             </Link>
-            <Link href="/examples" className="text-gray-700 hover:text-primary transition-colors">
+            <Link href="/examples" className="text-gray-600 hover:text-[#0066CC] transition-colors font-medium">
               Examples
             </Link>
             <a
               href="https://github.com/blueflyio/openstandardagents"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-gray-700 hover:text-primary transition-colors flex items-center gap-1"
+              className="text-gray-600 hover:text-[#0066CC] transition-colors flex items-center gap-1 font-medium"
               title="View on GitHub"
             >
               <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
@@ -98,42 +98,42 @@ export function Header() {
           >
             <Link
               href="/about"
-              className="block py-2 text-gray-700 hover:text-primary transition-colors"
+              className="block py-2 text-gray-600 hover:text-[#0066CC] transition-colors font-medium"
               onClick={() => setMobileMenuOpen(false)}
             >
               About
             </Link>
             <Link
               href="/specification"
-              className="block py-2 text-gray-700 hover:text-primary transition-colors"
+              className="block py-2 text-gray-600 hover:text-[#0066CC] transition-colors font-medium"
               onClick={() => setMobileMenuOpen(false)}
             >
               Specification
             </Link>
             <Link
               href="/docs"
-              className="block py-2 text-gray-700 hover:text-primary transition-colors"
+              className="block py-2 text-gray-600 hover:text-[#0066CC] transition-colors font-medium"
               onClick={() => setMobileMenuOpen(false)}
             >
               Documentation
             </Link>
             <Link
               href="/schema"
-              className="block py-2 text-gray-700 hover:text-primary transition-colors"
+              className="block py-2 text-gray-600 hover:text-[#0066CC] transition-colors font-medium"
               onClick={() => setMobileMenuOpen(false)}
             >
               Schema
             </Link>
             <Link
               href="/playground"
-              className="block py-2 text-gray-700 hover:text-primary transition-colors"
+              className="block py-2 text-gray-600 hover:text-[#0066CC] transition-colors font-medium"
               onClick={() => setMobileMenuOpen(false)}
             >
               Playground
             </Link>
             <Link
               href="/examples"
-              className="block py-2 text-gray-700 hover:text-primary transition-colors"
+              className="block py-2 text-gray-600 hover:text-[#0066CC] transition-colors font-medium"
               onClick={() => setMobileMenuOpen(false)}
             >
               Examples
@@ -142,7 +142,7 @@ export function Header() {
               href="https://github.com/blueflyio/openstandardagents"
               target="_blank"
               rel="noopener noreferrer"
-              className="block py-2 text-gray-700 hover:text-primary transition-colors flex items-center gap-2"
+              className="block py-2 text-gray-600 hover:text-[#0066CC] transition-colors flex items-center gap-2 font-medium"
               onClick={() => setMobileMenuOpen(false)}
               title="View on GitHub"
             >

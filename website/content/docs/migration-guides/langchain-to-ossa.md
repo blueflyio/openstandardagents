@@ -1,3 +1,7 @@
+---
+title: "LangChain to OSSA"
+---
+
 # LangChain to OSSA Migration Guide
 
 ## Overview
@@ -1612,7 +1616,7 @@ Use feature flags or load balancer to control traffic split.
    ```
 
 5. **Join the community**
-   - [OSSA Specification](https://github.com/blueflyio/openstandardagents/wiki/home)
+   - [OSSA Specification](https://gitlab.bluefly.io/llm/ossa/-/wikis/home)
    - [Agent BuildKit](https://gitlab.bluefly.io/llm/npm/agent-buildkit)
    - [Examples Repository](https://gitlab.bluefly.io/llm/npm/agent-buildkit/-/tree/main/examples)
    - [Issue Tracker](https://gitlab.bluefly.io/llm/npm/agent-buildkit/-/issues)
@@ -1634,14 +1638,14 @@ Use feature flags or load balancer to control traffic split.
 - [Multi-Agent System](https://gitlab.bluefly.io/llm/npm/agent-buildkit/-/tree/main/examples)
 
 ### Tools
-- [Agent Validator](https://gitlab.bluefly.io/llm/npm/agent-buildkit/blob/main/src/cli/agents/validate.ts)
-- [Migration Script](https://gitlab.bluefly.io/llm/npm/agent-buildkit/blob/main/scripts/migrate-agents-to-ossa.ts)
+- [Agent Validator](https://gitlab.bluefly.io/llm/npm/agent-buildkit/-/blob/main/src/cli/agents/validate.ts)
+- [Migration Script](https://gitlab.bluefly.io/llm/npm/agent-buildkit/-/blob/main/scripts/migrate-agents-to-ossa.ts)
 - [Agent Templates](https://gitlab.bluefly.io/llm/npm/agent-buildkit/-/tree/main/templates/agents)
 
 ### Support
 - **Issues**: https://gitlab.bluefly.io/llm/npm/agent-buildkit/-/issues
 - **Discussions**: https://gitlab.bluefly.io/llm/npm/agent-buildkit/-/merge_requests
-- **Wiki**: https://gitlab.bluefly.io/llm/npm/agent-buildkit/wiki/home
+- **Wiki**: https://gitlab.bluefly.io/llm/npm/agent-buildkit/-/wikis/home
 
 ---
 
@@ -1708,4 +1712,3 @@ runtime:
 ---
 
 *For questions or issues with this migration guide, please create an issue at: https://gitlab.bluefly.io/llm/npm/agent-buildkit/-/issues*
-

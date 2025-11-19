@@ -1,3 +1,7 @@
+---
+title: "Contributing"
+---
+
 # Contributing to OpenAPI AI Agents Standard (OAAS)
 
 > **Technical Excellence in AI Agent Interoperability**

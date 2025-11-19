@@ -1,3 +1,7 @@
+---
+title: "Quick Reference"
+---
+
 # Quick Reference
 
 - Root: `x-ossa-metadata`, `x-ossa`, `x-agent`
@@ -11,4 +15,3 @@ ossa validate examples/openapi-extensions/worker-agent-api.openapi.yml --openapi
 ```
 
 **Links**: [OpenAPI-Extensions](./OpenAPI-Extensions) · [Examples](./Examples)
-

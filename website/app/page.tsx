@@ -24,7 +24,7 @@ export default function HomePage() {
             </span>
           </h1>
           <p className="text-3xl md:text-4xl mb-6 font-light">
-            Industry Standard for Agent Orchestration
+            The Interoperability Layer Your Agents Are Missing
           </p>
           <p className="text-xl md:text-2xl mb-8 text-gray-200 max-w-4xl mx-auto">
             A vendor-neutral, open specification for defining, deploying, and managing AI agents.
@@ -32,7 +32,7 @@ export default function HomePage() {
             across frameworks, runtimes, and organizations.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
-            <a href="#get-started" className="btn-primary text-lg px-8 py-4">
+            <a href="#get-started" className="btn-primary text-lg px-8 py-4 border-2 border-transparent hover:border-white transition-all">
               Get Started
             </a>
             <Link href="https://gitlab.bluefly.io/llm/ossa" className="btn-outline border-white text-white hover:bg-white hover:text-primary text-lg px-8 py-4" target="_blank" rel="noopener noreferrer">

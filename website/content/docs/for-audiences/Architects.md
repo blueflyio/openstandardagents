@@ -1,3 +1,7 @@
+---
+title: "Architects"
+---
+
 # For Architects & Platform Engineers
 
 Design and govern multi-agent systems using OSSA's standard architecture patterns.

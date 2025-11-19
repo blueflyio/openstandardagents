@@ -1,3 +1,7 @@
+---
+title: "Hello World"
+---
+
 # Hello World Tutorial
 
 Create your first OSSA agent in 10 minutes.
@@ -25,7 +29,7 @@ This creates a minimal, valid OSSA agent manifest.
 Open `hello-world.ossa.yaml`:
 
 ```yaml
-apiVersion: ossa/v0.2.x
+apiVersion: ossa/v0.2.2
 kind: Agent
 
 metadata:
@@ -51,7 +55,7 @@ spec:
 ### apiVersion & kind
 
 ```yaml
-apiVersion: ossa/v0.2.x
+apiVersion: ossa/v0.2.2
 kind: Agent
 ```
 
@@ -102,7 +106,7 @@ ossa validate hello-world.ossa.yaml
 You should see:
 
 ```
-✓ Agent manifest is valid OSSA v0.2.x
+✓ Agent manifest is valid OSSA 0.2.2
 ```
 
 ## Step 5: Add a Tool (Optional)
@@ -138,7 +142,7 @@ ossa validate hello-world.ossa.yaml
 
 For a fully annotated example with extensive comments, see:
 
-[examples/getting-started/hello-world-complete.ossa.yaml](https://github.com/blueflyio/openstandardagents/blob/main/examples/getting-started/hello-world-complete.ossa.yaml)
+[examples/getting-started/hello-world-complete.ossa.yaml](https://gitlab.bluefly.io/llm/openapi-ai-agents-standard/-/blob/main/examples/getting-started/hello-world-complete.ossa.yaml)
 
 This example includes:
 - Detailed comments for every field
@@ -176,5 +180,5 @@ A: OSSA is just a standard. Use agent-buildkit or your own deployment system.
 
 - [5-Minute Overview](5-Minute-Overview)
 - [First Agent Creation](First-Agent)
-- [Complete Annotated Example](https://github.com/blueflyio/openstandardagents/blob/main/examples/getting-started/hello-world-complete.ossa.yaml)
+- [Complete Annotated Example](https://gitlab.bluefly.io/llm/openapi-ai-agents-standard/-/blob/main/examples/getting-started/hello-world-complete.ossa.yaml)
 

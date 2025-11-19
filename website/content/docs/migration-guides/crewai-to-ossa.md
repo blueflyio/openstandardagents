@@ -1,3 +1,7 @@
+---
+title: "CrewAI to OSSA"
+---
+
 # CrewAI to OSSA Migration Guide
 
 ## Overview
@@ -268,4 +272,3 @@ A: Use OSSA's hierarchical workflow type with manager-worker pattern.
 - [OSSA Orchestration Patterns](/Specification/Orchestration)
 - [Multi-Agent Examples](/Examples/Multi-Agent)
 - [Kubernetes Deployment](/Deployment/Kubernetes)
-

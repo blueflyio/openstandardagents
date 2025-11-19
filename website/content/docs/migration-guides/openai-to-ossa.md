@@ -1,3 +1,7 @@
+---
+title: "OpenAI to OSSA"
+---
+
 # OpenAI Assistants API to OSSA Migration Guide
 
 > **Comprehensive guide for migrating from OpenAI Assistants API to OSSA (Open Source Self-Organizing Agent) Standard**
@@ -1176,8 +1180,8 @@ curl http://localhost:3000/metrics
 
 ## Additional Resources
 
-- **OSSA Specification**: [https://github.com/blueflyio/openstandardagents/wiki/home](https://github.com/blueflyio/openstandardagents/wiki/home)
-- **BuildKit Documentation**: [https://gitlab.bluefly.io/llm/documentation/wiki/BuildKit-CLI-Reference](https://gitlab.bluefly.io/llm/documentation/wiki/BuildKit-CLI-Reference)
+- **OSSA Specification**: [https://gitlab.bluefly.io/llm/ossa/-/wikis/home](https://gitlab.bluefly.io/llm/ossa/-/wikis/home)
+- **BuildKit Documentation**: [https://gitlab.bluefly.io/llm/documentation/-/wikis/BuildKit-CLI-Reference](https://gitlab.bluefly.io/llm/documentation/-/wikis/BuildKit-CLI-Reference)
 - **Agent Examples**: `/Users/flux423/Sites/LLM/agent-buildkit/templates/agents/`
 - **OSSA Types**: `/Users/flux423/Sites/LLM/agent-buildkit/src/types/ossa.ts`
 - **OpenAPI Spec**: `/Users/flux423/Sites/LLM/agent-buildkit/openapi/ossa-complete-v0.1.2.yaml`
@@ -1188,7 +1192,7 @@ curl http://localhost:3000/metrics
 
 - **Issues**: [https://gitlab.bluefly.io/llm/documentation/-/issues](https://gitlab.bluefly.io/llm/documentation/-/issues)
 - **BuildKit Repo**: [https://gitlab.bluefly.io/llm/npm/agent-buildkit](https://gitlab.bluefly.io/llm/npm/agent-buildkit)
-- **Wiki**: [https://gitlab.bluefly.io/llm/documentation/wiki/home](https://gitlab.bluefly.io/llm/documentation/wiki/home)
+- **Wiki**: [https://gitlab.bluefly.io/llm/documentation/-/wikis/home](https://gitlab.bluefly.io/llm/documentation/-/wikis/home)
 
 ---
 
@@ -1196,4 +1200,3 @@ curl http://localhost:3000/metrics
 **Last Updated**: 2025-11-10
 **OSSA Version**: v0.2.2
 **Maintainer**: BuildKit Team
-

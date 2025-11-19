@@ -1,3 +1,7 @@
+---
+title: "Installation"
+---
+
 # Installation Guide
 
 Install OSSA CLI and get ready to create your first agent.
@@ -63,7 +67,7 @@ ossa --help
 You should see:
 
 ```
-OSSA CLI - Open Standard for Scalable AI Agents (The OpenAPI for AI Agents)
+OSSA CLI - Open Standard for Scalable Agents (The OpenAPI for AI Agents)
 
 Usage: ossa [options] [command]
 

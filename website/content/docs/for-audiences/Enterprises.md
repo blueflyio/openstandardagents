@@ -1,3 +1,7 @@
+---
+title: "Enterprises"
+---
+
 # For Enterprises
 
 Adopt OSSA for vendor independence, compliance, and enterprise-scale agent management.
@@ -234,7 +238,7 @@ spec:
 
 ### Enterprise Support
 
-- [GitLab Issues](https://github.com/blueflyio/openstandardagents/issues)
+- [GitLab Issues](https://gitlab.bluefly.io/llm/openapi-ai-agents-standard/-/issues)
 - [Documentation](../Technical/Specification-Deep-Dive)
 - [Examples](../Examples/Enterprise-Examples)
 

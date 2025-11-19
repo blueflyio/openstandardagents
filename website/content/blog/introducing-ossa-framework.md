@@ -1,10 +1,10 @@
 ---
-title: "Introducing the OSSA Framework: 3-Tier Progressive Compliance"
-date: 2024-11-18
-author: Thomas Scola
-category: Technical
+title: ""Introducing the OSSA Framework: 3-Tier Progressive Compliance""
+date: "2024-11-18"
+author: "Thomas Scola"
+category: "Technical"
 tags: [ossa, architecture, framework, compliance]
-excerpt: How OSSA's progressive compliance model enables organizations to adopt agent orchestration incrementally while maintaining enterprise governance.
+excerpt: "How OSSA's progressive compliance model enables organizations to adopt agent orchestration incrementally while maintaining enterprise governance."
 ---
 
 # Introducing the OSSA Framework: 3-Tier Progressive Compliance

@@ -5,11 +5,13 @@
   "private": true,
   "scripts": {
     "sync-version": "node scripts/sync-version.js",
+    "sync-wiki": "npx tsx scripts/sync-wiki.ts",
     "dev": "npm run sync-version && next dev",
-    "build": "npm run sync-version && next build",
+    "build": "npm run sync-version && npm run sync-wiki && next build",
+    "build:no-wiki": "npm run sync-version && next build",
     "start": "next start",
     "lint": "next lint",
-    "export": "npm run sync-version && next build"
+    "export": "npm run sync-version && npm run sync-wiki && next build"
   },
   "keywords": [
     "ossa",
@@ -45,6 +47,7 @@
     "@types/react-dom": "^18.3.1",
     "@types/react-syntax-highlighter": "^15.5.13",
     "eslint": "^9.18.0",
-    "eslint-config-next": "^15.5.6"
+    "eslint-config-next": "^15.5.6",
+    "tsx": "^4.19.0"
   }
 }

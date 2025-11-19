@@ -1,59 +1,38 @@
+---
+title: "5 Minute Overview"
+---
+
 # 5-Minute Overview
 
-Get up to speed on OSSA and start building your first agent.
-
----
+Get up to speed on OSSA in 5 minutes.
 
 ## What is OSSA?
 
-**OSSA (Open Standard for Scalable AI Agents)** is the industry standard for defining AI agents - think of it as **OpenAPI for AI Agents**.
+**OSSA (Open Standard for Scalable Agents)** is like OpenAPI, but for AI agents.
 
-| Standard | Purpose |
-|----------|---------|
-| **OpenAPI** | Standardizes REST API definitions |
-| **OSSA** | Standardizes AI agent definitions |
+- **OpenAPI** = Standard format for REST APIs
+- **OSSA** = Standard format for AI agents
 
-Just like OpenAPI made APIs portable across tools and frameworks, OSSA makes AI agents portable across LangChain, CrewAI, OpenAI Assistants, Anthropic Claude, and more.
+## Why Does This Matter?
 
----
-
-## The Problem OSSA Solves
-
-### Today's Reality
-- **LangChain** calls them "chains"
-- **CrewAI** calls them "crews"
-- **OpenAI** calls them "assistants"
-- **Anthropic** has different tool patterns
-
-Each framework has its own configuration, terminology, and lock-in. Moving agents between frameworks? Complete rewrite.
+### Before OSSA
+- Agents built with LangChain couldn't work with Anthropic SDK agents
+- Moving agents between teams required rewriting
+- No standard way to validate agent correctness
+- Framework lock-in everywhere
 
 ### With OSSA
-✅ **One definition** → Deploy to any framework
-✅ **Validate before deploy** → Catch errors early
-✅ **Share across teams** → No rewrites needed
-✅ **Switch providers** → True portability
+- ✅ Agents work across any framework
+- ✅ Move agents between teams/organizations easily
+- ✅ Validate agents before deployment
+- ✅ No vendor lock-in
 
----
+## Core Concept
 
-## Quick Start (2 Minutes)
-
-### 1. Install the CLI
-
-```bash
-npm install -g @bluefly/open-standards-scalable-agents
-```
-
-### 2. Create Your First Agent
-
-```bash
-ossa init my-agent --type worker
-cd my-agent
-```
-
-This creates a minimal `agent.ossa.yaml`:
+OSSA defines agents using a **declarative YAML/JSON format**:
 
 ```yaml
-apiVersion: ossa/v0.2.3
+apiVersion: ossa/v0.2.2
 kind: Agent
 
 metadata:
@@ -62,179 +41,45 @@ metadata:
   description: My first OSSA agent
 
 spec:
-  role: |
-    You are a helpful assistant that can answer questions
-    and help with various tasks.
-
+  role: You are a helpful assistant
   llm:
     provider: openai
-    model: gpt-4-turbo
-    temperature: 0.7
-
+    model: gpt-3.5-turbo
   tools:
     - type: function
-      name: search
-      description: Search for information
+      name: greet_user
+      description: Greet a user by name
 ```
 
-### 3. Validate
+## Key Components
 
-```bash
-ossa validate agent.ossa.yaml
-```
+| Component | What It Does |
+|-----------|--------------|
+| **Specification** | JSON Schema that defines the standard |
+| **CLI** | Validates and generates agent manifests |
+| **Examples** | Reference implementations for learning |
+| **agent-buildkit** | Reference implementation with production features |
 
-### 4. Export to Any Framework
+## What OSSA Is NOT
 
-```bash
-# Export to LangChain
-ossa export --to langchain
-
-# Export to CrewAI
-ossa export --to crewai
-
-# Export to OpenAI Assistants
-ossa export --to openai
-```
-
----
-
-## Core Components
-
-| Component | Purpose | Example |
-|-----------|---------|---------|
-| **apiVersion** | Schema version | `ossa/v0.2.3` |
-| **metadata** | Identity & labels | name, version, tags |
-| **spec.role** | System prompt | Agent personality |
-| **spec.llm** | Model config | provider, temperature |
-| **spec.tools** | Capabilities | functions, APIs, code |
-| **spec.autonomy** | Control level | supervised → autonomous |
-| **extensions** | Framework bridges | kagent, langchain, crewai |
-
----
-
-## What OSSA Is vs Isn't
-
-### OSSA IS
-- ✅ A **specification standard** (like OpenAPI)
-- ✅ **Vendor-neutral** (Apache 2.0 licensed)
-- ✅ **Framework-agnostic** (works with any runtime)
-- ✅ **Validation-ready** (JSON Schema based)
-
-### OSSA IS NOT
-- ❌ A framework (it's a standard)
-- ❌ A runtime (it's a specification)
-- ❌ An orchestration tool (it's a contract)
-
----
-
-## Real-World Example
-
-Here's a complete production-ready agent:
-
-```yaml
-apiVersion: ossa/v0.2.3
-kind: Agent
-
-metadata:
-  name: customer-support-agent
-  version: 2.1.0
-  description: Tier-1 customer support with escalation
-  labels:
-    team: support
-    environment: production
-
-spec:
-  role: |
-    You are a customer support agent for an e-commerce platform.
-    Help customers with:
-    - Order status inquiries
-    - Return and refund requests
-    - Product questions
-
-    Escalate to human if:
-    - Customer is upset (3+ frustrated messages)
-    - Request involves refund > $500
-    - Legal or compliance issues mentioned
-
-  llm:
-    provider: anthropic
-    model: claude-3-sonnet-20240229
-    temperature: 0.3
-    maxTokens: 1500
-
-  tools:
-    - type: http
-      name: get_order_status
-      description: Fetch order details by order ID
-      endpoint: https://api.example.com/orders/{orderId}
-      auth:
-        type: bearer
-        token: ${ORDER_API_KEY}
-
-    - type: function
-      name: create_support_ticket
-      description: Create escalation ticket for human review
-
-  autonomy:
-    level: L2
-    approval_required:
-      - refund_over_500
-      - account_deletion
-
-  observability:
-    tracing:
-      enabled: true
-      exporter: otlp
-    metrics:
-      enabled: true
-      exporter: prometheus
-
-extensions:
-  kagent:
-    enabled: true
-    replicas: 3
-
-  langchain:
-    enabled: true
-    memory_type: conversation_buffer_window
-```
-
----
+- ❌ **Not a framework** - It's a standard
+- ❌ **Not a runtime** - It's a specification
+- ❌ **Not an orchestration tool** - It's a contract definition
 
 ## Next Steps
 
-### Immediate (5 min)
-1. [Hello World Tutorial](Hello-World) → Build your first working agent
-2. [Installation Guide](Installation) → Complete setup instructions
+1. **Install OSSA CLI**: `npm install -g @bluefly/open-standards-scalable-agents`
+2. **Try the Hello World example**: See [Hello World Tutorial](Hello-World)
+3. **Create your first agent**: See [First Agent Creation](First-Agent)
+4. **Explore examples**: Check out [Examples & Patterns](../Examples/Getting-Started-Examples)
 
-### Short-term (30 min)
-3. [First Agent Creation](First-Agent) → Production patterns
-4. [Schema Reference](/schema) → Explore all fields
+## Learn More
 
-### Deeper Learning
-5. [Migration Guides](/docs/migration-guides) → From LangChain, CrewAI, OpenAI
-6. [Examples](/examples) → 58+ real-world agents
-7. [Playground](/playground) → Interactive validation
+- [Installation Guide](Installation)
+- [Hello World Tutorial](Hello-World)
+- [Full Documentation](../Technical/Specification-Deep-Dive)
 
 ---
 
-## Key Resources
+**Time to next level**: ~15 minutes → [Hello World Tutorial](Hello-World)
 
-| Resource | URL |
-|----------|-----|
-| **GitLab Repository** | https://gitlab.bluefly.io/llm/ossa |
-| **npm Package** | [@bluefly/open-standards-scalable-agents](https://www.npmjs.com/package/@bluefly/open-standards-scalable-agents) |
-| **Schema Reference** | [/schema](/schema) |
-| **Issue Tracker** | https://gitlab.bluefly.io/llm/ossa/-/issues |
-
----
-
-## Need Help?
-
-- **GitLab Issues**: [Report bugs or request features](https://gitlab.bluefly.io/llm/ossa/-/issues)
-- **Documentation**: [Full docs](/docs)
-- **Examples**: [58+ agent examples](/examples)
-
----
-
-**Ready to build?** → [Hello World Tutorial](Hello-World) (15 min)

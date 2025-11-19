@@ -1,10 +1,10 @@
 ---
-title: Welcome to OSSA
-date: 2024-01-15
-author: OSSA Team
-category: Announcement
-tags: [ossa, announcement, standard]
-excerpt: OSSA is now available as an open standard for AI agents.
+title: ""Welcome to OSSA""
+date: ""2024-01-15""
+author: ""OSSA Team""
+category: ""Announcement""
+tags: ["OSSA", "announcement", "standard"]
+excerpt: "\"OSSA is now available as an open standard for AI agents.\""
 ---
 
 # Welcome to OSSA
@@ -27,13 +27,13 @@ OSSA is a specification standard for defining AI agents, similar to how OpenAPI 
 Install the OSSA CLI:
 
 ```bash
-npm install -g @bluefly/open-standards-scalable-agents
+npm install -g @openstandardagents/cli
 ```
 
 Create your first agent:
 
 ```bash
-ossa init my-agent --type worker
+osa init my-agent --type worker
 ```
 
 ## Learn More
@@ -41,4 +41,3 @@ ossa init my-agent --type worker
 - [Documentation](/docs)
 - [Examples](/examples)
 - [Playground](/playground)
-

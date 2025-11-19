@@ -1,3 +1,7 @@
+---
+title: "Drupal ECA to OSSA"
+---
+
 # Drupal ECA to OSSA Migration Guide
 
 > **Comprehensive guide for converting Drupal ECA (Event-Condition-Action) rules to OSSA (Open Standard for Smart & Scalable Agents) agents**
@@ -1937,9 +1941,9 @@ if ($features->isEnabled('ossa_moderation')) {
 ## Additional Resources
 
 ### Documentation
-- [OSSA Specification](https://github.com/blueflyio/openstandardagents/wiki/home)
+- [OSSA Specification](https://gitlab.bluefly.io/llm/ossa/-/wikis/home)
 - [Drupal ECA Guide](https://ecaguide.org/)
-- [BuildKit CLI Reference](https://gitlab.bluefly.io/llm/documentation/wiki/BuildKit-CLI-Reference)
+- [BuildKit CLI Reference](https://gitlab.bluefly.io/llm/documentation/-/wikis/BuildKit-CLI-Reference)
 
 ### Tools
 - OSSA CLI: `npm install -g @ossa/cli`
@@ -1947,12 +1951,12 @@ if ($features->isEnabled('ossa_moderation')) {
 - OSSA Validator: `ossa validate <file>`
 
 ### Examples
-- [OSSA Example Agents](https://github.com/blueflyio/openstandardagents/-/tree/main/examples)
+- [OSSA Example Agents](https://gitlab.bluefly.io/llm/ossa/-/tree/main/examples)
 - [Drupal Integration Module](https://gitlab.bluefly.io/llm/drupal/ossa_integration)
 
 ### Support
 - [GitLab Issues](https://gitlab.bluefly.io/llm/documentation/-/issues)
-- [OSSA Discussions](https://github.com/blueflyio/openstandardagents/issues)
+- [OSSA Discussions](https://gitlab.bluefly.io/llm/ossa/-/issues)
 
 ---
 
@@ -2011,4 +2015,3 @@ if ($features->isEnabled('ossa_moderation')) {
 **Last Updated:** 2025-11-10
 **Maintainer:** LLM Platform Team
 **License:** Apache-2.0
-

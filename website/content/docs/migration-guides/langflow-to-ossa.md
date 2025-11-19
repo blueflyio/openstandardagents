@@ -1,3 +1,7 @@
+---
+title: "Langflow to OSSA"
+---
+
 # Langflow to OSSA Migration Guide
 
 **Version:** 1.0
@@ -2046,9 +2050,9 @@ ossa-migrate validate \
 
 ### Documentation
 
-- **OSSA Specification**: https://github.com/blueflyio/openstandardagents/wiki/home
+- **OSSA Specification**: https://gitlab.bluefly.io/llm/ossa/-/wikis/home
 - **OSSA Quick Reference**: [OSSA-QUICK-REFERENCE.md](../OSSA-QUICK-REFERENCE.md)
-- **BuildKit CLI**: https://gitlab.bluefly.io/llm/documentation/wiki/BuildKit-CLI-Reference
+- **BuildKit CLI**: https://gitlab.bluefly.io/llm/documentation/-/wikis/BuildKit-CLI-Reference
 - **Langflow Documentation**: https://docs.langflow.org/
 
 ### Example Repositories
@@ -2068,5 +2072,4 @@ ossa-migrate validate \
 **Maintained By:** OSSA Team
 **License:** MIT
 
-**Feedback**: Please report issues or suggestions at https://gitlab.bluefly.io/llm/documentation/issues/new?issue[title]=Langflow%20Migration%20Guide%20Feedback
-
+**Feedback**: Please report issues or suggestions at https://gitlab.bluefly.io/llm/documentation/-/issues/new?issue[title]=Langflow%20Migration%20Guide%20Feedback

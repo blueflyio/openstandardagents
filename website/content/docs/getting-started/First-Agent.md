@@ -1,3 +1,7 @@
+---
+title: "First Agent"
+---
+
 # First Agent Creation
 
 Build your first real OSSA agent with capabilities.
@@ -117,7 +121,7 @@ ossa validate research-assistant.ossa.yaml --verbose
 Your final agent should look like:
 
 ```yaml
-apiVersion: ossa/v0.2.x
+apiVersion: ossa/v0.2.2
 kind: Agent
 
 metadata:
