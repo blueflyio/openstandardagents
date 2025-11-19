@@ -1180,8 +1180,8 @@ curl http://localhost:3000/metrics
 
 ## Additional Resources
 
-- **OSSA Specification**: [https://gitlab.bluefly.io/llm/ossa/-/wikis/home](https://gitlab.bluefly.io/llm/ossa/-/wikis/home)
-- **BuildKit Documentation**: [https://gitlab.bluefly.io/llm/documentation/-/wikis/BuildKit-CLI-Reference](https://gitlab.bluefly.io/llm/documentation/-/wikis/BuildKit-CLI-Reference)
+- **OSSA Specification**: [https://github.com/blueflyio/openstandardagents/wiki/home](https://github.com/blueflyio/openstandardagents/wiki/home)
+- **BuildKit Documentation**: [https://github.com/blueflyio/openstandardagents/wiki/BuildKit-CLI-Reference](https://github.com/blueflyio/openstandardagents/wiki/BuildKit-CLI-Reference)
 - **Agent Examples**: `/Users/flux423/Sites/LLM/agent-buildkit/templates/agents/`
 - **OSSA Types**: `/Users/flux423/Sites/LLM/agent-buildkit/src/types/ossa.ts`
 - **OpenAPI Spec**: `/Users/flux423/Sites/LLM/agent-buildkit/openapi/ossa-complete-v0.1.2.yaml`
@@ -1190,9 +1190,9 @@ curl http://localhost:3000/metrics
 
 ## Support
 
-- **Issues**: [https://gitlab.bluefly.io/llm/documentation/-/issues](https://gitlab.bluefly.io/llm/documentation/-/issues)
-- **BuildKit Repo**: [https://gitlab.bluefly.io/llm/npm/agent-buildkit](https://gitlab.bluefly.io/llm/npm/agent-buildkit)
-- **Wiki**: [https://gitlab.bluefly.io/llm/documentation/-/wikis/home](https://gitlab.bluefly.io/llm/documentation/-/wikis/home)
+- **Issues**: [https://github.com/blueflyio/openstandardagents/issues](https://github.com/blueflyio/openstandardagents/issues)
+- **BuildKit Repo**: [https://github.com/blueflyio/openstandardagents](https://github.com/blueflyio/openstandardagents)
+- **Wiki**: [https://github.com/blueflyio/openstandardagents/wiki/home](https://github.com/blueflyio/openstandardagents/wiki/home)
 
 ---
 

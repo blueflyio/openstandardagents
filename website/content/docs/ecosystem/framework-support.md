@@ -134,9 +134,9 @@ console.log(result);
 
 ### Documentation
 
-- **Repository**: [gitlab.bluefly.io/llm/kagent](https://gitlab.bluefly.io/llm/kagent)
+- **Repository**: [github.com/blueflyio/kagent](https://github.com/blueflyio/kagent)
 - **API Reference**: [docs.openstandardagents.org/kagent/api](https://docs.openstandardagents.org/kagent/api)
-- **Examples**: [examples/kagent/](https://github.com/blueflyio/openstandardagents/-/tree/main/examples/kagent)
+- **Examples**: [examples/kagent/](https://github.com/blueflyio/openstandardagents/tree/main/examples/kagent)
 
 ---
 
@@ -233,7 +233,7 @@ result = agent.invoke("What are the latest AI research papers?")
 
 ### Example Manifest
 
-See [examples/langchain/](https://github.com/blueflyio/openstandardagents/-/tree/main/examples/langchain) for complete examples.
+See [examples/langchain/](https://github.com/blueflyio/openstandardagents/tree/main/examples/langchain) for complete examples.
 
 ### Documentation
 

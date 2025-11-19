@@ -43,7 +43,7 @@ function getAllPages(): string[] {
 }
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = 'https://ossa.dev';
+  const baseUrl = 'https://openstandardagents.org';
   const pages = getAllPages();
 
   return pages.map((page) => ({

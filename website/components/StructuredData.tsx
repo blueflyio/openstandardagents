@@ -4,7 +4,7 @@ interface StructuredDataProps {
 }
 
 export function StructuredData({ type, data }: StructuredDataProps) {
-  const baseUrl = 'https://ossa.dev';
+  const baseUrl = 'https://openstandardagents.org';
 
   const getStructuredData = (): object => {
     switch (type) {

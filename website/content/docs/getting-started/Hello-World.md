@@ -142,7 +142,7 @@ ossa validate hello-world.ossa.yaml
 
 For a fully annotated example with extensive comments, see:
 
-[examples/getting-started/hello-world-complete.ossa.yaml](https://gitlab.bluefly.io/llm/openapi-ai-agents-standard/-/blob/main/examples/getting-started/hello-world-complete.ossa.yaml)
+[examples/getting-started/hello-world-complete.ossa.yaml](https://github.com/blueflyio/openstandardagents/blob/main/examples/getting-started/hello-world-complete.ossa.yaml)
 
 This example includes:
 - Detailed comments for every field
@@ -180,5 +180,5 @@ A: OSSA is just a standard. Use agent-buildkit or your own deployment system.
 
 - [5-Minute Overview](5-Minute-Overview)
 - [First Agent Creation](First-Agent)
-- [Complete Annotated Example](https://gitlab.bluefly.io/llm/openapi-ai-agents-standard/-/blob/main/examples/getting-started/hello-world-complete.ossa.yaml)
+- [Complete Annotated Example](https://github.com/blueflyio/openstandardagents/blob/main/examples/getting-started/hello-world-complete.ossa.yaml)
 

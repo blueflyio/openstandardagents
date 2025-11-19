@@ -265,7 +265,7 @@ Ready to achieve similar results?
 - **Install OSSA**: `npm install -g @bluefly/open-standards-scalable-agents`
 - **Read the docs**: [Getting Started Guide](/docs/getting-started/installation)
 - **Try examples**: [Example Workflows](/examples)
-- **Join the community**: [GitHub Discussions](https://github.com/BlueflyCollective/OSSA/discussions)
+- **Join the community**: [GitHub Discussions](https://github.com/blueflyio/openstandardagents/discussions)
 
 ---
 
@@ -276,4 +276,4 @@ Ready to achieve similar results?
 
 **Research Paper**: [OpenAPI for AI Agents: Formal Standard Documentation](/research)
 
-**Questions?** [Open an issue](https://github.com/BlueflyCollective/OSSA/issues) or [contact us](mailto:thomas@bluefly.io)
+**Questions?** [Open an issue](https://github.com/blueflyio/openstandardagents/issues) or [contact us](mailto:thomas@bluefly.io)

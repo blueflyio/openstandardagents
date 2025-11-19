@@ -8,13 +8,13 @@ title: "AIFlow Framework Integration with OSSA"
 
 AIFlow is a Python-based social agent framework that enables personality-driven, emotionally intelligent AI agents for autonomous social media content generation. This integration demonstrates how AIFlow agents are wrapped in OSSA 1.0 manifests for Kubernetes orchestration and deployment through agent-buildkit.
 
-For complete integration analysis, see: [agent-buildkit AIFlow Integration Guide](https://gitlab.bluefly.io/llm/agent-buildkit/-/wikis/AIFlow-Integration-with-OSSA-BuildKit-and-K-Agent)
+For complete integration analysis, see: [agent-buildkit AIFlow Integration Guide](https://github.com/blueflyio/openstandardagents/wiki/AIFlow-Integration-with-OSSA-BuildKit-and-K-Agent)
 
 ## Core Components
 
 ### OSSA Manifest
 
-**Location**: [agent-buildkit/examples/aiflow-integration/social-agent-aiflow.ossa.yaml](https://gitlab.bluefly.io/llm/agent-buildkit/-/blob/development/examples/aiflow-integration/social-agent-aiflow.ossa.yaml)
+**Location**: [agent-buildkit/examples/aiflow-integration/social-agent-aiflow.ossa.yaml](https://github.com/blueflyio/openstandardagents/blob/development/examples/aiflow-integration/social-agent-aiflow.ossa.yaml)
 
 The manifest defines the agent's identity, runtime configuration, capabilities, and deployment requirements. It conforms to OSSA 1.0 specification.
 
@@ -28,7 +28,7 @@ The manifest defines the agent's identity, runtime configuration, capabilities, 
 
 ### OpenAPI Specification
 
-**Location**: [agent-buildkit/openapi/aiflow-agent.openapi.yml](https://gitlab.bluefly.io/llm/agent-buildkit/-/blob/development/openapi/aiflow-agent.openapi.yml)
+**Location**: [agent-buildkit/openapi/aiflow-agent.openapi.yml](https://github.com/blueflyio/openstandardagents/blob/development/openapi/aiflow-agent.openapi.yml)
 
 The OpenAPI 3.1 specification defines the REST API interface for the AIFlow agent, including:
 - FastAPI bridge endpoints for AIFlow Sia runtime
@@ -38,7 +38,7 @@ The OpenAPI 3.1 specification defines the REST API interface for the AIFlow agen
 
 ### OSSA Schema
 
-**Location**: [OSSA/spec/v1.0/ossa-1.0.schema.json](https://gitlab.bluefly.io/llm/OSSA/-/blob/development/spec/v1.0/ossa-1.0.schema.json)
+**Location**: [OSSA/spec/v1.0/ossa-1.0.schema.json](https://github.com/blueflyio/openstandardagents/blob/development/spec/v1.0/ossa-1.0.schema.json)
 
 JSON Schema definition for OSSA 1.0 manifest validation. All agent manifests must conform to this schema.
 
@@ -100,8 +100,8 @@ This generates Kubernetes manifests and deploys the agent with:
 ## Resources
 
 - **AIFlow Repository**: https://github.com/AIFlow-agent/AIFlow-Agent
-- **OSSA Project**: [openapi-ai-agents-standard](https://gitlab.bluefly.io/llm/openapi-ai-agents-standard)
-- **Integration Guide**: [agent-buildkit Wiki](https://gitlab.bluefly.io/llm/agent-buildkit/-/wikis/AIFlow-Integration-with-OSSA-BuildKit-and-K-Agent)
-- **OSSA Specification Schema**: [OSSA 1.0 Schema](https://gitlab.bluefly.io/llm/OSSA/-/blob/development/spec/v1.0/ossa-1.0.schema.json)
-- **Example Manifest**: [social-agent-aiflow.ossa.yaml](https://gitlab.bluefly.io/llm/agent-buildkit/-/blob/development/examples/aiflow-integration/social-agent-aiflow.ossa.yaml)
-- **OpenAPI Spec**: [aiflow-agent.openapi.yml](https://gitlab.bluefly.io/llm/agent-buildkit/-/blob/development/openapi/aiflow-agent.openapi.yml)
+- **OSSA Project**: [openapi-ai-agents-standard](https://github.com/blueflyio/openstandardagents)
+- **Integration Guide**: [agent-buildkit Wiki](https://github.com/blueflyio/openstandardagents/wiki/AIFlow-Integration-with-OSSA-BuildKit-and-K-Agent)
+- **OSSA Specification Schema**: [OSSA 1.0 Schema](https://github.com/blueflyio/openstandardagents/blob/development/spec/v1.0/ossa-1.0.schema.json)
+- **Example Manifest**: [social-agent-aiflow.ossa.yaml](https://github.com/blueflyio/openstandardagents/blob/development/examples/aiflow-integration/social-agent-aiflow.ossa.yaml)
+- **OpenAPI Spec**: [aiflow-agent.openapi.yml](https://github.com/blueflyio/openstandardagents/blob/development/openapi/aiflow-agent.openapi.yml)

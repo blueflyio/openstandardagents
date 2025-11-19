@@ -132,8 +132,8 @@ OSSA doesn't care - it's just a standard.
 
 - **Main Repository**: [github.com/blueflyio/openstandardagents](https://github.com/blueflyio/openstandardagents)
 - **Issues**: [Report Issues](https://github.com/blueflyio/openstandardagents/issues)
-- **Milestones**: [View Roadmap](https://github.com/blueflyio/openstandardagents/-/milestones)
-- **Releases**: [View Releases](https://github.com/blueflyio/openstandardagents/-/releases)
+- **Milestones**: [View Roadmap](https://github.com/blueflyio/openstandardagents/milestones)
+- **Releases**: [View Releases](https://github.com/blueflyio/openstandardagents/releases)
 - **npm Package**: [@bluefly/open-standards-scalable-agents](https://www.npmjs.com/package/@bluefly/open-standards-scalable-agents)
 
 ---

@@ -93,7 +93,7 @@ npm install -g @bluefly/open-standards-scalable-agents
 - Examples unchanged (`examples/`)
 
 **For documentation**:
-- Comprehensive guides → GitLab Wiki (https://gitlab.bluefly.io/llm/openapi-ai-agents-standard/-/wikis/home)
+- Comprehensive guides → GitLab Wiki (https://github.com/blueflyio/openstandardagents/wiki/home)
 - Core specification docs → `docs/` directory
 - API documentation → GitLab Pages (automated)
 

@@ -10,7 +10,7 @@ OSSA follows semantic versioning. Development specs are marked with `-dev` suffi
 
 **Status**: Development
 **Target Release**: February 2025
-**Milestone**: [v0.2.4 - Transport & Security](https://gitlab.bluefly.io/llm/openstandardagents/-/milestones/12)
+**Milestone**: [v0.2.4 - Transport & Security](https://github.com/blueflyio/openstandardagents/milestones/12)
 
 #### New Features
 
@@ -50,7 +50,7 @@ OSSA follows semantic versioning. Development specs are marked with `-dev` suffi
 
 **Status**: Development
 **Target Release**: March 2025
-**Milestone**: [v0.2.5 - Multi-Agent Composition](https://gitlab.bluefly.io/llm/openstandardagents/-/milestones/13)
+**Milestone**: [v0.2.5 - Multi-Agent Composition](https://github.com/blueflyio/openstandardagents/milestones/13)
 
 #### New Features
 
@@ -108,7 +108,7 @@ Development specs are available in the repository:
 
 ```bash
 # Clone the repository
-git clone https://gitlab.bluefly.io/llm/openstandardagents.git
+git clone https://github.com/blueflyio/openstandardagents.git
 cd openstandardagents
 
 # View development specs
@@ -140,25 +140,25 @@ Development examples are in the spec directories:
 
 We welcome feedback on development specifications:
 
-1. **GitLab Issues**: [Create an issue](https://gitlab.bluefly.io/llm/openstandardagents/-/issues/new)
+1. **GitLab Issues**: [Create an issue](https://github.com/blueflyio/openstandardagents/issues/new)
 2. **Discussions**: Comment on milestone issues
 3. **Pull Requests**: Submit improvements
 
 ### v0.2.4 Issues
-- [#220 - Transport metadata](https://gitlab.bluefly.io/llm/openstandardagents/-/issues/220)
-- [#221 - State/memory block](https://gitlab.bluefly.io/llm/openstandardagents/-/issues/221)
-- [#222 - Security scopes](https://gitlab.bluefly.io/llm/openstandardagents/-/issues/222)
-- [#223 - Capability versioning](https://gitlab.bluefly.io/llm/openstandardagents/-/issues/223)
-- [#224 - Google ADK extension](https://gitlab.bluefly.io/llm/openstandardagents/-/issues/224)
-- [#225 - MS AF adapter](https://gitlab.bluefly.io/llm/openstandardagents/-/issues/225)
+- [#220 - Transport metadata](https://github.com/blueflyio/openstandardagents/issues/220)
+- [#221 - State/memory block](https://github.com/blueflyio/openstandardagents/issues/221)
+- [#222 - Security scopes](https://github.com/blueflyio/openstandardagents/issues/222)
+- [#223 - Capability versioning](https://github.com/blueflyio/openstandardagents/issues/223)
+- [#224 - Google ADK extension](https://github.com/blueflyio/openstandardagents/issues/224)
+- [#225 - MS AF adapter](https://github.com/blueflyio/openstandardagents/issues/225)
 
 ### v0.2.5 Issues
-- [#211-212 - AgentGraph resource](https://gitlab.bluefly.io/llm/openstandardagents/-/issues/211)
-- [#213 - Process patterns](https://gitlab.bluefly.io/llm/openstandardagents/-/issues/213)
-- [#214 - Edge routing](https://gitlab.bluefly.io/llm/openstandardagents/-/issues/214)
-- [#215 - Shared state](https://gitlab.bluefly.io/llm/openstandardagents/-/issues/215)
-- [#216-218 - Adapter examples](https://gitlab.bluefly.io/llm/openstandardagents/-/issues/216)
-- [#219 - Validation rules](https://gitlab.bluefly.io/llm/openstandardagents/-/issues/219)
+- [#211-212 - AgentGraph resource](https://github.com/blueflyio/openstandardagents/issues/211)
+- [#213 - Process patterns](https://github.com/blueflyio/openstandardagents/issues/213)
+- [#214 - Edge routing](https://github.com/blueflyio/openstandardagents/issues/214)
+- [#215 - Shared state](https://github.com/blueflyio/openstandardagents/issues/215)
+- [#216-218 - Adapter examples](https://github.com/blueflyio/openstandardagents/issues/216)
+- [#219 - Validation rules](https://github.com/blueflyio/openstandardagents/issues/219)
 
 ---
 
@@ -172,4 +172,4 @@ We welcome feedback on development specifications:
 | v0.3.0 | Gamma Release | Planned | Apr 2025 |
 | v1.0.0 | Genesis Release | Planned | TBD |
 
-See [milestones](https://gitlab.bluefly.io/llm/openstandardagents/-/milestones) for full details.
+See [milestones](https://github.com/blueflyio/openstandardagents/milestones) for full details.
