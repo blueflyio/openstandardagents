@@ -25,7 +25,19 @@ module.exports = {
     'dist/',
     'out/',
     '*.js',
+    '*.d.ts',
     'website/',
     'examples/',
+  ],
+  overrides: [
+    {
+      files: ['tests/**/*.ts'],
+      parserOptions: {
+        project: null,
+      },
+      rules: {
+        '@typescript-eslint/no-explicit-any': 'off',
+      },
+    },
   ],
 };
