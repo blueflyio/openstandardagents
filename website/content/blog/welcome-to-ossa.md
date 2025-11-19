@@ -1,10 +1,10 @@
 ---
-title: ""Welcome to OSSA""
-date: ""2024-01-15""
-author: ""OSSA Team""
-category: ""Announcement""
+title: "Welcome to OSSA"
+date: "2024-01-15"
+author: "OSSA Team"
+category: "Announcement"
 tags: ["OSSA", "announcement", "standard"]
-excerpt: "\"OSSA is now available as an open standard for AI agents.\""
+excerpt: "OSSA is now available as an open standard for AI agents."
 ---
 
 # Welcome to OSSA

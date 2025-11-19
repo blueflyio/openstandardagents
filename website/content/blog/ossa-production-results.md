@@ -1,5 +1,5 @@
 ---
-title: ""Real-World Results: 34% Efficiency Gains with OSSA""
+title: "Real-World Results: 34% Efficiency Gains with OSSA"
 date: "2024-11-20"
 author: "Thomas Scola"
 category: "Research"

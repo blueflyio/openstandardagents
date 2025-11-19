@@ -14,21 +14,21 @@ interface PageProps {
 const docsDirectory = path.join(process.cwd(), 'content/docs');
 
 function getDocContent(slug: string[]): { content: string; metadata: any } | null {
-  // Convert URL slug to PascalCase (e.g., getting-started -> Getting-Started)
+  // Convert URL slug to PascalCase for legacy wiki files
   const slugPath = slug.map(s =>
     s.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join('-')
   );
 
-  // Try different path patterns for wiki structure
+  // Try different path patterns - lowercase first (new convention), then PascalCase (legacy)
   const possiblePaths = [
-    // Direct file: For-Audiences/Developers.md
-    path.join(docsDirectory, ...slugPath) + '.md',
-    // Nested index: Getting-Started/Installation/index.md
-    path.join(docsDirectory, ...slugPath, 'index.md'),
-    // README: Migration-Guides/README.md
-    path.join(docsDirectory, ...slugPath, 'README.md'),
-    // Lowercase fallback: getting-started.md
+    // Lowercase paths (current convention)
     path.join(docsDirectory, ...slug) + '.md',
+    path.join(docsDirectory, ...slug, 'index.md'),
+    path.join(docsDirectory, ...slug, 'readme.md'),
+    // PascalCase paths (legacy wiki structure)
+    path.join(docsDirectory, ...slugPath) + '.md',
+    path.join(docsDirectory, ...slugPath, 'index.md'),
+    path.join(docsDirectory, ...slugPath, 'README.md'),
   ];
 
   let fullPath = null;

@@ -41,6 +41,9 @@ export function Header() {
             <Link href="/examples" className="text-gray-600 hover:text-[#0066CC] transition-colors font-medium">
               Examples
             </Link>
+            <Link href="/blog" className="text-gray-600 hover:text-[#0066CC] transition-colors font-medium">
+              Blog
+            </Link>
             <a
               href="https://github.com/blueflyio/openstandardagents"
               target="_blank"
@@ -137,6 +140,13 @@ export function Header() {
               onClick={() => setMobileMenuOpen(false)}
             >
               Examples
+            </Link>
+            <Link
+              href="/blog"
+              className="block py-2 text-gray-600 hover:text-[#0066CC] transition-colors font-medium"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              Blog
             </Link>
             <a
               href="https://github.com/blueflyio/openstandardagents"

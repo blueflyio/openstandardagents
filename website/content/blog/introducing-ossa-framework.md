@@ -1,5 +1,5 @@
 ---
-title: ""Introducing the OSSA Framework: 3-Tier Progressive Compliance""
+title: "Introducing the OSSA Framework: 3-Tier Progressive Compliance"
 date: "2024-11-18"
 author: "Thomas Scola"
 category: "Technical"

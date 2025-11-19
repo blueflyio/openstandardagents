@@ -58,17 +58,17 @@ async function fetchWikiPages(): Promise<WikiPage[]> {
 
 function slugToFilePath(slug: string): string {
   // Convert GitLab wiki slug to local file path
-  // e.g., "Getting-Started/5-Minute-Overview" -> "getting-started/5-Minute-Overview.md"
+  // e.g., "Getting-Started/5-Minute-Overview" -> "getting-started/5-minute-overview.md"
   const parts = slug.split('/');
 
-  // Keep the case for filename, lowercase for directories
+  // Lowercase everything for URL-friendly paths
   if (parts.length > 1) {
     const dirs = parts.slice(0, -1).map(d => d.toLowerCase());
-    const filename = parts[parts.length - 1];
+    const filename = parts[parts.length - 1].toLowerCase();
     return path.join(...dirs, `${filename}.md`);
   }
 
-  return `${slug}.md`;
+  return `${slug.toLowerCase()}.md`;
 }
 
 function processContent(content: string, title: string): string {
