@@ -125,8 +125,8 @@ spec:
 
 extensions:
   kagent:
-    mesh_discovery: true`
-};
+    mesh_discovery: true`,
+});
 
 export default function PlaygroundPage() {
   const [templates] = useState(getTemplates(STABLE_VERSION));
