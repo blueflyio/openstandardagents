@@ -11,8 +11,6 @@ import sys
 import urllib.parse
 from pathlib import Path
 
-import os
-
 # Get GitLab URL from environment or detect from git remote
 def get_gitlab_url():
     """Get GitLab URL from environment or git remote"""
