@@ -152,8 +152,6 @@ quality:gates:
 semantic-release:preview:
   stage: semantic-preview
   image: node:${NODE_VERSION}-alpine
-  dependencies:
-    - build:dist
   before_script:
     - apk add --no-cache git
     - npm ci --legacy-peer-deps
@@ -177,9 +175,9 @@ semantic-release:preview:
       PREDICTED_VERSION=$(grep -oP "The next release version is \K[0-9]+\.[0-9]+\.[0-9]+" semantic-preview.txt || echo "unknown")
       RELEASE_TYPE=$(grep -oP "The release type for the commit is \K[a-z]+" semantic-preview.txt || echo "none")
       
-      echo "📊 Semantic Release Preview:"
-      echo "   Predicted Version: ${PREDICTED_VERSION}"
-      echo "   Release Type: ${RELEASE_TYPE}"
+      echo "📊 Semantic Release Preview"
+      echo "   Predicted Version ${PREDICTED_VERSION}"
+      echo "   Release Type ${RELEASE_TYPE}"
       echo ""
       cat semantic-preview.txt || true
       
@@ -209,7 +207,10 @@ semantic-release:preview:
     - if: $CI_COMMIT_BRANCH && $CI_COMMIT_BRANCH != "main" && $CI_COMMIT_BRANCH != "development"
   allow_failure: true
   needs:
-    - quality:gates
+    - job: quality:gates
+      optional: true
+    - job: build:dist
+      artifacts: true
 
 # ============================================================================
 # STAGE 6: AUTO-MERGE INTO development
@@ -535,12 +536,13 @@ release:main:major:
 # ============================================================================
 # Manual buttons to promote released version to different environments
 
-promote:staging:
+promote-staging:
   stage: release-env
   image: node:${NODE_VERSION}-alpine
   script:
     - echo "🚀 Promoting to STAGING environment"
-    - echo "Version: $(node -p "require('./package.json').version")"
+    - VERSION=$(node -p "require('./package.json').version")
+    - echo "Version $VERSION"
     - echo "✅ Promotion to staging completed"
   rules:
     - if: $CI_COMMIT_TAG
@@ -549,12 +551,13 @@ promote:staging:
     name: staging
     url: https://staging.openstandardagents.org
 
-promote:production:
+promote-production:
   stage: release-env
   image: node:${NODE_VERSION}-alpine
   script:
     - echo "🚀 Promoting to PRODUCTION environment"
-    - echo "Version: $(node -p "require('./package.json').version")"
+    - VERSION=$(node -p "require('./package.json').version")
+    - echo "Version $VERSION"
     - echo "✅ Promotion to production completed"
   rules:
     - if: $CI_COMMIT_TAG
