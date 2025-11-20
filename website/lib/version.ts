@@ -21,7 +21,7 @@ export interface VersionsData {
   fallbackVersion: string;
 }
 
-export const VERSIONS_DATA: VersionsData = versionsData;
+export const VERSIONS_DATA: VersionsData = versionsData as VersionsData;
 
 export const STABLE_VERSION = VERSIONS_DATA.stable;
 export const LATEST_VERSION = VERSIONS_DATA.latest;

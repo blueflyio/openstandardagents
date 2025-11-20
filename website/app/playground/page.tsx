@@ -8,23 +8,6 @@ const MonacoEditor = dynamic(() => import('@monaco-editor/react'), {
   ssr: false,
 });
 
-// Dynamic example manifest using current stable version
-const getExampleManifest = (version: string) => `apiVersion: ossa/v${version}
-kind: Agent
-
-metadata:
-  name: my-first-agent
-  version: 1.0.0
-  description: My first Open Standard Agents manifest
-
-spec:
-  role: You are a helpful assistant
-  llm:
-    provider: openai
-    model: gpt-4
-  tools: []
-`;
-
 // Dynamic templates using current stable version
 const getTemplates = (version: string) => ({
   simple: `apiVersion: ossa/v${version}
@@ -146,8 +129,7 @@ extensions:
 };
 
 export default function PlaygroundPage() {
-  const [currentVersion, setCurrentVersion] = useState(STABLE_VERSION);
-  const [templates, setTemplates] = useState(getTemplates(STABLE_VERSION));
+  const [templates] = useState(getTemplates(STABLE_VERSION));
   const [code, setCode] = useState(templates.simple);
   const [validationResult, setValidationResult] = useState<{
     valid: boolean;
@@ -156,19 +138,12 @@ export default function PlaygroundPage() {
   const [isValidating, setIsValidating] = useState(false);
   const [activeTemplate, setActiveTemplate] = useState('simple');
 
-  // Update templates when version changes
-  useEffect(() => {
-    const newTemplates = getTemplates(currentVersion);
-    setTemplates(newTemplates);
-    setCode(newTemplates[activeTemplate as keyof typeof newTemplates] || newTemplates.simple);
-  }, [currentVersion, activeTemplate]);
-
   const handleValidate = async (): Promise<void> => {
     setIsValidating(true);
     try {
       // For static export, we'll use a client-side validation approach
       // Load schema and validate in browser - use dynamic version
-      const schemaResponse = await fetch(`/schemas/ossa-${currentVersion}.schema.json`);
+      const schemaResponse = await fetch(`/schemas/ossa-${STABLE_VERSION}.schema.json`);
       if (!schemaResponse.ok) {
         throw new Error('Failed to load schema');
       }

@@ -248,7 +248,6 @@ The documentation is organized into:
 OSSA is an open standard. Contributions welcome.
 
 **Primary Repository**: [GitHub](https://github.com/blueflyio/openstandardagents)  
-**GitLab Mirror**: [GitLab](https://gitlab.bluefly.io/llm/openstandardagents) (internal)
 
 1. Fork the repository on GitHub
 2. Create feature branch
