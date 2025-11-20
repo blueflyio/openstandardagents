@@ -88,14 +88,14 @@ export default function HomePage() {
         </div>
 
         {/* Quick Start */}
-        <div className="bg-gray-50 rounded-lg p-8 mb-16">
-          <h2 className="text-3xl font-bold mb-6 text-center">Quick Start</h2>
+        <div className="bg-gray-50 rounded-lg p-4 md:p-8 mb-16">
+          <h2 className="text-2xl md:text-3xl font-bold mb-6 text-center">Quick Start</h2>
           <div className="max-w-2xl mx-auto">
-            <div className="bg-gray-900 rounded-lg p-4 mb-4">
-              <code className="text-green-400">npm install -g @bluefly/openstandardagents</code>
+            <div className="bg-gray-900 rounded-lg p-3 md:p-4 mb-4 overflow-x-auto">
+              <code className="text-green-400 text-sm md:text-base whitespace-nowrap">npm install -g @bluefly/openstandardagents</code>
             </div>
-            <div className="bg-gray-900 rounded-lg p-4">
-              <code className="text-green-400">ossa generate chat --name "My First Agent"</code>
+            <div className="bg-gray-900 rounded-lg p-3 md:p-4 overflow-x-auto">
+              <code className="text-green-400 text-sm md:text-base whitespace-nowrap">ossa generate chat --name "My First Agent"</code>
             </div>
           </div>
         </div>
