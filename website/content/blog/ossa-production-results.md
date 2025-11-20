@@ -274,6 +274,6 @@ Ready to achieve similar results?
 - [Part 2: Introducing the OSSA Framework](/blog/introducing-ossa-framework)
 - **Part 3: Real-World Results** (this post)
 
-**Research Paper**: [OpenAPI for AI Agents: Formal Standard Documentation](/research)
+**Research Paper**: [OpenAPI for AI Agents: Formal Standard Documentation](/docs)
 
 **Questions?** [Open an issue](https://github.com/blueflyio/openstandardagents/issues) or [contact us](mailto:thomas@bluefly.io)

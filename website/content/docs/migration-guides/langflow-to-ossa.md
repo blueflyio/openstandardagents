@@ -2062,7 +2062,7 @@ ossa-migrate validate \
 
 ### Community & Support
 
-- **GitLab Issues**: https://github.com/blueflyio/openstandardagents/issues
+- **GitHub Issues**: https://github.com/blueflyio/openstandardagents/issues
 - **Migration Support**: Tag issues with `migration::langflow`
 
 ---

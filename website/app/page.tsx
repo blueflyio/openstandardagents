@@ -239,7 +239,7 @@ export default function HomePage() {
               <h3 className="text-2xl font-semibold mb-4 text-primary">1. Install CLI</h3>
               <div className="bg-code-bg rounded-lg p-4 mb-4">
                 <pre className="text-code-text text-sm overflow-x-auto">
-                  <code>npm install -g @openstandardagents/cli</code>
+                  <code>npm install -g @bluefly/openstandardagents</code>
                 </pre>
               </div>
             </div>
@@ -272,7 +272,7 @@ osa export --to langchain`}</code>
           </div>
           
           <div className="text-center">
-            <Link href="/docs/getting-started/5-Minute-Overview" className="btn-primary text-lg px-8 py-4">
+            <Link href="/docs/getting-started/5-minute-overview" className="btn-primary text-lg px-8 py-4">
               Read Full Getting Started Guide
             </Link>
           </div>

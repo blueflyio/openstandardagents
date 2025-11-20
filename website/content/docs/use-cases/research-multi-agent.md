@@ -1158,4 +1158,4 @@ kubectl apply -f agent-registry.yaml
 
 - [Multi-Agent Reinforcement Learning](https://arxiv.org/)
 - [Peer Review Best Practices](https://www.acm.org/publications/policies/peer-review)
-- [OSSA Multi-Agent Patterns](https://ossa.dev/docs/multi-agent)
+- [OSSA Multi-Agent Patterns](https://openstandardagents.org/docs/multi-agent)

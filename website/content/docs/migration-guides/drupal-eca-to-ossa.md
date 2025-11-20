@@ -1946,7 +1946,7 @@ if ($features->isEnabled('ossa_moderation')) {
 - [BuildKit CLI Reference](https://github.com/blueflyio/openstandardagents/wiki/BuildKit-CLI-Reference)
 
 ### Tools
-- OSSA CLI: `npm install -g @ossa/cli`
+- OSSA CLI: `npm install -g @bluefly/openstandardagents`
 - BuildKit: `npm install -g @llm/agent-buildkit`
 - OSSA Validator: `ossa validate <file>`
 
@@ -1955,7 +1955,7 @@ if ($features->isEnabled('ossa_moderation')) {
 - [Drupal Integration Module](https://github.com/blueflyio/openstandardagents)
 
 ### Support
-- [GitLab Issues](https://github.com/blueflyio/openstandardagents/issues)
+- [GitHub Issues](https://github.com/blueflyio/openstandardagents/issues)
 - [OSSA Discussions](https://github.com/blueflyio/openstandardagents/issues)
 
 ---
