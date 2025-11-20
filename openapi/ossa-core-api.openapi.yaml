@@ -52,7 +52,9 @@ paths:
         '200':
           $ref: '#/components/responses/HealthCheck'
         '503':
-          description: Service not ready
+          $ref: '#/components/responses/ServiceUnavailable'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
 
   /health/live:
     get:
@@ -63,6 +65,10 @@ paths:
       responses:
         '200':
           $ref: '#/components/responses/HealthCheck'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
 
   # Agent Registry
   /agents:
@@ -242,7 +248,31 @@ paths:
 
   # Specification & Validation
   /specification/validate:
-    $ref: './src/api/specification.openapi.yml#/paths/~1specification~1validate'
+    post:
+      summary: Validate agent manifest
+      description: Validate an OSSA agent manifest against the specification
+      tags: [Specification]
+      operationId: validateManifest
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AgentManifest'
+          application/yaml:
+            schema:
+              $ref: '#/components/schemas/AgentManifest'
+      responses:
+        '200':
+          description: Validation result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationResult'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
 
   /specification/taxonomies:
     get:
