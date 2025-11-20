@@ -107,12 +107,12 @@ See [migrations/v0.2.2-to-v0.2.3.md](migrations/v0.2.2-to-v0.2.3.md) for detaile
 
 ### npm (Recommended)
 ```bash
-npm install -g @bluefly/open-standards-scalable-agents@0.2.3
+npm install -g @bluefly/openstandardagents@0.2.3
 ```
 
 ### GitLab Package Registry
 ```bash
-npm install --registry=https://gitlab.bluefly.io/api/v4/projects/PROJECT_ID/packages/npm/ @bluefly/open-standards-scalable-agents@0.2.3
+npm install --registry=https://gitlab.bluefly.io/api/v4/projects/PROJECT_ID/packages/npm/ @bluefly/openstandardagents@0.2.3
 ```
 
 ### Verify Installation

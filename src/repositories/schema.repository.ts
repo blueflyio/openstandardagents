@@ -70,7 +70,7 @@ export class SchemaRepository implements ISchemaRepository {
 
   /**
    * Find OSSA package root directory
-   * Looks for package.json with @bluefly/open-standards-scalable-agents
+   * Looks for package.json with @bluefly/openstandardagents
    */
   private findOssaRoot(): string {
     // Strategy 1: Check if OSSA_ROOT env var is set
@@ -115,7 +115,7 @@ export class SchemaRepository implements ISchemaRepository {
           const packageJson = JSON.parse(
             fs.readFileSync(packageJsonPath, 'utf-8')
           );
-          if (packageJson.name === '@bluefly/open-standards-scalable-agents') {
+          if (packageJson.name === '@bluefly/openstandardagents') {
             // Check both dist/spec and project root spec
             const distSpec = path.join(
               current,

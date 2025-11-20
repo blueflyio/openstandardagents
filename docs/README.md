@@ -25,7 +25,7 @@ The Wiki contains:
 ## Quick Links
 
 - **Specification**: [spec/ossa-1.0.schema.json](../spec/ossa-1.0.schema.json)
-- **npm Package**: [@bluefly/open-standards-scalable-agents](https://www.npmjs.com/package/@bluefly/open-standards-scalable-agents)
+- **npm Package**: [@bluefly/openstandardagents](https://www.npmjs.com/package/@bluefly/openstandardagents)
 - **GitLab Repository**: [llm/openapi-ai-agents-standard](https://gitlab.bluefly.io/llm/openapi-ai-agents-standard)
 - **Issues**: [GitLab Issues](https://gitlab.bluefly.io/llm/openapi-ai-agents-standard/-/issues)
 

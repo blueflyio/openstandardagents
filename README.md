@@ -3,10 +3,10 @@
 **The OpenAPI for AI Agents**
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
-[![npm version](https://img.shields.io/badge/npm-v0.2.3-blue.svg)](https://www.npmjs.com/package/@bluefly/open-standards-scalable-agents)
-[![GitLab](https://img.shields.io/badge/GitLab-OSSA-orange.svg)](https://gitlab.bluefly.io/llm/openapi-ai-agents-standard)
-[![GitHub](https://img.shields.io/badge/GitHub-OSSA-black.svg)](https://github.com/BlueflyCollective/OSSA)
-[![OSSA Compliant](https://img.shields.io/badge/OSSA-Compliant-00B8D4.svg)](https://gitlab.bluefly.io/llm/openapi-ai-agents-standard)
+[![npm version](https://img.shields.io/badge/npm-v0.2.3-blue.svg)](https://www.npmjs.com/package/@bluefly/openstandardagents)
+[![GitLab](https://img.shields.io/badge/GitLab-OSSA-orange.svg)](https://gitlab.bluefly.io/llm/openstandardagents)
+[![GitHub](https://img.shields.io/badge/GitHub-OSSA-black.svg)](https://github.com/blueflyio/openstandardagents)
+[![OSSA Compliant](https://img.shields.io/badge/OSSA-Compliant-00B8D4.svg)](https://gitlab.bluefly.io/llm/openstandardagents)
 
 ---
 
@@ -47,7 +47,7 @@ Just as OpenAPI standardized REST APIs, OSSA standardizes AI agent interaction, 
 ### Installation
 
 ```bash
-npm install -g @bluefly/open-standards-scalable-agents
+npm install -g @bluefly/openstandardagents
 ```
 
 ### Create Agent
@@ -198,7 +198,7 @@ Together, they form a complete ecosystem for AI agent development, deployment, a
 ### As a Standard (Validation Only)
 
 ```bash
-npm install -g @bluefly/open-standards-scalable-agents
+npm install -g @bluefly/openstandardagents
 ossa validate my-agent.yml
 ```
 
@@ -216,7 +216,7 @@ buildkit ossa sync-docs               # GitLab integration
 
 ### Official Website & Documentation Portal
 
-**Live Website**: https://ossa.ai (or your deployment URL)
+**Live Website**: https://openstandardagents.org
 
 The OSSA website features:
 - **Interactive Documentation** - Browse the complete OSSA wiki with an enhanced UI
@@ -239,8 +239,7 @@ The documentation is organized into:
 - **Specification**: [spec/v0.2.2/ossa-0.2.2.schema.json](spec/v0.2.2/ossa-0.2.2.schema.json)
 - **Examples**: [examples/](examples/)
 - **API Reference**: [docs/](docs/)
-- **GitLab Wiki**: https://gitlab.bluefly.io/llm/ossa/-/wikis/home
-- **Issue Tracker**: https://gitlab.bluefly.io/llm/ossa/-/issues
+- **GitLab Issues**: https://gitlab.bluefly.io/llm/openstandardagents/-/issues
 
 ---
 
@@ -248,16 +247,16 @@ The documentation is organized into:
 
 OSSA is an open standard. Contributions welcome.
 
-**Primary Repository**: [GitLab](https://gitlab.bluefly.io/llm/openapi-ai-agents-standard)  
-**GitHub Mirror**: [GitHub](https://github.com/BlueflyCollective/OSSA) (read-only, automatically synced)
+**Primary Repository**: [GitLab](https://gitlab.bluefly.io/llm/openstandardagents)  
+**GitHub Mirror**: [GitHub](https://github.com/blueflyio/openstandardagents) (read-only, automatically synced)
 
-1. Fork the repository (GitLab preferred)
+1. Fork the repository on GitLab
 2. Create feature branch
 3. Submit merge request
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
-> **Note**: This repository is automatically mirrored from GitLab to GitHub. The GitHub repository is read-only. All development happens on GitLab. See [GitHub Mirror Setup Guide](docs/GITHUB-MIRROR-SETUP.md) for details.
+> **Note**: This repository is automatically mirrored from GitLab to GitHub. The GitHub repository is read-only. All development happens on GitLab.
 
 ---
 
@@ -271,7 +270,7 @@ Apache 2.0 - see [LICENSE](LICENSE) for details.
 
 OSSA is part of a unified ecosystem for AI agent development:
 
-- **[OSSA](https://gitlab.bluefly.io/llm/openapi-ai-agents-standard)** - The open standard (this repository)
+- **[OSSA](https://gitlab.bluefly.io/llm/openstandardagents)** - The open standard (this repository)
 - **[Agent Buildkit](https://gitlab.bluefly.io/llm/npm/agent-buildkit)** - CLI for building and managing agents
 - **[Agent Studio](https://gitlab.bluefly.io/llm/demos/llm-platform-demo)** - GUI platform for agent orchestration
 

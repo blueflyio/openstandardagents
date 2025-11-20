@@ -1,14 +1,35 @@
 import Link from 'next/link';
 import { SchemaExplorer } from '@/components/schema/SchemaExplorer';
-import { OSSA_VERSION } from '@/lib/version';
+import { STABLE_VERSION, STABLE_VERSION_TAG, getSchemaPath } from '@/lib/version';
+import fs from 'fs';
+import path from 'path';
 
-// Import schema directly - this is bundled at build time
-const schemaJson = require('../../public/schemas/ossa-0.2.3.schema.json');
-
-function loadSchema(): any {
-  // Return the imported schema directly
-  // This works in both development and production
-  return schemaJson;
+// Try to load schema dynamically - fallback to stable version
+function loadSchema(version: string = STABLE_VERSION): any {
+  try {
+    // Try to load from public/schemas first
+    const publicSchemaPath = path.join(process.cwd(), 'public', 'schemas', `ossa-${version}.schema.json`);
+    if (fs.existsSync(publicSchemaPath)) {
+      return JSON.parse(fs.readFileSync(publicSchemaPath, 'utf8'));
+    }
+    
+    // Fallback to spec directory
+    const specSchemaPath = path.join(process.cwd(), '..', 'spec', `v${version}`, `ossa-${version}.schema.json`);
+    if (fs.existsSync(specSchemaPath)) {
+      return JSON.parse(fs.readFileSync(specSchemaPath, 'utf8'));
+    }
+    
+    // Final fallback - try to require (for build time)
+    try {
+      return require(`../../public/schemas/ossa-${version}.schema.json`);
+    } catch {
+      // If all else fails, return null
+      return null;
+    }
+  } catch (error) {
+    console.error('Error loading schema:', error);
+    return null;
+  }
 }
 
 export default function SchemaPage() {
@@ -40,7 +61,7 @@ export default function SchemaPage() {
             Complete JSON Schema for defining portable, framework-agnostic AI agents
           </p>
           <p className="text-lg text-white/80">
-            Version v0.2.x • The OpenAPI for AI Agents
+            Version {STABLE_VERSION_TAG} • The OpenAPI for AI Agents
           </p>
         </div>
       </div>
@@ -106,7 +127,7 @@ export default function SchemaPage() {
               <div className="grid md:grid-cols-3 gap-6">
                 <div className="bg-blue-50 border-3 border-blue-400 rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow">
                   <div className="font-bold text-blue-900 mb-3 text-xl">apiVersion</div>
-                  <div className="text-base text-gray-700 font-mono">ossa/v0.2.3</div>
+                  <div className="text-base text-gray-700 font-mono">ossa/v{STABLE_VERSION}</div>
                 </div>
                 <div className="bg-green-50 border-3 border-green-400 rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow">
                   <div className="font-bold text-green-900 mb-3 text-xl">kind</div>
@@ -539,7 +560,7 @@ export default function SchemaPage() {
                     <div>
                       <p className="font-semibold text-gray-900 mb-1">EXAMPLE:</p>
                       <div className="bg-code-bg rounded-lg p-3 mt-2">
-                        <pre className="text-code-text text-sm"><code>{`apiVersion: ossa/v0.2.3
+                        <pre className="text-code-text text-sm"><code>{`apiVersion: ossa/v${STABLE_VERSION}
 kind: Agent`}</code></pre>
                       </div>
                     </div>

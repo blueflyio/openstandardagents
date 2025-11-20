@@ -2,7 +2,7 @@
 
 ## What is OSSA?
 
-OSSA (Open Standard for Scalable AI Agents) is a specification standard for AI agents, similar to how OpenAPI standardizes REST APIs.
+OSSA (Open Standard for Scalable Agents) is a specification standard for AI agents, similar to how OpenAPI standardizes REST APIs.
 
 **OSSA is NOT a framework** - it's a standard that defines the contract.
 
@@ -26,7 +26,7 @@ cd .agents/my-agent
 Edit `agent.yml`:
 
 ```yaml
-ossaVersion: "1.0"
+apiVersion: ossa/v{{version}}
 
 agent:
   id: my-agent

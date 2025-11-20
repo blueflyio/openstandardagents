@@ -1,9 +1,16 @@
 export default {
   branches: [
-    'main',
-    { name: 'development', prerelease: 'dev', channel: 'development' },
+    {
+      name: 'main',
+      channel: false, // Stable releases get 'latest' tag
+    },
+    {
+      name: 'development',
+      prerelease: 'dev',
+      channel: 'dev', // Dev releases get 'dev' tag
+    },
   ],
-  repositoryUrl: 'https://gitlab.bluefly.io/llm/openapi-ai-agents-standard.git',
+  repositoryUrl: 'https://gitlab.bluefly.io/llm/openstandardagents.git',
   plugins: [
     [
       '@semantic-release/commit-analyzer',
@@ -38,7 +45,12 @@ export default {
     ],
     [
       '@semantic-release/npm',
-      { npmPublish: false, tarballDir: 'dist' },
+      { 
+        npmPublish: true,
+        tarballDir: 'dist',
+        // Tag stable releases as 'latest', dev releases as 'dev'
+        // This is handled by branch configuration below
+      },
     ],
     [
       '@semantic-release/gitlab',

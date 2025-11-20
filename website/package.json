@@ -5,13 +5,14 @@
   "private": true,
   "scripts": {
     "sync-version": "node scripts/sync-version.js",
+    "fetch-versions": "node scripts/fetch-versions.js",
     "sync-wiki": "npx tsx scripts/sync-wiki.ts",
-    "dev": "npm run sync-version && next dev",
-    "build": "npm run sync-version && npm run sync-wiki && next build",
-    "build:no-wiki": "npm run sync-version && next build",
+    "dev": "npm run fetch-versions && npm run sync-version && next dev",
+    "build": "npm run fetch-versions && npm run sync-version && npm run sync-wiki && next build",
+    "build:no-wiki": "npm run fetch-versions && npm run sync-version && next build",
     "start": "next start",
     "lint": "next lint",
-    "export": "npm run sync-version && npm run sync-wiki && next build"
+    "export": "npm run fetch-versions && npm run sync-version && npm run sync-wiki && next build"
   },
   "keywords": [
     "ossa",

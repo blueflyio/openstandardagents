@@ -192,8 +192,8 @@ release:rc:
       echo "Next version will be determined by conventional commits..."
       npx semantic-release --dry-run || true
 
-      echo "Release candidates are managed via semantic-release in GitHub Actions"
-      echo "See: https://github.com/BlueflyCollective/openstandardagents/actions"
+      echo "Release candidates are managed via semantic-release"
+      echo "See: https://gitlab.bluefly.io/llm/openstandardagents/-/pipelines"
   only:
     - main
   except:
@@ -218,18 +218,17 @@ release:prod:
     - npm ci --legacy-peer-deps
   script:
     - |
-      echo "Production releases managed via semantic-release in GitHub Actions"
+      echo "Production releases managed via semantic-release"
       echo ""
       echo "To create a production release:"
       echo "1. Merge to main with conventional commit messages"
-      echo "2. GitHub Actions will automatically:"
+      echo "2. Semantic-release will automatically:"
       echo "   - Determine version based on commits (feat=minor, fix=patch, BREAKING=major)"
       echo "   - Update CHANGELOG.md"
-      echo "   - Create GitHub release"
+      echo "   - Create GitLab release"
       echo "   - Publish to npm"
-      echo "   - Deploy website to GitHub Pages"
       echo ""
-      echo "See: https://github.com/BlueflyCollective/openstandardagents/actions"
+      echo "See: https://github.com/blueflyio/openstandardagents"
 
       # Configure npm to use GitLab Package Registry
       echo "@bluefly:registry=${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/npm/" > .npmrc
@@ -252,7 +251,7 @@ release:prod:
 
       echo "Production release v${CURRENT_VERSION} completed"
       echo "GitLab Package: ${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages"
-      echo "npm Package: https://www.npmjs.com/package/@bluefly/open-standards-scalable-agents"
+      echo "npm Package: https://www.npmjs.com/package/@bluefly/openstandardagents"
   rules:
     - when: never  # DISABLED - use release-all-platforms
 
@@ -396,9 +395,19 @@ release-all-platforms:
       echo "📦 Step 2/4: Publishing to npmjs.org..."
       if [ -n "$NPM_TOKEN" ]; then
         echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > .npmrc
-        npm publish --registry=https://registry.npmjs.org/ --tag latest
-        echo "✅ Published to npmjs.org"
-        echo "   View at: https://www.npmjs.com/package/@bluefly/open-standards-scalable-agents"
+        
+        # Determine npm tag based on version
+        if [[ "$CURRENT_VERSION" =~ -dev|-pre|-rc|alpha|beta ]]; then
+          NPM_TAG="dev"
+          echo "Detected pre-release version, tagging as 'dev'"
+        else
+          NPM_TAG="latest"
+          echo "Detected stable version, tagging as 'latest'"
+        fi
+        
+        npm publish --registry=https://registry.npmjs.org/ --tag ${NPM_TAG}
+        echo "✅ Published to npmjs.org with tag '${NPM_TAG}'"
+        echo "   View at: https://www.npmjs.com/package/@bluefly/openstandardagents"
       else
         echo "⚠️  NPM_TOKEN not set - skipping npmjs.org publish"
         echo "   To enable, add NPM_TOKEN to GitLab CI/CD variables"
@@ -418,9 +427,9 @@ release-all-platforms:
       ${CHANGELOG_EXCERPT}
 
       ### Links
-      - [npm Package](https://www.npmjs.com/package/@bluefly/open-standards-scalable-agents)
-      - [GitHub Mirror](https://github.com/BlueflyCollective/OSSA)
-      - [Documentation](https://ossa.ai)
+      - [npm Package](https://www.npmjs.com/package/@bluefly/openstandardagents)
+      - [GitHub Mirror](https://github.com/blueflyio/openstandardagents) (read-only)
+      - [Documentation](https://openstandardagents.org)
       ")
 
       if echo "$RELEASE_RESPONSE" | jq -e '.tag_name' > /dev/null 2>&1; then
@@ -435,7 +444,7 @@ release-all-platforms:
       echo "🔄 Step 4/4: GitHub Mirror Sync..."
       echo "✅ GitLab → GitHub mirror configured"
       echo "   Tag will sync automatically to GitHub"
-      echo "   View at: https://github.com/BlueflyCollective/OSSA/releases/tag/${TAG_NAME}"
+      echo "   View at: https://github.com/blueflyio/openstandardagents/releases/tag/${TAG_NAME} (mirror)"
       echo ""
 
       # Summary
@@ -446,10 +455,10 @@ release-all-platforms:
       echo "✅ Git Tag: ${TAG_NAME}"
       echo "✅ GitLab Package Registry"
       if [ -n "$NPM_TOKEN" ]; then
-        echo "✅ npmjs.org: https://www.npmjs.com/package/@bluefly/open-standards-scalable-agents"
+        echo "✅ npmjs.org: https://www.npmjs.com/package/@bluefly/openstandardagents"
       fi
       echo "✅ GitLab Release: ${CI_PROJECT_URL}/-/releases/${TAG_NAME}"
-      echo "✅ GitHub Mirror: https://github.com/BlueflyCollective/OSSA/releases/tag/${TAG_NAME}"
+      echo "✅ GitHub Mirror: https://github.com/blueflyio/openstandardagents/releases/tag/${TAG_NAME} (read-only)"
       echo ""
       echo "📚 Next steps:"
       echo "   - Update documentation if needed"
@@ -461,7 +470,7 @@ release-all-platforms:
   allow_failure: false
   environment:
     name: production
-    url: https://www.npmjs.com/package/@bluefly/open-standards-scalable-agents
+    url: https://www.npmjs.com/package/@bluefly/openstandardagents
 
 # ============================================================================
 # MANUAL: CREATE RELEASE TAG (Legacy - use release-all-platforms instead)
@@ -548,8 +557,8 @@ mirror:github:
         exit 0
       fi
       
-      GITHUB_OWNER="${GITHUB_ORG:-BlueflyCollective}"
-      GITHUB_REPO_NAME="${GITHUB_REPO:-OSSA}"
+      GITHUB_OWNER="${GITHUB_ORG:-blueflyio}"
+      GITHUB_REPO_NAME="${GITHUB_REPO:-openstandardagents}"
       GITHUB_API="https://api.github.com"
       
       echo "GitHub Repository: ${GITHUB_OWNER}/${GITHUB_REPO_NAME}"

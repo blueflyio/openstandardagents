@@ -261,7 +261,7 @@ See [migrations/v0.2.3-to-v0.2.4.md](migrations/v0.2.3-to-v0.2.4.md) for detaile
 
 ### Development Version
 ```bash
-npm install -g @bluefly/open-standards-scalable-agents@0.2.4-dev
+npm install -g @bluefly/openstandardagents@0.2.4-dev
 ```
 
 ### Verify Installation

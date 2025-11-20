@@ -99,5 +99,5 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./website/out
-          cname: ossa.bluefly.io
+          cname: openstandardagents.org
           commit_message: 'deploy: update website from ${{ github.sha }}'

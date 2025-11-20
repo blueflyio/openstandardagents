@@ -101,5 +101,5 @@ OSSA agents work with Drupal's ECA (Event-Condition-Action):
 ## Next Steps
 
 - [OSSA Manifest Reference](/docs/schema-reference)
-- [Orchestra Module Docs](https://github.com/blueflyio/openstandardagents)
+- [Orchestra Module Docs](https://gitlab.bluefly.io/llm/drupal/ai_agents_orchestra)
 - [CrewAI Integration](/docs/migration-guides/crewai-to-ossa)

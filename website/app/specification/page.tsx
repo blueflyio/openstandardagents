@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import type { Metadata } from 'next';
+import { STABLE_VERSION_TAG, STABLE_VERSION } from '@/lib/version';
 
 export const metadata: Metadata = {
   title: 'Specification - Open Standard Agents',
@@ -20,7 +21,7 @@ export default function SpecificationPage() {
           <div className="card p-6 mb-6">
             <div className="flex items-center justify-between mb-4">
               <div>
-                <h3 className="text-2xl font-semibold mb-2">v0.2.3</h3>
+                <h3 className="text-2xl font-semibold mb-2">{STABLE_VERSION_TAG}</h3>
                 <p className="text-gray-700">Latest stable release</p>
               </div>
               <Link href="/schema" className="btn-primary">
@@ -100,7 +101,7 @@ export default function SpecificationPage() {
               </p>
               <div className="bg-code-bg rounded-lg p-4 mt-3">
                 <pre className="text-code-text text-sm overflow-x-auto">
-                  <code>{`apiVersion: ossa/v0.2.3
+                  <code>{`apiVersion: ossa/v${STABLE_VERSION}
 kind: Agent
 metadata:
   name: my-agent

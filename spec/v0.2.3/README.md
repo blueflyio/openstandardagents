@@ -121,7 +121,7 @@ Validate your manifests using the OSSA CLI:
 
 ```bash
 # Install
-npm install -g @bluefly/open-standards-scalable-agents
+npm install -g @bluefly/openstandardagents
 
 # Validate
 ossa validate my-agent.ossa.yaml

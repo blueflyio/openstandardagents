@@ -59,7 +59,7 @@ To display the OSSA Compliant badge, your project must:
 
 ```bash
 # Install OSSA CLI
-npm install -g @bluefly/open-standards-scalable-agents
+npm install -g @bluefly/openstandardagents
 
 # Validate your manifest
 ossa validate path/to/your-agent.ossa.yaml
@@ -74,7 +74,7 @@ ossa-validation:
   stage: test
   image: node:20-alpine
   script:
-    - npm install -g @bluefly/open-standards-scalable-agents
+    - npm install -g @bluefly/openstandardagents
     - ossa validate agents/*.ossa.yaml
 ```
 
@@ -91,7 +91,7 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: '20'
-      - run: npm install -g @bluefly/open-standards-scalable-agents
+      - run: npm install -g @bluefly/openstandardagents
       - run: ossa validate agents/*.ossa.yaml
 ```
 
