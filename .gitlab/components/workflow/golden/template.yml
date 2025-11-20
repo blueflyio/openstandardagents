@@ -455,7 +455,7 @@ release:production:
     - if: '$CI_COMMIT_BRANCH == "main"'
   environment:
     name: release
-    url: https://gitlab.bluefly.io/${CI_PROJECT_PATH}/-/releases
+    url: ${CI_SERVER_URL}/${CI_PROJECT_PATH}/-/releases
   release:
     name: "v${PROJECT_VERSION}"
     description: "Production release v${PROJECT_VERSION}"
