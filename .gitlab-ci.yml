@@ -541,7 +541,8 @@ promote-staging:
   image: node:${NODE_VERSION}-alpine
   script:
     - echo "🚀 Promoting to STAGING environment"
-    - echo "Version: $(node -p "require('./package.json').version")"
+    - VERSION=$(node -p "require('./package.json').version")
+    - echo "Version: $VERSION"
     - echo "✅ Promotion to staging completed"
   rules:
     - if: $CI_COMMIT_TAG
@@ -555,7 +556,8 @@ promote-production:
   image: node:${NODE_VERSION}-alpine
   script:
     - echo "🚀 Promoting to PRODUCTION environment"
-    - echo "Version: $(node -p "require('./package.json').version")"
+    - VERSION=$(node -p "require('./package.json').version")
+    - echo "Version: $VERSION"
     - echo "✅ Promotion to production completed"
   rules:
     - if: $CI_COMMIT_TAG
