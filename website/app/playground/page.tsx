@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import dynamic from 'next/dynamic';
 import { STABLE_VERSION, STABLE_VERSION_TAG } from '@/lib/version';
 
