@@ -40,8 +40,19 @@ security:
 paths:
   # Health & Status
   /health:
-    $ref: './src/api/specification.openapi.yml#/paths/~1health'
+    get:
 
+      summary: Health check
+      tags: [Health]
+      operationId: healthCheck
+      security: []
+      responses:
+        '200':
+          $ref: '#/components/responses/HealthCheck'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
   /health/ready:
     get:
       summary: Readiness check
