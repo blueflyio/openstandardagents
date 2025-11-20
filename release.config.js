@@ -21,10 +21,9 @@ export default {
           { type: 'refactor', scope: 'core-*', release: 'minor' },
           { type: 'refactor', release: 'patch' },
           { type: 'chore', scope: 'deps', release: 'patch' },
-          // Allow manual override via environment variable
-          ...(process.env.RELEASE_TYPE === 'patch' ? [{ breaking: false, release: 'patch' }] : []),
-          ...(process.env.RELEASE_TYPE === 'minor' ? [{ breaking: false, release: 'minor' }] : []),
-          ...(process.env.RELEASE_TYPE === 'major' ? [{ breaking: true, release: 'major' }] : []),
+          // Version is determined automatically by commit analysis
+          // Milestones are used for planning and tracking, but version bump
+          // is controlled by commit messages (feat → minor, fix → patch, BREAKING → major)
         ],
         parserOpts: {
           noteKeywords: ['BREAKING CHANGE', 'BREAKING CHANGES'],
