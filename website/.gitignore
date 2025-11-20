@@ -37,3 +37,6 @@ next-env.d.ts
 # Wiki sync manifest (generated at build time)
 content/docs/.wiki-sync-manifest.json
 
+# Wiki export directory (temporary files for wiki upload)
+.wiki-export/
+

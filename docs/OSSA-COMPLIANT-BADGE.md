@@ -9,16 +9,16 @@ Display the **OSSA Compliant** badge in your project to show that your AI agent 
 ### Markdown
 
 ```markdown
-[![OSSA Compliant](https://img.shields.io/badge/OSSA-Compliant-00B8D4.svg)](https://gitlab.bluefly.io/llm/openapi-ai-agents-standard)
+[![OSSA Compliant](https://img.shields.io/badge/OSSA-Compliant-00B8D4.svg)](https://github.com/blueflyio/openstandardagents)
 ```
 
 **Result**:
-[![OSSA Compliant](https://img.shields.io/badge/OSSA-Compliant-00B8D4.svg)](https://gitlab.bluefly.io/llm/openapi-ai-agents-standard)
+[![OSSA Compliant](https://img.shields.io/badge/OSSA-Compliant-00B8D4.svg)](https://github.com/blueflyio/openstandardagents)
 
 ### HTML
 
 ```html
-<a href="https://gitlab.bluefly.io/llm/openapi-ai-agents-standard">
+<a href="https://github.com/blueflyio/openstandardagents">
   <img src="https://img.shields.io/badge/OSSA-Compliant-00B8D4.svg" alt="OSSA Compliant">
 </a>
 ```
@@ -27,7 +27,7 @@ Display the **OSSA Compliant** badge in your project to show that your AI agent 
 
 ```rst
 .. image:: https://img.shields.io/badge/OSSA-Compliant-00B8D4.svg
-   :target: https://gitlab.bluefly.io/llm/openapi-ai-agents-standard
+   :target: https://github.com/blueflyio/openstandardagents
    :alt: OSSA Compliant
 ```
 
@@ -128,9 +128,9 @@ Projects that have achieved OSSA compliance:
 
 | Project | Level | Version | Link |
 |---------|-------|---------|------|
-| Agent Buildkit | Advanced | v0.2.3 | [GitLab](https://gitlab.bluefly.io/llm/npm/agent-buildkit) |
-| Agent Studio | Advanced | v0.2.3 | [GitLab](https://gitlab.bluefly.io/llm/demos/llm-platform-demo) |
-| KAgent | Advanced | v0.2.3 | [GitLab](https://gitlab.bluefly.io/llm/npm/kagent) |
+| Agent Buildkit | Advanced | v0.2.3 | [GitHub](https://github.com/blueflyio/openstandardagents) |
+| Agent Studio | Advanced | v0.2.3 | [GitHub](https://github.com/blueflyio/openstandardagents) |
+| KAgent | Advanced | v0.2.3 | [GitHub](https://github.com/blueflyio/openstandardagents) |
 
 **Add your project**: Submit a merge request to update this table!
 
@@ -234,12 +234,11 @@ extensions:
 - **Examples**: [examples/](../examples/)
 - **CLI Documentation**: [docs/cli/](./cli/)
 - **Contributing**: [CONTRIBUTING.md](../CONTRIBUTING.md)
-- **GitLab Repository**: https://gitlab.bluefly.io/llm/openapi-ai-agents-standard
-- **GitHub Mirror**: https://github.com/BlueflyCollective/OSSA
+- **GitHub Repository**: https://github.com/blueflyio/openstandardagents
 
 ---
 
-**Questions?** Open an issue on [GitLab](https://gitlab.bluefly.io/llm/openapi-ai-agents-standard/-/issues)
+**Questions?** Open an issue on [GitHub](https://github.com/blueflyio/openstandardagents/issues)
 
 **Want to contribute?** See [CONTRIBUTING.md](../CONTRIBUTING.md)
 

@@ -19,7 +19,7 @@ Install OSSA CLI and get ready to create your first agent.
 Install OSSA CLI globally for use across all projects:
 
 ```bash
-npm install -g @bluefly/openstandardagents
+npm install -g @bluefly/open-standards-scalable-agents
 ```
 
 Verify installation:
@@ -33,7 +33,7 @@ ossa --version
 Install in a specific project:
 
 ```bash
-npm install --save-dev @bluefly/openstandardagents
+npm install --save-dev @bluefly/open-standards-scalable-agents
 ```
 
 Use via npx:
@@ -115,7 +115,7 @@ export PATH="$(npm config get prefix)/bin:$PATH"
 On Linux/macOS, you may need sudo:
 
 ```bash
-sudo npm install -g @bluefly/openstandardagents
+sudo npm install -g @bluefly/open-standards-scalable-agents
 ```
 
 Or configure npm to use a different directory:
@@ -135,10 +135,10 @@ If you have multiple versions:
 npm list -g --depth=0
 
 # Uninstall old version
-npm uninstall -g @bluefly/openstandardagents
+npm uninstall -g @bluefly/open-standards-scalable-agents
 
 # Install latest
-npm install -g @bluefly/openstandardagents@latest
+npm install -g @bluefly/open-standards-scalable-agents@latest
 ```
 
 ## Next Steps
@@ -151,5 +151,5 @@ npm install -g @bluefly/openstandardagents@latest
 
 - [5-Minute Overview](5-Minute-Overview)
 - [Hello World Tutorial](Hello-World)
-- [CLI Reference](../quick-reference)
+- [CLI Reference](../Technical/CLI-Reference)
 

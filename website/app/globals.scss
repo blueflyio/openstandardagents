@@ -1,35 +1,41 @@
+@use '../styles/variables.scss' as *;
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
   :root {
-    /* OSSA Brand Colors - from logo design */
-    --ossa-primary: #0066CC;        /* Main blue - OSSA hub/standard */
-    --ossa-secondary: #00B8D4;      /* Cyan - Agent nodes */
-    --ossa-accent: #0099E6;         /* Light blue accent */
-    --ossa-success: #28a745;
-    --ossa-warning: #ffc107;
-    --ossa-error: #dc3545;
-    --ossa-info: #17a2b8;
-    --ossa-dark: #212529;
-    --ossa-gray-900: #343a40;
-    --ossa-gray-700: #495057;
-    --ossa-gray-500: #6c757d;
-    --ossa-gray-300: #dee2e6;
-    --ossa-gray-100: #f8f9fa;
-    --ossa-white: #ffffff;
+    /* OSSA Brand Colors - from SCSS variables */
+    --ossa-primary: #{$ossa-primary};
+    --ossa-secondary: #{$ossa-secondary};
+    --ossa-accent: #{$ossa-accent};
+    
+    /* Semantic Colors - Muted for better visual harmony */
+    --ossa-success: #{$ossa-success};
+    --ossa-warning: #{$ossa-warning};
+    --ossa-error: #{$ossa-error};
+    --ossa-info: #{$ossa-info};
+    
+    /* Neutral Colors */
+    --ossa-dark: #{$ossa-dark};
+    --ossa-gray-900: #{$ossa-gray-900};
+    --ossa-gray-700: #{$ossa-gray-700};
+    --ossa-gray-500: #{$ossa-gray-500};
+    --ossa-gray-300: #{$ossa-gray-300};
+    --ossa-gray-100: #{$ossa-gray-100};
+    --ossa-white: #{$ossa-white};
 
     /* Brand gradients */
-    --gradient-brand: linear-gradient(135deg, #0066CC 0%, #00B8D4 100%);
-    --gradient-hero: linear-gradient(135deg, #0052A3 0%, #0066CC 50%, #00B8D4 100%);
+    --gradient-brand: #{$gradient-brand};
+    --gradient-hero: #{$gradient-hero};
 
     /* Code syntax highlighting */
-    --code-bg: #1e1e1e;
-    --code-text: #d4d4d4;
-    --code-keyword: #569cd6;
-    --code-string: #ce9178;
-    --code-comment: #6a9955;
+    --code-bg: #{$code-bg};
+    --code-text: #{$code-text};
+    --code-keyword: #{$code-keyword};
+    --code-string: #{$code-string};
+    --code-comment: #{$code-comment};
   }
 
   html {
@@ -86,7 +92,23 @@
 
 @layer components {
   .btn-primary {
-    @apply bg-primary text-white px-6 py-3 rounded-lg font-medium hover:bg-primary-dark transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2;
+    @apply bg-primary text-white px-6 py-3 rounded-lg font-medium hover:opacity-90 transition-opacity focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2;
+  }
+  
+  .bg-gradient-hero {
+    background: var(--gradient-hero);
+  }
+  
+  .bg-code-bg {
+    background-color: var(--code-bg);
+  }
+  
+  .text-code-text {
+    color: var(--code-text);
+  }
+  
+  .text-success {
+    color: var(--ossa-success);
   }
 
   .btn-secondary {

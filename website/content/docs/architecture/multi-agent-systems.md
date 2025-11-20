@@ -729,9 +729,9 @@ graph TB
 
 - [Execution Flow](execution-flow) - How individual agents process requests
 - [Stack Integration](stack-integration) - Where multi-agent systems fit
-- [Integration Patterns](../Examples/Integration-Patterns) - Real-world patterns
-- [Specification Deep-Dive](../Technical/Specification-Deep-Dive) - OSSA spec details
+- [Ecosystem Overview](/docs/ecosystem/overview) - Real-world patterns
+- [Specification](/docs/specification) - OSSA spec details
 
 ---
 
-**Next Steps**: Explore [Integration Patterns](../Examples/Integration-Patterns) for real-world multi-agent examples
+**Next Steps**: Explore [Ecosystem Overview](/docs/ecosystem/overview) for real-world multi-agent examples

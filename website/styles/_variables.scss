@@ -1,0 +1,34 @@
+// OSSA Design System - Centralized Color Variables
+// Update colors here to change them site-wide
+
+// Brand Colors
+$ossa-primary: #0066CC;        // Main blue - OSSA hub/standard
+$ossa-secondary: #00B8D4;      // Cyan - Agent nodes
+$ossa-accent: #0099E6;         // Light blue accent
+
+// Semantic Colors - Muted for better visual harmony
+$ossa-success: #10b981;        // Muted green
+$ossa-warning: #f59e0b;        // Muted amber
+$ossa-error: #ef4444;          // Muted red
+$ossa-info: #06b6d4;           // Muted cyan
+
+// Neutral Colors
+$ossa-dark: #212529;
+$ossa-gray-900: #343a40;
+$ossa-gray-700: #495057;
+$ossa-gray-500: #6c757d;
+$ossa-gray-300: #dee2e6;
+$ossa-gray-100: #f8f9fa;
+$ossa-white: #ffffff;
+
+// Gradients
+$gradient-brand: linear-gradient(135deg, $ossa-primary 0%, $ossa-secondary 100%);
+$gradient-hero: linear-gradient(135deg, #0052A3 0%, $ossa-primary 50%, $ossa-secondary 100%);
+
+// Code Colors
+$code-bg: #1e1e1e;
+$code-text: #d4d4d4;
+$code-keyword: #569cd6;
+$code-string: #ce9178;
+$code-comment: #6a9955;
+

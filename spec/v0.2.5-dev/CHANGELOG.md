@@ -168,4 +168,4 @@ See `migrations/v0.2.4-to-v0.2.5.md` for detailed migration guidance.
 
 ### Feedback
 Report issues and feedback at:
-https://gitlab.bluefly.io/llm/ossa/-/issues
+https://github.com/blueflyio/openstandardagents/issues

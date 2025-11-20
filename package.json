@@ -48,10 +48,10 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://gitlab.bluefly.io/llm/openstandardagents.git"
+    "url": "https://github.com/blueflyio/openstandardagents/"
   },
   "bugs": {
-    "url": "https://gitlab.bluefly.io/llm/openstandardagents/-/issues"
+    "url": "https://github.com/blueflyio/openstandardagents/issues"
   },
   "homepage": "https://openstandardagents.org",
   "scripts": {
@@ -95,6 +95,7 @@
   "dependencies": {
     "ajv": "^8.12.0",
     "ajv-formats": "^3.0.1",
+    "axios": "^1.12.2",
     "chalk": "^5.6.2",
     "commander": "^11.1.0",
     "glob": "^11.0.3",
@@ -116,7 +117,6 @@
     "@types/redis": "^4.0.10",
     "@typescript-eslint/eslint-plugin": "^5.62.0",
     "@typescript-eslint/parser": "^5.62.0",
-    "axios": "^1.12.2",
     "eslint": "^8.57.1",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^5.5.4",

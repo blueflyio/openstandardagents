@@ -29,7 +29,7 @@ This project adheres to a Code of Conduct. By participating, you are expected to
 
 ```bash
 # Clone the repository
-git clone https://gitlab.bluefly.io/llm/openstandardagents.git
+git clone https://github.com/blueflyio/openstandardagents.git
 cd openstandardagents
 
 # Install dependencies
@@ -242,8 +242,8 @@ npm run lint -- --fix
 - **Conventional Commits**: https://www.conventionalcommits.org/
 - **Semantic Versioning**: https://semver.org/
 - **OSSA Specification**: https://openstandardagents.org/docs
-- **GitLab CI**: https://gitlab.bluefly.io/llm/openstandardagents/-/pipelines
+- **GitHub Actions**: https://github.com/blueflyio/openstandardagents/actions
 
 ---
 
-**Questions?** Open an [Issue](https://gitlab.bluefly.io/llm/openstandardagents/-/issues).
+**Questions?** Open an [Issue](https://github.com/blueflyio/openstandardagents/issues).

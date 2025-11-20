@@ -1,5 +1,5 @@
 ---
-title: "Real-World Results: 34% Efficiency Gains with OSSA"
+title: ""Real-World Results: 34% Efficiency Gains with OSSA""
 date: "2024-11-20"
 author: "Thomas Scola"
 category: "Research"
@@ -262,10 +262,10 @@ These results validate the OSSA approach, but we're just getting started. Future
 
 Ready to achieve similar results?
 
-- **Install OSSA**: `npm install -g @bluefly/openstandardagents`
+- **Install OSSA**: `npm install -g @bluefly/open-standards-scalable-agents`
 - **Read the docs**: [Getting Started Guide](/docs/getting-started/installation)
 - **Try examples**: [Example Workflows](/examples)
-- **Join the community**: [GitHub Discussions](https://github.com/blueflyio/openstandardagents/discussions)
+- **Join the community**: [GitHub Discussions](https://github.com/BlueflyCollective/OSSA/discussions)
 
 ---
 
@@ -274,6 +274,6 @@ Ready to achieve similar results?
 - [Part 2: Introducing the OSSA Framework](/blog/introducing-ossa-framework)
 - **Part 3: Real-World Results** (this post)
 
-**Research Paper**: [OpenAPI for AI Agents: Formal Standard Documentation](/docs)
+**Research Paper**: [OpenAPI for AI Agents: Formal Standard Documentation](/research)
 
-**Questions?** [Open an issue](https://github.com/blueflyio/openstandardagents/issues) or [contact us](mailto:thomas@bluefly.io)
+**Questions?** [Open an issue](https://github.com/BlueflyCollective/OSSA/issues) or [contact us](mailto:thomas@bluefly.io)

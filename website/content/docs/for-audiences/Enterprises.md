@@ -91,7 +91,7 @@ OSSA enables:
 ### Example: Compliance Agent
 
 ```yaml
-apiVersion: ossa/v0.2.3
+apiVersion: ossa/v0.2.2
 kind: Agent
 
 metadata:
@@ -238,7 +238,7 @@ spec:
 
 ### Enterprise Support
 
-- [GitHub Issues](https://github.com/blueflyio/openstandardagents/issues)
+- [GitLab Issues](https://gitlab.bluefly.io/llm/openapi-ai-agents-standard/-/issues)
 - [Documentation](../Technical/Specification-Deep-Dive)
 - [Examples](../Examples/Enterprise-Examples)
 

@@ -121,7 +121,7 @@ ossa validate research-assistant.ossa.yaml --verbose
 Your final agent should look like:
 
 ```yaml
-apiVersion: ossa/v0.2.3
+apiVersion: ossa/v0.2.2
 kind: Agent
 
 metadata:

@@ -103,10 +103,10 @@ Deploy OSSA agents anywhere:
 
 ## Related Documentation
 
-- [Specification Deep-Dive](../Technical/Specification-Deep-Dive) - Technical details of the OSSA spec
-- [Runtime Deployment](../Technical/Runtime-Deployment) - Deployment patterns and guides
-- [Tool Integration](../Technical/Tool-Integration) - Connecting external tools to agents
-- [Integration Patterns](../Examples/Integration-Patterns) - Real-world integration examples
+- [Specification](/docs/specification) - Technical details of the OSSA spec
+- [Schema Reference](/docs/schema-reference) - Complete schema documentation
+- [Ecosystem Overview](/docs/ecosystem/overview) - Framework integrations
+- [Migration Guides](/docs/migration-guides/langchain-to-ossa) - Real-world migration examples
 
 ---
 

@@ -922,7 +922,7 @@ Most OpenAPI tools ignore unknown extensions (per OpenAPI spec), so OSSA extensi
 - [OpenAPI 3.1 Specification](https://spec.openapis.org/oas/v3.1.0)
 - [OpenAPI Extensions Schema](../schemas/openapi-extensions.schema.json)
 - [OSSA Examples](../../examples/)
-- [GitLab Wiki](https://gitlab.bluefly.io/llm/openapi-ai-agents-standard/-/wikis/home)
+- [GitHub Repository](https://github.com/blueflyio/openstandardagents)
 
 ---
 

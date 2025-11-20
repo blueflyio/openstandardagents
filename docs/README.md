@@ -12,9 +12,9 @@
 
 For comprehensive documentation, guides, and architecture details, visit:
 
-**[OSSA GitLab Wiki](https://gitlab.bluefly.io/llm/openapi-ai-agents-standard/-/wikis/home)**
+**[GitHub Repository](https://github.com/blueflyio/openstandardagents)**
 
-The Wiki contains:
+The repository contains:
 - Architecture guides
 - Deployment strategies
 - Integration tutorials
@@ -26,6 +26,6 @@ The Wiki contains:
 
 - **Specification**: [spec/ossa-1.0.schema.json](../spec/ossa-1.0.schema.json)
 - **npm Package**: [@bluefly/openstandardagents](https://www.npmjs.com/package/@bluefly/openstandardagents)
-- **GitLab Repository**: [llm/openapi-ai-agents-standard](https://gitlab.bluefly.io/llm/openapi-ai-agents-standard)
-- **Issues**: [GitLab Issues](https://gitlab.bluefly.io/llm/openapi-ai-agents-standard/-/issues)
+- **GitHub Repository**: [blueflyio/openstandardagents](https://github.com/blueflyio/openstandardagents)
+- **Issues**: [GitHub Issues](https://github.com/blueflyio/openstandardagents/issues)
 

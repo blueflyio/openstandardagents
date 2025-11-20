@@ -24,7 +24,7 @@ info:
 
   contact:
     name: LLM Platform Team
-    url: https://gitlab.bluefly.io/llm
+    url: https://github.com/blueflyio/openstandardagents
   
   license:
     name: MIT
@@ -401,7 +401,7 @@ paths:
     get:
       tags: [gitlab]
       summary: List available packages
-      description: Query gitlab.bluefly.io package registry
+      description: Query package registry
       operationId: listGitLabPackages
       parameters:
         - name: scope
@@ -500,7 +500,7 @@ components:
           type: string
           format: uri
           description: URL to OSSA manifest in GitLab
-          example: "https://gitlab.bluefly.io/llm/agents/my-agent/-/raw/main/agent.ossa.yaml"
+          example: "https://github.com/blueflyio/openstandardagents/blob/main/examples/getting-started/hello-world-complete.ossa.yaml"
         deployment_target:
           type: string
           enum: [kubernetes, docker, serverless]

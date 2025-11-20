@@ -1,0 +1,94 @@
+# GitLab Kubernetes Agent Configuration for OSSA
+# Production-ready configuration with CI/CD integration, observability, and security
+
+# User access configuration
+# Grants Kubernetes cluster access to project/group members and activates Dashboard for Kubernetes
+user_access:
+  # Access method: agent impersonation (works on all GitLab tiers including Free)
+  # All requests are forwarded to the API server using the agent service account
+  access_as:
+    agent: {}
+
+  # Projects whose members should have access to this agent
+  # Members can access the cluster through this agent for deployments and operations
+  projects:
+    - id: llm/openstandardagents
+    # Add more projects as needed:
+    # - id: llm/agent-buildkit
+    # - id: llm/agent-studio
+
+  # Groups whose members should have access to this agent
+  # Grants access to the group and all its descendant groups and projects
+  groups:
+    - id: llm
+    # Add more groups as needed:
+    # - id: llm/agents
+    # - id: llm/platform
+
+# CI/CD access configuration
+# Allows GitLab CI/CD pipelines to access the Kubernetes cluster through this agent
+ci_access:
+  # Projects whose CI/CD pipelines can access the cluster
+  projects:
+    - id: llm/openstandardagents
+  # Groups whose CI/CD pipelines can access the cluster
+  groups:
+    - id: llm
+
+# GitOps configuration (optional)
+# Enables GitLab to manage Kubernetes resources via GitOps workflows
+# Uncomment and configure if you want to use GitOps:
+# gitops:
+#   manifest_projects:
+#     - id: llm/openstandardagents
+#       default_namespace: ossa-agents
+#       paths:
+#         - glob: 'infrastructure/k8s/**/*.yaml'
+#     - id: llm/agent-buildkit
+#       default_namespace: ossa-prod
+#       paths:
+#         - glob: 'k8s/**/*.yaml'
+
+# Observability configuration
+# Enables monitoring and observability features for the agent
+observability:
+  # Logging configuration
+  logging:
+    level: info
+    # Available levels: debug, info, warn, error
+  
+  # Metrics configuration
+  metrics:
+    enabled: true
+    # Prometheus scraping endpoint will be available at /metrics
+
+# Agent configuration
+agent:
+  # Health check configuration
+  health:
+    enabled: true
+    interval: 30s
+    timeout: 10s
+  
+  # Connection settings
+  connection:
+    # Maximum number of concurrent connections
+    max_connections: 100
+    # Connection timeout
+    timeout: 60s
+    # Keep-alive interval
+    keep_alive: 30s
+
+# Security configuration
+security:
+  # Network policies (applied if supported)
+  network_policy:
+    enabled: true
+  
+  # TLS configuration
+  tls:
+    # Verify TLS certificates
+    verify: true
+    # Minimum TLS version
+    min_version: "1.2"
+

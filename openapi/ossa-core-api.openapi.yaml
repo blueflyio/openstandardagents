@@ -19,7 +19,7 @@ info:
 
   contact:
     name: Bluefly.io LLM Platform Team
-    url: https://gitlab.bluefly.io/llm/openapi-ai-agents-standard
+    url: https://github.com/blueflyio/openstandardagents
   license:
     name: MIT
     url: https://opensource.org/licenses/MIT
@@ -40,8 +40,19 @@ security:
 paths:
   # Health & Status
   /health:
-    $ref: './src/api/specification.openapi.yml#/paths/~1health'
+    get:
 
+      summary: Health check
+      tags: [Health]
+      operationId: healthCheck
+      security: []
+      responses:
+        '200':
+          $ref: '#/components/responses/HealthCheck'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
   /health/ready:
     get:
       summary: Readiness check
@@ -52,7 +63,9 @@ paths:
         '200':
           $ref: '#/components/responses/HealthCheck'
         '503':
-          description: Service not ready
+          $ref: '#/components/responses/ServiceUnavailable'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
 
   /health/live:
     get:
@@ -63,6 +76,10 @@ paths:
       responses:
         '200':
           $ref: '#/components/responses/HealthCheck'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
 
   # Agent Registry
   /agents:
@@ -242,7 +259,31 @@ paths:
 
   # Specification & Validation
   /specification/validate:
-    $ref: './src/api/specification.openapi.yml#/paths/~1specification~1validate'
+    post:
+      summary: Validate agent manifest
+      description: Validate an OSSA agent manifest against the specification
+      tags: [Specification]
+      operationId: validateManifest
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AgentManifest'
+          application/yaml:
+            schema:
+              $ref: '#/components/schemas/AgentManifest'
+      responses:
+        '200':
+          description: Validation result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationResult'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
 
   /specification/taxonomies:
     get:
@@ -1403,6 +1444,20 @@ components:
 
     NotFound:
       description: Resource not found
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+
+    ServiceUnavailable:
+      description: Service unavailable
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+
+    InternalServerError:
+      description: Internal server error
       content:
         application/problem+json:
           schema:

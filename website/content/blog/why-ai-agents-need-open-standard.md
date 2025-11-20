@@ -1,10 +1,10 @@
 ---
-title: "Why AI Agents Need an Open Standard"
-date: "2024-11-15"
-author: "Thomas Scola"
-category: "Technical"
+title: ""Why AI Agents Need an Open Standard""
+date: ""2024-11-15""
+author: ""Thomas Scola""
+category: ""Technical""
 tags: ["OSSA", "standards", "interoperability", "multi-agent"]
-excerpt: "The proliferation of specialized AI agents in enterprise environments necessitates standardized orchestration mechanisms. Here's why."
+excerpt: "\"The proliferation of specialized AI agents in enterprise environments necessitates standardized orchestration mechanisms. Here's why.\""
 ---
 
 # Why AI Agents Need an Open Standard

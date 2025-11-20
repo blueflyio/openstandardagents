@@ -13,6 +13,31 @@ interface PageProps {
 
 const blogDirectory = path.join(process.cwd(), 'content/blog');
 
+// Helper function to fix malformed YAML frontmatter (double quotes)
+function fixYamlFrontmatter(content: string): string {
+  // Fix double-quoted values in frontmatter
+  // Pattern: key: ""value"" -> key: "value"
+  // Also handle escaped quotes in values
+  let fixed = content;
+  
+  // Fix double quotes around values (key: ""value"" -> key: "value")
+  fixed = fixed.replace(/(\w+):\s*""([^"]*)""/g, '$1: "$2"');
+  
+  // Fix escaped quotes in excerpt (\"value\" -> value)
+  fixed = fixed.replace(/excerpt:\s*"\\"([^"]*)\\""/g, 'excerpt: "$1"');
+  
+  return fixed;
+}
+
+// Helper to clean extracted values
+function cleanValue(value: any): any {
+  if (typeof value === 'string') {
+    // Remove surrounding double quotes if present
+    return value.replace(/^""(.*)""$/, '$1').replace(/^"(.*)"$/, '$1');
+  }
+  return value;
+}
+
 function getBlogPost(slug: string): { content: string; metadata: any } | null {
   const fullPath = path.join(blogDirectory, `${slug}.md`);
 
@@ -20,20 +45,40 @@ function getBlogPost(slug: string): { content: string; metadata: any } | null {
     return null;
   }
 
-  const fileContents = fs.readFileSync(fullPath, 'utf8');
-  const { data, content } = matter(fileContents);
+  try {
+    const fileContents = fs.readFileSync(fullPath, 'utf8');
+    
+    // Fix malformed YAML before parsing
+    const fixedContent = fixYamlFrontmatter(fileContents);
+    const { data, content } = matter(fixedContent);
 
-  return {
-    content,
-    metadata: {
-      title: data.title,
-      date: data.date,
-      author: data.author,
-      category: data.category,
-      tags: data.tags || [],
-      excerpt: data.excerpt,
-    },
-  };
+    const dateValue = cleanValue(data.date) || new Date().toISOString();
+    const dateObj = new Date(dateValue);
+    const validDate = isNaN(dateObj.getTime()) ? new Date() : dateObj;
+    
+    // Format date during server-side rendering to avoid hydration mismatch
+    const formattedDate = validDate.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+
+    return {
+      content,
+      metadata: {
+        title: cleanValue(data.title) || slug,
+        date: validDate.toISOString(),
+        formattedDate,
+        author: cleanValue(data.author) || 'OSSA Team',
+        category: cleanValue(data.category) || 'General',
+        tags: Array.isArray(data.tags) ? data.tags.map(cleanValue) : [],
+        excerpt: cleanValue(data.excerpt) || '',
+      },
+    };
+  } catch (error) {
+    console.error(`Error parsing blog post ${slug}:`, error);
+    return null;
+  }
 }
 
 function getAllBlogSlugs(): string[] {
@@ -97,11 +142,7 @@ export default async function BlogPostPage({ params }: PageProps) {
               <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
               </svg>
-              <span>{new Date(post.metadata.date).toLocaleDateString('en-US', {
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric'
-              })}</span>
+              <span>{post.metadata.formattedDate}</span>
             </div>
           </div>
         </div>
@@ -109,7 +150,7 @@ export default async function BlogPostPage({ params }: PageProps) {
 
       {/* Content */}
       <div className="container mx-auto max-w-4xl px-4 py-12">
-        <article className="glass-card p-8 md:p-12 rounded-lg shadow-lg">
+        <article className="bg-white p-8 md:p-12 rounded-lg shadow-lg border border-gray-200">
           <div className="prose prose-lg max-w-none
             prose-headings:text-gray-900
             prose-h1:text-4xl prose-h1:font-bold prose-h1:mb-6

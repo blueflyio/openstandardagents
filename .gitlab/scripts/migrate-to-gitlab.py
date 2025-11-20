@@ -11,8 +11,50 @@ import sys
 import urllib.parse
 from pathlib import Path
 
-GITLAB_URL = "https://gitlab.bluefly.io"
-PROJECT_PATH = "llm/openapi-ai-agents-standard"
+# Get GitLab URL from environment or detect from git remote
+def get_gitlab_url():
+    """Get GitLab URL from environment or git remote"""
+    if "CI_SERVER_URL" in os.environ:
+        return os.environ["CI_SERVER_URL"]
+    if "GITLAB_URL" in os.environ:
+        return os.environ["GITLAB_URL"]
+    try:
+        result = subprocess.run(
+            ["git", "remote", "get-url", "origin"],
+            capture_output=True,
+            text=True,
+            check=True
+        )
+        remote_url = result.stdout.strip()
+        if "gitlab" in remote_url:
+            parts = remote_url.split("//")[1].split("/")
+            return f"https://{parts[0]}"
+    except Exception:
+        pass
+    return "https://gitlab.bluefly.io"
+
+def get_project_path():
+    """Get project path from environment or git remote"""
+    if "CI_PROJECT_PATH" in os.environ:
+        return os.environ["CI_PROJECT_PATH"]
+    try:
+        result = subprocess.run(
+            ["git", "remote", "get-url", "origin"],
+            capture_output=True,
+            text=True,
+            check=True
+        )
+        remote_url = result.stdout.strip()
+        if "gitlab" in remote_url:
+            parts = remote_url.split("//")[1].split("/")
+            if len(parts) >= 3:
+                return f"{parts[1]}/{parts[2].replace('.git', '')}"
+    except Exception:
+        pass
+    return "llm/openstandardagents"
+
+GITLAB_URL = get_gitlab_url()
+PROJECT_PATH = get_project_path()
 
 def get_gitlab_token():
     """Extract GitLab token from git remote"""
@@ -273,9 +315,9 @@ def main():
     print("✅ GitLab migration complete!")
     print("")
     print("Next steps:")
-    print("1. Review wiki pages at: https://gitlab.bluefly.io/llm/openapi-ai-agents-standard/-/wikis")
-    print("2. Review milestones at: https://gitlab.bluefly.io/llm/openapi-ai-agents-standard/-/milestones")
-    print("3. Review labels at: https://gitlab.bluefly.io/llm/openapi-ai-agents-standard/-/labels")
+    print(f"1. Review wiki pages at: {GITLAB_URL}/{PROJECT_PATH}/-/wikis")
+    print(f"2. Review milestones at: {GITLAB_URL}/{PROJECT_PATH}/-/milestones")
+    print(f"3. Review labels at: {GITLAB_URL}/{PROJECT_PATH}/-/labels")
 
 if __name__ == "__main__":
     main()

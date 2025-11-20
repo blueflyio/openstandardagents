@@ -40,4 +40,4 @@ Continue with your main points. Break up long sections with subheadings.
 
 - [Link to related documentation](/docs/getting-started/hello-world)
 - [View examples](/examples)
-- [Join the discussion](https://github.com/blueflyio/openstandardagents/issues)
+- [Join the discussion](https://gitlab.bluefly.io/llm/openstandardagents/-/issues)

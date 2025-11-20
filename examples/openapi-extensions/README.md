@@ -83,5 +83,5 @@ Use any OpenAPI viewer:
 For complete documentation on OSSA OpenAPI extensions, see:
 - [OpenAPI Extensions Documentation](../../docs/openapi-extensions.md)
 - [OSSA Specification](../../spec/v0.2.2/OSSA-SPECIFICATION-v0.2.2.md)
-- [GitLab Wiki](https://gitlab.bluefly.io/llm/openapi-ai-agents-standard/-/wikis/home)
+- [GitHub Repository](https://github.com/blueflyio/openstandardagents)
 

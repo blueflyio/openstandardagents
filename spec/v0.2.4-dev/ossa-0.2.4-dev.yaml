@@ -565,7 +565,7 @@ best_practices:
 development_notes:
   status: DEVELOPMENT VERSION - APIs may change
   stability: unstable
-  feedback: https://gitlab.bluefly.io/llm/openapi-ai-agents-standard/-/issues
+  feedback: https://github.com/blueflyio/openstandardagents/issues
   planned_ga: v0.3.0
 
   known_limitations:

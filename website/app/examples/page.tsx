@@ -11,49 +11,40 @@ interface ExampleFile {
 }
 
 function getAllExamples(): ExampleFile[] {
-  // Check for mounted examples directory (Docker) or local development
-  const examplesDir = fs.existsSync('/examples')
-    ? '/examples'
-    : path.join(process.cwd(), '../examples');
-  const examples: ExampleFile[] = [];
-
-  if (!fs.existsSync(examplesDir)) {
-    return examples;
-  }
-
-  function traverseDir(dir: string, category = ''): void {
-    const entries = fs.readdirSync(dir, { withFileTypes: true });
-
-    for (const entry of entries) {
-      const fullPath = path.join(dir, entry.name);
-      const relativePath = path.relative(examplesDir, fullPath);
-
-      if (entry.isDirectory()) {
-        traverseDir(fullPath, entry.name);
-      } else if (
-        entry.isFile() &&
-        (entry.name.endsWith('.yml') ||
-          entry.name.endsWith('.yaml') ||
-          entry.name.endsWith('.json') ||
-          entry.name.endsWith('.ts'))
-      ) {
-        try {
-          const content = fs.readFileSync(fullPath, 'utf8');
-          examples.push({
-            name: entry.name,
-            path: relativePath,
-            content,
-            category: category || 'root',
-          });
-        } catch (error) {
-          // Skip files that can't be read
+  try {
+    // Try multiple absolute paths
+    const paths = [
+      path.resolve(process.cwd(), 'public', 'examples.json'),
+      path.join(process.cwd(), 'public', 'examples.json'),
+      path.resolve(__dirname, '..', '..', 'public', 'examples.json'),
+    ];
+    
+    for (const examplesJsonPath of paths) {
+      if (fs.existsSync(examplesJsonPath)) {
+        const content = fs.readFileSync(examplesJsonPath, 'utf8');
+        const examples = JSON.parse(content);
+        if (Array.isArray(examples) && examples.length > 0) {
+          return examples;
         }
       }
     }
+    
+    // If still not found, try reading from public directory directly
+    const publicDir = path.resolve(process.cwd(), 'public');
+    const directPath = path.join(publicDir, 'examples.json');
+    if (fs.existsSync(directPath)) {
+      const content = fs.readFileSync(directPath, 'utf8');
+      const examples = JSON.parse(content);
+      if (Array.isArray(examples)) {
+        return examples;
+      }
+    }
+    
+    return [];
+  } catch (error) {
+    console.error('Error loading examples:', error);
+    return [];
   }
-
-  traverseDir(examplesDir);
-  return examples;
 }
 
 export default function ExamplesPage() {
@@ -64,6 +55,25 @@ export default function ExamplesPage() {
     acc[ex.category] = (acc[ex.category] || 0) + 1;
     return acc;
   }, {} as Record<string, number>);
+
+  // Extract unique frameworks from example paths and content
+  const frameworkNames = [
+    'kagent', 'langchain', 'crewai', 'openai', 'anthropic', 
+    'autogen', 'langflow', 'langgraph', 'llamaindex', 'cursor', 
+    'vercel', 'drupal', 'mcp', 'huggingface', 'google', 'aws', 
+    'azure', 'github', 'docker', 'kubernetes'
+  ];
+  
+  const frameworksInExamples = new Set<string>();
+  examples.forEach(ex => {
+    const pathLower = ex.path.toLowerCase();
+    const contentLower = ex.content.toLowerCase();
+    frameworkNames.forEach(fw => {
+      if (pathLower.includes(fw) || contentLower.includes(`"${fw}"`) || contentLower.includes(`'${fw}'`)) {
+        frameworksInExamples.add(fw);
+      }
+    });
+  });
 
   return (
     <>
@@ -100,7 +110,7 @@ export default function ExamplesPage() {
             </div>
             <div className="w-px h-12 bg-gray-300"></div>
             <div className="text-center">
-              <div className="text-3xl font-bold text-primary">15+</div>
+              <div className="text-3xl font-bold text-primary">{frameworksInExamples.size}</div>
               <div className="text-sm text-gray-600">Frameworks</div>
             </div>
           </div>

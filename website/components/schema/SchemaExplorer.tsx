@@ -141,16 +141,16 @@ export function SchemaExplorer({ schema }: SchemaExplorerProps) {
     : schema;
 
   return (
-    <div className="grid lg:grid-cols-2 gap-6">
-      {/* Property Tree */}
+    <div className="space-y-6">
+      {/* Property Tree - Row 1 */}
       <div className="card">
         <h2 className="text-xl font-semibold mb-4">Schema Structure</h2>
-        <div className="space-y-1 max-h-[600px] overflow-y-auto">
+        <div className="space-y-1 max-h-[400px] overflow-y-auto">
           {rootProperties.map((prop) => renderProperty(prop))}
         </div>
       </div>
 
-      {/* Property Details */}
+      {/* Property Details - Row 2 */}
       <div className="card">
         <h2 className="text-xl font-semibold mb-4">
           {selectedPath || 'Schema Overview'}

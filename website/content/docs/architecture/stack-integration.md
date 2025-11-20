@@ -452,8 +452,8 @@ Change any layer without affecting others:
 ## Related Documentation
 
 - [Execution Flow](execution-flow) - How requests flow through OSSA agents
-- [Runtime Deployment](../Technical/Runtime-Deployment) - Deployment guides
-- [Integration Patterns](../Examples/Integration-Patterns) - Real-world examples
+- [Specification](/docs/specification) - Deployment guides
+- [Ecosystem Overview](/docs/ecosystem/overview) - Real-world examples
 - [Multi-Agent Systems](multi-agent-systems) - Agent-to-agent communication
 
 ---

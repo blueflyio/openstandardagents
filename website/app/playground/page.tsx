@@ -2,29 +2,15 @@
 
 import { useState } from 'react';
 import dynamic from 'next/dynamic';
+import { STABLE_VERSION, STABLE_VERSION_TAG } from '@/lib/version';
 
 const MonacoEditor = dynamic(() => import('@monaco-editor/react'), {
   ssr: false,
 });
 
-const exampleManifest = `apiVersion: ossa/v0.2.3
-kind: Agent
-
-metadata:
-  name: my-first-agent
-  version: 1.0.0
-  description: My first Open Standard Agents manifest
-
-spec:
-  role: You are a helpful assistant
-  llm:
-    provider: openai
-    model: gpt-4
-  tools: []
-`;
-
-const templates = {
-  simple: `apiVersion: ossa/v0.2.3
+// Dynamic templates using current stable version
+const getTemplates = (version: string) => ({
+  simple: `apiVersion: ossa/v${version}
 kind: Agent
 
 metadata:
@@ -39,7 +25,7 @@ spec:
     model: gpt-4
   tools: []`,
 
-  withTools: `apiVersion: ossa/v0.2.3
+  withTools: `apiVersion: ossa/v${version}
 kind: Agent
 
 metadata:
@@ -58,7 +44,7 @@ spec:
       endpoint: https://api.search.com/search
       method: GET`,
 
-  autonomous: `apiVersion: ossa/v0.2.3
+  autonomous: `apiVersion: ossa/v${version}
 kind: Agent
 
 metadata:
@@ -83,7 +69,7 @@ spec:
     human_in_loop:
       notification_channels: [slack]`,
 
-  fullStack: `apiVersion: ossa/v0.2.3
+  fullStack: `apiVersion: ossa/v${version}
 kind: Agent
 
 metadata:
@@ -139,10 +125,11 @@ spec:
 
 extensions:
   kagent:
-    mesh_discovery: true`
-};
+    mesh_discovery: true`,
+});
 
 export default function PlaygroundPage() {
+  const [templates] = useState(getTemplates(STABLE_VERSION));
   const [code, setCode] = useState(templates.simple);
   const [validationResult, setValidationResult] = useState<{
     valid: boolean;
@@ -155,8 +142,8 @@ export default function PlaygroundPage() {
     setIsValidating(true);
     try {
       // For static export, we'll use a client-side validation approach
-      // Load schema and validate in browser
-      const schemaResponse = await fetch('/schemas/ossa-0.2.3.schema.json');
+      // Load schema and validate in browser - use dynamic version
+      const schemaResponse = await fetch(`/schemas/ossa-${STABLE_VERSION}.schema.json`);
       if (!schemaResponse.ok) {
         throw new Error('Failed to load schema');
       }
@@ -258,19 +245,19 @@ export default function PlaygroundPage() {
               disabled={isValidating}
               className="bg-gradient-to-r from-primary to-primary-dark text-white px-6 py-3 rounded-lg font-medium hover:shadow-lg transition-all disabled:opacity-50"
             >
-              {isValidating ? '⏳ Validating...' : '✓ Validate Manifest'}
+              {isValidating ? 'Validating...' : 'Validate Manifest'}
             </button>
             <button
               onClick={downloadManifest}
               className="bg-white border-2 border-primary text-primary px-6 py-3 rounded-lg font-medium hover:bg-primary hover:text-white transition-all"
             >
-              ⬇️ Download YAML
+              Download YAML
             </button>
             <button
               onClick={copyToClipboard}
               className="bg-white border-2 border-secondary text-secondary px-6 py-3 rounded-lg font-medium hover:bg-secondary hover:text-white transition-all"
             >
-              📋 Copy to Clipboard
+              Copy to Clipboard
             </button>
           </div>
           <div className="flex gap-2 items-center">
@@ -283,7 +270,7 @@ export default function PlaygroundPage() {
 
       {/* Template Selector */}
       <div className="mb-6">
-        <h2 className="text-2xl font-bold mb-4 text-gray-900">📚 Quick Start Templates</h2>
+        <h2 className="text-2xl font-bold mb-4 text-gray-900">Quick Start Templates</h2>
         <div className="grid md:grid-cols-4 gap-4">
           <button
             onClick={() => loadTemplate('simple')}
@@ -293,7 +280,6 @@ export default function PlaygroundPage() {
                 : 'border-gray-300 hover:border-primary/50 hover:shadow-md'
             }`}
           >
-            <div className="text-2xl mb-2">🚀</div>
             <div className="font-bold mb-1">Simple Agent</div>
             <div className="text-sm text-gray-600">Basic manifest structure</div>
           </button>
@@ -306,7 +292,6 @@ export default function PlaygroundPage() {
                 : 'border-gray-300 hover:border-primary/50 hover:shadow-md'
             }`}
           >
-            <div className="text-2xl mb-2">🔧</div>
             <div className="font-bold mb-1">With Tools</div>
             <div className="text-sm text-gray-600">HTTP API integration</div>
           </button>
@@ -319,7 +304,6 @@ export default function PlaygroundPage() {
                 : 'border-gray-300 hover:border-primary/50 hover:shadow-md'
             }`}
           >
-            <div className="text-2xl mb-2">🎯</div>
             <div className="font-bold mb-1">Autonomous</div>
             <div className="text-sm text-gray-600">With autonomy controls</div>
           </button>
@@ -332,7 +316,6 @@ export default function PlaygroundPage() {
                 : 'border-gray-300 hover:border-primary/50 hover:shadow-md'
             }`}
           >
-            <div className="text-2xl mb-2">⚡</div>
             <div className="font-bold mb-1">Full Stack</div>
             <div className="text-sm text-gray-600">Complete production setup</div>
           </button>
@@ -342,7 +325,7 @@ export default function PlaygroundPage() {
       <div className="grid lg:grid-cols-2 gap-6 mb-6">
         <div className="card border-2 border-gray-300">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-2xl font-semibold">📝 Editor</h2>
+            <h2 className="text-2xl font-semibold">Editor</h2>
             <span className="text-sm bg-gray-100 px-3 py-1 rounded-full">YAML Format</span>
           </div>
           <div className="border-2 border-gray-300 rounded-lg overflow-hidden shadow-md" style={{ height: '600px' }}>
@@ -369,7 +352,7 @@ export default function PlaygroundPage() {
 
           {validationResult === null ? (
             <div className="text-center py-16 bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl border-2 border-dashed border-gray-300">
-              <div className="text-6xl mb-4">🔍</div>
+              <div className="text-6xl mb-4 text-gray-400">✓</div>
               <p className="text-gray-600 text-lg mb-2">Ready to validate</p>
               <p className="text-gray-500 text-sm">Click "Validate Manifest" above to check your OSSA manifest</p>
             </div>
@@ -396,7 +379,7 @@ export default function PlaygroundPage() {
                     Manifest is Valid! ✓
                   </div>
                   <p className="text-base text-green-800">
-                    Conforms to OSSA v0.2.3 specification
+                    Conforms to OSSA {STABLE_VERSION_TAG} specification
                   </p>
                 </div>
               </div>
@@ -476,23 +459,20 @@ export default function PlaygroundPage() {
 
           {/* Help Section */}
           <div className="mt-6 bg-gradient-to-br from-blue-50 to-cyan-50 rounded-xl p-5 border border-blue-200">
-            <h3 className="font-bold text-blue-900 mb-3 flex items-center">
-              <span className="text-xl mr-2">💡</span>
-              Need Help?
-            </h3>
+            <h3 className="font-bold text-blue-900 mb-3">Need Help?</h3>
             <div className="space-y-2 text-sm">
               <div className="bg-white rounded-lg p-3 border border-blue-100">
-                <strong className="text-blue-900">📖 View Schema Reference</strong>
+                <strong className="text-blue-900">View Schema Reference</strong>
                 <p className="text-gray-700 mt-1">Complete documentation of all fields</p>
                 <a href="/schema" className="text-blue-600 hover:underline mt-1 inline-block">Visit Schema Page →</a>
               </div>
               <div className="bg-white rounded-lg p-3 border border-blue-100">
-                <strong className="text-blue-900">📚 Browse Examples</strong>
+                <strong className="text-blue-900">Browse Examples</strong>
                 <p className="text-gray-700 mt-1">58+ real-world agent manifests</p>
                 <a href="/examples" className="text-blue-600 hover:underline mt-1 inline-block">View Examples →</a>
               </div>
               <div className="bg-white rounded-lg p-3 border border-blue-100">
-                <strong className="text-blue-900">📖 Read Documentation</strong>
+                <strong className="text-blue-900">Read Documentation</strong>
                 <p className="text-gray-700 mt-1">Complete guides and tutorials</p>
                 <a href="/docs" className="text-blue-600 hover:underline mt-1 inline-block">Read Docs →</a>
               </div>

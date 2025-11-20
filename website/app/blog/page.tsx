@@ -1,12 +1,19 @@
 import Link from 'next/link';
+import type { Metadata } from 'next';
 import fs from 'fs';
 import path from 'path';
 import matter from 'gray-matter';
+
+export const metadata: Metadata = {
+  title: 'OSSA Blog - Insights, Research, and Updates',
+  description: 'Insights, research, and updates on the open standard for AI agents. Learn about OSSA, agent orchestration, and best practices.',
+};
 
 interface BlogPost {
   slug: string;
   title: string;
   date: string;
+  formattedDate: string;
   author: string;
   category: string;
   tags: string[];
@@ -15,38 +22,121 @@ interface BlogPost {
 
 const blogDirectory = path.join(process.cwd(), 'content/blog');
 
+// Helper function to fix malformed YAML frontmatter (double quotes)
+function fixYamlFrontmatter(content: string): string {
+  // Fix double-quoted values in frontmatter
+  // Pattern: key: ""value"" -> key: "value"
+  // Also handle escaped quotes in values
+  let fixed = content;
+  
+  // Fix double quotes around values (key: ""value"" -> key: "value")
+  fixed = fixed.replace(/(\w+):\s*""([^"]*)""/g, '$1: "$2"');
+  
+  // Fix escaped quotes in excerpt (\"value\" -> value)
+  fixed = fixed.replace(/excerpt:\s*"\\"([^"]*)\\""/g, 'excerpt: "$1"');
+  
+  return fixed;
+}
+
 function getAllBlogPosts(): BlogPost[] {
+  if (!fs.existsSync(blogDirectory)) {
+    console.warn(`Blog directory does not exist: ${blogDirectory}`);
+    return [];
+  }
+
   const fileNames = fs.readdirSync(blogDirectory);
   const posts = fileNames
     .filter(fileName => fileName.endsWith('.md'))
     .map(fileName => {
-      const slug = fileName.replace(/\.md$/, '');
-      const fullPath = path.join(blogDirectory, fileName);
-      const fileContents = fs.readFileSync(fullPath, 'utf8');
-      const { data } = matter(fileContents);
+      try {
+        const slug = fileName.replace(/\.md$/, '');
+        const fullPath = path.join(blogDirectory, fileName);
+        const fileContents = fs.readFileSync(fullPath, 'utf8');
+        
+        // Fix malformed YAML before parsing
+        const fixedContent = fixYamlFrontmatter(fileContents);
+        const { data } = matter(fixedContent);
 
-      return {
-        slug,
-        title: data.title || slug,
-        date: data.date || new Date().toISOString(),
-        author: data.author || 'OSSA Team',
-        category: data.category || 'General',
-        tags: data.tags || [],
-        excerpt: data.excerpt || '',
-      };
+        // Clean up extracted values (remove extra quotes if present)
+        const cleanValue = (value: any): any => {
+          if (typeof value === 'string') {
+            // Remove surrounding double quotes if present
+            return value.replace(/^""(.*)""$/, '$1').replace(/^"(.*)"$/, '$1');
+          }
+          return value;
+        };
+
+        const dateValue = cleanValue(data.date) || new Date().toISOString();
+        const dateObj = new Date(dateValue);
+        const validDate = isNaN(dateObj.getTime()) ? new Date() : dateObj;
+        
+        // Format date during server-side rendering to avoid hydration mismatch
+        const formattedDate = validDate.toLocaleDateString('en-US', {
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric'
+        });
+
+        return {
+          slug,
+          title: cleanValue(data.title) || slug,
+          date: validDate.toISOString(),
+          formattedDate,
+          author: cleanValue(data.author) || 'OSSA Team',
+          category: cleanValue(data.category) || 'General',
+          tags: Array.isArray(data.tags) ? data.tags.map(cleanValue) : [],
+          excerpt: cleanValue(data.excerpt) || '',
+        };
+      } catch (error) {
+        console.error(`Error parsing blog post ${fileName}:`, error);
+        // Return a default post so the page doesn't crash
+        const defaultDate = new Date();
+        return {
+          slug: fileName.replace(/\.md$/, ''),
+          title: fileName.replace(/\.md$/, ''),
+          date: defaultDate.toISOString(),
+          formattedDate: defaultDate.toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+          }),
+          author: 'OSSA Team',
+          category: 'General',
+          tags: [],
+          excerpt: '',
+        };
+      }
     })
-    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    .filter(post => post !== null && post !== undefined)
+    .sort((a, b) => {
+      try {
+        const dateA = new Date(a.date).getTime();
+        const dateB = new Date(b.date).getTime();
+        if (isNaN(dateA) || isNaN(dateB)) return 0;
+        return dateB - dateA;
+      } catch {
+        return 0;
+      }
+    });
 
   return posts;
 }
 
 export default function BlogPage() {
-  const posts = getAllBlogPosts();
+  let posts: BlogPost[] = [];
+  let featuredPost: BlogPost | undefined;
+  let otherPosts: BlogPost[] = [];
 
-  // Featured post - OpenAPI AI Agents Standard
-  const featuredSlug = 'openapi-ai-agents-standard';
-  const featuredPost = posts.find(p => p.slug.toLowerCase().includes(featuredSlug) || p.slug.toLowerCase().includes('openapi'));
-  const otherPosts = posts.filter(p => p.slug !== featuredPost?.slug);
+  try {
+    posts = getAllBlogPosts();
+    // Featured post - Welcome to OSSA
+    const featuredSlug = 'welcome-to-ossa';
+    featuredPost = posts.find(p => p.slug.toLowerCase() === featuredSlug);
+    otherPosts = posts.filter(p => p.slug !== featuredPost?.slug);
+  } catch (error) {
+    console.error('Error loading blog posts:', error);
+    // Continue with empty arrays - page will show "No blog posts yet"
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -54,9 +144,14 @@ export default function BlogPage() {
       <div className="bg-gradient-to-br from-primary via-blue-600 to-secondary text-white py-20 px-4">
         <div className="container mx-auto max-w-6xl">
           <h1 className="text-5xl font-bold mb-6">OSSA Blog</h1>
-          <p className="text-xl opacity-90 max-w-3xl">
+          <p className="text-xl opacity-90 max-w-3xl mb-4">
             Insights, research, and updates on the open standard for AI agents
           </p>
+          {featuredPost && featuredPost.title && featuredPost.excerpt && (
+            <p className="text-lg opacity-80 max-w-3xl">
+              Start with our featured article: <strong>&quot;{featuredPost.title}&quot;</strong> - {featuredPost.excerpt}
+            </p>
+          )}
         </div>
       </div>
 
@@ -89,11 +184,7 @@ export default function BlogPage() {
                 <div className="flex items-center gap-4 text-sm text-gray-500">
                   <span className="font-medium">{featuredPost.author}</span>
                   <span>•</span>
-                  <span>{new Date(featuredPost.date).toLocaleDateString('en-US', {
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric'
-                  })}</span>
+                  <span>{featuredPost.formattedDate}</span>
                 </div>
                 <span className="text-primary font-medium">Read article →</span>
               </div>
@@ -110,7 +201,7 @@ export default function BlogPage() {
             <Link
               key={post.slug}
               href={`/blog/${post.slug}`}
-              className="glass-card p-6 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 block"
+              className="bg-white p-6 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 block border border-gray-200"
             >
               <div className="mb-4">
                 <span className="inline-block px-3 py-1 text-xs font-semibold text-primary bg-blue-100 rounded-full">
@@ -128,11 +219,7 @@ export default function BlogPage() {
 
               <div className="flex items-center justify-between text-sm text-gray-500">
                 <span>{post.author}</span>
-                <span>{new Date(post.date).toLocaleDateString('en-US', {
-                  year: 'numeric',
-                  month: 'long',
-                  day: 'numeric'
-                })}</span>
+                <span>{post.formattedDate}</span>
               </div>
 
               {post.tags.length > 0 && (

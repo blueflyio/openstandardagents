@@ -24,7 +24,7 @@ This release represents a complete transformation of OSSA into an enterprise-gra
 - **Getting Started Guide** - Clear, technical quick-start documentation
 
 ### Changed
-- **Package Name Standardized** - Now `@bluefly/openstandardagents` (consistent with npm)
+- **Package Name Standardized** - Now `@bluefly/open-standards-scalable-agents` (consistent with npm)
 - **Version Unified to 1.0.0** - Aligned package.json, schema, and documentation versions
 - **Dependencies Minimized** - Reduced from 8 to 4 deps, removed runtime services (qdrant, redis, pg, zod)
   - **Before**: 12MB+ with runtime dependencies
@@ -81,10 +81,10 @@ This release represents a complete transformation of OSSA into an enterprise-gra
 **For npm users**:
 ```bash
 # Old (not published)
-npm install -g @bluefly/openstandardagents
+npm install -g @ossa/standard
 
 # New (v1.0.0+)
-npm install -g @bluefly/openstandardagents
+npm install -g @bluefly/open-standards-scalable-agents
 ```
 
 **For developers**:
@@ -93,7 +93,7 @@ npm install -g @bluefly/openstandardagents
 - Examples unchanged (`examples/`)
 
 **For documentation**:
-- Comprehensive guides → GitLab Wiki (https://github.com/blueflyio/openstandardagents/wiki)
+- Comprehensive guides → GitLab Wiki (https://gitlab.bluefly.io/llm/openapi-ai-agents-standard/-/wikis/home)
 - Core specification docs → `docs/` directory
 - API documentation → GitLab Pages (automated)
 

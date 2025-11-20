@@ -163,9 +163,9 @@ ossa --version
 
 ## Support
 
-- **Documentation**: https://gitlab.bluefly.io/llm/openapi-ai-agents-standard/-/wikis/home
-- **Issues**: https://gitlab.bluefly.io/llm/openapi-ai-agents-standard/-/issues
-- **Examples**: https://gitlab.bluefly.io/llm/openapi-ai-agents-standard/-/tree/main/examples
+- **Documentation**: https://github.com/blueflyio/openstandardagents
+- **Issues**: https://github.com/blueflyio/openstandardagents/issues
+- **Examples**: https://github.com/blueflyio/openstandardagents/tree/main/examples
 
 ## Acknowledgments
 

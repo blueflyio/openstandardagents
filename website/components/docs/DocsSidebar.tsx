@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { DocsSearch } from './DocsSearch';
 import { VersionSelector } from './VersionSelector';
 
@@ -37,6 +37,13 @@ const navigation = [
     ],
   },
   {
+    title: 'Ecosystem',
+    items: [
+      { href: '/docs/ecosystem/overview', label: 'Ecosystem Overview' },
+      { href: '/docs/ecosystem/framework-support', label: 'Framework Support' },
+    ],
+  },
+  {
     title: 'Reference',
     items: [
       { href: '/docs/openapi-extensions', label: 'OpenAPI Extensions' },
@@ -55,7 +62,37 @@ const navigation = [
 
 export function DocsSidebar() {
   const pathname = usePathname();
-  const [openSections, setOpenSections] = useState<string[]>(['Getting Started']);
+
+  // Calculate initial open sections based on pathname to avoid hydration mismatch
+  const getInitialOpenSections = (): string[] => {
+    const sections: string[] = ['Getting Started'];
+    const currentSection = navigation.find((section) =>
+      section.items.some((item) => item.href === pathname)
+    );
+    if (currentSection && !sections.includes(currentSection.title)) {
+      sections.push(currentSection.title);
+    }
+    return sections;
+  };
+
+  const [openSections, setOpenSections] = useState<string[]>(getInitialOpenSections);
+
+  // Update open sections when pathname changes (for client-side navigation)
+  useEffect(() => {
+    const currentSection = navigation.find((section) =>
+      section.items.some((item) => item.href === pathname)
+    );
+
+    if (currentSection) {
+      setOpenSections((prev) => {
+        // Only add if not already in the array
+        if (!prev.includes(currentSection.title)) {
+          return [...prev, currentSection.title];
+        }
+        return prev;
+      });
+    }
+  }, [pathname]);
 
   const toggleSection = (title: string): void => {
     setOpenSections((prev) =>

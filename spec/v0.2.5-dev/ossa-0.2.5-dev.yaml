@@ -401,7 +401,7 @@ compatibility:
 
 developmentNotes:
   status: "UNSTABLE - API may change"
-  feedback: "https://gitlab.bluefly.io/llm/ossa/-/issues"
+  feedback: "https://github.com/blueflyio/openstandardagents/issues"
   roadmap:
     - "v0.2.5: Stabilize AgentGraph API"
     - "v0.2.6: Add resource dependencies"

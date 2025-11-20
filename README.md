@@ -4,9 +4,9 @@
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![npm version](https://img.shields.io/badge/npm-v0.2.3-blue.svg)](https://www.npmjs.com/package/@bluefly/openstandardagents)
-[![GitLab](https://img.shields.io/badge/GitLab-OSSA-orange.svg)](https://gitlab.bluefly.io/llm/openstandardagents)
+[![GitLab](https://img.shields.io/badge/GitLab-OSSA-orange.svg)](https://github.com/blueflyio/openstandardagents)
 [![GitHub](https://img.shields.io/badge/GitHub-OSSA-black.svg)](https://github.com/blueflyio/openstandardagents)
-[![OSSA Compliant](https://img.shields.io/badge/OSSA-Compliant-00B8D4.svg)](https://gitlab.bluefly.io/llm/openstandardagents)
+[![OSSA Compliant](https://img.shields.io/badge/OSSA-Compliant-00B8D4.svg)](https://github.com/blueflyio/openstandardagents)
 
 ---
 
@@ -96,7 +96,7 @@ ossa migrate <source>   # Migrate v0.1.9 → v0.2.2
 - ❌ Production monitoring
 - ❌ Infrastructure management
 
-For production features, see [Agent Buildkit](https://gitlab.bluefly.io/llm/npm/agent-buildkit).
+For production features, see [Agent Buildkit](https://github.com/blueflyio/openstandardagents).
 
 ---
 
@@ -154,14 +154,14 @@ Reference implementations: [`examples/`](examples/)
 - GitLab integration
 - Kubernetes deployment
 - Production monitoring
-- [Learn more →](https://gitlab.bluefly.io/llm/npm/agent-buildkit)
+- [Learn more →](https://github.com/blueflyio/openstandardagents)
 
 **Agent Studio** - GUI platform for agent orchestration
 - macOS-aligned design
 - Visual workflow design
 - Agent monitoring and debugging
 - End-to-end agent lifecycle management
-- [Learn more →](https://gitlab.bluefly.io/llm/demos/llm-platform-demo)
+- [Learn more →](https://github.com/blueflyio/openstandardagents)
 
 ### Part of the OSSA Ecosystem
 
@@ -239,7 +239,7 @@ The documentation is organized into:
 - **Specification**: [spec/v0.2.2/ossa-0.2.2.schema.json](spec/v0.2.2/ossa-0.2.2.schema.json)
 - **Examples**: [examples/](examples/)
 - **API Reference**: [docs/](docs/)
-- **GitLab Issues**: https://gitlab.bluefly.io/llm/openstandardagents/-/issues
+- **GitHub Issues**: https://github.com/blueflyio/openstandardagents/issues
 
 ---
 
@@ -247,16 +247,15 @@ The documentation is organized into:
 
 OSSA is an open standard. Contributions welcome.
 
-**Primary Repository**: [GitLab](https://gitlab.bluefly.io/llm/openstandardagents)  
-**GitHub Mirror**: [GitHub](https://github.com/blueflyio/openstandardagents) (read-only, automatically synced)
+**Repository**: https://github.com/blueflyio/openstandardagents/  
+**Homepage**: https://openstandardagents.org  
+**Issues**: https://github.com/blueflyio/openstandardagents/issues
 
-1. Fork the repository on GitLab
+1. Fork the repository on GitHub
 2. Create feature branch
-3. Submit merge request
+3. Submit pull request
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
-
-> **Note**: This repository is automatically mirrored from GitLab to GitHub. The GitHub repository is read-only. All development happens on GitLab.
 
 ---
 
@@ -270,9 +269,9 @@ Apache 2.0 - see [LICENSE](LICENSE) for details.
 
 OSSA is part of a unified ecosystem for AI agent development:
 
-- **[OSSA](https://gitlab.bluefly.io/llm/openstandardagents)** - The open standard (this repository)
-- **[Agent Buildkit](https://gitlab.bluefly.io/llm/npm/agent-buildkit)** - CLI for building and managing agents
-- **[Agent Studio](https://gitlab.bluefly.io/llm/demos/llm-platform-demo)** - GUI platform for agent orchestration
+- **[OSSA](https://github.com/blueflyio/openstandardagents)** - The open standard (this repository)
+- **[Agent Buildkit](https://github.com/blueflyio/openstandardagents)** - CLI for building and managing agents
+- **[Agent Studio](https://github.com/blueflyio/openstandardagents)** - GUI platform for agent orchestration
 
 **OSSA: Open. Interoperable. Trustworthy.**
 

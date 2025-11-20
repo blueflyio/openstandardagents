@@ -84,23 +84,23 @@ spec:
   it('should show verbose output when requested', () => {
     const manifestPath = path.join(tempDir, 'agent.ossa.yaml');
     const manifest = `
-apiVersion: ossa/v1
-kind: Agent
-metadata:
-  name: test-agent
-  version: 2.5.0
-  description: Workflow agent
-spec:
-  role: workflow
-  llm:
-    provider: openai
-    model: gpt-4
-  tools:
-    - type: mcp
-      name: execute
-      server: test-agent
-      capabilities: []
-`;
+    apiVersion: ossa/v1
+    kind: Agent
+    metadata:
+      name: test-agent
+      version: 2.5.0
+      description: Workflow agent
+    spec:
+      role: workflow
+      llm:
+        provider: openai
+        model: gpt-4
+      tools:
+        - type: mcp
+          name: execute
+          server: test-agent
+          capabilities: []
+    `;
 
     fs.writeFileSync(manifestPath, manifest);
 

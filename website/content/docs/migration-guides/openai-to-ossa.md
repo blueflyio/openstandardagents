@@ -83,7 +83,7 @@ assistant = client.beta.assistants.create(
 
 **OSSA Equivalent:**
 ```yaml
-apiVersion: ossa/v0.2.3
+apiVersion: ossa/v0.2.2
 kind: Agent
 metadata:
   name: data-analyst
@@ -203,7 +203,7 @@ assistant = client.beta.assistants.create(
 
 **OSSA Data Capabilities:**
 ```yaml
-apiVersion: ossa/v0.2.3
+apiVersion: ossa/v0.2.2
 kind: Agent
 metadata:
   name: research-assistant
@@ -397,7 +397,7 @@ print(messages.data[0].content[0].text.value)
 
 **1. Create Agent Manifest (`math-tutor.ossa.yaml`):**
 ```yaml
-apiVersion: ossa/v0.2.3
+apiVersion: ossa/v0.2.2
 kind: Agent
 metadata:
   name: math-tutor
@@ -528,7 +528,7 @@ if run.status == 'requires_action':
 
 **1. Create Agent Manifest (`stock-assistant.ossa.yaml`):**
 ```yaml
-apiVersion: ossa/v0.2.3
+apiVersion: ossa/v0.2.2
 kind: Agent
 metadata:
   name: stock-assistant
@@ -696,7 +696,7 @@ buildkit ecosystem services start qdrant
 
 **2. Create Agent Manifest (`support-assistant.ossa.yaml`):**
 ```yaml
-apiVersion: ossa/v0.2.3
+apiVersion: ossa/v0.2.2
 kind: Agent
 metadata:
   name: support-assistant
@@ -905,7 +905,7 @@ OSSA provides native support for multi-agent orchestration, which OpenAI Assista
 
 **OSSA Orchestrator Example:**
 ```yaml
-apiVersion: ossa/v0.2.3
+apiVersion: ossa/v0.2.2
 kind: Agent
 metadata:
   name: research-orchestrator
@@ -1180,8 +1180,8 @@ curl http://localhost:3000/metrics
 
 ## Additional Resources
 
-- **OSSA Specification**: [https://github.com/blueflyio/openstandardagents/wiki/home](https://github.com/blueflyio/openstandardagents/wiki/home)
-- **BuildKit Documentation**: [https://github.com/blueflyio/openstandardagents/wiki/BuildKit-CLI-Reference](https://github.com/blueflyio/openstandardagents/wiki/BuildKit-CLI-Reference)
+- **OSSA Specification**: [https://gitlab.bluefly.io/llm/ossa/-/wikis/home](https://gitlab.bluefly.io/llm/ossa/-/wikis/home)
+- **BuildKit Documentation**: [https://gitlab.bluefly.io/llm/documentation/-/wikis/BuildKit-CLI-Reference](https://gitlab.bluefly.io/llm/documentation/-/wikis/BuildKit-CLI-Reference)
 - **Agent Examples**: `/Users/flux423/Sites/LLM/agent-buildkit/templates/agents/`
 - **OSSA Types**: `/Users/flux423/Sites/LLM/agent-buildkit/src/types/ossa.ts`
 - **OpenAPI Spec**: `/Users/flux423/Sites/LLM/agent-buildkit/openapi/ossa-complete-v0.1.2.yaml`
@@ -1190,9 +1190,9 @@ curl http://localhost:3000/metrics
 
 ## Support
 
-- **Issues**: [https://github.com/blueflyio/openstandardagents/issues](https://github.com/blueflyio/openstandardagents/issues)
-- **BuildKit Repo**: [https://github.com/blueflyio/openstandardagents](https://github.com/blueflyio/openstandardagents)
-- **Wiki**: [https://github.com/blueflyio/openstandardagents/wiki/home](https://github.com/blueflyio/openstandardagents/wiki/home)
+- **Issues**: [https://gitlab.bluefly.io/llm/documentation/-/issues](https://gitlab.bluefly.io/llm/documentation/-/issues)
+- **BuildKit Repo**: [https://gitlab.bluefly.io/llm/npm/agent-buildkit](https://gitlab.bluefly.io/llm/npm/agent-buildkit)
+- **Wiki**: [https://gitlab.bluefly.io/llm/documentation/-/wikis/home](https://gitlab.bluefly.io/llm/documentation/-/wikis/home)
 
 ---
 

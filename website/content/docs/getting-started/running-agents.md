@@ -15,7 +15,7 @@ Learn how to run OSSA agents using the CLI.
 ## Installation
 
 ```bash
-npm install -g @bluefly/openstandardagents
+npm install -g @bluefly/open-standards-scalable-agents
 ```
 
 ## Quick Start
@@ -30,7 +30,7 @@ export OPENAI_API_KEY=sk-...
 
 ```yaml
 # support-agent.ossa.yaml
-apiVersion: ossa/v0.2.3
+apiVersion: ossa/v0.2.4
 kind: Agent
 
 metadata:

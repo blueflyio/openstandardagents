@@ -123,7 +123,7 @@ Starting fresh? → Check Getting Started guide
 
 Found an issue or want to add a migration guide?
 
-1. Create an issue: [GitHub Issues](https://github.com/blueflyio/openstandardagents/issues)
+1. Create an issue: [GitLab Issues](https://gitlab.bluefly.io/llm/documentation/-/issues)
 2. Submit a merge request with your guide
 3. Follow the existing structure and format
 

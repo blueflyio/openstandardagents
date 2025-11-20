@@ -132,10 +132,10 @@ ossa generate my-new-agent --type worker
 
 ## Resources
 
-- **Main Docs**: https://gitlab.bluefly.io/llm/openapi-ai-agents-standard/-/wikis/home
-- **Examples**: https://gitlab.bluefly.io/llm/openapi-ai-agents-standard/-/tree/main/examples
-- **Migration Guides**: https://gitlab.bluefly.io/llm/openapi-ai-agents-standard/-/wikis/Migration-Guides
-- **OpenAPI Extensions**: https://gitlab.bluefly.io/llm/openapi-ai-agents-standard/-/wikis/OpenAPI-Extensions
+- **Main Docs**: https://github.com/blueflyio/openstandardagents
+- **Examples**: https://github.com/blueflyio/openstandardagents/tree/main/examples
+- **Migration Guides**: https://github.com/blueflyio/openstandardagents/tree/main/spec
+- **OpenAPI Extensions**: https://github.com/blueflyio/openstandardagents/tree/main/docs
 
 ## Compatibility Matrix
 

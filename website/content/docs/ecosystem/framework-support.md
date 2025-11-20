@@ -18,8 +18,6 @@ This guide provides detailed information about OSSA compatibility with popular A
 | Langflow | ✅ Supported | 1.0.0+ | Low | [Docs](#langflow) |
 | Drupal ECA | ✅ Supported | 1.0.0+ | Medium | [Docs](#drupal-eca) |
 | OpenAI Assistants | ✅ Supported | 1.0.0+ | Medium | [Docs](#openai-assistants) |
-| AutoGPT | 🔄 Planned | TBD | TBD | Coming Soon |
-| BabyAGI | 🔄 Planned | TBD | TBD | Coming Soon |
 
 **Legend:**
 - ✅ **Native**: Built on OSSA from the ground up

@@ -260,7 +260,7 @@ spec:
 # - OSSA Specification: spec/v0.2.x/ossa-0.2.x.schema.json
 # - Schema Reference: docs/schemas/
 # - API Reference: openapi/
-# - GitLab Wiki: https://gitlab.bluefly.io/llm/openapi-ai-agents-standard/-/wikis
+# - GitHub Repository: https://github.com/blueflyio/openstandardagents
 #
 # ============================================================================
 

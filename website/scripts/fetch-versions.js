@@ -131,8 +131,13 @@ async function fetchVersions() {
     return bPatch - aPatch;
   });
 
-  const stableVersion = allVersions.find(v => v.type === 'stable')?.version || '0.2.3'; // Fallback
-  const devVersion = allVersions.find(v => v.type === 'dev')?.version || allVersions.find(v => v.type === 'prerelease')?.version || '0.2.4'; // Fallback
+  // Prioritize npm's latest tag for stable version
+  const npmStableVersion = distTags.latest || allVersions.find(v => v.type === 'stable' && v.published)?.version;
+  const stableVersion = npmStableVersion || allVersions.find(v => v.type === 'stable')?.version || '0.2.3'; // Fallback
+  
+  // Prioritize npm's dev tag for dev version
+  const npmDevVersion = distTags.dev || allVersions.find(v => (v.type === 'dev' || v.type === 'prerelease') && v.published)?.version;
+  const devVersion = npmDevVersion || allVersions.find(v => v.type === 'dev')?.version || allVersions.find(v => v.type === 'prerelease')?.version || '0.2.5-dev'; // Fallback
 
   const versionsData = {
     stable: stableVersion,

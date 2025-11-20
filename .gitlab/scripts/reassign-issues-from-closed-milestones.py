@@ -9,8 +9,65 @@ import sys
 import urllib.parse
 import urllib.request
 
-GITLAB_URL = "https://gitlab.bluefly.io"
-PROJECT_ID = 1553
+import os
+
+# Get GitLab URL from environment or detect from git remote
+def get_gitlab_url():
+    """Get GitLab URL from environment or git remote"""
+    if "CI_SERVER_URL" in os.environ:
+        return os.environ["CI_SERVER_URL"]
+    if "GITLAB_URL" in os.environ:
+        return os.environ["GITLAB_URL"]
+    try:
+        result = subprocess.run(
+            ["git", "remote", "get-url", "origin"],
+            capture_output=True,
+            text=True,
+            check=True
+        )
+        remote_url = result.stdout.strip()
+        if "gitlab" in remote_url:
+            parts = remote_url.split("//")[1].split("/")
+            return f"https://{parts[0]}"
+    except Exception:
+        pass
+    return "https://gitlab.bluefly.io"
+
+def get_project_id(token):
+    """Get project ID from GitLab API"""
+    project_path = get_project_path()
+    url = f"{GITLAB_URL}/api/v4/projects/{urllib.parse.quote(project_path, safe='')}"
+    req = urllib.request.Request(url)
+    req.add_header("PRIVATE-TOKEN", token)
+    try:
+        with urllib.request.urlopen(req) as response:
+            data = json.loads(response.read())
+            return data["id"]
+    except Exception:
+        return None
+
+def get_project_path():
+    """Get project path from environment or git remote"""
+    if "CI_PROJECT_PATH" in os.environ:
+        return os.environ["CI_PROJECT_PATH"]
+    try:
+        result = subprocess.run(
+            ["git", "remote", "get-url", "origin"],
+            capture_output=True,
+            text=True,
+            check=True
+        )
+        remote_url = result.stdout.strip()
+        if "gitlab" in remote_url:
+            parts = remote_url.split("//")[1].split("/")
+            if len(parts) >= 3:
+                return f"{parts[1]}/{parts[2].replace('.git', '')}"
+    except Exception:
+        pass
+    return "llm/openstandardagents"
+
+GITLAB_URL = get_gitlab_url()
+PROJECT_PATH = get_project_path()
 
 def get_gitlab_token():
     """Extract GitLab token from git remote"""
@@ -31,6 +88,13 @@ def get_gitlab_token():
 
 def api_request(method, endpoint, token, data=None):
     """Make GitLab API request"""
+    # Get project ID dynamically if not already set
+    if 'PROJECT_ID' not in globals():
+        project_id = get_project_id(token)
+        if not project_id:
+            return {"error": "Could not get project ID"}
+        globals()['PROJECT_ID'] = project_id
+    
     url = f"{GITLAB_URL}/api/v4/projects/{PROJECT_ID}/{endpoint}"
     req = urllib.request.Request(url)
     req.add_header("PRIVATE-TOKEN", token)
@@ -110,7 +174,7 @@ def main():
     print("")
     print(f"✅ Reassigned {reassigned} issues to v0.2.3 milestone")
     print("")
-    print("View milestones: https://gitlab.bluefly.io/llm/openapi-ai-agents-standard/-/milestones")
+    print(f"View milestones: {GITLAB_URL}/{PROJECT_PATH}/-/milestones")
 
 if __name__ == "__main__":
     main()

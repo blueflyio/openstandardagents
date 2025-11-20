@@ -8,7 +8,7 @@ export function Footer() {
           <div>
             <h3 className="text-white font-semibold mb-4">Open Standard Agents</h3>
             <p className="text-sm">
-              Industry Standard for Agent Orchestration. The vendor-neutral specification for multi-agent systems.
+              OSSA is an Open Standard for AI Agents. The vendor-neutral specification was created by Thomas Scola, founder of Bluefly.io.
             </p>
           </div>
           <div>
@@ -47,6 +47,11 @@ export function Footer() {
               <li>
                 <Link href="/blog" className="hover:text-white transition-colors">
                   Blog
+                </Link>
+              </li>
+              <li>
+                <Link href="/design-guide" className="hover:text-white transition-colors">
+                  Design Guide
                 </Link>
               </li>
             </ul>

@@ -116,7 +116,7 @@ Starting fresh? → Check Getting Started guide
 
 - **Documentation:** `/Users/flux423/Sites/LLM/agent-buildkit/docs/`
 - **Examples:** `/Users/flux423/Sites/LLM/agent-buildkit/.agents/`
-- **OSSA Spec:** [OSSA Complete Reference](../OSSA-COMPLETE-AGENT-REFERENCE.md)
+- **OSSA Spec:** [Schema Reference](/docs/schema-reference)
 - **BuildKit CLI:** `buildkit agents --help`
 
 ## Contributing

@@ -21,10 +21,10 @@ info:
     - Type-Safe: Zod + TypeScript auto-generation
 
     OSSA Compliance: v0.1.9
-    Reference: https://gitlab.bluefly.io/llm/OSSA
+    Reference: https://github.com/blueflyio/openstandardagents
   contact:
     name: LLM Platform Innovation Team
-    url: https://gitlab.bluefly.io/llm
+    url: https://github.com/blueflyio/openstandardagents
   license:
     name: MIT
 

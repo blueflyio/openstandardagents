@@ -326,9 +326,9 @@ gantt
 ## Related Documentation
 
 - [Stack Integration](stack-integration) - Where OSSA fits in your architecture
-- [Tool Integration Patterns](../Technical/Tool-Integration) - Detailed tool execution patterns
-- [Runtime Deployment](../Technical/Runtime-Deployment) - How to deploy OSSA agents
-- [Specification Deep-Dive](../Technical/Specification-Deep-Dive) - Full OSSA spec details
+- [Schema Reference](/docs/schema-reference) - Detailed tool execution patterns
+- [Specification](/docs/specification) - Full OSSA spec details
+- [Ecosystem Overview](/docs/ecosystem/overview) - Framework integrations
 
 ---
 

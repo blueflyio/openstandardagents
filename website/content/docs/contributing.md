@@ -188,8 +188,8 @@ Contributing to OAAS directly advances:
 ### 3. Getting Started
 
 1. **Read the Documentation** - Start with [README.md](README.md) and [ROADMAP.md](ROADMAP.md)
-2. **Check Issues** - Find something you can help with in our [GitHub Issues](https://github.com/blueflyio/openstandardagents/issues)
-3. **Join Discussions** - Participate in [GitHub Discussions](https://github.com/blueflyio/openstandardagents/discussions)
+2. **Check Issues** - Find something you can help with in our [GitHub Issues](https://github.com/openapi-ai-agents/standard/issues)
+3. **Join Discussions** - Participate in [GitHub Discussions](https://github.com/openapi-ai-agents/standard/discussions)
 4. **Submit PRs** - Start with small, focused changes
 5. **Test Everything** - Ensure all implementations work correctly
 

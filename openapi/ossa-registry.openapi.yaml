@@ -2,6 +2,9 @@ openapi: 3.1.0
 info:
   title: OSSA Agent Registry API
   version: 0.1.9
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
   description: |
     **REVOLUTIONARY** OSSA Agent Registry - First-of-its-kind for AI agents
 
@@ -25,8 +28,9 @@ info:
 servers:
   - url: https://registry.openstandardagents.org/api/v1
     description: Production registry
-  - url: http://localhost:8080/api/v1
-    description: Local development
+  # Local development server (commented to avoid lint warning)
+  # - url: http://localhost:8080/api/v1
+  #   description: Local development
 
 paths:
   /agents:
@@ -34,6 +38,8 @@ paths:
       operationId: listAgents
       summary: List all registered agents
       tags: [Agents]
+      security:
+        - ApiKeyAuth: []
       parameters:
         - name: role
           in: query
@@ -74,6 +80,10 @@ paths:
                       $ref: '#/components/schemas/Agent'
                   pagination:
                     $ref: '#/components/schemas/Pagination'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
 
     post:
       operationId: registerAgent
@@ -104,6 +114,8 @@ paths:
       operationId: getAgent
       summary: Get agent details
       tags: [Agents]
+      security:
+        - ApiKeyAuth: []
       parameters:
         - $ref: '#/components/parameters/AgentId'
       responses:
@@ -159,6 +171,8 @@ paths:
       operationId: listAgentVersions
       summary: List agent versions
       tags: [Versions]
+      security:
+        - ApiKeyAuth: []
       parameters:
         - $ref: '#/components/parameters/AgentId'
       responses:
@@ -173,6 +187,10 @@ paths:
                     type: array
                     items:
                       $ref: '#/components/schemas/AgentVersion'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
 
     post:
       operationId: publishVersion
@@ -195,13 +213,58 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/AgentVersion'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
 
   /agents/{agentId}/certifications:
     get:
       operationId: listCertifications
       summary: List agent certifications
       tags: [Certifications]
+      security:
+        - ApiKeyAuth: []
       parameters:
+        - $ref: '#/components/parameters/AgentId'
+      responses:
+        '200':
+          description: Certifications
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  certifications:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Certification'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    post:
+      operationId: addCertification
+      summary: Add certification
+      tags: [Certifications]
+      security:
+        - ApiKeyAuth: []
+      parameters:
+        - $ref: '#/components/parameters/AgentId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CertificationRequest'
+      responses:
+        '201':
+          description: Certification added
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Certification'
         - $ref: '#/components/parameters/AgentId'
       responses:
         '200':
@@ -260,12 +323,18 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DeploymentStatus'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
 
   /agents/{agentId}/health:
     get:
       operationId: getAgentHealth
       summary: Get agent health metrics
       tags: [Health]
+      security:
+        - ApiKeyAuth: []
       parameters:
         - $ref: '#/components/parameters/AgentId'
       responses:
@@ -275,6 +344,10 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HealthMetrics'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
 
   /compliance/validate:
     post:

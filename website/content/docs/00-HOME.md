@@ -15,37 +15,30 @@
 ### Quick Navigation
 
 #### 🚀 Getting Started
-- [5-Minute Overview](Getting-Started/5-Minute-Overview)
-- [Installation Guide](Getting-Started/Installation)
-- [Hello World Tutorial](Getting-Started/Hello-World)
-- [First Agent Creation](Getting-Started/First-Agent)
-- [Common Questions](Getting-Started/Common-Questions)
+- [5-Minute Overview](/docs/getting-started/5-minute-overview)
+- [Installation Guide](/docs/getting-started/installation)
+- [Hello World Tutorial](/docs/getting-started/hello-world)
+- [First Agent Creation](/docs/getting-started/first-agent)
 
 #### 👥 For Different Audiences
-- [Students & Researchers](For-Audiences/Students-Researchers)
-- [Developers](For-Audiences/Developers)
-- [Architects & Platform Engineers](For-Audiences/Architects)
-- [Enterprises](For-Audiences/Enterprises)
+- [Students & Researchers](/docs/for-audiences/students-researchers)
+- [Developers](/docs/for-audiences/developers)
+- [Architects & Platform Engineers](/docs/for-audiences/architects)
+- [Enterprises](/docs/for-audiences/enterprises)
 
 #### 📚 Technical Documentation
-- [Specification Deep-Dive](Technical/Specification-Deep-Dive)
-- [Schema Reference v0.2.2](Technical/Schema-Reference)
-- [Tool Integration Patterns](Technical/Tool-Integration)
-- [Runtime Deployment Guides](Technical/Runtime-Deployment)
-- [Observability Configuration](Technical/Observability)
+- [Specification](/docs/specification)
+- [Schema Reference](/docs/schema-reference)
+- [OpenAPI Extensions](/docs/openapi-extensions)
 
 #### 💡 Examples & Patterns
-- [Getting Started Examples](Examples/Getting-Started-Examples)
-- [Integration Patterns](Examples/Integration-Patterns)
-- [Migration Guides](Examples/Migration-Guides)
-- [Advanced Patterns](Examples/Advanced-Patterns)
-- [Enterprise Examples](Examples/Enterprise-Examples)
+- [Migration Guides](/docs/migration-guides/langchain-to-ossa)
+- [Ecosystem Overview](/docs/ecosystem/overview)
+- [Framework Support](/docs/ecosystem/framework-support)
 
 #### 🌐 Ecosystem
-- [OSSA Standard](Ecosystem/OSSA-Standard)
-- [agent-buildkit Reference](Ecosystem/agent-buildkit)
-- [Community Tools](Ecosystem/Community-Tools)
-- [Registry & Discovery](Ecosystem/Registry-Discovery)
+- [Ecosystem Overview](/docs/ecosystem/overview)
+- [Framework Support](/docs/ecosystem/framework-support)
 
 ---
 
@@ -142,7 +135,7 @@ OSSA doesn't care - it's just a standard.
 
 OSSA is an open standard. Contributions welcome!
 
-1. Review [Contributing Guidelines](Contributing)
+1. Review [Contributing Guidelines](/docs/contributing)
 2. Check [Open Issues](https://github.com/blueflyio/openstandardagents/issues)
 3. Create a merge request
 

@@ -1,0 +1,391 @@
+openapi: 3.1.0
+info:
+  title: GitLab Kubernetes Agent Management API
+  description: |
+    OpenAPI specification for GitLab Kubernetes Agent management operations.
+    Provides CRUD operations for managing GitLab cluster agents.
+    
+    This API follows OSSA principles:
+    - OpenAPI-First: Spec drives types, validation, and documentation
+    - DRY: Single source of truth (this spec)
+    - CRUD: Full Create/Read/Update/Delete operations
+    - Type-Safe: Auto-generated types + runtime validation (Zod)
+  version: 1.0.0
+  contact:
+    name: OSSA Standards Team
+
+servers:
+  - url: https://gitlab.com/api/v4
+    description: GitLab.com (default)
+    variables:
+      base_url:
+        default: https://gitlab.com
+  - url: {base_url}/api/v4
+    description: Custom GitLab instance
+    variables:
+      base_url:
+        default: https://gitlab.com
+        description: Your GitLab instance URL
+
+tags:
+  - name: agents
+    description: GitLab Kubernetes Agent operations
+  - name: tokens
+    description: Agent access token management
+
+paths:
+  /projects/{project_id}/cluster_agents:
+    get:
+      tags:
+        - agents
+      summary: List cluster agents
+      description: List all cluster agents for a project (READ operation)
+      operationId: listAgents
+      parameters:
+        - name: project_id
+          in: path
+          required: true
+          description: Project ID or path (e.g., llm/openstandardagents)
+          schema:
+            oneOf:
+              - type: integer
+              - type: string
+      responses:
+        '200':
+          description: List of cluster agents
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Agent'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    
+    post:
+      tags:
+        - agents
+      summary: Create cluster agent
+      description: Create a new cluster agent (CREATE operation)
+      operationId: createAgent
+      parameters:
+        - name: project_id
+          in: path
+          required: true
+          description: Project ID or path
+          schema:
+            oneOf:
+              - type: integer
+              - type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateAgentRequest'
+      responses:
+        '201':
+          description: Agent created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Agent'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /projects/{project_id}/cluster_agents/{agent_id}:
+    get:
+      tags:
+        - agents
+      summary: Get cluster agent
+      description: Get a specific cluster agent by ID (READ operation)
+      operationId: getAgent
+      parameters:
+        - name: project_id
+          in: path
+          required: true
+          schema:
+            oneOf:
+              - type: integer
+              - type: string
+        - name: agent_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Agent details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Agent'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    
+    delete:
+      tags:
+        - agents
+      summary: Delete cluster agent
+      description: Delete a cluster agent (DELETE operation)
+      operationId: deleteAgent
+      parameters:
+        - name: project_id
+          in: path
+          required: true
+          schema:
+            oneOf:
+              - type: integer
+              - type: string
+        - name: agent_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Agent deleted successfully
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /projects/{project_id}/cluster_agents/{agent_id}/tokens:
+    get:
+      tags:
+        - tokens
+      summary: List agent tokens
+      description: List all tokens for a cluster agent (READ operation)
+      operationId: listTokens
+      parameters:
+        - name: project_id
+          in: path
+          required: true
+          schema:
+            oneOf:
+              - type: integer
+              - type: string
+        - name: agent_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: List of agent tokens
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AgentToken'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    
+    post:
+      tags:
+        - tokens
+      summary: Create agent token
+      description: Create a new access token for a cluster agent (CREATE operation)
+      operationId: createToken
+      parameters:
+        - name: project_id
+          in: path
+          required: true
+          schema:
+            oneOf:
+              - type: integer
+              - type: string
+        - name: agent_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateTokenRequest'
+      responses:
+        '201':
+          description: Token created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentToken'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /projects/{project_id}/cluster_agents/{agent_id}/tokens/{token_id}:
+    delete:
+      tags:
+        - tokens
+      summary: Delete agent token
+      description: Delete an agent access token (DELETE operation)
+      operationId: deleteToken
+      parameters:
+        - name: project_id
+          in: path
+          required: true
+          schema:
+            oneOf:
+              - type: integer
+              - type: string
+        - name: agent_id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: token_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Token deleted successfully
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: GitLab personal access token or OAuth token
+
+  schemas:
+    Agent:
+      type: object
+      required:
+        - id
+        - name
+        - project_id
+        - created_at
+      properties:
+        id:
+          type: integer
+          description: Agent ID
+          example: 1
+        name:
+          type: string
+          description: Agent name (DNS-1123 format)
+          pattern: '^[a-z0-9]([-a-z0-9]*[a-z0-9])?$'
+          minLength: 1
+          maxLength: 63
+          example: ossa-agent
+        project_id:
+          type: integer
+          description: Project ID
+          example: 123
+        created_at:
+          type: string
+          format: date-time
+          description: Creation timestamp
+        created_by_user_id:
+          type: integer
+          nullable: true
+          description: User ID who created the agent
+
+    CreateAgentRequest:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+          description: Agent name (DNS-1123 format)
+          pattern: '^[a-z0-9]([-a-z0-9]*[a-z0-9])?$'
+          minLength: 1
+          maxLength: 63
+          example: ossa-agent
+
+    AgentToken:
+      type: object
+      required:
+        - id
+        - name
+        - token
+        - created_at
+      properties:
+        id:
+          type: integer
+          description: Token ID
+          example: 1
+        name:
+          type: string
+          description: Token name
+          example: ossa-agent-token-1234567890
+        token:
+          type: string
+          description: Access token (only returned on creation)
+          example: glpat-xxxxxxxxxxxxxxxxxxxx
+        created_at:
+          type: string
+          format: date-time
+          description: Creation timestamp
+        created_by_user_id:
+          type: integer
+          nullable: true
+          description: User ID who created the token
+        last_used_at:
+          type: string
+          format: date-time
+          nullable: true
+          description: Last usage timestamp
+
+    CreateTokenRequest:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+          description: Token name
+          example: ossa-agent-token-1234567890
+        description:
+          type: string
+          description: Token description
+          example: Token for OSSA GitLab agent
+
+    Error:
+      type: object
+      required:
+        - message
+      properties:
+        message:
+          type: string
+          description: Error message
+        error:
+          type: string
+          description: Error code
+
+  responses:
+    BadRequest:
+      description: Bad request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    
+    Unauthorized:
+      description: Unauthorized
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+security:
+  - BearerAuth: []
+
