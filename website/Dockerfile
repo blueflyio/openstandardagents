@@ -19,9 +19,9 @@ WORKDIR /app/website
 # Generate examples.json - this MUST succeed
 RUN npm run generate-examples
 
-# Verify examples.json was created
+# Verify examples.json was created and has content
 RUN test -f public/examples.json && echo "✅ examples.json created" || (echo "❌ examples.json NOT FOUND" && exit 1)
-RUN jq 'length' public/examples.json && echo "examples found"
+RUN test -s public/examples.json && echo "✅ examples.json has content" || (echo "❌ examples.json is empty" && exit 1)
 
 # Expose port
 EXPOSE 3000
