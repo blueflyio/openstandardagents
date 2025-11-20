@@ -379,17 +379,17 @@ promote-to-main:
     action: start
 
 # ============================================================================
-# STAGE 8: RELEASE ON main (Automatic - Milestone Controlled)
+# STAGE 8: RELEASE ON main (Manual - Milestone Controlled)
 # ============================================================================
-# Automatic release based on commits and milestones
+# Manual release job - must be explicitly triggered after merge to main
 # Version bump is determined by semantic-release analyzing commit messages:
 # - feat: → MINOR
 # - fix: → PATCH
 # - BREAKING CHANGE: → MAJOR
 #
 # Milestones are used for planning and tracking, but version is determined
-# automatically by commit analysis. Releases happen automatically when
-# code is merged to main.
+# automatically by commit analysis. Release job must be manually triggered
+# after reviewing the merge to main.
 
 release:main:
   stage: release-main
@@ -407,22 +407,6 @@ release:main:
     - |
       echo "🚀 Automatic Release (Milestone Controlled)"
       echo "============================================"
-      
-      # Check if release should be skipped
-      # Skip if any commit message contains [skip release] or [no release]
-      # Check the last few commits (merge commits and recent commits)
-      LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
-      if [ -n "$LAST_TAG" ]; then
-        COMMITS_TO_CHECK=$(git log --oneline ${LAST_TAG}..HEAD | head -20)
-      else
-        COMMITS_TO_CHECK=$(git log --oneline -20)
-      fi
-      
-      if echo "$COMMITS_TO_CHECK" | grep -qiE "\[skip release\]|\[no release\]"; then
-        echo "⏭️  Release skipped: Found [skip release] or [no release] in commit messages"
-        echo "✅ Merge completed without release"
-        exit 0
-      fi
       
       # Configure npm
       echo "@bluefly:registry=${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/npm/" > .npmrc
@@ -443,23 +427,12 @@ release:main:
       # - chore:, docs:, test:, build:, ci: → No release (semantic-release skips automatically)
       # Milestones are used for planning, but version is commit-driven
       echo "Analyzing commits to determine version..."
-      npx semantic-release || {
-        EXIT_CODE=$?
-        # semantic-release exits with code 1 if no release is needed (e.g., only chore commits)
-        if [ $EXIT_CODE -eq 1 ]; then
-          echo "ℹ️  No release needed: Only non-release commits (chore, docs, test, build, ci)"
-          echo "✅ Merge completed without release"
-          exit 0
-        else
-          echo "❌ Release failed with exit code $EXIT_CODE"
-          exit $EXIT_CODE
-        fi
-      }
+      npx semantic-release
       
       echo "✅ Release completed"
   rules:
     - if: $CI_COMMIT_BRANCH == "main"
-      when: on_success
+      when: manual
       allow_failure: false
   needs:
     - quality:gates
