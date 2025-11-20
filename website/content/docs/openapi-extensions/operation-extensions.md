@@ -20,11 +20,24 @@ x-ossa-capability: "capability-name"
 ```
 
 **Detailed object**:
+```yaml
+x-ossa-capability:
+  name: string                 # Capability name
+  description: string          # Capability description (optional)
+  input: boolean              # Whether this is an input capability (optional)
+  output: boolean             # Whether this is an output capability (optional)
+  inputSchema: object         # JSON Schema for capability input (optional)
+  outputSchema: object         # JSON Schema for capability output (optional)
+```
+
+**Schema Reference Table:**
 
 | Field | Type | Description |
 |-------|------|-------------|
 | `name` | string | Capability name |
 | `description` | string | Capability description (optional) |
+| `input` | boolean | Whether this is an input capability (optional) |
+| `output` | boolean | Whether this is an output capability (optional) |
 | `inputSchema` | object | JSON Schema for capability input (optional) |
 | `outputSchema` | object | JSON Schema for capability output (optional) |
 
@@ -79,6 +92,16 @@ Defines autonomy level and approval requirements for operation execution.
 Operation object within path item
 
 ### Schema
+
+```yaml
+x-ossa-autonomy:
+  level: string                # "supervised" | "semi-autonomous" | "autonomous"
+  approval_required: boolean   # Whether human approval is required
+  allowed_actions: string[]   # List of allowed actions (optional)
+  blocked_actions: string[]   # List of blocked actions (optional)
+```
+
+**Schema Reference Table:**
 
 | Field | Type | Description |
 |-------|------|-------------|
@@ -137,6 +160,22 @@ Operation object within path item
 
 ### Schema
 
+```yaml
+x-ossa-constraints:
+  cost:
+    maxTokensPerDay: integer   # Maximum tokens allowed per day
+    maxTokensPerRequest: integer # Maximum tokens allowed per request
+    maxCostPerDay: number      # Maximum cost in USD per day
+    currency: string           # Currency code (default: "USD")
+  performance:
+    maxLatencySeconds: number  # Maximum acceptable latency in seconds
+    maxConcurrentRequests: integer # Maximum concurrent requests
+  time:
+    maxExecutionTime: integer  # Maximum execution time in seconds
+```
+
+**Schema Reference Table:**
+
 | Field | Type | Description |
 |-------|------|-------------|
 | `cost.maxTokensPerDay` | integer | Maximum tokens allowed per day |
@@ -191,7 +230,17 @@ Operation object within path item
 
 ### Schema
 
-Each tool is an object with:
+Each tool is an object in an array:
+
+```yaml
+x-ossa-tools:
+  - type: string               # "mcp" | "http" | "custom"
+    server: string             # Tool server identifier or URL
+    namespace: string          # Namespace for the tool (optional, for MCP servers)
+    capabilities: string[]     # List of tool capabilities (optional)
+```
+
+**Schema Reference Table:**
 
 | Field | Type | Description |
 |-------|------|-------------|
@@ -247,6 +296,16 @@ Overrides LLM configuration for a specific operation. Useful when different oper
 Operation object within path item
 
 ### Schema
+
+```yaml
+x-ossa-llm:
+  provider: string             # "openai" | "anthropic" | "google" | "azure" | "custom"
+  model: string                # Model identifier (e.g., "gpt-4", "claude-3-opus")
+  temperature: number          # Sampling temperature (0-2, optional)
+  maxTokens: integer           # Maximum tokens in response (optional)
+```
+
+**Schema Reference Table:**
 
 | Field | Type | Description |
 |-------|------|-------------|

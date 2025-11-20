@@ -14,6 +14,28 @@ Root level of OpenAPI spec
 
 ### Schema
 
+```yaml
+x-ossa-metadata:
+  version: string              # OSSA specification version (e.g., "0.2.2", "1.0.0")
+  compliance:
+    level: string              # "basic" | "standard" | "advanced" | "enterprise"
+    frameworks: string[]       # List of compliance frameworks
+  governance:
+    approved: boolean          # Whether specification has been approved
+    approvedBy: string         # Entity that approved (optional)
+    approvalDate: string       # Date of approval in YYYY-MM-DD format (optional)
+  security:
+    classification: string     # "public" | "internal" | "confidential" | "restricted"
+    authentication: string     # "required" | "optional" | "none"
+    encryption: string         # Encryption requirements (e.g., "tls1.3")
+  observability:
+    tracing: boolean           # Enable distributed tracing
+    metrics: boolean           # Enable metrics collection
+    logging: boolean           # Enable structured logging
+```
+
+**Schema Reference Table:**
+
 | Field | Type | Description |
 |-------|------|-------------|
 | `version` | string | OSSA specification version (e.g., "0.2.2", "1.0.0") |
@@ -115,6 +137,20 @@ Root level or `info` section of OpenAPI spec
 
 ### Schema
 
+```yaml
+x-ossa:
+  version: string              # OSSA specification version (e.g., "0.2.2")
+  agent:
+    id: string                 # Unique agent identifier (DNS subdomain format)
+    type: string               # Agent type (see table below)
+    compliance:
+      standards: string[]      # Architectural standards (e.g., ["openapi-first", "dry", "solid"])
+      validated: boolean       # Whether agent has been validated
+      validatedAt: string      # ISO 8601 timestamp of validation
+```
+
+**Schema Reference Table:**
+
 | Field | Type | Description |
 |-------|------|-------------|
 | `version` | string | OSSA specification version (e.g., "0.2.2") |
@@ -184,6 +220,16 @@ Agent-specific capabilities, tools, environment, and rules configuration.
 Root level or `info` section of OpenAPI spec
 
 ### Schema
+
+```yaml
+x-agent:
+  capabilities: string[]       # List of agent capability names
+  tools: string[]             # List of tools/MCP servers available
+  environment: object         # Environment-specific configuration (key-value pairs)
+  rules: string[]             # List of rules or policies the agent follows
+```
+
+**Schema Reference Table:**
 
 | Field | Type | Description |
 |-------|------|-------------|

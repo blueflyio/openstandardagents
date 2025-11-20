@@ -27,7 +27,7 @@ describe('Full Workflow E2E', () => {
 
     // 1. Generate agent
     const generateOutput = execSync(
-      `node dist/cli/index.js generate chat --name "My Agent" --output ${agentPath}`,
+      `node --require reflect-metadata dist/cli/index.js generate chat --name "My Agent" --output ${agentPath}`,
       {
         encoding: 'utf-8',
         cwd: cwdPath,
@@ -39,7 +39,7 @@ describe('Full Workflow E2E', () => {
 
     // 2. Validate generated agent
     const validateOutput = execSync(
-      `node dist/cli/index.js validate ${agentPath}`,
+      `node --require reflect-metadata dist/cli/index.js validate ${agentPath}`,
       {
         encoding: 'utf-8',
         cwd: cwdPath,
@@ -59,7 +59,7 @@ describe('Full Workflow E2E', () => {
 
       // Generate
       execSync(
-        `node dist/cli/index.js generate ${agent.includes('chat') ? 'chat' : agent.includes('workflow') ? 'workflow' : 'compliance'} --name "${agent}" --output ${agentPath}`,
+        `node --require reflect-metadata dist/cli/index.js generate ${agent.includes('chat') ? 'chat' : agent.includes('workflow') ? 'workflow' : 'compliance'} --name "${agent}" --output ${agentPath}`,
         {
           encoding: 'utf-8',
           cwd: cwdPath,
@@ -67,7 +67,7 @@ describe('Full Workflow E2E', () => {
       );
 
       // Validate
-      const output = execSync(`node dist/cli/index.js validate ${agentPath}`, {
+      const output = execSync(`node --require reflect-metadata dist/cli/index.js validate ${agentPath}`, {
         encoding: 'utf-8',
         cwd: cwdPath,
       });
@@ -85,7 +85,7 @@ describe('Full Workflow E2E', () => {
 
     // Step 1: Generate
     execSync(
-      `node dist/cli/index.js generate workflow --name "Development Agent" --runtime k8s --output ${agentPath}`,
+      `node --require reflect-metadata dist/cli/index.js generate workflow --name "Development Agent" --runtime k8s --output ${agentPath}`,
       {
         encoding: 'utf-8',
         cwd: cwdPath,
@@ -96,7 +96,7 @@ describe('Full Workflow E2E', () => {
 
     // Step 2: Validate with verbose
     const validateOutput = execSync(
-      `node dist/cli/index.js validate ${agentPath} --verbose`,
+      `node --require reflect-metadata dist/cli/index.js validate ${agentPath} --verbose`,
       {
         encoding: 'utf-8',
         cwd: cwdPath,

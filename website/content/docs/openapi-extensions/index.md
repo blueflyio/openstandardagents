@@ -405,6 +405,62 @@ See [Full Documentation](https://github.com/blueflyio/openstandardagents/blob/ma
 
 ---
 
+## Integration with OSSA Manifests
+
+OSSA OpenAPI extensions complement OSSA agent manifests (`.ossa.yaml` files). They serve different but related purposes:
+
+- **OSSA Agent Manifest** (`.ossa.yaml`) - Declarative agent definition with full configuration, capabilities, tools, LLM settings, and runtime configuration
+- **OpenAPI Specification with OSSA Extensions** - API interface definition with agent metadata, operation-level autonomy, constraints, and tool requirements
+
+### When to Use Each
+
+**Use OSSA Manifest (`.ossa.yaml`)** when:
+- Defining the complete agent configuration
+- Specifying runtime environment (k8s, docker, serverless)
+- Declaring all agent capabilities in one place
+- Configuring default LLM settings
+- Defining agent-to-agent communication protocols
+
+**Use OpenAPI with OSSA Extensions** when:
+- Documenting REST API endpoints
+- Linking API operations to agent capabilities
+- Defining operation-specific autonomy levels
+- Setting per-operation cost and performance constraints
+- Specifying which tools are needed for each API call
+
+### Combining Both
+
+You can use both together:
+
+1. **OSSA Manifest** defines the agent's overall configuration
+2. **OpenAPI Spec** defines the API interface with OSSA extensions
+3. The `x-ossa-capability` extension links API operations to capabilities defined in the manifest
+
+Example workflow:
+```yaml
+# agent.ossa.yaml
+apiVersion: ossa/v0.2.3
+kind: Agent
+metadata:
+  name: data-processor
+spec:
+  capabilities:
+    - name: data-transformation
+      description: Transform CSV to JSON
+      # ... capability config ...
+
+# agent.openapi.yml
+openapi: 3.1.0
+paths:
+  /api/v1/transform:
+    post:
+      x-ossa-capability:
+        name: data-transformation  # Links to capability in manifest
+      # ... operation config ...
+```
+
+---
+
 ## Governance & Autonomy Guidance
 
 ### Autonomy Levels

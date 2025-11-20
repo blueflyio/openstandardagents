@@ -44,7 +44,7 @@ spec:
 
     fs.writeFileSync(manifestPath, manifest);
 
-    const output = execSync(`node dist/cli/index.js validate ${manifestPath}`, {
+    const output = execSync(`node --require reflect-metadata dist/cli/index.js validate ${manifestPath}`, {
       encoding: 'utf-8',
       cwd: path.resolve(__dirname, '../../..'),
     });
@@ -105,7 +105,7 @@ spec:
     fs.writeFileSync(manifestPath, manifest);
 
     const output = execSync(
-      `node dist/cli/index.js validate ${manifestPath} --verbose`,
+      `node --require reflect-metadata dist/cli/index.js validate ${manifestPath} --verbose`,
       {
         encoding: 'utf-8',
         cwd: path.resolve(__dirname, '../../..'),
@@ -129,7 +129,7 @@ spec:
 
     fs.writeFileSync(manifestPath, manifest);
 
-    const output = execSync(`node dist/cli/index.js validate ${manifestPath}`, {
+    const output = execSync(`node --require reflect-metadata dist/cli/index.js validate ${manifestPath}`, {
       encoding: 'utf-8',
       cwd: path.resolve(__dirname, '../../..'),
     });
