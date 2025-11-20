@@ -16,8 +16,12 @@ COPY website ./website
 
 WORKDIR /app/website
 
-# Generate examples.json before starting
-RUN npm run generate-examples || echo "Warning: Could not generate examples"
+# Generate examples.json - this MUST succeed
+RUN npm run generate-examples
+
+# Verify examples.json was created
+RUN test -f public/examples.json && echo "✅ examples.json created" || (echo "❌ examples.json NOT FOUND" && exit 1)
+RUN jq 'length' public/examples.json && echo "examples found"
 
 # Expose port
 EXPOSE 3000
