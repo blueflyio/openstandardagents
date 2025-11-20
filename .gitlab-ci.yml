@@ -536,7 +536,7 @@ release:main:major:
 # ============================================================================
 # Manual buttons to promote released version to different environments
 
-promote:staging:
+promote-staging:
   stage: release-env
   image: node:${NODE_VERSION}-alpine
   script:
@@ -550,7 +550,7 @@ promote:staging:
     name: staging
     url: https://staging.openstandardagents.org
 
-promote:production:
+promote-production:
   stage: release-env
   image: node:${NODE_VERSION}-alpine
   script:
