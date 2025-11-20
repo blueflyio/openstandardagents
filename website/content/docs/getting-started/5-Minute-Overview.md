@@ -32,7 +32,7 @@ Get up to speed on OSSA in 5 minutes.
 OSSA defines agents using a **declarative YAML/JSON format**:
 
 ```yaml
-apiVersion: ossa/v0.2.3
+apiVersion: ossa/v0.2.4
 kind: Agent
 
 metadata:

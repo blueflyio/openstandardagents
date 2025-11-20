@@ -392,7 +392,7 @@ The OpenAPI spec should reference capabilities and tools defined in the manifest
 
 **agent.ossa.yaml**:
 ```yaml
-apiVersion: ossa/v0.2.3
+apiVersion: ossa/v0.2.4
 kind: Agent
 metadata:
   name: k8s-troubleshooter

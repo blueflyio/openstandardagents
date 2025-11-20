@@ -323,7 +323,7 @@ taxonomy:
 ### Infrastructure Kubernetes Troubleshooting Agent
 
 ```yaml
-apiVersion: ossa/v0.2.3
+apiVersion: ossa/v0.2.4
 kind: Agent
 metadata:
   name: k8s-troubleshooter
@@ -362,7 +362,7 @@ spec:
 ### Security Vulnerability Scanner
 
 ```yaml
-apiVersion: ossa/v0.2.3
+apiVersion: ossa/v0.2.4
 kind: Agent
 metadata:
   name: vulnerability-scanner
@@ -400,7 +400,7 @@ spec:
 ### Documentation Generator
 
 ```yaml
-apiVersion: ossa/v0.2.3
+apiVersion: ossa/v0.2.4
 kind: Agent
 metadata:
   name: api-doc-generator
