@@ -378,10 +378,10 @@ Submit PRs to: https://github.com/blueflyio/openstandardagents/pulls
 
 ## Support & Resources
 
-- **Documentation**: https://ossa.dev/docs
+- **Documentation**: https://openstandardagents.org/docs
 - **Specification**: https://github.com/blueflyio/openstandardagents/spec
 - **Examples**: https://github.com/blueflyio/openstandardagents/examples
-- **Community**: https://discord.gg/ossa
+- **Community**: https://github.com/blueflyio/openstandardagents/discussions
 - **Issues**: https://github.com/blueflyio/openstandardagents/issues
 
 ## License

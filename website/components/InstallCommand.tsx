@@ -8,7 +8,7 @@ export function InstallCommand() {
   const steps = [
     {
       title: '1. Install',
-      command: 'npm install -g @openstandardagents/cli',
+      command: 'npm install -g @bluefly/openstandardagents',
     },
     {
       title: '2. Create',

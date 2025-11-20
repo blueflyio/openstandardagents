@@ -151,5 +151,5 @@ npm install -g @bluefly/openstandardagents@latest
 
 - [5-Minute Overview](5-Minute-Overview)
 - [Hello World Tutorial](Hello-World)
-- [CLI Reference](../Technical/CLI-Reference)
+- [CLI Reference](../quick-reference)
 

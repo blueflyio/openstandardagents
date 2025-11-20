@@ -1231,4 +1231,4 @@ EOF
 
 - [Zendesk API Documentation](https://developer.zendesk.com/)
 - [OpenAI Embeddings Guide](https://platform.openai.com/docs/guides/embeddings)
-- [OSSA Runtime Documentation](https://ossa.dev/docs/runtime)
+- [OSSA Runtime Documentation](https://openstandardagents.org/docs/runtime)

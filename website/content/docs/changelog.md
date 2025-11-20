@@ -81,7 +81,7 @@ This release represents a complete transformation of OSSA into an enterprise-gra
 **For npm users**:
 ```bash
 # Old (not published)
-npm install -g @ossa/standard
+npm install -g @bluefly/openstandardagents
 
 # New (v1.0.0+)
 npm install -g @bluefly/openstandardagents
@@ -93,7 +93,7 @@ npm install -g @bluefly/openstandardagents
 - Examples unchanged (`examples/`)
 
 **For documentation**:
-- Comprehensive guides → GitLab Wiki (https://github.com/blueflyio/openstandardagents/wiki/home)
+- Comprehensive guides → GitLab Wiki (https://github.com/blueflyio/openstandardagents/wiki)
 - Core specification docs → `docs/` directory
 - API documentation → GitLab Pages (automated)
 

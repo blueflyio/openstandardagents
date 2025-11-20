@@ -17,7 +17,7 @@ function loadSchema(): any {
 
   const schemaPath = path.join(
     process.cwd(),
-    '../../../spec/v0.2.2/ossa-0.2.2.schema.json'
+    '../../../spec/v0.2.3/ossa-0.2.2.schema.json'
   );
 
   if (!fs.existsSync(schemaPath)) {

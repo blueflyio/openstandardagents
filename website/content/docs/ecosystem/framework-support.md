@@ -47,17 +47,17 @@ This guide provides detailed information about OSSA compatibility with popular A
 ### Installation
 
 ```bash
-npm install @ossa/kagent
+npm install @bluefly/openstandardagents
 # or
-pnpm add @ossa/kagent
+pnpm add @bluefly/openstandardagents
 # or
-yarn add @ossa/kagent
+yarn add @bluefly/openstandardagents
 ```
 
 ### Quick Start
 
 ```typescript
-import { OSSAAgent, OSSAManifest } from '@ossa/kagent';
+import { OSSAAgent, OSSAManifest } from '@bluefly/openstandardagents';
 
 // Load manifest
 const manifest: OSSAManifest = {
@@ -135,7 +135,7 @@ console.log(result);
 ### Documentation
 
 - **Repository**: [github.com/blueflyio/kagent](https://github.com/blueflyio/kagent)
-- **API Reference**: [docs.openstandardagents.org/kagent/api](https://docs.openstandardagents.org/kagent/api)
+- **API Reference**: [docs.openstandardagents.org/kagent/api](https://openstandardagents.org/docs/kagent/api)
 - **Examples**: [examples/kagent/](https://github.com/blueflyio/openstandardagents/tree/main/examples/kagent)
 
 ---
@@ -237,7 +237,7 @@ See [examples/langchain/](https://github.com/blueflyio/openstandardagents/tree/m
 
 ### Documentation
 
-- **Integration Guide**: [docs.openstandardagents.org/langchain](https://docs.openstandardagents.org/langchain)
+- **Integration Guide**: [docs.openstandardagents.org/langchain](https://openstandardagents.org/docs/langchain)
 - **LangChain Docs**: [python.langchain.com](https://python.langchain.com)
 
 ---
@@ -371,7 +371,7 @@ print(result)
 
 ### Documentation
 
-- **Integration Guide**: [docs.openstandardagents.org/crewai](https://docs.openstandardagents.org/crewai)
+- **Integration Guide**: [docs.openstandardagents.org/crewai](https://openstandardagents.org/docs/crewai)
 - **CrewAI Docs**: [docs.crewai.com](https://docs.crewai.com)
 
 ---
@@ -395,7 +395,7 @@ npm install @ossa/mcp @anthropic-ai/sdk
 ### Using MCP Servers in OSSA
 
 ```typescript
-import { OSSAAgent } from '@ossa/kagent';
+import { OSSAAgent } from '@bluefly/openstandardagents';
 import { MCPServerRegistry } from '@ossa/mcp';
 
 // Register MCP servers
@@ -491,7 +491,7 @@ await agent.execute({ task: 'List all files in the directory' });
 ### Documentation
 
 - **MCP Specification**: [modelcontextprotocol.io](https://modelcontextprotocol.io)
-- **OSSA MCP Guide**: [docs.openstandardagents.org/mcp](https://docs.openstandardagents.org/mcp)
+- **OSSA MCP Guide**: [docs.openstandardagents.org/mcp](https://openstandardagents.org/docs/mcp)
 
 ---
 
@@ -548,7 +548,7 @@ with open('flow.json', 'w') as f:
 ### Documentation
 
 - **Langflow Docs**: [docs.langflow.org](https://docs.langflow.org)
-- **OSSA Langflow Guide**: [docs.openstandardagents.org/langflow](https://docs.openstandardagents.org/langflow)
+- **OSSA Langflow Guide**: [docs.openstandardagents.org/langflow](https://openstandardagents.org/docs/langflow)
 
 ---
 
@@ -635,7 +635,7 @@ actions:
 ### Documentation
 
 - **Drupal ECA**: [drupal.org/project/eca](https://drupal.org/project/eca)
-- **OSSA Drupal Guide**: [docs.openstandardagents.org/drupal](https://docs.openstandardagents.org/drupal)
+- **OSSA Drupal Guide**: [docs.openstandardagents.org/drupal](https://openstandardagents.org/docs/drupal)
 
 ---
 
@@ -733,7 +733,7 @@ console.log(`Created assistant: ${assistant.id}`);
 ### Documentation
 
 - **OpenAI Assistants**: [platform.openai.com/docs/assistants](https://platform.openai.com/docs/assistants)
-- **OSSA OpenAI Guide**: [docs.openstandardagents.org/openai](https://docs.openstandardagents.org/openai)
+- **OSSA OpenAI Guide**: [docs.openstandardagents.org/openai](https://openstandardagents.org/docs/openai)
 
 ---
 
@@ -794,8 +794,8 @@ Validate migrations:
 
 ### Getting Help
 
-- **Discord**: [discord.gg/ossa](https://discord.gg/ossa) - Real-time community support
-- **GitLab Issues**: [GitHub Issues](https://github.com/blueflyio/openstandardagents/issues) - Bug reports and feature requests
+- **Discord**: [discord.gg/ossa](https://github.com/blueflyio/openstandardagents/discussions) - Real-time community support
+- **GitHub Issues**: [GitHub Issues](https://github.com/blueflyio/openstandardagents/issues) - Bug reports and feature requests
 - **Documentation**: [docs.openstandardagents.org](https://docs.openstandardagents.org) - Comprehensive guides
 
 ### Contributing
@@ -818,4 +818,4 @@ To request support for a new framework:
 
 ---
 
-**Next Steps**: Explore [Runtime Deployment](/docs/deployment/overview) to learn about deploying OSSA agents.
+**Next Steps**: Explore [Runtime Deployment](/docs/getting-started/installation) to learn about deploying OSSA agents.

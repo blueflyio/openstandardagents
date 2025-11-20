@@ -5,7 +5,24 @@ All notable changes to OSSA (Open Standard for Scalable AI Agents) will be docum
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.2.3](https://gitlab.bluefly.io/llm/openapi-ai-agents-standard/compare/v0.2.2...v0.2.3) (2025-11-12)
+## [0.2.4](https://github.com/blueflyio/openstandardagents/compare/v0.2.3...v0.2.4) (2025-11-19)
+
+### Package Rename
+
+* **IMPORTANT**: Package renamed from `@bluefly/open-standards-scalable-agents` to `@bluefly/openstandardagents`
+* The old package `@bluefly/open-standards-scalable-agents` has been deprecated
+* Update your dependencies: `npm install @bluefly/openstandardagents`
+
+### Website Fixes
+
+* Fixed 100+ broken links (gitlab.bluefly.io → github.com/blueflyio/openstandardagents)
+* Fixed npm registry auth in CI pipeline
+* Standardized all package references across documentation
+* Fixed broken internal links (/docs/deployment, /research, CLI-Reference)
+* Updated all schema version references to v0.2.3
+* Fixed RSS feed base URL to openstandardagents.org
+
+## [0.2.3](https://github.com/blueflyio/openstandardagents/compare/v0.2.2...v0.2.3) (2025-11-12)
 
 ### Documentation
 

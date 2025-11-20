@@ -151,7 +151,7 @@ release:dev:
 
       # Configure npm to use GitLab Package Registry
       echo "@bluefly:registry=${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/npm/" > .npmrc
-      echo "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/npm/:_authToken=${CI_JOB_TOKEN}" >> .npmrc
+      echo "//gitlab.bluefly.io/api/v4/projects/${CI_PROJECT_ID}/packages/npm/:_authToken=${CI_JOB_TOKEN}" >> .npmrc
 
       # Publish to GitLab Package Registry
       echo "Publishing to GitLab Package Registry..."
@@ -186,7 +186,7 @@ release:rc:
 
       # Configure npm for GitLab Package Registry
       echo "@bluefly:registry=${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/npm/" > .npmrc
-      echo "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/npm/:_authToken=${CI_JOB_TOKEN}" >> .npmrc
+      echo "//gitlab.bluefly.io/api/v4/projects/${CI_PROJECT_ID}/packages/npm/:_authToken=${CI_JOB_TOKEN}" >> .npmrc
 
       # Run semantic-release (dry-run on main to preview next version)
       echo "Next version will be determined by conventional commits..."
@@ -232,7 +232,7 @@ release:prod:
 
       # Configure npm to use GitLab Package Registry
       echo "@bluefly:registry=${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/npm/" > .npmrc
-      echo "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/npm/:_authToken=${CI_JOB_TOKEN}" >> .npmrc
+      echo "//gitlab.bluefly.io/api/v4/projects/${CI_PROJECT_ID}/packages/npm/:_authToken=${CI_JOB_TOKEN}" >> .npmrc
 
       # Publish to GitLab Package Registry
       echo "Publishing to GitLab Package Registry..."
@@ -386,19 +386,9 @@ release-all-platforms:
       # Step 1: Publish to GitLab Package Registry
       echo "📦 Step 1/4: Publishing to GitLab Package Registry..."
       echo "@bluefly:registry=${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/npm/" > .npmrc
-      echo "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/npm/:_authToken=${CI_JOB_TOKEN}" >> .npmrc
-      
-      # Determine npm tag based on version
-      if [[ "$CURRENT_VERSION" =~ -dev|-pre|-rc|alpha|beta ]]; then
-        NPM_TAG="dev"
-        echo "Detected pre-release version, tagging as 'dev'"
-      else
-        NPM_TAG="latest"
-        echo "Detected stable version, tagging as 'latest'"
-      fi
-      
-      npm publish --tag ${NPM_TAG}
-      echo "✅ Published to GitLab Package Registry with tag '${NPM_TAG}'"
+      echo "//gitlab.bluefly.io/api/v4/projects/${CI_PROJECT_ID}/packages/npm/:_authToken=${CI_JOB_TOKEN}" >> .npmrc
+      npm publish --tag latest
+      echo "✅ Published to GitLab Package Registry"
       echo ""
 
       # Step 2: Publish to npmjs.org
@@ -552,9 +542,9 @@ create-release-tag:
 
 mirror:github:
   stage: mirror-github
-  image: curlimages/curl:latest
+  image: alpine:latest
   before_script:
-    - apk add --no-cache jq git
+    - apk add --no-cache curl jq git
   script:
     - |
       set -e
