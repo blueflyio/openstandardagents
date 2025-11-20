@@ -21,6 +21,10 @@ export default {
           { type: 'refactor', scope: 'core-*', release: 'minor' },
           { type: 'refactor', release: 'patch' },
           { type: 'chore', scope: 'deps', release: 'patch' },
+          // Allow manual override via environment variable
+          ...(process.env.RELEASE_TYPE === 'patch' ? [{ breaking: false, release: 'patch' }] : []),
+          ...(process.env.RELEASE_TYPE === 'minor' ? [{ breaking: false, release: 'minor' }] : []),
+          ...(process.env.RELEASE_TYPE === 'major' ? [{ breaking: true, release: 'major' }] : []),
         ],
         parserOpts: {
           noteKeywords: ['BREAKING CHANGE', 'BREAKING CHANGES'],

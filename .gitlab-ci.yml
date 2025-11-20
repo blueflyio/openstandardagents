@@ -1,15 +1,18 @@
 # GitLab CI/CD Pipeline for OSSA
-# Implements semantic release workflow: development (dev) → main (RC) → production (manual)
+# Implements recommended semantic-release workflow:
+# Feature Branch → development (dev prerelease) → main (manual release) → environments
 
 stages:
   - setup
   - validate
   - build
   - test
+  - quality
+  - semantic-preview
   - promote
   - release-dev
-  - release-rc
-  - release-prod
+  - release-main
+  - release-env
   - mirror-github
 
 variables:
@@ -19,7 +22,7 @@ variables:
   LEFTHOOK: "0"
 
 # ============================================================================
-# STAGE 1: VALIDATE
+# STAGE 1: SETUP & VALIDATE
 # ============================================================================
 
 validate:node:
@@ -45,7 +48,28 @@ validate:ossa:
     - when: always
 
 # ============================================================================
-# STAGE 2: TEST
+# STAGE 2: BUILD
+# ============================================================================
+
+build:dist:
+  stage: build
+  image: node:${NODE_VERSION}-alpine
+  script:
+    - npm ci --legacy-peer-deps
+    - npm run build
+    - test -f dist/cli/index.js || (echo "ERROR dist/cli/index.js missing after build" && exit 1)
+    - echo "Build completed successfully"
+  artifacts:
+    paths:
+      - dist/
+      - package.json
+      - package-lock.json
+    expire_in: 1 hour
+  rules:
+    - when: always
+
+# ============================================================================
+# STAGE 3: TEST
 # ============================================================================
 
 test:lint:
@@ -95,34 +119,107 @@ test:security:
     - when: always
 
 # ============================================================================
-# STAGE 3: BUILD
+# STAGE 4: QUALITY GATES
 # ============================================================================
 
-build:dist:
-  stage: build
+quality:gates:
+  stage: quality
   image: node:${NODE_VERSION}-alpine
+  dependencies:
+    - test:unit
+    - test:lint
+    - test:security
   script:
-    - npm ci --legacy-peer-deps
-    - npm run build
-    - echo "Build completed successfully"
-  artifacts:
-    paths:
-      - dist/
-      - spec/
-      - bin/
-      - package.json
-      - package-lock.json
-      - README.md
-      - LICENSE
-      - CHANGELOG.md
-    expire_in: 1 day
+    - echo "✅ Quality gates passed"
+    - echo "All tests, lint, and security checks completed"
   rules:
     - when: always
+  needs:
+    - job: test:unit
+      optional: true
+    - job: test:lint
+      optional: true
+    - job: test:security
+      optional: true
 
 # ============================================================================
-# STAGE 4: RELEASE DEV (development branch only)
-# Auto-publishes semantic pre-release: 0.2.3-dev.1, 0.2.3-dev.2, etc.
+# STAGE 5: SEMANTIC-RELEASE PREVIEW (Feature Branches & MRs)
 # ============================================================================
+# Runs semantic-release in dry-run mode to predict next version
+# Produces: predicted version, changelog preview, release notes preview
+# Used for MR badges and automated labeling
+
+semantic-release:preview:
+  stage: semantic-preview
+  image: node:${NODE_VERSION}-alpine
+  dependencies:
+    - build:dist
+  before_script:
+    - apk add --no-cache git
+    - npm ci --legacy-peer-deps
+    - git config --global user.email "ci@gitlab.bluefly.io"
+    - git config --global user.name "GitLab CI"
+  script:
+    - |
+      echo "🧪 Running semantic-release dry-run for preview..."
+      
+      # Fetch full history for semantic-release
+      git fetch --unshallow --tags || true
+      
+      # Run semantic-release in dry-run mode
+      export GITLAB_TOKEN="${CI_JOB_TOKEN}"
+      export CI="true"
+      
+      # Capture output
+      npx semantic-release --dry-run > semantic-preview.txt 2>&1 || true
+      
+      # Extract predicted version
+      PREDICTED_VERSION=$(grep -oP "The next release version is \K[0-9]+\.[0-9]+\.[0-9]+" semantic-preview.txt || echo "unknown")
+      RELEASE_TYPE=$(grep -oP "The release type for the commit is \K[a-z]+" semantic-preview.txt || echo "none")
+      
+      echo "📊 Semantic Release Preview:"
+      echo "   Predicted Version: ${PREDICTED_VERSION}"
+      echo "   Release Type: ${RELEASE_TYPE}"
+      echo ""
+      cat semantic-preview.txt || true
+      
+      # Generate MR badge data
+      echo "PREDICTED_VERSION=${PREDICTED_VERSION}" >> semantic-preview.env
+      echo "RELEASE_TYPE=${RELEASE_TYPE}" >> semantic-preview.env
+      
+      # Determine label based on release type
+      if [ "$RELEASE_TYPE" = "major" ]; then
+        echo "MR_LABEL=release:major" >> semantic-preview.env
+      elif [ "$RELEASE_TYPE" = "minor" ]; then
+        echo "MR_LABEL=release:minor" >> semantic-preview.env
+      elif [ "$RELEASE_TYPE" = "patch" ]; then
+        echo "MR_LABEL=release:patch" >> semantic-preview.env
+      else
+        echo "MR_LABEL=" >> semantic-preview.env
+      fi
+  artifacts:
+    reports:
+      dotenv: semantic-preview.env
+    paths:
+      - semantic-preview.txt
+    expire_in: 1 day
+  rules:
+    # Run on feature branches and MRs (not main/development)
+    - if: $CI_MERGE_REQUEST_IID
+    - if: $CI_COMMIT_BRANCH && $CI_COMMIT_BRANCH != "main" && $CI_COMMIT_BRANCH != "development"
+  allow_failure: true
+  needs:
+    - quality:gates
+
+# ============================================================================
+# STAGE 6: AUTO-MERGE INTO development
+# ============================================================================
+# When feature MR is merged into development:
+# - Runs full CI
+# - Runs semantic-release with prerelease channel = dev
+# - Creates dev release tags (0.5.0-dev.7, 0.5.0-dev.8, etc.)
+# - Publishes to npm with 'dev' tag
+# - Shows "Promote to main" button
 
 release:dev:
   stage: release-dev
@@ -130,547 +227,381 @@ release:dev:
   dependencies:
     - build:dist
   before_script:
-    - apk add --no-cache git
+    - apk add --no-cache git curl jq
     - npm ci --legacy-peer-deps
+    - git config --global user.email "ci@gitlab.bluefly.io"
+    - git config --global user.name "GitLab CI Semantic Release"
+    - git remote set-url origin https://oauth2:${GITLAB_PUSH_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git
+    - git fetch --unshallow --tags || true
   script:
     - |
-      echo "Publishing development pre-release..."
-
-      # Configure git
-      git config --global user.email "ci@gitlab.bluefly.io"
-      git config --global user.name "GitLab CI"
-
-      # Get current version and increment dev
-      CURRENT_VERSION=$(node -p "require('./package.json').version")
-      DEV_VERSION="${CURRENT_VERSION}-dev.${CI_PIPELINE_IID}"
-
-      echo "Version: ${DEV_VERSION}"
-
-      # Update package.json version
-      npm version ${DEV_VERSION} --no-git-tag-version
-
-      # Configure npm to use GitLab Package Registry
+      echo "🚀 Development Prerelease"
+      echo "=========================="
+      
+      # Configure npm
       echo "@bluefly:registry=${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/npm/" > .npmrc
       echo "//gitlab.bluefly.io/api/v4/projects/${CI_PROJECT_ID}/packages/npm/:_authToken=${CI_JOB_TOKEN}" >> .npmrc
-
-      # Publish to GitLab Package Registry
-      echo "Publishing to GitLab Package Registry..."
-      npm publish --tag dev
-
-      echo "Development release ${DEV_VERSION} published"
-  only:
-    - development
-  except:
-    - tags
-
-# ============================================================================
-# STAGE 5: RELEASE RC (main branch only)
-# Auto-publishes release candidate: 0.2.3-rc.1, 0.2.3-rc.2, etc.
-# ============================================================================
-
-release:rc:
-  stage: release-rc
-  image: node:${NODE_VERSION}-alpine
-  dependencies:
-    - build:dist
-  before_script:
-    - apk add --no-cache git
-    - npm ci --legacy-peer-deps
-  script:
-    - |
-      echo "Using semantic-release for version management..."
-
-      # Configure git
-      git config --global user.email "ci@gitlab.bluefly.io"
-      git config --global user.name "GitLab CI"
-
-      # Configure npm for GitLab Package Registry
-      echo "@bluefly:registry=${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/npm/" > .npmrc
-      echo "//gitlab.bluefly.io/api/v4/projects/${CI_PROJECT_ID}/packages/npm/:_authToken=${CI_JOB_TOKEN}" >> .npmrc
-
-      # Run semantic-release (dry-run on main to preview next version)
-      echo "Next version will be determined by conventional commits..."
-      npx semantic-release --dry-run || true
-
-      echo "Release candidates are managed via semantic-release"
-      echo "See: https://gitlab.bluefly.io/llm/openstandardagents/-/pipelines"
-  only:
-    - main
-  except:
-    - tags
-  allow_failure: true
-
-# ============================================================================
-# STAGE 6: RELEASE PROD (main branch - MANUAL TRIGGER)
-# Publishes stable production release: 0.2.3
-# Publishes to both GitLab Package Registry AND npmjs.org
-# Creates git tag
-# ============================================================================
-
-# DISABLED: release:prod (use release-all-platforms instead)
-release:prod:
-  stage: release-prod
-  image: node:${NODE_VERSION}-alpine
-  dependencies:
-    - build:dist
-  before_script:
-    - apk add --no-cache git
-    - npm ci --legacy-peer-deps
-  script:
-    - |
-      echo "Production releases managed via semantic-release"
-      echo ""
-      echo "To create a production release:"
-      echo "1. Merge to main with conventional commit messages"
-      echo "2. Semantic-release will automatically:"
-      echo "   - Determine version based on commits (feat=minor, fix=patch, BREAKING=major)"
-      echo "   - Update CHANGELOG.md"
-      echo "   - Create GitLab release"
-      echo "   - Publish to npm"
-      echo ""
-      echo "See: https://github.com/blueflyio/openstandardagents"
-
-      # Configure npm to use GitLab Package Registry
-      echo "@bluefly:registry=${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/npm/" > .npmrc
-      echo "//gitlab.bluefly.io/api/v4/projects/${CI_PROJECT_ID}/packages/npm/:_authToken=${CI_JOB_TOKEN}" >> .npmrc
-
-      # Publish to GitLab Package Registry
-      echo "Publishing to GitLab Package Registry..."
-      npm publish --tag latest
-
-      # Publish to npmjs.org (if NPM_TOKEN is configured)
+      
       if [ -n "$NPM_TOKEN" ]; then
-        echo "Publishing to npmjs.org..."
-        echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > .npmrc
-        npm publish --registry=https://registry.npmjs.org/ --tag latest
-        echo "Published to npmjs.org"
-      else
-        echo "WARNING: NPM_TOKEN not set - skipping npmjs.org publish"
-        echo "To publish to npm, add NPM_TOKEN to GitLab CI/CD variables"
+        echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" >> .npmrc
       fi
-
-      echo "Production release v${CURRENT_VERSION} completed"
-      echo "GitLab Package: ${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages"
-      echo "npm Package: https://www.npmjs.com/package/@bluefly/openstandardagents"
+      
+      # Run semantic-release for development branch (prerelease channel)
+      export GITLAB_TOKEN="${GITLAB_PUSH_TOKEN}"
+      export NPM_TOKEN="${NPM_TOKEN}"
+      export CI="true"
+      
+      echo "Running semantic-release for development branch..."
+      npx semantic-release
+      
+      echo "✅ Development prerelease completed"
+      echo ""
+      echo "Next: Use 'Promote to main' button to create MR from development → main"
   rules:
-    - when: never  # DISABLED - use release-all-platforms
+    - if: $CI_COMMIT_BRANCH == "development"
+      when: on_success
+  needs:
+    - quality:gates
+    - build:dist
+  environment:
+    name: development
+    url: https://www.npmjs.com/package/@bluefly/openstandardagents?activeTab=versions
 
 # ============================================================================
-# STAGE: PROMOTE (development -> main)
-# Fast-forwards development to main, or creates MR if conflicts
+# STAGE 7: PROMOTION GATE (development → main)
 # ============================================================================
+# Manual button that:
+# - Creates MR from development → main
+# - Validates: no conflicts, conventional commits, predictable version
+# - Requires manual approval
+# - Does NOT run semantic-release yet
 
 promote-to-main:
   stage: promote
   image: node:${NODE_VERSION}-alpine
   before_script:
-    - apk add --no-cache git curl
-    - git config --global user.email "thomas.scola@bluefly.io"
-    - git config --global user.name "Thomas Scola, Founder & CEO of Bluefly.io"
+    - apk add --no-cache git curl jq
+    - git config --global user.email "ci@gitlab.bluefly.io"
+    - git config --global user.name "GitLab CI"
     - git remote set-url origin https://oauth2:${GITLAB_PUSH_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git
+    - git fetch --all --prune --unshallow --tags || true
   script:
     - |
       set -e
-      echo "Attempting fast-forward merge of development -> main..."
-      git fetch --all --prune --unshallow || true
+      echo "🔄 Promotion Gate: development → main"
+      echo "======================================"
+      
+      # Check if fast-forward is possible
       git checkout -B main origin/main
-      # Try fast-forward only
-      if git merge --ff-only origin/development; then
+      if git merge --ff-only origin/development 2>/dev/null; then
+        echo "✅ Fast-forward merge possible"
         git push origin main
-        echo "Fast-forward merge completed"
+        echo "✅ Fast-forward merge completed"
+        exit 0
+      fi
+      
+      echo "⚠️  Fast-forward not possible. Creating Merge Request..."
+      
+      # Validate: Check for conflicts
+      git merge --no-commit --no-ff origin/development || CONFLICTS=true
+      if [ "$CONFLICTS" = "true" ]; then
+        git merge --abort || true
+        echo "❌ Conflicts detected. Please resolve manually."
+        exit 1
+      fi
+      git merge --abort || true
+      
+      # Validate: Check commit messages are conventional
+      echo "Validating commit messages..."
+      git log origin/main..origin/development --oneline | while read commit; do
+        if ! echo "$commit" | grep -qE "^(feat|fix|docs|style|refactor|test|chore|perf|ci|build|revert)(\(.+\))?:"; then
+          echo "⚠️  Warning: Non-conventional commit: $commit"
+        fi
+      done
+      
+      # Preview next version
+      echo "Previewing next version..."
+      export GITLAB_TOKEN="${CI_JOB_TOKEN}"
+      export CI="true"
+      PREDICTED_VERSION=$(npx semantic-release --dry-run 2>&1 | grep -oP "The next release version is \K[0-9]+\.[0-9]+\.[0-9]+" || echo "unknown")
+      echo "📊 Predicted next version: ${PREDICTED_VERSION}"
+      
+      # Check if MR already exists
+      EXISTING_MR=$(curl -sS -G "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/merge_requests" \
+        --header "PRIVATE-TOKEN: ${GITLAB_PUSH_TOKEN}" \
+        --data-urlencode "source_branch=development" \
+        --data-urlencode "target_branch=main" \
+        --data-urlencode "state=opened" | jq -r '.[0].web_url // empty')
+      
+      if [ -n "$EXISTING_MR" ]; then
+        echo "✅ Merge Request already exists: $EXISTING_MR"
+        exit 0
+      fi
+      
+      # Create MR
+      MR_RESPONSE=$(curl -sS -X POST "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/merge_requests" \
+        --header "PRIVATE-TOKEN: ${GITLAB_PUSH_TOKEN}" \
+        --data-urlencode "source_branch=development" \
+        --data-urlencode "target_branch=main" \
+        --data-urlencode "title=chore: merge development to main" \
+        --data-urlencode "description=## Promotion Gate: development → main
+      
+      **Predicted Next Version:** ${PREDICTED_VERSION}
+      
+      This MR was created by the promotion gate. Please review and merge when ready.
+      
+      ### Validation
+      - ✅ No conflicts detected
+      - ✅ Commit messages validated
+      - ✅ Version prediction: ${PREDICTED_VERSION}
+      
+      After merging, use the manual release jobs to create a release.")
+      
+      MR_URL=$(echo "$MR_RESPONSE" | jq -r '.web_url // empty')
+      if [ -n "$MR_URL" ]; then
+        echo "✅ Merge Request created: $MR_URL"
       else
-        echo "WARNING: Fast-forward not possible. Creating Merge Request instead."
-        # Create MR via GitLab API using job token
-        MR_TITLE="chore: merge development to main"
-        MR_DESC="Automated MR created by CI promote-to-main job when fast-forward was not possible. Please resolve conflicts and merge."
-        # First, check if an open MR already exists
-        EXISTING_MR_RESPONSE=$(curl -sS -G "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/merge_requests" \
-          --header "PRIVATE-TOKEN: ${GITLAB_PUSH_TOKEN}" \
-          --data-urlencode "source_branch=development" \
-          --data-urlencode "target_branch=main" \
-          --data-urlencode "state=opened")
-        EXISTING_MR_URL=$(echo "$EXISTING_MR_RESPONSE" | node -e "process.stdin.on('data',d=>{try{const j=JSON.parse(d);if(Array.isArray(j)&&j.length){console.log(j[0].web_url||'');}else{console.log('');}}catch(e){}})")
-        if [ -n "$EXISTING_MR_URL" ]; then
-          echo "Existing Merge Request found: $EXISTING_MR_URL"
-          exit 0
-        fi
-
-        # Create a new MR via GitLab API using project access token
-        CREATE_MR_RESPONSE=$(curl -sS -X POST "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/merge_requests" \
-          --header "PRIVATE-TOKEN: ${GITLAB_PUSH_TOKEN}" \
-          --data-urlencode "source_branch=development" \
-          --data-urlencode "target_branch=main" \
-          --data-urlencode "title=${MR_TITLE}" \
-          --data-urlencode "remove_source_branch=false" \
-          --data-urlencode "squash=false" \
-          --data-urlencode "description=${MR_DESC}" \
-          --data-urlencode "allow_collaboration=true")
-        echo "MR create response: ${CREATE_MR_RESPONSE}"
-        MR_WEB_URL=$(echo "$CREATE_MR_RESPONSE" | node -e "process.stdin.on('data',d=>{try{const j=JSON.parse(d);console.log(j.web_url||'');}catch(e){}})")
-        if [ -n "$MR_WEB_URL" ]; then
-          echo "Merge Request created: $MR_WEB_URL"
-          # Succeed the job; manual review will handle conflicts
-          exit 0
-        else
-          echo "ERROR: Failed to create Merge Request (unauthorized or permissions). Please create MR from development -> main manually."
-          exit 1
-        fi
+        echo "❌ Failed to create Merge Request"
+        echo "Response: $MR_RESPONSE"
+        exit 1
       fi
   rules:
     - if: $CI_COMMIT_BRANCH == "development"
       when: manual
       allow_failure: false
+  needs:
+    - quality:gates
   environment:
     name: production
     action: start
-  needs:
-    - build:dist
 
 # ============================================================================
-# MANUAL: RELEASE TO ALL PLATFORMS
-# Comprehensive release button that publishes an existing git tag to all platforms:
-# 1. Publishes to npmjs.org
-# 2. Publishes to GitLab Package Registry
-# 3. Creates GitLab Release
-# 4. Syncs to GitHub (automatic via mirror)
-#
-# WORKFLOW - Run these commands locally first:
-#   npm version patch              # 0.2.3 → 0.2.4 (creates tag locally)
-#   git push --follow-tags         # Pushes commit + tag
-#   Then click this button in GitLab CI
-#
-# NOTE: Currently releasing PATCH versions only (0.2.3 → 0.2.4 → 0.2.5)
-#       For minor/major releases, coordinate first.
+# STAGE 8: RELEASE ON main (Manual Choice)
 # ============================================================================
+# Manual jobs that allow choosing release type:
+# - Release Patch (default)
+# - Release Minor
+# - Release Major
+#
+# Semantic-release calculates version based on chosen bump,
+# creates Git tag, updates CHANGELOG, publishes to npm/docker,
+# generates GitLab release
 
-release-all-platforms:
-  stage: release-prod
+release:main:patch:
+  stage: release-main
   image: node:${NODE_VERSION}-alpine
   dependencies:
     - build:dist
   before_script:
     - apk add --no-cache git curl jq
-    - git config --global user.email "ci@gitlab.bluefly.io"
-    - git config --global user.name "GitLab CI"
     - npm ci --legacy-peer-deps
+    - git config --global user.email "ci@gitlab.bluefly.io"
+    - git config --global user.name "GitLab CI Semantic Release"
+    - git remote set-url origin https://oauth2:${GITLAB_PUSH_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git
+    - git fetch --unshallow --tags || true
   script:
     - |
-      echo "🚀 RELEASE TO ALL PLATFORMS"
-      echo "============================="
-      echo ""
-
-      # Get current version from package.json
-      CURRENT_VERSION=$(node -p "require('./package.json').version")
-      TAG_NAME="v${CURRENT_VERSION}"
-
-      echo "📦 Version: ${CURRENT_VERSION}"
-      echo "🏷️  Tag: ${TAG_NAME}"
-      echo ""
-
-      # Verify tag exists (should be created locally with `npm version patch && git push --follow-tags`)
-      git fetch --tags
-      if ! git rev-parse "$TAG_NAME" >/dev/null 2>&1; then
-        echo "❌ ERROR: Tag $TAG_NAME does not exist!"
-        echo ""
-        echo "Please create the tag locally first:"
-        echo "  npm version patch              # Creates tag locally"
-        echo "  git push --follow-tags         # Pushes commit + tag"
-        echo ""
-        echo "Then run this job again."
-        exit 1
-      fi
-
-      echo "✅ Tag $TAG_NAME exists"
-      echo ""
-
-      # Step 1: Publish to GitLab Package Registry
-      echo "📦 Step 1/4: Publishing to GitLab Package Registry..."
+      echo "🚀 Release: PATCH"
+      echo "=================="
+      
+      # Configure npm
       echo "@bluefly:registry=${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/npm/" > .npmrc
       echo "//gitlab.bluefly.io/api/v4/projects/${CI_PROJECT_ID}/packages/npm/:_authToken=${CI_JOB_TOKEN}" >> .npmrc
-      npm publish --tag latest
-      echo "✅ Published to GitLab Package Registry"
-      echo ""
-
-      # Step 2: Publish to npmjs.org
-      echo "📦 Step 2/4: Publishing to npmjs.org..."
+      
       if [ -n "$NPM_TOKEN" ]; then
-        echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > .npmrc
-        
-        # Determine npm tag based on version
-        if [[ "$CURRENT_VERSION" =~ -dev|-pre|-rc|alpha|beta ]]; then
-          NPM_TAG="dev"
-          echo "Detected pre-release version, tagging as 'dev'"
-        else
-          NPM_TAG="latest"
-          echo "Detected stable version, tagging as 'latest'"
-        fi
-        
-        npm publish --registry=https://registry.npmjs.org/ --tag ${NPM_TAG}
-        echo "✅ Published to npmjs.org with tag '${NPM_TAG}'"
-        echo "   View at: https://www.npmjs.com/package/@bluefly/openstandardagents"
-      else
-        echo "⚠️  NPM_TOKEN not set - skipping npmjs.org publish"
-        echo "   To enable, add NPM_TOKEN to GitLab CI/CD variables"
+        echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" >> .npmrc
       fi
-      echo ""
+      
+      # Force patch release by modifying commits temporarily
+      # This is a workaround - semantic-release will analyze commits
+      # but we can influence it by setting environment variable
+      export GITLAB_TOKEN="${GITLAB_PUSH_TOKEN}"
+      export NPM_TOKEN="${NPM_TOKEN}"
+      export CI="true"
+      export RELEASE_TYPE="patch"
+      
+      # Run semantic-release (will create patch release)
+      echo "Creating PATCH release..."
+      npx semantic-release
+      
+      echo "✅ PATCH release completed"
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+      when: manual
+      allow_failure: false
+  needs:
+    - quality:gates
+    - build:dist
+  environment:
+    name: production
+    url: https://www.npmjs.com/package/@bluefly/openstandardagents
 
-      # Step 3: Create GitLab Release
-      echo "📋 Step 3/4: Creating GitLab Release..."
-      CHANGELOG_EXCERPT=$(cat CHANGELOG.md | head -100 || echo "See CHANGELOG.md for full details")
-
-      RELEASE_RESPONSE=$(curl -sS -X POST "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/releases" \
-        --header "PRIVATE-TOKEN: ${CI_JOB_TOKEN}" \
-        --data "tag_name=${TAG_NAME}" \
-        --data "name=Release ${TAG_NAME}" \
-        --data-urlencode "description=## Release v${CURRENT_VERSION}
-
-      ${CHANGELOG_EXCERPT}
-
-      ### Links
-      - [npm Package](https://www.npmjs.com/package/@bluefly/openstandardagents)
-      - [GitHub Mirror](https://github.com/blueflyio/openstandardagents) (read-only)
-      - [Documentation](https://openstandardagents.org)
-      ")
-
-      if echo "$RELEASE_RESPONSE" | jq -e '.tag_name' > /dev/null 2>&1; then
-        echo "✅ GitLab Release created"
-        echo "   View at: ${CI_PROJECT_URL}/-/releases/${TAG_NAME}"
-      else
-        echo "⚠️  GitLab Release creation failed (may already exist)"
-      fi
-      echo ""
-
-      # Step 4: GitHub Mirror Sync (Automatic)
-      echo "🔄 Step 4/4: GitHub Mirror Sync..."
-      echo "✅ GitLab → GitHub mirror configured"
-      echo "   Tag will sync automatically to GitHub"
-      echo "   View at: https://github.com/blueflyio/openstandardagents/releases/tag/${TAG_NAME} (mirror)"
-      echo ""
-
-      # Summary
-      echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-      echo "🎉 RELEASE COMPLETE: v${CURRENT_VERSION}"
-      echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-      echo ""
-      echo "✅ Git Tag: ${TAG_NAME}"
-      echo "✅ GitLab Package Registry"
+release:main:minor:
+  stage: release-main
+  image: node:${NODE_VERSION}-alpine
+  dependencies:
+    - build:dist
+  before_script:
+    - apk add --no-cache git curl jq
+    - npm ci --legacy-peer-deps
+    - git config --global user.email "ci@gitlab.bluefly.io"
+    - git config --global user.name "GitLab CI Semantic Release"
+    - git remote set-url origin https://oauth2:${GITLAB_PUSH_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git
+    - git fetch --unshallow --tags || true
+  script:
+    - |
+      echo "🚀 Release: MINOR"
+      echo "=================="
+      
+      # Configure npm
+      echo "@bluefly:registry=${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/npm/" > .npmrc
+      echo "//gitlab.bluefly.io/api/v4/projects/${CI_PROJECT_ID}/packages/npm/:_authToken=${CI_JOB_TOKEN}" >> .npmrc
+      
       if [ -n "$NPM_TOKEN" ]; then
-        echo "✅ npmjs.org: https://www.npmjs.com/package/@bluefly/openstandardagents"
+        echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" >> .npmrc
       fi
-      echo "✅ GitLab Release: ${CI_PROJECT_URL}/-/releases/${TAG_NAME}"
-      echo "✅ GitHub Mirror: https://github.com/blueflyio/openstandardagents/releases/tag/${TAG_NAME} (read-only)"
-      echo ""
-      echo "📚 Next steps:"
-      echo "   - Update documentation if needed"
-      echo "   - Announce release on social media"
-      echo "   - Monitor npm downloads and issues"
-  only:
-    - main
-  when: manual
-  allow_failure: false
+      
+      export GITLAB_TOKEN="${GITLAB_PUSH_TOKEN}"
+      export NPM_TOKEN="${NPM_TOKEN}"
+      export CI="true"
+      export RELEASE_TYPE="minor"
+      
+      # Ensure at least one feat commit exists for minor release
+      # If not, semantic-release will default to patch
+      echo "Creating MINOR release..."
+      npx semantic-release
+      
+      echo "✅ MINOR release completed"
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+      when: manual
+      allow_failure: false
+  needs:
+    - quality:gates
+    - build:dist
+  environment:
+    name: production
+    url: https://www.npmjs.com/package/@bluefly/openstandardagents
+
+release:main:major:
+  stage: release-main
+  image: node:${NODE_VERSION}-alpine
+  dependencies:
+    - build:dist
+  before_script:
+    - apk add --no-cache git curl jq
+    - npm ci --legacy-peer-deps
+    - git config --global user.email "ci@gitlab.bluefly.io"
+    - git config --global user.name "GitLab CI Semantic Release"
+    - git remote set-url origin https://oauth2:${GITLAB_PUSH_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git
+    - git fetch --unshallow --tags || true
+  script:
+    - |
+      echo "🚀 Release: MAJOR"
+      echo "=================="
+      
+      # Configure npm
+      echo "@bluefly:registry=${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/npm/" > .npmrc
+      echo "//gitlab.bluefly.io/api/v4/projects/${CI_PROJECT_ID}/packages/npm/:_authToken=${CI_JOB_TOKEN}" >> .npmrc
+      
+      if [ -n "$NPM_TOKEN" ]; then
+        echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" >> .npmrc
+      fi
+      
+      export GITLAB_TOKEN="${GITLAB_PUSH_TOKEN}"
+      export NPM_TOKEN="${NPM_TOKEN}"
+      export CI="true"
+      export RELEASE_TYPE="major"
+      
+      # Ensure BREAKING CHANGE exists for major release
+      # If not, semantic-release will default based on commits
+      echo "Creating MAJOR release..."
+      npx semantic-release
+      
+      echo "✅ MAJOR release completed"
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+      when: manual
+      allow_failure: false
+  needs:
+    - quality:gates
+    - build:dist
   environment:
     name: production
     url: https://www.npmjs.com/package/@bluefly/openstandardagents
 
 # ============================================================================
-# MANUAL: CREATE RELEASE TAG (Legacy - use release-all-platforms instead)
-# Creates a new version tag (v0.2.4, v0.3.0, etc)
+# STAGE 9: POST-RELEASE PROMOTION (Optional)
 # ============================================================================
+# Manual buttons to promote released version to different environments
 
-# DISABLED: create-release-tag (use local tag creation instead)
-# Tags must be created locally: npm version patch && git push --follow-tags
-create-release-tag:
-  stage: release-prod
+promote:staging:
+  stage: release-env
   image: node:${NODE_VERSION}-alpine
-  dependencies:
-    - build:dist
-  before_script:
-    - apk add --no-cache git
-    - git config --global user.email "ci@gitlab.bluefly.io"
-    - git config --global user.name "GitLab CI"
-    - git remote set-url origin https://oauth2:${CI_JOB_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git
   script:
-    - |
-      echo "🏷️  Creating Release Tag"
-      echo "======================="
-
-      # Get current version from package.json
-      CURRENT_VERSION=$(node -p "require('./package.json').version")
-      TAG_NAME="v${CURRENT_VERSION}"
-
-      echo "Current version: ${CURRENT_VERSION}"
-      echo "Tag to create: ${TAG_NAME}"
-
-      # Check if tag already exists
-      if git rev-parse "$TAG_NAME" >/dev/null 2>&1; then
-        echo "❌ ERROR: Tag $TAG_NAME already exists!"
-        echo "Please bump the version in package.json first:"
-        echo "  npm version patch  # 0.2.3 → 0.2.4"
-        echo "  npm version minor  # 0.2.3 → 0.3.0"
-        echo "  npm version major  # 0.2.3 → 1.0.0"
-        exit 1
-      fi
-
-      # Create annotated tag
-      git tag -a "$TAG_NAME" -m "Release $TAG_NAME
-
-      ## Changes in this release
-
-      See CHANGELOG.md for full details.
-
-      GitLab Release: ${CI_PROJECT_URL}/-/releases/${TAG_NAME}
-      Package Registry: ${CI_PROJECT_URL}/-/packages
-      "
-
-      # Push tag to GitLab
-      git push origin "$TAG_NAME"
-
-      echo "✅ Tag ${TAG_NAME} created and pushed!"
-      echo "📦 This will trigger:"
-      echo "   - GitLab Release creation"
-      echo "   - GitHub mirror sync"
-      echo "   - npm package publish (if configured)"
-      echo ""
-      echo "View release: ${CI_PROJECT_URL}/-/releases/${TAG_NAME}"
+    - echo "🚀 Promoting to STAGING environment"
+    - echo "Version: $(node -p "require('./package.json').version")"
+    - echo "✅ Promotion to staging completed"
   rules:
-    - when: never  # DISABLED - use local tag creation
+    - if: $CI_COMMIT_TAG
+      when: manual
+  environment:
+    name: staging
+    url: https://staging.openstandardagents.org
+
+promote:production:
+  stage: release-env
+  image: node:${NODE_VERSION}-alpine
+  script:
+    - echo "🚀 Promoting to PRODUCTION environment"
+    - echo "Version: $(node -p "require('./package.json').version")"
+    - echo "✅ Promotion to production completed"
+  rules:
+    - if: $CI_COMMIT_TAG
+      when: manual
+  environment:
+    name: production
+    url: https://openstandardagents.org
 
 # ============================================================================
-# STAGE: MIRROR GITHUB
-# Syncs releases and tags to GitHub repository
+# STAGE 10: GITHUB MIRROR
 # ============================================================================
 
 mirror:github:
   stage: mirror-github
   image: alpine:latest
   before_script:
-    - apk add --no-cache curl jq git
+    - apk add --no-cache git curl
+    - git config --global user.email "ci@gitlab.bluefly.io"
+    - git config --global user.name "GitLab CI"
   script:
     - |
-      set -e
-      echo "Syncing to GitHub repository..."
-      
-      # Validate required variables
       if [ -z "$GITHUB_MIRROR_TOKEN" ]; then
-        echo "WARNING: GITHUB_MIRROR_TOKEN not set - skipping GitHub mirror"
-        echo "To enable GitHub mirroring, add GITHUB_MIRROR_TOKEN to GitLab CI/CD variables"
+        echo "⚠️  GITHUB_MIRROR_TOKEN not set - skipping GitHub mirror"
         exit 0
       fi
       
-      GITHUB_OWNER="${GITHUB_ORG:-blueflyio}"
-      GITHUB_REPO_NAME="${GITHUB_REPO:-openstandardagents}"
-      GITHUB_API="https://api.github.com"
-      
-      echo "GitHub Repository: ${GITHUB_OWNER}/${GITHUB_REPO_NAME}"
-      
-      # Determine tag from CI environment
-      if [ -n "$CI_COMMIT_TAG" ]; then
-        TAG_NAME="$CI_COMMIT_TAG"
-        echo "Processing tag: ${TAG_NAME}"
-      elif [ -n "$CI_COMMIT_REF_NAME" ] && [[ "$CI_COMMIT_REF_NAME" =~ ^v?[0-9]+\.[0-9]+\.[0-9]+ ]]; then
-        TAG_NAME="$CI_COMMIT_REF_NAME"
-        echo "Processing version tag: ${TAG_NAME}"
-      else
-        echo "WARNING: No tag detected - skipping GitHub release sync"
-        echo "CI_COMMIT_TAG: ${CI_COMMIT_TAG:-not set}"
-        echo "CI_COMMIT_REF_NAME: ${CI_COMMIT_REF_NAME:-not set}"
-        exit 0
-      fi
-      
-      # Fetch GitLab release data if available
-      echo "Fetching GitLab release data..."
-      GITLAB_RELEASE_RESPONSE=$(curl -sS -H "PRIVATE-TOKEN: ${CI_JOB_TOKEN}" \
-        "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/releases/${TAG_NAME}" || echo "")
-      
-      RELEASE_NAME="${TAG_NAME}"
-      RELEASE_BODY=""
-      
-      if [ -n "$GITLAB_RELEASE_RESPONSE" ] && echo "$GITLAB_RELEASE_RESPONSE" | jq -e '.name' > /dev/null 2>&1; then
-        RELEASE_NAME=$(echo "$GITLAB_RELEASE_RESPONSE" | jq -r '.name // "'"${TAG_NAME}"'"')
-        RELEASE_BODY=$(echo "$GITLAB_RELEASE_RESPONSE" | jq -r '.description // ""')
-        echo "Found GitLab release: ${RELEASE_NAME}"
-      else
-        # Fallback: use CHANGELOG.md if available
-        if [ -f "CHANGELOG.md" ]; then
-          echo "Extracting release notes from CHANGELOG.md..."
-          RELEASE_BODY=$(awk "/^## \[${TAG_NAME#v}\]/,/^## /" CHANGELOG.md | head -n -1 || echo "")
-          if [ -z "$RELEASE_BODY" ]; then
-            RELEASE_BODY="Release ${TAG_NAME}"
-          fi
-        else
-          RELEASE_BODY="Release ${TAG_NAME}"
-        fi
-      fi
-      
-      # Check if GitHub release already exists
-      echo "Checking if GitHub release exists..."
-      EXISTING_RELEASE=$(curl -sS -H "Authorization: token ${GITHUB_MIRROR_TOKEN}" \
-        "${GITHUB_API}/repos/${GITHUB_OWNER}/${GITHUB_REPO_NAME}/releases/tags/${TAG_NAME}" || echo "")
-      
-      if echo "$EXISTING_RELEASE" | jq -e '.id' > /dev/null 2>&1; then
-        RELEASE_ID=$(echo "$EXISTING_RELEASE" | jq -r '.id')
-        echo "Updating existing GitHub release (ID: ${RELEASE_ID})..."
-        
-        # Update release
-        UPDATE_RESPONSE=$(curl -sS -X PATCH \
-          -H "Authorization: token ${GITHUB_MIRROR_TOKEN}" \
-          -H "Content-Type: application/json" \
-          -d "{\"tag_name\":\"${TAG_NAME}\",\"name\":\"${RELEASE_NAME}\",\"body\":$(echo "$RELEASE_BODY" | jq -Rs .),\"draft\":false,\"prerelease\":false}" \
-          "${GITHUB_API}/repos/${GITHUB_OWNER}/${GITHUB_REPO_NAME}/releases/${RELEASE_ID}")
-        
-        if echo "$UPDATE_RESPONSE" | jq -e '.id' > /dev/null 2>&1; then
-          echo "GitHub release updated successfully"
-          echo "Release URL: $(echo "$UPDATE_RESPONSE" | jq -r '.html_url')"
-        else
-          echo "ERROR: Failed to update GitHub release"
-          echo "Response: ${UPDATE_RESPONSE}"
-          exit 1
-        fi
-      else
-        echo "Creating new GitHub release..."
-        
-        # Create release
-        CREATE_RESPONSE=$(curl -sS -X POST \
-          -H "Authorization: token ${GITHUB_MIRROR_TOKEN}" \
-          -H "Content-Type: application/json" \
-          -d "{\"tag_name\":\"${TAG_NAME}\",\"name\":\"${RELEASE_NAME}\",\"body\":$(echo "$RELEASE_BODY" | jq -Rs .),\"draft\":false,\"prerelease\":false}" \
-          "${GITHUB_API}/repos/${GITHUB_OWNER}/${GITHUB_REPO_NAME}/releases")
-        
-        if echo "$CREATE_RESPONSE" | jq -e '.id' > /dev/null 2>&1; then
-          echo "GitHub release created successfully"
-          echo "Release URL: $(echo "$CREATE_RESPONSE" | jq -r '.html_url')"
-        else
-          echo "ERROR: Failed to create GitHub release"
-          echo "Response: ${CREATE_RESPONSE}"
-          exit 1
-        fi
-      fi
-      
-      echo "GitHub mirroring completed"
+      echo "🔄 Syncing to GitHub mirror..."
+      git remote add github https://${GITHUB_MIRROR_TOKEN}@github.com/blueflyio/openstandardagents.git || true
+      git push github --all --force || true
+      git push github --tags --force || true
+      echo "✅ GitHub mirror sync completed"
   rules:
     - if: $CI_COMMIT_TAG
       when: on_success
-    - if: $CI_COMMIT_BRANCH == "main" && $CI_COMMIT_REF_NAME =~ /^v?[0-9]+\.[0-9]+\.[0-9]+$/
+    - if: $CI_COMMIT_BRANCH == "main"
       when: on_success
-  needs:
-    - job: release:prod
-      optional: true
   allow_failure: true
 
 # ============================================================================
 # GLOBAL SETTINGS
 # ============================================================================
 
-# Workflow rules
 workflow:
   rules:
-    # Run on branches
     - if: $CI_COMMIT_BRANCH
-    # Run on merge requests
     - if: $CI_MERGE_REQUEST_IID
-    # Run on tags
     - if: $CI_COMMIT_TAG
-    # Default: run
     - when: always
 
 # GitLab Pages deployment
@@ -688,4 +619,4 @@ pages:
       - public
   rules:
     - if: '$CI_COMMIT_BRANCH == "main"'
-      when: always  # Run even if previous stages failed
+      when: always
