@@ -40,6 +40,8 @@ validate:node:
 validate:ossa:
   stage: validate
   image: node:${NODE_VERSION}-alpine
+  before_script:
+    - apk add --no-cache git curl jq bash
   script:
     - npm ci --legacy-peer-deps
     - npm run build
@@ -48,6 +50,27 @@ validate:ossa:
   allow_failure: true
   rules:
     - when: always
+
+prepare:spec-structure:
+  stage: validate
+  image: alpine:latest
+  before_script:
+    - apk add --no-cache git curl jq bash
+    - chmod +x .gitlab/scripts/sync-spec-to-milestone.sh
+  script:
+    - |
+      echo "📁 Preparing spec directory structure from milestones..."
+      export CI_SERVER_URL="${CI_SERVER_URL:-https://gitlab.bluefly.io}"
+      export CI_PROJECT_ID="${CI_PROJECT_ID}"
+      export GITLAB_PUSH_TOKEN="${GITLAB_PUSH_TOKEN:-${CI_JOB_TOKEN}}"
+      ./.gitlab/scripts/sync-spec-to-milestone.sh
+  artifacts:
+    paths:
+      - spec/
+    expire_in: 1 day
+  rules:
+    - when: always
+  allow_failure: true
 
 # ============================================================================
 # STAGE 2: BUILD
@@ -434,9 +457,38 @@ release:main:
       MILESTONE_TITLE=$(echo "$ALL_MILESTONES" | jq -r '.[] | select(.state == "closed") | .title' | grep -E 'v?[0-9]+\.[0-9]+\.[0-9]+' | head -1)
       MILESTONE_VERSION=$(echo "$MILESTONE_TITLE" | grep -oE 'v?[0-9]+\.[0-9]+\.[0-9]+' | head -1 | sed 's/^v//')
       MILESTONE_ID=$(echo "$ALL_MILESTONES" | jq -r ".[] | select(.title == \"${MILESTONE_TITLE}\") | .id" | head -1)
+      MAJOR_MINOR=$(echo "$MILESTONE_VERSION" | cut -d. -f1,2)
       
       echo "✅ Found completed milestone: ${MILESTONE_TITLE} (ID: ${MILESTONE_ID})"
       echo "   Version: v${MILESTONE_VERSION}"
+      echo "   Major.Minor: v${MAJOR_MINOR}"
+      
+      # Prepare spec directory structure from milestone
+      echo ""
+      echo "📁 Preparing spec directory structure..."
+      chmod +x .gitlab/scripts/prepare-spec-from-milestone.sh || true
+      ./.gitlab/scripts/prepare-spec-from-milestone.sh || echo "⚠️  Spec preparation script not found or failed"
+      
+      # Verify stable spec directory exists
+      STABLE_SPEC_DIR="spec/v${MAJOR_MINOR}"
+      if [ ! -d "$STABLE_SPEC_DIR" ]; then
+        echo "⚠️  Warning: Stable spec directory $STABLE_SPEC_DIR not found"
+        echo "   Creating from dev directory..."
+        mkdir -p "$STABLE_SPEC_DIR"
+        if [ -d "spec/v${MAJOR_MINOR}-dev" ]; then
+          cp -r "spec/v${MAJOR_MINOR}-dev"/* "$STABLE_SPEC_DIR/"
+          # Rename schema files
+          if [ -f "$STABLE_SPEC_DIR/ossa-${MAJOR_MINOR}-dev.schema.json" ]; then
+            mv "$STABLE_SPEC_DIR/ossa-${MAJOR_MINOR}-dev.schema.json" "$STABLE_SPEC_DIR/ossa-${MAJOR_MINOR}.schema.json"
+          fi
+          if [ -f "$STABLE_SPEC_DIR/ossa-${MAJOR_MINOR}-dev.yaml" ]; then
+            mv "$STABLE_SPEC_DIR/ossa-${MAJOR_MINOR}-dev.yaml" "$STABLE_SPEC_DIR/ossa-${MAJOR_MINOR}.yaml"
+          fi
+          echo "   ✅ Created stable spec directory"
+        fi
+      else
+        echo "✅ Stable spec directory exists: $STABLE_SPEC_DIR"
+      fi
       
       # Check if this version already exists
       if git tag -l | grep -qE "^v?${MILESTONE_VERSION}$"; then
