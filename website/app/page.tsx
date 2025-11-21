@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import type { Metadata } from 'next';
 import { Logo } from '@/components/Logo';
+import { STABLE_VERSION_TAG } from '@/lib/version';
 
 export const metadata: Metadata = {
   title: 'Open Standard Agents - Industry Standard for Agent Orchestration',
@@ -15,9 +16,14 @@ export default function HomePage() {
         <div className="container mx-auto max-w-7xl text-center">
           <div className="mb-8 flex flex-col items-center">
             <img src="/assets/brand/ossa-logo.svg" alt="OSSA Logo" className="h-24 w-24 mb-6 animate-pulse" />
-            <span className="inline-block px-4 py-2 bg-white/20 backdrop-blur-sm rounded-full text-sm font-medium">
-              The OpenAPI for AI Agents
-            </span>
+            <div className="flex flex-wrap items-center justify-center gap-3 mb-4">
+              <span className="inline-block px-4 py-2 bg-white/20 backdrop-blur-sm rounded-full text-sm font-medium">
+                The OpenAPI for AI Agents
+              </span>
+              <span className="inline-block px-4 py-2 bg-white/30 backdrop-blur-sm rounded-full text-sm font-semibold border border-white/40">
+                Latest: {STABLE_VERSION_TAG}
+              </span>
+            </div>
           </div>
           <h1 className="text-6xl md:text-7xl font-bold mb-6 leading-tight">
             Open Standard for <span className="bg-gradient-to-r from-yellow-300 via-orange-300 to-pink-300 bg-clip-text text-transparent animate-pulse">Scalable Agents</span>
