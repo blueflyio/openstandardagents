@@ -1,0 +1,152 @@
+apiVersion: ossa/v0.2.4-dev
+kind: Agent
+metadata:
+  name: ossa-release-agent
+  version: 1.0.0
+  description: |
+    Manages OSSA project releases using semantic-release.
+    Handles versioning, changelog generation, and publishing.
+  labels:
+    environment: ci
+    team: platform-engineering
+    domain: release
+    purpose: ci-cd
+  annotations:
+    documentation: https://openstandardagents.org/docs/release
+    ci-job: release:main:minor
+
+spec:
+  role: |
+    You are an OSSA release agent that manages project releases.
+    Your responsibilities:
+    1. Analyze commits to determine version bump
+    2. Generate changelog from commits
+    3. Update version in package.json
+    4. Create git tags
+    5. Publish to npm
+    6. Create GitLab releases
+    7. Sync to GitHub mirror
+    
+    Always follow semantic versioning and ensure release artifacts are complete.
+
+  llm:
+    provider: openai
+    model: gpt-4-turbo
+    temperature: 0.1
+    maxTokens: 3000
+
+  tools:
+    - type: function
+      name: analyze_commits
+      description: |
+        Analyzes git commits to determine version bump type.
+        Uses conventional commits to determine patch/minor/major.
+      transport:
+        protocol: http
+        streaming: none
+      config:
+        handler: commit_analyzer
+        timeout: 30
+      auth:
+        type: bearer
+        credentials: secret:gitlab-token
+        scopes:
+          - read:repository
+
+    - type: function
+      name: generate_changelog
+      description: |
+        Generates CHANGELOG.md from commit history.
+        Formats changes by type (feat, fix, docs, etc.).
+      transport:
+        protocol: http
+        streaming: none
+      config:
+        handler: changelog_generator
+        timeout: 60
+
+    - type: function
+      name: create_release
+      description: |
+        Creates GitLab release with changelog and assets.
+        Tags release with version and publishes release notes.
+      transport:
+        protocol: http
+        streaming: none
+      config:
+        handler: release_creator
+        timeout: 60
+      auth:
+        type: bearer
+        credentials: secret:gitlab-token
+        scopes:
+          - write:repository
+          - write:releases
+
+    - type: function
+      name: publish_npm
+      description: |
+        Publishes package to npm registry.
+        Creates tarball and publishes with appropriate tags.
+      transport:
+        protocol: http
+        streaming: none
+      config:
+        handler: npm_publisher
+        timeout: 120
+      auth:
+        type: bearer
+        credentials: secret:npm-token
+        scopes:
+          - write:packages
+
+    - type: function
+      name: sync_github
+      description: |
+        Syncs release to GitHub mirror repository.
+        Pushes tags and commits to GitHub.
+      transport:
+        protocol: http
+        streaming: none
+      config:
+        handler: github_syncer
+        timeout: 60
+      auth:
+        type: bearer
+        credentials: secret:github-token
+        scopes:
+          - write:repository
+
+  state:
+    mode: session
+    storage:
+      type: kv
+      retention: 7d
+      config:
+        provider: redis
+        key_prefix: release:session
+    context_window:
+      max_messages: 50
+      max_tokens: 16000
+      strategy: sliding_window
+
+  constraints:
+    cost:
+      maxTokensPerDay: 50000
+      maxCostPerDay: 20.00
+      currency: USD
+    performance:
+      maxLatencySeconds: 300.0
+      timeoutSeconds: 300
+
+  observability:
+    tracing:
+      enabled: true
+      exporter: otlp
+    metrics:
+      enabled: true
+      exporter: prometheus
+    logging:
+      level: info
+      format: json
+

@@ -1,0 +1,102 @@
+apiVersion: ossa/v0.2.4-dev
+kind: Agent
+metadata:
+  name: ossa-validation-agent
+  version: 1.0.0
+  description: |
+    Validates OSSA agent manifests against the OSSA schema.
+    Used in CI/CD pipelines to ensure all agent definitions are compliant.
+  labels:
+    environment: ci
+    team: platform-engineering
+    domain: validation
+    purpose: ci-cd
+  annotations:
+    documentation: https://openstandardagents.org/docs/validation
+    ci-job: validate:ossa
+
+spec:
+  role: |
+    You are an OSSA validation agent that validates agent manifests against the OSSA schema.
+    Your responsibilities:
+    1. Validate manifest structure (apiVersion, kind, metadata, spec)
+    2. Check required fields are present
+    3. Validate field types and formats
+    4. Verify schema compliance
+    5. Report validation errors with clear messages
+    
+    Always provide actionable feedback to help developers fix validation issues.
+
+  llm:
+    provider: openai
+    model: gpt-4-turbo
+    temperature: 0.1
+    maxTokens: 2000
+
+  tools:
+    - type: function
+      name: validate_manifest
+      description: |
+        Validates an OSSA manifest file against the schema.
+        Returns validation results with errors and warnings.
+      transport:
+        protocol: http
+        streaming: none
+      config:
+        handler: validation_handler
+        timeout: 30
+      auth:
+        type: none
+
+    - type: function
+      name: check_schema_version
+      description: |
+        Checks if manifest uses a supported OSSA schema version.
+        Validates apiVersion field format.
+      transport:
+        protocol: http
+        streaming: none
+      config:
+        handler: schema_version_checker
+        timeout: 5
+
+    - type: function
+      name: lint_manifest
+      description: |
+        Performs linting checks on manifest structure and best practices.
+        Checks naming conventions, required fields, and recommended patterns.
+      transport:
+        protocol: http
+        streaming: none
+      config:
+        handler: lint_handler
+        timeout: 10
+
+  state:
+    mode: stateless
+    storage:
+      type: memory
+      retention: 1h
+
+  constraints:
+    cost:
+      maxTokensPerDay: 50000
+      maxCostPerDay: 5.00
+      currency: USD
+    performance:
+      maxLatencySeconds: 10.0
+      timeoutSeconds: 30
+
+  observability:
+    tracing:
+      enabled: true
+      exporter: otlp
+      endpoint: ${OTLP_ENDPOINT:-http://localhost:4318}
+    metrics:
+      enabled: true
+      exporter: prometheus
+      endpoint: ${METRICS_ENDPOINT:-http://localhost:9090/metrics}
+    logging:
+      level: info
+      format: json
+

@@ -1,0 +1,128 @@
+apiVersion: ossa/v0.2.4-dev
+kind: Agent
+metadata:
+  name: ossa-test-agent
+  version: 1.0.0
+  description: |
+    Runs test suites for OSSA projects.
+    Executes unit, integration, and e2e tests with coverage reporting.
+  labels:
+    environment: ci
+    team: platform-engineering
+    domain: testing
+    purpose: ci-cd
+  annotations:
+    documentation: https://openstandardagents.org/docs/testing
+    ci-job: test:unit
+
+spec:
+  role: |
+    You are an OSSA test agent that runs test suites and reports results.
+    Your responsibilities:
+    1. Execute unit tests
+    2. Run integration tests
+    3. Execute e2e tests
+    4. Generate coverage reports
+    5. Report test failures with context
+    6. Validate test coverage thresholds
+    
+    Always provide clear test results and actionable failure messages.
+
+  llm:
+    provider: openai
+    model: gpt-4-turbo
+    temperature: 0.1
+    maxTokens: 2000
+
+  tools:
+    - type: function
+      name: run_unit_tests
+      description: |
+        Runs unit tests using Jest.
+        Executes tests in tests/unit/ directory.
+      transport:
+        protocol: http
+        streaming: response
+      config:
+        handler: jest_handler
+        timeout: 300
+      auth:
+        type: none
+
+    - type: function
+      name: run_integration_tests
+      description: |
+        Runs integration tests using Jest.
+        Executes tests in tests/integration/ directory.
+      transport:
+        protocol: http
+        streaming: response
+      config:
+        handler: jest_handler
+        timeout: 600
+
+    - type: function
+      name: run_e2e_tests
+      description: |
+        Runs end-to-end tests.
+        Executes tests in tests/e2e/ directory.
+      transport:
+        protocol: http
+        streaming: response
+      config:
+        handler: e2e_handler
+        timeout: 900
+
+    - type: function
+      name: generate_coverage
+      description: |
+        Generates test coverage reports.
+        Creates coverage/ directory with HTML and JSON reports.
+      transport:
+        protocol: http
+        streaming: none
+      config:
+        handler: coverage_generator
+        timeout: 120
+
+    - type: function
+      name: validate_coverage
+      description: |
+        Validates test coverage meets thresholds.
+        Checks coverage percentage against requirements.
+      transport:
+        protocol: http
+        streaming: none
+      config:
+        handler: coverage_validator
+        timeout: 10
+
+  state:
+    mode: stateless
+    storage:
+      type: memory
+      retention: 24h
+
+  constraints:
+    cost:
+      maxTokensPerDay: 100000
+      maxCostPerDay: 10.00
+      currency: USD
+    performance:
+      maxLatencySeconds: 1200.0
+      timeoutSeconds: 1200
+    resources:
+      cpu: "2000m"
+      memory: "4Gi"
+
+  observability:
+    tracing:
+      enabled: true
+      exporter: otlp
+    metrics:
+      enabled: true
+      exporter: prometheus
+    logging:
+      level: info
+      format: json
+
