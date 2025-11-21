@@ -47,7 +47,7 @@ spec:
       endpoint: http://worker-agent:8080/api
 ```
 
-See: [Integration Patterns](../Examples/Integration-Patterns)
+See: [Examples](/docs/examples)
 
 ### Pattern 3: Agent Mesh
 
@@ -218,7 +218,7 @@ constraints:
 
 ## Related Resources
 
-- [Technical Documentation](../Technical/Specification-Deep-Dive)
-- [Integration Patterns](../Examples/Integration-Patterns)
-- [Enterprise Guide](../For-Audiences/Enterprises)
+- [Technical Documentation](/docs/specification)
+- [Examples](/docs/examples)
+- [Enterprise Guide](/docs/for-audiences/enterprises)
 

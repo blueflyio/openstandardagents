@@ -210,13 +210,13 @@ spec:
 ## Next Steps
 
 1. ✅ First agent created
-2. → [Integration Patterns](../Examples/Integration-Patterns) - Connect multiple agents
-3. → [Migration Guides](../Examples/Migration-Guides) - Migrate from other frameworks
-4. → [Advanced Patterns](../Examples/Advanced-Patterns) - Enterprise patterns
+2. → [Integration Patterns](/docs/examples) - Connect multiple agents
+3. → [Migration Guides](/docs/migration-guides) - Migrate from other frameworks
+4. → [Advanced Patterns](/docs/examples) - Enterprise patterns
 
 ## Related
 
 - [Hello World Tutorial](Hello-World)
-- [Schema Reference](../Technical/Schema-Reference)
-- [Complete Examples](../Examples/Getting-Started-Examples)
+- [Schema Reference](/docs/schema-reference)
+- [Complete Examples](/docs/examples)
 

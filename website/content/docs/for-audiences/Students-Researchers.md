@@ -78,14 +78,14 @@ Research migration patterns:
 ### Step 1: Understand the Standard
 
 Read the specification:
-- [Specification Deep-Dive](../Technical/Specification-Deep-Dive)
-- [Schema Reference](../Technical/Schema-Reference)
+- [Specification](/docs/specification)
+- [Schema Reference](/docs/schema-reference)
 
 ### Step 2: Study Examples
 
 Review annotated examples:
 - [Hello World Complete](https://gitlab.bluefly.io/llm/openapi-ai-agents-standard/-/blob/main/examples/getting-started/hello-world-complete.ossa.yaml)
-- [Integration Patterns](../Examples/Integration-Patterns)
+- [Examples](/docs/examples)
 
 ### Step 3: Create Research Agents
 
@@ -115,8 +115,8 @@ We welcome research contributions:
 
 ## Related Resources
 
-- [Getting Started](../Getting-Started/5-Minute-Overview)
-- [Technical Documentation](../Technical/Specification-Deep-Dive)
-- [Examples & Patterns](../Examples/Getting-Started-Examples)
+- [Getting Started](/docs/getting-started/5-minute-overview)
+- [Technical Documentation](/docs/specification)
+- [Examples & Patterns](/docs/examples)
 - [Repository](https://gitlab.bluefly.io/llm/openapi-ai-agents-standard)
 

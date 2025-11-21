@@ -62,7 +62,7 @@ Deploy to:
 
 ### LangChain → OSSA
 
-See: [Migration Guide: LangChain](../Examples/Migration-Guides/from-langchain-to-ossa)
+See: [Migration Guide: LangChain](/docs/migration-guides/langchain-to-ossa)
 
 ### Anthropic SDK → OSSA
 
@@ -179,7 +179,7 @@ spec:
 
 ### Pattern 3: Multi-Agent Orchestration
 
-See: [Integration Patterns](../Examples/Integration-Patterns)
+See: [Examples](/docs/examples)
 
 ## Testing
 
@@ -213,8 +213,8 @@ ossa validate agent.ossa.yaml --verbose
 
 ## Resources
 
-- [Getting Started](../Getting-Started/Hello-World)
-- [API Reference](../Technical/CLI-Reference)
-- [Migration Guides](../Examples/Migration-Guides)
-- [Examples](../Examples/Getting-Started-Examples)
+- [Getting Started](/docs/getting-started/hello-world)
+- [Schema Reference](/docs/schema-reference)
+- [Migration Guides](/docs/migration-guides)
+- [Examples](/docs/examples)
 

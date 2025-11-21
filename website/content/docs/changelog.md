@@ -309,5 +309,4 @@ Enhanced OSSA v0.1.9 release with master orchestrator capabilities, multi-agent 
 
 ---
 
-For detailed migration instructions, see [MIGRATION.md](docs/MIGRATION.md)
-For release procedures, see [RELEASE.md](RELEASE.md)
+For detailed migration instructions, see [Migration Guides](/docs/migration-guides)
