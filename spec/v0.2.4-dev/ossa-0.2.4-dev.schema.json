@@ -13,15 +13,32 @@
   "properties": {
     "apiVersion": {
       "type": "string",
-      "pattern": "^ossa/v(0\\.2\\.[2-4](-dev)?|1)(\\.[0-9]+)?(-[a-zA-Z0-9]+)?$",
-      "description": "OSSA API version (supports ossa/v0.2.2, ossa/v0.2.3, ossa/v0.2.4-dev, or ossa/v1 for compatibility)",
+      "pattern": "^ossa/v((0\\.2\\.[0-9]+|0\\.2\\.x|0\\.2|0\\.[0-9]+\\.[0-9]+|0\\.[0-9]+\\.x|0\\.[0-9]+|0\\.x|0|1(\\.[0-9]+)?|1\\.x|1)(-dev)?|[0-9]+\\.[0-9]+\\.[0-9]+|[0-9]+\\.[0-9]+\\.x|[0-9]+\\.[0-9]+|[0-9]+\\.x|[0-9]+)(-[a-zA-Z0-9]+)?$",
+      "description": "OSSA API version. Supports specific versions (ossa/v0.2.4), patch wildcards (ossa/v0.2.x or ossa/v0.2), minor wildcards (ossa/v0.x or ossa/v0), or major versions (ossa/v1, ossa/v1.x). Use wildcards to avoid updating manifests on every patch release. Wildcards resolve to the latest compatible version during validation.",
       "examples": [
-        "ossa/v1",
+        "ossa/v0.2.4",
+        "ossa/v0.2.x",
+        "ossa/v0.2",
         "ossa/v0.2.4-dev",
         "ossa/v0.2.3",
         "ossa/v0.2.2",
+        "ossa/v0.x",
+        "ossa/v0",
+        "ossa/v1",
+        "ossa/v1.x",
         "ossa/v1.0"
-      ]
+      ],
+      "x-version-resolution": {
+        "description": "How wildcard versions are resolved to specific versions during validation",
+        "rules": {
+          "ossa/v0.2.x": "Resolves to latest 0.2.x version (e.g., 0.2.4)",
+          "ossa/v0.2": "Same as ossa/v0.2.x",
+          "ossa/v0.x": "Resolves to latest 0.x.x version (e.g., 0.2.4)",
+          "ossa/v0": "Same as ossa/v0.x",
+          "ossa/v1.x": "Resolves to latest 1.x.x version",
+          "ossa/v1": "Resolves to latest 1.x.x version"
+        }
+      }
     },
     "kind": {
       "type": "string",

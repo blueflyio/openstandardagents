@@ -37,7 +37,7 @@ export class ValidationService implements IValidationService {
   ) {
     this.ajv = new Ajv({
       allErrors: true,
-      strict: true,
+      strict: false, // Allow custom keywords like x-version-resolution
       validateFormats: true,
     });
     addFormats(this.ajv);

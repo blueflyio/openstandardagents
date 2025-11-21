@@ -17,7 +17,7 @@ export class GenerationService {
     const tools = this.generateTools(template);
 
     const manifest: any = {
-      apiVersion: 'ossa/v1',
+      apiVersion: 'ossa/v0.2.4',
       kind: 'Agent',
       metadata: {
         name: this.normalizeId(template.id),

@@ -128,6 +128,8 @@ extensions:
     mesh_discovery: true`,
 });
 
+type PlaygroundTab = 'editor' | 'discovery' | 'workspace' | 'capabilities' | 'simulator';
+
 export default function PlaygroundPage() {
   const [templates] = useState(getTemplates(STABLE_VERSION));
   const [code, setCode] = useState(templates.simple);
@@ -137,6 +139,7 @@ export default function PlaygroundPage() {
   } | null>(null);
   const [isValidating, setIsValidating] = useState(false);
   const [activeTemplate, setActiveTemplate] = useState('simple');
+  const [activeTab, setActiveTab] = useState<PlaygroundTab>('editor');
 
   const handleValidate = async (): Promise<void> => {
     setIsValidating(true);
@@ -236,6 +239,65 @@ export default function PlaygroundPage() {
 
       <div className="container mx-auto max-w-7xl px-4 py-12">
 
+      {/* Tab Navigation */}
+      <div className="mb-6 bg-white rounded-xl p-2 border border-gray-300 shadow-sm">
+        <div className="flex gap-2">
+          <button
+            onClick={() => setActiveTab('editor')}
+            className={`px-6 py-3 rounded-lg font-medium transition-all ${
+              activeTab === 'editor'
+                ? 'bg-primary text-white shadow-md'
+                : 'text-gray-600 hover:bg-gray-100'
+            }`}
+          >
+            Editor
+          </button>
+          <button
+            onClick={() => setActiveTab('discovery')}
+            className={`px-6 py-3 rounded-lg font-medium transition-all ${
+              activeTab === 'discovery'
+                ? 'bg-primary text-white shadow-md'
+                : 'text-gray-600 hover:bg-gray-100'
+            }`}
+          >
+            Discovery
+          </button>
+          <button
+            onClick={() => setActiveTab('workspace')}
+            className={`px-6 py-3 rounded-lg font-medium transition-all ${
+              activeTab === 'workspace'
+                ? 'bg-primary text-white shadow-md'
+                : 'text-gray-600 hover:bg-gray-100'
+            }`}
+          >
+            Workspace
+          </button>
+          <button
+            onClick={() => setActiveTab('capabilities')}
+            className={`px-6 py-3 rounded-lg font-medium transition-all ${
+              activeTab === 'capabilities'
+                ? 'bg-primary text-white shadow-md'
+                : 'text-gray-600 hover:bg-gray-100'
+            }`}
+          >
+            Capabilities
+          </button>
+          <button
+            onClick={() => setActiveTab('simulator')}
+            className={`px-6 py-3 rounded-lg font-medium transition-all ${
+              activeTab === 'simulator'
+                ? 'bg-primary text-white shadow-md'
+                : 'text-gray-600 hover:bg-gray-100'
+            }`}
+          >
+            Simulator
+          </button>
+        </div>
+      </div>
+
+      {/* Editor Tab */}
+      {activeTab === 'editor' && (
+        <>
       {/* Quick Actions Bar */}
       <div className="mb-6 bg-gradient-to-r from-primary/5 to-secondary/5 rounded-xl p-4 border border-primary/20">
         <div className="flex flex-wrap gap-3 items-center justify-between">
@@ -480,6 +542,162 @@ export default function PlaygroundPage() {
           </div>
         </div>
       </div>
+        </>
+      )}
+
+      {/* Discovery Tab */}
+      {activeTab === 'discovery' && (
+        <div className="card border-2 border-gray-300 p-6">
+          <h2 className="text-2xl font-semibold mb-4">Agent Discovery Visualizer</h2>
+          <p className="text-gray-600 mb-6">
+            Visualize discovered agents from a workspace structure. This shows how tools scan for `.agents/` folders and discover agent manifests.
+          </p>
+          <div className="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-xl p-6 border border-blue-200">
+            <h3 className="font-bold text-blue-900 mb-4">Example Workspace Structure</h3>
+            <pre className="bg-white rounded-lg p-4 border border-blue-100 overflow-x-auto text-sm">
+{`project-root/
+├── .agents/
+│   └── project-agent/
+│       └── agent.ossa.yaml
+└── modules/
+    └── custom-module/
+        └── .agents/
+            └── module-agent/
+                └── agent.ossa.yaml`}
+            </pre>
+            <div className="mt-4 space-y-2">
+              <div className="bg-white rounded-lg p-3 border border-blue-100">
+                <div className="font-semibold text-blue-900">Discovered Agents:</div>
+                <ul className="mt-2 space-y-1 text-sm text-gray-700">
+                  <li>✓ project-agent (project-root/.agents/)</li>
+                  <li>✓ module-agent (modules/custom-module/.agents/)</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+          <div className="mt-6">
+            <a href="/docs/core-concepts/workspace-discovery" className="text-blue-600 hover:underline">
+              Learn more about workspace discovery →
+            </a>
+          </div>
+        </div>
+      )}
+
+      {/* Workspace Tab */}
+      {activeTab === 'workspace' && (
+        <div className="card border-2 border-gray-300 p-6">
+          <h2 className="text-2xl font-semibold mb-4">Workspace Structure Viewer</h2>
+          <p className="text-gray-600 mb-6">
+            Explore hierarchical agent organization across a workspace. Filter by ecosystem, domain, or capability.
+          </p>
+          <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl p-6 border border-green-200">
+            <h3 className="font-bold text-green-900 mb-4">Workspace Hierarchy</h3>
+            <div className="bg-white rounded-lg p-4 border border-green-100">
+              <div className="space-y-2 text-sm">
+                <div className="font-semibold">📁 project-root</div>
+                <div className="ml-4 space-y-1">
+                  <div className="font-semibold text-blue-600">📁 .agents/</div>
+                  <div className="ml-4">
+                    <div className="text-gray-700">└── project-agent (domain: orchestration)</div>
+                  </div>
+                  <div className="font-semibold text-purple-600">📁 modules/</div>
+                  <div className="ml-4">
+                    <div className="font-semibold">└── custom-module/</div>
+                    <div className="ml-4">
+                      <div className="font-semibold text-blue-600">└── .agents/</div>
+                      <div className="ml-4">
+                        <div className="text-gray-700">└── module-agent (domain: e-commerce)</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="mt-4 flex gap-2">
+              <button className="px-4 py-2 bg-green-600 text-white rounded-lg text-sm hover:bg-green-700">
+                Filter by Domain
+              </button>
+              <button className="px-4 py-2 bg-green-600 text-white rounded-lg text-sm hover:bg-green-700">
+                Filter by Ecosystem
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Capabilities Tab */}
+      {activeTab === 'capabilities' && (
+        <div className="card border-2 border-gray-300 p-6">
+          <h2 className="text-2xl font-semibold mb-4">Agent Capability Browser</h2>
+          <p className="text-gray-600 mb-6">
+            Browse agents by capability, search by taxonomy (domain, subdomain), and see agent relationships.
+          </p>
+          <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl p-6 border border-purple-200">
+            <h3 className="font-bold text-purple-900 mb-4">Capability Index</h3>
+            <div className="space-y-3">
+              <div className="bg-white rounded-lg p-4 border border-purple-100">
+                <div className="font-semibold text-purple-900 mb-2">process-order</div>
+                <div className="text-sm text-gray-700">
+                  <div>Agents: order-processor</div>
+                  <div>Domain: e-commerce</div>
+                  <div>Subdomain: order-management</div>
+                </div>
+              </div>
+              <div className="bg-white rounded-lg p-4 border border-purple-100">
+                <div className="font-semibold text-purple-900 mb-2">validate-payment</div>
+                <div className="text-sm text-gray-700">
+                  <div>Agents: order-processor, payment-validator</div>
+                  <div>Domain: e-commerce</div>
+                  <div>Subdomain: payment-processing</div>
+                </div>
+              </div>
+            </div>
+            <div className="mt-4">
+              <input
+                type="text"
+                placeholder="Search by capability, domain, or subdomain..."
+                className="w-full px-4 py-2 border border-purple-200 rounded-lg"
+              />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Simulator Tab */}
+      {activeTab === 'simulator' && (
+        <div className="card border-2 border-gray-300 p-6">
+          <h2 className="text-2xl font-semibold mb-4">Discovery Simulator</h2>
+          <p className="text-gray-600 mb-6">
+            Simulate agent discovery by uploading a workspace structure. See discovered agents and the generated registry.
+          </p>
+          <div className="bg-gradient-to-br from-orange-50 to-red-50 rounded-xl p-6 border border-orange-200">
+            <h3 className="font-bold text-orange-900 mb-4">Upload Workspace Structure</h3>
+            <div className="bg-white rounded-lg p-4 border border-orange-100 mb-4">
+              <input
+                type="file"
+                accept=".json,.yaml,.yml"
+                className="w-full px-4 py-2 border border-orange-200 rounded-lg"
+              />
+              <p className="text-sm text-gray-600 mt-2">
+                Upload a workspace structure file (JSON or YAML) to simulate agent discovery.
+              </p>
+            </div>
+            <div className="bg-white rounded-lg p-4 border border-orange-100">
+              <div className="font-semibold text-orange-900 mb-2">Discovered Agents:</div>
+              <div className="text-sm text-gray-700 space-y-1">
+                <div>Scanning workspace...</div>
+                <div>Found 2 agents in .agents/ folders</div>
+                <div>Generated registry.json</div>
+              </div>
+            </div>
+            <div className="mt-4">
+              <a href="/docs/core-concepts/workspace-discovery" className="text-orange-600 hover:underline">
+                Learn more about discovery →
+              </a>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
     </>
   );

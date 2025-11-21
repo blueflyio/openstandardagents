@@ -1,6 +1,6 @@
 ---
 title: "Why Formal Standards Matter Now"
-date: "2025-11-20"
+date: "2025-11-21"
 author: "OSSA Team"
 category: "Research"
 tags: ["OSSA", "AI Agents", "Standards"]

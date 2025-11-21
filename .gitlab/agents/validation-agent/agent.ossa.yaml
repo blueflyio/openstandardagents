@@ -1,4 +1,4 @@
-apiVersion: ossa/v0.2.4-dev
+apiVersion: ossa/v0.2.4
 kind: Agent
 metadata:
   name: ossa-validation-agent

@@ -151,11 +151,30 @@ done
 
 ## Schema Version
 
-All agents use `apiVersion: ossa/v0.2.4-dev` to demonstrate v0.2.4 features:
+All agents use `apiVersion: ossa/v0.2.4` (stable) to demonstrate v0.2.4 features:
 - Transport metadata
 - State management
 - Security scopes
 - Enhanced observability
+
+### Flexible Versioning
+
+OSSA supports flexible versioning to avoid frequent manifest updates:
+
+```yaml
+# Specific version (recommended for CI/CD)
+apiVersion: ossa/v0.2.4
+
+# Patch wildcard (auto-updates to latest 0.2.x)
+apiVersion: ossa/v0.2.x
+apiVersion: ossa/v0.2  # Shorthand
+
+# Minor wildcard (auto-updates to latest 0.x.x)
+apiVersion: ossa/v0.x
+apiVersion: ossa/v0  # Shorthand
+```
+
+When using wildcards, the OSSA CLI automatically resolves to the latest compatible version during validation. This means your CI/CD agents stay valid across patch releases without manual updates.
 
 ## Next Steps
 

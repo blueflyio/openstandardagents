@@ -39,6 +39,7 @@ Just as OpenAPI standardized REST APIs, OSSA standardizes AI agent interaction, 
 2. **Implementation-Agnostic** - Any runtime can implement it
 3. **Minimal Tooling** - Basic CLI for validation & generation
 4. **No Vendor Lock-in** - Deploy to any infrastructure
+5. **Type-Safe Development** - TypeScript, Zod validation, OpenAPI-first architecture
 
 ---
 
@@ -102,7 +103,7 @@ For production features, see [Agent Buildkit](https://github.com/blueflyio/opens
 
 ## Specification
 
-OSSA v0.2.4 Schema: [`spec/v0.2.4-dev/ossa-0.2.4-dev.schema.json`](spec/v0.2.4-dev/ossa-0.2.4-dev.schema.json)
+OSSA v0.2.4 Schema: [`spec/v0.2.4/ossa-0.2.4.schema.json`](spec/v0.2.4/ossa-0.2.4.schema.json)
 
 ### Required Fields
 
@@ -236,7 +237,7 @@ The documentation is organized into:
 
 ### Additional Resources
 
-- **Specification**: [spec/v0.2.2/ossa-0.2.2.schema.json](spec/v0.2.2/ossa-0.2.2.schema.json)
+- **Specification**: [spec/v0.2.4/ossa-0.2.4.schema.json](spec/v0.2.4/ossa-0.2.4.schema.json)
 - **Examples**: [examples/](examples/)
 - **API Reference**: [docs/](docs/)
 - **GitHub Issues**: https://github.com/blueflyio/openstandardagents/issues
@@ -256,6 +257,17 @@ OSSA is an open standard. Contributions welcome.
 3. Submit pull request
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+
+### Development & CI/CD
+
+OSSA uses a **milestone-driven release workflow** with TypeScript-based automation:
+
+- **TypeScript Scripts** - All CI/CD automation is built with TypeScript, Zod validation, and type safety
+- **Milestone-Based Releases** - Releases are controlled by GitLab milestones (100% issue completion required)
+- **Automated Validation** - Milestone readiness is automatically checked on every pipeline
+- **Spec Directory Management** - Spec directories are automatically created and managed based on milestones
+
+See [`.gitlab/scripts/README.md`](.gitlab/scripts/README.md) for details on the automation scripts.
 
 ---
 

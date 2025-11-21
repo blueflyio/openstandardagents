@@ -1,0 +1,9 @@
+services:
+  ossa.agent_discovery:
+    class: Drupal\ai_agents_ossa\Service\AgentDiscoveryService
+    arguments: ['@file_system', '@logger.factory']
+  
+  ossa.agent_manager:
+    class: Drupal\ai_agents_ossa\Service\AgentManagerService
+    arguments: ['@ossa.agent_discovery', '@logger.factory']
+

@@ -8,6 +8,7 @@ import 'reflect-metadata';
 
 // Repositories
 import { ManifestRepository } from './repositories/manifest.repository.js';
+import { DiscoveryService } from './services/discovery.service.js';
 import { SchemaRepository } from './repositories/schema.repository.js';
 
 // Services
@@ -26,6 +27,7 @@ container.bind(ManifestRepository).toSelf().inSingletonScope();
 container.bind(ValidationService).toSelf();
 container.bind(GenerationService).toSelf();
 container.bind(MigrationService).toSelf();
+container.bind(DiscoveryService).toSelf().inSingletonScope();
 
 /**
  * Get service from container
@@ -45,6 +47,7 @@ export function resetContainer(): void {
   // Rebind all services
   container.bind(SchemaRepository).toSelf().inSingletonScope();
   container.bind(ManifestRepository).toSelf().inSingletonScope();
+  container.bind(DiscoveryService).toSelf().inSingletonScope();
   container.bind(ValidationService).toSelf();
   container.bind(GenerationService).toSelf();
   container.bind(MigrationService).toSelf();

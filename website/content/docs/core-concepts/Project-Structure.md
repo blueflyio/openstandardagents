@@ -13,11 +13,12 @@ Understanding how OSSA organizes your agent projects is essential for effective 
 my-ossa-project/
 ├── .agents/                    # Agent definitions (version controlled)
 │   ├── my-agent/
-│   │   ├── manifest.json      # Agent configuration
-│   │   ├── prompts/           # Agent prompts
-│   │   └── tools/             # Agent-specific tools
+│   │   ├── agent.ossa.yaml    # Required: OSSA manifest
+│   │   ├── README.md          # Recommended: Agent documentation
+│   │   └── data/              # Optional: Agent-specific data files
 │   └── another-agent/
-│       └── manifest.json
+│       ├── agent.ossa.yaml
+│       └── README.md
 ├── .agents-workspace/          # Agent runtime workspace (NOT version controlled)
 │   ├── my-agent/
 │   │   ├── context/           # Runtime context
@@ -25,8 +26,13 @@ my-ossa-project/
 │   │   └── logs/              # Execution logs
 │   └── another-agent/
 │       └── context/
-├── examples/                   # Example agents and workflows
-└── ossa.yaml                   # Project configuration
+├── modules/                    # Example: Drupal modules, npm packages, etc.
+│   └── custom-module/
+│       └── .agents/           # Module-specific agents
+│           └── module-agent/
+│               ├── agent.ossa.yaml
+│               └── README.md
+└── examples/                   # Example agents and workflows
 ```
 
 ## `.agents/` - Agent Definitions
@@ -44,61 +50,75 @@ The `.agents/` directory contains your **agent definitions**. This folder **shou
 
 Each agent gets its own subdirectory within `.agents/`:
 
-```json
+```
 .agents/
 └── customer-support-agent/
-    ├── manifest.json           # Required: Agent metadata and configuration
-    ├── prompts/
-    │   ├── system.md          # System prompt
-    │   ├── context.md         # Context instructions
-    │   └── examples.md        # Few-shot examples
-    ├── tools/
-    │   ├── search.json        # Tool definition
-    │   └── create-ticket.json # Tool definition
-    └── schema/
-        └── openapi.yaml       # OpenAPI schema if using x-ossa extensions
+    ├── agent.ossa.yaml        # Required: OSSA manifest (or agent.yml)
+    ├── README.md              # Recommended: Agent documentation
+    └── data/                  # Optional: Agent-specific data files
+        ├── schemas/           # JSON schemas
+        ├── examples/          # Example data
+        └── config.json        # Configuration templates
 ```
 
-### manifest.json
+**Required:**
+- `agent.ossa.yaml` or `agent.yml` - OSSA manifest file
+
+**Recommended:**
+- `README.md` - What the agent does, how to use it
+
+**Optional:**
+- `data/` - JSON schemas, example data, configuration files
+- `tests/` - Agent-specific tests
+- `examples/` - Usage examples
+
+### agent.ossa.yaml
 
 The manifest is the core of each agent. It defines:
 
 - **Agent metadata**: Name, description, version
-- **Capabilities**: What the agent can do
-- **Tools**: Which tools the agent has access to
-- **Configuration**: Runtime settings and parameters
-- **Taxonomy**: Agent classification (see below)
+- **Capabilities**: What the agent can do (tools)
+- **LLM configuration**: Which model powers the agent
+- **State management**: How the agent manages memory/context
+- **Transport metadata**: How the agent communicates
+- **Taxonomy**: Agent classification for discovery
 
 Example manifest:
 
-```json
-{
-  "name": "customer-support-agent",
-  "version": "1.0.0",
-  "description": "Handles customer support inquiries",
-  "taxonomy": {
-    "role": "worker",
-    "domain": "customer-service",
-    "capabilities": ["qa", "ticket-creation", "escalation"]
-  },
-  "tools": [
-    {
-      "name": "search_knowledge_base",
-      "type": "function",
-      "source": "./tools/search.json"
-    },
-    {
-      "name": "create_support_ticket",
-      "type": "function",
-      "source": "./tools/create-ticket.json"
-    }
-  ],
-  "prompts": {
-    "system": "./prompts/system.md",
-    "context": "./prompts/context.md"
-  }
-}
+```yaml
+apiVersion: ossa/v0.2.4
+kind: Agent
+
+metadata:
+  name: customer-support-agent
+  version: 1.0.0
+  description: Handles customer support inquiries
+
+spec:
+  role: |
+    You are a customer support agent that helps users with their inquiries.
+    Be friendly, helpful, and escalate complex issues when needed.
+  
+  llm:
+    provider: openai
+    model: gpt-4-turbo
+  
+  tools:
+    - type: function
+      name: search_knowledge_base
+      description: Search the knowledge base for answers
+    - type: function
+      name: create_support_ticket
+      description: Create a new support ticket
+  
+  state:
+    mode: session
+    storage:
+      type: kv
+      retention: 7d
 ```
+
+See [Agent Manifest Reference](/docs/schema-reference/ossa-manifest) for complete schema.
 
 ## `.agents-workspace/` - Agent Runtime Workspace
 
@@ -331,12 +351,59 @@ $ osa migrate --from langchain --input ./langchain-agents --output ./.agents
 
 See [Migration Guides](/docs/migration-guides) for framework-specific instructions.
 
+## Workspace Discovery
+
+OSSA supports **workspace-level agent discovery** similar to how Drupal discovers modules or npm discovers packages.
+
+### Discovery Pattern
+
+Tools scan for `.agents/` folders to discover agents:
+
+1. **Project-level**: `project-root/.agents/`
+2. **Module-level**: `modules/*/.agents/`, `packages/*/.agents/`, etc.
+3. **Workspace-level**: Scan entire workspace for all `.agents/` folders
+
+### Example: Drupal-Like Ecosystem
+
+```
+drupal-site/
+├── .agents/                    # Site-level agents
+│   └── site-orchestrator/
+│       └── agent.ossa.yaml
+├── .agents-workspace/          # Workspace registry (auto-generated)
+│   └── registry.json
+└── modules/
+    └── custom/
+        ├── commerce-module/
+        │   └── .agents/       # Module-specific agents
+        │       └── order-processor/
+        │           ├── agent.ossa.yaml
+        │           └── README.md
+        └── content-module/
+            └── .agents/
+                └── content-generator/
+                    ├── agent.ossa.yaml
+                    └── README.md
+```
+
+The workspace orchestrator can discover all agents across modules and coordinate multi-agent workflows.
+
+### How Discovery Works
+
+1. Tools scan for `.agents/` folders (recursively or at specific levels)
+2. Look for `agent.ossa.yaml` or `agent.yml` files
+3. Validate manifests against OSSA schema
+4. Build registry/index of discovered agents
+5. Use taxonomy (domain, capabilities) for filtering and routing
+
+See [Workspace Discovery](/docs/core-concepts/Workspace-Discovery) for detailed documentation.
+
 ## Summary
 
 | Folder | Purpose | Version Control | Contains |
 |--------|---------|-----------------|----------|
-| `.agents/` | Agent definitions | ✅ YES | Manifests, prompts, tool definitions |
-| `.agents-workspace/` | Agent runtime | ❌ NO | Logs, memory, context, artifacts |
+| `.agents/` | Agent definitions | ✅ YES | Manifests (agent.ossa.yaml), README.md, data/ |
+| `.agents-workspace/` | Agent runtime | ❌ NO | Logs, memory, context, artifacts, registry.json |
 
 **Key Takeaway**: `.agents/` defines **what** agents do (commit to git). `.agents-workspace/` is **where** they work (never commit).
 

@@ -37,6 +37,31 @@ const navigation = [
     ],
   },
   {
+    title: 'Core Concepts',
+    items: [
+      { href: '/docs/core-concepts/project-structure', label: 'Project Structure' },
+      { href: '/docs/core-concepts/workspace-discovery', label: 'Workspace Discovery' },
+    ],
+  },
+  {
+    title: 'Ecosystems',
+    items: [
+      { href: '/docs/ecosystems/drupal-agents', label: 'Drupal' },
+      { href: '/docs/ecosystems/wordpress-agents', label: 'WordPress' },
+      { href: '/docs/ecosystems/laravel-agents', label: 'Laravel' },
+      { href: '/docs/ecosystems/react-agents', label: 'React/Next.js' },
+      { href: '/docs/ecosystems/python-agents', label: 'Python' },
+      { href: '/docs/ecosystems/nodejs-agents', label: 'Node.js/npm' },
+      { href: '/docs/ecosystems/monorepo-agents', label: 'Monorepo' },
+    ],
+  },
+  {
+    title: 'Guides',
+    items: [
+      { href: '/docs/guides/agent-organization', label: 'Agent Organization' },
+    ],
+  },
+  {
     title: 'Ecosystem',
     items: [
       { href: '/docs/ecosystem/overview', label: 'Ecosystem Overview' },

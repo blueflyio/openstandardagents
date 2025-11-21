@@ -1,0 +1,7 @@
+name: AI Agents OSSA
+type: module
+description: 'Open Standard for Scalable AI Agents (OSSA) integration for Drupal. Discovers and manages OSSA agents from module .agents/ folders.'
+core_version_requirement: ^11 || ^10
+package: AI & Machine Learning
+version: 1.0.0
+

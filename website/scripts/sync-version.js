@@ -29,11 +29,14 @@ try {
 }
 
 // Generate version.ts content
+// Inline the versions.json data to avoid ESM import issues
+const versionsJsonData = JSON.stringify(versionsData, null, 2);
+
 const versionTsContent = `// OSSA version constants
 // AUTO-GENERATED - DO NOT EDIT DIRECTLY
 // Update package.json version instead, then run: npm run sync-version
 
-import versionsData from './versions.json';
+const versionsData = ${versionsJsonData};
 
 export const OSSA_VERSION = "${version}";
 export const OSSA_VERSION_TAG = \`v\${OSSA_VERSION}\`;
@@ -44,7 +47,7 @@ export const OSSA_SCHEMA_VERSION = OSSA_VERSION;
 export const STABLE_VERSION = OSSA_VERSION;
 export const STABLE_VERSION_TAG = OSSA_VERSION_TAG;
 
-// Version data from versions.json
+// Version data from versions.json (inlined)
 export const STABLE_VERSIONS = versionsData.all.filter((v: any) => v.type === 'stable');
 export const DEV_VERSIONS = versionsData.all.filter((v: any) => v.type === 'dev' || v.type === 'prerelease');
 export const ALL_VERSIONS = versionsData.all;

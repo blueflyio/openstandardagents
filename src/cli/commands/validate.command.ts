@@ -8,14 +8,15 @@ import { Command } from 'commander';
 import { container } from '../../di-container.js';
 import { ManifestRepository } from '../../repositories/manifest.repository.js';
 import { ValidationService } from '../../services/validation.service.js';
+import { extractSchemaVersion, resolveApiVersion } from '../../utils/version-resolver.js';
 import type { SchemaVersion, ValidationResult } from '../../types/index.js';
 
 export const validateCommand = new Command('validate')
   .argument('<path>', 'Path to OSSA manifest or OpenAPI spec (YAML or JSON)')
   .option(
     '-s, --schema <version>',
-    'Schema version (0.2.2, 0.1.9, or 1.0)',
-    '0.2.2'
+    'Schema version (0.2.4, 0.2.3, 0.2.2, or 0.1.9)',
+    '0.2.4'
   )
   .option('--openapi', 'Validate as OpenAPI specification with OSSA extensions')
   .option('-v, --verbose', 'Verbose output with detailed information')
@@ -42,15 +43,29 @@ export const validateCommand = new Command('validate')
         }
         const manifest = await manifestRepo.load(path);
 
+        // Auto-detect schema version from apiVersion if not explicitly provided
+        let schemaVersion: SchemaVersion = options.schema as SchemaVersion;
+        if (!options.openapi && manifest && typeof manifest === 'object' && 'apiVersion' in manifest) {
+          const apiVersion = (manifest as any).apiVersion;
+          if (apiVersion && typeof apiVersion === 'string') {
+            const resolved = resolveApiVersion(apiVersion);
+            if (resolved.isWildcard) {
+              console.log(
+                chalk.yellow(
+                  `ℹ️  Resolving wildcard version: ${resolved.original} → ${resolved.resolved}`
+                )
+              );
+            }
+            schemaVersion = extractSchemaVersion(apiVersion) as SchemaVersion;
+          }
+        }
+
         // Validate
         let result: ValidationResult;
         if (options.openapi) {
           result = await validationService.validateOpenAPIExtensions(manifest);
         } else {
-          result = await validationService.validate(
-            manifest,
-            options.schema as SchemaVersion
-          );
+          result = await validationService.validate(manifest, schemaVersion);
         }
 
         // Output results

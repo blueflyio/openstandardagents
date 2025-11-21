@@ -63,6 +63,18 @@ export default function RootLayout({
   return (
     <html lang="en" className={inter.variable}>
       <head>
+        {/* Google tag (gtag.js) */}
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-96C3Z66SYK"></script>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              window.dataLayer = window.dataLayer || [];
+              function gtag(){dataLayer.push(arguments);}
+              gtag('js', new Date());
+              gtag('config', 'G-96C3Z66SYK');
+            `,
+          }}
+        />
         <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml" />
         <link rel="apple-touch-icon" href="/assets/brand/ossa-logo.svg" />
         <StructuredData

@@ -16,6 +16,7 @@ import { importCommand } from './commands/import.command.js';
 import { schemaCommand } from './commands/schema.command.js';
 import { runCommand } from './commands/run.command.js';
 import { gitlabAgentCommand } from './commands/gitlab-agent.command.js';
+import { discoverCommand } from './commands/discover.command.js';
 
 // Load package.json for version
 import * as fs from 'fs';
@@ -50,6 +51,7 @@ program.addCommand(importCommand);
 program.addCommand(schemaCommand);
 program.addCommand(runCommand);
 program.addCommand(gitlabAgentCommand);
+program.addCommand(discoverCommand);
 
 // Parse arguments
 program.parse();
