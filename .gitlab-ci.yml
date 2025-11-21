@@ -648,6 +648,33 @@ promote-production:
 # STAGE 10: GITHUB MIRROR
 # ============================================================================
 
+sync:dependabot-prs:
+  stage: mirror-github
+  image: node:${NODE_VERSION}-alpine
+  before_script:
+    - apk add --no-cache git curl
+    - npm ci --legacy-peer-deps
+  script:
+    - |
+      if [ -z "$GITHUB_MIRROR_TOKEN" ] && [ -z "$GITHUB_TOKEN" ]; then
+        echo "⚠️  GITHUB_MIRROR_TOKEN or GITHUB_TOKEN not set - skipping Dependabot PR sync"
+        exit 0
+      fi
+      
+      echo "🔄 Syncing and managing GitHub Dependabot PRs..."
+      export GITHUB_TOKEN="${GITHUB_TOKEN:-${GITHUB_MIRROR_TOKEN}}"
+      npx ts-node .gitlab/scripts/sync-github-dependabot-prs.ts
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+      when: manual
+    - if: $CI_COMMIT_BRANCH == "development"
+      when: manual
+    - if: $CI_PIPELINE_SOURCE == "schedule"
+      when: on_success
+  allow_failure: true
+  variables:
+    GITHUB_TOKEN: $GITHUB_MIRROR_TOKEN
+
 mirror:github:
   stage: mirror-github
   image: alpine:latest

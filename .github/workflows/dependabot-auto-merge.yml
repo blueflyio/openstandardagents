@@ -2,7 +2,7 @@ name: Dependabot Auto-merge
 
 on:
   pull_request:
-    types: [opened, synchronize, reopened]
+    types: [opened, synchronize, reopened, labeled]
 
 permissions:
   contents: write
@@ -14,15 +14,40 @@ jobs:
     runs-on: ubuntu-latest
     if: github.actor == 'dependabot[bot]'
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup GitHub CLI
+        run: |
+          gh --version || (echo "Installing gh CLI..." && curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg && echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null && sudo apt update && sudo apt install gh -y)
+
       - name: Fetch Dependabot metadata
         id: metadata
         uses: dependabot/fetch-metadata@v1
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Check if CI passes
+        id: ci-check
+        run: |
+          sleep 30
+          gh pr checks ${{ github.event.pull_request.number }} --json conclusion,status --jq '.[] | select(.status == "completed") | .conclusion' | head -1 || echo "pending"
+        continue-on-error: true
+
       - name: Auto-merge minor and patch updates
-        if: steps.metadata.outputs.update-type == 'version-update:semver-patch' || steps.metadata.outputs.update-type == 'version-update:semver-minor'
-        run: gh pr merge --auto --squash "$PR_URL"
+        if: |
+          (steps.metadata.outputs.update-type == 'version-update:semver-patch' || 
+           steps.metadata.outputs.update-type == 'version-update:semver-minor') &&
+          (steps.ci-check.outputs.result == 'success' || steps.ci-check.outputs.result == '')
+        run: |
+          echo "Merging PR #${{ github.event.pull_request.number }}"
+          gh pr merge ${{ github.event.pull_request.number }} --squash --auto
         env:
-          PR_URL: ${{ github.event.pull_request.html_url }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Comment on major updates
+        if: steps.metadata.outputs.update-type == 'version-update:semver-major'
+        run: |
+          gh pr comment ${{ github.event.pull_request.number }} --body "⚠️ Major version update detected. Please review manually before merging."
+        env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
