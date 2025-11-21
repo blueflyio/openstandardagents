@@ -328,14 +328,16 @@ promote-to-main:
       
       echo "⚠️  Fast-forward not possible. Creating Merge Request..."
       
-      # Validate: Check for conflicts
-      git merge --no-commit --no-ff origin/development || CONFLICTS=true
+      # Validate: Check for conflicts (non-blocking - MR will be created anyway)
+      git merge --no-commit --no-ff origin/development 2>&1 || CONFLICTS=true
       if [ "$CONFLICTS" = "true" ]; then
         git merge --abort || true
-        echo "❌ Conflicts detected. Please resolve manually."
-        exit 1
+        echo "⚠️  Conflicts detected. Merge Request will be created for manual resolution."
+        HAS_CONFLICTS=true
+      else
+        git merge --abort || true
+        HAS_CONFLICTS=false
       fi
-      git merge --abort || true
       
       # Validate: Check commit messages are conventional
       echo "Validating commit messages..."
@@ -365,23 +367,44 @@ promote-to-main:
       fi
       
       # Create MR
+      if [ "$HAS_CONFLICTS" = "true" ]; then
+        MR_DESCRIPTION="## Promotion Gate: development → main
+
+**Predicted Next Version:** ${PREDICTED_VERSION}
+
+⚠️ **CONFLICTS DETECTED** - This MR has merge conflicts that need to be resolved manually.
+
+This MR was created by the promotion gate. Please resolve conflicts and merge when ready.
+
+### Validation
+- ⚠️ Conflicts detected - manual resolution required
+- ✅ Commit messages validated
+- ✅ Version prediction: ${PREDICTED_VERSION}
+
+### Next Steps
+1. Resolve merge conflicts in this MR
+2. After merging, the release will be created automatically based on commit analysis."
+      else
+        MR_DESCRIPTION="## Promotion Gate: development → main
+
+**Predicted Next Version:** ${PREDICTED_VERSION}
+
+This MR was created by the promotion gate. Please review and merge when ready.
+
+### Validation
+- ✅ No conflicts detected
+- ✅ Commit messages validated
+- ✅ Version prediction: ${PREDICTED_VERSION}
+
+After merging, the release will be created automatically based on commit analysis."
+      fi
+      
       MR_RESPONSE=$(curl -sS -X POST "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/merge_requests" \
         --header "PRIVATE-TOKEN: ${GITLAB_PUSH_TOKEN}" \
         --data-urlencode "source_branch=development" \
         --data-urlencode "target_branch=main" \
         --data-urlencode "title=chore: merge development to main" \
-        --data-urlencode "description=## Promotion Gate: development → main
-      
-      **Predicted Next Version:** ${PREDICTED_VERSION}
-      
-      This MR was created by the promotion gate. Please review and merge when ready.
-      
-      ### Validation
-      - ✅ No conflicts detected
-      - ✅ Commit messages validated
-      - ✅ Version prediction: ${PREDICTED_VERSION}
-      
-      After merging, the release will be created automatically based on commit analysis.")
+        --data-urlencode "description=${MR_DESCRIPTION}")
       
       MR_URL=$(echo "$MR_RESPONSE" | jq -r '.web_url // empty')
       if [ -n "$MR_URL" ]; then
