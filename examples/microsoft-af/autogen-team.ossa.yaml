@@ -42,9 +42,6 @@ spec:
   tools:
     - type: function
       name: coordinate_agents
-      description: |
-        Coordinate multiple agents in a team workflow.
-        Manages task distribution and result aggregation.
       transport:
         protocol: a2a
         streaming: bidirectional
@@ -56,9 +53,6 @@ spec:
 
     - type: function
       name: share_context
-      description: |
-        Share context between team agents.
-        Maintains shared state across agent interactions.
       transport:
         protocol: a2a
         streaming: none
@@ -75,7 +69,7 @@ spec:
       retention: 7d
       config:
         provider: redis
-        key_prefix: autogen:team:
+        key_prefix: "autogen:team:"
     context_window:
       max_messages: 200
       max_tokens: 64000

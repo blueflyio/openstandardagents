@@ -41,9 +41,6 @@ spec:
   tools:
     - type: http
       name: web_search
-      description: |
-        Search the web for information using Bing Search API.
-        Returns relevant web pages and snippets.
       endpoint: https://api.bing.microsoft.com/v7.0/search
       transport:
         protocol: http
@@ -63,9 +60,6 @@ spec:
 
     - type: function
       name: summarize_document
-      description: |
-        Summarize a research paper or document.
-        Extracts key findings and main points.
       transport:
         protocol: http
         streaming: response
@@ -77,9 +71,6 @@ spec:
 
     - type: function
       name: generate_report
-      description: |
-        Generate a research report from collected information.
-        Formats findings into a structured document.
       transport:
         protocol: http
         streaming: none
