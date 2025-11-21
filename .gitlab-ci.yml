@@ -181,7 +181,7 @@ semantic-release:preview:
   before_script:
     - apk add --no-cache git
     - npm ci --legacy-peer-deps
-    - git config --global user.email "ci@gitlab.bluefly.io"
+    - git config --global user.email "ci@blueflyio.com"
     - git config --global user.name "GitLab CI"
   script:
     - |
@@ -256,7 +256,7 @@ release:dev:
   before_script:
     - apk add --no-cache git curl jq
     - npm ci --legacy-peer-deps
-    - git config --global user.email "ci@gitlab.bluefly.io"
+    - git config --global user.email "ci@blueflyio.com"
     - git config --global user.name "GitLab CI Semantic Release"
     - git remote set-url origin https://oauth2:${GITLAB_PUSH_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git
     - git fetch --unshallow --tags || true
@@ -308,7 +308,7 @@ promote-to-main:
   image: node:${NODE_VERSION}-alpine
   before_script:
     - apk add --no-cache git curl jq
-    - git config --global user.email "ci@gitlab.bluefly.io"
+    - git config --global user.email "ci@blueflyio.com"
     - git config --global user.name "GitLab CI"
     - git remote set-url origin https://oauth2:${GITLAB_PUSH_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git
     - git fetch --all --prune --unshallow --tags || true
@@ -423,7 +423,7 @@ release:main:
   before_script:
     - apk add --no-cache git curl jq
     - npm ci --legacy-peer-deps
-    - git config --global user.email "ci@gitlab.bluefly.io"
+    - git config --global user.email "ci@blueflyio.com"
     - git config --global user.name "GitLab CI Semantic Release"
     - git remote set-url origin https://oauth2:${GITLAB_PUSH_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git
     - git fetch --unshallow --tags || true
@@ -556,7 +556,7 @@ mirror:github:
   image: alpine:latest
   before_script:
     - apk add --no-cache git curl
-    - git config --global user.email "ci@gitlab.bluefly.io"
+    - git config --global user.email "ci@blueflyio.com"
     - git config --global user.name "GitLab CI"
   script:
     - |

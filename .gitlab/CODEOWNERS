@@ -1,0 +1,105 @@
+# OSSA Code Owners
+# https://docs.gitlab.com/ee/user/project/codeowners/
+#
+# Code owners are automatically requested for review when someone opens a merge request
+# that modifies code they own.
+#
+# Syntax: path @username @group
+# The last matching pattern takes precedence.
+
+# ============================================================================
+# Default Owners (All Files)
+# ============================================================================
+* @flux423
+
+# ============================================================================
+# Critical Infrastructure & Security
+# ============================================================================
+# CI/CD Pipeline
+/.gitlab-ci.yml @flux423
+/.gitlab/ @flux423
+
+# Security & Authentication
+/.env* @flux423
+/secrets/ @flux423
+/security/ @flux423
+
+# Build & Release
+/scripts/sync-versions.js @flux423
+/scripts/release* @flux423
+/RELEASING.md @flux423
+/package.json @flux423
+/package-lock.json @flux423
+
+# ============================================================================
+# Core Specification
+# ============================================================================
+# OpenAPI Specs
+/spec/openapi/*.yaml @flux423
+/spec/*.schema.json @flux423
+
+# OSSA Schema
+/spec/v*/*.schema.json @flux423
+/spec/v*/ossa-*.yaml @flux423
+
+# Examples
+/examples/ @flux423
+
+# ============================================================================
+# Source Code
+# ============================================================================
+# CLI & Commands
+/src/cli/ @flux423
+/bin/ @flux423
+
+# Core Services
+/src/api/ @flux423
+/src/domain/ @flux423
+/src/infrastructure/ @flux423
+
+# Agents
+/.agents/ @flux423
+
+# ============================================================================
+# Documentation
+# ============================================================================
+# Main Documentation
+/README.md @flux423
+/CHANGELOG.md @flux423
+/RELEASING.md @flux423
+/CONTRIBUTING.md @flux423
+
+# Wiki & Website
+/website/ @flux423
+/docs/ @flux423
+
+# ============================================================================
+# Tests & Quality
+# ============================================================================
+/tests/ @flux423
+/.prettierrc @flux423
+/.eslintrc* @flux423
+/tsconfig*.json @flux423
+
+# ============================================================================
+# Dependencies & Configuration
+# ============================================================================
+/package.json @flux423
+/package-lock.json @flux423
+/tsconfig.json @flux423
+/.nvmrc @flux423
+/.node-version @flux423
+
+# ============================================================================
+# Docker & Infrastructure
+# ============================================================================
+/Dockerfile @flux423
+/docker-compose*.yml @flux423
+/.dockerignore @flux423
+
+# ============================================================================
+# Git Configuration
+# ============================================================================
+/.gitignore @flux423
+/.gitattributes @flux423
+/.gitlab/CODEOWNERS @flux423
