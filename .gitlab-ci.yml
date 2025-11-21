@@ -1,8 +1,11 @@
 # GitLab CI/CD Pipeline for OSSA
-# Implements recommended semantic-release workflow:
-# Feature Branch → development (dev prerelease) → main (automatic release) → environments
+# Implements milestone-gated semantic-release workflow:
+# Feature Branch → development (dev prerelease) → main (milestone-gated release) → environments
 # Version bump is determined automatically by commit analysis (feat → minor, fix → patch, BREAKING → major)
-# Milestones are used for planning and tracking, but version is commit-driven
+# Milestones gate production releases - must be 100% complete before merge to main
+#
+# Status: ACTIVE MODE (tests must pass, version sync validated)
+# Last updated: 2025-11-21 (v0.2.5 milestone)
 
 stages:
   - setup
@@ -49,6 +52,27 @@ validate:ossa:
   rules:
     - when: always
 
+validate:version-sync:
+  stage: validate
+  image: node:${NODE_VERSION}-alpine
+  script:
+    - npm ci --legacy-peer-deps
+    - echo "🔍 Checking version consistency..."
+    - node scripts/sync-versions.js --check
+  allow_failure: false
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      when: always
+    - if: $CI_COMMIT_BRANCH == "development"
+      when: always
+    - if: $CI_COMMIT_BRANCH == "main"
+      when: always
+    - changes:
+      - package.json
+      - README.md
+      - spec/**/*
+      when: always
+
 # ============================================================================
 # STAGE 2: BUILD
 # ============================================================================
@@ -80,9 +104,9 @@ test:lint:
   script:
     - npm ci --legacy-peer-deps
     - npm run build
-    - npm run lint || echo "WARNING Lint warnings detected (non-blocking)"
-    - npm run typecheck || echo "WARNING Typecheck warnings detected (non-blocking)"
-  allow_failure: true
+    - npm run lint || echo "WARNING Lint warnings detected"
+    - npm run typecheck || echo "WARNING Typecheck warnings detected"
+  allow_failure: true  # Warnings only, doesn't block
   rules:
     - when: always
 
@@ -106,7 +130,7 @@ test:unit:
     paths:
       - coverage/
     expire_in: 7 days
-  allow_failure: true
+  allow_failure: false  # Tests must pass
   rules:
     - when: always
 
