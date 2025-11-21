@@ -53,17 +53,17 @@ validate:ossa:
 
 prepare:spec-structure:
   stage: validate
-  image: alpine:latest
+  image: node:${NODE_VERSION}-alpine
   before_script:
-    - apk add --no-cache git curl jq bash
-    - chmod +x .gitlab/scripts/sync-spec-to-milestone.sh
+    - apk add --no-cache git
+    - npm ci --legacy-peer-deps
   script:
     - |
       echo "📁 Preparing spec directory structure from milestones..."
       export CI_SERVER_URL="${CI_SERVER_URL:-https://gitlab.bluefly.io}"
       export CI_PROJECT_ID="${CI_PROJECT_ID}"
       export GITLAB_PUSH_TOKEN="${GITLAB_PUSH_TOKEN:-${CI_JOB_TOKEN}}"
-      ./.gitlab/scripts/sync-spec-to-milestone.sh
+      npx ts-node .gitlab/scripts/sync-spec-to-milestone.ts
   artifacts:
     paths:
       - spec/
@@ -402,17 +402,54 @@ promote-to-main:
     action: start
 
 # ============================================================================
+# STAGE 7.5: MILESTONE READINESS CHECK
+# ============================================================================
+# Validates that at least one milestone is 100% complete (all issues closed)
+# This job must pass before release:main can be triggered
+# Runs on every pipeline to provide real-time milestone status
+
+check:milestone-ready:
+  stage: promote
+  image: node:${NODE_VERSION}-alpine
+  before_script:
+    - apk add --no-cache git
+    - npm ci --legacy-peer-deps
+  script:
+    - |
+      echo "🔍 Checking milestone readiness for release..."
+      echo ""
+      export CI_SERVER_URL="${CI_SERVER_URL:-https://gitlab.bluefly.io}"
+      export CI_PROJECT_ID="${CI_PROJECT_ID}"
+      export GITLAB_PUSH_TOKEN="${GITLAB_PUSH_TOKEN:-${CI_JOB_TOKEN}}"
+      npx ts-node .gitlab/scripts/validate-release-readiness.ts
+  artifacts:
+    reports:
+      dotenv: milestone-status.env
+    paths:
+      - milestone-status.txt
+    expire_in: 1 day
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+      when: always
+    - if: $CI_COMMIT_BRANCH == "development"
+      when: always
+  allow_failure: false
+
+# ============================================================================
 # STAGE 8: RELEASE ON main (Manual - Milestone Controlled)
 # ============================================================================
-# Manual release job - must be explicitly triggered after merge to main
+# Manual release job - only available when milestone is 100% complete
 # Version bump is determined by semantic-release analyzing commit messages:
 # - feat: → MINOR
 # - fix: → PATCH
 # - BREAKING CHANGE: → MAJOR
 #
-# Milestones are used for planning and tracking, but version is determined
-# automatically by commit analysis. Release job must be manually triggered
-# after reviewing the merge to main.
+# The release button will only be enabled when:
+# 1. All issues in a milestone are closed (100% complete)
+# 2. Milestone has a version in the title (e.g., "v0.2.4 - Feature Name")
+# 3. The check:milestone-ready job has passed
+#
+# This ensures releases only happen when milestones are truly complete.
 
 release:main:
   stage: release-main
@@ -430,44 +467,75 @@ release:main:
     - |
       echo "🚀 Milestone-Controlled Release"
       echo "================================"
+      echo ""
       
-      # Get all milestones (open and closed)
-      echo "Checking for completed milestones..."
+      # Validate milestone readiness (double-check, should have passed in check:milestone-ready)
+      export CI_SERVER_URL="${CI_SERVER_URL:-https://gitlab.bluefly.io}"
+      export CI_PROJECT_ID="${CI_PROJECT_ID}"
+      export GITLAB_PUSH_TOKEN="${GITLAB_PUSH_TOKEN:-${CI_JOB_TOKEN}}"
+      npx ts-node .gitlab/scripts/validate-release-readiness.ts || {
+        echo ""
+        echo "❌ Milestone validation failed"
+        echo "   This should not happen if check:milestone-ready passed"
+        echo "   Please check milestone status manually"
+        exit 1
+      }
+      
+      # Get all milestones
+      echo ""
+      echo "📋 Getting milestone details..."
       ALL_MILESTONES=$(curl -sS -G "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/milestones" \
         --header "PRIVATE-TOKEN: ${GITLAB_PUSH_TOKEN}" \
-        --data-urlencode "per_page=100")
+        --data-urlencode "per_page=100" \
+        --data-urlencode "state=all")
       
-      # Find closed/completed milestones with version in title
-      CLOSED_MILESTONES=$(echo "$ALL_MILESTONES" | jq -r '.[] | select(.state == "closed") | .title' | grep -E 'v?[0-9]+\.[0-9]+\.[0-9]+' || true)
+      # Find ready milestone (all issues closed, has version)
+      READY_MILESTONE_TITLE=""
       
-      if [ -z "$CLOSED_MILESTONES" ]; then
-        echo "❌ No completed milestone found with version in title"
-        echo ""
-        echo "To release:"
-        echo "1. Create a milestone with version in title (e.g., 'v0.2.6 - Feature Name' or '0.2.6 - Feature Name')"
-        echo "2. Complete/close the milestone (100% complete or manually close)"
-        echo "3. Retry this release job"
+      # Check open milestones first (preferred - they're active)
+      OPEN_MILESTONES=$(echo "$ALL_MILESTONES" | jq -r '.[] | select(.state == "open") | select(.title | test("v?[0-9]+\\.[0-9]+\\.[0-9]+")) | .title')
+      
+      for MILESTONE_TITLE in $OPEN_MILESTONES; do
+        ISSUES=$(curl -sS -G "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/issues" \
+          --header "PRIVATE-TOKEN: ${GITLAB_PUSH_TOKEN}" \
+          --data-urlencode "milestone=${MILESTONE_TITLE}" \
+          --data-urlencode "per_page=100")
+        
+        TOTAL_ISSUES=$(echo "$ISSUES" | jq -r '. | length')
+        OPEN_ISSUES=$(echo "$ISSUES" | jq -r '[.[] | select(.state == "open")] | length')
+        
+        if [ "$TOTAL_ISSUES" -gt 0 ] && [ "$OPEN_ISSUES" -eq 0 ]; then
+          READY_MILESTONE_TITLE="$MILESTONE_TITLE"
+          break
+        fi
+      done
+      
+      # Fallback to closed milestones if no open milestone is ready
+      if [ -z "$READY_MILESTONE_TITLE" ]; then
+        CLOSED_MILESTONES=$(echo "$ALL_MILESTONES" | jq -r '.[] | select(.state == "closed") | select(.title | test("v?[0-9]+\\.[0-9]+\\.[0-9]+")) | .title')
+        READY_MILESTONE_TITLE=$(echo "$CLOSED_MILESTONES" | head -1)
+      fi
+      
+      if [ -z "$READY_MILESTONE_TITLE" ]; then
+        echo "❌ No ready milestone found"
         echo ""
         echo "Available milestones:"
         echo "$ALL_MILESTONES" | jq -r '.[] | "  - \(.title) (State: \(.state))"' | head -10
         exit 1
       fi
       
-      # Get the most recent closed milestone with version
-      MILESTONE_TITLE=$(echo "$ALL_MILESTONES" | jq -r '.[] | select(.state == "closed") | .title' | grep -E 'v?[0-9]+\.[0-9]+\.[0-9]+' | head -1)
-      MILESTONE_VERSION=$(echo "$MILESTONE_TITLE" | grep -oE 'v?[0-9]+\.[0-9]+\.[0-9]+' | head -1 | sed 's/^v//')
-      MILESTONE_ID=$(echo "$ALL_MILESTONES" | jq -r ".[] | select(.title == \"${MILESTONE_TITLE}\") | .id" | head -1)
+      MILESTONE_VERSION=$(echo "$READY_MILESTONE_TITLE" | grep -oE 'v?[0-9]+\.[0-9]+\.[0-9]+' | head -1 | sed 's/^v//')
+      MILESTONE_ID=$(echo "$ALL_MILESTONES" | jq -r ".[] | select(.title == \"${READY_MILESTONE_TITLE}\") | .id" | head -1)
       MAJOR_MINOR=$(echo "$MILESTONE_VERSION" | cut -d. -f1,2)
       
-      echo "✅ Found completed milestone: ${MILESTONE_TITLE} (ID: ${MILESTONE_ID})"
+      echo "✅ Ready milestone: ${READY_MILESTONE_TITLE} (ID: ${MILESTONE_ID})"
       echo "   Version: v${MILESTONE_VERSION}"
       echo "   Major.Minor: v${MAJOR_MINOR}"
       
       # Prepare spec directory structure from milestone
       echo ""
       echo "📁 Preparing spec directory structure..."
-      chmod +x .gitlab/scripts/prepare-spec-from-milestone.sh || true
-      ./.gitlab/scripts/prepare-spec-from-milestone.sh || echo "⚠️  Spec preparation script not found or failed"
+      npx ts-node .gitlab/scripts/prepare-spec-from-milestone.ts || echo "⚠️  Spec preparation script not found or failed"
       
       # Verify stable spec directory exists
       STABLE_SPEC_DIR="spec/v${MAJOR_MINOR}"
@@ -534,8 +602,12 @@ release:main:
       when: manual
       allow_failure: false
   needs:
-    - quality:gates
-    - build:dist
+    - job: check:milestone-ready
+      artifacts: false
+    - job: quality:gates
+      optional: true
+    - job: build:dist
+      artifacts: true
   environment:
     name: production
     url: https://www.npmjs.com/package/@bluefly/openstandardagents
