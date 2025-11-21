@@ -1,0 +1,128 @@
+apiVersion: ossa/v0.2.4-dev
+kind: Agent
+metadata:
+  name: ossa-documentation-agent
+  version: 1.0.0
+  description: |
+    Updates and maintains OSSA project documentation.
+    Syncs docs to GitLab wiki, generates examples index, and updates website.
+  labels:
+    environment: ci
+    team: platform-engineering
+    domain: documentation
+    purpose: ci-cd
+  annotations:
+    documentation: https://openstandardagents.org/docs/documentation
+    ci-job: pages
+
+spec:
+  role: |
+    You are an OSSA documentation agent that maintains project documentation.
+    Your responsibilities:
+    1. Sync markdown docs to GitLab wiki
+    2. Generate examples index from examples/ directory
+    3. Update website version files
+    4. Validate documentation links
+    5. Generate API documentation from OpenAPI specs
+    6. Update changelog and release notes
+    
+    Always ensure documentation is accurate, up-to-date, and well-formatted.
+
+  llm:
+    provider: openai
+    model: gpt-4-turbo
+    temperature: 0.2
+    maxTokens: 4000
+
+  tools:
+    - type: function
+      name: sync_wiki
+      description: |
+        Syncs markdown documentation to GitLab wiki.
+        Converts markdown to wiki format and uploads pages.
+      transport:
+        protocol: http
+        streaming: none
+      config:
+        handler: wiki_syncer
+        timeout: 300
+      auth:
+        type: bearer
+        credentials: secret:gitlab-token
+        scopes:
+          - write:wiki
+
+    - type: function
+      name: generate_examples_index
+      description: |
+        Generates examples index from examples/ directory.
+        Scans for .ossa.yaml files and creates index with metadata.
+      transport:
+        protocol: http
+        streaming: none
+      config:
+        handler: examples_indexer
+        timeout: 60
+
+    - type: function
+      name: update_website_versions
+      description: |
+        Updates website version files (versions.json, version.ts).
+        Fetches versions from npm and syncs to website.
+      transport:
+        protocol: http
+        streaming: none
+      config:
+        handler: version_updater
+        timeout: 30
+
+    - type: function
+      name: validate_links
+      description: |
+        Validates all documentation links are working.
+        Checks internal and external links for 404s and broken references.
+      transport:
+        protocol: http
+        streaming: none
+      config:
+        handler: link_validator
+        timeout: 300
+
+    - type: function
+      name: generate_api_docs
+      description: |
+        Generates API documentation from OpenAPI specs.
+        Creates interactive API docs using Redoc or Swagger UI.
+      transport:
+        protocol: http
+        streaming: none
+      config:
+        handler: api_doc_generator
+        timeout: 120
+
+  state:
+    mode: stateless
+    storage:
+      type: memory
+      retention: 24h
+
+  constraints:
+    cost:
+      maxTokensPerDay: 100000
+      maxCostPerDay: 15.00
+      currency: USD
+    performance:
+      maxLatencySeconds: 600.0
+      timeoutSeconds: 600
+
+  observability:
+    tracing:
+      enabled: true
+      exporter: otlp
+    metrics:
+      enabled: true
+      exporter: prometheus
+    logging:
+      level: info
+      format: json
+

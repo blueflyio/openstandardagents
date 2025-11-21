@@ -71,13 +71,13 @@ spec:
 1. **Install OSSA CLI**: `npm install -g @bluefly/open-standards-scalable-agents`
 2. **Try the Hello World example**: See [Hello World Tutorial](Hello-World)
 3. **Create your first agent**: See [First Agent Creation](First-Agent)
-4. **Explore examples**: Check out [Examples & Patterns](../Examples/Getting-Started-Examples)
+4. **Explore examples**: Check out [Examples & Patterns](/docs/examples)
 
 ## Learn More
 
 - [Installation Guide](Installation)
 - [Hello World Tutorial](Hello-World)
-- [Full Documentation](../Technical/Specification-Deep-Dive)
+- [Full Documentation](/docs/specification)
 
 ---
 

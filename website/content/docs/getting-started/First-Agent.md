@@ -59,15 +59,41 @@ spec:
       name: web_search
       description: Search the web for current information
       endpoint: https://api.search-service.com/search
+      transport:
+        protocol: http
+        streaming: response
+        content_type: application/json
       config:
         method: POST
         timeout: 10
       auth:
         type: apikey
         credentials: SEARCH_API_KEY
+        scopes:
+          - read:data
+          - execute:query
 ```
 
-## Step 4: Add Observability
+## Step 4: Add State Management (v0.2.4)
+
+Add state management for session continuity:
+
+```yaml
+spec:
+  # ... existing config ...
+  
+  state:
+    mode: session
+    storage:
+      type: memory
+      retention: 1h
+    context_window:
+      max_messages: 100
+      max_tokens: 32000
+      strategy: sliding_window
+```
+
+## Step 5: Add Observability
 
 Add observability configuration:
 
@@ -89,7 +115,7 @@ spec:
       format: json
 ```
 
-## Step 5: Add Constraints
+## Step 6: Add Constraints
 
 Add cost and performance constraints:
 
@@ -184,13 +210,13 @@ spec:
 ## Next Steps
 
 1. ✅ First agent created
-2. → [Integration Patterns](../Examples/Integration-Patterns) - Connect multiple agents
-3. → [Migration Guides](../Examples/Migration-Guides) - Migrate from other frameworks
-4. → [Advanced Patterns](../Examples/Advanced-Patterns) - Enterprise patterns
+2. → [Integration Patterns](/docs/examples) - Connect multiple agents
+3. → [Migration Guides](/docs/migration-guides) - Migrate from other frameworks
+4. → [Advanced Patterns](/docs/examples) - Enterprise patterns
 
 ## Related
 
 - [Hello World Tutorial](Hello-World)
-- [Schema Reference](../Technical/Schema-Reference)
-- [Complete Examples](../Examples/Getting-Started-Examples)
+- [Schema Reference](/docs/schema-reference)
+- [Complete Examples](/docs/examples)
 

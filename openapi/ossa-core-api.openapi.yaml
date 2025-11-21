@@ -29,8 +29,8 @@ servers:
     description: Production server
   - url: https://api-dev.llm.bluefly.io/ossa/v1
     description: Development server
-  - url: http://localhost:3000
-    description: Local development
+  - url: https://api-local.llm.bluefly.io/ossa/v1
+    description: Local development (via tunnel)
 
 security:
   - ApiKeyAuth: []
@@ -49,6 +49,8 @@ paths:
       responses:
         '200':
           $ref: '#/components/responses/HealthCheck'
+        '400':
+          $ref: '#/components/responses/BadRequest'
         '503':
           $ref: '#/components/responses/ServiceUnavailable'
         '500':
@@ -62,6 +64,8 @@ paths:
       responses:
         '200':
           $ref: '#/components/responses/HealthCheck'
+        '400':
+          $ref: '#/components/responses/BadRequest'
         '503':
           $ref: '#/components/responses/ServiceUnavailable'
         '500':
@@ -76,6 +80,8 @@ paths:
       responses:
         '200':
           $ref: '#/components/responses/HealthCheck'
+        '400':
+          $ref: '#/components/responses/BadRequest'
         '503':
           $ref: '#/components/responses/ServiceUnavailable'
         '500':
@@ -111,6 +117,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/AgentsList'
+        '400':
+          $ref: '#/components/responses/BadRequest'
 
     post:
       summary: Register new agent
@@ -131,6 +139,12 @@ paths:
                 $ref: '#/components/schemas/AgentRegistration'
         '400':
           $ref: '#/components/responses/ValidationError'
+        '409':
+          description: Agent already exists
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
 
   /agents/{agentId}:
     get:
@@ -146,6 +160,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Agent'
+        '400':
+          $ref: '#/components/responses/BadRequest'
         '404':
           $ref: '#/components/responses/NotFound'
 
@@ -168,6 +184,10 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Agent'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
 
     delete:
       summary: Unregister agent
@@ -178,6 +198,10 @@ paths:
       responses:
         '204':
           description: Agent unregistered
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
 
   # Orchestration
   /orchestration/workflows:
@@ -195,6 +219,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/WorkflowsList'
+        '400':
+          $ref: '#/components/responses/BadRequest'
 
     post:
       summary: Create workflow
@@ -213,6 +239,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Workflow'
+        '400':
+          $ref: '#/components/responses/BadRequest'
 
   /orchestration/workflows/{workflowId}/execute:
     post:
@@ -237,6 +265,10 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/WorkflowExecution'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
 
   /orchestration/executions/{executionId}:
     get:
@@ -256,6 +288,10 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/WorkflowExecution'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
 
   # Specification & Validation
   /specification/validate:
@@ -297,6 +333,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/TaxonomiesList'
+        '400':
+          $ref: '#/components/responses/BadRequest'
 
   /specification/capabilities:
     get:
@@ -315,6 +353,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/CapabilitiesList'
+        '400':
+          $ref: '#/components/responses/BadRequest'
 
   # Certification
   /certification/request:
@@ -335,6 +375,10 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/CertificationProcess'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
 
   /certification/{certificationId}:
     get:
@@ -354,6 +398,10 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Certification'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
 
   # Governance
   /governance/policies:
@@ -368,6 +416,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/PoliciesList'
+        '400':
+          $ref: '#/components/responses/BadRequest'
 
   /governance/compliance/{agentId}:
     get:
@@ -383,6 +433,10 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ComplianceStatus'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
 
   # Federation
   /federation/nodes:
@@ -397,6 +451,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/FederationNodesList'
+        '400':
+          $ref: '#/components/responses/BadRequest'
 
   /federation/join:
     post:
@@ -416,6 +472,14 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/FederationMembership'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '409':
+          description: Already a member of federation
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
 
   # Monitoring
   /monitoring/metrics:
@@ -430,6 +494,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/PlatformMetrics'
+        '400':
+          $ref: '#/components/responses/BadRequest'
 
   /monitoring/events:
     get:
@@ -447,6 +513,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/EventsList'
+        '400':
+          $ref: '#/components/responses/BadRequest'
 
 components:
   securitySchemes:
@@ -1434,6 +1502,13 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/HealthStatus'
+
+    BadRequest:
+      description: Bad request - Invalid parameters
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
 
     ValidationError:
       description: Validation error

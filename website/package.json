@@ -1,6 +1,6 @@
 {
   "name": "ossa-website",
-  "version": "0.2.3",
+  "version": "0.2.4",
   "description": "Open Standard Agents - The OpenAPI for AI Agents",
   "private": true,
   "scripts": {

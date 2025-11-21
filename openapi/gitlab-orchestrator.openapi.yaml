@@ -12,6 +12,9 @@ info:
     - Tracks deployment status
     
     **No GitHub. Only GitLab.**
+  license:
+    name: Apache-2.0
+    url: https://opensource.org/licenses/Apache-2.0
 
 servers:
   - url: https://ci-orchestrator.agents.orb.local/api/v1
@@ -74,6 +77,28 @@ paths:
                     format: uri
                   status:
                     type: string
+        '400':
+          description: Bad request - Invalid parameters
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  message:
+                    type: string
+        '404':
+          description: Project not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  message:
+                    type: string
 
   /pipelines/multi-trigger:
     post:
@@ -131,6 +156,28 @@ paths:
                           type: integer
                         web_url:
                           type: string
+        '400':
+          description: Bad request - Invalid parameters
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  message:
+                    type: string
+        '404':
+          description: One or more projects not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  message:
+                    type: string
 
   /packages/publish:
     post:
@@ -173,6 +220,28 @@ paths:
                     type: string
                   pipeline_url:
                     type: string
+        '400':
+          description: Bad request - Invalid parameters
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  message:
+                    type: string
+        '404':
+          description: Project not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  message:
+                    type: string
 
   /packages/list:
     get:
@@ -211,6 +280,17 @@ paths:
                       type: string
                     package_url:
                       type: string
+        '400':
+          description: Bad request - Invalid query parameters
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  message:
+                    type: string
 
   /deployments/orchestrate:
     post:
@@ -262,6 +342,28 @@ paths:
                     type: array
                     items:
                       type: object
+        '400':
+          description: Bad request - Invalid parameters
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  message:
+                    type: string
+        '404':
+          description: One or more projects not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  message:
+                    type: string
 
 components:
   securitySchemes:
@@ -283,48 +385,5 @@ components:
       in: header
       name: X-Drupal-API-Key
   
-  schemas:
-    ContentCreateRequest:
-      type: object
-      required:
-        - type
-        - title
-      properties:
-        type:
-          type: string
-        title:
-          type: string
-        body:
-          type: object
-        fields:
-          type: object
-        agent_context:
-          type: object
-          properties:
-            agent_id:
-              type: string
-            session_id:
-              type: string
-            task_id:
-              type: string
-
-    ContentResponse:
-      type: object
-      properties:
-        nid:
-          type: integer
-        uuid:
-          type: string
-        type:
-          type: string
-        title:
-          type: string
-        url:
-          type: string
-        api_url:
-          type: string
-        created:
-          type: string
-        changed:
-          type: string
+  schemas: {}
 

@@ -9,6 +9,73 @@ All notable changes to OSSA (Open Standards Scalable Agents) will be documented 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.4] - 2025-11-18
+
+### 🚀 Transport & Security Release
+
+This release introduces foundational features for secure, stateful agent communication and enterprise integrations, focusing on transport metadata, state management, enhanced security, and framework extensions.
+
+### Added
+
+#### Transport Metadata
+- **Protocol specification per capability** - Support for `http`, `grpc`, `a2a`, `mcp`, `websocket`, and `custom` protocols
+- **Streaming modes** - `none`, `request`, `response`, and `bidirectional` streaming support
+- **Binding paths and content types** - Protocol-specific endpoint configuration
+- **Use cases**: Google ADK bidirectional streaming, A2A protocol agent-to-agent communication, streaming LLM responses
+
+#### State Management
+- **Agent state modes** - `stateless`, `session`, and `long_running` agent configurations
+- **Storage backends** - Support for `memory`, `vector-db`, `kv`, `rdbms`, and `custom` storage types
+- **Context window strategies** - `sliding_window`, `summarization`, and `importance_weighted` strategies
+- **Retention policies** - Configurable data retention periods
+- **Critical for**: OpenAI Agents SDK session continuity, Microsoft Autogen Framework workflows, RAG systems with context retention
+
+#### Enhanced Security & Compliance
+- **OAuth2-like scopes** - Fine-grained permission scopes (`read:data`, `write:data`, `admin:system`, etc.)
+- **Compliance tags** - Support for `pii`, `hipaa`, `gdpr`, `fedramp`, `soc2`, `pci-dss` compliance frameworks
+- **Per-capability scope overrides** - Tool-level permission customization
+- **Enterprise-ready** - Built-in support for regulatory compliance requirements
+
+#### Capability Versioning
+- **Independent capability versioning** - Semantic versioning for individual capabilities
+- **Deprecation support** - Deprecation flags with removal version tracking
+- **Migration guide templates** - Structured deprecation messages with migration instructions
+- **Lifecycle management** - Independent capability evolution without breaking agent manifests
+
+#### Framework Extensions
+- **Google ADK Extension** - Integration with Google Agent Development Kit
+  - Support for `llm_agent`, `sequential_agent`, `parallel_agent`, and `loop_agent` types
+  - Configuration for Gemini models and ADK-specific settings
+- **Microsoft Agent Framework Examples** - AutoGen adapter examples and multi-agent team configurations
+  - Single AutoGen agent examples
+  - Multi-agent AutoGen team examples with state management
+
+### Changed
+- **apiVersion pattern** - Extended to support `ossa/v0.2.4` (backward compatible with v0.2.2 and v0.2.3)
+- **Schema validation** - Enhanced validation for transport, state, and security features
+- **Documentation** - Comprehensive documentation for all new features
+
+### Migration Notes
+
+**Backward Compatibility**: All v0.2.3 manifests work without modification. New features are additive and optional.
+
+**To adopt new features**:
+1. Update `apiVersion` to `ossa/v0.2.4` (optional)
+2. Add transport metadata to tools requiring streaming or protocol-specific configuration
+3. Configure state management for stateful agents
+4. Add security scopes and compliance tags for enterprise deployments
+5. Use capability versioning for independent capability lifecycle management
+
+See [Migration Guide: v0.2.3 to v0.2.4](/docs/migration-guides/v0.2.3-to-v0.2.4) for detailed instructions.
+
+### Technical Details
+- **Schema version**: `ossa/v0.2.4`
+- **JSON Schema**: `spec/v0.2.4/ossa-0.2.4.schema.json`
+- **Breaking changes**: None (fully backward compatible)
+- **New required fields**: None (all new features are optional)
+
+---
+
 ## [0.2.1] - 2025-10-14
 
 ### 🧹 Cleanup & Maintenance Release
@@ -242,5 +309,4 @@ Enhanced OSSA v0.1.9 release with master orchestrator capabilities, multi-agent 
 
 ---
 
-For detailed migration instructions, see [MIGRATION.md](docs/MIGRATION.md)
-For release procedures, see [RELEASE.md](RELEASE.md)
+For detailed migration instructions, see [Migration Guides](/docs/migration-guides)

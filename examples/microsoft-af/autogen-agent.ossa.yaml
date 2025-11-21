@@ -1,0 +1,144 @@
+apiVersion: ossa/v0.2.4-dev
+kind: Agent
+
+metadata:
+  name: autogen-research-assistant
+  version: 1.0.0
+  description: |
+    Microsoft AutoGen 0.4+ compatible agent using OSSA specification.
+    Demonstrates mapping from OSSA to AutoGen/Magentic-One framework.
+    
+    This agent can participate in AutoGen teams (round_robin, selector, swarm)
+    and supports all AutoGen agent types (assistant, orchestrator, web_surfer, coder).
+  
+  labels:
+    framework: autogen
+    framework-version: "0.4+"
+    team-type: assistant
+    environment: development
+  
+  annotations:
+    documentation: https://microsoft.github.io/autogen/
+    migration-guide: https://openstandardagents.org/docs/migration-guides/autogen-to-ossa
+    example-type: framework-adapter
+
+spec:
+  role: |
+    You are a research assistant agent that can:
+    1. Search the web for information
+    2. Analyze and summarize research papers
+    3. Generate reports based on findings
+    4. Collaborate with other agents in a team
+    
+    Always cite sources and provide accurate information.
+
+  llm:
+    provider: openai
+    model: gpt-4-turbo
+    temperature: 0.7
+    maxTokens: 4000
+
+  tools:
+    - type: http
+      name: web_search
+      endpoint: https://api.bing.microsoft.com/v7.0/search
+      transport:
+        protocol: http
+        streaming: none
+        binding: /v7.0/search
+        content_type: application/json
+      config:
+        method: GET
+        timeout: 10
+      auth:
+        type: apikey
+        credentials: secret:bing-api-key
+        scopes:
+          - read:web
+      compliance_tags:
+        - pii
+
+    - type: function
+      name: summarize_document
+      transport:
+        protocol: http
+        streaming: response
+        binding: /summarize
+        content_type: text/event-stream
+      config:
+        handler: document_summarizer
+        timeout: 60
+
+    - type: function
+      name: generate_report
+      transport:
+        protocol: http
+        streaming: none
+        binding: /generate-report
+        content_type: application/json
+      config:
+        handler: report_generator
+        timeout: 120
+
+  state:
+    mode: session
+    storage:
+      type: memory
+      retention: 24h
+    context_window:
+      max_messages: 100
+      max_tokens: 32000
+      strategy: sliding_window
+
+  autonomy:
+    level: autonomous
+    approval_required: false
+    allowed_actions:
+      - web_search
+      - summarize_document
+      - generate_report
+
+  constraints:
+    cost:
+      maxTokensPerDay: 200000
+      maxCostPerDay: 50.00
+      currency: USD
+    performance:
+      maxLatencySeconds: 30.0
+      timeoutSeconds: 180
+
+  observability:
+    tracing:
+      enabled: true
+      exporter: otlp
+    metrics:
+      enabled: true
+      exporter: prometheus
+    logging:
+      level: info
+      format: json
+
+extensions:
+  autogen:
+    enabled: true
+    team_type: round_robin
+    agent_type: assistant
+    termination_condition: |
+      max_turns: 10
+      max_cost: 5.00
+      success_criteria:
+        - report_generated: true
+        - sources_cited: true
+    system_message: |
+      You are a research assistant. Search for information,
+      summarize findings, and generate comprehensive reports.
+    tools_mapping:
+      web_search: "bing_search"
+      summarize_document: "summarize_text"
+      generate_report: "write_markdown"
+    mcp_servers:
+      - name: filesystem
+        enabled: true
+      - name: web
+        enabled: true
+

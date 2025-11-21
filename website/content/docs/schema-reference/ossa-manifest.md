@@ -12,7 +12,7 @@ The root object of an OSSA agent manifest. This is the top-level container for a
 
 | Field Name | Type | Required | Description |
 |------------|------|----------|-------------|
-| `apiVersion` | string | **Yes** | OSSA API version. Must match pattern `ossa/v(0.2.[2-3]\|1)`. Examples: `ossa/v1`, `ossa/v0.2.3` |
+| `apiVersion` | string | **Yes** | OSSA API version. Must match pattern `ossa/v(0.2.[2-4]\|1)`. Examples: `ossa/v1`, `ossa/v0.2.4`, `ossa/v0.2.3` |
 | `kind` | string | **Yes** | Resource type. Currently only `Agent` is supported |
 | `metadata` | [Metadata](#metadata-object) | **Yes** | Agent metadata including name, version, labels, and annotations |
 | `spec` | [AgentSpec](./agent-spec.md) | **Yes** | Agent specification defining behavior, capabilities, and configuration |
@@ -89,6 +89,25 @@ metadata:
   version: 1.0.0
 spec:
   # ... agent spec ...
+  state:
+    mode: session
+    storage:
+      type: vector-db
+      retention: 30d
+  tools:
+    - type: http
+      name: api-service
+      transport:
+        protocol: http
+        streaming: response
+        binding: /v1/stream
+      auth:
+        scopes:
+          - read:data
+          - execute:query
+      compliance_tags:
+        - pii
+        - gdpr
 
 extensions:
   kagent:
@@ -98,6 +117,10 @@ extensions:
         environment: production
     deployment:
       replicas: 3
+  google_adk:
+    agent_type: llm_agent
+    config:
+      model: gemini-2.0-flash-exp
       strategy: rolling-update
 
   buildkit:

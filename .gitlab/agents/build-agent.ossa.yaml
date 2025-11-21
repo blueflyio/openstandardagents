@@ -1,0 +1,116 @@
+apiVersion: ossa/v0.2.4-dev
+kind: Agent
+metadata:
+  name: ossa-build-agent
+  version: 1.0.0
+  description: |
+    Builds and packages OSSA projects for deployment.
+    Handles TypeScript compilation, asset copying, and package creation.
+  labels:
+    environment: ci
+    team: platform-engineering
+    domain: build
+    purpose: ci-cd
+  annotations:
+    documentation: https://openstandardagents.org/docs/build
+    ci-job: build:dist
+
+spec:
+  role: |
+    You are an OSSA build agent that compiles and packages OSSA projects.
+    Your responsibilities:
+    1. Compile TypeScript to JavaScript
+    2. Copy assets and schemas to dist/
+    3. Generate type definitions
+    4. Create npm packages
+    5. Validate build artifacts
+    6. Report build errors with context
+    
+    Always ensure builds are reproducible and artifacts are complete.
+
+  llm:
+    provider: openai
+    model: gpt-4-turbo
+    temperature: 0.1
+    maxTokens: 2000
+
+  tools:
+    - type: function
+      name: compile_typescript
+      description: |
+        Compiles TypeScript source files to JavaScript.
+        Validates types and generates declaration files.
+      transport:
+        protocol: http
+        streaming: response
+      config:
+        handler: tsc_handler
+        timeout: 300
+      auth:
+        type: none
+
+    - type: function
+      name: copy_assets
+      description: |
+        Copies non-code assets (schemas, docs, configs) to dist/.
+        Preserves directory structure and file permissions.
+      transport:
+        protocol: http
+        streaming: none
+      config:
+        handler: asset_copier
+        timeout: 60
+
+    - type: function
+      name: create_package
+      description: |
+        Creates npm package tarball from dist/ directory.
+        Validates package.json and includes all required files.
+      transport:
+        protocol: http
+        streaming: none
+      config:
+        handler: package_creator
+        timeout: 30
+
+    - type: function
+      name: validate_build
+      description: |
+        Validates build artifacts are complete and correct.
+        Checks for required files, correct structure, and integrity.
+      transport:
+        protocol: http
+        streaming: none
+      config:
+        handler: build_validator
+        timeout: 10
+
+  state:
+    mode: stateless
+    storage:
+      type: memory
+      retention: 1h
+
+  constraints:
+    cost:
+      maxTokensPerDay: 100000
+      maxCostPerDay: 10.00
+      currency: USD
+    performance:
+      maxLatencySeconds: 600.0
+      timeoutSeconds: 600
+    resources:
+      cpu: "2000m"
+      memory: "2Gi"
+
+  observability:
+    tracing:
+      enabled: true
+      exporter: otlp
+    metrics:
+      enabled: true
+      exporter: prometheus
+    logging:
+      level: info
+      format: json
+

@@ -239,8 +239,8 @@ spec:
 ### Enterprise Support
 
 - [GitLab Issues](https://gitlab.bluefly.io/llm/openapi-ai-agents-standard/-/issues)
-- [Documentation](../Technical/Specification-Deep-Dive)
-- [Examples](../Examples/Enterprise-Examples)
+- [Documentation](/docs/specification)
+- [Examples](/docs/examples)
 
 ### Training
 
@@ -250,7 +250,7 @@ spec:
 
 ## Related Resources
 
-- [Architecture Guide](../For-Audiences/Architects)
-- [Technical Documentation](../Technical/Specification-Deep-Dive)
-- [Enterprise Examples](../Examples/Enterprise-Examples)
+- [Architecture Guide](/docs/for-audiences/architects)
+- [Technical Documentation](/docs/specification)
+- [Enterprise Examples](/docs/examples)
 

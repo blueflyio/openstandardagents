@@ -4,7 +4,7 @@
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![npm version](https://img.shields.io/npm/v/@bluefly/openstandardagents.svg)](https://www.npmjs.com/package/@bluefly/openstandardagents)
-[![Specification](https://img.shields.io/badge/Spec-v0.2.2-blue)](https://github.com/blueflyio/openstandardagents/blob/main/spec/v0.2.2/ossa-0.2.2.schema.json)
+[![Specification](https://img.shields.io/badge/Spec-v0.2.4-blue)](https://github.com/blueflyio/openstandardagents/blob/main/spec/v0.2.4/ossa-0.2.4.schema.json)
 
 ---
 

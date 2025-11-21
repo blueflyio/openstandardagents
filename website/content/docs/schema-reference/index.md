@@ -16,18 +16,21 @@ The OSSA manifest is a JSON/YAML document that defines:
 
 - **Agent metadata** - Name, version, labels, and annotations
 - **Agent specification** - Role, LLM configuration, tools, and capabilities
+- **State management** - Stateless, session, and long-running agent modes with storage backends
+- **Transport metadata** - Protocol-specific configuration for streaming and communication
+- **Security & compliance** - OAuth2-like scopes and compliance tags (HIPAA, GDPR, FedRAMP, etc.)
 - **Autonomy settings** - Decision-making level and approval requirements
 - **Constraints** - Cost, performance, and resource limits
 - **Observability** - Tracing, metrics, and logging configuration
-- **Framework extensions** - Integration with kagent, BuildKit, Drupal, LibreChat, and 14+ other frameworks
+- **Framework extensions** - Integration with kagent, BuildKit, Drupal, LibreChat, Google ADK, Microsoft AF, and 14+ other frameworks
 
 ## Schema Version
 
 ```yaml
-apiVersion: ossa/v0.2.x
+apiVersion: ossa/v0.2.4
 ```
 
-The current stable version is `ossa/v0.2.x` (v0.2.2, v0.2.3, v0.2.4+). The schema also supports `ossa/v1` for forward compatibility.
+The current stable version is `ossa/v0.2.4`. Previous versions (v0.2.2, v0.2.3) remain supported. The schema also supports `ossa/v1` for forward compatibility.
 
 ## Schema Components
 
@@ -41,6 +44,9 @@ The current stable version is `ossa/v0.2.x` (v0.2.2, v0.2.3, v0.2.4+). The schem
 ### Configuration Objects
 
 - [**Taxonomy**](./taxonomy.md) - Agent domain, subdomain, and capability classification
+- [**State Management**](./state.md) - Agent state modes, storage backends, and context window strategies
+- [**Transport**](./transport.md) - Protocol configuration, streaming modes, and binding paths
+- [**Security**](./security.md) - OAuth2 scopes, compliance tags, and per-capability permissions
 - [**Autonomy**](./autonomy.md) - Decision-making level and action controls
 - [**Constraints**](./constraints.md) - Cost, performance, and resource constraints
 - [**Observability**](./observability.md) - Tracing, metrics, and logging
@@ -62,11 +68,12 @@ The current stable version is `ossa/v0.2.x` (v0.2.2, v0.2.3, v0.2.4+). The schem
 - [**LlamaIndex Extension**](./extensions/llamaindex.md) - LlamaIndex RAG framework
 - [**LangGraph Extension**](./extensions/langgraph.md) - LangGraph state machines
 - [**Anthropic Extension**](./extensions/anthropic.md) - Anthropic Claude API
+- [**Google ADK Extension**](./extensions/google-adk.md) - Google Agent Development Kit integration
 
 ## Quick Example
 
 ```yaml
-apiVersion: ossa/v0.2.x
+apiVersion: ossa/v0.2.4
 kind: Agent
 metadata:
   name: code-reviewer

@@ -1,0 +1,120 @@
+apiVersion: ossa/v0.2.4-dev
+kind: Agent
+
+metadata:
+  name: autogen-research-team
+  version: 1.0.0
+  description: |
+    Microsoft AutoGen team configuration using OSSA specification.
+    Demonstrates multi-agent team patterns (round_robin, selector, swarm, magentic_one).
+    
+    This team consists of:
+    - Research Assistant: Searches and gathers information
+    - Analyst: Analyzes and processes data
+    - Writer: Generates reports and documentation
+  
+  labels:
+    framework: autogen
+    framework-version: "0.4+"
+    team-type: round_robin
+    environment: development
+  
+  annotations:
+    documentation: https://microsoft.github.io/autogen/
+    example-type: multi-agent-team
+
+spec:
+  role: |
+    You are a research team coordinator that orchestrates multiple agents
+    to complete complex research tasks. Coordinate between:
+    - Research Assistant: Gathers information
+    - Analyst: Processes and analyzes data
+    - Writer: Creates final reports
+    
+    Ensure all agents work together efficiently and share context.
+
+  llm:
+    provider: openai
+    model: gpt-4-turbo
+    temperature: 0.5
+    maxTokens: 4000
+
+  tools:
+    - type: function
+      name: coordinate_agents
+      transport:
+        protocol: a2a
+        streaming: bidirectional
+        binding: /coordinate
+        content_type: application/json
+      config:
+        handler: team_coordinator
+        timeout: 300
+
+    - type: function
+      name: share_context
+      transport:
+        protocol: a2a
+        streaming: none
+        binding: /context/share
+        content_type: application/json
+      config:
+        handler: context_sharer
+        timeout: 10
+
+  state:
+    mode: long_running
+    storage:
+      type: kv
+      retention: 7d
+      config:
+        provider: redis
+        key_prefix: "autogen:team:"
+    context_window:
+      max_messages: 200
+      max_tokens: 64000
+      strategy: importance_weighted
+
+  autonomy:
+    level: autonomous
+    approval_required: false
+
+  constraints:
+    cost:
+      maxTokensPerDay: 500000
+      maxCostPerDay: 100.00
+      currency: USD
+    performance:
+      maxLatencySeconds: 60.0
+      timeoutSeconds: 600
+
+  observability:
+    tracing:
+      enabled: true
+      exporter: otlp
+    metrics:
+      enabled: true
+      exporter: prometheus
+    logging:
+      level: info
+      format: json
+
+extensions:
+  autogen:
+    enabled: true
+    team_type: round_robin
+    agent_type: orchestrator
+    sub_agents:
+      - autogen-research-assistant
+      - autogen-analyst
+      - autogen-writer
+    termination_condition: |
+      max_turns: 20
+      max_cost: 20.00
+      success_criteria:
+        - all_agents_complete: true
+        - final_report_generated: true
+    system_message: |
+      Coordinate a research team to complete complex tasks.
+      Distribute work efficiently and ensure quality output.
+
