@@ -2,8 +2,8 @@
   "branches": [
     "main",
     {
-      "name": "develop",
-      "prerelease": "beta"
+      "name": "development",
+      "prerelease": "dev"
     }
   ],
   "plugins": [
@@ -64,13 +64,14 @@
       }
     ],
     [
-      "@semantic-release/github",
+      "@semantic-release/gitlab",
       {
+        "gitlabUrl": "https://gitlab.bluefly.io",
         "assets": [
           { "path": "dist/*.tgz", "label": "Distribution Package" },
           { "path": "CHANGELOG.md", "label": "Changelog" }
         ],
-        "successComment": "🎉 This ${issue.pull_request ? 'PR is included' : 'issue has been resolved'} in version ${nextRelease.version}\n\nThe release is available on:\n- [npm package](https://www.npmjs.com/package/@bluefly/open-standards-scalable-agents)\n- [GitHub release](${releases[0].url})\n- [Documentation](https://ossa.bluefly.io)\n\nYour **${issue.pull_request ? 'pull request' : 'issue'}** is included in this release!"
+        "successComment": "🎉 This ${issue.pull_request ? 'MR is included' : 'issue has been resolved'} in version ${nextRelease.version}\n\nThe release is available on:\n- [npm package](https://www.npmjs.com/package/@bluefly/openstandardagents)\n- [GitLab release](${releases[0].url})\n- [Documentation](https://openstandardagents.org)\n\nYour **${issue.pull_request ? 'merge request' : 'issue'}** is included in this release!"
       }
     ],
     [
