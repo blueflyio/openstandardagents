@@ -368,7 +368,8 @@ promote-to-main:
       
       # Create MR
       if [ "$HAS_CONFLICTS" = "true" ]; then
-        MR_DESCRIPTION="## Promotion Gate: development → main
+        MR_DESCRIPTION=$(cat <<EOF
+## Promotion Gate: development → main
 
 **Predicted Next Version:** ${PREDICTED_VERSION}
 
@@ -383,9 +384,12 @@ This MR was created by the promotion gate. Please resolve conflicts and merge wh
 
 ### Next Steps
 1. Resolve merge conflicts in this MR
-2. After merging, the release will be created automatically based on commit analysis."
+2. After merging, the release will be created automatically based on commit analysis.
+EOF
+)
       else
-        MR_DESCRIPTION="## Promotion Gate: development → main
+        MR_DESCRIPTION=$(cat <<EOF
+## Promotion Gate: development → main
 
 **Predicted Next Version:** ${PREDICTED_VERSION}
 
@@ -396,7 +400,9 @@ This MR was created by the promotion gate. Please review and merge when ready.
 - ✅ Commit messages validated
 - ✅ Version prediction: ${PREDICTED_VERSION}
 
-After merging, the release will be created automatically based on commit analysis."
+After merging, the release will be created automatically based on commit analysis.
+EOF
+)
       fi
       
       MR_RESPONSE=$(curl -sS -X POST "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/merge_requests" \
