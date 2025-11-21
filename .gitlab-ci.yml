@@ -405,8 +405,58 @@ release:main:
     - git fetch --unshallow --tags || true
   script:
     - |
-      echo "🚀 Automatic Release (Milestone Controlled)"
-      echo "============================================"
+      echo "🚀 Milestone-Controlled Release"
+      echo "================================"
+      
+      # Get all milestones (open and closed)
+      echo "Checking for completed milestones..."
+      ALL_MILESTONES=$(curl -sS -G "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/milestones" \
+        --header "PRIVATE-TOKEN: ${GITLAB_PUSH_TOKEN}" \
+        --data-urlencode "per_page=100")
+      
+      # Find closed/completed milestones with version in title
+      CLOSED_MILESTONES=$(echo "$ALL_MILESTONES" | jq -r '.[] | select(.state == "closed") | .title' | grep -E 'v?[0-9]+\.[0-9]+\.[0-9]+' || true)
+      
+      if [ -z "$CLOSED_MILESTONES" ]; then
+        echo "❌ No completed milestone found with version in title"
+        echo ""
+        echo "To release:"
+        echo "1. Create a milestone with version in title (e.g., 'v0.2.6 - Feature Name' or '0.2.6 - Feature Name')"
+        echo "2. Complete/close the milestone (100% complete or manually close)"
+        echo "3. Retry this release job"
+        echo ""
+        echo "Available milestones:"
+        echo "$ALL_MILESTONES" | jq -r '.[] | "  - \(.title) (State: \(.state))"' | head -10
+        exit 1
+      fi
+      
+      # Get the most recent closed milestone with version
+      MILESTONE_TITLE=$(echo "$ALL_MILESTONES" | jq -r '.[] | select(.state == "closed") | .title' | grep -E 'v?[0-9]+\.[0-9]+\.[0-9]+' | head -1)
+      MILESTONE_VERSION=$(echo "$MILESTONE_TITLE" | grep -oE 'v?[0-9]+\.[0-9]+\.[0-9]+' | head -1 | sed 's/^v//')
+      MILESTONE_ID=$(echo "$ALL_MILESTONES" | jq -r ".[] | select(.title == \"${MILESTONE_TITLE}\") | .id" | head -1)
+      
+      echo "✅ Found completed milestone: ${MILESTONE_TITLE} (ID: ${MILESTONE_ID})"
+      echo "   Version: v${MILESTONE_VERSION}"
+      
+      # Check if this version already exists
+      if git tag -l | grep -qE "^v?${MILESTONE_VERSION}$"; then
+        echo "⚠️  Version v${MILESTONE_VERSION} already released"
+        echo "Available tags:"
+        git tag -l | tail -5
+        exit 1
+      fi
+      
+      # Preview what semantic-release would do
+      echo ""
+      echo "Previewing semantic-release analysis..."
+      export GITLAB_TOKEN="${CI_JOB_TOKEN}"
+      export CI="true"
+      PREDICTED_VERSION=$(npx semantic-release --dry-run 2>&1 | grep -oP "The next release version is \K[0-9]+\.[0-9]+\.[0-9]+" || echo "")
+      
+      if [ -n "$PREDICTED_VERSION" ] && [ "$PREDICTED_VERSION" != "$MILESTONE_VERSION" ]; then
+        echo "⚠️  Warning: Milestone version (v${MILESTONE_VERSION}) differs from predicted version (v${PREDICTED_VERSION})"
+        echo "Proceeding with milestone version: v${MILESTONE_VERSION}"
+      fi
       
       # Configure npm
       echo "@bluefly:registry=${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/npm/" > .npmrc
@@ -420,13 +470,10 @@ release:main:
       export NPM_TOKEN="${NPM_TOKEN}"
       export CI="true"
       
-      # Semantic-release will automatically determine version based on commits:
-      # - feat: commits → MINOR version bump
-      # - fix: commits → PATCH version bump
-      # - BREAKING CHANGE → MAJOR version bump
-      # - chore:, docs:, test:, build:, ci: → No release (semantic-release skips automatically)
-      # Milestones are used for planning, but version is commit-driven
-      echo "Analyzing commits to determine version..."
+      # Run semantic-release - it will determine version from commits
+      # The milestone acts as a gate - release only happens if milestone is completed
+      echo ""
+      echo "Creating release (version determined by commits, milestone validates readiness)..."
       npx semantic-release
       
       echo "✅ Release completed"
