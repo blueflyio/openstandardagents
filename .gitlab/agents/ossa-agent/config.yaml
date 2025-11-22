@@ -12,28 +12,42 @@ user_access:
   # Projects whose members should have access to this agent
   # Members can access the cluster through this agent for deployments and operations
   projects:
-    - id: llm/openstandardagents
+    - id: blueflyio/openstandardagents
     # Add more projects as needed:
-    # - id: llm/agent-buildkit
-    # - id: llm/agent-studio
+    # - id: blueflyio/agent-platform/agent-buildkit
 
   # Groups whose members should have access to this agent
   # Grants access to the group and all its descendant groups and projects
   groups:
-    - id: llm
-    # Add more groups as needed:
-    # - id: llm/agents
-    # - id: llm/platform
+    - id: blueflyio
+    - id: blueflyio/agent-platform
 
-# CI/CD access configuration
-# Allows GitLab CI/CD pipelines to access the Kubernetes cluster through this agent
+# CI/CD access configuration with impersonation (restricted access)
+# Uses impersonation to restrict access based on project/group membership
+# More secure than default service account access
 ci_access:
   # Projects whose CI/CD pipelines can access the cluster
   projects:
-    - id: llm/openstandardagents
+    - id: blueflyio/openstandardagents
+      access_as:
+        # Impersonate the CI/CD job user for better security
+        # Requires RBAC configuration in the cluster
+        impersonate:
+          # Use the CI/CD job's user identity
+          username: "gitlab:user:{{.user.username}}"
+          # Use the CI/CD job's groups
+          groups:
+            - "gitlab:group:{{.group.path}}"
+            - "gitlab:project:{{.project.path_with_namespace}}"
+
   # Groups whose CI/CD pipelines can access the cluster
   groups:
-    - id: llm
+    - id: blueflyio
+      access_as:
+        impersonate:
+          username: "gitlab:user:{{.user.username}}"
+          groups:
+            - "gitlab:group:{{.group.path}}"
 
 # GitOps configuration (optional)
 # Enables GitLab to manage Kubernetes resources via GitOps workflows
