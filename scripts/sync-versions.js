@@ -108,7 +108,6 @@ function createSpecDirectory(version) {
   const newSchemaFile = path.join(newSpecPath, `ossa-${version}.schema.json`);
 
   if (fs.existsSync(schemaFile)) {
-  if (fs.existsSync(schemaFile)) {
     let schema;
     try {
       schema = JSON.parse(fs.readFileSync(schemaFile, 'utf8'));
