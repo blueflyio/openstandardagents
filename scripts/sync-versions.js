@@ -47,8 +47,13 @@ let changes = [];
  * Get current version from package.json
  */
 function getCurrentVersion() {
-  const pkg = JSON.parse(fs.readFileSync(PACKAGE_JSON, 'utf8'));
-  return pkg.version;
+  try {
+    const pkg = JSON.parse(fs.readFileSync(PACKAGE_JSON, 'utf8'));
+    return pkg.version;
+  } catch (error) {
+    errors.push(`Failed to read package.json: ${error.message}`);
+    throw error;
+  }
 }
 
 /**
@@ -91,15 +96,26 @@ function createSpecDirectory(version) {
 
   // Copy directory
   console.log(`Creating spec/v${version}/ from ${latestSpec}...`);
-  fs.cpSync(sourceSpecPath, newSpecPath, { recursive: true });
+  try {
+    fs.cpSync(sourceSpecPath, newSpecPath, { recursive: true });
+  } catch (error) {
+    errors.push(`Failed to copy spec directory: ${error.message}`);
+    return;
+  }
 
   // Update schema version in copied files
   const schemaFile = path.join(newSpecPath, `ossa-${latestSpec.slice(1)}.schema.json`);
   const newSchemaFile = path.join(newSpecPath, `ossa-${version}.schema.json`);
 
   if (fs.existsSync(schemaFile)) {
-    let schema = JSON.parse(fs.readFileSync(schemaFile, 'utf8'));
-    schema.version = version;
+  if (fs.existsSync(schemaFile)) {
+    let schema;
+    try {
+      schema = JSON.parse(fs.readFileSync(schemaFile, 'utf8'));
+    } catch (error) {
+      errors.push(`Failed to parse schema file ${schemaFile}: ${error.message}`);
+      return;
+    }
     schema.$id = schema.$id.replace(latestSpec, `v${version}`);
 
     fs.writeFileSync(newSchemaFile, JSON.stringify(schema, null, 2));
@@ -231,8 +247,8 @@ function updateOpenAPISpecs(version) {
 
     // Update version in info section
     content = content.replace(
-      /version:\s*['"]?[\d.]+['"]?/,
-      `version: '${version}'`
+      /^(\s*)version:\s*['"]?[\d.]+['"]?/m,
+      `$1version: '${version}'`
     );
 
     if (content !== original) {
