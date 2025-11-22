@@ -1,0 +1,282 @@
+# ============================================================================
+# OSSA Rollback Coordinator Agent - GitLab Kubernetes Deployment
+# ============================================================================
+#
+# PURPOSE:
+#   Automated rollback coordination for failed deployments and migrations.
+#   Monitors deployment health, triggers rollbacks on failure, and coordinates
+#   multi-component rollback workflows (application + database + config).
+#
+# CAPABILITIES:
+#   - Deployment health monitoring (readiness, liveness, error rates)
+#   - Automated rollback triggering on failure detection
+#   - Multi-component rollback coordination (app + db + config)
+#   - Traffic shifting and canary rollback
+#   - Database schema rollback coordination with db-migrator
+#   - Post-rollback verification and validation
+#
+# ============================================================================
+
+apiVersion: ossa/v0.2.x
+kind: Agent
+
+metadata:
+  name: rollback-coordinator
+  version: 1.0.0
+  description: |
+    Automated rollback coordination agent for Kubernetes deployments.
+    Monitors deployment health, detects failures, triggers coordinated rollbacks
+    across application, database, and configuration components.
+
+  labels:
+    environment: production
+    team: sre
+    domain: deployment
+    capability: rollback-automation
+    dora-metric: mttr
+
+  annotations:
+    documentation: https://gitlab.bluefly.io/llm/documentation/-/wikis/agents/rollback-coordinator
+    support: sre-team@bluefly.io
+    runbook: https://gitlab.bluefly.io/llm/documentation/-/wikis/runbooks/rollback-coordinator
+    safety: "automated-rollback-enabled"
+
+spec:
+  taxonomy:
+    domain: deployment-automation
+    subdomain: rollback-management
+    capability: automated-recovery
+
+  role: |
+    You are an expert deployment rollback coordinator specializing in failure recovery.
+
+    Your responsibilities:
+    1. Monitor deployment health (readiness probes, error rates, latency spikes)
+    2. Detect deployment failures (crash loops, failed health checks, high error rates)
+    3. Trigger automated rollbacks when failure thresholds exceeded
+    4. Coordinate multi-component rollbacks:
+       - Application: Rollback Deployment/StatefulSet to previous revision
+       - Database: Trigger db-migrator to execute rollback SQL
+       - Configuration: Revert ConfigMaps and Secrets to previous version
+    5. Manage traffic shifting (canary rollback, gradual traffic reduction)
+    6. Verify rollback success (health checks, metrics validation)
+    7. Create post-mortem incident reports with failure analysis
+
+    Rollback Triggers:
+    - Error rate > 5% for 5 minutes
+    - P95 latency > 2x baseline for 10 minutes
+    - Crash loop backoff (> 3 restarts in 5 minutes)
+    - Failed readiness probes (> 50% pods not ready for 3 minutes)
+    - Database migration failure (transaction rollback)
+
+    For each rollback:
+    - Trigger reason (metrics, logs, health checks)
+    - Components affected (app/db/config)
+    - Rollback strategy (immediate/canary/gradual)
+    - Verification steps (health checks, smoke tests)
+    - Post-mortem action items
+
+  llm:
+    provider: anthropic
+    model: claude-3-5-sonnet-20241022
+    temperature: 0.0  # Deterministic for safety-critical operations
+    maxTokens: 8000
+
+  tools:
+    - type: mcp
+      name: kubernetes-rollback
+      description: |
+        Execute Kubernetes rollbacks using kubectl rollout undo.
+      config:
+        server: kubernetes-mcp
+        rollbackStrategy: immediate
+      auth:
+        type: mtls
+        certPath: /var/secrets/k8s-client-cert.pem
+
+    - type: http
+      name: argo-rollouts
+      description: |
+        Manage canary deployments and progressive delivery rollbacks.
+      endpoint: http://argo-rollouts-server:8080/api/v1
+      config:
+        method: POST
+        timeout: 30
+
+    - type: http
+      name: flagger-api
+      description: |
+        Control Flagger canary releases and automated rollbacks.
+      endpoint: http://flagger:8080/api/v1
+      config:
+        method: POST
+        timeout: 15
+
+    - type: a2a
+      name: db-migrator
+      description: |
+        Coordinate database schema rollback with db-migrator agent.
+      endpoint: http://db-migrator:8080/a2a
+      config:
+        protocol: json-rpc
+      auth:
+        type: mtls
+        certPath: /var/secrets/a2a-client-cert.pem
+
+    - type: a2a
+      name: monitoring-agent
+      description: |
+        Receive failure alerts and metrics from monitoring-agent.
+      endpoint: http://monitoring-agent:8080/a2a
+      config:
+        protocol: json-rpc
+      auth:
+        type: mtls
+        certPath: /var/secrets/a2a-client-cert.pem
+
+    - type: http
+      name: gitlab-api
+      description: |
+        Create rollback issues and update deployment status in GitLab.
+      endpoint: https://gitlab.bluefly.io/api/v4
+      config:
+        method: POST
+        timeout: 10
+      auth:
+        type: bearer
+        tokenPath: /var/secrets/gitlab-token
+
+  autonomy:
+    level: autonomous
+    approval_required: false  # Auto-rollback enabled for production safety
+
+    allowed_actions:
+      - trigger_deployment_rollback
+      - trigger_database_rollback
+      - revert_configmaps
+      - shift_traffic_to_stable
+      - create_incident_reports
+
+    blocked_actions:
+      - delete_deployments
+      - scale_to_zero
+
+  constraints:
+    cost:
+      maxTokensPerDay: 300000
+      maxTokensPerRequest: 8000
+      maxCostPerDay: 30.00
+      currency: USD
+
+    performance:
+      maxLatencySeconds: 10  # Fast rollback response
+      maxConcurrentRequests: 10
+      timeoutSeconds: 300  # 5 min rollback timeout
+
+    resources:
+      cpu: "1000m"
+      memory: "2Gi"
+
+  observability:
+    tracing:
+      enabled: true
+      exporter: otlp
+      endpoint: http://jaeger-collector:4318
+      samplingRate: 1.0  # 100% trace all rollbacks
+
+    metrics:
+      enabled: true
+      exporter: prometheus
+      endpoint: http://prometheus:9090/metrics
+      customMetrics:
+        - name: rollbacks_triggered_total
+          type: counter
+          description: "Total rollbacks triggered"
+          labels: [component, trigger_reason]
+        - name: rollback_duration_seconds
+          type: histogram
+          description: "Rollback execution duration"
+        - name: rollback_success_rate
+          type: gauge
+          description: "Percentage of successful rollbacks"
+
+    logging:
+      level: info
+      format: json
+      auditLog:
+        enabled: true
+        destination: /var/log/rollback/audit.log
+        retention: 1year
+
+  state:
+    backend: redis
+    config:
+      host: redis-cluster.default.svc.cluster.local
+      port: 6379
+      database: 6
+      ttl: 2592000  # 30 days for rollback history
+      keyPrefix: "rollback-coordinator:"
+
+  extensions:
+    kagent:
+      kubernetes:
+        namespace: deployment-system
+        labels:
+          app: rollback-coordinator
+          team: sre
+        resourceLimits:
+          cpu: "1000m"
+          memory: "2Gi"
+        serviceAccount: rollback-coordinator-sa
+
+      guardrails:
+        requireApproval: false  # Auto-rollback enabled
+
+        allowedActions:
+          - kubernetes:patch:deployments
+          - kubernetes:patch:statefulsets
+          - kubernetes:rollback:*
+          - argo:rollback:*
+          - flagger:rollback:*
+
+        auditLog:
+          destination: compliance-engine
+          retention: 1year
+
+      a2aConfig:
+        enabled: true
+        protocol: json-rpc
+        endpoints:
+          - http://db-migrator:8080/a2a
+          - http://monitoring-agent:8080/a2a
+          - http://security-scanner:8080/a2a
+        authentication:
+          type: mtls
+
+      meshIntegration:
+        enabled: true
+        istioIntegration: true
+        mtlsMode: STRICT
+
+# ============================================================================
+# ROLLBACK WORKFLOW
+# ============================================================================
+#
+# 1. Monitoring-agent detects deployment failure (error rate spike)
+# 2. Monitoring-agent sends A2A message to rollback-coordinator
+# 3. Rollback-coordinator evaluates failure severity:
+#    - SEV1: Immediate rollback all components
+#    - SEV2: Canary rollback (gradually shift traffic to previous version)
+#    - SEV3: Human approval required
+# 4. Execute rollback sequence:
+#    a. Shift traffic to stable version (Istio VirtualService update)
+#    b. Rollback Kubernetes Deployment (kubectl rollout undo)
+#    c. Coordinate database rollback (A2A call to db-migrator)
+#    d. Revert ConfigMaps/Secrets to previous version
+# 5. Verify rollback success:
+#    - Health checks passing
+#    - Error rate < 1%
+#    - Latency within SLO
+# 6. Create GitLab issue with post-mortem template
+#
+# ============================================================================

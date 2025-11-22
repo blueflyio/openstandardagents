@@ -1,0 +1,371 @@
+# ============================================================================
+# OSSA Security Scanner Agent - GitLab Kubernetes Deployment
+# ============================================================================
+#
+# PURPOSE:
+#   Automated security vulnerability scanning for Kubernetes deployments,
+#   container images, and application dependencies. Integrates with GitLab
+#   security scanning, Trivy, and compliance frameworks.
+#
+# CAPABILITIES:
+#   - Container image vulnerability scanning (CVE detection)
+#   - Kubernetes RBAC security audit
+#   - Secret detection in code and configs
+#   - Dependency vulnerability analysis (npm, composer, pip)
+#   - OWASP Top 10 compliance checking
+#   - CIS Kubernetes Benchmark validation
+#
+# DEPLOYMENT:
+#   Runs as autonomous agent in Kubernetes with read-only cluster access.
+#   Communicates with other agents via A2A protocol for remediation workflows.
+#
+# ============================================================================
+
+apiVersion: ossa/v0.2.x
+kind: Agent
+
+metadata:
+  name: security-scanner
+  version: 1.0.0
+  description: |
+    Autonomous security vulnerability scanner for Kubernetes deployments.
+    Performs container image scanning, RBAC audits, secret detection, and
+    compliance validation against CIS benchmarks and OWASP standards.
+
+  labels:
+    environment: production
+    team: security-ops
+    domain: security
+    capability: vulnerability-scanning
+    compliance: cis-kubernetes
+
+  annotations:
+    documentation: https://gitlab.bluefly.io/llm/documentation/-/wikis/agents/security-scanner
+    support: security-team@bluefly.io
+    runbook: https://gitlab.bluefly.io/llm/documentation/-/wikis/runbooks/security-scanner
+    compliance: "CIS Kubernetes Benchmark v1.8, OWASP Top 10"
+
+spec:
+  # ==========================================================================
+  # TAXONOMY: Security Domain Classification
+  # ==========================================================================
+  taxonomy:
+    domain: security
+    subdomain: vulnerability-management
+    capability: container-scanning
+
+  # ==========================================================================
+  # ROLE: Security Scanning Expertise
+  # ==========================================================================
+  role: |
+    You are an expert security scanner specializing in Kubernetes and container security.
+
+    Your responsibilities:
+    1. Scan container images for CVE vulnerabilities using Trivy and Grype
+    2. Audit Kubernetes RBAC configurations for privilege escalation risks
+    3. Detect hardcoded secrets, API keys, and credentials in code/configs
+    4. Analyze application dependencies (npm, composer, pip) for known vulnerabilities
+    5. Validate compliance with CIS Kubernetes Benchmark and OWASP Top 10
+    6. Generate security reports with severity levels and remediation guidance
+    7. Coordinate with other agents (compliance-auditor, rollback-coordinator) for fixes
+
+    Always prioritize critical (CVSS >= 9.0) and high (CVSS >= 7.0) vulnerabilities.
+    For each finding, provide:
+    - CVE ID or security issue identifier
+    - CVSS score and severity level
+    - Affected component and version
+    - Remediation steps (upgrade version, apply patch, configuration change)
+    - Estimated effort (low/medium/high)
+
+  # ==========================================================================
+  # LLM CONFIGURATION: Security-Focused Model
+  # ==========================================================================
+  llm:
+    provider: anthropic
+    model: claude-3-5-sonnet-20241022
+    temperature: 0.1  # Low temperature for consistent security analysis
+    maxTokens: 8000   # Large context for detailed security reports
+
+  # ==========================================================================
+  # TOOLS: Security Scanning MCP Servers
+  # ==========================================================================
+  tools:
+    # Trivy container image scanner
+    - type: mcp
+      name: trivy-scanner
+      description: |
+        Trivy vulnerability scanner for container images, filesystems,
+        and git repositories. Detects CVEs, misconfigurations, and secrets.
+      config:
+        server: trivy-mcp
+        endpoint: http://trivy-server:8080
+      auth:
+        type: bearer
+        tokenPath: /var/secrets/trivy-token
+
+    # Kubernetes RBAC auditor
+    - type: mcp
+      name: kubernetes-rbac
+      description: |
+        Kubernetes RBAC audit capabilities. Analyzes roles, role bindings,
+        service accounts, and cluster roles for security risks.
+      config:
+        server: kubernetes-mcp
+        namespace: all
+      auth:
+        type: mtls
+        certPath: /var/secrets/k8s-client-cert.pem
+        keyPath: /var/secrets/k8s-client-key.pem
+
+    # Secret detection scanner
+    - type: mcp
+      name: secret-scanner
+      description: |
+        Detect hardcoded secrets, API keys, tokens, and credentials in
+        code repositories, ConfigMaps, and environment variables.
+      config:
+        server: gitleaks-mcp
+        patterns: /etc/gitleaks/patterns.toml
+      auth:
+        type: apikey
+        keyPath: /var/secrets/gitleaks-api-key
+
+    # Dependency vulnerability scanner
+    - type: http
+      name: dependency-scanner
+      description: |
+        Analyze application dependencies (npm, composer, pip, go.mod) for
+        known vulnerabilities using OSV, Snyk, and GitHub Advisory Database.
+      endpoint: http://dependency-check:8080/scan
+      config:
+        method: POST
+        timeout: 120
+        databases:
+          - osv
+          - snyk
+          - github-advisory
+      auth:
+        type: bearer
+        tokenPath: /var/secrets/snyk-token
+
+    # Agent-to-Agent communication for remediation
+    - type: a2a
+      name: compliance-coordinator
+      description: |
+        Communicate with compliance-auditor and rollback-coordinator agents
+        to orchestrate security remediation workflows.
+      endpoint: http://agent-mesh:9090/a2a
+      config:
+        protocol: json-rpc
+        version: "2.0"
+      auth:
+        type: mtls
+        certPath: /var/secrets/a2a-client-cert.pem
+
+  # ==========================================================================
+  # AUTONOMY: Supervised with Auto-Scanning
+  # ==========================================================================
+  autonomy:
+    level: autonomous  # Can scan automatically, requires approval for fixes
+    approval_required: false  # Auto-scan enabled
+
+    allowed_actions:
+      - scan_container_images
+      - audit_rbac_configs
+      - detect_secrets
+      - scan_dependencies
+      - generate_security_reports
+      - read_kubernetes_resources
+
+    blocked_actions:
+      - delete_pods
+      - modify_rbac
+      - delete_secrets
+      - scale_deployments
+
+  # ==========================================================================
+  # CONSTRAINTS: Security Scanning Limits
+  # ==========================================================================
+  constraints:
+    cost:
+      maxTokensPerDay: 500000  # High token budget for detailed analysis
+      maxTokensPerRequest: 8000
+      maxCostPerDay: 50.00
+      currency: USD
+
+    performance:
+      maxLatencySeconds: 300  # 5 min for deep scans
+      maxConcurrentRequests: 20  # Parallel image scanning
+      timeoutSeconds: 600  # 10 min scan timeout
+
+    resources:
+      cpu: "2000m"      # 2 CPU cores for parallel scanning
+      memory: "4Gi"     # 4GB for Trivy database and analysis
+      ephemeralStorage: "10Gi"  # Temporary storage for image layers
+
+  # ==========================================================================
+  # OBSERVABILITY: Security Metrics & Audit Logging
+  # ==========================================================================
+  observability:
+    tracing:
+      enabled: true
+      exporter: otlp
+      endpoint: http://jaeger-collector:4318
+      samplingRate: 1.0  # 100% trace sampling for security audits
+
+    metrics:
+      enabled: true
+      exporter: prometheus
+      endpoint: http://prometheus:9090/metrics
+      customMetrics:
+        - name: security_scans_total
+          type: counter
+          description: "Total number of security scans performed"
+        - name: vulnerabilities_detected
+          type: gauge
+          description: "Number of vulnerabilities by severity"
+          labels: [severity, cve_id, component]
+        - name: scan_duration_seconds
+          type: histogram
+          description: "Security scan duration"
+
+    logging:
+      level: info
+      format: json
+      auditLog:
+        enabled: true
+        destination: /var/log/security/audit.log
+        retention: 365  # 1 year retention for compliance
+
+  # ==========================================================================
+  # STATE: Vulnerability Database Management
+  # ==========================================================================
+  state:
+    backend: redis
+    config:
+      host: redis-cluster.default.svc.cluster.local
+      port: 6379
+      database: 2  # Dedicated DB for security state
+      ttl: 86400   # 24h cache for scan results
+      keyPrefix: "security-scanner:"
+
+  # ==========================================================================
+  # EXTENSIONS: kAgent Kubernetes Integration
+  # ==========================================================================
+  extensions:
+    kagent:
+      kubernetes:
+        namespace: security-system
+
+        labels:
+          app: security-scanner
+          team: security-ops
+          compliance: cis-kubernetes
+
+        annotations:
+          description: "Automated security vulnerability scanner"
+          contact: "security-team@bluefly.io"
+          compliance: "CIS Kubernetes Benchmark v1.8"
+
+        resourceLimits:
+          cpu: "2000m"
+          memory: "4Gi"
+          ephemeralStorage: "10Gi"
+
+        # Service account with read-only cluster access
+        serviceAccount: security-scanner-sa
+
+        # Security context (non-root, read-only filesystem)
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 65534
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop:
+              - ALL
+
+      # Guardrails for security operations
+      guardrails:
+        requireApproval: false  # Auto-scanning enabled
+
+        costLimits:
+          maxTokensPerDay: 500000
+          maxCostPerDay: 50.00
+          currency: USD
+
+        allowedActions:
+          - kubernetes:get:pods
+          - kubernetes:get:deployments
+          - kubernetes:get:secrets  # Read-only for secret scanning
+          - kubernetes:get:configmaps
+          - kubernetes:get:roles
+          - kubernetes:get:rolebindings
+          - kubernetes:get:clusterroles
+          - kubernetes:get:clusterrolebindings
+
+        auditLog:
+          destination: compliance-engine
+          retention: 1year
+
+      # Agent-to-Agent mesh communication
+      a2aConfig:
+        enabled: true
+        protocol: json-rpc
+
+        endpoints:
+          - http://compliance-auditor:8080/a2a
+          - http://rollback-coordinator:8080/a2a
+          - http://monitoring-agent:8080/a2a
+
+        authentication:
+          type: mtls
+          certPath: /var/secrets/a2a-client-cert.pem
+          keyPath: /var/secrets/a2a-client-key.pem
+
+      # Istio service mesh integration
+      meshIntegration:
+        enabled: true
+        istioIntegration: true
+        ambientMesh: true
+
+        # mTLS enforcement for all traffic
+        mtlsMode: STRICT
+
+        # Traffic policy
+        trafficPolicy:
+          connectionPool:
+            tcp:
+              maxConnections: 100
+            http:
+              http2MaxRequests: 1000
+              maxRequestsPerConnection: 2
+
+# ============================================================================
+# DEPLOYMENT NOTES
+# ============================================================================
+#
+# RBAC Requirements:
+#   apiVersion: rbac.authorization.k8s.io/v1
+#   kind: ClusterRole
+#   metadata:
+#     name: security-scanner-role
+#   rules:
+#     - apiGroups: [""]
+#       resources: [pods, secrets, configmaps, serviceaccounts]
+#       verbs: [get, list, watch]
+#     - apiGroups: [rbac.authorization.k8s.io]
+#       resources: [roles, rolebindings, clusterroles, clusterrolebindings]
+#       verbs: [get, list, watch]
+#
+# Prerequisites:
+#   - Trivy server deployed (trivy-server:8080)
+#   - Redis cluster for state management
+#   - Prometheus & Jaeger for observability
+#   - Istio service mesh with mTLS enabled
+#
+# Environment Variables:
+#   TRIVY_TOKEN: /var/secrets/trivy-token
+#   SNYK_TOKEN: /var/secrets/snyk-token
+#   K8S_CLIENT_CERT: /var/secrets/k8s-client-cert.pem
+#
+# ============================================================================

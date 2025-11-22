@@ -291,8 +291,8 @@ release:dev:
     - quality:gates
     - build:dist
   environment:
-    name: development
-    url: https://www.npmjs.com/package/@bluefly/openstandardagents?activeTab=versions
+    name: npm-registry
+    url: https://www.npmjs.com/package/@bluefly/openstandardagents
 
 # ============================================================================
 # STAGE 7: PROMOTION GATE (development → main)
@@ -399,8 +399,9 @@ promote-to-main:
   needs:
     - quality:gates
   environment:
-    name: production
+    name: review/promotion
     action: start
+    auto_stop_in: 1 hour
 
 # ============================================================================
 # STAGE 8: RELEASE ON main (Manual - Milestone Controlled)
@@ -414,6 +415,30 @@ promote-to-main:
 # Milestones are used for planning and tracking, but version is determined
 # automatically by commit analysis. Release job must be manually triggered
 # after reviewing the merge to main.
+
+# Preview job - shows what version will be released (dry-run)
+release:preview:
+  stage: release-main
+  image: node:${NODE_VERSION}-alpine
+  dependencies:
+    - build:dist
+  before_script:
+    - apk add --no-cache git curl jq
+    - npm ci --legacy-peer-deps
+    - git config --global user.email "ci@blueflyio.com"
+    - git config --global user.name "GitLab CI Preview"
+    - git remote set-url origin https://oauth2:${GITLAB_PUSH_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git
+    - git fetch --unshallow --tags || true
+  script:
+    - echo "🔍 Release Preview (Dry-Run)"
+    - echo "============================"
+    - npx semantic-release --dry-run
+    - echo ""
+    - echo "✅ Preview complete. Review output above before triggering release:main"
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+      when: always
+  allow_failure: true
 
 release:main:
   stage: release-main
@@ -503,49 +528,26 @@ release:main:
       echo "✅ Release completed"
   rules:
     - if: $CI_COMMIT_BRANCH == "main"
-      when: manual
+      when: manual  # ALWAYS manual - prevents accidental npm publishes
       allow_failure: false
+    - when: never  # Explicit deny for all other cases
   needs:
     - quality:gates
     - build:dist
+    - release:preview  # Must review preview before releasing
   environment:
-    name: production
+    name: npm-registry
     url: https://www.npmjs.com/package/@bluefly/openstandardagents
+    deployment_tier: production
 
 # ============================================================================
 # STAGE 9: POST-RELEASE PROMOTION (Optional)
 # ============================================================================
 # Manual buttons to promote released version to different environments
 
-promote-staging:
-  stage: release-env
-  image: node:${NODE_VERSION}-alpine
-  script:
-    - echo "🚀 Promoting to STAGING environment"
-    - VERSION=$(node -p "require('./package.json').version")
-    - echo "Version $VERSION"
-    - echo "✅ Promotion to staging completed"
-  rules:
-    - if: $CI_COMMIT_TAG
-      when: manual
-  environment:
-    name: staging
-    url: https://staging.openstandardagents.org
-
-promote-production:
-  stage: release-env
-  image: node:${NODE_VERSION}-alpine
-  script:
-    - echo "🚀 Promoting to PRODUCTION environment"
-    - VERSION=$(node -p "require('./package.json').version")
-    - echo "Version $VERSION"
-    - echo "✅ Promotion to production completed"
-  rules:
-    - if: $CI_COMMIT_TAG
-      when: manual
-  environment:
-    name: production
-    url: https://openstandardagents.org
+# NOTE: Staging/production promotion jobs removed
+# Website deployment is handled by 'pages' job
+# NPM releases are tracked in 'npm-registry' environment
 
 # ============================================================================
 # STAGE 10: GITHUB MIRROR
@@ -611,6 +613,19 @@ pages:
   artifacts:
     paths:
       - public
+  environment:
+    name: website
+    url: https://blueflyio.gitlab.io/openstandardagents
+    deployment_tier: production
   rules:
-    - if: '$CI_COMMIT_BRANCH == "main"'
+    # Auto-deploy for website/docs changes
+    - if: $CI_COMMIT_BRANCH == "main"
+      changes:
+        - website/**/*
+        - docs/**/*
+        - spec/**/*.md
+        - README.md
       when: always
+    # Manual for package code changes
+    - if: $CI_COMMIT_BRANCH == "main"
+      when: manual

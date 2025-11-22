@@ -1,0 +1,352 @@
+# ============================================================================
+# OSSA Performance Optimizer Agent - GitLab Kubernetes Deployment
+# ============================================================================
+#
+# PURPOSE:
+#   Automated performance analysis and optimization for Kubernetes workloads.
+#   Analyzes resource usage, identifies bottlenecks, and recommends optimizations
+#   for CPU, memory, network, and storage based on real-time metrics.
+#
+# CAPABILITIES:
+#   - Resource usage analysis (CPU, memory, network, I/O)
+#   - Horizontal Pod Autoscaler (HPA) recommendation
+#   - Vertical Pod Autoscaler (VPA) tuning
+#   - Database query optimization suggestions
+#   - Container image size optimization
+#   - Network latency analysis and optimization
+#
+# DEPLOYMENT:
+#   Runs as autonomous agent with Prometheus metrics access.
+#   Communicates with cost-analyzer for cost-aware optimization decisions.
+#
+# ============================================================================
+
+apiVersion: ossa/v0.2.x
+kind: Agent
+
+metadata:
+  name: performance-optimizer
+  version: 1.0.0
+  description: |
+    Autonomous performance optimization agent for Kubernetes workloads.
+    Analyzes resource usage patterns, identifies bottlenecks, and provides
+    actionable recommendations for CPU, memory, network, and storage optimization.
+
+  labels:
+    environment: production
+    team: platform-engineering
+    domain: performance
+    capability: optimization
+    dora-metric: lead-time
+
+  annotations:
+    documentation: https://gitlab.bluefly.io/llm/documentation/-/wikis/agents/performance-optimizer
+    support: platform-team@bluefly.io
+    runbook: https://gitlab.bluefly.io/llm/documentation/-/wikis/runbooks/performance-optimizer
+    slo: "p95 response time < 500ms"
+
+spec:
+  # ==========================================================================
+  # TAXONOMY: Performance Engineering Domain
+  # ==========================================================================
+  taxonomy:
+    domain: infrastructure
+    subdomain: performance-engineering
+    capability: resource-optimization
+
+  # ==========================================================================
+  # ROLE: Performance Optimization Expertise
+  # ==========================================================================
+  role: |
+    You are an expert performance engineer specializing in Kubernetes resource optimization.
+
+    Your responsibilities:
+    1. Analyze Prometheus metrics for CPU, memory, network, and I/O usage patterns
+    2. Identify performance bottlenecks (hot spots, resource contention, slow queries)
+    3. Recommend Horizontal Pod Autoscaler (HPA) configurations based on traffic patterns
+    4. Suggest Vertical Pod Autoscaler (VPA) settings for right-sizing pods
+    5. Optimize database queries based on slow query logs and explain plans
+    6. Reduce container image sizes through multi-stage builds and layer optimization
+    7. Analyze network latency (service mesh overhead, DNS resolution, inter-pod communication)
+    8. Coordinate with cost-analyzer for cost-effective optimization recommendations
+
+    For each optimization:
+    - Baseline metrics (current state)
+    - Expected improvement (% reduction in latency/resource usage)
+    - Implementation complexity (low/medium/high)
+    - Risk assessment (safe/moderate/high-risk)
+    - Cost impact (increase/decrease/neutral)
+
+    Always prioritize p95/p99 latency improvements and resource efficiency gains.
+
+  # ==========================================================================
+  # LLM CONFIGURATION: Data-Driven Analysis Model
+  # ==========================================================================
+  llm:
+    provider: openai
+    model: gpt-4-turbo
+    temperature: 0.2  # Low temperature for analytical consistency
+    maxTokens: 6000   # Large context for metrics analysis
+
+  # ==========================================================================
+  # TOOLS: Performance Monitoring & Analysis
+  # ==========================================================================
+  tools:
+    # Prometheus metrics query engine
+    - type: http
+      name: prometheus-query
+      description: |
+        Query Prometheus for resource usage metrics, latency histograms,
+        request rates, and error rates. Supports PromQL queries.
+      endpoint: http://prometheus:9090/api/v1/query
+      config:
+        method: POST
+        timeout: 30
+        queryLanguage: promql
+      auth:
+        type: bearer
+        tokenPath: /var/secrets/prometheus-token
+
+    # Kubernetes metrics server
+    - type: mcp
+      name: kubernetes-metrics
+      description: |
+        Access Kubernetes metrics-server data for real-time pod and node
+        resource usage (CPU, memory, network, ephemeral storage).
+      config:
+        server: kubernetes-mcp
+        metricsServer: metrics.k8s.io
+      auth:
+        type: mtls
+        certPath: /var/secrets/k8s-client-cert.pem
+
+    # Database slow query analyzer
+    - type: mcp
+      name: postgres-analyzer
+      description: |
+        Analyze PostgreSQL slow query logs, explain plans, and index usage.
+        Provides optimization recommendations for queries and schema.
+      config:
+        server: postgres-mcp
+        database: application_db
+        slowQueryThreshold: 1000  # 1 second
+      auth:
+        type: password
+        passwordPath: /var/secrets/postgres-password
+
+    # Container image analyzer
+    - type: http
+      name: dive-analyzer
+      description: |
+        Analyze container image layers using Dive tool. Identifies
+        layer bloat, duplicate files, and optimization opportunities.
+      endpoint: http://dive-server:8080/analyze
+      config:
+        method: POST
+        timeout: 60
+      auth:
+        type: none
+
+    # Network latency tracer (Istio/Envoy metrics)
+    - type: mcp
+      name: istio-telemetry
+      description: |
+        Access Istio service mesh telemetry for request latency, retry rates,
+        circuit breaker status, and inter-service communication patterns.
+      config:
+        server: istio-telemetry-mcp
+        namespace: istio-system
+      auth:
+        type: mtls
+        certPath: /var/secrets/istio-client-cert.pem
+
+    # Agent-to-Agent: cost-analyzer coordination
+    - type: a2a
+      name: cost-analyzer
+      description: |
+        Communicate with cost-analyzer agent to validate that performance
+        optimizations don't increase infrastructure costs disproportionately.
+      endpoint: http://cost-analyzer:8080/a2a
+      config:
+        protocol: json-rpc
+        version: "2.0"
+      auth:
+        type: mtls
+        certPath: /var/secrets/a2a-client-cert.pem
+
+  # ==========================================================================
+  # AUTONOMY: Autonomous Recommendations, Supervised Actions
+  # ==========================================================================
+  autonomy:
+    level: autonomous
+    approval_required: false  # Can generate recommendations autonomously
+
+    allowed_actions:
+      - query_prometheus_metrics
+      - analyze_slow_queries
+      - analyze_container_images
+      - generate_optimization_reports
+      - recommend_hpa_settings
+      - recommend_vpa_settings
+      - read_kubernetes_resources
+
+    blocked_actions:
+      - apply_hpa_configs  # Requires human approval
+      - apply_vpa_configs
+      - modify_deployments
+      - restart_pods
+
+  # ==========================================================================
+  # CONSTRAINTS: Performance Analysis Limits
+  # ==========================================================================
+  constraints:
+    cost:
+      maxTokensPerDay: 300000
+      maxTokensPerRequest: 6000
+      maxCostPerDay: 30.00
+      currency: USD
+
+    performance:
+      maxLatencySeconds: 60  # 1 min for deep analysis
+      maxConcurrentRequests: 15
+      timeoutSeconds: 300  # 5 min analysis timeout
+
+    resources:
+      cpu: "1000m"      # 1 CPU core
+      memory: "2Gi"     # 2GB for metrics processing
+      ephemeralStorage: "5Gi"
+
+  # ==========================================================================
+  # OBSERVABILITY: Performance Metrics
+  # ==========================================================================
+  observability:
+    tracing:
+      enabled: true
+      exporter: otlp
+      endpoint: http://jaeger-collector:4318
+      samplingRate: 0.1  # 10% sampling for performance impact
+
+    metrics:
+      enabled: true
+      exporter: prometheus
+      endpoint: http://prometheus:9090/metrics
+      customMetrics:
+        - name: optimization_recommendations_total
+          type: counter
+          description: "Total optimization recommendations generated"
+        - name: estimated_cost_savings_usd
+          type: gauge
+          description: "Estimated monthly cost savings from optimizations"
+        - name: analysis_duration_seconds
+          type: histogram
+          description: "Performance analysis duration"
+
+    logging:
+      level: info
+      format: json
+
+  # ==========================================================================
+  # STATE: Optimization History & Baselines
+  # ==========================================================================
+  state:
+    backend: redis
+    config:
+      host: redis-cluster.default.svc.cluster.local
+      port: 6379
+      database: 3
+      ttl: 604800  # 7 days cache for baseline metrics
+      keyPrefix: "performance-optimizer:"
+
+  # ==========================================================================
+  # EXTENSIONS: kAgent Kubernetes Integration
+  # ==========================================================================
+  extensions:
+    kagent:
+      kubernetes:
+        namespace: platform-system
+
+        labels:
+          app: performance-optimizer
+          team: platform-engineering
+          dora-metric: lead-time
+
+        annotations:
+          description: "Automated performance optimization agent"
+          contact: "platform-team@bluefly.io"
+          slo: "p95 response time < 500ms"
+
+        resourceLimits:
+          cpu: "1000m"
+          memory: "2Gi"
+          ephemeralStorage: "5Gi"
+
+        serviceAccount: performance-optimizer-sa
+
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 65534
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop:
+              - ALL
+
+      guardrails:
+        requireApproval: false
+
+        costLimits:
+          maxTokensPerDay: 300000
+          maxCostPerDay: 30.00
+          currency: USD
+
+        allowedActions:
+          - kubernetes:get:pods
+          - kubernetes:get:deployments
+          - kubernetes:get:horizontalpodautoscalers
+          - kubernetes:get:verticalpodautoscalers
+          - kubernetes:get:nodes
+          - prometheus:query:*
+
+        auditLog:
+          destination: compliance-engine
+          retention: 90days
+
+      a2aConfig:
+        enabled: true
+        protocol: json-rpc
+
+        endpoints:
+          - http://cost-analyzer:8080/a2a
+          - http://monitoring-agent:8080/a2a
+
+        authentication:
+          type: mtls
+          certPath: /var/secrets/a2a-client-cert.pem
+          keyPath: /var/secrets/a2a-client-key.pem
+
+      meshIntegration:
+        enabled: true
+        istioIntegration: true
+        ambientMesh: true
+        mtlsMode: STRICT
+
+# ============================================================================
+# DEPLOYMENT NOTES
+# ============================================================================
+#
+# RBAC Requirements:
+#   - Read access to pods, deployments, HPA, VPA, nodes
+#   - Query access to Prometheus and metrics-server
+#   - Read access to Istio telemetry (istio-system namespace)
+#
+# Prerequisites:
+#   - Prometheus server with historical metrics (7+ days retention)
+#   - Kubernetes metrics-server deployed
+#   - Istio service mesh with telemetry enabled
+#   - Redis cluster for state persistence
+#
+# Optimization Triggers:
+#   - Scheduled analysis (every 6 hours)
+#   - Webhook triggers from Prometheus alerts (high CPU/memory)
+#   - On-demand analysis via API
+#
+# ============================================================================
