@@ -23,7 +23,7 @@ describe('ValidationService', () => {
   describe('validate()', () => {
     it('should validate a correct minimal manifest (v0.2.3)', async () => {
       const manifest: OssaAgent = {
-        apiVersion: 'ossa/v0.2.3',
+        apiVersion: 'ossa/v0.2.4',
         kind: 'Agent',
         metadata: {
           name: 'test-agent',
@@ -56,7 +56,7 @@ describe('ValidationService', () => {
 
     it('should reject invalid agent ID (uppercase)', async () => {
       const manifest = {
-        apiVersion: 'ossa/v0.2.3',
+        apiVersion: 'ossa/v0.2.4',
         kind: 'Agent',
         metadata: {
           name: 'INVALID_ID', // Must be lowercase DNS-1123 format
@@ -84,7 +84,7 @@ describe('ValidationService', () => {
 
     it('should reject manifest missing required fields', async () => {
       const manifest = {
-        apiVersion: 'ossa/v0.2.3',
+        apiVersion: 'ossa/v0.2.4',
         kind: 'Agent',
         metadata: {
           name: 'test-agent',
@@ -103,7 +103,7 @@ describe('ValidationService', () => {
 
     it('should generate warnings for missing best practices', async () => {
       const manifest: OssaAgent = {
-        apiVersion: 'ossa/v0.2.3',
+        apiVersion: 'ossa/v0.2.4',
         kind: 'Agent',
         metadata: {
           name: 'test-agent',
@@ -134,7 +134,7 @@ describe('ValidationService', () => {
 
     it('should validate manifest with extensions', async () => {
       const manifest: OssaAgent = {
-        apiVersion: 'ossa/v0.2.3',
+        apiVersion: 'ossa/v0.2.4',
         kind: 'Agent',
         metadata: {
           name: 'test-agent',
@@ -173,7 +173,7 @@ describe('ValidationService', () => {
 
     it('should reject manifest with invalid version string', async () => {
       const manifest = {
-        apiVersion: 'ossa/v0.2.3',
+        apiVersion: 'ossa/v0.2.4',
         kind: 'Agent',
         metadata: {
           name: 'test-agent',
@@ -213,7 +213,7 @@ describe('ValidationService', () => {
     it('should validate multiple manifests', async () => {
       const manifests: OssaAgent[] = [
         {
-          apiVersion: 'ossa/v0.2.3',
+          apiVersion: 'ossa/v0.2.4',
           kind: 'Agent',
           metadata: {
             name: 'agent-1',
@@ -235,7 +235,7 @@ describe('ValidationService', () => {
           },
         },
         {
-          apiVersion: 'ossa/v0.2.3',
+          apiVersion: 'ossa/v0.2.4',
           kind: 'Agent',
           metadata: {
             name: 'agent-2',
@@ -268,7 +268,7 @@ describe('ValidationService', () => {
     it('should identify invalid manifests in a batch', async () => {
       const manifests = [
         {
-          apiVersion: 'ossa/v0.2.3',
+          apiVersion: 'ossa/v0.2.4',
           kind: 'Agent',
           metadata: {
             name: 'valid-agent',
@@ -285,7 +285,7 @@ describe('ValidationService', () => {
         },
         {
           // Invalid manifest - missing required fields
-          apiVersion: 'ossa/v0.2.3',
+          apiVersion: 'ossa/v0.2.4',
           kind: 'Agent',
           metadata: {
             name: 'invalid-agent',

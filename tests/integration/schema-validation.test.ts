@@ -41,7 +41,7 @@ describe('Schema Validation Integration', () => {
           const fullPath = path.join(examplePath, file);
           try {
             const manifest = await manifestRepo.load(fullPath);
-            const result = await validationService.validate(manifest, '0.2.3');
+            const result = await validationService.validate(manifest, '0.2.4');
 
             // Log errors for debugging
             if (result.errors.length > 0) {
@@ -87,7 +87,7 @@ describe('Schema Validation Integration', () => {
 
   it('should validate platform extensions', async () => {
     const manifest = {
-      apiVersion: 'ossa/v0.2.3',
+      apiVersion: 'ossa/v0.2.4',
       kind: 'Agent',
       metadata: {
         name: 'test-agent',
@@ -112,13 +112,13 @@ describe('Schema Validation Integration', () => {
       },
     };
 
-    const result = await validationService.validate(manifest, '0.2.3');
+    const result = await validationService.validate(manifest, '0.2.4');
     expect(result.valid).toBe(true);
   });
 
   it('should catch platform-specific validation errors', async () => {
     const manifest = {
-      apiVersion: 'ossa/v0.2.3',
+      apiVersion: 'ossa/v0.2.4',
       kind: 'Agent',
       metadata: {
         name: 'test-agent',
@@ -138,14 +138,14 @@ describe('Schema Validation Integration', () => {
       },
     };
 
-    const result = await validationService.validate(manifest, '0.2.3');
+    const result = await validationService.validate(manifest, '0.2.4');
     expect(result.valid).toBe(false);
     expect(result.errors.length).toBeGreaterThan(0);
   });
 
   it('should validate cross-platform compatibility', async () => {
     const manifest = {
-      apiVersion: 'ossa/v0.2.3',
+      apiVersion: 'ossa/v0.2.4',
       kind: 'Agent',
       metadata: {
         name: 'multi-platform-agent',
@@ -174,7 +174,7 @@ describe('Schema Validation Integration', () => {
       },
     };
 
-    const result = await validationService.validate(manifest, '0.2.3');
+    const result = await validationService.validate(manifest, '0.2.4');
     if (result.errors.length > 0) {
       console.error(
         'Cross-platform validation errors:',

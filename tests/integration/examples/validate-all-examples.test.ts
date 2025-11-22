@@ -57,7 +57,7 @@ describe('All Examples Validation', () => {
   describe('Generated manifests', () => {
     it('should validate generated chat agent', async () => {
       const manifest = {
-        apiVersion: 'ossa/v0.2.3',
+        apiVersion: 'ossa/v0.2.4',
         kind: 'Agent',
         metadata: {
           name: 'test-chat',

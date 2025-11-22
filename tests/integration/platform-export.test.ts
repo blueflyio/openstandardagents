@@ -13,7 +13,7 @@ describe('Platform Export Integration', () => {
   const manifestRepo = container.get(ManifestRepository);
 
   const baseManifest = {
-    apiVersion: 'ossa/v0.2.3',
+    apiVersion: 'ossa/v0.2.4',
     kind: 'Agent',
     metadata: {
       name: 'test-agent',

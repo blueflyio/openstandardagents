@@ -216,7 +216,7 @@ export class GenerationService {
    */
   async importFromPlatform(platformData: any, platform: string): Promise<any> {
     const baseManifest: any = {
-      apiVersion: 'ossa/v0.2.3',
+      apiVersion: 'ossa/v0.2.4',
       kind: 'Agent',
       metadata: {
         name: platformData.name || platformData.id || 'imported-agent',
