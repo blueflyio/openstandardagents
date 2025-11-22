@@ -169,7 +169,7 @@ export interface AgentTemplate {
 /**
  * Schema versions supported
  */
-export type SchemaVersion = '0.2.3' | '0.2.2' | '0.1.9';
+export type SchemaVersion = '0.2.4' | '0.2.3' | '0.2.2' | '0.1.9';
 
 /**
  * Service interfaces

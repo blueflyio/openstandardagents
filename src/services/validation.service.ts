@@ -37,7 +37,7 @@ export class ValidationService implements IValidationService {
   ) {
     this.ajv = new Ajv({
       allErrors: true,
-      strict: true,
+      strict: false, // Allow custom x- keywords in v0.2.4+ schemas
       validateFormats: true,
     });
     addFormats(this.ajv);

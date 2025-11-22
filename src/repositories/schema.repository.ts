@@ -52,6 +52,7 @@ export class SchemaRepository implements ISchemaRepository {
   private getSchemaPath(version: SchemaVersion): string {
     // Map versions to schema files
     const schemaMap: Record<SchemaVersion, string> = {
+      '0.2.4': 'spec/v0.2.4/ossa-0.2.4.schema.json',
       '0.2.3': 'spec/v0.2.3/ossa-0.2.3.schema.json',
       '0.2.2': 'spec/v0.2.2/ossa-0.2.2.schema.json',
       '0.1.9': 'spec/versions/v0.1.9/ossa-v0.1.9.schema.json',

@@ -45,7 +45,7 @@ describe('ValidationService', () => {
         },
       };
 
-      const result = await validationService.validate(manifest, '0.2.3');
+      const result = await validationService.validate(manifest, '0.2.4');
 
       expect(result.valid).toBe(true);
       expect(result.errors).toHaveLength(0);
@@ -75,7 +75,7 @@ describe('ValidationService', () => {
         },
       };
 
-      const result = await validationService.validate(manifest, '0.2.3');
+      const result = await validationService.validate(manifest, '0.2.4');
 
       expect(result.valid).toBe(false);
       expect(result.errors.length).toBeGreaterThan(0);
@@ -95,7 +95,7 @@ describe('ValidationService', () => {
         },
       };
 
-      const result = await validationService.validate(manifest, '0.2.3');
+      const result = await validationService.validate(manifest, '0.2.4');
 
       expect(result.valid).toBe(false);
       expect(result.errors.length).toBeGreaterThan(0);
@@ -120,7 +120,7 @@ describe('ValidationService', () => {
         },
       };
 
-      const result = await validationService.validate(manifest, '0.2.3');
+      const result = await validationService.validate(manifest, '0.2.4');
 
       expect(result.valid).toBe(true); // Schema valid
       expect(result.warnings.length).toBeGreaterThan(0);
@@ -164,7 +164,7 @@ describe('ValidationService', () => {
         },
       };
 
-      const result = await validationService.validate(manifest, '0.2.3');
+      const result = await validationService.validate(manifest, '0.2.4');
 
       expect(result.valid).toBe(true);
       expect(result.manifest?.extensions).toBeDefined();
@@ -189,7 +189,7 @@ describe('ValidationService', () => {
         },
       };
 
-      const result = await validationService.validate(manifest, '0.2.3');
+      const result = await validationService.validate(manifest, '0.2.4');
 
       expect(result.valid).toBe(false);
       expect(result.errors.length).toBeGreaterThan(0);
@@ -258,7 +258,7 @@ describe('ValidationService', () => {
         },
       ];
 
-      const results = await validationService.validateMany(manifests, '0.2.3');
+      const results = await validationService.validateMany(manifests, '0.2.4');
 
       expect(results).toHaveLength(2);
       expect(results[0].valid).toBe(true);
@@ -297,7 +297,7 @@ describe('ValidationService', () => {
         },
       ];
 
-      const results = await validationService.validateMany(manifests, '0.2.3');
+      const results = await validationService.validateMany(manifests, '0.2.4');
 
       expect(results).toHaveLength(2);
       expect(results[0].valid).toBe(true);
