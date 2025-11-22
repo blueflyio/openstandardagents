@@ -79,7 +79,7 @@ describe('All Examples Validation', () => {
         },
       };
 
-      const result = await validationService.validate(manifest, '0.2.3');
+      const result = await validationService.validate(manifest, '0.2.4');
 
       expect(result.valid).toBe(true);
       expect(result.errors).toHaveLength(0);

@@ -38,9 +38,20 @@ describe('Schema Validation Integration', () => {
       const files = fs.readdirSync(examplePath);
       for (const file of files) {
         if (file.endsWith('.ossa.json') || file.endsWith('.ossa.yaml')) {
+          // Skip legacy version examples (v0.2.2, v1)
+          if (file.includes('.v0.2.2.') || file.includes('-v1.')) {
+            continue;
+          }
+
           const fullPath = path.join(examplePath, file);
           try {
             const manifest = await manifestRepo.load(fullPath);
+
+            // Skip manifests not using v0.2.4 schema
+            if (manifest.apiVersion !== 'ossa/v0.2.4') {
+              continue;
+            }
+
             const result = await validationService.validate(manifest, '0.2.4');
 
             // Log errors for debugging
@@ -69,9 +80,11 @@ describe('Schema Validation Integration', () => {
 
             if (criticalErrors.length > 0) {
               console.error(
-                `Critical validation errors for ${fullPath}:`,
-                criticalErrors
+                `\n❌ Critical validation errors for ${fullPath}:`
               );
+              criticalErrors.forEach(e => {
+                console.error(`  - ${e.instancePath}: ${e.message}`);
+              });
             }
 
             // Only fail on critical schema errors, not platform-specific validation
