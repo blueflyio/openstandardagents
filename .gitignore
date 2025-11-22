@@ -328,15 +328,26 @@ mlruns/
 # Data Files
 # =============================================================================
 
-# Data files
+# Data files (not schema/config files)
 *.csv
-*.json
-!tsconfig*.json
-!package*.json
 *.parquet
 *.feather
 data/raw/
 data/processed/
+
+# Ignore large data JSONs but allow configs and schemas
+data/**/*.json
+logs/**/*.json
+*.data.json
+!spec/**/*.json
+!docs/**/*.json
+!examples/**/*.json
+!openapi/**/*.json
+!.gitlab/**/*.json
+!.claude/**/*.json
+!.cursor/**/*.json
+!website/content/**/*.json
+!website/public/**/*.json
 
 # =============================================================================
 # Security & Certificates
