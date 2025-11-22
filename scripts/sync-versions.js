@@ -154,7 +154,7 @@ function updateReadme(version) {
   readme = readme.replace(yamlVersionRegex, `ossaVersion: "${version}"`);
 
   // Update badge version
-  const badgeRegex = /https:\/\/img\.shields\.io\/npm\/v\/@bluefly\/[^.]+/g;
+  const badgeRegex = /https:\/\/img\.shields\.io\/npm\/v\/@bluefly\/[^)]+/g;
   readme = readme.replace(badgeRegex, `https://img.shields.io/npm/v/@bluefly/openstandardagents`);
 
   if (readme !== original) {
