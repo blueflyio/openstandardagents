@@ -5,7 +5,7 @@
 # Milestones gate production releases - must be 100% complete before merge to main
 #
 # Status: ACTIVE MODE (tests must pass, version sync validated)
-# Last updated: 2025-11-23 (v0.2.5 milestone)
+# Last updated: 2025-11-21 (v0.2.5 milestone)
 
 stages:
   - setup
@@ -416,12 +416,8 @@ promote-to-main:
 # automatically by commit analysis. Release job must be manually triggered
 # after reviewing the merge to main.
 
-<<<<<<< HEAD
 # Preview job - shows what version will be released (dry-run)
 release:preview:
-=======
-release:main:
->>>>>>> origin/main
   stage: release-main
   image: node:${NODE_VERSION}-alpine
   dependencies:
@@ -434,7 +430,6 @@ release:main:
     - git remote set-url origin https://oauth2:${GITLAB_PUSH_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git
     - git fetch --unshallow --tags || true
   script:
-<<<<<<< HEAD
     - echo "🔍 Release Preview (Dry-Run)"
     - echo "============================"
     - npx semantic-release --dry-run
@@ -458,8 +453,6 @@ release:main:
     - git remote set-url origin https://oauth2:${GITLAB_PUSH_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git
     - git fetch --unshallow --tags || true
   script:
-=======
->>>>>>> origin/main
     - |
       echo "🚀 Milestone-Controlled Release"
       echo "================================"
@@ -535,7 +528,6 @@ release:main:
       echo "✅ Release completed"
   rules:
     - if: $CI_COMMIT_BRANCH == "main"
-<<<<<<< HEAD
       when: manual  # ALWAYS manual - prevents accidental npm publishes
       allow_failure: false
     - when: never  # Explicit deny for all other cases
@@ -545,15 +537,6 @@ release:main:
     - release:preview  # Must review preview before releasing
   environment:
     name: npm-registry
-=======
-      when: manual
-      allow_failure: false
-  needs:
-    - quality:gates
-    - build:dist
-  environment:
-    name: production
->>>>>>> origin/main
     url: https://www.npmjs.com/package/@bluefly/openstandardagents
     deployment_tier: production
 
