@@ -10,7 +10,7 @@ describe('CursorValidator', () => {
 
   it('should validate valid Cursor extension', () => {
     const manifest = {
-      apiVersion: 'ossa/v0.2.3',
+      apiVersion: 'ossa/v0.2.4',
       kind: 'Agent',
       metadata: { name: 'test-agent' },
       spec: { role: 'Test agent' },

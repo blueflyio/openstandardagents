@@ -93,7 +93,7 @@ All kagent examples updated with:
 ```yaml
 # Both versions work identically
 apiVersion: ossa/v0.2.2  # Still valid
-apiVersion: ossa/v0.2.3  # Recommended
+apiVersion: ossa/v0.2.4  # Recommended
 ```
 
 ### Recommended Changes

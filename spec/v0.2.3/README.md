@@ -20,11 +20,11 @@ OSSA is to AI agents what OpenAPI is to REST APIs:
 ## API Version
 
 ```yaml
-apiVersion: ossa/v0.2.3
+apiVersion: ossa/v0.2.4
 ```
 
 The schema accepts:
-- `ossa/v0.2.3` (recommended)
+- `ossa/v0.2.4` (recommended)
 - `ossa/v0.2.2` (backward compatible)
 - `ossa/v1` (forward compatible)
 
@@ -33,7 +33,7 @@ The schema accepts:
 ### Kubernetes-Style Manifest
 
 ```yaml
-apiVersion: ossa/v0.2.3
+apiVersion: ossa/v0.2.4
 kind: Agent
 metadata:
   name: my-agent
@@ -86,7 +86,7 @@ Simply update your `apiVersion` field:
 apiVersion: ossa/v0.2.2
 
 # After (v0.2.3)
-apiVersion: ossa/v0.2.3
+apiVersion: ossa/v0.2.4
 ```
 
 Both versions are accepted by the same schema. See [migrations/v0.2.2-to-v0.2.3.md](migrations/v0.2.2-to-v0.2.3.md) for details.

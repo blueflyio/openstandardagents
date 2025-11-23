@@ -145,7 +145,7 @@ Projects that have achieved OSSA compliance:
 ### Minimal OSSA Manifest
 
 ```yaml
-apiVersion: ossa/v0.2.3
+apiVersion: ossa/v0.2.4
 kind: Agent
 
 metadata:
@@ -170,7 +170,7 @@ spec:
 ### With Platform Extensions
 
 ```yaml
-apiVersion: ossa/v0.2.3
+apiVersion: ossa/v0.2.4
 kind: Agent
 
 metadata:

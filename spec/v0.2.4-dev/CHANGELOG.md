@@ -184,7 +184,7 @@ Updated to support v0.2.4-dev:
 
 **Valid versions**:
 - `ossa/v0.2.2`
-- `ossa/v0.2.3`
+- `ossa/v0.2.4`
 - `ossa/v0.2.4-dev`
 - `ossa/v1`
 - `ossa/v1.0`
