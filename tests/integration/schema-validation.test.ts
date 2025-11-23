@@ -47,11 +47,12 @@ describe('Schema Validation Integration', () => {
           try {
             const manifest = await manifestRepo.load(fullPath);
 
-            // Skip manifests not using v0.2.4 schema
-            if (manifest.apiVersion !== 'ossa/v0.2.4') {
+            // Skip manifests not using v0.2.x schema
+            if (!manifest.apiVersion?.startsWith('ossa/v0.2')) {
               continue;
             }
 
+            // Map ossa/v0.2 or ossa/v0.2.x to latest v0.2.x schema
             const result = await validationService.validate(manifest, '0.2.4');
 
             // Log errors for debugging

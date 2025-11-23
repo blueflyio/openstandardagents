@@ -32,7 +32,7 @@
 #
 # ============================================================================
 
-apiVersion: ossa/v0.2.x
+apiVersion: ossa/v0.2
 kind: Agent
 
 metadata:
