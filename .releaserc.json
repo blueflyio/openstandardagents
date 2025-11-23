@@ -1,0 +1,85 @@
+{
+  "branches": [
+    "main",
+    {
+      "name": "development",
+      "prerelease": "dev"
+    }
+  ],
+  "plugins": [
+    [
+      "@semantic-release/commit-analyzer",
+      {
+        "preset": "conventionalcommits",
+        "releaseRules": [
+          { "type": "feat", "release": "minor" },
+          { "type": "fix", "release": "patch" },
+          { "type": "perf", "release": "patch" },
+          { "type": "revert", "release": "patch" },
+          { "type": "docs", "release": "patch" },
+          { "type": "chore", "release": false },
+          { "type": "refactor", "release": "patch" },
+          { "type": "test", "release": false },
+          { "type": "build", "release": false },
+          { "type": "ci", "release": false },
+          { "breaking": true, "release": "major" }
+        ],
+        "parserOpts": {
+          "noteKeywords": ["BREAKING CHANGE", "BREAKING CHANGES", "BREAKING"]
+        }
+      }
+    ],
+    [
+      "@semantic-release/release-notes-generator",
+      {
+        "preset": "conventionalcommits",
+        "presetConfig": {
+          "types": [
+            { "type": "feat", "section": "✨ Features", "hidden": false },
+            { "type": "fix", "section": "🐛 Bug Fixes", "hidden": false },
+            { "type": "perf", "section": "⚡ Performance", "hidden": false },
+            { "type": "revert", "section": "⏪ Reverts", "hidden": false },
+            { "type": "docs", "section": "📚 Documentation", "hidden": false },
+            { "type": "refactor", "section": "♻️ Code Refactoring", "hidden": false },
+            { "type": "test", "section": "✅ Tests", "hidden": true },
+            { "type": "build", "section": "🏗️ Build System", "hidden": true },
+            { "type": "ci", "section": "👷 CI/CD", "hidden": true },
+            { "type": "chore", "section": "🔧 Chores", "hidden": true }
+          ]
+        }
+      }
+    ],
+    [
+      "@semantic-release/changelog",
+      {
+        "changelogFile": "CHANGELOG.md",
+        "changelogTitle": "# Changelog\n\nAll notable changes to OSSA (Open Standard for Scalable AI Agents) will be documented in this file.\n\nThe format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),\nand this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html)."
+      }
+    ],
+    [
+      "@semantic-release/npm",
+      {
+        "npmPublish": true,
+        "tarballDir": "dist"
+      }
+    ],
+    [
+      "@semantic-release/gitlab",
+      {
+        "gitlabUrl": "https://gitlab.bluefly.io",
+        "assets": [
+          { "path": "dist/*.tgz", "label": "Distribution Package" },
+          { "path": "CHANGELOG.md", "label": "Changelog" }
+        ],
+        "successComment": "🎉 This ${issue.pull_request ? 'MR is included' : 'issue has been resolved'} in version ${nextRelease.version}\n\nThe release is available on:\n- [npm package](https://www.npmjs.com/package/@bluefly/openstandardagents)\n- [GitLab release](${releases[0].url})\n- [Documentation](https://openstandardagents.org)\n\nYour **${issue.pull_request ? 'merge request' : 'issue'}** is included in this release!"
+      }
+    ],
+    [
+      "@semantic-release/git",
+      {
+        "assets": ["CHANGELOG.md", "package.json", "package-lock.json"],
+        "message": "chore(release): ${nextRelease.version} [skip ci]\n\n${nextRelease.notes}"
+      }
+    ]
+  ]
+}
