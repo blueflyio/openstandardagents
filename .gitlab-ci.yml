@@ -698,6 +698,7 @@ release:preview:
       when: always
   allow_failure: true
   needs:
+    - build:dist
     - job: detect:milestone-version
       optional: true
       artifacts: true
