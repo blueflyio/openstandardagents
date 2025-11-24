@@ -56,7 +56,7 @@ Research migration patterns:
 
 ### Papers & Publications
 
-- OSSA Specification: [spec/v0.2.4/ossa-0.2.4.schema.json](https://gitlab.bluefly.io/llm/openapi-ai-agents-standard/-/blob/main/spec/v0.2.4/ossa-0.2.4.schema.json)
+- OSSA Specification: [spec/v0.2.5-RC/ossa-0.2.5-RC.schema.json](https://gitlab.bluefly.io/llm/openapi-ai-agents-standard/-/blob/main/spec/v0.2.5-RC/ossa-0.2.5-RC.schema.json)
 - Examples Library: [examples/](https://gitlab.bluefly.io/llm/openapi-ai-agents-standard/-/tree/main/examples)
 
 ### Research Questions
