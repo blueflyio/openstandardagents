@@ -101,7 +101,7 @@
     "inversify": "^7.10.3",
     "reflect-metadata": "^0.2.2",
     "yaml": "^2.3.0",
-    "zod": "^4.1.11"
+    "zod": "^4.1.13"
   },
   "devDependencies": {
     "@jest/globals": "^29.7.0",
