@@ -102,7 +102,7 @@ For production features, see [Agent Buildkit](https://gitlab.com/blueflyio/agent
 
 ## Specification
 
-OSSA v0.2.5 Schema: [`spec/v0.2.5-RC/ossa-0.2.5.schema.json`](spec/v0.2.5-RC/ossa-0.2.5.schema.json)
+OSSA v0.2.5-RC Schema: [`spec/v0.2.5-RC/ossa-0.2.5-RC.schema.json`](spec/v0.2.5-RC/ossa-0.2.5-RC.schema.json)
 
 ### Required Fields
 
@@ -267,7 +267,7 @@ The documentation is organized into:
 
 ### Additional Resources
 
-- **Specification**: [spec/v0.2.5-RC/ossa-0.2.5.schema.json](spec/v0.2.5-RC/ossa-0.2.5.schema.json)
+- **Specification**: [spec/v0.2.5-RC/ossa-0.2.5-RC.schema.json](spec/v0.2.5-RC/ossa-0.2.5-RC.schema.json)
 - **Examples**: [examples/](examples/)
 - **API Reference**: [docs/](docs/)
 - **GitHub Issues**: https://github.com/blueflyio/openstandardagents/issues
