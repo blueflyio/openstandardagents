@@ -87,7 +87,7 @@ detect:milestone-version:
 
           TOTAL_ISSUES=$(echo "$MILESTONE_STATS" | jq -r '.total_issues_count // 0')
           CLOSED_ISSUES=$(echo "$MILESTONE_STATS" | jq -r '.closed_issues_count // 0')
-          OPEN_ISSUES=$(echo "$MILESTONE_STATS" | jq -r '(.total_issues_count - .closed_issues_count) // 0')
+          OPEN_ISSUES=$(echo "$MILESTONE_STATS" | jq -r '((.total_issues_count // 0) - (.closed_issues_count // 0))')
 
           echo "📋 Found closed milestone: $TITLE"
           echo "   Version: v${VERSION}"
