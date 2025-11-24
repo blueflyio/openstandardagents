@@ -2,34 +2,11 @@
 title: "Examples"
 ---
 
-# OSSA Examples
-
-Complete working examples demonstrating OSSA capabilities, from minimal agents to production-ready ecosystems.
-
----
-
-## 🚀 Production-Ready: GitLab Kubernetes Agent Ecosystem
-
-**NEW**: Complete production ecosystem with 8 specialized agents for GitLab-integrated Kubernetes deployments.
-
-[**View Full Documentation →**](./gitlab-kubernetes-agents)
-
-**Highlights**:
-- 8 OSSA-compliant agents (Security, Performance, Database, Config, Monitoring, Rollback, Cost, Compliance)
-- Agent mesh with Istio + mTLS
-- Elite DORA metrics (12 deployments/day, 45min lead time, 8.5% CFR)
-- $80-145K/month cost savings potential
-- SOC2, HIPAA, PCI-DSS, GDPR, FedRAMP compliance
-
-**Location**: [`.gitlab/agents/`](https://gitlab.bluefly.io/llm/openstandardagents/-/tree/main/.gitlab/agents)
-
----
-
-## OpenAPI Extensions Examples
+# OSSA OpenAPI Extensions - Examples
 
 Complete working examples demonstrating OSSA OpenAPI extensions.
 
-### Example Specifications
+## Example Specifications
 
 ### [Minimal Agent API](./examples/openapi-extensions/minimal-agent-api.openapi.yml)
 

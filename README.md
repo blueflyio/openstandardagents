@@ -102,7 +102,7 @@ For production features, see [Agent Buildkit](https://github.com/blueflyio/opens
 
 ## Specification
 
-OSSA v0.2.3 Schema: [`spec/v0.2.4/ossa-0.2.4.schema.json`](spec/v0.2.4/ossa-0.2.4.schema.json)
+OSSA v0.2.4 Schema: [`spec/v0.2.4/ossa-0.2.4.schema.json`](spec/v0.2.4/ossa-0.2.4.schema.json)
 
 ### Required Fields
 
