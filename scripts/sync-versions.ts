@@ -253,7 +253,7 @@ function updateReleasing(version: string): void {
   const original = releasing;
 
   // Update "Current Version: X.Y.Z" line
-  const currentVersionRegex = /\*\*Current Version\*\*:\s*[\d.]+/;
+  const currentVersionRegex = /\*\*Current Version\*\*:\s*[\d.\-a-zA-Z]+/;
   if (currentVersionRegex.test(releasing)) {
     releasing = releasing.replace(currentVersionRegex, `**Current Version**: ${version}`);
   }
