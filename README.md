@@ -3,7 +3,7 @@
 **The OpenAPI for AI Agents**
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
-[![npm version](https://img.shields.io/badge/npm-v0.2.3-blue.svg)](https://www.npmjs.com/package/@bluefly/openstandardagents)
+[![npm version](https://img.shields.io/npm/v/@bluefly/openstandardagents.svg)](https://www.npmjs.com/package/@bluefly/openstandardagents)
 [![GitLab](https://img.shields.io/badge/GitLab-OSSA-orange.svg)](https://github.com/blueflyio/openstandardagents)
 [![GitHub](https://img.shields.io/badge/GitHub-OSSA-black.svg)](https://github.com/blueflyio/openstandardagents)
 [![OSSA Compliant](https://img.shields.io/badge/OSSA-Compliant-00B8D4.svg)](https://github.com/blueflyio/openstandardagents)
@@ -82,7 +82,7 @@ The OSSA CLI provides basic tooling:
 ```bash
 ossa validate <path>    # Validate against OSSA schema
 ossa generate <type>    # Generate agent from template (chat, workflow, compliance, etc.)
-ossa migrate <source>   # Migrate v0.1.9 → v0.2.2
+ossa migrate <source>   # Migrate between OSSA versions
 ```
 
 **What OSSA CLI does:**

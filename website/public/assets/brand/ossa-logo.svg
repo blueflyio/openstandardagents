@@ -1,26 +1,21 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="120" height="120">
-  <!-- OSSA Logo - Open Standard for AI Agents -->
-  <!-- Design: Clean geometric symbol representing agents connecting -->
-
-  <!-- Background circle -->
-  <circle cx="60" cy="60" r="58" fill="#0066CC" opacity="0.1"/>
-
-  <!-- Central node (represents OSSA standard) -->
-  <circle cx="60" cy="60" r="20" fill="#0066CC"/>
-
-  <!-- Connecting nodes (represent agents) -->
-  <circle cx="30" cy="30" r="8" fill="#00B8D4"/>
-  <circle cx="90" cy="30" r="8" fill="#00B8D4"/>
-  <circle cx="30" cy="90" r="8" fill="#00B8D4"/>
-  <circle cx="90" cy="90" r="8" fill="#00B8D4"/>
-
-  <!-- Connection lines (represent interoperability) -->
-  <line x1="60" y1="60" x2="30" y2="30" stroke="#00B8D4" stroke-width="2" opacity="0.6"/>
-  <line x1="60" y1="60" x2="90" y2="30" stroke="#00B8D4" stroke-width="2" opacity="0.6"/>
-  <line x1="60" y1="60" x2="30" y2="90" stroke="#00B8D4" stroke-width="2" opacity="0.6"/>
-  <line x1="60" y1="60" x2="90" y2="90" stroke="#00B8D4" stroke-width="2" opacity="0.6"/>
-
-  <!-- Letter "O" subtly formed by central circle -->
-  <circle cx="60" cy="60" r="12" fill="none" stroke="#FFFFFF" stroke-width="2"/>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg width="100%" height="100%" viewBox="0 0 284 180" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" xmlns:serif="http://www.serif.com/" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2;">
+    <g id="Layer3">
+    </g>
+    <g id="Artboard1" transform="matrix(0.959459,0,0,0.967742,-85.391892,-77.419355)">
+        <rect x="89" y="80" width="296" height="186" style="fill:none;"/>
+        <g id="Layer2" transform="matrix(1.042254,0,0,1.033333,-98.605634,44.866667)">
+            <g transform="matrix(1,0,0,1,-4,3)">
+                <path d="M360.304,111.534C363.113,108.192 389.309,70.107 418.113,69.792C455.004,69.388 453.98,85.001 454,85C411.09,80.447 406.306,113.749 391,127C376.213,128.875 359.884,111.957 360.304,111.534Z" style="fill:url(#_Linear1);"/>
+            </g>
+            <path d="M387,130C363.955,129.387 356.634,111.656 343.218,92.638C330.132,74.086 313.017,55.009 299,47C275.667,33.667 230.506,22.195 196,79C178.201,108.301 181.795,160.269 198,181C216.5,204.667 252.252,235.718 318,181C308.173,174.775 295,164 295,164C295,164 278.634,182.883 265,183C235.793,183.251 216.333,158.333 218,120C218.883,99.683 237.095,60.92 262,61C305.125,61.138 316.755,172.294 387,130Z" style="fill:url(#_Linear2);"/>
+            <path d="M237,121C298.486,85.797 306.515,155.607 345.704,156.426C374.233,157.023 382.29,134.105 392,129C391.933,128.919 430.028,113.239 430,113C433.734,111.659 461,183 461,183L444,183L420,142L417,142C417,142 382.667,187.667 338,186C287.813,183.443 267.695,115.583 237,121Z" style="fill:url(#_Linear3);"/>
+        </g>
+    </g>
+    <defs>
+        <linearGradient id="_Linear1" x1="0" y1="0" x2="1" y2="0" gradientUnits="userSpaceOnUse" gradientTransform="matrix(-38,11,-11,-38,440,80)"><stop offset="0" style="stop-color:rgb(74,62,205);stop-opacity:1"/><stop offset="1" style="stop-color:rgb(116,82,222);stop-opacity:1"/></linearGradient>
+        <linearGradient id="_Linear2" x1="0" y1="0" x2="1" y2="0" gradientUnits="userSpaceOnUse" gradientTransform="matrix(-104,82,-82,-104,296,85)"><stop offset="0" style="stop-color:rgb(144,96,234);stop-opacity:1"/><stop offset="1" style="stop-color:rgb(74,62,205);stop-opacity:1"/></linearGradient>
+        <linearGradient id="_Linear3" x1="0" y1="0" x2="1" y2="0" gradientUnits="userSpaceOnUse" gradientTransform="matrix(-222,-64,64,-222,461,183)"><stop offset="0" style="stop-color:rgb(26,188,237);stop-opacity:1"/><stop offset="1" style="stop-color:rgb(101,78,217);stop-opacity:1"/></linearGradient>
+    </defs>
 </svg>
-
