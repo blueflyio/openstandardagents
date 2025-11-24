@@ -197,7 +197,7 @@ validate:version-sync:
   script:
     - npm ci --legacy-peer-deps
     - echo "🔍 Checking version consistency..."
-    - node scripts/sync-versions.js --check
+    - npx tsx scripts/sync-versions.ts --check
   allow_failure: false
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
@@ -232,8 +232,8 @@ validate:docs-consistency:
       echo ""
 
       # Run comprehensive version sync check
-      echo "Running sync-versions.js --check..."
-      if ! node scripts/sync-versions.js --check; then
+      echo "Running sync-versions.ts --check..."
+      if ! npx tsx scripts/sync-versions.ts --check; then
         echo ""
         echo "❌ CRITICAL FAILURE: Documentation is out of sync!"
         echo ""
@@ -243,7 +243,7 @@ validate:docs-consistency:
         echo "  • Badge versions are incorrect"
         echo ""
         echo "FIX REQUIRED:"
-        echo "  1. Run locally: node scripts/sync-versions.js --fix"
+        echo "  1. Run locally: npx tsx scripts/sync-versions.ts --fix"
         echo "  2. Commit the changes"
         echo "  3. Push and re-run pipeline"
         echo ""
@@ -254,7 +254,7 @@ validate:docs-consistency:
       # Verify spec directory exists
       if [ ! -d "spec/v${VERSION}" ]; then
         echo "❌ CRITICAL: spec/v${VERSION}/ directory does not exist!"
-        echo "Run: node scripts/sync-versions.js --fix"
+        echo "Run: npx tsx scripts/sync-versions.ts --fix"
         exit 1
       fi
 
@@ -764,12 +764,12 @@ release:main:
       echo ""
       echo "📝 AUTO-FIXING: Syncing all documentation and version references..."
       echo "This ensures README, schema paths, badges, and all docs are consistent."
-      node scripts/sync-versions.js --fix
+      npx tsx scripts/sync-versions.ts --fix
 
       # Verify the sync worked
       echo ""
       echo "🔍 Verifying documentation consistency..."
-      if ! node scripts/sync-versions.js --check; then
+      if ! npx tsx scripts/sync-versions.ts --check; then
         echo "❌ CRITICAL: Documentation sync failed verification!"
         echo "This should never happen. Aborting release."
         exit 1
