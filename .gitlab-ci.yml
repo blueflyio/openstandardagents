@@ -498,7 +498,7 @@ release:dev:
       
       # Configure npm
       echo "@bluefly:registry=${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/npm/" > .npmrc
-      echo "//gitlab.bluefly.io/api/v4/projects/${CI_PROJECT_ID}/packages/npm/:_authToken=${CI_JOB_TOKEN}" >> .npmrc
+      echo "//${CI_SERVER_HOST}/api/v4/projects/${CI_PROJECT_ID}/packages/npm/:_authToken=${CI_JOB_TOKEN}" >> .npmrc
       
       if [ -n "$NPM_TOKEN" ]; then
         echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" >> .npmrc
@@ -795,7 +795,7 @@ release:main:
 
       # Configure npm
       echo "@bluefly:registry=${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/npm/" > .npmrc
-      echo "//gitlab.bluefly.io/api/v4/projects/${CI_PROJECT_ID}/packages/npm/:_authToken=${CI_JOB_TOKEN}" >> .npmrc
+      echo "//${CI_SERVER_HOST}/api/v4/projects/${CI_PROJECT_ID}/packages/npm/:_authToken=${CI_JOB_TOKEN}" >> .npmrc
 
       if [ -n "$NPM_TOKEN" ]; then
         echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" >> .npmrc
