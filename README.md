@@ -4,9 +4,9 @@
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![npm version](https://img.shields.io/npm/v/@bluefly/openstandardagents.svg)](https://www.npmjs.com/package/@bluefly/openstandardagents)
-[![GitLab](https://img.shields.io/badge/GitLab-OSSA-orange.svg)](https://github.com/blueflyio/openstandardagents)
+[![GitLab](https://img.shields.io/badge/GitLab-OSSA-orange.svg)](https://gitlab.com/blueflyio/openstandardagents)
 [![GitHub](https://img.shields.io/badge/GitHub-OSSA-black.svg)](https://github.com/blueflyio/openstandardagents)
-[![OSSA Compliant](https://img.shields.io/badge/OSSA-Compliant-00B8D4.svg)](https://github.com/blueflyio/openstandardagents)
+[![OSSA Compliant](https://img.shields.io/badge/OSSA-Compliant-00B8D4.svg)](https://gitlab.com/blueflyio/openstandardagents)
 
 ---
 
@@ -19,10 +19,10 @@ Just as OpenAPI standardized REST APIs, OSSA standardizes AI agent interaction, 
 **OSSA is NOT a framework** - it's a standard that defines the contract. Implementations provide the functionality.
 
 **Key Qualities:**
-- ✅ **Vendor-Neutral** - Community-driven, not controlled by any single company
-- ✅ **Interoperable** - Common language enabling diverse AI agents to work together
-- ✅ **Trustworthy** - Built with compliance and security in mind
-- ✅ **Open** - Collaborative effort for the "Internet of Agents"
+- **Vendor-Neutral** - Community-driven, not controlled by any single company
+- **Interoperable** - Common language enabling diverse AI agents to work together
+- **Trustworthy** - Built with compliance and security in mind
+- **Open** - Collaborative effort for the "Internet of Agents"
 
 | Component | Role | Comparable To |
 |-----------|------|---------------|
@@ -86,28 +86,28 @@ ossa migrate <source>   # Migrate between OSSA versions
 ```
 
 **What OSSA CLI does:**
-- ✅ Validate agent manifests
-- ✅ Generate project scaffolding
-- ✅ Provide templates
+- Validate agent manifests
+- Generate project scaffolding
+- Provide templates
 
 **What OSSA CLI does NOT do:**
-- ❌ Runtime orchestration
-- ❌ Deployment
-- ❌ Production monitoring
-- ❌ Infrastructure management
+- Runtime orchestration
+- Deployment
+- Production monitoring
+- Infrastructure management
 
-For production features, see [Agent Buildkit](https://github.com/blueflyio/openstandardagents).
+For production features, see [Agent Buildkit](https://gitlab.com/blueflyio/agent-buildkit).
 
 ---
 
 ## Specification
 
-OSSA v0.2.4 Schema: [`spec/v0.2.4/ossa-0.2.4.schema.json`](spec/v0.2.4/ossa-0.2.4.schema.json)
+OSSA v0.2.5-RC Schema: [`spec/v0.2.5-RC/ossa-0.2.5-RC.schema.json`](spec/v0.2.5-RC/ossa-0.2.5-RC.schema.json)
 
 ### Required Fields
 
 ```yaml
-ossaVersion: "0.2.4"
+ossaVersion: "0.2.5-RC"
 
 agent:
   id: my-agent                    # DNS-1123 format
@@ -129,19 +129,19 @@ Full schema documentation: [`docs/specification/`](docs/specification/)
 
 ---
 
-## 🚀 Production-Ready Example: GitLab Kubernetes Agent Ecosystem
+## Production-Ready Example: GitLab Kubernetes Agent Ecosystem
 
 **NEW**: Complete production ecosystem with **8 specialized agents** for GitLab-integrated Kubernetes deployments.
 
-[**View Full Documentation →**](https://gitlab.bluefly.io/llm/openstandardagents/-/wikis/OSSA-Agent-Ecosystem-for-GitLab-Kubernetes-Deployments)
+[**View Full Documentation**](https://github.com/blueflyio/openstandardagents/wiki/OSSA-Agent-Ecosystem-for-GitLab-Kubernetes-Deployments)
 
 ### Highlights
 
-- ✅ **8 OSSA-compliant agents**: Security, Performance, Database, Config, Monitoring, Rollback, Cost, Compliance
-- ✅ **Agent mesh** with Istio + STRICT mTLS
-- ✅ **Elite DORA metrics**: 12 deployments/day, 45min lead time, 8.5% change failure rate
-- ✅ **Massive ROI**: $80-145K/month cost savings (31-57x return)
-- ✅ **Full compliance**: SOC2, HIPAA, PCI-DSS, GDPR, FedRAMP
+- **8 OSSA-compliant agents**: Security, Performance, Database, Config, Monitoring, Rollback, Cost, Compliance
+- **Agent mesh** with Istio + STRICT mTLS
+- **Elite DORA metrics**: 12 deployments/day, 45min lead time, 8.5% change failure rate
+- **Massive ROI**: $80-145K/month cost savings (31-57x return)
+- **Full compliance**: SOC2, HIPAA, PCI-DSS, GDPR, FedRAMP
 
 ### Quick Deploy
 
@@ -187,14 +187,12 @@ Reference implementations: [`examples/`](examples/)
 - GitLab integration
 - Kubernetes deployment
 - Production monitoring
-- [Learn more →](https://github.com/blueflyio/openstandardagents)
 
 **Agent Studio** - GUI platform for agent orchestration
 - macOS-aligned design
 - Visual workflow design
 - Agent monitoring and debugging
 - End-to-end agent lifecycle management
-- [Learn more →](https://github.com/blueflyio/openstandardagents)
 
 ### Part of the OSSA Ecosystem
 
@@ -213,16 +211,16 @@ Together, they form a complete ecosystem for AI agent development, deployment, a
 
 ### For Enterprises
 
-✅ **Lightweight** - Just a standard, minimal dependencies
-✅ **No Vendor Lock-in** - Use any implementation
-✅ **Deploy Anywhere** - Your infrastructure, your choice
-✅ **Clear Specification** - Well-defined contract
+- **Lightweight** - Just a standard, minimal dependencies
+- **No Vendor Lock-in** - Use any implementation
+- **Deploy Anywhere** - Your infrastructure, your choice
+- **Clear Specification** - Well-defined contract
 
 ### For Framework Builders
 
-✅ **Standard to Build On** - Like OpenAPI for APIs
-✅ **Reference Implementation** - Agent Buildkit shows the way
-✅ **Clear Boundaries** - Standard vs. implementation
+- **Standard to Build On** - Like OpenAPI for APIs
+- **Reference Implementation** - Agent Buildkit shows the way
+- **Clear Boundaries** - Standard vs. implementation
 
 ---
 
@@ -269,7 +267,7 @@ The documentation is organized into:
 
 ### Additional Resources
 
-- **Specification**: [spec/v0.2.4/ossa-0.2.4.schema.json](spec/v0.2.4/ossa-0.2.4.schema.json)
+- **Specification**: [spec/v0.2.5-RC/ossa-0.2.5-RC.schema.json](spec/v0.2.5-RC/ossa-0.2.5-RC.schema.json)
 - **Examples**: [examples/](examples/)
 - **API Reference**: [docs/](docs/)
 - **GitHub Issues**: https://github.com/blueflyio/openstandardagents/issues
@@ -302,9 +300,9 @@ Apache 2.0 - see [LICENSE](LICENSE) for details.
 
 OSSA is part of a unified ecosystem for AI agent development:
 
-- **[OSSA](https://github.com/blueflyio/openstandardagents)** - The open standard (this repository)
-- **[Agent Buildkit](https://github.com/blueflyio/openstandardagents)** - CLI for building and managing agents
-- **[Agent Studio](https://github.com/blueflyio/openstandardagents)** - GUI platform for agent orchestration
+- **OSSA** - The open standard (this repository)
+- **Agent Buildkit** - CLI for building and managing agents
+- **Agent Studio** - GUI platform for agent orchestration
 
 **OSSA: Open. Interoperable. Trustworthy.**
 
