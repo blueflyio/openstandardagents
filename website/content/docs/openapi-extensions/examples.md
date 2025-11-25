@@ -16,13 +16,13 @@ info:
   description: Minimal OSSA-compliant agent API
 
 x-ossa-metadata:
-  version: 0.2.2
+  version: 0.2.x
   compliance:
     level: basic
     frameworks: [OSSA, OpenAPI 3.1]
 
 x-ossa:
-  version: 0.2.2
+  version: 0.2.x
   agent:
     id: hello-world-agent
     type: worker
@@ -89,7 +89,7 @@ info:
     Supports pod inspection, log analysis, and event correlation.
 
 x-ossa-metadata:
-  version: 0.2.2
+  version: 0.2.x
   compliance:
     level: enterprise
     frameworks:
@@ -110,7 +110,7 @@ x-ossa-metadata:
     logging: true
 
 x-ossa:
-  version: 0.2.2
+  version: 0.2.x
   agent:
     id: k8s-troubleshooter
     type: worker
@@ -268,13 +268,13 @@ info:
   version: 1.0.0
 
 x-ossa-metadata:
-  version: 0.2.2
+  version: 0.2.x
   compliance:
     level: standard
     frameworks: [OSSA, OpenAPI 3.1]
 
 x-ossa:
-  version: 0.2.2
+  version: 0.2.x
   agent:
     id: data-processor
     type: worker
@@ -392,7 +392,7 @@ The OpenAPI spec should reference capabilities and tools defined in the manifest
 
 **agent.ossa.yaml**:
 ```yaml
-apiVersion: ossa/v0.2.4
+apiVersion: ossa/v0.2.x
 kind: Agent
 metadata:
   name: k8s-troubleshooter
@@ -461,7 +461,7 @@ info:
   version: 1.0.0
 
 x-ossa:
-  version: 0.2.2
+  version: 0.2.x
   agent:
     id: devops-assistant
     type: worker

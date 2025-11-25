@@ -1,0 +1,208 @@
+openapi: 3.1.0
+info:
+  title: Data Processing Worker Agent API
+  version: 1.2.0
+  description: |
+    High-performance worker agent for distributed data processing tasks.
+    Executes tasks delegated by orchestrator agents.
+
+x-ossa-metadata:
+  version: 0.2.5-RC
+  compliance:
+    level: intermediate
+    frameworks:
+      - OSSA
+      - OpenAPI 3.1
+
+x-ossa:
+  version: 0.2.5-RC
+  agent:
+    id: data-processing-worker
+    type: worker
+    compliance:
+      standards:
+        - openapi-first
+        - type-safe
+      validated: true
+      validatedAt: "2024-01-15T10:00:00Z"
+
+servers:
+  - url: https://worker.platform.com/api/v1
+    description: Production
+  - url: http://worker:3000/api/v1
+    description: Kubernetes internal
+
+tags:
+  - name: processing
+    description: Data processing operations
+  - name: tasks
+    description: Task management operations
+
+paths:
+  /process:
+    post:
+      summary: Process data records
+      description: Process a batch of data records with transformation and validation
+      operationId: processRecords
+      tags: [processing]
+      x-ossa-capability: process-records
+      x-ossa-autonomy:
+        level: autonomous
+        approval_required: false
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [records]
+              properties:
+                records:
+                  type: array
+                  items:
+                    type: object
+                transformation:
+                  type: object
+                  description: Transformation rules to apply
+                validation:
+                  type: object
+                  description: Validation rules
+      responses:
+        '200':
+          description: Processing completed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  processed:
+                    type: integer
+                  failed:
+                    type: integer
+                  results:
+                    type: array
+                    items:
+                      type: object
+                  errors:
+                    type: array
+                    items:
+                      type: object
+
+  /transform:
+    post:
+      summary: Transform data
+      description: Apply transformation rules to input data
+      operationId: transformData
+      tags: [processing]
+      x-ossa-capability: transform-data
+      x-ossa-autonomy:
+        level: autonomous
+        approval_required: false
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [data, rules]
+              properties:
+                data:
+                  type: object
+                rules:
+                  type: array
+                  items:
+                    type: object
+      responses:
+        '200':
+          description: Transformation completed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  transformed:
+                    type: object
+                  metadata:
+                    type: object
+
+  /validate:
+    post:
+      summary: Validate input data
+      description: Validate input data against schema and business rules
+      operationId: validateInput
+      tags: [processing]
+      x-ossa-capability: validate-input
+      x-ossa-autonomy:
+        level: autonomous
+        approval_required: false
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [data, schema]
+              properties:
+                data:
+                  type: object
+                schema:
+                  type: object
+                rules:
+                  type: array
+                  items:
+                    type: string
+      responses:
+        '200':
+          description: Validation completed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  valid:
+                    type: boolean
+                  errors:
+                    type: array
+                    items:
+                      type: object
+                  warnings:
+                    type: array
+                    items:
+                      type: string
+
+  /tasks/{task_id}/status:
+    get:
+      summary: Get task status
+      description: Retrieve the status of an asynchronous task
+      operationId: getTaskStatus
+      tags: [tasks]
+      x-ossa-capability: report-progress
+      x-ossa-autonomy:
+        level: autonomous
+        approval_required: false
+      parameters:
+        - name: task_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Task status
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  task_id:
+                    type: string
+                  status:
+                    type: string
+                    enum: [pending, running, completed, failed]
+                  progress:
+                    type: number
+                    minimum: 0
+                    maximum: 100
+                  result:
+                    type: object
+

@@ -29,7 +29,7 @@ graph TB
 
     subgraph "OSSA Specification Layer"
         Manifest[OSSA Manifests<br/>agent.ossa.yaml]
-        Schema[JSON Schema<br/>v0.2.2]
+        Schema[JSON Schema<br/>v0.2.x]
         CLI_Tool[OSSA CLI<br/>Validation]
         Registry[Agent Registry]
     end
@@ -144,7 +144,7 @@ response = agent.run(user_message="Hello")
 
 **Components:**
 - **OSSA Manifests**: YAML/JSON files defining agents
-- **JSON Schema**: Validation schema (v0.2.2)
+- **JSON Schema**: Validation schema (v0.2.x)
 - **OSSA CLI**: Validation and generation tools
 - **Agent Registry**: Discovery and versioning
 

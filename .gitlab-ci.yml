@@ -277,7 +277,7 @@ validate:version-sync:
   script:
     - npm ci --legacy-peer-deps
     - echo "Checking version consistency..."
-    - npx tsx scripts/sync-versions.ts --check
+    - npm run version:check
   allow_failure: false
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
@@ -291,6 +291,37 @@ validate:version-sync:
       - README.md
       - spec/**/*
       when: always
+
+# ============================================================================
+# VERSION MANAGEMENT VIA GITLAB AGENTS (Dogfooding)
+# ============================================================================
+# TODO: Enable after component is published to main
+# include:
+#   - component: gitlab.com/blueflyio/openstandardagents/version-management/version-bump-agent@main
+
+# version:bump:agent:
+#   extends: .version-bump-agent
+#   variables:
+#     BUMP_TYPE: "patch"
+#     TARGET_BRANCH: "development"
+#   rules:
+#     - if: '$BUMP_VERSION == "true"'
+#       when: manual
+#       allow_failure: false
+    - if: '$CI_MERGE_REQUEST_TITLE =~ /^chore:.*version/i'
+      when: manual
+      allow_failure: false
+
+# version:sync:agent:
+#   extends: .version-sync-agent
+#   rules:
+#     - if: '$CI_PIPELINE_SOURCE == "push"'
+#       when: always
+#     - if: '$VERSION_SYNC == "true"'
+#       when: manual
+
+# version:consistency:check:
+#   extends: .version-consistency-check
 
 validate:scripts-version:
   stage: validate
@@ -491,9 +522,11 @@ pages:
       - public
     expire_in: 30 days
   environment:
-    name: website
+    name: production
     url: https://openstandardagents.org
     deployment_tier: production
+    kubernetes:
+      namespace: ossa-production
   rules:
     - if: $CI_COMMIT_BRANCH == "main"
       when: manual
@@ -771,8 +804,9 @@ release-to-npm:
     - if: $CI_COMMIT_BRANCH == "main"
       when: manual
   environment:
-    name: npm-production
+    name: production
     url: https://www.npmjs.com/package/@bluefly/openstandardagents
+    deployment_tier: production
 
 release-to-github:
   stage: release
@@ -786,8 +820,9 @@ release-to-github:
     - if: $CI_COMMIT_BRANCH == "main"
       when: manual
   environment:
-    name: github-production
+    name: production
     url: https://github.com/blueflyio/openstandardagents/releases
+    deployment_tier: production
 
 deploy-website-production:
   stage: release
@@ -801,8 +836,9 @@ deploy-website-production:
     - if: $CI_COMMIT_BRANCH == "main"
       when: manual
   environment:
-    name: website-production
+    name: production
     url: https://openstandardagents.org
+    deployment_tier: production
 
 announce-release:
   stage: .post

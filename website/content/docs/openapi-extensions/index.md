@@ -45,7 +45,7 @@ info:
   version: 1.0.0
 
 x-ossa-metadata:
-  version: 0.2.2
+  version: 0.2.x
   compliance:
     level: enterprise
     frameworks:
@@ -78,7 +78,7 @@ Core OSSA compliance information with agent identification and validation metada
 
 ```yaml
 x-ossa:
-  version: 0.2.2
+  version: 0.2.x
   agent:
     id: k8s-troubleshooter
     type: worker
@@ -395,7 +395,7 @@ See [Full Documentation](https://github.com/blueflyio/openstandardagents/blob/ma
 - **Full Documentation**: [docs/openapi-extensions.md](https://github.com/blueflyio/openstandardagents/blob/main/docs/openapi-extensions.md)
 - **JSON Schema**: [docs/schemas/openapi-extensions.schema.json](https://github.com/blueflyio/openstandardagents/blob/main/docs/schemas/openapi-extensions.schema.json)
 - **Examples**: [examples/openapi-extensions/](https://github.com/blueflyio/openstandardagents/tree/main/examples/openapi-extensions)
-- **OSSA Specification**: [spec/v0.2.5-RC/OSSA-SPECIFICATION-v0.2.2.md](https://github.com/blueflyio/openstandardagents/blob/main/spec/v0.2.5-RC/OSSA-SPECIFICATION-v0.2.2.md)
+- **OSSA Specification**: [spec/v0.2.5-RC/OSSA-SPECIFICATION-v0.2.x.md](https://github.com/blueflyio/openstandardagents/blob/main/spec/v0.2.5-RC/OSSA-SPECIFICATION-v0.2.2.md)
 - **npm Package**: [@bluefly/openstandardagents](https://www.npmjs.com/package/@bluefly/openstandardagents)
 
 ---
@@ -439,7 +439,7 @@ You can use both together:
 Example workflow:
 ```yaml
 # agent.ossa.yaml
-apiVersion: ossa/v0.2.4
+apiVersion: ossa/v0.2.x
 kind: Agent
 metadata:
   name: data-processor

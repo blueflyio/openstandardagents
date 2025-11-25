@@ -208,6 +208,24 @@ npm test -- --coverage
 
 ## 📚 Documentation
 
+### Public Documentation
+Public-facing documentation is managed in the [GitLab Wiki](https://gitlab.com/blueflyio/openstandardagents/-/wikis/home) and automatically synced to [openstandardagents.org](https://openstandardagents.org).
+
+**Public docs include:**
+- OSSA specification and standard
+- Usage guides and tutorials
+- API reference and schema documentation
+- Migration guides
+- Community contribution guidelines
+
+### Internal Documentation
+Internal project documentation is located in `.gitlab/docs/`:
+- `/development` - Development workflows and coding standards
+  - **VERSIONING.md** - Automated version management (CRITICAL: never manually update versions)
+- `/releases` - Release management and versioning
+- `/infrastructure` - CI/CD, GitLab agents, Kubernetes setup
+- `/processes` - Project governance and internal processes
+
 ### Code Documentation
 
 - Use **JSDoc** for all public APIs

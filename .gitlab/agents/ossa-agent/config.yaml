@@ -4,10 +4,12 @@
 # User access configuration
 # Grants Kubernetes cluster access to project/group members and activates Dashboard for Kubernetes
 user_access:
-  # Access method: agent impersonation (works on all GitLab tiers including Free)
-  # All requests are forwarded to the API server using the agent service account
+  # Access method: user impersonation (Premium/Ultimate tier)
+  # Users maintain their identity in Kubernetes for better audit trails and user-specific RBAC
+  # Switch to agent: {} if using Free tier
   access_as:
-    agent: {}
+    user: {}  # ✅ Using Ultimate tier - users maintain identity
+    # agent: {}  # Alternative for Free tier (commented out)
 
   # Projects whose members should have access to this agent
   # Members can access the cluster through this agent for deployments and operations
@@ -49,19 +51,20 @@ ci_access:
           groups:
             - "gitlab:group:{{.group.path}}"
 
-# GitOps configuration (optional)
+# GitOps configuration
 # Enables GitLab to manage Kubernetes resources via GitOps workflows
-# Uncomment and configure if you want to use GitOps:
-# gitops:
-#   manifest_projects:
-#     - id: blueflyio/openstandardagents
-#       default_namespace: ossa-agents
-#       paths:
-#         - glob: 'infrastructure/k8s/**/*.yaml'
-#     - id: llm/agent-buildkit
-#       default_namespace: ossa-prod
-#       paths:
-#         - glob: 'k8s/**/*.yaml'
+gitops:
+  manifest_projects:
+    - id: blueflyio/openstandardagents
+      default_namespace: ossa-agents
+      paths:
+        - glob: '.gitlab/agents/*/deployment.yaml'
+        - glob: '.gitlab/agents/*/service.yaml'
+        - glob: 'infrastructure/k8s/**/*.yaml'
+    - id: blueflyio/agent-platform/agent-buildkit
+      default_namespace: ossa-prod
+      paths:
+        - glob: 'k8s/**/*.yaml'
 
 # Observability configuration
 # Enables monitoring and observability features for the agent

@@ -60,7 +60,7 @@ info:
   version: 1.0.0
 
 x-ossa-metadata:
-  version: 0.2.2
+  version: 0.2.x
   compliance:
     level: enterprise
     frameworks:
@@ -184,7 +184,7 @@ info:
   version: 1.0.0
 
 x-ossa:
-  version: 0.2.2
+  version: 0.2.x
   agent:
     id: k8s-troubleshooter
     type: worker

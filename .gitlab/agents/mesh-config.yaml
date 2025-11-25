@@ -132,6 +132,19 @@ spec:
         - security-scanner  # Coordinate security compliance
         - config-validator  # Coordinate policy compliance
 
+    - name: version-manager
+      namespace: version-management
+      endpoint: http://version-manager:8080
+      healthCheck: http://version-manager:8080/health
+      capabilities:
+        - version-bumping
+        - version-synchronization
+        - documentation-processing
+        - git-operations
+        - milestone-integration
+        - mr-creation
+      dependencies: []  # No dependencies (can run standalone)
+
   # ==========================================================================
   # COMMUNICATION PROTOCOL: Agent-to-Agent (A2A) Configuration
   # ==========================================================================

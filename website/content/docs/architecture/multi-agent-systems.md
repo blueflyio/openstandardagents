@@ -330,7 +330,7 @@ spec:
 POST /api/agents/sales-agent/tasks
 Content-Type: application/json
 X-OSSA-Agent: customer-agent
-X-OSSA-Version: v0.2.2
+X-OSSA-Version: v0.2.x
 
 {
   "task": "create_order",

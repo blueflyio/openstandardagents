@@ -260,7 +260,7 @@ autonomy:
 ### Read-Only Analysis Agent
 
 ```yaml
-apiVersion: ossa/v0.2.4
+apiVersion: ossa/v0.2.x
 kind: Agent
 metadata:
   name: log-analyzer
@@ -296,7 +296,7 @@ spec:
 ### Code Review Agent (Supervised)
 
 ```yaml
-apiVersion: ossa/v0.2.4
+apiVersion: ossa/v0.2.x
 kind: Agent
 metadata:
   name: code-reviewer
@@ -328,7 +328,7 @@ spec:
 ### Infrastructure Automation Agent
 
 ```yaml
-apiVersion: ossa/v0.2.4
+apiVersion: ossa/v0.2.x
 kind: Agent
 metadata:
   name: k8s-autoscaler
@@ -366,7 +366,7 @@ spec:
 ### Customer Support Agent
 
 ```yaml
-apiVersion: ossa/v0.2.4
+apiVersion: ossa/v0.2.x
 kind: Agent
 metadata:
   name: support-assistant
@@ -411,7 +411,7 @@ spec:
 ### DevOps Incident Response
 
 ```yaml
-apiVersion: ossa/v0.2.4
+apiVersion: ossa/v0.2.x
 kind: Agent
 metadata:
   name: incident-responder

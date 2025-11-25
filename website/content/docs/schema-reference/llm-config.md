@@ -356,7 +356,7 @@ llm:
 ## Complete Example
 
 ```yaml
-apiVersion: ossa/v0.2.4
+apiVersion: ossa/v0.2.x
 kind: Agent
 metadata:
   name: technical-writer

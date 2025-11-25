@@ -66,7 +66,7 @@ The `ai_agents_orchestra` module enables multi-agent workflows:
 
 ```yaml
 # workflow.ossa.yaml
-apiVersion: ossa/v0.2.5-RC
+apiVersion: ossa/v0.2.x
 kind: AgentGraph
 
 metadata:
