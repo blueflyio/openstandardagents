@@ -9,8 +9,12 @@ import fs from 'fs';
 import path from 'path';
 import os from 'os';
 
+// Load .env.local first to get project path
+loadEnvLocal();
+
 const GITLAB_HOST = process.env.GITLAB_HOST || process.env.CI_SERVER_HOST || 'gitlab.com';
-const PROJECT_PATH = 'blueflyio/openstandardagents';
+// Get project path from env (GITLAB_PROJECT_PATH) or fallback to default
+const PROJECT_PATH = process.env.GITLAB_PROJECT_PATH || 'blueflyio/openstandardagents';
 const EXPORT_DIR = path.join(process.cwd(), '.wiki-export');
 
 function loadEnvLocal(): void {
@@ -61,8 +65,7 @@ function loadEnvLocal(): void {
 }
 
 async function getGitLabToken(): Promise<string | null> {
-  // Load .env.local first
-  loadEnvLocal();
+  // .env.local already loaded at top level
 
   // Try environment variables (check multiple possible names)
   if (process.env.GITLAB_TOKEN) {
