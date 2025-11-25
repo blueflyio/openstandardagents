@@ -39,7 +39,9 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "bin": {
-    "ossa": "bin/ossa"
+    "ossa": "bin/ossa",
+    "ossa-version": "bin/ossa-version",
+    "ossa-validate-all": "bin/ossa-validate-all"
   },
   "publishConfig": {
     "access": "public",
