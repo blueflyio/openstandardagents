@@ -243,11 +243,22 @@ validate:scripts-version:
       echo ""
       echo "Checking package.json scripts..."
       
-      # Check validate:schema doesn't have hardcoded version
-      if grep -q "spec/v0\.[0-9]" package.json; then
+      # Verify exports["./schema"] matches current version (this is allowed)
+      EXPECTED_EXPORT="./spec/v${VERSION}/ossa-${VERSION}.schema.json"
+      ACTUAL_EXPORT=$(node -p "require('./package.json').exports?.['./schema'] || ''")
+      if [ "$ACTUAL_EXPORT" != "$EXPECTED_EXPORT" ] && [ -n "$ACTUAL_EXPORT" ]; then
+        echo "ERROR: package.json exports[\"./schema\"] is \"${ACTUAL_EXPORT}\", should be \"${EXPECTED_EXPORT}\""
+        exit 1
+      fi
+      
+      # Check scripts field doesn't have hardcoded version paths
+      # Extract just the scripts section to avoid false positives from exports
+      if node -e "const pkg = require('./package.json'); const scripts = JSON.stringify(pkg.scripts || {}); if (scripts.match(/spec\\/v0\\.[0-9]/)) { process.exit(1); }" 2>/dev/null; then
+        echo "✓ Scripts field does not contain hardcoded version paths"
+      else
         echo "ERROR: package.json scripts contain hardcoded version paths"
         echo "  Scripts should use dynamic version detection (scripts/*.ts)"
-        grep "spec/v0\.[0-9]" package.json || true
+        node -p "const pkg = require('./package.json'); Object.entries(pkg.scripts || {}).filter(([k,v]) => String(v).match(/spec\\/v0\\.[0-9]/)).map(([k,v]) => \`  \${k}: \${v}\`).join('\\n')" || true
         exit 1
       fi
       

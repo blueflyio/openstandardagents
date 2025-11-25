@@ -36,9 +36,9 @@ metadata:
     financial-impact: high
 
   annotations:
-    documentation: https://github.com/blueflyio/documentation/-/wikis/agents/cost-analyzer
+    documentation: https://openstandardagents.org/docs/agents/cost-analyzer
     support: operations@bluefly.io
-    runbook: https://github.com/blueflyio/documentation/-/wikis/runbooks/cost-analyzer
+    runbook: https://openstandardagents.org/docs/runbooks/cost-analyzer
     target: "20% cost reduction in 90 days"
 
 spec:

@@ -40,9 +40,9 @@ metadata:
     dora-metric: lead-time
 
   annotations:
-    documentation: https://github.com/blueflyio/documentation/-/wikis/agents/performance-optimizer
+    documentation: https://openstandardagents.org/docs/agents/performance-optimizer
     support: operations@bluefly.io
-    runbook: https://github.com/blueflyio/documentation/-/wikis/runbooks/performance-optimizer
+    runbook: https://openstandardagents.org/docs/runbooks/performance-optimizer
     slo: "p95 response time < 500ms"
 
 spec:

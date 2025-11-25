@@ -40,9 +40,9 @@ metadata:
     compliance: cis-kubernetes
 
   annotations:
-    documentation: https://github.com/blueflyio/documentation/-/wikis/agents/security-scanner
+    documentation: https://openstandardagents.org/docs/agents/security-scanner
     support: operations@bluefly.io
-    runbook: https://github.com/blueflyio/documentation/-/wikis/runbooks/security-scanner
+    runbook: https://openstandardagents.org/docs/runbooks/security-scanner
     compliance: "CIS Kubernetes Benchmark v1.8, OWASP Top 10"
 
 spec:

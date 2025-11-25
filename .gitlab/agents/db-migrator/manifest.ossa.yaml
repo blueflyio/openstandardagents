@@ -40,9 +40,9 @@ metadata:
     dora-metric: deployment-frequency
 
   annotations:
-    documentation: https://github.com/blueflyio/documentation/-/wikis/agents/db-migrator
+    documentation: https://openstandardagents.org/docs/agents/db-migrator
     support: operations@bluefly.io
-    runbook: https://github.com/blueflyio/documentation/-/wikis/runbooks/db-migrator
+    runbook: https://openstandardagents.org/docs/runbooks/db-migrator
     safety: "transactional-rollback-enabled"
 
 spec:

@@ -36,9 +36,9 @@ metadata:
     dora-metric: mttr
 
   annotations:
-    documentation: https://github.com/blueflyio/documentation/-/wikis/agents/rollback-coordinator
+    documentation: https://openstandardagents.org/docs/agents/rollback-coordinator
     support: operations@bluefly.io
-    runbook: https://github.com/blueflyio/documentation/-/wikis/runbooks/rollback-coordinator
+    runbook: https://openstandardagents.org/docs/runbooks/rollback-coordinator
     safety: "automated-rollback-enabled"
 
 spec:

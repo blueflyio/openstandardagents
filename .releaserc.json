@@ -66,7 +66,7 @@
     [
       "@semantic-release/gitlab",
       {
-        "gitlabUrl": "https://github.com/blueflyio",
+        "gitlabUrl": "https://gitlab.com",
         "assets": [
           { "path": "dist/*.tgz", "label": "Distribution Package" },
           { "path": "CHANGELOG.md", "label": "Changelog" }
