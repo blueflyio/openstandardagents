@@ -1,3 +1,4 @@
+
 # GitLab CI/CD Pipeline for OSSA
 # Decoupled Release Model:
 # - Code flows freely: Feature → development → main (CI validates, no auto-release)
@@ -58,6 +59,9 @@ detect:milestone-and-tags:
     - git fetch --unshallow --tags --force || git fetch --tags --force || true
   script:
     - |
+      #!/bin/bash
+      set -e
+      
       echo "🔍 DEV TAG MANAGEMENT"
       echo "===================="
       echo "Branch: ${CI_COMMIT_BRANCH}"
@@ -66,10 +70,12 @@ detect:milestone-and-tags:
       echo ""
 
       # Initialize env files
-      echo "DEV_TAG_VERSION=" > dev-tags.env
-      echo "DEV_TAG_NAME=" >> dev-tags.env
-      echo "DEV_TAG_BUILD=" >> dev-tags.env
-      echo "DEV_MILESTONE_ID=" >> dev-tags.env
+      cat > dev-tags.env << 'EOF'
+      DEV_TAG_VERSION=
+      DEV_TAG_NAME=
+      DEV_TAG_BUILD=
+      DEV_MILESTONE_ID=
+      EOF
 
       # Only run on main and development branches
       if [ "$CI_COMMIT_BRANCH" != "main" ] && [ "$CI_COMMIT_BRANCH" != "development" ]; then
@@ -82,14 +88,15 @@ detect:milestone-and-tags:
           --data-urlencode "state=all" 2>/dev/null || echo "[]")
 
         if [ "$DEV_MILESTONES" != "[]" ] && [ -n "$DEV_MILESTONES" ]; then
-          echo "$DEV_MILESTONES" | jq -c '.[]' | while IFS= read -r dev_milestone_json; do
-            if [ -z "$dev_milestone_json" ]; then continue; fi
+          # Process milestones - FIXED LOOP
+          echo "$DEV_MILESTONES" | jq -c '.[]' | while read -r dev_milestone_json; do
+            [ -z "$dev_milestone_json" ] && continue
 
             DEV_TITLE=$(echo "$dev_milestone_json" | jq -r '.title // ""')
             DEV_ID=$(echo "$dev_milestone_json" | jq -r '.id // ""')
             DEV_VERSION=$(echo "$DEV_TITLE" | grep -oE 'v?[0-9]+\.[0-9]+\.[0-9]+(-[A-Za-z0-9]+)?' | head -1 | sed 's/^v//')
 
-            if [ -z "$DEV_VERSION" ]; then continue; fi
+            [ -z "$DEV_VERSION" ] && continue
 
             # Skip if already released
             if git tag -l | grep -qE "^v?${DEV_VERSION}$"; then
@@ -119,10 +126,12 @@ detect:milestone-and-tags:
             if git tag -a "$NEW_TAG" -m "Dev build ${NEXT_BUILD} for milestone ${DEV_ID}" "$CI_COMMIT_SHA" 2>/dev/null; then
               if git push origin "$NEW_TAG" 2>/dev/null; then
                 echo "✅ Created dev tag: ${NEW_TAG}"
-                echo "DEV_TAG_VERSION=${DEV_VERSION}" > dev-tags.env
-                echo "DEV_TAG_NAME=${NEW_TAG}" >> dev-tags.env
-                echo "DEV_TAG_BUILD=${NEXT_BUILD}" >> dev-tags.env
-                echo "DEV_MILESTONE_ID=${DEV_ID}" >> dev-tags.env
+                cat > dev-tags.env << EOF
+      DEV_TAG_VERSION=${DEV_VERSION}
+      DEV_TAG_NAME=${NEW_TAG}
+      DEV_TAG_BUILD=${NEXT_BUILD}
+      DEV_MILESTONE_ID=${DEV_ID}
+      EOF
               else
                 echo "⚠️  Failed to push tag ${NEW_TAG}"
                 git tag -d "$NEW_TAG" 2>/dev/null || true
@@ -147,15 +156,21 @@ detect:milestone-and-tags:
         --data-urlencode "per_page=100" \
         --data-urlencode "state=all")
       
-      # Find closed milestone ready for release
-      MILESTONE_FOUND=false
-      MILESTONE_VERSION=""
-      MILESTONE_TITLE=""
-      MILESTONE_ID=""
-      MILESTONE_COMPLETE=false
+      # Initialize milestone env file
+      cat > milestone-version.env << 'EOF'
+      RELEASE_VERSION=
+      MILESTONE_TITLE=
+      MILESTONE_ID=
+      MILESTONE_READY=false
+      EOF
       
-      echo "$ALL_MILESTONES" | jq -c '.[] | select(.state == "closed")' | while IFS= read -r milestone_json; do
-        if [ -z "$milestone_json" ]; then continue; fi
+      # Find closed milestone ready for release - FIXED LOOP
+      FOUND_MILESTONE=false
+      echo "$ALL_MILESTONES" | jq -c '.[] | select(.state == "closed")' | while read -r milestone_json; do
+        [ -z "$milestone_json" ] && continue
+        
+        # Skip if we already found one
+        [ "$FOUND_MILESTONE" = "true" ] && break
       
         TITLE=$(echo "$milestone_json" | jq -r '.title // ""')
         ID=$(echo "$milestone_json" | jq -r '.id // ""')
@@ -179,42 +194,37 @@ detect:milestone-and-tags:
       
           # Check if 100% complete
           if [ "$OPEN_ISSUES" -eq 0 ] && [ "$TOTAL_ISSUES" -gt 0 ]; then
-            MILESTONE_COMPLETE=true
-            MILESTONE_TITLE="$TITLE"
-            MILESTONE_VERSION="$VERSION"
-            MILESTONE_ID="$ID"
-            MILESTONE_FOUND=true
-            
-            # Write to env file and break
-            echo "RELEASE_VERSION=${MILESTONE_VERSION}" > milestone-version.env
-            echo "MILESTONE_TITLE=${MILESTONE_TITLE}" >> milestone-version.env
-            echo "MILESTONE_ID=${MILESTONE_ID}" >> milestone-version.env
-            echo "MILESTONE_READY=true" >> milestone-version.env
-            echo "✅ Release-ready milestone found: v${MILESTONE_VERSION}"
+            cat > milestone-version.env << EOF
+      RELEASE_VERSION=${VERSION}
+      MILESTONE_TITLE=${TITLE}
+      MILESTONE_ID=${ID}
+      MILESTONE_READY=true
+      EOF
+            echo "✅ Release-ready milestone found: v${VERSION}"
+            FOUND_MILESTONE=true
             break
           elif [ "$TOTAL_ISSUES" -eq 0 ]; then
-            MILESTONE_COMPLETE=true
-            MILESTONE_TITLE="$TITLE"
-            MILESTONE_VERSION="$VERSION"
-            MILESTONE_ID="$ID"
-            MILESTONE_FOUND=true
-            
-            echo "RELEASE_VERSION=${MILESTONE_VERSION}" > milestone-version.env
-            echo "MILESTONE_TITLE=${MILESTONE_TITLE}" >> milestone-version.env
-            echo "MILESTONE_ID=${MILESTONE_ID}" >> milestone-version.env
-            echo "MILESTONE_READY=true" >> milestone-version.env
-            echo "✅ Release-ready milestone found: v${MILESTONE_VERSION}"
+            cat > milestone-version.env << EOF
+      RELEASE_VERSION=${VERSION}
+      MILESTONE_TITLE=${TITLE}
+      MILESTONE_ID=${ID}
+      MILESTONE_READY=true
+      EOF
+            echo "✅ Release-ready milestone found: v${VERSION} (empty milestone)"
+            FOUND_MILESTONE=true
             break
           fi
         fi
       done
       
-      # If no milestone found, create empty env file
-      if [ ! -f milestone-version.env ]; then
-        echo "RELEASE_VERSION=" > milestone-version.env
-        echo "MILESTONE_TITLE=" >> milestone-version.env
-        echo "MILESTONE_ID=" >> milestone-version.env
-        echo "MILESTONE_READY=false" >> milestone-version.env
+      # If no milestone found, ensure env file exists
+      if [ ! -s milestone-version.env ]; then
+        cat > milestone-version.env << 'EOF'
+      RELEASE_VERSION=
+      MILESTONE_TITLE=
+      MILESTONE_ID=
+      MILESTONE_READY=false
+      EOF
         echo "ℹ️  No release-ready milestone found"
       fi
       
@@ -372,7 +382,7 @@ build:dist:
   script:
     - npm ci --legacy-peer-deps
     - npm run build
-    - test -f dist/cli/index.js || (echo "❌ ERROR: dist/cli/index.js missing" && exit 1)
+    - test -f dist/cli/index.js || (echo "❌ ERROR dist/cli/index.js missing" && exit 1)
     - echo "✅ Build completed"
   artifacts:
     paths:
@@ -553,7 +563,7 @@ release:npm:
     - build:dist
     - detect:milestone-and-tags
   before_script:
-    - apk add --no-cache git curl jq
+    - apk add --no-cache git curl jq bash
     - npm ci --legacy-peer-deps
     - git config --global user.email "ci@blueflyio.com"
     - git config --global user.name "GitLab CI Release"
@@ -562,6 +572,9 @@ release:npm:
     - git checkout -B main origin/main
   script:
     - |
+      #!/bin/bash
+      set -e
+      
       echo "🚀 MILESTONE-GATED RELEASE"
       echo "=========================="
       
@@ -605,8 +618,10 @@ release:npm:
       
       # Configure npm
       GITLAB_HOST="${CI_SERVER_HOST}"
-      echo "@bluefly:registry=${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/npm/" > .npmrc
-      echo "//${GITLAB_HOST}/api/v4/projects/${CI_PROJECT_ID}/packages/npm/:_authToken=${CI_JOB_TOKEN}" >> .npmrc
+      cat > .npmrc << EOF
+      @bluefly:registry=${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/npm/
+      //${GITLAB_HOST}/api/v4/projects/${CI_PROJECT_ID}/packages/npm/:_authToken=${CI_JOB_TOKEN}
+      EOF
       
       if [ -n "$NPM_TOKEN" ]; then
         echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" >> .npmrc
@@ -627,12 +642,12 @@ release:npm:
       PROD_TAG="v${RELEASE_VERSION}"
       git tag -a "$PROD_TAG" -m "Release v${RELEASE_VERSION}
 
-Milestone: ${MILESTONE_TITLE}
-Pipeline: ${CI_PIPELINE_ID}
-Released: $(date -u +"%Y-%m-%dT%H:%M:%SZ")" "$CI_COMMIT_SHA"
+      Milestone: ${MILESTONE_TITLE}
+      Pipeline: ${CI_PIPELINE_ID}
+      Released: $(date -u +"%Y-%m-%dT%H:%M:%SZ")" "$CI_COMMIT_SHA"
       
       # Commit and push
-      git add package.json package-lock.json README.md spec/
+      git add package.json package-lock.json README.md spec/ || true
       git commit -m "chore(release): v${RELEASE_VERSION} [skip ci]" || echo "No changes to commit"
       git push origin main --tags
       
