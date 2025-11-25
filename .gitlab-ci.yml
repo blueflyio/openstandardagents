@@ -228,6 +228,82 @@ validate:version-sync:
       - spec/**/*
       when: always
 
+validate:scripts-version:
+  stage: validate
+  image: node:${NODE_VERSION}-alpine
+  script:
+    - |
+      echo "🔍 Validating npm scripts use dynamic version..."
+      VERSION=$(node -p "require('./package.json').version")
+      echo "Current version: ${VERSION}"
+      
+      # Check that scripts reference dynamic version, not hardcoded
+      echo ""
+      echo "Checking package.json scripts..."
+      
+      # Check validate:schema doesn't have hardcoded version
+      if grep -q "spec/v0\.[0-9]" package.json; then
+        echo "❌ ERROR: package.json scripts contain hardcoded version paths"
+        echo "   Scripts should use dynamic version detection (scripts/*.sh)"
+        grep "spec/v0\.[0-9]" package.json || true
+        exit 1
+      fi
+      
+      # Check validate:power-suite uses generic script
+      if ! grep -q "validate-ossa.ts" package.json; then
+        echo "❌ ERROR: validate:power-suite should use bin/validate-ossa.ts (version-agnostic)"
+        exit 1
+      fi
+      
+      # Verify scripts exist and are executable
+      echo ""
+      echo "Checking helper scripts exist..."
+      for script in scripts/get-version.js scripts/validate-schema.sh scripts/gen-types.sh scripts/gen-zod.sh; do
+        if [ ! -f "$script" ]; then
+          echo "❌ ERROR: Missing script: $script"
+          exit 1
+        fi
+        if [ ! -x "$script" ]; then
+          echo "⚠️  WARNING: Script not executable: $script"
+        fi
+      done
+      
+      # Test that get-version.js works
+      echo ""
+      echo "Testing version detection..."
+      DETECTED_VERSION=$(node scripts/get-version.js)
+      if [ "$DETECTED_VERSION" != "$VERSION" ]; then
+        echo "❌ ERROR: Version mismatch"
+        echo "   package.json: $VERSION"
+        echo "   get-version.js: $DETECTED_VERSION"
+        exit 1
+      fi
+      
+      # Verify schema path exists for current version
+      SCHEMA_PATH="spec/v${VERSION}/ossa-${VERSION}.schema.json"
+      if [ ! -f "$SCHEMA_PATH" ]; then
+        echo "⚠️  WARNING: Schema not found at $SCHEMA_PATH"
+        echo "   This is expected for new versions before schema is created"
+      else
+        echo "✓ Schema found: $SCHEMA_PATH"
+      fi
+      
+      echo ""
+      echo "✅ All scripts use dynamic version detection"
+  allow_failure: false
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      when: always
+    - if: $CI_COMMIT_BRANCH == "development"
+      when: always
+    - if: $CI_COMMIT_BRANCH == "main"
+      when: always
+    - changes:
+      - package.json
+      - scripts/**/*
+      - bin/validate-ossa*.ts
+      when: always
+
 validate:docs-consistency:
   stage: validate
   image: node:${NODE_VERSION}-alpine
