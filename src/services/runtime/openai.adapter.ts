@@ -4,7 +4,10 @@
  */
 
 import OpenAI from 'openai';
-import type { ChatCompletionMessageParam, ChatCompletionTool } from 'openai/resources/chat/completions';
+import type {
+  ChatCompletionMessageParam,
+  ChatCompletionTool,
+} from 'openai/resources/chat/completions';
 
 export interface OssaManifest {
   apiVersion: string;
@@ -108,7 +111,8 @@ export class OpenAIAdapter {
       for (const mapping of toolsMapping) {
         const toolDef: ToolDefinition = {
           name: mapping.openai_tool_name || mapping.ossa_capability,
-          description: mapping.description || `Execute ${mapping.ossa_capability}`,
+          description:
+            mapping.description || `Execute ${mapping.ossa_capability}`,
           parameters: mapping.parameters || {
             type: 'object',
             properties: {},
@@ -250,17 +254,25 @@ export class OpenAIAdapter {
           // Type guard for function tool calls
           if (toolCall.type !== 'function') continue;
 
-          const funcCall = toolCall as { id: string; type: 'function'; function: { name: string; arguments: string } };
+          const funcCall = toolCall as {
+            id: string;
+            type: 'function';
+            function: { name: string; arguments: string };
+          };
           const args = JSON.parse(funcCall.function.arguments);
 
           if (options?.verbose) {
-            console.log(`  → ${funcCall.function.name}(${JSON.stringify(args)})`);
+            console.log(
+              `  → ${funcCall.function.name}(${JSON.stringify(args)})`
+            );
           }
 
           const result = await this.executeTool(funcCall.function.name, args);
 
           if (options?.verbose) {
-            console.log(`  ← ${result.substring(0, 100)}${result.length > 100 ? '...' : ''}`);
+            console.log(
+              `  ← ${result.substring(0, 100)}${result.length > 100 ? '...' : ''}`
+            );
           }
 
           // Add tool result to messages

@@ -9,7 +9,11 @@ import axios, { type AxiosInstance } from 'axios';
 
 // Zod schemas for type safety and validation
 const GitLabAgentConfigSchema = z.object({
-  name: z.string().min(1).max(63).regex(/^[a-z0-9]([-a-z0-9]*[a-z0-9])?$/),
+  name: z
+    .string()
+    .min(1)
+    .max(63)
+    .regex(/^[a-z0-9]([-a-z0-9]*[a-z0-9])?$/),
   projectPath: z.string().min(1),
   gitlabUrl: z.string().url().min(1),
   token: z.string().min(1),
@@ -34,7 +38,9 @@ const GitLabAgentTokenResponseSchema = z.object({
 
 export type GitLabAgentConfig = z.infer<typeof GitLabAgentConfigSchema>;
 export type GitLabAgentResponse = z.infer<typeof GitLabAgentResponseSchema>;
-export type GitLabAgentTokenResponse = z.infer<typeof GitLabAgentTokenResponseSchema>;
+export type GitLabAgentTokenResponse = z.infer<
+  typeof GitLabAgentTokenResponseSchema
+>;
 
 export interface RegisterAgentResult {
   agentId: number;
@@ -67,7 +73,7 @@ export class GitLabAgentService {
     this.client = axios.create({
       baseURL: this.config.gitlabUrl,
       headers: {
-        'Authorization': `Bearer ${this.config.token}`,
+        Authorization: `Bearer ${this.config.token}`,
         'Content-Type': 'application/json',
       },
       timeout: 30000,
@@ -87,8 +93,10 @@ export class GitLabAgentService {
    * List all agents for a project
    */
   async listAgents(projectId?: number): Promise<AgentInfo[]> {
-    const pid = projectId || await this.getProjectId();
-    const response = await this.client.get(`/api/v4/projects/${pid}/cluster_agents`);
+    const pid = projectId || (await this.getProjectId());
+    const response = await this.client.get(
+      `/api/v4/projects/${pid}/cluster_agents`
+    );
     return response.data.map((agent: unknown) => {
       const parsed = GitLabAgentResponseSchema.parse(agent);
       return {
@@ -103,10 +111,13 @@ export class GitLabAgentService {
   /**
    * Get agent by name
    */
-  async getAgent(agentName?: string, projectId?: number): Promise<AgentInfo | null> {
+  async getAgent(
+    agentName?: string,
+    projectId?: number
+  ): Promise<AgentInfo | null> {
     const name = agentName || this.config.name;
     const agents = await this.listAgents(projectId);
-    return agents.find(a => a.name === name) || null;
+    return agents.find((a) => a.name === name) || null;
   }
 
   /**
@@ -152,7 +163,7 @@ export class GitLabAgentService {
     tokenName?: string,
     projectId?: number
   ): Promise<GitLabAgentTokenResponse> {
-    const pid = projectId || await this.getProjectId();
+    const pid = projectId || (await this.getProjectId());
     const name = tokenName || `${this.config.name}-token-${Date.now()}`;
 
     const response = await this.client.post(
@@ -169,8 +180,11 @@ export class GitLabAgentService {
   /**
    * List agent tokens (READ operation)
    */
-  async listTokens(agentId: number, projectId?: number): Promise<GitLabAgentTokenResponse[]> {
-    const pid = projectId || await this.getProjectId();
+  async listTokens(
+    agentId: number,
+    projectId?: number
+  ): Promise<GitLabAgentTokenResponse[]> {
+    const pid = projectId || (await this.getProjectId());
     const response = await this.client.get(
       `/api/v4/projects/${pid}/cluster_agents/${agentId}/tokens`
     );
@@ -187,7 +201,7 @@ export class GitLabAgentService {
     tokenId: number,
     projectId?: number
   ): Promise<void> {
-    const pid = projectId || await this.getProjectId();
+    const pid = projectId || (await this.getProjectId());
     await this.client.delete(
       `/api/v4/projects/${pid}/cluster_agents/${agentId}/tokens/${tokenId}`
     );
@@ -197,7 +211,7 @@ export class GitLabAgentService {
    * Delete agent (DELETE operation)
    */
   async deleteAgent(agentId: number, projectId?: number): Promise<void> {
-    const pid = projectId || await this.getProjectId();
+    const pid = projectId || (await this.getProjectId());
     await this.client.delete(
       `/api/v4/projects/${pid}/cluster_agents/${agentId}`
     );
@@ -206,7 +220,9 @@ export class GitLabAgentService {
   /**
    * Register agent and create token (full registration flow)
    */
-  async registerAgentWithToken(agentName?: string): Promise<RegisterAgentResult> {
+  async registerAgentWithToken(
+    agentName?: string
+  ): Promise<RegisterAgentResult> {
     const agent = await this.registerAgent(agentName);
     const token = await this.createToken(agent.id);
     const projectId = await this.getProjectId();
@@ -220,4 +236,3 @@ export class GitLabAgentService {
     };
   }
 }
-
