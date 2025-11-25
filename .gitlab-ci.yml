@@ -1,25 +1,27 @@
 # GitLab CI/CD Pipeline for OSSA
-# Implements milestone-gated semantic-release workflow:
-# Feature Branch → development (dev prerelease) → main (milestone-gated release) → environments
-# Version bump is determined automatically by commit analysis (feat → minor, fix → patch, BREAKING → major)
-# Milestones gate production releases - must be 100% complete before merge to main
+# Decoupled Release Model:
+# - Code flows freely: Feature → development → main (CI validates, no auto-release)
+# - Website deployment: Manual button (independent of releases)
+# - NPM releases: Manual button + milestone-gated
 #
-# Status: ACTIVE MODE (tests must pass, version sync validated)
-# Last updated: 2025-11-21 (v0.2.5 milestone)
+# Workflow:
+# 1. Feature branches → merge to development (CI validates)
+# 2. Development → merge to main via merge train (CI validates)
+# 3. Click "Deploy Website" button → GitLab Pages deploys
+# 4. Close milestone → Click "Release" button → npm publish + git tag
+#
+# Status: ACTIVE MODE
+# Last updated: 2025-11-24
 
 stages:
-  - setup
-  - version-detect  # NEW: Detect version from milestone
+  - version-detect
   - validate
   - build
   - test
   - quality
-  - semantic-preview
-  - promote
-  - release-dev
-  - release-main
-  - release-env
-  - mirror-github
+  - deploy          # Website deployment (manual)
+  - release         # NPM release (manual, milestone-gated)
+  - mirror
 
 variables:
   NODE_VERSION: "22"
@@ -28,11 +30,8 @@ variables:
   LEFTHOOK: "0"
 
 # ============================================================================
-# STAGE 0: VERSION DETECTION
+# STAGE 0: VERSION DETECTION (for release gating)
 # ============================================================================
-# Extracts the version from closed milestone title
-# Makes it available as $RELEASE_VERSION throughout the pipeline
-# Example: Milestone "v0.2.6 - Feature Name" → RELEASE_VERSION=0.2.6
 
 detect:milestone-version:
   stage: version-detect
@@ -41,118 +40,61 @@ detect:milestone-version:
     - apk add --no-cache curl jq git
   script:
     - |
-      echo "🔍 MILESTONE-GATED RELEASE DETECTION"
-      echo "====================================="
-      echo ""
-      echo "Requirements for automatic release:"
-      echo "  1. Milestone MUST be closed"
-      echo "  2. Milestone MUST be 100% complete (all issues closed)"
-      echo "  3. Version MUST NOT already be released (git tag)"
+      echo "🔍 Milestone Version Detection"
+      echo "=============================="
       echo ""
 
-      # Fetch git tags to check if version is already released
       git fetch --tags 2>/dev/null || echo "Warning: Could not fetch tags"
 
-      # Get all milestones
+      # Get closed milestones
       ALL_MILESTONES=$(curl -sS -G "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/milestones" \
         --header "PRIVATE-TOKEN: ${GITLAB_PUSH_TOKEN}" \
-        --data-urlencode "per_page=100")
+        --data-urlencode "per_page=100" \
+        --data-urlencode "state=closed")
 
-      # Find the first closed milestone with a version
       MILESTONE_FOUND=false
-      MILESTONE_VERSION=""
+      RELEASE_VERSION=""
       MILESTONE_TITLE=""
       MILESTONE_ID=""
-      MILESTONE_COMPLETE=false
 
-      while IFS= read -r milestone_json; do
-        if [ -z "$milestone_json" ]; then continue; fi
-
-        TITLE=$(echo "$milestone_json" | jq -r '.title')
-        ID=$(echo "$milestone_json" | jq -r '.id')
-        STATE=$(echo "$milestone_json" | jq -r '.state')
-
+      for milestone in $(echo "$ALL_MILESTONES" | jq -c '.[]'); do
+        TITLE=$(echo "$milestone" | jq -r '.title')
+        ID=$(echo "$milestone" | jq -r '.id')
         VERSION=$(echo "$TITLE" | grep -oE 'v?[0-9]+\.[0-9]+\.[0-9]+' | head -1 | sed 's/^v//')
 
-        if [ -n "$VERSION" ] && [ "$STATE" = "closed" ]; then
-          # Check if this version has already been released
-          if git tag -l | grep -qE "^v?${VERSION}$"; then
-            echo "⏭️  Skipping milestone: $TITLE (v${VERSION} already released)"
-            continue
-          fi
+        if [ -z "$VERSION" ]; then continue; fi
 
-          # Get milestone statistics
-          MILESTONE_STATS=$(curl -sS -G "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/milestones/${ID}" \
-            --header "PRIVATE-TOKEN: ${GITLAB_PUSH_TOKEN}")
-
-          TOTAL_ISSUES=$(echo "$MILESTONE_STATS" | jq -r '.total_issues_count // 0')
-          CLOSED_ISSUES=$(echo "$MILESTONE_STATS" | jq -r '.closed_issues_count // 0')
-          OPEN_ISSUES=$(echo "$MILESTONE_STATS" | jq -r '((.total_issues_count // 0) - (.closed_issues_count // 0))')
-
-          echo "📋 Found closed milestone: $TITLE"
-          echo "   Version: v${VERSION}"
-          echo "   Total Issues: ${TOTAL_ISSUES}"
-          echo "   Closed Issues: ${CLOSED_ISSUES}"
-          echo "   Open Issues: ${OPEN_ISSUES}"
-          echo ""
-
-          # Check if 100% complete
-          if [ "$OPEN_ISSUES" -eq 0 ] && [ "$TOTAL_ISSUES" -gt 0 ]; then
-            echo "✅ Milestone is 100% complete - READY FOR RELEASE"
-            MILESTONE_COMPLETE=true
-            MILESTONE_TITLE="$TITLE"
-            MILESTONE_VERSION="$VERSION"
-            MILESTONE_ID="$ID"
-            MILESTONE_FOUND=true
-            break
-          elif [ "$TOTAL_ISSUES" -eq 0 ]; then
-            echo "⚠️  Milestone has no issues - treating as complete"
-            MILESTONE_COMPLETE=true
-            MILESTONE_TITLE="$TITLE"
-            MILESTONE_VERSION="$VERSION"
-            MILESTONE_ID="$ID"
-            MILESTONE_FOUND=true
-            break
-          else
-            echo "❌ Milestone is NOT 100% complete"
-            echo "   ${OPEN_ISSUES} issue(s) still open"
-            echo "   Cannot proceed with automatic release"
-            echo ""
-            echo "Complete these issues first:"
-            echo "   https://gitlab.com/blueflyio/openstandardagents/-/milestones/${ID}"
-            echo ""
-          fi
+        # Skip if already released
+        if git tag -l | grep -qE "^v?${VERSION}$"; then
+          echo "⏭️  Skipping: $TITLE (v${VERSION} already released)"
+          continue
         fi
-      done < <(echo "$ALL_MILESTONES" | jq -c '.[] | select(.state == "closed")')
 
-      # Generate environment variables
-      if [ "$MILESTONE_FOUND" = "true" ] && [ "$MILESTONE_COMPLETE" = "true" ]; then
-        echo "RELEASE_VERSION=${MILESTONE_VERSION}" > milestone-version.env
-        echo "MILESTONE_TITLE=${MILESTONE_TITLE}" >> milestone-version.env
-        echo "MILESTONE_ID=${MILESTONE_ID}" >> milestone-version.env
-        echo "MILESTONE_READY=true" >> milestone-version.env
+        # Get milestone stats
+        STATS=$(curl -sS "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/milestones/${ID}" \
+          --header "PRIVATE-TOKEN: ${GITLAB_PUSH_TOKEN}")
+        OPEN_ISSUES=$(echo "$STATS" | jq -r '((.total_issues_count // 0) - (.closed_issues_count // 0))')
 
-        echo ""
-        echo "✅ AUTOMATIC RELEASE WILL PROCEED"
-        echo "   Version: v${MILESTONE_VERSION}"
-        echo "   Milestone: ${MILESTONE_TITLE}"
-        echo ""
-        cat milestone-version.env
-      else
-        echo "RELEASE_VERSION=" > milestone-version.env
-        echo "MILESTONE_TITLE=" >> milestone-version.env
-        echo "MILESTONE_ID=" >> milestone-version.env
-        echo "MILESTONE_READY=false" >> milestone-version.env
+        if [ "$OPEN_ISSUES" -eq 0 ]; then
+          echo "✅ Found release-ready milestone: $TITLE"
+          MILESTONE_FOUND=true
+          RELEASE_VERSION="$VERSION"
+          MILESTONE_TITLE="$TITLE"
+          MILESTONE_ID="$ID"
+          break
+        else
+          echo "⚠️  $TITLE has $OPEN_ISSUES open issues"
+        fi
+      done
 
-        echo ""
-        echo "ℹ️  No release-ready milestone found"
-        echo "   Either:"
-        echo "   • No closed milestones with version in title"
-        echo "   • Milestone has open issues"
-        echo "   • Version already released"
-        echo ""
-        cat milestone-version.env
-      fi
+      # Write environment file
+      echo "RELEASE_VERSION=${RELEASE_VERSION}" > milestone-version.env
+      echo "MILESTONE_TITLE=${MILESTONE_TITLE}" >> milestone-version.env
+      echo "MILESTONE_ID=${MILESTONE_ID}" >> milestone-version.env
+      echo "MILESTONE_READY=${MILESTONE_FOUND}" >> milestone-version.env
+
+      echo ""
+      cat milestone-version.env
   artifacts:
     reports:
       dotenv: milestone-version.env
@@ -160,13 +102,12 @@ detect:milestone-version:
       - milestone-version.env
     expire_in: 1 day
   rules:
-    # Only run on main branch (where releases happen)
     - if: $CI_COMMIT_BRANCH == "main"
       when: always
-  allow_failure: true  # Don't block pipeline if no milestone found
+  allow_failure: true
 
 # ============================================================================
-# STAGE 1: SETUP & VALIDATE
+# STAGE 1: VALIDATE
 # ============================================================================
 
 validate:node:
@@ -186,7 +127,7 @@ validate:ossa:
     - npm ci --legacy-peer-deps
     - npm run build
     - echo "Validating example manifests..."
-    - node dist/cli/index.js validate examples/getting-started/hello-world-complete.ossa.yaml || echo "WARNING Validation warnings (non-blocking)"
+    - node dist/cli/index.js validate examples/getting-started/hello-world-complete.ossa.yaml || echo "WARNING: Validation warnings (non-blocking)"
   allow_failure: true
   rules:
     - when: always
@@ -219,86 +160,38 @@ validate:docs-consistency:
     - npm ci --legacy-peer-deps
   script:
     - |
-      echo "🔍 CRITICAL: Pre-Release Documentation Validation"
-      echo "=================================================="
-      echo ""
-      echo "This job PREVENTS releases with inconsistent documentation."
-      echo "All version references MUST match package.json before proceeding."
-      echo ""
+      echo "🔍 Documentation Validation"
+      echo "==========================="
 
-      # Get version from package.json
       VERSION=$(node -p "require('./package.json').version")
       echo "📦 Package version: v${VERSION}"
-      echo ""
 
-      # Run comprehensive version sync check
-      echo "Running sync-versions.ts --check..."
+      # Run version sync check
       if ! npx tsx scripts/sync-versions.ts --check; then
-        echo ""
-        echo "❌ CRITICAL FAILURE: Documentation is out of sync!"
-        echo ""
-        echo "This means:"
-        echo "  • README.md has wrong version references"
-        echo "  • Schema paths don't match package.json"
-        echo "  • Badge versions are incorrect"
-        echo ""
-        echo "FIX REQUIRED:"
-        echo "  1. Run locally: npx tsx scripts/sync-versions.ts --fix"
-        echo "  2. Commit the changes"
-        echo "  3. Push and re-run pipeline"
-        echo ""
-        echo "This validation CANNOT be bypassed."
-        exit 1
-      fi
-
-      # Verify spec directory exists
-      if [ ! -d "spec/v${VERSION}" ]; then
-        echo "❌ CRITICAL: spec/v${VERSION}/ directory does not exist!"
+        echo "❌ Documentation out of sync!"
         echo "Run: npx tsx scripts/sync-versions.ts --fix"
         exit 1
       fi
 
-      # Verify schema file exists
+      # Verify spec directory
+      if [ ! -d "spec/v${VERSION}" ]; then
+        echo "❌ spec/v${VERSION}/ missing"
+        exit 1
+      fi
+
+      # Verify schema file
       if [ ! -f "spec/v${VERSION}/ossa-${VERSION}.schema.json" ]; then
-        echo "❌ CRITICAL: spec/v${VERSION}/ossa-${VERSION}.schema.json does not exist!"
+        echo "❌ Schema file missing"
         exit 1
       fi
 
-      # Verify README references correct version
-      if ! grep -q "OSSA v${VERSION} Schema:" README.md; then
-        echo "❌ CRITICAL: README.md does not reference v${VERSION}!"
-        echo "Found:"
-        grep "OSSA v.*Schema:" README.md || echo "(no version found)"
-        exit 1
-      fi
-
-      # Verify package.json exports correct schema
-      SCHEMA_EXPORT=$(node -p "require('./package.json').exports['./schema']")
-      EXPECTED_SCHEMA="./spec/v${VERSION}/ossa-${VERSION}.schema.json"
-      if [ "$SCHEMA_EXPORT" != "$EXPECTED_SCHEMA" ]; then
-        echo "❌ CRITICAL: package.json schema export is wrong!"
-        echo "   Expected: ${EXPECTED_SCHEMA}"
-        echo "   Found: ${SCHEMA_EXPORT}"
-        exit 1
-      fi
-
-      echo ""
-      echo "✅ ALL DOCUMENTATION CONSISTENCY CHECKS PASSED"
-      echo "   Version: v${VERSION}"
-      echo "   README: ✓"
-      echo "   Schema: ✓"
-      echo "   package.json: ✓"
-      echo ""
-      echo "Safe to proceed with release."
-  allow_failure: false  # CRITICAL: This MUST pass before release
+      echo "✅ Documentation consistent"
+  allow_failure: false
   rules:
-    # Run ALWAYS before any release
     - if: $CI_COMMIT_BRANCH == "main"
       when: always
-    # Also run on development to catch issues early
     - if: $CI_COMMIT_BRANCH == "development"
       when: always
-    # Run on MRs targeting main or development
     - if: $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "main"
       when: always
     - if: $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "development"
@@ -314,8 +207,8 @@ build:dist:
   script:
     - npm ci --legacy-peer-deps
     - npm run build
-    - test -f dist/cli/index.js || (echo "ERROR dist/cli/index.js missing after build" && exit 1)
-    - echo "Build completed successfully"
+    - test -f dist/cli/index.js || (echo "ERROR: dist/cli/index.js missing" && exit 1)
+    - echo "Build completed"
   artifacts:
     paths:
       - dist/
@@ -335,9 +228,9 @@ test:lint:
   script:
     - npm ci --legacy-peer-deps
     - npm run build
-    - npm run lint || echo "WARNING Lint warnings detected"
-    - npm run typecheck || echo "WARNING Typecheck warnings detected"
-  allow_failure: true  # Warnings only, doesn't block
+    - npm run lint || echo "WARNING: Lint warnings"
+    - npm run typecheck || echo "WARNING: Typecheck warnings"
+  allow_failure: true
   rules:
     - when: always
 
@@ -350,7 +243,6 @@ test:unit:
     - npm ci --legacy-peer-deps
   script:
     - npm run build
-    - test -f dist/cli/index.js || (echo "ERROR dist/cli/index.js missing after build" && exit 1)
     - npm run test:coverage
   coverage: '/All files[^|]*\|[^|]*\s+([\d\.]+)/'
   artifacts:
@@ -361,7 +253,7 @@ test:unit:
     paths:
       - coverage/
     expire_in: 7 days
-  allow_failure: false  # Tests must pass
+  allow_failure: false
   rules:
     - when: always
 
@@ -370,7 +262,7 @@ test:security:
   image: node:${NODE_VERSION}-alpine
   script:
     - npm ci --legacy-peer-deps
-    - npm audit --production || echo "WARNING Security vulnerabilities detected (review required)"
+    - npm audit --production || echo "WARNING: Security vulnerabilities"
   allow_failure: true
   rules:
     - when: always
@@ -382,13 +274,8 @@ test:security:
 quality:gates:
   stage: quality
   image: node:${NODE_VERSION}-alpine
-  dependencies:
-    - test:unit
-    - test:lint
-    - test:security
   script:
     - echo "✅ Quality gates passed"
-    - echo "All tests, lint, and security checks completed"
   rules:
     - when: always
   needs:
@@ -400,299 +287,76 @@ quality:gates:
       optional: true
 
 # ============================================================================
-# STAGE 5: SEMANTIC-RELEASE PREVIEW (Feature Branches & MRs)
+# STAGE 5: DEPLOY (Website - Manual Button)
 # ============================================================================
-# Runs semantic-release in dry-run mode to predict next version
-# Produces: predicted version, changelog preview, release notes preview
-# Used for MR badges and automated labeling
+# Website deployment is INDEPENDENT of npm releases
+# Click the button to deploy website at any time
 
-semantic-release:preview:
-  stage: semantic-preview
+pages:
+  stage: deploy
   image: node:${NODE_VERSION}-alpine
+  needs: []  # Run independently - no dependencies
   before_script:
-    - apk add --no-cache git
-    - npm ci --legacy-peer-deps
-    - git config --global user.email "ci@blueflyio.com"
-    - git config --global user.name "GitLab CI"
+    - cd website
+    - npm ci
+    - apk add --no-cache git curl
+    - export GITLAB_HOST="${GITLAB_HOST:-${CI_SERVER_HOST}}"
   script:
-    - |
-      echo "🧪 Running semantic-release dry-run for preview..."
-      
-      # Fetch full history for semantic-release
-      git fetch --unshallow --tags || true
-      
-      # Run semantic-release in dry-run mode
-      export GITLAB_TOKEN="${CI_JOB_TOKEN}"
-      export CI="true"
-      
-      # Capture output
-      npx semantic-release --dry-run > semantic-preview.txt 2>&1 || true
-      
-      # Extract predicted version
-      PREDICTED_VERSION=$(grep -oP "The next release version is \K[0-9]+\.[0-9]+\.[0-9]+" semantic-preview.txt || echo "unknown")
-      RELEASE_TYPE=$(grep -oP "The release type for the commit is \K[a-z]+" semantic-preview.txt || echo "none")
-      
-      echo "📊 Semantic Release Preview"
-      echo "   Predicted Version ${PREDICTED_VERSION}"
-      echo "   Release Type ${RELEASE_TYPE}"
-      echo ""
-      cat semantic-preview.txt || true
-      
-      # Generate MR badge data
-      echo "PREDICTED_VERSION=${PREDICTED_VERSION}" >> semantic-preview.env
-      echo "RELEASE_TYPE=${RELEASE_TYPE}" >> semantic-preview.env
-      
-      # Determine label based on release type
-      if [ "$RELEASE_TYPE" = "major" ]; then
-        echo "MR_LABEL=release:major" >> semantic-preview.env
-      elif [ "$RELEASE_TYPE" = "minor" ]; then
-        echo "MR_LABEL=release:minor" >> semantic-preview.env
-      elif [ "$RELEASE_TYPE" = "patch" ]; then
-        echo "MR_LABEL=release:patch" >> semantic-preview.env
-      else
-        echo "MR_LABEL=" >> semantic-preview.env
-      fi
+    - npm run sync-wiki || echo "Warning: Wiki sync failed"
+    - npm run build
+    - mv out ../public
   artifacts:
-    reports:
-      dotenv: semantic-preview.env
     paths:
-      - semantic-preview.txt
-    expire_in: 1 day
-  rules:
-    # Run on feature branches and MRs (not main/development)
-    - if: $CI_MERGE_REQUEST_IID
-    - if: $CI_COMMIT_BRANCH && $CI_COMMIT_BRANCH != "main" && $CI_COMMIT_BRANCH != "development"
-  allow_failure: true
-  needs:
-    - job: quality:gates
-      optional: true
-    - job: build:dist
-      artifacts: true
-
-# ============================================================================
-# STAGE 6: AUTO-MERGE INTO development
-# ============================================================================
-# When feature MR is merged into development:
-# - Runs full CI
-# - Runs semantic-release with prerelease channel = dev
-# - Creates dev release tags (0.5.0-dev.7, 0.5.0-dev.8, etc.)
-# - Publishes to npm with 'dev' tag
-# - Shows "Promote to main" button
-
-release:dev:
-  stage: release-dev
-  image: node:${NODE_VERSION}-alpine
-  dependencies:
-    - build:dist
-  before_script:
-    - apk add --no-cache git curl jq
-    - npm ci --legacy-peer-deps
-    - git config --global user.email "ci@blueflyio.com"
-    - git config --global user.name "GitLab CI Semantic Release"
-    - git remote set-url origin https://oauth2:${GITLAB_PUSH_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git
-    - git fetch --unshallow --tags || true
-  script:
-    - |
-      echo "🚀 Development Prerelease"
-      echo "=========================="
-      
-      # Configure npm
-      echo "@bluefly:registry=${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/npm/" > .npmrc
-      echo "//${CI_SERVER_HOST}/api/v4/projects/${CI_PROJECT_ID}/packages/npm/:_authToken=${CI_JOB_TOKEN}" >> .npmrc
-      
-      if [ -n "$NPM_TOKEN" ]; then
-        echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" >> .npmrc
-      fi
-      
-      # Run semantic-release for development branch (prerelease channel)
-      export GITLAB_TOKEN="${GITLAB_PUSH_TOKEN}"
-      export NPM_TOKEN="${NPM_TOKEN}"
-      export CI="true"
-      
-      echo "Running semantic-release for development branch..."
-      npx semantic-release
-      
-      echo "✅ Development prerelease completed"
-      echo ""
-      echo "Next: Use 'Promote to main' button to create MR from development → main"
-  rules:
-    - if: $CI_COMMIT_BRANCH == "development"
-      when: on_success
-  needs:
-    - quality:gates
-    - build:dist
+      - public
   environment:
-    name: npm-registry
-    url: https://www.npmjs.com/package/@bluefly/openstandardagents
-
-# ============================================================================
-# STAGE 7: PROMOTION GATE (development → main)
-# ============================================================================
-# Manual button that:
-# - Creates MR from development → main
-# - Validates: no conflicts, conventional commits, predictable version
-# - Requires manual approval
-# - Does NOT run semantic-release yet
-
-promote-to-main:
-  stage: promote
-  image: node:${NODE_VERSION}-alpine
-  before_script:
-    - apk add --no-cache git curl jq
-    - git config --global user.email "ci@blueflyio.com"
-    - git config --global user.name "GitLab CI"
-    - git remote set-url origin https://oauth2:${GITLAB_PUSH_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git
-    - git fetch --all --prune --unshallow --tags || true
-  script:
-    - |
-      set -e
-      echo "🔄 Promotion Gate: development → main"
-      echo "======================================"
-      
-      # Check if fast-forward is possible
-      git checkout -B main origin/main
-      if git merge --ff-only origin/development 2>/dev/null; then
-        echo "✅ Fast-forward merge possible"
-        git push origin main
-        echo "✅ Fast-forward merge completed"
-        exit 0
-      fi
-      
-      echo "⚠️  Fast-forward not possible. Creating Merge Request..."
-      
-      # Validate: Check for conflicts
-      git merge --no-commit --no-ff origin/development || CONFLICTS=true
-      if [ "$CONFLICTS" = "true" ]; then
-        git merge --abort || true
-        echo "❌ Conflicts detected. Please resolve manually."
-        exit 1
-      fi
-      git merge --abort || true
-      
-      # Validate: Check commit messages are conventional
-      echo "Validating commit messages..."
-      git log origin/main..origin/development --oneline | while read commit; do
-        if ! echo "$commit" | grep -qE "^(feat|fix|docs|style|refactor|test|chore|perf|ci|build|revert)(\(.+\))?:"; then
-          echo "⚠️  Warning: Non-conventional commit: $commit"
-        fi
-      done
-      
-      # Preview next version
-      echo "Previewing next version..."
-      export GITLAB_TOKEN="${CI_JOB_TOKEN}"
-      export CI="true"
-      PREDICTED_VERSION=$(npx semantic-release --dry-run 2>&1 | grep -oP "The next release version is \K[0-9]+\.[0-9]+\.[0-9]+" || echo "unknown")
-      echo "📊 Predicted next version: ${PREDICTED_VERSION}"
-      
-      # Check if MR already exists
-      EXISTING_MR=$(curl -sS -G "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/merge_requests" \
-        --header "PRIVATE-TOKEN: ${GITLAB_PUSH_TOKEN}" \
-        --data-urlencode "source_branch=development" \
-        --data-urlencode "target_branch=main" \
-        --data-urlencode "state=opened" | jq -r '.[0].web_url // empty')
-      
-      if [ -n "$EXISTING_MR" ]; then
-        echo "✅ Merge Request already exists: $EXISTING_MR"
-        exit 0
-      fi
-      
-      # Create MR
-      MR_RESPONSE=$(curl -sS -X POST "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/merge_requests" \
-        --header "PRIVATE-TOKEN: ${GITLAB_PUSH_TOKEN}" \
-        --data-urlencode "source_branch=development" \
-        --data-urlencode "target_branch=main" \
-        --data-urlencode "title=chore: merge development to main" \
-        --data-urlencode "description=## Promotion Gate: development → main
-      
-      **Predicted Next Version:** ${PREDICTED_VERSION}
-      
-      This MR was created by the promotion gate. Please review and merge when ready.
-      
-      ### Validation
-      - ✅ No conflicts detected
-      - ✅ Commit messages validated
-      - ✅ Version prediction: ${PREDICTED_VERSION}
-      
-      After merging, the release will be created automatically based on commit analysis.")
-      
-      MR_URL=$(echo "$MR_RESPONSE" | jq -r '.web_url // empty')
-      if [ -n "$MR_URL" ]; then
-        echo "✅ Merge Request created: $MR_URL"
-      else
-        echo "❌ Failed to create Merge Request"
-        echo "Response: $MR_RESPONSE"
-        exit 1
-      fi
+    name: website
+    url: https://openstandardagents.org
+    deployment_tier: production
   rules:
+    # Manual button on main - deploy website anytime
+    - if: $CI_COMMIT_BRANCH == "main"
+      when: manual
+      allow_failure: true
+    # Manual on development for preview
     - if: $CI_COMMIT_BRANCH == "development"
       when: manual
-      allow_failure: false
-  needs:
-    - quality:gates
-  environment:
-    name: review/promotion
-    action: start
-    auto_stop_in: 1 hour
+      allow_failure: true
 
 # ============================================================================
-# STAGE 8: RELEASE ON main (Manual - Milestone Controlled)
+# STAGE 6: RELEASE (NPM - Manual Button, Milestone-Gated)
 # ============================================================================
-# Manual release job - must be explicitly triggered after merge to main
-# Version bump is determined by semantic-release analyzing commit messages:
-# - feat: → MINOR
-# - fix: → PATCH
-# - BREAKING CHANGE: → MAJOR
-#
-# Milestones are used for planning and tracking, but version is determined
-# automatically by commit analysis. Release job must be manually triggered
-# after reviewing the merge to main.
+# NPM release requires:
+# 1. Closed milestone with version in title
+# 2. All issues in milestone closed (100% complete)
+# 3. Manual button click
 
-# Preview job - shows what version will be released (dry-run)
 release:preview:
-  stage: release-main
+  stage: release
   image: node:${NODE_VERSION}-alpine
   dependencies:
     - build:dist
   before_script:
-    - apk add --no-cache git curl jq
     - npm ci --legacy-peer-deps
-    - git config --global user.email "ci@blueflyio.com"
-    - git config --global user.name "GitLab CI Preview"
-    - git remote set-url origin https://oauth2:${GITLAB_PUSH_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git
-    - git fetch --unshallow --tags || true
   script:
     - |
-      echo "🔍 Release Preview (Dry-Run)"
-      echo "============================"
-      echo ""
+      echo "🔍 Release Preview"
+      echo "=================="
 
-      # Show milestone-detected version (if available)
-      if [ -n "$RELEASE_VERSION" ]; then
-        echo "📋 Detected from closed milestone:"
+      CURRENT_VERSION=$(node -p "require('./package.json').version")
+      echo "📦 Current version: v${CURRENT_VERSION}"
+
+      if [ -n "$RELEASE_VERSION" ] && [ "$MILESTONE_READY" = "true" ]; then
+        echo ""
+        echo "✅ Release ready!"
         echo "   Milestone: ${MILESTONE_TITLE}"
         echo "   Version to release: v${RELEASE_VERSION}"
         echo ""
-      fi
-
-      # Show current package.json version
-      CURRENT_VERSION=$(node -p "require('./package.json').version")
-      echo "📦 Current package.json: v${CURRENT_VERSION}"
-      echo ""
-
-      if [ -n "$RELEASE_VERSION" ] && [ "$RELEASE_VERSION" != "$CURRENT_VERSION" ]; then
-        echo "⚠️  Version mismatch:"
-        echo "   Milestone says: v${RELEASE_VERSION}"
-        echo "   package.json says: v${CURRENT_VERSION}"
+        echo "Click 'release:npm' button to publish."
+      else
         echo ""
-        echo "The release:main job will update package.json to v${RELEASE_VERSION}"
-        echo ""
+        echo "ℹ️  No release-ready milestone found"
+        echo "   Close a milestone with version to enable release"
       fi
-
-      echo "Running semantic-release preview..."
-      npx semantic-release --dry-run || true
-
-      echo ""
-      echo "✅ Preview complete. Review output above before triggering release:main"
   rules:
     - if: $CI_COMMIT_BRANCH == "main"
       when: always
@@ -703,8 +367,8 @@ release:preview:
       optional: true
       artifacts: true
 
-release:main:
-  stage: release-main
+release:npm:
+  stage: release
   image: node:${NODE_VERSION}-alpine
   dependencies:
     - build:dist
@@ -719,78 +383,36 @@ release:main:
     - git checkout -B main origin/main
   script:
     - |
-      echo "🚀 AUTOMATIC MILESTONE-GATED RELEASE"
-      echo "===================================="
-      echo ""
+      echo "🚀 NPM Release (Milestone-Gated)"
+      echo "================================="
 
-      # Validate milestone is ready (set by detect:milestone-version job)
+      # Validate milestone is ready
       if [ "$MILESTONE_READY" != "true" ]; then
-        echo "❌ RELEASE BLOCKED: No release-ready milestone found"
+        echo "❌ RELEASE BLOCKED: No release-ready milestone"
         echo ""
-        echo "Requirements for automatic release:"
-        echo "  1. ✅ Milestone MUST exist with version in title (e.g., 'v0.2.6 - Feature Name')"
-        echo "  2. ✅ Milestone MUST be CLOSED"
-        echo "  3. ✅ Milestone MUST be 100% COMPLETE (all issues closed)"
-        echo "  4. ✅ Version MUST NOT already be released"
-        echo ""
-        echo "Current status:"
-        if [ -z "$RELEASE_VERSION" ]; then
-          echo "  • No closed milestone with version found"
-        else
-          echo "  • Found milestone: ${MILESTONE_TITLE}"
-          echo "  • Milestone has open issues - complete them first:"
-          echo "    https://gitlab.com/blueflyio/openstandardagents/-/milestones/${MILESTONE_ID}"
-        fi
-        echo ""
-        echo "Once all issues are closed and milestone is closed, the release will trigger automatically."
+        echo "Requirements:"
+        echo "  1. Milestone with version in title (e.g., 'v0.2.6 - Feature')"
+        echo "  2. Milestone must be CLOSED"
+        echo "  3. All issues must be closed (100% complete)"
+        echo "  4. Version not already released"
         exit 1
       fi
 
-      # Milestone is ready - use detected version
-      MILESTONE_VERSION="$RELEASE_VERSION"
-      MILESTONE_TITLE="$MILESTONE_TITLE"
-      # MILESTONE_ID already set by detect:milestone-version
+      VERSION="$RELEASE_VERSION"
+      echo "✅ Releasing v${VERSION}"
+      echo "   Milestone: ${MILESTONE_TITLE}"
 
-      echo "✅ Release ready for: ${MILESTONE_TITLE}"
-      echo "   Version: v${MILESTONE_VERSION}"
-      echo "   Milestone: https://gitlab.com/blueflyio/openstandardagents/-/milestones/${MILESTONE_ID}"
-      echo ""
+      # Update package.json
+      npm version ${VERSION} --no-git-tag-version --allow-same-version
 
-      # Update package.json version
-      echo ""
-      echo "📦 Updating package.json to v${MILESTONE_VERSION}..."
-      npm version ${MILESTONE_VERSION} --no-git-tag-version --allow-same-version
-
-      # AUTO-FIX: Sync ALL version references across the project
-      echo ""
-      echo "📝 AUTO-FIXING: Syncing all documentation and version references..."
-      echo "This ensures README, schema paths, badges, and all docs are consistent."
+      # Sync documentation
+      echo "📝 Syncing documentation..."
       npx tsx scripts/sync-versions.ts --fix
 
-      # Verify the sync worked
-      echo ""
-      echo "🔍 Verifying documentation consistency..."
+      # Verify sync
       if ! npx tsx scripts/sync-versions.ts --check; then
-        echo "❌ CRITICAL: Documentation sync failed verification!"
-        echo "This should never happen. Aborting release."
+        echo "❌ Documentation sync failed"
         exit 1
-      fi
-      echo "✅ Documentation sync verified - all references consistent"
-
-      # Rename spec directory if needed
-      if [ ! -d "spec/v${MILESTONE_VERSION}" ] && [ -d "spec/v${MILESTONE_VERSION}-dev" ]; then
-        echo "Renaming spec/v${MILESTONE_VERSION}-dev to spec/v${MILESTONE_VERSION}..."
-        mv "spec/v${MILESTONE_VERSION}-dev" "spec/v${MILESTONE_VERSION}"
-        # Rename schema files
-        cd "spec/v${MILESTONE_VERSION}"
-        for file in ossa-${MILESTONE_VERSION}-dev.*; do
-          if [ -f "$file" ]; then
-            newname="${file//-dev/}"
-            mv "$file" "$newname"
-            echo "  Renamed: $file → $newname"
-          fi
-        done
-        cd ../..
       fi
 
       # Configure npm
@@ -801,67 +423,43 @@ release:main:
         echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" >> .npmrc
       fi
 
-      # Run tests one more time before publishing
-      echo ""
-      echo "🧪 Running final tests before publish..."
-      npm run test || (echo "❌ Tests failed - aborting release" && exit 1)
+      # Run tests
+      echo "🧪 Running tests..."
+      npm run test || (echo "❌ Tests failed" && exit 1)
 
-      # Publish to npm
-      echo ""
-      echo "📦 Publishing v${MILESTONE_VERSION} to npm..."
+      # Publish
+      echo "📦 Publishing to npm..."
       npm publish --access public
 
-      # Commit updated files and create tag
-      echo ""
-      echo "🏷️  Creating git tag and pushing..."
-      git add package.json package-lock.json README.md spec/
-      git commit -m "chore(release): v${MILESTONE_VERSION} [skip ci]" || echo "No changes to commit"
-      git tag -a "v${MILESTONE_VERSION}" -m "Release v${MILESTONE_VERSION}"
+      # Commit and tag
+      echo "🏷️  Creating tag..."
+      git add package.json package-lock.json README.md spec/ RELEASING.md || true
+      git commit -m "chore(release): v${VERSION} [skip ci]" || echo "No changes"
+      git tag -a "v${VERSION}" -m "Release v${VERSION}"
       git push origin main --tags
 
       echo ""
-      echo "✅ Release v${MILESTONE_VERSION} completed successfully!"
+      echo "✅ Released v${VERSION}"
       echo "   📦 npm: https://www.npmjs.com/package/@bluefly/openstandardagents"
-      echo "   🏷️  Tag: v${MILESTONE_VERSION}"
-      echo "   📋 Milestone: ${MILESTONE_TITLE}"
+      echo "   🏷️  Tag: v${VERSION}"
   rules:
-    # AUTOMATIC release when milestone is 100% complete and closed
-    - if: $CI_COMMIT_BRANCH == "main" && $MILESTONE_READY == "true"
-      when: on_success  # Automatic when milestone is ready
-      allow_failure: false
-    # Manual fallback if milestone detection fails but you want to force release
+    # Manual button - only appears on main branch
     - if: $CI_COMMIT_BRANCH == "main"
       when: manual
       allow_failure: false
-    - when: never  # Explicit deny for all other cases
   needs:
     - quality:gates
     - build:dist
-    - release:preview  # Must review preview before releasing
-    - validate:docs-consistency  # CRITICAL: Docs MUST be consistent before release
-    - detect:milestone-version  # CRITICAL: Milestone MUST be ready
-  # TEMPORARY: Environment commented out to bypass self-approval restriction
-  # Will re-enable after adding second maintainer or using project access token
-  # environment:
-  #   name: npm-registry
-  #   url: https://www.npmjs.com/package/@bluefly/openstandardagents
-  #   deployment_tier: production
+    - validate:docs-consistency
+    - job: detect:milestone-version
+      artifacts: true
 
 # ============================================================================
-# STAGE 9: POST-RELEASE PROMOTION (Optional)
-# ============================================================================
-# Manual buttons to promote released version to different environments
-
-# NOTE: Staging/production promotion jobs removed
-# Website deployment is handled by 'pages' job
-# NPM releases are tracked in 'npm-registry' environment
-
-# ============================================================================
-# STAGE 10: GITHUB MIRROR
+# STAGE 7: MIRROR
 # ============================================================================
 
 mirror:github:
-  stage: mirror-github
+  stage: mirror
   image: alpine:latest
   before_script:
     - apk add --no-cache git curl
@@ -870,15 +468,15 @@ mirror:github:
   script:
     - |
       if [ -z "$GITHUB_MIRROR_TOKEN" ]; then
-        echo "⚠️  GITHUB_MIRROR_TOKEN not set - skipping GitHub mirror"
+        echo "⚠️  GITHUB_MIRROR_TOKEN not set - skipping"
         exit 0
       fi
-      
-      echo "🔄 Syncing to GitHub mirror..."
+
+      echo "🔄 Syncing to GitHub..."
       git remote add github https://${GITHUB_MIRROR_TOKEN}@github.com/blueflyio/openstandardagents.git || true
       git push github --all --force || true
       git push github --tags --force || true
-      echo "✅ GitHub mirror sync completed"
+      echo "✅ GitHub mirror synced"
   rules:
     - if: $CI_COMMIT_TAG
       when: on_success
@@ -887,7 +485,7 @@ mirror:github:
   allow_failure: true
 
 # ============================================================================
-# GLOBAL SETTINGS
+# WORKFLOW
 # ============================================================================
 
 workflow:
@@ -896,37 +494,3 @@ workflow:
     - if: $CI_MERGE_REQUEST_IID
     - if: $CI_COMMIT_TAG
     - when: always
-
-# GitLab Pages deployment
-pages:
-  stage: .post
-  needs: []  # Run independently - website deploys regardless of release status
-  image: node:${NODE_VERSION}-alpine
-  before_script:
-    - cd website
-    - npm ci
-    - apk add --no-cache git curl
-    # Set up GitLab token for wiki sync if available
-    - |
-      if [ -n "$GITLAB_TOKEN" ]; then
-        export GITLAB_TOKEN="$GITLAB_TOKEN"
-      elif [ -f ~/.tokens/gitlab ]; then
-        export GITLAB_TOKEN=$(cat ~/.tokens/gitlab)
-      fi
-    - export GITLAB_HOST="${GITLAB_HOST:-${CI_SERVER_HOST}}"
-  script:
-    - npm run sync-wiki || echo "Warning Wiki sync failed, using existing content"
-    - npm run build
-    - mv out ../public
-  artifacts:
-    paths:
-      - public
-  environment:
-    name: website
-    url: https://blueflyio.gitlab.io/openstandardagents
-    deployment_tier: production
-  rules:
-    # Manual button - deploy website anytime on main
-    - if: $CI_COMMIT_BRANCH == "main"
-      when: manual
-      allow_failure: true
