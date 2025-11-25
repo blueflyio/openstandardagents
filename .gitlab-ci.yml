@@ -328,7 +328,7 @@ validate:docs-consistency:
     - npm ci --legacy-peer-deps
   script:
     - |
-      echo "CRITICAL: Pre-Release Documentation Validation"
+      echo "ERROR: Pre-Release Documentation Validation"
       echo "=================================================="
       echo ""
       echo "This job PREVENTS releases with inconsistent documentation."
@@ -341,10 +341,10 @@ validate:docs-consistency:
       echo ""
 
       # Run comprehensive version sync check
-      echo "Running sync-versions.js --check..."
-      if ! node scripts/sync-versions.js --check; then
+      echo "Running sync-versions.ts --check..."
+      if ! npx tsx scripts/sync-versions.ts --check; then
         echo ""
-        echo "CRITICAL FAILURE: Documentation is out of sync!"
+        echo "ERROR: Documentation is out of sync!"
         echo ""
         echo "This means:"
         echo " • README.md has wrong version references"
@@ -352,7 +352,7 @@ validate:docs-consistency:
         echo " • Badge versions are incorrect"
         echo ""
         echo "FIX REQUIRED:"
-        echo " 1. Run locally: node scripts/sync-versions.js --fix"
+        echo " 1. Run locally: npx tsx scripts/sync-versions.ts --fix"
         echo " 2. Commit the changes"
         echo " 3. Push and re-run pipeline"
         echo ""
@@ -362,20 +362,20 @@ validate:docs-consistency:
 
       # Verify spec directory exists
       if [ ! -d "spec/v${VERSION}" ]; then
-        echo "CRITICAL: spec/v${VERSION}/ directory does not exist!"
-        echo "Run: node scripts/sync-versions.js --fix"
+        echo "ERROR: spec/v${VERSION}/ directory does not exist!"
+        echo "Run: npx tsx scripts/sync-versions.ts --fix"
         exit 1
       fi
 
       # Verify schema file exists
       if [ ! -f "spec/v${VERSION}/ossa-${VERSION}.schema.json" ]; then
-        echo "CRITICAL: spec/v${VERSION}/ossa-${VERSION}.schema.json does not exist!"
+        echo "ERROR: spec/v${VERSION}/ossa-${VERSION}.schema.json does not exist!"
         exit 1
       fi
 
       # Verify README references correct version
       if ! grep -q "OSSA v${VERSION} Schema:" README.md; then
-        echo "CRITICAL: README.md does not reference v${VERSION}!"
+        echo "ERROR: README.md does not reference v${VERSION}!"
         echo "Found:"
         grep "OSSA v.*Schema:" README.md || echo "(no version found)"
         exit 1
@@ -385,7 +385,7 @@ validate:docs-consistency:
       SCHEMA_EXPORT=$(node -p "require('./package.json').exports['./schema']")
       EXPECTED_SCHEMA="./spec/v${VERSION}/ossa-${VERSION}.schema.json"
       if [ "$SCHEMA_EXPORT" != "$EXPECTED_SCHEMA" ]; then
-        echo "CRITICAL: package.json schema export is wrong!"
+        echo "ERROR: package.json schema export is wrong!"
         echo "  Expected: ${EXPECTED_SCHEMA}"
         echo "  Found: ${SCHEMA_EXPORT}"
         exit 1
@@ -729,12 +729,12 @@ release:npm:
       echo ""
       echo "📝 AUTO-FIXING: Syncing all documentation and version references..."
       echo "This ensures README, schema paths, badges, and all docs are consistent."
-      node scripts/sync-versions.js --fix
+      npx tsx scripts/sync-versions.ts --fix
 
       # Verify the sync worked
       echo ""
       echo "Verifying documentation consistency..."
-      if ! node scripts/sync-versions.js --check; then
+      if ! npx tsx scripts/sync-versions.ts --check; then
         echo "CRITICAL: Documentation sync failed verification!"
         echo "This should never happen. Aborting release."
         exit 1
