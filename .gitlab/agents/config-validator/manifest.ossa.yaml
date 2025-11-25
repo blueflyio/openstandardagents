@@ -36,9 +36,9 @@ metadata:
     dora-metric: change-failure-rate
 
   annotations:
-    documentation: https://gitlab.bluefly.io/llm/documentation/-/wikis/agents/config-validator
-    support: platform-team@bluefly.io
-    runbook: https://gitlab.bluefly.io/llm/documentation/-/wikis/runbooks/config-validator
+    documentation: https://openstandardagents.org/docs/agents/config-validator
+    support: operations@bluefly.io
+    runbook: https://openstandardagents.org/docs/runbooks/config-validator
     policies: "OPA, Gatekeeper, Pod Security Standards"
 
 spec:

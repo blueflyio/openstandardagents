@@ -30,8 +30,7 @@ describe('SchemaRepository', () => {
       expect((schema.properties as any).spec).toBeDefined();
     });
 
-    it.skip('should load v0.1.9 schema', async () => {
-      // Skip v0.1.9 test - schema file was moved to __DELETE_LATER/
+    it('should load v0.1.9 schema', async () => {
       const schema = await repository.getSchema('0.1.9');
 
       expect(schema).toBeDefined();
@@ -53,16 +52,16 @@ describe('SchemaRepository', () => {
     it('should throw error for unsupported version', async () => {
       await expect(
         repository.getSchema('999.0' as SchemaVersion)
-      ).rejects.toThrow('Unsupported schema version');
+      ).rejects.toThrow('Schema not found for version');
     });
 
-    it.skip('should cache different versions separately', async () => {
-      // Skip v0.1.9 test - schema file was moved to __DELETE_LATER/
+    it('should cache different versions separately', async () => {
       const schema0_2_3 = await repository.getSchema('0.2.3');
       const schema0_1_9 = await repository.getSchema('0.1.9');
 
       expect(schema0_2_3).not.toBe(schema0_1_9);
       expect(schema0_2_3.title).toContain('OSSA');
+      expect(schema0_1_9.title).toContain('OSSA');
     });
   });
 

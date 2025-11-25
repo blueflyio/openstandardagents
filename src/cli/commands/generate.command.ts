@@ -8,7 +8,7 @@ import chalk from 'chalk';
 import { container } from '../../di-container.js';
 import { GenerationService } from '../../services/generation.service.js';
 import { ManifestRepository } from '../../repositories/manifest.repository.js';
-import type { AgentTemplate } from '../../types/index.js';
+import type { AgentTemplate, OssaAgent } from '../../types/index.js';
 
 export const generateCommand = new Command('generate')
   .argument(
@@ -59,15 +59,15 @@ export const generateCommand = new Command('generate')
 
         console.log(chalk.green(`✓ Agent manifest generated successfully`));
         console.log(chalk.gray(`\nGenerated Agent:`));
-        const m = manifest as any;
+        const m = manifest as OssaAgent;
         if (m.apiVersion) {
-          console.log(`  Name: ${chalk.cyan(m.metadata.name)}`);
-          console.log(`  Version: ${chalk.cyan(m.metadata.version)}`);
-          console.log(`  Role: ${chalk.cyan(m.spec.role)}`);
-          if (m.spec.tools) {
+          console.log(`  Name: ${chalk.cyan(m.metadata?.name || 'N/A')}`);
+          console.log(`  Version: ${chalk.cyan(m.metadata?.version || 'N/A')}`);
+          console.log(`  Role: ${chalk.cyan(m.spec?.role || 'N/A')}`);
+          if (m.spec?.tools) {
             console.log(`  Tools: ${chalk.cyan(m.spec.tools.length)}`);
           }
-        } else {
+        } else if (m.agent) {
           console.log(`  ID: ${chalk.cyan(m.agent.id)}`);
           console.log(`  Name: ${chalk.cyan(m.agent.name)}`);
           console.log(`  Role: ${chalk.cyan(m.agent.role)}`);

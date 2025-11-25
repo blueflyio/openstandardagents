@@ -6,12 +6,8 @@
 import chalk from 'chalk';
 import { Command } from 'commander';
 import * as fs from 'fs';
-import * as path from 'path';
-import { fileURLToPath } from 'url';
 import readline from 'readline';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+import type { OssaAgent } from '../../types/index.js';
 
 const rl = readline.createInterface({
   input: process.stdin,
@@ -92,7 +88,7 @@ export const initCommand = new Command('init')
           platforms = ['cursor', 'openai'];
         }
 
-        const manifest: any = {
+        const manifest: OssaAgent = {
           apiVersion: 'ossa/v0.2.4',
           kind: 'Agent',
           metadata: {

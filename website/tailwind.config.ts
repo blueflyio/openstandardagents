@@ -10,44 +10,46 @@ const config: Config = {
     extend: {
       colors: {
         primary: {
-          DEFAULT: 'var(--ossa-primary)', // From SCSS variables
-          50: '#f0f9ff',
-          100: '#e0f2fe',
-          200: '#bae6fd',
-          300: '#7dd3fc',
-          400: '#38bdf8',
-          500: 'var(--ossa-primary)', // #0066CC - from SCSS
-          600: '#0284c7',
-          700: '#0369a1',
-          800: '#075985',
-          900: '#0c4a6e',
-          950: '#082f49',
+          DEFAULT: 'var(--ossa-primary)', // From SCSS variables - #4A3ECD
+          50: '#f5f4fd',
+          100: '#e8e5fa',
+          200: '#d4cff5',
+          300: '#b5abee',
+          400: '#8f7ee4',
+          500: 'var(--ossa-primary)', // #4A3ECD - from SCSS
+          600: '#3d2fb8',
+          700: '#322598',
+          800: '#2a1f7a',
+          900: '#241f65',
+          950: '#15113a',
         },
         secondary: {
-          DEFAULT: 'var(--ossa-secondary)', // From SCSS variables
-          50: '#ecfeff',
-          100: '#cffafe',
-          200: '#a5f3fc',
-          300: '#67e8f9',
-          400: '#22d3ee',
-          500: 'var(--ossa-secondary)', // #00B8D4 - from SCSS
-          600: '#0891b2',
-          700: '#0e7490',
-          800: '#155e75',
-          900: '#164e63',
+          DEFAULT: 'var(--ossa-secondary)', // From SCSS variables - #1CB9ED
+          50: '#ecfbff',
+          100: '#d1f5fe',
+          200: '#a8e9fd',
+          300: '#6fd8fa',
+          400: '#2ec0f5',
+          500: 'var(--ossa-secondary)', // #1CB9ED - from SCSS
+          600: '#0a9dd1',
+          700: '#087da9',
+          800: '#0c6688',
+          900: '#105570',
+          950: '#08374a',
         },
         accent: {
-          50: '#faf5ff',
-          100: '#f3e8ff',
-          200: '#e9d5ff',
-          300: '#d8b4fe',
-          400: '#c084fc',
-          500: '#a855f7',
-          600: '#9333ea',
-          700: '#7e22ce',
-          800: '#6b21a8',
-          900: '#581c87',
-          950: '#3b0764',
+          DEFAULT: 'var(--ossa-accent)', // From SCSS variables - #9060EA
+          50: '#f7f4fe',
+          100: '#ede9fd',
+          200: '#ddd4fb',
+          300: '#c5b3f8',
+          400: '#a887f3',
+          500: 'var(--ossa-accent)', // #9060EA - from SCSS
+          600: '#7c3aed',
+          700: '#6b28d9',
+          800: '#5923b8',
+          900: '#4b1f97',
+          950: '#2d0f5c',
         },
         // Semantic colors - centralized and muted
         // These reference CSS variables which come from SCSS variables in styles/_variables.scss

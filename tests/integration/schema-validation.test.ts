@@ -7,6 +7,7 @@ import { describe, it, expect } from '@jest/globals';
 import { container } from '../../src/di-container.js';
 import { ValidationService } from '../../src/services/validation.service.js';
 import { ManifestRepository } from '../../src/repositories/manifest.repository.js';
+import type { OssaAgent } from '../../src/types/index.js';
 import * as fs from 'fs';
 import * as path from 'path';
 
@@ -45,7 +46,7 @@ describe('Schema Validation Integration', () => {
 
           const fullPath = path.join(examplePath, file);
           try {
-            const manifest = await manifestRepo.load(fullPath);
+            const manifest = (await manifestRepo.load(fullPath)) as OssaAgent;
 
             // Skip manifests not using v0.2.x schema
             if (!manifest.apiVersion?.startsWith('ossa/v0.2')) {

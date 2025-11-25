@@ -17,7 +17,7 @@
 #
 # ============================================================================
 
-apiVersion: ossa/v0.2.x
+apiVersion: ossa/v0.2.5-RC
 kind: Agent
 
 metadata:
@@ -36,9 +36,9 @@ metadata:
     dora-metric: mttr
 
   annotations:
-    documentation: https://gitlab.bluefly.io/llm/documentation/-/wikis/agents/rollback-coordinator
-    support: sre-team@bluefly.io
-    runbook: https://gitlab.bluefly.io/llm/documentation/-/wikis/runbooks/rollback-coordinator
+    documentation: https://openstandardagents.org/docs/agents/rollback-coordinator
+    support: operations@bluefly.io
+    runbook: https://openstandardagents.org/docs/runbooks/rollback-coordinator
     safety: "automated-rollback-enabled"
 
 spec:
@@ -83,200 +83,200 @@ spec:
     maxTokens: 8000
 
   tools:
-    - type: mcp
+    - type: http
       name: kubernetes-rollback
       description: |
         Execute Kubernetes rollbacks using kubectl rollout undo.
+      endpoint: http://kubernetes-api:6443/apis/apps/v1
       config:
-        server: kubernetes-mcp
-        rollbackStrategy: immediate
+        method: POST
+        timeout: 300
       auth:
-        type: mtls
-        certPath: /var/secrets/k8s-client-cert.pem
+        type: bearer
+        tokenPath: /var/secrets/k8s-token
 
     - type: http
       name: argo-rollouts
       description: |
         Manage canary deployments and progressive delivery rollbacks.
-      endpoint: http://argo-rollouts-server:8080/api/v1
+      endpoint: http://argo-rollouts:8080/api/v1
       config:
         method: POST
-        timeout: 30
+        timeout: 300
+      auth:
+        type: bearer
+        tokenPath: /var/secrets/argo-token
 
     - type: http
-      name: flagger-api
+      name: istio-traffic-shift
       description: |
-        Control Flagger canary releases and automated rollbacks.
-      endpoint: http://flagger:8080/api/v1
+        Manage Istio VirtualService traffic shifting for gradual rollback.
+      endpoint: http://istio-pilot:8080/api/v1
       config:
         method: POST
-        timeout: 15
+        timeout: 60
+      auth:
+        type: mtls
+        certPath: /var/secrets/istio-client-cert.pem
 
     - type: a2a
       name: db-migrator
       description: |
-        Coordinate database schema rollback with db-migrator agent.
+        Coordinate database rollbacks with db-migrator agent.
       endpoint: http://db-migrator:8080/a2a
       config:
         protocol: json-rpc
-      auth:
-        type: mtls
-        certPath: /var/secrets/a2a-client-cert.pem
-
-    - type: a2a
-      name: monitoring-agent
-      description: |
-        Receive failure alerts and metrics from monitoring-agent.
-      endpoint: http://monitoring-agent:8080/a2a
-      config:
-        protocol: json-rpc
+        version: "2.0"
       auth:
         type: mtls
         certPath: /var/secrets/a2a-client-cert.pem
 
     - type: http
-      name: gitlab-api
+      name: prometheus-query
       description: |
-        Create rollback issues and update deployment status in GitLab.
-      endpoint: https://gitlab.bluefly.io/api/v4
+        Query Prometheus for deployment health metrics (error rates, latency).
+      endpoint: http://prometheus:9090/api/v1/query
       config:
         method: POST
-        timeout: 10
+        timeout: 30
+        queryLanguage: promql
       auth:
         type: bearer
-        tokenPath: /var/secrets/gitlab-token
+        tokenPath: /var/secrets/prometheus-token
+
+    - type: http
+      name: monitoring-agent
+      description: |
+        Receive failure alerts and coordinate with monitoring-agent for incident response.
+      endpoint: http://monitoring-agent:8080/a2a
+      config:
+        protocol: json-rpc
+        version: "2.0"
+      auth:
+        type: mtls
+        certPath: /var/secrets/a2a-client-cert.pem
 
   autonomy:
     level: autonomous
-    approval_required: false  # Auto-rollback enabled for production safety
+    approval_required: false  # Automated rollback on failure detection
 
     allowed_actions:
-      - trigger_deployment_rollback
-      - trigger_database_rollback
-      - revert_configmaps
-      - shift_traffic_to_stable
-      - create_incident_reports
+      - monitor_deployment_health
+      - detect_failure_thresholds
+      - trigger_rollback
+      - coordinate_multi_component_rollback
+      - verify_rollback_success
+      - create_incident_report
 
     blocked_actions:
-      - delete_deployments
-      - scale_to_zero
+      - delete_namespace
+      - delete_persistent_volumes
+      - modify_cluster_config
 
   constraints:
-    cost:
-      maxTokensPerDay: 300000
-      maxTokensPerRequest: 8000
-      maxCostPerDay: 30.00
-      currency: USD
+    resource_limits:
+      cpu: "500m"
+      memory: "1Gi"
+      ephemeral_storage: "2Gi"
 
-    performance:
-      maxLatencySeconds: 10  # Fast rollback response
-      maxConcurrentRequests: 10
-      timeoutSeconds: 300  # 5 min rollback timeout
+    rate_limits:
+      rollbacks_per_hour: 10
+      api_calls_per_minute: 60
 
-    resources:
-      cpu: "1000m"
-      memory: "2Gi"
-
-  observability:
-    tracing:
-      enabled: true
-      exporter: otlp
-      endpoint: http://jaeger-collector:4318
-      samplingRate: 1.0  # 100% trace all rollbacks
-
-    metrics:
-      enabled: true
-      exporter: prometheus
-      endpoint: http://prometheus:9090/metrics
-      customMetrics:
-        - name: rollbacks_triggered_total
-          type: counter
-          description: "Total rollbacks triggered"
-          labels: [component, trigger_reason]
-        - name: rollback_duration_seconds
-          type: histogram
-          description: "Rollback execution duration"
-        - name: rollback_success_rate
-          type: gauge
-          description: "Percentage of successful rollbacks"
-
-    logging:
-      level: info
-      format: json
-      auditLog:
-        enabled: true
-        destination: /var/log/rollback/audit.log
-        retention: 1year
+    safety_checks:
+      - verify_previous_revision_exists
+      - check_rollback_will_not_break_dependencies
+      - validate_database_rollback_sql_before_execution
 
   state:
-    backend: redis
+    backend: postgres
     config:
-      host: redis-cluster.default.svc.cluster.local
-      port: 6379
-      database: 6
-      ttl: 2592000  # 30 days for rollback history
-      keyPrefix: "rollback-coordinator:"
+      host: postgres-primary.default.svc.cluster.local
+      port: 5432
+      database: rollback_metadata
+      schema: rollback_history
+      ssl: true
+      sslMode: require
 
   extensions:
     kagent:
       kubernetes:
         namespace: deployment-system
+
         labels:
           app: rollback-coordinator
           team: sre
+          dora-metric: mttr
+
+        annotations:
+          description: "Automated rollback coordination agent"
+          contact: "operations@bluefly.io"
+          safety: "automated-rollback-enabled"
+
         resourceLimits:
-          cpu: "1000m"
-          memory: "2Gi"
+          cpu: "500m"
+          memory: "1Gi"
+          ephemeralStorage: "2Gi"
+
         serviceAccount: rollback-coordinator-sa
 
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 65534
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop:
+              - ALL
+
       guardrails:
-        requireApproval: false  # Auto-rollback enabled
+        requireApproval: false  # Autonomous for safety-critical rollbacks
+
+        costLimits:
+          maxTokensPerDay: 100000
+          maxCostPerDay: 10.00
+          currency: USD
 
         allowedActions:
-          - kubernetes:patch:deployments
-          - kubernetes:patch:statefulsets
-          - kubernetes:rollback:*
-          - argo:rollback:*
-          - flagger:rollback:*
+          - kubernetes:rollback:deployment
+          - kubernetes:rollback:statefulset
+          - kubernetes:rollback:daemonset
+          - kubernetes:update:configmap
+          - kubernetes:update:secret
+          - istio:update:virtualservice
+          - argo:rollback:rollout
 
         auditLog:
           destination: compliance-engine
-          retention: 1year
+          retention: 7years
 
       a2aConfig:
         enabled: true
         protocol: json-rpc
+
         endpoints:
           - http://db-migrator:8080/a2a
           - http://monitoring-agent:8080/a2a
-          - http://security-scanner:8080/a2a
+
         authentication:
           type: mtls
+          certPath: /var/secrets/a2a-client-cert.pem
+          keyPath: /var/secrets/a2a-client-key.pem
 
       meshIntegration:
         enabled: true
-        istioIntegration: true
-        mtlsMode: STRICT
+        serviceMesh: istio
 
-# ============================================================================
-# ROLLBACK WORKFLOW
-# ============================================================================
-#
-# 1. Monitoring-agent detects deployment failure (error rate spike)
-# 2. Monitoring-agent sends A2A message to rollback-coordinator
-# 3. Rollback-coordinator evaluates failure severity:
-#    - SEV1: Immediate rollback all components
-#    - SEV2: Canary rollback (gradually shift traffic to previous version)
-#    - SEV3: Human approval required
-# 4. Execute rollback sequence:
-#    a. Shift traffic to stable version (Istio VirtualService update)
-#    b. Rollback Kubernetes Deployment (kubectl rollout undo)
-#    c. Coordinate database rollback (A2A call to db-migrator)
-#    d. Revert ConfigMaps/Secrets to previous version
-# 5. Verify rollback success:
-#    - Health checks passing
-#    - Error rate < 1%
-#    - Latency within SLO
-# 6. Create GitLab issue with post-mortem template
-#
-# ============================================================================
+        trafficPolicy:
+          loadBalancer: round_robin
+          connectionPool:
+            tcp:
+              maxConnections: 100
+            http:
+              http1MaxPendingRequests: 50
+              http2MaxRequests: 100
+
+        circuitBreaker:
+          consecutiveErrors: 5
+          interval: 30s
+          baseEjectionTime: 30s
+          maxEjectionPercent: 50

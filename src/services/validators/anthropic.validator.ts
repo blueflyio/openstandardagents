@@ -4,16 +4,22 @@
  */
 
 import { injectable } from 'inversify';
-import type { ValidationResult } from '../../types/index.js';
+import type { ErrorObject } from 'ajv';
+import type { OssaAgent, ValidationResult } from '../../types/index.js';
 
 @injectable()
 export class AnthropicValidator {
-  validate(manifest: any): ValidationResult {
-    const errors: any[] = [];
+  validate(manifest: OssaAgent): ValidationResult {
+    const errors: ErrorObject[] = [];
     const warnings: string[] = [];
 
-    const anthropicExt = manifest.extensions?.anthropic;
-    if (!anthropicExt || anthropicExt.enabled === false) {
+    const anthropicExt = manifest.extensions?.anthropic as
+      | Record<string, unknown>
+      | undefined;
+    if (
+      !anthropicExt ||
+      (anthropicExt.enabled as boolean | undefined) === false
+    ) {
       return { valid: true, errors: [], warnings: [] };
     }
 
@@ -25,7 +31,8 @@ export class AnthropicValidator {
       'claude-3-sonnet-20240229',
       'claude-3-haiku-20240307',
     ];
-    if (anthropicExt.model && !validModels.includes(anthropicExt.model)) {
+    const model = anthropicExt.model as string | undefined;
+    if (model && !validModels.includes(model)) {
       errors.push({
         instancePath: '/extensions/anthropic/model',
         schemaPath: '',
@@ -64,11 +71,12 @@ export class AnthropicValidator {
     }
 
     // Validate temperature if provided
-    if (anthropicExt.temperature !== undefined) {
+    const temperature = anthropicExt.temperature as number | undefined;
+    if (temperature !== undefined) {
       if (
-        typeof anthropicExt.temperature !== 'number' ||
-        anthropicExt.temperature < 0 ||
-        anthropicExt.temperature > 1
+        typeof temperature !== 'number' ||
+        temperature < 0 ||
+        temperature > 1
       ) {
         errors.push({
           instancePath: '/extensions/anthropic/temperature',
@@ -81,7 +89,8 @@ export class AnthropicValidator {
     }
 
     // Validate tools if provided
-    if (anthropicExt.tools && !Array.isArray(anthropicExt.tools)) {
+    const tools = anthropicExt.tools as unknown[] | undefined;
+    if (tools && !Array.isArray(tools)) {
       errors.push({
         instancePath: '/extensions/anthropic/tools',
         schemaPath: '',
@@ -92,9 +101,10 @@ export class AnthropicValidator {
     }
 
     // Validate tool_choice if provided
-    if (anthropicExt.tool_choice) {
+    const toolChoice = anthropicExt.tool_choice as string | undefined;
+    if (toolChoice) {
       const validChoices = ['auto', 'any', 'none'];
-      if (!validChoices.includes(anthropicExt.tool_choice)) {
+      if (!validChoices.includes(toolChoice)) {
         errors.push({
           instancePath: '/extensions/anthropic/tool_choice',
           schemaPath: '',

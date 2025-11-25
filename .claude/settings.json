@@ -15,9 +15,10 @@
   "network": {
     "access": "limited",
     "allowedDomains": [
-      "gitlab.bluefly.io",
-      "registry.gitlab.bluefly.io",
-      "gitlab.bluefly.io/api/v4",
+      "gitlab.com",
+      "github.com/blueflyio",
+      "registry.gitlab.com",
+      "gitlab.com/api/v4",
       "registry.npmjs.org",
       "www.npmjs.com",
       "pypi.org",

@@ -2,7 +2,7 @@
 
 **Version Control System**: Milestone-Gated Semantic Release
 **Last Updated**: 2025-11-21
-**Current Version**: 0.2.5
+**Current Version**: 0.2.5-RC
 
 ---
 
@@ -37,7 +37,7 @@ OSSA uses a **milestone-gated semantic release workflow** that combines:
          │
          ▼
 ┌─────────────────┐
-│  development    │  ← semantic-release creates: v0.2.5-dev.1, v0.2.5-dev.2, etc.
+│  development    │  ← semantic-release creates: v0.2.5-RC-dev.1, v0.2.5-RC-dev.2, etc.
 │                 │  ← Publishes to npm with --tag dev
 └────────┬────────┘
          │
@@ -45,7 +45,7 @@ OSSA uses a **milestone-gated semantic release workflow** that combines:
          │
          ▼
 ┌─────────────────┐
-│      main       │  ← semantic-release creates: v0.2.5
+│      main       │  ← semantic-release creates: v0.2.5-RC
 │                 │  ← Publishes to npm with --tag latest
 └─────────────────┘
 ```
@@ -112,7 +112,7 @@ git push origin feature/add-new-protocol
 When MR is approved and merged to `development`:
 
 **CI Actions**:
-- Creates pre-release tag: `v0.2.5-dev.1`
+- Creates pre-release tag: `v0.2.5-RC-dev.1`
 - Publishes to npm: `npm install @bluefly/openstandardagents@dev`
 - Shows "Promote to main" button
 
@@ -130,14 +130,14 @@ npm install @bluefly/openstandardagents@0.2.5-dev.1
 Before promoting to main, ensure milestone exists and is properly configured:
 
 **Milestone Requirements**:
-- Title **must** include version: `v0.2.5 - Feature Name` or `0.2.5 - Feature Name`
+- Title **must** include version: `v0.2.5-RC - Feature Name` or `0.2.5 - Feature Name`
 - All issues must be closed (100% complete)
 - Proper dates set (start and due date)
 
 **GitLab UI**:
 1. Go to: https://gitlab.com/agentstudio/openstandardagents/-/milestones
 2. Create or edit milestone
-3. Ensure title includes version: `v0.2.5 - Multi-Agent Composition`
+3. Ensure title includes version: `v0.2.5-RC - Multi-Agent Composition`
 4. Close all issues in milestone
 5. Close the milestone
 
@@ -174,7 +174,7 @@ After merge to `main`:
 - ✅ Validates milestone is closed
 - ✅ Checks version doesn't already exist
 - ✅ Runs version sync script
-- ✅ Creates production tag: `v0.2.5`
+- ✅ Creates production tag: `v0.2.5-RC`
 - ✅ Publishes to npm: `@bluefly/openstandardagents@latest`
 - ✅ Updates CHANGELOG.md
 - ✅ Creates GitLab release
@@ -200,10 +200,10 @@ When version changes, the script updates:
 
 ```bash
 # Check version consistency (CI mode)
-node scripts/sync-versions.js --check
+npx tsx scripts/sync-versions.ts --check
 
 # Fix all version references
-node scripts/sync-versions.js --fix
+npx tsx scripts/sync-versions.ts --fix
 ```
 
 ### CI Integration
@@ -245,14 +245,14 @@ These can merge to `development` and `main` without creating releases.
 ```
 ❌ Version consistency check FAILED:
   • README.md has outdated version references
-  • package.json exports["./schema"] should be ./spec/v0.2.5/ossa-0.2.5.schema.json
+  • package.json exports["./schema"] should be ./spec/v0.2.5-RC/ossa-0.2.5.schema.json
 ```
 
 **Fix**:
 ```bash
-node scripts/sync-versions.js --fix
+npx tsx scripts/sync-versions.ts --fix
 git add .
-git commit -m "chore: sync version references to v0.2.5"
+git commit -m "chore: sync version references to v0.2.5-RC"
 git push
 ```
 
@@ -264,7 +264,7 @@ git push
 
 **Fix**:
 1. Go to: https://gitlab.com/agentstudio/openstandardagents/-/milestones
-2. Create milestone with version in title: `v0.2.5 - Feature Name`
+2. Create milestone with version in title: `v0.2.5-RC - Feature Name`
 3. Close all issues in milestone
 4. Close the milestone
 5. Retry release job
@@ -272,21 +272,21 @@ git push
 ### Version Already Released
 
 ```
-⚠️ Version v0.2.5 already released
+⚠️ Version v0.2.5-RC already released
 ```
 
 **Options**:
 1. Create new milestone for v0.2.6
 2. Or delete existing tag and re-release (⚠️ dangerous):
    ```bash
-   git tag -d v0.2.5
-   git push origin :refs/tags/v0.2.5
+   git tag -d v0.2.5-RC
+   git push origin :refs/tags/v0.2.5-RC
    ```
 
 ### Pre-release Published Accidentally
 
 ```
-⚠️ v0.2.5-dev was published but v0.2.5 doesn't exist
+⚠️ v0.2.5-RC-dev was published but v0.2.5-RC doesn't exist
 ```
 
 **Fix** (within 72 hours):
@@ -296,7 +296,7 @@ npm unpublish @bluefly/openstandardagents@0.2.5-dev
 
 **After 72 hours**:
 ```bash
-npm deprecate @bluefly/openstandardagents@0.2.5-dev "Published prematurely, use v0.2.5 instead"
+npm deprecate @bluefly/openstandardagents@0.2.5-dev "Published prematurely, use v0.2.5-RC instead"
 ```
 
 ---
@@ -310,8 +310,8 @@ npm deprecate @bluefly/openstandardagents@0.2.5-dev "Published prematurely, use 
 npm unpublish @bluefly/openstandardagents@0.2.5
 
 # 2. Delete git tag
-git tag -d v0.2.5
-git push origin :refs/tags/v0.2.5
+git tag -d v0.2.5-RC
+git push origin :refs/tags/v0.2.5-RC
 
 # 3. Revert commits
 git revert <commit-hash>
@@ -327,15 +327,15 @@ git push origin main
 git checkout main
 
 # 2. Run version sync
-node scripts/sync-versions.js --fix
+npx tsx scripts/sync-versions.ts --fix
 
 # 3. Commit changes
 git add .
 git commit -m "chore: sync version references"
 
 # 4. Create tag
-git tag -a v0.2.5 -m "Release v0.2.5"
-git push origin v0.2.5
+git tag -a v0.2.5-RC -m "Release v0.2.5-RC"
+git push origin v0.2.5-RC
 
 # 5. Publish to npm
 npm publish --tag latest
@@ -380,10 +380,10 @@ npm install @bluefly/openstandardagents
 ### Version Management
 ```bash
 # Check version consistency
-node scripts/sync-versions.js --check
+npx tsx scripts/sync-versions.ts --check
 
 # Fix version references
-node scripts/sync-versions.js --fix
+npx tsx scripts/sync-versions.ts --fix
 ```
 
 ### GitLab API
@@ -404,7 +404,7 @@ curl -X PUT -H "PRIVATE-TOKEN: $TOKEN" \
 npm view @bluefly/openstandardagents versions
 
 # Install specific version
-npm install @bluefly/openstandardagents@0.2.4
+npm install @bluefly/openstandardagents@0.2.5-RC
 
 # Install dev version
 npm install @bluefly/openstandardagents@dev

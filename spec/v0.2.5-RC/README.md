@@ -1,4 +1,4 @@
-# OSSA v0.2.5 Specification
+# OSSA v0.2.5-RC Specification
 
 **Release Date**: November 24, 2025
 **Status**: Stable Release
@@ -6,11 +6,11 @@
 
 ## Overview
 
-OSSA (Open Standard for Scalable AI Agents) v0.2.5 is a minor release introducing enhanced transport metadata, state management, security features, and capability versioning for better framework integration.
+OSSA (Open Standard for Scalable AI Agents) v0.2.5-RC is a minor release introducing enhanced transport metadata, state management, security features, and capability versioning for better framework integration.
 
 ## What's in This Directory
 
-- **`ossa-0.2.5-RC.schema.json`** - JSON Schema definition for OSSA v0.2.5 agent manifests
+- **`ossa-0.2.5-RC.schema.json`** - JSON Schema definition for OSSA v0.2.5-RC agent manifests
 - **`ossa-0.2.5.yaml`** - YAML specification document
 - **`CHANGELOG.md`** - Detailed release notes and feature descriptions
 - **`README.md`** - This file
@@ -63,7 +63,7 @@ ossa validate your-agent.yaml
 
 - **Website**: https://openstandardagents.org
 - **Schema URL**: https://openstandardagents.org/schemas/v0.2.5/agent.json
-- **GitLab**: https://gitlab.com/blueflyio/openstandardagents
+- **GitHub**: https://github.com/blueflyio/openstandardagents
 - **GitHub Mirror**: https://github.com/blueflyio/openstandardagents
 - **npm Package**: https://npmjs.com/package/@bluefly/openstandardagents
 

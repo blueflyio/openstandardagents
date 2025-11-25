@@ -282,7 +282,7 @@ rollback:production:
   image: bitnami/kubectl:latest
   environment:
     name: production
-    action: rollback
+    action: stop
   script:
     - kubectl rollout undo deployment/aiflow-social-agent -n agents
     - kubectl rollout status deployment/aiflow-social-agent -n agents

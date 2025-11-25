@@ -168,8 +168,10 @@ export interface AgentTemplate {
 
 /**
  * Schema versions supported
+ * Dynamic: versions are discovered from spec/ directory at runtime
+ * Supports any version pattern like 0.2.5-RC, 0.2.6, etc.
  */
-export type SchemaVersion = '0.2.4' | '0.2.3' | '0.2.2' | '0.1.9';
+export type SchemaVersion = string;
 
 /**
  * Service interfaces
@@ -183,6 +185,9 @@ export interface IValidationService {
 
 export interface ISchemaRepository {
   getSchema(version: SchemaVersion): Promise<Record<string, unknown>>;
+  clearCache(): void;
+  getAvailableVersions(): string[];
+  getCurrentVersion(): string;
 }
 
 export interface IManifestRepository {

@@ -4,22 +4,26 @@
  */
 
 import { injectable } from 'inversify';
-import type { ValidationResult } from '../../types/index.js';
+import type { ErrorObject } from 'ajv';
+import type { OssaAgent, ValidationResult } from '../../types/index.js';
 
 @injectable()
 export class AutoGenValidator {
-  validate(manifest: any): ValidationResult {
-    const errors: any[] = [];
+  validate(manifest: OssaAgent): ValidationResult {
+    const errors: ErrorObject[] = [];
     const warnings: string[] = [];
 
-    const autogenExt = manifest.extensions?.autogen;
-    if (!autogenExt || autogenExt.enabled === false) {
+    const autogenExt = manifest.extensions?.autogen as
+      | Record<string, unknown>
+      | undefined;
+    if (!autogenExt || (autogenExt.enabled as boolean | undefined) === false) {
       return { valid: true, errors: [], warnings: [] };
     }
 
     // Validate agent_type
     const validTypes = ['assistant', 'user_proxy', 'groupchat', 'custom'];
-    if (autogenExt.agent_type && !validTypes.includes(autogenExt.agent_type)) {
+    const agentType = autogenExt.agent_type as string | undefined;
+    if (agentType && !validTypes.includes(agentType)) {
       errors.push({
         instancePath: '/extensions/autogen/agent_type',
         schemaPath: '',
@@ -30,10 +34,8 @@ export class AutoGenValidator {
     }
 
     // Validate system_message if provided
-    if (
-      autogenExt.system_message !== undefined &&
-      typeof autogenExt.system_message !== 'string'
-    ) {
+    const systemMessage = autogenExt.system_message as string | undefined;
+    if (systemMessage !== undefined && typeof systemMessage !== 'string') {
       errors.push({
         instancePath: '/extensions/autogen/system_message',
         schemaPath: '',
@@ -44,10 +46,13 @@ export class AutoGenValidator {
     }
 
     // Validate max_consecutive_auto_reply if provided
-    if (autogenExt.max_consecutive_auto_reply !== undefined) {
+    const maxConsecutiveAutoReply = autogenExt.max_consecutive_auto_reply as
+      | number
+      | undefined;
+    if (maxConsecutiveAutoReply !== undefined) {
       if (
-        typeof autogenExt.max_consecutive_auto_reply !== 'number' ||
-        autogenExt.max_consecutive_auto_reply < 0
+        typeof maxConsecutiveAutoReply !== 'number' ||
+        maxConsecutiveAutoReply < 0
       ) {
         errors.push({
           instancePath: '/extensions/autogen/max_consecutive_auto_reply',
@@ -60,9 +65,10 @@ export class AutoGenValidator {
     }
 
     // Validate human_input_mode if provided
-    if (autogenExt.human_input_mode) {
+    const humanInputMode = autogenExt.human_input_mode as string | undefined;
+    if (humanInputMode) {
       const validModes = ['NEVER', 'TERMINATE', 'ALWAYS'];
-      if (!validModes.includes(autogenExt.human_input_mode)) {
+      if (!validModes.includes(humanInputMode)) {
         errors.push({
           instancePath: '/extensions/autogen/human_input_mode',
           schemaPath: '',
@@ -74,8 +80,11 @@ export class AutoGenValidator {
     }
 
     // Validate code_execution_config if provided
-    if (autogenExt.code_execution_config) {
-      if (typeof autogenExt.code_execution_config !== 'object') {
+    const codeExecutionConfig = autogenExt.code_execution_config as
+      | Record<string, unknown>
+      | undefined;
+    if (codeExecutionConfig) {
+      if (typeof codeExecutionConfig !== 'object') {
         errors.push({
           instancePath: '/extensions/autogen/code_execution_config',
           schemaPath: '',
@@ -84,10 +93,8 @@ export class AutoGenValidator {
           message: 'code_execution_config must be an object',
         });
       } else {
-        if (
-          autogenExt.code_execution_config.work_dir &&
-          typeof autogenExt.code_execution_config.work_dir !== 'string'
-        ) {
+        const workDir = codeExecutionConfig.work_dir as string | undefined;
+        if (workDir && typeof workDir !== 'string') {
           errors.push({
             instancePath: '/extensions/autogen/code_execution_config/work_dir',
             schemaPath: '',
@@ -100,14 +107,11 @@ export class AutoGenValidator {
     }
 
     // Warnings
-    if (!autogenExt.system_message) {
+    if (!systemMessage) {
       warnings.push('Best practice: Define system_message for AutoGen agents');
     }
 
-    if (
-      autogenExt.agent_type === 'assistant' &&
-      autogenExt.max_consecutive_auto_reply === undefined
-    ) {
+    if (agentType === 'assistant' && maxConsecutiveAutoReply === undefined) {
       warnings.push(
         'Best practice: Set max_consecutive_auto_reply for AutoGen assistant agents'
       );

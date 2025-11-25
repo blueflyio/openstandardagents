@@ -4,23 +4,27 @@
  */
 
 import { injectable } from 'inversify';
-import type { ValidationResult } from '../../types/index.js';
+import type { ErrorObject } from 'ajv';
+import type { OssaAgent, ValidationResult } from '../../types/index.js';
 
 @injectable()
 export class CursorValidator {
-  validate(manifest: any): ValidationResult {
-    const errors: any[] = [];
+  validate(manifest: OssaAgent): ValidationResult {
+    const errors: ErrorObject[] = [];
     const warnings: string[] = [];
 
-    const cursorExt = manifest.extensions?.cursor;
+    const cursorExt = manifest.extensions?.cursor as
+      | Record<string, unknown>
+      | undefined;
     if (!cursorExt) {
       return { valid: true, errors: [], warnings: [] };
     }
 
-    if (cursorExt.enabled !== false) {
+    if ((cursorExt.enabled as boolean | undefined) !== false) {
       // Validate agent_type
       const validTypes = ['composer', 'chat', 'background', 'cloud'];
-      if (cursorExt.agent_type && !validTypes.includes(cursorExt.agent_type)) {
+      const agentType = cursorExt.agent_type as string | undefined;
+      if (agentType && !validTypes.includes(agentType)) {
         errors.push({
           instancePath: '/extensions/cursor/agent_type',
           schemaPath: '',
@@ -31,11 +35,12 @@ export class CursorValidator {
       }
 
       // Validate workspace_config if provided
-      if (cursorExt.workspace_config) {
-        if (
-          cursorExt.workspace_config.rules_file &&
-          typeof cursorExt.workspace_config.rules_file !== 'string'
-        ) {
+      const workspaceConfig = cursorExt.workspace_config as
+        | Record<string, unknown>
+        | undefined;
+      if (workspaceConfig) {
+        const rulesFile = workspaceConfig.rules_file as string | undefined;
+        if (rulesFile && typeof rulesFile !== 'string') {
           errors.push({
             instancePath: '/extensions/cursor/workspace_config/rules_file',
             schemaPath: '',
@@ -45,10 +50,10 @@ export class CursorValidator {
           });
         }
 
-        if (
-          cursorExt.workspace_config.context_files &&
-          !Array.isArray(cursorExt.workspace_config.context_files)
-        ) {
+        const contextFiles = workspaceConfig.context_files as
+          | unknown[]
+          | undefined;
+        if (contextFiles && !Array.isArray(contextFiles)) {
           errors.push({
             instancePath: '/extensions/cursor/workspace_config/context_files',
             schemaPath: '',
@@ -60,12 +65,11 @@ export class CursorValidator {
       }
 
       // Validate model configuration
-      if (cursorExt.model) {
+      const model = cursorExt.model as Record<string, unknown> | undefined;
+      if (model) {
         const validProviders = ['openai', 'anthropic', 'custom'];
-        if (
-          cursorExt.model.provider &&
-          !validProviders.includes(cursorExt.model.provider)
-        ) {
+        const provider = model.provider as string | undefined;
+        if (provider && !validProviders.includes(provider)) {
           errors.push({
             instancePath: '/extensions/cursor/model/provider',
             schemaPath: '',
@@ -77,13 +81,14 @@ export class CursorValidator {
       }
 
       // Warnings for best practices
-      if (!cursorExt.workspace_config?.rules_file) {
+      if (!workspaceConfig?.rules_file) {
         warnings.push(
           'Best practice: Specify .cursorrules file path for Cursor IDE integration'
         );
       }
 
-      if (!cursorExt.capabilities) {
+      const capabilities = cursorExt.capabilities as unknown[] | undefined;
+      if (!capabilities) {
         warnings.push(
           'Best practice: Define Cursor capabilities (code_generation, code_review, etc.)'
         );

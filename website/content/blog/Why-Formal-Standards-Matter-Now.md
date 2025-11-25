@@ -1,24 +1,13 @@
 ---
 title: "Why Formal Standards Matter Now"
 date: "2025-11-23"
-author: "OSSA Team"
+author: "Thomas Scola, Bluefly.io Founder & CEO"
 category: "Research"
 tags: ["OSSA", "AI Agents", "Standards"]
-excerpt: "---"
+excerpt: "The AI agent ecosystem is at the exact inflection point where APIs were a decade ago: fragmented, vendor-locked, and unsustainable at scale. We need OpenAPI for AI agents—not as a nice-to-have, but as a foundational governance layer. This article explores why formal standards matter now, how they enable vendor neutrality, and what the path forward looks like for enterprises and framework builders."
 ---
 
 # OpenAPI for AI Agents—Why Formal Standards Matter Now
-
----
-
-  title: Why Formal Standards Matter Now
-  date: 2025-11-18
-  author: Thomas Scola, Bluefly.io Founder & CEO
-  category: Tutorial
-  tags: ["Why", "Getting Started"]
-  excerpt: Custom description for the blog listing
-
----
 
 ## The Case for Vendor-Neutral AI Agent Standards
 

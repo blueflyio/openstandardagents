@@ -173,7 +173,7 @@ print(result)
 **Step 1: Create agent manifest** - `.agents/assistant-agent/agent.yml`
 
 ```yaml
-ossaVersion: "0.2.5"
+ossaVersion: "0.2.5-RC"
 metadata:
   name: assistant-agent
   version: "1.0.0"
@@ -471,7 +471,7 @@ agent.run("What's my name?")  # Should remember "Alice"
 **Agent manifest** - `.agents/conversational-agent/agent.yml`
 
 ```yaml
-ossaVersion: "0.2.5"
+ossaVersion: "0.2.5-RC"
 metadata:
   name: conversational-agent
   version: "1.0.0"
@@ -799,7 +799,7 @@ print(f"Story: {result['story']}")
 **Agent manifest** - `.agents/story-writer-agent/agent.yml`
 
 ```yaml
-ossaVersion: "0.2.5"
+ossaVersion: "0.2.5-RC"
 metadata:
   name: story-writer-agent
   version: "1.0.0"
@@ -1257,7 +1257,7 @@ final = editor.run(f"Edit this draft: {draft}")
 Use orchestrator agent with A2A (Agent-to-Agent) communication:
 
 ```yaml
-ossaVersion: "0.2.5"
+ossaVersion: "0.2.5-RC"
 agent:
   id: article-orchestrator
   name: Article Orchestrator
@@ -1616,10 +1616,10 @@ Use feature flags or load balancer to control traffic split.
    ```
 
 5. **Join the community**
-   - [OSSA Specification](https://gitlab.bluefly.io/llm/ossa/-/wikis/home)
-   - [Agent BuildKit](https://gitlab.bluefly.io/llm/npm/agent-buildkit)
-   - [Examples Repository](https://gitlab.bluefly.io/llm/npm/agent-buildkit/-/tree/main/examples)
-   - [Issue Tracker](https://gitlab.bluefly.io/llm/npm/agent-buildkit/-/issues)
+   - [OSSA Specification](https://github.com/blueflyio/openstandardagents/wiki/home)
+   - [Agent BuildKit](https://github.com/blueflyio/agent-buildkit)
+   - [Examples Repository](https://github.com/blueflyio/agent-buildkit/-/tree/main/examples)
+   - [Issue Tracker](https://github.com/blueflyio/agent-buildkit/-/issues)
 
 ---
 
@@ -1633,19 +1633,19 @@ Use feature flags or load balancer to control traffic split.
 - [Getting Started Guide](/Getting-Started)
 
 ### Examples
-- [Simple Worker Agent](https://gitlab.bluefly.io/llm/npm/agent-buildkit/-/tree/main/agents/review-agents)
-- [Orchestrator Agent](https://gitlab.bluefly.io/llm/npm/agent-buildkit/-/tree/main/agents/executive-agents)
-- [Multi-Agent System](https://gitlab.bluefly.io/llm/npm/agent-buildkit/-/tree/main/examples)
+- [Simple Worker Agent](https://github.com/blueflyio/agent-buildkit/-/tree/main/agents/review-agents)
+- [Orchestrator Agent](https://github.com/blueflyio/agent-buildkit/-/tree/main/agents/executive-agents)
+- [Multi-Agent System](https://github.com/blueflyio/agent-buildkit/-/tree/main/examples)
 
 ### Tools
-- [Agent Validator](https://gitlab.bluefly.io/llm/npm/agent-buildkit/-/blob/main/src/cli/agents/validate.ts)
-- [Migration Script](https://gitlab.bluefly.io/llm/npm/agent-buildkit/-/blob/main/scripts/migrate-agents-to-ossa.ts)
-- [Agent Templates](https://gitlab.bluefly.io/llm/npm/agent-buildkit/-/tree/main/templates/agents)
+- [Agent Validator](https://github.com/blueflyio/agent-buildkit/-/blob/main/src/cli/agents/validate.ts)
+- [Migration Script](https://github.com/blueflyio/agent-buildkit/-/blob/main/scripts/migrate-agents-to-ossa.ts)
+- [Agent Templates](https://github.com/blueflyio/agent-buildkit/-/tree/main/templates/agents)
 
 ### Support
-- **Issues**: https://gitlab.bluefly.io/llm/npm/agent-buildkit/-/issues
-- **Discussions**: https://gitlab.bluefly.io/llm/npm/agent-buildkit/-/merge_requests
-- **Wiki**: https://gitlab.bluefly.io/llm/npm/agent-buildkit/-/wikis/home
+- **Issues**: https://github.com/blueflyio/agent-buildkit/-/issues
+- **Discussions**: https://github.com/blueflyio/agent-buildkit/-/merge_requests
+- **Wiki**: https://github.com/blueflyio/agent-buildkit/-/wikis/home
 
 ---
 
@@ -1711,4 +1711,4 @@ runtime:
 
 ---
 
-*For questions or issues with this migration guide, please create an issue at: https://gitlab.bluefly.io/llm/npm/agent-buildkit/-/issues*
+*For questions or issues with this migration guide, please create an issue at: https://github.com/blueflyio/agent-buildkit/-/issues*

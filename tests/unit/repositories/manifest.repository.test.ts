@@ -7,7 +7,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
 import { ManifestRepository } from '../../../src/repositories/manifest.repository.js';
-import type { OssaAgent } from '../../../src/types/index.js';
+// import type { OssaAgent } from '../../../src/types/index.js'; // Not used in tests
 
 describe('ManifestRepository', () => {
   let repository: ManifestRepository;

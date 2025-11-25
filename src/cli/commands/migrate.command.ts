@@ -9,6 +9,7 @@ import { container } from '../../di-container.js';
 import { ManifestRepository } from '../../repositories/manifest.repository.js';
 import { MigrationService } from '../../services/migration.service.js';
 import { ValidationService } from '../../services/validation.service.js';
+import type { OssaAgent } from '../../types/index.js';
 
 export const migrateCommand = new Command('migrate')
   .argument('<source>', 'Path to manifest or directory to migrate')
@@ -45,7 +46,7 @@ export const migrateCommand = new Command('migrate')
 
         // Check if migration is needed
         if (!migrationService.needsMigration(legacyManifest)) {
-          const m = legacyManifest as any;
+          const m = legacyManifest as OssaAgent;
           if (m.apiVersion === 'ossa/v1' && m.kind === 'Agent') {
             console.log(chalk.green('✓ Manifest is already in v0.2.2 format'));
           } else {
@@ -108,14 +109,14 @@ export const migrateCommand = new Command('migrate')
 
           console.log(chalk.green('✓ Migration successful'));
           console.log(chalk.gray('\nMigrated Agent:'));
-          const m = migratedManifest as any;
+          const m = migratedManifest as OssaAgent;
           if (m.apiVersion) {
-            console.log(`  Name: ${chalk.cyan(m.metadata.name)}`);
+            console.log(`  Name: ${chalk.cyan(m.metadata?.name || 'unknown')}`);
             console.log(
-              `  Version: ${chalk.cyan(m.metadata.version || '0.1.0')}`
+              `  Version: ${chalk.cyan(m.metadata?.version || '0.1.0')}`
             );
-            console.log(`  Role: ${chalk.cyan(m.spec.role)}`);
-            if (m.spec.tools) {
+            console.log(`  Role: ${chalk.cyan(m.spec?.role || 'unknown')}`);
+            if (m.spec?.tools) {
               console.log(`  Tools: ${chalk.cyan(m.spec.tools.length)}`);
             }
           } else {

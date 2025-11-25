@@ -6,11 +6,10 @@
 import { describe, it, expect } from '@jest/globals';
 import { container } from '../../src/di-container.js';
 import { GenerationService } from '../../src/services/generation.service.js';
-import { ManifestRepository } from '../../src/repositories/manifest.repository.js';
 
 describe('Platform Export Integration', () => {
   const generationService = container.get(GenerationService);
-  const manifestRepo = container.get(ManifestRepository);
+  // const manifestRepo = container.get(ManifestRepository); // Not used in tests
 
   const baseManifest = {
     apiVersion: 'ossa/v0.2.4',

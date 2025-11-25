@@ -4,14 +4,17 @@ info:
   version: 1.0.0
   description: |
     **Multi-Project CI/CD Orchestration**
-    
+
     Orchestrates GitLab CI/CD across all LLM platform projects:
     - Triggers pipelines for agent deployment
     - Manages GitLab package publishing (npm, PyPI)
     - Coordinates multi-repo workflows
     - Tracks deployment status
-    
+
     **No GitHub. Only GitLab.**
+  license:
+    name: Apache-2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0.html
 
 servers:
   - url: https://ci-orchestrator.agents.orb.local/api/v1
@@ -74,6 +77,21 @@ paths:
                     format: uri
                   status:
                     type: string
+        '400':
+          description: Bad request - invalid parameters
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  message:
+                    type: string
+        '401':
+          description: Unauthorized - invalid or missing token
+        '404':
+          description: Project not found
 
   /pipelines/multi-trigger:
     post:
@@ -131,12 +149,25 @@ paths:
                           type: integer
                         web_url:
                           type: string
+        '400':
+          description: Bad request - invalid parameters
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  message:
+                    type: string
+        '401':
+          description: Unauthorized - invalid or missing token
 
   /packages/publish:
     post:
       tags: [packages]
       summary: Publish to GitLab package registry
-      description: Publish npm or PyPI package to gitlab.bluefly.io
+      description: Publish npm or PyPI package to GitLab package registry
       operationId: publishPackage
       requestBody:
         required: true
@@ -173,12 +204,27 @@ paths:
                     type: string
                   pipeline_url:
                     type: string
+        '400':
+          description: Bad request - invalid parameters
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  message:
+                    type: string
+        '401':
+          description: Unauthorized - invalid or missing token
+        '404':
+          description: Project not found
 
   /packages/list:
     get:
       tags: [packages]
       summary: List GitLab packages
-      description: Query gitlab.bluefly.io package registry
+      description: Query gitlab.com package registry
       operationId: listPackages
       parameters:
         - name: scope
@@ -211,6 +257,10 @@ paths:
                       type: string
                     package_url:
                       type: string
+        '400':
+          description: Bad request - invalid query parameters
+        '401':
+          description: Unauthorized - invalid or missing token
 
   /deployments/orchestrate:
     post:
@@ -262,6 +312,19 @@ paths:
                     type: array
                     items:
                       type: object
+        '400':
+          description: Bad request - invalid parameters
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  message:
+                    type: string
+        '401':
+          description: Unauthorized - invalid or missing token
 
 components:
   securitySchemes:
@@ -269,62 +332,19 @@ components:
       type: oauth2
       flows:
         clientCredentials:
-          tokenUrl: https://gitlab.bluefly.io/oauth/token
+          tokenUrl: https://gitlab.com/oauth/token
           scopes:
             api: Full API access
-    
+
     GitLabToken:
       type: http
       scheme: bearer
       bearerFormat: GitLab Personal Access Token
-    
+
     ApiKeyAuth:
       type: apiKey
       in: header
       name: X-Drupal-API-Key
-  
-  schemas:
-    ContentCreateRequest:
-      type: object
-      required:
-        - type
-        - title
-      properties:
-        type:
-          type: string
-        title:
-          type: string
-        body:
-          type: object
-        fields:
-          type: object
-        agent_context:
-          type: object
-          properties:
-            agent_id:
-              type: string
-            session_id:
-              type: string
-            task_id:
-              type: string
 
-    ContentResponse:
-      type: object
-      properties:
-        nid:
-          type: integer
-        uuid:
-          type: string
-        type:
-          type: string
-        title:
-          type: string
-        url:
-          type: string
-        api_url:
-          type: string
-        created:
-          type: string
-        changed:
-          type: string
+  schemas: {}
 

@@ -54,7 +54,7 @@ ci_access:
 # Uncomment and configure if you want to use GitOps:
 # gitops:
 #   manifest_projects:
-#     - id: llm/openstandardagents
+#     - id: blueflyio/openstandardagents
 #       default_namespace: ossa-agents
 #       paths:
 #         - glob: 'infrastructure/k8s/**/*.yaml'

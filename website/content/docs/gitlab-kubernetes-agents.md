@@ -22,7 +22,7 @@ This agent ecosystem provides end-to-end automation for Kubernetes deployments, 
 
 ### 1. Security Scanner
 
-**Manifest**: [`.gitlab/agents/security-scanner/manifest.ossa.yaml`](https://gitlab.bluefly.io/llm/openstandardagents/-/blob/main/.gitlab/agents/security-scanner/manifest.ossa.yaml)
+**Manifest**: [`.gitlab/agents/security-scanner/manifest.ossa.yaml`](https://github.com/blueflyio/openstandardagents/blob/main/.gitlab/agents/security-scanner/manifest.ossa.yaml)
 
 Automated security vulnerability scanning for container images, Kubernetes RBAC, secrets, and dependencies.
 
@@ -41,7 +41,7 @@ Automated security vulnerability scanning for container images, Kubernetes RBAC,
 
 ### 2. Performance Optimizer
 
-**Manifest**: [`.gitlab/agents/performance-optimizer/manifest.ossa.yaml`](https://gitlab.bluefly.io/llm/openstandardagents/-/blob/main/.gitlab/agents/performance-optimizer/manifest.ossa.yaml)
+**Manifest**: [`.gitlab/agents/performance-optimizer/manifest.ossa.yaml`](https://github.com/blueflyio/openstandardagents/blob/main/.gitlab/agents/performance-optimizer/manifest.ossa.yaml)
 
 Automated performance analysis and resource optimization for Kubernetes workloads.
 
@@ -61,7 +61,7 @@ Automated performance analysis and resource optimization for Kubernetes workload
 
 ### 3. Database Migrator
 
-**Manifest**: [`.gitlab/agents/db-migrator/manifest.ossa.yaml`](https://gitlab.bluefly.io/llm/openstandardagents/-/blob/main/.gitlab/agents/db-migrator/manifest.ossa.yaml)
+**Manifest**: [`.gitlab/agents/db-migrator/manifest.ossa.yaml`](https://github.com/blueflyio/openstandardagents/blob/main/.gitlab/agents/db-migrator/manifest.ossa.yaml)
 
 Automated database schema migrations with transaction safety and rollback procedures.
 
@@ -81,7 +81,7 @@ Automated database schema migrations with transaction safety and rollback proced
 
 ### 4. Config Validator
 
-**Manifest**: [`.gitlab/agents/config-validator/manifest.ossa.yaml`](https://gitlab.bluefly.io/llm/openstandardagents/-/blob/main/.gitlab/agents/config-validator/manifest.ossa.yaml)
+**Manifest**: [`.gitlab/agents/config-validator/manifest.ossa.yaml`](https://github.com/blueflyio/openstandardagents/blob/main/.gitlab/agents/config-validator/manifest.ossa.yaml)
 
 Automated validation of Kubernetes manifests, Helm charts, and OPA policies.
 
@@ -102,7 +102,7 @@ Automated validation of Kubernetes manifests, Helm charts, and OPA policies.
 
 ### 5. Monitoring Agent
 
-**Manifest**: [`.gitlab/agents/monitoring-agent/manifest.ossa.yaml`](https://gitlab.bluefly.io/llm/openstandardagents/-/blob/main/.gitlab/agents/monitoring-agent/manifest.ossa.yaml)
+**Manifest**: [`.gitlab/agents/monitoring-agent/manifest.ossa.yaml`](https://github.com/blueflyio/openstandardagents/blob/main/.gitlab/agents/monitoring-agent/manifest.ossa.yaml)
 
 Real-time monitoring, anomaly detection, and incident response for Kubernetes workloads.
 
@@ -122,7 +122,7 @@ Real-time monitoring, anomaly detection, and incident response for Kubernetes wo
 
 ### 6. Rollback Coordinator
 
-**Manifest**: [`.gitlab/agents/rollback-coordinator/manifest.ossa.yaml`](https://gitlab.bluefly.io/llm/openstandardagents/-/blob/main/.gitlab/agents/rollback-coordinator/manifest.ossa.yaml)
+**Manifest**: [`.gitlab/agents/rollback-coordinator/manifest.ossa.yaml`](https://github.com/blueflyio/openstandardagents/blob/main/.gitlab/agents/rollback-coordinator/manifest.ossa.yaml)
 
 Automated rollback orchestration for failed deployments and migrations.
 
@@ -147,7 +147,7 @@ Automated rollback orchestration for failed deployments and migrations.
 
 ### 7. Cost Analyzer
 
-**Manifest**: [`.gitlab/agents/cost-analyzer/manifest.ossa.yaml`](https://gitlab.bluefly.io/llm/openstandardagents/-/blob/main/.gitlab/agents/cost-analyzer/manifest.ossa.yaml)
+**Manifest**: [`.gitlab/agents/cost-analyzer/manifest.ossa.yaml`](https://github.com/blueflyio/openstandardagents/blob/main/.gitlab/agents/cost-analyzer/manifest.ossa.yaml)
 
 Cloud cost analysis and optimization for Kubernetes workloads.
 
@@ -169,7 +169,7 @@ Cloud cost analysis and optimization for Kubernetes workloads.
 
 ### 8. Compliance Auditor
 
-**Manifest**: [`.gitlab/agents/compliance-auditor/manifest.ossa.yaml`](https://gitlab.bluefly.io/llm/openstandardagents/-/blob/main/.gitlab/agents/compliance-auditor/manifest.ossa.yaml)
+**Manifest**: [`.gitlab/agents/compliance-auditor/manifest.ossa.yaml`](https://github.com/blueflyio/openstandardagents/blob/main/.gitlab/agents/compliance-auditor/manifest.ossa.yaml)
 
 Automated compliance auditing for regulatory frameworks.
 
@@ -192,7 +192,7 @@ Automated compliance auditing for regulatory frameworks.
 
 The agent mesh provides multi-agent coordination through:
 
-**Configuration**: [`.gitlab/agents/mesh-config.yaml`](https://gitlab.bluefly.io/llm/openstandardagents/-/blob/main/.gitlab/agents/mesh-config.yaml)
+**Configuration**: [`.gitlab/agents/mesh-config.yaml`](https://github.com/blueflyio/openstandardagents/blob/main/.gitlab/agents/mesh-config.yaml)
 
 - **Service Discovery**: All 8 agents registered with health check endpoints
 - **A2A Protocol**: JSON-RPC 2.0 over HTTP with mTLS authentication
@@ -215,7 +215,7 @@ compliance-auditor → security-scanner (security compliance)
 
 ## Swarm Orchestration
 
-**Configuration**: [`.gitlab/agents/swarm-tasks.json`](https://gitlab.bluefly.io/llm/openstandardagents/-/blob/main/.gitlab/agents/swarm-tasks.json)
+**Configuration**: [`.gitlab/agents/swarm-tasks.json`](https://github.com/blueflyio/openstandardagents/blob/main/.gitlab/agents/swarm-tasks.json)
 
 Defines **10 coordinated tasks** for end-to-end deployment workflows:
 
@@ -325,10 +325,10 @@ All agents comply with:
 
 ## Resources
 
-- **Full Documentation**: [GitLab Wiki](https://gitlab.bluefly.io/llm/openstandardagents/-/wikis/OSSA-Agent-Ecosystem-for-GitLab-Kubernetes-Deployments)
-- **Source Code**: [GitLab Repository](https://gitlab.bluefly.io/llm/openstandardagents/-/tree/main/.gitlab/agents)
-- **Issues**: [Issue Tracker](https://gitlab.bluefly.io/llm/openstandardagents/-/issues)
-- **OSSA Specification**: [OSSA Spec](https://gitlab.bluefly.io/llm/ossa)
+- **Full Documentation**: [GitLab Wiki](https://github.com/blueflyio/openstandardagents/wiki/OSSA-Agent-Ecosystem-for-GitLab-Kubernetes-Deployments)
+- **Source Code**: [GitLab Repository](https://github.com/blueflyio/openstandardagents/tree/main/.gitlab/agents)
+- **Issues**: [Issue Tracker](https://github.com/blueflyio/openstandardagents/issues)
+- **OSSA Specification**: [OSSA Spec](https://github.com/blueflyio/openstandardagents)
 
 ---
 

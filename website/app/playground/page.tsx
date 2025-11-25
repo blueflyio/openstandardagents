@@ -217,7 +217,7 @@ export default function PlaygroundPage() {
   return (
     <>
       {/* Hero Section */}
-      <div className="bg-gradient-to-br from-primary via-accent to-secondary text-white py-16 px-4">
+      <div className="bg-gradient-to-br from-secondary via-primary to-accent text-white py-16 px-4">
         <div className="container mx-auto max-w-6xl text-center">
           <div className="inline-flex items-center justify-center w-20 h-20 bg-white/20 backdrop-blur-sm rounded-full mb-6">
             <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -243,7 +243,7 @@ export default function PlaygroundPage() {
             <button
               onClick={handleValidate}
               disabled={isValidating}
-              className="bg-gradient-to-r from-primary to-primary-dark text-white px-6 py-3 rounded-lg font-medium hover:shadow-lg transition-all disabled:opacity-50"
+              className="bg-gradient-to-r from-secondary via-primary to-accent text-white px-6 py-3 rounded-lg font-medium hover:shadow-lg transition-all disabled:opacity-50"
             >
               {isValidating ? 'Validating...' : 'Validate Manifest'}
             </button>

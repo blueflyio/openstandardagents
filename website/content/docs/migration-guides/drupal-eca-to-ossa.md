@@ -152,7 +152,7 @@ events:
 
 **OSSA Agent (Webhook Integration):**
 ```yaml
-ossaVersion: "0.2.5"
+ossaVersion: "0.2.5-RC"
 agent:
   id: drupal-content-handler
   name: Drupal Content Handler Agent
@@ -225,7 +225,7 @@ conditions:
 
 **OSSA Agent (Schema + Policy Enforcement):**
 ```yaml
-ossaVersion: "0.2.5"
+ossaVersion: "0.2.5-RC"
 agent:
   id: content-moderator
   name: Content Moderation Agent
@@ -283,7 +283,7 @@ actions:
 
 **OSSA Agent (Multi-Capability):**
 ```yaml
-ossaVersion: "0.2.5"
+ossaVersion: "0.2.5-RC"
 agent:
   id: content-processor
   name: Content Processing Agent
@@ -475,7 +475,7 @@ workflow:
 
 **OSSA Orchestrator Agent:**
 ```yaml
-ossaVersion: "0.2.5"
+ossaVersion: "0.2.5-RC"
 agent:
   id: content-workflow-orchestrator
   name: Content Workflow Orchestrator
@@ -673,7 +673,7 @@ actions:
 
 ```yaml
 # drupal-content-moderator.ossa.yaml
-ossaVersion: "0.2.5"
+ossaVersion: "0.2.5-RC"
 
 agent:
   id: drupal-content-moderator
@@ -962,7 +962,7 @@ actions:
 
 ```yaml
 # user-onboarding-agent.ossa.yaml
-ossaVersion: "0.2.5"
+ossaVersion: "0.2.5-RC"
 
 agent:
   id: user-onboarding-orchestrator
@@ -1272,7 +1272,7 @@ actions:
 
 ```yaml
 # commerce-order-processor.ossa.yaml
-ossaVersion: "0.2.5"
+ossaVersion: "0.2.5-RC"
 
 agent:
   id: commerce-order-processor
@@ -1941,9 +1941,9 @@ if ($features->isEnabled('ossa_moderation')) {
 ## Additional Resources
 
 ### Documentation
-- [OSSA Specification](https://gitlab.bluefly.io/llm/ossa/-/wikis/home)
+- [OSSA Specification](https://github.com/blueflyio/openstandardagents/wiki/home)
 - [Drupal ECA Guide](https://ecaguide.org/)
-- [BuildKit CLI Reference](https://gitlab.bluefly.io/llm/documentation/-/wikis/BuildKit-CLI-Reference)
+- [BuildKit CLI Reference](https://github.com/blueflyio/documentation/-/wikis/BuildKit-CLI-Reference)
 
 ### Tools
 - OSSA CLI: `npm install -g @ossa/cli`
@@ -1951,12 +1951,12 @@ if ($features->isEnabled('ossa_moderation')) {
 - OSSA Validator: `ossa validate <file>`
 
 ### Examples
-- [OSSA Example Agents](https://gitlab.bluefly.io/llm/ossa/-/tree/main/examples)
-- [Drupal Integration Module](https://gitlab.bluefly.io/llm/drupal/ossa_integration)
+- [OSSA Example Agents](https://github.com/blueflyio/openstandardagents/tree/main/examples)
+- [Drupal Integration Module](https://github.com/blueflyio/drupal/ossa_integration)
 
 ### Support
-- [GitLab Issues](https://gitlab.bluefly.io/llm/documentation/-/issues)
-- [OSSA Discussions](https://gitlab.bluefly.io/llm/ossa/-/issues)
+- [GitLab Issues](https://github.com/blueflyio/documentation/-/issues)
+- [OSSA Discussions](https://github.com/blueflyio/openstandardagents/issues)
 
 ---
 

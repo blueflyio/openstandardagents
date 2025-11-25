@@ -36,9 +36,9 @@ metadata:
     dora-metric: mttr
 
   annotations:
-    documentation: https://gitlab.bluefly.io/llm/documentation/-/wikis/agents/monitoring-agent
-    support: sre-team@bluefly.io
-    runbook: https://gitlab.bluefly.io/llm/documentation/-/wikis/runbooks/monitoring-agent
+    documentation: https://openstandardagents.org/docs/agents/monitoring-agent
+    support: operations@bluefly.io
+    runbook: https://openstandardagents.org/docs/runbooks/monitoring-agent
     slo: "99.9% availability, p95 < 500ms"
 
 spec:

@@ -105,7 +105,7 @@ export function DocsSidebar() {
   return (
     <aside className="w-64 bg-gray-100 border-r border-gray-300 p-4 overflow-y-auto h-screen sticky top-0">
       <nav>
-        <Link href="/docs" className="block mb-6 font-semibold text-primary hover:text-primary-dark">
+        <Link href="/docs" className="block mb-6 font-semibold text-primary hover:text-accent">
           Documentation
         </Link>
         <div className="mb-6">

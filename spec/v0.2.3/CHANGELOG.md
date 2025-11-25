@@ -112,7 +112,7 @@ npm install -g @bluefly/openstandardagents@0.2.3
 
 ### GitLab Package Registry
 ```bash
-npm install --registry=https://gitlab.bluefly.io/api/v4/projects/PROJECT_ID/packages/npm/ @bluefly/openstandardagents@0.2.3
+npm install @bluefly/openstandardagents@0.2.3
 ```
 
 ### Verify Installation
@@ -173,4 +173,4 @@ Special thanks to the OSSA community for feedback and contributions!
 
 ---
 
-**Full Changelog**: [v0.2.2...v0.2.3](https://gitlab.bluefly.io/llm/openapi-ai-agents-standard/compare/v0.2.2...v0.2.3)
+**Full Changelog**: [v0.2.2...v0.2.3](https://github.com/blueflyio/openstandardagents/compare/v0.2.2...v0.2.3)

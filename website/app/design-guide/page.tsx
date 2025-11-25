@@ -10,7 +10,7 @@ export default function DesignGuidePage() {
   return (
     <>
       {/* Hero Section */}
-      <div className="bg-gradient-to-br from-primary via-accent to-secondary text-white py-16 px-4">
+      <div className="bg-gradient-to-br from-secondary via-primary to-accent text-white py-16 px-4">
         <div className="container mx-auto max-w-6xl text-center">
           <div className="inline-flex items-center justify-center w-20 h-20 bg-white/20 backdrop-blur-sm rounded-full mb-6">
             <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -31,7 +31,7 @@ export default function DesignGuidePage() {
         {/* Brand Identity */}
         <section className="mb-16">
           <div className="flex items-center mb-8">
-            <div className="w-12 h-12 bg-gradient-to-br from-primary to-secondary rounded-lg flex items-center justify-center mr-4">
+            <div className="w-12 h-12 bg-gradient-to-br from-secondary via-primary to-accent rounded-lg flex items-center justify-center mr-4">
               <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
               </svg>
@@ -76,7 +76,7 @@ export default function DesignGuidePage() {
         {/* Color System */}
         <section className="mb-16">
           <div className="flex items-center mb-8">
-            <div className="w-12 h-12 bg-gradient-to-br from-primary to-secondary rounded-lg flex items-center justify-center mr-4">
+            <div className="w-12 h-12 bg-gradient-to-br from-secondary via-primary to-accent rounded-lg flex items-center justify-center mr-4">
               <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
               </svg>
@@ -91,9 +91,9 @@ export default function DesignGuidePage() {
                 <div className="h-32 bg-primary rounded-lg mb-4 flex items-center justify-center">
                   <span className="text-white font-bold text-lg">Primary</span>
                 </div>
-                <h4 className="font-bold mb-2">Primary Blue</h4>
-                <p className="text-sm text-gray-600 mb-2"><strong>Hex:</strong> #0066CC</p>
-                <p className="text-sm text-gray-600 mb-2"><strong>RGB:</strong> 0, 102, 204</p>
+                <h4 className="font-bold mb-2">Primary Blue-Purple</h4>
+                <p className="text-sm text-gray-600 mb-2"><strong>Hex:</strong> #4A3ECD</p>
+                <p className="text-sm text-gray-600 mb-2"><strong>RGB:</strong> 74, 62, 205</p>
                 <p className="text-sm text-gray-700">
                   Represents the OSSA hub/standard. Use for primary actions, links, and key UI elements.
                 </p>
@@ -103,21 +103,21 @@ export default function DesignGuidePage() {
                 <div className="h-32 bg-secondary rounded-lg mb-4 flex items-center justify-center">
                   <span className="text-white font-bold text-lg">Secondary</span>
                 </div>
-                <h4 className="font-bold mb-2">Secondary Cyan</h4>
-                <p className="text-sm text-gray-600 mb-2"><strong>Hex:</strong> #00B8D4</p>
-                <p className="text-sm text-gray-600 mb-2"><strong>RGB:</strong> 0, 184, 212</p>
+                <h4 className="font-bold mb-2">Secondary Cyan-Blue</h4>
+                <p className="text-sm text-gray-600 mb-2"><strong>Hex:</strong> #1CB9ED</p>
+                <p className="text-sm text-gray-600 mb-2"><strong>RGB:</strong> 28, 185, 237</p>
                 <p className="text-sm text-gray-700">
                   Represents agent nodes. Use for secondary actions, accents, and complementary elements.
                 </p>
               </div>
 
               <div className="card">
-                <div className="h-32 bg-gradient-to-br from-primary to-secondary rounded-lg mb-4 flex items-center justify-center">
+                <div className="h-32 bg-gradient-to-br from-secondary via-primary to-accent rounded-lg mb-4 flex items-center justify-center">
                   <span className="text-white font-bold text-lg">Gradient</span>
                 </div>
                 <h4 className="font-bold mb-2">Brand Gradient</h4>
-                <p className="text-sm text-gray-600 mb-2"><strong>From:</strong> #0066CC</p>
-                <p className="text-sm text-gray-600 mb-2"><strong>To:</strong> #00B8D4</p>
+                <p className="text-sm text-gray-600 mb-2"><strong>From:</strong> #4A3ECD</p>
+                <p className="text-sm text-gray-600 mb-2"><strong>To:</strong> #1CB9ED</p>
                 <p className="text-sm text-gray-700">
                   Use for hero sections, backgrounds, and prominent visual elements.
                 </p>
@@ -158,8 +158,9 @@ export default function DesignGuidePage() {
           <div className="card bg-gray-50">
             <h4 className="font-bold mb-3 text-gray-900">Color Usage Guidelines</h4>
             <ul className="space-y-2 text-gray-700">
-              <li><strong>Primary (#0066CC):</strong> Main CTAs, links, headings, borders for primary sections</li>
-              <li><strong>Secondary (#00B8D4):</strong> Secondary CTAs, accents, complementary borders, highlights</li>
+              <li><strong>Primary (#4A3ECD):</strong> Main CTAs, links, headings, borders for primary sections</li>
+              <li><strong>Secondary (#1CB9ED):</strong> Secondary CTAs, accents, complementary borders, highlights</li>
+              <li><strong>Accent (#9060EA):</strong> Purple accent for highlights and special elements</li>
               <li><strong>Gradients:</strong> Hero sections, card backgrounds (use subtle opacity: /10, /20, /30)</li>
               <li><strong>Neutral Grays:</strong> Body text (gray-700), borders (gray-300), backgrounds (gray-50, gray-100)</li>
               <li><strong>Semantic Colors:</strong> Use muted semantic colors (success, warning, error, info) for status indicators. All defined in <code className="bg-gray-200 px-1 rounded">styles/_variables.scss</code>.</li>
@@ -174,7 +175,7 @@ export default function DesignGuidePage() {
         {/* Typography */}
         <section className="mb-16">
           <div className="flex items-center mb-8">
-            <div className="w-12 h-12 bg-gradient-to-br from-primary to-secondary rounded-lg flex items-center justify-center mr-4">
+            <div className="w-12 h-12 bg-gradient-to-br from-secondary via-primary to-accent rounded-lg flex items-center justify-center mr-4">
               <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h7" />
               </svg>
@@ -242,7 +243,7 @@ export default function DesignGuidePage() {
         {/* Components */}
         <section className="mb-16">
           <div className="flex items-center mb-8">
-            <div className="w-12 h-12 bg-gradient-to-br from-primary to-secondary rounded-lg flex items-center justify-center mr-4">
+            <div className="w-12 h-12 bg-gradient-to-br from-secondary via-primary to-accent rounded-lg flex items-center justify-center mr-4">
               <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
               </svg>
@@ -303,7 +304,7 @@ export default function DesignGuidePage() {
             {/* Hero Sections */}
             <div className="card">
               <h3 className="text-xl font-bold mb-4 text-gray-900">Hero Sections</h3>
-              <div className="bg-gradient-to-br from-primary via-[#0099E6] to-secondary text-white rounded-lg p-8 mb-4">
+              <div className="bg-gradient-to-br from-secondary via-primary to-accent text-white rounded-lg p-8 mb-4">
                 <div className="text-center">
                   <div className="inline-flex items-center justify-center w-16 h-16 bg-white/20 backdrop-blur-sm rounded-full mb-4">
                     <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -361,7 +362,7 @@ export default function DesignGuidePage() {
         {/* Layout Patterns */}
         <section className="mb-16">
           <div className="flex items-center mb-8">
-            <div className="w-12 h-12 bg-gradient-to-br from-primary to-secondary rounded-lg flex items-center justify-center mr-4">
+            <div className="w-12 h-12 bg-gradient-to-br from-secondary via-primary to-accent rounded-lg flex items-center justify-center mr-4">
               <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z" />
               </svg>
@@ -392,7 +393,7 @@ export default function DesignGuidePage() {
               <h3 className="text-xl font-bold mb-4 text-gray-900">Section Headers</h3>
               <div className="space-y-4">
                 <div className="flex items-center">
-                  <div className="w-10 h-10 bg-gradient-to-br from-primary to-secondary rounded-lg flex items-center justify-center mr-3">
+                  <div className="w-10 h-10 bg-gradient-to-br from-secondary via-primary to-accent rounded-lg flex items-center justify-center mr-3">
                     <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                     </svg>
@@ -411,7 +412,7 @@ export default function DesignGuidePage() {
         {/* Best Practices */}
         <section className="mb-16">
           <div className="flex items-center mb-8">
-            <div className="w-12 h-12 bg-gradient-to-br from-primary to-secondary rounded-lg flex items-center justify-center mr-4">
+            <div className="w-12 h-12 bg-gradient-to-br from-secondary via-primary to-accent rounded-lg flex items-center justify-center mr-4">
               <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
@@ -453,7 +454,7 @@ export default function DesignGuidePage() {
         {/* Code Examples */}
         <section className="mb-16">
           <div className="flex items-center mb-8">
-            <div className="w-12 h-12 bg-gradient-to-br from-primary to-secondary rounded-lg flex items-center justify-center mr-4">
+            <div className="w-12 h-12 bg-gradient-to-br from-secondary via-primary to-accent rounded-lg flex items-center justify-center mr-4">
               <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
               </svg>

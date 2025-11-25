@@ -30,7 +30,10 @@ import { LangGraphValidator } from './validators/langgraph.validator.js';
 @injectable()
 export class ValidationService implements IValidationService {
   private ajv: Ajv;
-  private platformValidators: Map<string, any>;
+  private platformValidators: Map<
+    string,
+    { validate: (manifest: OssaAgent) => ValidationResult }
+  >;
 
   constructor(
     @inject(SchemaRepository) private schemaRepository: SchemaRepository
@@ -64,8 +67,12 @@ export class ValidationService implements IValidationService {
    */
   async validate(
     manifest: unknown,
-    version: SchemaVersion = '0.2.3'
+    version?: SchemaVersion
   ): Promise<ValidationResult> {
+    // Use dynamic version detection if not provided
+    if (!version) {
+      version = this.schemaRepository.getCurrentVersion();
+    }
     try {
       // 1. Load schema for version
       const schema = await this.schemaRepository.getSchema(version);
@@ -80,7 +87,9 @@ export class ValidationService implements IValidationService {
       const warnings = this.generateWarnings(manifest);
 
       // 5. Run platform-specific validators
-      const platformResults = this.validatePlatformExtensions(manifest);
+      const platformResults = this.validatePlatformExtensions(
+        manifest as OssaAgent
+      );
       const allErrors = [
         ...(valid ? [] : validator.errors || []),
         ...platformResults.errors,
@@ -128,16 +137,23 @@ export class ValidationService implements IValidationService {
       return warnings;
     }
 
-    const m = manifest as any;
+    const m = manifest as OssaAgent;
     const spec = m.spec || m.agent;
-    const metadata = m.metadata || m.agent?.metadata;
+    const metadata =
+      (m as Record<string, unknown>).metadata ||
+      (m.agent as Record<string, unknown> | undefined)?.metadata;
 
     if (!spec) {
       return warnings;
     }
 
     // Check for description
-    if (!metadata?.description || metadata.description.trim().length === 0) {
+    const metadataRecord = metadata as Record<string, unknown> | undefined;
+    if (
+      !metadataRecord?.description ||
+      (typeof metadataRecord.description === 'string' &&
+        metadataRecord.description.trim().length === 0)
+    ) {
       warnings.push(
         'Best practice: Add agent description for better documentation'
       );
@@ -162,21 +178,23 @@ export class ValidationService implements IValidationService {
 
     // Check for observability
     const extensions = m.extensions;
-    if (extensions && !spec.observability && !m.agent?.monitoring) {
+    const specRecord = spec as Record<string, unknown>;
+    const agentRecord = m.agent as Record<string, unknown> | undefined;
+    if (extensions && !specRecord.observability && !agentRecord?.monitoring) {
       warnings.push(
         'Best practice: Configure observability (tracing, metrics, logging)'
       );
     }
 
     // Check for autonomy configuration
-    if (!spec.autonomy && !m.agent?.autonomy) {
+    if (!specRecord.autonomy && !agentRecord?.autonomy) {
       warnings.push(
         'Best practice: Define autonomy level and approval requirements'
       );
     }
 
     // Check for constraints
-    if (!spec.constraints && !m.agent?.constraints) {
+    if (!specRecord.constraints && !agentRecord?.constraints) {
       warnings.push(
         'Best practice: Set cost and performance constraints for production use'
       );
@@ -190,8 +208,8 @@ export class ValidationService implements IValidationService {
    * @param manifest - Manifest object to validate
    * @returns Combined validation result from all platform validators
    */
-  private validatePlatformExtensions(manifest: any): ValidationResult {
-    const errors: any[] = [];
+  private validatePlatformExtensions(manifest: OssaAgent): ValidationResult {
+    const errors: ErrorObject[] = [];
     const warnings: string[] = [];
     let allValid = true;
 
@@ -226,8 +244,12 @@ export class ValidationService implements IValidationService {
    */
   async validateMany(
     manifests: unknown[],
-    version: SchemaVersion = '0.2.3'
+    version?: SchemaVersion
   ): Promise<ValidationResult[]> {
+    // Use dynamic version detection if not provided
+    if (!version) {
+      version = this.schemaRepository.getCurrentVersion();
+    }
     return Promise.all(
       manifests.map((manifest) => this.validate(manifest, version))
     );
@@ -244,9 +266,7 @@ export class ValidationService implements IValidationService {
     try {
       // Load OpenAPI extensions schema
       // Try multiple possible paths (works in both dev and production)
-      let extensionSchema: Record<string, unknown> = {};
       const possiblePaths = [
-        join(process.cwd(), 'docs/schemas/openapi-extensions.schema.json'),
         join(process.cwd(), 'dist/docs/schemas/openapi-extensions.schema.json'),
         join(process.cwd(), 'spec/schemas/openapi-extensions.schema.json'),
       ];
@@ -254,7 +274,8 @@ export class ValidationService implements IValidationService {
       for (const path of possiblePaths) {
         try {
           if (existsSync(path)) {
-            extensionSchema = JSON.parse(readFileSync(path, 'utf-8'));
+            // Schema loaded but not used in validation logic
+            JSON.parse(readFileSync(path, 'utf-8'));
             break;
           }
         } catch {

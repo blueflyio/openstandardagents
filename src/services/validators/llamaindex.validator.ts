@@ -4,16 +4,22 @@
  */
 
 import { injectable } from 'inversify';
-import type { ValidationResult } from '../../types/index.js';
+import type { OssaAgent, ValidationResult } from '../../types/index.js';
+import type { ErrorObject } from 'ajv';
 
 @injectable()
 export class LlamaIndexValidator {
-  validate(manifest: any): ValidationResult {
-    const errors: any[] = [];
+  validate(manifest: OssaAgent): ValidationResult {
+    const errors: ErrorObject[] = [];
     const warnings: string[] = [];
 
-    const llamaindexExt = manifest.extensions?.llamaindex;
-    if (!llamaindexExt || llamaindexExt.enabled === false) {
+    const llamaindexExt = manifest.extensions?.llamaindex as
+      | Record<string, unknown>
+      | undefined;
+    if (
+      !llamaindexExt ||
+      (llamaindexExt.enabled as boolean | undefined) === false
+    ) {
       return { valid: true, errors: [], warnings: [] };
     }
 
@@ -21,7 +27,7 @@ export class LlamaIndexValidator {
     const validTypes = ['query_engine', 'chat_engine', 'retriever', 'custom'];
     if (
       llamaindexExt.agent_type &&
-      !validTypes.includes(llamaindexExt.agent_type)
+      !validTypes.includes(llamaindexExt.agent_type as string)
     ) {
       errors.push({
         instancePath: '/extensions/llamaindex/agent_type',
@@ -33,8 +39,11 @@ export class LlamaIndexValidator {
     }
 
     // Validate index_config if provided
-    if (llamaindexExt.index_config) {
-      if (typeof llamaindexExt.index_config !== 'object') {
+    const indexConfig = llamaindexExt.index_config as
+      | Record<string, unknown>
+      | undefined;
+    if (indexConfig) {
+      if (typeof indexConfig !== 'object') {
         errors.push({
           instancePath: '/extensions/llamaindex/index_config',
           schemaPath: '',
@@ -43,11 +52,9 @@ export class LlamaIndexValidator {
           message: 'index_config must be an object',
         });
       } else {
-        if (llamaindexExt.index_config.chunk_size !== undefined) {
-          if (
-            typeof llamaindexExt.index_config.chunk_size !== 'number' ||
-            llamaindexExt.index_config.chunk_size < 1
-          ) {
+        if (indexConfig.chunk_size !== undefined) {
+          const chunkSize = indexConfig.chunk_size as number | undefined;
+          if (typeof chunkSize !== 'number' || chunkSize < 1) {
             errors.push({
               instancePath: '/extensions/llamaindex/index_config/chunk_size',
               schemaPath: '',
@@ -58,11 +65,9 @@ export class LlamaIndexValidator {
           }
         }
 
-        if (llamaindexExt.index_config.chunk_overlap !== undefined) {
-          if (
-            typeof llamaindexExt.index_config.chunk_overlap !== 'number' ||
-            llamaindexExt.index_config.chunk_overlap < 0
-          ) {
+        if (indexConfig.chunk_overlap !== undefined) {
+          const chunkOverlap = indexConfig.chunk_overlap as number | undefined;
+          if (typeof chunkOverlap !== 'number' || chunkOverlap < 0) {
             errors.push({
               instancePath: '/extensions/llamaindex/index_config/chunk_overlap',
               schemaPath: '',
@@ -76,11 +81,9 @@ export class LlamaIndexValidator {
     }
 
     // Validate similarity_top_k if provided
-    if (llamaindexExt.similarity_top_k !== undefined) {
-      if (
-        typeof llamaindexExt.similarity_top_k !== 'number' ||
-        llamaindexExt.similarity_top_k < 1
-      ) {
+    const similarityTopK = llamaindexExt.similarity_top_k as number | undefined;
+    if (similarityTopK !== undefined) {
+      if (typeof similarityTopK !== 'number' || similarityTopK < 1) {
         errors.push({
           instancePath: '/extensions/llamaindex/similarity_top_k',
           schemaPath: '',
@@ -92,7 +95,8 @@ export class LlamaIndexValidator {
     }
 
     // Validate response_mode if provided
-    if (llamaindexExt.response_mode) {
+    const responseMode = llamaindexExt.response_mode as string | undefined;
+    if (responseMode) {
       const validModes = [
         'default',
         'compact',
@@ -100,7 +104,7 @@ export class LlamaIndexValidator {
         'refine',
         'simple_summarize',
       ];
-      if (!validModes.includes(llamaindexExt.response_mode)) {
+      if (!validModes.includes(responseMode)) {
         errors.push({
           instancePath: '/extensions/llamaindex/response_mode',
           schemaPath: '',
@@ -112,15 +116,15 @@ export class LlamaIndexValidator {
     }
 
     // Warnings
-    if (!llamaindexExt.index_config) {
+    if (!indexConfig) {
       warnings.push(
         'Best practice: Configure index_config for LlamaIndex agents'
       );
     }
 
     if (
-      llamaindexExt.agent_type === 'query_engine' &&
-      !llamaindexExt.similarity_top_k
+      (llamaindexExt.agent_type as string | undefined) === 'query_engine' &&
+      !similarityTopK
     ) {
       warnings.push(
         'Best practice: Set similarity_top_k for query engine agents'

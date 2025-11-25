@@ -17,20 +17,60 @@ import { schemaCommand } from './commands/schema.command.js';
 import { runCommand } from './commands/run.command.js';
 import { gitlabAgentCommand } from './commands/gitlab-agent.command.js';
 
-// Load package.json for version
+// Load package.json for version (lazy to avoid Jest module resolution issues)
 import * as fs from 'fs';
 import * as path from 'path';
 import { fileURLToPath } from 'url';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-const packageJsonPath = path.join(__dirname, '../../package.json');
-let packageJson: { version: string };
-try {
-  packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf-8'));
-} catch (error) {
-  // Fallback if package.json can't be read
-  packageJson = { version: '0.2.3' };
+function getVersion(): string {
+  // Try multiple strategies to find package.json
+  // Strategy 1: Relative to this file (for built dist)
+  const __filename = fileURLToPath(import.meta.url);
+  const __dirname = path.dirname(__filename);
+  const relativePath = path.resolve(__dirname, '../../package.json');
+
+  if (fs.existsSync(relativePath)) {
+    try {
+      const content = fs.readFileSync(relativePath, 'utf-8');
+      const pkg = JSON.parse(content);
+      return pkg.version || '0.2.3';
+    } catch {
+      // Fall through to next strategy
+    }
+  }
+
+  // Strategy 2: From current working directory
+  const cwdPath = path.resolve(process.cwd(), 'package.json');
+  if (fs.existsSync(cwdPath)) {
+    try {
+      const content = fs.readFileSync(cwdPath, 'utf-8');
+      const pkg = JSON.parse(content);
+      return pkg.version || '0.2.3';
+    } catch {
+      // Fall through to next strategy
+    }
+  }
+
+  // Strategy 3: Search upward from cwd
+  let current = process.cwd();
+  for (let i = 0; i < 10; i++) {
+    const candidate = path.resolve(current, 'package.json');
+    if (fs.existsSync(candidate)) {
+      try {
+        const content = fs.readFileSync(candidate, 'utf-8');
+        const pkg = JSON.parse(content);
+        return pkg.version || '0.2.3';
+      } catch {
+        // Continue searching
+      }
+    }
+    const parent = path.dirname(current);
+    if (parent === current) break; // Reached root
+    current = parent;
+  }
+
+  // Fallback version
+  return '0.2.3';
 }
 
 program
@@ -38,7 +78,7 @@ program
   .description(
     'OSSA CLI - Open Standard for Scalable AI Agents (The OpenAPI for AI Agents)'
   )
-  .version(packageJson.version);
+  .version(getVersion());
 
 // Register commands
 program.addCommand(validateCommand);

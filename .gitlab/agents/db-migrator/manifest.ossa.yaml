@@ -40,9 +40,9 @@ metadata:
     dora-metric: deployment-frequency
 
   annotations:
-    documentation: https://gitlab.bluefly.io/llm/documentation/-/wikis/agents/db-migrator
-    support: data-team@bluefly.io
-    runbook: https://gitlab.bluefly.io/llm/documentation/-/wikis/runbooks/db-migrator
+    documentation: https://openstandardagents.org/docs/agents/db-migrator
+    support: operations@bluefly.io
+    runbook: https://openstandardagents.org/docs/runbooks/db-migrator
     safety: "transactional-rollback-enabled"
 
 spec:
@@ -281,7 +281,7 @@ spec:
 
         annotations:
           description: "Automated database migration agent"
-          contact: "data-team@bluefly.io"
+          contact: "operations@bluefly.io"
           safety: "transactional-rollback-enabled"
 
         resourceLimits:

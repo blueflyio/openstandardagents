@@ -36,9 +36,9 @@ metadata:
     frameworks: "SOC2,HIPAA,PCI-DSS,GDPR,FedRAMP"
 
   annotations:
-    documentation: https://gitlab.bluefly.io/llm/documentation/-/wikis/agents/compliance-auditor
-    support: compliance-team@bluefly.io
-    runbook: https://gitlab.bluefly.io/llm/documentation/-/wikis/runbooks/compliance-auditor
+    documentation: https://openstandardagents.org/docs/agents/compliance-auditor
+    support: operations@bluefly.io
+    runbook: https://openstandardagents.org/docs/runbooks/compliance-auditor
     certifications: "SOC 2 Type II, HIPAA, PCI-DSS Level 1"
 
 spec:

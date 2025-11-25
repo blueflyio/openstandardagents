@@ -400,4 +400,4 @@ This is a development release. Please provide feedback:
 
 ---
 
-**Full Changelog**: [v0.2.3...v0.2.4-dev](https://gitlab.bluefly.io/llm/openapi-ai-agents-standard/compare/v0.2.3...v0.2.4-dev)
+**Full Changelog**: [v0.2.3...v0.2.4-dev](https://github.com/blueflyio/openstandardagents/compare/v0.2.3...v0.2.4-dev)

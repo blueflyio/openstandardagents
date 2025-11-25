@@ -2,7 +2,8 @@
 # Use this template in your project's .gitlab-ci.yml
 
 include:
-  - component: app-4001.cloud.bluefly.io/llm/openapi-ai-agents-standard/ossa-validator@v0.1.9
+  # Component reference - update with your GitLab instance URL
+  # - component: https://${CI_SERVER_HOST}/blueflyio/openstandardagents/ossa-validator@v0.1.9
     inputs:
       project_name: $CI_PROJECT_NAME
       ossa_version: '0.1.9'

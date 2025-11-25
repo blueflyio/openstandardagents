@@ -216,7 +216,7 @@ export function MarkdownContent({ content, currentPath }: MarkdownContentProps) 
                       window.history.pushState(null, '', `${pathname}${href}`);
                     }
                   }}
-                  className="text-primary hover:text-primary-dark underline"
+                  className="text-primary hover:text-accent underline"
                 >
                   {children}
                 </a>
@@ -228,7 +228,7 @@ export function MarkdownContent({ content, currentPath }: MarkdownContentProps) 
               return (
                 <a
                   href={href}
-                  className="text-primary hover:text-primary-dark underline"
+                  className="text-primary hover:text-accent underline"
                   target="_blank"
                   rel="noopener noreferrer"
                 >

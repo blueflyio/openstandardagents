@@ -1,4 +1,6 @@
-module.exports = {
+import type { Config } from '@lhci/cli';
+
+const config: Config = {
   ci: {
     collect: {
       staticDistDir: './out',
@@ -17,4 +19,6 @@ module.exports = {
     },
   },
 };
+
+export default config;
 

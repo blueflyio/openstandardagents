@@ -8,7 +8,11 @@ import { Command } from 'commander';
 import { container } from '../../di-container.js';
 import { ManifestRepository } from '../../repositories/manifest.repository.js';
 import { ValidationService } from '../../services/validation.service.js';
-import type { SchemaVersion, ValidationResult } from '../../types/index.js';
+import type {
+  OssaAgent,
+  SchemaVersion,
+  ValidationResult,
+} from '../../types/index.js';
 
 export const validateCommand = new Command('validate')
   .argument('<path>', 'Path to OSSA manifest or OpenAPI spec (YAML or JSON)')
@@ -67,11 +71,15 @@ export const validateCommand = new Command('validate')
 
           if (options.verbose && result.manifest) {
             console.log(chalk.gray('\nAgent Details:'));
-            const m = result.manifest as any;
+            const m = result.manifest as OssaAgent;
             if (m.apiVersion) {
-              console.log(`  Name: ${chalk.cyan(m.metadata.name)}`);
-              console.log(`  Version: ${chalk.cyan(m.metadata.version)}`);
-              console.log(`  Role: ${chalk.cyan(m.spec.role)}`);
+              console.log(
+                `  Name: ${chalk.cyan(m.metadata?.name || 'unknown')}`
+              );
+              console.log(
+                `  Version: ${chalk.cyan(m.metadata?.version || 'unknown')}`
+              );
+              console.log(`  Role: ${chalk.cyan(m.spec?.role || 'unknown')}`);
             } else if (m.agent) {
               console.log(`  ID: ${chalk.cyan(m.agent.id)}`);
               console.log(`  Name: ${chalk.cyan(m.agent.name)}`);

@@ -6,24 +6,40 @@ import { Logo } from '@/components/Logo';
 import fs from 'fs';
 import path from 'path';
 
+// Get actual stable version from versions.json (not website package.json)
+function getStableVersion(): string {
+  try {
+    const versionsPath = path.join(process.cwd(), 'lib', 'versions.json');
+    if (fs.existsSync(versionsPath)) {
+      const versions = JSON.parse(fs.readFileSync(versionsPath, 'utf8'));
+      return versions.stable || '0.2.4';
+    }
+  } catch (error) {
+    console.error('Error reading versions.json:', error);
+  }
+  // Fallback to 0.2.4 if versions.json not available
+  return '0.2.4';
+}
+
 // Try to load schema dynamically - fallback to stable version
-function loadSchema(version: string = STABLE_VERSION): any {
+function loadSchema(version?: string): any {
+  const stableVersion = version || getStableVersion();
   try {
     // Try to load from public/schemas first
-    const publicSchemaPath = path.join(process.cwd(), 'public', 'schemas', `ossa-${version}.schema.json`);
+    const publicSchemaPath = path.join(process.cwd(), 'public', 'schemas', `ossa-${stableVersion}.schema.json`);
     if (fs.existsSync(publicSchemaPath)) {
       return JSON.parse(fs.readFileSync(publicSchemaPath, 'utf8'));
     }
     
     // Fallback to spec directory
-    const specSchemaPath = path.join(process.cwd(), '..', 'spec', `v${version}`, `ossa-${version}.schema.json`);
+    const specSchemaPath = path.join(process.cwd(), '..', 'spec', `v${stableVersion}`, `ossa-${stableVersion}.schema.json`);
     if (fs.existsSync(specSchemaPath)) {
       return JSON.parse(fs.readFileSync(specSchemaPath, 'utf8'));
     }
     
     // Final fallback - try to require (for build time)
     try {
-      return require(`../../public/schemas/ossa-${version}.schema.json`);
+      return require(`../../public/schemas/ossa-${stableVersion}.schema.json`);
     } catch {
       // If all else fails, return null
       return null;
@@ -35,7 +51,8 @@ function loadSchema(version: string = STABLE_VERSION): any {
 }
 
 export default function SchemaPage() {
-  const schema = loadSchema();
+  const stableVersion = getStableVersion();
+  const schema = loadSchema(stableVersion);
 
   if (!schema) {
     return (
@@ -51,7 +68,7 @@ export default function SchemaPage() {
   return (
     <>
       {/* Hero Section */}
-      <div className="bg-gradient-to-br from-primary via-accent to-secondary text-white py-16 px-4">
+      <div className="bg-gradient-to-br from-secondary via-primary to-accent text-white py-16 px-4">
         <div className="container mx-auto max-w-6xl text-center">
           <div className="inline-flex items-center justify-center w-20 h-20 bg-white/20 backdrop-blur-sm rounded-full mb-6">
             <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -63,7 +80,7 @@ export default function SchemaPage() {
             Complete JSON Schema for defining portable, framework-agnostic AI agents
           </p>
           <p className="text-lg text-white/80">
-            Version {STABLE_VERSION_TAG} • The OpenAPI for AI Agents
+            Version v{stableVersion} • The OpenAPI for AI Agents
           </p>
         </div>
       </div>
@@ -73,7 +90,7 @@ export default function SchemaPage() {
         <section className="mb-16">
           <div className="bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50 rounded-2xl p-8 mb-8">
             <div className="flex items-start mb-6">
-              <div className="w-12 h-12 bg-gradient-to-br from-primary to-secondary rounded-lg flex items-center justify-center mr-4 flex-shrink-0">
+              <div className="w-12 h-12 bg-gradient-to-br from-secondary via-primary to-accent rounded-lg flex items-center justify-center mr-4 flex-shrink-0">
                 <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
@@ -103,7 +120,7 @@ export default function SchemaPage() {
         {/* Schema Architecture Diagram */}
         <section className="mb-16">
           <div className="flex items-center mb-8">
-            <div className="w-12 h-12 bg-gradient-to-br from-primary to-secondary rounded-lg flex items-center justify-center mr-4">
+            <div className="w-12 h-12 bg-gradient-to-br from-secondary via-primary to-accent rounded-lg flex items-center justify-center mr-4">
               <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
               </svg>
@@ -120,7 +137,7 @@ export default function SchemaPage() {
 
             <div className="space-y-6">
               {/* Root */}
-              <div className="bg-gradient-to-r from-primary to-secondary text-white rounded-xl p-6 text-center shadow-md">
+              <div className="bg-gradient-to-r from-secondary via-primary to-accent text-white rounded-xl p-6 text-center shadow-md">
                 <div className="font-bold text-2xl mb-2">OSSA Agent Manifest</div>
                 <div className="text-base opacity-90">agent.yaml / agent.json</div>
               </div>
@@ -130,7 +147,7 @@ export default function SchemaPage() {
                 <div className="bg-blue-50/50 border-2 border-blue-200 rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow">
                   <div className="font-bold text-gray-900 mb-2 text-xl">apiVersion</div>
                   <div className="text-base text-gray-600 mb-3">Specifies the OSSA specification version</div>
-                  <div className="text-lg text-gray-800 font-mono">ossa/v{STABLE_VERSION}</div>
+                  <div className="text-lg text-gray-800 font-mono">ossa/v{stableVersion}</div>
                 </div>
                 <div className="bg-green-50/50 border-2 border-green-200 rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow">
                   <div className="font-bold text-gray-900 mb-2 text-xl">kind</div>
@@ -358,7 +375,7 @@ export default function SchemaPage() {
         {/* Data Flow Diagram */}
         <section className="mb-16">
           <div className="flex items-center mb-8">
-            <div className="w-12 h-12 bg-gradient-to-br from-secondary to-primary rounded-lg flex items-center justify-center mr-4">
+            <div className="w-12 h-12 bg-gradient-to-br from-secondary via-primary to-accent rounded-lg flex items-center justify-center mr-4">
               <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
               </svg>
@@ -580,7 +597,7 @@ export default function SchemaPage() {
         {/* Core Components Breakdown */}
         <section className="mb-16">
           <div className="flex items-center mb-6">
-            <div className="w-12 h-12 bg-gradient-to-br from-primary to-secondary rounded-lg flex items-center justify-center mr-4">
+            <div className="w-12 h-12 bg-gradient-to-br from-secondary via-primary to-accent rounded-lg flex items-center justify-center mr-4">
               <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
               </svg>
@@ -613,7 +630,7 @@ export default function SchemaPage() {
                     <div>
                       <p className="font-semibold text-gray-900 mb-2">EXAMPLE:</p>
                       <div className="bg-gray-900 rounded-lg p-4 mt-2">
-                        <pre className="text-green-400 text-sm font-mono"><code>{`apiVersion: ossa/v${STABLE_VERSION}
+                        <pre className="text-green-400 text-sm font-mono"><code>{`apiVersion: ossa/v${stableVersion}
 kind: Agent`}</code></pre>
                       </div>
                     </div>
@@ -942,7 +959,7 @@ kind: Agent`}</code></pre>
         {/* Interactive Schema Explorer */}
         <section className="mb-16">
           <div className="flex items-center mb-8">
-            <div className="w-12 h-12 bg-gradient-to-br from-primary to-secondary rounded-lg flex items-center justify-center mr-4">
+            <div className="w-12 h-12 bg-gradient-to-br from-secondary via-primary to-accent rounded-lg flex items-center justify-center mr-4">
               <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>

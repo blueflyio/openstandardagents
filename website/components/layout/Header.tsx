@@ -16,39 +16,39 @@ export function Header() {
               alt="OSSA Logo"
               className="h-10 w-10 transition-transform group-hover:scale-110"
             />
-            <span className="text-2xl font-bold bg-gradient-to-r from-[#0066CC] to-[#00B8D4] bg-clip-text text-transparent">
+            <span className="text-2xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
               OSSA
             </span>
           </Link>
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-3 lg:space-x-6 text-sm lg:text-base">
-            <Link href="/about" className="text-gray-600 hover:text-[#0066CC] transition-colors font-medium whitespace-nowrap">
+            <Link href="/about" className="text-gray-600 hover:text-primary transition-colors font-medium whitespace-nowrap">
               About
             </Link>
-            <Link href="/specification" className="text-gray-600 hover:text-[#0066CC] transition-colors font-medium whitespace-nowrap">
+            <Link href="/specification" className="text-gray-600 hover:text-primary transition-colors font-medium whitespace-nowrap">
               Specification
             </Link>
-            <Link href="/schema" className="text-gray-600 hover:text-[#0066CC] transition-colors font-medium whitespace-nowrap">
+            <Link href="/schema" className="text-gray-600 hover:text-primary transition-colors font-medium whitespace-nowrap">
               Schema
             </Link>
-            <Link href="/docs" className="text-gray-600 hover:text-[#0066CC] transition-colors font-medium whitespace-nowrap">
+            <Link href="/docs" className="text-gray-600 hover:text-primary transition-colors font-medium whitespace-nowrap">
               Docs
             </Link>
-            <Link href="/blog" className="text-gray-600 hover:text-[#0066CC] transition-colors font-medium whitespace-nowrap">
+            <Link href="/blog" className="text-gray-600 hover:text-primary transition-colors font-medium whitespace-nowrap">
               Blog
             </Link>
-            <Link href="/playground" className="text-gray-600 hover:text-[#0066CC] transition-colors font-medium whitespace-nowrap">
+            <Link href="/playground" className="text-gray-600 hover:text-primary transition-colors font-medium whitespace-nowrap">
               Playground
             </Link>
-            <Link href="/examples" className="text-gray-600 hover:text-[#0066CC] transition-colors font-medium whitespace-nowrap">
+            <Link href="/examples" className="text-gray-600 hover:text-primary transition-colors font-medium whitespace-nowrap">
               Examples
             </Link>
             <a
               href="https://github.com/blueflyio/openstandardagents"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-gray-600 hover:text-[#0066CC] transition-colors flex items-center font-medium"
+              className="text-gray-600 hover:text-primary transition-colors flex items-center font-medium"
               title="View on GitHub"
             >
               <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
@@ -100,49 +100,49 @@ export function Header() {
           >
             <Link
               href="/about"
-              className="block py-2 text-gray-600 hover:text-[#0066CC] transition-colors font-medium"
+              className="block py-2 text-gray-600 hover:text-primary transition-colors font-medium"
               onClick={() => setMobileMenuOpen(false)}
             >
               About
             </Link>
             <Link
               href="/specification"
-              className="block py-2 text-gray-600 hover:text-[#0066CC] transition-colors font-medium"
+              className="block py-2 text-gray-600 hover:text-primary transition-colors font-medium"
               onClick={() => setMobileMenuOpen(false)}
             >
               Specification
             </Link>
             <Link
               href="/schema"
-              className="block py-2 text-gray-600 hover:text-[#0066CC] transition-colors font-medium"
+              className="block py-2 text-gray-600 hover:text-primary transition-colors font-medium"
               onClick={() => setMobileMenuOpen(false)}
             >
               Schema
             </Link>
             <Link
               href="/docs"
-              className="block py-2 text-gray-600 hover:text-[#0066CC] transition-colors font-medium"
+              className="block py-2 text-gray-600 hover:text-primary transition-colors font-medium"
               onClick={() => setMobileMenuOpen(false)}
             >
               Docs
             </Link>
             <Link
               href="/blog"
-              className="block py-2 text-gray-600 hover:text-[#0066CC] transition-colors font-medium"
+              className="block py-2 text-gray-600 hover:text-primary transition-colors font-medium"
               onClick={() => setMobileMenuOpen(false)}
             >
               Blog
             </Link>
             <Link
               href="/playground"
-              className="block py-2 text-gray-600 hover:text-[#0066CC] transition-colors font-medium"
+              className="block py-2 text-gray-600 hover:text-primary transition-colors font-medium"
               onClick={() => setMobileMenuOpen(false)}
             >
               Playground
             </Link>
             <Link
               href="/examples"
-              className="block py-2 text-gray-600 hover:text-[#0066CC] transition-colors font-medium"
+              className="block py-2 text-gray-600 hover:text-primary transition-colors font-medium"
               onClick={() => setMobileMenuOpen(false)}
             >
               Examples
@@ -151,7 +151,7 @@ export function Header() {
               href="https://github.com/blueflyio/openstandardagents"
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-2 py-2 text-gray-600 hover:text-[#0066CC] transition-colors font-medium"
+              className="flex items-center gap-2 py-2 text-gray-600 hover:text-primary transition-colors font-medium"
               onClick={() => setMobileMenuOpen(false)}
               title="View on GitHub"
             >

@@ -10,6 +10,7 @@ const config: Config = {
     '!src/**/*.d.ts',
     '!src/**/index.ts',
     '!src/types/generated/**',
+    '!src/di-container.ts',
   ],
   coverageDirectory: 'coverage',
   coverageReporters: ['text', 'lcov', 'html', 'cobertura'],
