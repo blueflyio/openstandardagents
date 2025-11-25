@@ -14,14 +14,13 @@
 # Last updated: 2025-11-24
 
 stages:
-  - setup
   - version-detect
   - validate
   - build
   - test
   - quality
-  - deploy          # Website deployment (manual)
-  - release         # NPM release (manual, milestone-gated)
+  - deploy
+  - release
   - mirror
 
 variables:
