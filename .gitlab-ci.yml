@@ -735,7 +735,7 @@ release:npm:
       echo ""
       echo "Verifying documentation consistency..."
       if ! npx tsx scripts/sync-versions.ts --check; then
-        echo "CRITICAL: Documentation sync failed verification!"
+        echo "ERROR: Documentation sync failed verification!"
         echo "This should never happen. Aborting release."
         exit 1
       fi
