@@ -128,7 +128,7 @@ validate:ossa:
     - npm ci --legacy-peer-deps
     - npm run build
     - echo "Validating example manifests..."
-    - node dist/cli/index.js validate examples/getting-started/hello-world-complete.ossa.yaml || echo "WARNING: Validation warnings (non-blocking)"
+    - node dist/cli/index.js validate examples/getting-started/hello-world-complete.ossa.yaml || echo "WARNING Validation warnings (non-blocking)"
   allow_failure: true
   rules:
     - when: always
@@ -208,7 +208,7 @@ build:dist:
   script:
     - npm ci --legacy-peer-deps
     - npm run build
-    - test -f dist/cli/index.js || (echo "ERROR: dist/cli/index.js missing" && exit 1)
+    - test -f dist/cli/index.js || (echo "ERROR dist/cli/index.js missing" && exit 1)
     - echo "Build completed"
   artifacts:
     paths:
@@ -229,8 +229,8 @@ test:lint:
   script:
     - npm ci --legacy-peer-deps
     - npm run build
-    - npm run lint || echo "WARNING: Lint warnings"
-    - npm run typecheck || echo "WARNING: Typecheck warnings"
+    - npm run lint || echo "WARNING Lint warnings"
+    - npm run typecheck || echo "WARNING Typecheck warnings"
   allow_failure: true
   rules:
     - when: always
@@ -263,7 +263,7 @@ test:security:
   image: node:${NODE_VERSION}-alpine
   script:
     - npm ci --legacy-peer-deps
-    - npm audit --production || echo "WARNING: Security vulnerabilities"
+    - npm audit --production || echo "WARNING Security vulnerabilities"
   allow_failure: true
   rules:
     - when: always
@@ -303,7 +303,7 @@ pages:
     - apk add --no-cache git curl
     - export GITLAB_HOST="${GITLAB_HOST:-${CI_SERVER_HOST}}"
   script:
-    - npm run sync-wiki || echo "Warning: Wiki sync failed"
+    - npm run sync-wiki || echo "Warning Wiki sync failed"
     - npm run build
     - mv out ../public
   artifacts:
