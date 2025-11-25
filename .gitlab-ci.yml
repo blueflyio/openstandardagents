@@ -287,7 +287,7 @@ validate:scripts-version:
       # Test that version detection works via TypeScript
       echo ""
       echo "Testing version detection via TypeScript..."
-      DETECTED_VERSION=$(npx tsx -e "import { getCurrentVersion } from './scripts/lib/version.js'; console.log(getCurrentVersion())")
+      DETECTED_VERSION=$(npx tsx -e "import { getCurrentVersion } from './scripts/lib/version.ts'; console.log(getCurrentVersion())")
       if [ "$DETECTED_VERSION" != "$VERSION" ]; then
         echo "ERROR: Version mismatch"
         echo "  package.json: $VERSION"
@@ -798,8 +798,8 @@ release:npm:
       when: on_success  # Automatic when both conditions are met
       allow_failure: false
     # Manual fallback if milestone detection fails but you want to force release
-    # Still requires both ENABLE_RELEASE and MILESTONE_READY to be set
-    - if: $CI_COMMIT_BRANCH == "main" && $MILESTONE_READY == "true" && $ENABLE_RELEASE == "true"
+    # Only requires ENABLE_RELEASE (allows override when MILESTONE_READY is false/missing)
+    - if: $CI_COMMIT_BRANCH == "main" && $ENABLE_RELEASE == "true"
       when: manual
       allow_failure: false
   needs:

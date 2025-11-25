@@ -1,7 +1,9 @@
 import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
-  // Remove 'export' to use dynamic server
+  output: 'export',
+  distDir: 'out',
+  trailingSlash: true,
   images: {
     unoptimized: true
   },

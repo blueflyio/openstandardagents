@@ -200,10 +200,10 @@ When version changes, the script updates:
 
 ```bash
 # Check version consistency (CI mode)
-node scripts/sync-versions.js --check
+npx tsx scripts/sync-versions.ts --check
 
 # Fix all version references
-node scripts/sync-versions.js --fix
+npx tsx scripts/sync-versions.ts --fix
 ```
 
 ### CI Integration
@@ -250,7 +250,7 @@ These can merge to `development` and `main` without creating releases.
 
 **Fix**:
 ```bash
-node scripts/sync-versions.js --fix
+npx tsx scripts/sync-versions.ts --fix
 git add .
 git commit -m "chore: sync version references to v0.2.5-RC"
 git push
@@ -327,7 +327,7 @@ git push origin main
 git checkout main
 
 # 2. Run version sync
-node scripts/sync-versions.js --fix
+npx tsx scripts/sync-versions.ts --fix
 
 # 3. Commit changes
 git add .
@@ -380,10 +380,10 @@ npm install @bluefly/openstandardagents
 ### Version Management
 ```bash
 # Check version consistency
-node scripts/sync-versions.js --check
+npx tsx scripts/sync-versions.ts --check
 
 # Fix version references
-node scripts/sync-versions.js --fix
+npx tsx scripts/sync-versions.ts --fix
 ```
 
 ### GitLab API
