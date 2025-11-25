@@ -303,8 +303,8 @@ pages:
     - apk add --no-cache git curl
     - export GITLAB_HOST="${GITLAB_HOST:-${CI_SERVER_HOST}}"
   script:
-    - npm run sync-wiki || echo "Warning Wiki sync failed"
-    - npm run build
+    - npm run sync-wiki || echo "Warning: Wiki sync failed (continuing without wiki content)"
+    - npm run build:no-wiki
     - mv out ../public
   artifacts:
     paths:
