@@ -231,6 +231,8 @@ validate:version-sync:
 validate:scripts-version:
   stage: validate
   image: node:${NODE_VERSION}-alpine
+  before_script:
+    - npm ci --legacy-peer-deps
   script:
     - |
       echo "🔍 Validating npm scripts use dynamic version..."
@@ -244,7 +246,7 @@ validate:scripts-version:
       # Check validate:schema doesn't have hardcoded version
       if grep -q "spec/v0\.[0-9]" package.json; then
         echo "❌ ERROR: package.json scripts contain hardcoded version paths"
-        echo "   Scripts should use dynamic version detection (scripts/*.sh)"
+        echo "   Scripts should use dynamic version detection (scripts/*.ts)"
         grep "spec/v0\.[0-9]" package.json || true
         exit 1
       fi
@@ -255,29 +257,44 @@ validate:scripts-version:
         exit 1
       fi
       
-      # Verify scripts exist and are executable
+      # Check scripts use tsx (TypeScript execution)
+      if ! grep -q "tsx scripts/" package.json; then
+        echo "⚠️  WARNING: Scripts should use tsx for TypeScript execution"
+      fi
+      
+      # Verify TypeScript scripts exist
       echo ""
-      echo "Checking helper scripts exist..."
-      for script in scripts/get-version.js scripts/validate-schema.js scripts/gen-types.js scripts/gen-zod.js; do
+      echo "Checking TypeScript scripts exist..."
+      for script in scripts/validate-schema.ts scripts/gen-types.ts scripts/gen-zod.ts; do
         if [ ! -f "$script" ]; then
           echo "❌ ERROR: Missing script: $script"
           exit 1
         fi
-        if [ ! -x "$script" ]; then
-          echo "⚠️  WARNING: Script not executable: $script"
-        fi
+        echo "✓ Found: $script"
       done
       
-      # Test that get-version.js works
+      # Verify shared utilities exist
       echo ""
-      echo "Testing version detection..."
-      DETECTED_VERSION=$(node scripts/get-version.js)
+      echo "Checking shared utilities exist..."
+      for util in scripts/lib/version.ts scripts/lib/file-ops.ts scripts/lib/exec.ts scripts/schemas/package.schema.ts; do
+        if [ ! -f "$util" ]; then
+          echo "❌ ERROR: Missing utility: $util"
+          exit 1
+        fi
+        echo "✓ Found: $util"
+      done
+      
+      # Test that version detection works via TypeScript
+      echo ""
+      echo "Testing version detection via TypeScript..."
+      DETECTED_VERSION=$(npx tsx -e "import { getCurrentVersion } from './scripts/lib/version.js'; console.log(getCurrentVersion())")
       if [ "$DETECTED_VERSION" != "$VERSION" ]; then
         echo "❌ ERROR: Version mismatch"
         echo "   package.json: $VERSION"
-        echo "   get-version.js: $DETECTED_VERSION"
+        echo "   version.ts: $DETECTED_VERSION"
         exit 1
       fi
+      echo "✓ Version detection works: $DETECTED_VERSION"
       
       # Verify schema path exists for current version
       SCHEMA_PATH="spec/v${VERSION}/ossa-${VERSION}.schema.json"
@@ -289,7 +306,7 @@ validate:scripts-version:
       fi
       
       echo ""
-      echo "✅ All scripts use dynamic version detection"
+      echo "✅ All scripts use dynamic version detection with TypeScript + Zod"
   allow_failure: false
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
@@ -501,29 +518,32 @@ pages:
       artifacts: false
   before_script:
     - cd website
-    - npm ci
+    - npm ci --legacy-peer-deps
     - apk add --no-cache git curl
     - export GITLAB_HOST="${GITLAB_HOST:-${CI_SERVER_HOST}}"
   script:
+    - echo "🌐 Building website for GitLab Pages..."
     - npm run sync-wiki || echo "Warning Wiki sync failed (continuing without wiki content)"
     - npm run build:no-wiki
-    - mv out ../public
+    - echo "📦 Verifying build output..."
+    - ls -la out/ || (echo "ERROR: out/ directory not found" && exit 1)
+    - echo "📁 Moving build output to public/ for GitLab Pages..."
+    - mkdir -p ../public
+    - cp -r out/* ../public/
+    - echo "✅ Build artifacts ready:"
+    - ls -la ../public/ | head -20
   artifacts:
     paths:
       - public
+    expire_in: 30 days
   environment:
     name: website
     url: https://openstandardagents.org
     deployment_tier: production
   rules:
-    # Automatic deployment after successful release (main branch only)
-    - if: $CI_COMMIT_BRANCH == "main" && $ENABLE_RELEASE == "true" && $MILESTONE_READY == "true"
-      when: on_success
-      allow_failure: true
-    # Manual button on main - deploy website anytime (fallback)
+    # Automatic deployment on main branch (always deploy website)
     - if: $CI_COMMIT_BRANCH == "main"
-      when: manual
-      allow_failure: true
+      when: on_success
     # Manual on development for preview
     - if: $CI_COMMIT_BRANCH == "development"
       when: manual
