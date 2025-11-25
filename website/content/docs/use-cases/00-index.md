@@ -391,5 +391,5 @@ All use cases are provided under Apache 2.0 license. Implementation code may be 
 ---
 
 **Last Updated**: November 2024
-**OSSA Version**: v0.2.3
+**OSSA Version**: v0.2.x
 **Status**: Production Ready

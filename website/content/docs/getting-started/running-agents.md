@@ -30,7 +30,7 @@ export OPENAI_API_KEY=sk-...
 
 ```yaml
 # support-agent.ossa.yaml
-apiVersion: ossa/v0.2.4
+apiVersion: ossa/v0.2.x
 kind: Agent
 
 metadata:

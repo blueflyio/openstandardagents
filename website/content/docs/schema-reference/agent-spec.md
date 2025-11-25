@@ -350,7 +350,7 @@ spec:
 The only required field in `spec` is `role`:
 
 ```yaml
-apiVersion: ossa/v0.2.4
+apiVersion: ossa/v0.2.x
 kind: Agent
 metadata:
   name: simple-agent
@@ -397,7 +397,7 @@ spec:
 
 The `spec` object is validated against the JSON Schema:
 ```
-https://openstandardagents.org/schemas/v0.2.3/agent.json#/definitions/AgentSpec
+https://openstandardagents.org/schemas/v0.2.x/agent.json#/definitions/AgentSpec
 ```
 
 Required fields:

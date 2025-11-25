@@ -29,7 +29,7 @@ This creates a minimal, valid OSSA agent manifest.
 Open `hello-world.ossa.yaml`:
 
 ```yaml
-apiVersion: ossa/v0.2.2
+apiVersion: ossa/v0.2.x
 kind: Agent
 
 metadata:
@@ -55,7 +55,7 @@ spec:
 ### apiVersion & kind
 
 ```yaml
-apiVersion: ossa/v0.2.2
+apiVersion: ossa/v0.2.x
 kind: Agent
 ```
 
@@ -106,7 +106,7 @@ ossa validate hello-world.ossa.yaml
 You should see:
 
 ```
-✓ Agent manifest is valid OSSA 0.2.2
+✓ Agent manifest is valid OSSA v0.2.x
 ```
 
 ## Step 5: Add a Tool (Optional)

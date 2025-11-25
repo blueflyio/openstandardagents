@@ -51,7 +51,7 @@ Embeds comprehensive OSSA agent metadata in OpenAPI spec root. Provides governan
 
 ```yaml
 x-ossa-metadata:
-  version: string              # OSSA specification version (e.g., "0.2.2", "1.0.0")
+  version: string              # OSSA specification version (e.g., "0.2.x", "1.0.0")
   compliance:
     level: string              # "basic" | "standard" | "advanced" | "enterprise"
     frameworks: string[]       # List of compliance frameworks
@@ -78,7 +78,7 @@ info:
   version: 1.0.0
 
 x-ossa-metadata:
-  version: 0.2.2
+  version: 0.2.x
   compliance:
     level: enterprise
     frameworks:
@@ -179,7 +179,7 @@ info:
   version: 1.0.0
 
 x-ossa:
-  version: 0.2.2
+  version: 0.2.x
   agent:
     id: k8s-troubleshooter
     type: worker
@@ -626,13 +626,13 @@ info:
   description: Minimal OSSA-compliant agent API
 
 x-ossa-metadata:
-  version: 0.2.2
+  version: 0.2.x
   compliance:
     level: basic
     frameworks: [OSSA, OpenAPI 3.1]
 
 x-ossa:
-  version: 0.2.2
+  version: 0.2.x
   agent:
     id: hello-world-agent
     type: worker
@@ -690,7 +690,7 @@ info:
     Supports pod inspection, log analysis, and event correlation.
 
 x-ossa-metadata:
-  version: 0.2.2
+  version: 0.2.x
   compliance:
     level: enterprise
     frameworks:
@@ -711,7 +711,7 @@ x-ossa-metadata:
     logging: true
 
 x-ossa:
-  version: 0.2.2
+  version: 0.2.x
   agent:
     id: k8s-troubleshooter
     type: worker
@@ -852,7 +852,7 @@ The OpenAPI spec should reference capabilities and tools defined in the manifest
 
 ```yaml
 # agent.ossa.yaml
-apiVersion: ossa/v0.2.2
+apiVersion: ossa/v0.2.x
 kind: Agent
 metadata:
   name: k8s-troubleshooter
@@ -921,8 +921,8 @@ Most OpenAPI tools ignore unknown extensions (per OpenAPI spec), so OSSA extensi
 
 ## References
 
-- [OSSA Specification v0.2.2](Specification/v0.2.2/OSSA-SPECIFICATION-v0.2.2.md)
-- [OSSA JSON Schema](Specification/v0.2.2/ossa-0.2.2.schema.json)
+- [OSSA Specification v0.2.x](Specification/v0.2.x/OSSA-SPECIFICATION-v0.2.x.md)
+- [OSSA JSON Schema](Specification/v0.2.x/ossa-0.2.x.schema.json)
 - [OpenAPI 3.1 Specification](https://spec.openapis.org/oas/v3.1.0)
 - [OpenAPI Extensions Schema](../schemas/openapi-extensions.schema.json)
 - [OSSA Examples](../../examples/)

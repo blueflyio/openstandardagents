@@ -10,6 +10,14 @@ This file contains project-specific rules for Cursor Agent. Additional detailed 
 
 ## Critical Workflows
 
+### Version Management
+**NEVER manually update version numbers in any file.**
+- Single source of truth: `.version.json`
+- Use `npm run version:bump <type>` to change versions (rc, patch, minor, major, release)
+- Use `{{VERSION}}` placeholders in documentation
+- Versions auto-sync before every build
+- See `.gitlab/docs/development/VERSIONING.md` for complete guide
+
 ### Before Config Work
 **ALWAYS** run `ddev drush cst` before working with Drupal config. This is CRITICAL.
 
