@@ -8,7 +8,7 @@ ossaVersion: '0.2.5'
 # This specification defines a standard format for AI agent definition,
 # deployment, and orchestration across heterogeneous environments.
 #
-# v0.2.5 NEW FEATURES:
+# v0.2.5-RC NEW FEATURES:
 # - Transport metadata for capabilities (streaming, protocol binding)
 # - State/memory block for agent state management
 # - Enhanced security with scopes and compliance tags

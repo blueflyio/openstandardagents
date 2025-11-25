@@ -46,17 +46,17 @@ OSSA follows semantic versioning. Development specs are marked with `-dev` suffi
 
 ---
 
-### v0.2.5-dev - Multi-Agent Composition
+### v0.2.5-RC-dev - Multi-Agent Composition
 
 **Status**: Development
 **Target Release**: March 2025
-**Milestone**: [v0.2.5 - Multi-Agent Composition](https://github.com/blueflyio/openstandardagents/milestones/13)
+**Milestone**: [v0.2.5-RC - Multi-Agent Composition](https://github.com/blueflyio/openstandardagents/milestones/13)
 
 #### New Features
 
 1. **AgentGraph Resource Type**
    ```yaml
-   apiVersion: ossa/v0.2.5
+   apiVersion: ossa/v0.2.5-RC
    kind: AgentGraph  # New!
    metadata:
      name: customer-support-cluster
@@ -112,8 +112,8 @@ git clone https://github.com/blueflyio/openstandardagents.git
 cd openstandardagents
 
 # View development specs
-ls spec/v0.2.5/
-ls spec/v0.2.5/
+ls spec/v0.2.5-RC/
+ls spec/v0.2.5-RC/
 ```
 
 ### Validation
@@ -130,9 +130,9 @@ ossa validate your-agent.yaml --version 0.2.4-dev
 
 Development examples are in the spec directories:
 
-- `spec/v0.2.5/examples/customer-support-graph.ossa.yaml` - Sequential process
-- `spec/v0.2.5/examples/research-team.ossa.yaml` - Hierarchical process
-- `spec/v0.2.5/examples/parallel-processors.ossa.yaml` - Parallel process
+- `spec/v0.2.5-RC/examples/customer-support-graph.ossa.yaml` - Sequential process
+- `spec/v0.2.5-RC/examples/research-team.ossa.yaml` - Hierarchical process
+- `spec/v0.2.5-RC/examples/parallel-processors.ossa.yaml` - Parallel process
 
 ---
 
@@ -152,7 +152,7 @@ We welcome feedback on development specifications:
 - [#224 - Google ADK extension](https://github.com/blueflyio/openstandardagents/issues/224)
 - [#225 - MS AF adapter](https://github.com/blueflyio/openstandardagents/issues/225)
 
-### v0.2.5 Issues
+### v0.2.5-RC Issues
 - [#211-212 - AgentGraph resource](https://github.com/blueflyio/openstandardagents/issues/211)
 - [#213 - Process patterns](https://github.com/blueflyio/openstandardagents/issues/213)
 - [#214 - Edge routing](https://github.com/blueflyio/openstandardagents/issues/214)
@@ -168,7 +168,7 @@ We welcome feedback on development specifications:
 |---------|-------|--------|--------|
 | v0.2.3 | Documentation & Examples | **Stable** | Released |
 | v0.2.4 | Transport & Security | Development | Feb 2025 |
-| v0.2.5 | Multi-Agent Composition | Development | Mar 2025 |
+| v0.2.5-RC | Multi-Agent Composition | Development | Mar 2025 |
 | v0.3.0 | Gamma Release | Planned | Apr 2025 |
 | v1.0.0 | Genesis Release | Planned | TBD |
 

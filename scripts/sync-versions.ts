@@ -238,7 +238,7 @@ function updateReadme(version: string): void {
   const headerRegex = new RegExp(`OSSA v${SEMVER_PATTERN} Schema:`, 'g');
   readme = readme.replace(headerRegex, `OSSA v${version} Schema:`);
 
-  // Update any bare version references like "v0.2.5-RC" in links
+  // Update any bare version references like "v0.2.5-RC-RC" in links
   const versionLinkRegex = new RegExp(`spec/v${SEMVER_PATTERN}/`, 'g');
   readme = readme.replace(versionLinkRegex, `spec/v${version}/`);
 

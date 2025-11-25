@@ -2,16 +2,29 @@
 # Decoupled Release Model:
 # - Code flows freely: Feature → development → main (CI validates, no auto-release)
 # - Website deployment: Manual button (independent of releases)
-# - NPM releases: Manual button + milestone-gated
+# - NPM releases: Milestone-gated + ENABLE_RELEASE variable required
 #
 # Workflow:
 # 1. Feature branches → merge to development (CI validates)
 # 2. Development → merge to main via merge train (CI validates)
 # 3. Click "Deploy Website" button → GitLab Pages deploys
-# 4. Close milestone → Click "Release" button → npm publish + git tag
+# 4. To release: Set ENABLE_RELEASE=true + close milestone → automatic npm publish + git tag
+#
+# Release Gate:
+# Releases require BOTH conditions:
+#   - Milestone must be 100% complete and closed
+#   - CI/CD variable ENABLE_RELEASE must be set to "true"
+# This allows deploying to main without releasing. Set the variable only when ready to release.
+#
+# To set ENABLE_RELEASE:
+#   GitLab UI: Settings → CI/CD → Variables → Add variable
+#   Variable: ENABLE_RELEASE
+#   Value: true
+#   Protected: Yes (recommended)
+#   Masked: No
 #
 # Status: ACTIVE MODE
-# Last updated: 2025-11-24
+# Last updated: 2025-01-24
 
 stages:
   - setup
@@ -75,7 +88,7 @@ detect:milestone-version:
         ID=$(echo "$milestone_json" | jq -r '.id')
         STATE=$(echo "$milestone_json" | jq -r '.state')
 
-        VERSION=$(echo "$TITLE" | grep -oE 'v?[0-9]+\.[0-9]+\.[0-9]+' | head -1 | sed 's/^v//')
+        VERSION=$(echo "$TITLE" | grep -oE 'v?[0-9]+\.[0-9]+\.[0-9]+(-[A-Za-z0-9]+)?' | head -1 | sed 's/^v//')
 
         if [ -n "$VERSION" ] && [ "$STATE" = "closed" ]; then
           # Check if this version has already been released
@@ -405,7 +418,11 @@ quality:gates:
 pages:
   stage: deploy
   image: node:${NODE_VERSION}-alpine
-  needs: []  # Run independently - no dependencies
+  needs:
+    # After release completes, deploy website with updated version
+    - job: release:npm
+      optional: true
+      artifacts: false
   before_script:
     - cd website
     - npm ci
@@ -423,7 +440,11 @@ pages:
     url: https://openstandardagents.org
     deployment_tier: production
   rules:
-    # Manual button on main - deploy website anytime
+    # Automatic deployment after successful release
+    - if: $CI_COMMIT_BRANCH == "main" && $ENABLE_RELEASE == "true" && $MILESTONE_READY == "true"
+      when: on_success
+      allow_failure: true
+    # Manual button on main - deploy website anytime (fallback)
     - if: $CI_COMMIT_BRANCH == "main"
       when: manual
       allow_failure: true
@@ -453,11 +474,26 @@ release:preview:
       echo "============================"
       echo ""
 
+      # Show release gate status
+      echo "🔒 Release Gate Status:"
+      if [ "$ENABLE_RELEASE" = "true" ]; then
+        echo "   ✅ ENABLE_RELEASE: ${ENABLE_RELEASE} (releases enabled)"
+      else
+        echo "   🔒 ENABLE_RELEASE: ${ENABLE_RELEASE:-not set} (releases disabled)"
+        echo ""
+        echo "   To enable releases, set CI/CD variable:"
+        echo "   Settings → CI/CD → Variables → Add variable"
+        echo "   Variable: ENABLE_RELEASE"
+        echo "   Value: true"
+        echo ""
+      fi
+
       # Show milestone-detected version (if available)
       if [ -n "$RELEASE_VERSION" ]; then
         echo "📋 Detected from closed milestone:"
         echo "   Milestone: ${MILESTONE_TITLE}"
         echo "   Version to release: v${RELEASE_VERSION}"
+        echo "   Milestone ready: ${MILESTONE_READY:-false}"
         echo ""
       fi
 
@@ -475,6 +511,16 @@ release:preview:
         echo ""
       fi
 
+      # Show release readiness
+      if [ "$ENABLE_RELEASE" = "true" ] && [ "$MILESTONE_READY" = "true" ]; then
+        echo "✅ Release will proceed automatically when pipeline completes"
+      elif [ "$ENABLE_RELEASE" != "true" ]; then
+        echo "🔒 Release blocked: ENABLE_RELEASE not set"
+      elif [ "$MILESTONE_READY" != "true" ]; then
+        echo "🔒 Release blocked: Milestone not ready"
+      fi
+
+      echo ""
       echo "Running semantic-release preview..."
       npx semantic-release --dry-run || true
 
@@ -510,15 +556,35 @@ release:npm:
       echo "===================================="
       echo ""
 
+      # RELEASE GATE: Check if releases are enabled via CI variable
+      if [ "$ENABLE_RELEASE" != "true" ]; then
+        echo "🔒 RELEASE BLOCKED: ENABLE_RELEASE variable not set"
+        echo ""
+        echo "To enable releases, set the CI/CD variable:"
+        echo "  Variable: ENABLE_RELEASE"
+        echo "  Value: true"
+        echo ""
+        echo "This allows you to:"
+        echo "  • Deploy code to main without releasing"
+        echo "  • Run CI/CD pipelines without triggering npm publish"
+        echo "  • Control when releases happen explicitly"
+        echo ""
+        echo "Current status:"
+        echo "  • ENABLE_RELEASE: ${ENABLE_RELEASE:-not set}"
+        echo "  • Release will NOT proceed"
+        exit 0  # Exit successfully - this is expected behavior
+      fi
+
       # Validate milestone is ready (set by detect:milestone-version job)
       if [ "$MILESTONE_READY" != "true" ]; then
         echo "❌ RELEASE BLOCKED: No release-ready milestone found"
         echo ""
         echo "Requirements for automatic release:"
-        echo "  1. ✅ Milestone MUST exist with version in title (e.g., 'v0.2.6 - Feature Name')"
-        echo "  2. ✅ Milestone MUST be CLOSED"
-        echo "  3. ✅ Milestone MUST be 100% COMPLETE (all issues closed)"
-        echo "  4. ✅ Version MUST NOT already be released"
+        echo "  1. ✅ ENABLE_RELEASE variable MUST be set to 'true'"
+        echo "  2. ✅ Milestone MUST exist with version in title (e.g., 'v0.2.6 - Feature Name')"
+        echo "  3. ✅ Milestone MUST be CLOSED"
+        echo "  4. ✅ Milestone MUST be 100% COMPLETE (all issues closed)"
+        echo "  5. ✅ Version MUST NOT already be released"
         echo ""
         echo "Current status:"
         if [ -z "$RELEASE_VERSION" ]; then
@@ -532,6 +598,11 @@ release:npm:
         echo "Once all issues are closed and milestone is closed, the release will trigger automatically."
         exit 1
       fi
+
+      echo "✅ Release gate passed:"
+      echo "   • ENABLE_RELEASE: ${ENABLE_RELEASE}"
+      echo "   • Milestone ready: ${MILESTONE_READY}"
+      echo ""
 
       # Milestone is ready - use detected version
       MILESTONE_VERSION="$RELEASE_VERSION"
@@ -612,12 +683,15 @@ release:npm:
       echo "   🏷️  Tag: v${MILESTONE_VERSION}"
       echo "   📋 Milestone: ${MILESTONE_TITLE}"
   rules:
-    # AUTOMATIC release when milestone is 100% complete and closed
-    - if: $CI_COMMIT_BRANCH == "main" && $MILESTONE_READY == "true"
-      when: on_success  # Automatic when milestone is ready
+    # AUTOMATIC release when BOTH conditions are met:
+    # 1. Milestone is 100% complete and closed
+    # 2. ENABLE_RELEASE variable is set to "true"
+    - if: $CI_COMMIT_BRANCH == "main" && $MILESTONE_READY == "true" && $ENABLE_RELEASE == "true"
+      when: on_success  # Automatic when both conditions are met
       allow_failure: false
     # Manual fallback if milestone detection fails but you want to force release
-    - if: $CI_COMMIT_BRANCH == "main"
+    # Still requires ENABLE_RELEASE to be set
+    - if: $CI_COMMIT_BRANCH == "main" && $ENABLE_RELEASE == "true"
       when: manual
       allow_failure: false
   needs:

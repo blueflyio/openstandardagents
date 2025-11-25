@@ -1,4 +1,4 @@
-# OSSA v0.2.5 Release Notes
+# OSSA v0.2.5-RC Release Notes
 
 **Release Date**: 2025-11-24
 **Type**: Minor Release
@@ -6,7 +6,7 @@
 
 ## Overview
 
-OSSA v0.2.5 introduces significant new features for transport metadata, state management, enhanced security, and capability versioning. This release enhances OSSA integration with Google ADK, A2A protocol, OpenAI Agents SDK, and Microsoft Autogen Framework.
+OSSA v0.2.5-RC introduces significant new features for transport metadata, state management, enhanced security, and capability versioning. This release enhances OSSA integration with Google ADK, A2A protocol, OpenAI Agents SDK, and Microsoft Autogen Framework.
 
 ## What's New
 

@@ -172,7 +172,7 @@ All agents use `apiVersion: ossa/v0.2.4-dev` to demonstrate v0.2.4 features:
 
 ## Related Documentation
 
-- OSSA Specification: `spec/v0.2.5/ossa-0.2.5.schema.json`
+- OSSA Specification: `spec/v0.2.5-RC/ossa-0.2.5.schema.json`
 - OSSA CLI: `bin/ossa`
 - Examples: `examples/`
 - CI/CD Integration: `.gitlab-ci.yml`

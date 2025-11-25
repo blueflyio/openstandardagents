@@ -26,30 +26,6 @@ build:
   tags:
     - docker
 
-# Deploy to GitLab Pages (static fallback using nginx)
-pages:
-  stage: deploy
-  image: node:20-alpine
-  script:
-    - cd website
-    - npm ci --legacy-peer-deps
-    - npm run fetch-versions
-    - npm run sync-version
-    - npm run generate-examples
-    # Start dev server, wait, then wget static files
-    - npm run dev &
-    - sleep 30
-    - mkdir -p public
-    - wget -r -np -nH --cut-dirs=0 -P public http://localhost:3000/ || true
-    - wget -r -np -nH --cut-dirs=0 -P public http://localhost:3000/docs/ || true
-    - wget -r -np -nH --cut-dirs=0 -P public http://localhost:3000/examples/ || true
-    - wget -r -np -nH --cut-dirs=0 -P public http://localhost:3000/schema/ || true
-    - wget -r -np -nH --cut-dirs=0 -P public http://localhost:3000/playground/ || true
-    - pkill -f "next dev" || true
-    # Move public to correct location
-    - mv public ../public
-  artifacts:
-    paths:
-      - public
-  only:
-    - main
+# NOTE: GitLab Pages deployment is handled by the main .gitlab-ci.yml file
+# This file only handles Docker image builds for the website
+# The main CI uses proper Next.js static export (npm run build:no-wiki)

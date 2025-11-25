@@ -3,7 +3,7 @@
 **The OpenAPI for AI Agents**
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
-[![npm version](https://img.shields.io/npm/v/@bluefly/openstandardagents.svg)](https://www.npmjs.com/package/@bluefly/openstandardagents)
+[![npm version](https://img.shields.io/npm/v/@bluefly/openstandardagents)](https://www.npmjs.com/package/@bluefly/openstandardagents)
 [![GitLab](https://img.shields.io/badge/GitLab-OSSA-orange.svg)](https://gitlab.com/blueflyio/openstandardagents)
 [![GitHub](https://img.shields.io/badge/GitHub-OSSA-black.svg)](https://github.com/blueflyio/openstandardagents)
 [![OSSA Compliant](https://img.shields.io/badge/OSSA-Compliant-00B8D4.svg)](https://gitlab.com/blueflyio/openstandardagents)
@@ -102,12 +102,12 @@ For production features, see [Agent Buildkit](https://gitlab.com/blueflyio/agent
 
 ## Specification
 
-OSSA v0.2.5 Schema: [`spec/v0.2.5/ossa-0.2.5.schema.json`](spec/v0.2.5/ossa-0.2.5.schema.json)
+OSSA v0.2.5-RC Schema: [`spec/v0.2.5-RC/ossa-0.2.5-RC.schema.json`](spec/v0.2.5-RC/ossa-0.2.5-RC.schema.json)
 
 ### Required Fields
 
 ```yaml
-ossaVersion: "0.2.5"
+ossaVersion: "0.2.5-RC"
 
 agent:
   id: my-agent                    # DNS-1123 format
@@ -267,7 +267,7 @@ The documentation is organized into:
 
 ### Additional Resources
 
-- **Specification**: [spec/v0.2.5/ossa-0.2.5.schema.json](spec/v0.2.5/ossa-0.2.5.schema.json)
+- **Specification**: [spec/v0.2.5-RC/ossa-0.2.5-RC.schema.json](spec/v0.2.5-RC/ossa-0.2.5-RC.schema.json)
 - **Examples**: [examples/](examples/)
 - **API Reference**: [docs/](docs/)
 - **GitHub Issues**: https://github.com/blueflyio/openstandardagents/issues
