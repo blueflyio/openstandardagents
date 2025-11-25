@@ -4,12 +4,13 @@
  */
 
 import { injectable } from 'inversify';
-import type { ValidationResult } from '../../types/index.js';
+import type { ErrorObject } from 'ajv';
+import type { OssaAgent, ValidationResult } from '../../types/index.js';
 
 @injectable()
 export class CrewAIValidator {
-  validate(manifest: any): ValidationResult {
-    const errors: any[] = [];
+  validate(manifest: OssaAgent): ValidationResult {
+    const errors: ErrorObject[] = [];
     const warnings: string[] = [];
 
     const crewaiExt = manifest.extensions?.crewai;

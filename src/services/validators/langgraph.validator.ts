@@ -4,12 +4,13 @@
  */
 
 import { injectable } from 'inversify';
-import type { ValidationResult } from '../../types/index.js';
+import type { OssaAgent, ValidationResult } from '../../types/index.js';
+import type { ErrorObject } from 'ajv';
 
 @injectable()
 export class LangGraphValidator {
-  validate(manifest: any): ValidationResult {
-    const errors: any[] = [];
+  validate(manifest: OssaAgent): ValidationResult {
+    const errors: ErrorObject[] = [];
     const warnings: string[] = [];
 
     const langgraphExt = manifest.extensions?.langgraph;

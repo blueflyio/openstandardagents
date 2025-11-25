@@ -4,12 +4,13 @@
  */
 
 import { injectable } from 'inversify';
-import type { ValidationResult } from '../../types/index.js';
+import type { ErrorObject } from 'ajv';
+import type { OssaAgent, ValidationResult } from '../../types/index.js';
 
 @injectable()
 export class OpenAIValidator {
-  validate(manifest: any): ValidationResult {
-    const errors: any[] = [];
+  validate(manifest: OssaAgent): ValidationResult {
+    const errors: ErrorObject[] = [];
     const warnings: string[] = [];
 
     const openaiExt = manifest.extensions?.openai_agents;
@@ -45,7 +46,7 @@ export class OpenAIValidator {
           message: 'tools_mapping must be an array',
         });
       } else {
-        openaiExt.tools_mapping.forEach((mapping: any, index: number) => {
+        openaiExt.tools_mapping.forEach((mapping: Record<string, unknown>, index: number) => {
           if (!mapping.ossa_capability) {
             errors.push({
               instancePath: `/extensions/openai_agents/tools_mapping/${index}/ossa_capability`,

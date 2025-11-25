@@ -9,6 +9,7 @@ import * as fs from 'fs';
 import { container } from '../../di-container.js';
 import { ManifestRepository } from '../../repositories/manifest.repository.js';
 import { GenerationService } from '../../services/generation.service.js';
+import type { OssaAgent } from '../../types/index.js';
 
 export const exportCommand = new Command('export')
   .argument('<path>', 'Path to OSSA manifest')
@@ -50,8 +51,8 @@ export const exportCommand = new Command('export')
         for (const platform of platforms) {
           try {
             const exported = await generationService.exportToPlatform(
-              manifest,
-              platform as any
+              manifest as OssaAgent,
+              platform as 'cursor' | 'openai' | 'anthropic' | 'langchain' | 'crewai' | 'autogen' | 'langflow' | 'langgraph' | 'llamaindex' | 'vercel-ai'
             );
             const outputPath = options?.output || `${platform}-agent.json`;
             const finalPath =

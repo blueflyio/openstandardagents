@@ -6,13 +6,53 @@
 import * as fs from 'fs';
 import { injectable } from 'inversify';
 import * as path from 'path';
-import { dirname } from 'path';
-import { fileURLToPath } from 'url';
 import type { ISchemaRepository, SchemaVersion } from '../types/index';
 
 @injectable()
 export class SchemaRepository implements ISchemaRepository {
   private schemaCache: Map<string, Record<string, unknown>> = new Map();
+  private _availableVersions: string[] | null = null;
+
+  /**
+   * Get available schema versions (cached after first discovery)
+   */
+  getAvailableVersions(): string[] {
+    if (this._availableVersions === null) {
+      const ossaRoot = this.findOssaRoot();
+      const specDir = path.join(ossaRoot, 'spec');
+      this._availableVersions = this.discoverAvailableVersions(specDir);
+    }
+    return this._availableVersions;
+  }
+
+  /**
+   * Get the latest/current version from package.json or spec directory
+   */
+  getCurrentVersion(): string {
+    // Try to get from package.json first
+    const ossaRoot = this.findOssaRoot();
+    const packageJsonPath = path.join(ossaRoot, 'package.json');
+    if (fs.existsSync(packageJsonPath)) {
+      try {
+        const pkg = JSON.parse(fs.readFileSync(packageJsonPath, 'utf-8'));
+        if (pkg.version) {
+          return pkg.version;
+        }
+      } catch {
+        // Fall through to spec directory discovery
+      }
+    }
+
+    // Fallback: get latest version from spec directory
+    const versions = this.getAvailableVersions();
+    if (versions.length > 0) {
+      // Return the highest version (last in sorted array)
+      return versions[versions.length - 1];
+    }
+
+    // Ultimate fallback
+    return '0.2.3';
+  }
 
   /**
    * Get schema for specific version
@@ -21,8 +61,9 @@ export class SchemaRepository implements ISchemaRepository {
    */
   async getSchema(version: SchemaVersion): Promise<Record<string, unknown>> {
     // Check cache first
-    if (this.schemaCache.has(version)) {
-      return this.schemaCache.get(version)!;
+    const cached = this.schemaCache.get(version);
+    if (cached) {
+      return cached;
     }
 
     // Determine schema file path
@@ -45,28 +86,74 @@ export class SchemaRepository implements ISchemaRepository {
   }
 
   /**
-   * Get schema file path for version
+   * Get schema file path for version (dynamically discovers from spec directory)
    * @param version - Schema version
    * @returns Absolute path to schema file
    */
   private getSchemaPath(version: SchemaVersion): string {
-    // Map versions to schema files
-    const schemaMap: Record<SchemaVersion, string> = {
-      '0.2.4': 'spec/v0.2.4/ossa-0.2.4.schema.json',
-      '0.2.3': 'spec/v0.2.3/ossa-0.2.3.schema.json',
-      '0.2.2': 'spec/v0.2.2/ossa-0.2.2.schema.json',
-      '0.1.9': 'spec/versions/v0.1.9/ossa-v0.1.9.schema.json',
-    };
+    const ossaRoot = this.findOssaRoot();
+    const specDir = path.join(ossaRoot, 'spec');
 
-    const relativePath = schemaMap[version];
-    if (!relativePath) {
-      throw new Error(`Unsupported schema version: ${version}`);
+    // Try multiple naming patterns for schema files
+    const possiblePaths = [
+      // Pattern 1: spec/v0.2.5-RC/ossa-0.2.5-RC.schema.json (for versions with suffixes)
+      `spec/v${version}/ossa-${version}.schema.json`,
+      // Pattern 2: spec/v0.2.3/ossa-0.2.3.schema.json (standard pattern)
+      `spec/v${version}/ossa-${version}.schema.json`,
+      // Pattern 3: spec/v0.1.9/ossa-v0.1.9.schema.json (legacy with 'v' prefix in filename)
+      `spec/v${version}/ossa-v${version}.schema.json`,
+    ];
+
+    // Try each pattern
+    for (const relativePath of possiblePaths) {
+      const fullPath = path.resolve(ossaRoot, relativePath);
+      if (fs.existsSync(fullPath)) {
+        return fullPath;
+      }
     }
 
-    // Resolve from OSSA package root (not cwd)
-    // Try multiple strategies to find OSSA root
-    const ossaRoot = this.findOssaRoot();
-    return path.resolve(ossaRoot, relativePath);
+    // If not found, try to discover available versions
+    const availableVersions = this.discoverAvailableVersions(specDir);
+    throw new Error(
+      `Schema not found for version ${version}. ` +
+        `Available versions: ${availableVersions.join(', ')}`
+    );
+  }
+
+  /**
+   * Dynamically discover available schema versions from spec directory
+   * @param specDir - Path to spec directory
+   * @returns Array of available version strings
+   */
+  private discoverAvailableVersions(specDir: string): string[] {
+    if (!fs.existsSync(specDir)) {
+      return [];
+    }
+
+    const versions: string[] = [];
+    const entries = fs.readdirSync(specDir, { withFileTypes: true });
+
+    for (const entry of entries) {
+      if (entry.isDirectory() && entry.name.startsWith('v')) {
+        // Extract version from directory name (e.g., "v0.2.5-RC" -> "0.2.5-RC")
+        const version = entry.name.substring(1);
+
+        // Check if schema file exists for this version
+        const schemaPatterns = [
+          path.join(specDir, entry.name, `ossa-${version}.schema.json`),
+          path.join(specDir, entry.name, `ossa-v${version}.schema.json`),
+        ];
+
+        for (const schemaPath of schemaPatterns) {
+          if (fs.existsSync(schemaPath)) {
+            versions.push(version);
+            break;
+          }
+        }
+      }
+    }
+
+    return versions.sort();
   }
 
   /**

@@ -4,7 +4,7 @@
  */
 
 import { injectable } from 'inversify';
-import type { SchemaVersion } from '../types/index.js';
+import type { OssaAgent, SchemaVersion } from '../types/index.js';
 
 /**
  * v1.0 manifest structure
@@ -18,19 +18,19 @@ interface V1Manifest {
     description?: string;
     role: string;
     tags?: string[];
-    runtime?: any;
-    capabilities?: any[];
-    llm?: any;
-    tools?: any;
-    autonomy?: any;
-    constraints?: any;
-    observability?: any;
-    monitoring?: any;
-    integration?: any;
-    deployment?: any;
+    runtime?: Record<string, unknown>;
+    capabilities?: Array<Record<string, unknown>>;
+    llm?: Record<string, unknown>;
+    tools?: Array<Record<string, unknown>>;
+    autonomy?: Record<string, unknown>;
+    constraints?: Record<string, unknown>;
+    observability?: Record<string, unknown>;
+    monitoring?: Record<string, unknown>;
+    integration?: Record<string, unknown>;
+    deployment?: Record<string, unknown>;
   };
   metadata?: {
-    authors?: any;
+    authors?: Array<Record<string, unknown>>;
     license?: string;
     repository?: string;
   };
@@ -46,9 +46,9 @@ export class MigrationService {
    */
   async migrate(
     manifest: unknown,
-    targetVersion: SchemaVersion = '0.2.2'
-  ): Promise<any> {
-    const m = manifest as any;
+    _targetVersion: SchemaVersion = '0.2.2'
+  ): Promise<OssaAgent> {
+    const m = manifest as Record<string, unknown>;
 
     // Detect source version
     if (m.apiVersion === 'ossa/v1' && m.kind === 'Agent') {
@@ -72,8 +72,8 @@ export class MigrationService {
   /**
    * Migrate v1.0 manifest to v0.2.2
    */
-  private migrateV1ToV022(v1: V1Manifest): any {
-    const migrated: any = {
+  private migrateV1ToV022(v1: V1Manifest): OssaAgent {
+    const migrated: OssaAgent = {
       apiVersion: 'ossa/v1',
       kind: 'Agent',
       metadata: {
@@ -153,7 +153,7 @@ export class MigrationService {
     // Handle observability with proper structure
     if (v1.agent.observability || v1.agent.monitoring) {
       const obs = v1.agent.observability || v1.agent.monitoring;
-      let normalizedMetrics: any = obs.metrics;
+      let normalizedMetrics: Record<string, unknown> = obs.metrics as Record<string, unknown>;
 
       if (normalizedMetrics === true) {
         normalizedMetrics = { enabled: true };
@@ -222,7 +222,7 @@ export class MigrationService {
     return migrated;
   }
 
-  private detectDomain(agent: any): string {
+  private detectDomain(agent: Record<string, unknown>): string {
     const text = [
       agent.id,
       agent.name,
@@ -241,7 +241,7 @@ export class MigrationService {
     return 'integration';
   }
 
-  private detectSubdomain(agent: any): string {
+  private detectSubdomain(agent: Record<string, unknown>): string {
     const text = [agent.id, agent.name].join(' ').toLowerCase();
     if (text.includes('kubernetes') || text.includes('k8s'))
       return 'kubernetes';
@@ -250,7 +250,7 @@ export class MigrationService {
     return 'general';
   }
 
-  private detectCapability(agent: any): string {
+  private detectCapability(agent: Record<string, unknown>): string {
     const text = [agent.id, agent.name].join(' ').toLowerCase();
     if (text.includes('troubleshoot')) return 'troubleshooting';
     if (text.includes('monitor')) return 'monitoring';
@@ -265,7 +265,7 @@ export class MigrationService {
   async migrateMany(
     manifests: unknown[],
     targetVersion: SchemaVersion = '0.2.2'
-  ): Promise<any[]> {
+  ): Promise<OssaAgent[]> {
     return Promise.all(manifests.map((m) => this.migrate(m, targetVersion)));
   }
 
@@ -273,7 +273,7 @@ export class MigrationService {
    * Check if manifest needs migration
    */
   needsMigration(manifest: unknown): boolean {
-    const m = manifest as any;
+    const m = manifest as Record<string, unknown>;
     return !!(m.ossaVersion === '1.0' && m.agent);
   }
 }

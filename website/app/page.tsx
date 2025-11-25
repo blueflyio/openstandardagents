@@ -11,7 +11,7 @@ export default function HomePage() {
   return (
     <div className="flex flex-col">
       {/* Hero Section */}
-      <section className="bg-gradient-hero text-white py-24 px-4">
+      <section className="bg-gradient-to-br from-secondary via-primary to-accent text-white py-24 px-4">
         <div className="container mx-auto max-w-7xl text-center">
           <div className="mb-6 flex flex-col items-center">
             <span className="inline-block px-4 py-2 bg-white/20 backdrop-blur-sm rounded-full text-sm font-medium mb-4">

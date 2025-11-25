@@ -10,7 +10,7 @@ import { container } from '../../di-container.js';
 import { ManifestRepository } from '../../repositories/manifest.repository.js';
 import { ValidationService } from '../../services/validation.service.js';
 import { OpenAIAdapter } from '../../services/runtime/openai.adapter.js';
-import type { SchemaVersion } from '../../types/index.js';
+// SchemaVersion not used in this file
 
 export const runCommand = new Command('run')
   .argument('<path>', 'Path to OSSA agent manifest (YAML or JSON)')
@@ -42,10 +42,7 @@ export const runCommand = new Command('run')
 
         // Validate if not skipped
         if (options.validate !== false) {
-          const result = await validationService.validate(
-            manifest,
-            '0.2.3' as SchemaVersion
-          );
+          const result = await validationService.validate(manifest);
 
           if (!result.valid) {
             console.error(chalk.red('✗ Agent manifest validation failed\n'));

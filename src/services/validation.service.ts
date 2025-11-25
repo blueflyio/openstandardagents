@@ -7,6 +7,7 @@ import Ajv, { ErrorObject } from 'ajv';
 import addFormats from 'ajv-formats';
 import { inject, injectable } from 'inversify';
 import { SchemaRepository } from '../repositories/schema.repository.js';
+import { container } from '../di-container.js';
 import { readFileSync, existsSync } from 'node:fs';
 import { join } from 'path';
 import type {
@@ -30,7 +31,7 @@ import { LangGraphValidator } from './validators/langgraph.validator.js';
 @injectable()
 export class ValidationService implements IValidationService {
   private ajv: Ajv;
-  private platformValidators: Map<string, any>;
+  private platformValidators: Map<string, (ext: Record<string, unknown>) => { valid: boolean; errors: string[] }>;
 
   constructor(
     @inject(SchemaRepository) private schemaRepository: SchemaRepository
@@ -64,8 +65,13 @@ export class ValidationService implements IValidationService {
    */
   async validate(
     manifest: unknown,
-    version: SchemaVersion = '0.2.3'
+    version?: SchemaVersion
   ): Promise<ValidationResult> {
+    // Use dynamic version detection if not provided
+    if (!version) {
+      const schemaRepo = container.get(SchemaRepository);
+      version = schemaRepo.getCurrentVersion();
+    }
     try {
       // 1. Load schema for version
       const schema = await this.schemaRepository.getSchema(version);
@@ -128,7 +134,7 @@ export class ValidationService implements IValidationService {
       return warnings;
     }
 
-    const m = manifest as any;
+    const m = manifest as OssaAgent;
     const spec = m.spec || m.agent;
     const metadata = m.metadata || m.agent?.metadata;
 
@@ -190,8 +196,8 @@ export class ValidationService implements IValidationService {
    * @param manifest - Manifest object to validate
    * @returns Combined validation result from all platform validators
    */
-  private validatePlatformExtensions(manifest: any): ValidationResult {
-    const errors: any[] = [];
+  private validatePlatformExtensions(manifest: OssaAgent): ValidationResult {
+    const errors: ErrorObject[] = [];
     const warnings: string[] = [];
     let allValid = true;
 
@@ -226,8 +232,13 @@ export class ValidationService implements IValidationService {
    */
   async validateMany(
     manifests: unknown[],
-    version: SchemaVersion = '0.2.3'
+    version?: SchemaVersion
   ): Promise<ValidationResult[]> {
+    // Use dynamic version detection if not provided
+    if (!version) {
+      const schemaRepo = container.get(SchemaRepository);
+      version = schemaRepo.getCurrentVersion();
+    }
     return Promise.all(
       manifests.map((manifest) => this.validate(manifest, version))
     );
@@ -244,7 +255,6 @@ export class ValidationService implements IValidationService {
     try {
       // Load OpenAPI extensions schema
       // Try multiple possible paths (works in both dev and production)
-      let extensionSchema: Record<string, unknown> = {};
       const possiblePaths = [
         join(process.cwd(), 'docs/schemas/openapi-extensions.schema.json'),
         join(process.cwd(), 'dist/docs/schemas/openapi-extensions.schema.json'),
@@ -254,7 +264,8 @@ export class ValidationService implements IValidationService {
       for (const path of possiblePaths) {
         try {
           if (existsSync(path)) {
-            extensionSchema = JSON.parse(readFileSync(path, 'utf-8'));
+            // Schema loaded but not used in validation logic
+            JSON.parse(readFileSync(path, 'utf-8'));
             break;
           }
         } catch {

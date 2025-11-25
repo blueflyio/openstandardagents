@@ -21,9 +21,11 @@ $ossa-gray-300: #dee2e6;
 $ossa-gray-100: #f8f9fa;
 $ossa-white: #ffffff;
 
-// Gradients
-$gradient-brand: linear-gradient(135deg, $ossa-primary 0%, $ossa-secondary 100%);
-$gradient-hero: linear-gradient(135deg, #6450D9 0%, $ossa-primary 50%, $ossa-secondary 100%);
+// Gradients - Lightest blue to darkest purple, blue spans more
+// Order: secondary (lightest blue #1CB9ED) -> primary (blue-purple #4A3ECD) -> accent (darkest purple #9060EA)
+$gradient-brand: linear-gradient(135deg, $ossa-secondary 0%, $ossa-secondary 40%, $ossa-primary 70%, $ossa-accent 100%);
+$gradient-hero: linear-gradient(135deg, $ossa-secondary 0%, $ossa-secondary 35%, $ossa-primary 65%, $ossa-accent 100%);
+$gradient-button: linear-gradient(135deg, $ossa-secondary 0%, $ossa-secondary 45%, $ossa-primary 75%, $ossa-accent 100%);
 
 // Code Colors
 $code-bg: #1e1e1e;

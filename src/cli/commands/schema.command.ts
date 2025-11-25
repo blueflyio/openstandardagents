@@ -6,13 +6,10 @@
 import chalk from 'chalk';
 import { Command } from 'commander';
 import * as fs from 'fs';
-import * as path from 'path';
-import { fileURLToPath } from 'url';
 import { container } from '../../di-container.js';
 import { SchemaRepository } from '../../repositories/schema.repository.js';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+// __dirname not used in this file
 
 export const schemaCommand = new Command('schema')
   .option(
@@ -36,7 +33,7 @@ export const schemaCommand = new Command('schema')
     }) => {
       try {
         const schemaRepo = container.get(SchemaRepository);
-        const version = (options?.version || '0.2.3') as any;
+        const version = options?.version || schemaRepo.getCurrentVersion();
 
         const schema = await schemaRepo.getSchema(version);
 
@@ -53,7 +50,7 @@ export const schemaCommand = new Command('schema')
 
         if (options?.path) {
           const parts = options.path.split('.');
-          let current: any = schema;
+          let current: unknown = schema;
           for (const part of parts) {
             current = current[part];
             if (!current) {
@@ -81,7 +78,7 @@ export const schemaCommand = new Command('schema')
           });
         }
 
-        const schemaProps = schema.properties as Record<string, any>;
+        const schemaProps = schema.properties as Record<string, unknown>;
         const extensions = schemaProps?.extensions?.properties;
         if (extensions) {
           console.log(chalk.cyan('\nSupported platform extensions:'));

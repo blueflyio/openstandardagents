@@ -77,22 +77,19 @@ async function fetchRepoInfo(): Promise<GitHubRepoInfo | null> {
 
     if (prsResponse.ok) {
       try {
-        const prsLink = prsResponse.headers.get('link');
-        if (prsLink && prsLink.includes('rel="last"')) {
-          // Parse pagination to get total count
-          const lastMatch = prsLink.match(/<[^>]+page=(\d+)[^>]*>; rel="last"/);
-          if (lastMatch) {
-            const lastPageNum = parseInt(lastMatch[1]);
-            const lastPageResponse = await fetch(
-              `${GITHUB_API_BASE}/repos/${GITHUB_OWNER}/${GITHUB_REPO}/pulls?state=open&per_page=100&page=${lastPageNum}`,
-              { headers, next: { revalidate: 300 } }
-            );
-            if (lastPageResponse.ok) {
-              const lastPageData = await lastPageResponse.json();
-              openPullRequests = (lastPageNum - 1) * 100 + lastPageData.length;
-            }
+        // Use search API for accurate PR count
+        const prsSearchResponse = await fetch(
+          `${GITHUB_API_BASE}/search/issues?q=repo:${GITHUB_OWNER}/${GITHUB_REPO}+type:pr+state:open&per_page=1`,
+          {
+            headers,
+            next: { revalidate: 300 },
           }
+        );
+        if (prsSearchResponse.ok) {
+          const prsSearchData = await prsSearchResponse.json();
+          openPullRequests = prsSearchData.total_count || 0;
         } else {
+          // Fallback to direct count
           const prsData = await prsResponse.json();
           openPullRequests = Array.isArray(prsData) ? prsData.length : 0;
         }
@@ -128,13 +125,20 @@ const docsDirectory = path.join(process.cwd(), 'content/docs');
 
 function getDocContent(slug: string[]): { content: string; metadata: any } | null {
   // Convert URL slug to PascalCase for legacy wiki files
+  // Directories stay lowercase, but file names are PascalCase
   const slugPath = slug.map(s =>
     s.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join('-')
   );
+  
+  // Build path with lowercase directories but PascalCase filename
+  const dirPath = slug.slice(0, -1); // All but last segment (directories)
+  const fileName = slugPath[slugPath.length - 1]; // Last segment (filename) in PascalCase
 
   // Try different path patterns - exact case first, then variations
   const possiblePaths = [
-    // Exact case match first (for files like 5-Minute-Overview.md)
+    // Directory lowercase, filename PascalCase (e.g., getting-started/First-Agent.md)
+    ...(dirPath.length > 0 && fileName ? [path.join(docsDirectory, ...dirPath, fileName + '.md')] : []),
+    // Full PascalCase path (legacy)
     path.join(docsDirectory, ...slugPath) + '.md',
     // PascalCase paths (legacy wiki structure)
     path.join(docsDirectory, ...slugPath, 'index.md'),
@@ -262,7 +266,7 @@ export default async function DocsPage({ params }: PageProps) {
     return (
       <div className="min-h-screen bg-white">
         {/* Hero Section */}
-        <div className="bg-gradient-to-br from-primary via-accent to-secondary text-white py-16 px-4">
+        <div className="bg-gradient-to-br from-secondary via-primary to-accent text-white py-16 px-4">
           <div className="container mx-auto max-w-6xl text-center">
             <div className="inline-flex items-center justify-center w-20 h-20 bg-white/20 backdrop-blur-sm rounded-full mb-6">
               <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -338,7 +342,7 @@ export default async function DocsPage({ params }: PageProps) {
           <section className="mb-16">
             <div className="bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 rounded-2xl p-8 border-2 border-blue-200 shadow-lg">
               <div className="flex items-start gap-6">
-                <div className="w-16 h-16 bg-gradient-to-br from-primary to-secondary rounded-xl flex items-center justify-center flex-shrink-0">
+                <div className="w-16 h-16 bg-gradient-to-br from-secondary via-primary to-accent rounded-xl flex items-center justify-center flex-shrink-0">
                   <svg className="h-8 w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                   </svg>
@@ -364,7 +368,7 @@ export default async function DocsPage({ params }: PageProps) {
           {/* Core Documentation - Blog Style Teasers */}
           <section className="mb-16">
             <div className="flex items-center mb-8">
-              <div className="w-12 h-12 bg-gradient-to-br from-primary to-secondary rounded-lg flex items-center justify-center mr-4">
+              <div className="w-12 h-12 bg-gradient-to-br from-secondary via-primary to-accent rounded-lg flex items-center justify-center mr-4">
                 <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
                 </svg>
@@ -478,7 +482,7 @@ export default async function DocsPage({ params }: PageProps) {
           {/* By Role - Blog Style Cards */}
           <section className="mb-16">
             <div className="flex items-center mb-8">
-              <div className="w-12 h-12 bg-gradient-to-br from-primary to-secondary rounded-lg flex items-center justify-center mr-4">
+              <div className="w-12 h-12 bg-gradient-to-br from-secondary via-primary to-accent rounded-lg flex items-center justify-center mr-4">
                 <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                 </svg>
@@ -590,7 +594,7 @@ export default async function DocsPage({ params }: PageProps) {
           {/* Resources & Tools */}
           <section className="border-t-2 border-gray-200 pt-12">
             <div className="flex items-center mb-8">
-              <div className="w-12 h-12 bg-gradient-to-br from-primary to-secondary rounded-lg flex items-center justify-center mr-4">
+              <div className="w-12 h-12 bg-gradient-to-br from-secondary via-primary to-accent rounded-lg flex items-center justify-center mr-4">
                 <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
                 </svg>
@@ -682,7 +686,7 @@ export default async function DocsPage({ params }: PageProps) {
     return (
       <>
         {/* Hero Section */}
-        <div className="bg-gradient-to-br from-primary via-accent to-secondary text-white py-16 px-4">
+        <div className="bg-gradient-to-br from-secondary via-primary to-accent text-white py-16 px-4">
           <div className="container mx-auto max-w-6xl text-center">
             <div className="inline-flex items-center justify-center w-20 h-20 bg-white/20 backdrop-blur-sm rounded-full mb-6">
               <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -707,7 +711,7 @@ export default async function DocsPage({ params }: PageProps) {
               <section className="mb-12">
                 <div className="grid md:grid-cols-3 gap-6 mb-8">
                   <Link href="/schema" className="group bg-white border-2 border-blue-100 rounded-xl p-6 shadow-md hover:shadow-xl hover:border-primary transition-all duration-300">
-                    <div className="w-12 h-12 bg-gradient-to-br from-primary to-secondary rounded-lg flex items-center justify-center mb-4">
+                    <div className="w-12 h-12 bg-gradient-to-br from-secondary via-primary to-accent rounded-lg flex items-center justify-center mb-4">
                       <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                       </svg>
@@ -739,7 +743,7 @@ export default async function DocsPage({ params }: PageProps) {
               {/* Schema Components Grid */}
               <section className="mb-12">
                 <div className="flex items-center mb-8">
-                  <div className="w-12 h-12 bg-gradient-to-br from-primary to-secondary rounded-lg flex items-center justify-center mr-4">
+                  <div className="w-12 h-12 bg-gradient-to-br from-secondary via-primary to-accent rounded-lg flex items-center justify-center mr-4">
                     <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
                     </svg>

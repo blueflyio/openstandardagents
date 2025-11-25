@@ -18,7 +18,7 @@ export default function LicensePage() {
 
   return (
     <>
-      <div className="bg-gradient-to-br from-primary via-accent to-secondary text-white py-20 px-4">
+      <div className="bg-gradient-to-br from-secondary via-primary to-accent text-white py-20 px-4">
         <div className="container mx-auto max-w-4xl text-center">
           <div className="inline-flex items-center justify-center w-20 h-20 bg-white/20 backdrop-blur-sm rounded-full mb-6">
             <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">

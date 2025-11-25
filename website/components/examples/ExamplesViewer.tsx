@@ -179,7 +179,7 @@ export function ExamplesViewer({ examples }: ExamplesViewerProps) {
                 onClick={() => handleSelectExample(example)}
                 className={`w-full text-left px-4 py-3 rounded-lg text-sm transition-all border-2 ${
                   selectedExample?.path === example.path
-                    ? 'bg-gradient-to-r from-primary to-primary-dark text-white border-primary shadow-md'
+                    ? 'bg-gradient-to-r from-secondary via-primary to-accent text-white border-primary shadow-md'
                     : 'bg-white border-gray-200 hover:border-primary/50 hover:shadow-md'
                 }`}
               >
@@ -231,7 +231,7 @@ export function ExamplesViewer({ examples }: ExamplesViewerProps) {
               </div>
               <button
                 onClick={() => copyToClipboard(selectedExample.content)}
-                className="bg-gradient-to-r from-primary to-primary-dark text-white px-6 py-3 rounded-lg font-medium hover:shadow-lg transition-all flex items-center gap-2"
+                className="bg-gradient-to-r from-secondary via-primary to-accent text-white px-6 py-3 rounded-lg font-medium hover:shadow-lg transition-all flex items-center gap-2"
                 aria-label="Copy example code to clipboard"
                 title="Copy code"
               >

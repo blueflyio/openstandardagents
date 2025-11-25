@@ -4,7 +4,9 @@
  */
 
 import { injectable } from 'inversify';
-import type { AgentTemplate } from '../types/index.js';
+import type { AgentTemplate, OssaAgent } from '../types/index.js';
+
+type Platform = 'cursor' | 'openai' | 'anthropic' | 'langchain' | 'crewai' | 'autogen' | 'langflow' | 'langgraph' | 'llamaindex' | 'vercel-ai';
 
 @injectable()
 export class GenerationService {
@@ -13,10 +15,10 @@ export class GenerationService {
    * @param template - Agent configuration template
    * @returns Complete OSSA agent manifest
    */
-  async generate(template: AgentTemplate): Promise<any> {
+  async generate(template: AgentTemplate): Promise<OssaAgent> {
     const tools = this.generateTools(template);
 
-    const manifest: any = {
+    const manifest: OssaAgent = {
       apiVersion: 'ossa/v1',
       kind: 'Agent',
       metadata: {
@@ -55,15 +57,15 @@ export class GenerationService {
    * @param template - Agent template
    * @returns Array of tools
    */
-  private generateTools(template: AgentTemplate): any[] {
-    const baseTool: any = {
+  private generateTools(template: AgentTemplate): Array<Record<string, unknown>> {
+    const baseTool: Record<string, unknown> = {
       type: 'mcp',
       name: `${template.role}_operation`,
       server: this.normalizeId(template.id),
       capabilities: [],
     };
 
-    const roleTools: Record<string, any[]> = {
+    const roleTools: Record<string, Array<Record<string, unknown>>> = {
       chat: [
         {
           type: 'mcp',
@@ -98,8 +100,8 @@ export class GenerationService {
    * @param role - Agent role
    * @returns LLM configuration
    */
-  private generateLLMConfig(role: string): Record<string, any> {
-    const configs: Record<string, any> = {
+  private generateLLMConfig(role: string): Record<string, unknown> {
+    const configs: Record<string, unknown> = {
       chat: {
         provider: 'openai',
         model: 'gpt-4',
@@ -141,7 +143,7 @@ export class GenerationService {
    * @param templates - Array of templates
    * @returns Array of generated manifests
    */
-  async generateMany(templates: AgentTemplate[]): Promise<any[]> {
+  async generateMany(templates: AgentTemplate[]): Promise<OssaAgent[]> {
     return Promise.all(templates.map((t) => this.generate(t)));
   }
 
@@ -151,7 +153,7 @@ export class GenerationService {
    * @param platform - Target platform
    * @returns Platform-specific agent configuration
    */
-  async exportToPlatform(manifest: any, platform: string): Promise<any> {
+  async exportToPlatform(manifest: OssaAgent, platform: Platform): Promise<Record<string, unknown>> {
     const agent = manifest.agent || manifest;
     const metadata = manifest.metadata || agent.metadata || {};
     const spec = manifest.spec || agent;
@@ -214,8 +216,8 @@ export class GenerationService {
    * @param platform - Source platform
    * @returns OSSA agent manifest
    */
-  async importFromPlatform(platformData: any, platform: string): Promise<any> {
-    const baseManifest: any = {
+  async importFromPlatform(platformData: Record<string, unknown>, platform: Platform): Promise<OssaAgent> {
+    const baseManifest: OssaAgent = {
       apiVersion: 'ossa/v0.2.4',
       kind: 'Agent',
       metadata: {
@@ -296,7 +298,7 @@ export class GenerationService {
     return baseManifest;
   }
 
-  private extractTools(tools: any[]): any[] {
+  private extractTools(tools: Array<Record<string, unknown>>): Array<Record<string, unknown>> {
     return tools.map((tool) => ({
       type: 'function',
       function: {
@@ -307,7 +309,7 @@ export class GenerationService {
     }));
   }
 
-  private convertToolsToOSSA(tools: any[]): any[] {
+  private convertToolsToOSSA(tools: Array<Record<string, unknown>>): Array<Record<string, unknown>> {
     return tools.map((tool) => {
       const func = tool.function || tool;
       return {

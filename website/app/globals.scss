@@ -29,6 +29,7 @@
     /* Brand gradients */
     --gradient-brand: #{$gradient-brand};
     --gradient-hero: #{$gradient-hero};
+    --gradient-button: #{$gradient-button};
 
     /* Code syntax highlighting */
     --code-bg: #{$code-bg};
@@ -97,6 +98,10 @@
   
   .bg-gradient-hero {
     background: var(--gradient-hero);
+  }
+  
+  .bg-gradient-button {
+    background: var(--gradient-button);
   }
   
   .bg-code-bg {
