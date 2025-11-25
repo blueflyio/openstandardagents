@@ -24,7 +24,7 @@
 #   Masked: No
 #
 # Status: ACTIVE MODE
-# Last updated: 2025-01-24
+# Last updated: 2025-11-24
 
 stages:
   - setup
@@ -257,9 +257,9 @@ validate:scripts-version:
         exit 1
       fi
       
-      # Check scripts use tsx (TypeScript execution)
-      if ! grep -q "tsx scripts/" package.json; then
-        echo " WARNING: Scripts should use tsx for TypeScript execution"
+      # Check scripts use TypeScript execution (tsx or ts-node/esm)
+      if ! grep -q "tsx scripts/" package.json && ! grep -q "node --loader ts-node/esm scripts/" package.json; then
+        echo " WARNING: Scripts should use tsx or ts-node/esm for TypeScript execution"
       fi
       
       # Verify TypeScript scripts exist
@@ -758,8 +758,10 @@ release:npm:
       fi
 
       # Configure npm
+      # Use CI_SERVER_HOST for dynamic GitLab instance support
+      GITLAB_HOST="${CI_SERVER_HOST:-$(echo "${CI_API_V4_URL}" | sed 's|https\?://||' | sed 's|/api/v4.*||')}"
       echo "@bluefly:registry=${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/npm/" > .npmrc
-      echo "//gitlab.bluefly.io/api/v4/projects/${CI_PROJECT_ID}/packages/npm/:_authToken=${CI_JOB_TOKEN}" >> .npmrc
+      echo "//${GITLAB_HOST}/api/v4/projects/${CI_PROJECT_ID}/packages/npm/:_authToken=${CI_JOB_TOKEN}" >> .npmrc
 
       if [ -n "$NPM_TOKEN" ]; then
         echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" >> .npmrc
@@ -796,8 +798,8 @@ release:npm:
       when: on_success  # Automatic when both conditions are met
       allow_failure: false
     # Manual fallback if milestone detection fails but you want to force release
-    # Still requires ENABLE_RELEASE to be set
-    - if: $CI_COMMIT_BRANCH == "main" && $ENABLE_RELEASE == "true"
+    # Still requires both ENABLE_RELEASE and MILESTONE_READY to be set
+    - if: $CI_COMMIT_BRANCH == "main" && $MILESTONE_READY == "true" && $ENABLE_RELEASE == "true"
       when: manual
       allow_failure: false
   needs:
@@ -822,8 +824,8 @@ mirror:github:
   image: alpine:latest
   before_script:
     - apk add --no-cache git curl
-    - git config --global user.email "thomas.scola@blueflyio.com"
-    - git config --global user.name "Thomas Scola, Bluefly.io Founder and creator of OssA"
+    - git config --global user.email "ci@blueflyio.com"
+    - git config --global user.name "GitLab CI Release"
   script:
     - |
       if [ -z "$GITHUB_MIRROR_TOKEN" ]; then

@@ -32,7 +32,8 @@ async function main() {
     
     // Get additional args
     const args = process.argv.slice(2);
-    const command = `npx ajv validate -s ${schemaPath} ${args.join(' ')}`;
+    // Use ajv-cli compile to validate schema syntax (no data file needed)
+    const command = `npx ajv-cli compile -s ${schemaPath} ${args.join(' ')}`;
     
     // Run validation
     execCommand(command, { stdio: 'inherit' });

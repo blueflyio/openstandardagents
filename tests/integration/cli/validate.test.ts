@@ -108,7 +108,7 @@ spec:
     fs.writeFileSync(manifestPath, manifest);
 
     const output = execSync(
-      `node --require reflect-metadata dist/cli/index.js validate ${manifestPath} --verbose`,
+      `node bin/ossa validate ${manifestPath} --verbose`,
       {
         encoding: 'utf-8',
         cwd: path.resolve(__dirname, '../../..'),

@@ -106,7 +106,7 @@ function getCurrentVersion(): string {
     return pkg.version;
   } catch (error) {
     if (error instanceof z.ZodError) {
-      result.errors.push(`package.json validation failed: ${error.errors.map(e => e.message).join(', ')}`);
+      result.errors.push(`package.json validation failed: ${error.issues.map((e: z.ZodIssue) => e.message).join(', ')}`);
     } else {
       result.errors.push(`Failed to read package.json: ${error instanceof Error ? error.message : String(error)}`);
     }
@@ -238,7 +238,7 @@ function updateReadme(version: string): void {
   const headerRegex = new RegExp(`OSSA v${SEMVER_PATTERN} Schema:`, 'g');
   readme = readme.replace(headerRegex, `OSSA v${version} Schema:`);
 
-  // Update any bare version references like "v0.2.5-RC-RC" in links
+  // Update version references in spec paths (e.g., spec/v0.2.5-RC/)
   const versionLinkRegex = new RegExp(`spec/v${SEMVER_PATTERN}/`, 'g');
   readme = readme.replace(versionLinkRegex, `spec/v${version}/`);
 
@@ -482,7 +482,7 @@ try {
   console.error('\n❌ Fatal Error:', error instanceof Error ? error.message : String(error));
   if (error instanceof z.ZodError) {
     console.error('\nValidation Errors:');
-    error.errors.forEach(err => console.error(`  • ${err.path.join('.')}: ${err.message}`));
+    error.issues.forEach((err: z.ZodIssue) => console.error(`  • ${err.path.join('.')}: ${err.message}`));
   }
   process.exit(1);
 }

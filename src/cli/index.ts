@@ -28,7 +28,7 @@ function getVersion(): string {
   const __filename = fileURLToPath(import.meta.url);
   const __dirname = path.dirname(__filename);
   const relativePath = path.resolve(__dirname, '../../package.json');
-  
+
   if (fs.existsSync(relativePath)) {
     try {
       const content = fs.readFileSync(relativePath, 'utf-8');
