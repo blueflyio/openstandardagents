@@ -4,11 +4,7 @@
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![npm version](https://img.shields.io/npm/v/@bluefly/openstandardagents.svg)](https://www.npmjs.com/package/@bluefly/openstandardagents)
-<<<<<<< HEAD
-[![Specification](https://img.shields.io/badge/Spec-v0.2.2-blue)](https://github.com/blueflyio/openstandardagents/blob/main/spec/v0.2.5-RC/ossa-0.2.5-RC.schema.json)
-=======
-[![Specification](https://img.shields.io/badge/Spec-v0.2.2-blue)](https://github.com/blueflyio/openstandardagents/blob/main/spec/v0.2.5-RC/ossa-0.2.5-RC.schema.json)
->>>>>>> origin/main
+[![Specification](https://img.shields.io/badge/Spec-v0.2.5--RC-blue)](https://github.com/blueflyio/openstandardagents/blob/main/spec/v0.2.5-RC/ossa-0.2.5-RC.schema.json)
 
 ---
 
