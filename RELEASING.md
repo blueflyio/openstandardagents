@@ -2,7 +2,7 @@
 
 **Version Control System**: Milestone-Gated Semantic Release
 **Last Updated**: 2025-11-21
-**Current Version**: 0.2.5
+**Current Version**: 0.2.5-RC
 
 ---
 
