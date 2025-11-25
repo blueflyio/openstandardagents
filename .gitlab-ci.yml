@@ -419,8 +419,12 @@ pages:
   stage: deploy
   image: node:${NODE_VERSION}-alpine
   needs:
-    # After release completes, deploy website with updated version
+    # Optional: deploy after release completes (only on main with release)
     - job: release:npm
+      optional: true
+      artifacts: false
+    # Always need build for website assets
+    - job: build:dist
       optional: true
       artifacts: false
   before_script:
@@ -440,7 +444,7 @@ pages:
     url: https://openstandardagents.org
     deployment_tier: production
   rules:
-    # Automatic deployment after successful release
+    # Automatic deployment after successful release (main branch only)
     - if: $CI_COMMIT_BRANCH == "main" && $ENABLE_RELEASE == "true" && $MILESTONE_READY == "true"
       when: on_success
       allow_failure: true
@@ -450,6 +454,10 @@ pages:
       allow_failure: true
     # Manual on development for preview
     - if: $CI_COMMIT_BRANCH == "development"
+      when: manual
+      allow_failure: true
+    # Allow pages to run on feature branches for testing (manual)
+    - if: $CI_COMMIT_BRANCH
       when: manual
       allow_failure: true
 
