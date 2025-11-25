@@ -419,11 +419,7 @@ pages:
   stage: deploy
   image: node:${NODE_VERSION}-alpine
   needs:
-    # Optional: deploy after release completes (only on main with release)
-    - job: release:npm
-      optional: true
-      artifacts: false
-    # Always need build for website assets
+    # Optional: need build for website assets
     - job: build:dist
       optional: true
       artifacts: false
