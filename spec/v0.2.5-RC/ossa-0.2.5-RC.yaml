@@ -1,9 +1,9 @@
-ossaVersion: '0.2.5'
+ossaVersion: '0.2.5-RC'
 
-# OSSA (Open Standard for Smart & Scalable Agents) - Version 0.2.5
+# OSSA (Open Standard for Smart & Scalable Agents) - Version 0.2.5-RC
 # The OpenAPI for AI Agents
 #
-# DEVELOPMENT VERSION - APIs and schemas may change without notice
+# RELEASE CANDIDATE - APIs and schemas may change before final release
 #
 # This specification defines a standard format for AI agent definition,
 # deployment, and orchestration across heterogeneous environments.
@@ -16,9 +16,9 @@ ossaVersion: '0.2.5'
 # - Google ADK extension for Agent Development Kit integration
 
 spec:
-  title: OSSA 0.2.5 Specification
-  description: Open Standard for Smart & Scalable Agents - Development Release
-  version: '0.2.5'
+  title: OSSA 0.2.5-RC Specification
+  description: Open Standard for Smart & Scalable Agents - Release Candidate
+  version: '0.2.5-RC'
   status: development
   license: Apache-2.0
   maintainer: OSSA Working Group

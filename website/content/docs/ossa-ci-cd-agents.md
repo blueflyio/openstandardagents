@@ -17,7 +17,7 @@ This directory contains OSSA-compliant agent definitions that demonstrate how to
 ### 1. validation-agent.ossa.yaml
 **Purpose:** Validates OSSA agent manifests in CI/CD pipelines
 
-**OSSA v0.2.4 Features Demonstrated:**
+**OSSA v0.2.5-RC Features Demonstrated:**
 - Basic agent structure (apiVersion, kind, metadata, spec)
 - Function tools with transport metadata
 - Stateless agent configuration
@@ -34,7 +34,7 @@ validate:ossa:
 ### 2. build-agent.ossa.yaml
 **Purpose:** Builds and packages OSSA projects
 
-**OSSA v0.2.4 Features Demonstrated:**
+**OSSA v0.2.5-RC Features Demonstrated:**
 - Streaming transport (response streaming for build output)
 - Multiple tools for build pipeline
 - Resource constraints (CPU, memory)
@@ -50,7 +50,7 @@ build:dist:
 ### 3. test-agent.ossa.yaml
 **Purpose:** Runs test suites with coverage reporting
 
-**OSSA v0.2.4 Features Demonstrated:**
+**OSSA v0.2.5-RC Features Demonstrated:**
 - Multiple test execution tools
 - Coverage generation and validation
 - Resource-intensive configuration
@@ -66,7 +66,7 @@ test:unit:
 ### 4. release-agent.ossa.yaml
 **Purpose:** Manages semantic releases and publishing
 
-**OSSA v0.2.4 Features Demonstrated:**
+**OSSA v0.2.5-RC Features Demonstrated:**
 - **State management** (session mode with Redis storage)
 - **Security scopes** (OAuth2-like scopes for GitLab, npm, GitHub)
 - **Compliance tags** (for audit logging)
@@ -83,7 +83,7 @@ release:main:minor:
 ### 5. documentation-agent.ossa.yaml
 **Purpose:** Maintains project documentation
 
-**OSSA v0.2.4 Features Demonstrated:**
+**OSSA v0.2.5-RC Features Demonstrated:**
 - Wiki synchronization
 - Documentation generation
 - Link validation
@@ -96,7 +96,7 @@ pages:
     - ossa run .gitlab/agents/documentation-agent.ossa.yaml
 ```
 
-## OSSA v0.2.4 Features Showcased
+## OSSA v0.2.5-RC Features Showcased
 
 ### Transport Metadata
 All agents demonstrate transport configuration:
@@ -157,7 +157,7 @@ done
 
 ## Schema Version
 
-All agents use `apiVersion: ossa/v0.2.4-dev` to demonstrate v0.2.4 features:
+All agents use `apiVersion: ossa/v0.2.5` to demonstrate v0.2.5-RC features:
 - Transport metadata
 - State management
 - Security scopes

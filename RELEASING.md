@@ -404,7 +404,7 @@ curl -X PUT -H "PRIVATE-TOKEN: $TOKEN" \
 npm view @bluefly/openstandardagents versions
 
 # Install specific version
-npm install @bluefly/openstandardagents@0.2.4
+npm install @bluefly/openstandardagents@0.2.5-RC
 
 # Install dev version
 npm install @bluefly/openstandardagents@dev
