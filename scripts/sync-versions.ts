@@ -220,12 +220,12 @@ function updateReadme(version: string): void {
   let readme = fs.readFileSync(config.readme, 'utf8');
   const original = readme;
 
-  // Update schema references
-  const schemaRegex = /spec\/v[\d.]+\/ossa-[\d.]+\.schema\.json/g;
+  // Update schema references (support pre-release versions with hyphens)
+  const schemaRegex = /spec\/v[\d.\-a-zA-Z]+\/ossa-[\d.\-a-zA-Z]+\.schema\.json/g;
   readme = readme.replace(schemaRegex, `spec/v${version}/ossa-${version}.schema.json`);
 
-  // Update version in YAML examples
-  const yamlVersionRegex = /ossaVersion:\s*["'][\d.]+["']/g;
+  // Update version in YAML examples (support pre-release versions)
+  const yamlVersionRegex = /ossaVersion:\s*["'][\d.\-a-zA-Z]+["']/g;
   readme = readme.replace(yamlVersionRegex, `ossaVersion: "${version}"`);
 
   if (readme !== original) {
@@ -363,9 +363,9 @@ function updateWebsiteDocs(version: string): void {
     let content = fs.readFileSync(file, 'utf8');
     const original = content;
 
-    // Update version references (but not version history sections)
-    content = content.replace(/ossaVersion:\s*["'][\d.]+["']/g, `ossaVersion: "${version}"`);
-    content = content.replace(/spec\/v[\d.]+\/ossa-[\d.]+\.schema\.json/g, `spec/v${version}/ossa-${version}.schema.json`);
+    // Update version references (but not version history sections) - support pre-release versions
+    content = content.replace(/ossaVersion:\s*["'][\d.\-a-zA-Z]+["']/g, `ossaVersion: "${version}"`);
+    content = content.replace(/spec\/v[\d.\-a-zA-Z]+\/ossa-[\d.\-a-zA-Z]+\.schema\.json/g, `spec/v${version}/ossa-${version}.schema.json`);
 
     if (content !== original) {
       if (config.mode === 'check') {
