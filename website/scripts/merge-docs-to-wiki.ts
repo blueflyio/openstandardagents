@@ -18,7 +18,7 @@
 import fs from 'fs';
 import path from 'path';
 
-const DOCS_SOURCE_DIR = path.join(process.cwd(), '../docs');
+const DOCS_SOURCE_DIR = path.join(process.cwd(), 'content/docs');
 const OUTPUT_DIR = path.join(process.cwd(), '.wiki-export');
 
 interface DocFile {

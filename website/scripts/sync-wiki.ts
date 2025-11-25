@@ -8,10 +8,15 @@
 
 import fs from 'fs';
 import path from 'path';
+import os from 'os';
+
+// Load .env.local first to get project path
+loadEnvLocal();
 
 // Get GITLAB_HOST from env or CI variables, with fallback
 const GITLAB_HOST = process.env.GITLAB_HOST || process.env.CI_SERVER_HOST || 'gitlab.com';
-const PROJECT_PATH = 'blueflyio/openstandardagents';
+// Get project path from env (GITLAB_PROJECT_PATH) or fallback to default
+const PROJECT_PATH = process.env.GITLAB_PROJECT_PATH || 'blueflyio/openstandardagents';
 const DOCS_DIR = path.join(process.cwd(), 'content/docs');
 const BLOG_DIR = path.join(process.cwd(), 'content/blog');
 
@@ -22,10 +27,65 @@ interface WikiPage {
   format: string;
 }
 
+function loadEnvLocal(): void {
+  // Check multiple common locations for .env.local
+  const envPaths: string[] = [];
+  
+  // If ENV_FILE is set, use that first
+  if (process.env.ENV_FILE) {
+    envPaths.push(process.env.ENV_FILE);
+  }
+  
+  // Current directory and parent directories (walk up to 5 levels)
+  let currentDir = process.cwd();
+  for (let i = 0; i < 5; i++) {
+    envPaths.push(path.join(currentDir, '.env.local'));
+    const parentDir = path.dirname(currentDir);
+    if (parentDir === currentDir) break; // Reached filesystem root
+    currentDir = parentDir;
+  }
+  
+  // User home directory
+  envPaths.push(path.join(os.homedir(), '.env.local'));
+
+  for (const envLocalPath of envPaths) {
+    if (fs.existsSync(envLocalPath)) {
+      try {
+        const envContent = fs.readFileSync(envLocalPath, 'utf-8');
+        envContent.split('\n').forEach(line => {
+          const trimmed = line.trim();
+          if (trimmed && !trimmed.startsWith('#')) {
+            const [key, ...valueParts] = trimmed.split('=');
+            if (key && valueParts.length > 0) {
+              const value = valueParts.join('=').replace(/^["']|["']$/g, '').trim();
+              if (!process.env[key] && value) {
+                process.env[key] = value;
+              }
+            }
+          }
+        });
+        // Load from first found file only
+        return;
+      } catch (error) {
+        // Continue to next location if this one fails
+        continue;
+      }
+    }
+  }
+}
+
 async function getGitLabToken(): Promise<string | null> {
-  // Try environment variable first
+  // .env.local already loaded at top level
+
+  // Try environment variables (check multiple possible names)
   if (process.env.GITLAB_TOKEN) {
     return process.env.GITLAB_TOKEN;
+  }
+  if (process.env.GITLAB_PUSH_TOKEN) {
+    return process.env.GITLAB_PUSH_TOKEN;
+  }
+  if (process.env.CI_JOB_TOKEN) {
+    return process.env.CI_JOB_TOKEN;
   }
 
   // Try reading from ~/.tokens/gitlab
