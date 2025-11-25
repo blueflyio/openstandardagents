@@ -526,7 +526,12 @@ pages:
     - npm run sync-wiki || echo "Warning Wiki sync failed (continuing without wiki content)"
     - npm run build:no-wiki
     - echo "Verifying build output..."
-    - ls -la out/ || (echo "ERROR: out/ directory not found" && exit 1)
+    - |
+      if [ ! -d "out" ]; then
+        echo "ERROR: out/ directory not found"
+        exit 1
+      fi
+      ls -la out/
     - echo "Moving build output to public/ for GitLab Pages..."
     - mkdir -p ../public
     - cp -r out/* ../public/
@@ -817,8 +822,8 @@ mirror:github:
   image: alpine:latest
   before_script:
     - apk add --no-cache git curl
-    - git config --global user.email "ci@blueflyio.com"
-    - git config --global user.name "GitLab CI"
+    - git config --global user.email "thomas.scola@blueflyio.com"
+    - git config --global user.name "Thomas Scola, Bluefly.io Founder and creator of OssA"
   script:
     - |
       if [ -z "$GITHUB_MIRROR_TOKEN" ]; then
