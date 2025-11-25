@@ -53,17 +53,17 @@ export class MigrationService {
     // Detect source version
     if (m.apiVersion === 'ossa/v1' && m.kind === 'Agent') {
       // Already v0.2.2 format
-      return manifest;
+      return manifest as OssaAgent;
     }
 
     if (m.ossaVersion === '1.0' && m.agent) {
       // v1.0 to v0.2.2
-      return this.migrateV1ToV022(m as V1Manifest);
+      return this.migrateV1ToV022(m as unknown as V1Manifest);
     }
 
     if (m.apiVersion && m.kind && m.metadata && m.spec) {
       // Already in v0₁.9/v0.2.2 format, just return
-      return manifest;
+      return manifest as OssaAgent;
     }
 
     throw new Error('Unsupported manifest format');
@@ -92,47 +92,51 @@ export class MigrationService {
     };
 
     // Convert tags to labels
-    if (v1.agent.tags && Array.isArray(v1.agent.tags)) {
+    if (v1.agent.tags && Array.isArray(v1.agent.tags) && migrated.metadata?.labels) {
       v1.agent.tags.forEach((tag) => {
-        migrated.metadata.labels[tag] = 'true';
+        if (typeof tag === 'string') {
+          migrated.metadata!.labels![tag] = 'true';
+        }
       });
     }
 
     // Copy metadata
-    if (v1.metadata) {
+    if (v1.metadata && migrated.metadata?.annotations) {
       if (v1.metadata.authors) {
         migrated.metadata.annotations.author = Array.isArray(
           v1.metadata.authors
         )
           ? v1.metadata.authors.join(', ')
-          : v1.metadata.authors;
+          : String(v1.metadata.authors);
       }
       if (v1.metadata.license) {
-        migrated.metadata.annotations.license = v1.metadata.license;
+        migrated.metadata.annotations.license = String(v1.metadata.license);
       }
       if (v1.metadata.repository) {
-        migrated.metadata.annotations.repository = v1.metadata.repository;
+        migrated.metadata.annotations.repository = String(v1.metadata.repository);
       }
     }
 
-    // Detect taxonomy
-    migrated.spec.taxonomy = {
-      domain: this.detectDomain(v1.agent),
-      subdomain: this.detectSubdomain(v1.agent),
-      capability: this.detectCapability(v1.agent),
-    };
+    // Detect taxonomy - add to spec as Record since it's not in base type
+    if (migrated.spec) {
+      const specRecord = migrated.spec as Record<string, unknown>;
+      specRecord.taxonomy = {
+        domain: this.detectDomain(v1.agent),
+        subdomain: this.detectSubdomain(v1.agent),
+        capability: this.detectCapability(v1.agent),
+      };
+    }
 
     // Convert LLM config with normalization
-    if (v1.agent.llm) {
+    if (v1.agent.llm && migrated.spec) {
+      const llm = v1.agent.llm as Record<string, unknown>;
       migrated.spec.llm = {
         provider:
-          v1.agent.llm.provider === 'auto' ? 'openai' : v1.agent.llm.provider,
-        model: v1.agent.llm.model,
-        temperature: v1.agent.llm.temperature,
-        maxTokens: v1.agent.llm.maxTokens,
-        topP: v1.agent.llm.topP,
-        frequencyPenalty: v1.agent.llm.frequencyPenalty,
-        presencePenalty: v1.agent.llm.presencePenalty,
+          (llm.provider === 'auto' ? 'openai' : String(llm.provider || 'openai')) as string,
+        model: String(llm.model || ''),
+        temperature: typeof llm.temperature === 'number' ? llm.temperature : undefined,
+        maxTokens: typeof llm.maxTokens === 'number' ? llm.maxTokens : undefined,
+        topP: typeof llm.topP === 'number' ? llm.topP : undefined,
       };
     }
 

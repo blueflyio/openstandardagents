@@ -7,7 +7,6 @@ import Ajv, { ErrorObject } from 'ajv';
 import addFormats from 'ajv-formats';
 import { inject, injectable } from 'inversify';
 import { SchemaRepository } from '../repositories/schema.repository.js';
-import { container } from '../di-container.js';
 import { readFileSync, existsSync } from 'node:fs';
 import { join } from 'path';
 import type {
@@ -72,8 +71,7 @@ export class ValidationService implements IValidationService {
   ): Promise<ValidationResult> {
     // Use dynamic version detection if not provided
     if (!version) {
-      const schemaRepo = container.get(SchemaRepository);
-      version = schemaRepo.getCurrentVersion();
+      version = this.schemaRepository.getCurrentVersion();
     }
     try {
       // 1. Load schema for version
@@ -250,8 +248,7 @@ export class ValidationService implements IValidationService {
   ): Promise<ValidationResult[]> {
     // Use dynamic version detection if not provided
     if (!version) {
-      const schemaRepo = container.get(SchemaRepository);
-      version = schemaRepo.getCurrentVersion();
+      version = this.schemaRepository.getCurrentVersion();
     }
     return Promise.all(
       manifests.map((manifest) => this.validate(manifest, version))

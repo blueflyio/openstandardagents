@@ -111,12 +111,12 @@ export const migrateCommand = new Command('migrate')
           console.log(chalk.gray('\nMigrated Agent:'));
           const m = migratedManifest as OssaAgent;
           if (m.apiVersion) {
-            console.log(`  Name: ${chalk.cyan(m.metadata.name)}`);
+            console.log(`  Name: ${chalk.cyan(m.metadata?.name || 'unknown')}`);
             console.log(
-              `  Version: ${chalk.cyan(m.metadata.version || '0.1.0')}`
+              `  Version: ${chalk.cyan(m.metadata?.version || '0.1.0')}`
             );
-            console.log(`  Role: ${chalk.cyan(m.spec.role)}`);
-            if (m.spec.tools) {
+            console.log(`  Role: ${chalk.cyan(m.spec?.role || 'unknown')}`);
+            if (m.spec?.tools) {
               console.log(`  Tools: ${chalk.cyan(m.spec.tools.length)}`);
             }
           } else {

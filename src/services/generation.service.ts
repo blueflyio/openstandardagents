@@ -41,7 +41,19 @@ export class GenerationService {
       spec: {
         role: template.role,
         llm: this.generateLLMConfig(template.role),
-        tools: template.capabilities || tools,
+        tools: (template.capabilities || tools) as Array<{
+          type: string;
+          name?: string;
+          server?: string;
+          namespace?: string;
+          endpoint?: string;
+          capabilities?: string[];
+          config?: Record<string, unknown>;
+          auth?: {
+            type: string;
+            credentials?: string;
+          };
+        }>,
       },
     };
 
@@ -112,8 +124,18 @@ export class GenerationService {
    * @param role - Agent role
    * @returns LLM configuration
    */
-  private generateLLMConfig(role: string): Record<string, unknown> {
-    const configs: Record<string, unknown> = {
+  private generateLLMConfig(role: string): {
+    provider: string;
+    model: string;
+    temperature?: number;
+    maxTokens?: number;
+  } {
+    const configs: Record<string, {
+      provider: string;
+      model: string;
+      temperature?: number;
+      maxTokens?: number;
+    }> = {
       chat: {
         provider: 'openai',
         model: 'gpt-4',
@@ -170,55 +192,66 @@ export class GenerationService {
     platform: Platform
   ): Promise<Record<string, unknown>> {
     const agent = manifest.agent || manifest;
-    const metadata = manifest.metadata || agent.metadata || {};
-    const spec = manifest.spec || agent;
-    const extensions = manifest.extensions || agent.extensions || {};
+    const metadata = manifest.metadata || (agent as { metadata?: Record<string, unknown> })?.metadata || {};
+    const spec = manifest.spec || (agent as { role?: string; llm?: Record<string, unknown>; tools?: Array<Record<string, unknown>> });
+    const extensions = manifest.extensions || (agent as { extensions?: Record<string, unknown> })?.extensions || {};
 
     switch (platform) {
-      case 'cursor':
+      case 'cursor': {
+        const cursorExt = extensions.cursor as { agent_type?: string; workspace_config?: Record<string, unknown>; capabilities?: Record<string, unknown>; model?: Record<string, unknown> } | undefined;
         return {
-          agent_type: extensions.cursor?.agent_type || 'composer',
-          workspace_config: extensions.cursor?.workspace_config || {},
-          capabilities: extensions.cursor?.capabilities || {},
-          model: extensions.cursor?.model || spec.llm || {},
+          agent_type: cursorExt?.agent_type || 'composer',
+          workspace_config: cursorExt?.workspace_config || {},
+          capabilities: cursorExt?.capabilities || {},
+          model: cursorExt?.model || spec?.llm || {},
         };
+      }
 
-      case 'openai':
+      case 'openai': {
+        const openaiExt = extensions.openai_agents as { model?: string } | undefined;
         return {
-          name: metadata.name || agent.id,
-          instructions: spec.role || agent.role,
+          name: metadata.name || (agent as { id?: string })?.id || '',
+          instructions: spec?.role || (agent as { role?: string })?.role || '',
           model:
-            extensions.openai_agents?.model || spec.llm?.model || 'gpt-4o-mini',
-          tools: this.extractTools(spec.tools || agent.tools || []),
+            openaiExt?.model || spec?.llm?.model || 'gpt-4o-mini',
+          tools: this.extractTools((spec?.tools || (agent as { tools?: Array<Record<string, unknown>> })?.tools || []) as Array<Record<string, unknown>>),
         };
+      }
 
-      case 'crewai':
+      case 'crewai': {
+        const crewaiExt = extensions.crewai as { role?: string; goal?: string; backstory?: string; tools?: Array<unknown>; agent_type?: string } | undefined;
         return {
-          role: extensions.crewai?.role || spec.role || agent.role,
+          role: crewaiExt?.role || spec?.role || (agent as { role?: string })?.role || '',
           goal:
-            extensions.crewai?.goal ||
+            crewaiExt?.goal ||
             metadata.description ||
-            agent.description,
-          backstory: extensions.crewai?.backstory || '',
-          tools: extensions.crewai?.tools || [],
-          agent_type: extensions.crewai?.agent_type || 'worker',
+            (agent as { description?: string })?.description || '',
+          backstory: crewaiExt?.backstory || '',
+          tools: crewaiExt?.tools || [],
+          agent_type: crewaiExt?.agent_type || 'worker',
         };
+      }
 
-      case 'langchain':
+      case 'langchain': {
+        const langchainExt = extensions.langchain as { chain_type?: string } | undefined;
         return {
           type: 'agent',
-          chain_type: extensions.langchain?.chain_type || 'agent',
-          tools: this.extractTools(spec.tools || agent.tools || []),
-          llm: spec.llm || agent.llm || {},
+          chain_type: langchainExt?.chain_type || 'agent',
+          tools: this.extractTools((spec?.tools || (agent as { tools?: Array<Record<string, unknown>> })?.tools || []) as Array<Record<string, unknown>>),
+          llm: spec?.llm || (agent as { llm?: Record<string, unknown> })?.llm || {},
         };
+      }
 
-      case 'anthropic':
+      case 'anthropic': {
+        const agentTools = (agent as { tools?: Array<Record<string, unknown>> })?.tools;
+        const anthropicExt = extensions.anthropic as { system?: string; model?: string } | undefined;
         return {
-          name: metadata.name || agent.id,
-          system: extensions.anthropic?.system || spec.role || agent.role,
-          model: extensions.anthropic?.model || 'claude-3-5-sonnet-20241022',
-          tools: this.extractTools(spec.tools || agent.tools || []),
+          name: metadata.name || (agent as { id?: string })?.id || '',
+          system: anthropicExt?.system || spec?.role || (agent as { role?: string })?.role || '',
+          model: anthropicExt?.model || 'claude-3-5-sonnet-20241022',
+          tools: this.extractTools((spec?.tools || agentTools || []) as Array<Record<string, unknown>>),
         };
+      }
 
       default:
         throw new Error(`Unsupported platform: ${platform}`);
@@ -239,15 +272,15 @@ export class GenerationService {
       apiVersion: 'ossa/v0.2.4',
       kind: 'Agent',
       metadata: {
-        name: platformData.name || platformData.id || 'imported-agent',
-        version: platformData.version || '1.0.0',
-        description: platformData.description || '',
+        name: (typeof platformData.name === 'string' ? platformData.name : typeof platformData.id === 'string' ? platformData.id : 'imported-agent'),
+        version: (typeof platformData.version === 'string' ? platformData.version : '1.0.0'),
+        description: (typeof platformData.description === 'string' ? platformData.description : ''),
       },
       spec: {
         role:
-          platformData.instructions ||
-          platformData.system ||
-          platformData.role ||
+          (typeof platformData.instructions === 'string' ? platformData.instructions : '') ||
+          (typeof platformData.system === 'string' ? platformData.system : '') ||
+          (typeof platformData.role === 'string' ? platformData.role : '') ||
           '',
         llm: {
           provider:
@@ -256,7 +289,7 @@ export class GenerationService {
               : platform === 'anthropic'
                 ? 'anthropic'
                 : 'openai',
-          model: platformData.model || 'gpt-4',
+          model: (typeof platformData.model === 'string' ? platformData.model : 'gpt-4'),
         },
         tools: [],
       },
@@ -281,7 +314,7 @@ export class GenerationService {
             instructions: platformData.instructions,
           },
         };
-        if (platformData.tools) {
+        if (platformData.tools && Array.isArray(platformData.tools) && baseManifest.spec) {
           baseManifest.spec.tools = this.convertToolsToOSSA(platformData.tools);
         }
         break;
@@ -307,7 +340,7 @@ export class GenerationService {
             system: platformData.system,
           },
         };
-        if (platformData.tools) {
+        if (platformData.tools && Array.isArray(platformData.tools) && baseManifest.spec) {
           baseManifest.spec.tools = this.convertToolsToOSSA(platformData.tools);
         }
         break;
@@ -331,14 +364,19 @@ export class GenerationService {
 
   private convertToolsToOSSA(
     tools: Array<Record<string, unknown>>
-  ): Array<Record<string, unknown>> {
+  ): Array<{
+    type: string;
+    name?: string;
+    description?: string;
+    input_schema?: Record<string, unknown>;
+  }> {
     return tools.map((tool) => {
-      const func = tool.function || tool;
+      const func = (tool.function || tool) as Record<string, unknown>;
       return {
         type: 'function',
-        name: func.name,
-        description: func.description || '',
-        input_schema: func.parameters || func.input_schema || {},
+        name: typeof func.name === 'string' ? func.name : undefined,
+        description: typeof func.description === 'string' ? func.description : undefined,
+        input_schema: (func.parameters || func.input_schema || {}) as Record<string, unknown>,
       };
     });
   }

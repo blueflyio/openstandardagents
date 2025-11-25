@@ -7,6 +7,7 @@ import chalk from 'chalk';
 import { Command } from 'commander';
 import * as fs from 'fs';
 import readline from 'readline';
+import type { OssaAgent } from '../../types/index.js';
 
 const rl = readline.createInterface({
   input: process.stdin,

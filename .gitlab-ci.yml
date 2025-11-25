@@ -88,7 +88,7 @@ detect:milestone-and-tags:
 
         if [ "$DEV_MILESTONES" != "[]" ] && [ -n "$DEV_MILESTONES" ]; then
           # Process milestones - use process substitution to avoid subshell
-          while IFS= read -r dev_milestone_json; do
+          while read -r dev_milestone_json; do
             [ -z "$dev_milestone_json" ] && continue
 
             DEV_TITLE=$(echo "$dev_milestone_json" | jq -r '.title // ""' 2>/dev/null || echo "")
@@ -165,7 +165,7 @@ detect:milestone-and-tags:
       
       # Find closed milestone ready for release - use process substitution to avoid subshell
       FOUND_MILESTONE=false
-      while IFS= read -r milestone_json; do
+      while read -r milestone_json; do
         [ -z "$milestone_json" ] && continue
         [ "$FOUND_MILESTONE" = "true" ] && break
       
@@ -226,7 +226,7 @@ detect:milestone-and-tags:
       fi
       
       # Merge dev-tags.env into milestone-version.env
-      if [ -f dev-tags.env ]; then
+      if [ -s dev-tags.env ]; then
         cat dev-tags.env >> milestone-version.env
       fi
       
@@ -615,13 +615,17 @@ release:npm:
 
       # Configure npm
       GITLAB_HOST="${CI_SERVER_HOST}"
-      cat > .npmrc << EOF
+      if [ -n "$NPM_TOKEN" ]; then
+        cat > .npmrc << EOF
+      @bluefly:registry=${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/npm/
+      //${GITLAB_HOST}/api/v4/projects/${CI_PROJECT_ID}/packages/npm/:_authToken=${CI_JOB_TOKEN}
+      //registry.npmjs.org/:_authToken=${NPM_TOKEN}
+      EOF
+      else
+        cat > .npmrc << EOF
       @bluefly:registry=${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/npm/
       //${GITLAB_HOST}/api/v4/projects/${CI_PROJECT_ID}/packages/npm/:_authToken=${CI_JOB_TOKEN}
       EOF
-
-      if [ -n "$NPM_TOKEN" ]; then
-        echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" >> .npmrc
       fi
 
       # Final tests

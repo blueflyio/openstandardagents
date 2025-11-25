@@ -52,7 +52,12 @@ export const schemaCommand = new Command('schema')
           const parts = options.path.split('.');
           let current: unknown = schema;
           for (const part of parts) {
-            current = current[part];
+            if (typeof current === 'object' && current !== null && part in current) {
+              current = (current as Record<string, unknown>)[part];
+            } else {
+              console.error(chalk.red(`Path not found: ${options.path}`));
+              process.exit(1);
+            }
             if (!current) {
               console.error(chalk.red(`Path not found: ${options.path}`));
               process.exit(1);
@@ -78,8 +83,8 @@ export const schemaCommand = new Command('schema')
           });
         }
 
-        const schemaProps = schema.properties as Record<string, unknown>;
-        const extensions = schemaProps?.extensions?.properties;
+        const schemaProps = (schema.properties || {}) as Record<string, unknown>;
+        const extensions = (schemaProps?.extensions as Record<string, unknown>)?.properties;
         if (extensions) {
           console.log(chalk.cyan('\nSupported platform extensions:'));
           Object.keys(extensions).forEach((ext) => {

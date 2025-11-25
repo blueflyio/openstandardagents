@@ -32,7 +32,7 @@
       "types": "./dist/types/openapi-extensions.d.ts",
       "import": "./dist/types/openapi-extensions.js",
       "require": "./dist/types/openapi-extensions.js"
-    },
+    }
   },
   "description": "OSSA - Open Standard for Scalable AI Agents. A specification standard for AI agents (like OpenAPI for REST APIs). NOT a framework.",
   "type": "module",
