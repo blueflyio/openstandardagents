@@ -258,7 +258,7 @@ validate:scripts-version:
       # Verify scripts exist and are executable
       echo ""
       echo "Checking helper scripts exist..."
-      for script in scripts/get-version.js scripts/validate-schema.sh scripts/gen-types.sh scripts/gen-zod.sh; do
+      for script in scripts/get-version.js scripts/validate-schema.js scripts/gen-types.js scripts/gen-zod.js; do
         if [ ! -f "$script" ]; then
           echo "❌ ERROR: Missing script: $script"
           exit 1
