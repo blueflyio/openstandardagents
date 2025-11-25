@@ -7,7 +7,7 @@
 <<<<<<< HEAD
 [![Specification](https://img.shields.io/badge/Spec-v0.2.2-blue)](https://github.com/blueflyio/openstandardagents/blob/main/spec/v0.2.5-RC/ossa-0.2.5-RC.schema.json)
 =======
-[![Specification](https://img.shields.io/badge/Spec-v0.2.2-blue)](https://github.com/blueflyio/openstandardagents/blob/main/spec/v0.2.5/ossa-0.2.5.schema.json)
+[![Specification](https://img.shields.io/badge/Spec-v0.2.2-blue)](https://github.com/blueflyio/openstandardagents/blob/main/spec/v0.2.5-RC/ossa-0.2.5-RC.schema.json)
 >>>>>>> origin/main
 
 ---
