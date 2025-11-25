@@ -1,912 +1,282 @@
-# GitLab CI/CD Pipeline for OSSA
-# Decoupled Release Model:
-# - Code flows freely: Feature → development → main (CI validates, no auto-release)
-# - Website deployment: Manual button (independent of releases)
-# - NPM releases: Milestone-gated + ENABLE_RELEASE variable required
+# ============================================================================
+# OSSA Rollback Coordinator Agent - GitLab Kubernetes Deployment
+# ============================================================================
 #
-# Workflow:
-# 1. Feature branches → merge to development (CI validates)
-# 2. Development → merge to main via merge train (CI validates)
-# 3. Click "Deploy Website" button → GitLab Pages deploys
-# 4. To release: Set ENABLE_RELEASE=true + close milestone → automatic npm publish + git tag
+# PURPOSE:
+#   Automated rollback coordination for failed deployments and migrations.
+#   Monitors deployment health, triggers rollbacks on failure, and coordinates
+#   multi-component rollback workflows (application + database + config).
 #
-# Release Gate:
-# Releases require BOTH conditions:
-#   - Milestone must be 100% complete and closed
-#   - CI/CD variable ENABLE_RELEASE must be set to "true"
-# This allows deploying to main without releasing. Set the variable only when ready to release.
+# CAPABILITIES:
+#   - Deployment health monitoring (readiness, liveness, error rates)
+#   - Automated rollback triggering on failure detection
+#   - Multi-component rollback coordination (app + db + config)
+#   - Traffic shifting and canary rollback
+#   - Database schema rollback coordination with db-migrator
+#   - Post-rollback verification and validation
 #
-# To set ENABLE_RELEASE:
-#   GitLab UI: Settings → CI/CD → Variables → Add variable
-#   Variable: ENABLE_RELEASE
-#   Value: true
-#   Protected: Yes (recommended)
-#   Masked: No
-#
-# Status: ACTIVE MODE
-# Last updated: 2025-11-24
-
-stages:
-  - setup
-  - version-detect  # NEW: Detect version from milestone
-  - validate
-  - build
-  - test
-  - quality
-  - deploy          # Website deployment (manual)
-  - release         # NPM release (manual, milestone-gated)
-  - mirror
-
-variables:
-  NODE_VERSION: "22"
-  NPM_CONFIG_LEGACY_PEER_DEPS: "1"
-  HUSKY: "0"
-  LEFTHOOK: "0"
-
-# ============================================================================
-# STAGE 0: VERSION DETECTION
-# ============================================================================
-# Extracts the version from closed milestone title
-# Makes it available as $RELEASE_VERSION throughout the pipeline
-# Example: Milestone "v0.2.6 - Feature Name" → RELEASE_VERSION=0.2.6
-
-detect:milestone-version:
-  stage: version-detect
-  image: alpine:latest
-  before_script:
-    - apk add --no-cache curl jq git
-  script:
-    - |
-      echo "MILESTONE-GATED RELEASE DETECTION"
-      echo "====================================="
-      echo ""
-      echo "Requirements for automatic release:"
-      echo " 1. Milestone MUST be closed"
-      echo " 2. Milestone MUST be 100% complete (all issues closed)"
-      echo " 3. Version MUST NOT already be released (git tag)"
-      echo ""
-
-      # Fetch git tags to check if version is already released
-      git fetch --tags 2>/dev/null || echo "Warning: Could not fetch tags"
-
-      # Get all milestones
-      ALL_MILESTONES=$(curl -sS -G "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/milestones" \
-        --header "PRIVATE-TOKEN: ${GITLAB_PUSH_TOKEN}" \
-        --data-urlencode "per_page=100")
-
-      # Find the first closed milestone with a version
-      MILESTONE_FOUND=false
-      MILESTONE_VERSION=""
-      MILESTONE_TITLE=""
-      MILESTONE_ID=""
-      MILESTONE_COMPLETE=false
-
-      while IFS= read -r milestone_json; do
-        if [ -z "$milestone_json" ]; then continue; fi
-
-        TITLE=$(echo "$milestone_json" | jq -r '.title')
-        ID=$(echo "$milestone_json" | jq -r '.id')
-        STATE=$(echo "$milestone_json" | jq -r '.state')
-
-        VERSION=$(echo "$TITLE" | grep -oE 'v?[0-9]+\.[0-9]+\.[0-9]+(-[A-Za-z0-9]+)?' | head -1 | sed 's/^v//')
-
-        if [ -n "$VERSION" ] && [ "$STATE" = "closed" ]; then
-          # Check if this version has already been released
-          if git tag -l | grep -qE "^v?${VERSION}$"; then
-            echo " Skipping milestone: $TITLE (v${VERSION} already released)"
-            continue
-          fi
-
-          # Get milestone statistics
-          MILESTONE_STATS=$(curl -sS -G "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/milestones/${ID}" \
-            --header "PRIVATE-TOKEN: ${GITLAB_PUSH_TOKEN}")
-
-          TOTAL_ISSUES=$(echo "$MILESTONE_STATS" | jq -r '.total_issues_count // 0')
-          CLOSED_ISSUES=$(echo "$MILESTONE_STATS" | jq -r '.closed_issues_count // 0')
-          OPEN_ISSUES=$(echo "$MILESTONE_STATS" | jq -r '(.total_issues_count - .closed_issues_count) // 0')
-
-          echo "Found closed milestone: $TITLE"
-          echo "  Version: v${VERSION}"
-          echo "  Total Issues: ${TOTAL_ISSUES}"
-          echo "  Closed Issues: ${CLOSED_ISSUES}"
-          echo "  Open Issues: ${OPEN_ISSUES}"
-          echo ""
-
-          # Check if 100% complete
-          if [ "$OPEN_ISSUES" -eq 0 ] && [ "$TOTAL_ISSUES" -gt 0 ]; then
-            echo "Milestone is 100% complete - READY FOR RELEASE"
-            MILESTONE_COMPLETE=true
-            MILESTONE_TITLE="$TITLE"
-            MILESTONE_VERSION="$VERSION"
-            MILESTONE_ID="$ID"
-            MILESTONE_FOUND=true
-            break
-          elif [ "$TOTAL_ISSUES" -eq 0 ]; then
-            echo " Milestone has no issues - treating as complete"
-            MILESTONE_COMPLETE=true
-            MILESTONE_TITLE="$TITLE"
-            MILESTONE_VERSION="$VERSION"
-            MILESTONE_ID="$ID"
-            MILESTONE_FOUND=true
-            break
-          else
-            echo "Milestone is NOT 100% complete"
-            echo "  ${OPEN_ISSUES} issue(s) still open"
-            echo "  Cannot proceed with automatic release"
-            echo ""
-            echo "Complete these issues first:"
-            echo "  https://${CI_SERVER_HOST}/${CI_PROJECT_PATH}/-/milestones/${ID}"
-            echo ""
-          fi
-        fi
-      done < <(echo "$ALL_MILESTONES" | jq -c '.[] | select(.state == "closed")')
-
-      # Generate environment variables
-      if [ "$MILESTONE_FOUND" = "true" ] && [ "$MILESTONE_COMPLETE" = "true" ]; then
-        echo "RELEASE_VERSION=${MILESTONE_VERSION}" > milestone-version.env
-        echo "MILESTONE_TITLE=${MILESTONE_TITLE}" >> milestone-version.env
-        echo "MILESTONE_ID=${MILESTONE_ID}" >> milestone-version.env
-        echo "MILESTONE_READY=true" >> milestone-version.env
-
-        echo ""
-        echo "AUTOMATIC RELEASE WILL PROCEED"
-        echo "  Version: v${MILESTONE_VERSION}"
-        echo "  Milestone: ${MILESTONE_TITLE}"
-        echo ""
-        cat milestone-version.env
-      else
-        echo "RELEASE_VERSION=" > milestone-version.env
-        echo "MILESTONE_TITLE=" >> milestone-version.env
-        echo "MILESTONE_ID=" >> milestone-version.env
-        echo "MILESTONE_READY=false" >> milestone-version.env
-
-        echo ""
-        echo " No release-ready milestone found"
-        echo "  Either:"
-        echo "  • No closed milestones with version in title"
-        echo "  • Milestone has open issues"
-        echo "  • Version already released"
-        echo ""
-        cat milestone-version.env
-      fi
-  artifacts:
-    reports:
-      dotenv: milestone-version.env
-    paths:
-      - milestone-version.env
-    expire_in: 1 day
-  rules:
-    # Only run on main branch (where releases happen)
-    - if: $CI_COMMIT_BRANCH == "main"
-      when: always
-  allow_failure: true  # Don't block pipeline if no milestone found
-
-# ============================================================================
-# STAGE 1: SETUP & VALIDATE
 # ============================================================================
 
-validate:node:
-  stage: validate
-  image: node:${NODE_VERSION}-alpine
-  script:
-    - node --version
-    - npm --version
-    - echo "Node.js ${NODE_VERSION} ready"
-  rules:
-    - when: always
+apiVersion: ossa/v0.2.5-RC
+kind: Agent
 
-validate:ossa:
-  stage: validate
-  image: node:${NODE_VERSION}-alpine
-  script:
-    - npm ci --legacy-peer-deps
-    - npm run build
-    - echo "Validating example manifests..."
-    - node dist/cli/index.js validate examples/getting-started/hello-world-complete.ossa.yaml || echo "WARNING Validation warnings (non-blocking)"
-  allow_failure: true
-  rules:
-    - when: always
+metadata:
+  name: rollback-coordinator
+  version: 1.0.0
+  description: |
+    Automated rollback coordination agent for Kubernetes deployments.
+    Monitors deployment health, detects failures, triggers coordinated rollbacks
+    across application, database, and configuration components.
 
-validate:version-sync:
-  stage: validate
-  image: node:${NODE_VERSION}-alpine
-  script:
-    - npm ci --legacy-peer-deps
-    - echo "Checking version consistency..."
-    - npx tsx scripts/sync-versions.ts --check
-  allow_failure: false
-  rules:
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-      when: always
-    - if: $CI_COMMIT_BRANCH == "development"
-      when: always
-    - if: $CI_COMMIT_BRANCH == "main"
-      when: always
-    - changes:
-      - package.json
-      - README.md
-      - spec/**/*
-      when: always
+  labels:
+    environment: production
+    team: sre
+    domain: deployment
+    capability: rollback-automation
+    dora-metric: mttr
 
-validate:scripts-version:
-  stage: validate
-  image: node:${NODE_VERSION}-alpine
-  before_script:
-    - npm ci --legacy-peer-deps
-  script:
-    - |
-      echo "Validating npm scripts use dynamic version..."
-      VERSION=$(node -p "require('./package.json').version")
-      echo "Current version: ${VERSION}"
-      
-      # Check that scripts reference dynamic version, not hardcoded
-      echo ""
-      echo "Checking package.json scripts..."
-      
-      # Verify exports["./schema"] matches current version (this is allowed)
-      EXPECTED_EXPORT="./spec/v${VERSION}/ossa-${VERSION}.schema.json"
-      ACTUAL_EXPORT=$(node -p "require('./package.json').exports?.['./schema'] || ''")
-      if [ "$ACTUAL_EXPORT" != "$EXPECTED_EXPORT" ] && [ -n "$ACTUAL_EXPORT" ]; then
-        echo "ERROR: package.json exports[\"./schema\"] is \"${ACTUAL_EXPORT}\", should be \"${EXPECTED_EXPORT}\""
-        exit 1
-      fi
-      
-      # Check scripts field doesn't have hardcoded version paths
-      # Extract just the scripts section to avoid false positives from exports
-      if node -e "const pkg = require('./package.json'); const scripts = JSON.stringify(pkg.scripts || {}); if (scripts.match(/spec\\/v0\\.[0-9]/)) { process.exit(1); }" 2>/dev/null; then
-        echo "✓ Scripts field does not contain hardcoded version paths"
-      else
-        echo "ERROR: package.json scripts contain hardcoded version paths"
-        echo "  Scripts should use dynamic version detection (scripts/*.ts)"
-        node -p "const pkg = require('./package.json'); Object.entries(pkg.scripts || {}).filter(([k,v]) => String(v).match(/spec\\/v0\\.[0-9]/)).map(([k,v]) => \`  \${k}: \${v}\`).join('\\n')" || true
-        exit 1
-      fi
-      
-      # Check validate:power-suite uses generic script
-      if ! grep -q "validate-ossa.ts" package.json; then
-        echo "ERROR: validate:power-suite should use bin/validate-ossa.ts (version-agnostic)"
-        exit 1
-      fi
-      
-      # Check scripts use TypeScript execution (tsx or ts-node/esm)
-      if ! grep -q "tsx scripts/" package.json && ! grep -q "node --loader ts-node/esm scripts/" package.json; then
-        echo " WARNING: Scripts should use tsx or ts-node/esm for TypeScript execution"
-      fi
-      
-      # Verify TypeScript scripts exist
-      echo ""
-      echo "Checking TypeScript scripts exist..."
-      for script in scripts/validate-schema.ts scripts/gen-types.ts scripts/gen-zod.ts; do
-        if [ ! -f "$script" ]; then
-          echo "ERROR: Missing script: $script"
-          exit 1
-        fi
-        echo "✓ Found: $script"
-      done
-      
-      # Verify shared utilities exist
-      echo ""
-      echo "Checking shared utilities exist..."
-      for util in scripts/lib/version.ts scripts/lib/file-ops.ts scripts/lib/exec.ts scripts/schemas/package.schema.ts; do
-        if [ ! -f "$util" ]; then
-          echo "ERROR: Missing utility: $util"
-          exit 1
-        fi
-        echo "✓ Found: $util"
-      done
-      
-      # Test that version detection works via TypeScript
-      echo ""
-      echo "Testing version detection via TypeScript..."
-      DETECTED_VERSION=$(npx tsx -e "import { getCurrentVersion } from './scripts/lib/version.ts'; console.log(getCurrentVersion())")
-      if [ "$DETECTED_VERSION" != "$VERSION" ]; then
-        echo "ERROR: Version mismatch"
-        echo "  package.json: $VERSION"
-        echo "  version.ts: $DETECTED_VERSION"
-        exit 1
-      fi
-      echo "✓ Version detection works: $DETECTED_VERSION"
-      
-      # Verify schema path exists for current version
-      SCHEMA_PATH="spec/v${VERSION}/ossa-${VERSION}.schema.json"
-      if [ ! -f "$SCHEMA_PATH" ]; then
-        echo " WARNING: Schema not found at $SCHEMA_PATH"
-        echo "  This is expected for new versions before schema is created"
-      else
-        echo "✓ Schema found: $SCHEMA_PATH"
-      fi
-      
-      echo ""
-      echo "All scripts use dynamic version detection with TypeScript + Zod"
-  allow_failure: false
-  rules:
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-      when: always
-    - if: $CI_COMMIT_BRANCH == "development"
-      when: always
-    - if: $CI_COMMIT_BRANCH == "main"
-      when: always
-    - changes:
-      - package.json
-      - scripts/**/*
-      - bin/validate-ossa*.ts
-      when: always
+  annotations:
+    documentation: https://openstandardagents.org/docs/agents/rollback-coordinator
+    support: operations@bluefly.io
+    runbook: https://openstandardagents.org/docs/runbooks/rollback-coordinator
+    safety: "automated-rollback-enabled"
 
-validate:docs-consistency:
-  stage: validate
-  image: node:${NODE_VERSION}-alpine
-  before_script:
-    - npm ci --legacy-peer-deps
-  script:
-    - |
-      echo "ERROR: Pre-Release Documentation Validation"
-      echo "=================================================="
-      echo ""
-      echo "This job PREVENTS releases with inconsistent documentation."
-      echo "All version references MUST match package.json before proceeding."
-      echo ""
+spec:
+  taxonomy:
+    domain: deployment-automation
+    subdomain: rollback-management
+    capability: automated-recovery
 
-      # Get version from package.json
-      VERSION=$(node -p "require('./package.json').version")
-      echo "Package version: v${VERSION}"
-      echo ""
+  role: |
+    You are an expert deployment rollback coordinator specializing in failure recovery.
 
-      # Run comprehensive version sync check
-      echo "Running sync-versions.ts --check..."
-      if ! npx tsx scripts/sync-versions.ts --check; then
-        echo ""
-        echo "ERROR: Documentation is out of sync!"
-        echo ""
-        echo "This means:"
-        echo " • README.md has wrong version references"
-        echo " • Schema paths don't match package.json"
-        echo " • Badge versions are incorrect"
-        echo ""
-        echo "FIX REQUIRED:"
-        echo " 1. Run locally: npx tsx scripts/sync-versions.ts --fix"
-        echo " 2. Commit the changes"
-        echo " 3. Push and re-run pipeline"
-        echo ""
-        echo "This validation CANNOT be bypassed."
-        exit 1
-      fi
+    Your responsibilities:
+    1. Monitor deployment health (readiness probes, error rates, latency spikes)
+    2. Detect deployment failures (crash loops, failed health checks, high error rates)
+    3. Trigger automated rollbacks when failure thresholds exceeded
+    4. Coordinate multi-component rollbacks:
+       - Application: Rollback Deployment/StatefulSet to previous revision
+       - Database: Trigger db-migrator to execute rollback SQL
+       - Configuration: Revert ConfigMaps and Secrets to previous version
+    5. Manage traffic shifting (canary rollback, gradual traffic reduction)
+    6. Verify rollback success (health checks, metrics validation)
+    7. Create post-mortem incident reports with failure analysis
 
-      # Verify spec directory exists
-      if [ ! -d "spec/v${VERSION}" ]; then
-        echo "ERROR: spec/v${VERSION}/ directory does not exist!"
-        echo "Run: npx tsx scripts/sync-versions.ts --fix"
-        exit 1
-      fi
+    Rollback Triggers:
+    - Error rate > 5% for 5 minutes
+    - P95 latency > 2x baseline for 10 minutes
+    - Crash loop backoff (> 3 restarts in 5 minutes)
+    - Failed readiness probes (> 50% pods not ready for 3 minutes)
+    - Database migration failure (transaction rollback)
 
-      # Verify schema file exists
-      if [ ! -f "spec/v${VERSION}/ossa-${VERSION}.schema.json" ]; then
-        echo "ERROR: spec/v${VERSION}/ossa-${VERSION}.schema.json does not exist!"
-        exit 1
-      fi
+    For each rollback:
+    - Trigger reason (metrics, logs, health checks)
+    - Components affected (app/db/config)
+    - Rollback strategy (immediate/canary/gradual)
+    - Verification steps (health checks, smoke tests)
+    - Post-mortem action items
 
-      # Verify README references correct version
-      if ! grep -q "OSSA v${VERSION} Schema:" README.md; then
-        echo "ERROR: README.md does not reference v${VERSION}!"
-        echo "Found:"
-        grep "OSSA v.*Schema:" README.md || echo "(no version found)"
-        exit 1
-      fi
+  llm:
+    provider: anthropic
+    model: claude-3-5-sonnet-20241022
+    temperature: 0.0  # Deterministic for safety-critical operations
+    maxTokens: 8000
 
-      # Verify package.json exports correct schema
-      SCHEMA_EXPORT=$(node -p "require('./package.json').exports['./schema']")
-      EXPECTED_SCHEMA="./spec/v${VERSION}/ossa-${VERSION}.schema.json"
-      if [ "$SCHEMA_EXPORT" != "$EXPECTED_SCHEMA" ]; then
-        echo "ERROR: package.json schema export is wrong!"
-        echo "  Expected: ${EXPECTED_SCHEMA}"
-        echo "  Found: ${SCHEMA_EXPORT}"
-        exit 1
-      fi
+  tools:
+    - type: http
+      name: kubernetes-rollback
+      description: |
+        Execute Kubernetes rollbacks using kubectl rollout undo.
+      endpoint: http://kubernetes-api:6443/apis/apps/v1
+      config:
+        method: POST
+        timeout: 300
+      auth:
+        type: bearer
+        tokenPath: /var/secrets/k8s-token
 
-      echo ""
-      echo "ALL DOCUMENTATION CONSISTENCY CHECKS PASSED"
-      echo "  Version: v${VERSION}"
-      echo "  README: ✓"
-      echo "  Schema: ✓"
-      echo "  package.json: ✓"
-      echo ""
-      echo "Safe to proceed with release."
-  allow_failure: false  # CRITICAL: This MUST pass before release
-  rules:
-    # Run ALWAYS before any release
-    - if: $CI_COMMIT_BRANCH == "main"
-      when: always
-    # Also run on development to catch issues early
-    - if: $CI_COMMIT_BRANCH == "development"
-      when: always
-    # Run on MRs targeting main or development
-    - if: $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "main"
-      when: always
-    - if: $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "development"
-      when: always
+    - type: http
+      name: argo-rollouts
+      description: |
+        Manage canary deployments and progressive delivery rollbacks.
+      endpoint: http://argo-rollouts:8080/api/v1
+      config:
+        method: POST
+        timeout: 300
+      auth:
+        type: bearer
+        tokenPath: /var/secrets/argo-token
 
-# ============================================================================
-# STAGE 2: BUILD
-# ============================================================================
+    - type: http
+      name: istio-traffic-shift
+      description: |
+        Manage Istio VirtualService traffic shifting for gradual rollback.
+      endpoint: http://istio-pilot:8080/api/v1
+      config:
+        method: POST
+        timeout: 60
+      auth:
+        type: mtls
+        certPath: /var/secrets/istio-client-cert.pem
 
-build:dist:
-  stage: build
-  image: node:${NODE_VERSION}-alpine
-  script:
-    - npm ci --legacy-peer-deps
-    - npm run build
-    - test -f dist/cli/index.js || (echo "ERROR dist/cli/index.js missing" && exit 1)
-    - echo "Build completed"
-  artifacts:
-    paths:
-      - dist/
-      - package.json
-      - package-lock.json
-    expire_in: 1 hour
-  rules:
-    - when: always
+    - type: a2a
+      name: db-migrator
+      description: |
+        Coordinate database rollbacks with db-migrator agent.
+      endpoint: http://db-migrator:8080/a2a
+      config:
+        protocol: json-rpc
+        version: "2.0"
+      auth:
+        type: mtls
+        certPath: /var/secrets/a2a-client-cert.pem
 
-# ============================================================================
-# STAGE 3: TEST
-# ============================================================================
+    - type: http
+      name: prometheus-query
+      description: |
+        Query Prometheus for deployment health metrics (error rates, latency).
+      endpoint: http://prometheus:9090/api/v1/query
+      config:
+        method: POST
+        timeout: 30
+        queryLanguage: promql
+      auth:
+        type: bearer
+        tokenPath: /var/secrets/prometheus-token
 
-test:lint:
-  stage: test
-  image: node:${NODE_VERSION}-alpine
-  script:
-    - npm ci --legacy-peer-deps
-    - npm run build
-    - npm run lint || echo "WARNING Lint warnings"
-    - npm run typecheck || echo "WARNING Typecheck warnings"
-  allow_failure: true
-  rules:
-    - when: always
+    - type: http
+      name: monitoring-agent
+      description: |
+        Receive failure alerts and coordinate with monitoring-agent for incident response.
+      endpoint: http://monitoring-agent:8080/a2a
+      config:
+        protocol: json-rpc
+        version: "2.0"
+      auth:
+        type: mtls
+        certPath: /var/secrets/a2a-client-cert.pem
 
-test:unit:
-  stage: test
-  image: node:${NODE_VERSION}-alpine
-  dependencies:
-    - build:dist
-  before_script:
-    - npm ci --legacy-peer-deps
-  script:
-    - npm run build
-    - npm run test:coverage
-  coverage: '/All files[^|]*\|[^|]*\s+([\d\.]+)/'
-  artifacts:
-    reports:
-      coverage_report:
-        coverage_format: cobertura
-        path: coverage/cobertura-coverage.xml
-    paths:
-      - coverage/
-    expire_in: 7 days
-  allow_failure: false
-  rules:
-    - when: always
+  autonomy:
+    level: autonomous
+    approval_required: false  # Automated rollback on failure detection
 
-test:security:
-  stage: test
-  image: node:${NODE_VERSION}-alpine
-  script:
-    - npm ci --legacy-peer-deps
-    - npm audit --production || echo "WARNING Security vulnerabilities"
-  allow_failure: true
-  rules:
-    - when: always
+    allowed_actions:
+      - monitor_deployment_health
+      - detect_failure_thresholds
+      - trigger_rollback
+      - coordinate_multi_component_rollback
+      - verify_rollback_success
+      - create_incident_report
 
-# ============================================================================
-# STAGE 4: QUALITY GATES
-# ============================================================================
+    blocked_actions:
+      - delete_namespace
+      - delete_persistent_volumes
+      - modify_cluster_config
 
-quality:gates:
-  stage: quality
-  image: node:${NODE_VERSION}-alpine
-  script:
-    - echo "Quality gates passed"
-  rules:
-    - when: always
-  needs:
-    - job: test:unit
-      optional: true
-    - job: test:lint
-      optional: true
-    - job: test:security
-      optional: true
+  constraints:
+    resource_limits:
+      cpu: "500m"
+      memory: "1Gi"
+      ephemeral_storage: "2Gi"
 
-# ============================================================================
-# STAGE 5: DEPLOY (Website - Manual Button)
-# ============================================================================
-# Website deployment is INDEPENDENT of npm releases
-# Click the button to deploy website at any time
+    rate_limits:
+      rollbacks_per_hour: 10
+      api_calls_per_minute: 60
 
-pages:
-  stage: deploy
-  image: node:${NODE_VERSION}-alpine
-  needs:
-    # Optional: need build for website assets
-    - job: build:dist
-      optional: true
-      artifacts: false
-  before_script:
-    - cd website
-    - npm ci --legacy-peer-deps
-    - apk add --no-cache git curl
-    - export GITLAB_HOST="${GITLAB_HOST:-${CI_SERVER_HOST}}"
-  script:
-    - echo "Building website for GitLab Pages..."
-    - npm run sync-wiki || echo "Warning Wiki sync failed (continuing without wiki content)"
-    - npm run build:no-wiki
-    - echo "Verifying build output..."
-    - |
-      if [ ! -d "out" ]; then
-        echo "ERROR: out/ directory not found"
-        exit 1
-      fi
-      ls -la out/
-    - echo "Moving build output to public/ for GitLab Pages..."
-    - mkdir -p ../public
-    - cp -r out/* ../public/
-    - echo "Build artifacts ready:"
-    - ls -la ../public/ | head -20
-  artifacts:
-    paths:
-      - public
-    expire_in: 30 days
-  environment:
-    name: website
-    url: https://openstandardagents.org
-    deployment_tier: production
-  rules:
-    # Manual deployment on main branch (click button to deploy)
-    - if: $CI_COMMIT_BRANCH == "main"
-      when: manual
-    # Manual on development for preview
-    - if: $CI_COMMIT_BRANCH == "development"
-      when: manual
-      allow_failure: true
-    # Allow pages to run on feature branches for testing (manual)
-    - if: $CI_COMMIT_BRANCH
-      when: manual
-      allow_failure: true
+    safety_checks:
+      - verify_previous_revision_exists
+      - check_rollback_will_not_break_dependencies
+      - validate_database_rollback_sql_before_execution
 
-# ============================================================================
-# STAGE 6: RELEASE (NPM - Manual Button, Milestone-Gated)
-# ============================================================================
-# NPM release requires:
-# 1. Closed milestone with version in title
-# 2. All issues in milestone closed (100% complete)
-# 3. Manual button click
+  state:
+    backend: postgres
+    config:
+      host: postgres-primary.default.svc.cluster.local
+      port: 5432
+      database: rollback_metadata
+      schema: rollback_history
+      ssl: true
+      sslMode: require
 
-release:preview:
-  stage: release
-  image: node:${NODE_VERSION}-alpine
-  dependencies:
-    - build:dist
-  before_script:
-    - npm ci --legacy-peer-deps
-  script:
-    - |
-      echo "Release Preview (Dry-Run)"
-      echo "============================"
-      echo ""
+  extensions:
+    kagent:
+      kubernetes:
+        namespace: deployment-system
 
-      # Show release gate status
-      echo "Release Gate Status:"
-      if [ "$ENABLE_RELEASE" = "true" ]; then
-        echo "   ENABLE_RELEASE ${ENABLE_RELEASE} (releases enabled)"
-      else
-        echo "   ENABLE_RELEASE ${ENABLE_RELEASE:-not set} (releases disabled)"
-        echo ""
-        echo "  To enable releases, set CI/CD variable:"
-        echo "  Settings → CI/CD → Variables → Add variable"
-        echo "  Variable ENABLE_RELEASE"
-        echo "  Value: true"
-        echo ""
-      fi
+        labels:
+          app: rollback-coordinator
+          team: sre
+          dora-metric: mttr
 
-      # Show milestone-detected version (if available)
-      if [ -n "$RELEASE_VERSION" ]; then
-        echo "Detected from closed milestone:"
-        echo "  Milestone: ${MILESTONE_TITLE}"
-        echo "  Version to release: v${RELEASE_VERSION}"
-        MILESTONE_STATUS="${MILESTONE_READY:-false}"
-        echo "  Milestone ready: ${MILESTONE_STATUS}"
-        echo ""
-      fi
+        annotations:
+          description: "Automated rollback coordination agent"
+          contact: "operations@bluefly.io"
+          safety: "automated-rollback-enabled"
 
-      # Show current package.json version
-      CURRENT_VERSION=$(node -p "require('./package.json').version")
-      echo "Current package.json: v${CURRENT_VERSION}"
-      echo ""
+        resourceLimits:
+          cpu: "500m"
+          memory: "1Gi"
+          ephemeralStorage: "2Gi"
 
-      if [ -n "$RELEASE_VERSION" ] && [ "$RELEASE_VERSION" != "$CURRENT_VERSION" ]; then
-        echo "WARNING: Version mismatch:"
-        echo "  Milestone says: v${RELEASE_VERSION}"
-        echo "  package.json says: v${CURRENT_VERSION}"
-        echo ""
-        echo "The release:main job will update package.json to v${RELEASE_VERSION}"
-        echo ""
-      fi
+        serviceAccount: rollback-coordinator-sa
 
-      # Show release readiness
-      if [ "$ENABLE_RELEASE" = "true" ] && [ "$MILESTONE_READY" = "true" ]; then
-        echo "Release will proceed automatically when pipeline completes"
-      elif [ "$ENABLE_RELEASE" != "true" ]; then
-        echo "Release blocked: ENABLE_RELEASE not set"
-      elif [ "$MILESTONE_READY" != "true" ]; then
-        echo "Release blocked: Milestone not ready"
-      fi
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 65534
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop:
+              - ALL
 
-      echo ""
-      echo "Running semantic-release preview..."
-      npx semantic-release --dry-run || true
+      guardrails:
+        requireApproval: false  # Autonomous for safety-critical rollbacks
 
-      echo ""
-      echo "Preview complete. Review output above before triggering release:main"
-  rules:
-    - if: $CI_COMMIT_BRANCH == "main"
-      when: always
-  allow_failure: true
-  needs:
-    - build:dist
-    - job: detect:milestone-version
-      optional: true
-      artifacts: true
+        costLimits:
+          maxTokensPerDay: 100000
+          maxCostPerDay: 10.00
+          currency: USD
 
-release:npm:
-  stage: release
-  image: node:${NODE_VERSION}-alpine
-  dependencies:
-    - build:dist
-    - detect:milestone-version
-  before_script:
-    - apk add --no-cache git curl jq
-    - npm ci --legacy-peer-deps
-    - git config --global user.email "operations@blueflyio.com"
-    - git config --global user.name "GitLab CI Release"
-    - git remote set-url origin https://oauth2:${GITLAB_PUSH_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git
-    - git fetch --unshallow --tags || true
-    - git checkout -B main origin/main
-  script:
-    - |
-      echo "🚀 AUTOMATIC MILESTONE-GATED RELEASE"
-      echo "===================================="
-      echo ""
+        allowedActions:
+          - kubernetes:rollback:deployment
+          - kubernetes:rollback:statefulset
+          - kubernetes:rollback:daemonset
+          - kubernetes:update:configmap
+          - kubernetes:update:secret
+          - istio:update:virtualservice
+          - argo:rollback:rollout
 
-      # RELEASE GATE: Check if releases are enabled via CI variable
-      if [ "$ENABLE_RELEASE" != "true" ]; then
-        echo "RELEASE BLOCKED ENABLE_RELEASE variable not set"
-        echo ""
-        echo "To enable releases, set the CI/CD variable:"
-        echo " Variable: ENABLE_RELEASE"
-        echo " Value: true"
-        echo ""
-        echo "This allows you to:"
-        echo " • Deploy code to main without releasing"
-        echo " • Run CI/CD pipelines without triggering npm publish"
-        echo " • Control when releases happen explicitly"
-        echo ""
-        echo "Current status:"
-        echo " • ENABLE_RELEASE: ${ENABLE_RELEASE:-not set}"
-        echo " • Release will NOT proceed"
-        exit 0  # Exit successfully - this is expected behavior
-      fi
+        auditLog:
+          destination: compliance-engine
+          retention: 7years
 
-      # Validate milestone is ready (set by detect:milestone-version job)
-      # Allow manual override: check if FORCE_RELEASE is set or if manually triggered
-      # Manual jobs can be detected by checking if pipeline was triggered via web/api
-      # and the job rule allows manual triggering without MILESTONE_READY
-      IS_MANUAL_OVERRIDE=false
-      if [ -n "$FORCE_RELEASE" ] && [ "$FORCE_RELEASE" = "true" ]; then
-        IS_MANUAL_OVERRIDE=true
-        echo "Manual override detected: FORCE_RELEASE variable is set"
-      elif [ "$CI_PIPELINE_SOURCE" = "web" ] || [ "$CI_PIPELINE_SOURCE" = "api" ]; then
-        # If pipeline was manually triggered and we have ENABLE_RELEASE but no MILESTONE_READY,
-        # assume this is a manual override attempt
-        if [ "$ENABLE_RELEASE" = "true" ] && [ "$MILESTONE_READY" != "true" ]; then
-          IS_MANUAL_OVERRIDE=true
-          echo "Manual override detected: pipeline triggered manually without milestone ready"
-        fi
-      fi
+      a2aConfig:
+        enabled: true
+        protocol: json-rpc
 
-      if [ "$MILESTONE_READY" != "true" ]; then
-        if [ "$IS_MANUAL_OVERRIDE" = "true" ]; then
-          echo "WARNING: No release-ready milestone found, but proceeding with manual release"
-          echo "Manual override enabled - milestone validation skipped"
-          echo ""
-          # For manual release, try to use RELEASE_VERSION if available, otherwise prompt
-          if [ -z "$RELEASE_VERSION" ]; then
-            echo "ERROR: Manual release requires RELEASE_VERSION to be set"
-            echo "Set the CI/CD variable RELEASE_VERSION to the version you want to release"
-            echo "Or set FORCE_RELEASE=true to explicitly enable manual override"
-            exit 1
-          fi
-          echo "Using manually specified version: ${RELEASE_VERSION}"
-        else
-          echo "RELEASE BLOCKED: No release-ready milestone found"
-          echo ""
-          echo "Requirements for automatic release:"
-          echo " 1.  ENABLE_RELEASE variable MUST be set to 'true'"
-          echo " 2.  Milestone MUST exist with version in title (e.g., 'v0.2.6 - Feature Name')"
-          echo " 3.  Milestone MUST be CLOSED"
-          echo " 4.  Milestone MUST be 100% COMPLETE (all issues closed)"
-          echo " 5.  Version MUST NOT already be released"
-          echo ""
-          echo "Current status:"
-          if [ -z "$RELEASE_VERSION" ]; then
-            echo " • No closed milestone with version found"
-          else
-            echo " • Found milestone: ${MILESTONE_TITLE}"
-            echo " • Milestone has open issues - complete them first:"
-            echo "   https://${CI_SERVER_HOST}/${CI_PROJECT_PATH}/-/milestones/${MILESTONE_ID}"
-          fi
-          echo ""
-          echo "Once all issues are closed and milestone is closed, the release will trigger automatically."
-          echo "Or use the manual release button to override (requires RELEASE_VERSION variable)."
-          exit 1
-        fi
-      fi
+        endpoints:
+          - http://db-migrator:8080/a2a
+          - http://monitoring-agent:8080/a2a
 
-      echo "Release gate passed:"
-      echo "  • ENABLE_RELEASE: ${ENABLE_RELEASE}"
-      echo "  • Milestone ready: ${MILESTONE_READY}"
-      if [ "$IS_MANUAL_OVERRIDE" = "true" ]; then
-        echo "  • Manual override: enabled"
-      fi
-      echo ""
+        authentication:
+          type: mtls
+          certPath: /var/secrets/a2a-client-cert.pem
+          keyPath: /var/secrets/a2a-client-key.pem
 
-      # Use detected version (from milestone or manual override)
-      MILESTONE_VERSION="$RELEASE_VERSION"
-      if [ -z "$MILESTONE_TITLE" ]; then
-        MILESTONE_TITLE="Manual Release v${MILESTONE_VERSION}"
-      fi
-      # MILESTONE_ID may not be set for manual releases
+      meshIntegration:
+        enabled: true
+        serviceMesh: istio
 
-      echo "Release ready for: ${MILESTONE_TITLE}"
-      echo "  Version: v${MILESTONE_VERSION}"
-      if [ -n "$MILESTONE_ID" ]; then
-        echo "  Milestone: https://${CI_SERVER_HOST}/${CI_PROJECT_PATH}/-/milestones/${MILESTONE_ID}"
-      else
-        echo "  Milestone: Manual release (no milestone linked)"
-      fi
-      echo ""
+        trafficPolicy:
+          loadBalancer: round_robin
+          connectionPool:
+            tcp:
+              maxConnections: 100
+            http:
+              http1MaxPendingRequests: 50
+              http2MaxRequests: 100
 
-      # Update package.json version
-      echo ""
-      echo "Updating package.json to v${MILESTONE_VERSION}..."
-      npm version ${MILESTONE_VERSION} --no-git-tag-version --allow-same-version
-
-      # AUTO-FIX: Sync ALL version references across the project
-      echo ""
-      echo "📝 AUTO-FIXING: Syncing all documentation and version references..."
-      echo "This ensures README, schema paths, badges, and all docs are consistent."
-      npx tsx scripts/sync-versions.ts --fix
-
-      # Verify the sync worked
-      echo ""
-      echo "Verifying documentation consistency..."
-      if ! npx tsx scripts/sync-versions.ts --check; then
-        echo "ERROR: Documentation sync failed verification!"
-        echo "This should never happen. Aborting release."
-        exit 1
-      fi
-      echo "Documentation sync verified - all references consistent"
-
-      # Rename spec directory if needed
-      if [ ! -d "spec/v${MILESTONE_VERSION}" ] && [ -d "spec/v${MILESTONE_VERSION}-dev" ]; then
-        echo "Renaming spec/v${MILESTONE_VERSION}-dev to spec/v${MILESTONE_VERSION}..."
-        mv "spec/v${MILESTONE_VERSION}-dev" "spec/v${MILESTONE_VERSION}"
-        # Rename schema files
-        cd "spec/v${MILESTONE_VERSION}"
-        for file in ossa-${MILESTONE_VERSION}-dev.*; do
-          if [ -f "$file" ]; then
-            newname="${file//-dev/}"
-            mv "$file" "$newname"
-            echo " Renamed: $file → $newname"
-          fi
-        done
-        cd ../..
-      fi
-
-      # Configure npm
-      # Use CI_SERVER_HOST for dynamic GitLab instance support
-      GITLAB_HOST="${CI_SERVER_HOST:-$(echo "${CI_API_V4_URL}" | sed 's|https\?://||' | sed 's|/api/v4.*||')}"
-      echo "@bluefly:registry=${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/npm/" > .npmrc
-      echo "//${GITLAB_HOST}/api/v4/projects/${CI_PROJECT_ID}/packages/npm/:_authToken=${CI_JOB_TOKEN}" >> .npmrc
-
-      if [ -n "$NPM_TOKEN" ]; then
-        echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" >> .npmrc
-      fi
-
-      # Run tests one more time before publishing
-      echo ""
-      echo "🧪 Running final tests before publish..."
-      npm run test || (echo "Tests failed - aborting release" && exit 1)
-
-      # Publish to npm
-      echo ""
-      echo "Publishing v${MILESTONE_VERSION} to npm..."
-      if ! npm publish --access public; then
-        echo "ERROR: npm publish failed - aborting release"
-        echo "No git tag or commit will be created"
-        exit 1
-      fi
-
-      # Only proceed with git operations if npm publish succeeded
-      echo ""
-      echo "npm publish succeeded - creating git tag and pushing..."
-      git add package.json package-lock.json README.md spec/
-      git commit -m "chore(release): v${MILESTONE_VERSION} [skip ci]" || echo "No changes to commit"
-      git tag -a "v${MILESTONE_VERSION}" -m "Release v${MILESTONE_VERSION}"
-      git push origin main --tags
-
-      echo ""
-      echo "Release v${MILESTONE_VERSION} completed successfully!"
-      echo "   npm: https://www.npmjs.com/package/@bluefly/openstandardagents"
-      echo "    Tag: v${MILESTONE_VERSION}"
-      echo "   Milestone: ${MILESTONE_TITLE}"
-  rules:
-    # AUTOMATIC release when BOTH conditions are met:
-    # 1. Milestone is 100% complete and closed
-    # 2. ENABLE_RELEASE variable is set to "true"
-    - if: $CI_COMMIT_BRANCH == "main" && $MILESTONE_READY == "true" && $ENABLE_RELEASE == "true"
-      when: on_success  # Automatic when both conditions are met
-      allow_failure: false
-    # Manual fallback if milestone detection fails but you want to force release
-    # Only requires ENABLE_RELEASE (allows override when MILESTONE_READY is false/missing)
-    - if: $CI_COMMIT_BRANCH == "main" && $ENABLE_RELEASE == "true"
-      when: manual
-      allow_failure: false
-  needs:
-    - quality:gates
-    - build:dist
-    - release:preview  # Must review preview before releasing
-    - validate:docs-consistency  # CRITICAL: Docs MUST be consistent before release
-    - detect:milestone-version  # CRITICAL: Milestone MUST be ready
-  # TEMPORARY: Environment commented out to bypass self-approval restriction
-  # Will re-enable after adding second maintainer or using project access token
-  # environment:
-  #   name: npm-registry
-  #   url: https://www.npmjs.com/package/@bluefly/openstandardagents
-  #   deployment_tier: production
-
-# ============================================================================
-# STAGE 7: MIRROR
-# ============================================================================
-
-mirror:github:
-  stage: mirror
-  image: alpine:latest
-  before_script:
-    - apk add --no-cache git curl
-    - git config --global user.email "operations@blueflyio.com"
-    - git config --global user.name "GitLab CI Release"
-  script:
-    - |
-      if [ -z "$GITHUB_MIRROR_TOKEN" ]; then
-        echo " GITHUB_MIRROR_TOKEN not set - skipping"
-        exit 0
-      fi
-
-      echo "Syncing to GitHub..."
-      git remote add github https://${GITHUB_MIRROR_TOKEN}@github.com/blueflyio/openstandardagents.git || true
-      git push github --all --force || true
-      git push github --tags --force || true
-      echo "GitHub mirror synced"
-  rules:
-    - if: $CI_COMMIT_TAG
-      when: on_success
-    - if: $CI_COMMIT_BRANCH == "main"
-      when: on_success
-  allow_failure: true
-
-# ============================================================================
-# WORKFLOW
-# ============================================================================
-
-workflow:
-  rules:
-    - if: $CI_COMMIT_BRANCH
-    - if: $CI_MERGE_REQUEST_IID
-    - if: $CI_COMMIT_TAG
-    - when: always
+        circuitBreaker:
+          consecutiveErrors: 5
+          interval: 30s
+          baseEjectionTime: 30s
+          maxEjectionPercent: 50
