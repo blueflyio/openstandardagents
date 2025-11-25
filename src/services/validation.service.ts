@@ -33,7 +33,7 @@ export class ValidationService implements IValidationService {
   private ajv: Ajv;
   private platformValidators: Map<
     string,
-    (ext: Record<string, unknown>) => { valid: boolean; errors: string[] }
+    { validate: (manifest: OssaAgent) => ValidationResult }
   >;
 
   constructor(
@@ -89,7 +89,7 @@ export class ValidationService implements IValidationService {
       const warnings = this.generateWarnings(manifest);
 
       // 5. Run platform-specific validators
-      const platformResults = this.validatePlatformExtensions(manifest);
+      const platformResults = this.validatePlatformExtensions(manifest as OssaAgent);
       const allErrors = [
         ...(valid ? [] : validator.errors || []),
         ...platformResults.errors,
@@ -139,14 +139,15 @@ export class ValidationService implements IValidationService {
 
     const m = manifest as OssaAgent;
     const spec = m.spec || m.agent;
-    const metadata = m.metadata || m.agent?.metadata;
+    const metadata = (m as Record<string, unknown>).metadata || (m.agent as Record<string, unknown> | undefined)?.metadata;
 
     if (!spec) {
       return warnings;
     }
 
     // Check for description
-    if (!metadata?.description || metadata.description.trim().length === 0) {
+    const metadataRecord = metadata as Record<string, unknown> | undefined;
+    if (!metadataRecord?.description || (typeof metadataRecord.description === 'string' && metadataRecord.description.trim().length === 0)) {
       warnings.push(
         'Best practice: Add agent description for better documentation'
       );
@@ -171,21 +172,23 @@ export class ValidationService implements IValidationService {
 
     // Check for observability
     const extensions = m.extensions;
-    if (extensions && !spec.observability && !m.agent?.monitoring) {
+    const specRecord = spec as Record<string, unknown>;
+    const agentRecord = m.agent as Record<string, unknown> | undefined;
+    if (extensions && !specRecord.observability && !agentRecord?.monitoring) {
       warnings.push(
         'Best practice: Configure observability (tracing, metrics, logging)'
       );
     }
 
     // Check for autonomy configuration
-    if (!spec.autonomy && !m.agent?.autonomy) {
+    if (!specRecord.autonomy && !agentRecord?.autonomy) {
       warnings.push(
         'Best practice: Define autonomy level and approval requirements'
       );
     }
 
     // Check for constraints
-    if (!spec.constraints && !m.agent?.constraints) {
+    if (!specRecord.constraints && !agentRecord?.constraints) {
       warnings.push(
         'Best practice: Set cost and performance constraints for production use'
       );

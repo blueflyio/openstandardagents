@@ -13,14 +13,15 @@ export class CrewAIValidator {
     const errors: ErrorObject[] = [];
     const warnings: string[] = [];
 
-    const crewaiExt = manifest.extensions?.crewai;
-    if (!crewaiExt || crewaiExt.enabled === false) {
+    const crewaiExt = manifest.extensions?.crewai as Record<string, unknown> | undefined;
+    if (!crewaiExt || (crewaiExt.enabled as boolean | undefined) === false) {
       return { valid: true, errors: [], warnings: [] };
     }
 
     // Validate agent_type
     const validTypes = ['worker', 'manager', 'researcher', 'analyst', 'custom'];
-    if (crewaiExt.agent_type && !validTypes.includes(crewaiExt.agent_type)) {
+    const agentType = crewaiExt.agent_type as string | undefined;
+    if (agentType && !validTypes.includes(agentType)) {
       errors.push({
         instancePath: '/extensions/crewai/agent_type',
         schemaPath: '',
@@ -31,10 +32,11 @@ export class CrewAIValidator {
     }
 
     // Validate role (required for CrewAI)
+    const role = crewaiExt.role as string | undefined;
     if (
-      !crewaiExt.role ||
-      typeof crewaiExt.role !== 'string' ||
-      crewaiExt.role.trim().length === 0
+      !role ||
+      typeof role !== 'string' ||
+      role.trim().length === 0
     ) {
       errors.push({
         instancePath: '/extensions/crewai/role',
@@ -46,10 +48,11 @@ export class CrewAIValidator {
     }
 
     // Validate goal (required for CrewAI)
+    const goal = crewaiExt.goal as string | undefined;
     if (
-      !crewaiExt.goal ||
-      typeof crewaiExt.goal !== 'string' ||
-      crewaiExt.goal.trim().length === 0
+      !goal ||
+      typeof goal !== 'string' ||
+      goal.trim().length === 0
     ) {
       errors.push({
         instancePath: '/extensions/crewai/goal',
@@ -61,14 +64,16 @@ export class CrewAIValidator {
     }
 
     // Validate backstory (optional but recommended)
-    if (!crewaiExt.backstory || crewaiExt.backstory.trim().length === 0) {
+    const backstory = crewaiExt.backstory as string | undefined;
+    if (!backstory || backstory.trim().length === 0) {
       warnings.push(
         'Best practice: Add backstory for better CrewAI agent context'
       );
     }
 
     // Validate tools if provided
-    if (crewaiExt.tools && !Array.isArray(crewaiExt.tools)) {
+    const tools = crewaiExt.tools as unknown[] | undefined;
+    if (tools && !Array.isArray(tools)) {
       errors.push({
         instancePath: '/extensions/crewai/tools',
         schemaPath: '',
@@ -79,10 +84,11 @@ export class CrewAIValidator {
     }
 
     // Validate max_iterations if provided
-    if (crewaiExt.max_iterations !== undefined) {
+    const maxIterations = crewaiExt.max_iterations as number | undefined;
+    if (maxIterations !== undefined) {
       if (
-        typeof crewaiExt.max_iterations !== 'number' ||
-        crewaiExt.max_iterations < 1
+        typeof maxIterations !== 'number' ||
+        maxIterations < 1
       ) {
         errors.push({
           instancePath: '/extensions/crewai/max_iterations',
@@ -95,10 +101,11 @@ export class CrewAIValidator {
     }
 
     // Validate max_execution_time if provided
-    if (crewaiExt.max_execution_time !== undefined) {
+    const maxExecutionTime = crewaiExt.max_execution_time as number | undefined;
+    if (maxExecutionTime !== undefined) {
       if (
-        typeof crewaiExt.max_execution_time !== 'number' ||
-        crewaiExt.max_execution_time < 1
+        typeof maxExecutionTime !== 'number' ||
+        maxExecutionTime < 1
       ) {
         errors.push({
           instancePath: '/extensions/crewai/max_execution_time',
@@ -111,9 +118,10 @@ export class CrewAIValidator {
     }
 
     // Validate verbose if provided
+    const verbose = crewaiExt.verbose as boolean | undefined;
     if (
-      crewaiExt.verbose !== undefined &&
-      typeof crewaiExt.verbose !== 'boolean'
+      verbose !== undefined &&
+      typeof verbose !== 'boolean'
     ) {
       errors.push({
         instancePath: '/extensions/crewai/verbose',

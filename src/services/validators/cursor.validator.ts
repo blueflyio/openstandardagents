@@ -13,15 +13,16 @@ export class CursorValidator {
     const errors: ErrorObject[] = [];
     const warnings: string[] = [];
 
-    const cursorExt = manifest.extensions?.cursor;
+    const cursorExt = manifest.extensions?.cursor as Record<string, unknown> | undefined;
     if (!cursorExt) {
       return { valid: true, errors: [], warnings: [] };
     }
 
-    if (cursorExt.enabled !== false) {
+    if ((cursorExt.enabled as boolean | undefined) !== false) {
       // Validate agent_type
       const validTypes = ['composer', 'chat', 'background', 'cloud'];
-      if (cursorExt.agent_type && !validTypes.includes(cursorExt.agent_type)) {
+      const agentType = cursorExt.agent_type as string | undefined;
+      if (agentType && !validTypes.includes(agentType)) {
         errors.push({
           instancePath: '/extensions/cursor/agent_type',
           schemaPath: '',
@@ -32,10 +33,12 @@ export class CursorValidator {
       }
 
       // Validate workspace_config if provided
-      if (cursorExt.workspace_config) {
+      const workspaceConfig = cursorExt.workspace_config as Record<string, unknown> | undefined;
+      if (workspaceConfig) {
+        const rulesFile = workspaceConfig.rules_file as string | undefined;
         if (
-          cursorExt.workspace_config.rules_file &&
-          typeof cursorExt.workspace_config.rules_file !== 'string'
+          rulesFile &&
+          typeof rulesFile !== 'string'
         ) {
           errors.push({
             instancePath: '/extensions/cursor/workspace_config/rules_file',
@@ -46,9 +49,10 @@ export class CursorValidator {
           });
         }
 
+        const contextFiles = workspaceConfig.context_files as unknown[] | undefined;
         if (
-          cursorExt.workspace_config.context_files &&
-          !Array.isArray(cursorExt.workspace_config.context_files)
+          contextFiles &&
+          !Array.isArray(contextFiles)
         ) {
           errors.push({
             instancePath: '/extensions/cursor/workspace_config/context_files',
@@ -61,11 +65,13 @@ export class CursorValidator {
       }
 
       // Validate model configuration
-      if (cursorExt.model) {
+      const model = cursorExt.model as Record<string, unknown> | undefined;
+      if (model) {
         const validProviders = ['openai', 'anthropic', 'custom'];
+        const provider = model.provider as string | undefined;
         if (
-          cursorExt.model.provider &&
-          !validProviders.includes(cursorExt.model.provider)
+          provider &&
+          !validProviders.includes(provider)
         ) {
           errors.push({
             instancePath: '/extensions/cursor/model/provider',
@@ -78,13 +84,14 @@ export class CursorValidator {
       }
 
       // Warnings for best practices
-      if (!cursorExt.workspace_config?.rules_file) {
+      if (!workspaceConfig?.rules_file) {
         warnings.push(
           'Best practice: Specify .cursorrules file path for Cursor IDE integration'
         );
       }
 
-      if (!cursorExt.capabilities) {
+      const capabilities = cursorExt.capabilities as unknown[] | undefined;
+      if (!capabilities) {
         warnings.push(
           'Best practice: Define Cursor capabilities (code_generation, code_review, etc.)'
         );

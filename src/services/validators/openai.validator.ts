@@ -13,8 +13,8 @@ export class OpenAIValidator {
     const errors: ErrorObject[] = [];
     const warnings: string[] = [];
 
-    const openaiExt = manifest.extensions?.openai_agents;
-    if (!openaiExt || openaiExt.enabled === false) {
+    const openaiExt = manifest.extensions?.openai_agents as Record<string, unknown> | undefined;
+    if (!openaiExt || (openaiExt.enabled as boolean | undefined) === false) {
       return { valid: true, errors: [], warnings: [] };
     }
 
@@ -25,7 +25,8 @@ export class OpenAIValidator {
       'gpt-4-turbo',
       'gpt-3.5-turbo',
     ];
-    if (openaiExt.model && !validModels.includes(openaiExt.model)) {
+    const model = openaiExt.model as string | undefined;
+    if (model && !validModels.includes(model)) {
       errors.push({
         instancePath: '/extensions/openai_agents/model',
         schemaPath: '',
@@ -36,8 +37,9 @@ export class OpenAIValidator {
     }
 
     // Validate tools_mapping if provided
-    if (openaiExt.tools_mapping) {
-      if (!Array.isArray(openaiExt.tools_mapping)) {
+    const toolsMapping = openaiExt.tools_mapping as Array<Record<string, unknown>> | undefined;
+    if (toolsMapping) {
+      if (!Array.isArray(toolsMapping)) {
         errors.push({
           instancePath: '/extensions/openai_agents/tools_mapping',
           schemaPath: '',
@@ -46,7 +48,7 @@ export class OpenAIValidator {
           message: 'tools_mapping must be an array',
         });
       } else {
-        openaiExt.tools_mapping.forEach(
+        toolsMapping.forEach(
           (mapping: Record<string, unknown>, index: number) => {
             if (!mapping.ossa_capability) {
               errors.push({
@@ -63,10 +65,12 @@ export class OpenAIValidator {
     }
 
     // Validate guardrails
-    if (openaiExt.guardrails) {
+    const guardrails = openaiExt.guardrails as Record<string, unknown> | undefined;
+    if (guardrails) {
+      const maxToolCalls = guardrails.max_tool_calls as number | undefined;
       if (
-        openaiExt.guardrails.max_tool_calls !== undefined &&
-        openaiExt.guardrails.max_tool_calls < 1
+        maxToolCalls !== undefined &&
+        maxToolCalls < 1
       ) {
         errors.push({
           instancePath: '/extensions/openai_agents/guardrails/max_tool_calls',
@@ -77,9 +81,10 @@ export class OpenAIValidator {
         });
       }
 
+      const timeoutSeconds = guardrails.timeout_seconds as number | undefined;
       if (
-        openaiExt.guardrails.timeout_seconds !== undefined &&
-        openaiExt.guardrails.timeout_seconds < 1
+        timeoutSeconds !== undefined &&
+        timeoutSeconds < 1
       ) {
         errors.push({
           instancePath: '/extensions/openai_agents/guardrails/timeout_seconds',
@@ -92,11 +97,13 @@ export class OpenAIValidator {
     }
 
     // Validate memory
-    if (openaiExt.memory) {
+    const memory = openaiExt.memory as Record<string, unknown> | undefined;
+    if (memory) {
       const validMemoryTypes = ['session', 'persistent'];
+      const memoryType = memory.type as string | undefined;
       if (
-        openaiExt.memory.type &&
-        !validMemoryTypes.includes(openaiExt.memory.type)
+        memoryType &&
+        !validMemoryTypes.includes(memoryType)
       ) {
         errors.push({
           instancePath: '/extensions/openai_agents/memory/type',
@@ -107,9 +114,10 @@ export class OpenAIValidator {
         });
       }
 
+      const maxMessages = memory.max_messages as number | undefined;
       if (
-        openaiExt.memory.max_messages !== undefined &&
-        openaiExt.memory.max_messages < 1
+        maxMessages !== undefined &&
+        maxMessages < 1
       ) {
         errors.push({
           instancePath: '/extensions/openai_agents/memory/max_messages',
@@ -122,13 +130,13 @@ export class OpenAIValidator {
     }
 
     // Warnings
-    if (!openaiExt.tools_mapping || openaiExt.tools_mapping.length === 0) {
+    if (!toolsMapping || toolsMapping.length === 0) {
       warnings.push(
         'Best practice: Define tools_mapping to map OSSA capabilities to OpenAI tools'
       );
     }
 
-    if (!openaiExt.guardrails) {
+    if (!guardrails) {
       warnings.push('Best practice: Configure guardrails for production use');
     }
 

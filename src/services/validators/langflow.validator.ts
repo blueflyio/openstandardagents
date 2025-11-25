@@ -13,13 +13,14 @@ export class LangflowValidator {
     const errors: ErrorObject[] = [];
     const warnings: string[] = [];
 
-    const langflowExt = manifest.extensions?.langflow;
-    if (!langflowExt || langflowExt.enabled === false) {
+    const langflowExt = manifest.extensions?.langflow as Record<string, unknown> | undefined;
+    if (!langflowExt || (langflowExt.enabled as boolean | undefined) === false) {
       return { valid: true, errors: [], warnings: [] };
     }
 
     // Validate flow_id if provided
-    if (langflowExt.flow_id && typeof langflowExt.flow_id !== 'string') {
+    const flowId = langflowExt.flow_id as string | undefined;
+    if (flowId && typeof flowId !== 'string') {
       errors.push({
         instancePath: '/extensions/langflow/flow_id',
         schemaPath: '',
@@ -30,7 +31,8 @@ export class LangflowValidator {
     }
 
     // Validate endpoint if provided
-    if (langflowExt.endpoint && typeof langflowExt.endpoint !== 'string') {
+    const endpoint = langflowExt.endpoint as string | undefined;
+    if (endpoint && typeof endpoint !== 'string') {
       errors.push({
         instancePath: '/extensions/langflow/endpoint',
         schemaPath: '',
@@ -41,9 +43,9 @@ export class LangflowValidator {
     }
 
     // Validate endpoint URL format if provided
-    if (langflowExt.endpoint && typeof langflowExt.endpoint === 'string') {
+    if (endpoint && typeof endpoint === 'string') {
       try {
-        new URL(langflowExt.endpoint);
+        new URL(endpoint);
       } catch {
         errors.push({
           instancePath: '/extensions/langflow/endpoint',
@@ -56,8 +58,9 @@ export class LangflowValidator {
     }
 
     // Validate timeout if provided
-    if (langflowExt.timeout !== undefined) {
-      if (typeof langflowExt.timeout !== 'number' || langflowExt.timeout < 1) {
+    const timeout = langflowExt.timeout as number | undefined;
+    if (timeout !== undefined) {
+      if (typeof timeout !== 'number' || timeout < 1) {
         errors.push({
           instancePath: '/extensions/langflow/timeout',
           schemaPath: '',
@@ -69,7 +72,8 @@ export class LangflowValidator {
     }
 
     // Validate inputs if provided
-    if (langflowExt.inputs && typeof langflowExt.inputs !== 'object') {
+    const inputs = langflowExt.inputs as Record<string, unknown> | undefined;
+    if (inputs && typeof inputs !== 'object') {
       errors.push({
         instancePath: '/extensions/langflow/inputs',
         schemaPath: '',
@@ -80,7 +84,7 @@ export class LangflowValidator {
     }
 
     // Warnings
-    if (!langflowExt.flow_id && !langflowExt.endpoint) {
+    if (!flowId && !endpoint) {
       warnings.push(
         'Best practice: Specify flow_id or endpoint for Langflow integration'
       );

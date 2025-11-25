@@ -13,8 +13,8 @@ export class LangChainValidator {
     const errors: ErrorObject[] = [];
     const warnings: string[] = [];
 
-    const langchainExt = manifest.extensions?.langchain;
-    if (!langchainExt || langchainExt.enabled === false) {
+    const langchainExt = manifest.extensions?.langchain as Record<string, unknown> | undefined;
+    if (!langchainExt || (langchainExt.enabled as boolean | undefined) === false) {
       return { valid: true, errors: [], warnings: [] };
     }
 
@@ -26,9 +26,10 @@ export class LangChainValidator {
       'sequential',
       'custom',
     ];
+    const chainType = langchainExt.chain_type as string | undefined;
     if (
-      langchainExt.chain_type &&
-      !validChainTypes.includes(langchainExt.chain_type)
+      chainType &&
+      !validChainTypes.includes(chainType)
     ) {
       errors.push({
         instancePath: '/extensions/langchain/chain_type',
@@ -40,11 +41,13 @@ export class LangChainValidator {
     }
 
     // Validate memory if provided
-    if (langchainExt.memory) {
+    const memory = langchainExt.memory as Record<string, unknown> | undefined;
+    if (memory) {
       const validMemoryTypes = ['buffer', 'summary', 'conversation', 'vector'];
+      const memoryType = memory.type as string | undefined;
       if (
-        langchainExt.memory.type &&
-        !validMemoryTypes.includes(langchainExt.memory.type)
+        memoryType &&
+        !validMemoryTypes.includes(memoryType)
       ) {
         errors.push({
           instancePath: '/extensions/langchain/memory/type',
@@ -82,9 +85,10 @@ export class LangChainValidator {
     }
 
     // Validate return_intermediate_steps if provided
+    const returnIntermediateSteps = langchainExt.return_intermediate_steps as boolean | undefined;
     if (
-      langchainExt.return_intermediate_steps !== undefined &&
-      typeof langchainExt.return_intermediate_steps !== 'boolean'
+      returnIntermediateSteps !== undefined &&
+      typeof returnIntermediateSteps !== 'boolean'
     ) {
       errors.push({
         instancePath: '/extensions/langchain/return_intermediate_steps',
@@ -96,15 +100,16 @@ export class LangChainValidator {
     }
 
     // Warnings
-    if (!langchainExt.memory) {
+    if (!memory) {
       warnings.push(
         'Best practice: Configure memory for conversational LangChain agents'
       );
     }
 
+    const tools = langchainExt.tools as unknown[] | undefined;
     if (
-      !langchainExt.tools ||
-      (Array.isArray(langchainExt.tools) && langchainExt.tools.length === 0)
+      !tools ||
+      (Array.isArray(tools) && tools.length === 0)
     ) {
       warnings.push(
         'Best practice: Define tools for LangChain agent capabilities'

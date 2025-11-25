@@ -1,4 +1,3 @@
-
 # GitLab CI/CD Pipeline for OSSA
 # Decoupled Release Model:
 # - Code flows freely: Feature → development → main (CI validates, no auto-release)
@@ -60,10 +59,10 @@ detect:milestone-and-tags:
   script:
     - |
       #!/bin/bash
-      set -e
+      set +e  # Don't exit on error - we handle errors manually
       
-      echo "🔍 DEV TAG MANAGEMENT"
-      echo "===================="
+      echo "DEV TAG MANAGEMENT"
+      echo "=================="
       echo "Branch: ${CI_COMMIT_BRANCH}"
       echo "Commit: ${CI_COMMIT_SHA}"
       echo "Pipeline: ${CI_PIPELINE_ID}"
@@ -79,7 +78,7 @@ detect:milestone-and-tags:
 
       # Only run on main and development branches
       if [ "$CI_COMMIT_BRANCH" != "main" ] && [ "$CI_COMMIT_BRANCH" != "development" ]; then
-        echo "ℹ️  Skipping dev tag management (not on main/development branch)"
+        echo "Skipping dev tag management (not on main/development branch)"
       else
         # Get all milestones
         DEV_MILESTONES=$(curl -sS -G "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/milestones" \
@@ -88,24 +87,24 @@ detect:milestone-and-tags:
           --data-urlencode "state=all" 2>/dev/null || echo "[]")
 
         if [ "$DEV_MILESTONES" != "[]" ] && [ -n "$DEV_MILESTONES" ]; then
-          # Process milestones - FIXED LOOP
-          echo "$DEV_MILESTONES" | jq -c '.[]' | while read -r dev_milestone_json; do
+          # Process milestones - use process substitution to avoid subshell
+          while IFS= read -r dev_milestone_json; do
             [ -z "$dev_milestone_json" ] && continue
 
-            DEV_TITLE=$(echo "$dev_milestone_json" | jq -r '.title // ""')
-            DEV_ID=$(echo "$dev_milestone_json" | jq -r '.id // ""')
+            DEV_TITLE=$(echo "$dev_milestone_json" | jq -r '.title // ""' 2>/dev/null || echo "")
+            DEV_ID=$(echo "$dev_milestone_json" | jq -r '.id // ""' 2>/dev/null || echo "")
             DEV_VERSION=$(echo "$DEV_TITLE" | grep -oE 'v?[0-9]+\.[0-9]+\.[0-9]+(-[A-Za-z0-9]+)?' | head -1 | sed 's/^v//')
 
             [ -z "$DEV_VERSION" ] && continue
 
             # Skip if already released
-            if git tag -l | grep -qE "^v?${DEV_VERSION}$"; then
-              echo "ℹ️  Skipping ${DEV_VERSION} (already released)"
+            if git tag -l 2>/dev/null | grep -qE "^v?${DEV_VERSION}$"; then
+              echo "Skipping ${DEV_VERSION} (already released)"
               continue
             fi
 
             # Get latest dev tag for this version
-            LATEST_DEV_TAG=$(git tag -l "${DEV_VERSION}-dev-*" | sort -V | tail -1)
+            LATEST_DEV_TAG=$(git tag -l "${DEV_VERSION}-dev-*" 2>/dev/null | sort -V | tail -1)
             CURRENT_BUILD=$(echo "$LATEST_DEV_TAG" | sed "s/.*-dev-//" | grep -E '^[0-9]+$' || echo "0")
             [ -z "$CURRENT_BUILD" ] && CURRENT_BUILD=0
             NEXT_BUILD=$((CURRENT_BUILD + 1))
@@ -114,18 +113,18 @@ detect:milestone-and-tags:
             if [ -n "$LATEST_DEV_TAG" ]; then
               TAG_COMMIT=$(git rev-list -n 1 "$LATEST_DEV_TAG" 2>/dev/null || echo "")
               if [ "$CI_COMMIT_SHA" = "$TAG_COMMIT" ]; then
-                echo "ℹ️  No changes since ${LATEST_DEV_TAG}, skipping"
+                echo "No changes since ${LATEST_DEV_TAG}, skipping"
                 continue
               fi
             fi
 
             NEW_TAG="${DEV_VERSION}-dev-${NEXT_BUILD}"
-            echo "📦 Creating dev tag: ${NEW_TAG}"
+            echo "Creating dev tag: ${NEW_TAG}"
 
             # Create and push tag
             if git tag -a "$NEW_TAG" -m "Dev build ${NEXT_BUILD} for milestone ${DEV_ID}" "$CI_COMMIT_SHA" 2>/dev/null; then
               if git push origin "$NEW_TAG" 2>/dev/null; then
-                echo "✅ Created dev tag: ${NEW_TAG}"
+                echo "Created dev tag: ${NEW_TAG}"
                 cat > dev-tags.env << EOF
       DEV_TAG_VERSION=${DEV_VERSION}
       DEV_TAG_NAME=${NEW_TAG}
@@ -133,22 +132,22 @@ detect:milestone-and-tags:
       DEV_MILESTONE_ID=${DEV_ID}
       EOF
               else
-                echo "⚠️  Failed to push tag ${NEW_TAG}"
+                echo "Failed to push tag ${NEW_TAG}"
                 git tag -d "$NEW_TAG" 2>/dev/null || true
               fi
             else
-              echo "⚠️  Tag ${NEW_TAG} already exists or failed to create"
+              echo "Tag ${NEW_TAG} already exists or failed to create"
             fi
 
             break  # Only create one dev tag per pipeline
-          done
+          done < <(echo "$DEV_MILESTONES" | jq -c '.[]' 2>/dev/null || echo "")
         fi
       fi
       
       # Also detect closed milestones for release readiness
       echo ""
-      echo "🔍 RELEASE READINESS CHECK"
-      echo "==========================="
+      echo "RELEASE READINESS CHECK"
+      echo "========================"
       
       # Get all milestones
       ALL_MILESTONES=$(curl -sS -G "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/milestones" \
@@ -164,32 +163,30 @@ detect:milestone-and-tags:
       MILESTONE_READY=false
       EOF
       
-      # Find closed milestone ready for release - FIXED LOOP
+      # Find closed milestone ready for release - use process substitution to avoid subshell
       FOUND_MILESTONE=false
-      echo "$ALL_MILESTONES" | jq -c '.[] | select(.state == "closed")' | while read -r milestone_json; do
+      while IFS= read -r milestone_json; do
         [ -z "$milestone_json" ] && continue
-        
-        # Skip if we already found one
         [ "$FOUND_MILESTONE" = "true" ] && break
       
-        TITLE=$(echo "$milestone_json" | jq -r '.title // ""')
-        ID=$(echo "$milestone_json" | jq -r '.id // ""')
-        STATE=$(echo "$milestone_json" | jq -r '.state // ""')
+        TITLE=$(echo "$milestone_json" | jq -r '.title // ""' 2>/dev/null || echo "")
+        ID=$(echo "$milestone_json" | jq -r '.id // ""' 2>/dev/null || echo "")
+        STATE=$(echo "$milestone_json" | jq -r '.state // ""' 2>/dev/null || echo "")
       
         VERSION=$(echo "$TITLE" | grep -oE 'v?[0-9]+\.[0-9]+\.[0-9]+(-[A-Za-z0-9]+)?' | head -1 | sed 's/^v//')
       
         if [ -n "$VERSION" ] && [ "$STATE" = "closed" ]; then
           # Skip if already released
-          if git tag -l | grep -qE "^v?${VERSION}$"; then
+          if git tag -l 2>/dev/null | grep -qE "^v?${VERSION}$"; then
             continue
           fi
       
           # Get milestone stats
           MILESTONE_STATS=$(curl -sS -G "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/milestones/${ID}" \
-            --header "PRIVATE-TOKEN: ${GITLAB_PUSH_TOKEN}")
+            --header "PRIVATE-TOKEN: ${GITLAB_PUSH_TOKEN}" 2>/dev/null || echo "{}")
       
-          TOTAL_ISSUES=$(echo "$MILESTONE_STATS" | jq -r '.total_issues_count // 0')
-          CLOSED_ISSUES=$(echo "$MILESTONE_STATS" | jq -r '.closed_issues_count // 0')
+          TOTAL_ISSUES=$(echo "$MILESTONE_STATS" | jq -r '.total_issues_count // 0' 2>/dev/null || echo "0")
+          CLOSED_ISSUES=$(echo "$MILESTONE_STATS" | jq -r '.closed_issues_count // 0' 2>/dev/null || echo "0")
           OPEN_ISSUES=$((TOTAL_ISSUES - CLOSED_ISSUES))
       
           # Check if 100% complete
@@ -200,7 +197,7 @@ detect:milestone-and-tags:
       MILESTONE_ID=${ID}
       MILESTONE_READY=true
       EOF
-            echo "✅ Release-ready milestone found: v${VERSION}"
+            echo "Release-ready milestone found: v${VERSION}"
             FOUND_MILESTONE=true
             break
           elif [ "$TOTAL_ISSUES" -eq 0 ]; then
@@ -210,12 +207,12 @@ detect:milestone-and-tags:
       MILESTONE_ID=${ID}
       MILESTONE_READY=true
       EOF
-            echo "✅ Release-ready milestone found: v${VERSION} (empty milestone)"
+            echo "Release-ready milestone found: v${VERSION} (empty milestone)"
             FOUND_MILESTONE=true
             break
           fi
         fi
-      done
+      done < <(echo "$ALL_MILESTONES" | jq -c '.[] | select(.state == "closed")' 2>/dev/null || echo "")
       
       # If no milestone found, ensure env file exists
       if [ ! -s milestone-version.env ]; then
@@ -638,13 +635,47 @@ release:npm:
         exit 1
       fi
       
-      # Create git tag
+      # Create git tag with comprehensive release information
       PROD_TAG="v${RELEASE_VERSION}"
-      git tag -a "$PROD_TAG" -m "Release v${RELEASE_VERSION}
+      RELEASE_DATE=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+      
+      # Extract release notes from CHANGELOG if available
+      CHANGELOG_FILE="spec/v${RELEASE_VERSION}/CHANGELOG.md"
+      if [ ! -f "$CHANGELOG_FILE" ]; then
+        CHANGELOG_FILE="spec/v${RELEASE_VERSION}-RC/CHANGELOG.md"
+      fi
+      
+      if [ -f "$CHANGELOG_FILE" ]; then
+        # Extract overview and key features from CHANGELOG
+        OVERVIEW=$(grep -A 5 "^## Overview" "$CHANGELOG_FILE" 2>/dev/null | head -6 | tail -5 | sed 's/^/  /' || echo "")
+        KEY_FEATURES=$(grep -A 20 "^## What's New" "$CHANGELOG_FILE" 2>/dev/null | head -21 | tail -20 | sed 's/^/  /' || echo "")
+      else
+        OVERVIEW=""
+        KEY_FEATURES=""
+      fi
+      
+      # Build comprehensive tag message
+      TAG_MESSAGE="Release v${RELEASE_VERSION}
 
-      Milestone: ${MILESTONE_TITLE}
-      Pipeline: ${CI_PIPELINE_ID}
-      Released: $(date -u +"%Y-%m-%dT%H:%M:%SZ")" "$CI_COMMIT_SHA"
+Milestone: ${MILESTONE_TITLE}
+Pipeline: ${CI_PIPELINE_ID}
+Released: ${RELEASE_DATE}
+Commit: ${CI_COMMIT_SHA}
+
+${OVERVIEW}
+
+${KEY_FEATURES}
+
+Documentation:
+- Schema: https://openstandardagents.org/schema/
+- Changelog: https://github.com/blueflyio/openstandardagents/blob/main/CHANGELOG.md
+- Migration Guide: https://openstandardagents.org/docs/migration-guides/
+- Examples: https://openstandardagents.org/examples/
+
+npm Package: @bluefly/openstandardagents@${RELEASE_VERSION}
+GitLab Release: https://${CI_SERVER_HOST}/${CI_PROJECT_PATH}/-/releases/v${RELEASE_VERSION}"
+      
+      git tag -a "$PROD_TAG" -m "$TAG_MESSAGE" "$CI_COMMIT_SHA"
       
       # Commit and push
       git add package.json package-lock.json README.md spec/ || true
