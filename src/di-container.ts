@@ -32,7 +32,9 @@ container.bind(MigrationService).toSelf();
  * @param serviceIdentifier - Service class or token
  * @returns Service instance
  */
-export function getService<T>(serviceIdentifier: new (...args: unknown[]) => T): T {
+export function getService<T>(
+  serviceIdentifier: new (...args: unknown[]) => T
+): T {
   return container.get<T>(serviceIdentifier);
 }
 

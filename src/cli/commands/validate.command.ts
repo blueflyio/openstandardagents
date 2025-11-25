@@ -8,7 +8,11 @@ import { Command } from 'commander';
 import { container } from '../../di-container.js';
 import { ManifestRepository } from '../../repositories/manifest.repository.js';
 import { ValidationService } from '../../services/validation.service.js';
-import type { OssaAgent, SchemaVersion, ValidationResult } from '../../types/index.js';
+import type {
+  OssaAgent,
+  SchemaVersion,
+  ValidationResult,
+} from '../../types/index.js';
 
 export const validateCommand = new Command('validate')
   .argument('<path>', 'Path to OSSA manifest or OpenAPI spec (YAML or JSON)')

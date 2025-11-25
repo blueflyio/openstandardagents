@@ -34,7 +34,17 @@ export const importCommand = new Command('import')
 
         const ossaManifest = await generationService.importFromPlatform(
           platformData as Record<string, unknown>,
-          platform as 'cursor' | 'openai' | 'anthropic' | 'langchain' | 'crewai' | 'autogen' | 'langflow' | 'langgraph' | 'llamaindex' | 'vercel-ai'
+          platform as
+            | 'cursor'
+            | 'openai'
+            | 'anthropic'
+            | 'langchain'
+            | 'crewai'
+            | 'autogen'
+            | 'langflow'
+            | 'langgraph'
+            | 'llamaindex'
+            | 'vercel-ai'
         );
 
         const outputPath = options?.output || 'agent.ossa.json';

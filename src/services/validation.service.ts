@@ -31,7 +31,10 @@ import { LangGraphValidator } from './validators/langgraph.validator.js';
 @injectable()
 export class ValidationService implements IValidationService {
   private ajv: Ajv;
-  private platformValidators: Map<string, (ext: Record<string, unknown>) => { valid: boolean; errors: string[] }>;
+  private platformValidators: Map<
+    string,
+    (ext: Record<string, unknown>) => { valid: boolean; errors: string[] }
+  >;
 
   constructor(
     @inject(SchemaRepository) private schemaRepository: SchemaRepository

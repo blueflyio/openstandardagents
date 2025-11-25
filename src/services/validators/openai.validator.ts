@@ -46,17 +46,19 @@ export class OpenAIValidator {
           message: 'tools_mapping must be an array',
         });
       } else {
-        openaiExt.tools_mapping.forEach((mapping: Record<string, unknown>, index: number) => {
-          if (!mapping.ossa_capability) {
-            errors.push({
-              instancePath: `/extensions/openai_agents/tools_mapping/${index}/ossa_capability`,
-              schemaPath: '',
-              keyword: 'required',
-              params: { missingProperty: 'ossa_capability' },
-              message: 'tools_mapping item must have ossa_capability',
-            });
+        openaiExt.tools_mapping.forEach(
+          (mapping: Record<string, unknown>, index: number) => {
+            if (!mapping.ossa_capability) {
+              errors.push({
+                instancePath: `/extensions/openai_agents/tools_mapping/${index}/ossa_capability`,
+                schemaPath: '',
+                keyword: 'required',
+                params: { missingProperty: 'ossa_capability' },
+                message: 'tools_mapping item must have ossa_capability',
+              });
+            }
           }
-        });
+        );
       }
     }
 

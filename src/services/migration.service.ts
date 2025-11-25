@@ -153,7 +153,10 @@ export class MigrationService {
     // Handle observability with proper structure
     if (v1.agent.observability || v1.agent.monitoring) {
       const obs = v1.agent.observability || v1.agent.monitoring;
-      let normalizedMetrics: Record<string, unknown> = obs.metrics as Record<string, unknown>;
+      let normalizedMetrics: Record<string, unknown> = obs.metrics as Record<
+        string,
+        unknown
+      >;
 
       if (normalizedMetrics === true) {
         normalizedMetrics = { enabled: true };

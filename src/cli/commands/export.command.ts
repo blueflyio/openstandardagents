@@ -52,7 +52,17 @@ export const exportCommand = new Command('export')
           try {
             const exported = await generationService.exportToPlatform(
               manifest as OssaAgent,
-              platform as 'cursor' | 'openai' | 'anthropic' | 'langchain' | 'crewai' | 'autogen' | 'langflow' | 'langgraph' | 'llamaindex' | 'vercel-ai'
+              platform as
+                | 'cursor'
+                | 'openai'
+                | 'anthropic'
+                | 'langchain'
+                | 'crewai'
+                | 'autogen'
+                | 'langflow'
+                | 'langgraph'
+                | 'llamaindex'
+                | 'vercel-ai'
             );
             const outputPath = options?.output || `${platform}-agent.json`;
             const finalPath =

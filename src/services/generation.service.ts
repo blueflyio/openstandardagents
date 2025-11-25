@@ -6,7 +6,17 @@
 import { injectable } from 'inversify';
 import type { AgentTemplate, OssaAgent } from '../types/index.js';
 
-type Platform = 'cursor' | 'openai' | 'anthropic' | 'langchain' | 'crewai' | 'autogen' | 'langflow' | 'langgraph' | 'llamaindex' | 'vercel-ai';
+type Platform =
+  | 'cursor'
+  | 'openai'
+  | 'anthropic'
+  | 'langchain'
+  | 'crewai'
+  | 'autogen'
+  | 'langflow'
+  | 'langgraph'
+  | 'llamaindex'
+  | 'vercel-ai';
 
 @injectable()
 export class GenerationService {
@@ -57,7 +67,9 @@ export class GenerationService {
    * @param template - Agent template
    * @returns Array of tools
    */
-  private generateTools(template: AgentTemplate): Array<Record<string, unknown>> {
+  private generateTools(
+    template: AgentTemplate
+  ): Array<Record<string, unknown>> {
     const baseTool: Record<string, unknown> = {
       type: 'mcp',
       name: `${template.role}_operation`,
@@ -153,7 +165,10 @@ export class GenerationService {
    * @param platform - Target platform
    * @returns Platform-specific agent configuration
    */
-  async exportToPlatform(manifest: OssaAgent, platform: Platform): Promise<Record<string, unknown>> {
+  async exportToPlatform(
+    manifest: OssaAgent,
+    platform: Platform
+  ): Promise<Record<string, unknown>> {
     const agent = manifest.agent || manifest;
     const metadata = manifest.metadata || agent.metadata || {};
     const spec = manifest.spec || agent;
@@ -216,7 +231,10 @@ export class GenerationService {
    * @param platform - Source platform
    * @returns OSSA agent manifest
    */
-  async importFromPlatform(platformData: Record<string, unknown>, platform: Platform): Promise<OssaAgent> {
+  async importFromPlatform(
+    platformData: Record<string, unknown>,
+    platform: Platform
+  ): Promise<OssaAgent> {
     const baseManifest: OssaAgent = {
       apiVersion: 'ossa/v0.2.4',
       kind: 'Agent',
@@ -298,7 +316,9 @@ export class GenerationService {
     return baseManifest;
   }
 
-  private extractTools(tools: Array<Record<string, unknown>>): Array<Record<string, unknown>> {
+  private extractTools(
+    tools: Array<Record<string, unknown>>
+  ): Array<Record<string, unknown>> {
     return tools.map((tool) => ({
       type: 'function',
       function: {
@@ -309,7 +329,9 @@ export class GenerationService {
     }));
   }
 
-  private convertToolsToOSSA(tools: Array<Record<string, unknown>>): Array<Record<string, unknown>> {
+  private convertToolsToOSSA(
+    tools: Array<Record<string, unknown>>
+  ): Array<Record<string, unknown>> {
     return tools.map((tool) => {
       const func = tool.function || tool;
       return {
