@@ -278,8 +278,8 @@ tag:pre-release:
     - "PRE_RELEASE_TAG=\"v${PROJECT_VERSION}-${BRANCH_TYPE}.${BRANCH_SLUG}+sha.${SHORT_SHA}\""
     - "echo 'Generated pre-release tag: $PRE_RELEASE_TAG'"
     - "if git rev-parse \"$PRE_RELEASE_TAG\" >/dev/null 2>&1; then COUNTER=1; while git rev-parse \"${PRE_RELEASE_TAG}+build.${COUNTER}\" >/dev/null 2>&1; do COUNTER=$((COUNTER + 1)); done; PRE_RELEASE_TAG=\"${PRE_RELEASE_TAG}+build.${COUNTER}\"; fi"
-    - "git config user.email 'ci@app-4001.cloud.bluefly.io'"
-    - "git config user.name 'GitLab CI'"
+    - "git config user.email 'thomas.scola@bluefly.io'"
+    - "git config user.name 'Bluefly.io Founder & creator of OssA'"
     - "git tag -a \"$PRE_RELEASE_TAG\" -m \"Pre-release: $CI_COMMIT_MESSAGE\""
     - "git push origin \"$PRE_RELEASE_TAG\" || echo 'Tag push failed - may need permissions'"
     - "echo '✅ Pre-release tag created: $PRE_RELEASE_TAG'"
@@ -304,8 +304,8 @@ changelog:update:
       # Check for changes
       if ! git diff --quiet CHANGELOG.md; then
         echo "CHANGELOG has new entries"
-        git config user.email "ci@app-4001.cloud.bluefly.io"
-        git config user.name "GitLab CI"
+        git config user.email 'thomas.scola@bluefly.io'
+        git config user.name 'Bluefly.io Founder & creator of OssA'
         git add CHANGELOG.md
         git commit -m "chore: update CHANGELOG for v${PROJECT_VERSION} [skip ci]"
         git push origin HEAD:$CI_COMMIT_BRANCH || echo "Push failed - manual update needed"
@@ -331,8 +331,8 @@ merge:to-development:
     - |
       if [ "$ENABLE_AUTO_MERGE" = "true" ]; then
         echo "🔄 Auto-merging to development"
-        git config user.email "ci@app-4001.cloud.bluefly.io"
-        git config user.name "GitLab CI"
+        git config user.email 'thomas.scola@bluefly.io'
+        git config user.name 'Bluefly.io Founder & creator of OssA'
         git fetch origin development
         git checkout development
         git merge --no-ff $CI_COMMIT_SHA -m "Auto-merge: $CI_COMMIT_MESSAGE"
@@ -352,8 +352,8 @@ promote:to-main:
   script:
     - apk add --no-cache git openssh-client openssl
     - echo "🚀 Promoting development to main (version $PROJECT_VERSION)"
-    - git config user.email "ci@app-4001.cloud.bluefly.io"
-    - git config user.name "GitLab CI"
+    - git config user.email 'thomas.scola@bluefly.io'
+    - git config user.name 'Bluefly.io Founder & creator of OssA'
     # Setup SSH authentication with multiple fallback methods
     - mkdir -p ~/.ssh
     - chmod 700 ~/.ssh
@@ -369,12 +369,12 @@ promote:to-main:
         chmod 600 ~/.ssh/id_rsa
       fi
     # Add GitLab host key
-    - ssh-keyscan -t ed25519,rsa app-4001.cloud.bluefly.io >> ~/.ssh/known_hosts
+    - ssh-keyscan -t ed25519,rsa gitlab.com >> ~/.ssh/known_hosts
     # Configure SSH to try all key types and be more permissive
     - |
       cat > ~/.ssh/config << EOF
-      Host app-4001.cloud.bluefly.io
-        HostName app-4001.cloud.bluefly.io
+      Host gitlab.com
+        HostName gitlab.com
         User git
         IdentitiesOnly yes
         IdentityFile ~/.ssh/id_rsa
@@ -385,9 +385,9 @@ promote:to-main:
       EOF
     - chmod 600 ~/.ssh/config
     # Test SSH connection before proceeding
-    - ssh -T git@app-4001.cloud.bluefly.io || echo "SSH test completed"
+    - ssh -T git@gitlab.com || echo "SSH test completed"
     # Configure git to use SSH
-    - git remote set-url origin git@app-4001.cloud.bluefly.io:llm/openapi-ai-agents-standard.git
+    - git remote set-url origin git@gitlab.com:blueflyio/openstandardagents.git
     # Perform the merge
     - git fetch origin main
     - git checkout main
@@ -408,8 +408,8 @@ release:production:
   script:
     - apk add --no-cache git curl jq openssh-client
     - echo '🎉 Creating production release v${PROJECT_VERSION}'
-    - git config user.email 'ci@app-4001.cloud.bluefly.io'
-    - git config user.name 'GitLab CI'
+    - git config user.email 'thomas.scola@bluefly.io'
+    - git config user.name 'Bluefly.io Founder & creator of OssA'
     - export RELEASE_TAG='v${PROJECT_VERSION}'
     - git tag -a "$RELEASE_TAG" -m "Release ${RELEASE_TAG}"
     # Setup SSH authentication with multiple fallback methods
@@ -427,12 +427,12 @@ release:production:
         chmod 600 ~/.ssh/id_rsa
       fi
     # Add GitLab host key
-    - ssh-keyscan -t ed25519,rsa app-4001.cloud.bluefly.io >> ~/.ssh/known_hosts
+    - ssh-keyscan -t ed25519,rsa gitlab.com >> ~/.ssh/known_hosts
     # Configure SSH to try all key types and be more permissive
     - |
       cat > ~/.ssh/config << EOF
-      Host app-4001.cloud.bluefly.io
-        HostName app-4001.cloud.bluefly.io
+      Host gitlab.com
+        HostName gitlab.com
         User git
         IdentitiesOnly yes
         IdentityFile ~/.ssh/id_rsa
@@ -443,9 +443,9 @@ release:production:
       EOF
     - chmod 600 ~/.ssh/config
     # Test SSH connection before proceeding
-    - ssh -T git@app-4001.cloud.bluefly.io || echo "SSH test completed"
+    - ssh -T git@gitlab.com || echo "SSH test completed"
     # Configure git to use SSH
-    - git remote set-url origin git@app-4001.cloud.bluefly.io:llm/openapi-ai-agents-standard.git
+    - git remote set-url origin git@gitlab.com:blueflyio/openstandardagents.git
     - git push origin "$RELEASE_TAG"
     - "if [ -f 'CHANGELOG.md' ]; then export RELEASE_NOTES=$(sed -n \"/## \\[${PROJECT_VERSION}\\]/,/## \\[/p\" CHANGELOG.md | head -n -1); else export RELEASE_NOTES='Release ${RELEASE_TAG}'; fi"
     - "curl --request POST --header \"PRIVATE-TOKEN: ${CI_JOB_TOKEN}\" --header 'Content-Type: application/json' --data \"{\\\"name\\\": \\\"${RELEASE_TAG}\\\", \\\"tag_name\\\": \\\"${RELEASE_TAG}\\\", \\\"description\\\": \\\"${RELEASE_NOTES}\\\", \\\"ref\\\": \\\"main\\\", \\\"assets\\\": {\\\"links\\\": []}}\" \"${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/releases\" || echo 'Release creation may require permissions'"

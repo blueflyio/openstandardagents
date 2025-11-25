@@ -36,9 +36,9 @@ metadata:
     dora-metric: mttr
 
   annotations:
-    documentation: https://gitlab.bluefly.io/llm/documentation/-/wikis/agents/rollback-coordinator
-    support: sre-team@bluefly.io
-    runbook: https://gitlab.bluefly.io/llm/documentation/-/wikis/runbooks/rollback-coordinator
+    documentation: https://github.com/blueflyio/documentation/-/wikis/agents/rollback-coordinator
+    support: operations@bluefly.io
+    runbook: https://github.com/blueflyio/documentation/-/wikis/runbooks/rollback-coordinator
     safety: "automated-rollback-enabled"
 
 spec:
@@ -138,7 +138,7 @@ spec:
       name: gitlab-api
       description: |
         Create rollback issues and update deployment status in GitLab.
-      endpoint: https://gitlab.bluefly.io/api/v4
+      endpoint: https://github.com/blueflyio/api/v4
       config:
         method: POST
         timeout: 10

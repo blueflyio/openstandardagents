@@ -371,9 +371,9 @@ All agents comply with:
 
 ## Support
 
-**Documentation**: https://gitlab.bluefly.io/llm/openstandardagents/-/wikis  
-**Issues**: https://gitlab.bluefly.io/llm/openstandardagents/-/issues  
-**OSSA Spec**: https://gitlab.bluefly.io/llm/ossa
+**Documentation**: https://github.com/blueflyio/openstandardagents/wiki  
+**Issues**: https://github.com/blueflyio/openstandardagents/issues  
+**OSSA Spec**: https://github.com/blueflyio/openstandardagents
 
 ---
 

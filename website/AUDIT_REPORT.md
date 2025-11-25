@@ -1,7 +1,7 @@
 # OSSA Website - Configuration and Dependency Issues Report
 
 **Date:** 2025-11-24  
-**Project:** `/Users/flux423/Sites/LLM/openstandardagents/website`  
+**Project:** `/Users/flux423/Sites/blueflyio/openstandardagents/website`  
 **Analysis Type:** Comprehensive dependency and configuration audit
 
 ---
@@ -25,7 +25,7 @@ The OSSA website has **CRITICAL ISSUES** that need immediate resolution:
 **Severity:** CRITICAL  
 **Impact:** Build and dev script will fail
 
-**Location:** `/Users/flux423/Sites/LLM/openstandardagents/website/scripts/fetch-versions.js`  
+**Location:** `/Users/flux423/Sites/blueflyio/openstandardagents/website/scripts/fetch-versions.js`  
 **Line:** 4
 
 ```javascript
@@ -58,8 +58,8 @@ const axios = require('axios');
 **Impact:** Build configuration unclear; unpredictable behavior
 
 **Files:**
-- `/Users/flux423/Sites/LLM/openstandardagents/website/next.config.js`
-- `/Users/flux423/Sites/LLM/openstandardagents/website/next.config.ts`
+- `/Users/flux423/Sites/blueflyio/openstandardagents/website/next.config.js`
+- `/Users/flux423/Sites/blueflyio/openstandardagents/website/next.config.ts`
 
 **Conflicts:**
 
@@ -129,9 +129,9 @@ Choose one config file and delete the other. Recommend keeping `next.config.ts` 
 **Impact:** Incorrect version information displayed; versioning confusion
 
 **Files:**
-- `/Users/flux423/Sites/LLM/openstandardagents/website/package.json` (Line 3)
-- `/Users/flux423/Sites/LLM/openstandardagents/website/lib/version.ts` (Line 6)
-- `/Users/flux423/Sites/LLM/openstandardagents/website/lib/versions.json` (Lines 2-3)
+- `/Users/flux423/Sites/blueflyio/openstandardagents/website/package.json` (Line 3)
+- `/Users/flux423/Sites/blueflyio/openstandardagents/website/lib/version.ts` (Line 6)
+- `/Users/flux423/Sites/blueflyio/openstandardagents/website/lib/versions.json` (Lines 2-3)
 
 **Mismatch:**
 
@@ -144,7 +144,7 @@ lib/versions.json latest: "0.2.4"  ← CONFLICT
 
 **Details:**
 
-**In `/Users/flux423/Sites/LLM/openstandardagents/website/lib/versions.json`:**
+**In `/Users/flux423/Sites/blueflyio/openstandardagents/website/lib/versions.json`:**
 ```json
 {
   "stable": "0.2.4",
@@ -202,7 +202,7 @@ npm run sync-version
 Already covered in Issue #1
 
 **Issue 2: git command dependency**
-**Location:** `/Users/flux423/Sites/LLM/openstandardagents/website/scripts/fetch-versions.js`
+**Location:** `/Users/flux423/Sites/blueflyio/openstandardagents/website/scripts/fetch-versions.js`
 
 The script uses `axios` to fetch from npm registry, but has a fallback to local package.json if npm is unreachable. However, it doesn't handle the case where axios itself is missing.
 
@@ -269,10 +269,10 @@ typescript: {
 
 ### 7. Wiki Sync Token Dependency
 
-**Location:** `/Users/flux423/Sites/LLM/openstandardagents/website/scripts/sync-wiki.ts` Lines 20-29
+**Location:** `/Users/flux423/Sites/blueflyio/openstandardagents/website/scripts/sync-wiki.ts` Lines 20-29
 
 ```typescript
-const GITLAB_HOST = process.env.GITLAB_HOST || process.env.CI_SERVER_HOST || 'gitlab.bluefly.io';
+const GITLAB_HOST = process.env.GITLAB_HOST || process.env.CI_SERVER_HOST || 'github.com/blueflyio';
 
 async function getGitLabToken(): Promise<string | null> {
   // Try environment variable first
@@ -343,19 +343,19 @@ async function getGitLabToken(): Promise<string | null> {
 ## FILES AFFECTED
 
 ### Critical
-1. `/Users/flux423/Sites/LLM/openstandardagents/website/package.json` - Missing axios dependency
-2. `/Users/flux423/Sites/LLM/openstandardagents/website/next.config.js` - Duplicate (should delete)
-3. `/Users/flux423/Sites/LLM/openstandardagents/website/next.config.ts` - Conflicting config
-4. `/Users/flux423/Sites/LLM/openstandardagents/website/lib/version.ts` - Auto-generated (fix source)
-5. `/Users/flux423/Sites/LLM/openstandardagents/website/lib/versions.json` - Version mismatch
+1. `/Users/flux423/Sites/blueflyio/openstandardagents/website/package.json` - Missing axios dependency
+2. `/Users/flux423/Sites/blueflyio/openstandardagents/website/next.config.js` - Duplicate (should delete)
+3. `/Users/flux423/Sites/blueflyio/openstandardagents/website/next.config.ts` - Conflicting config
+4. `/Users/flux423/Sites/blueflyio/openstandardagents/website/lib/version.ts` - Auto-generated (fix source)
+5. `/Users/flux423/Sites/blueflyio/openstandardagents/website/lib/versions.json` - Version mismatch
 
 ### Related
-6. `/Users/flux423/Sites/LLM/openstandardagents/website/scripts/fetch-versions.js` - Requires missing axios
-7. `/Users/flux423/Sites/LLM/openstandardagents/website/scripts/sync-wiki.ts` - GitLab token dependency
+6. `/Users/flux423/Sites/blueflyio/openstandardagents/website/scripts/fetch-versions.js` - Requires missing axios
+7. `/Users/flux423/Sites/blueflyio/openstandardagents/website/scripts/sync-wiki.ts` - GitLab token dependency
 
 ### Information
-8. `/Users/flux423/Sites/LLM/openstandardagents/website/nginx.conf` - Suggests static hosting
-9. `/Users/flux423/Sites/LLM/openstandardagents/website/Dockerfile` - Build environment config
+8. `/Users/flux423/Sites/blueflyio/openstandardagents/website/nginx.conf` - Suggests static hosting
+9. `/Users/flux423/Sites/blueflyio/openstandardagents/website/Dockerfile` - Build environment config
 
 ---
 
@@ -393,8 +393,8 @@ All expected pages found:
    ```
 
 2. **Delete duplicate Next.js config** - Choose one and remove the other
-   - Delete: `/Users/flux423/Sites/LLM/openstandardagents/website/next.config.js`
-   - Keep: `/Users/flux423/Sites/LLM/openstandardagents/website/next.config.ts`
+   - Delete: `/Users/flux423/Sites/blueflyio/openstandardagents/website/next.config.js`
+   - Keep: `/Users/flux423/Sites/blueflyio/openstandardagents/website/next.config.ts`
 
 3. **Resolve version mismatch** - Sync versions
    - Either update package.json to 0.2.4 and run `npm run sync-version`

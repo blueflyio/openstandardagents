@@ -10,7 +10,7 @@ export default {
       channel: 'dev', // Dev releases get 'dev' tag
     },
   ],
-  repositoryUrl: 'https://gitlab.bluefly.io/llm/openstandardagents.git',
+  repositoryUrl: 'https://github.com/blueflyio/openstandardagents.git',
   plugins: [
     [
       '@semantic-release/commit-analyzer',
@@ -58,7 +58,7 @@ export default {
     [
       '@semantic-release/gitlab',
       {
-        gitlabUrl: 'https://gitlab.bluefly.io',
+        gitlabUrl: 'https://gitlab.com',
         assets: [
           { path: 'dist/*.tgz', label: 'OSSA npm package (${nextRelease.gitTag})' },
           {

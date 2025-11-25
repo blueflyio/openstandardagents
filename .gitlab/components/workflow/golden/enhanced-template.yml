@@ -420,8 +420,8 @@ integrate:feature:
   needs: ['quality:gates']
   before_script:
     - apk add --no-cache git
-    - git config user.email "ci@bluefly.io"
-    - git config user.name "CI Bot"
+    - git config user.email "thomas.scola@bluefly.io"
+    - git config user.name "Bluefly.io Founder & creator of OssA"
   script:
     - |
       echo "🔀 Auto-merging to development..."
@@ -570,7 +570,7 @@ release:production:
       ### Usage
       ```yaml
       include:
-        - component: app-4001.cloud.bluefly.io/llm/gitlab_components/workflow/golden@$PROJECT_VERSION
+        - component: gitlab.com/blueflyio/agent-platform/gitlab_components/workflow/golden@$PROJECT_VERSION
       ```
   when: manual
   rules:

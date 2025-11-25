@@ -151,7 +151,7 @@ ${docFiles.length} documentation files have been prepared for GitLab wiki.
 
 ### Option 1: Manual Upload (Recommended for First Time)
 
-1. Go to your GitLab project: https://${process.env.GITLAB_HOST || 'gitlab.bluefly.io'}/llm/openstandardagents/-/wikis
+1. Go to your GitLab project: https://${process.env.GITLAB_HOST || 'gitlab.com'}/blueflyio/openstandardagents/-/wikis
 2. For each file in the manifest:
    - Click "New Page"
    - Use the slug as the page title (e.g., "Getting-Started")
@@ -165,7 +165,7 @@ You can use the GitLab API to upload pages programmatically:
 \`\`\`bash
 # Set your GitLab token
 export GITLAB_TOKEN="your-token-here"
-export GITLAB_HOST="gitlab.bluefly.io"
+// GITLAB_HOST should be set via environment variable or CI_SERVER_HOST
 
 # Upload each page
 for file in .wiki-export/*.md; do

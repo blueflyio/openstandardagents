@@ -45,7 +45,7 @@ paths:
         - name: project_id
           in: path
           required: true
-          description: Project ID or path (e.g., llm/openstandardagents)
+          description: Project ID or path (e.g., blueflyio/openstandardagents)
           schema:
             oneOf:
               - type: integer

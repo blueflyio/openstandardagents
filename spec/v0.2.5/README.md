@@ -63,7 +63,7 @@ ossa validate your-agent.yaml
 
 - **Website**: https://openstandardagents.org
 - **Schema URL**: https://openstandardagents.org/schemas/v0.2.5/agent.json
-- **GitLab**: https://gitlab.com/blueflyio/openstandardagents
+- **GitHub**: https://github.com/blueflyio/openstandardagents
 - **GitHub Mirror**: https://github.com/blueflyio/openstandardagents
 - **npm Package**: https://npmjs.com/package/@bluefly/openstandardagents
 

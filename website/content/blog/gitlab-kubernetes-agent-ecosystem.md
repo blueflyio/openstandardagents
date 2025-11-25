@@ -234,13 +234,13 @@ spec:
 
 All manifests are open source:
 
-- **Agent Manifests**: [`.gitlab/agents/`](https://gitlab.bluefly.io/llm/openstandardagents/-/tree/main/.gitlab/agents)
-- **Mesh Config**: [`mesh-config.yaml`](https://gitlab.bluefly.io/llm/openstandardagents/-/blob/main/.gitlab/agents/mesh-config.yaml)
-- **Swarm Tasks**: [`swarm-tasks.json`](https://gitlab.bluefly.io/llm/openstandardagents/-/blob/main/.gitlab/agents/swarm-tasks.json)
+- **Agent Manifests**: [`.gitlab/agents/`](https://github.com/blueflyio/openstandardagents/tree/main/.gitlab/agents)
+- **Mesh Config**: [`mesh-config.yaml`](https://github.com/blueflyio/openstandardagents/blob/main/.gitlab/agents/mesh-config.yaml)
+- **Swarm Tasks**: [`swarm-tasks.json`](https://github.com/blueflyio/openstandardagents/blob/main/.gitlab/agents/swarm-tasks.json)
 
 ### Read the Docs
 
-- **Full Documentation**: [GitLab Wiki](https://gitlab.bluefly.io/llm/openstandardagents/-/wikis/OSSA-Agent-Ecosystem-for-GitLab-Kubernetes-Deployments)
+- **Full Documentation**: [GitLab Wiki](https://github.com/blueflyio/openstandardagents/wiki/OSSA-Agent-Ecosystem-for-GitLab-Kubernetes-Deployments)
 - **Website Guide**: [GitLab Kubernetes Agents](/docs/gitlab-kubernetes-agents)
 
 ### Deploy to Your Cluster
@@ -273,9 +273,9 @@ This ecosystem is just the beginning. We're working on:
 
 This ecosystem was built entirely using OSSA v0.2.x. If you're building AI agents for production workloads, we'd love to hear from you:
 
-- **Contribute**: [GitLab Repository](https://gitlab.bluefly.io/llm/openstandardagents)
-- **Report Issues**: [Issue Tracker](https://gitlab.bluefly.io/llm/openstandardagents/-/issues)
-- **Learn More**: [OSSA Specification](https://gitlab.bluefly.io/llm/ossa)
+- **Contribute**: [GitLab Repository](https://github.com/blueflyio/openstandardagents)
+- **Report Issues**: [Issue Tracker](https://github.com/blueflyio/openstandardagents/issues)
+- **Learn More**: [OSSA Specification](https://github.com/blueflyio/openstandardagents)
 
 ---
 

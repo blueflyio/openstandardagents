@@ -36,9 +36,9 @@ metadata:
     financial-impact: high
 
   annotations:
-    documentation: https://gitlab.bluefly.io/llm/documentation/-/wikis/agents/cost-analyzer
-    support: finops-team@bluefly.io
-    runbook: https://gitlab.bluefly.io/llm/documentation/-/wikis/runbooks/cost-analyzer
+    documentation: https://github.com/blueflyio/documentation/-/wikis/agents/cost-analyzer
+    support: operations@bluefly.io
+    runbook: https://github.com/blueflyio/documentation/-/wikis/runbooks/cost-analyzer
     target: "20% cost reduction in 90 days"
 
 spec:

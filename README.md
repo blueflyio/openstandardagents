@@ -4,9 +4,9 @@
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![npm version](https://img.shields.io/npm/v/@bluefly/openstandardagents)](https://www.npmjs.com/package/@bluefly/openstandardagents)
-[![GitLab](https://img.shields.io/badge/GitLab-OSSA-orange.svg)](https://gitlab.com/blueflyio/openstandardagents)
+[![GitLab](https://img.shields.io/badge/GitLab-OSSA-orange.svg)](https://github.com/blueflyio/openstandardagents)
 [![GitHub](https://img.shields.io/badge/GitHub-OSSA-black.svg)](https://github.com/blueflyio/openstandardagents)
-[![OSSA Compliant](https://img.shields.io/badge/OSSA-Compliant-00B8D4.svg)](https://gitlab.com/blueflyio/openstandardagents)
+[![OSSA Compliant](https://img.shields.io/badge/OSSA-Compliant-00B8D4.svg)](https://github.com/blueflyio/openstandardagents)
 
 ---
 
@@ -96,7 +96,7 @@ ossa migrate <source>   # Migrate between OSSA versions
 - Production monitoring
 - Infrastructure management
 
-For production features, see [Agent Buildkit](https://gitlab.com/blueflyio/agent-buildkit).
+For production features, see [Agent Buildkit](https://github.com/blueflyio/agent-buildkit).
 
 ---
 

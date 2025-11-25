@@ -40,9 +40,9 @@ metadata:
     compliance: cis-kubernetes
 
   annotations:
-    documentation: https://gitlab.bluefly.io/llm/documentation/-/wikis/agents/security-scanner
-    support: security-team@bluefly.io
-    runbook: https://gitlab.bluefly.io/llm/documentation/-/wikis/runbooks/security-scanner
+    documentation: https://github.com/blueflyio/documentation/-/wikis/agents/security-scanner
+    support: operations@bluefly.io
+    runbook: https://github.com/blueflyio/documentation/-/wikis/runbooks/security-scanner
     compliance: "CIS Kubernetes Benchmark v1.8, OWASP Top 10"
 
 spec:
@@ -264,7 +264,7 @@ spec:
 
         annotations:
           description: "Automated security vulnerability scanner"
-          contact: "security-team@bluefly.io"
+          contact: "operations@bluefly.io"
           compliance: "CIS Kubernetes Benchmark v1.8"
 
         resourceLimits:

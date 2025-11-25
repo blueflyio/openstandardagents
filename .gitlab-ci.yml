@@ -135,7 +135,7 @@ detect:milestone-version:
             echo "  Cannot proceed with automatic release"
             echo ""
             echo "Complete these issues first:"
-            echo "  https://gitlab.com/blueflyio/openstandardagents/-/milestones/${ID}"
+            echo "  https://${CI_SERVER_HOST}/${CI_PROJECT_PATH}/-/milestones/${ID}"
             echo ""
           fi
         fi
@@ -546,9 +546,9 @@ pages:
     url: https://openstandardagents.org
     deployment_tier: production
   rules:
-    # Automatic deployment on main branch (always deploy website)
+    # Manual deployment on main branch (click button to deploy)
     - if: $CI_COMMIT_BRANCH == "main"
-      when: on_success
+      when: manual
     # Manual on development for preview
     - if: $CI_COMMIT_BRANCH == "development"
       when: manual
@@ -682,42 +682,82 @@ release:npm:
       fi
 
       # Validate milestone is ready (set by detect:milestone-version job)
-      if [ "$MILESTONE_READY" != "true" ]; then
-        echo "RELEASE BLOCKED: No release-ready milestone found"
-        echo ""
-        echo "Requirements for automatic release:"
-        echo " 1.  ENABLE_RELEASE variable MUST be set to 'true'"
-        echo " 2.  Milestone MUST exist with version in title (e.g., 'v0.2.6 - Feature Name')"
-        echo " 3.  Milestone MUST be CLOSED"
-        echo " 4.  Milestone MUST be 100% COMPLETE (all issues closed)"
-        echo " 5.  Version MUST NOT already be released"
-        echo ""
-        echo "Current status:"
-        if [ -z "$RELEASE_VERSION" ]; then
-          echo " • No closed milestone with version found"
-        else
-          echo " • Found milestone: ${MILESTONE_TITLE}"
-          echo " • Milestone has open issues - complete them first:"
-          echo "   https://gitlab.com/blueflyio/openstandardagents/-/milestones/${MILESTONE_ID}"
+      # Allow manual override: check if FORCE_RELEASE is set or if manually triggered
+      # Manual jobs can be detected by checking if pipeline was triggered via web/api
+      # and the job rule allows manual triggering without MILESTONE_READY
+      IS_MANUAL_OVERRIDE=false
+      if [ -n "$FORCE_RELEASE" ] && [ "$FORCE_RELEASE" = "true" ]; then
+        IS_MANUAL_OVERRIDE=true
+        echo "Manual override detected: FORCE_RELEASE variable is set"
+      elif [ "$CI_PIPELINE_SOURCE" = "web" ] || [ "$CI_PIPELINE_SOURCE" = "api" ]; then
+        # If pipeline was manually triggered and we have ENABLE_RELEASE but no MILESTONE_READY,
+        # assume this is a manual override attempt
+        if [ "$ENABLE_RELEASE" = "true" ] && [ "$MILESTONE_READY" != "true" ]; then
+          IS_MANUAL_OVERRIDE=true
+          echo "Manual override detected: pipeline triggered manually without milestone ready"
         fi
-        echo ""
-        echo "Once all issues are closed and milestone is closed, the release will trigger automatically."
-        exit 1
+      fi
+
+      if [ "$MILESTONE_READY" != "true" ]; then
+        if [ "$IS_MANUAL_OVERRIDE" = "true" ]; then
+          echo "WARNING: No release-ready milestone found, but proceeding with manual release"
+          echo "Manual override enabled - milestone validation skipped"
+          echo ""
+          # For manual release, try to use RELEASE_VERSION if available, otherwise prompt
+          if [ -z "$RELEASE_VERSION" ]; then
+            echo "ERROR: Manual release requires RELEASE_VERSION to be set"
+            echo "Set the CI/CD variable RELEASE_VERSION to the version you want to release"
+            echo "Or set FORCE_RELEASE=true to explicitly enable manual override"
+            exit 1
+          fi
+          echo "Using manually specified version: ${RELEASE_VERSION}"
+        else
+          echo "RELEASE BLOCKED: No release-ready milestone found"
+          echo ""
+          echo "Requirements for automatic release:"
+          echo " 1.  ENABLE_RELEASE variable MUST be set to 'true'"
+          echo " 2.  Milestone MUST exist with version in title (e.g., 'v0.2.6 - Feature Name')"
+          echo " 3.  Milestone MUST be CLOSED"
+          echo " 4.  Milestone MUST be 100% COMPLETE (all issues closed)"
+          echo " 5.  Version MUST NOT already be released"
+          echo ""
+          echo "Current status:"
+          if [ -z "$RELEASE_VERSION" ]; then
+            echo " • No closed milestone with version found"
+          else
+            echo " • Found milestone: ${MILESTONE_TITLE}"
+            echo " • Milestone has open issues - complete them first:"
+            echo "   https://${CI_SERVER_HOST}/${CI_PROJECT_PATH}/-/milestones/${MILESTONE_ID}"
+          fi
+          echo ""
+          echo "Once all issues are closed and milestone is closed, the release will trigger automatically."
+          echo "Or use the manual release button to override (requires RELEASE_VERSION variable)."
+          exit 1
+        fi
       fi
 
       echo "Release gate passed:"
       echo "  • ENABLE_RELEASE: ${ENABLE_RELEASE}"
       echo "  • Milestone ready: ${MILESTONE_READY}"
+      if [ "$IS_MANUAL_OVERRIDE" = "true" ]; then
+        echo "  • Manual override: enabled"
+      fi
       echo ""
 
-      # Milestone is ready - use detected version
+      # Use detected version (from milestone or manual override)
       MILESTONE_VERSION="$RELEASE_VERSION"
-      MILESTONE_TITLE="$MILESTONE_TITLE"
-      # MILESTONE_ID already set by detect:milestone-version
+      if [ -z "$MILESTONE_TITLE" ]; then
+        MILESTONE_TITLE="Manual Release v${MILESTONE_VERSION}"
+      fi
+      # MILESTONE_ID may not be set for manual releases
 
       echo "Release ready for: ${MILESTONE_TITLE}"
       echo "  Version: v${MILESTONE_VERSION}"
-      echo "  Milestone: https://gitlab.com/blueflyio/openstandardagents/-/milestones/${MILESTONE_ID}"
+      if [ -n "$MILESTONE_ID" ]; then
+        echo "  Milestone: https://${CI_SERVER_HOST}/${CI_PROJECT_PATH}/-/milestones/${MILESTONE_ID}"
+      else
+        echo "  Milestone: Manual release (no milestone linked)"
+      fi
       echo ""
 
       # Update package.json version
@@ -775,11 +815,15 @@ release:npm:
       # Publish to npm
       echo ""
       echo "Publishing v${MILESTONE_VERSION} to npm..."
-      npm publish --access public
+      if ! npm publish --access public; then
+        echo "ERROR: npm publish failed - aborting release"
+        echo "No git tag or commit will be created"
+        exit 1
+      fi
 
-      # Commit updated files and create tag
+      # Only proceed with git operations if npm publish succeeded
       echo ""
-      echo " Creating git tag and pushing..."
+      echo "npm publish succeeded - creating git tag and pushing..."
       git add package.json package-lock.json README.md spec/
       git commit -m "chore(release): v${MILESTONE_VERSION} [skip ci]" || echo "No changes to commit"
       git tag -a "v${MILESTONE_VERSION}" -m "Release v${MILESTONE_VERSION}"

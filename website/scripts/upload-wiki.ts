@@ -8,8 +8,8 @@
 import fs from 'fs';
 import path from 'path';
 
-const GITLAB_HOST = process.env.GITLAB_HOST || process.env.CI_SERVER_HOST || 'gitlab.bluefly.io';
-const PROJECT_PATH = 'llm/openstandardagents';
+const GITLAB_HOST = process.env.GITLAB_HOST || process.env.CI_SERVER_HOST || 'gitlab.com';
+const PROJECT_PATH = 'blueflyio/openstandardagents';
 const EXPORT_DIR = path.join(process.cwd(), '.wiki-export');
 
 async function getGitLabToken(): Promise<string | null> {

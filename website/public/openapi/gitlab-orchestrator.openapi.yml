@@ -167,7 +167,7 @@ paths:
     post:
       tags: [packages]
       summary: Publish to GitLab package registry
-      description: Publish npm or PyPI package to gitlab.bluefly.io
+      description: Publish npm or PyPI package to github.com/blueflyio
       operationId: publishPackage
       requestBody:
         required: true
@@ -332,7 +332,7 @@ components:
       type: oauth2
       flows:
         clientCredentials:
-          tokenUrl: https://gitlab.bluefly.io/oauth/token
+          tokenUrl: https://github.com/blueflyio/oauth/token
           scopes:
             api: Full API access
 

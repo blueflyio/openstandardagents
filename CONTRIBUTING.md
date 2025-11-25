@@ -220,7 +220,7 @@ npm test -- --coverage
 
 **DO NOT** open public issues for security vulnerabilities.
 
-Email: security@bluefly.io
+Email: operations@bluefly.io
 
 ## 📊 Code Style
 
