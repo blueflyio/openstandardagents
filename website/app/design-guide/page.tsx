@@ -91,9 +91,9 @@ export default function DesignGuidePage() {
                 <div className="h-32 bg-primary rounded-lg mb-4 flex items-center justify-center">
                   <span className="text-white font-bold text-lg">Primary</span>
                 </div>
-                <h4 className="font-bold mb-2">Primary Blue</h4>
-                <p className="text-sm text-gray-600 mb-2"><strong>Hex:</strong> #0066CC</p>
-                <p className="text-sm text-gray-600 mb-2"><strong>RGB:</strong> 0, 102, 204</p>
+                <h4 className="font-bold mb-2">Primary Blue-Purple</h4>
+                <p className="text-sm text-gray-600 mb-2"><strong>Hex:</strong> #4A3ECD</p>
+                <p className="text-sm text-gray-600 mb-2"><strong>RGB:</strong> 74, 62, 205</p>
                 <p className="text-sm text-gray-700">
                   Represents the OSSA hub/standard. Use for primary actions, links, and key UI elements.
                 </p>
@@ -103,9 +103,9 @@ export default function DesignGuidePage() {
                 <div className="h-32 bg-secondary rounded-lg mb-4 flex items-center justify-center">
                   <span className="text-white font-bold text-lg">Secondary</span>
                 </div>
-                <h4 className="font-bold mb-2">Secondary Cyan</h4>
-                <p className="text-sm text-gray-600 mb-2"><strong>Hex:</strong> #00B8D4</p>
-                <p className="text-sm text-gray-600 mb-2"><strong>RGB:</strong> 0, 184, 212</p>
+                <h4 className="font-bold mb-2">Secondary Cyan-Blue</h4>
+                <p className="text-sm text-gray-600 mb-2"><strong>Hex:</strong> #1CB9ED</p>
+                <p className="text-sm text-gray-600 mb-2"><strong>RGB:</strong> 28, 185, 237</p>
                 <p className="text-sm text-gray-700">
                   Represents agent nodes. Use for secondary actions, accents, and complementary elements.
                 </p>
@@ -116,8 +116,8 @@ export default function DesignGuidePage() {
                   <span className="text-white font-bold text-lg">Gradient</span>
                 </div>
                 <h4 className="font-bold mb-2">Brand Gradient</h4>
-                <p className="text-sm text-gray-600 mb-2"><strong>From:</strong> #0066CC</p>
-                <p className="text-sm text-gray-600 mb-2"><strong>To:</strong> #00B8D4</p>
+                <p className="text-sm text-gray-600 mb-2"><strong>From:</strong> #4A3ECD</p>
+                <p className="text-sm text-gray-600 mb-2"><strong>To:</strong> #1CB9ED</p>
                 <p className="text-sm text-gray-700">
                   Use for hero sections, backgrounds, and prominent visual elements.
                 </p>
@@ -158,8 +158,9 @@ export default function DesignGuidePage() {
           <div className="card bg-gray-50">
             <h4 className="font-bold mb-3 text-gray-900">Color Usage Guidelines</h4>
             <ul className="space-y-2 text-gray-700">
-              <li><strong>Primary (#0066CC):</strong> Main CTAs, links, headings, borders for primary sections</li>
-              <li><strong>Secondary (#00B8D4):</strong> Secondary CTAs, accents, complementary borders, highlights</li>
+              <li><strong>Primary (#4A3ECD):</strong> Main CTAs, links, headings, borders for primary sections</li>
+              <li><strong>Secondary (#1CB9ED):</strong> Secondary CTAs, accents, complementary borders, highlights</li>
+              <li><strong>Accent (#9060EA):</strong> Purple accent for highlights and special elements</li>
               <li><strong>Gradients:</strong> Hero sections, card backgrounds (use subtle opacity: /10, /20, /30)</li>
               <li><strong>Neutral Grays:</strong> Body text (gray-700), borders (gray-300), backgrounds (gray-50, gray-100)</li>
               <li><strong>Semantic Colors:</strong> Use muted semantic colors (success, warning, error, info) for status indicators. All defined in <code className="bg-gray-200 px-1 rounded">styles/_variables.scss</code>.</li>
@@ -303,7 +304,7 @@ export default function DesignGuidePage() {
             {/* Hero Sections */}
             <div className="card">
               <h3 className="text-xl font-bold mb-4 text-gray-900">Hero Sections</h3>
-              <div className="bg-gradient-to-br from-primary via-[#0099E6] to-secondary text-white rounded-lg p-8 mb-4">
+              <div className="bg-gradient-to-br from-primary via-accent to-secondary text-white rounded-lg p-8 mb-4">
                 <div className="text-center">
                   <div className="inline-flex items-center justify-center w-16 h-16 bg-white/20 backdrop-blur-sm rounded-full mb-4">
                     <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">

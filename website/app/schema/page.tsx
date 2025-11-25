@@ -6,24 +6,40 @@ import { Logo } from '@/components/Logo';
 import fs from 'fs';
 import path from 'path';
 
+// Get actual stable version from versions.json (not website package.json)
+function getStableVersion(): string {
+  try {
+    const versionsPath = path.join(process.cwd(), 'lib', 'versions.json');
+    if (fs.existsSync(versionsPath)) {
+      const versions = JSON.parse(fs.readFileSync(versionsPath, 'utf8'));
+      return versions.stable || '0.2.4';
+    }
+  } catch (error) {
+    console.error('Error reading versions.json:', error);
+  }
+  // Fallback to 0.2.4 if versions.json not available
+  return '0.2.4';
+}
+
 // Try to load schema dynamically - fallback to stable version
-function loadSchema(version: string = STABLE_VERSION): any {
+function loadSchema(version?: string): any {
+  const stableVersion = version || getStableVersion();
   try {
     // Try to load from public/schemas first
-    const publicSchemaPath = path.join(process.cwd(), 'public', 'schemas', `ossa-${version}.schema.json`);
+    const publicSchemaPath = path.join(process.cwd(), 'public', 'schemas', `ossa-${stableVersion}.schema.json`);
     if (fs.existsSync(publicSchemaPath)) {
       return JSON.parse(fs.readFileSync(publicSchemaPath, 'utf8'));
     }
     
     // Fallback to spec directory
-    const specSchemaPath = path.join(process.cwd(), '..', 'spec', `v${version}`, `ossa-${version}.schema.json`);
+    const specSchemaPath = path.join(process.cwd(), '..', 'spec', `v${stableVersion}`, `ossa-${stableVersion}.schema.json`);
     if (fs.existsSync(specSchemaPath)) {
       return JSON.parse(fs.readFileSync(specSchemaPath, 'utf8'));
     }
     
     // Final fallback - try to require (for build time)
     try {
-      return require(`../../public/schemas/ossa-${version}.schema.json`);
+      return require(`../../public/schemas/ossa-${stableVersion}.schema.json`);
     } catch {
       // If all else fails, return null
       return null;
@@ -35,7 +51,8 @@ function loadSchema(version: string = STABLE_VERSION): any {
 }
 
 export default function SchemaPage() {
-  const schema = loadSchema();
+  const stableVersion = getStableVersion();
+  const schema = loadSchema(stableVersion);
 
   if (!schema) {
     return (
@@ -63,7 +80,7 @@ export default function SchemaPage() {
             Complete JSON Schema for defining portable, framework-agnostic AI agents
           </p>
           <p className="text-lg text-white/80">
-            Version {STABLE_VERSION_TAG} • The OpenAPI for AI Agents
+            Version v{stableVersion} • The OpenAPI for AI Agents
           </p>
         </div>
       </div>
@@ -130,7 +147,7 @@ export default function SchemaPage() {
                 <div className="bg-blue-50/50 border-2 border-blue-200 rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow">
                   <div className="font-bold text-gray-900 mb-2 text-xl">apiVersion</div>
                   <div className="text-base text-gray-600 mb-3">Specifies the OSSA specification version</div>
-                  <div className="text-lg text-gray-800 font-mono">ossa/v{STABLE_VERSION}</div>
+                  <div className="text-lg text-gray-800 font-mono">ossa/v{stableVersion}</div>
                 </div>
                 <div className="bg-green-50/50 border-2 border-green-200 rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow">
                   <div className="font-bold text-gray-900 mb-2 text-xl">kind</div>
@@ -613,7 +630,7 @@ export default function SchemaPage() {
                     <div>
                       <p className="font-semibold text-gray-900 mb-2">EXAMPLE:</p>
                       <div className="bg-gray-900 rounded-lg p-4 mt-2">
-                        <pre className="text-green-400 text-sm font-mono"><code>{`apiVersion: ossa/v${STABLE_VERSION}
+                        <pre className="text-green-400 text-sm font-mono"><code>{`apiVersion: ossa/v${stableVersion}
 kind: Agent`}</code></pre>
                       </div>
                     </div>

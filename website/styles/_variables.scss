@@ -2,9 +2,9 @@
 // Update colors here to change them site-wide
 
 // Brand Colors
-$ossa-primary: #0066CC;        // Main blue - OSSA hub/standard
-$ossa-secondary: #00B8D4;      // Cyan - Agent nodes
-$ossa-accent: #0099E6;         // Light blue accent
+$ossa-primary: #4A3ECD;        // Main blue-purple - OSSA hub/standard
+$ossa-secondary: #1CB9ED;     // Cyan-blue - Agent nodes
+$ossa-accent: #9060EA;        // Purple accent
 
 // Semantic Colors - Muted for better visual harmony
 $ossa-success: #10b981;        // Muted green
@@ -23,7 +23,7 @@ $ossa-white: #ffffff;
 
 // Gradients
 $gradient-brand: linear-gradient(135deg, $ossa-primary 0%, $ossa-secondary 100%);
-$gradient-hero: linear-gradient(135deg, #0052A3 0%, $ossa-primary 50%, $ossa-secondary 100%);
+$gradient-hero: linear-gradient(135deg, #6450D9 0%, $ossa-primary 50%, $ossa-secondary 100%);
 
 // Code Colors
 $code-bg: #1e1e1e;

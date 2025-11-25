@@ -2,7 +2,8 @@
 title: "Production-Ready: GitLab Kubernetes Agent Ecosystem with OSSA"
 date: 2025-11-22
 author: "OSSA Team"
-description: "Announcing a complete, production-ready ecosystem of 8 OSSA-compliant agents for GitLab-integrated Kubernetes deployments, demonstrating elite DORA metrics and massive cost savings."
+category: "Production"
+excerpt: "We're excited to announce a comprehensive, production-ready ecosystem of 8 specialized OSSA-compliant agents designed for GitLab-integrated Kubernetes deployments. This ecosystem demonstrates every advanced feature of the OSSA specification while delivering real business value through automation, cost optimization, and compliance. Achieve elite DORA metrics with 12 deployments per day, 45-minute lead times, and 35-minute MTTR, while generating $80-145K/month in cost savings."
 tags: ["production", "kubernetes", "gitlab", "devops", "dora-metrics", "multi-agent", "enterprise"]
 ---
 

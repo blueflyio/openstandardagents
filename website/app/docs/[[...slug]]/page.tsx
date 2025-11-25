@@ -132,16 +132,17 @@ function getDocContent(slug: string[]): { content: string; metadata: any } | nul
     s.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join('-')
   );
 
-  // Try different path patterns - lowercase first (new convention), then PascalCase (legacy)
+  // Try different path patterns - exact case first, then variations
   const possiblePaths = [
+    // Exact case match first (for files like 5-Minute-Overview.md)
+    path.join(docsDirectory, ...slugPath) + '.md',
+    // PascalCase paths (legacy wiki structure)
+    path.join(docsDirectory, ...slugPath, 'index.md'),
+    path.join(docsDirectory, ...slugPath, 'README.md'),
     // Lowercase paths (current convention) - try index.md first for directories
     path.join(docsDirectory, ...slug, 'index.md'),
     path.join(docsDirectory, ...slug, 'readme.md'),
     path.join(docsDirectory, ...slug) + '.md',
-    // PascalCase paths (legacy wiki structure)
-    path.join(docsDirectory, ...slugPath, 'index.md'),
-    path.join(docsDirectory, ...slugPath, 'README.md'),
-    path.join(docsDirectory, ...slugPath) + '.md',
   ];
 
   let fullPath = null;
