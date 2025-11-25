@@ -80,10 +80,8 @@ describe('Schema Validation Integration', () => {
             );
 
             if (criticalErrors.length > 0) {
-              console.error(
-                `\n❌ Critical validation errors for ${fullPath}:`
-              );
-              criticalErrors.forEach(e => {
+              console.error(`\n❌ Critical validation errors for ${fullPath}:`);
+              criticalErrors.forEach((e) => {
                 console.error(`  - ${e.instancePath}: ${e.message}`);
               });
             }

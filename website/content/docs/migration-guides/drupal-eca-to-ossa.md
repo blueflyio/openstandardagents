@@ -152,7 +152,7 @@ events:
 
 **OSSA Agent (Webhook Integration):**
 ```yaml
-ossaVersion: "0.2.5-RC"
+ossaVersion: "0.2.5"
 agent:
   id: drupal-content-handler
   name: Drupal Content Handler Agent
@@ -225,7 +225,7 @@ conditions:
 
 **OSSA Agent (Schema + Policy Enforcement):**
 ```yaml
-ossaVersion: "0.2.5-RC"
+ossaVersion: "0.2.5"
 agent:
   id: content-moderator
   name: Content Moderation Agent
@@ -283,7 +283,7 @@ actions:
 
 **OSSA Agent (Multi-Capability):**
 ```yaml
-ossaVersion: "0.2.5-RC"
+ossaVersion: "0.2.5"
 agent:
   id: content-processor
   name: Content Processing Agent
@@ -475,7 +475,7 @@ workflow:
 
 **OSSA Orchestrator Agent:**
 ```yaml
-ossaVersion: "0.2.5-RC"
+ossaVersion: "0.2.5"
 agent:
   id: content-workflow-orchestrator
   name: Content Workflow Orchestrator
@@ -673,7 +673,7 @@ actions:
 
 ```yaml
 # drupal-content-moderator.ossa.yaml
-ossaVersion: "0.2.5-RC"
+ossaVersion: "0.2.5"
 
 agent:
   id: drupal-content-moderator
@@ -962,7 +962,7 @@ actions:
 
 ```yaml
 # user-onboarding-agent.ossa.yaml
-ossaVersion: "0.2.5-RC"
+ossaVersion: "0.2.5"
 
 agent:
   id: user-onboarding-orchestrator
@@ -1272,7 +1272,7 @@ actions:
 
 ```yaml
 # commerce-order-processor.ossa.yaml
-ossaVersion: "0.2.5-RC"
+ossaVersion: "0.2.5"
 
 agent:
   id: commerce-order-processor

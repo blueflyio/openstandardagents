@@ -209,6 +209,12 @@ function createSpecDirectory(version: string): void {
 // ============================================================================
 
 /**
+ * Semver pattern that matches versions with optional pre-release tags
+ * Matches: 0.2.5, 0.2.5-RC, 0.2.5-alpha.1, 1.0.0-beta.2, etc.
+ */
+const SEMVER_PATTERN = '[\\d]+\\.[\\d]+\\.[\\d]+(?:-[a-zA-Z0-9.]+)?';
+
+/**
  * Update README.md version references
  */
 function updateReadme(version: string): void {
@@ -220,13 +226,25 @@ function updateReadme(version: string): void {
   let readme = fs.readFileSync(config.readme, 'utf8');
   const original = readme;
 
-  // Update schema references (support pre-release versions with hyphens)
-  const schemaRegex = /spec\/v[\d.\-a-zA-Z]+\/ossa-[\d.\-a-zA-Z]+\.schema\.json/g;
+  // Update schema references (spec/vX.Y.Z/ossa-X.Y.Z.schema.json)
+  const schemaRegex = new RegExp(`spec/v${SEMVER_PATTERN}/ossa-${SEMVER_PATTERN}\\.schema\\.json`, 'g');
   readme = readme.replace(schemaRegex, `spec/v${version}/ossa-${version}.schema.json`);
 
-  // Update version in YAML examples (support pre-release versions)
-  const yamlVersionRegex = /ossaVersion:\s*["'][\d.\-a-zA-Z]+["']/g;
+  // Update version in YAML examples (ossaVersion: "X.Y.Z")
+  const yamlVersionRegex = new RegExp(`ossaVersion:\\s*["']${SEMVER_PATTERN}["']`, 'g');
   readme = readme.replace(yamlVersionRegex, `ossaVersion: "${version}"`);
+
+  // Update "OSSA vX.Y.Z Schema:" header pattern
+  const headerRegex = new RegExp(`OSSA v${SEMVER_PATTERN} Schema:`, 'g');
+  readme = readme.replace(headerRegex, `OSSA v${version} Schema:`);
+
+  // Update any bare version references like "v0.2.5-RC" in links
+  const versionLinkRegex = new RegExp(`spec/v${SEMVER_PATTERN}/`, 'g');
+  readme = readme.replace(versionLinkRegex, `spec/v${version}/`);
+
+  // Update ossa-X.Y.Z.yaml references
+  const yamlFileRegex = new RegExp(`ossa-${SEMVER_PATTERN}\\.yaml`, 'g');
+  readme = readme.replace(yamlFileRegex, `ossa-${version}.yaml`);
 
   if (readme !== original) {
     if (config.mode === 'check') {
@@ -311,10 +329,14 @@ function updatePackageExports(version: string): void {
 
   if (pkg.exports && pkg.exports['./schema']) {
     const expectedSchema = `./spec/v${version}/ossa-${version}.schema.json`;
+    const currentSchema = pkg.exports['./schema'];
 
-    if (pkg.exports['./schema'] !== expectedSchema) {
+    // Check if current schema matches ANY version pattern (not just the expected one)
+    const schemaVersionRegex = new RegExp(`\\./spec/v${SEMVER_PATTERN}/ossa-${SEMVER_PATTERN}\\.schema\\.json`);
+
+    if (currentSchema !== expectedSchema) {
       if (config.mode === 'check') {
-        result.errors.push(`package.json exports["./schema"] should be ${expectedSchema}`);
+        result.errors.push(`package.json exports["./schema"] is "${currentSchema}", should be "${expectedSchema}"`);
       } else {
         pkg.exports['./schema'] = expectedSchema;
         fs.writeFileSync(config.packageJson, JSON.stringify(pkg, null, 2) + '\n');
@@ -363,9 +385,17 @@ function updateWebsiteDocs(version: string): void {
     let content = fs.readFileSync(file, 'utf8');
     const original = content;
 
-    // Update version references (but not version history sections) - support pre-release versions
-    content = content.replace(/ossaVersion:\s*["'][\d.\-a-zA-Z]+["']/g, `ossaVersion: "${version}"`);
-    content = content.replace(/spec\/v[\d.\-a-zA-Z]+\/ossa-[\d.\-a-zA-Z]+\.schema\.json/g, `spec/v${version}/ossa-${version}.schema.json`);
+    // Update version references (but not version history sections)
+    // Use same SEMVER_PATTERN to catch pre-release versions like -RC, -alpha, -beta
+    const yamlVersionRegex = new RegExp(`ossaVersion:\\s*["']${SEMVER_PATTERN}["']`, 'g');
+    content = content.replace(yamlVersionRegex, `ossaVersion: "${version}"`);
+
+    const schemaRegex = new RegExp(`spec/v${SEMVER_PATTERN}/ossa-${SEMVER_PATTERN}\\.schema\\.json`, 'g');
+    content = content.replace(schemaRegex, `spec/v${version}/ossa-${version}.schema.json`);
+
+    // Also update spec directory links
+    const specLinkRegex = new RegExp(`spec/v${SEMVER_PATTERN}/`, 'g');
+    content = content.replace(specLinkRegex, `spec/v${version}/`);
 
     if (content !== original) {
       if (config.mode === 'check') {

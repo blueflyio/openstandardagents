@@ -112,8 +112,8 @@ git clone https://github.com/blueflyio/openstandardagents.git
 cd openstandardagents
 
 # View development specs
-ls spec/v0.2.4-dev/
-ls spec/v0.2.5-dev/
+ls spec/v0.2.5/
+ls spec/v0.2.5/
 ```
 
 ### Validation
@@ -130,9 +130,9 @@ ossa validate your-agent.yaml --version 0.2.4-dev
 
 Development examples are in the spec directories:
 
-- `spec/v0.2.5-dev/examples/customer-support-graph.ossa.yaml` - Sequential process
-- `spec/v0.2.5-dev/examples/research-team.ossa.yaml` - Hierarchical process
-- `spec/v0.2.5-dev/examples/parallel-processors.ossa.yaml` - Parallel process
+- `spec/v0.2.5/examples/customer-support-graph.ossa.yaml` - Sequential process
+- `spec/v0.2.5/examples/research-team.ossa.yaml` - Hierarchical process
+- `spec/v0.2.5/examples/parallel-processors.ossa.yaml` - Parallel process
 
 ---
 

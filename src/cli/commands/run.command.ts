@@ -51,7 +51,9 @@ export const runCommand = new Command('run')
             console.error(chalk.red('✗ Agent manifest validation failed\n'));
             result.errors.forEach((error, index) => {
               console.error(
-                chalk.red(`  ${index + 1}. ${error.instancePath}: ${error.message}`)
+                chalk.red(
+                  `  ${index + 1}. ${error.instancePath}: ${error.message}`
+                )
               );
             });
             process.exit(1);
@@ -73,13 +75,19 @@ export const runCommand = new Command('run')
 
         // Check for API key
         if (!process.env.OPENAI_API_KEY) {
-          console.error(chalk.red('Error: OPENAI_API_KEY environment variable not set'));
-          console.error(chalk.yellow('Set it with: export OPENAI_API_KEY=sk-...'));
+          console.error(
+            chalk.red('Error: OPENAI_API_KEY environment variable not set')
+          );
+          console.error(
+            chalk.yellow('Set it with: export OPENAI_API_KEY=sk-...')
+          );
           process.exit(1);
         }
 
         // Create adapter
-        const adapter = new OpenAIAdapter(manifest as import('../../services/runtime/openai.adapter.js').OssaManifest);
+        const adapter = new OpenAIAdapter(
+          manifest as import('../../services/runtime/openai.adapter.js').OssaManifest
+        );
         adapter.initialize();
 
         const info = adapter.getAgentInfo();
@@ -101,7 +109,9 @@ export const runCommand = new Command('run')
         }
 
         // Interactive REPL mode
-        console.log(chalk.gray('\nEntering interactive mode. Type "exit" to quit.\n'));
+        console.log(
+          chalk.gray('\nEntering interactive mode. Type "exit" to quit.\n')
+        );
 
         const rl = readline.createInterface({
           input: process.stdin,
@@ -112,7 +122,10 @@ export const runCommand = new Command('run')
           rl.question(chalk.yellow('You: '), async (input) => {
             const trimmed = input.trim();
 
-            if (trimmed.toLowerCase() === 'exit' || trimmed.toLowerCase() === 'quit') {
+            if (
+              trimmed.toLowerCase() === 'exit' ||
+              trimmed.toLowerCase() === 'quit'
+            ) {
               console.log(chalk.gray('\nGoodbye!'));
               rl.close();
               process.exit(0);
