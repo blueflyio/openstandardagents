@@ -13,7 +13,9 @@ export class OpenAIValidator {
     const errors: ErrorObject[] = [];
     const warnings: string[] = [];
 
-    const openaiExt = manifest.extensions?.openai_agents as Record<string, unknown> | undefined;
+    const openaiExt = manifest.extensions?.openai_agents as
+      | Record<string, unknown>
+      | undefined;
     if (!openaiExt || (openaiExt.enabled as boolean | undefined) === false) {
       return { valid: true, errors: [], warnings: [] };
     }
@@ -37,7 +39,9 @@ export class OpenAIValidator {
     }
 
     // Validate tools_mapping if provided
-    const toolsMapping = openaiExt.tools_mapping as Array<Record<string, unknown>> | undefined;
+    const toolsMapping = openaiExt.tools_mapping as
+      | Array<Record<string, unknown>>
+      | undefined;
     if (toolsMapping) {
       if (!Array.isArray(toolsMapping)) {
         errors.push({
@@ -65,13 +69,12 @@ export class OpenAIValidator {
     }
 
     // Validate guardrails
-    const guardrails = openaiExt.guardrails as Record<string, unknown> | undefined;
+    const guardrails = openaiExt.guardrails as
+      | Record<string, unknown>
+      | undefined;
     if (guardrails) {
       const maxToolCalls = guardrails.max_tool_calls as number | undefined;
-      if (
-        maxToolCalls !== undefined &&
-        maxToolCalls < 1
-      ) {
+      if (maxToolCalls !== undefined && maxToolCalls < 1) {
         errors.push({
           instancePath: '/extensions/openai_agents/guardrails/max_tool_calls',
           schemaPath: '',
@@ -82,10 +85,7 @@ export class OpenAIValidator {
       }
 
       const timeoutSeconds = guardrails.timeout_seconds as number | undefined;
-      if (
-        timeoutSeconds !== undefined &&
-        timeoutSeconds < 1
-      ) {
+      if (timeoutSeconds !== undefined && timeoutSeconds < 1) {
         errors.push({
           instancePath: '/extensions/openai_agents/guardrails/timeout_seconds',
           schemaPath: '',
@@ -101,10 +101,7 @@ export class OpenAIValidator {
     if (memory) {
       const validMemoryTypes = ['session', 'persistent'];
       const memoryType = memory.type as string | undefined;
-      if (
-        memoryType &&
-        !validMemoryTypes.includes(memoryType)
-      ) {
+      if (memoryType && !validMemoryTypes.includes(memoryType)) {
         errors.push({
           instancePath: '/extensions/openai_agents/memory/type',
           schemaPath: '',
@@ -115,10 +112,7 @@ export class OpenAIValidator {
       }
 
       const maxMessages = memory.max_messages as number | undefined;
-      if (
-        maxMessages !== undefined &&
-        maxMessages < 1
-      ) {
+      if (maxMessages !== undefined && maxMessages < 1) {
         errors.push({
           instancePath: '/extensions/openai_agents/memory/max_messages',
           schemaPath: '',

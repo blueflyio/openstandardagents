@@ -13,7 +13,9 @@ export class AutoGenValidator {
     const errors: ErrorObject[] = [];
     const warnings: string[] = [];
 
-    const autogenExt = manifest.extensions?.autogen as Record<string, unknown> | undefined;
+    const autogenExt = manifest.extensions?.autogen as
+      | Record<string, unknown>
+      | undefined;
     if (!autogenExt || (autogenExt.enabled as boolean | undefined) === false) {
       return { valid: true, errors: [], warnings: [] };
     }
@@ -33,10 +35,7 @@ export class AutoGenValidator {
 
     // Validate system_message if provided
     const systemMessage = autogenExt.system_message as string | undefined;
-    if (
-      systemMessage !== undefined &&
-      typeof systemMessage !== 'string'
-    ) {
+    if (systemMessage !== undefined && typeof systemMessage !== 'string') {
       errors.push({
         instancePath: '/extensions/autogen/system_message',
         schemaPath: '',
@@ -47,7 +46,9 @@ export class AutoGenValidator {
     }
 
     // Validate max_consecutive_auto_reply if provided
-    const maxConsecutiveAutoReply = autogenExt.max_consecutive_auto_reply as number | undefined;
+    const maxConsecutiveAutoReply = autogenExt.max_consecutive_auto_reply as
+      | number
+      | undefined;
     if (maxConsecutiveAutoReply !== undefined) {
       if (
         typeof maxConsecutiveAutoReply !== 'number' ||
@@ -79,7 +80,9 @@ export class AutoGenValidator {
     }
 
     // Validate code_execution_config if provided
-    const codeExecutionConfig = autogenExt.code_execution_config as Record<string, unknown> | undefined;
+    const codeExecutionConfig = autogenExt.code_execution_config as
+      | Record<string, unknown>
+      | undefined;
     if (codeExecutionConfig) {
       if (typeof codeExecutionConfig !== 'object') {
         errors.push({
@@ -91,10 +94,7 @@ export class AutoGenValidator {
         });
       } else {
         const workDir = codeExecutionConfig.work_dir as string | undefined;
-        if (
-          workDir &&
-          typeof workDir !== 'string'
-        ) {
+        if (workDir && typeof workDir !== 'string') {
           errors.push({
             instancePath: '/extensions/autogen/code_execution_config/work_dir',
             schemaPath: '',
@@ -111,10 +111,7 @@ export class AutoGenValidator {
       warnings.push('Best practice: Define system_message for AutoGen agents');
     }
 
-    if (
-      agentType === 'assistant' &&
-      maxConsecutiveAutoReply === undefined
-    ) {
+    if (agentType === 'assistant' && maxConsecutiveAutoReply === undefined) {
       warnings.push(
         'Best practice: Set max_consecutive_auto_reply for AutoGen assistant agents'
       );

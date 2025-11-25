@@ -13,8 +13,13 @@ export class LlamaIndexValidator {
     const errors: ErrorObject[] = [];
     const warnings: string[] = [];
 
-    const llamaindexExt = manifest.extensions?.llamaindex as Record<string, unknown> | undefined;
-    if (!llamaindexExt || (llamaindexExt.enabled as boolean | undefined) === false) {
+    const llamaindexExt = manifest.extensions?.llamaindex as
+      | Record<string, unknown>
+      | undefined;
+    if (
+      !llamaindexExt ||
+      (llamaindexExt.enabled as boolean | undefined) === false
+    ) {
       return { valid: true, errors: [], warnings: [] };
     }
 
@@ -34,7 +39,9 @@ export class LlamaIndexValidator {
     }
 
     // Validate index_config if provided
-    const indexConfig = llamaindexExt.index_config as Record<string, unknown> | undefined;
+    const indexConfig = llamaindexExt.index_config as
+      | Record<string, unknown>
+      | undefined;
     if (indexConfig) {
       if (typeof indexConfig !== 'object') {
         errors.push({
@@ -47,10 +54,7 @@ export class LlamaIndexValidator {
       } else {
         if (indexConfig.chunk_size !== undefined) {
           const chunkSize = indexConfig.chunk_size as number | undefined;
-          if (
-            typeof chunkSize !== 'number' ||
-            chunkSize < 1
-          ) {
+          if (typeof chunkSize !== 'number' || chunkSize < 1) {
             errors.push({
               instancePath: '/extensions/llamaindex/index_config/chunk_size',
               schemaPath: '',
@@ -63,10 +67,7 @@ export class LlamaIndexValidator {
 
         if (indexConfig.chunk_overlap !== undefined) {
           const chunkOverlap = indexConfig.chunk_overlap as number | undefined;
-          if (
-            typeof chunkOverlap !== 'number' ||
-            chunkOverlap < 0
-          ) {
+          if (typeof chunkOverlap !== 'number' || chunkOverlap < 0) {
             errors.push({
               instancePath: '/extensions/llamaindex/index_config/chunk_overlap',
               schemaPath: '',
@@ -82,10 +83,7 @@ export class LlamaIndexValidator {
     // Validate similarity_top_k if provided
     const similarityTopK = llamaindexExt.similarity_top_k as number | undefined;
     if (similarityTopK !== undefined) {
-      if (
-        typeof similarityTopK !== 'number' ||
-        similarityTopK < 1
-      ) {
+      if (typeof similarityTopK !== 'number' || similarityTopK < 1) {
         errors.push({
           instancePath: '/extensions/llamaindex/similarity_top_k',
           schemaPath: '',

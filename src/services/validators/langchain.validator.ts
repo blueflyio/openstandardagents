@@ -13,8 +13,13 @@ export class LangChainValidator {
     const errors: ErrorObject[] = [];
     const warnings: string[] = [];
 
-    const langchainExt = manifest.extensions?.langchain as Record<string, unknown> | undefined;
-    if (!langchainExt || (langchainExt.enabled as boolean | undefined) === false) {
+    const langchainExt = manifest.extensions?.langchain as
+      | Record<string, unknown>
+      | undefined;
+    if (
+      !langchainExt ||
+      (langchainExt.enabled as boolean | undefined) === false
+    ) {
       return { valid: true, errors: [], warnings: [] };
     }
 
@@ -27,10 +32,7 @@ export class LangChainValidator {
       'custom',
     ];
     const chainType = langchainExt.chain_type as string | undefined;
-    if (
-      chainType &&
-      !validChainTypes.includes(chainType)
-    ) {
+    if (chainType && !validChainTypes.includes(chainType)) {
       errors.push({
         instancePath: '/extensions/langchain/chain_type',
         schemaPath: '',
@@ -45,10 +47,7 @@ export class LangChainValidator {
     if (memory) {
       const validMemoryTypes = ['buffer', 'summary', 'conversation', 'vector'];
       const memoryType = memory.type as string | undefined;
-      if (
-        memoryType &&
-        !validMemoryTypes.includes(memoryType)
-      ) {
+      if (memoryType && !validMemoryTypes.includes(memoryType)) {
         errors.push({
           instancePath: '/extensions/langchain/memory/type',
           schemaPath: '',
@@ -85,7 +84,9 @@ export class LangChainValidator {
     }
 
     // Validate return_intermediate_steps if provided
-    const returnIntermediateSteps = langchainExt.return_intermediate_steps as boolean | undefined;
+    const returnIntermediateSteps = langchainExt.return_intermediate_steps as
+      | boolean
+      | undefined;
     if (
       returnIntermediateSteps !== undefined &&
       typeof returnIntermediateSteps !== 'boolean'
@@ -107,10 +108,7 @@ export class LangChainValidator {
     }
 
     const tools = langchainExt.tools as unknown[] | undefined;
-    if (
-      !tools ||
-      (Array.isArray(tools) && tools.length === 0)
-    ) {
+    if (!tools || (Array.isArray(tools) && tools.length === 0)) {
       warnings.push(
         'Best practice: Define tools for LangChain agent capabilities'
       );

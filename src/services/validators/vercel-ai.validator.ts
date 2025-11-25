@@ -13,7 +13,9 @@ export class VercelAIValidator {
     const errors: ErrorObject[] = [];
     const warnings: string[] = [];
 
-    const vercelExt = manifest.extensions?.vercel_ai as Record<string, unknown> | undefined;
+    const vercelExt = manifest.extensions?.vercel_ai as
+      | Record<string, unknown>
+      | undefined;
     if (!vercelExt || (vercelExt.enabled as boolean | undefined) === false) {
       return { valid: true, errors: [], warnings: [] };
     }
@@ -33,10 +35,7 @@ export class VercelAIValidator {
 
     // Validate stream if provided
     const stream = vercelExt.stream as boolean | undefined;
-    if (
-      stream !== undefined &&
-      typeof stream !== 'boolean'
-    ) {
+    if (stream !== undefined && typeof stream !== 'boolean') {
       errors.push({
         instancePath: '/extensions/vercel_ai/stream',
         schemaPath: '',
@@ -49,10 +48,7 @@ export class VercelAIValidator {
     // Validate max_tokens if provided
     const maxTokens = vercelExt.max_tokens as number | undefined;
     if (maxTokens !== undefined) {
-      if (
-        typeof maxTokens !== 'number' ||
-        maxTokens < 1
-      ) {
+      if (typeof maxTokens !== 'number' || maxTokens < 1) {
         errors.push({
           instancePath: '/extensions/vercel_ai/max_tokens',
           schemaPath: '',
@@ -100,11 +96,7 @@ export class VercelAIValidator {
       );
     }
 
-    if (
-      runtime === 'edge' &&
-      maxTokens &&
-      maxTokens > 4096
-    ) {
+    if (runtime === 'edge' && maxTokens && maxTokens > 4096) {
       warnings.push(
         'Best practice: Edge runtime has token limits - consider reducing max_tokens'
       );

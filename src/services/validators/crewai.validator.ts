@@ -13,7 +13,9 @@ export class CrewAIValidator {
     const errors: ErrorObject[] = [];
     const warnings: string[] = [];
 
-    const crewaiExt = manifest.extensions?.crewai as Record<string, unknown> | undefined;
+    const crewaiExt = manifest.extensions?.crewai as
+      | Record<string, unknown>
+      | undefined;
     if (!crewaiExt || (crewaiExt.enabled as boolean | undefined) === false) {
       return { valid: true, errors: [], warnings: [] };
     }
@@ -33,11 +35,7 @@ export class CrewAIValidator {
 
     // Validate role (required for CrewAI)
     const role = crewaiExt.role as string | undefined;
-    if (
-      !role ||
-      typeof role !== 'string' ||
-      role.trim().length === 0
-    ) {
+    if (!role || typeof role !== 'string' || role.trim().length === 0) {
       errors.push({
         instancePath: '/extensions/crewai/role',
         schemaPath: '',
@@ -49,11 +47,7 @@ export class CrewAIValidator {
 
     // Validate goal (required for CrewAI)
     const goal = crewaiExt.goal as string | undefined;
-    if (
-      !goal ||
-      typeof goal !== 'string' ||
-      goal.trim().length === 0
-    ) {
+    if (!goal || typeof goal !== 'string' || goal.trim().length === 0) {
       errors.push({
         instancePath: '/extensions/crewai/goal',
         schemaPath: '',
@@ -86,10 +80,7 @@ export class CrewAIValidator {
     // Validate max_iterations if provided
     const maxIterations = crewaiExt.max_iterations as number | undefined;
     if (maxIterations !== undefined) {
-      if (
-        typeof maxIterations !== 'number' ||
-        maxIterations < 1
-      ) {
+      if (typeof maxIterations !== 'number' || maxIterations < 1) {
         errors.push({
           instancePath: '/extensions/crewai/max_iterations',
           schemaPath: '',
@@ -103,10 +94,7 @@ export class CrewAIValidator {
     // Validate max_execution_time if provided
     const maxExecutionTime = crewaiExt.max_execution_time as number | undefined;
     if (maxExecutionTime !== undefined) {
-      if (
-        typeof maxExecutionTime !== 'number' ||
-        maxExecutionTime < 1
-      ) {
+      if (typeof maxExecutionTime !== 'number' || maxExecutionTime < 1) {
         errors.push({
           instancePath: '/extensions/crewai/max_execution_time',
           schemaPath: '',
@@ -119,10 +107,7 @@ export class CrewAIValidator {
 
     // Validate verbose if provided
     const verbose = crewaiExt.verbose as boolean | undefined;
-    if (
-      verbose !== undefined &&
-      typeof verbose !== 'boolean'
-    ) {
+    if (verbose !== undefined && typeof verbose !== 'boolean') {
       errors.push({
         instancePath: '/extensions/crewai/verbose',
         schemaPath: '',

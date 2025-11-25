@@ -137,14 +137,20 @@ export class MigrationService {
     }
 
     // Convert capabilities to tools
-    if (v1.agent.capabilities && Array.isArray(v1.agent.capabilities) && migrated.spec && migrated.metadata) {
-      const mcpRecord = v1.agent.integration?.mcp as Record<string, unknown> | undefined;
+    if (
+      v1.agent.capabilities &&
+      Array.isArray(v1.agent.capabilities) &&
+      migrated.spec &&
+      migrated.metadata
+    ) {
+      const mcpRecord = v1.agent.integration?.mcp as
+        | Record<string, unknown>
+        | undefined;
       const metadataName = migrated.metadata.name;
       migrated.spec.tools = v1.agent.capabilities.map((cap) => ({
         type: 'mcp',
         name: (cap.name as string | undefined) || 'unnamed_tool',
-        server:
-          (mcpRecord?.server_name as string | undefined) || metadataName,
+        server: (mcpRecord?.server_name as string | undefined) || metadataName,
       }));
     }
 
@@ -157,7 +163,9 @@ export class MigrationService {
 
     // Handle observability with proper structure
     if ((v1.agent.observability || v1.agent.monitoring) && migrated.spec) {
-      const obs = (v1.agent.observability || v1.agent.monitoring) as Record<string, unknown> | undefined;
+      const obs = (v1.agent.observability || v1.agent.monitoring) as
+        | Record<string, unknown>
+        | undefined;
       if (obs) {
         const metricsValue = obs.metrics;
         let normalizedMetrics: Record<string, unknown>;
@@ -222,7 +230,11 @@ export class MigrationService {
     }
 
     // kagent extension
-    if (v1.agent.runtime?.type === 'k8s' && migrated.spec && migrated.metadata) {
+    if (
+      v1.agent.runtime?.type === 'k8s' &&
+      migrated.spec &&
+      migrated.metadata
+    ) {
       const specRecord = migrated.spec as Record<string, unknown>;
       if (!specRecord.extensions) {
         specRecord.extensions = {};
@@ -242,7 +254,8 @@ export class MigrationService {
       if (!specRecord.extensions) {
         specRecord.extensions = {};
       }
-      (specRecord.extensions as Record<string, unknown>).runtime = v1.agent.runtime;
+      (specRecord.extensions as Record<string, unknown>).runtime =
+        v1.agent.runtime;
     }
 
     // Integration extension
@@ -251,7 +264,8 @@ export class MigrationService {
       if (!specRecord.extensions) {
         specRecord.extensions = {};
       }
-      (specRecord.extensions as Record<string, unknown>).integration = v1.agent.integration;
+      (specRecord.extensions as Record<string, unknown>).integration =
+        v1.agent.integration;
     }
 
     return migrated;
@@ -259,12 +273,7 @@ export class MigrationService {
 
   private detectDomain(agent: Record<string, unknown>): string {
     const tags = Array.isArray(agent.tags) ? agent.tags : [];
-    const text = [
-      agent.id,
-      agent.name,
-      agent.description,
-      ...tags,
-    ]
+    const text = [agent.id, agent.name, agent.description, ...tags]
       .join(' ')
       .toLowerCase();
     if (text.includes('infrastructure') || text.includes('k8s'))

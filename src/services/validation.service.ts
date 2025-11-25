@@ -89,7 +89,9 @@ export class ValidationService implements IValidationService {
       const warnings = this.generateWarnings(manifest);
 
       // 5. Run platform-specific validators
-      const platformResults = this.validatePlatformExtensions(manifest as OssaAgent);
+      const platformResults = this.validatePlatformExtensions(
+        manifest as OssaAgent
+      );
       const allErrors = [
         ...(valid ? [] : validator.errors || []),
         ...platformResults.errors,
@@ -139,7 +141,9 @@ export class ValidationService implements IValidationService {
 
     const m = manifest as OssaAgent;
     const spec = m.spec || m.agent;
-    const metadata = (m as Record<string, unknown>).metadata || (m.agent as Record<string, unknown> | undefined)?.metadata;
+    const metadata =
+      (m as Record<string, unknown>).metadata ||
+      (m.agent as Record<string, unknown> | undefined)?.metadata;
 
     if (!spec) {
       return warnings;
@@ -147,7 +151,11 @@ export class ValidationService implements IValidationService {
 
     // Check for description
     const metadataRecord = metadata as Record<string, unknown> | undefined;
-    if (!metadataRecord?.description || (typeof metadataRecord.description === 'string' && metadataRecord.description.trim().length === 0)) {
+    if (
+      !metadataRecord?.description ||
+      (typeof metadataRecord.description === 'string' &&
+        metadataRecord.description.trim().length === 0)
+    ) {
       warnings.push(
         'Best practice: Add agent description for better documentation'
       );

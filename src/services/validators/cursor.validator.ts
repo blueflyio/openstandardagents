@@ -13,7 +13,9 @@ export class CursorValidator {
     const errors: ErrorObject[] = [];
     const warnings: string[] = [];
 
-    const cursorExt = manifest.extensions?.cursor as Record<string, unknown> | undefined;
+    const cursorExt = manifest.extensions?.cursor as
+      | Record<string, unknown>
+      | undefined;
     if (!cursorExt) {
       return { valid: true, errors: [], warnings: [] };
     }
@@ -33,13 +35,12 @@ export class CursorValidator {
       }
 
       // Validate workspace_config if provided
-      const workspaceConfig = cursorExt.workspace_config as Record<string, unknown> | undefined;
+      const workspaceConfig = cursorExt.workspace_config as
+        | Record<string, unknown>
+        | undefined;
       if (workspaceConfig) {
         const rulesFile = workspaceConfig.rules_file as string | undefined;
-        if (
-          rulesFile &&
-          typeof rulesFile !== 'string'
-        ) {
+        if (rulesFile && typeof rulesFile !== 'string') {
           errors.push({
             instancePath: '/extensions/cursor/workspace_config/rules_file',
             schemaPath: '',
@@ -49,11 +50,10 @@ export class CursorValidator {
           });
         }
 
-        const contextFiles = workspaceConfig.context_files as unknown[] | undefined;
-        if (
-          contextFiles &&
-          !Array.isArray(contextFiles)
-        ) {
+        const contextFiles = workspaceConfig.context_files as
+          | unknown[]
+          | undefined;
+        if (contextFiles && !Array.isArray(contextFiles)) {
           errors.push({
             instancePath: '/extensions/cursor/workspace_config/context_files',
             schemaPath: '',
@@ -69,10 +69,7 @@ export class CursorValidator {
       if (model) {
         const validProviders = ['openai', 'anthropic', 'custom'];
         const provider = model.provider as string | undefined;
-        if (
-          provider &&
-          !validProviders.includes(provider)
-        ) {
+        if (provider && !validProviders.includes(provider)) {
           errors.push({
             instancePath: '/extensions/cursor/model/provider',
             schemaPath: '',

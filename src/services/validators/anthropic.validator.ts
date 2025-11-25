@@ -13,8 +13,13 @@ export class AnthropicValidator {
     const errors: ErrorObject[] = [];
     const warnings: string[] = [];
 
-    const anthropicExt = manifest.extensions?.anthropic as Record<string, unknown> | undefined;
-    if (!anthropicExt || (anthropicExt.enabled as boolean | undefined) === false) {
+    const anthropicExt = manifest.extensions?.anthropic as
+      | Record<string, unknown>
+      | undefined;
+    if (
+      !anthropicExt ||
+      (anthropicExt.enabled as boolean | undefined) === false
+    ) {
       return { valid: true, errors: [], warnings: [] };
     }
 

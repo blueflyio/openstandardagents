@@ -66,7 +66,7 @@ export function parsePackageJson(content: string): PackageJson {
   } catch (error) {
     if (error instanceof z.ZodError) {
       throw new Error(
-        `Invalid package.json: ${error.errors.map((e) => e.message).join(', ')}`
+        `Invalid package.json: ${error.issues.map((e: z.ZodIssue) => e.message).join(', ')}`
       );
     }
     throw error;
