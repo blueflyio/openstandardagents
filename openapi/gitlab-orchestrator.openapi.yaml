@@ -4,13 +4,13 @@ info:
   version: 1.0.0
   description: |
     **Multi-Project CI/CD Orchestration**
-    
+
     Orchestrates GitLab CI/CD across all LLM platform projects:
     - Triggers pipelines for agent deployment
     - Manages GitLab package publishing (npm, PyPI)
     - Coordinates multi-repo workflows
     - Tracks deployment status
-    
+
     **No GitHub. Only GitLab.**
 
 servers:
@@ -178,7 +178,7 @@ paths:
     get:
       tags: [packages]
       summary: List GitLab packages
-      description: Query gitlab.bluefly.io package registry
+      description: Query gitlab.com package registry
       operationId: listPackages
       parameters:
         - name: scope
@@ -272,17 +272,17 @@ components:
           tokenUrl: https://gitlab.bluefly.io/oauth/token
           scopes:
             api: Full API access
-    
+
     GitLabToken:
       type: http
       scheme: bearer
       bearerFormat: GitLab Personal Access Token
-    
+
     ApiKeyAuth:
       type: apiKey
       in: header
       name: X-Drupal-API-Key
-  
+
   schemas:
     ContentCreateRequest:
       type: object
