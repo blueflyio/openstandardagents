@@ -92,7 +92,11 @@ export class MigrationService {
     };
 
     // Convert tags to labels
-    if (v1.agent.tags && Array.isArray(v1.agent.tags) && migrated.metadata?.labels) {
+    if (
+      v1.agent.tags &&
+      Array.isArray(v1.agent.tags) &&
+      migrated.metadata?.labels
+    ) {
       v1.agent.tags.forEach((tag) => {
         if (typeof tag === 'string') {
           migrated.metadata!.labels![tag] = 'true';
@@ -113,7 +117,9 @@ export class MigrationService {
         migrated.metadata.annotations.license = String(v1.metadata.license);
       }
       if (v1.metadata.repository) {
-        migrated.metadata.annotations.repository = String(v1.metadata.repository);
+        migrated.metadata.annotations.repository = String(
+          v1.metadata.repository
+        );
       }
     }
 
@@ -131,11 +137,14 @@ export class MigrationService {
     if (v1.agent.llm && migrated.spec) {
       const llm = v1.agent.llm as Record<string, unknown>;
       migrated.spec.llm = {
-        provider:
-          (llm.provider === 'auto' ? 'openai' : String(llm.provider || 'openai')) as string,
+        provider: (llm.provider === 'auto'
+          ? 'openai'
+          : String(llm.provider || 'openai')) as string,
         model: String(llm.model || ''),
-        temperature: typeof llm.temperature === 'number' ? llm.temperature : undefined,
-        maxTokens: typeof llm.maxTokens === 'number' ? llm.maxTokens : undefined,
+        temperature:
+          typeof llm.temperature === 'number' ? llm.temperature : undefined,
+        maxTokens:
+          typeof llm.maxTokens === 'number' ? llm.maxTokens : undefined,
         topP: typeof llm.topP === 'number' ? llm.topP : undefined,
       };
     }

@@ -130,12 +130,15 @@ export class GenerationService {
     temperature?: number;
     maxTokens?: number;
   } {
-    const configs: Record<string, {
-      provider: string;
-      model: string;
-      temperature?: number;
-      maxTokens?: number;
-    }> = {
+    const configs: Record<
+      string,
+      {
+        provider: string;
+        model: string;
+        temperature?: number;
+        maxTokens?: number;
+      }
+    > = {
       chat: {
         provider: 'openai',
         model: 'gpt-4',
@@ -192,13 +195,32 @@ export class GenerationService {
     platform: Platform
   ): Promise<Record<string, unknown>> {
     const agent = manifest.agent || manifest;
-    const metadata = manifest.metadata || (agent as { metadata?: Record<string, unknown> })?.metadata || {};
-    const spec = manifest.spec || (agent as { role?: string; llm?: Record<string, unknown>; tools?: Array<Record<string, unknown>> });
-    const extensions = manifest.extensions || (agent as { extensions?: Record<string, unknown> })?.extensions || {};
+    const metadata =
+      manifest.metadata ||
+      (agent as { metadata?: Record<string, unknown> })?.metadata ||
+      {};
+    const spec =
+      manifest.spec ||
+      (agent as {
+        role?: string;
+        llm?: Record<string, unknown>;
+        tools?: Array<Record<string, unknown>>;
+      });
+    const extensions =
+      manifest.extensions ||
+      (agent as { extensions?: Record<string, unknown> })?.extensions ||
+      {};
 
     switch (platform) {
       case 'cursor': {
-        const cursorExt = extensions.cursor as { agent_type?: string; workspace_config?: Record<string, unknown>; capabilities?: Record<string, unknown>; model?: Record<string, unknown> } | undefined;
+        const cursorExt = extensions.cursor as
+          | {
+              agent_type?: string;
+              workspace_config?: Record<string, unknown>;
+              capabilities?: Record<string, unknown>;
+              model?: Record<string, unknown>;
+            }
+          | undefined;
         return {
           agent_type: cursorExt?.agent_type || 'composer',
           workspace_config: cursorExt?.workspace_config || {},
@@ -208,24 +230,42 @@ export class GenerationService {
       }
 
       case 'openai': {
-        const openaiExt = extensions.openai_agents as { model?: string } | undefined;
+        const openaiExt = extensions.openai_agents as
+          | { model?: string }
+          | undefined;
         return {
           name: metadata.name || (agent as { id?: string })?.id || '',
           instructions: spec?.role || (agent as { role?: string })?.role || '',
-          model:
-            openaiExt?.model || spec?.llm?.model || 'gpt-4o-mini',
-          tools: this.extractTools((spec?.tools || (agent as { tools?: Array<Record<string, unknown>> })?.tools || []) as Array<Record<string, unknown>>),
+          model: openaiExt?.model || spec?.llm?.model || 'gpt-4o-mini',
+          tools: this.extractTools(
+            (spec?.tools ||
+              (agent as { tools?: Array<Record<string, unknown>> })?.tools ||
+              []) as Array<Record<string, unknown>>
+          ),
         };
       }
 
       case 'crewai': {
-        const crewaiExt = extensions.crewai as { role?: string; goal?: string; backstory?: string; tools?: Array<unknown>; agent_type?: string } | undefined;
+        const crewaiExt = extensions.crewai as
+          | {
+              role?: string;
+              goal?: string;
+              backstory?: string;
+              tools?: Array<unknown>;
+              agent_type?: string;
+            }
+          | undefined;
         return {
-          role: crewaiExt?.role || spec?.role || (agent as { role?: string })?.role || '',
+          role:
+            crewaiExt?.role ||
+            spec?.role ||
+            (agent as { role?: string })?.role ||
+            '',
           goal:
             crewaiExt?.goal ||
             metadata.description ||
-            (agent as { description?: string })?.description || '',
+            (agent as { description?: string })?.description ||
+            '',
           backstory: crewaiExt?.backstory || '',
           tools: crewaiExt?.tools || [],
           agent_type: crewaiExt?.agent_type || 'worker',
@@ -233,23 +273,41 @@ export class GenerationService {
       }
 
       case 'langchain': {
-        const langchainExt = extensions.langchain as { chain_type?: string } | undefined;
+        const langchainExt = extensions.langchain as
+          | { chain_type?: string }
+          | undefined;
         return {
           type: 'agent',
           chain_type: langchainExt?.chain_type || 'agent',
-          tools: this.extractTools((spec?.tools || (agent as { tools?: Array<Record<string, unknown>> })?.tools || []) as Array<Record<string, unknown>>),
-          llm: spec?.llm || (agent as { llm?: Record<string, unknown> })?.llm || {},
+          tools: this.extractTools(
+            (spec?.tools ||
+              (agent as { tools?: Array<Record<string, unknown>> })?.tools ||
+              []) as Array<Record<string, unknown>>
+          ),
+          llm:
+            spec?.llm ||
+            (agent as { llm?: Record<string, unknown> })?.llm ||
+            {},
         };
       }
 
       case 'anthropic': {
-        const agentTools = (agent as { tools?: Array<Record<string, unknown>> })?.tools;
-        const anthropicExt = extensions.anthropic as { system?: string; model?: string } | undefined;
+        const agentTools = (agent as { tools?: Array<Record<string, unknown>> })
+          ?.tools;
+        const anthropicExt = extensions.anthropic as
+          | { system?: string; model?: string }
+          | undefined;
         return {
           name: metadata.name || (agent as { id?: string })?.id || '',
-          system: anthropicExt?.system || spec?.role || (agent as { role?: string })?.role || '',
+          system:
+            anthropicExt?.system ||
+            spec?.role ||
+            (agent as { role?: string })?.role ||
+            '',
           model: anthropicExt?.model || 'claude-3-5-sonnet-20241022',
-          tools: this.extractTools((spec?.tools || agentTools || []) as Array<Record<string, unknown>>),
+          tools: this.extractTools(
+            (spec?.tools || agentTools || []) as Array<Record<string, unknown>>
+          ),
         };
       }
 
@@ -272,14 +330,29 @@ export class GenerationService {
       apiVersion: 'ossa/v0.2.4',
       kind: 'Agent',
       metadata: {
-        name: (typeof platformData.name === 'string' ? platformData.name : typeof platformData.id === 'string' ? platformData.id : 'imported-agent'),
-        version: (typeof platformData.version === 'string' ? platformData.version : '1.0.0'),
-        description: (typeof platformData.description === 'string' ? platformData.description : ''),
+        name:
+          typeof platformData.name === 'string'
+            ? platformData.name
+            : typeof platformData.id === 'string'
+              ? platformData.id
+              : 'imported-agent',
+        version:
+          typeof platformData.version === 'string'
+            ? platformData.version
+            : '1.0.0',
+        description:
+          typeof platformData.description === 'string'
+            ? platformData.description
+            : '',
       },
       spec: {
         role:
-          (typeof platformData.instructions === 'string' ? platformData.instructions : '') ||
-          (typeof platformData.system === 'string' ? platformData.system : '') ||
+          (typeof platformData.instructions === 'string'
+            ? platformData.instructions
+            : '') ||
+          (typeof platformData.system === 'string'
+            ? platformData.system
+            : '') ||
           (typeof platformData.role === 'string' ? platformData.role : '') ||
           '',
         llm: {
@@ -289,7 +362,10 @@ export class GenerationService {
               : platform === 'anthropic'
                 ? 'anthropic'
                 : 'openai',
-          model: (typeof platformData.model === 'string' ? platformData.model : 'gpt-4'),
+          model:
+            typeof platformData.model === 'string'
+              ? platformData.model
+              : 'gpt-4',
         },
         tools: [],
       },
@@ -314,7 +390,11 @@ export class GenerationService {
             instructions: platformData.instructions,
           },
         };
-        if (platformData.tools && Array.isArray(platformData.tools) && baseManifest.spec) {
+        if (
+          platformData.tools &&
+          Array.isArray(platformData.tools) &&
+          baseManifest.spec
+        ) {
           baseManifest.spec.tools = this.convertToolsToOSSA(platformData.tools);
         }
         break;
@@ -340,7 +420,11 @@ export class GenerationService {
             system: platformData.system,
           },
         };
-        if (platformData.tools && Array.isArray(platformData.tools) && baseManifest.spec) {
+        if (
+          platformData.tools &&
+          Array.isArray(platformData.tools) &&
+          baseManifest.spec
+        ) {
           baseManifest.spec.tools = this.convertToolsToOSSA(platformData.tools);
         }
         break;
@@ -362,9 +446,7 @@ export class GenerationService {
     }));
   }
 
-  private convertToolsToOSSA(
-    tools: Array<Record<string, unknown>>
-  ): Array<{
+  private convertToolsToOSSA(tools: Array<Record<string, unknown>>): Array<{
     type: string;
     name?: string;
     description?: string;
@@ -375,8 +457,12 @@ export class GenerationService {
       return {
         type: 'function',
         name: typeof func.name === 'string' ? func.name : undefined,
-        description: typeof func.description === 'string' ? func.description : undefined,
-        input_schema: (func.parameters || func.input_schema || {}) as Record<string, unknown>,
+        description:
+          typeof func.description === 'string' ? func.description : undefined,
+        input_schema: (func.parameters || func.input_schema || {}) as Record<
+          string,
+          unknown
+        >,
       };
     });
   }

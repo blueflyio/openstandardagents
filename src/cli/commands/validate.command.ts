@@ -73,8 +73,12 @@ export const validateCommand = new Command('validate')
             console.log(chalk.gray('\nAgent Details:'));
             const m = result.manifest as OssaAgent;
             if (m.apiVersion) {
-              console.log(`  Name: ${chalk.cyan(m.metadata?.name || 'unknown')}`);
-              console.log(`  Version: ${chalk.cyan(m.metadata?.version || 'unknown')}`);
+              console.log(
+                `  Name: ${chalk.cyan(m.metadata?.name || 'unknown')}`
+              );
+              console.log(
+                `  Version: ${chalk.cyan(m.metadata?.version || 'unknown')}`
+              );
               console.log(`  Role: ${chalk.cyan(m.spec?.role || 'unknown')}`);
             } else if (m.agent) {
               console.log(`  ID: ${chalk.cyan(m.agent.id)}`);
