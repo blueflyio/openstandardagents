@@ -900,6 +900,7 @@ workflow:
 # GitLab Pages deployment
 pages:
   stage: .post
+  needs: []  # Run independently - website deploys regardless of release status
   image: node:${NODE_VERSION}-alpine
   before_script:
     - cd website
