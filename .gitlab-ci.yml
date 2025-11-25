@@ -57,13 +57,13 @@ detect:milestone-version:
     - apk add --no-cache curl jq git
   script:
     - |
-      echo "🔍 MILESTONE-GATED RELEASE DETECTION"
+      echo "MILESTONE-GATED RELEASE DETECTION"
       echo "====================================="
       echo ""
       echo "Requirements for automatic release:"
-      echo "  1. Milestone MUST be closed"
-      echo "  2. Milestone MUST be 100% complete (all issues closed)"
-      echo "  3. Version MUST NOT already be released (git tag)"
+      echo " 1. Milestone MUST be closed"
+      echo " 2. Milestone MUST be 100% complete (all issues closed)"
+      echo " 3. Version MUST NOT already be released (git tag)"
       echo ""
 
       # Fetch git tags to check if version is already released
@@ -93,7 +93,7 @@ detect:milestone-version:
         if [ -n "$VERSION" ] && [ "$STATE" = "closed" ]; then
           # Check if this version has already been released
           if git tag -l | grep -qE "^v?${VERSION}$"; then
-            echo "⏭️  Skipping milestone: $TITLE (v${VERSION} already released)"
+            echo " Skipping milestone: $TITLE (v${VERSION} already released)"
             continue
           fi
 
@@ -105,16 +105,16 @@ detect:milestone-version:
           CLOSED_ISSUES=$(echo "$MILESTONE_STATS" | jq -r '.closed_issues_count // 0')
           OPEN_ISSUES=$(echo "$MILESTONE_STATS" | jq -r '(.total_issues_count - .closed_issues_count) // 0')
 
-          echo "📋 Found closed milestone: $TITLE"
-          echo "   Version: v${VERSION}"
-          echo "   Total Issues: ${TOTAL_ISSUES}"
-          echo "   Closed Issues: ${CLOSED_ISSUES}"
-          echo "   Open Issues: ${OPEN_ISSUES}"
+          echo "Found closed milestone: $TITLE"
+          echo "  Version: v${VERSION}"
+          echo "  Total Issues: ${TOTAL_ISSUES}"
+          echo "  Closed Issues: ${CLOSED_ISSUES}"
+          echo "  Open Issues: ${OPEN_ISSUES}"
           echo ""
 
           # Check if 100% complete
           if [ "$OPEN_ISSUES" -eq 0 ] && [ "$TOTAL_ISSUES" -gt 0 ]; then
-            echo "✅ Milestone is 100% complete - READY FOR RELEASE"
+            echo "Milestone is 100% complete - READY FOR RELEASE"
             MILESTONE_COMPLETE=true
             MILESTONE_TITLE="$TITLE"
             MILESTONE_VERSION="$VERSION"
@@ -122,7 +122,7 @@ detect:milestone-version:
             MILESTONE_FOUND=true
             break
           elif [ "$TOTAL_ISSUES" -eq 0 ]; then
-            echo "⚠️  Milestone has no issues - treating as complete"
+            echo " Milestone has no issues - treating as complete"
             MILESTONE_COMPLETE=true
             MILESTONE_TITLE="$TITLE"
             MILESTONE_VERSION="$VERSION"
@@ -130,12 +130,12 @@ detect:milestone-version:
             MILESTONE_FOUND=true
             break
           else
-            echo "❌ Milestone is NOT 100% complete"
-            echo "   ${OPEN_ISSUES} issue(s) still open"
-            echo "   Cannot proceed with automatic release"
+            echo "Milestone is NOT 100% complete"
+            echo "  ${OPEN_ISSUES} issue(s) still open"
+            echo "  Cannot proceed with automatic release"
             echo ""
             echo "Complete these issues first:"
-            echo "   https://gitlab.com/blueflyio/openstandardagents/-/milestones/${ID}"
+            echo "  https://gitlab.com/blueflyio/openstandardagents/-/milestones/${ID}"
             echo ""
           fi
         fi
@@ -149,9 +149,9 @@ detect:milestone-version:
         echo "MILESTONE_READY=true" >> milestone-version.env
 
         echo ""
-        echo "✅ AUTOMATIC RELEASE WILL PROCEED"
-        echo "   Version: v${MILESTONE_VERSION}"
-        echo "   Milestone: ${MILESTONE_TITLE}"
+        echo "AUTOMATIC RELEASE WILL PROCEED"
+        echo "  Version: v${MILESTONE_VERSION}"
+        echo "  Milestone: ${MILESTONE_TITLE}"
         echo ""
         cat milestone-version.env
       else
@@ -161,11 +161,11 @@ detect:milestone-version:
         echo "MILESTONE_READY=false" >> milestone-version.env
 
         echo ""
-        echo "ℹ️  No release-ready milestone found"
-        echo "   Either:"
-        echo "   • No closed milestones with version in title"
-        echo "   • Milestone has open issues"
-        echo "   • Version already released"
+        echo " No release-ready milestone found"
+        echo "  Either:"
+        echo "  • No closed milestones with version in title"
+        echo "  • Milestone has open issues"
+        echo "  • Version already released"
         echo ""
         cat milestone-version.env
       fi
@@ -212,7 +212,7 @@ validate:version-sync:
   image: node:${NODE_VERSION}-alpine
   script:
     - npm ci --legacy-peer-deps
-    - echo "🔍 Checking version consistency..."
+    - echo "Checking version consistency..."
     - npx tsx scripts/sync-versions.ts --check
   allow_failure: false
   rules:
@@ -235,7 +235,7 @@ validate:scripts-version:
     - npm ci --legacy-peer-deps
   script:
     - |
-      echo "🔍 Validating npm scripts use dynamic version..."
+      echo "Validating npm scripts use dynamic version..."
       VERSION=$(node -p "require('./package.json').version")
       echo "Current version: ${VERSION}"
       
@@ -245,21 +245,21 @@ validate:scripts-version:
       
       # Check validate:schema doesn't have hardcoded version
       if grep -q "spec/v0\.[0-9]" package.json; then
-        echo "❌ ERROR: package.json scripts contain hardcoded version paths"
-        echo "   Scripts should use dynamic version detection (scripts/*.ts)"
+        echo "ERROR: package.json scripts contain hardcoded version paths"
+        echo "  Scripts should use dynamic version detection (scripts/*.ts)"
         grep "spec/v0\.[0-9]" package.json || true
         exit 1
       fi
       
       # Check validate:power-suite uses generic script
       if ! grep -q "validate-ossa.ts" package.json; then
-        echo "❌ ERROR: validate:power-suite should use bin/validate-ossa.ts (version-agnostic)"
+        echo "ERROR: validate:power-suite should use bin/validate-ossa.ts (version-agnostic)"
         exit 1
       fi
       
       # Check scripts use tsx (TypeScript execution)
       if ! grep -q "tsx scripts/" package.json; then
-        echo "⚠️  WARNING: Scripts should use tsx for TypeScript execution"
+        echo " WARNING: Scripts should use tsx for TypeScript execution"
       fi
       
       # Verify TypeScript scripts exist
@@ -267,7 +267,7 @@ validate:scripts-version:
       echo "Checking TypeScript scripts exist..."
       for script in scripts/validate-schema.ts scripts/gen-types.ts scripts/gen-zod.ts; do
         if [ ! -f "$script" ]; then
-          echo "❌ ERROR: Missing script: $script"
+          echo "ERROR: Missing script: $script"
           exit 1
         fi
         echo "✓ Found: $script"
@@ -278,7 +278,7 @@ validate:scripts-version:
       echo "Checking shared utilities exist..."
       for util in scripts/lib/version.ts scripts/lib/file-ops.ts scripts/lib/exec.ts scripts/schemas/package.schema.ts; do
         if [ ! -f "$util" ]; then
-          echo "❌ ERROR: Missing utility: $util"
+          echo "ERROR: Missing utility: $util"
           exit 1
         fi
         echo "✓ Found: $util"
@@ -289,9 +289,9 @@ validate:scripts-version:
       echo "Testing version detection via TypeScript..."
       DETECTED_VERSION=$(npx tsx -e "import { getCurrentVersion } from './scripts/lib/version.js'; console.log(getCurrentVersion())")
       if [ "$DETECTED_VERSION" != "$VERSION" ]; then
-        echo "❌ ERROR: Version mismatch"
-        echo "   package.json: $VERSION"
-        echo "   version.ts: $DETECTED_VERSION"
+        echo "ERROR: Version mismatch"
+        echo "  package.json: $VERSION"
+        echo "  version.ts: $DETECTED_VERSION"
         exit 1
       fi
       echo "✓ Version detection works: $DETECTED_VERSION"
@@ -299,14 +299,14 @@ validate:scripts-version:
       # Verify schema path exists for current version
       SCHEMA_PATH="spec/v${VERSION}/ossa-${VERSION}.schema.json"
       if [ ! -f "$SCHEMA_PATH" ]; then
-        echo "⚠️  WARNING: Schema not found at $SCHEMA_PATH"
-        echo "   This is expected for new versions before schema is created"
+        echo " WARNING: Schema not found at $SCHEMA_PATH"
+        echo "  This is expected for new versions before schema is created"
       else
         echo "✓ Schema found: $SCHEMA_PATH"
       fi
       
       echo ""
-      echo "✅ All scripts use dynamic version detection with TypeScript + Zod"
+      echo "All scripts use dynamic version detection with TypeScript + Zod"
   allow_failure: false
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
@@ -328,7 +328,7 @@ validate:docs-consistency:
     - npm ci --legacy-peer-deps
   script:
     - |
-      echo "🔍 CRITICAL: Pre-Release Documentation Validation"
+      echo "CRITICAL: Pre-Release Documentation Validation"
       echo "=================================================="
       echo ""
       echo "This job PREVENTS releases with inconsistent documentation."
@@ -337,24 +337,24 @@ validate:docs-consistency:
 
       # Get version from package.json
       VERSION=$(node -p "require('./package.json').version")
-      echo "📦 Package version: v${VERSION}"
+      echo "Package version: v${VERSION}"
       echo ""
 
       # Run comprehensive version sync check
       echo "Running sync-versions.js --check..."
       if ! node scripts/sync-versions.js --check; then
         echo ""
-        echo "❌ CRITICAL FAILURE: Documentation is out of sync!"
+        echo "CRITICAL FAILURE: Documentation is out of sync!"
         echo ""
         echo "This means:"
-        echo "  • README.md has wrong version references"
-        echo "  • Schema paths don't match package.json"
-        echo "  • Badge versions are incorrect"
+        echo " • README.md has wrong version references"
+        echo " • Schema paths don't match package.json"
+        echo " • Badge versions are incorrect"
         echo ""
         echo "FIX REQUIRED:"
-        echo "  1. Run locally: node scripts/sync-versions.js --fix"
-        echo "  2. Commit the changes"
-        echo "  3. Push and re-run pipeline"
+        echo " 1. Run locally: node scripts/sync-versions.js --fix"
+        echo " 2. Commit the changes"
+        echo " 3. Push and re-run pipeline"
         echo ""
         echo "This validation CANNOT be bypassed."
         exit 1
@@ -362,20 +362,20 @@ validate:docs-consistency:
 
       # Verify spec directory exists
       if [ ! -d "spec/v${VERSION}" ]; then
-        echo "❌ CRITICAL: spec/v${VERSION}/ directory does not exist!"
+        echo "CRITICAL: spec/v${VERSION}/ directory does not exist!"
         echo "Run: node scripts/sync-versions.js --fix"
         exit 1
       fi
 
       # Verify schema file exists
       if [ ! -f "spec/v${VERSION}/ossa-${VERSION}.schema.json" ]; then
-        echo "❌ CRITICAL: spec/v${VERSION}/ossa-${VERSION}.schema.json does not exist!"
+        echo "CRITICAL: spec/v${VERSION}/ossa-${VERSION}.schema.json does not exist!"
         exit 1
       fi
 
       # Verify README references correct version
       if ! grep -q "OSSA v${VERSION} Schema:" README.md; then
-        echo "❌ CRITICAL: README.md does not reference v${VERSION}!"
+        echo "CRITICAL: README.md does not reference v${VERSION}!"
         echo "Found:"
         grep "OSSA v.*Schema:" README.md || echo "(no version found)"
         exit 1
@@ -385,18 +385,18 @@ validate:docs-consistency:
       SCHEMA_EXPORT=$(node -p "require('./package.json').exports['./schema']")
       EXPECTED_SCHEMA="./spec/v${VERSION}/ossa-${VERSION}.schema.json"
       if [ "$SCHEMA_EXPORT" != "$EXPECTED_SCHEMA" ]; then
-        echo "❌ CRITICAL: package.json schema export is wrong!"
-        echo "   Expected: ${EXPECTED_SCHEMA}"
-        echo "   Found: ${SCHEMA_EXPORT}"
+        echo "CRITICAL: package.json schema export is wrong!"
+        echo "  Expected: ${EXPECTED_SCHEMA}"
+        echo "  Found: ${SCHEMA_EXPORT}"
         exit 1
       fi
 
       echo ""
-      echo "✅ ALL DOCUMENTATION CONSISTENCY CHECKS PASSED"
-      echo "   Version: v${VERSION}"
-      echo "   README: ✓"
-      echo "   Schema: ✓"
-      echo "   package.json: ✓"
+      echo "ALL DOCUMENTATION CONSISTENCY CHECKS PASSED"
+      echo "  Version: v${VERSION}"
+      echo "  README: ✓"
+      echo "  Schema: ✓"
+      echo "  package.json: ✓"
       echo ""
       echo "Safe to proceed with release."
   allow_failure: false  # CRITICAL: This MUST pass before release
@@ -491,7 +491,7 @@ quality:gates:
   stage: quality
   image: node:${NODE_VERSION}-alpine
   script:
-    - echo "✅ Quality gates passed"
+    - echo "Quality gates passed"
   rules:
     - when: always
   needs:
@@ -570,42 +570,43 @@ release:preview:
     - npm ci --legacy-peer-deps
   script:
     - |
-      echo "🔍 Release Preview (Dry-Run)"
+      echo "Release Preview (Dry-Run)"
       echo "============================"
       echo ""
 
       # Show release gate status
-      echo "🔒 Release Gate Status:"
+      echo "Release Gate Status:"
       if [ "$ENABLE_RELEASE" = "true" ]; then
-        echo "   ✅ ENABLE_RELEASE: ${ENABLE_RELEASE} (releases enabled)"
+        echo "   ENABLE_RELEASE ${ENABLE_RELEASE} (releases enabled)"
       else
-        echo "   🔒 ENABLE_RELEASE: ${ENABLE_RELEASE:-not set} (releases disabled)"
+        echo "   ENABLE_RELEASE ${ENABLE_RELEASE:-not set} (releases disabled)"
         echo ""
-        echo "   To enable releases, set CI/CD variable:"
-        echo "   Settings → CI/CD → Variables → Add variable"
-        echo "   Variable: ENABLE_RELEASE"
-        echo "   Value: true"
+        echo "  To enable releases, set CI/CD variable:"
+        echo "  Settings → CI/CD → Variables → Add variable"
+        echo "  Variable ENABLE_RELEASE"
+        echo "  Value: true"
         echo ""
       fi
 
       # Show milestone-detected version (if available)
       if [ -n "$RELEASE_VERSION" ]; then
-        echo "📋 Detected from closed milestone:"
-        echo "   Milestone: ${MILESTONE_TITLE}"
-        echo "   Version to release: v${RELEASE_VERSION}"
-        echo "   Milestone ready: ${MILESTONE_READY:-false}"
+        echo "Detected from closed milestone:"
+        echo "  Milestone: ${MILESTONE_TITLE}"
+        echo "  Version to release: v${RELEASE_VERSION}"
+        MILESTONE_STATUS="${MILESTONE_READY:-false}"
+        echo "  Milestone ready: ${MILESTONE_STATUS}"
         echo ""
       fi
 
       # Show current package.json version
       CURRENT_VERSION=$(node -p "require('./package.json').version")
-      echo "📦 Current package.json: v${CURRENT_VERSION}"
+      echo "Current package.json: v${CURRENT_VERSION}"
       echo ""
 
       if [ -n "$RELEASE_VERSION" ] && [ "$RELEASE_VERSION" != "$CURRENT_VERSION" ]; then
-        echo "⚠️  Version mismatch:"
-        echo "   Milestone says: v${RELEASE_VERSION}"
-        echo "   package.json says: v${CURRENT_VERSION}"
+        echo "WARNING: Version mismatch:"
+        echo "  Milestone says: v${RELEASE_VERSION}"
+        echo "  package.json says: v${CURRENT_VERSION}"
         echo ""
         echo "The release:main job will update package.json to v${RELEASE_VERSION}"
         echo ""
@@ -613,11 +614,11 @@ release:preview:
 
       # Show release readiness
       if [ "$ENABLE_RELEASE" = "true" ] && [ "$MILESTONE_READY" = "true" ]; then
-        echo "✅ Release will proceed automatically when pipeline completes"
+        echo "Release will proceed automatically when pipeline completes"
       elif [ "$ENABLE_RELEASE" != "true" ]; then
-        echo "🔒 Release blocked: ENABLE_RELEASE not set"
+        echo "Release blocked: ENABLE_RELEASE not set"
       elif [ "$MILESTONE_READY" != "true" ]; then
-        echo "🔒 Release blocked: Milestone not ready"
+        echo "Release blocked: Milestone not ready"
       fi
 
       echo ""
@@ -625,7 +626,7 @@ release:preview:
       npx semantic-release --dry-run || true
 
       echo ""
-      echo "✅ Preview complete. Review output above before triggering release:main"
+      echo "Preview complete. Review output above before triggering release:main"
   rules:
     - if: $CI_COMMIT_BRANCH == "main"
       when: always
@@ -658,50 +659,50 @@ release:npm:
 
       # RELEASE GATE: Check if releases are enabled via CI variable
       if [ "$ENABLE_RELEASE" != "true" ]; then
-        echo "🔒 RELEASE BLOCKED: ENABLE_RELEASE variable not set"
+        echo "RELEASE BLOCKED: ENABLE_RELEASE variable not set"
         echo ""
         echo "To enable releases, set the CI/CD variable:"
-        echo "  Variable: ENABLE_RELEASE"
-        echo "  Value: true"
+        echo " Variable: ENABLE_RELEASE"
+        echo " Value: true"
         echo ""
         echo "This allows you to:"
-        echo "  • Deploy code to main without releasing"
-        echo "  • Run CI/CD pipelines without triggering npm publish"
-        echo "  • Control when releases happen explicitly"
+        echo " • Deploy code to main without releasing"
+        echo " • Run CI/CD pipelines without triggering npm publish"
+        echo " • Control when releases happen explicitly"
         echo ""
         echo "Current status:"
-        echo "  • ENABLE_RELEASE: ${ENABLE_RELEASE:-not set}"
-        echo "  • Release will NOT proceed"
+        echo " • ENABLE_RELEASE: ${ENABLE_RELEASE:-not set}"
+        echo " • Release will NOT proceed"
         exit 0  # Exit successfully - this is expected behavior
       fi
 
       # Validate milestone is ready (set by detect:milestone-version job)
       if [ "$MILESTONE_READY" != "true" ]; then
-        echo "❌ RELEASE BLOCKED: No release-ready milestone found"
+        echo "RELEASE BLOCKED: No release-ready milestone found"
         echo ""
         echo "Requirements for automatic release:"
-        echo "  1. ✅ ENABLE_RELEASE variable MUST be set to 'true'"
-        echo "  2. ✅ Milestone MUST exist with version in title (e.g., 'v0.2.6 - Feature Name')"
-        echo "  3. ✅ Milestone MUST be CLOSED"
-        echo "  4. ✅ Milestone MUST be 100% COMPLETE (all issues closed)"
-        echo "  5. ✅ Version MUST NOT already be released"
+        echo " 1.  ENABLE_RELEASE variable MUST be set to 'true'"
+        echo " 2.  Milestone MUST exist with version in title (e.g., 'v0.2.6 - Feature Name')"
+        echo " 3.  Milestone MUST be CLOSED"
+        echo " 4.  Milestone MUST be 100% COMPLETE (all issues closed)"
+        echo " 5.  Version MUST NOT already be released"
         echo ""
         echo "Current status:"
         if [ -z "$RELEASE_VERSION" ]; then
-          echo "  • No closed milestone with version found"
+          echo " • No closed milestone with version found"
         else
-          echo "  • Found milestone: ${MILESTONE_TITLE}"
-          echo "  • Milestone has open issues - complete them first:"
-          echo "    https://gitlab.com/blueflyio/openstandardagents/-/milestones/${MILESTONE_ID}"
+          echo " • Found milestone: ${MILESTONE_TITLE}"
+          echo " • Milestone has open issues - complete them first:"
+          echo "   https://gitlab.com/blueflyio/openstandardagents/-/milestones/${MILESTONE_ID}"
         fi
         echo ""
         echo "Once all issues are closed and milestone is closed, the release will trigger automatically."
         exit 1
       fi
 
-      echo "✅ Release gate passed:"
-      echo "   • ENABLE_RELEASE: ${ENABLE_RELEASE}"
-      echo "   • Milestone ready: ${MILESTONE_READY}"
+      echo "Release gate passed:"
+      echo "  • ENABLE_RELEASE: ${ENABLE_RELEASE}"
+      echo "  • Milestone ready: ${MILESTONE_READY}"
       echo ""
 
       # Milestone is ready - use detected version
@@ -709,14 +710,14 @@ release:npm:
       MILESTONE_TITLE="$MILESTONE_TITLE"
       # MILESTONE_ID already set by detect:milestone-version
 
-      echo "✅ Release ready for: ${MILESTONE_TITLE}"
-      echo "   Version: v${MILESTONE_VERSION}"
-      echo "   Milestone: https://gitlab.com/blueflyio/openstandardagents/-/milestones/${MILESTONE_ID}"
+      echo "Release ready for: ${MILESTONE_TITLE}"
+      echo "  Version: v${MILESTONE_VERSION}"
+      echo "  Milestone: https://gitlab.com/blueflyio/openstandardagents/-/milestones/${MILESTONE_ID}"
       echo ""
 
       # Update package.json version
       echo ""
-      echo "📦 Updating package.json to v${MILESTONE_VERSION}..."
+      echo "Updating package.json to v${MILESTONE_VERSION}..."
       npm version ${MILESTONE_VERSION} --no-git-tag-version --allow-same-version
 
       # AUTO-FIX: Sync ALL version references across the project
@@ -727,13 +728,13 @@ release:npm:
 
       # Verify the sync worked
       echo ""
-      echo "🔍 Verifying documentation consistency..."
+      echo "Verifying documentation consistency..."
       if ! node scripts/sync-versions.js --check; then
-        echo "❌ CRITICAL: Documentation sync failed verification!"
+        echo "CRITICAL: Documentation sync failed verification!"
         echo "This should never happen. Aborting release."
         exit 1
       fi
-      echo "✅ Documentation sync verified - all references consistent"
+      echo "Documentation sync verified - all references consistent"
 
       # Rename spec directory if needed
       if [ ! -d "spec/v${MILESTONE_VERSION}" ] && [ -d "spec/v${MILESTONE_VERSION}-dev" ]; then
@@ -745,7 +746,7 @@ release:npm:
           if [ -f "$file" ]; then
             newname="${file//-dev/}"
             mv "$file" "$newname"
-            echo "  Renamed: $file → $newname"
+            echo " Renamed: $file → $newname"
           fi
         done
         cd ../..
@@ -762,26 +763,26 @@ release:npm:
       # Run tests one more time before publishing
       echo ""
       echo "🧪 Running final tests before publish..."
-      npm run test || (echo "❌ Tests failed - aborting release" && exit 1)
+      npm run test || (echo "Tests failed - aborting release" && exit 1)
 
       # Publish to npm
       echo ""
-      echo "📦 Publishing v${MILESTONE_VERSION} to npm..."
+      echo "Publishing v${MILESTONE_VERSION} to npm..."
       npm publish --access public
 
       # Commit updated files and create tag
       echo ""
-      echo "🏷️  Creating git tag and pushing..."
+      echo " Creating git tag and pushing..."
       git add package.json package-lock.json README.md spec/
       git commit -m "chore(release): v${MILESTONE_VERSION} [skip ci]" || echo "No changes to commit"
       git tag -a "v${MILESTONE_VERSION}" -m "Release v${MILESTONE_VERSION}"
       git push origin main --tags
 
       echo ""
-      echo "✅ Release v${MILESTONE_VERSION} completed successfully!"
-      echo "   📦 npm: https://www.npmjs.com/package/@bluefly/openstandardagents"
-      echo "   🏷️  Tag: v${MILESTONE_VERSION}"
-      echo "   📋 Milestone: ${MILESTONE_TITLE}"
+      echo "Release v${MILESTONE_VERSION} completed successfully!"
+      echo "   npm: https://www.npmjs.com/package/@bluefly/openstandardagents"
+      echo "    Tag: v${MILESTONE_VERSION}"
+      echo "   Milestone: ${MILESTONE_TITLE}"
   rules:
     # AUTOMATIC release when BOTH conditions are met:
     # 1. Milestone is 100% complete and closed
@@ -821,15 +822,15 @@ mirror:github:
   script:
     - |
       if [ -z "$GITHUB_MIRROR_TOKEN" ]; then
-        echo "⚠️  GITHUB_MIRROR_TOKEN not set - skipping"
+        echo " GITHUB_MIRROR_TOKEN not set - skipping"
         exit 0
       fi
 
-      echo "🔄 Syncing to GitHub..."
+      echo "Syncing to GitHub..."
       git remote add github https://${GITHUB_MIRROR_TOKEN}@github.com/blueflyio/openstandardagents.git || true
       git push github --all --force || true
       git push github --tags --force || true
-      echo "✅ GitHub mirror synced"
+      echo "GitHub mirror synced"
   rules:
     - if: $CI_COMMIT_TAG
       when: on_success
