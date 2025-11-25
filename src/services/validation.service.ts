@@ -270,7 +270,6 @@ export class ValidationService implements IValidationService {
       // Load OpenAPI extensions schema
       // Try multiple possible paths (works in both dev and production)
       const possiblePaths = [
-        join(process.cwd(), 'docs/schemas/openapi-extensions.schema.json'),
         join(process.cwd(), 'dist/docs/schemas/openapi-extensions.schema.json'),
         join(process.cwd(), 'spec/schemas/openapi-extensions.schema.json'),
       ];
