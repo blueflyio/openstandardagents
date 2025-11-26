@@ -5,6 +5,49 @@ All notable changes to OSSA (Open Standard for Scalable AI Agents) will be docum
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- **ossa run command**: New CLI command to execute agents using the OpenAI adapter
+  - Interactive REPL mode for ongoing conversations
+  - Single message mode with `-m, --message` flag
+  - Verbose output with `-v, --verbose` flag for debugging
+  - Configurable max turns with `--max-turns` option
+  - Runtime selection with `-r, --runtime` flag (currently supports OpenAI)
+  - Validation toggle with `--no-validate` flag
+  - Comprehensive error handling and user-friendly messages
+
+- **OpenAI Adapter**: Complete runtime adapter for OpenAI API integration
+  - OpenAI function calling API support
+  - Tool registration and execution with custom handlers
+  - Conversation history management
+  - Model selection from manifest or OpenAI extensions
+  - System prompt configuration
+  - Tool mapping from OSSA capabilities to OpenAI functions
+  - Temperature and max tokens configuration
+  - Max turns limit to prevent infinite loops
+
+- **Documentation**:
+  - Complete CLI reference for `ossa run` command
+  - Comprehensive OpenAI adapter guide
+  - Enhanced running agents guide with troubleshooting
+  - README.md updated with run command examples
+
+- **Examples**:
+  - Basic OpenAI agent example (`examples/openai/basic-agent.ossa.yaml`)
+  - Advanced multi-tool agent example (`examples/openai/multi-tool-agent.ossa.json`)
+
+- **Tests**:
+  - Unit tests for run command
+  - Unit tests for OpenAI adapter
+  - Integration tests for CLI execution
+
+### Changed
+
+- Enhanced getting started documentation with detailed option descriptions
+- Updated README.md with running agents section
+
 ## [0.2.4](https://github.com/blueflyio/openstandardagents/compare/v0.2.3...v0.2.4) (2025-11-19)
 
 ### Package Rename
