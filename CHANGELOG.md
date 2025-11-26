@@ -6,6 +6,26 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [0.2.4](https://github.com/blueflyio/openstandardagents/compare/v0.2.3...v0.2.4) (2025-11-19)
+## [v0.2.6] - TBD
+
+### Added
+
+- **spec/v0.2.6 directory structure**: New specification directory for v0.2.6
+- **Migration guide**: Guide for migrating from v0.2.5-RC to v0.2.6
+
+### Changed
+
+- Updated version references from 0.2.5-RC to 0.2.6
+- Updated schema files to reflect v0.2.6
+
+### Fixed
+
+- TBD: Issues fixed in this release
+
+### Migration Notes
+
+See [spec/v0.2.6/migrations/v0.2.5-RC-to-v0.2.6.md](./spec/v0.2.6/migrations/v0.2.5-RC-to-v0.2.6.md) for detailed migration instructions.
+
 
 ### Package Rename
 
