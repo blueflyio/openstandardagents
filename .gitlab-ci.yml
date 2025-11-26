@@ -804,9 +804,8 @@ release-to-npm:
     - if: $CI_COMMIT_BRANCH == "main"
       when: manual
   environment:
-    name: production
+    name: npm-production
     url: https://www.npmjs.com/package/@bluefly/openstandardagents
-    deployment_tier: production
 
 release-to-github:
   stage: release
@@ -820,9 +819,8 @@ release-to-github:
     - if: $CI_COMMIT_BRANCH == "main"
       when: manual
   environment:
-    name: production
+    name: github-production
     url: https://github.com/blueflyio/openstandardagents/releases
-    deployment_tier: production
 
 deploy-website-production:
   stage: release
@@ -836,9 +834,8 @@ deploy-website-production:
     - if: $CI_COMMIT_BRANCH == "main"
       when: manual
   environment:
-    name: production
+    name: website-production
     url: https://openstandardagents.org
-    deployment_tier: production
 
 announce-release:
   stage: .post
