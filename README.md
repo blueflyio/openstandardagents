@@ -102,12 +102,12 @@ For production features, see [Agent Buildkit](https://github.com/blueflyio/agent
 
 ## Specification
 
-OSSA v0.2.5-RC Schema: [`spec/v0.2.5-RC/ossa-0.2.5-RC.schema.json`](spec/v0.2.5-RC/ossa-0.2.5-RC.schema.json)
+OSSA v0.2.6 Schema: [`spec/v0.2.6/ossa-0.2.6.schema.json`](spec/v0.2.6/ossa-0.2.6.schema.json)
 
 ### Required Fields
 
 ```yaml
-ossaVersion: "0.2.5-RC"
+ossaVersion: "0.2.6"
 
 agent:
   id: my-agent                    # DNS-1123 format
@@ -267,7 +267,7 @@ The documentation is organized into:
 
 ### Additional Resources
 
-- **Specification**: [spec/v0.2.5-RC/ossa-0.2.5-RC.schema.json](spec/v0.2.5-RC/ossa-0.2.5-RC.schema.json)
+- **Specification**: [spec/v0.2.6/ossa-0.2.6.schema.json](spec/v0.2.6/ossa-0.2.6.schema.json)
 - **Examples**: [examples/](examples/)
 - **API Reference**: [docs/](docs/)
 - **GitHub Issues**: https://github.com/blueflyio/openstandardagents/issues
