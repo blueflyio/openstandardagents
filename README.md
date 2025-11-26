@@ -270,6 +270,7 @@ The documentation is organized into:
 - **Specification**: [spec/v0.2.6/ossa-0.2.6.schema.json](spec/v0.2.6/ossa-0.2.6.schema.json)
 - **Examples**: [examples/](examples/)
 - **API Reference**: [docs/](docs/)
+- **Deployment Guides**: [GitHub Mirroring](https://openstandardagents.org/docs/deployment/github-mirroring)
 - **GitHub Issues**: https://github.com/blueflyio/openstandardagents/issues
 
 ---
