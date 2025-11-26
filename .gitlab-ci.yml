@@ -786,7 +786,7 @@ increment-dev-tag:
   before_script:
     - npm ci
   script:
-    - node .gitlab/release-automation/scripts/increment-dev-tag.ts
+    - tsx .gitlab/release-automation/scripts/increment-dev-tag.ts
   rules:
     - if: $CI_COMMIT_BRANCH == "development" && $CI_PIPELINE_SOURCE == "push"
       when: on_success
@@ -799,13 +799,14 @@ release-to-npm:
   before_script:
     - npm ci
   script:
-    - RELEASE_ACTION=npm node .gitlab/release-automation/scripts/release-buttons.ts
+    - RELEASE_ACTION=npm tsx .gitlab/release-automation/scripts/release-buttons.ts
   rules:
     - if: $CI_COMMIT_BRANCH == "main"
       when: manual
   environment:
-    name: npm-production
+    name: production
     url: https://www.npmjs.com/package/@bluefly/openstandardagents
+    deployment_tier: production
 
 release-to-github:
   stage: release
@@ -814,13 +815,14 @@ release-to-github:
   before_script:
     - npm ci
   script:
-    - RELEASE_ACTION=github node .gitlab/release-automation/scripts/release-buttons.ts
+    - RELEASE_ACTION=github tsx .gitlab/release-automation/scripts/release-buttons.ts
   rules:
     - if: $CI_COMMIT_BRANCH == "main"
       when: manual
   environment:
-    name: github-production
+    name: production
     url: https://github.com/blueflyio/openstandardagents/releases
+    deployment_tier: production
 
 deploy-website-production:
   stage: release
@@ -829,13 +831,14 @@ deploy-website-production:
   before_script:
     - cd website && npm ci
   script:
-    - RELEASE_ACTION=website node ../.gitlab/release-automation/scripts/release-buttons.ts
+    - cd website && RELEASE_ACTION=website tsx ../.gitlab/release-automation/scripts/release-buttons.ts
   rules:
     - if: $CI_COMMIT_BRANCH == "main"
       when: manual
   environment:
-    name: website-production
+    name: production
     url: https://openstandardagents.org
+    deployment_tier: production
 
 announce-release:
   stage: .post
@@ -844,7 +847,7 @@ announce-release:
   before_script:
     - npm ci
   script:
-    - RELEASE_ACTION=announce node .gitlab/release-automation/scripts/release-buttons.ts
+    - RELEASE_ACTION=announce tsx .gitlab/release-automation/scripts/release-buttons.ts
   rules:
     - if: $CI_COMMIT_BRANCH == "main"
       when: manual
