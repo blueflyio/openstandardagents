@@ -18,9 +18,6 @@ Release management, versioning strategy, and release checklists for OSSA version
 ### `/infrastructure`
 Internal infrastructure setup: CI/CD pipelines, GitLab agents, Kubernetes deployments, monitoring.
 
-**Key documents:**
-- **GitHub Mirroring** - See GitLab Wiki: [Deployment/GitHub-Mirroring](https://gitlab.com/blueflyio/openstandardagents/-/wikis/Deployment/GitHub-Mirroring)
-
 ### `/processes`
 Internal processes: issue triage, PR review, security response, governance decisions.
 

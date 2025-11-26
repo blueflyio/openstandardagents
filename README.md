@@ -63,6 +63,22 @@ ossa generate worker --name "My Agent" --id my-agent
 ossa validate agent.yml
 ```
 
+### Run Your Agent
+
+```bash
+# Set your API key
+export OPENAI_API_KEY=sk-your-key-here
+
+# Run interactively
+ossa run agent.ossa.yaml
+
+# Or send a single message
+ossa run agent.ossa.yaml -m "Hello, how can you help me?"
+
+# With verbose output
+ossa run agent.ossa.yaml -v
+```
+
 ### Deploy
 
 Deploy to **YOUR** infrastructure:
@@ -83,12 +99,14 @@ The OSSA CLI provides basic tooling:
 ossa validate <path>    # Validate against OSSA schema
 ossa generate <type>    # Generate agent from template (chat, workflow, compliance, etc.)
 ossa migrate <source>   # Migrate between OSSA versions
+ossa run <path>         # Run agents with OpenAI adapter
 ```
 
 **What OSSA CLI does:**
 - Validate agent manifests
 - Generate project scaffolding
 - Provide templates
+- Run agents interactively (OpenAI adapter)
 
 **What OSSA CLI does NOT do:**
 - Runtime orchestration
@@ -97,6 +115,37 @@ ossa migrate <source>   # Migrate between OSSA versions
 - Infrastructure management
 
 For production features, see [Agent Buildkit](https://github.com/blueflyio/agent-buildkit).
+
+### Running Agents
+
+The `ossa run` command allows you to execute agents using the OpenAI adapter:
+
+```bash
+# Interactive mode (REPL)
+ossa run my-agent.ossa.yaml
+
+# Single message mode
+ossa run my-agent.ossa.yaml -m "What is the weather today?"
+
+# Verbose output (show tool calls)
+ossa run my-agent.ossa.yaml -v
+
+# Custom options
+ossa run my-agent.ossa.yaml --max-turns 20 --no-validate
+```
+
+**Features:**
+- Interactive REPL mode for conversations
+- Single message mode for quick queries
+- Tool execution with custom handlers
+- Verbose mode for debugging
+- Configurable max turns to prevent loops
+
+**Requirements:**
+- OpenAI API key: `export OPENAI_API_KEY=sk-...`
+- Valid OSSA manifest (YAML or JSON)
+
+See [Running Agents Guide](https://openstandardagents.org/docs/getting-started/running-agents) for more details.
 
 ---
 

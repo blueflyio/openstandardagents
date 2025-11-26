@@ -13,10 +13,11 @@
   "properties": {
     "apiVersion": {
       "type": "string",
-      "pattern": "^ossa/v(0\\.2\\.[2-5](-dev)?|1)(\\.[0-9]+)?(-[a-zA-Z0-9]+)?$",
-      "description": "OSSA API version (supports ossa/v0.2.2, ossa/v0.2.3, ossa/v0.2.5, or ossa/v1 for compatibility)",
+      "pattern": "^ossa/v(0\\.2\\.[2-6](-dev)?|1)(\\.[0-9]+)?(-[a-zA-Z0-9]+)?$",
+      "description": "OSSA API version (supports ossa/v0.2.2, ossa/v0.2.3, ossa/v0.2.5, ossa/v0.2.6, or ossa/v1 for compatibility)",
       "examples": [
         "ossa/v1",
+        "ossa/v0.2.6",
         "ossa/v0.2.5",
         "ossa/v0.2.3",
         "ossa/v0.2.2",
