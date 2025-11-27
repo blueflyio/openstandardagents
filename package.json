@@ -56,7 +56,7 @@
   },
   "homepage": "https://openstandardagents.org",
   "scripts": {
-    "version:sync": "tsx scripts/sync-versions.ts",
+    "version:sync": "node scripts/sync-version.js",
     "version:bump": "tsx scripts/bump-version.ts",
     "version:enhanced": "tsx scripts/enhanced-version-manager.ts",
     "version:check": "tsx scripts/sync-versions.ts --check",
