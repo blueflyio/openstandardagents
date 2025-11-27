@@ -7,7 +7,7 @@
 **Single Source of Truth**: `.version.json`
 ```json
 {
-  "current": "0.2.5-RC",
+  "current": "0.2.6",
   "latest_stable": "0.2.4",
   "spec_path": "spec/v{version}",
   "schema_file": "ossa-{version}.schema.json"

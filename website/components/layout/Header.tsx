@@ -10,7 +10,7 @@ export function Header() {
     <header className="bg-white border-b border-gray-300 sticky top-0 z-50">
       <nav className="container mx-auto max-w-6xl px-4">
         <div className="flex items-center justify-between h-16">
-          <Link href="/" className="flex items-center space-x-3 group">
+          <Link href="/" className="flex items-center space-x-2 group">
             <img
               src="/assets/brand/ossa-logo.svg"
               alt="OSSA Logo"

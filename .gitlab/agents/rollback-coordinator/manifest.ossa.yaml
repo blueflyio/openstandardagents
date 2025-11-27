@@ -17,7 +17,7 @@
 #
 # ============================================================================
 
-apiVersion: ossa/v0.2.5-RC
+apiVersion: ossa/v0.2.6
 kind: Agent
 
 metadata:
