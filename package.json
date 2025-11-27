@@ -96,7 +96,10 @@
     "gen:zod": "tsx scripts/gen-zod.ts",
     "gen:all": "npm run gen:types && npm run gen:zod",
     "cli:legacy": "node cli/bin/ossa --help",
-    "prepublishOnly": "npm run clean && npm run build && npm run test && npm run lint"
+    "prepublishOnly": "npm run clean && npm run build && npm run test && npm run lint",
+    "validate:all": "node scripts/validate-all.js",
+    "fix:schemas": "node scripts/fix-schema-formats.js",
+    "prepare": "husky install || true"
   },
   "keywords": [
     "ossa",
