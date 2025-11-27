@@ -1,5 +1,14 @@
 # OSSA - Open Standard for Scalable AI Agents
 
+> **📍 Public Mirror**: This is a read-only mirror of our GitLab repository.
+> 
+> - **🦊 Development**: [gitlab.com/blueflyio/openstandardagents](https://gitlab.com/blueflyio/openstandardagents)
+> - **🐙 Community**: You're here! Submit PRs and issues
+> - **🌐 Website**: [openstandardagents.org](https://openstandardagents.org)
+> - **💬 Discord**: [Join our community](https://discord.gg/ossa)
+
+---
+
 **The OpenAPI for AI Agents**
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
