@@ -1,0 +1,483 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "version": "1.0.0",
+  "description": "Problem-driven editing rules for Cursor AI - ensures minimal, deterministic fixes based on Problems Tab",
+  
+  "instruct": {
+    "primary_directive": "Always use Problems Tab as the single source of truth for all code modifications",
+    "behavior": [
+      "Read Problems Tab before making any code changes",
+      "Fix problems in the smallest possible scope",
+      "Never perform speculative edits or refactors",
+      "Only modify files explicitly listed in Problems Tab",
+      "Address errors sequentially and atomically",
+      "Verify fixes don't introduce new problems",
+      "Ask for clarification when problems are ambiguous"
+    ],
+    "philosophy": "Problem-Driven, not Suggestion-Driven"
+  },
+
+  "problems_handling": {
+    "interpretation": {
+      "source": "Problems Tab (errors, warnings, linter output)",
+      "priority_order": [
+        "syntax_errors",
+        "type_errors",
+        "undefined_variables",
+        "import_issues",
+        "missing_exports",
+        "security_violations",
+        "deprecation_warnings",
+        "linting_warnings",
+        "style_warnings"
+      ],
+      "grouping_strategy": "Group by file, then by severity, then by line number",
+      "repair_strategy": "Fix one problem at a time, verify, then move to next"
+    },
+    "classification": {
+      "syntax": {
+        "detection": ["SyntaxError", "ParseError", "Unexpected token"],
+        "fix_scope": "single_line_to_block",
+        "requires_approval": false
+      },
+      "type_errors": {
+        "detection": ["TypeError", "TS2304", "TS2322", "TS2345"],
+        "fix_scope": "symbol_definition_to_usage",
+        "requires_approval": false
+      },
+      "undefined_variables": {
+        "detection": ["ReferenceError", "TS2304", "undefined"],
+        "fix_scope": "import_or_definition",
+        "requires_approval": false
+      },
+      "import_issues": {
+        "detection": ["Cannot find module", "TS2307", "Module not found"],
+        "fix_scope": "import_statement_only",
+        "requires_approval": false
+      },
+      "missing_exports": {
+        "detection": ["TS2305", "has no exported member"],
+        "fix_scope": "export_statement_only",
+        "requires_approval": false
+      },
+      "security_violations": {
+        "detection": ["XSS", "CSRF", "SQL injection", "path traversal"],
+        "fix_scope": "requires_analysis",
+        "requires_approval": true
+      },
+      "deprecation_warnings": {
+        "detection": ["deprecated", "DEPRECATED"],
+        "fix_scope": "requires_analysis",
+        "requires_approval": true
+      },
+      "linting_warnings": {
+        "detection": ["ESLint", "unused", "no-unused"],
+        "fix_scope": "single_issue_only",
+        "requires_approval": false
+      }
+    }
+  },
+
+  "protected_paths": {
+    "description": "Files and directories that require explicit approval before editing",
+    "paths": [
+      ".gitlab-ci.yml",
+      ".gitlab/ci/*.yml",
+      "package.json",
+      "composer.json",
+      "tsconfig.json",
+      "release.config.js",
+      "semantic-release.config.js",
+      "common_npm/**",
+      "models/**",
+      "all_drupal_custom/**",
+      "spec/**/*.schema.json",
+      "openapi/**/*.openapi.yaml",
+      "examples/**/*.yml",
+      "examples/**/*.yaml",
+      ".cursor/**",
+      "website/**/package.json",
+      "website/**/tsconfig.json"
+    ],
+    "rules": [
+      "Never modify these files unless explicitly requested",
+      "Always ask for approval before touching protected paths",
+      "If a problem exists in a protected path, report it and ask how to proceed"
+    ],
+    "exceptions": {
+      "allowed_with_approval": [
+        "Fixing syntax errors in protected files",
+        "Fixing import paths in protected files",
+        "Adding missing type definitions in protected files"
+      ]
+    }
+  },
+
+  "allowed_operations": {
+    "description": "Operations Cursor can perform automatically without approval",
+    "operations": [
+      {
+        "type": "fix_syntax",
+        "scope": "single_line_to_block",
+        "examples": [
+          "Fix missing semicolon",
+          "Fix bracket mismatch",
+          "Fix quote mismatch",
+          "Fix indentation errors"
+        ]
+      },
+      {
+        "type": "fix_imports",
+        "scope": "import_statement_only",
+        "examples": [
+          "Add missing import statement",
+          "Fix incorrect import path",
+          "Remove unused imports",
+          "Fix import order"
+        ]
+      },
+      {
+        "type": "fix_missing_symbols",
+        "scope": "symbol_definition_or_import",
+        "examples": [
+          "Add missing variable declaration",
+          "Add missing function parameter",
+          "Add missing type definition"
+        ]
+      },
+      {
+        "type": "fix_type_errors",
+        "scope": "type_definition_or_usage",
+        "examples": [
+          "Fix incorrect return type",
+          "Add missing type annotation",
+          "Fix type mismatch in assignment"
+        ]
+      },
+      {
+        "type": "fix_undefined_references",
+        "scope": "reference_to_definition",
+        "examples": [
+          "Fix undefined variable by adding declaration",
+          "Fix undefined function by adding import",
+          "Fix undefined class by adding import"
+        ]
+      },
+      {
+        "type": "fix_eslint_autofixes",
+        "scope": "single_issue_only",
+        "examples": [
+          "Remove unused variable",
+          "Fix no-console warnings",
+          "Fix prefer-const"
+        ],
+        "conditions": [
+          "Only when ESLint rule is safe to auto-fix",
+          "No structural changes required"
+        ]
+      },
+      {
+        "type": "fix_missing_exports",
+        "scope": "export_statement_only",
+        "examples": [
+          "Add missing export keyword",
+          "Fix export syntax"
+        ]
+      }
+    ]
+  },
+
+  "forbidden_operations": {
+    "description": "Operations Cursor must never perform automatically",
+    "operations": [
+      {
+        "type": "rewrite_entire_files",
+        "reason": "Too broad, may introduce regressions",
+        "requires_approval": true
+      },
+      {
+        "type": "rename_directories",
+        "reason": "Structural change, affects many files",
+        "requires_approval": true
+      },
+      {
+        "type": "create_new_services",
+        "reason": "Architectural decision",
+        "requires_approval": true
+      },
+      {
+        "type": "create_new_classes",
+        "reason": "Architectural decision",
+        "requires_approval": true
+      },
+      {
+        "type": "restructure_architecture",
+        "reason": "Major architectural change",
+        "requires_approval": true
+      },
+      {
+        "type": "write_bespoke_frameworks",
+        "reason": "Should use existing patterns",
+        "requires_approval": true
+      },
+      {
+        "type": "generate_inconsistent_patterns",
+        "reason": "Breaks codebase consistency",
+        "requires_approval": true
+      },
+      {
+        "type": "refactor_unrelated_code",
+        "reason": "Not driven by Problems Tab",
+        "requires_approval": true
+      },
+      {
+        "type": "modify_ci_pipelines",
+        "reason": "CI files are protected",
+        "requires_approval": true
+      },
+      {
+        "type": "modify_package_manifests",
+        "reason": "Dependency management is critical",
+        "requires_approval": true
+      },
+      {
+        "type": "modify_semantic_release_config",
+        "reason": "Release automation is critical",
+        "requires_approval": true
+      },
+      {
+        "type": "modify_ossa_schemas",
+        "reason": "Schema changes affect entire ecosystem",
+        "requires_approval": true
+      },
+      {
+        "type": "modify_openapi_specs",
+        "reason": "API contracts are critical",
+        "requires_approval": true
+      }
+    ]
+  },
+
+  "minimal_diff_rule": {
+    "description": "All fixes must be minimal and targeted",
+    "requirements": [
+      "Only change the lines necessary to fix the problem",
+      "Avoid reformatting entire files",
+      "Avoid rewriting sections without Problems Tab references",
+      "Avoid renaming variables unless required by the error",
+      "Avoid dependency additions unless required by an error",
+      "Preserve existing code style and formatting",
+      "Make changes visible and reversible"
+    ],
+    "verification": [
+      "Count lines changed - should be minimal",
+      "Verify only problem-related code changed",
+      "Verify no unrelated formatting changes",
+      "Verify no new warnings introduced"
+    ]
+  },
+
+  "ecosystem_rules": {
+    "drupal": {
+      "description": "Drupal-specific conventions and patterns",
+      "rules": [
+        "Use hooks, plugins, and services - no direct SQL",
+        "No procedural rendering - use render arrays",
+        "Follow contrib-first patterns",
+        "Respect Drupal coding standards",
+        "Use dependency injection for services",
+        "Follow Drupal 11.x API patterns",
+        "Never modify .info.yml files unless explicitly requested",
+        "Never modify recipes unless explicitly requested"
+      ],
+      "protected_patterns": [
+        "*.info.yml",
+        "*.module",
+        "*.routing.yml",
+        "*.services.yml",
+        "recipes/**"
+      ]
+    },
+    "typescript_npm": {
+      "description": "TypeScript and NPM package conventions",
+      "rules": [
+        "Follow existing project structure",
+        "Maintain consistency across common_npm packages",
+        "Do not change version numbers (semantic-release only)",
+        "Use existing type patterns",
+        "Follow existing import/export patterns",
+        "Respect tsconfig.json settings",
+        "Never modify package.json versions",
+        "Never add dependencies without approval"
+      ],
+      "protected_patterns": [
+        "package.json",
+        "tsconfig.json",
+        "common_npm/**/package.json"
+      ]
+    },
+    "gitlab_ci": {
+      "description": "GitLab CI/CD protection rules",
+      "rules": [
+        "Never overwrite pipelines",
+        "CI files are sacred",
+        "Never modify .gitlab-ci.yml without explicit approval",
+        "Never modify GitLab component templates",
+        "Respect existing CI patterns",
+        "Never change semantic-release configuration"
+      ],
+      "protected_patterns": [
+        ".gitlab-ci.yml",
+        ".gitlab/ci/**",
+        "release.config.js"
+      ]
+    },
+    "ossa_agents": {
+      "description": "OSSA and Agent BuildKit protection rules",
+      "rules": [
+        "Respect agent format and schema",
+        "No unvalidated schema changes",
+        "No automatic codegen",
+        "No cross-project moves",
+        "Validate against OSSA schema before changes",
+        "Never modify spec/**/*.schema.json without approval",
+        "Never modify examples/** without approval"
+      ],
+      "protected_patterns": [
+        "spec/**/*.schema.json",
+        "examples/**/*.yml",
+        "examples/**/*.yaml",
+        "openapi/**/*.openapi.yaml"
+      ]
+    }
+  },
+
+  "verification_rules": {
+    "description": "Post-fix verification requirements",
+    "steps": [
+      {
+        "step": "rerun_analysis",
+        "description": "Mentally rerun Problems Tab analysis",
+        "check": "All targeted issues should be resolved"
+      },
+      {
+        "step": "check_new_issues",
+        "description": "Verify no new issues were introduced",
+        "check": "No new errors or warnings in fixed files"
+      },
+      {
+        "step": "check_unrelated_files",
+        "description": "Verify unrelated files untouched",
+        "check": "Only files with problems were modified"
+      },
+      {
+        "step": "summarize_remaining",
+        "description": "Report any remaining unresolved issues",
+        "check": "List any problems that couldn't be fixed"
+      }
+    ],
+    "success_criteria": [
+      "All targeted problems resolved",
+      "No new problems introduced",
+      "Minimal diff applied",
+      "Unrelated files untouched"
+    ]
+  },
+
+  "clarification_requirements": {
+    "description": "When to ask for clarification",
+    "triggers": [
+      "Ambiguous problem description",
+      "Multiple valid fix strategies",
+      "Problem requires architectural decision",
+      "Problem affects protected paths",
+      "Problem requires dependency changes",
+      "Problem requires schema changes"
+    ],
+    "questions_to_ask": [
+      "Which fix strategy do you prefer?",
+      "Should this be solved using pattern A, B, or C?",
+      "Does this require a larger architectural change?",
+      "Should I modify the protected file?",
+      "Which dependency version should I use?",
+      "Should I update the schema?"
+    ],
+    "rule": "Never assume an interpretation - always ask when ambiguous"
+  },
+
+  "change_authorization": {
+    "description": "Required authorization before major changes",
+    "requires_authorization": [
+      {
+        "type": "ci_cd_files",
+        "question": "Do you want me to modify CI/CD files?",
+        "files": [".gitlab-ci.yml", ".gitlab/ci/**"]
+      },
+      {
+        "type": "package_manifests",
+        "question": "Do you want me to modify package.json?",
+        "files": ["package.json", "**/package.json"]
+      },
+      {
+        "type": "semantic_release",
+        "question": "Do you want me to update semantic-release configuration?",
+        "files": ["release.config.js", "semantic-release.config.js"]
+      },
+      {
+        "type": "drupal_modules",
+        "question": "Do you want me to rewrite Drupal modules?",
+        "files": ["**/*.module", "**/*.info.yml"]
+      },
+      {
+        "type": "ossa_schemas",
+        "question": "Do you want me to modify OSSA schemas?",
+        "files": ["spec/**/*.schema.json"]
+      },
+      {
+        "type": "openapi_specs",
+        "question": "Do you want me to modify OpenAPI specifications?",
+        "files": ["openapi/**/*.openapi.yaml"]
+      },
+      {
+        "type": "directory_restructure",
+        "question": "Do you want me to restructure directories?",
+        "scope": "any directory moves or renames"
+      }
+    ],
+    "rule": "Always ask before making changes that could cause catastrophic repo damage"
+  },
+
+  "behavioral_guarantees": {
+    "description": "What this rule set ensures",
+    "guarantees": [
+      "Cursor only fixes what's broken",
+      "Cursor does not rewrite your ecosystem",
+      "Cursor respects strict directory architecture",
+      "Cursor is Problem-Driven, not Suggestion-Driven",
+      "All fixes pass through ecosystem standards",
+      "Semantic-release and GitLab CI remain untouched unless allowed",
+      "Drupal modules modified only using correct Drupal patterns",
+      "OSSA schemas and OpenAPI specs protected from accidental changes",
+      "Minimal, deterministic, reversible changes"
+    ]
+  },
+
+  "examples": {
+    "good_fix": {
+      "problem": "Line 42: Cannot find module 'reflect-metadata'",
+      "action": "Add import statement: import 'reflect-metadata';",
+      "scope": "Single line change",
+      "files_modified": 1,
+      "lines_changed": 1
+    },
+    "bad_fix": {
+      "problem": "Line 42: Cannot find module 'reflect-metadata'",
+      "action": "Rewrite entire file, add new dependencies, restructure imports",
+      "scope": "Entire file rewrite",
+      "files_modified": 3,
+      "lines_changed": 150,
+      "why_bad": "Too broad, introduces risk, not minimal"
+    }
+  }
+}
+

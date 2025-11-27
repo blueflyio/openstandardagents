@@ -42,7 +42,7 @@ Organized GitLab milestones and issues for v0.2.4 release preparation. Created v
 - #164: Comprehensive Test Cases
 - #165: JSON Schema and Reusable Component Library
 
-### v0.2.5-RC - Multi-Agent Composition (ID: 150)
+### v0.2.6 - Multi-Agent Composition (ID: 150)
 **Issues:** #213-219 (composition, validation, examples)
 
 ## Issue Description Enhancements

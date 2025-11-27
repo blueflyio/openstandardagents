@@ -1,7 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://openstandardagents.org/schemas/v0.2.6-dev/agent.json",
-  "title": "OSSA v0.2.6-dev Agent Manifest Schema",
+  "$id": "https://openstandardagents.org/schemas/v0.2.6/agent.json",
+  "title": "OSSA v0.2.6 Agent Manifest Schema",
   "description": "Open Standard for Scalable AI Agents (OSSA) - The OpenAPI for AI Agents. Specification for declarative agent definition with framework-agnostic portability.",
   "type": "object",
   "required": [
@@ -13,11 +13,12 @@
   "properties": {
     "apiVersion": {
       "type": "string",
-      "pattern": "^ossa/v(0\\.2\\.[2-3]|1)(\\.[0-9]+)?(-[a-zA-Z0-9]+)?$",
-      "description": "OSSA API version (supports ossa/v0.2.2, ossa/v0.2.6-dev, or ossa/v1 for compatibility)",
+      "pattern": "^ossa/v(0\\.2\\.[2-5](-dev)?|1)(\\.[0-9]+)?(-[a-zA-Z0-9]+)?$",
+      "description": "OSSA API version (supports ossa/v0.2.2, ossa/v0.2.3, ossa/v0.2.5, or ossa/v1 for compatibility)",
       "examples": [
         "ossa/v1",
-        "ossa/v0.2.6-dev",
+        "ossa/v0.2.5",
+        "ossa/v0.2.3",
         "ossa/v0.2.2",
         "ossa/v1.0"
       ]
@@ -83,6 +84,9 @@
         },
         "anthropic": {
           "$ref": "#/definitions/AnthropicExtension"
+        },
+        "google_adk": {
+          "$ref": "#/definitions/GoogleADKExtension"
         }
       },
       "additionalProperties": true
@@ -162,6 +166,9 @@
         },
         "observability": {
           "$ref": "#/definitions/Observability"
+        },
+        "state": {
+          "$ref": "#/definitions/State"
         }
       },
       "additionalProperties": true
@@ -277,6 +284,7 @@
             "http",
             "grpc",
             "function",
+            "a2a",
             "custom"
           ],
           "description": "Tool integration type"
@@ -301,7 +309,7 @@
         "capabilities": {
           "type": "array",
           "items": {
-            "type": "string"
+            "$ref": "#/definitions/Capability"
           },
           "description": "Specific capabilities/operations from this tool"
         },
@@ -326,8 +334,198 @@
             "credentials": {
               "type": "string",
               "description": "Reference to secret/credential (not the actual secret)"
+            },
+            "scopes": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "OAuth2 scopes or permission scopes required"
             }
           }
+        },
+        "transport": {
+          "$ref": "#/definitions/Transport"
+        },
+        "compliance_tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Compliance framework tags (e.g., 'pii', 'hipaa', 'gdpr', 'fedramp')"
+        }
+      },
+      "additionalProperties": false
+    },
+    "Capability": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Capability name/identifier"
+        },
+        "description": {
+          "type": "string",
+          "description": "Human-readable description of the capability"
+        },
+        "version": {
+          "type": "string",
+          "pattern": "^[0-9]+\\.[0-9]+$",
+          "description": "Capability version (major.minor format)"
+        },
+        "deprecated": {
+          "type": "boolean",
+          "default": false,
+          "description": "Whether this capability is deprecated"
+        },
+        "deprecation_message": {
+          "type": "string",
+          "description": "Message explaining deprecation and migration path"
+        },
+        "input_schema": {
+          "type": "object",
+          "description": "JSON Schema for capability input"
+        },
+        "output_schema": {
+          "type": "object",
+          "description": "JSON Schema for capability output"
+        },
+        "transport": {
+          "$ref": "#/definitions/Transport"
+        },
+        "scopes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Required permission scopes for this capability"
+        },
+        "compliance_tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Compliance framework tags for this capability"
+        }
+      },
+      "additionalProperties": false
+    },
+    "Transport": {
+      "type": "object",
+      "description": "Transport metadata for protocol-specific configuration (v0.2.5)",
+      "properties": {
+        "protocol": {
+          "type": "string",
+          "enum": [
+            "http",
+            "grpc",
+            "a2a",
+            "mcp",
+            "websocket",
+            "custom"
+          ],
+          "description": "Transport protocol"
+        },
+        "streaming": {
+          "type": "string",
+          "enum": [
+            "none",
+            "request",
+            "response",
+            "bidirectional"
+          ],
+          "default": "none",
+          "description": "Streaming mode for the transport"
+        },
+        "binding": {
+          "type": "string",
+          "description": "Path or endpoint binding (e.g., '/api/v1/chat', 'myservice.MyMethod')"
+        },
+        "content_type": {
+          "type": "string",
+          "description": "Content type for HTTP transports",
+          "examples": [
+            "application/json",
+            "application/x-ndjson",
+            "text/event-stream"
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "State": {
+      "type": "object",
+      "description": "Agent state and memory configuration (v0.2.5)",
+      "properties": {
+        "mode": {
+          "type": "string",
+          "enum": [
+            "stateless",
+            "session",
+            "long_running"
+          ],
+          "default": "stateless",
+          "description": "State management mode"
+        },
+        "storage": {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string",
+              "enum": [
+                "memory",
+                "vector-db",
+                "kv",
+                "rdbms",
+                "custom"
+              ],
+              "default": "memory",
+              "description": "Storage backend type"
+            },
+            "retention": {
+              "type": "string",
+              "description": "Retention period (e.g., '30d', '1y', 'forever')",
+              "examples": [
+                "24h",
+                "7d",
+                "30d",
+                "1y",
+                "forever"
+              ]
+            },
+            "config": {
+              "type": "object",
+              "description": "Storage-specific configuration",
+              "additionalProperties": true
+            }
+          },
+          "additionalProperties": false
+        },
+        "context_window": {
+          "type": "object",
+          "properties": {
+            "max_messages": {
+              "type": "integer",
+              "minimum": 1,
+              "description": "Maximum messages to retain in context"
+            },
+            "max_tokens": {
+              "type": "integer",
+              "minimum": 1,
+              "description": "Maximum tokens to retain in context"
+            },
+            "strategy": {
+              "type": "string",
+              "enum": [
+                "sliding_window",
+                "summarization",
+                "importance_weighted"
+              ],
+              "default": "sliding_window",
+              "description": "Context management strategy"
+            }
+          },
+          "additionalProperties": false
         }
       },
       "additionalProperties": false
@@ -1389,6 +1587,107 @@
             "type": "string"
           },
           "description": "Stop sequences for response generation"
+        }
+      },
+      "additionalProperties": true
+    },
+    "GoogleADKExtension": {
+      "type": "object",
+      "description": "Google Agent Development Kit (ADK) integration extension (v0.2.5)",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable Google ADK integration"
+        },
+        "agent_type": {
+          "type": "string",
+          "enum": ["llm_agent", "sequential_agent", "parallel_agent", "loop_agent", "custom"],
+          "default": "llm_agent",
+          "description": "ADK agent type"
+        },
+        "model": {
+          "type": "string",
+          "description": "Gemini model to use",
+          "examples": ["gemini-2.0-flash-exp", "gemini-1.5-pro"]
+        },
+        "instruction": {
+          "type": "string",
+          "description": "Agent instruction (overrides spec.role if provided)"
+        },
+        "tools": {
+          "type": "array",
+          "description": "ADK tools configuration",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "type": {
+                "type": "string",
+                "enum": ["function", "agent", "mcp_server"]
+              },
+              "config": {
+                "type": "object",
+                "additionalProperties": true
+              }
+            }
+          }
+        },
+        "sub_agents": {
+          "type": "array",
+          "description": "Sub-agent references for orchestration",
+          "items": {
+            "type": "string"
+          }
+        },
+        "session": {
+          "type": "object",
+          "description": "Session management configuration",
+          "properties": {
+            "service": {
+              "type": "string",
+              "enum": ["in_memory", "database", "vertex_ai"],
+              "default": "in_memory"
+            },
+            "state_schema": {
+              "type": "object",
+              "description": "Session state schema"
+            }
+          }
+        },
+        "memory": {
+          "type": "object",
+          "description": "Memory service configuration",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": false
+            },
+            "service": {
+              "type": "string",
+              "enum": ["in_memory", "vertex_ai_rag"]
+            }
+          }
+        },
+        "callbacks": {
+          "type": "object",
+          "description": "Lifecycle callbacks",
+          "properties": {
+            "before_agent_callback": {
+              "type": "string"
+            },
+            "after_agent_callback": {
+              "type": "string"
+            },
+            "before_model_callback": {
+              "type": "string"
+            },
+            "after_model_callback": {
+              "type": "string"
+            }
+          }
         }
       },
       "additionalProperties": true
