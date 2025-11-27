@@ -13,6 +13,10 @@
 # Release Gate
 # Releases require BOTH conditions
 #   - Milestone must be 100% complete and closed
+
+include:
+  - local: '.gitlab/ci/agents.yml'
+
 #   - CI/CD variable ENABLE_RELEASE must be set to "true"
 # This allows deploying to main without releasing. Set the variable only when ready to release.
 #

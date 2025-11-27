@@ -1,0 +1,146 @@
+# GitLab Agent Integration
+# Uses agents from blueflyio/agent-platform
+
+variables:
+  AGENT_PLATFORM_GROUP: blueflyio/agent-platform
+
+# GitHub PR Sync Agent
+github:sync:agent:
+  stage: .pre
+  trigger:
+    project: ${AGENT_PLATFORM_GROUP}
+    strategy: depend
+  variables:
+    AGENT_NAME: gitlab-lib-ci
+    AGENT_TASK: github-pr-sync
+    TARGET_REPO: blueflyio/openstandardagents
+    GITHUB_OWNER: blueflyio
+    GITHUB_REPO: openstandardagents
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "schedule"
+    - if: $CI_PIPELINE_SOURCE == "web"
+      when: manual
+
+# Code Review Agent
+code:review:agent:
+  stage: .pre
+  allow_failure: true
+  trigger:
+    project: ${AGENT_PLATFORM_GROUP}
+    strategy: depend
+  variables:
+    AGENT_NAME: gitlab-lib-ci
+    AGENT_TASK: code-review
+    MR_IID: $CI_MERGE_REQUEST_IID
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+
+# Documentation Sync Agent
+docs:sync:agent:
+  stage: .post
+  trigger:
+    project: ${AGENT_PLATFORM_GROUP}
+    strategy: depend
+  variables:
+    AGENT_NAME: gitlab-lib-ci
+    AGENT_TASK: docs-sync
+    SOURCE_BRANCH: $CI_COMMIT_BRANCH
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+      changes:
+        - docs/**/*
+        - README.md
+
+# Security Scan Agent
+security:scan:agent:
+  stage: test
+  allow_failure: true
+  trigger:
+    project: ${AGENT_PLATFORM_GROUP}
+    strategy: depend
+  variables:
+    AGENT_NAME: gitlab-lib-ci
+    AGENT_TASK: security-scan
+    SCAN_TYPE: full
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_PIPELINE_SOURCE == "schedule"
+
+# TypeScript Build Agent
+ts:build:agent:
+  stage: build
+  trigger:
+    project: ${AGENT_PLATFORM_GROUP}
+    strategy: depend
+  variables:
+    AGENT_NAME: ts-prod
+    AGENT_TASK: build
+    BUILD_TARGET: production
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+    - if: $CI_COMMIT_TAG
+
+# Deployment Agent (Infrastructure)
+deploy:infra:agent:
+  stage: deploy
+  trigger:
+    project: ${AGENT_PLATFORM_GROUP}
+    strategy: depend
+  variables:
+    AGENT_NAME: infra-prod
+    AGENT_TASK: deploy
+    ENVIRONMENT: production
+    MANIFEST_PATH: infrastructure/
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+      changes:
+        - infrastructure/**/*
+      when: manual
+    - if: $CI_COMMIT_TAG
+      when: manual
+
+# ML Model Deployment Agent
+deploy:ml:agent:
+  stage: deploy
+  trigger:
+    project: ${AGENT_PLATFORM_GROUP}
+    strategy: depend
+  variables:
+    AGENT_NAME: ml-prod
+    AGENT_TASK: deploy-model
+    MODEL_PATH: models/
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+      changes:
+        - models/**/*
+      when: manual
+
+# Drupal Integration Agent
+drupal:sync:agent:
+  stage: .post
+  trigger:
+    project: ${AGENT_PLATFORM_GROUP}
+    strategy: depend
+  variables:
+    AGENT_NAME: drupal-prod
+    AGENT_TASK: sync-content
+    CONTENT_TYPE: ossa-agents
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+      changes:
+        - spec/**/*
+      when: manual
+
+# Native Build Agent
+native:build:agent:
+  stage: build
+  trigger:
+    project: ${AGENT_PLATFORM_GROUP}
+    strategy: depend
+  variables:
+    AGENT_NAME: native-local
+    AGENT_TASK: build-native
+    PLATFORM: multi
+  rules:
+    - if: $CI_COMMIT_TAG
+      when: manual
