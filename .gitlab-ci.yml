@@ -789,6 +789,7 @@ increment-dev-tag:
   image: node:${NODE_VERSION}
   before_script:
     - npm ci
+    - npm install -g tsx
   script:
     - tsx .gitlab/release-automation/scripts/increment-dev-tag.ts
   rules:
