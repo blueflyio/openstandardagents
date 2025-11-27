@@ -5,6 +5,29 @@ All notable changes to OSSA (Open Standard for Scalable AI Agents) will be docum
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.6] - 2025-11-26
+
+### Added
+- **ossa-dev**: Development server with hot reload
+- **ossa-generate**: Scaffold agents and adapters
+- **ossa-health**: Health check utility
+- Brand positioning and value proposition framework
+- Visual identity system specification
+- Competitive comparison matrix
+- GitHub mirroring deployment guide
+- Spec v0.2.6-dev development structure
+
+### Fixed
+- Version synchronization across project files
+- Website deployment configuration
+- Missing spec directories (v0.2.4, v0.2.5)
+
+### Documentation
+- CLI utilities guide
+- Brand guide framework
+- Comparison with LangChain, AutoGen, MCP, Semantic Kernel
+- Migration paths from alternatives
+
 ## [0.2.4](https://github.com/blueflyio/openstandardagents/compare/v0.2.3...v0.2.4) (2025-11-19)
 
 ### Package Rename
