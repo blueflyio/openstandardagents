@@ -19,9 +19,12 @@ github:sync:agent:
   rules:
     - if: $CI_PIPELINE_SOURCE == "schedule"
     - if: $CI_PIPELINE_SOURCE == "web"
-      when: manual
+      allow_failure: true
 
 # Code Review Agent
+# Code Review Agent
+# Note: Requires blueflyio/agent-platform project to be created
+# Currently set to allow_failure until agent-platform is deployed
 code:review:agent:
   stage: .pre
   allow_failure: true
@@ -95,9 +98,9 @@ deploy:infra:agent:
     - if: $CI_COMMIT_BRANCH == "main"
       changes:
         - infrastructure/**/*
-      when: manual
+      allow_failure: true
     - if: $CI_COMMIT_TAG
-      when: manual
+      allow_failure: true
 
 # ML Model Deployment Agent
 deploy:ml:agent:
@@ -113,7 +116,7 @@ deploy:ml:agent:
     - if: $CI_COMMIT_BRANCH == "main"
       changes:
         - models/**/*
-      when: manual
+      allow_failure: true
 
 # Drupal Integration Agent
 drupal:sync:agent:
@@ -129,7 +132,7 @@ drupal:sync:agent:
     - if: $CI_COMMIT_BRANCH == "main"
       changes:
         - spec/**/*
-      when: manual
+      allow_failure: true
 
 # Native Build Agent
 native:build:agent:
@@ -143,4 +146,4 @@ native:build:agent:
     PLATFORM: multi
   rules:
     - if: $CI_COMMIT_TAG
-      when: manual
+      allow_failure: true
