@@ -1,0 +1,60 @@
+#!/usr/bin/env node
+
+import { writeFileSync, mkdirSync } from 'fs';
+import { join } from 'path';
+
+const [type, name] = process.argv.slice(2);
+
+if (!type || !name) {
+  console.log('Usage: ossa-generate <agent|adapter> <name>');
+  process.exit(1);
+}
+
+const templates = {
+  agent: `apiVersion: ossa.ai/v0.2.6
+kind: Agent
+metadata:
+  name: ${name}
+  version: 1.0.0
+spec:
+  description: ${name} agent
+  capabilities:
+    - text-generation
+  interface:
+    input:
+      type: object
+      properties:
+        prompt:
+          type: string
+    output:
+      type: object
+      properties:
+        response:
+          type: string
+`,
+  adapter: `import { Adapter } from '@ossa/core';
+
+export class ${name.charAt(0).toUpperCase() + name.slice(1)}Adapter implements Adapter {
+  async execute(input: any): Promise<any> {
+    // Implementation
+    return { result: 'success' };
+  }
+}
+`
+};
+
+if (!templates[type]) {
+  console.log('❌ Unknown type. Use: agent or adapter');
+  process.exit(1);
+}
+
+const ext = type === 'agent' ? 'yaml' : 'ts';
+const filename = `${name}.${ext}`;
+
+try {
+  writeFileSync(filename, templates[type]);
+  console.log(`✓ Created ${type}: ${filename}`);
+} catch (err) {
+  console.error('❌ Error:', err.message);
+  process.exit(1);
+}
