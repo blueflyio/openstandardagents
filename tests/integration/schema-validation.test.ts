@@ -82,8 +82,11 @@ describe('Schema Validation Integration', () => {
 
             if (criticalErrors.length > 0) {
               console.error(`\n❌ Critical validation errors for ${fullPath}:`);
+              console.error(`Total errors: ${result.errors.length}`);
+              console.error(`Critical errors: ${criticalErrors.length}`);
               criticalErrors.forEach((e) => {
                 console.error(`  - ${e.instancePath}: ${e.message}`);
+                console.error(`    keyword: ${e.keyword}, params:`, e.params);
               });
             }
 

@@ -1,5 +1,5 @@
 {
-  "apiVersion": "ossa/v0.2",
+  "apiVersion": "ossa/v0.2.4",
   "kind": "Agent",
   "metadata": {
     "name": "swarm-agent",
@@ -17,12 +17,26 @@
       {
         "type": "function",
         "name": "search_web",
-        "capabilities": ["search", "retrieve"]
+        "capabilities": [
+          {
+            "name": "search"
+          },
+          {
+            "name": "retrieve"
+          }
+        ]
       },
       {
         "type": "function",
         "name": "execute_code",
-        "capabilities": ["run", "evaluate"]
+        "capabilities": [
+          {
+            "name": "run"
+          },
+          {
+            "name": "evaluate"
+          }
+        ]
       }
     ]
   },
@@ -56,4 +70,3 @@
     }
   }
 }
-
