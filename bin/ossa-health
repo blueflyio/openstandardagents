@@ -1,0 +1,40 @@
+#!/usr/bin/env node
+
+import { readFileSync, existsSync } from 'fs';
+import { parse } from 'yaml';
+
+const agentPath = process.argv[2] || './agent.yaml';
+
+if (!existsSync(agentPath)) {
+  console.log('❌ Agent file not found:', agentPath);
+  process.exit(1);
+}
+
+try {
+  const content = readFileSync(agentPath, 'utf-8');
+  const agent = parse(content);
+  
+  const checks = {
+    'Valid YAML': !!agent,
+    'Has apiVersion': !!agent.apiVersion,
+    'Has kind': agent.kind === 'Agent',
+    'Has metadata': !!agent.metadata?.name,
+    'Has spec': !!agent.spec
+  };
+  
+  console.log('\n🏥 OSSA Agent Health Check\n');
+  console.log(`Agent: ${agentPath}\n`);
+  
+  let passed = 0;
+  for (const [check, result] of Object.entries(checks)) {
+    console.log(`${result ? '✓' : '✗'} ${check}`);
+    if (result) passed++;
+  }
+  
+  console.log(`\n${passed}/${Object.keys(checks).length} checks passed\n`);
+  
+  process.exit(passed === Object.keys(checks).length ? 0 : 1);
+} catch (err) {
+  console.log('❌ Error:', err.message);
+  process.exit(1);
+}
