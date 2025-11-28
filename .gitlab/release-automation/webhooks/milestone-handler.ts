@@ -34,9 +34,7 @@ async function handleMilestoneCreate(event: MilestoneEvent) {
   
   // 1. Create initial dev tag
   const devTag = `${version}-dev.0`;
-  await gitlab.Tags.create(project.id, {
-    tag_name: devTag,
-    ref: 'development',
+  await gitlab.Tags.create(project.id, devTag, 'development', {
     message: `Initial dev tag for ${version}`,
   });
   console.log(`✅ Created tag: ${devTag}`);
@@ -113,9 +111,7 @@ async function handleMilestoneClose(event: MilestoneEvent) {
   
   // 3. Create RC tag
   const rcTag = `${version}-rc.1`;
-  await gitlab.Tags.create(project.id, {
-    tag_name: rcTag,
-    ref: 'development',
+  await gitlab.Tags.create(project.id, rcTag, 'development', {
     message: `Release candidate for ${version}`,
   });
   console.log(`✅ Created RC tag: ${rcTag}`);

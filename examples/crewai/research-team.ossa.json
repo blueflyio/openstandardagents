@@ -1,5 +1,5 @@
 {
-  "apiVersion": "ossa/v0.2",
+  "apiVersion": "ossa/v0.2.4",
   "kind": "Agent",
   "metadata": {
     "name": "research-agent",
@@ -18,7 +18,14 @@
         "type": "http",
         "name": "web_search",
         "endpoint": "https://api.search.example.com",
-        "capabilities": ["search", "retrieve"]
+        "capabilities": [
+          {
+            "name": "search"
+          },
+          {
+            "name": "retrieve"
+          }
+        ]
       }
     ]
   },
@@ -29,8 +36,10 @@
       "role": "Research Specialist",
       "goal": "Gather comprehensive and accurate information on assigned research topics",
       "backstory": "You are an expert researcher with years of experience in information gathering and analysis. You excel at finding reliable sources and synthesizing complex information.",
-      "tools": ["web_search", "document_analyzer"]
+      "tools": [
+        "web_search",
+        "document_analyzer"
+      ]
     }
   }
 }
-

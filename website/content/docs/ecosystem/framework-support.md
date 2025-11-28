@@ -7,17 +7,92 @@ description: Detailed framework compatibility guide including migration paths, e
 
 This guide provides detailed information about OSSA compatibility with popular AI agent frameworks, including migration guides, examples, and best practices for each integration.
 
+## How OSSA Works
+
+OSSA acts as a **translation layer** between your agent definitions and framework-specific implementations. It doesn't replace frameworks—it standardizes how agents are defined, enabling portability across different execution environments.
+
+### Architecture Overview
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    OSSA Manifest (JSON/YAML)                │
+│  ┌──────────────────────────────────────────────────────┐  │
+│  │ {                                                     │  │
+│  │   "ossa": "1.0.0",                                   │  │
+│  │   "name": "research-agent",                          │  │
+│  │   "capabilities": { "tools": [...], "llm": {...} }  │  │
+│  │ }                                                     │  │
+│  └──────────────────────────────────────────────────────┘  │
+└────────────────────────┬────────────────────────────────────┘
+                         │
+                         ▼
+         ┌───────────────────────────────┐
+         │   OSSA Runtime / Adapter      │
+         │  (Validates & Translates)     │
+         └───────────────┬───────────────┘
+                         │
+        ┌────────────────┼────────────────┐
+        │                │                │
+        ▼                ▼                ▼
+   ┌─────────┐     ┌──────────┐    ┌──────────┐
+   │LangChain│     │  CrewAI  │    │  AutoGen │
+   └────┬────┘     └─────┬────┘    └─────┬────┘
+        │                │                │
+        └────────────────┼────────────────┘
+                         │
+                         ▼
+              ┌──────────────────┐
+              │   LLM Provider   │
+              │ (OpenAI/Anthropic)│
+              └──────────────────┘
+```
+
+### Data Flow
+
+**1. Manifest Loading**
+```
+OSSA Manifest → Schema Validation → Parsed Configuration
+```
+
+**2. Runtime Translation**
+```
+OSSA Config → Framework Adapter → Native Framework Objects
+```
+
+**3. Execution**
+```
+User Input → Agent Execution → Tool Calls → LLM Responses → Output
+```
+
+**4. Response Flow**
+```
+┌──────────┐     ┌──────────┐     ┌──────────┐     ┌──────────┐
+│   User   │────▶│   OSSA   │────▶│Framework │────▶│   LLM    │
+│  Input   │     │  Agent   │     │ Runtime  │     │ Provider │
+└──────────┘     └──────────┘     └──────────┘     └──────────┘
+     ▲                                                     │
+     │                                                     │
+     └─────────────────────────────────────────────────────┘
+                    Formatted Response
+```
+
 ## Support Matrix
 
 | Framework | Status | OSSA Version | Migration Complexity | Documentation |
 |-----------|--------|--------------|---------------------|---------------|
 | kAgent | ✅ Native | 1.0.0+ | N/A (Native) | [Docs](#kagent) |
 | LangChain | ✅ Supported | 1.0.0+ | Low | [Docs](#langchain) |
+| LangGraph | ✅ Supported | 1.0.0+ | Low | [Docs](#langgraph) |
 | CrewAI | ✅ Supported | 1.0.0+ | Medium | [Docs](#crewai) |
+| AutoGen | ✅ Supported | 1.0.0+ | Medium | [Docs](#autogen) |
+| Semantic Kernel | ✅ Supported | 1.0.0+ | Medium | [Docs](#semantic-kernel) |
 | Anthropic MCP | ✅ Supported | 1.0.0+ | Low | [Docs](#anthropic-mcp) |
 | Langflow | ✅ Supported | 1.0.0+ | Low | [Docs](#langflow) |
+| LlamaIndex | ✅ Supported | 1.0.0+ | Low | [Docs](#llamaindex) |
+| Haystack | 🔄 Planned | 1.1.0+ | Medium | Coming Soon |
 | Drupal ECA | ✅ Supported | 1.0.0+ | Medium | [Docs](#drupal-eca) |
 | OpenAI Assistants | ✅ Supported | 1.0.0+ | Medium | [Docs](#openai-assistants) |
+| Vercel AI SDK | 🔄 Planned | 1.1.0+ | Low | Coming Soon |
 
 **Legend:**
 - ✅ **Native**: Built on OSSA from the ground up
@@ -25,6 +100,14 @@ This guide provides detailed information about OSSA compatibility with popular A
 - 🔄 **Planned**: Integration in progress
 - ⚠️ **Beta**: Experimental support available
 - ❌ **Not Supported**: No current integration plans
+
+### What "Supported" Means
+
+**Bidirectional Conversion**: Convert to/from OSSA manifests
+**Runtime Compatibility**: Execute OSSA manifests natively
+**Tool Mapping**: Framework tools map to OSSA tool definitions
+**LLM Configuration**: Framework LLM settings translate to OSSA capabilities
+**Workflow Preservation**: Multi-step workflows maintain structure
 
 ---
 
@@ -237,6 +320,371 @@ See [examples/langchain/](https://github.com/blueflyio/openstandardagents/tree/m
 
 - **Integration Guide**: [docs.openstandardagents.org/langchain](https://openstandardagents.org/docs/langchain)
 - **LangChain Docs**: [python.langchain.com](https://python.langchain.com)
+
+---
+
+## LangGraph {#langgraph}
+
+### Overview
+
+**LangGraph** is LangChain's framework for building stateful, multi-actor applications with LLMs. OSSA supports LangGraph's graph-based workflows with state management.
+
+### Migration Complexity
+
+**Low** - LangGraph's nodes and edges map to OSSA workflow steps.
+
+### Installation
+
+```bash
+npm install @ossa/langgraph langgraph
+# or
+pip install ossa-langgraph langgraph
+```
+
+### Converting LangGraph to OSSA
+
+```python
+from ossa_langgraph import LangGraphToOSSA
+from langgraph.graph import StateGraph, END
+from typing import TypedDict
+
+# Define state
+class AgentState(TypedDict):
+    messages: list
+    next_step: str
+
+# Create graph
+workflow = StateGraph(AgentState)
+
+# Add nodes
+workflow.add_node("researcher", research_node)
+workflow.add_node("writer", write_node)
+workflow.add_node("reviewer", review_node)
+
+# Add edges
+workflow.add_edge("researcher", "writer")
+workflow.add_edge("writer", "reviewer")
+workflow.add_conditional_edges("reviewer", should_continue, {
+    "continue": "writer",
+    "end": END
+})
+
+# Set entry point
+workflow.set_entry_point("researcher")
+
+# Compile
+app = workflow.compile()
+
+# Convert to OSSA
+converter = LangGraphToOSSA()
+manifest = converter.convert(app, name="content-pipeline")
+manifest.save("content-pipeline.json")
+```
+
+### Technical Details
+
+**State Management**: LangGraph state is preserved in OSSA's `workflow.state` field
+**Conditional Routing**: Conditional edges become OSSA workflow conditions
+**Checkpointing**: LangGraph checkpoints map to OSSA's persistence layer
+
+### Data Flow
+
+```
+Input → Entry Node → [State Update] → Next Node → [Condition Check] → 
+  ├─ Continue → Loop Back
+  └─ End → Output
+```
+
+### Documentation
+
+- **LangGraph Docs**: [langchain-ai.github.io/langgraph](https://langchain-ai.github.io/langgraph)
+- **OSSA LangGraph Guide**: [docs.openstandardagents.org/langgraph](https://openstandardagents.org/docs/langgraph)
+
+---
+
+## AutoGen {#autogen}
+
+### Overview
+
+**Microsoft AutoGen** enables multi-agent conversations with human-in-the-loop capabilities. OSSA supports AutoGen's conversational patterns and agent groups.
+
+### Migration Complexity
+
+**Medium** - AutoGen's conversation-driven model requires mapping to OSSA's message-based workflow.
+
+### Installation
+
+```bash
+pip install ossa-autogen pyautogen
+```
+
+### Converting AutoGen to OSSA
+
+```python
+from ossa_autogen import AutoGenToOSSA
+import autogen
+
+# Configure AutoGen agents
+config_list = [{"model": "gpt-4", "api_key": "..."}]
+
+assistant = autogen.AssistantAgent(
+    name="assistant",
+    llm_config={"config_list": config_list},
+)
+
+user_proxy = autogen.UserProxyAgent(
+    name="user_proxy",
+    human_input_mode="NEVER",
+    code_execution_config={"work_dir": "coding"},
+)
+
+# Convert to OSSA
+converter = AutoGenToOSSA()
+manifest = converter.convert(
+    agents=[assistant, user_proxy],
+    name="coding-assistant"
+)
+manifest.save("coding-assistant.json")
+```
+
+### Technical Details
+
+**Conversation Flow**: AutoGen conversations become OSSA workflow steps
+**Code Execution**: AutoGen's code execution maps to OSSA's `code_interpreter` tool
+**Human-in-Loop**: AutoGen's human input becomes OSSA's `approval_required` flag
+
+### Data Flow
+
+```
+User Message → Agent 1 → [Generate Response] → Agent 2 → 
+  [Execute Code] → [Validate] → Agent 1 → Final Response
+```
+
+### Example Manifest
+
+```json
+{
+  "ossa": "1.0.0",
+  "name": "coding-assistant",
+  "type": "orchestrator",
+  "agents": [
+    {
+      "id": "assistant",
+      "role": "Assistant",
+      "capabilities": {
+        "tools": ["code_interpreter"],
+        "llm": {
+          "provider": "openai",
+          "model": "gpt-4"
+        }
+      }
+    },
+    {
+      "id": "executor",
+      "role": "Code Executor",
+      "capabilities": {
+        "tools": [
+          {
+            "type": "code_interpreter",
+            "languages": ["python", "javascript"],
+            "sandbox": true
+          }
+        ]
+      }
+    }
+  ],
+  "workflow": {
+    "type": "conversation",
+    "max_turns": 10,
+    "termination": {
+      "condition": "task_complete"
+    }
+  }
+}
+```
+
+### Documentation
+
+- **AutoGen Docs**: [microsoft.github.io/autogen](https://microsoft.github.io/autogen)
+- **OSSA AutoGen Guide**: [docs.openstandardagents.org/autogen](https://openstandardagents.org/docs/autogen)
+
+---
+
+## Semantic Kernel {#semantic-kernel}
+
+### Overview
+
+**Microsoft Semantic Kernel** is an SDK for integrating LLMs with conventional programming languages. OSSA supports Semantic Kernel's plugin system and planners.
+
+### Migration Complexity
+
+**Medium** - Semantic Kernel's plugin architecture requires mapping to OSSA tools.
+
+### Installation
+
+```bash
+dotnet add package OSSA.SemanticKernel
+# or
+pip install ossa-semantic-kernel semantic-kernel
+```
+
+### Converting Semantic Kernel to OSSA
+
+```csharp
+using Microsoft.SemanticKernel;
+using OSSA.SemanticKernel;
+
+// Create Semantic Kernel
+var kernel = Kernel.CreateBuilder()
+    .AddOpenAIChatCompletion("gpt-4", "api-key")
+    .Build();
+
+// Import plugins
+kernel.ImportPluginFromType<MathPlugin>();
+kernel.ImportPluginFromType<FileIOPlugin>();
+
+// Convert to OSSA
+var converter = new SemanticKernelToOSSA();
+var manifest = converter.Convert(kernel, "sk-agent");
+await manifest.SaveAsync("sk-agent.json");
+```
+
+### Python Example
+
+```python
+from ossa_semantic_kernel import SemanticKernelToOSSA
+import semantic_kernel as sk
+
+# Create kernel
+kernel = sk.Kernel()
+
+# Add service
+kernel.add_chat_service(
+    "chat",
+    sk.connectors.ai.OpenAIChatCompletion("gpt-4", "api-key")
+)
+
+# Import skills
+kernel.import_skill(MathSkill(), "math")
+kernel.import_skill(FileIOSkill(), "fileio")
+
+# Convert to OSSA
+converter = SemanticKernelToOSSA()
+manifest = converter.convert(kernel, name="sk-agent")
+manifest.save("sk-agent.json")
+```
+
+### Technical Details
+
+**Plugin Mapping**: SK plugins become OSSA tools
+**Planner Integration**: SK planners map to OSSA's workflow orchestration
+**Memory**: SK memory becomes OSSA's context management
+
+### Data Flow
+
+```
+User Goal → Planner → [Generate Steps] → Execute Plugin 1 → 
+  Execute Plugin 2 → [Aggregate Results] → Response
+```
+
+### Documentation
+
+- **Semantic Kernel Docs**: [learn.microsoft.com/semantic-kernel](https://learn.microsoft.com/semantic-kernel)
+- **OSSA SK Guide**: [docs.openstandardagents.org/semantic-kernel](https://openstandardagents.org/docs/semantic-kernel)
+
+---
+
+## LlamaIndex {#llamaindex}
+
+### Overview
+
+**LlamaIndex** (formerly GPT Index) is a data framework for LLM applications. OSSA supports LlamaIndex's indexing and query engines.
+
+### Migration Complexity
+
+**Low** - LlamaIndex's query engines map cleanly to OSSA's retrieval tools.
+
+### Installation
+
+```bash
+pip install ossa-llamaindex llama-index
+```
+
+### Converting LlamaIndex to OSSA
+
+```python
+from ossa_llamaindex import LlamaIndexToOSSA
+from llama_index import VectorStoreIndex, SimpleDirectoryReader
+
+# Create index
+documents = SimpleDirectoryReader('data').load_data()
+index = VectorStoreIndex.from_documents(documents)
+
+# Create query engine
+query_engine = index.as_query_engine()
+
+# Convert to OSSA
+converter = LlamaIndexToOSSA()
+manifest = converter.convert(
+    query_engine,
+    name="rag-agent",
+    description="RAG-powered Q&A agent"
+)
+manifest.save("rag-agent.json")
+```
+
+### Technical Details
+
+**Index Types**: Vector, tree, keyword, and graph indexes all supported
+**Retrievers**: LlamaIndex retrievers become OSSA retrieval tools
+**Response Synthesis**: Synthesis modes map to OSSA's response formatting
+
+### Data Flow
+
+```
+Query → [Embed Query] → Vector Search → [Retrieve Docs] → 
+  LLM Context → [Generate Response] → Post-process → Output
+```
+
+### Example Manifest
+
+```json
+{
+  "ossa": "1.0.0",
+  "name": "rag-agent",
+  "type": "worker",
+  "capabilities": {
+    "tools": [
+      {
+        "type": "retrieval",
+        "name": "vector_search",
+        "index_type": "vector",
+        "embedding_model": "text-embedding-ada-002",
+        "top_k": 5
+      }
+    ],
+    "llm": {
+      "provider": "openai",
+      "model": "gpt-4",
+      "temperature": 0.7
+    }
+  },
+  "data": {
+    "sources": [
+      {
+        "type": "directory",
+        "path": "./data",
+        "file_types": ["txt", "pdf", "md"]
+      }
+    ]
+  }
+}
+```
+
+### Documentation
+
+- **LlamaIndex Docs**: [docs.llamaindex.ai](https://docs.llamaindex.ai)
+- **OSSA LlamaIndex Guide**: [docs.openstandardagents.org/llamaindex](https://openstandardagents.org/docs/llamaindex)
 
 ---
 
@@ -737,15 +1185,109 @@ console.log(`Created assistant: ${assistant.id}`);
 
 ## Framework Comparison
 
-| Feature | kAgent | LangChain | CrewAI | MCP | Langflow | Drupal ECA | OpenAI |
-|---------|--------|-----------|--------|-----|----------|------------|--------|
-| OSSA Native | ✅ | ❌ | ❌ | ✅ | ❌ | ❌ | ❌ |
-| Multi-Agent | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ❌ |
-| Visual Builder | ❌ | ❌ | ❌ | ❌ | ✅ | ✅ | ❌ |
-| TypeScript | ✅ | ✅ | ❌ | ✅ | ❌ | ❌ | ✅ |
-| Python | ✅ | ✅ | ✅ | ✅ | ✅ | ❌ | ✅ |
-| Self-Hosted | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ❌ |
-| Cloud Managed | ✅ | ✅ | ✅ | ❌ | ✅ | ❌ | ✅ |
+| Feature | kAgent | LangChain | LangGraph | CrewAI | AutoGen | Semantic Kernel | MCP | Langflow | LlamaIndex | Drupal ECA | OpenAI |
+|---------|--------|-----------|-----------|--------|---------|-----------------|-----|----------|------------|------------|--------|
+| OSSA Native | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ | ❌ | ❌ | ❌ | ❌ |
+| Multi-Agent | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ❌ | ✅ | ❌ |
+| State Management | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ❌ | ✅ | ✅ |
+| Visual Builder | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ | ❌ | ✅ | ❌ |
+| TypeScript | ✅ | ✅ | ✅ | ❌ | ❌ | ❌ | ✅ | ❌ | ❌ | ❌ | ✅ |
+| Python | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ❌ | ✅ |
+| C# / .NET | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ | ❌ | ❌ | ❌ | ❌ | ✅ |
+| Self-Hosted | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ❌ |
+| Cloud Managed | ✅ | ✅ | ✅ | ✅ | ❌ | ✅ | ❌ | ✅ | ✅ | ❌ | ✅ |
+| RAG Support | ✅ | ✅ | ✅ | ✅ | ❌ | ✅ | ✅ | ✅ | ✅ | ❌ | ✅ |
+| Code Execution | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ❌ | ❌ | ✅ |
+
+---
+
+## Technical Architecture
+
+### OSSA Runtime Components
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                      OSSA Runtime                            │
+│                                                              │
+│  ┌────────────────┐  ┌────────────────┐  ┌──────────────┐  │
+│  │ Manifest       │  │ Schema         │  │ Validator    │  │
+│  │ Parser         │──│ Validator      │──│ Engine       │  │
+│  └────────────────┘  └────────────────┘  └──────────────┘  │
+│           │                                       │          │
+│           ▼                                       ▼          │
+│  ┌────────────────┐                    ┌──────────────────┐ │
+│  │ Framework      │                    │ Execution        │ │
+│  │ Adapter        │◀───────────────────│ Engine           │ │
+│  └────────────────┘                    └──────────────────┘ │
+│           │                                       │          │
+└───────────┼───────────────────────────────────────┼──────────┘
+            │                                       │
+            ▼                                       ▼
+   ┌────────────────┐                    ┌──────────────────┐
+   │ Native         │                    │ Tool             │
+   │ Framework      │                    │ Registry         │
+   └────────────────┘                    └──────────────────┘
+```
+
+### Adapter Pattern
+
+Each framework adapter implements:
+
+1. **Manifest Translation**: OSSA → Framework Config
+2. **Tool Mapping**: OSSA tools → Framework tools
+3. **Execution Bridge**: Framework execution → OSSA responses
+4. **State Management**: Framework state ↔ OSSA state
+
+### Example: LangChain Adapter Flow
+
+```
+OSSA Manifest
+     │
+     ▼
+┌─────────────────────┐
+│ Parse Capabilities  │
+│ - tools: [...]      │
+│ - llm: {...}        │
+└──────────┬──────────┘
+           │
+           ▼
+┌─────────────────────┐
+│ Create LangChain    │
+│ - ChatModel         │
+│ - Tools             │
+│ - Agent Executor    │
+└──────────┬──────────┘
+           │
+           ▼
+┌─────────────────────┐
+│ Execute Task        │
+│ - Input → Agent     │
+│ - Agent → Tools     │
+│ - Tools → LLM       │
+└──────────┬──────────┘
+           │
+           ▼
+┌─────────────────────┐
+│ Format Response     │
+│ - OSSA Output       │
+└─────────────────────┘
+```
+
+### Tool Resolution
+
+```
+OSSA Tool Definition
+     │
+     ├─ type: "function" ──→ Native Function Call
+     │
+     ├─ type: "mcp" ──────→ MCP Server Connection
+     │
+     ├─ type: "rest" ─────→ HTTP API Call
+     │
+     ├─ type: "retrieval" ─→ Vector DB Query
+     │
+     └─ type: "code" ─────→ Code Interpreter
+```
 
 ---
 

@@ -1,0 +1,162 @@
+apiVersion: ossa/v0.2.6
+kind: Agent
+
+metadata:
+  name: cursor-ide-agent
+  version: 1.0.0
+  description: |
+    OSSA-compliant agent for Cursor AI-powered code editor.
+    Provides intelligent code completion, refactoring, and development assistance.
+
+  labels:
+    platform: cursor
+    category: ide
+    environment: development
+
+spec:
+  taxonomy:
+    domain: development
+    subdomain: code-editing
+    capability: ai-assistance
+
+  role: |
+    You are an AI coding assistant integrated with Cursor IDE.
+    
+    Your responsibilities:
+    1. Provide intelligent code completions
+    2. Suggest refactorings and improvements
+    3. Explain code and answer questions
+    4. Generate code from natural language
+    5. Debug and fix issues
+    
+    Always write clean, maintainable code following best practices.
+
+  llm:
+    provider: anthropic
+    model: claude-3-5-sonnet-20241022
+    temperature: 0.2
+    maxTokens: 8000
+
+  capabilities:
+    - name: code_completion
+      description: Generate code completions based on context
+      input_schema:
+        type: object
+        required: [prefix, language]
+        properties:
+          prefix:
+            type: string
+            description: Code before cursor
+          suffix:
+            type: string
+            description: Code after cursor
+          language:
+            type: string
+            description: Programming language
+          context:
+            type: array
+            items:
+              type: string
+            description: Related file contents
+      output_schema:
+        type: object
+        properties:
+          completions:
+            type: array
+            items:
+              type: object
+              properties:
+                text:
+                  type: string
+                confidence:
+                  type: number
+                explanation:
+                  type: string
+
+    - name: refactor_code
+      description: Suggest code refactorings
+      input_schema:
+        type: object
+        required: [code, language]
+        properties:
+          code:
+            type: string
+          language:
+            type: string
+          refactorType:
+            type: string
+            enum: [extract-function, rename, inline, optimize]
+      output_schema:
+        type: object
+        properties:
+          refactored:
+            type: string
+          changes:
+            type: array
+            items:
+              type: object
+          explanation:
+            type: string
+
+    - name: explain_code
+      description: Explain code functionality
+      input_schema:
+        type: object
+        required: [code]
+        properties:
+          code:
+            type: string
+          language:
+            type: string
+          detail:
+            type: string
+            enum: [brief, detailed, line-by-line]
+      output_schema:
+        type: object
+        properties:
+          explanation:
+            type: string
+          complexity:
+            type: string
+          suggestions:
+            type: array
+            items:
+              type: string
+
+    - name: generate_code
+      description: Generate code from natural language
+      input_schema:
+        type: object
+        required: [prompt, language]
+        properties:
+          prompt:
+            type: string
+          language:
+            type: string
+          framework:
+            type: string
+          style:
+            type: string
+      output_schema:
+        type: object
+        properties:
+          code:
+            type: string
+          tests:
+            type: string
+          documentation:
+            type: string
+
+  runtime:
+    type: local
+    config:
+      timeout: 30
+      retries: 2
+
+  integration:
+    platform: cursor
+    version: ">=0.40.0"
+    configuration:
+      composer_enabled: true
+      inline_completions: true
+      chat_enabled: true
