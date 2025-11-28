@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import type { Metadata } from 'next';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
 
 export const metadata: Metadata = {
   title: 'Ecosystem - Open Standard Agents',
@@ -209,14 +210,14 @@ export default function EcosystemPage() {
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {runtimes.map((runtime) => (
-              <div key={runtime.name} className="card p-6 hover:shadow-lg transition-shadow">
+              <Card key={runtime.name} variant="default" padding="md" elevation={1} hover>
                 <div className="flex items-center justify-between mb-4">
                   <span className="text-4xl">{runtime.logo}</span>
                   <StatusBadge status={runtime.status} />
                 </div>
                 <h3 className="text-xl font-semibold mb-2">{runtime.name}</h3>
                 <p className="text-gray-600">{runtime.notes}</p>
-              </div>
+              </Card>
             ))}
           </div>
         </section>
@@ -225,109 +226,125 @@ export default function EcosystemPage() {
         <section className="mb-16">
           <h2 className="text-4xl font-bold mb-6 text-primary">Integration Ecosystem</h2>
           <div className="grid md:grid-cols-2 gap-6">
-            <div className="card p-6">
-              <h3 className="text-2xl font-semibold mb-4 text-primary">Tool Integration</h3>
-              <ul className="space-y-3 text-gray-700">
-                <li className="flex items-start">
-                  <span className="text-green-500 mr-2">✓</span>
-                  <span><strong>MCP Servers:</strong> Native Model Context Protocol support</span>
-                </li>
-                <li className="flex items-start">
-                  <span className="text-green-500 mr-2">✓</span>
-                  <span><strong>OpenAPI/REST:</strong> Standard HTTP API integration</span>
-                </li>
-                <li className="flex items-start">
-                  <span className="text-green-500 mr-2">✓</span>
-                  <span><strong>GraphQL:</strong> Query-based data fetching</span>
-                </li>
-                <li className="flex items-start">
-                  <span className="text-green-500 mr-2">✓</span>
-                  <span><strong>gRPC:</strong> High-performance RPC protocols</span>
-                </li>
-                <li className="flex items-start">
-                  <span className="text-green-500 mr-2">✓</span>
-                  <span><strong>WebSockets:</strong> Real-time bidirectional communication</span>
-                </li>
-              </ul>
-            </div>
+            <Card variant="default" padding="md" elevation={1}>
+              <CardHeader>
+                <CardTitle className="text-primary">Tool Integration</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ul className="space-y-3 text-gray-700">
+                  <li className="flex items-start">
+                    <span className="text-green-500 mr-2">✓</span>
+                    <span><strong>MCP Servers:</strong> Native Model Context Protocol support</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-green-500 mr-2">✓</span>
+                    <span><strong>OpenAPI/REST:</strong> Standard HTTP API integration</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-green-500 mr-2">✓</span>
+                    <span><strong>GraphQL:</strong> Query-based data fetching</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-green-500 mr-2">✓</span>
+                    <span><strong>gRPC:</strong> High-performance RPC protocols</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-green-500 mr-2">✓</span>
+                    <span><strong>WebSockets:</strong> Real-time bidirectional communication</span>
+                  </li>
+                </ul>
+              </CardContent>
+            </Card>
 
-            <div className="card p-6">
-              <h3 className="text-2xl font-semibold mb-4 text-primary">Data Integration</h3>
-              <ul className="space-y-3 text-gray-700">
-                <li className="flex items-start">
-                  <span className="text-green-500 mr-2">✓</span>
-                  <span><strong>Vector Databases:</strong> Pinecone, Weaviate, Qdrant</span>
-                </li>
-                <li className="flex items-start">
-                  <span className="text-green-500 mr-2">✓</span>
-                  <span><strong>SQL Databases:</strong> PostgreSQL, MySQL, SQLite</span>
-                </li>
-                <li className="flex items-start">
-                  <span className="text-green-500 mr-2">✓</span>
-                  <span><strong>NoSQL:</strong> MongoDB, Redis, DynamoDB</span>
-                </li>
-                <li className="flex items-start">
-                  <span className="text-green-500 mr-2">✓</span>
-                  <span><strong>Message Queues:</strong> RabbitMQ, Kafka, SQS</span>
-                </li>
-                <li className="flex items-start">
-                  <span className="text-green-500 mr-2">✓</span>
-                  <span><strong>Object Storage:</strong> S3, GCS, Azure Blob</span>
-                </li>
-              </ul>
-            </div>
+            <Card variant="default" padding="md" elevation={1}>
+              <CardHeader>
+                <CardTitle className="text-primary">Data Integration</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ul className="space-y-3 text-gray-700">
+                  <li className="flex items-start">
+                    <span className="text-green-500 mr-2">✓</span>
+                    <span><strong>Vector Databases:</strong> Pinecone, Weaviate, Qdrant</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-green-500 mr-2">✓</span>
+                    <span><strong>SQL Databases:</strong> PostgreSQL, MySQL, SQLite</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-green-500 mr-2">✓</span>
+                    <span><strong>NoSQL:</strong> MongoDB, Redis, DynamoDB</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-green-500 mr-2">✓</span>
+                    <span><strong>Message Queues:</strong> RabbitMQ, Kafka, SQS</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-green-500 mr-2">✓</span>
+                    <span><strong>Object Storage:</strong> S3, GCS, Azure Blob</span>
+                  </li>
+                </ul>
+              </CardContent>
+            </Card>
 
-            <div className="card p-6">
-              <h3 className="text-2xl font-semibold mb-4 text-primary">Monitoring & Observability</h3>
-              <ul className="space-y-3 text-gray-700">
-                <li className="flex items-start">
-                  <span className="text-green-500 mr-2">✓</span>
-                  <span><strong>OpenTelemetry:</strong> Distributed tracing support</span>
-                </li>
-                <li className="flex items-start">
-                  <span className="text-green-500 mr-2">✓</span>
-                  <span><strong>Prometheus:</strong> Metrics collection and alerting</span>
-                </li>
-                <li className="flex items-start">
-                  <span className="text-green-500 mr-2">✓</span>
-                  <span><strong>Grafana:</strong> Visualization and dashboards</span>
-                </li>
-                <li className="flex items-start">
-                  <span className="text-green-500 mr-2">✓</span>
-                  <span><strong>Sentry:</strong> Error tracking and reporting</span>
-                </li>
-                <li className="flex items-start">
-                  <span className="text-green-500 mr-2">✓</span>
-                  <span><strong>DataDog:</strong> Full-stack monitoring</span>
-                </li>
-              </ul>
-            </div>
+            <Card variant="default" padding="md" elevation={1}>
+              <CardHeader>
+                <CardTitle className="text-primary">Monitoring & Observability</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ul className="space-y-3 text-gray-700">
+                  <li className="flex items-start">
+                    <span className="text-green-500 mr-2">✓</span>
+                    <span><strong>OpenTelemetry:</strong> Distributed tracing support</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-green-500 mr-2">✓</span>
+                    <span><strong>Prometheus:</strong> Metrics collection and alerting</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-green-500 mr-2">✓</span>
+                    <span><strong>Grafana:</strong> Visualization and dashboards</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-green-500 mr-2">✓</span>
+                    <span><strong>Sentry:</strong> Error tracking and reporting</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-green-500 mr-2">✓</span>
+                    <span><strong>DataDog:</strong> Full-stack monitoring</span>
+                  </li>
+                </ul>
+              </CardContent>
+            </Card>
 
-            <div className="card p-6">
-              <h3 className="text-2xl font-semibold mb-4 text-primary">CI/CD & DevOps</h3>
-              <ul className="space-y-3 text-gray-700">
-                <li className="flex items-start">
-                  <span className="text-green-500 mr-2">✓</span>
-                  <span><strong>GitHub Actions:</strong> Automated testing and deployment</span>
-                </li>
-                <li className="flex items-start">
-                  <span className="text-green-500 mr-2">✓</span>
-                  <span><strong>GitLab CI/CD:</strong> Pipeline automation</span>
-                </li>
-                <li className="flex items-start">
-                  <span className="text-green-500 mr-2">✓</span>
-                  <span><strong>Jenkins:</strong> Continuous integration server</span>
-                </li>
-                <li className="flex items-start">
-                  <span className="text-green-500 mr-2">✓</span>
-                  <span><strong>ArgoCD:</strong> GitOps continuous delivery</span>
-                </li>
-                <li className="flex items-start">
-                  <span className="text-green-500 mr-2">✓</span>
-                  <span><strong>Terraform:</strong> Infrastructure as code</span>
-                </li>
-              </ul>
-            </div>
+            <Card variant="default" padding="md" elevation={1}>
+              <CardHeader>
+                <CardTitle className="text-primary">CI/CD & DevOps</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ul className="space-y-3 text-gray-700">
+                  <li className="flex items-start">
+                    <span className="text-green-500 mr-2">✓</span>
+                    <span><strong>GitHub Actions:</strong> Automated testing and deployment</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-green-500 mr-2">✓</span>
+                    <span><strong>GitLab CI/CD:</strong> Pipeline automation</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-green-500 mr-2">✓</span>
+                    <span><strong>Jenkins:</strong> Continuous integration server</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-green-500 mr-2">✓</span>
+                    <span><strong>ArgoCD:</strong> GitOps continuous delivery</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-green-500 mr-2">✓</span>
+                    <span><strong>Terraform:</strong> Infrastructure as code</span>
+                  </li>
+                </ul>
+              </CardContent>
+            </Card>
           </div>
         </section>
 
@@ -335,17 +352,35 @@ export default function EcosystemPage() {
         <section className="mb-16">
           <h2 className="text-4xl font-bold mb-6 text-primary">Community & Resources</h2>
           <div className="grid md:grid-cols-3 gap-6">
-            <Link href="/docs/ecosystem/overview" className="card-hover p-6">
-              <h3 className="text-xl font-semibold mb-2 text-primary">Ecosystem Overview</h3>
-              <p className="text-gray-700">Learn about the OSSA ecosystem architecture and integration patterns.</p>
+            <Link href="/docs/ecosystem/overview">
+              <Card variant="interactive" padding="md" elevation={1} className="h-full">
+                <CardHeader>
+                  <CardTitle className="text-primary">Ecosystem Overview</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-gray-700">Learn about the OSSA ecosystem architecture and integration patterns.</p>
+                </CardContent>
+              </Card>
             </Link>
-            <Link href="/docs/ecosystem/framework-support" className="card-hover p-6">
-              <h3 className="text-xl font-semibold mb-2 text-primary">Framework Support Guide</h3>
-              <p className="text-gray-700">Detailed compatibility information and migration guides for each framework.</p>
+            <Link href="/docs/ecosystem/framework-support">
+              <Card variant="interactive" padding="md" elevation={1} className="h-full">
+                <CardHeader>
+                  <CardTitle className="text-primary">Framework Support Guide</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-gray-700">Detailed compatibility information and migration guides for each framework.</p>
+                </CardContent>
+              </Card>
             </Link>
-            <Link href="/examples" className="card-hover p-6">
-              <h3 className="text-xl font-semibold mb-2 text-primary">Integration Examples</h3>
-              <p className="text-gray-700">Real-world examples of OSSA integrations across frameworks and platforms.</p>
+            <Link href="/examples">
+              <Card variant="interactive" padding="md" elevation={1} className="h-full">
+                <CardHeader>
+                  <CardTitle className="text-primary">Integration Examples</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-gray-700">Real-world examples of OSSA integrations across frameworks and platforms.</p>
+                </CardContent>
+              </Card>
             </Link>
           </div>
         </section>

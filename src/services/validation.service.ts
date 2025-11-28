@@ -71,7 +71,18 @@ export class ValidationService implements IValidationService {
   ): Promise<ValidationResult> {
     // Use dynamic version detection if not provided
     if (!version) {
-      version = this.schemaRepository.getCurrentVersion();
+      // Try to extract version from manifest's apiVersion field
+      if (manifest && typeof manifest === 'object' && 'apiVersion' in manifest) {
+        const apiVersion = (manifest as { apiVersion: string }).apiVersion;
+        const match = apiVersion?.match(/^ossa\/v(.+)$/);
+        if (match) {
+          version = match[1] as SchemaVersion;
+        }
+      }
+      // Fall back to current version if extraction failed
+      if (!version) {
+        version = this.schemaRepository.getCurrentVersion();
+      }
     }
     try {
       // 1. Load schema for version

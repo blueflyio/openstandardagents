@@ -1,8 +1,8 @@
 {
   "name": "@bluefly/openstandardagents",
-  "version": "0.2.5-RC",
+  "version": "0.2.6",
   "exports": {
-    "./schema": "./spec/v0.2.5-RC/ossa-0.2.5-RC.schema.json",
+    "./schema": "./spec/v0.2.6/ossa-0.2.6.schema.json",
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
@@ -78,13 +78,28 @@
     "format": "prettier --write \"src/**/*.ts\" \"tests/**/*.ts\"",
     "format:check": "prettier --check \"src/**/*.ts\" \"tests/**/*.ts\"",
     "validate:schema": "tsx scripts/validate-schema.ts",
+    "docs:api:generate": "tsx scripts/generate-api-docs.ts",
+    "docs:cli:generate": "tsx scripts/generate-cli-docs.ts",
+    "docs:schema:generate": "tsx scripts/generate-schema-docs.ts",
+    "docs:examples:generate": "tsx scripts/generate-examples-docs.ts",
+    "docs:agents:generate": "tsx scripts/generate-agents-catalog.ts",
+    "docs:types:generate": "tsx scripts/generate-types-docs.ts",
+    "docs:errors:generate": "tsx scripts/generate-errors-docs.ts",
+    "docs:config:generate": "tsx scripts/generate-config-docs.ts",
+    "docs:lowercase": "tsx scripts/lowercase-docs.ts",
+    "docs:generate": "npm run docs:api:generate && npm run docs:cli:generate && npm run docs:schema:generate && npm run docs:examples:generate && npm run docs:agents:generate && npm run docs:types:generate && npm run docs:errors:generate && npm run docs:config:generate && npm run docs:lowercase",
+    "docs:validate": "echo 'Documentation validation not yet implemented'",
+    "docs:lint": "echo 'Documentation linting not yet implemented'",
     "validate:examples": "node -r ts-node/register tests/integration/examples/validate-all-examples.test.ts",
     "validate:power-suite": "tsx bin/validate-ossa.ts",
     "gen:types": "tsx scripts/gen-types.ts",
     "gen:zod": "tsx scripts/gen-zod.ts",
     "gen:all": "npm run gen:types && npm run gen:zod",
     "cli:legacy": "node cli/bin/ossa --help",
-    "prepublishOnly": "npm run clean && npm run build && npm run test && npm run lint"
+    "prepublishOnly": "npm run clean && npm run build && npm run test && npm run lint",
+    "validate:all": "node scripts/validate-all.js",
+    "fix:schemas": "node scripts/fix-schema-formats.js",
+    "prepare": "husky install || true"
   },
   "keywords": [
     "ossa",
@@ -100,6 +115,8 @@
   "author": "OSSA Standards Team",
   "license": "Apache-2.0",
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.71.0",
+    "@gitbeaker/node": "^35.8.1",
     "ajv": "^8.12.0",
     "ajv-formats": "^3.0.1",
     "axios": "^1.12.2",

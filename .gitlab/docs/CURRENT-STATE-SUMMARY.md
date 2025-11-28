@@ -1,12 +1,12 @@
 # OSSA Project - Current State Summary
 
 **Last Updated**: 2025-11-25  
-**Version**: 0.2.5-RC  
+**Version**: 0.2.6  
 **Branch**: fix/resolve-increment-dev-tag-conflict → development
 
 ## Release Status
 
-### v0.2.5-RC
+### v0.2.6
 - **Status**: Ready for release to production
 - **MR**: #32 (fix/resolve-increment-dev-tag-conflict → development)
 - **MR**: #30 & #31 (development → main) - Ready for merge
@@ -67,7 +67,7 @@
 - `.gitlab/docs/infrastructure/openapi/` - Internal APIs
 
 **Updated**:
-- All core specs to v0.2.5-RC
+- All core specs to v0.2.6
 - Comprehensive README
 - CHANGELOG.md
 
@@ -93,7 +93,7 @@
 /spec/                    # Version-specific schemas (keep all versions)
   /v0.2.2/
   /v0.2.4/
-  /v0.2.5-RC/
+  /v0.2.6/
 /openapi/                 # Public OpenAPI specifications
   /core/                  # Standard OSSA APIs
   /reference-implementations/
@@ -173,7 +173,7 @@
 
 ## Next Steps
 
-### Immediate (v0.2.5-RC Release)
+### Immediate (v0.2.6 Release)
 1. ✅ Merge MR #32 to development
 2. ✅ Merge MR #30 or #31 (development → main)
 3. ✅ Trigger semantic-release pipeline

@@ -1,0 +1,14 @@
+{
+  "allowedOrigins": [
+    "https://openstandardagents.org",
+    "https://*.openstandardagents.org",
+    "http://localhost:3000",
+    "http://localhost:3001"
+  ],
+  "screenshotOnError": true,
+  "consoleLogCapture": true,
+  "networkLogCapture": true,
+  "accessibilityAudit": true,
+  "performanceMetrics": true
+}
+
