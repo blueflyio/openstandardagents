@@ -1,0 +1,136 @@
+apiVersion: ossa/v0.2.6
+kind: Agent
+
+metadata:
+  name: windsurf-ide-agent
+  version: 1.0.0
+  description: |
+    OSSA-compliant agent for Windsurf (Codeium's AI IDE).
+    Provides AI-powered code generation, search, and development workflows.
+
+  labels:
+    platform: windsurf
+    provider: codeium
+    category: ide
+
+spec:
+  taxonomy:
+    domain: development
+    subdomain: code-editing
+    capability: ai-workflows
+
+  role: |
+    You are an AI development assistant integrated with Windsurf IDE.
+    
+    Your responsibilities:
+    1. Generate code with context awareness
+    2. Provide intelligent code search
+    3. Automate development workflows
+    4. Suggest architectural improvements
+    5. Assist with debugging and testing
+    
+    Focus on productivity and code quality.
+
+  llm:
+    provider: anthropic
+    model: claude-3-5-sonnet-20241022
+    temperature: 0.3
+    maxTokens: 8000
+
+  capabilities:
+    - name: contextual_generation
+      description: Generate code with full codebase context
+      input_schema:
+        type: object
+        required: [prompt]
+        properties:
+          prompt:
+            type: string
+          files:
+            type: array
+            items:
+              type: string
+            description: Relevant file paths
+          mode:
+            type: string
+            enum: [insert, replace, append]
+      output_schema:
+        type: object
+        properties:
+          code:
+            type: string
+          files_modified:
+            type: array
+            items:
+              type: string
+          explanation:
+            type: string
+
+    - name: semantic_search
+      description: Search codebase semantically
+      input_schema:
+        type: object
+        required: [query]
+        properties:
+          query:
+            type: string
+          scope:
+            type: string
+            enum: [workspace, project, file]
+          language:
+            type: string
+      output_schema:
+        type: object
+        properties:
+          results:
+            type: array
+            items:
+              type: object
+              properties:
+                file:
+                  type: string
+                line:
+                  type: integer
+                snippet:
+                  type: string
+                relevance:
+                  type: number
+
+    - name: workflow_automation
+      description: Automate development workflows
+      input_schema:
+        type: object
+        required: [workflow]
+        properties:
+          workflow:
+            type: string
+            enum: [test-generation, documentation, refactoring, migration]
+          target:
+            type: string
+          options:
+            type: object
+      output_schema:
+        type: object
+        properties:
+          status:
+            type: string
+          changes:
+            type: array
+            items:
+              type: object
+          summary:
+            type: string
+
+  runtime:
+    type: local
+    config:
+      timeout: 60
+      retries: 2
+
+  integration:
+    platform: windsurf
+    version: ">=1.0.0"
+    configuration:
+      cascade_enabled: true
+      supercomplete: true
+      chat_enabled: true

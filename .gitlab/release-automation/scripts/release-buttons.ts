@@ -68,14 +68,20 @@ async function releaseToGitHub() {
 async function deployWebsite() {
   console.log('🌐 Starting website deployment...');
   
+  // Note: We're already in website/ directory from CI before_script
+  // Check if we're in website directory, if not, cd into it
+  const cwd = process.cwd();
+  const isInWebsite = cwd.endsWith('website');
+  const websiteDir = isInWebsite ? '.' : 'website';
+  
   // 1. Build website
-  execSync('cd website && npm run build', { stdio: 'inherit' });
+  execSync(`cd ${websiteDir} && npm run build`, { stdio: 'inherit' });
   
   // 2. Run pre-deploy checks
-  execSync('cd website && npm run lighthouse', { stdio: 'inherit' });
+  execSync(`cd ${websiteDir} && npm run lighthouse`, { stdio: 'inherit' });
   
   // 3. Deploy to production
-  execSync('cd website && npm run deploy', { stdio: 'inherit' });
+  execSync(`cd ${websiteDir} && npm run deploy`, { stdio: 'inherit' });
   
   // 4. Verify deployment
   const response = execSync('curl -s -o /dev/null -w "%{http_code}" https://openstandardagents.org').toString();

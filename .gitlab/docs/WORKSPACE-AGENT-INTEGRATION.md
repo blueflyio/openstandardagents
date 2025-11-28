@@ -159,7 +159,7 @@ curl -X POST http://version-manager/api/bump \
 
 # Release orchestration
 curl -X POST http://release-orchestrator/api/release \
-  -d '{"version": "0.2.5-RC"}'
+  -d '{"version": "0.2.6"}'
 
 # Security scanning
 curl http://security-scanner/api/scan/project/openstandardagents

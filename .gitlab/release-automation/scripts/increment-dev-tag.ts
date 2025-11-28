@@ -36,7 +36,7 @@ async function incrementDevTag() {
   const nextVersion = `${baseVersion}-dev.${nextNum}`;
   const tagName = `v${nextVersion}`;
   
-  // Get commit details
+  // Get commit details for rich tag description
   const commitDate = new Date().toISOString();
   const shortSha = commitSha.substring(0, 8);
   
@@ -83,10 +83,8 @@ When milestone is complete and closed:
 3. After approval, production release will be triggered
 `;
 
-  // Create new tag with rich description
-  await gitlab.Tags.create(projectId, {
-    tag_name: tagName,
-    ref: commitSha,
+  // Create new tag (correct API signature: projectId, tagName, ref, options)
+  await gitlab.Tags.create(projectId, tagName, commitSha, {
     message: tagDescription,
   });
   

@@ -92,15 +92,14 @@ export class SchemaRepository implements ISchemaRepository {
    */
   private getSchemaPath(version: SchemaVersion): string {
     const ossaRoot = this.findOssaRoot();
-    const specDir = path.join(ossaRoot, 'spec');
 
-    // Try multiple naming patterns for schema files
+    // Try multiple naming patterns for schema files in both dist/spec and spec directories
     const possiblePaths = [
-      // Pattern 1: spec/v0.2.5-RC/ossa-0.2.5-RC.schema.json (for versions with suffixes)
+      // Try dist/spec first (for built/published package)
+      `dist/spec/v${version}/ossa-${version}.schema.json`,
+      `dist/spec/v${version}/ossa-v${version}.schema.json`,
+      // Then try source spec (for development)
       `spec/v${version}/ossa-${version}.schema.json`,
-      // Pattern 2: spec/v0.2.3/ossa-0.2.3.schema.json (standard pattern)
-      `spec/v${version}/ossa-${version}.schema.json`,
-      // Pattern 3: spec/v0.1.9/ossa-v0.1.9.schema.json (legacy with 'v' prefix in filename)
       `spec/v${version}/ossa-v${version}.schema.json`,
     ];
 
@@ -112,11 +111,18 @@ export class SchemaRepository implements ISchemaRepository {
       }
     }
 
-    // If not found, try to discover available versions
-    const availableVersions = this.discoverAvailableVersions(specDir);
+    // If not found, try to discover available versions from both directories
+    const distSpecDir = path.join(ossaRoot, 'dist/spec');
+    const sourceSpecDir = path.join(ossaRoot, 'spec');
+    const availableVersions = [
+      ...this.discoverAvailableVersions(distSpecDir),
+      ...this.discoverAvailableVersions(sourceSpecDir),
+    ];
+    const uniqueVersions = [...new Set(availableVersions)].sort();
+    
     throw new Error(
       `Schema not found for version ${version}. ` +
-        `Available versions: ${availableVersions.join(', ')}`
+        `Available versions: ${uniqueVersions.join(', ')}`
     );
   }
 
@@ -179,7 +185,7 @@ export class SchemaRepository implements ISchemaRepository {
       'dist/spec/v0.2.3/ossa-0.2.3.schema.json'
     );
     if (fs.existsSync(distSpecPath)) {
-      return path.join(process.cwd(), 'dist');
+      return process.cwd(); // Return project root, not dist
     }
 
     // Check project root spec (for development)

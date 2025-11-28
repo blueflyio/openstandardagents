@@ -1,0 +1,206 @@
+ossaVersion: "0.2.5-RC"
+
+agent:
+  id: doc-agent
+  name: Documentation Agent
+  version: "1.0.0"
+  description: Automated documentation generation and validation agent
+  role: worker
+  
+  runtime:
+    type: gitlab-ci
+    environment:
+      NODE_VERSION: "20"
+      DOCS_OUTPUT_DIR: "website/content/docs"
+  
+  capabilities:
+    - name: generate_api_docs
+      description: Generate API documentation from OpenAPI specifications
+      input_schema:
+        type: object
+        properties:
+          spec_dir:
+            type: string
+            description: Directory containing OpenAPI specs
+            default: "openapi"
+          output_dir:
+            type: string
+            description: Output directory for generated docs
+            default: "website/content/docs/api-reference"
+        required:
+          - spec_dir
+      output_schema:
+        type: object
+        properties:
+          files_generated:
+            type: array
+            items:
+              type: string
+          success:
+            type: boolean
+    
+    - name: generate_cli_docs
+      description: Generate CLI documentation from command source files
+      input_schema:
+        type: object
+        properties:
+          cli_dir:
+            type: string
+            description: Directory containing CLI command files
+            default: "src/cli/commands"
+          output_dir:
+            type: string
+            description: Output directory for generated docs
+            default: "website/content/docs/cli-reference"
+        required:
+          - cli_dir
+      output_schema:
+        type: object
+        properties:
+          commands_documented:
+            type: array
+            items:
+              type: string
+          success:
+            type: boolean
+    
+    - name: generate_schema_docs
+      description: Generate schema documentation from JSON Schema
+      input_schema:
+        type: object
+        properties:
+          schema_path:
+            type: string
+            description: Path to JSON Schema file
+          output_dir:
+            type: string
+            description: Output directory for generated docs
+            default: "website/content/docs/schema-reference"
+        required:
+          - schema_path
+      output_schema:
+        type: object
+        properties:
+          fields_documented:
+            type: integer
+          success:
+            type: boolean
+    
+    - name: validate_docs
+      description: Validate documentation completeness and quality
+      input_schema:
+        type: object
+        properties:
+          docs_dir:
+            type: string
+            description: Directory to validate
+            default: "website/content/docs"
+          check_links:
+            type: boolean
+            description: Check for broken links
+            default: true
+          check_examples:
+            type: boolean
+            description: Validate code examples
+            default: true
+        required:
+          - docs_dir
+      output_schema:
+        type: object
+        properties:
+          missing_docs:
+            type: array
+            items:
+              type: string
+          broken_links:
+            type: array
+            items:
+              type: string
+          invalid_examples:
+            type: array
+            items:
+              type: string
+          success:
+            type: boolean
+    
+    - name: sync_wiki
+      description: Sync documentation to GitLab wiki
+      input_schema:
+        type: object
+        properties:
+          source_dir:
+            type: string
+            description: Source documentation directory
+          wiki_repo:
+            type: string
+            description: GitLab wiki repository URL
+        required:
+          - source_dir
+          - wiki_repo
+      output_schema:
+        type: object
+        properties:
+          pages_synced:
+            type: integer
+          success:
+            type: boolean
+  
+  tools:
+    - name: openapi_parser
+      type: library
+      description: Parse OpenAPI specifications
+      version: "3.1.0"
+    
+    - name: markdown_generator
+      type: library
+      description: Generate markdown documentation
+      version: "1.0.0"
+    
+    - name: link_checker
+      type: library
+      description: Check for broken links in documentation
+      version: "1.0.0"
+  
+  llm_config:
+    provider: anthropic
+    model: claude-3-5-sonnet-20241022
+    temperature: 0.3
+    max_tokens: 4096
+  
+  autonomy:
+    level: supervised
+    requires_approval: false
+    can_modify_files: true
+    can_create_issues: true
+  
+  constraints:
+    rate_limits:
+      max_requests_per_minute: 10
+    resource_limits:
+      max_memory_mb: 2048
+      max_cpu_cores: 2
+    execution_timeout_seconds: 600
+  
+  observability:
+    logging:
+      level: info
+      format: json
+    metrics:
+      enabled: true
+      endpoint: "https://metrics.ossa.dev"
+    tracing:
+      enabled: true
+      endpoint: "https://tracing.ossa.dev"
+  
+  taxonomy:
+    category: documentation
+    tags:
+      - automation
+      - documentation
+      - ci-cd
+      - gitlab
+    keywords:
+      - api-docs
+      - cli-docs
+      - schema-docs
+      - validation

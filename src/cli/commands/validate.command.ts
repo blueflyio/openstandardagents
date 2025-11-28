@@ -18,8 +18,8 @@ export const validateCommand = new Command('validate')
   .argument('<path>', 'Path to OSSA manifest or OpenAPI spec (YAML or JSON)')
   .option(
     '-s, --schema <version>',
-    'Schema version (0.2.2, 0.1.9, or 1.0)',
-    '0.2.2'
+    'Schema version (0.2.6, 0.2.5, 0.2.3, 0.2.2, or 1.0)',
+    '0.2.6'
   )
   .option('--openapi', 'Validate as OpenAPI specification with OSSA extensions')
   .option('-v, --verbose', 'Verbose output with detailed information')

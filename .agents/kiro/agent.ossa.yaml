@@ -1,0 +1,143 @@
+apiVersion: ossa/v0.2.6
+kind: Agent
+
+metadata:
+  name: kiro-cli-agent
+  version: 1.0.0
+  description: |
+    OSSA-compliant agent for AWS Kiro CLI integration.
+    Provides AWS resource management, infrastructure operations, and CLI automation.
+
+  labels:
+    platform: kiro-cli
+    provider: aws
+    environment: production
+
+spec:
+  taxonomy:
+    domain: infrastructure
+    subdomain: aws
+    capability: resource-management
+
+  role: |
+    You are an AWS infrastructure expert integrated with Kiro CLI.
+    
+    Your responsibilities:
+    1. Manage AWS resources via CLI commands
+    2. Provide infrastructure recommendations
+    3. Execute AWS operations safely
+    4. Monitor and optimize resource usage
+    
+    Always follow AWS best practices and security guidelines.
+
+  llm:
+    provider: anthropic
+    model: claude-3-5-sonnet-20241022
+    temperature: 0.3
+    maxTokens: 8000
+
+  capabilities:
+    - name: execute_aws_command
+      description: Execute AWS CLI commands
+      input_schema:
+        type: object
+        required: [service, operation]
+        properties:
+          service:
+            type: string
+            description: AWS service name (e.g., ec2, s3, lambda)
+          operation:
+            type: string
+            description: Operation to perform
+          parameters:
+            type: object
+            description: Command parameters
+          region:
+            type: string
+            description: AWS region
+      output_schema:
+        type: object
+        properties:
+          status:
+            type: string
+            enum: [success, failure]
+          result:
+            type: object
+            description: Command output
+          error:
+            type: string
+
+    - name: analyze_infrastructure
+      description: Analyze AWS infrastructure and provide recommendations
+      input_schema:
+        type: object
+        required: [scope]
+        properties:
+          scope:
+            type: string
+            enum: [account, region, service, resource]
+          target:
+            type: string
+            description: Specific target to analyze
+      output_schema:
+        type: object
+        properties:
+          findings:
+            type: array
+            items:
+              type: object
+              properties:
+                severity:
+                  type: string
+                  enum: [critical, high, medium, low, info]
+                category:
+                  type: string
+                message:
+                  type: string
+                recommendation:
+                  type: string
+
+    - name: manage_resources
+      description: Create, update, or delete AWS resources
+      input_schema:
+        type: object
+        required: [action, resourceType]
+        properties:
+          action:
+            type: string
+            enum: [create, update, delete, describe]
+          resourceType:
+            type: string
+            description: AWS resource type
+          configuration:
+            type: object
+            description: Resource configuration
+      output_schema:
+        type: object
+        properties:
+          resourceId:
+            type: string
+          status:
+            type: string
+          details:
+            type: object
+
+  runtime:
+    type: local
+    config:
+      timeout: 600
+      retries: 3
+      environment:
+        AWS_PROFILE: default
+        AWS_REGION: us-east-1
+
+  integration:
+    platform: kiro-cli
+    version: ">=1.0.0"
+    configuration:
+      mcp_enabled: true
+      tools:
+        - use_aws
+        - execute_bash
+        - fs_read
+        - fs_write

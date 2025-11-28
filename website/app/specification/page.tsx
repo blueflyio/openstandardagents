@@ -225,7 +225,7 @@ spec:
 
               <div className="bg-white border-2 border-gray-200 rounded-xl p-6 shadow-md">
                 <div className="flex items-center justify-between mb-2">
-                  <h3 className="text-xl font-semibold text-gray-900">v0.2.2</h3>
+                  <h3 className="text-xl font-semibold text-gray-900">v0.2.6</h3>
                   <span className="px-3 py-1 bg-gray-200 text-gray-700 rounded-full text-sm font-medium">
                     Previous
                   </span>

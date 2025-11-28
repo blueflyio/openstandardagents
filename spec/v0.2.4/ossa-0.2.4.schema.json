@@ -1,8 +1,8 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://openstandardagents.org/schemas/v0.2.4/agent.json",
-  "title": "OssA v0.2.4 Agent Manifest Schema",
-  "description": "Open Standard for Scalable AI Agents (OssA) - The OpenAPI for AI Agents. Specification for declarative agent definition with framework-agnostic portability. STABLE RELEASE - APIs may change.",
+  "$id": "https://openstandardagents.org/schemas/v0.2.4-dev/agent.json",
+  "title": "OSSA v0.2.4-dev Agent Manifest Schema",
+  "description": "Open Standard for Scalable AI Agents (OSSA) - The OpenAPI for AI Agents. Specification for declarative agent definition with framework-agnostic portability. DEVELOPMENT VERSION - APIs may change.",
   "type": "object",
   "required": [
     "apiVersion",
@@ -13,32 +13,15 @@
   "properties": {
     "apiVersion": {
       "type": "string",
-      "pattern": "^ossa/v((0\\.2\\.[0-9]+|0\\.2\\.x|0\\.2|0\\.[0-9]+\\.[0-9]+|0\\.[0-9]+\\.x|0\\.[0-9]+|0\\.x|0|1(\\.[0-9]+)?|1\\.x|1)(-dev)?|[0-9]+\\.[0-9]+\\.[0-9]+|[0-9]+\\.[0-9]+\\.x|[0-9]+\\.[0-9]+|[0-9]+\\.x|[0-9]+)(-[a-zA-Z0-9]+)?$",
-      "description": "OssA API version. Supports specific versions (ossa/v0.2.4), patch wildcards (ossa/v0.2.x or ossa/v0.2), minor wildcards (ossa/v0.x or ossa/v0), or major versions (ossa/v1, ossa/v1.x). Use wildcards to avoid updating manifests on every patch release. Wildcards resolve to the latest compatible version during validation.",
+      "pattern": "^ossa/v(0\\.2\\.[2-4](-dev)?|1)(\\.[0-9]+)?(-[a-zA-Z0-9]+)?$",
+      "description": "OSSA API version (supports ossa/v0.2.2, ossa/v0.2.3, ossa/v0.2.4-dev, or ossa/v1 for compatibility)",
       "examples": [
-        "ossa/v0.2.4",
-        "ossa/v0.2.x",
-        "ossa/v0.2",
-        "ossa/v0.2.4",
+        "ossa/v1",
+        "ossa/v0.2.4-dev",
         "ossa/v0.2.3",
         "ossa/v0.2.2",
-        "ossa/v0.x",
-        "ossa/v0",
-        "ossa/v1",
-        "ossa/v1.x",
         "ossa/v1.0"
-      ],
-      "x-version-resolution": {
-        "description": "How wildcard versions are resolved to specific versions during validation",
-        "rules": {
-          "ossa/v0.2.x": "Resolves to latest 0.2.x version (e.g., 0.2.4)",
-          "ossa/v0.2": "Same as ossa/v0.2.x",
-          "ossa/v0.x": "Resolves to latest 0.x.x version (e.g., 0.2.4)",
-          "ossa/v0": "Same as ossa/v0.x",
-          "ossa/v1.x": "Resolves to latest 1.x.x version",
-          "ossa/v1": "Resolves to latest 1.x.x version"
-        }
-      }
+      ]
     },
     "kind": {
       "type": "string",
@@ -310,10 +293,6 @@
           "type": "string",
           "description": "Tool name/identifier"
         },
-        "description": {
-          "type": "string",
-          "description": "Human-readable description of what the tool does"
-        },
         "server": {
           "type": "string",
           "description": "MCP server name (for type=mcp)"
@@ -379,68 +358,61 @@
       "additionalProperties": false
     },
     "Capability": {
-      "oneOf": [
-        {
-          "type": "string"
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Capability name/identifier"
         },
-        {
+        "description": {
+          "type": "string",
+          "description": "Human-readable description of the capability"
+        },
+        "version": {
+          "type": "string",
+          "pattern": "^[0-9]+\\.[0-9]+$",
+          "description": "Capability version (major.minor format)"
+        },
+        "deprecated": {
+          "type": "boolean",
+          "default": false,
+          "description": "Whether this capability is deprecated"
+        },
+        "deprecation_message": {
+          "type": "string",
+          "description": "Message explaining deprecation and migration path"
+        },
+        "input_schema": {
           "type": "object",
-          "properties": {
-            "name": {
-              "type": "string",
-              "description": "Capability name/identifier"
-            },
-            "description": {
-              "type": "string",
-              "description": "Human-readable description of the capability"
-            },
-            "version": {
-              "type": "string",
-              "pattern": "^[0-9]+\\.[0-9]+$",
-              "description": "Capability version (major.minor format)"
-            },
-            "deprecated": {
-              "type": "boolean",
-              "default": false,
-              "description": "Whether this capability is deprecated"
-            },
-            "deprecation_message": {
-              "type": "string",
-              "description": "Message explaining deprecation and migration path"
-            },
-            "input_schema": {
-              "type": "object",
-              "description": "JSON Schema for capability input"
-            },
-            "output_schema": {
-              "type": "object",
-              "description": "JSON Schema for capability output"
-            },
-            "transport": {
-              "$ref": "#/definitions/Transport"
-            },
-            "scopes": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              },
-              "description": "Required permission scopes for this capability"
-            },
-            "compliance_tags": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              },
-              "description": "Compliance framework tags for this capability"
-            }
+          "description": "JSON Schema for capability input"
+        },
+        "output_schema": {
+          "type": "object",
+          "description": "JSON Schema for capability output"
+        },
+        "transport": {
+          "$ref": "#/definitions/Transport"
+        },
+        "scopes": {
+          "type": "array",
+          "items": {
+            "type": "string"
           },
-          "additionalProperties": false
+          "description": "Required permission scopes for this capability"
+        },
+        "compliance_tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Compliance framework tags for this capability"
         }
-      ]
+      },
+      "additionalProperties": false
     },
     "Transport": {
       "type": "object",
-      "description": "Transport metadata for protocol-specific configuration (v0.2.4)",
+      "description": "Transport metadata for protocol-specific configuration (v0.2.4-dev)",
       "properties": {
         "protocol": {
           "type": "string",
@@ -483,7 +455,7 @@
     },
     "State": {
       "type": "object",
-      "description": "Agent state and memory configuration (v0.2.4)",
+      "description": "Agent state and memory configuration (v0.2.4-dev)",
       "properties": {
         "mode": {
           "type": "string",
@@ -767,10 +739,7 @@
             },
             "strategy": {
               "type": "string",
-              "enum": [
-                "rolling-update",
-                "recreate"
-              ],
+              "enum": ["rolling-update", "recreate"],
               "default": "rolling-update"
             }
           }
@@ -814,11 +783,7 @@
             },
             "runtime": {
               "type": "string",
-              "enum": [
-                "docker",
-                "podman",
-                "containerd"
-              ],
+              "enum": ["docker", "podman", "containerd"],
               "default": "docker"
             },
             "resources": {
@@ -906,11 +871,7 @@
         },
         "server_type": {
           "type": "string",
-          "enum": [
-            "stdio",
-            "sse",
-            "websocket"
-          ],
+          "enum": ["stdio", "sse", "websocket"],
           "default": "stdio"
         },
         "server_name": {
@@ -938,25 +899,14 @@
         },
         "chain_type": {
           "type": "string",
-          "enum": [
-            "llm",
-            "retrieval",
-            "agent",
-            "sequential",
-            "custom"
-          ]
+          "enum": ["llm", "retrieval", "agent", "sequential", "custom"]
         },
         "memory": {
           "type": "object",
           "properties": {
             "type": {
               "type": "string",
-              "enum": [
-                "buffer",
-                "summary",
-                "conversation",
-                "vector"
-              ]
+              "enum": ["buffer", "summary", "conversation", "vector"]
             },
             "max_tokens": {
               "type": "integer"
@@ -976,13 +926,7 @@
         },
         "agent_type": {
           "type": "string",
-          "enum": [
-            "worker",
-            "manager",
-            "researcher",
-            "analyst",
-            "custom"
-          ]
+          "enum": ["worker", "manager", "researcher", "analyst", "custom"]
         },
         "role": {
           "type": "string",
@@ -1036,7 +980,7 @@
         },
         "tools_mapping": {
           "type": "array",
-          "description": "Map OssA capabilities to OpenAI tools",
+          "description": "Map OSSA capabilities to OpenAI tools",
           "items": {
             "type": "object",
             "required": [
@@ -1045,7 +989,7 @@
             "properties": {
               "ossa_capability": {
                 "type": "string",
-                "description": "OssA capability name to map"
+                "description": "OSSA capability name to map"
               },
               "openai_tool_name": {
                 "type": "string",
@@ -1053,11 +997,11 @@
               },
               "description": {
                 "type": "string",
-                "description": "Tool description (defaults to OssA capability description)"
+                "description": "Tool description (defaults to OSSA capability description)"
               },
               "parameters": {
                 "type": "object",
-                "description": "OpenAI tool parameter schema (auto-generated from OssA input_schema if not provided)"
+                "description": "OpenAI tool parameter schema (auto-generated from OSSA input_schema if not provided)"
               }
             },
             "additionalProperties": false
@@ -1079,7 +1023,7 @@
               },
               "ossa_agent_ref": {
                 "type": "string",
-                "description": "Reference to OssA agent (metadata.name or agent ID)"
+                "description": "Reference to OSSA agent (metadata.name or agent ID)"
               },
               "handoff_conditions": {
                 "type": "array",
@@ -1109,7 +1053,7 @@
               "items": {
                 "type": "string"
               },
-              "description": "Guardrail policy names (maps to OssA compliance frameworks)"
+              "description": "Guardrail policy names (maps to OSSA compliance frameworks)"
             },
             "max_tool_calls": {
               "type": "integer",
@@ -1189,12 +1133,7 @@
         },
         "agent_type": {
           "type": "string",
-          "enum": [
-            "composer",
-            "chat",
-            "background",
-            "cloud"
-          ],
+          "enum": ["composer", "chat", "background", "cloud"],
           "default": "composer",
           "description": "Cursor agent type (composer, chat, background, or cloud)"
         },
@@ -1247,11 +1186,7 @@
           "properties": {
             "provider": {
               "type": "string",
-              "enum": [
-                "openai",
-                "anthropic",
-                "custom"
-              ],
+              "enum": ["openai", "anthropic", "custom"],
               "default": "openai"
             },
             "name": {
@@ -1325,12 +1260,7 @@
         },
         "agent_type": {
           "type": "string",
-          "enum": [
-            "assistant",
-            "user_proxy",
-            "groupchat",
-            "custom"
-          ],
+          "enum": ["assistant", "user_proxy", "groupchat", "custom"],
           "description": "AutoGen agent type"
         },
         "system_message": {
@@ -1339,11 +1269,7 @@
         },
         "human_input_mode": {
           "type": "string",
-          "enum": [
-            "ALWAYS",
-            "NEVER",
-            "TERMINATE"
-          ],
+          "enum": ["ALWAYS", "NEVER", "TERMINATE"],
           "default": "NEVER",
           "description": "When to request human input"
         },
@@ -1403,10 +1329,7 @@
         },
         "runtime": {
           "type": "string",
-          "enum": [
-            "edge",
-            "nodejs"
-          ],
+          "enum": ["edge", "nodejs"],
           "default": "edge",
           "description": "Runtime environment (edge or nodejs)"
         },
@@ -1457,12 +1380,7 @@
         },
         "agent_type": {
           "type": "string",
-          "enum": [
-            "query_engine",
-            "chat_engine",
-            "retriever",
-            "custom"
-          ],
+          "enum": ["query_engine", "chat_engine", "retriever", "custom"],
           "description": "LlamaIndex agent/engine type"
         },
         "llm": {
@@ -1470,12 +1388,7 @@
           "properties": {
             "provider": {
               "type": "string",
-              "enum": [
-                "openai",
-                "anthropic",
-                "local",
-                "custom"
-              ]
+              "enum": ["openai", "anthropic", "local", "custom"]
             },
             "model": {
               "type": "string"
@@ -1493,14 +1406,7 @@
           "properties": {
             "type": {
               "type": "string",
-              "enum": [
-                "pinecone",
-                "weaviate",
-                "chroma",
-                "qdrant",
-                "milvus",
-                "custom"
-              ]
+              "enum": ["pinecone", "weaviate", "chroma", "qdrant", "milvus", "custom"]
             },
             "config": {
               "type": "object",
@@ -1604,12 +1510,7 @@
             },
             "type": {
               "type": "string",
-              "enum": [
-                "memory",
-                "sqlite",
-                "postgres",
-                "custom"
-              ]
+              "enum": ["memory", "sqlite", "postgres", "custom"]
             }
           }
         }
@@ -1672,11 +1573,7 @@
                 "description": "Tool input schema (JSON Schema)"
               }
             },
-            "required": [
-              "name",
-              "description",
-              "input_schema"
-            ]
+            "required": ["name", "description", "input_schema"]
           }
         },
         "streaming": {
@@ -1696,7 +1593,7 @@
     },
     "GoogleADKExtension": {
       "type": "object",
-      "description": "Google Agent Development Kit (ADK) integration extension (v0.2.4)",
+      "description": "Google Agent Development Kit (ADK) integration extension (v0.2.4-dev)",
       "properties": {
         "enabled": {
           "type": "boolean",
@@ -1705,23 +1602,14 @@
         },
         "agent_type": {
           "type": "string",
-          "enum": [
-            "llm_agent",
-            "sequential_agent",
-            "parallel_agent",
-            "loop_agent",
-            "custom"
-          ],
+          "enum": ["llm_agent", "sequential_agent", "parallel_agent", "loop_agent", "custom"],
           "default": "llm_agent",
           "description": "ADK agent type"
         },
         "model": {
           "type": "string",
           "description": "Gemini model to use",
-          "examples": [
-            "gemini-2.0-flash-exp",
-            "gemini-1.5-pro"
-          ]
+          "examples": ["gemini-2.0-flash-exp", "gemini-1.5-pro"]
         },
         "instruction": {
           "type": "string",
@@ -1738,11 +1626,7 @@
               },
               "type": {
                 "type": "string",
-                "enum": [
-                  "function",
-                  "agent",
-                  "mcp_server"
-                ]
+                "enum": ["function", "agent", "mcp_server"]
               },
               "config": {
                 "type": "object",
@@ -1764,11 +1648,7 @@
           "properties": {
             "service": {
               "type": "string",
-              "enum": [
-                "in_memory",
-                "database",
-                "vertex_ai"
-              ],
+              "enum": ["in_memory", "database", "vertex_ai"],
               "default": "in_memory"
             },
             "state_schema": {
@@ -1787,10 +1667,7 @@
             },
             "service": {
               "type": "string",
-              "enum": [
-                "in_memory",
-                "vertex_ai_rag"
-              ]
+              "enum": ["in_memory", "vertex_ai_rag"]
             }
           }
         },

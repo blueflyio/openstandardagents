@@ -1,5 +1,5 @@
 {
-  "apiVersion": "ossa/v0.2",
+  "apiVersion": "ossa/v0.2.4",
   "kind": "Agent",
   "metadata": {
     "name": "code-review-agent",
@@ -18,7 +18,17 @@
         "type": "mcp",
         "name": "analyze_code",
         "server": "code-reviewer",
-        "capabilities": ["review", "suggest", "explain"]
+        "capabilities": [
+          {
+            "name": "review"
+          },
+          {
+            "name": "suggest"
+          },
+          {
+            "name": "explain"
+          }
+        ]
       }
     ]
   },
@@ -28,8 +38,14 @@
       "agent_type": "composer",
       "workspace_config": {
         "rules_file": ".cursor/.cursorrules",
-        "context_files": ["src/**/*.ts", "tests/**/*.ts"],
-        "ignore_patterns": ["node_modules/**", "dist/**"]
+        "context_files": [
+          "src/**/*.ts",
+          "tests/**/*.ts"
+        ],
+        "ignore_patterns": [
+          "node_modules/**",
+          "dist/**"
+        ]
       },
       "capabilities": {
         "code_generation": false,
@@ -44,4 +60,3 @@
     }
   }
 }
-
