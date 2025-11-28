@@ -5,6 +5,29 @@ All notable changes to OSSA (Open Standard for Scalable AI Agents) will be docum
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.6] - 2025-11-26
+
+### Added
+- **ossa-dev**: Development server with hot reload
+- **ossa-generate**: Scaffold agents and adapters
+- **ossa-health**: Health check utility
+- Brand positioning and value proposition framework
+- Visual identity system specification
+- Competitive comparison matrix
+- GitHub mirroring deployment guide
+- Spec v0.2.6-dev development structure
+
+### Fixed
+- Version synchronization across project files
+- Website deployment configuration
+- Missing spec directories (v0.2.4, v0.2.5)
+
+### Documentation
+- CLI utilities guide
+- Brand guide framework
+- Comparison with LangChain, AutoGen, MCP, Semantic Kernel
+- Migration paths from alternatives
+
 ## [v0.2.5-RC] - 2025-11-26
 
 ### Added
@@ -49,26 +72,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Updated README.md with running agents section
 
 ## [0.2.4](https://github.com/blueflyio/openstandardagents/compare/v0.2.3...v0.2.4) (2025-11-19)
-## [v0.2.6] - TBD
-
-### Added
-
-- **spec/v0.2.6 directory structure**: New specification directory for v0.2.6
-- **Migration guide**: Guide for migrating from v0.2.5-RC to v0.2.6
-
-### Changed
-
-- Updated version references from 0.2.5-RC to 0.2.6
-- Updated schema files to reflect v0.2.6
-
-### Fixed
-
-- TBD: Issues fixed in this release
-
-### Migration Notes
-
-See [spec/v0.2.6/migrations/v0.2.5-RC-to-v0.2.6.md](./spec/v0.2.6/migrations/v0.2.5-RC-to-v0.2.6.md) for detailed migration instructions.
-
 
 ### Package Rename
 
