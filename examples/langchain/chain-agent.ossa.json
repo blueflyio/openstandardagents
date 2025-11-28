@@ -1,5 +1,5 @@
 {
-  "apiVersion": "ossa/v0.2",
+  "apiVersion": "ossa/v0.2.4",
   "kind": "Agent",
   "metadata": {
     "name": "langchain-agent",
@@ -17,13 +17,30 @@
       {
         "type": "function",
         "name": "calculator",
-        "capabilities": ["add", "subtract", "multiply", "divide"]
+        "capabilities": [
+          {
+            "name": "add"
+          },
+          {
+            "name": "subtract"
+          },
+          {
+            "name": "multiply"
+          },
+          {
+            "name": "divide"
+          }
+        ]
       },
       {
         "type": "http",
         "name": "web_search",
         "endpoint": "https://api.search.example.com",
-        "capabilities": ["search"]
+        "capabilities": [
+          {
+            "name": "search"
+          }
+        ]
       }
     ]
   },
@@ -39,4 +56,3 @@
     }
   }
 }
-

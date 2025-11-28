@@ -37,7 +37,9 @@
                 "default": 5
               }
             },
-            "required": ["query"]
+            "required": [
+              "query"
+            ]
           }
         },
         {
@@ -52,7 +54,9 @@
                 "description": "Mathematical expression to evaluate (e.g., '2 + 2', 'sqrt(16)', 'sin(pi/2)')"
               }
             },
-            "required": ["expression"]
+            "required": [
+              "expression"
+            ]
           }
         },
         {
@@ -68,7 +72,11 @@
               },
               "units": {
                 "type": "string",
-                "enum": ["celsius", "fahrenheit", "kelvin"],
+                "enum": [
+                  "celsius",
+                  "fahrenheit",
+                  "kelvin"
+                ],
                 "description": "Temperature units",
                 "default": "celsius"
               },
@@ -78,7 +86,9 @@
                 "default": false
               }
             },
-            "required": ["location"]
+            "required": [
+              "location"
+            ]
           }
         },
         {
@@ -102,7 +112,10 @@
                 "description": "Target language code (e.g., 'en', 'es', 'fr')"
               }
             },
-            "required": ["text", "target_language"]
+            "required": [
+              "text",
+              "target_language"
+            ]
           }
         },
         {
@@ -125,7 +138,11 @@
                 "description": "Target unit (e.g., 'meters', 'feet', 'celsius', 'pounds')"
               }
             },
-            "required": ["value", "from_unit", "to_unit"]
+            "required": [
+              "value",
+              "from_unit",
+              "to_unit"
+            ]
           }
         },
         {
@@ -141,12 +158,18 @@
               },
               "format": {
                 "type": "string",
-                "enum": ["12h", "24h", "iso"],
+                "enum": [
+                  "12h",
+                  "24h",
+                  "iso"
+                ],
                 "description": "Time format",
                 "default": "12h"
               }
             },
-            "required": ["timezone"]
+            "required": [
+              "timezone"
+            ]
           }
         }
       ],
