@@ -1,0 +1,34 @@
+name: Dependabot Comment
+
+on:
+  pull_request:
+    types: [opened]
+
+jobs:
+  comment:
+    if: github.actor == 'dependabot[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Comment on Dependabot PR
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `🤖 **Dependabot Update**
+
+This PR will be batched with other dependency updates and synced to our internal GitLab for testing.
+
+**Process:**
+1. We batch Dependabot PRs weekly
+2. Test on GitLab CI
+3. Merge and sync back to GitHub
+4. This PR will auto-close when changes appear in main
+
+**Timeline:** Usually within 7 days.
+
+---
+*This is a public mirror. Development at [gitlab.com/blueflyio/openstandardagents](https://gitlab.com/blueflyio/openstandardagents).*`
+            })
