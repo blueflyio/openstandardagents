@@ -1,10 +1,14 @@
 'use client';
 
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { useState } from 'react';
 
 export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const pathname = usePathname();
+  
+  const isActive = (path: string) => pathname === path || pathname?.startsWith(path + '/');
 
   return (
     <header className="bg-white border-b border-gray-300 sticky top-0 z-50">
@@ -23,25 +27,25 @@ export function Header() {
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-3 lg:space-x-6 text-sm lg:text-base">
-            <Link href="/about" className="text-gray-600 hover:text-primary transition-colors font-medium whitespace-nowrap">
+            <Link href="/about" className={`px-3 py-2 rounded-lg transition-all font-medium whitespace-nowrap ${isActive('/about') ? 'text-primary bg-primary/10' : 'text-gray-600 hover:text-primary hover:bg-primary/5'}`}>
               About
             </Link>
-            <Link href="/specification" className="text-gray-600 hover:text-primary transition-colors font-medium whitespace-nowrap">
+            <Link href="/specification" className={`px-3 py-2 rounded-lg transition-all font-medium whitespace-nowrap ${isActive('/specification') ? 'text-primary bg-primary/10' : 'text-gray-600 hover:text-primary hover:bg-primary/5'}`}>
               Specification
             </Link>
-            <Link href="/schema" className="text-gray-600 hover:text-primary transition-colors font-medium whitespace-nowrap">
+            <Link href="/schema" className={`px-3 py-2 rounded-lg transition-all font-medium whitespace-nowrap ${isActive('/schema') ? 'text-primary bg-primary/10' : 'text-gray-600 hover:text-primary hover:bg-primary/5'}`}>
               Schema
             </Link>
-            <Link href="/docs" className="text-gray-600 hover:text-primary transition-colors font-medium whitespace-nowrap">
+            <Link href="/docs" className={`px-3 py-2 rounded-lg transition-all font-medium whitespace-nowrap ${isActive('/docs') ? 'text-primary bg-primary/10' : 'text-gray-600 hover:text-primary hover:bg-primary/5'}`}>
               Docs
             </Link>
-            <Link href="/blog" className="text-gray-600 hover:text-primary transition-colors font-medium whitespace-nowrap">
+            <Link href="/blog" className={`px-3 py-2 rounded-lg transition-all font-medium whitespace-nowrap ${isActive('/blog') ? 'text-primary bg-primary/10' : 'text-gray-600 hover:text-primary hover:bg-primary/5'}`}>
               Blog
             </Link>
-            <Link href="/playground" className="text-gray-600 hover:text-primary transition-colors font-medium whitespace-nowrap">
+            <Link href="/playground" className={`px-3 py-2 rounded-lg transition-all font-medium whitespace-nowrap ${isActive('/playground') ? 'text-primary bg-primary/10' : 'text-gray-600 hover:text-primary hover:bg-primary/5'}`}>
               Playground
             </Link>
-            <Link href="/examples" className="text-gray-600 hover:text-primary transition-colors font-medium whitespace-nowrap">
+            <Link href="/examples" className={`px-3 py-2 rounded-lg transition-all font-medium whitespace-nowrap ${isActive('/examples') ? 'text-primary bg-primary/10' : 'text-gray-600 hover:text-primary hover:bg-primary/5'}`}>
               Examples
             </Link>
             <a
@@ -91,58 +95,59 @@ export function Header() {
         </div>
 
         {/* Mobile Navigation */}
-        {mobileMenuOpen && (
-          <div
-            id="mobile-menu"
-            className="md:hidden py-4 border-t border-gray-300"
-            role="navigation"
-            aria-label="Mobile navigation"
-          >
+        <div
+          id="mobile-menu"
+          className={`md:hidden overflow-hidden transition-all duration-300 ease-in-out ${
+            mobileMenuOpen ? 'max-h-96 opacity-100 py-4 border-t border-gray-300' : 'max-h-0 opacity-0'
+          }`}
+          role="navigation"
+          aria-label="Mobile navigation"
+        >
             <Link
               href="/about"
-              className="block py-2 text-gray-600 hover:text-primary transition-colors font-medium"
+              className={`block px-3 py-2 rounded-lg transition-all font-medium ${isActive('/about') ? 'text-primary bg-primary/10' : 'text-gray-600 hover:text-primary hover:bg-primary/5'}`}
               onClick={() => setMobileMenuOpen(false)}
             >
               About
             </Link>
             <Link
               href="/specification"
-              className="block py-2 text-gray-600 hover:text-primary transition-colors font-medium"
+              className={`block px-3 py-2 rounded-lg transition-all font-medium ${isActive('/specification') ? 'text-primary bg-primary/10' : 'text-gray-600 hover:text-primary hover:bg-primary/5'}`}
               onClick={() => setMobileMenuOpen(false)}
             >
               Specification
             </Link>
             <Link
               href="/schema"
-              className="block py-2 text-gray-600 hover:text-primary transition-colors font-medium"
+              className={`block px-3 py-2 rounded-lg transition-all font-medium ${isActive('/schema') ? 'text-primary bg-primary/10' : 'text-gray-600 hover:text-primary hover:bg-primary/5'}`}
               onClick={() => setMobileMenuOpen(false)}
             >
               Schema
             </Link>
             <Link
               href="/docs"
-              className="block py-2 text-gray-600 hover:text-primary transition-colors font-medium"
+              className={`block px-3 py-2 rounded-lg transition-all font-medium ${isActive('/docs') ? 'text-primary bg-primary/10' : 'text-gray-600 hover:text-primary hover:bg-primary/5'}`}
               onClick={() => setMobileMenuOpen(false)}
             >
               Docs
             </Link>
             <Link
               href="/blog"
-              className="block py-2 text-gray-600 hover:text-primary transition-colors font-medium"
+              className={`block px-3 py-2 rounded-lg transition-all font-medium ${isActive('/blog') ? 'text-primary bg-primary/10' : 'text-gray-600 hover:text-primary hover:bg-primary/5'}`}
               onClick={() => setMobileMenuOpen(false)}
             >
               Blog
             </Link>
             <Link
               href="/playground"
-              className="block py-2 text-gray-600 hover:text-primary transition-colors font-medium"
+              className={`block px-3 py-2 rounded-lg transition-all font-medium ${isActive('/playground') ? 'text-primary bg-primary/10' : 'text-gray-600 hover:text-primary hover:bg-primary/5'}`}
               onClick={() => setMobileMenuOpen(false)}
             >
               Playground
             </Link>
             <Link
               href="/examples"
-              className="block py-2 text-gray-600 hover:text-primary transition-colors font-medium"
+              className={`block px-3 py-2 rounded-lg transition-all font-medium ${isActive('/examples') ? 'text-primary bg-primary/10' : 'text-gray-600 hover:text-primary hover:bg-primary/5'}`}
               onClick={() => setMobileMenuOpen(false)}
             >
               Examples
@@ -160,7 +165,6 @@ export function Header() {
               </svg>
             </a>
           </div>
-        )}
       </nav>
     </header>
   );
