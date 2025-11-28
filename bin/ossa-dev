@@ -1,0 +1,42 @@
+#!/usr/bin/env node
+
+import { spawn } from 'child_process';
+import { watch } from 'fs';
+import { resolve } from 'path';
+
+const args = process.argv.slice(2);
+const agentPath = args[0] || './agent.yaml';
+const port = args[1] || '3000';
+
+let server;
+
+function startServer() {
+  if (server) server.kill();
+  
+  console.log(`\n🚀 Starting OSSA agent: ${agentPath}`);
+  server = spawn('node', ['--loader', 'tsx', '-e', `
+    import { readFileSync } from 'fs';
+    import { createServer } from 'http';
+    
+    const agent = readFileSync('${agentPath}', 'utf-8');
+    
+    createServer((req, res) => {
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ status: 'ok', agent: '${agentPath}' }));
+    }).listen(${port}, () => {
+      console.log('✓ Agent running on http://localhost:${port}');
+    });
+  `], { stdio: 'inherit' });
+}
+
+watch(resolve(agentPath), () => {
+  console.log('📝 Agent config changed, reloading...');
+  startServer();
+});
+
+startServer();
+
+process.on('SIGINT', () => {
+  if (server) server.kill();
+  process.exit(0);
+});

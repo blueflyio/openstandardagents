@@ -1,0 +1,42 @@
+{
+  "lastSync": "2025-11-24T20:17:14.874Z",
+  "source": "https://github.com/blueflyio/openstandardagents/wiki/home",
+  "docs": [
+    "aiflow-framework-integration-with-ossa.md",
+    "changelog.md",
+    "contributing.md",
+    "core-concepts/project-structure.md",
+    "examples.md",
+    "examples/migration-guides.md",
+    "for-audiences/architects.md",
+    "for-audiences/developers.md",
+    "for-audiences/enterprises.md",
+    "for-audiences/students-researchers.md",
+    "getting-started.md",
+    "getting-started/5-minute-overview.md",
+    "getting-started/first-agent.md",
+    "getting-started/hello-world.md",
+    "getting-started/installation.md",
+    "migration-guides/anthropic-mcp-to-ossa.md",
+    "migration-guides/crewai-to-ossa.md",
+    "migration-guides/drupal-eca-to-ossa.md",
+    "migration-guides/langchain-to-ossa.md",
+    "migration-guides/langflow-to-ossa.md",
+    "migration-guides/openai-to-ossa.md",
+    "migration-guides/readme.md",
+    "openapi-extensions.md",
+    "ossa-compliant-badge.md",
+    "quick-reference.md",
+    "readme.md",
+    "templates/blog-post.md",
+    "versioning.md"
+  ],
+  "blogs": [
+    "Introducing-OSSA-Framework.md",
+    "OSSA-Production-Results.md",
+    "OpenAPI-AI-Agents-Standard.md",
+    "Welcome-to-OSSA.md",
+    "Why-AI-Agents-Need-Open-Standard.md",
+    "Why-Formal-Standards-Matter-Now.md"
+  ]
+}

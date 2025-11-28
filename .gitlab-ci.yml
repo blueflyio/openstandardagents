@@ -13,6 +13,10 @@
 # Release Gate
 # Releases require BOTH conditions
 #   - Milestone must be 100% complete and closed
+
+include:
+  - local: '.gitlab/ci/agents.yml'
+
 #   - CI/CD variable ENABLE_RELEASE must be set to "true"
 # This allows deploying to main without releasing. Set the variable only when ready to release.
 #
@@ -785,8 +789,9 @@ increment-dev-tag:
   image: node:${NODE_VERSION}
   before_script:
     - npm ci
+    - npm install -g tsx
   script:
-    - node .gitlab/release-automation/scripts/increment-dev-tag.ts
+    - tsx .gitlab/release-automation/scripts/increment-dev-tag.ts
   rules:
     - if: $CI_COMMIT_BRANCH == "development" && $CI_PIPELINE_SOURCE == "push"
       when: on_success
@@ -799,7 +804,7 @@ release-to-npm:
   before_script:
     - npm ci
   script:
-    - RELEASE_ACTION=npm node .gitlab/release-automation/scripts/release-buttons.ts
+    - RELEASE_ACTION=npm tsx .gitlab/release-automation/scripts/release-buttons.ts
   rules:
     - if: $CI_COMMIT_BRANCH == "main"
       when: manual
@@ -815,7 +820,7 @@ release-to-github:
   before_script:
     - npm ci
   script:
-    - RELEASE_ACTION=github node .gitlab/release-automation/scripts/release-buttons.ts
+    - RELEASE_ACTION=github tsx .gitlab/release-automation/scripts/release-buttons.ts
   rules:
     - if: $CI_COMMIT_BRANCH == "main"
       when: manual
@@ -831,7 +836,7 @@ deploy-website-production:
   before_script:
     - cd website && npm ci
   script:
-    - RELEASE_ACTION=website node ../.gitlab/release-automation/scripts/release-buttons.ts
+    - cd website && RELEASE_ACTION=website tsx ../.gitlab/release-automation/scripts/release-buttons.ts
   rules:
     - if: $CI_COMMIT_BRANCH == "main"
       when: manual
@@ -847,7 +852,7 @@ announce-release:
   before_script:
     - npm ci
   script:
-    - RELEASE_ACTION=announce node .gitlab/release-automation/scripts/release-buttons.ts
+    - RELEASE_ACTION=announce tsx .gitlab/release-automation/scripts/release-buttons.ts
   rules:
     - if: $CI_COMMIT_BRANCH == "main"
       when: manual

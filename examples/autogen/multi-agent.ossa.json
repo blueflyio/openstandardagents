@@ -1,5 +1,5 @@
 {
-  "apiVersion": "ossa/v0.2",
+  "apiVersion": "ossa/v0.2.4",
   "kind": "Agent",
   "metadata": {
     "name": "autogen-assistant",
@@ -28,10 +28,12 @@
       },
       "max_consecutive_auto_reply": 10,
       "groupchat": {
-        "agents": ["user_proxy", "assistant"],
+        "agents": [
+          "user_proxy",
+          "assistant"
+        ],
         "max_round": 20
       }
     }
   }
 }
-
