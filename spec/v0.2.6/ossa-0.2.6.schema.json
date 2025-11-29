@@ -88,9 +88,6 @@
         },
         "google_adk": {
           "$ref": "#/definitions/GoogleADKExtension"
-        },
-        "claude_code": {
-          "$ref": "#/definitions/ClaudeCodeExtension"
         }
       },
       "additionalProperties": true
@@ -173,106 +170,9 @@
         },
         "state": {
           "$ref": "#/definitions/State"
-        },
-        "identity": {
-          "$ref": "#/definitions/Identity",
-          "description": "Agent identity for attribution and DORA metrics tracking"
         }
       },
       "additionalProperties": true
-    },
-    "Identity": {
-      "type": "object",
-      "description": "Agent identity configuration for GitLab service account attribution and DORA metrics",
-      "properties": {
-        "provider": {
-          "type": "string",
-          "enum": ["gitlab", "github", "azure_devops", "custom"],
-          "description": "Identity provider platform"
-        },
-        "service_account": {
-          "type": "object",
-          "properties": {
-            "id": {
-              "type": "integer",
-              "description": "Platform-specific user/service account ID"
-            },
-            "username": {
-              "type": "string",
-              "description": "Service account username"
-            },
-            "email": {
-              "type": "string",
-              "format": "email",
-              "description": "Service account email for git attribution"
-            }
-          },
-          "required": ["username", "email"]
-        },
-        "token_source": {
-          "type": "object",
-          "properties": {
-            "env_var": {
-              "type": "string",
-              "description": "Environment variable name containing the token"
-            },
-            "file_path": {
-              "type": "string",
-              "description": "File path to token (supports ~ expansion)"
-            },
-            "secret_ref": {
-              "type": "string",
-              "description": "Reference to external secret manager"
-            }
-          }
-        },
-        "patterns": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "description": "Glob patterns for auto-detection based on working directory"
-        },
-        "dora_tracking": {
-          "type": "object",
-          "properties": {
-            "enabled": {
-              "type": "boolean",
-              "default": true
-            },
-            "metrics": {
-              "type": "array",
-              "items": {
-                "type": "string",
-                "enum": ["deployment_frequency", "lead_time", "change_failure_rate", "mttr"]
-              }
-            }
-          }
-        },
-        "session_tracking": {
-          "type": "object",
-          "properties": {
-            "redis_enabled": {
-              "type": "boolean",
-              "description": "Enable Redis for live session tracking"
-            },
-            "postgres_enabled": {
-              "type": "boolean",
-              "description": "Enable PostgreSQL for audit trail"
-            },
-            "heartbeat_interval": {
-              "type": "integer",
-              "description": "Heartbeat interval in seconds",
-              "default": 300
-            },
-            "session_timeout": {
-              "type": "integer",
-              "description": "Session timeout in seconds",
-              "default": 3600
-            }
-          }
-        }
-      }
     },
     "Taxonomy": {
       "type": "object",
@@ -1876,103 +1776,6 @@
             },
             "after_model_callback": {
               "type": "string"
-            }
-          }
-        }
-      },
-      "additionalProperties": true
-    },
-    "ClaudeCodeExtension": {
-      "type": "object",
-      "description": "Claude Code CLI integration extension for agentic coding sessions",
-      "properties": {
-        "enabled": {
-          "type": "boolean",
-          "default": true,
-          "description": "Enable Claude Code integration"
-        },
-        "identity": {
-          "type": "object",
-          "description": "Agent identity for Claude Code sessions",
-          "properties": {
-            "auto_detect": {
-              "type": "boolean",
-              "default": true,
-              "description": "Auto-detect identity from working directory patterns"
-            },
-            "fallback_agent": {
-              "type": "string",
-              "description": "Default agent if no pattern matches"
-            }
-          }
-        },
-        "hooks": {
-          "type": "object",
-          "description": "Claude Code hooks configuration",
-          "properties": {
-            "pre_prompt_submit": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              },
-              "description": "Commands to run before prompt submission"
-            },
-            "pre_tool_use": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              },
-              "description": "Commands to run before tool execution"
-            },
-            "post_tool_use": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              },
-              "description": "Commands to run after tool execution"
-            }
-          }
-        },
-        "session": {
-          "type": "object",
-          "description": "Session management for Claude Code",
-          "properties": {
-            "init_on_start": {
-              "type": "boolean",
-              "default": true,
-              "description": "Initialize identity session on first prompt"
-            },
-            "propagate_to_subprocesses": {
-              "type": "boolean",
-              "default": true,
-              "description": "Pass identity env vars to spawned processes"
-            },
-            "git_attribution": {
-              "type": "boolean",
-              "default": true,
-              "description": "Auto-configure git author/committer from identity"
-            }
-          }
-        },
-        "metrics": {
-          "type": "object",
-          "description": "Metrics collection for Claude Code sessions",
-          "properties": {
-            "track_commits": {
-              "type": "boolean",
-              "default": true
-            },
-            "track_issues": {
-              "type": "boolean",
-              "default": true
-            },
-            "track_deployments": {
-              "type": "boolean",
-              "default": true
-            },
-            "prometheus_endpoint": {
-              "type": "string",
-              "description": "Prometheus push gateway endpoint"
             }
           }
         }
