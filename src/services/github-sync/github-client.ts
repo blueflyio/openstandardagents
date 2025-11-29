@@ -1,5 +1,5 @@
 import { Octokit } from '@octokit/rest';
-import { GitHubPR, GitHubPRSchema } from './schemas';
+import { GitHubPR, GitHubPRSchema } from './schemas.js';
 
 export class GitHubClient {
   private octokit: Octokit;

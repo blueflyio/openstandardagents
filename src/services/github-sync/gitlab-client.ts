@@ -1,4 +1,4 @@
-import { GitLabMR, GitLabMRSchema } from './schemas';
+import { GitLabMR, GitLabMRSchema } from './schemas.js';
 
 export class GitLabClient {
   private baseUrl = 'https://gitlab.com/api/v4';
