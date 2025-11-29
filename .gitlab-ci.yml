@@ -16,6 +16,8 @@
 
 include:
   - local: '.gitlab/ci/agents.yml'
+  # TODO: Add merge-train component when gitlab_components is made public/internal
+  # - component: gitlab.com/blueflyio/agent-platform/gitlab_components/merge-train@main
 
 #   - CI/CD variable ENABLE_RELEASE must be set to "true"
 # This allows deploying to main without releasing. Set the variable only when ready to release.
