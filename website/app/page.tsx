@@ -356,8 +356,8 @@ export default function HomePage() {
                 <CardTitle className="text-primary">1. Install CLI</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="bg-code-bg rounded-lg p-4">
-                  <pre className="text-code-text text-sm overflow-x-auto">
+                <div className="bg-code-bg rounded-lg p-3 sm:p-4 overflow-x-auto">
+                  <pre className="text-code-text text-xs sm:text-sm whitespace-pre-wrap break-all sm:break-normal sm:whitespace-pre">
                     <code>npm install -g @bluefly/openstandardagents</code>
                   </pre>
                 </div>
@@ -368,8 +368,8 @@ export default function HomePage() {
                 <CardTitle className="text-primary">2. Create Agent</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="bg-code-bg rounded-lg p-4">
-                  <pre className="text-code-text text-sm overflow-x-auto">
+                <div className="bg-code-bg rounded-lg p-3 sm:p-4 overflow-x-auto">
+                  <pre className="text-code-text text-xs sm:text-sm whitespace-pre-wrap break-all sm:break-normal sm:whitespace-pre">
                     <code>{`osa init my-agent
 cd my-agent`}</code>
                   </pre>
@@ -381,8 +381,8 @@ cd my-agent`}</code>
                 <CardTitle className="text-primary">3. Validate</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="bg-code-bg rounded-lg p-4">
-                  <pre className="text-code-text text-sm overflow-x-auto">
+                <div className="bg-code-bg rounded-lg p-3 sm:p-4 overflow-x-auto">
+                  <pre className="text-code-text text-xs sm:text-sm whitespace-pre-wrap break-all sm:break-normal sm:whitespace-pre">
                     <code>osa validate my-agent.ossa.yaml</code>
                   </pre>
                 </div>
@@ -393,8 +393,8 @@ cd my-agent`}</code>
                 <CardTitle className="text-primary">4. Export</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="bg-code-bg rounded-lg p-4">
-                  <pre className="text-code-text text-sm overflow-x-auto">
+                <div className="bg-code-bg rounded-lg p-3 sm:p-4 overflow-x-auto">
+                  <pre className="text-code-text text-xs sm:text-sm whitespace-pre-wrap break-all sm:break-normal sm:whitespace-pre">
                     <code>{`osa export --to cursor
 osa export --to langchain`}</code>
                   </pre>
