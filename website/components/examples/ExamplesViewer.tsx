@@ -115,15 +115,15 @@ export function ExamplesViewer({ examples }: ExamplesViewerProps) {
   };
 
   return (
-    <div className="grid lg:grid-cols-3 gap-6">
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6">
       {/* Sidebar */}
-      <div className="lg:col-span-1">
-        <div className="card border-2 border-gray-300 sticky top-4">
+      <div className="lg:col-span-1 order-2 lg:order-1">
+        <div className="card border-2 border-gray-300 lg:sticky lg:top-4">
           <div className="flex items-center mb-4">
-            <svg className="w-6 h-6 text-primary mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-5 h-5 sm:w-6 sm:h-6 text-primary mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
             </svg>
-            <h2 className="text-2xl font-bold text-gray-900">Browse Examples</h2>
+            <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Browse Examples</h2>
           </div>
 
           {/* Search */}
@@ -203,87 +203,86 @@ export function ExamplesViewer({ examples }: ExamplesViewerProps) {
       </div>
 
       {/* Main Content */}
-      <div className="lg:col-span-2">
+      <div className="lg:col-span-2 order-1 lg:order-2 min-w-0">
         {selectedExample ? (
-          <div className="card border-2 border-gray-300 shadow-lg">
-            <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
-              <div className="flex-1">
+          <div className="card border-2 border-gray-300 shadow-lg overflow-hidden">
+            <div className="flex flex-col gap-3 sm:gap-4 mb-4 sm:mb-6">
+              <div className="flex-1 min-w-0">
                 <div className="flex items-center mb-2">
-                  <svg className="w-6 h-6 text-primary mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-5 h-5 sm:w-6 sm:h-6 text-primary mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                   </svg>
-                  <h2 className="text-3xl font-bold text-gray-900">{selectedExample.name}</h2>
+                  <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 truncate">{selectedExample.name}</h2>
                 </div>
-                <div className="flex items-center gap-3 text-sm">
-                  <span className="flex items-center text-gray-600">
-                    <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="flex flex-wrap items-center gap-2 sm:gap-3 text-xs sm:text-sm">
+                  <span className="flex items-center text-gray-600 truncate max-w-[200px] sm:max-w-none">
+                    <svg className="w-3 h-3 sm:w-4 sm:h-4 mr-1 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
                     </svg>
-                    {selectedExample.path}
+                    <span className="truncate">{selectedExample.path}</span>
                   </span>
-                  <span className="text-gray-400">•</span>
-                  <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-primary/10 text-primary border border-primary/20">
+                  <span className="inline-flex items-center px-2 sm:px-3 py-0.5 sm:py-1 rounded-full text-xs font-semibold bg-primary/10 text-primary border border-primary/20">
                     {selectedExample.category}
                   </span>
-                  <span className="text-gray-400">•</span>
                   <span className="text-gray-600">{selectedExample.content.split('\n').length} lines</span>
                 </div>
               </div>
               <button
                 onClick={() => copyToClipboard(selectedExample.content)}
-                className="bg-gradient-to-r from-secondary via-primary to-accent text-white px-6 py-3 rounded-lg font-medium hover:shadow-lg transition-all flex items-center gap-2"
+                className="bg-gradient-to-r from-secondary via-primary to-accent text-white px-4 sm:px-6 py-2 sm:py-3 rounded-lg text-sm sm:text-base font-medium hover:shadow-lg transition-all flex items-center justify-center gap-2 w-full sm:w-auto"
                 aria-label="Copy example code to clipboard"
                 title="Copy code"
               >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
                 </svg>
                 Copy Code
               </button>
             </div>
 
-            <div className="border-2 border-gray-300 rounded-xl overflow-hidden shadow-md">
+            <div className="border-2 border-gray-300 rounded-lg sm:rounded-xl overflow-x-auto shadow-md">
               <SyntaxHighlighter
                 language={getLanguage(selectedExample.name)}
                 style={vscDarkPlus}
                 customStyle={{
                   margin: 0,
                   borderRadius: 0,
-                  fontSize: '15px',
-                  padding: '1.5rem',
+                  fontSize: '12px',
+                  padding: '1rem',
                 }}
                 showLineNumbers
                 wrapLines
+                wrapLongLines
               >
                 {selectedExample.content}
               </SyntaxHighlighter>
             </div>
 
             {/* Quick Actions */}
-            <div className="mt-6 bg-gradient-to-br from-blue-50 to-cyan-50 rounded-xl p-5 border border-blue-200">
-              <h3 className="font-bold text-blue-900 mb-3 flex items-center">
-                <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="mt-4 sm:mt-6 bg-gradient-to-br from-blue-50 to-cyan-50 rounded-lg sm:rounded-xl p-3 sm:p-5 border border-blue-200">
+              <h3 className="font-bold text-blue-900 mb-2 sm:mb-3 flex items-center text-sm sm:text-base">
+                <svg className="w-4 h-4 sm:w-5 sm:h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                 </svg>
                 Quick Actions
               </h3>
-              <div className="grid md:grid-cols-2 gap-3">
-                <a href={`/playground?source=examples&example=${encodeURIComponent(selectedExample.name)}`} className="bg-white border-2 border-blue-200 rounded-lg p-3 hover:border-blue-400 hover:shadow-md transition-all">
-                  <div className="font-semibold text-blue-900">✏️ Try in Playground</div>
-                  <div className="text-xs text-gray-600 mt-1">Test and modify this example</div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
+                <a href={`/playground?source=examples&example=${encodeURIComponent(selectedExample.name)}`} className="bg-white border-2 border-blue-200 rounded-lg p-2 sm:p-3 hover:border-blue-400 hover:shadow-md transition-all">
+                  <div className="font-semibold text-blue-900 text-sm sm:text-base">✏️ Try in Playground</div>
+                  <div className="text-xs text-gray-600 mt-0.5 sm:mt-1 hidden sm:block">Test and modify this example</div>
                 </a>
-                <a href="/schema#components" className="bg-white border-2 border-blue-200 rounded-lg p-3 hover:border-blue-400 hover:shadow-md transition-all">
-                  <div className="font-semibold text-blue-900">📖 View Schema Reference</div>
-                  <div className="text-xs text-gray-600 mt-1">Learn about all fields</div>
+                <a href="/schema#components" className="bg-white border-2 border-blue-200 rounded-lg p-2 sm:p-3 hover:border-blue-400 hover:shadow-md transition-all">
+                  <div className="font-semibold text-blue-900 text-sm sm:text-base">📖 View Schema Reference</div>
+                  <div className="text-xs text-gray-600 mt-0.5 sm:mt-1 hidden sm:block">Learn about all fields</div>
                 </a>
               </div>
             </div>
           </div>
         ) : (
-          <div className="card border-2 border-dashed border-gray-300 text-center py-20">
-            <div className="text-6xl mb-4">👈</div>
-            <p className="text-gray-600 text-lg font-semibold mb-2">Select an example to view</p>
-            <p className="text-gray-500">Choose from {examples.length} examples on the left</p>
+          <div className="card border-2 border-dashed border-gray-300 text-center py-10 sm:py-20">
+            <div className="text-4xl sm:text-6xl mb-3 sm:mb-4">👇</div>
+            <p className="text-gray-600 text-base sm:text-lg font-semibold mb-1 sm:mb-2">Select an example to view</p>
+            <p className="text-gray-500 text-sm sm:text-base">Choose from {examples.length} examples below</p>
           </div>
         )}
       </div>
