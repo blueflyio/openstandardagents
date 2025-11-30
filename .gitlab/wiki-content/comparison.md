@@ -1,3 +1,10 @@
+<!--
+OSSA Comparison Page
+Purpose: Compare OSSA to other agent frameworks and standards
+Audience: Developers and architects evaluating OSSA
+Educational Focus: Show OSSA's unique position as a standard, not a framework
+-->
+
 # OSSA Competitive Comparison Matrix
 
 ## Quick Comparison

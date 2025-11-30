@@ -1,3 +1,9 @@
+<!--
+OSSA Brand Guide: 07-application-examples.md
+Purpose: Brand guidelines for OSSA visual identity and messaging
+Audience: Designers, marketers, and contributors
+Educational Focus: Maintain consistent OSSA brand across ecosystem
+-->
 # OSSA Brand Application Examples
 
 > Version 1.0.0 | Last Updated: November 2025

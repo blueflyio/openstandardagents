@@ -1,3 +1,9 @@
+<!--
+OSSA Brand Guide: 06-visual-elements.md
+Purpose: Brand guidelines for OSSA visual identity and messaging
+Audience: Designers, marketers, and contributors
+Educational Focus: Maintain consistent OSSA brand across ecosystem
+-->
 # OSSA Visual Elements
 
 > Version 1.0.0 | Last Updated: November 2025

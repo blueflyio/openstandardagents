@@ -1,3 +1,9 @@
+<!--
+OSSA Operations: github-sync-strategy.md
+Purpose: Internal operations and automation documentation
+Audience: Maintainers and contributors
+Educational Focus: Document automation and operational procedures
+-->
 # GitHub Sync Strategy
 
 ## Overview
