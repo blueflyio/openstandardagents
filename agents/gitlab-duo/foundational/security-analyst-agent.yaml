@@ -1,0 +1,60 @@
+# GitLab Duo Foundational Agent: Security Analyst
+# OSSA documentation of GitLab's built-in Security Analyst agent
+# Source: https://docs.gitlab.com/user/duo_agent_platform/agents/foundational_agents/security_analyst_agent/
+
+ossaVersion: '0.2.6'
+
+agent:
+  id: gitlab-duo-security-analyst
+  name: GitLab Duo Security Analyst
+  description: |
+    Specialized AI assistant for security analysis and vulnerability management.
+    Provides expert guidance on security issues, vulnerabilities, and remediation.
+  version: '1.0.0'
+  role: analyzer
+  
+  author:
+    name: GitLab
+    organization: GitLab Inc.
+    verified: true
+  
+  license: Proprietary
+  
+  capabilities:
+    - name: analyze-vulnerability
+      type: query
+      description: Analyze security vulnerabilities and assess severity
+      
+    - name: suggest-remediation
+      type: query
+      description: Suggest remediation steps for vulnerabilities
+      
+    - name: review-security-scan
+      type: query
+      description: Review security scan results and prioritize findings
+      
+    - name: explain-cve
+      type: query
+      description: Explain CVE details and impact
+      
+    - name: assess-risk
+      type: query
+      description: Assess security risk of dependencies or code changes
+      
+    - name: generate-security-policy
+      type: action
+      description: Generate security policy configurations
+  
+  integration:
+    platform: gitlab-duo
+    type: foundational
+    enabled_by_default: true
+    requires_gitlab_ultimate: true
+  
+  metadata:
+    tags:
+      - security
+      - vulnerability-management
+      - compliance
+      - risk-assessment
+    documentation: https://docs.gitlab.com/user/duo_agent_platform/agents/foundational_agents/security_analyst_agent/
