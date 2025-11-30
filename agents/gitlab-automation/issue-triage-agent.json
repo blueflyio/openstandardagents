@@ -1,0 +1,62 @@
+{
+  "apiVersion": "ossa.bluefly.io/v0.2.6",
+  "kind": "Agent",
+  "metadata": {
+    "name": "gitlab-issue-triage-agent",
+    "version": "1.0.0",
+    "description": "Automatically triages GitLab issues by analyzing content, assigning labels, milestones, and suggesting related issues",
+    "labels": {
+      "role": "analyzer",
+      "platform": "gitlab",
+      "automation": "triage"
+    }
+  },
+  "spec": {
+    "capabilities": [
+      {
+        "name": "analyze-issue",
+        "type": "query",
+        "description": "Analyze issue content and extract metadata",
+        "input": {
+          "type": "object",
+          "required": ["issueId", "title", "description"],
+          "properties": {
+            "issueId": {
+              "type": "integer"
+            },
+            "title": {
+              "type": "string"
+            },
+            "description": {
+              "type": "string"
+            }
+          }
+        },
+        "output": {
+          "type": "object",
+          "required": ["issueType", "suggestedLabels", "confidence"],
+          "properties": {
+            "issueType": {
+              "type": "string",
+              "enum": ["bug", "feature", "documentation", "question"]
+            },
+            "suggestedLabels": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "confidence": {
+              "type": "number"
+            }
+          }
+        }
+      }
+    ],
+    "configuration": {
+      "gitlabUrl": "https://gitlab.com",
+      "projectId": "blueflyio/openstandardagents",
+      "model": "gpt-4"
+    }
+  }
+}
