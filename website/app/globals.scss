@@ -216,6 +216,7 @@
   html {
     scroll-behavior: smooth;
     font-family: $font-sans;
+    overflow-x: hidden;
   }
 
   body {
@@ -223,6 +224,8 @@
     font-size: $text-body;
     line-height: $leading-body;
     font-weight: $font-normal;
+    overflow-x: hidden;
+    max-width: 100vw;
   }
 
   /* ========================================================================
