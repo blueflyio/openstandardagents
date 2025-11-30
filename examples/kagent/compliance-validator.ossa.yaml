@@ -1,0 +1,111 @@
+# OSSA kAgent Reference Implementation #5
+# Compliance Validator Agent
+# Domain: compliance.validation.continuous
+
+apiVersion: ossa/v1
+kind: Agent
+metadata:
+  name: compliance-validator
+  version: 1.0.0
+  description: "Continuous compliance validation for SOC2, HIPAA, FedRAMP, and NIST frameworks"
+
+spec:
+  taxonomy:
+    domain: compliance
+    subdomain: validation
+    capability: continuous
+
+  role: |
+    You are a compliance validation agent that continuously monitors infrastructure
+    and applications for compliance violations. You enforce SOC2, HIPAA, FedRAMP,
+    and NIST cybersecurity framework requirements. You generate audit reports
+    and maintain compliance evidence.
+
+  llm:
+    provider: openai
+    model: gpt-4
+    temperature: 0.1
+    maxTokens: 8000
+
+  tools:
+    - type: mcp
+      server: kubernetes-mcp
+      capabilities:
+        - audit_rbac
+        - check_network_policies
+        - validate_encryption
+
+    - type: mcp
+      server: buildkit-compliance-engine
+      capabilities:
+        - validate_policies
+        - generate_audit_reports
+        - track_compliance_status
+        - collect_evidence
+
+    - type: mcp
+      server: buildkit-agent-tracer
+      capabilities:
+        - trace_access
+        - audit_logs
+
+  autonomy:
+    level: autonomous
+    approval_required: false
+    allowed_actions:
+      - validate_compliance
+      - generate_reports
+      - collect_evidence
+      - send_alerts
+      - block_non_compliant_deployments
+
+  constraints:
+    cost:
+      maxTokensPerDay: 150000
+      maxCostPerDay: 35.0
+    performance:
+      maxLatencySeconds: 45
+      validationInterval: 1800
+
+  extensions:
+    kagent:
+      kubernetes:
+        namespace: compliance
+        labels:
+          app: compliance-validator
+          team: compliance
+          environment: production
+          frameworks: soc2-hipaa-fedramp-nist
+        annotations:
+          compliance.level: "critical"
+          audit.required: "true"
+        resourceLimits:
+          cpu: "1000m"
+          memory: "2Gi"
+
+      guardrails:
+        requireApproval: false
+        costLimits:
+          maxTokensPerDay: 150000
+        allowedActions:
+          - validate_all_namespaces
+          - block_deployments
+          - generate_evidence
+        auditLog:
+          destination: compliance-engine
+          retention: 10years
+
+      a2aConfig:
+        enabled: true
+        protocol: json-rpc
+        endpoints:
+          - http://security-scanner:8080/a2a
+          - http://documentation-agent:8080/a2a
+          - http://k8s-troubleshooter:8080/a2a
+        authentication:
+          type: mtls
+
+      meshIntegration:
+        enabled: true
+        istioIntegration: true
+        ambientMesh: true

@@ -1,0 +1,106 @@
+apiVersion: ossa/v1
+kind: Agent
+metadata:
+  name: k8s-troubleshooter
+  version: 1.0.0
+  description: Autonomous Kubernetes cluster troubleshooting agent with diagnostic capabilities
+  labels:
+    kubernetes: "true"
+    troubleshooting: "true"
+    infrastructure: "true"
+    diagnostics: "true"
+  annotations:
+    ossa.io/migration: v1.0 to v0.2.2
+    ossa.io/migrated-date: 2025-10-29
+spec:
+  role: monitoring
+  taxonomy:
+    domain: infrastructure
+    subdomain: kubernetes
+    capability: troubleshooting
+  tools:
+    - type: mcp
+      name: diagnose_pod_failures
+      server: k8s-troubleshooter
+      capabilities:
+        - with_input_schema
+    - type: mcp
+      name: analyze_resource_constraints
+      server: k8s-troubleshooter
+      capabilities:
+        - with_input_schema
+    - type: mcp
+      name: check_network_connectivity
+      server: k8s-troubleshooter
+      capabilities:
+        - with_input_schema
+  observability:
+    tracing:
+      enabled: true
+    metrics:
+      enabled: true
+    logging:
+      level: info
+      format: json
+  extensions:
+    mcp:
+      enabled: true
+      server_type: stdio
+      tools:
+        - name: diagnose_pod_failures
+          description: Diagnose why pods are failing or crashing
+        - name: analyze_resource_constraints
+          description: Analyze CPU and memory resource constraints
+        - name: check_network_connectivity
+          description: Verify network connectivity between services
+    buildkit:
+      deployment:
+        replicas:
+          min: 1
+          max: 4
+        health_check:
+          path: /health
+          port: 8080
+      container:
+        image: ossa/k8s-troubleshooter:1.0.0
+        runtime: k8s
+        resources: &a1
+          cpu: 500m
+          memory: 512Mi
+    kagent:
+      kubernetes:
+        namespace: default
+        labels:
+          app: k8s-troubleshooter
+        resourceLimits: *a1
+      deployment:
+        replicas: 2
+        strategy: rolling-update
+    runtime:
+      type: k8s
+      image: ossa/k8s-troubleshooter:1.0.0
+      resources: *a1
+      health_check:
+        type: http
+        endpoint: /health
+        port: 8080
+        initial_delay_seconds: 30
+        period_seconds: 10
+        timeout_seconds: 5
+        failure_threshold: 3
+    integration:
+      protocol: http
+      endpoints:
+        base_url: http://k8s-troubleshooter:8080
+        health: /health
+        metrics: /metrics
+        openapi: /api/openapi.json
+      auth:
+        type: jwt
+        config:
+          issuer: https://auth.company.com
+          audience: k8s-troubleshooter
+      rate_limits:
+        requests_per_second: 10
+        requests_per_minute: 500
+        burst: 20

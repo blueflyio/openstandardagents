@@ -1,0 +1,293 @@
+# GitLab CI/CD Pipeline for AIFlow Social Agent
+# Follows production architecture: Build → Test → Deploy
+
+stages:
+  - validate
+  - build
+  - test
+  - deploy
+  - monitor
+
+variables:
+  DOCKER_REGISTRY: registry.bluefly.io
+  IMAGE_NAME: $DOCKER_REGISTRY/llm/aiflow-social-agent
+  KUBERNETES_NAMESPACE: agents
+  HELM_RELEASE_NAME: aiflow-social-agent
+
+# Global rules
+workflow:
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+    - if: $CI_COMMIT_BRANCH == "development"
+    - if: $CI_MERGE_REQUEST_IID
+    - if: $CI_COMMIT_TAG
+
+#===========================================
+# Stage 1: Validation
+#===========================================
+
+validate:openapi:
+  stage: validate
+  image: stoplight/spectral:latest
+  script:
+    - spectral lint aiflow-registration-api.openapi.yml --ruleset .spectral.yaml
+  only:
+    - merge_requests
+    - main
+    - development
+
+validate:python:
+  stage: validate
+  image: python:3.11-slim
+  before_script:
+    - pip install --no-cache-dir black flake8 mypy
+  script:
+    - black --check *.py
+    - flake8 *.py --max-line-length=120
+    - mypy *.py --ignore-missing-imports
+  only:
+    - merge_requests
+    - main
+    - development
+
+validate:ossa:
+  stage: validate
+  image: node:20-alpine
+  before_script:
+    - npm install -g @llm/ossa-cli
+  script:
+    - ossa validate ../social-agent-aiflow.ossa.yaml
+  only:
+    - merge_requests
+    - main
+    - development
+
+#===========================================
+# Stage 2: Build
+#===========================================
+
+build:docker:
+  stage: build
+  image: docker:24-dind
+  services:
+    - docker:24-dind
+  before_script:
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $DOCKER_REGISTRY
+  script:
+    # Build multi-stage production image
+    - |
+      docker build \
+        -f Dockerfile.production \
+        -t $IMAGE_NAME:$CI_COMMIT_SHORT_SHA \
+        -t $IMAGE_NAME:latest \
+        --label "git.commit=$CI_COMMIT_SHORT_SHA" \
+        --label "git.branch=$CI_COMMIT_BRANCH" \
+        --label "pipeline.id=$CI_PIPELINE_ID" \
+        --label "ossa.version=1.0" \
+        .
+    
+    # Scan for vulnerabilities
+    - docker run --rm -v /var/run/docker.sock:/var/run/docker.sock aquasec/trivy image --severity HIGH,CRITICAL $IMAGE_NAME:$CI_COMMIT_SHORT_SHA
+    
+    # Push images
+    - docker push $IMAGE_NAME:$CI_COMMIT_SHORT_SHA
+    - docker push $IMAGE_NAME:latest
+  only:
+    - main
+    - development
+  tags:
+    - docker
+
+#===========================================
+# Stage 3: Test
+#===========================================
+
+test:unit:
+  stage: test
+  image: python:3.11-slim
+  before_script:
+    - pip install --no-cache-dir -r requirements.txt
+    - pip install --no-cache-dir pytest pytest-asyncio pytest-cov
+  script:
+    - pytest test_aiflow_integration.py -v --cov=. --cov-report=xml --cov-report=html
+  coverage: '/^TOTAL.*\s+(\d+\%)$/'
+  artifacts:
+    reports:
+      coverage_report:
+        coverage_format: cobertura
+        path: coverage.xml
+    paths:
+      - htmlcov/
+    expire_in: 1 week
+  only:
+    - merge_requests
+    - main
+    - development
+
+test:integration:
+  stage: test
+  image: $IMAGE_NAME:$CI_COMMIT_SHORT_SHA
+  services:
+    - name: redis:7-alpine
+      alias: redis
+  variables:
+    BUILDKIT_REGISTRY_URL: http://mock-buildkit:3000
+    PHOENIX_ENDPOINT: http://mock-phoenix:4318
+  script:
+    - python -m pytest test_aiflow_integration.py -v -k "integration"
+  only:
+    - main
+    - development
+
+test:load:
+  stage: test
+  image: grafana/k6:latest
+  script:
+    - k6 run --vus 10 --duration 2m loadtest/k6-scenarios.js
+  artifacts:
+    reports:
+      junit: k6-results.xml
+  only:
+    - main
+  when: manual
+  allow_failure: true
+
+#===========================================
+# Stage 4: Deploy
+#===========================================
+
+deploy:development:
+  stage: deploy
+  image: bitnami/kubectl:latest
+  environment:
+    name: development
+    url: https://aiflow-dev.agent-buildkit.orb.local
+    kubernetes:
+      namespace: agents-dev
+  before_script:
+    - kubectl config use-context $KUBE_CONTEXT_DEV
+  script:
+    # Update image in deployment
+    - |
+      kubectl set image deployment/aiflow-social-agent \
+        aiflow-agent=$IMAGE_NAME:$CI_COMMIT_SHORT_SHA \
+        -n agents-dev
+    
+    # Wait for rollout
+    - kubectl rollout status deployment/aiflow-social-agent -n agents-dev --timeout=5m
+    
+    # Verify deployment
+    - kubectl get pods -n agents-dev -l app=aiflow-social-agent
+  only:
+    - development
+  tags:
+    - kubernetes
+
+deploy:staging:
+  stage: deploy
+  image: bitnami/kubectl:latest
+  environment:
+    name: staging
+    url: https://aiflow-staging.agent-buildkit.orb.local
+    kubernetes:
+      namespace: agents-staging
+  before_script:
+    - kubectl config use-context $KUBE_CONTEXT_STAGING
+  script:
+    - |
+      kubectl set image deployment/aiflow-social-agent \
+        aiflow-agent=$IMAGE_NAME:$CI_COMMIT_SHORT_SHA \
+        -n agents-staging
+    - kubectl rollout status deployment/aiflow-social-agent -n agents-staging --timeout=5m
+  only:
+    - main
+  when: manual
+  tags:
+    - kubernetes
+
+deploy:production:
+  stage: deploy
+  image: bitnami/kubectl:latest
+  environment:
+    name: production
+    url: https://aiflow.agent-buildkit.orb.local
+    kubernetes:
+      namespace: agents
+  before_script:
+    - kubectl config use-context $KUBE_CONTEXT_PROD
+  script:
+    # Blue/Green deployment
+    - |
+      # Create green deployment
+      kubectl apply -f k8s/deployment.yaml -n agents
+      kubectl set image deployment/aiflow-social-agent \
+        aiflow-agent=$IMAGE_NAME:$CI_COMMIT_SHORT_SHA \
+        -n agents
+      
+      # Wait for green to be ready
+      kubectl rollout status deployment/aiflow-social-agent -n agents --timeout=10m
+      
+      # Run smoke tests
+      kubectl run smoke-test --image=curlimages/curl:latest --rm -i --restart=Never -- \
+        curl -f http://aiflow-social-agent.agents.svc.cluster.local:8000/health || exit 1
+      
+      # Switch traffic (already done by deployment)
+      echo "Deployment successful"
+  only:
+    - main
+  when: manual
+  tags:
+    - kubernetes
+  needs:
+    - deploy:staging
+
+#===========================================
+# Stage 5: Monitor
+#===========================================
+
+monitor:health:
+  stage: monitor
+  image: curlimages/curl:latest
+  script:
+    - |
+      for i in {1..5}; do
+        curl -f https://aiflow.agent-buildkit.orb.local/health || exit 1
+        sleep 10
+      done
+  only:
+    - main
+  needs:
+    - deploy:production
+  when: on_success
+
+monitor:traces:
+  stage: monitor
+  image: curlimages/curl:latest
+  script:
+    - echo "Verifying Phoenix traces..."
+    - curl -f http://phoenix.agent-buildkit.orb.local:6006/api/projects/aiflow-social-agents/traces
+  only:
+    - main
+  needs:
+    - deploy:production
+  when: on_success
+  allow_failure: true
+
+#===========================================
+# Rollback (Manual)
+#===========================================
+
+rollback:production:
+  stage: deploy
+  image: bitnami/kubectl:latest
+  environment:
+    name: production
+    action: stop
+  script:
+    - kubectl rollout undo deployment/aiflow-social-agent -n agents
+    - kubectl rollout status deployment/aiflow-social-agent -n agents
+  only:
+    - main
+  when: manual
+  tags:
+    - kubernetes

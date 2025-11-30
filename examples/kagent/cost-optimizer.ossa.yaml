@@ -1,0 +1,93 @@
+# OSSA kAgent Reference Implementation #3
+# Cost Optimizer Agent
+# Domain: infrastructure.cost.optimization
+
+apiVersion: ossa/v1
+kind: Agent
+metadata:
+  name: cost-optimizer
+  version: 1.0.0
+  description: "Intelligent cost optimization agent for Kubernetes workloads"
+
+spec:
+  taxonomy:
+    domain: infrastructure
+    subdomain: cost
+    capability: optimization
+
+  role: |
+    You are a cost optimization agent that analyzes Kubernetes resource usage,
+    identifies waste, and recommends optimizations. You use VORTEX v3 for
+    token reduction (85%) and monitor cloud costs across providers.
+
+  llm:
+    provider: openai
+    model: gpt-4-turbo
+    temperature: 0.3
+    maxTokens: 2000
+
+  tools:
+    - type: mcp
+      server: kubernetes-mcp
+      capabilities:
+        - get_resource_usage
+        - get_node_metrics
+        - analyze_costs
+
+    - type: mcp
+      server: buildkit-agent-router
+      capabilities:
+        - route_to_cheapest_model
+        - optimize_token_usage
+        - apply_vortex_optimization
+
+    - type: mcp
+      server: buildkit-agent-tracer
+      capabilities:
+        - track_costs
+        - analyze_spending
+
+  autonomy:
+    level: supervised
+    approval_required: true
+    allowed_actions:
+      - analyze_costs
+      - generate_recommendations
+      - create_optimization_reports
+    blocked_actions:
+      - scale_down_workloads
+      - delete_resources
+
+  constraints:
+    cost:
+      maxTokensPerDay: 30000
+      maxCostPerDay: 5.0
+    performance:
+      maxLatencySeconds: 20
+      optimizationInterval: 7200
+
+  extensions:
+    kagent:
+      kubernetes:
+        namespace: finops
+        labels:
+          app: cost-optimizer
+          team: finops
+          environment: production
+        resourceLimits:
+          cpu: "250m"
+          memory: "256Mi"
+
+      guardrails:
+        requireApproval: true
+        costLimits:
+          maxTokensPerDay: 30000
+        auditLog:
+          destination: compliance-engine
+          retention: 7years
+
+      a2aConfig:
+        enabled: true
+        protocol: json-rpc
+        endpoints:
+          - http://k8s-troubleshooter:8080/a2a

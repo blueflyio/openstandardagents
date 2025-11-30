@@ -1,0 +1,309 @@
+# ============================================================================
+# Migration Guide: LangChain Agents → OSSA
+# ============================================================================
+#
+# PURPOSE:
+#   This guide demonstrates how to migrate a LangChain agent to OSSA format.
+#   LangChain uses Python-based agent definitions with tools and chains.
+#   OSSA uses declarative YAML manifests that are framework-agnostic.
+#
+# KEY DIFFERENCES:
+#   1. LangChain: Code-based (Python), OSSA: Declarative (YAML)
+#   2. LangChain: Framework-specific, OSSA: Framework-agnostic
+#   3. LangChain: Runtime-coupled, OSSA: Runtime-independent
+#   4. LangChain: Tool execution in code, OSSA: Tool declaration in manifest
+#
+# MIGRATION BENEFITS:
+#   - Deploy to any runtime (not just Python/LangChain)
+#   - Standardized agent definitions across teams
+#   - Better observability and compliance
+#   - Easier testing and validation
+#   - Framework independence
+#
+# ============================================================================
+
+# ----------------------------------------------------------------------------
+# EXAMPLE 1: Simple LangChain Agent → OSSA
+# ----------------------------------------------------------------------------
+#
+# LANGCHAIN CODE (Before):
+# ```python
+# from langchain.agents import initialize_agent, Tool
+# from langchain.llms import OpenAI
+#
+# llm = OpenAI(temperature=0)
+# tools = [
+#     Tool(
+#         name="Search",
+#         func=search_function,
+#         description="Search the web for current information"
+#     ),
+#     Tool(
+#         name="Calculator",
+#         func=calculator_function,
+#         description="Perform mathematical calculations"
+#     )
+# ]
+# agent = initialize_agent(tools, llm, agent="zero-shot-react-description")
+# ```
+#
+# OSSA MANIFEST (After):
+# ----------------------------------------------------------------------------
+
+apiVersion: ossa/v0.2.2
+kind: Agent
+
+metadata:
+  name: langchain-migrated-agent
+  version: 1.0.0
+  description: |
+    Migrated from LangChain zero-shot-react-description agent.
+    Provides web search and calculator capabilities.
+
+spec:
+  role: |
+    You are a helpful assistant that can search the web and perform calculations.
+    Use the available tools to answer user questions accurately.
+    When searching, provide sources. When calculating, show your work.
+  
+  llm:
+    provider: openai
+    model: gpt-3.5-turbo
+    temperature: 0  # Matches LangChain's temperature=0
+  
+  tools:
+    # LangChain Tool: Search → OSSA Tool
+    - type: http
+      name: Search
+      description: Search the web for current information
+      endpoint: https://api.search-service.com/search
+      config:
+        method: POST
+        timeout: 10
+      auth:
+        type: apikey
+        credentials: SEARCH_API_KEY
+    
+    # LangChain Tool: Calculator → OSSA Tool
+    - type: function
+      name: Calculator
+      description: Perform mathematical calculations
+      config:
+        handler: calculator_handler
+        language: python
+        timeout: 5
+
+# ----------------------------------------------------------------------------
+# EXAMPLE 2: LangChain Agent with Custom Tools → OSSA
+# ----------------------------------------------------------------------------
+#
+# LANGCHAIN CODE (Before):
+# ```python
+# from langchain.agents import AgentExecutor, create_react_agent
+# from langchain.prompts import PromptTemplate
+# from langchain.tools import DuckDuckGoSearchRun
+#
+# tools = [DuckDuckGoSearchRun()]
+# prompt = PromptTemplate.from_template("""
+#     Answer the following questions as best you can.
+#     Use the following tools: {tools}
+#     Question: {input}
+# """)
+# agent = create_react_agent(llm, tools, prompt)
+# agent_executor = AgentExecutor(agent=agent, tools=tools, verbose=True)
+# ```
+#
+# OSSA MANIFEST (After):
+# ----------------------------------------------------------------------------
+
+---
+apiVersion: ossa/v0.2.2
+kind: Agent
+
+metadata:
+  name: react-agent-migrated
+  version: 1.0.0
+  description: |
+    Migrated LangChain ReAct agent with DuckDuckGo search.
+    Uses ReAct (Reasoning + Acting) pattern for tool use.
+
+spec:
+  # The role field replaces LangChain's prompt template
+  role: |
+    Answer the following questions as best you can.
+    Use the available tools to gather information and answer accurately.
+    Think step by step: reason about what you need, then act using tools.
+  
+  llm:
+    provider: openai
+    model: gpt-4  # ReAct works better with more capable models
+    temperature: 0.3
+  
+  tools:
+    # DuckDuckGo Search Tool
+    - type: http
+      name: DuckDuckGoSearch
+      description: Search the web using DuckDuckGo for current information
+      endpoint: https://api.duckduckgo.com/
+      config:
+        method: GET
+        timeout: 10
+      auth:
+        type: none
+  
+  # Enable verbose logging (equivalent to LangChain's verbose=True)
+  observability:
+    logging:
+      level: debug
+      format: json
+
+# ----------------------------------------------------------------------------
+# EXAMPLE 3: LangChain Multi-Agent System → OSSA Orchestration
+# ----------------------------------------------------------------------------
+#
+# LANGCHAIN CODE (Before):
+# ```python
+# from langchain.agents import AgentExecutor
+# from langchain.agents.agent_types import AgentType
+#
+# # Supervisor agent
+# supervisor = initialize_agent(
+#     tools=[],
+#     llm=llm,
+#     agent=AgentType.ZERO_SHOT_REACT_DESCRIPTION
+# )
+#
+# # Worker agents
+# research_agent = initialize_agent(research_tools, llm, ...)
+# writing_agent = initialize_agent(writing_tools, llm, ...)
+# ```
+#
+# OSSA APPROACH (After):
+#   Create separate OSSA manifests for each agent, then orchestrate them.
+#   See examples/agent-manifests/orchestrators/ for orchestration patterns.
+#
+# ----------------------------------------------------------------------------
+
+---
+apiVersion: ossa/v0.2.2
+kind: Agent
+
+metadata:
+  name: research-agent
+  version: 1.0.0
+  description: Research agent migrated from LangChain multi-agent system
+
+spec:
+  role: |
+    You are a research specialist. Your job is to gather accurate,
+    up-to-date information on topics requested by the supervisor agent.
+    Provide comprehensive, well-sourced research results.
+  
+  llm:
+    provider: openai
+    model: gpt-4
+    temperature: 0.2
+  
+  tools:
+    - type: http
+      name: WebSearch
+      description: Search the web for information
+      endpoint: https://api.search.com/search
+    - type: http
+      name: AcademicSearch
+      description: Search academic papers and publications
+      endpoint: https://api.academic.com/search
+
+---
+apiVersion: ossa/v0.2.2
+kind: Agent
+
+metadata:
+  name: writing-agent
+  version: 1.0.0
+  description: Writing agent migrated from LangChain multi-agent system
+
+spec:
+  role: |
+    You are a writing specialist. Your job is to create well-structured,
+    clear content based on research provided by the research agent.
+    Write in a professional, engaging style.
+  
+  llm:
+    provider: openai
+    model: gpt-4
+    temperature: 0.7
+  
+  tools:
+    - type: function
+      name: FormatDocument
+      description: Format documents in various styles (Markdown, HTML, LaTeX)
+      config:
+        handler: format_handler
+
+# ============================================================================
+# MIGRATION CHECKLIST
+# ============================================================================
+#
+# [ ] 1. Identify LangChain agent type (zero-shot, react, conversational, etc.)
+# [ ] 2. Map LangChain tools to OSSA tools (type: http, function, mcp, etc.)
+# [ ] 3. Convert prompt templates to OSSA role field
+# [ ] 4. Map LLM configuration (model, temperature, etc.)
+# [ ] 5. Define autonomy level (supervised vs autonomous)
+# [ ] 6. Add observability configuration (tracing, metrics, logging)
+# [ ] 7. Define constraints (cost limits, performance, resources)
+# [ ] 8. Validate manifest: ossa validate <manifest.yaml>
+# [ ] 9. Test agent behavior matches LangChain version
+# [ ] 10. Update deployment configuration
+# [ ] 11. Update documentation and runbooks
+#
+# ============================================================================
+# COMMON PATTERNS
+# ============================================================================
+#
+# LangChain Tool → OSSA Tool Type Mapping:
+#   - Python function → type: function
+#   - API endpoint → type: http
+#   - Database query → type: custom (with config)
+#   - File operations → type: function or mcp
+#
+# LangChain Agent Types → OSSA Role Patterns:
+#   - zero-shot-react-description → ReAct-style role with tool descriptions
+#   - conversational-react-description → Conversational role with memory
+#   - structured-chat → Structured role with schema validation
+#
+# ============================================================================
+# VALIDATION & TESTING
+# ============================================================================
+#
+# 1. Validate OSSA manifest:
+#    $ ossa validate examples/migration-guides/from-langchain-to-ossa.yaml
+#
+# 2. Compare behavior:
+#    - Run LangChain agent with test inputs
+#    - Run OSSA agent with same inputs
+#    - Compare outputs and behavior
+#
+# 3. Performance testing:
+#    - Measure latency differences
+#    - Compare resource usage
+#    - Validate cost constraints
+#
+# ============================================================================
+# NEXT STEPS
+# ============================================================================
+#
+# After migration:
+# 1. Deploy OSSA agent to your infrastructure
+# 2. Set up observability (tracing, metrics, logs)
+# 3. Configure cost and performance constraints
+# 4. Integrate with agent registry/discovery
+# 5. Document agent capabilities and usage
+#
+# See also:
+# - examples/migration-guides/from-anthropic-sdk-to-ossa.yaml
+# - examples/migration-guides/from-mcp-to-ossa.yaml
+# - examples/advanced/ for complex patterns
+#
+# ============================================================================
+

@@ -1,0 +1,247 @@
+openapi: 3.0.3
+info:
+  title: General Agent API Schema
+  description: A generalized agent schema for comparison with GitLab Duo Agent API
+  version: 1.0.0
+
+components:
+  schemas:
+    Agent:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        description:
+          type: string
+        agent_type:
+          type: string
+          enum: [cli, web, chat, workflow, autonomous]
+        status:
+          type: string
+          enum: [active, inactive, paused, error, training]
+        capabilities:
+          type: array
+          items:
+            type: string
+            enum: [code_generation, code_review, issue_analysis, documentation, testing, deployment]
+        configuration:
+          type: object
+          properties:
+            model:
+              type: string
+            provider:
+              type: string
+              enum: [openai, anthropic, cohere, local]
+            temperature:
+              type: number
+              minimum: 0
+              maximum: 2
+            max_tokens:
+              type: integer
+              minimum: 1
+        permissions:
+          type: array
+          items:
+            type: string
+            enum: [read, write, execute, admin]
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+        last_activity:
+          type: string
+          format: date-time
+        metadata:
+          type: object
+          additionalProperties: true
+
+    CreateAgentRequest:
+      type: object
+      required:
+        - name
+        - agent_type
+        - capabilities
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        agent_type:
+          type: string
+          enum: [cli, web, chat, workflow, autonomous]
+        capabilities:
+          type: array
+          items:
+            type: string
+        configuration:
+          type: object
+        permissions:
+          type: array
+          items:
+            type: string
+        metadata:
+          type: object
+          additionalProperties: true
+
+    AgentExecution:
+      type: object
+      properties:
+        execution_id:
+          type: string
+          format: uuid
+        agent_id:
+          type: string
+          format: uuid
+        task:
+          type: object
+          properties:
+            description:
+              type: string
+            input_data:
+              type: object
+            context:
+              type: object
+        status:
+          type: string
+          enum: [pending, running, completed, failed, cancelled]
+        result:
+          type: object
+          properties:
+            output:
+              type: string
+            artifacts:
+              type: array
+              items:
+                type: string
+            metrics:
+              type: object
+        logs:
+          type: array
+          items:
+            type: object
+            properties:
+              timestamp:
+                type: string
+                format: date-time
+              level:
+                type: string
+                enum: [debug, info, warning, error]
+              message:
+                type: string
+        started_at:
+          type: string
+          format: date-time
+        completed_at:
+          type: string
+          format: date-time
+        duration_ms:
+          type: integer
+
+    AgentTrigger:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        agent_id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        trigger_type:
+          type: string
+          enum: [manual, scheduled, event_based, api_call, webhook]
+        event_config:
+          type: object
+          properties:
+            events:
+              type: array
+              items:
+                type: string
+            conditions:
+              type: object
+        schedule:
+          type: object
+          properties:
+            cron_expression:
+              type: string
+            timezone:
+              type: string
+        status:
+          type: string
+          enum: [active, inactive]
+        created_at:
+          type: string
+          format: date-time
+        last_triggered:
+          type: string
+          format: date-time
+          nullable: true
+
+    AgentSkill:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        description:
+          type: string
+        skill_type:
+          type: string
+          enum: [tool, knowledge, workflow]
+        input_schema:
+          type: object
+        output_schema:
+          type: object
+        implementation:
+          type: object
+          properties:
+            type:
+              type: string
+              enum: [function, api_call, script, workflow]
+            endpoint:
+              type: string
+            parameters:
+              type: object
+        version:
+          type: string
+        status:
+          type: string
+          enum: [active, deprecated, experimental]
+
+    AgentMemory:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        agent_id:
+          type: string
+          format: uuid
+        memory_type:
+          type: string
+          enum: [short_term, long_term, episodic, semantic]
+        content:
+          type: object
+        embedding:
+          type: array
+          items:
+            type: number
+        metadata:
+          type: object
+        created_at:
+          type: string
+          format: date-time
+        last_accessed:
+          type: string
+          format: date-time
+        access_count:
+          type: integer
+          default: 0

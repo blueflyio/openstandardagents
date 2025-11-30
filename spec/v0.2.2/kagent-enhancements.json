@@ -1,0 +1,395 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "OSSA v0.2.2 KAgent.dev Enhancements",
+  "description": "Schema extensions for kagent.dev integration with OSSA agents",
+  "type": "object",
+  "properties": {
+    "kagent": {
+      "type": "object",
+      "description": "kagent.dev bridge configuration for Kubernetes-native agents",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "Enable kagent.dev integration"
+        },
+        "apiVersion": {
+          "type": "string",
+          "description": "kagent.dev API version",
+          "default": "kagent.dev/v1alpha1",
+          "enum": ["kagent.dev/v1alpha1", "kagent.dev/v1alpha2"]
+        },
+        "agentType": {
+          "type": "string",
+          "description": "Agent type for kagent.dev",
+          "enum": ["declarative", "imperative"]
+        },
+        "deployment": {
+          "type": "object",
+          "description": "Kubernetes deployment configuration",
+          "properties": {
+            "replicas": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1
+            },
+            "resources": {
+              "type": "object",
+              "properties": {
+                "requests": {
+                  "type": "object",
+                  "properties": {
+                    "cpu": {
+                      "type": "string",
+                      "pattern": "^[0-9]+m?$"
+                    },
+                    "memory": {
+                      "type": "string",
+                      "pattern": "^[0-9]+(Mi|Gi)$"
+                    }
+                  }
+                },
+                "limits": {
+                  "type": "object",
+                  "properties": {
+                    "cpu": {
+                      "type": "string",
+                      "pattern": "^[0-9]+m?$"
+                    },
+                    "memory": {
+                      "type": "string",
+                      "pattern": "^[0-9]+(Mi|Gi)$"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "modelConfig": {
+          "type": "string",
+          "description": "Reference to ModelConfig CRD (e.g., 'default-model')"
+        },
+        "systemMessage": {
+          "type": "string",
+          "description": "System prompt for the agent"
+        },
+        "tools": {
+          "type": "array",
+          "description": "kagent.dev tool servers",
+          "items": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": ["McpServer", "ToolServer", "HttpTool"]
+              },
+              "mcpServer": {
+                "type": "object",
+                "properties": {
+                  "toolServer": {
+                    "type": "string",
+                    "description": "Name of MCP server"
+                  },
+                  "toolNames": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "description": "Specific tools to use"
+                  }
+                }
+              },
+              "httpTool": {
+                "type": "object",
+                "properties": {
+                  "url": {
+                    "type": "string",
+                    "format": "uri"
+                  },
+                  "method": {
+                    "type": "string",
+                    "enum": ["GET", "POST", "PUT", "DELETE", "PATCH"]
+                  }
+                }
+              }
+            },
+            "required": ["type"]
+          }
+        },
+        "a2aConfig": {
+          "type": "object",
+          "description": "Agent-to-Agent configuration for kagent",
+          "properties": {
+            "skills": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "description": {
+                    "type": "string"
+                  },
+                  "examples": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "tags": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "required": ["id", "name"]
+              }
+            }
+          }
+        },
+        "observability": {
+          "type": "object",
+          "description": "Observability integration (OpenTelemetry, Prometheus)",
+          "properties": {
+            "openTelemetry": {
+              "type": "object",
+              "properties": {
+                "enabled": {
+                  "type": "boolean"
+                },
+                "endpoint": {
+                  "type": "string",
+                  "format": "uri"
+                }
+              }
+            },
+            "prometheus": {
+              "type": "object",
+              "properties": {
+                "enabled": {
+                  "type": "boolean"
+                },
+                "port": {
+                  "type": "integer",
+                  "default": 9090
+                }
+              }
+            }
+          }
+        },
+        "multiFramework": {
+          "type": "object",
+          "description": "Multi-framework support (ADK, OSSA, custom)",
+          "properties": {
+            "adk": {
+              "type": "object",
+              "properties": {
+                "enabled": {
+                  "type": "boolean"
+                },
+                "version": {
+                  "type": "string"
+                }
+              }
+            },
+            "ossa": {
+              "type": "object",
+              "properties": {
+                "enabled": {
+                  "type": "boolean"
+                },
+                "version": {
+                  "type": "string"
+                }
+              }
+            },
+            "custom": {
+              "type": "object",
+              "properties": {
+                "enabled": {
+                  "type": "boolean"
+                },
+                "framework": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "a2aProtocol": {
+      "type": "object",
+      "description": "Agent-to-Agent protocol configuration",
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "gateway": {
+          "type": "string",
+          "format": "uri",
+          "description": "A2A Gateway endpoint"
+        },
+        "authentication": {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string",
+              "enum": ["none", "api_key", "jwt", "mtls"]
+            },
+            "config": {
+              "type": "object"
+            }
+          }
+        }
+      }
+    },
+    "multiPlatform": {
+      "type": "object",
+      "description": "Multi-platform deployment metadata",
+      "properties": {
+        "agentstudio": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean"
+            },
+            "platforms": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": ["osx", "ios", "electron", "web", "vscode"]
+              }
+            }
+          }
+        },
+        "drupal": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean"
+            },
+            "modules": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "gitlab": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean"
+            },
+            "ciCd": {
+              "type": "boolean"
+            }
+          }
+        },
+        "deployable": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean"
+            },
+            "helm": {
+              "type": "boolean"
+            }
+          }
+        }
+      }
+    },
+    "multiRegion": {
+      "type": "object",
+      "description": "Multi-region deployment configuration",
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "regions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "region": {
+                "type": "string"
+              },
+              "providers": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "enum": ["aws", "gcp", "azure"]
+                }
+              },
+              "dataResidency": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            },
+            "required": ["region", "providers"]
+          }
+        }
+      }
+    },
+    "agentFlow": {
+      "type": "object",
+      "description": "Agent flow integration metadata (Langflow, Langchain, CrewAI, ECA)",
+      "properties": {
+        "langflow": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean"
+            },
+            "workflowId": {
+              "type": "string"
+            }
+          }
+        },
+        "langchain": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean"
+            },
+            "chainId": {
+              "type": "string"
+            }
+          }
+        },
+        "crewai": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean"
+            },
+            "crewId": {
+              "type": "string"
+            }
+          }
+        },
+        "eca": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean"
+            },
+            "workflowId": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    }
+  }
+}
+

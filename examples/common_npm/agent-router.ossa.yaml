@@ -1,0 +1,182 @@
+ossaVersion: "1.0"
+
+agent:
+  id: agent-router
+  name: "Agent Router"
+  version: "1.0.0"
+  role: "integration"
+  
+  description: |
+    Multi-provider LLM gateway with circuit breaker, intelligent routing, and failover.
+    
+    Features:
+    - Multi-provider support (OpenAI, Anthropic, Google, etc.)
+    - Intelligent routing based on model capabilities
+    - Circuit breaker pattern for fault tolerance
+    - Request/response caching
+    - Cost optimization
+    - Load balancing
+  
+  runtime:
+    type: "docker"
+    image: "llm-platform/agent-router:1.0.0"
+    
+    resources:
+      cpu: "500m"
+      memory: "1Gi"
+    
+    health_check:
+      type: "http"
+      endpoint: "/health"
+      port: 4000
+  
+  capabilities:
+    - name: llm_completion
+      description: "Generate LLM completion with intelligent provider routing"
+      input_schema:
+        type: object
+        required: [prompt]
+        properties:
+          prompt:
+            type: string
+            description: "Input prompt for LLM"
+          model:
+            type: string
+            description: "Preferred model (optional, router will auto-select)"
+            examples: ["gpt-4", "claude-3-opus", "gemini-pro"]
+          temperature:
+            type: number
+            minimum: 0
+            maximum: 2
+            default: 0.7
+          max_tokens:
+            type: integer
+            minimum: 1
+            maximum: 100000
+            default: 2000
+          provider:
+            type: string
+            enum: ["openai", "anthropic", "google", "auto"]
+            default: "auto"
+      output_schema:
+        type: object
+        required: [response, provider, model, usage]
+        properties:
+          response:
+            type: string
+          provider:
+            type: string
+          model:
+            type: string
+          usage:
+            type: object
+            properties:
+              prompt_tokens:
+                type: integer
+              completion_tokens:
+                type: integer
+              total_tokens:
+                type: integer
+              cost_usd:
+                type: number
+      timeout_seconds: 30
+      retry_policy:
+        max_attempts: 3
+        backoff: "exponential"
+    
+    - name: embedding_generation
+      description: "Generate text embeddings for vector storage"
+      input_schema:
+        type: object
+        required: [text]
+        properties:
+          text:
+            type: string
+          model:
+            type: string
+            default: "text-embedding-ada-002"
+      output_schema:
+        type: object
+        required: [embedding, dimensions]
+        properties:
+          embedding:
+            type: array
+            items:
+              type: number
+          dimensions:
+            type: integer
+          model:
+            type: string
+    
+    - name: health_check
+      description: "Check health of all LLM providers"
+      input_schema:
+        type: object
+        properties: {}
+      output_schema:
+        type: object
+        required: [healthy, providers]
+        properties:
+          healthy:
+            type: boolean
+          providers:
+            type: array
+            items:
+              type: object
+              properties:
+                name:
+                  type: string
+                status:
+                  type: string
+                  enum: ["healthy", "degraded", "down"]
+                latency_ms:
+                  type: number
+  
+  llm:
+    provider: "auto"
+    fallback_providers: ["openai", "anthropic", "google"]
+    model: "gpt-4"
+    temperature: 0.7
+    maxTokens: 2000
+  
+  protocols:
+    - type: "http"
+      version: "1.1"
+      endpoint: "http://agent-router:4000/v1/chat/completions"
+    
+    - type: "sse"
+      version: "1.0"
+      endpoint: "http://agent-router:4000/v1/stream"
+
+  compliance:
+    frameworks: ["SOC2"]
+    dataClassification: "confidential"
+
+extensions:
+  common_npm:
+    package: "@llm/agent-router"
+    port: 4000
+    version: "1.0.0"
+    
+    dependencies:
+      - "@llm/agent-protocol"
+      - "@llm/agent-tracer"
+    
+    providers:
+      - openai
+      - anthropic
+      - google
+      - azure
+    
+    circuit_breaker:
+      enabled: true
+      failure_threshold: 5
+      timeout_seconds: 60
+      half_open_requests: 3
+    
+    monitoring:
+      metrics: true
+      tracing: true
+      opentelemetry:
+        endpoint: "http://agent-tracer:4318"
+        service_name: "agent-router"

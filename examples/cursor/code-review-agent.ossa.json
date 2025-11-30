@@ -1,0 +1,62 @@
+{
+  "apiVersion": "ossa/v0.2.4",
+  "kind": "Agent",
+  "metadata": {
+    "name": "code-review-agent",
+    "version": "1.0.0",
+    "description": "AI-powered code review agent for Cursor IDE"
+  },
+  "spec": {
+    "role": "You are an expert code reviewer. Analyze code for bugs, security issues, performance problems, and best practices. Provide constructive feedback.",
+    "llm": {
+      "provider": "openai",
+      "model": "gpt-4",
+      "temperature": 0.2
+    },
+    "tools": [
+      {
+        "type": "mcp",
+        "name": "analyze_code",
+        "server": "code-reviewer",
+        "capabilities": [
+          {
+            "name": "review"
+          },
+          {
+            "name": "suggest"
+          },
+          {
+            "name": "explain"
+          }
+        ]
+      }
+    ]
+  },
+  "extensions": {
+    "cursor": {
+      "enabled": true,
+      "agent_type": "composer",
+      "workspace_config": {
+        "rules_file": ".cursor/.cursorrules",
+        "context_files": [
+          "src/**/*.ts",
+          "tests/**/*.ts"
+        ],
+        "ignore_patterns": [
+          "node_modules/**",
+          "dist/**"
+        ]
+      },
+      "capabilities": {
+        "code_generation": false,
+        "code_review": true,
+        "refactoring": true,
+        "testing": false
+      },
+      "model": {
+        "provider": "openai",
+        "name": "gpt-4"
+      }
+    }
+  }
+}

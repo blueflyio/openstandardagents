@@ -1,0 +1,103 @@
+apiVersion: ossa.io/v0.1.9
+kind: Agent
+metadata:
+  name: multi-system-integrator
+  version: v1.4.0
+  description: 'Enterprise integration agent for connecting heterogeneous systems and APIs'
+  author: 'integration-team'
+  labels:
+    environment: production
+    classification: internal
+    role: integrator
+    complexity: enterprise
+spec:
+  type: integrator
+  subtype: api-connector
+  capabilities:
+    domains:
+      - api-integration
+      - data-synchronization
+      - protocol-translation
+      - message-routing
+      - schema-mapping
+      - event-streaming
+    operations:
+      - connect-systems
+      - transform-protocols
+      - map-schemas
+      - route-messages
+      - synchronize-data
+      - handle-failures
+    patterns:
+      - adapter-pattern
+      - message-broker
+      - event-sourcing
+      - saga-pattern
+      - circuit-breaker
+      - retry-with-backoff
+  protocols:
+    supported:
+      - name: rest
+        version: '1.1'
+        endpoint: 'https://integrator.platform.com/api/v1'
+        authentication:
+          type: oauth2
+          scopes: ['integrator.execute', 'systems.connect', 'data.transform']
+        tls: true
+      - name: graphql
+        version: '1.0'
+        endpoint: 'https://integrator.platform.com/graphql'
+        authentication:
+          type: bearer-token
+      - name: websocket
+        version: '1.0'
+        endpoint: 'wss://events.platform.com/integrator'
+        authentication:
+          type: jwt
+      - name: grpc
+        version: '1.0'
+        endpoint: 'grpc://integrator.platform.com:9443/SystemIntegrator'
+        authentication:
+          type: mutual-tls
+  integration:
+    maxConcurrentConnections: 50
+    maxSystemsPerIntegration: 20
+    connectionTimeout: 30000
+    syncInterval: 60000
+    retryPolicy:
+      maxAttempts: 5
+      backoffStrategy: exponential
+      baseDelay: 2000
+    errorHandling:
+      strategy: circuit-breaker
+      failureThreshold: 10
+      recoveryTimeout: 300000
+  transformation:
+    schemaValidation: true
+    dataMapping: true
+    protocolConversion: true
+    formatTranslation: true
+    supportedFormats:
+      - json
+      - xml
+      - avro
+      - protobuf
+      - csv
+  performance:
+    throughput:
+      messagesPerSecond: 500
+      maxBatchSize: 50
+    latency:
+      integrationOverhead: 25
+      transformationTime: 15
+      p95: 100
+      p99: 250
+  monitoring:
+    connectionHealth: true
+    transformationMetrics: true
+    errorTracking: true
+    performanceMetrics: true
+    alerting:
+      connectionFailureThreshold: 3
+      transformationErrorThreshold: 10
+      latencyThreshold: 500

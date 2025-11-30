@@ -1,0 +1,269 @@
+# OSSA v1.0 KAgent Example
+# Kubernetes Troubleshooter Agent with KAgent Bridge
+# Fully compatible with kagent.dev/v1alpha2
+
+ossaVersion: "1.0"
+
+agent:
+  id: k8s-troubleshooter
+  name: Kubernetes Troubleshooter
+  version: 1.0.0
+  description: Autonomous Kubernetes cluster troubleshooting agent with diagnostic capabilities
+  role: monitoring
+  tags:
+    - kubernetes
+    - troubleshooting
+    - infrastructure
+    - diagnostics
+
+  runtime:
+    type: k8s
+    image: ossa/k8s-troubleshooter:1.0.0
+    resources:
+      cpu: "500m"
+      memory: "512Mi"
+    health_check:
+      type: http
+      endpoint: /health
+      port: 8080
+      initial_delay_seconds: 30
+      period_seconds: 10
+      timeout_seconds: 5
+      failure_threshold: 3
+
+  capabilities:
+    - name: diagnose_pod_failures
+      description: Diagnose why pods are failing or crashing
+      input_schema:
+        type: object
+        required:
+          - namespace
+          - pod_name
+        properties:
+          namespace:
+            type: string
+            description: Kubernetes namespace
+          pod_name:
+            type: string
+            description: Pod name pattern
+      output_schema:
+        type: object
+        properties:
+          status:
+            type: string
+            enum: [healthy, degraded, failed]
+          issues:
+            type: array
+            items:
+              type: object
+              properties:
+                type:
+                  type: string
+                severity:
+                  type: string
+                  enum: [critical, warning, info]
+                message:
+                  type: string
+                remediation:
+                  type: string
+      timeout_seconds: 120
+      retry_policy:
+        max_attempts: 3
+        backoff: exponential
+
+    - name: analyze_resource_constraints
+      description: Analyze CPU and memory resource constraints
+      input_schema:
+        type: object
+        required:
+          - namespace
+        properties:
+          namespace:
+            type: string
+      output_schema:
+        type: object
+        properties:
+          cpu_pressure:
+            type: boolean
+          memory_pressure:
+            type: boolean
+          recommendations:
+            type: array
+            items:
+              type: string
+      timeout_seconds: 60
+
+    - name: check_network_connectivity
+      description: Verify network connectivity between services
+      input_schema:
+        type: object
+        required:
+          - source_service
+          - target_service
+        properties:
+          source_service:
+            type: string
+          target_service:
+            type: string
+          namespace:
+            type: string
+            default: default
+      output_schema:
+        type: object
+        properties:
+          reachable:
+            type: boolean
+          latency_ms:
+            type: number
+          errors:
+            type: array
+            items:
+              type: string
+
+  policies:
+    compliance:
+      - soc2-type2
+      - iso27001
+    data_residency:
+      - US
+    encryption: true
+    audit: true
+    pii_handling: prohibit
+
+  integration:
+    protocol: http
+    endpoints:
+      base_url: http://k8s-troubleshooter:8080
+      health: /health
+      metrics: /metrics
+      openapi: /api/openapi.json
+    auth:
+      type: jwt
+      config:
+        issuer: https://auth.company.com
+        audience: k8s-troubleshooter
+    rate_limits:
+      requests_per_second: 10
+      requests_per_minute: 500
+      burst: 20
+
+  monitoring:
+    traces: true
+    metrics: true
+    logs: true
+    health_check: http://localhost:8080/health
+    phoenix_arise:
+      enabled: true
+      project: infrastructure-agents
+      export_interval_seconds: 60
+
+  dependencies:
+    required:
+      - agent_id: security-scanner
+        min_version: 1.0.0
+        max_version: 2.0.0
+    optional:
+      - agent_id: cost-optimizer
+        fallback: skip_optimization
+
+  metadata:
+    author: Platform Team
+    maintainer: platform-team@company.com
+    homepage: https://github.com/company/k8s-troubleshooter
+    repository: https://github.com/company/k8s-troubleshooter
+    documentation: https://docs.company.com/agents/k8s-troubleshooter
+    license: Apache-2.0
+    keywords:
+      - kubernetes
+      - troubleshooting
+      - monitoring
+      - diagnostics
+
+  # Multi-framework bridge configuration
+  bridge:
+    # KAgent bridge for Kubernetes-native deployment
+    kagent:
+      enabled: true
+      api_version: kagent.dev/v1alpha2
+      agent_type: declarative
+      deployment:
+        replicas: 2
+        resources:
+          requests:
+            cpu: "250m"
+            memory: "256Mi"
+          limits:
+            cpu: "500m"
+            memory: "512Mi"
+      model_config: gpt-4
+      system_message: |
+        You are an expert Kubernetes troubleshooter. You diagnose pod failures,
+        network issues, resource constraints, and configuration problems.
+        You use kubectl and monitoring tools to identify root causes and suggest remediation steps.
+      a2a_config:
+        skills:
+          - id: diagnose_pod_failures
+            name: Diagnose Pod Failures
+            description: Identify why pods are failing or crashing in Kubernetes
+            examples:
+              - Why is my-app-pod crashing in the production namespace?
+              - Diagnose ImagePullBackOff errors in the staging environment
+            tags:
+              - kubernetes
+              - pods
+              - diagnostics
+          - id: analyze_resource_constraints
+            name: Analyze Resource Constraints
+            description: Check for CPU and memory pressure in namespaces
+            examples:
+              - Are there resource constraints in the production namespace?
+              - Check memory pressure for my-service
+            tags:
+              - kubernetes
+              - resources
+              - performance
+          - id: check_network_connectivity
+            name: Check Network Connectivity
+            description: Verify network connectivity between Kubernetes services
+            examples:
+              - Can frontend-service reach backend-service?
+              - Test network connectivity from app-a to app-b
+            tags:
+              - kubernetes
+              - networking
+              - connectivity
+
+    # MCP bridge for Claude Desktop/Cursor integration
+    mcp:
+      enabled: true
+      server_type: stdio
+      tools:
+        - name: diagnose_pod
+          description: Diagnose Kubernetes pod issues
+          input_schema:
+            type: object
+            properties:
+              namespace:
+                type: string
+              pod_name:
+                type: string
+          output_schema:
+            type: object
+            properties:
+              status:
+                type: string
+              issues:
+                type: array
+          capability: diagnose_pod_failures
+
+    # A2A protocol bridge for agent-to-agent communication
+    a2a:
+      enabled: true
+      card_url: https://company.com/agents/k8s-troubleshooter/card.json
+      schema_version: "1.0"
+
+    # OpenAPI bridge for REST API integration
+    openapi:
+      enabled: true
+      spec_url: http://k8s-troubleshooter:8080/api/openapi.json
+      spec_version: "3.1"

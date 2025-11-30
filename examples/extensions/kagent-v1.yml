@@ -1,0 +1,167 @@
+# OSSA kAgent Extension Schema
+# Production-grade specification for Kubernetes-native agent deployment
+# Compatible with kagent.dev/v1alpha1 CRDs
+
+apiVersion: ossa/v1
+kind: ExtensionSchema
+metadata:
+  name: kagent-extension
+  version: v1alpha1
+  namespace: ossa/extensions
+spec:
+  compatibleWith:
+    - kagent.dev/v1alpha1
+  description: "Extension schema for Kubernetes-native agent deployment via kAgent"
+
+  additionalFields:
+    agent:
+      kubernetes:
+        namespace:
+          type: string
+          default: "default"
+          description: "Target Kubernetes namespace"
+        labels:
+          type: object
+          additionalProperties:
+            type: string
+          description: "Kubernetes labels for agent CRD"
+        annotations:
+          type: object
+          additionalProperties:
+            type: string
+          description: "Kubernetes annotations for agent CRD"
+        resourceLimits:
+          type: object
+          properties:
+            cpu:
+              type: string
+              default: "100m"
+            memory:
+              type: string
+              default: "256Mi"
+          description: "Kubernetes resource limits"
+
+      toolRefs:
+        type: array
+        items:
+          type: object
+          required: [name, type]
+          properties:
+            name:
+              type: string
+              description: "Tool name"
+            type:
+              type: string
+              enum: [mcp, kubernetes, http, custom]
+              description: "Tool type"
+            serverRef:
+              type: object
+              properties:
+                name:
+                  type: string
+                namespace:
+                  type: string
+                  default: "default"
+              description: "Reference to MCP server or Kubernetes resource"
+            config:
+              type: object
+              additionalProperties: true
+              description: "Tool-specific configuration"
+
+      a2aConfig:
+        type: object
+        properties:
+          enabled:
+            type: boolean
+            default: false
+          endpoints:
+            type: array
+            items:
+              type: string
+            description: "A2A protocol endpoints"
+          protocol:
+            type: string
+            enum: [json-rpc, http, sse]
+            default: "json-rpc"
+          authentication:
+            type: object
+            properties:
+              type:
+                type: string
+                enum: [mtls, bearer, oauth2]
+              credentials:
+                type: string
+                format: secret
+          description: "Agent-to-Agent communication configuration"
+
+      guardrails:
+        type: object
+        properties:
+          requireApproval:
+            type: boolean
+            default: true
+          costLimits:
+            type: object
+            properties:
+              maxTokensPerDay:
+                type: integer
+              maxTokensPerRequest:
+                type: integer
+              maxCostPerDay:
+                type: number
+              currency:
+                type: string
+                default: "USD"
+          allowedActions:
+            type: array
+            items:
+              type: string
+            description: "Permitted agent actions"
+          blockedActions:
+            type: array
+            items:
+              type: string
+            description: "Forbidden agent actions"
+          auditLog:
+            type: object
+            properties:
+              destination:
+                type: string
+                enum: [compliance-engine, agent-tracer, external]
+              retention:
+                type: string
+                pattern: "^\d+[years|months|days]$"
+              description: "Audit logging configuration"
+
+      meshIntegration:
+        type: object
+        properties:
+          enabled:
+            type: boolean
+            default: false
+          istioIntegration:
+            type: boolean
+            default: false
+          ambientMesh:
+            type: boolean
+            default: false
+          description: "Service mesh integration (Istio/Cilium)"
+
+  validation:
+    required:
+      - kubernetes.namespace
+      - toolRefs
+    customRules:
+      - name: "validate-tool-references"
+        rule: "All toolRefs must reference valid MCP servers or Kubernetes resources"
+      - name: "validate-a2a-endpoints"
+        rule: "If a2aConfig.enabled is true, endpoints must be provided"
+      - name: "validate-cost-limits"
+        rule: "If costLimits specified, maxTokensPerDay must be positive"
+
+  migration:
+    fromVersion: "v0.1.9"
+    toVersion: "v1alpha1"
+    breakingChanges: []
+    migrationGuide: "https://ossa.dev/docs/kagent/migration"
+

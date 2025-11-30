@@ -1,0 +1,46 @@
+{
+  "name": "@bluefly/openstandardagents.org",
+  "version": "0.2.9",
+  "description": "Community platform, website, and Discord integration for Open Standard Agents",
+  "type": "module",
+  "private": true,
+  "workspaces": [
+    "website",
+    "discord-bot"
+  ],
+  "scripts": {
+    "dev": "pnpm -r dev",
+    "build": "pnpm -r build",
+    "test": "pnpm -r test",
+    "lint": "pnpm -r lint",
+    "format": "prettier --write .",
+    "sync:spec": "pnpm --filter website sync:spec",
+    "sync:schema": "pnpm --filter website sync:schema",
+    "sync:examples": "pnpm --filter website sync:examples",
+    "website:dev": "pnpm --filter website dev",
+    "website:build": "pnpm --filter website build",
+    "bot:dev": "pnpm --filter discord-bot dev",
+    "bot:start": "pnpm --filter discord-bot start"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://gitlab.com/blueflyio/openstandardagents.org.git"
+  },
+  "keywords": [
+    "ossa",
+    "agents",
+    "discord",
+    "community",
+    "ai"
+  ],
+  "author": "BlueFly.io",
+  "license": "Apache-2.0",
+  "devDependencies": {
+    "prettier": "^3.2.0",
+    "typescript": "^5.7.0"
+  },
+  "engines": {
+    "node": ">=20.0.0",
+    "pnpm": ">=9.0.0"
+  }
+}

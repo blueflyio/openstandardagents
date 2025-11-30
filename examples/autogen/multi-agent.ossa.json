@@ -1,0 +1,39 @@
+{
+  "apiVersion": "ossa/v0.2.4",
+  "kind": "Agent",
+  "metadata": {
+    "name": "autogen-assistant",
+    "version": "1.0.0",
+    "description": "AutoGen multi-agent assistant"
+  },
+  "spec": {
+    "role": "You are an AI assistant that can collaborate with other agents to solve complex problems.",
+    "llm": {
+      "provider": "openai",
+      "model": "gpt-4",
+      "temperature": 0.7
+    },
+    "tools": []
+  },
+  "extensions": {
+    "autogen": {
+      "enabled": true,
+      "agent_type": "assistant",
+      "system_message": "You are an AI assistant that can collaborate with other agents to solve complex problems.",
+      "human_input_mode": "NEVER",
+      "code_execution": {
+        "enabled": true,
+        "work_dir": "/tmp/autogen",
+        "use_docker": false
+      },
+      "max_consecutive_auto_reply": 10,
+      "groupchat": {
+        "agents": [
+          "user_proxy",
+          "assistant"
+        ],
+        "max_round": 20
+      }
+    }
+  }
+}
