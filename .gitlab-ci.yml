@@ -16,6 +16,8 @@
 
 include:
   - local: '.gitlab/ci/agents.yml'
+  # TODO: Add merge-train component when gitlab_components is made public/internal
+  # - component: gitlab.com/blueflyio/agent-platform/gitlab_components/merge-train@main
 
 #   - CI/CD variable ENABLE_RELEASE must be set to "true"
 # This allows deploying to main without releasing. Set the variable only when ready to release.
@@ -497,6 +499,140 @@ quality:gates:
 # STAGE 5 - DEPLOY (Website - Manual Button)
 # ============================================================================
 
+# Review Apps for MRs - Deploy to Kubernetes for preview
+review:deploy:
+  stage: deploy
+  image: node:${NODE_VERSION}-alpine
+  needs:
+    - job: build:dist
+      optional: true
+      artifacts: false
+  before_script:
+    - apk add --no-cache git curl kubectl
+    - cd website && npm ci --legacy-peer-deps
+  script:
+    - |
+      echo "🚀 Deploying Review App for MR !${CI_MERGE_REQUEST_IID}"
+      echo "   Branch: ${CI_COMMIT_REF_SLUG}"
+      echo "   Namespace: ossa-review-${CI_MERGE_REQUEST_IID}"
+
+      # Build website
+      npm run build:no-wiki
+
+      # Create namespace if not exists
+      kubectl create namespace ossa-review-${CI_MERGE_REQUEST_IID} --dry-run=client -o yaml | kubectl apply -f -
+
+      # Deploy to k8s (using ConfigMap for static site)
+      kubectl create configmap ossa-website-${CI_MERGE_REQUEST_IID} \
+        --from-file=out/ \
+        --namespace=ossa-review-${CI_MERGE_REQUEST_IID} \
+        --dry-run=client -o yaml | kubectl apply -f -
+
+      # Apply deployment manifest
+      cat <<EOF | kubectl apply -f -
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: ossa-review-${CI_MERGE_REQUEST_IID}
+        namespace: ossa-review-${CI_MERGE_REQUEST_IID}
+        labels:
+          app: ossa-review
+          mr: "${CI_MERGE_REQUEST_IID}"
+      spec:
+        replicas: 1
+        selector:
+          matchLabels:
+            app: ossa-review
+        template:
+          metadata:
+            labels:
+              app: ossa-review
+          spec:
+            containers:
+            - name: nginx
+              image: nginx:alpine
+              ports:
+              - containerPort: 80
+              volumeMounts:
+              - name: website
+                mountPath: /usr/share/nginx/html
+            volumes:
+            - name: website
+              configMap:
+                name: ossa-website-${CI_MERGE_REQUEST_IID}
+      ---
+      apiVersion: v1
+      kind: Service
+      metadata:
+        name: ossa-review-${CI_MERGE_REQUEST_IID}
+        namespace: ossa-review-${CI_MERGE_REQUEST_IID}
+      spec:
+        selector:
+          app: ossa-review
+        ports:
+        - port: 80
+          targetPort: 80
+      ---
+      apiVersion: networking.k8s.io/v1
+      kind: Ingress
+      metadata:
+        name: ossa-review-${CI_MERGE_REQUEST_IID}
+        namespace: ossa-review-${CI_MERGE_REQUEST_IID}
+        annotations:
+          kubernetes.io/ingress.class: nginx
+      spec:
+        rules:
+        - host: ossa-mr-${CI_MERGE_REQUEST_IID}.orb.local
+          http:
+            paths:
+            - path: /
+              pathType: Prefix
+              backend:
+                service:
+                  name: ossa-review-${CI_MERGE_REQUEST_IID}
+                  port:
+                    number: 80
+      EOF
+
+      echo ""
+      echo "✅ Review App deployed!"
+      echo "   URL: https://ossa-mr-${CI_MERGE_REQUEST_IID}.orb.local"
+  environment:
+    name: review/${CI_COMMIT_REF_SLUG}
+    url: https://ossa-mr-${CI_MERGE_REQUEST_IID}.orb.local
+    deployment_tier: development
+    kubernetes:
+      namespace: ossa-review-${CI_MERGE_REQUEST_IID}
+    on_stop: review:stop
+    auto_stop_in: 1 week
+  rules:
+    - if: $CI_MERGE_REQUEST_IID
+      when: manual
+      allow_failure: true
+  tags:
+    - kubernetes
+
+# Stop/cleanup Review App when MR is closed/merged
+review:stop:
+  stage: deploy
+  image: alpine:latest
+  before_script:
+    - apk add --no-cache kubectl
+  script:
+    - |
+      echo "🧹 Cleaning up Review App for MR !${CI_MERGE_REQUEST_IID}"
+      kubectl delete namespace ossa-review-${CI_MERGE_REQUEST_IID} --ignore-not-found=true
+      echo "✅ Review App cleaned up"
+  environment:
+    name: review/${CI_COMMIT_REF_SLUG}
+    action: stop
+  rules:
+    - if: $CI_MERGE_REQUEST_IID
+      when: manual
+      allow_failure: true
+  tags:
+    - kubernetes
+
 pages:
   stage: deploy
   image: node:${NODE_VERSION}-alpine
@@ -551,6 +687,7 @@ release:preview:
   dependencies:
     - build:dist
   before_script:
+    - apk add --no-cache git
     - npm ci --legacy-peer-deps
   script:
     - |
@@ -809,7 +946,7 @@ release-to-npm:
     - if: $CI_COMMIT_BRANCH == "main"
       when: manual
   environment:
-    name: production
+    name: npm-registry
     url: https://www.npmjs.com/package/@bluefly/openstandardagents
     deployment_tier: production
 
@@ -825,10 +962,50 @@ release-to-github:
     - if: $CI_COMMIT_BRANCH == "main"
       when: manual
   environment:
-    name: production
-    url: https://github.com/blueflyio/openstandardagents/releases
+    name: github-mirror
+    url: https://github.com/blueflyio/openstandardagents
     deployment_tier: production
 
+# OrbStack local website deployment (decoupled from releases)
+deploy-website-orbstack:
+  stage: deploy
+  image: node:${NODE_VERSION}
+  needs:
+    - job: build:dist
+      optional: true
+      artifacts: false
+  before_script:
+    - cd website && npm ci
+  script:
+    - |
+      echo "🚀 Building website for OrbStack..."
+      npm run build:no-wiki
+      echo "✅ Build complete"
+      echo ""
+      echo "📦 Website built and ready for OrbStack deployment"
+      echo "   URL: https://ossa.orb.local"
+      echo ""
+      echo "To deploy manually:"
+      echo "  rsync -avz out/ orbstack-host:/path/to/ossa/"
+  artifacts:
+    paths:
+      - website/out/
+    expire_in: 7 days
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+      when: manual
+    - if: $CI_COMMIT_BRANCH == "development"
+      when: manual
+    - changes:
+        - website/**/*
+      when: manual
+      allow_failure: true
+  environment:
+    name: orbstack
+    url: https://ossa.orb.local
+    deployment_tier: development
+
+# Production website deployment (part of release workflow)
 deploy-website-production:
   stage: release
   image: node:${NODE_VERSION}

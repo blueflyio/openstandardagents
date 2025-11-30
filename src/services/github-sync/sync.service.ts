@@ -1,6 +1,6 @@
-import { GitHubClient } from './github-client';
-import { GitLabClient } from './gitlab-client';
-import { SyncConfig, SyncConfigSchema, GitHubPR, GitLabMR } from './schemas';
+import { GitHubClient } from './github-client.js';
+import { GitLabClient } from './gitlab-client.js';
+import { SyncConfig, SyncConfigSchema, GitHubPR, GitLabMR } from './schemas.js';
 
 export class GitHubSyncService {
   private github: GitHubClient;

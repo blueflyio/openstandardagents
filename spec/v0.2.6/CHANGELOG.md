@@ -1,4 +1,4 @@
-# OSSA v0.2.5-RC Release Notes
+# OSSA v0.2.6 Release Notes
 
 **Release Date**: 2025-11-24
 **Type**: Minor Release
@@ -6,7 +6,7 @@
 
 ## Overview
 
-OSSA v0.2.5-RC introduces significant new features for transport metadata, state management, enhanced security, and capability versioning. This release enhances OSSA integration with Google ADK, A2A protocol, OpenAI Agents SDK, and Microsoft Autogen Framework.
+OSSA v0.2.6 introduces significant new features for transport metadata, state management, enhanced security, and capability versioning. This release enhances OSSA integration with Google ADK, A2A protocol, OpenAI Agents SDK, and Microsoft Autogen Framework.
 
 ## What's New
 
@@ -175,7 +175,7 @@ extensions:
 ### Schema Updates
 
 #### apiVersion Pattern
-Updated to support v0.2.5:
+Updated to support v0.2.6:
 ```regex
 ^ossa/v(0\.2\.[2-4](-dev)?|1)(\.[0-9]+)?(-[a-zA-Z0-9]+)?$
 ```
@@ -183,7 +183,7 @@ Updated to support v0.2.5:
 **Valid versions**:
 - `ossa/v0.2.2`
 - `ossa/v0.2.4`
-- `ossa/v0.2.5`
+- `ossa/v0.2.6`
 - `ossa/v1`
 - `ossa/v1.0`
 
@@ -259,13 +259,13 @@ See [migrations/v0.2.3-to-v0.2.4.md](migrations/v0.2.3-to-v0.2.4.md) for detaile
 
 ### Development Version
 ```bash
-npm install -g @bluefly/openstandardagents@0.2.5
+npm install -g @bluefly/openstandardagents@0.2.6
 ```
 
 ### Verify Installation
 ```bash
 ossa --version
-# Output: 0.2.5
+# Output: 0.2.6
 ```
 
 ## Compatibility
@@ -398,4 +398,4 @@ This is a development release. Please provide feedback:
 
 ---
 
-**Full Changelog**: [v0.2.3...v0.2.5](https://github.com/blueflyio/openstandardagents/compare/v0.2.3...v0.2.5)
+**Full Changelog**: [v0.2.5...v0.2.6](https://github.com/blueflyio/openstandardagents/compare/v0.2.5...v0.2.6)
