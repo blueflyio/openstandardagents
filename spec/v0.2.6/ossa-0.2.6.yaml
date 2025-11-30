@@ -26,7 +26,7 @@ spec:
   repository: https://github.com/ossa-standard/specification
 
 # ==============================================================================
-# NEW IN v0.2.5: Transport Metadata
+# NEW IN v0.2.6: Transport Metadata
 # ==============================================================================
 # Transport configuration for protocol-specific settings
 # Supports ADK, A2A, MCP, and other protocols with streaming
@@ -96,7 +96,7 @@ transport:
       binding: query_database
 
 # ==============================================================================
-# NEW IN v0.2.5: State/Memory Block
+# NEW IN v0.2.6: State/Memory Block
 # ==============================================================================
 # Agent state management configuration
 # Essential for OpenAI SDK, Microsoft Autogen Framework, and long-running agents
@@ -186,7 +186,7 @@ state:
         strategy: summarization
 
 # ==============================================================================
-# NEW IN v0.2.5: Enhanced Security with Scopes
+# NEW IN v0.2.6: Enhanced Security with Scopes
 # ==============================================================================
 # Fine-grained permission scopes and compliance tags
 
@@ -238,7 +238,7 @@ security_scopes:
         - hipaa
 
 # ==============================================================================
-# NEW IN v0.2.5: Capability Versioning
+# NEW IN v0.2.6: Capability Versioning
 # ==============================================================================
 # Version capabilities independently for backward compatibility
 
@@ -287,7 +287,7 @@ capability_versioning:
         to use 'query' instead of 'search_term'.
 
 # ==============================================================================
-# NEW IN v0.2.5: Google ADK Extension
+# NEW IN v0.2.6: Google ADK Extension
 # ==============================================================================
 # Integration with Google's Agent Development Kit
 
@@ -351,11 +351,11 @@ google_adk_extension:
         - review-agent
 
 # ==============================================================================
-# Complete Agent Manifest Example (v0.2.5)
+# Complete Agent Manifest Example (v0.2.6)
 # ==============================================================================
 
 example_manifest:
-  apiVersion: ossa/v0.2.5
+  apiVersion: ossa/v0.2.6
   kind: Agent
   metadata:
     name: research-assistant
@@ -528,7 +528,7 @@ migration:
       - Version capabilities for better API lifecycle management
 
 # ==============================================================================
-# Best Practices (v0.2.5)
+# Best Practices (v0.2.6)
 # ==============================================================================
 
 best_practices:
