@@ -1,3 +1,9 @@
+<!--
+OSSA Brand Guide: 01-brand-overview.md
+Purpose: Brand guidelines for OSSA visual identity and messaging
+Audience: Designers, marketers, and contributors
+Educational Focus: Maintain consistent OSSA brand across ecosystem
+-->
 # OSSA Brand Overview
 
 > Version 1.0.0 | Last Updated: November 2025

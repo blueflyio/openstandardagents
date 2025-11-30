@@ -1,3 +1,9 @@
+<!--
+OSSA Brand Guide: OSSA-Brand-Guide-Complete.md
+Purpose: Brand guidelines for OSSA visual identity and messaging
+Audience: Designers, marketers, and contributors
+Educational Focus: Maintain consistent OSSA brand across ecosystem
+-->
 # OSSA Brand Guide
 
 **The OpenAPI for AI Agents**
