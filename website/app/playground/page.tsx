@@ -237,87 +237,87 @@ export default function PlaygroundPage() {
       <div className="container mx-auto max-w-7xl px-4 py-12">
 
       {/* Quick Actions Bar */}
-      <div className="mb-6 bg-gradient-to-r from-primary/5 to-secondary/5 rounded-xl p-4 border border-primary/20">
-        <div className="flex flex-wrap gap-3 items-center justify-between">
-          <div className="flex gap-3">
+      <div className="mb-6 bg-gradient-to-r from-primary/5 to-secondary/5 rounded-xl p-3 sm:p-4 border border-primary/20">
+        <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center justify-between">
+          <div className="grid grid-cols-3 sm:flex gap-2 sm:gap-3">
             <button
               onClick={handleValidate}
               disabled={isValidating}
-              className="bg-gradient-to-r from-secondary via-primary to-accent text-white px-6 py-3 rounded-lg font-medium hover:shadow-lg transition-all disabled:opacity-50"
+              className="bg-gradient-to-r from-secondary via-primary to-accent text-white px-3 sm:px-6 py-2 sm:py-3 rounded-lg text-xs sm:text-base font-medium hover:shadow-lg transition-all disabled:opacity-50"
             >
-              {isValidating ? 'Validating...' : 'Validate Manifest'}
+              {isValidating ? 'Validating...' : 'Validate'}
             </button>
             <button
               onClick={downloadManifest}
-              className="bg-white border-2 border-primary text-primary px-6 py-3 rounded-lg font-medium hover:bg-primary hover:text-white transition-all"
+              className="bg-white border-2 border-primary text-primary px-3 sm:px-6 py-2 sm:py-3 rounded-lg text-xs sm:text-base font-medium hover:bg-primary hover:text-white transition-all"
             >
-              Download YAML
+              Download
             </button>
             <button
               onClick={copyToClipboard}
-              className="bg-white border-2 border-secondary text-secondary px-6 py-3 rounded-lg font-medium hover:bg-secondary hover:text-white transition-all"
+              className="bg-white border-2 border-secondary text-secondary px-3 sm:px-6 py-2 sm:py-3 rounded-lg text-xs sm:text-base font-medium hover:bg-secondary hover:text-white transition-all"
             >
-              Copy to Clipboard
+              Copy
             </button>
           </div>
-          <div className="flex gap-2 items-center">
-            <span className="text-sm text-gray-600 font-semibold">Lines: {code.split('\n').length}</span>
-            <span className="text-sm text-gray-400">|</span>
-            <span className="text-sm text-gray-600 font-semibold">Chars: {code.length}</span>
+          <div className="flex gap-2 items-center justify-center sm:justify-end">
+            <span className="text-xs sm:text-sm text-gray-600 font-semibold">Lines: {code.split('\n').length}</span>
+            <span className="text-xs sm:text-sm text-gray-400">|</span>
+            <span className="text-xs sm:text-sm text-gray-600 font-semibold">Chars: {code.length}</span>
           </div>
         </div>
       </div>
 
       {/* Template Selector */}
       <div className="mb-6">
-        <h2 className="text-2xl font-bold mb-4 text-gray-900">Quick Start Templates</h2>
-        <div className="grid md:grid-cols-4 gap-4">
+        <h2 className="text-xl sm:text-2xl font-bold mb-4 text-gray-900">Quick Start Templates</h2>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-4">
           <button
             onClick={() => loadTemplate('simple')}
-            className={`p-4 rounded-xl border-2 text-left transition-all ${
+            className={`p-2 sm:p-4 rounded-lg sm:rounded-xl border-2 text-left transition-all ${
               activeTemplate === 'simple'
                 ? 'border-primary bg-primary/5 shadow-md'
                 : 'border-gray-300 hover:border-primary/50 hover:shadow-md'
             }`}
           >
-            <div className="font-bold mb-1">Simple Agent</div>
-            <div className="text-sm text-gray-600">Basic manifest structure</div>
+            <div className="font-bold text-sm sm:text-base mb-0.5 sm:mb-1">Simple Agent</div>
+            <div className="text-xs sm:text-sm text-gray-600 hidden sm:block">Basic manifest structure</div>
           </button>
 
           <button
             onClick={() => loadTemplate('withTools')}
-            className={`p-4 rounded-xl border-2 text-left transition-all ${
+            className={`p-2 sm:p-4 rounded-lg sm:rounded-xl border-2 text-left transition-all ${
               activeTemplate === 'withTools'
                 ? 'border-primary bg-primary/5 shadow-md'
                 : 'border-gray-300 hover:border-primary/50 hover:shadow-md'
             }`}
           >
-            <div className="font-bold mb-1">With Tools</div>
-            <div className="text-sm text-gray-600">HTTP API integration</div>
+            <div className="font-bold text-sm sm:text-base mb-0.5 sm:mb-1">With Tools</div>
+            <div className="text-xs sm:text-sm text-gray-600 hidden sm:block">HTTP API integration</div>
           </button>
 
           <button
             onClick={() => loadTemplate('autonomous')}
-            className={`p-4 rounded-xl border-2 text-left transition-all ${
+            className={`p-2 sm:p-4 rounded-lg sm:rounded-xl border-2 text-left transition-all ${
               activeTemplate === 'autonomous'
                 ? 'border-primary bg-primary/5 shadow-md'
                 : 'border-gray-300 hover:border-primary/50 hover:shadow-md'
             }`}
           >
-            <div className="font-bold mb-1">Autonomous</div>
-            <div className="text-sm text-gray-600">With autonomy controls</div>
+            <div className="font-bold text-sm sm:text-base mb-0.5 sm:mb-1">Autonomous</div>
+            <div className="text-xs sm:text-sm text-gray-600 hidden sm:block">With autonomy controls</div>
           </button>
 
           <button
             onClick={() => loadTemplate('fullStack')}
-            className={`p-4 rounded-xl border-2 text-left transition-all ${
+            className={`p-2 sm:p-4 rounded-lg sm:rounded-xl border-2 text-left transition-all ${
               activeTemplate === 'fullStack'
                 ? 'border-primary bg-primary/5 shadow-md'
                 : 'border-gray-300 hover:border-primary/50 hover:shadow-md'
             }`}
           >
-            <div className="font-bold mb-1">Full Stack</div>
-            <div className="text-sm text-gray-600">Complete production setup</div>
+            <div className="font-bold text-sm sm:text-base mb-0.5 sm:mb-1">Full Stack</div>
+            <div className="text-xs sm:text-sm text-gray-600 hidden sm:block">Complete production setup</div>
           </button>
         </div>
       </div>
