@@ -18,6 +18,7 @@ import { runCommand } from './commands/run.command.js';
 import { gitlabAgentCommand } from './commands/gitlab-agent.command.js';
 import { releaseCommandGroup } from './commands/release.command.js';
 import { setupCommand } from './commands/setup.command.js';
+import { syncCommand } from './commands/sync.command.js';
 
 // Load package.json for version (lazy to avoid Jest module resolution issues)
 import * as fs from 'fs';
@@ -94,6 +95,7 @@ program.addCommand(runCommand);
 program.addCommand(gitlabAgentCommand);
 program.addCommand(releaseCommandGroup);
 program.addCommand(setupCommand);
+program.addCommand(syncCommand);
 
 // Parse arguments
 program.parse();
