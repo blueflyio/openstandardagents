@@ -1,0 +1,654 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://open-standards-scalable-agents.org/schemas/v0.1.9/reasoning-compliance.json",
+  "title": "OSSA Reasoning & Chain-of-Thought Compliance v0.1.9",
+  "description": "Standards for reasoning transparency, chain-of-thought auditing, and attention-based explainability in OSSA agents",
+  "type": "object",
+  "properties": {
+    "apiVersion": {
+      "type": "string",
+      "enum": ["open-standards-scalable-agents/v0.1.9"],
+      "description": "OSSA API version"
+    },
+    "kind": {
+      "type": "string",
+      "enum": ["ReasoningPolicy"],
+      "description": "Resource type for reasoning compliance"
+    },
+    "metadata": {
+      "type": "object",
+      "required": ["name", "version"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "pattern": "^[a-z0-9]([-a-z0-9]*[a-z0-9])?$",
+          "description": "Policy name (kebab-case)"
+        },
+        "version": {
+          "type": "string",
+          "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
+          "description": "Semantic version"
+        },
+        "description": {
+          "type": "string",
+          "description": "Policy description"
+        },
+        "applicableAgents": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Agent types this policy applies to"
+        }
+      }
+    },
+    "spec": {
+      "type": "object",
+      "required": ["reasoning", "transparency", "auditing"],
+      "properties": {
+        "reasoning": {
+          "type": "object",
+          "description": "Reasoning chain requirements",
+          "required": ["chainTracking", "attentionMechanism"],
+          "properties": {
+            "chainTracking": {
+              "type": "object",
+              "required": ["enabled", "minSteps", "maxSteps"],
+              "properties": {
+                "enabled": {
+                  "type": "boolean",
+                  "description": "Enable reasoning chain tracking"
+                },
+                "minSteps": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "description": "Minimum reasoning steps required"
+                },
+                "maxSteps": {
+                  "type": "integer",
+                  "maximum": 100,
+                  "description": "Maximum reasoning steps allowed"
+                },
+                "requireConfidenceScores": {
+                  "type": "boolean",
+                  "default": true,
+                  "description": "Require confidence scores for each step"
+                },
+                "minConfidence": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 1,
+                  "default": 0.5,
+                  "description": "Minimum acceptable confidence threshold"
+                }
+              }
+            },
+            "attentionMechanism": {
+              "type": "object",
+              "required": ["enabled", "type"],
+              "properties": {
+                "enabled": {
+                  "type": "boolean",
+                  "description": "Enable transformer-based attention tracking"
+                },
+                "type": {
+                  "type": "string",
+                  "enum": ["multi-head", "self-attention", "cross-attention", "hybrid"],
+                  "description": "Type of attention mechanism"
+                },
+                "numHeads": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 32,
+                  "default": 8,
+                  "description": "Number of attention heads for multi-head attention"
+                },
+                "embeddingDimension": {
+                  "type": "integer",
+                  "minimum": 64,
+                  "maximum": 2048,
+                  "default": 768,
+                  "description": "Embedding dimension for attention computation"
+                },
+                "attentionThreshold": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 1,
+                  "default": 0.5,
+                  "description": "Threshold for significant attention connections"
+                }
+              }
+            },
+            "logicTypes": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "deductive",
+                  "inductive",
+                  "abductive",
+                  "analogical",
+                  "causal",
+                  "probabilistic",
+                  "default",
+                  "non-monotonic"
+                ]
+              },
+              "description": "Allowed logical inference types"
+            },
+            "requireEvidence": {
+              "type": "boolean",
+              "default": true,
+              "description": "Require evidence citations for reasoning steps"
+            },
+            "maxCognitiveLoad": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1,
+              "description": "Maximum cognitive load per reasoning step"
+            }
+          }
+        },
+        "transparency": {
+          "type": "object",
+          "description": "Transparency and explainability requirements",
+          "required": ["explainabilityLevel", "visualizations"],
+          "properties": {
+            "explainabilityLevel": {
+              "type": "string",
+              "enum": ["basic", "detailed", "expert"],
+              "description": "Required level of explanation detail"
+            },
+            "visualizations": {
+              "type": "object",
+              "required": ["attentionHeatmaps", "reasoningGraphs"],
+              "properties": {
+                "attentionHeatmaps": {
+                  "type": "object",
+                  "required": ["enabled", "format"],
+                  "properties": {
+                    "enabled": {
+                      "type": "boolean",
+                      "description": "Enable attention heatmap generation"
+                    },
+                    "format": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "enum": ["grafana", "json", "png", "svg", "html"]
+                      },
+                      "description": "Output formats for heatmaps"
+                    },
+                    "resolution": {
+                      "type": "string",
+                      "enum": ["low", "medium", "high"],
+                      "default": "medium",
+                      "description": "Heatmap resolution"
+                    }
+                  }
+                },
+                "reasoningGraphs": {
+                  "type": "object",
+                  "required": ["enabled", "format"],
+                  "properties": {
+                    "enabled": {
+                      "type": "boolean",
+                      "description": "Enable reasoning graph generation"
+                    },
+                    "format": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "enum": ["dot", "mermaid", "cytoscape", "d3", "graphml"]
+                      },
+                      "description": "Output formats for reasoning graphs"
+                    },
+                    "includeMetadata": {
+                      "type": "boolean",
+                      "default": true,
+                      "description": "Include metadata in graph exports"
+                    }
+                  }
+                },
+                "dashboards": {
+                  "type": "object",
+                  "properties": {
+                    "grafana": {
+                      "type": "boolean",
+                      "description": "Enable Grafana dashboard integration"
+                    },
+                    "kibana": {
+                      "type": "boolean",
+                      "description": "Enable Kibana dashboard integration"
+                    },
+                    "custom": {
+                      "type": "string",
+                      "description": "Custom dashboard URL or endpoint"
+                    }
+                  }
+                }
+              }
+            },
+            "accessControl": {
+              "type": "object",
+              "properties": {
+                "publicAccess": {
+                  "type": "boolean",
+                  "default": false,
+                  "description": "Allow public access to reasoning visualizations"
+                },
+                "roles": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "role": {
+                        "type": "string",
+                        "description": "Role name"
+                      },
+                      "permissions": {
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "enum": ["view", "export", "audit", "modify"]
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "auditing": {
+          "type": "object",
+          "description": "Auditing and compliance tracking",
+          "required": ["enabled", "storage", "retention"],
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "description": "Enable reasoning auditing"
+            },
+            "storage": {
+              "type": "object",
+              "required": ["type", "endpoint"],
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "enum": ["phoenix", "elasticsearch", "postgres", "mongodb", "s3", "custom"],
+                  "description": "Audit storage backend"
+                },
+                "endpoint": {
+                  "type": "string",
+                  "description": "Storage endpoint URL"
+                },
+                "encryption": {
+                  "type": "boolean",
+                  "default": true,
+                  "description": "Encrypt stored audit data"
+                }
+              }
+            },
+            "retention": {
+              "type": "object",
+              "required": ["period"],
+              "properties": {
+                "period": {
+                  "type": "string",
+                  "pattern": "^[0-9]+(d|w|m|y)$",
+                  "description": "Retention period (e.g., '30d', '6m', '1y')"
+                },
+                "archiveOld": {
+                  "type": "boolean",
+                  "default": true,
+                  "description": "Archive old audit logs instead of deleting"
+                },
+                "archiveLocation": {
+                  "type": "string",
+                  "description": "Archive storage location"
+                }
+              }
+            },
+            "metrics": {
+              "type": "object",
+              "properties": {
+                "trackPerformance": {
+                  "type": "boolean",
+                  "default": true,
+                  "description": "Track reasoning performance metrics"
+                },
+                "trackQuality": {
+                  "type": "boolean",
+                  "default": true,
+                  "description": "Track reasoning quality metrics"
+                },
+                "aggregationInterval": {
+                  "type": "string",
+                  "enum": ["1m", "5m", "15m", "1h", "1d"],
+                  "default": "5m",
+                  "description": "Metrics aggregation interval"
+                }
+              }
+            },
+            "alerts": {
+              "type": "object",
+              "properties": {
+                "lowConfidence": {
+                  "type": "object",
+                  "properties": {
+                    "enabled": {
+                      "type": "boolean"
+                    },
+                    "threshold": {
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 1
+                    }
+                  }
+                },
+                "longReasoningChains": {
+                  "type": "object",
+                  "properties": {
+                    "enabled": {
+                      "type": "boolean"
+                    },
+                    "threshold": {
+                      "type": "integer",
+                      "minimum": 1
+                    }
+                  }
+                },
+                "lowAttention": {
+                  "type": "object",
+                  "properties": {
+                    "enabled": {
+                      "type": "boolean"
+                    },
+                    "threshold": {
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 1
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "integration": {
+          "type": "object",
+          "description": "Integration with observability platforms",
+          "properties": {
+            "phoenixArize": {
+              "type": "object",
+              "properties": {
+                "enabled": {
+                  "type": "boolean"
+                },
+                "endpoint": {
+                  "type": "string"
+                },
+                "projectName": {
+                  "type": "string"
+                },
+                "apiKey": {
+                  "type": "string",
+                  "description": "API key (should be stored securely)"
+                }
+              }
+            },
+            "openTelemetry": {
+              "type": "object",
+              "properties": {
+                "enabled": {
+                  "type": "boolean"
+                },
+                "endpoint": {
+                  "type": "string"
+                },
+                "serviceName": {
+                  "type": "string"
+                }
+              }
+            },
+            "grafana": {
+              "type": "object",
+              "properties": {
+                "enabled": {
+                  "type": "boolean"
+                },
+                "endpoint": {
+                  "type": "string"
+                },
+                "dashboardId": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "validation": {
+          "type": "object",
+          "description": "Validation rules for reasoning compliance",
+          "properties": {
+            "rules": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": ["name", "condition", "severity"],
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "description": "Rule name"
+                  },
+                  "description": {
+                    "type": "string",
+                    "description": "Rule description"
+                  },
+                  "condition": {
+                    "type": "string",
+                    "description": "Validation condition (e.g., 'confidence >= 0.7')"
+                  },
+                  "severity": {
+                    "type": "string",
+                    "enum": ["error", "warning", "info"],
+                    "description": "Violation severity"
+                  },
+                  "action": {
+                    "type": "string",
+                    "enum": ["block", "warn", "log"],
+                    "description": "Action to take on violation"
+                  }
+                }
+              }
+            },
+            "enforceAtRuntime": {
+              "type": "boolean",
+              "default": true,
+              "description": "Enforce validation rules at runtime"
+            }
+          }
+        }
+      }
+    },
+    "status": {
+      "type": "object",
+      "description": "Runtime status of reasoning compliance",
+      "properties": {
+        "lastValidation": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Last validation timestamp"
+        },
+        "complianceScore": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100,
+          "description": "Overall compliance score (0-100)"
+        },
+        "violations": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "rule": {
+                "type": "string"
+              },
+              "severity": {
+                "type": "string"
+              },
+              "count": {
+                "type": "integer"
+              },
+              "lastOccurrence": {
+                "type": "string",
+                "format": "date-time"
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "required": ["apiVersion", "kind", "metadata", "spec"],
+  "examples": [
+    {
+      "apiVersion": "open-standards-scalable-agents/v0.1.9",
+      "kind": "ReasoningPolicy",
+      "metadata": {
+        "name": "high-stakes-reasoning-policy",
+        "version": "1.0.0",
+        "description": "Strict reasoning transparency for high-stakes decisions",
+        "applicableAgents": ["critic", "judge", "governor"]
+      },
+      "spec": {
+        "reasoning": {
+          "chainTracking": {
+            "enabled": true,
+            "minSteps": 5,
+            "maxSteps": 50,
+            "requireConfidenceScores": true,
+            "minConfidence": 0.8
+          },
+          "attentionMechanism": {
+            "enabled": true,
+            "type": "multi-head",
+            "numHeads": 8,
+            "embeddingDimension": 768,
+            "attentionThreshold": 0.6
+          },
+          "logicTypes": ["deductive", "inductive", "abductive"],
+          "requireEvidence": true,
+          "maxCognitiveLoad": 0.9
+        },
+        "transparency": {
+          "explainabilityLevel": "expert",
+          "visualizations": {
+            "attentionHeatmaps": {
+              "enabled": true,
+              "format": ["grafana", "json", "png"],
+              "resolution": "high"
+            },
+            "reasoningGraphs": {
+              "enabled": true,
+              "format": ["dot", "mermaid", "d3"],
+              "includeMetadata": true
+            },
+            "dashboards": {
+              "grafana": true
+            }
+          },
+          "accessControl": {
+            "publicAccess": false,
+            "roles": [
+              {
+                "role": "auditor",
+                "permissions": ["view", "export", "audit"]
+              },
+              {
+                "role": "admin",
+                "permissions": ["view", "export", "audit", "modify"]
+              }
+            ]
+          }
+        },
+        "auditing": {
+          "enabled": true,
+          "storage": {
+            "type": "phoenix",
+            "endpoint": "http://localhost:6006",
+            "encryption": true
+          },
+          "retention": {
+            "period": "1y",
+            "archiveOld": true,
+            "archiveLocation": "s3://audit-archive/"
+          },
+          "metrics": {
+            "trackPerformance": true,
+            "trackQuality": true,
+            "aggregationInterval": "5m"
+          },
+          "alerts": {
+            "lowConfidence": {
+              "enabled": true,
+              "threshold": 0.7
+            },
+            "longReasoningChains": {
+              "enabled": true,
+              "threshold": 40
+            },
+            "lowAttention": {
+              "enabled": true,
+              "threshold": 0.3
+            }
+          }
+        },
+        "integration": {
+          "phoenixArize": {
+            "enabled": true,
+            "endpoint": "http://localhost:6006",
+            "projectName": "high-stakes-agents"
+          },
+          "openTelemetry": {
+            "enabled": true,
+            "endpoint": "http://localhost:4318",
+            "serviceName": "reasoning-agent"
+          },
+          "grafana": {
+            "enabled": true,
+            "endpoint": "http://localhost:3000",
+            "dashboardId": "reasoning-dashboard"
+          }
+        },
+        "validation": {
+          "rules": [
+            {
+              "name": "minimum-confidence",
+              "description": "Ensure all reasoning steps meet minimum confidence",
+              "condition": "confidence >= 0.8",
+              "severity": "error",
+              "action": "block"
+            },
+            {
+              "name": "require-evidence",
+              "description": "All steps must cite evidence",
+              "condition": "evidence.length > 0",
+              "severity": "error",
+              "action": "block"
+            },
+            {
+              "name": "attention-correlation",
+              "description": "Warn if attention correlation is low",
+              "condition": "averageAttention >= 0.4",
+              "severity": "warning",
+              "action": "warn"
+            }
+          ],
+          "enforceAtRuntime": true
+        }
+      }
+    }
+  ]
+}
+

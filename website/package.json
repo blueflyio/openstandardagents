@@ -1,0 +1,59 @@
+{
+  "name": "ossa-website",
+  "version": "0.2.6",
+  "description": "Open Standard Agents - The OpenAPI for AI Agents",
+  "private": true,
+  "scripts": {
+    "sync-version": "node scripts/sync-version.js",
+    "fetch-versions": "node scripts/fetch-versions.js",
+    "sync-wiki": "npx tsx scripts/sync-wiki.ts",
+    "merge-docs-to-wiki": "npx tsx scripts/merge-docs-to-wiki.ts",
+    "upload-wiki": "npx tsx scripts/upload-wiki.ts",
+    "generate-examples": "node scripts/generate-examples-index.js",
+    "dev": "npm run fetch-versions && npm run sync-version && npm run generate-examples && next dev",
+    "build": "npm run fetch-versions && npm run sync-version && npm run sync-wiki && npm run generate-examples && next build",
+    "build:no-wiki": "npm run fetch-versions && npm run sync-version && npm run generate-examples && next build",
+    "start": "next start",
+    "lint": "next lint",
+    "export": "npm run fetch-versions && npm run sync-version && npm run sync-wiki && npm run generate-examples && next build"
+  },
+  "keywords": [
+    "ossa",
+    "ai-agents",
+    "standard",
+    "specification"
+  ],
+  "author": "OSSA Community",
+  "license": "MIT",
+  "dependencies": {
+    "axios": "^1.7.7",
+    "@monaco-editor/react": "^4.6.0",
+    "@types/node": "^24.10.0",
+    "@types/react": "^18.3.1",
+    "ajv": "^8.17.1",
+    "ajv-formats": "^3.0.1",
+    "autoprefixer": "^10.4.22",
+    "date-fns": "^4.1.0",
+    "gray-matter": "^4.0.3",
+    "lucide-react": "^0.294.0",
+    "next": "^15.5.6",
+    "postcss": "^8.5.6",
+    "prism-react-renderer": "^2.3.1",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-markdown": "^9.0.1",
+    "react-syntax-highlighter": "^15.5.0",
+    "remark-gfm": "^4.0.0",
+    "tailwindcss": "^3.4.1",
+    "typescript": "^5.9.3",
+    "yaml": "^2.8.1"
+  },
+  "devDependencies": {
+    "@types/react-dom": "^18.3.1",
+    "@types/react-syntax-highlighter": "^15.5.13",
+    "eslint": "^9.18.0",
+    "eslint-config-next": "^15.5.6",
+    "sass": "^1.94.2",
+    "tsx": "^4.19.0"
+  }
+}

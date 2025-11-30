@@ -1,0 +1,235 @@
+{
+  "version": "0.2.0",
+  "lastUpdated": "2025-09-26",
+  "ecosystem": {
+    "name": "Bluefly LLM Platform",
+    "type": "cross-ecosystem",
+    "components": {
+      "npm": {
+        "count": 16,
+        "packages": [
+          "agent-brain",
+          "agent-chat",
+          "agent-docker",
+          "agent-mesh",
+          "agent-ops",
+          "agent-protocol",
+          "agent-router",
+          "agent-studio",
+          "agent-tracer",
+          "agentic-flows",
+          "compliance-engine",
+          "doc-engine",
+          "foundation-bridge",
+          "rfp-automation",
+          "studio-ui",
+          "workflow-engine"
+        ],
+        "compliance": "100%",
+        "buildkit": true,
+        "ossa_version": "0.1.9"
+      },
+      "drupal": {
+        "modules": 20,
+        "module_list": [
+          "ai_agent_crewai",
+          "ai_agent_huggingface",
+          "ai_agent_marketplace",
+          "ai_agent_orchestra",
+          "ai_agentic_workflows",
+          "ai_agents",
+          "ai_agents_charts",
+          "ai_agents_client",
+          "ai_provider_apple",
+          "ai_provider_langchain",
+          "alternative_services",
+          "api_normalizer",
+          "code_executor",
+          "dita_ccms",
+          "gov_compliance",
+          "llm",
+          "mcp_registry",
+          "recipe_onboarding"
+        ],
+        "recipes": 3,
+        "recipe_list": [
+          "llm_platform",
+          "secure_drupal",
+          "ecosystem_orchestration"
+        ],
+        "themes": 1,
+        "drupal_version": "^10.5 || ^11.0"
+      },
+      "models": {
+        "count": 4,
+        "model_list": [
+          "gov-rfp_model",
+          "llm-platform_model",
+          "gov-policy_model",
+          "agent-studio_model"
+        ],
+        "framework": "ollama",
+        "deployment": "local"
+      }
+    },
+    "orchestration": {
+      "central_hub": "agent-mesh",
+      "protocol": "mcp",
+      "transport": "websocket",
+      "mesh_topology": "star",
+      "ports": {
+        "agent_range": "3001-3016",
+        "model_range": "11434-11437"
+      },
+      "health_check": {
+        "enabled": true,
+        "interval_ms": 30000,
+        "timeout_ms": 5000
+      }
+    },
+    "compliance_rules": {
+      "npm_packages": {
+        "required_files": [
+          "package.json",
+          "tsconfig.json",
+          "OSSA.md",
+          ".gitignore",
+          "README.md"
+        ],
+        "required_directories": [
+          "src",
+          "tests",
+          ".agents"
+        ],
+        "testing_framework": "vitest",
+        "linting": "eslint",
+        "buildkit_integration": true,
+        "golden_workflow": true
+      },
+      "drupal_modules": {
+        "required_files": [
+          "composer.json",
+          "*.info.yml",
+          "*.module"
+        ],
+        "php_version": ">=8.2",
+        "drupal_core": "^10.5 || ^11",
+        "coding_standards": "drupal/coder",
+        "recipe_support": true
+      },
+      "ml_models": {
+        "required_files": [
+          "config.json",
+          "README.md"
+        ],
+        "optional_files": [
+          "Modelfile",
+          "requirements.txt",
+          "server.py"
+        ],
+        "tracking": "mlflow",
+        "deployment": "ollama",
+        "api_exposure": true
+      }
+    },
+    "integration_mappings": {
+      "drupal_to_npm": {
+        "ai_agent_orchestra": "agent-mesh",
+        "ai_agentic_workflows": "workflow-engine",
+        "gov_compliance": "compliance-engine",
+        "ai_agent_marketplace": "agent-studio",
+        "llm": "agent-router",
+        "ai_agents": "agent-protocol",
+        "ai_agents_client": "agent-protocol",
+        "ai_agents_charts": "studio-ui",
+        "dita_ccms": "doc-engine",
+        "code_executor": "agent-ops",
+        "mcp_registry": "agent-mesh",
+        "api_normalizer": "agent-router",
+        "ai_provider_langchain": "foundation-bridge",
+        "ai_provider_apple": "foundation-bridge",
+        "ai_agent_crewai": "agentic-flows",
+        "ai_agent_huggingface": "foundation-bridge"
+      },
+      "model_to_npm": {
+        "gov-rfp_model": [
+          "rfp-automation",
+          "compliance-engine",
+          "doc-engine"
+        ],
+        "llm-platform_model": [
+          "agent-router",
+          "agent-mesh",
+          "agent-brain",
+          "agent-protocol",
+          "agent-chat"
+        ],
+        "gov-policy_model": [
+          "compliance-engine",
+          "doc-engine",
+          "workflow-engine"
+        ],
+        "agent-studio_model": [
+          "agent-studio",
+          "studio-ui",
+          "agentic-flows"
+        ]
+      },
+      "model_to_drupal": {
+        "gov-rfp_model": [
+          "gov_compliance",
+          "dita_ccms"
+        ],
+        "llm-platform_model": [
+          "llm",
+          "ai_agent_orchestra",
+          "ai_agents"
+        ],
+        "gov-policy_model": [
+          "gov_compliance",
+          "dita_ccms",
+          "ai_agentic_workflows"
+        ],
+        "agent-studio_model": [
+          "ai_agent_marketplace",
+          "ai_agents_charts",
+          "ai_agents_client"
+        ]
+      }
+    },
+    "validation": {
+      "enabled": true,
+      "strict_mode": true,
+      "pre_commit_hooks": true,
+      "ci_pipeline": "gitlab",
+      "golden_component": "v0.1.0",
+      "security_scanning": true,
+      "code_quality": true
+    },
+    "monitoring": {
+      "prometheus": true,
+      "grafana": true,
+      "jaeger_tracing": true,
+      "log_aggregation": "elasticsearch",
+      "alerting": {
+        "enabled": true,
+        "channels": ["email", "slack"],
+        "thresholds": {
+          "error_rate": 0.01,
+          "latency_p99": 1000,
+          "availability": 0.999
+        }
+      }
+    },
+    "deployment": {
+      "environment": "development",
+      "container_orchestration": "docker-compose",
+      "production_ready": false,
+      "scaling": {
+        "horizontal": true,
+        "vertical": false,
+        "auto_scaling": false
+      }
+    }
+  }
+}

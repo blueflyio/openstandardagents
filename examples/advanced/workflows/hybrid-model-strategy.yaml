@@ -1,0 +1,232 @@
+# Hybrid Model Strategy: Fast Local Planning + Premium Development
+# Demonstrates using fast Ollama models for planning agents and Claude for development
+
+apiVersion: ossa.io/v0.1.9
+kind: Workflow
+metadata:
+  name: hybrid-development-workflow
+  description: "Cost-optimized workflow using fast local models for planning and premium models for development"
+
+spec:
+  # Planning Phase - Use Fast Local Models
+  agents:
+    # Fast planning agent using local Ollama
+    - name: project-planner
+      type: orchestrator
+      ossa_type: orchestrator
+      modelConfig:
+        provider: "ollama"
+        model: "mistral:7b"  # Fast 1-2 second responses
+        parameters:
+          temperature: 0.3
+          max_tokens: 2000
+        ollamaConfig:
+          baseUrl: "http://localhost:11434"
+          keepAlive: "5m"
+      capabilities:
+        - project-planning
+        - task-breakdown
+        - resource-estimation
+      instruction: |
+        You are a fast project planning agent. Quickly break down development tasks:
+        - Analyze requirements
+        - Create task breakdown structure
+        - Estimate effort and dependencies
+        - Identify risks and blockers
+        Store plan in {project_plan}
+      output_key: project_plan
+
+    # Fast requirement analyzer using local model
+    - name: requirements-analyzer
+      type: critic
+      ossa_type: critic
+      modelConfig:
+        provider: "ollama"
+        model: "qwen2.5:7b"  # Good for analysis, fast
+        parameters:
+          temperature: 0.2
+          max_tokens: 1500
+        ollamaConfig:
+          baseUrl: "http://localhost:11434"
+      capabilities:
+        - requirements-analysis
+        - user-story-validation
+        - acceptance-criteria
+      instruction: |
+        Quickly analyze requirements for clarity and completeness:
+        - Validate user stories
+        - Identify missing requirements
+        - Check for conflicts or ambiguities
+        Store analysis in {requirements_analysis}
+      output_key: requirements_analysis
+
+  # Development Phase - Use Premium Models
+    # Premium development agent using Claude Code
+    - name: senior-developer
+      type: worker
+      ossa_type: worker
+      modelConfig:
+        provider: "anthropic"
+        model: "claude-3-5-sonnet-20241022"
+        parameters:
+          temperature: 0.1  # Low temperature for precise code
+          max_tokens: 8000
+        anthropicConfig:
+          apiKey: "${ANTHROPIC_API_KEY}"
+          defaultHeaders:
+            "anthropic-beta": "computer-use-2024-10-22"
+      capabilities:
+        - code-generation
+        - architecture-design
+        - best-practices
+        - testing
+        - documentation
+      instruction: |
+        You are an expert senior developer using best practices:
+        - Write clean, maintainable code
+        - Follow SOLID principles
+        - Include comprehensive tests
+        - Add proper documentation
+        - Consider security and performance
+        Use {project_plan} and {requirements_analysis} as context
+      tools:
+        - file-operations
+        - git-operations
+        - test-runner
+        - linter
+      output_key: development_result
+
+    # Code review agent using Claude
+    - name: code-reviewer
+      type: critic
+      ossa_type: critic
+      modelConfig:
+        provider: "anthropic"
+        model: "claude-3-5-sonnet-20241022"
+        parameters:
+          temperature: 0.05  # Very low for consistent reviews
+          max_tokens: 6000
+      capabilities:
+        - code-review
+        - security-analysis
+        - performance-review
+        - maintainability-check
+      instruction: |
+        Perform thorough code review focusing on:
+        - Code quality and best practices
+        - Security vulnerabilities
+        - Performance issues
+        - Maintainability concerns
+        - Test coverage and quality
+        Review {development_result} and provide detailed feedback
+      output_key: code_review
+
+  # Optimization Phase - Use Local Models for Simple Tasks
+    # Documentation generator using local model
+    - name: doc-generator
+      type: worker
+      ossa_type: worker
+      modelConfig:
+        provider: "ollama"
+        model: "codellama:7b"  # Good for documentation
+        parameters:
+          temperature: 0.4
+          max_tokens: 3000
+      capabilities:
+        - documentation-generation
+        - api-docs
+        - readme-creation
+      instruction: |
+        Generate comprehensive documentation based on {development_result}:
+        - API documentation
+        - Usage examples
+        - Installation instructions
+        - Architecture overview
+      output_key: documentation
+
+  # Cost Optimization Configuration
+  costOptimization:
+    strategy: "hybrid"
+    budgetLimits:
+      planning_phase: 0.01    # $0.01 - use free local models
+      development_phase: 1.00  # $1.00 - premium models for quality
+      optimization_phase: 0.05 # $0.05 - local models for docs
+
+    fallbackStrategy:
+      # If premium models unavailable, use these alternatives
+      fallbacks:
+        "claude-3-5-sonnet": "gpt-4o"
+        "gpt-4o": "gemini-2.0-flash"
+        "gemini-2.0-flash": "ollama:qwen2.5:7b"
+
+  # Performance Targets
+  performance:
+    planning_phase:
+      target_latency: "5s"      # Fast local responses
+      cost_per_task: "$0.00"    # Free local inference
+    development_phase:
+      target_latency: "30s"     # Quality over speed
+      cost_per_task: "$0.50"    # Premium model investment
+    optimization_phase:
+      target_latency: "10s"     # Fast local processing
+      cost_per_task: "$0.02"    # Minimal cost
+
+  # Execution Flow
+  execution:
+    phases:
+      - name: planning
+        agents: [project-planner, requirements-analyzer]
+        execution_mode: parallel
+        budget_limit: 0.01
+
+      - name: development
+        agents: [senior-developer]
+        execution_mode: sequential
+        dependencies: [planning]
+        budget_limit: 1.00
+
+      - name: review
+        agents: [code-reviewer]
+        execution_mode: sequential
+        dependencies: [development]
+        budget_limit: 0.30
+
+      - name: documentation
+        agents: [doc-generator]
+        execution_mode: sequential
+        dependencies: [development]
+        budget_limit: 0.05
+
+    # Quality gates
+    quality_gates:
+      - phase: development
+        condition: "code_review.score > 8.0"
+        action: "proceed"
+      - phase: development
+        condition: "code_review.security_issues > 0"
+        action: "retry_with_feedback"
+
+---
+# Example Environment Configuration
+# .env file should contain:
+
+# Fast local models for planning
+OLLAMA_BASE_URL=http://localhost:11434
+PLANNING_MODEL=mistral:7b
+ANALYSIS_MODEL=qwen2.5:7b
+DOC_MODEL=codellama:7b
+
+# Premium models for development
+ANTHROPIC_API_KEY=sk-ant-...
+DEVELOPMENT_MODEL=claude-3-5-sonnet-20241022
+REVIEW_MODEL=claude-3-5-sonnet-20241022
+
+# Cost controls
+MAX_PLANNING_COST=0.01
+MAX_DEVELOPMENT_COST=1.00
+MAX_TOTAL_COST=2.00
+
+# Performance settings
+PLANNING_TIMEOUT=10s
+DEVELOPMENT_TIMEOUT=300s
+REVIEW_TIMEOUT=120s

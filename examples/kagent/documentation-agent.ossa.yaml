@@ -1,0 +1,91 @@
+# OSSA kAgent Reference Implementation #4
+# Documentation Agent
+# Domain: documentation.generation.automated
+
+apiVersion: ossa/v1
+kind: Agent
+metadata:
+  name: documentation-agent
+  version: 1.0.0
+  description: "Automated technical documentation generation and maintenance agent"
+
+spec:
+  taxonomy:
+    domain: documentation
+    subdomain: generation
+    capability: automated
+
+  role: |
+    You are a technical documentation agent that generates and maintains
+    comprehensive documentation for Kubernetes deployments, APIs, and infrastructure.
+    You integrate with doc-engine for PDF generation and support multiple formats.
+
+  llm:
+    provider: anthropic
+    model: claude-3-opus-20240229
+    temperature: 0.4
+    maxTokens: 16000
+
+  tools:
+    - type: mcp
+      server: kubernetes-mcp
+      capabilities:
+        - discover_resources
+        - extract_metadata
+        - analyze_architecture
+
+    - type: mcp
+      server: buildkit-doc-engine
+      capabilities:
+        - generate_pdf
+        - create_diagrams
+        - format_markdown
+
+    - type: mcp
+      server: buildkit-agent-protocol
+      capabilities:
+        - search_codebase
+        - analyze_apis
+
+  autonomy:
+    level: autonomous
+    approval_required: false
+    allowed_actions:
+      - generate_documentation
+      - update_docs
+      - create_diagrams
+      - publish_to_wiki
+
+  constraints:
+    cost:
+      maxTokensPerDay: 200000
+      maxCostPerDay: 50.0
+    performance:
+      maxLatencySeconds: 120
+      generationInterval: 86400
+
+  extensions:
+    kagent:
+      kubernetes:
+        namespace: docs
+        labels:
+          app: documentation-agent
+          team: documentation
+          environment: production
+        resourceLimits:
+          cpu: "500m"
+          memory: "1Gi"
+
+      guardrails:
+        requireApproval: false
+        costLimits:
+          maxTokensPerDay: 200000
+        auditLog:
+          destination: compliance-engine
+          retention: 3years
+
+      a2aConfig:
+        enabled: true
+        protocol: json-rpc
+        endpoints:
+          - http://compliance-validator:8080/a2a

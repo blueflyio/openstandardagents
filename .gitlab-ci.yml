@@ -1,0 +1,136 @@
+stages:
+  - validate
+  - build
+  - test
+  - deploy
+
+variables:
+  NODE_VERSION: "20"
+
+.node-setup:
+  image: node:${NODE_VERSION}-alpine
+  before_script:
+    - apk add --no-cache git curl
+    - npm ci --legacy-peer-deps || npm install --legacy-peer-deps
+
+# Validation - skip for now until we have proper lint setup
+validate:lint:
+  stage: validate
+  image: node:${NODE_VERSION}-alpine
+  script:
+    - echo "Lint validation - skipping until setup complete"
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH == "main"
+    - if: $CI_COMMIT_BRANCH == "development"
+  allow_failure: true
+
+# Build website
+build:website:
+  extends: .node-setup
+  stage: build
+  script:
+    - cd website
+    - npm ci --legacy-peer-deps
+    - npm run build:no-wiki || npm run build
+  artifacts:
+    paths:
+      - website/out
+      - website/.next
+    expire_in: 1 week
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+    - if: $CI_COMMIT_BRANCH == "development"
+  allow_failure: true
+
+# Test - skip for now
+test:unit:
+  stage: test
+  image: node:${NODE_VERSION}-alpine
+  script:
+    - echo "Tests - skipping until setup complete"
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH == "main"
+  allow_failure: true
+
+# Deploy - GitLab Pages
+pages:
+  stage: deploy
+  image: node:${NODE_VERSION}-alpine
+  before_script:
+    - apk add --no-cache git curl
+  script:
+    - cd website
+    - npm ci --legacy-peer-deps
+    - echo "🌐 Building website for GitLab Pages..."
+    - npm run build:no-wiki || npm run build
+    - |
+      if [ ! -d "out" ]; then
+        echo "❌ ERROR: out/ directory not found"
+        ls -la
+        exit 1
+      fi
+    - mkdir -p ../public
+    - cp -r out/* ../public/
+    - echo "✅ Build artifacts ready in public/"
+    - ls -la ../public/
+  artifacts:
+    paths:
+      - public
+    expire_in: 30 days
+  environment:
+    name: website
+    url: https://openstandardagents.org
+    deployment_tier: production
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+      when: manual
+    - if: $CI_COMMIT_BRANCH == "development"
+      when: manual
+      allow_failure: true
+
+# Staging deploy placeholder
+deploy:website:staging:
+  stage: deploy
+  image: alpine:latest
+  script:
+    - echo "Deploy website to staging - placeholder"
+  environment:
+    name: staging
+    url: https://staging.openstandardagents.org
+  rules:
+    - if: $CI_COMMIT_BRANCH == "development"
+  when: manual
+  allow_failure: true
+
+# Discord notification on pipeline completion
+notify:discord:
+  stage: .post
+  image: curlimages/curl:latest
+  script:
+    - |
+      if [ -n "$DISCORD_WEBHOOK_URL" ]; then
+        curl -X POST "$DISCORD_WEBHOOK_URL" \
+          -H "Content-Type: application/json" \
+          -d "{
+            \"embeds\": [{
+              \"title\": \"Pipeline ${CI_PIPELINE_STATUS}\",
+              \"description\": \"Pipeline #${CI_PIPELINE_ID} for ${CI_PROJECT_NAME}\",
+              \"color\": $([ \"$CI_PIPELINE_STATUS\" == \"success\" ] && echo \"3066993\" || echo \"15158332\"),
+              \"fields\": [
+                {\"name\": \"Branch\", \"value\": \"${CI_COMMIT_BRANCH}\", \"inline\": true},
+                {\"name\": \"Commit\", \"value\": \"${CI_COMMIT_SHORT_SHA}\", \"inline\": true}
+              ],
+              \"url\": \"${CI_PIPELINE_URL}\"
+            }]
+          }"
+      else
+        echo "DISCORD_WEBHOOK_URL not set, skipping notification"
+      fi
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+      when: always
+    - if: $CI_COMMIT_BRANCH == "development"
+      when: on_failure
+  allow_failure: true
