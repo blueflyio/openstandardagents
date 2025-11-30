@@ -662,7 +662,7 @@ pages:
       - public
     expire_in: 30 days
   environment:
-    name: production
+    name: website
     url: https://openstandardagents.org
     deployment_tier: production
     kubernetes:
@@ -962,7 +962,7 @@ release-to-github:
     - if: $CI_COMMIT_BRANCH == "main"
       when: manual
   environment:
-    name: github-mirror
+    name: github
     url: https://github.com/blueflyio/openstandardagents
     deployment_tier: production
 
@@ -1018,7 +1018,7 @@ deploy-website-production:
     - if: $CI_COMMIT_BRANCH == "main"
       when: manual
   environment:
-    name: production
+    name: website
     url: https://openstandardagents.org
     deployment_tier: production
 
