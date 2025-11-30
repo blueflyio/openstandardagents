@@ -1,3 +1,9 @@
+<!--
+OSSA Operations: automation-roadmap.md
+Purpose: Internal operations and automation documentation
+Audience: Maintainers and contributors
+Educational Focus: Document automation and operational procedures
+-->
 # Automation Audit Report
 
 ## Shell Scripts Found (Convert to TypeScript)
