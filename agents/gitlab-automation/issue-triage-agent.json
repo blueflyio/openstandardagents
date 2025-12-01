@@ -1,5 +1,5 @@
 {
-  "apiVersion": "ossa.bluefly.io/v0.2.6",
+  "apiVersion": "ossa.bluefly.io/v0.2.8",
   "kind": "Agent",
   "metadata": {
     "name": "gitlab-issue-triage-agent",

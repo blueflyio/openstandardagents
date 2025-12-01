@@ -19,8 +19,8 @@ The OSSA schema defines the structure of agent manifests. Every field serves a s
 
 ## Schema Versions
 
-- **Current**: v0.2.5-RC
-- **Stable**: v0.2.4
+- **Current**: v0.2.8-RC
+- **Stable**: v0.2.8
 - **Previous**: v0.2.3, v0.2.2
 
 See [Versioning Guide](../guides/versioning.md) for migration information.
@@ -36,7 +36,7 @@ ossa validate agent.ossa.yaml
 ## Complete Schema
 
 View the complete JSON Schema:
-- [v0.2.5-RC Schema](https://github.com/blueflyio/openstandardagents/blob/main/spec/v0.2.6/ossa-0.2.6.schema.json)
+- [v0.2.8-RC Schema](https://github.com/blueflyio/openstandardagents/blob/main/spec/v0.2.8/ossa-0.2.8.schema.json)
 
 ## Related Documentation
 

@@ -4,7 +4,7 @@
 
 import versionsData from './versions.json';
 
-export const OSSA_VERSION = "0.2.6";
+export const OSSA_VERSION = "0.2.8";
 export const OSSA_VERSION_TAG = `v${OSSA_VERSION}`;
 export const OSSA_API_VERSION = `ossa/v${OSSA_VERSION}`;
 export const OSSA_SCHEMA_VERSION = OSSA_VERSION;
