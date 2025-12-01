@@ -1,0 +1,49 @@
+{
+  "name": "ossa-discord-bot",
+  "version": "1.0.0",
+  "description": "Discord bot for OSSA community with GitLab/GitHub webhooks and AI-powered Q&A",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "ts-node src/index.ts",
+    "watch": "tsc --watch",
+    "lint": "eslint src --ext .ts",
+    "format": "prettier --write 'src/**/*.ts'"
+  },
+  "keywords": [
+    "discord",
+    "bot",
+    "ossa",
+    "agents",
+    "gitlab",
+    "github",
+    "webhooks"
+  ],
+  "author": "OSSA Community",
+  "license": "MIT",
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.30.1",
+    "ajv": "^8.12.0",
+    "ajv-formats": "^3.0.1",
+    "body-parser": "^1.20.2",
+    "discord.js": "^14.14.1",
+    "express": "^4.18.2",
+    "openai": "^4.24.1",
+    "winston": "^3.11.0"
+  },
+  "devDependencies": {
+    "@types/body-parser": "^1.19.5",
+    "@types/express": "^4.17.21",
+    "@types/node": "^20.10.6",
+    "@typescript-eslint/eslint-plugin": "^6.17.0",
+    "@typescript-eslint/parser": "^6.17.0",
+    "eslint": "^8.56.0",
+    "prettier": "^3.1.1",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.3.3"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
