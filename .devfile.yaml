@@ -1,7 +1,7 @@
 schemaVersion: 2.2.0
 metadata:
   name: ossa-development
-  version: 0.2.5-RC
+  # Version is managed by package.json - run `npm run version:sync` to update
   description: OSSA development environment with GitLab agent access
 components:
   - name: dev-tools
