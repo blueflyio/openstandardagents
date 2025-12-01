@@ -26,11 +26,12 @@ export interface Capability {
 }
 
 /**
- * OSSA Agent manifest structure (v0.2.3 format)
- * Supports both v0.2.3 (apiVersion/kind/metadata/spec) and legacy v0.1.9 (ossaVersion/agent)
+ * OSSA Agent manifest structure (k8s-style format)
+ * Supports both k8s-style (apiVersion/kind/metadata/spec) and legacy (ossaVersion/agent) formats
+ * Compatible with all v0.2.x schema versions
  */
 export interface OssaAgent {
-  // v0.2.3 format
+  // k8s-style format (current)
   apiVersion?: string;
   kind?: string;
   metadata?: {

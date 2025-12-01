@@ -1,4 +1,4 @@
-apiVersion: ossa/v1
+apiVersion: ossa/v0.2.8
 kind: Agent
 metadata:
   name: k8s-troubleshooter
