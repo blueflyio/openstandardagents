@@ -65,4 +65,17 @@ describe('SchemaRepository', () => {
       await expect(repo.getSchema('99.99.99')).rejects.toThrow();
     });
   });
+
+  describe('clearCache', () => {
+    it('should clear cached schemas', async () => {
+      const versions = repo.getAvailableVersions();
+      if (versions.length > 0) {
+        await repo.getSchema(versions[0]);
+        repo.clearCache();
+        // After clearing, next getSchema should reload from disk
+        const schema = await repo.getSchema(versions[0]);
+        expect(schema).toBeDefined();
+      }
+    });
+  });
 });
