@@ -36,7 +36,9 @@ code:review:agent:
     AGENT_TASK: code-review
     MR_IID: $CI_MERGE_REQUEST_IID
   rules:
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event" && $AGENT_PLATFORM_GROUP != null
+      when: on_success
+    - when: never
 
 # Documentation Sync Agent
 docs:sync:agent:
@@ -66,8 +68,9 @@ security:scan:agent:
     AGENT_TASK: security-scan
     SCAN_TYPE: full
   rules:
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-    - if: $CI_PIPELINE_SOURCE == "schedule"
+    - if: ($CI_PIPELINE_SOURCE == "merge_request_event" || $CI_PIPELINE_SOURCE == "schedule") && $AGENT_PLATFORM_GROUP != null
+      when: on_success
+    - when: never
 
 # TypeScript Build Agent
 ts:build:agent:
