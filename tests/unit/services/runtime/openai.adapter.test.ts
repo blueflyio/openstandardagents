@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, jest } from '@jest/globals';
+import { describe, it, expect, beforeEach } from '@jest/globals';
 import { OpenAIAdapter } from '../../../../src/services/runtime/openai.adapter.js';
 import type { OssaAgent } from '../../../../src/types/index.js';
 
