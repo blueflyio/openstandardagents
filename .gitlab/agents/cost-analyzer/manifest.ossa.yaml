@@ -37,7 +37,7 @@ metadata:
 
   annotations:
     documentation: https://openstandardagents.org/docs/agents/cost-analyzer
-    support: operations@bluefly.io
+    support: ops@openstandardagents.org
     runbook: https://openstandardagents.org/docs/runbooks/cost-analyzer
     target: "20% cost reduction in 90 days"
 

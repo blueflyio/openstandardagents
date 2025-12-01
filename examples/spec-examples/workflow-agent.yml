@@ -209,7 +209,7 @@ agent:
   # Metadata
   metadata:
     author: OSSA Workflow Team
-    maintainer: workflows@ossa.io
+    maintainer: ops@openstandardagents.org
     homepage: https://ossa.io/agents/workflow-orchestrator
     repository: https://github.com/ossa-agents/workflow-orchestrator
     documentation: https://docs.ossa.io/agents/workflow-orchestrator

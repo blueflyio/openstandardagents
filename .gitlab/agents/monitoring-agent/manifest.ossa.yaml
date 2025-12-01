@@ -37,7 +37,7 @@ metadata:
 
   annotations:
     documentation: https://openstandardagents.org/docs/agents/monitoring-agent
-    support: operations@bluefly.io
+    support: ops@openstandardagents.org
     runbook: https://openstandardagents.org/docs/runbooks/monitoring-agent
     slo: "99.9% availability, p95 < 500ms"
 

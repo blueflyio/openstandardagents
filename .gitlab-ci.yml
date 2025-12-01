@@ -736,7 +736,7 @@ release:npm:
   before_script:
     - apk add --no-cache git curl jq bash
     - npm ci --legacy-peer-deps
-    - git config --global user.email "ci@blueflyio.com"
+    - git config --global user.email "ci@bluefly.io"
     - git config --global user.name "GitLab CI Release"
     - git remote set-url origin https://oauth2:${GITLAB_PUSH_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git
     - git fetch --unshallow --tags || git fetch --tags || true
@@ -884,7 +884,7 @@ mirror:github:
   image: alpine:latest
   before_script:
     - apk add --no-cache git
-    - git config --global user.email "ci@blueflyio.com"
+    - git config --global user.email "ci@bluefly.io"
     - git config --global user.name "GitLab CI"
   script:
     - |

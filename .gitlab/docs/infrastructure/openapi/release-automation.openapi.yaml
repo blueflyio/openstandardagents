@@ -7,7 +7,7 @@ info:
     Provides full lifecycle management for releases, milestones, tags, and merge requests.
   contact:
     name: OSSA Release Automation Team
-    email: operations@bluefly.io
+    email: ops@openstandardagents.org
   license:
     name: Apache 2.0
     url: https://opensource.org/licenses/Apache-2.0
