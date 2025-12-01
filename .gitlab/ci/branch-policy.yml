@@ -1,0 +1,22 @@
+# Branch Protection Policy Enforcement
+
+.branch-policy:
+  stage: validate
+  image: alpine:latest
+  rules:
+    - if: $CI_MERGE_REQUEST_TARGET_BRANCH == "main"
+
+enforce-main-branch-policy:
+  extends: .branch-policy
+  script:
+    - |
+      if [ "$CI_MERGE_REQUEST_SOURCE_BRANCH_NAME" != "development" ]; then
+        echo "❌ ERROR: Main branch only accepts merges from 'development'"
+        echo "   Source branch: $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME"
+        echo "   Target branch: $CI_MERGE_REQUEST_TARGET_BRANCH"
+        echo ""
+        echo "Correct workflow: feature/* → development → main"
+        exit 1
+      fi
+    - echo "✅ Branch policy check passed"
+    - echo "   Source: $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME → Target: $CI_MERGE_REQUEST_TARGET_BRANCH"
