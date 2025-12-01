@@ -238,7 +238,7 @@ Internal project documentation is located in `.gitlab/docs/`:
 
 **DO NOT** open public issues for security vulnerabilities.
 
-Email: operations@bluefly.io
+Email: ops@openstandardagents.org
 
 ## 📊 Code Style
 

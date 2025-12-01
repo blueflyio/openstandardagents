@@ -139,7 +139,7 @@ agent:
   # Metadata
   metadata:
     author: OSSA Security Team
-    maintainer: security@ossa.io
+    maintainer: ops@openstandardagents.org
     license: Apache-2.0
     keywords:
       - security
