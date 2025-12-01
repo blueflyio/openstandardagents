@@ -242,5 +242,5 @@
 - **Website**: https://openstandardagents.org
 - **GitLab**: https://gitlab.com/blueflyio/openstandardagents
 - **GitHub**: https://github.com/blueflyio/openstandardagents (mirror)
-- **Email**: operations@bluefly.io
+- **Email**: ops@openstandardagents.org
 - **License**: Apache 2.0

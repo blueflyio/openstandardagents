@@ -41,7 +41,7 @@ metadata:
 
   annotations:
     documentation: https://openstandardagents.org/docs/agents/db-migrator
-    support: operations@bluefly.io
+    support: ops@openstandardagents.org
     runbook: https://openstandardagents.org/docs/runbooks/db-migrator
     safety: "transactional-rollback-enabled"
 
@@ -281,7 +281,7 @@ spec:
 
         annotations:
           description: "Automated database migration agent"
-          contact: "operations@bluefly.io"
+          contact: "ops@openstandardagents.org"
           safety: "transactional-rollback-enabled"
 
         resourceLimits:

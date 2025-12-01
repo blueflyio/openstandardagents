@@ -41,7 +41,7 @@ metadata:
 
   annotations:
     documentation: https://openstandardagents.org/docs/agents/security-scanner
-    support: operations@bluefly.io
+    support: ops@openstandardagents.org
     runbook: https://openstandardagents.org/docs/runbooks/security-scanner
     compliance: "CIS Kubernetes Benchmark v1.8, OWASP Top 10"
 
@@ -264,7 +264,7 @@ spec:
 
         annotations:
           description: "Automated security vulnerability scanner"
-          contact: "operations@bluefly.io"
+          contact: "ops@openstandardagents.org"
           compliance: "CIS Kubernetes Benchmark v1.8"
 
         resourceLimits:

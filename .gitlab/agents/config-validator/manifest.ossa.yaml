@@ -37,7 +37,7 @@ metadata:
 
   annotations:
     documentation: https://openstandardagents.org/docs/agents/config-validator
-    support: operations@bluefly.io
+    support: ops@openstandardagents.org
     runbook: https://openstandardagents.org/docs/runbooks/config-validator
     policies: "OPA, Gatekeeper, Pod Security Standards"
 

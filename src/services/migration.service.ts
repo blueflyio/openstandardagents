@@ -1,6 +1,7 @@
 /**
  * Migration Service
- * Migrates OSSA manifests between versions (v0.1.9 to v0.2.2, legacy formats to v0.2.2)
+ * Migrates OSSA manifests from legacy formats to current k8s-style format (apiVersion/kind/metadata/spec)
+ * The target format is compatible with all v0.2.x schema versions
  */
 
 import { injectable } from 'inversify';
@@ -46,23 +47,23 @@ export class MigrationService {
    */
   async migrate(
     manifest: unknown,
-    _targetVersion: SchemaVersion = '0.2.2'
+    _targetVersion: SchemaVersion = 'current'
   ): Promise<OssaAgent> {
     const m = manifest as Record<string, unknown>;
 
     // Detect source version
     if (m.apiVersion === 'ossa/v1' && m.kind === 'Agent') {
-      // Already v0.2.2 format
+      // Already in k8s-style format
       return manifest as OssaAgent;
     }
 
     if (m.ossaVersion === '1.0' && m.agent) {
-      // v1.0 to v0.2.2
-      return this.migrateV1ToV022(m as unknown as V1Manifest);
+      // Legacy v1.0 format - migrate to k8s-style
+      return this.migrateV1ToKubeStyle(m as unknown as V1Manifest);
     }
 
     if (m.apiVersion && m.kind && m.metadata && m.spec) {
-      // Already in v0₁.9/v0.2.2 format, just return
+      // Already in k8s-style format
       return manifest as OssaAgent;
     }
 
@@ -70,9 +71,9 @@ export class MigrationService {
   }
 
   /**
-   * Migrate v1.0 manifest to v0.2.2
+   * Migrate legacy v1.0 manifest to k8s-style format
    */
-  private migrateV1ToV022(v1: V1Manifest): OssaAgent {
+  private migrateV1ToKubeStyle(v1: V1Manifest): OssaAgent {
     const migrated: OssaAgent = {
       apiVersion: 'ossa/v1',
       kind: 'Agent',
@@ -82,7 +83,7 @@ export class MigrationService {
         description: v1.agent.description || '',
         labels: {} as Record<string, string>,
         annotations: {
-          'ossa.io/migration': 'v1.0 to v0.2.2',
+          'ossa.io/migration': 'legacy-v1.0-to-kube-style',
           'ossa.io/migrated-date': new Date().toISOString().split('T')[0],
         },
       },
@@ -322,7 +323,7 @@ export class MigrationService {
    */
   async migrateMany(
     manifests: unknown[],
-    targetVersion: SchemaVersion = '0.2.2'
+    targetVersion: SchemaVersion = 'current'
   ): Promise<OssaAgent[]> {
     return Promise.all(manifests.map((m) => this.migrate(m, targetVersion)));
   }

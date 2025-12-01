@@ -122,7 +122,7 @@ agent:
   # Metadata
   metadata:
     author: OSSA Monitoring Team
-    maintainer: monitoring@ossa.io
+    maintainer: ops@openstandardagents.org
     license: MIT
     keywords:
       - monitoring

@@ -177,7 +177,7 @@ agent:
   # Metadata
   metadata:
     author: OSSA Chat Team
-    maintainer: chat@ossa.io
+    maintainer: ops@openstandardagents.org
     homepage: https://ossa.io/agents/customer-support-chat
     repository: https://github.com/ossa-agents/chat-agent
     documentation: https://docs.ossa.io/agents/chat
