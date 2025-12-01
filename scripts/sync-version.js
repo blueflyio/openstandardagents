@@ -5,18 +5,10 @@ import { resolve } from 'path';
 
 const { version } = JSON.parse(readFileSync('package.json', 'utf-8'));
 
-const files = [
-  {
-    path: 'website/src/config.ts',
-    pattern: /version:\s*['"][\d.]+['"]/,
-    replacement: `version: '${version}'`
-  },
-  {
-    path: 'src/version.ts',
-    pattern: /VERSION\s*=\s*['"][\d.]+['"]/,
-    replacement: `VERSION = '${version}'`
-  }
-];
+// Website moved to openstandardagents.org repository
+// Version is read from package.json at runtime via scripts/lib/version.ts
+// No hardcoded version files to sync
+const files = [];
 
 console.log(`📦 Syncing version: ${version}\n`);
 
