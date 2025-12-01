@@ -42,4 +42,8 @@ Thumbs.db
 
 # Synced content (generated from @bluefly/openstandardagents package)
 website/public/schema/
+website/public/schemas/
 website/public/examples/
+
+# Spec folder (fetched from blueflyio/openstandardagents main branch)
+spec/

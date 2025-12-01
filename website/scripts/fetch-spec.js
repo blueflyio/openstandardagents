@@ -1,0 +1,170 @@
+#!/usr/bin/env node
+/**
+ * Fetch spec folder from main openstandardagents repo
+ * This ensures the website always uses the latest spec from the source of truth
+ */
+
+const https = require('https');
+const fs = require('fs');
+const path = require('path');
+
+const GITLAB_API = 'https://gitlab.com/api/v4';
+const PROJECT_ID = 'blueflyio%2Fopenstandardagents';
+const SPEC_PATH = 'spec';
+const REF = 'main';
+
+const SPEC_DIR = path.join(__dirname, '../../spec');
+const SCHEMAS_DIR = path.join(__dirname, '../public/schemas');
+
+// Ensure directories exist
+function ensureDir(dir) {
+  if (!fs.existsSync(dir)) {
+    fs.mkdirSync(dir, { recursive: true });
+  }
+}
+
+// Fetch JSON from GitLab API
+function fetchJson(url) {
+  return new Promise((resolve, reject) => {
+    const headers = {};
+    if (process.env.GITLAB_TOKEN) {
+      headers['PRIVATE-TOKEN'] = process.env.GITLAB_TOKEN;
+    }
+
+    https.get(url, { headers }, (res) => {
+      let data = '';
+      res.on('data', chunk => data += chunk);
+      res.on('end', () => {
+        try {
+          resolve(JSON.parse(data));
+        } catch (e) {
+          reject(new Error(`Failed to parse JSON from ${url}: ${e.message}`));
+        }
+      });
+    }).on('error', reject);
+  });
+}
+
+// Fetch file content from GitLab
+function fetchFile(filePath) {
+  const encodedPath = encodeURIComponent(filePath);
+  const url = `${GITLAB_API}/projects/${PROJECT_ID}/repository/files/${encodedPath}/raw?ref=${REF}`;
+
+  return new Promise((resolve, reject) => {
+    const headers = {};
+    if (process.env.GITLAB_TOKEN) {
+      headers['PRIVATE-TOKEN'] = process.env.GITLAB_TOKEN;
+    }
+
+    https.get(url, { headers }, (res) => {
+      if (res.statusCode === 404) {
+        resolve(null);
+        return;
+      }
+      let data = '';
+      res.on('data', chunk => data += chunk);
+      res.on('end', () => resolve(data));
+    }).on('error', reject);
+  });
+}
+
+// List files in a directory from GitLab
+async function listFiles(dirPath) {
+  const encodedPath = encodeURIComponent(dirPath);
+  const url = `${GITLAB_API}/projects/${PROJECT_ID}/repository/tree?path=${encodedPath}&ref=${REF}&per_page=100`;
+  return fetchJson(url);
+}
+
+// Recursively fetch directory
+async function fetchDirectory(remotePath, localPath) {
+  ensureDir(localPath);
+
+  const items = await listFiles(remotePath);
+
+  if (!Array.isArray(items)) {
+    console.error(`Failed to list ${remotePath}:`, items);
+    return;
+  }
+
+  for (const item of items) {
+    const localItemPath = path.join(localPath, item.name);
+    const remoteItemPath = `${remotePath}/${item.name}`;
+
+    if (item.type === 'tree') {
+      await fetchDirectory(remoteItemPath, localItemPath);
+    } else if (item.type === 'blob') {
+      console.log(`  Fetching ${remoteItemPath}...`);
+      const content = await fetchFile(remoteItemPath);
+      if (content !== null) {
+        fs.writeFileSync(localItemPath, content);
+      }
+    }
+  }
+}
+
+// Copy latest schema to public/schemas
+function copyLatestSchema() {
+  ensureDir(SCHEMAS_DIR);
+
+  // Find latest version
+  const versions = fs.readdirSync(SPEC_DIR)
+    .filter(f => f.startsWith('v') && fs.statSync(path.join(SPEC_DIR, f)).isDirectory())
+    .sort((a, b) => {
+      // Sort by semver
+      const parseVersion = v => v.replace('v', '').split(/[-.]/).map(n => parseInt(n) || 0);
+      const aParts = parseVersion(a);
+      const bParts = parseVersion(b);
+      for (let i = 0; i < Math.max(aParts.length, bParts.length); i++) {
+        if ((aParts[i] || 0) !== (bParts[i] || 0)) {
+          return (bParts[i] || 0) - (aParts[i] || 0);
+        }
+      }
+      return 0;
+    });
+
+  if (versions.length === 0) {
+    console.log('No versions found in spec/');
+    return;
+  }
+
+  const latestVersion = versions[0];
+  console.log(`Latest version: ${latestVersion}`);
+
+  // Copy schema files
+  const versionDir = path.join(SPEC_DIR, latestVersion);
+  const files = fs.readdirSync(versionDir).filter(f => f.endsWith('.json'));
+
+  for (const file of files) {
+    const src = path.join(versionDir, file);
+    const dest = path.join(SCHEMAS_DIR, file);
+    fs.copyFileSync(src, dest);
+    console.log(`  Copied ${file} to public/schemas/`);
+  }
+}
+
+async function main() {
+  console.log('🔄 Fetching spec from blueflyio/openstandardagents (main branch)...\n');
+
+  try {
+    // Clean existing spec dir
+    if (fs.existsSync(SPEC_DIR)) {
+      fs.rmSync(SPEC_DIR, { recursive: true });
+    }
+
+    // Fetch spec directory
+    await fetchDirectory(SPEC_PATH, SPEC_DIR);
+
+    console.log('\n✅ Spec fetched successfully');
+
+    // Copy latest schema to public
+    console.log('\n📋 Copying latest schema to public/schemas/...');
+    copyLatestSchema();
+
+    console.log('\n✅ Done!');
+  } catch (error) {
+    console.error('❌ Error fetching spec:', error.message);
+    process.exit(1);
+  }
+}
+
+main();
