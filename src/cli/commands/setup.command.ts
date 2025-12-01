@@ -8,12 +8,8 @@ import chalk from 'chalk';
 import { Command } from 'commander';
 import * as fs from 'fs';
 import * as path from 'path';
-import { fileURLToPath } from 'url';
 import { execSync } from 'child_process';
 import { z } from 'zod';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 
 /**
  * Zod Schema for Setup Options
@@ -67,7 +63,7 @@ class SetupService {
         stdio: options?.silent ? 'pipe' : 'inherit',
       });
       return result.toString();
-    } catch (error) {
+    } catch {
       throw new Error(`Command failed: ${command}`);
     }
   }
@@ -242,7 +238,7 @@ class ReleaseAutomationService extends SetupService {
     this.log('Next steps:');
     this.log('  1. Configure webhooks in GitLab UI');
     this.log('  2. Set CI/CD variables in GitLab UI');
-    this.log('  3. Create test milestone: v0.2.7-test');
+    this.log('  3. Create test milestone: v0.2.8-test');
     this.log('  4. Verify automation works');
     this.log('');
   }

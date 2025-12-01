@@ -89,7 +89,7 @@ Example `.ossarc.json`:
 ```json
 {
   "registry": "https://registry.ossa.dev",
-  "defaultVersion": "0.2.5-RC",
+  "defaultVersion": "0.2.8-RC",
   "validation": {
     "strict": true
   }

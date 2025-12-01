@@ -98,7 +98,7 @@ export class ReleaseService extends BaseCrudService<
       const version = String(id).replace(/^v/, '');
       const release = await this.findByVersion(version);
       return release;
-    } catch (error) {
+    } catch {
       return null;
     }
   }

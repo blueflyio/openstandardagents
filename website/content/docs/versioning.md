@@ -148,9 +148,9 @@ OSSA schema versions follow specification versions:
 ```
 Package Version  → Schema Directory
 -----------------------------------------
-v0.2.2          → spec/v0.2.6/
-v0.3.0          → spec/v0.2.6/
-v1.0.0          → spec/v0.2.6/
+v0.2.2          → spec/v0.2.8/
+v0.3.0          → spec/v0.2.8/
+v1.0.0          → spec/v0.2.8/
 ```
 
 ### Schema Compatibility

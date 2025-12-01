@@ -160,12 +160,12 @@ See [Running Agents Guide](https://openstandardagents.org/docs/getting-started/r
 
 ## Specification
 
-OSSA v0.2.6 Schema: [`spec/v0.2.6/ossa-0.2.6.schema.json`](spec/v0.2.6/ossa-0.2.6.schema.json)
+OSSA v0.2.8 Schema: [`spec/v0.2.8/ossa-0.2.8.schema.json`](spec/v0.2.8/ossa-0.2.8.schema.json)
 
 ### Required Fields
 
 ```yaml
-ossaVersion: "0.2.6"
+ossaVersion: "0.2.8"
 
 agent:
   id: my-agent                    # DNS-1123 format
@@ -325,7 +325,7 @@ The documentation is organized into:
 
 ### Additional Resources
 
-- **Specification**: [spec/v0.2.6/ossa-0.2.6.schema.json](spec/v0.2.6/ossa-0.2.6.schema.json)
+- **Specification**: [spec/v0.2.8/ossa-0.2.8.schema.json](spec/v0.2.8/ossa-0.2.8.schema.json)
 - **Examples**: [examples/](examples/)
 - **API Reference**: [docs/](docs/)
 - **Deployment Guides**: [GitHub Mirroring](https://openstandardagents.org/docs/deployment/github-mirroring)

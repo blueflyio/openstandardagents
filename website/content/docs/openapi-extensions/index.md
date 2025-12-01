@@ -395,7 +395,7 @@ See [Full Documentation](https://github.com/blueflyio/openstandardagents/blob/ma
 - **Full Documentation**: [docs/openapi-extensions.md](https://github.com/blueflyio/openstandardagents/blob/main/docs/openapi-extensions.md)
 - **JSON Schema**: [docs/schemas/openapi-extensions.schema.json](https://github.com/blueflyio/openstandardagents/blob/main/docs/schemas/openapi-extensions.schema.json)
 - **Examples**: [examples/openapi-extensions/](https://github.com/blueflyio/openstandardagents/tree/main/examples/openapi-extensions)
-- **OSSA Specification**: [spec/v0.2.6/OSSA-SPECIFICATION-v0.2.x.md](https://github.com/blueflyio/openstandardagents/blob/main/spec/v0.2.6/OSSA-SPECIFICATION-v0.2.2.md)
+- **OSSA Specification**: [spec/v0.2.8/OSSA-SPECIFICATION-v0.2.x.md](https://github.com/blueflyio/openstandardagents/blob/main/spec/v0.2.8/OSSA-SPECIFICATION-v0.2.2.md)
 - **npm Package**: [@bluefly/openstandardagents](https://www.npmjs.com/package/@bluefly/openstandardagents)
 
 ---
