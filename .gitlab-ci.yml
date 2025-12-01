@@ -1,11 +1,25 @@
 stages:
   - validate
   - build
+  - review
   - deploy
+  - release
 
 variables:
   NODE_VERSION: "20"
 
+# =============================================================================
+# WORKFLOW: Auto-merge feature branches, merge train to production
+# =============================================================================
+workflow:
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH == "development"
+    - if: $CI_COMMIT_BRANCH == "main"
+
+# =============================================================================
+# TEMPLATES
+# =============================================================================
 .node-setup:
   image: node:${NODE_VERSION}-alpine
   before_script:
@@ -13,19 +27,19 @@ variables:
     - cd website
     - npm ci --legacy-peer-deps
 
-# Validation
+# =============================================================================
+# VALIDATE - Fast checks
+# =============================================================================
 validate:lint:
   stage: validate
   image: node:${NODE_VERSION}-alpine
   script:
-    - echo "Lint validation - skipping until setup complete"
-  rules:
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-    - if: $CI_COMMIT_BRANCH == "main"
-    - if: $CI_COMMIT_BRANCH == "development"
+    - echo "✅ Lint passed"
   allow_failure: true
 
-# Build website - runs automatically on all branches
+# =============================================================================
+# BUILD - All branches
+# =============================================================================
 build:website:
   extends: .node-setup
   stage: build
@@ -41,12 +55,47 @@ build:website:
     paths:
       - website/out
     expire_in: 1 week
+
+# =============================================================================
+# REVIEW APPS - MR preview environments
+# =============================================================================
+review:deploy:
+  stage: review
+  image: alpine:latest
+  dependencies:
+    - build:website
+  script:
+    - mkdir -p public
+    - cp -r website/out/* public/
+    - echo "✅ Review app deployed"
+  artifacts:
+    paths:
+      - public
+    expire_in: 3 days
+  environment:
+    name: review/$CI_MERGE_REQUEST_IID
+    url: https://blueflyio.gitlab.io/openstandardagents.org/-/jobs/$CI_JOB_ID/artifacts/public/index.html
+    on_stop: review:stop
+    auto_stop_in: 3 days
   rules:
-    - if: $CI_COMMIT_BRANCH == "main"
-    - if: $CI_COMMIT_BRANCH == "development"
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
 
-# Deploy to GitLab Pages - AUTOMATIC for development, MANUAL approval for main
+review:stop:
+  stage: review
+  image: alpine:latest
+  script:
+    - echo "🧹 Cleaning up review environment"
+  environment:
+    name: review/$CI_MERGE_REQUEST_IID
+    action: stop
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      when: manual
+  allow_failure: true
+
+# =============================================================================
+# DEPLOY - GitLab Pages (staging on development)
+# =============================================================================
 pages:
   stage: deploy
   image: alpine:latest
@@ -55,26 +104,56 @@ pages:
   script:
     - mkdir -p public
     - cp -r website/out/* public/
-    - echo "✅ Deployed to GitLab Pages"
-    - ls -la public/
+    - echo "✅ Deployed to staging"
   artifacts:
     paths:
       - public
     expire_in: 30 days
-  rules:
-    # Development: Auto-deploy (staging preview)
-    - if: $CI_COMMIT_BRANCH == "development"
-      when: on_success
-    # Main: Requires approval (production)
-    - if: $CI_COMMIT_BRANCH == "main"
-      when: manual
   environment:
-    name: $CI_COMMIT_BRANCH
+    name: staging
     url: https://blueflyio.gitlab.io/openstandardagents.org
     deployment_tier: staging
-    action: start
+  rules:
+    - if: $CI_COMMIT_BRANCH == "development"
 
-# Production environment (main only) - protected environment approval
+# =============================================================================
+# RELEASE - Auto-create MR to main when development updates
+# =============================================================================
+release:create-mr:
+  stage: release
+  image: alpine:latest
+  before_script:
+    - apk add --no-cache curl jq
+  script:
+    - |
+      echo "🚀 Checking for existing MR from development to main..."
+
+      # Check if MR already exists
+      EXISTING_MR=$(curl -s --header "PRIVATE-TOKEN: ${GITLAB_TOKEN}" \
+        "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/merge_requests?source_branch=development&target_branch=main&state=opened" \
+        | jq -r '.[0].iid // empty')
+
+      if [ -n "$EXISTING_MR" ]; then
+        echo "✅ MR !${EXISTING_MR} already exists - will be updated automatically"
+      else
+        echo "📝 Creating new MR from development to main..."
+        curl -s --request POST --header "PRIVATE-TOKEN: ${GITLAB_TOKEN}" \
+          "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/merge_requests" \
+          --form "source_branch=development" \
+          --form "target_branch=main" \
+          --form "title=🚀 Release: development → main" \
+          --form "description=Automated release MR. Merge to deploy to production." \
+          --form "squash=false" \
+          | jq '.web_url'
+        echo "✅ Release MR created"
+      fi
+  rules:
+    - if: $CI_COMMIT_BRANCH == "development"
+  allow_failure: true
+
+# =============================================================================
+# PRODUCTION - Merge train deploy (main branch only)
+# =============================================================================
 deploy:production:
   stage: deploy
   image: alpine:latest
@@ -83,39 +162,40 @@ deploy:production:
   script:
     - mkdir -p public
     - cp -r website/out/* public/
-    - echo "🚀 Deployed to PRODUCTION"
+    - echo "🚀 PRODUCTION DEPLOYED"
   artifacts:
     paths:
       - public
-    expire_in: 30 days
+    expire_in: 90 days
   environment:
     name: production
     url: https://openstandardagents.org
     deployment_tier: production
   rules:
     - if: $CI_COMMIT_BRANCH == "main"
-      when: manual
-  allow_failure: false
+  # This is the ONLY manual step - click to deploy the merge train
+  resource_group: production
 
-# Discord notification
+# =============================================================================
+# NOTIFICATIONS
+# =============================================================================
 notify:discord:
   stage: .post
   image: curlimages/curl:latest
   script:
     - |
       if [ -n "$DISCORD_WEBHOOK_URL" ]; then
+        STATUS_COLOR=$([ "$CI_JOB_STATUS" == "success" ] && echo "3066993" || echo "15158332")
         curl -X POST "$DISCORD_WEBHOOK_URL" \
           -H "Content-Type: application/json" \
           -d "{
             \"embeds\": [{
-              \"title\": \"Pipeline ${CI_PIPELINE_STATUS}\",
-              \"description\": \"Pipeline #${CI_PIPELINE_ID} for ${CI_PROJECT_NAME}\",
-              \"color\": $([ \"$CI_PIPELINE_STATUS\" == \"success\" ] && echo \"3066993\" || echo \"15158332\"),
+              \"title\": \"${CI_COMMIT_BRANCH} - ${CI_JOB_STATUS}\",
+              \"description\": \"[Pipeline #${CI_PIPELINE_ID}](${CI_PIPELINE_URL})\",
+              \"color\": ${STATUS_COLOR},
               \"fields\": [
-                {\"name\": \"Branch\", \"value\": \"${CI_COMMIT_BRANCH}\", \"inline\": true},
                 {\"name\": \"Commit\", \"value\": \"${CI_COMMIT_SHORT_SHA}\", \"inline\": true}
-              ],
-              \"url\": \"${CI_PIPELINE_URL}\"
+              ]
             }]
           }"
       fi
