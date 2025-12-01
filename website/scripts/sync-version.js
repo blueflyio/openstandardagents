@@ -28,6 +28,10 @@ try {
   // Ignore if versions.json doesn't exist yet
 }
 
+// Extract major.minor for display version (doesn't change on patch releases)
+const versionParts = version.split('.');
+const displayVersion = `${versionParts[0]}.${versionParts[1]}.x`;
+
 // Generate version.ts content
 const versionTsContent = `// OSSA version constants
 // AUTO-GENERATED - DO NOT EDIT DIRECTLY
@@ -39,6 +43,10 @@ export const OSSA_VERSION = "${version}";
 export const OSSA_VERSION_TAG = \`v\${OSSA_VERSION}\`;
 export const OSSA_API_VERSION = \`ossa/v\${OSSA_VERSION}\`;
 export const OSSA_SCHEMA_VERSION = OSSA_VERSION;
+
+// Display version for marketing (doesn't change on patch releases)
+export const OSSA_DISPLAY_VERSION = "${displayVersion}";
+export const OSSA_DISPLAY_VERSION_TAG = "v${displayVersion}";
 
 // Aliases for backward compatibility
 export const STABLE_VERSION = OSSA_VERSION;
