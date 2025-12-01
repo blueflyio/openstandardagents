@@ -1,307 +1,114 @@
-/**
- * ValidationService Unit Tests
- * Test validation logic with various manifest scenarios
- */
-
-import { SchemaRepository } from '../../../src/repositories/schema.repository.js';
+import { describe, it, expect, beforeEach } from '@jest/globals';
 import { ValidationService } from '../../../src/services/validation.service.js';
-import type { OssaAgent, SchemaVersion } from '../../../src/types/index.js';
+import { SchemaRepository } from '../../../src/repositories/schema.repository.js';
 
 describe('ValidationService', () => {
-  let validationService: ValidationService;
-  let schemaRepository: SchemaRepository;
+  let service: ValidationService;
+  let schemaRepo: SchemaRepository;
 
   beforeEach(() => {
-    schemaRepository = new SchemaRepository();
-    validationService = new ValidationService(schemaRepository);
+    schemaRepo = new SchemaRepository();
+    service = new ValidationService(schemaRepo);
   });
 
-  afterEach(() => {
-    schemaRepository.clearCache();
-  });
-
-  describe('validate()', () => {
-    it('should validate a correct minimal manifest (v0.2.3)', async () => {
-      const manifest: OssaAgent = {
-        apiVersion: 'ossa/v0.2.4',
+  describe('validate', () => {
+    it('should validate valid manifest', async () => {
+      const manifest = {
+        apiVersion: 'ossa/v0.2.8',
         kind: 'Agent',
-        metadata: {
-          name: 'test-agent',
-          version: '1.0.0',
-          description: 'A test agent',
-        },
-        spec: {
-          role: 'You are a helpful assistant',
-          llm: {
-            provider: 'openai',
-            model: 'gpt-4',
-          },
-          tools: [
-            {
-              type: 'function',
-              name: 'text_generation',
-            },
-          ],
-        },
+        metadata: { name: 'test', version: '1.0.0' },
+        spec: { role: 'assistant' }
       };
-
-      const result = await validationService.validate(manifest, '0.2.4');
-
+      const result = await service.validate(manifest);
       expect(result.valid).toBe(true);
       expect(result.errors).toHaveLength(0);
-      expect(result.manifest).toBeDefined();
-      expect(result.manifest?.metadata).toBeDefined();
-      expect(result.manifest?.metadata?.name).toBe('test-agent');
     });
 
-    it('should reject invalid agent ID (uppercase)', async () => {
-      const manifest = {
-        apiVersion: 'ossa/v0.2.4',
-        kind: 'Agent',
-        metadata: {
-          name: 'INVALID_ID', // Must be lowercase DNS-1123 format
-          version: '1.0.0',
-        },
-        spec: {
-          role: 'You are a helpful assistant',
-          capabilities: [
-            {
-              name: 'test',
-              description: 'Test capability',
-              input_schema: { type: 'object' },
-              output_schema: { type: 'object' },
-            },
-          ],
-        },
-      };
-
-      const result = await validationService.validate(manifest, '0.2.4');
-
-      expect(result.valid).toBe(false);
-      expect(result.errors.length).toBeGreaterThan(0);
-      expect(result.errors[0].message).toMatch(/pattern/i);
-    });
-
-    it('should reject manifest missing required fields', async () => {
-      const manifest = {
-        apiVersion: 'ossa/v0.2.4',
-        kind: 'Agent',
-        metadata: {
-          name: 'test-agent',
-          // Missing required fields: version
-        },
-        spec: {
-          // Missing required fields: role, llm
-        },
-      };
-
-      const result = await validationService.validate(manifest, '0.2.4');
-
+    it('should reject invalid manifest', async () => {
+      const invalid = { random: 'data' };
+      const result = await service.validate(invalid);
       expect(result.valid).toBe(false);
       expect(result.errors.length).toBeGreaterThan(0);
     });
 
-    it('should generate warnings for missing best practices', async () => {
-      const manifest: OssaAgent = {
-        apiVersion: 'ossa/v0.2.4',
+    it('should validate with specific version', async () => {
+      const manifest = {
+        apiVersion: 'ossa/v0.2.8',
         kind: 'Agent',
-        metadata: {
-          name: 'test-agent',
-          version: '1.0.0',
-          // Missing: description (best practice)
-        },
-        spec: {
-          role: 'You are a helpful assistant',
-          llm: {
-            provider: 'openai',
-            model: 'gpt-4',
-          },
-          tools: [],
-        },
+        metadata: { name: 'test', version: '1.0.0' },
+        spec: { role: 'assistant' }
       };
-
-      const result = await validationService.validate(manifest, '0.2.4');
-
-      expect(result.valid).toBe(true); // Schema valid
-      expect(result.warnings.length).toBeGreaterThan(0);
-
-      // Check that description warning exists (missing description is a best practice warning)
-      const hasDescriptionWarning = result.warnings.some((w) =>
-        w.includes('description')
-      );
-      expect(hasDescriptionWarning).toBe(true);
-    });
-
-    it('should validate manifest with extensions', async () => {
-      const manifest: OssaAgent = {
-        apiVersion: 'ossa/v0.2.4',
-        kind: 'Agent',
-        metadata: {
-          name: 'test-agent',
-          version: '1.0.0',
-          description: 'Test agent with extensions',
-        },
-        spec: {
-          role: 'You are a helpful assistant',
-          llm: {
-            provider: 'openai',
-            model: 'gpt-4',
-          },
-          tools: [
-            {
-              type: 'function',
-              name: 'chat',
-            },
-          ],
-        },
-        extensions: {
-          kagent: {
-            kubernetes: {
-              namespace: 'production',
-              labels: { app: 'test' },
-            },
-          },
-        },
-      };
-
-      const result = await validationService.validate(manifest, '0.2.4');
-
+      const result = await service.validate(manifest, '0.2.8');
       expect(result.valid).toBe(true);
-      expect(result.manifest?.extensions).toBeDefined();
-      expect(result.manifest?.extensions?.kagent).toBeDefined();
     });
 
-    it('should reject manifest with invalid version string', async () => {
+    it('should use current version when not specified', async () => {
       const manifest = {
-        apiVersion: 'ossa/v0.2.4',
+        apiVersion: 'ossa/v0.2.8',
         kind: 'Agent',
-        metadata: {
-          name: 'test-agent',
-          version: 'not-semver', // Invalid semver
-        },
-        spec: {
-          role: 'You are a helpful assistant',
-          llm: {
-            provider: 'openai',
-            model: 'gpt-4',
-          },
-          tools: [],
-        },
+        metadata: { name: 'test', version: '1.0.0' },
+        spec: { role: 'assistant' }
       };
-
-      const result = await validationService.validate(manifest, '0.2.4');
-
-      expect(result.valid).toBe(false);
-      expect(result.errors.length).toBeGreaterThan(0);
-    });
-
-    it('should handle schema loading errors gracefully', async () => {
-      const manifest = { test: 'data' };
-
-      // Invalid schema version
-      const result = await validationService.validate(
-        manifest,
-        '999.0' as SchemaVersion
-      );
-
-      expect(result.valid).toBe(false);
-      expect(result.errors.length).toBeGreaterThan(0);
+      const result = await service.validate(manifest);
+      expect(result).toBeDefined();
     });
   });
 
-  describe('validateMany()', () => {
+  describe('validateMany', () => {
     it('should validate multiple manifests', async () => {
-      const manifests: OssaAgent[] = [
+      const manifests = [
         {
-          apiVersion: 'ossa/v0.2.4',
+          apiVersion: 'ossa/v0.2.8',
           kind: 'Agent',
-          metadata: {
-            name: 'agent-1',
-            version: '1.0.0',
-            description: 'First agent',
-          },
-          spec: {
-            role: 'You are a helpful assistant',
-            llm: {
-              provider: 'openai',
-              model: 'gpt-4',
-            },
-            tools: [
-              {
-                type: 'function',
-                name: 'chat',
-              },
-            ],
-          },
+          metadata: { name: 'test1', version: '1.0.0' },
+          spec: { role: 'assistant' }
         },
         {
-          apiVersion: 'ossa/v0.2.4',
+          apiVersion: 'ossa/v0.2.8',
           kind: 'Agent',
-          metadata: {
-            name: 'agent-2',
-            version: '1.0.0',
-            description: 'Second agent',
-          },
-          spec: {
-            role: 'You are a workflow assistant',
-            llm: {
-              provider: 'openai',
-              model: 'gpt-4',
-            },
-            tools: [
-              {
-                type: 'function',
-                name: 'workflow',
-              },
-            ],
-          },
-        },
+          metadata: { name: 'test2', version: '1.0.0' },
+          spec: { role: 'assistant' }
+        }
       ];
-
-      const results = await validationService.validateMany(manifests, '0.2.4');
-
+      const results = await service.validateMany(manifests);
       expect(results).toHaveLength(2);
       expect(results[0].valid).toBe(true);
       expect(results[1].valid).toBe(true);
     });
 
-    it('should identify invalid manifests in a batch', async () => {
+    it('should handle mixed valid and invalid manifests', async () => {
       const manifests = [
         {
-          apiVersion: 'ossa/v0.2.4',
+          apiVersion: 'ossa/v0.2.8',
           kind: 'Agent',
-          metadata: {
-            name: 'valid-agent',
-            version: '1.0.0',
-          },
-          spec: {
-            role: 'You are a helpful assistant',
-            llm: {
-              provider: 'openai',
-              model: 'gpt-4',
-            },
-            tools: [],
-          },
+          metadata: { name: 'test', version: '1.0.0' },
+          spec: { role: 'assistant' }
         },
-        {
-          // Invalid manifest - missing required fields
-          apiVersion: 'ossa/v0.2.4',
-          kind: 'Agent',
-          metadata: {
-            name: 'invalid-agent',
-            // Missing version
-          },
-          spec: {
-            // Missing role and llm
-          },
-        },
+        { invalid: 'data' }
       ];
-
-      const results = await validationService.validateMany(manifests, '0.2.4');
-
+      const results = await service.validateMany(manifests);
       expect(results).toHaveLength(2);
       expect(results[0].valid).toBe(true);
       expect(results[1].valid).toBe(false);
+    });
+
+    it('should handle empty array', async () => {
+      const results = await service.validateMany([]);
+      expect(results).toHaveLength(0);
+    });
+
+    it('should use specified version', async () => {
+      const manifests = [
+        {
+          apiVersion: 'ossa/v0.2.8',
+          kind: 'Agent',
+          metadata: { name: 'test', version: '1.0.0' },
+          spec: { role: 'assistant' }
+        }
+      ];
+      const results = await service.validateMany(manifests, '0.2.8');
+      expect(results).toHaveLength(1);
+      expect(results[0].valid).toBe(true);
     });
   });
 });

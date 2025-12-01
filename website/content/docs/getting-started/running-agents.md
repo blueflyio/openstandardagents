@@ -274,7 +274,7 @@ The run command respects these environment variables:
 ```bash
 # Create the manifest
 cat > support.ossa.yaml << EOF
-apiVersion: ossa/v0.2.4
+apiVersion: ossa/v0.2.8
 kind: Agent
 metadata:
   name: support-agent

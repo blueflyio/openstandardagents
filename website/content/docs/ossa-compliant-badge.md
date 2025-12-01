@@ -234,7 +234,7 @@ extensions:
 
 ## Resources
 
-- **OSSA Specification**: [spec/v0.2.6/](Specification/v0.2.3/)
+- **OSSA Specification**: [spec/v0.2.8/](Specification/v0.2.3/)
 - **Examples**: [examples/](Examples/)
 - **CLI Documentation**: [docs/cli/](./cli/)
 - **Contributing**: [CONTRIBUTING.md](../CONTRIBUTING.md)

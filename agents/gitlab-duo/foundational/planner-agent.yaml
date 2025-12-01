@@ -2,7 +2,7 @@
 # OSSA documentation of GitLab's built-in Planner agent
 # Source: https://docs.gitlab.com/user/duo_agent_platform/agents/foundational_agents/planner/
 
-ossaVersion: '0.2.6'
+ossaVersion: '0.2.8'
 
 agent:
   id: gitlab-duo-planner

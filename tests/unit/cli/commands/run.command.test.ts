@@ -40,7 +40,6 @@ jest.unstable_mockModule('../../../../src/services/runtime/openai.adapter.js', (
 describe('Run Command', () => {
   let originalEnv: NodeJS.ProcessEnv;
   let originalExit: typeof process.exit;
-  let exitCode: number | undefined;
 
   beforeEach(() => {
     // Save original environment
@@ -48,9 +47,7 @@ describe('Run Command', () => {
     originalExit = process.exit;
 
     // Mock process.exit
-    exitCode = undefined;
     process.exit = jest.fn((code?: number) => {
-      exitCode = code;
       throw new Error(`Process exited with code ${code}`);
     }) as any;
 

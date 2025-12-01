@@ -251,7 +251,7 @@ extensions:
 
 ### apiVersion Validation
 - Must match regex: `^ossa/v(0\.2\.[2-3]|1)(\.0)?(-[a-zA-Z0-9]+)?$`
-- Valid examples: `ossa/v1`, `ossa/v0.2.x`, `ossa/v0.2.4`, `ossa/v1.0`
+- Valid examples: `ossa/v1`, `ossa/v0.2.x`, `ossa/v0.2.8`, `ossa/v1.0`
 - Invalid examples: `v1`, `ossa/v2`, `ossa/0.2.3`
 
 ### kind Validation
