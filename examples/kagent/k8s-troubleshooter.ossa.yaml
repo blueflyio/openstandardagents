@@ -17,7 +17,7 @@
 # Domain: infrastructure.kubernetes.troubleshooting
 # ============================================================================
 
-apiVersion: ossa/v1
+apiVersion: ossa/v0.2.8
 kind: Agent
 metadata:
   # Basic agent identification metadata
