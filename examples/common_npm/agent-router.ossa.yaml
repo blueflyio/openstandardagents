@@ -1,3 +1,4 @@
+apiVersion: ossa/v0.2.8
 ossaVersion: "1.0"
 
 agent:
