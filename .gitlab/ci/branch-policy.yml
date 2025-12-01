@@ -1,0 +1,49 @@
+# Branch Policy Enforcement
+# Ensures main branch only receives merges from development
+
+validate:branch-policy:
+  stage: validate
+  image: alpine:latest
+  script:
+    - |
+      #!/bin/sh
+      set -e
+
+      echo "🔒 BRANCH POLICY ENFORCEMENT"
+      echo "============================"
+      echo ""
+
+      # Only run on merge requests targeting main
+      if [ "$CI_MERGE_REQUEST_TARGET_BRANCH_NAME" != "main" ]; then
+        echo "✅ Not targeting main branch, policy check skipped"
+        exit 0
+      fi
+
+      echo "Target branch: $CI_MERGE_REQUEST_TARGET_BRANCH_NAME"
+      echo "Source branch: $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME"
+      echo ""
+
+      # Check if source branch is development
+      if [ "$CI_MERGE_REQUEST_SOURCE_BRANCH_NAME" = "development" ]; then
+        echo "✅ ALLOWED: Merge from development → main"
+        exit 0
+      fi
+
+      # Block all other merges to main
+      echo "❌ BLOCKED: Direct merges to main are not allowed"
+      echo ""
+      echo "Policy: main branch only accepts merges from development"
+      echo ""
+      echo "Required workflow:"
+      echo "  1. Create feature branch from development"
+      echo "  2. Merge feature → development"
+      echo "  3. Merge development → main"
+      echo ""
+      echo "Your branch: $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME"
+      echo "Please merge to development first, then create MR from development to main"
+      
+      exit 1
+  allow_failure: false
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "main"'
+      when: always
