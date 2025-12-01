@@ -26,7 +26,6 @@ workflow:
     - apk add --no-cache git curl
     - cd website
     - npm ci --legacy-peer-deps
-    - npm run fetch-spec
 
 # =============================================================================
 # VALIDATE - Fast checks
