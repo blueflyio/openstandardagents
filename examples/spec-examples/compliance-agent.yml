@@ -191,7 +191,7 @@ agent:
   # Metadata
   metadata:
     author: OSSA Standards Team
-    maintainer: compliance@ossa.io
+    maintainer: ops@openstandardagents.org
     homepage: https://ossa.io/agents/compliance-scanner
     repository: https://github.com/ossa-agents/compliance-scanner
     documentation: https://docs.ossa.io/agents/compliance-scanner
