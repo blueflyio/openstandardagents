@@ -13,11 +13,11 @@
     "generate-examples": "node scripts/generate-examples-index.js",
     "prebuild": "npm run fetch-spec",
     "dev": "npm run fetch-spec && npm run fetch-versions && npm run sync-version && npm run generate-examples && next dev",
-    "build": "npm run fetch-versions && npm run sync-version && npm run sync-wiki && npm run generate-examples && next build",
-    "build:no-wiki": "npm run fetch-versions && npm run sync-version && npm run generate-examples && next build",
+    "build": "npm run fetch-versions && npm run sync-version && npm run sync-wiki && npm run generate-examples && NODE_ENV=production next build",
+    "build:no-wiki": "npm run fetch-versions && npm run sync-version && npm run generate-examples && NODE_ENV=production next build",
     "start": "next start",
     "lint": "next lint",
-    "export": "npm run fetch-versions && npm run sync-version && npm run sync-wiki && npm run generate-examples && next build"
+    "export": "npm run fetch-versions && npm run sync-version && npm run sync-wiki && npm run generate-examples && NODE_ENV=production next build"
   },
   "keywords": [
     "ossa",
