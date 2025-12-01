@@ -60,7 +60,7 @@ build:website:
     expire_in: 1 week
 
 # =============================================================================
-# REVIEW APPS - MR preview environments
+# REVIEW APPS - Only for MRs targeting development (not main)
 # =============================================================================
 review:deploy:
   stage: review
@@ -81,7 +81,8 @@ review:deploy:
     on_stop: review:stop
     auto_stop_in: 3 days
   rules:
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    # Only for MRs targeting development - no review for MRs to main (goes live directly)
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "development"
 
 review:stop:
   stage: review
@@ -92,7 +93,7 @@ review:stop:
     name: review/$CI_MERGE_REQUEST_IID
     action: stop
   rules:
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "development"
       when: manual
   allow_failure: true
 
