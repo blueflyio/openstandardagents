@@ -5,8 +5,28 @@
  * Usage: npm run docs:schema:generate
  */
 
-import { readFileSync, writeFileSync, mkdirSync } from 'fs';
-import { join } from 'path';
+import { readFileSync, writeFileSync, mkdirSync, readdirSync } from 'fs';
+import { join, resolve } from 'path';
+
+// Dynamic version detection - find latest spec directory
+function getLatestSchemaVersion(): { dir: string; file: string } {
+  const specDir = join(process.cwd(), 'spec');
+  const dirs = readdirSync(specDir, { withFileTypes: true })
+    .filter(d => d.isDirectory() && d.name.startsWith('v'))
+    .map(d => d.name)
+    .sort((a, b) => b.localeCompare(a, undefined, { numeric: true }));
+
+  if (dirs.length === 0) {
+    throw new Error('No schema version directories found in spec/');
+  }
+
+  const latestDir = dirs[0];
+  const version = latestDir.slice(1); // Remove 'v' prefix
+  return {
+    dir: latestDir,
+    file: `ossa-${version}.schema.json`
+  };
+}
 
 interface SchemaProperty {
   type: string | string[];
@@ -25,8 +45,10 @@ interface SchemaProperty {
   items?: SchemaProperty;
 }
 
-const SPEC_DIR = join(process.cwd(), 'spec/v0.2.5-RC');
-const OUTPUT_DIR = join(process.cwd(), 'website/content/docs/schema-reference');
+// Dynamic paths based on detected version
+const schemaVersion = getLatestSchemaVersion();
+const SPEC_DIR = join(process.cwd(), 'spec', schemaVersion.dir);
+const OUTPUT_DIR = join(process.cwd(), 'docs/schema-reference');
 
 // Field documentation metadata
 const FIELD_DOCS: Record<string, {
@@ -211,8 +233,9 @@ function main() {
   // Create output directory
   mkdirSync(OUTPUT_DIR, { recursive: true });
   
-  // Read schema
-  const schemaPath = join(SPEC_DIR, 'ossa-0.2.5-RC.schema.json');
+  // Read schema dynamically
+  const schemaPath = join(SPEC_DIR, schemaVersion.file);
+  console.log(`📜 Using schema: ${schemaVersion.dir}/${schemaVersion.file}`);
   const schemaContent = readFileSync(schemaPath, 'utf-8');
   const schema = JSON.parse(schemaContent);
   
@@ -259,9 +282,7 @@ The OSSA schema defines the structure of agent manifests. Every field serves a s
 
 ## Schema Versions
 
-- **Current**: v0.2.5-RC
-- **Stable**: v0.2.4
-- **Previous**: v0.2.3, v0.2.2
+- **Current**: ${schemaVersion.dir}
 
 See [Versioning Guide](../guides/versioning.md) for migration information.
 
@@ -276,7 +297,7 @@ ossa validate agent.ossa.yaml
 ## Complete Schema
 
 View the complete JSON Schema:
-- [v0.2.5-RC Schema](https://github.com/blueflyio/openstandardagents/blob/main/spec/v0.2.5-RC/ossa-0.2.5-RC.schema.json)
+- [${schemaVersion.dir} Schema](https://github.com/blueflyio/openstandardagents/blob/main/spec/${schemaVersion.dir}/${schemaVersion.file})
 
 ## Related Documentation
 

@@ -1,5 +1,5 @@
 {
-  "apiVersion": "ossa/v0.2.4",
+  "apiVersion": "ossa/v0.2.8",
   "kind": "Agent",
   "metadata": {
     "name": "workflow-orchestrator",
