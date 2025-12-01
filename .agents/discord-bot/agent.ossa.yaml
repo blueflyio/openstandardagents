@@ -1,0 +1,456 @@
+# ============================================================================
+# OSSA Discord Bot Agent Manifest
+# ============================================================================
+#
+# PURPOSE:
+#   Community Discord bot for OSSA (Open Standard for Scalable AI Agents).
+#   Provides validation, DevOps notifications, examples, LLM assistance,
+#   and community moderation.
+#
+# CAPABILITIES:
+#   1. OSSA validation commands (/validate, /lint)
+#   2. CI/CD pipeline notifications
+#   3. Example manifest sharing and search
+#   4. LLM-powered assistance (Claude, GPT)
+#   5. Community moderation and safety
+#
+# DEPLOYMENT:
+#   - GitLab CI/CD integration
+#   - Discord webhook/bot token authentication
+#   - Stateful session management for conversations
+#
+# ============================================================================
+
+apiVersion: ossa/v0.2.6
+kind: Agent
+
+metadata:
+  name: discord-bot
+  version: 1.0.0
+  description: |
+    OSSA community Discord bot providing validation commands, DevOps notifications,
+    example sharing, LLM assistance, and moderation capabilities.
+
+    Integrates with GitLab CI/CD for pipeline notifications, supports OSSA
+    manifest validation, and provides AI-powered help using Claude and GPT models.
+
+  labels:
+    environment: production
+    domain: community
+    platform: discord
+    tier: essential
+    classification: service
+
+  annotations:
+    documentation: https://openstandardagents.org/docs/discord-bot
+    support: support@openstandardagents.org
+    repository: https://gitlab.com/blueflyio/openstandardagents.org
+    openstandardagents.org/stability: stable
+
+spec:
+  # Agent role and behavior definition
+  role: |
+    You are the official OSSA Discord community bot. Your responsibilities include:
+
+    1. **OSSA Validation**: Help users validate their OSSA manifests using /validate
+    2. **DevOps Notifications**: Post GitLab CI/CD pipeline status updates
+    3. **Example Discovery**: Share and search OSSA example manifests
+    4. **LLM Assistance**: Answer questions about OSSA using Claude/GPT integration
+    5. **Moderation**: Maintain community guidelines and safety
+
+    Always be helpful, concise, and professional. When users ask about OSSA:
+    - Reference the official spec (v0.2.6)
+    - Provide example manifests when relevant
+    - Link to documentation at https://openstandardagents.org
+    - Validate manifests before suggesting them
+
+    For technical questions, use your knowledge of:
+    - OSSA specification v0.2.6
+    - Kubernetes agent deployment
+    - Multi-agent orchestration
+    - Google ADK, OpenAI Agents, MCP bridges
+
+    If you encounter content policy violations or spam, use moderation tools.
+
+  # LLM configuration - Primary model with fallback
+  llm:
+    provider: anthropic
+    model: claude-sonnet-4-5-20250929
+    temperature: 0.7
+    maxTokens: 4096
+    topP: 0.9
+
+  # State management for conversation continuity
+  state:
+    mode: session
+    storage:
+      type: memory
+      retention: 24h
+      config:
+        max_sessions: 1000
+        cleanup_interval: 1h
+    context_window:
+      max_messages: 50
+      max_tokens: 32000
+      strategy: sliding_window
+
+  # Available tools and capabilities
+  tools:
+    # ========================================
+    # 1. OSSA Validation Tools
+    # ========================================
+    - type: function
+      name: validate_manifest
+      description: |
+        Validate OSSA manifest files against the v0.2.6 schema.
+        Checks syntax, required fields, and best practices.
+      transport:
+        protocol: http
+        streaming: none
+        binding: /api/validate
+        content_type: application/json
+      auth:
+        type: none
+      capabilities:
+        - name: validate_ossa
+          description: Validate OSSA YAML/JSON manifests
+          version: '1.0'
+          deprecated: false
+          input_schema:
+            type: object
+            properties:
+              manifest:
+                type: string
+                description: OSSA manifest content (YAML or JSON)
+              strict:
+                type: boolean
+                description: Enable strict validation mode
+                default: false
+            required:
+              - manifest
+          output_schema:
+            type: object
+            properties:
+              valid:
+                type: boolean
+              errors:
+                type: array
+                items:
+                  type: object
+              warnings:
+                type: array
+                items:
+                  type: object
+          scopes:
+            - read:schema
+            - validate:manifest
+
+    # ========================================
+    # 2. GitLab CI/CD Integration
+    # ========================================
+    - type: http
+      name: gitlab_webhook
+      description: |
+        Receive GitLab CI/CD webhook events and post pipeline notifications
+        to Discord channels. Includes build status, deployment updates, and
+        merge request notifications.
+      endpoint: https://gitlab.com/api/v4/projects/:project_id/pipelines
+      transport:
+        protocol: http
+        streaming: none
+        binding: /webhooks/gitlab
+        content_type: application/json
+      auth:
+        type: bearer
+        credentials: secret:gitlab-token
+        scopes:
+          - read:ci
+          - read:repository
+      capabilities:
+        - name: post_pipeline_status
+          description: Post GitLab pipeline status to Discord
+          version: '1.0'
+          input_schema:
+            type: object
+            properties:
+              pipeline_id:
+                type: integer
+              status:
+                type: string
+                enum: [success, failed, pending, running, canceled]
+              branch:
+                type: string
+              commit_sha:
+                type: string
+            required:
+              - pipeline_id
+              - status
+          scopes:
+            - write:notifications
+
+    # ========================================
+    # 3. Discord API Integration
+    # ========================================
+    - type: http
+      name: discord_api
+      description: |
+        Discord API integration for sending messages, embeds, reactions,
+        and managing channels/roles.
+      endpoint: https://discord.com/api/v10
+      transport:
+        protocol: http
+        streaming: none
+        binding: /channels/:channel_id/messages
+        content_type: application/json
+      auth:
+        type: bearer
+        credentials: secret:discord-bot-token
+        scopes:
+          - bot
+          - messages.read
+          - messages.write
+      capabilities:
+        - name: send_message
+          description: Send message to Discord channel
+          version: '1.0'
+          input_schema:
+            type: object
+            properties:
+              channel_id:
+                type: string
+              content:
+                type: string
+              embed:
+                type: object
+            required:
+              - channel_id
+          scopes:
+            - write:messages
+
+        - name: moderate_content
+          description: Moderate messages (delete, timeout users)
+          version: '1.0'
+          input_schema:
+            type: object
+            properties:
+              action:
+                type: string
+                enum: [delete, timeout, warn, ban]
+              message_id:
+                type: string
+              user_id:
+                type: string
+              reason:
+                type: string
+          scopes:
+            - admin:moderation
+          compliance_tags:
+            - content_moderation
+
+    # ========================================
+    # 4. Example Search & Discovery
+    # ========================================
+    - type: http
+      name: examples_api
+      description: |
+        Search and retrieve OSSA example manifests from the public examples
+        catalog. Includes Kubernetes, Drupal, OpenAI, and bridge examples.
+      endpoint: https://openstandardagents.org/examples
+      transport:
+        protocol: http
+        streaming: none
+        binding: /examples/index.json
+        content_type: application/json
+      auth:
+        type: none
+      capabilities:
+        - name: search_examples
+          description: Search OSSA example manifests by keyword
+          version: '1.0'
+          input_schema:
+            type: object
+            properties:
+              query:
+                type: string
+              category:
+                type: string
+                enum: [kubernetes, drupal, openai, bridges, quickstart]
+          output_schema:
+            type: array
+            items:
+              type: object
+              properties:
+                name:
+                  type: string
+                path:
+                  type: string
+                description:
+                  type: string
+          scopes:
+            - read:examples
+
+    # ========================================
+    # 5. LLM Integration (Claude, GPT)
+    # ========================================
+    - type: function
+      name: llm_assistance
+      description: |
+        Provide LLM-powered assistance using Claude (primary) and GPT (fallback)
+        for answering OSSA questions, explaining concepts, and troubleshooting.
+      transport:
+        protocol: http
+        streaming: response
+        binding: /api/v1/chat/stream
+        content_type: text/event-stream
+      auth:
+        type: bearer
+        credentials: secret:anthropic-api-key
+      capabilities:
+        - name: answer_question
+          description: Answer OSSA-related questions using LLM
+          version: '1.0'
+          input_schema:
+            type: object
+            properties:
+              question:
+                type: string
+              context:
+                type: array
+                items:
+                  type: string
+              model:
+                type: string
+                enum: [claude, gpt-4o]
+                default: claude
+          output_schema:
+            type: object
+            properties:
+              answer:
+                type: string
+              sources:
+                type: array
+                items:
+                  type: string
+          scopes:
+            - read:llm
+            - execute:inference
+
+  # Autonomy configuration
+  autonomy:
+    level: autonomous
+    approval_required: false
+    allowed_actions:
+      - send_message
+      - validate_ossa
+      - search_examples
+      - answer_question
+      - post_pipeline_status
+      - moderate_content  # Auto-moderate based on rules
+    blocked_actions:
+      - ban_user          # Requires human approval
+      - delete_channel
+
+  # Constraints and limits
+  constraints:
+    cost:
+      maxTokensPerDay: 1000000
+      maxTokensPerRequest: 8192
+      maxCostPerDay: 50.00
+      currency: USD
+
+    performance:
+      maxLatencySeconds: 10.0
+      maxConcurrentRequests: 50
+      timeoutSeconds: 30
+
+    resources:
+      cpu: "500m"
+      memory: "512Mi"
+
+  # Observability and monitoring
+  observability:
+    tracing:
+      enabled: true
+      exporter: otlp
+      endpoint: http://otel-collector:4318
+
+    metrics:
+      enabled: true
+      exporter: prometheus
+      endpoint: http://prometheus:9090/metrics
+
+    logging:
+      level: info
+      format: json
+
+# ============================================================================
+# Extensions - Framework-specific integrations
+# ============================================================================
+extensions:
+  # OpenAI Agents SDK compatibility (fallback LLM)
+  openai_agents:
+    enabled: true
+    model: gpt-4o-mini
+    memory:
+      enabled: true
+      type: session
+      max_messages: 50
+    tools_mapping:
+      - ossa_capability: validate_ossa
+        openai_tool_name: validate_manifest
+        description: Validate OSSA manifest against schema
+        parameters:
+          type: object
+          properties:
+            manifest:
+              type: string
+              description: OSSA manifest content
+          required:
+            - manifest
+
+  # MCP (Model Context Protocol) integration
+  mcp:
+    enabled: true
+    server_type: sse
+    config:
+      max_message_size: 1048576
+      tools:
+        - validate_manifest
+        - search_examples
+
+  # Google ADK (for future Gemini integration)
+  google_adk:
+    enabled: false
+    agent_type: llm_agent
+    model: gemini-2.0-flash-exp
+    session:
+      service: in_memory
+      state_schema:
+        conversation_history: array
+        user_preferences: object
+    memory:
+      enabled: true
+      service: in_memory
+
+# ============================================================================
+# Deployment Notes
+# ============================================================================
+#
+# Environment Variables Required:
+#   - DISCORD_BOT_TOKEN (Bot token from Discord Developer Portal)
+#   - DISCORD_CLIENT_ID (Application ID)
+#   - GITLAB_TOKEN (GitLab API token for CI/CD webhooks)
+#   - ANTHROPIC_API_KEY (Claude API key)
+#   - OPENAI_API_KEY (GPT fallback API key)
+#
+# GitLab CI/CD Integration:
+#   - Webhook URL: https://discord-bot.openstandardagents.org/webhooks/gitlab
+#   - Events: Pipeline, Job, Merge Request
+#
+# Discord Commands:
+#   - /validate <manifest> - Validate OSSA manifest
+#   - /examples <query> - Search example manifests
+#   - /help - Show available commands
+#   - /ask <question> - Ask OSSA-related question
+#
+# ============================================================================
