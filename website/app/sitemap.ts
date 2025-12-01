@@ -5,7 +5,21 @@ import path from 'path';
 export const dynamic = 'force-static';
 
 function getAllPages(): string[] {
-  const pages: string[] = ['', '/docs', '/playground', '/examples', '/schema', '/blog'];
+  // All static pages in the app
+  const pages: string[] = [
+    '',                    // Home
+    '/about',
+    '/blog',
+    '/brand',
+    '/design-guide',
+    '/docs',
+    '/ecosystem',
+    '/examples',
+    '/license',
+    '/playground',
+    '/schema',
+    '/specification',
+  ];
 
   // Add blog posts
   const blogDir = path.join(process.cwd(), '../content/blog');

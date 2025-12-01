@@ -1,15 +1,32 @@
 import Link from 'next/link';
 import type { Metadata } from 'next';
 import { STABLE_VERSION_TAG, STABLE_VERSION } from '@/lib/version';
+import { StructuredData } from '@/components/StructuredData';
 
 export const metadata: Metadata = {
-  title: 'Specification - Open Standard Agents',
-  description: 'The complete Open Standard Agents specification documentation.',
+  title: 'OSSA Specification - Technical Documentation',
+  description: 'The complete Open Standard Agents (OSSA) specification for defining, validating, and deploying AI agents. The OpenAPI for AI Agents.',
+  keywords: ['OSSA', 'specification', 'AI agents', 'technical documentation', 'schema', 'JSON Schema'],
+  openGraph: {
+    title: 'OSSA Specification - Technical Documentation',
+    description: 'Complete technical specification for multi-agent AI systems. Version-controlled, vendor-neutral.',
+    type: 'article',
+  },
 };
 
 export default function SpecificationPage() {
   return (
     <>
+      <StructuredData
+        type="TechArticle"
+        data={{
+          title: 'OSSA Specification',
+          description: 'Complete technical specification for defining, validating, and deploying AI agents',
+          version: STABLE_VERSION,
+          datePublished: '2024-11-01',
+          dateModified: new Date().toISOString().split('T')[0],
+        }}
+      />
       {/* Hero Section */}
       <div className="bg-gradient-to-br from-secondary via-primary to-accent text-white py-16 px-4">
         <div className="container mx-auto max-w-6xl text-center">

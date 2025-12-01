@@ -1,5 +1,5 @@
 interface StructuredDataProps {
-  type: 'Organization' | 'WebSite' | 'Article';
+  type: 'Organization' | 'WebSite' | 'Article' | 'SoftwareApplication' | 'TechArticle';
   data: Record<string, any>;
 }
 
@@ -45,7 +45,41 @@ export function StructuredData({ type, data }: StructuredDataProps) {
             name: 'OSSA Standards Team',
             logo: {
               '@type': 'ImageObject',
-              url: `${baseUrl}/logo.png`,
+              url: `${baseUrl}/og-image.png`,
+            },
+          },
+          ...data,
+        };
+      case 'SoftwareApplication':
+        return {
+          '@context': 'https://schema.org',
+          '@type': 'SoftwareApplication',
+          name: 'OSSA - Open Standard for Scalable AI Agents',
+          applicationCategory: 'DeveloperApplication',
+          operatingSystem: 'Cross-platform',
+          offers: {
+            '@type': 'Offer',
+            price: '0',
+            priceCurrency: 'USD',
+          },
+          ...data,
+        };
+      case 'TechArticle':
+        return {
+          '@context': 'https://schema.org',
+          '@type': 'TechArticle',
+          headline: data.title || 'OSSA Specification',
+          description: data.description || 'Technical specification for AI agent orchestration',
+          author: {
+            '@type': 'Organization',
+            name: 'OSSA Standards Team',
+          },
+          publisher: {
+            '@type': 'Organization',
+            name: 'OSSA Standards Team',
+            logo: {
+              '@type': 'ImageObject',
+              url: `${baseUrl}/og-image.png`,
             },
           },
           ...data,
