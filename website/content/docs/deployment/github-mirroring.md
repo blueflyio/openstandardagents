@@ -122,7 +122,7 @@ mirror:github:
   image: alpine:latest
   before_script:
     - apk add --no-cache git
-    - git config --global user.email "ci@blueflyio.com"
+    - git config --global user.email "ci@bluefly.io"
     - git config --global user.name "GitLab CI"
   script:
     - |
