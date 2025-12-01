@@ -54,7 +54,7 @@ describe('Schema Validation Integration', () => {
             }
 
             // Map ossa/v0.2 or ossa/v0.2.x to latest v0.2.x schema
-            const result = await validationService.validate(manifest, '0.2.4');
+            const result = await validationService.validate(manifest, '0.2.8');
 
             // Log errors for debugging
             if (result.errors.length > 0) {
@@ -103,7 +103,7 @@ describe('Schema Validation Integration', () => {
 
   it('should validate platform extensions', async () => {
     const manifest = {
-      apiVersion: 'ossa/v0.2.4',
+      apiVersion: 'ossa/v0.2.8',
       kind: 'Agent',
       metadata: {
         name: 'test-agent',
@@ -128,13 +128,13 @@ describe('Schema Validation Integration', () => {
       },
     };
 
-    const result = await validationService.validate(manifest, '0.2.4');
+    const result = await validationService.validate(manifest, '0.2.8');
     expect(result.valid).toBe(true);
   });
 
   it('should catch platform-specific validation errors', async () => {
     const manifest = {
-      apiVersion: 'ossa/v0.2.4',
+      apiVersion: 'ossa/v0.2.8',
       kind: 'Agent',
       metadata: {
         name: 'test-agent',
@@ -154,14 +154,14 @@ describe('Schema Validation Integration', () => {
       },
     };
 
-    const result = await validationService.validate(manifest, '0.2.4');
+    const result = await validationService.validate(manifest, '0.2.8');
     expect(result.valid).toBe(false);
     expect(result.errors.length).toBeGreaterThan(0);
   });
 
   it('should validate cross-platform compatibility', async () => {
     const manifest = {
-      apiVersion: 'ossa/v0.2.4',
+      apiVersion: 'ossa/v0.2.8',
       kind: 'Agent',
       metadata: {
         name: 'multi-platform-agent',
@@ -190,7 +190,7 @@ describe('Schema Validation Integration', () => {
       },
     };
 
-    const result = await validationService.validate(manifest, '0.2.4');
+    const result = await validationService.validate(manifest, '0.2.8');
     if (result.errors.length > 0) {
       console.error(
         'Cross-platform validation errors:',

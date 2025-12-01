@@ -1,38 +1,32 @@
 {
-  "hooks": {
-    "SessionStart": [
-      {
-        "matcher": "startup",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "\"$CLAUDE_PROJECT_DIR\"/scripts/setup-environment.sh"
-          }
-        ]
-      }
+  "permissions": {
+    "allow": [
+      "Bash(npm run *)",
+      "Bash(npm test *)",
+      "Bash(npx tsx *)",
+      "Bash(node *)",
+      "Bash(git status)",
+      "Bash(git diff *)",
+      "Bash(git log *)",
+      "Read(spec/**)",
+      "Read(examples/**)",
+      "Read(src/**)",
+      "Read(tests/**)"
+    ],
+    "deny": [
+      "Bash(rm -rf *)",
+      "Bash(git push --force *)",
+      "Bash(git commit * --no-verify *)"
     ]
   },
-  "network": {
-    "access": "limited",
-    "allowedDomains": [
-      "gitlab.com",
-      "github.com/blueflyio",
-      "registry.gitlab.com",
-      "gitlab.com/api/v4",
-      "registry.npmjs.org",
-      "www.npmjs.com",
-      "pypi.org",
-      "files.pythonhosted.org",
-      "crates.io",
-      "static.crates.io",
-      "proxy.golang.org",
-      "packagist.org",
-      "repo.packagist.org"
-    ]
+  "env": {
+    "OSSA_VERSION": "0.2.8",
+    "NODE_ENV": "development"
   },
-  "environment": {
-    "NODE_ENV": "development",
-    "GITLAB_PROJECT_PATH": "llm/openapi-ai-agents-standard",
-    "CLAUDE_CODE_REMOTE": "${CLAUDE_CODE_REMOTE}"
+  "context": {
+    "include": [
+      "spec/v0.2.8/ossa-0.2.8.schema.json",
+      "package.json"
+    ]
   }
 }

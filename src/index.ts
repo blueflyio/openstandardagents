@@ -7,6 +7,19 @@
 export * from './types/index.js';
 export * from './types/openapi-extensions.js';
 
+// Version utilities (dynamic version detection)
+export {
+  getVersionInfo,
+  getVersion,
+  getSchemaPath,
+  getApiVersion,
+  getSchemaDir,
+  isPrerelease,
+  getSupportedVersions,
+  resolveSchemaPath,
+  type VersionInfo
+} from './utils/version.js';
+
 // Repositories
 export { SchemaRepository } from './repositories/schema.repository.js';
 export { ManifestRepository } from './repositories/manifest.repository.js';

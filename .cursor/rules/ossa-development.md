@@ -27,7 +27,7 @@
 - Examples in `examples/` must all validate
 
 ## Schema Workflow
-1. Update schema JSON in `spec/v0.2.6/`
+1. Update schema JSON in `spec/v0.2.8/`
 2. Run `npm run gen:types` to generate TypeScript types
 3. Run `npm run gen:zod` to generate Zod validators
 4. Run `npm run validate:schema` to validate schema
