@@ -6,11 +6,11 @@
 
 OSSA follows semantic versioning. Development specs are marked with `-dev` suffix to indicate they are not yet stable.
 
-### v0.2.4-dev - Transport & Security
+### v0.2.8-dev - Transport & Security
 
 **Status**: Development
 **Target Release**: February 2025
-**Milestone**: [v0.2.4 - Transport & Security](https://github.com/blueflyio/openstandardagents/milestones/12)
+**Milestone**: [v0.2.8 - Transport & Security](https://github.com/blueflyio/openstandardagents/milestones/12)
 
 #### New Features
 
@@ -46,17 +46,17 @@ OSSA follows semantic versioning. Development specs are marked with `-dev` suffi
 
 ---
 
-### v0.2.5-RC-dev - Multi-Agent Composition
+### v0.2.8-RC-dev - Multi-Agent Composition
 
 **Status**: Development
 **Target Release**: March 2025
-**Milestone**: [v0.2.5-RC - Multi-Agent Composition](https://github.com/blueflyio/openstandardagents/milestones/13)
+**Milestone**: [v0.2.8-RC - Multi-Agent Composition](https://github.com/blueflyio/openstandardagents/milestones/13)
 
 #### New Features
 
 1. **AgentGraph Resource Type**
    ```yaml
-   apiVersion: ossa/v0.2.5-RC
+   apiVersion: ossa/v0.2.8-RC
    kind: AgentGraph  # New!
    metadata:
      name: customer-support-cluster
@@ -112,8 +112,8 @@ git clone https://github.com/blueflyio/openstandardagents.git
 cd openstandardagents
 
 # View development specs
-ls spec/v0.2.6/
-ls spec/v0.2.6/
+ls spec/v0.2.8/
+ls spec/v0.2.8/
 ```
 
 ### Validation
@@ -123,16 +123,16 @@ ls spec/v0.2.6/
 npm install -g @bluefly/openstandardagents
 
 # Validate against development schema
-ossa validate your-agent.yaml --version 0.2.4-dev
+ossa validate your-agent.yaml --version 0.2.8-dev
 ```
 
 ### Examples
 
 Development examples are in the spec directories:
 
-- `spec/v0.2.6/examples/customer-support-graph.ossa.yaml` - Sequential process
-- `spec/v0.2.6/examples/research-team.ossa.yaml` - Hierarchical process
-- `spec/v0.2.6/examples/parallel-processors.ossa.yaml` - Parallel process
+- `spec/v0.2.8/examples/customer-support-graph.ossa.yaml` - Sequential process
+- `spec/v0.2.8/examples/research-team.ossa.yaml` - Hierarchical process
+- `spec/v0.2.8/examples/parallel-processors.ossa.yaml` - Parallel process
 
 ---
 
@@ -144,7 +144,7 @@ We welcome feedback on development specifications:
 2. **Discussions**: Comment on milestone issues
 3. **Pull Requests**: Submit improvements
 
-### v0.2.4 Issues
+### v0.2.8 Issues
 - [#220 - Transport metadata](https://github.com/blueflyio/openstandardagents/issues/220)
 - [#221 - State/memory block](https://github.com/blueflyio/openstandardagents/issues/221)
 - [#222 - Security scopes](https://github.com/blueflyio/openstandardagents/issues/222)
@@ -152,7 +152,7 @@ We welcome feedback on development specifications:
 - [#224 - Google ADK extension](https://github.com/blueflyio/openstandardagents/issues/224)
 - [#225 - MS AF adapter](https://github.com/blueflyio/openstandardagents/issues/225)
 
-### v0.2.5-RC Issues
+### v0.2.8-RC Issues
 - [#211-212 - AgentGraph resource](https://github.com/blueflyio/openstandardagents/issues/211)
 - [#213 - Process patterns](https://github.com/blueflyio/openstandardagents/issues/213)
 - [#214 - Edge routing](https://github.com/blueflyio/openstandardagents/issues/214)
@@ -167,8 +167,8 @@ We welcome feedback on development specifications:
 | Version | Focus | Status | Target |
 |---------|-------|--------|--------|
 | v0.2.3 | Documentation & Examples | **Stable** | Released |
-| v0.2.4 | Transport & Security | Development | Feb 2025 |
-| v0.2.5-RC | Multi-Agent Composition | Development | Mar 2025 |
+| v0.2.8 | Transport & Security | Development | Feb 2025 |
+| v0.2.8-RC | Multi-Agent Composition | Development | Mar 2025 |
 | v0.3.0 | Gamma Release | Planned | Apr 2025 |
 | v1.0.0 | Genesis Release | Planned | TBD |
 

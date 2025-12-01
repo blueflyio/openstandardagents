@@ -1,5 +1,5 @@
 {
-  "ossa": "0.2.6",
+  "ossa": "0.2.8",
   "agent": {
     "name": "gitlab-cicd-optimization-agent",
     "version": "1.0.0",

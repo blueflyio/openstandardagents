@@ -178,7 +178,7 @@ export class ClaudeAdapter {
 
       // Check if we need to execute tools
       const toolUses = response.content.filter(
-        (block: any) => block.type === 'tool_use'
+        (block) => block.type === 'tool_use'
       );
 
       if (toolUses.length > 0) {
@@ -234,12 +234,12 @@ export class ClaudeAdapter {
 
       // Check if we have a text response
       const textBlocks = response.content.filter(
-        (block: any) => block.type === 'text'
+        (block) => block.type === 'text'
       );
 
       if (textBlocks.length > 0) {
         return textBlocks
-          .map((block: any) => ('text' in block ? block.text : ''))
+          .map((block) => (block.type === 'text' ? block.text : ''))
           .join('\n');
       }
 
