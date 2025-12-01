@@ -1,7 +1,7 @@
 {
   "stable": "0.2.5-RC",
   "latest": "0.2.5-RC",
-  "dev": "0.2.5-dev",
+  "dev": "0.2.6-dev",
   "all": [
     {
       "version": "0.2.4",
@@ -20,6 +20,15 @@
       "available": true
     },
     {
+      "version": "0.2.8",
+      "tag": "v0.2.8",
+      "apiVersion": "ossa/v0.2.8",
+      "type": "stable",
+      "published": false,
+      "available": true,
+      "schemaPath": "/Users/flux423/Sites/LLM/openstandardagents.org/worktrees/openstandardagents.org/feature-20-version-audit/spec/v0.2.8/ossa-0.2.8.schema.json"
+    },
+    {
       "version": "0.2.7",
       "tag": "v0.2.7",
       "apiVersion": "ossa/v0.2.7",
@@ -34,7 +43,7 @@
       "type": "stable",
       "published": false,
       "available": true,
-      "schemaPath": "/Users/flux423/Sites/LLM/openstandardagents.org/spec/v0.2.6/ossa-0.2.6.schema.json"
+      "schemaPath": "/Users/flux423/Sites/LLM/openstandardagents.org/worktrees/openstandardagents.org/feature-20-version-audit/spec/v0.2.6/ossa-0.2.6.schema.json"
     },
     {
       "version": "0.2.5",
@@ -43,7 +52,7 @@
       "type": "stable",
       "published": false,
       "available": true,
-      "schemaPath": "/Users/flux423/Sites/LLM/openstandardagents.org/spec/v0.2.5/ossa-0.2.5.schema.json"
+      "schemaPath": "/Users/flux423/Sites/LLM/openstandardagents.org/worktrees/openstandardagents.org/feature-20-version-audit/spec/v0.2.5/ossa-0.2.5.schema.json"
     },
     {
       "version": "0.2.3",
@@ -52,7 +61,7 @@
       "type": "stable",
       "published": false,
       "available": true,
-      "schemaPath": "/Users/flux423/Sites/LLM/openstandardagents.org/spec/v0.2.3/ossa-0.2.3.schema.json"
+      "schemaPath": "/Users/flux423/Sites/LLM/openstandardagents.org/worktrees/openstandardagents.org/feature-20-version-audit/spec/v0.2.3/ossa-0.2.3.schema.json"
     },
     {
       "version": "0.2.2",
@@ -61,7 +70,7 @@
       "type": "stable",
       "published": false,
       "available": true,
-      "schemaPath": "/Users/flux423/Sites/LLM/openstandardagents.org/spec/v0.2.2/ossa-0.2.2.schema.json"
+      "schemaPath": "/Users/flux423/Sites/LLM/openstandardagents.org/worktrees/openstandardagents.org/feature-20-version-audit/spec/v0.2.2/ossa-0.2.2.schema.json"
     },
     {
       "version": "0.2.1",
@@ -70,7 +79,7 @@
       "type": "stable",
       "published": false,
       "available": true,
-      "schemaPath": "/Users/flux423/Sites/LLM/openstandardagents.org/spec/v0.2.1/ossa-0.2.1.schema.json"
+      "schemaPath": "/Users/flux423/Sites/LLM/openstandardagents.org/worktrees/openstandardagents.org/feature-20-version-audit/spec/v0.2.1/ossa-0.2.1.schema.json"
     },
     {
       "version": "0.2.0",
@@ -79,7 +88,7 @@
       "type": "stable",
       "published": false,
       "available": true,
-      "schemaPath": "/Users/flux423/Sites/LLM/openstandardagents.org/spec/v0.2.0/ossa-0.2.0.schema.json"
+      "schemaPath": "/Users/flux423/Sites/LLM/openstandardagents.org/worktrees/openstandardagents.org/feature-20-version-audit/spec/v0.2.0/ossa-0.2.0.schema.json"
     },
     {
       "version": "0.1.9",
@@ -88,6 +97,14 @@
       "type": "stable",
       "published": true,
       "available": true
+    },
+    {
+      "version": "0.2.6-dev",
+      "tag": "v0.2.6-dev",
+      "apiVersion": "ossa/v0.2.6-dev",
+      "type": "dev",
+      "published": false,
+      "available": false
     }
   ],
   "fallbackVersion": "0.2.3"
