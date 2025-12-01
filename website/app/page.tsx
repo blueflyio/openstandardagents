@@ -2,22 +2,7 @@ import Link from 'next/link';
 import type { Metadata } from 'next';
 import { Logo } from '@/components/Logo';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
-import fs from 'fs';
-import path from 'path';
-
-// Get version dynamically
-function getVersion(): string {
-  try {
-    const pkgPath = path.join(process.cwd(), '../package.json');
-    if (fs.existsSync(pkgPath)) {
-      const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
-      return pkg.version;
-    }
-  } catch (error) {
-    console.error('Failed to load version:', error);
-  }
-  return '0.2.6';
-}
+import { OSSA_DISPLAY_VERSION_TAG } from '@/lib/version';
 
 export const metadata: Metadata = {
   title: 'Open Standard Agents - Industry Standard for Agent Orchestration',
@@ -25,8 +10,6 @@ export const metadata: Metadata = {
 };
 
 export default function HomePage() {
-  const version = getVersion();
-  
   return (
     <div className="flex flex-col">
       {/* Hero Section */}
@@ -34,7 +17,7 @@ export default function HomePage() {
         <div className="container mx-auto max-w-[1440px] text-center">
           <div className="mb-6 flex flex-col items-center">
             <span className="inline-block px-4 py-2 bg-white/20 backdrop-blur-sm rounded-full text-sm font-medium mb-4">
-              The OpenAPI for AI Agents (v{version})
+              The OpenAPI for AI Agents ({OSSA_DISPLAY_VERSION_TAG})
             </span>
           </div>
           <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold mb-6 leading-tight">
