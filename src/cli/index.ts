@@ -25,6 +25,10 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { fileURLToPath } from 'url';
 
+/**
+ * Get version dynamically from package.json
+ * Uses multiple strategies to find package.json reliably
+ */
 function getVersion(): string {
   // Try multiple strategies to find package.json
   // Strategy 1: Relative to this file (for built dist)
@@ -36,7 +40,7 @@ function getVersion(): string {
     try {
       const content = fs.readFileSync(relativePath, 'utf-8');
       const pkg = JSON.parse(content);
-      return pkg.version || '0.2.3';
+      if (pkg.version) return pkg.version;
     } catch {
       // Fall through to next strategy
     }
@@ -48,7 +52,7 @@ function getVersion(): string {
     try {
       const content = fs.readFileSync(cwdPath, 'utf-8');
       const pkg = JSON.parse(content);
-      return pkg.version || '0.2.3';
+      if (pkg.version) return pkg.version;
     } catch {
       // Fall through to next strategy
     }
@@ -62,7 +66,7 @@ function getVersion(): string {
       try {
         const content = fs.readFileSync(candidate, 'utf-8');
         const pkg = JSON.parse(content);
-        return pkg.version || '0.2.3';
+        if (pkg.version) return pkg.version;
       } catch {
         // Continue searching
       }
@@ -72,8 +76,28 @@ function getVersion(): string {
     current = parent;
   }
 
-  // Fallback version
-  return '0.2.3';
+  // Strategy 4: Environment variable
+  if (process.env.OSSA_VERSION) {
+    return process.env.OSSA_VERSION;
+  }
+
+  // Ultimate fallback - read from spec directory names
+  try {
+    const specDir = path.resolve(__dirname, '../../spec');
+    if (fs.existsSync(specDir)) {
+      const dirs = fs.readdirSync(specDir)
+        .filter((d: string) => d.startsWith('v'))
+        .sort((a: string, b: string) => b.localeCompare(a, undefined, { numeric: true }));
+      if (dirs.length > 0) {
+        return dirs[0].slice(1); // Remove 'v' prefix
+      }
+    }
+  } catch {
+    // Ignore
+  }
+
+  // Should never reach here if package.json exists
+  throw new Error('Unable to determine OSSA version. Ensure package.json exists.');
 }
 
 program

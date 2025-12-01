@@ -41,7 +41,7 @@ metadata:
 
   annotations:
     documentation: https://openstandardagents.org/docs/agents/performance-optimizer
-    support: operations@bluefly.io
+    support: ops@openstandardagents.org
     runbook: https://openstandardagents.org/docs/runbooks/performance-optimizer
     slo: "p95 response time < 500ms"
 
@@ -272,7 +272,7 @@ spec:
 
         annotations:
           description: "Automated performance optimization agent"
-          contact: "operations@bluefly.io"
+          contact: "ops@openstandardagents.org"
           slo: "p95 response time < 500ms"
 
         resourceLimits:

@@ -1,6 +1,6 @@
 # OSSA v0.1.9 Compliance Configuration for __ARCHIVE_REPORTS
 
-apiVersion: 'open-standards-scalable-agents/v0.1.9'
+apiVersion: ossa/v0.2.8
 kind: 'ComplianceConfiguration'
 metadata:
   name: '__ARCHIVE_REPORTS-compliance'
