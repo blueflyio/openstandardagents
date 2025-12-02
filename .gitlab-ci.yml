@@ -17,6 +17,10 @@
 include:
   - local: '.gitlab/ci/agents.yml'
   - local: '.gitlab/ci/branch-policy.yml'
+  # Security scanning from Auto DevOps
+  - template: Jobs/SAST.gitlab-ci.yml
+  - template: Jobs/Secret-Detection.gitlab-ci.yml
+  - template: Jobs/Dependency-Scanning.gitlab-ci.yml
   # TODO: Add merge-train component when gitlab_components is made public/internal
   # - component: gitlab.com/blueflyio/agent-platform/gitlab_components/merge-train@main
 
@@ -444,6 +448,23 @@ test:lint:
   rules:
     - when: always
 
+test:code-quality:
+  stage: test
+  image: node:${NODE_VERSION}-alpine
+  script:
+    - npm ci --legacy-peer-deps
+    - npx eslint src/ -f json -o eslint-report.json || true
+    - node scripts/eslint-to-codequality.cjs
+  artifacts:
+    reports:
+      codequality: gl-code-quality-report.json
+    paths:
+      - gl-code-quality-report.json
+      - eslint-report.json
+    expire_in: 7 days
+  rules:
+    - when: always
+
 test:unit:
   stage: test
   image: node:${NODE_VERSION}-alpine
@@ -457,11 +478,13 @@ test:unit:
   coverage: '/All files[^|]*\|[^|]*\s+([\d\.]+)/'
   artifacts:
     reports:
+      junit: test-results/junit.xml
       coverage_report:
         coverage_format: cobertura
         path: coverage/cobertura-coverage.xml
     paths:
       - coverage/
+      - test-results/
     expire_in: 7 days
   allow_failure: false
   rules:
@@ -1044,3 +1067,21 @@ create-release-mrs:
   rules:
     - if: $CI_COMMIT_BRANCH == "development"
       when: manual
+
+# Generate llms.txt context files
+generate:llms-txt:
+  stage: build
+  image: python:3.11-slim
+  script:
+    - pip install llms-txt
+    - llms_txt2ctx llms.txt > llms-ctx.txt
+    - llms_txt2ctx llms.txt --optional True > llms-ctx-full.txt
+  artifacts:
+    paths:
+      - llms.txt
+      - llms-ctx.txt
+      - llms-ctx-full.txt
+    expire_in: never
+  only:
+    - main
+    - development

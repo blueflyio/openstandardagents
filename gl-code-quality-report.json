@@ -1,0 +1,62 @@
+[
+  {
+    "description": "'options' is defined but never used. Allowed unused args must match /^_/u.",
+    "check_name": "@typescript-eslint/no-unused-vars",
+    "fingerprint": "2f9f79fe8e23387068b611520413b327",
+    "severity": "minor",
+    "location": {
+      "path": "src/cli/commands/setup.command.ts",
+      "lines": {
+        "begin": 214
+      }
+    }
+  },
+  {
+    "description": "'project' is assigned a value but never used.",
+    "check_name": "@typescript-eslint/no-unused-vars",
+    "fingerprint": "7402441c276d946f9420395c18052f97",
+    "severity": "minor",
+    "location": {
+      "path": "src/services/release-automation/webhook.service.ts",
+      "lines": {
+        "begin": 50
+      }
+    }
+  },
+  {
+    "description": "'project' is assigned a value but never used.",
+    "check_name": "@typescript-eslint/no-unused-vars",
+    "fingerprint": "71675c76efa40f112f4d1fa38384c254",
+    "severity": "minor",
+    "location": {
+      "path": "src/services/release-automation/webhook.service.ts",
+      "lines": {
+        "begin": 117
+      }
+    }
+  },
+  {
+    "description": "'project' is assigned a value but never used.",
+    "check_name": "@typescript-eslint/no-unused-vars",
+    "fingerprint": "94df01d04ebcbbc20035fbde29eb21ea",
+    "severity": "minor",
+    "location": {
+      "path": "src/services/release-automation/webhook.service.ts",
+      "lines": {
+        "begin": 145
+      }
+    }
+  },
+  {
+    "description": "'options' is defined but never used. Allowed unused args must match /^_/u.",
+    "check_name": "@typescript-eslint/no-unused-vars",
+    "fingerprint": "400e20d0938c08417406c37c76e4f043",
+    "severity": "minor",
+    "location": {
+      "path": "src/services/runtime/claude/claude-adapter.ts",
+      "lines": {
+        "begin": 268
+      }
+    }
+  }
+]
