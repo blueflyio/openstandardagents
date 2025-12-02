@@ -1046,3 +1046,21 @@ create-release-mrs:
   rules:
     - if: $CI_COMMIT_BRANCH == "development"
       when: manual
+
+# Generate llms.txt context files
+generate:llms-txt:
+  stage: build
+  image: python:3.11-slim
+  script:
+    - pip install llms-txt
+    - llms_txt2ctx llms.txt > llms-ctx.txt
+    - llms_txt2ctx llms.txt --optional True > llms-ctx-full.txt
+  artifacts:
+    paths:
+      - llms.txt
+      - llms-ctx.txt
+      - llms-ctx-full.txt
+    expire_in: never
+  only:
+    - main
+    - development
