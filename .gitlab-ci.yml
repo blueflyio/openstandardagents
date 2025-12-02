@@ -17,6 +17,10 @@
 include:
   - local: '.gitlab/ci/agents.yml'
   - local: '.gitlab/ci/branch-policy.yml'
+  # Security scanning from Auto DevOps
+  - template: Jobs/SAST.gitlab-ci.yml
+  - template: Jobs/Secret-Detection.gitlab-ci.yml
+  - template: Jobs/Dependency-Scanning.gitlab-ci.yml
   # TODO: Add merge-train component when gitlab_components is made public/internal
   # - component: gitlab.com/blueflyio/agent-platform/gitlab_components/merge-train@main
 
@@ -441,6 +445,23 @@ test:lint:
     - npm run lint || echo "⚠️  Lint warnings"
     - npm run typecheck || echo "⚠️  Typecheck warnings"
   allow_failure: true
+  rules:
+    - when: always
+
+test:code-quality:
+  stage: test
+  image: node:${NODE_VERSION}-alpine
+  script:
+    - npm ci --legacy-peer-deps
+    - npx eslint src/ -f json -o eslint-report.json || true
+    - node scripts/eslint-to-codequality.cjs
+  artifacts:
+    reports:
+      codequality: gl-code-quality-report.json
+    paths:
+      - gl-code-quality-report.json
+      - eslint-report.json
+    expire_in: 7 days
   rules:
     - when: always
 
