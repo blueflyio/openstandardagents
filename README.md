@@ -235,6 +235,12 @@ Features:
 **LangChain/AutoGen/Semantic Kernel**: Framework-specific implementations  
 **MCP**: Formal standard focused on context, not full agent lifecycle
 
+- **Specification**: [spec/v0.2.8/ossa-0.2.8.schema.json](spec/v0.2.8/ossa-0.2.8.schema.json)
+- **Examples**: [examples/](examples/)
+- **API Reference**: [docs/](docs/)
+- **Deployment Guides**: [GitHub Mirroring](https://openstandardagents.org/docs/deployment/github-mirroring)
+- **GitHub Issues**: https://github.com/blueflyio/openstandardagents/issues
+
 ---
 
 ## Contributing

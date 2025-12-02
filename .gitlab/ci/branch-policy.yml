@@ -23,26 +23,24 @@ validate:branch-policy:
       echo "Source branch: $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME"
       echo ""
 
-      # Allow development or merge/* branches
+      # Check if source branch is development
       if [ "$CI_MERGE_REQUEST_SOURCE_BRANCH_NAME" = "development" ]; then
         echo "✅ ALLOWED: Merge from development → main"
         exit 0
       fi
-      
-      case "$CI_MERGE_REQUEST_SOURCE_BRANCH_NAME" in
-        merge/*)
-          echo "✅ ALLOWED: Merge branch → main"
-          exit 0
-          ;;
-      esac
 
       # Block all other merges to main
       echo "❌ BLOCKED: Direct merges to main are not allowed"
       echo ""
-      echo "Policy: main branch only accepts merges from development or merge/* branches"
+      echo "Policy: main branch only accepts merges from development"
+      echo ""
+      echo "Required workflow:"
+      echo "  1. Create feature branch from development"
+      echo "  2. Merge feature → development"
+      echo "  3. Merge development → main"
       echo ""
       echo "Your branch: $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME"
-      echo "Please merge to development first"
+      echo "Please merge to development first, then create MR from development to main"
       
       exit 1
   allow_failure: false

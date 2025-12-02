@@ -28,9 +28,9 @@
 # =============================================================================
 # CI/CD & INFRASTRUCTURE (CI Bot + K8s Agents)
 # =============================================================================
-/.gitlab-ci.yml            @blueflyio/platform-team @bot-ci-local
-/.gitlab/                  @blueflyio/platform-team @bot-ci-local
-/infrastructure/           @blueflyio/platform-team @bot-ci-local
+/.gitlab-ci.yml            @flux423 @blueflyio/platform-team @bot-ci-local
+/.gitlab/                  @flux423 @blueflyio/platform-team @bot-ci-local
+/infrastructure/           @flux423 @blueflyio/platform-team @bot-ci-local
 
 # =============================================================================
 # AGENTS (OSSA Bot validates agent manifests)
@@ -49,15 +49,15 @@ CHANGELOG.md               @blueflyio/ossa-docs-team @bot-wiki-aggregator
 # =============================================================================
 # RELEASE & VERSIONING (CI Bot manages releases)
 # =============================================================================
-package.json               @blueflyio/ossa-maintainers @bot-ci-local
-package-lock.json          @blueflyio/ossa-maintainers @bot-ci-local
-.releaserc.json            @blueflyio/ossa-maintainers @bot-ci-local
-.version.json              @blueflyio/ossa-maintainers @bot-ci-local
+package.json               @flux423 @blueflyio/ossa-maintainers @bot-ci-local
+package-lock.json          @flux423 @blueflyio/ossa-maintainers @bot-ci-local
+.releaserc.json            @flux423 @blueflyio/ossa-maintainers @bot-ci-local
+.version.json              @flux423 @blueflyio/ossa-maintainers @bot-ci-local
 
 # =============================================================================
 # SCRIPTS (TypeScript Bot + CI Bot)
 # =============================================================================
-/scripts/                  @blueflyio/platform-team @bot-typescript-local @bot-ci-local
+/scripts/                  @flux423 @blueflyio/platform-team @bot-typescript-local @bot-ci-local
 
 # =============================================================================
 # BOT & AGENT TOKEN MAPPING
