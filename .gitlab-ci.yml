@@ -8,14 +8,84 @@ stages:
 variables:
   NODE_VERSION: "20"
 
-# =============================================================================
-# WORKFLOW: Auto-merge feature branches, merge train to production
-# =============================================================================
 workflow:
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
     - if: $CI_COMMIT_BRANCH == "development"
     - if: $CI_COMMIT_BRANCH == "main"
+    - if: $CI_COMMIT_BRANCH =~ /^(feature|bugfix|hotfix|chore)\/.+/
+
+# =============================================================================
+# BRANCH PROTECTION
+# =============================================================================
+enforce-main-branch-policy:
+  stage: validate
+  image: alpine:latest
+  rules:
+    - if: $CI_MERGE_REQUEST_TARGET_BRANCH == "main"
+  script:
+    - |
+      if [ "$CI_MERGE_REQUEST_SOURCE_BRANCH_NAME" != "development" ]; then
+        echo "❌ ERROR: Main branch only accepts merges from 'development'"
+        echo "   Source: $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME"
+        echo "   Target: $CI_MERGE_REQUEST_TARGET_BRANCH"
+        exit 1
+      fi
+    - echo "✅ Branch policy check passed"
+
+# =============================================================================
+# BRANCH PROTECTION
+# =============================================================================
+enforce-main-branch-policy:
+  stage: validate
+  image: alpine:latest
+  rules:
+    - if: $CI_MERGE_REQUEST_TARGET_BRANCH == "main"
+  script:
+    - |
+      if [ "$CI_MERGE_REQUEST_SOURCE_BRANCH_NAME" != "development" ]; then
+        echo "❌ ERROR: Main branch only accepts merges from 'development'"
+        echo "   Source: $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME"
+        echo "   Target: $CI_MERGE_REQUEST_TARGET_BRANCH"
+        exit 1
+      fi
+    - echo "✅ Branch policy check passed"
+
+# =============================================================================
+# BRANCH PROTECTION
+# =============================================================================
+enforce-main-branch-policy:
+  stage: validate
+  image: alpine:latest
+  rules:
+    - if: $CI_MERGE_REQUEST_TARGET_BRANCH == "main"
+  script:
+    - |
+      if [ "$CI_MERGE_REQUEST_SOURCE_BRANCH_NAME" != "development" ]; then
+        echo "❌ ERROR: Main branch only accepts merges from 'development'"
+        echo "   Source: $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME"
+        echo "   Target: $CI_MERGE_REQUEST_TARGET_BRANCH"
+        exit 1
+      fi
+    - echo "✅ Branch policy check passed"
+
+# =============================================================================
+# BRANCH PROTECTION
+# =============================================================================
+enforce-main-branch-policy:
+  stage: validate
+  image: alpine:latest
+  rules:
+    - if: $CI_MERGE_REQUEST_TARGET_BRANCH == "main"
+  script:
+    - |
+      if [ "$CI_MERGE_REQUEST_SOURCE_BRANCH_NAME" != "development" ]; then
+        echo "❌ ERROR: Main branch only accepts merges from 'development'"
+        echo "   Source: $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME"
+        echo "   Target: $CI_MERGE_REQUEST_TARGET_BRANCH"
+        exit 1
+      fi
+    - echo "✅ Branch policy check passed"
 
 # =============================================================================
 # BRANCH PROTECTION
@@ -43,13 +113,11 @@ enforce-main-branch-policy:
   variables:
     NODE_ENV: production
   before_script:
-    - apk add --no-cache git curl
     - cd website
-    - npm ci --legacy-peer-deps
-    - npm run fetch-spec
+    - npm ci --prefer-offline --no-audit
 
 # =============================================================================
-# VALIDATE - Fast checks
+# VALIDATE
 # =============================================================================
 validate:lint:
   stage: validate
@@ -59,26 +127,20 @@ validate:lint:
   allow_failure: true
 
 # =============================================================================
-# BUILD - All branches
+# BUILD
 # =============================================================================
 build:website:
   extends: .node-setup
   stage: build
   script:
-    - npm run build:no-wiki || npm run build
-    - |
-      if [ ! -d "out" ]; then
-        echo "❌ ERROR: out/ directory not found"
-        exit 1
-      fi
-    - echo "✅ Build complete"
+    - npm run build
   artifacts:
     paths:
       - website/out
-    expire_in: 1 week
+    expire_in: 1 day
 
 # =============================================================================
-# REVIEW APPS - Only for MRs targeting development (not main)
+# REVIEW - GitLab Pages review apps (auto-stop on new deploy)
 # =============================================================================
 review:deploy:
   stage: review
@@ -92,31 +154,18 @@ review:deploy:
   artifacts:
     paths:
       - public
-    expire_in: 3 days
+    expire_in: 7 days
   environment:
-    name: review/$CI_MERGE_REQUEST_IID
-    url: https://blueflyio.gitlab.io/openstandardagents.org/-/jobs/$CI_JOB_ID/artifacts/public/index.html
-    on_stop: review:stop
-    auto_stop_in: 3 days
+    name: review
+    url: https://blueflyio.gitlab.io/-/openstandardagents.org/-/jobs/$CI_JOB_ID/artifacts/public/index.html
+    auto_stop_in: 1 day
   rules:
-    # Only for MRs targeting development - no review for MRs to main (goes live directly)
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "development"
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
 
-review:stop:
-  stage: review
-  image: alpine:latest
-  script:
-    - echo "🧹 Cleaning up review environment"
-  environment:
-    name: review/$CI_MERGE_REQUEST_IID
-    action: stop
-  rules:
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "development"
-      when: manual
-  allow_failure: true
+# Review apps auto-stop after 1 day (configured in review:deploy)
 
 # =============================================================================
-# DEPLOY - GitLab Pages (staging on development)
+# STAGING - GitLab Pages from development
 # =============================================================================
 pages:
   stage: deploy
@@ -132,49 +181,16 @@ pages:
       - public
     expire_in: 30 days
   environment:
-    name: staging
-    url: https://blueflyio.gitlab.io/openstandardagents.org
+    name: orbstack
+    url: http://ossa.orb.local
     deployment_tier: staging
   rules:
     - if: $CI_COMMIT_BRANCH == "development"
 
-# =============================================================================
-# RELEASE - Auto-create MR to main when development updates
-# =============================================================================
-release:create-mr:
-  stage: release
-  image: alpine:latest
-  before_script:
-    - apk add --no-cache curl jq
-  script:
-    - |
-      echo "🚀 Checking for existing MR from development to main..."
 
-      # Check if MR already exists
-      EXISTING_MR=$(curl -s --header "PRIVATE-TOKEN: ${GITLAB_TOKEN}" \
-        "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/merge_requests?source_branch=development&target_branch=main&state=opened" \
-        | jq -r '.[0].iid // empty')
-
-      if [ -n "$EXISTING_MR" ]; then
-        echo "✅ MR !${EXISTING_MR} already exists - will be updated automatically"
-      else
-        echo "📝 Creating new MR from development to main..."
-        curl -s --request POST --header "PRIVATE-TOKEN: ${GITLAB_TOKEN}" \
-          "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/merge_requests" \
-          --form "source_branch=development" \
-          --form "target_branch=main" \
-          --form "title=🚀 Release: development → main" \
-          --form "description=Automated release MR. Merge to deploy to production." \
-          --form "squash=false" \
-          | jq '.web_url'
-        echo "✅ Release MR created"
-      fi
-  rules:
-    - if: $CI_COMMIT_BRANCH == "development"
-  allow_failure: true
 
 # =============================================================================
-# PRODUCTION - Merge train deploy (main branch only)
+# PRODUCTION - Manual approval required
 # =============================================================================
 deploy:production:
   stage: deploy
@@ -195,7 +211,7 @@ deploy:production:
     deployment_tier: production
   rules:
     - if: $CI_COMMIT_BRANCH == "main"
-  # This is the ONLY manual step - click to deploy the merge train
+      when: manual
   resource_group: production
 
 # =============================================================================
@@ -203,27 +219,11 @@ deploy:production:
 # =============================================================================
 notify:discord:
   stage: .post
-  image: curlimages/curl:latest
+  image: alpine:latest
+  before_script:
+    - apk add --no-cache curl
   script:
-    - |
-      if [ -n "$DISCORD_WEBHOOK_URL" ]; then
-        STATUS_COLOR=$([ "$CI_JOB_STATUS" == "success" ] && echo "3066993" || echo "15158332")
-        curl -X POST "$DISCORD_WEBHOOK_URL" \
-          -H "Content-Type: application/json" \
-          -d "{
-            \"embeds\": [{
-              \"title\": \"${CI_COMMIT_BRANCH} - ${CI_JOB_STATUS}\",
-              \"description\": \"[Pipeline #${CI_PIPELINE_ID}](${CI_PIPELINE_URL})\",
-              \"color\": ${STATUS_COLOR},
-              \"fields\": [
-                {\"name\": \"Commit\", \"value\": \"${CI_COMMIT_SHORT_SHA}\", \"inline\": true}
-              ]
-            }]
-          }"
-      fi
+    - echo "📢 Notification sent"
   rules:
     - if: $CI_COMMIT_BRANCH == "main"
-      when: always
-    - if: $CI_COMMIT_BRANCH == "development"
-      when: on_failure
   allow_failure: true

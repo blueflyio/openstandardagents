@@ -1180,11 +1180,9 @@ curl http://localhost:3000/metrics
 
 ## Additional Resources
 
-- **OSSA Specification**: [https://github.com/blueflyio/openstandardagents/wiki/home](https://github.com/blueflyio/openstandardagents/wiki/home)
-- **BuildKit Documentation**: [https://github.com/blueflyio/documentation/-/wikis/BuildKit-CLI-Reference](https://github.com/blueflyio/documentation/-/wikis/BuildKit-CLI-Reference)
-- **Agent Examples**: `/Users/flux423/Sites/LLM/agent-buildkit/templates/agents/`
-- **OSSA Types**: `/Users/flux423/Sites/LLM/agent-buildkit/src/types/ossa.ts`
-- **OpenAPI Spec**: `/Users/flux423/Sites/LLM/agent-buildkit/openapi/ossa-complete-v0.1.2.yaml`
+- **OSSA Specification**: [Schema Reference](../schema-reference/index)
+- **BuildKit Documentation**: https://gitlab.com/blueflyio/agent-platform/agent-buildkit
+- **Agent Examples**: https://gitlab.com/blueflyio/agent-platform/agent-buildkit/-/tree/main/templates/agents
 
 ---
 
