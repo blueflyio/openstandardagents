@@ -22,7 +22,6 @@ github:sync:agent:
       allow_failure: true
 
 # Code Review Agent
-# Code Review Agent
 # Note: Requires blueflyio/agent-platform project to be created
 # Currently set to allow_failure until agent-platform is deployed
 code:review:agent:
