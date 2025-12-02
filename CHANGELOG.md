@@ -81,43 +81,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Enhanced getting started documentation with detailed option descriptions
 - Updated README.md with running agents section
 
-## [0.2.4](https://github.com/blueflyio/openstandardagents/compare/v0.2.3...v0.2.4) (2025-11-19)
-## [v0.2.6] - TBD
-
-### Added
-
-- **spec/v0.2.6 directory structure**: New specification directory for v0.2.6
-- **Migration guide**: Guide for migrating from v0.2.5-RC to v0.2.6
-
-### Changed
-
-- Updated version references from 0.2.5-RC to 0.2.6
-- Updated schema files to reflect v0.2.6
-
-### Fixed
-
-- TBD: Issues fixed in this release
-
-### Migration Notes
-
-See [spec/v0.2.6/migrations/v0.2.5-RC-to-v0.2.6.md](./spec/v0.2.6/migrations/v0.2.5-RC-to-v0.2.6.md) for detailed migration instructions.
-
-
-### Package Rename
-
-- **IMPORTANT**: Package renamed from `@bluefly/open-standards-scalable-agents` to `@bluefly/openstandardagents`
-- The old package `@bluefly/open-standards-scalable-agents` has been deprecated
-- Update your dependencies: `npm install @bluefly/openstandardagents`
-
-### Website Fixes
-
-- Fixed 100+ broken links (gitlab.com → github.com/blueflyio/openstandardagents)
-- Fixed npm registry auth in CI pipeline
-- Standardized all package references across documentation
-- Fixed broken internal links (/docs/deployment, /research, CLI-Reference)
-- Updated all schema version references to v0.2.3
-- Fixed RSS feed base URL to openstandardagents.org
-
 ## [0.2.3](https://github.com/blueflyio/openstandardagents/compare/v0.2.2...v0.2.3) (2025-11-12)
 
 ### Documentation
