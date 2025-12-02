@@ -282,6 +282,56 @@ validate:ossa:
   rules:
     - when: always
 
+# Check for divergent branches before merging to protected branches
+check:divergence:
+  stage: validate
+  image: alpine:latest
+  before_script:
+    - apk add --no-cache git
+  script:
+    - |
+      if [ "$CI_MERGE_REQUEST_TARGET_BRANCH" = "main" ] || [ "$CI_MERGE_REQUEST_TARGET_BRANCH" = "development" ]; then
+        echo "🔍 Checking for divergent branches..."
+        git fetch origin
+        
+        BEHIND=$(git log --oneline origin/$CI_MERGE_REQUEST_SOURCE_BRANCH..origin/$CI_MERGE_REQUEST_TARGET_BRANCH 2>/dev/null | wc -l)
+        AHEAD=$(git log --oneline origin/$CI_MERGE_REQUEST_TARGET_BRANCH..origin/$CI_MERGE_REQUEST_SOURCE_BRANCH 2>/dev/null | wc -l)
+        
+        if [ $BEHIND -gt 0 ] && [ $AHEAD -gt 0 ]; then
+          echo "❌ DIVERGENT BRANCHES DETECTED"
+          echo "Target has $BEHIND commits not in source"
+          echo "Source has $AHEAD commits not in target"
+          echo "Use squash merge or force push recovery"
+          exit 1
+        fi
+        
+        if [ $BEHIND -gt 0 ]; then
+          echo "⚠️  Source behind target by $BEHIND commits"
+          exit 1
+        fi
+        
+        echo "✅ No divergence detected"
+      fi
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+
+# Check for .DS_Store files
+check:ds-store:
+  stage: validate
+  image: alpine:latest
+  before_script:
+    - apk add --no-cache git
+  script:
+    - |
+      echo "🔍 Checking for .DS_Store files..."
+      if git diff --name-only $CI_MERGE_REQUEST_DIFF_BASE_SHA 2>/dev/null | grep -q "\.DS_Store"; then
+        echo "❌ .DS_Store files in MR"
+        exit 1
+      fi
+      echo "✅ No .DS_Store files"
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+
 validate:version-sync:
   stage: validate
   image: node:${NODE_VERSION}-alpine
