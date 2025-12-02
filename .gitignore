@@ -27,7 +27,6 @@ coverage/
 *.tsbuildinfo
 
 # Development directories (not part of npm package)
-.agents/
 .cursor/
 .claude/
 
