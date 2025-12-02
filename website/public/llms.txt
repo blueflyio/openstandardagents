@@ -1,0 +1,21 @@
+# Open Standard for Scalable Agents (OSSA)
+
+> OSSA is a vendor-neutral, open specification for defining, deploying, and orchestrating AI agents across platforms. Visit openstandardagents.org for the complete specification, examples, and documentation.
+
+## Specification
+
+- [OSSA Schema v0.2.8](https://openstandardagents.org/schemas/ossa-schema.yaml): Complete agent definition schema
+- [API Documentation](https://openstandardagents.org/api-docs.html): OpenAPI specification for OSSA APIs
+- [Examples](https://openstandardagents.org/examples.json): 35+ agent definition examples
+
+## Project Resources
+
+- [GitLab Repository](https://gitlab.com/blueflyio/openstandardagents): Source code and development
+- [Project llms.txt](https://gitlab.com/blueflyio/openstandardagents/-/blob/main/llms.txt): Detailed project documentation
+- [Wiki](https://gitlab.com/blueflyio/openstandardagents/-/wikis/home): Complete documentation wiki
+
+## Integration
+
+- [GitLab Duo Platform](https://gitlab.com/blueflyio/openstandardagents/-/issues/73): Integration guide
+- [12 OSSA Agents](https://gitlab.com/blueflyio/openstandardagents/-/wikis/Specialized-Bot-Deployment): Agent registry
+- [AgentFlow Lifecycle](https://gitlab.com/blueflyio/openstandardagents/-/wikis/AgentFlow-Lifecycle): Workflow states

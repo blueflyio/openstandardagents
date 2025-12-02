@@ -114,8 +114,8 @@ Starting fresh? → Check Getting Started guide
 
 ## Support
 
-- **Documentation:** `/Users/flux423/Sites/LLM/agent-buildkit/docs/`
-- **Examples:** `/Users/flux423/Sites/LLM/agent-buildkit/.agents/`
+- **Documentation:** [Schema Reference](../schema-reference/index)
+- **Examples:** https://gitlab.com/blueflyio/agent-platform/agent-buildkit/-/tree/main/templates/agents
 - **OSSA Spec:** [Schema Reference](/docs/schema-reference)
 - **BuildKit CLI:** `buildkit agents --help`
 

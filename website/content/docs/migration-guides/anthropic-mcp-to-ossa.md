@@ -1738,10 +1738,10 @@ my_metric_total 123
 
 **Resources:**
 
-- **OSSA Specification:** [OSSA Complete Agent Reference](/Users/flux423/Sites/LLM/agent-buildkit/docs/architecture/OSSA_COMPLETE_AGENT_REFERENCE.md)
+- **OSSA Specification:** [Schema Reference](../schema-reference/index)
 - **MCP Protocol:** https://modelcontextprotocol.io
 - **BuildKit Commands:** `buildkit agents --help`
-- **MCPB Quickstart:** [MCPB Quickstart Guide](/Users/flux423/Sites/LLM/agent-buildkit/docs/architecture/MCPB_QUICKSTART.md)
+- **Agent BuildKit:** https://gitlab.com/blueflyio/agent-platform/agent-buildkit
 
 ---
 
