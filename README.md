@@ -2,10 +2,13 @@
 
 > **The OpenAPI for AI Agents**
 > 
-> - **🐙 GitHub**: [github.com/blueflyio/openstandardagents](https://github.com/blueflyio/openstandardagents)
+> - **🦊 GitLab**: [gitlab.com/blueflyio/openstandardagents](https://gitlab.com/blueflyio/openstandardagents) (Primary)
+> - **🐙 GitHub**: [github.com/blueflyio/openstandardagents](https://github.com/blueflyio/openstandardagents) (Mirror)
 > - **📦 npm**: [@bluefly/openstandardagents](https://www.npmjs.com/package/@bluefly/openstandardagents)
 > - **🌐 Website**: [openstandardagents.org](https://openstandardagents.org)
 > - **💬 Discord**: [Join our community](https://discord.gg/ossa)
+>
+> ⚠️ **Note**: GitHub is a read-only mirror. All development happens on GitLab.
 
 ---
 
@@ -247,18 +250,22 @@ Features:
 
 OSSA is an open-source, community-driven project. We welcome contributions!
 
-**Repository**: [github.com/blueflyio/openstandardagents](https://github.com/blueflyio/openstandardagents)  
-**Issues**: [github.com/blueflyio/openstandardagents/issues](https://github.com/blueflyio/openstandardagents/issues)  
-**Discussions**: [github.com/blueflyio/openstandardagents/discussions](https://github.com/blueflyio/openstandardagents/discussions)
+**Primary Repository**: [GitLab](https://gitlab.com/blueflyio/openstandardagents)  
+**GitHub Mirror**: [GitHub](https://github.com/blueflyio/openstandardagents) (read-only, automatically synced)
+
+> ⚠️ **Important**: The GitHub repository is a read-only mirror. All development happens on GitLab.
+> 
+> - ✅ **GitLab**: Create issues, merge requests, discussions
+> - ❌ **GitHub**: Do not create PRs or issues - they will not be reviewed
 
 ### How to Contribute
 
-1. Fork the repository on GitHub
+1. Fork the repository on [GitLab](https://gitlab.com/blueflyio/openstandardagents)
 2. Create a feature branch
 3. Make your changes
-4. Submit a pull request
+4. Submit a merge request on GitLab
 
-See [CONTRIBUTING.md](https://github.com/blueflyio/openstandardagents/blob/main/CONTRIBUTING.md) for detailed guidelines.
+See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines.
 
 ### Ways to Contribute
 
