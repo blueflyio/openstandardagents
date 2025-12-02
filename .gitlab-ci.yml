@@ -1138,3 +1138,23 @@ generate:llms-txt:
       when: on_success
     - if: $CI_COMMIT_BRANCH == "development"
       when: on_success
+
+# ============================================================================
+# AGENT: MR Manager (Automated MR Lifecycle)
+# ============================================================================
+
+agent:mr-manager:
+  stage: agents
+  image: node:${NODE_VERSION}-alpine
+  before_script:
+    - npm ci --legacy-peer-deps
+    - npm run build
+  script:
+    - |
+      echo "🤖 MR Manager Agent"
+      echo "Automated MR lifecycle management"
+      # Future: ossa run .gitlab/agents/mr-manager/manifest.ossa.yaml
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "webhook"
+      when: manual
+  allow_failure: true
