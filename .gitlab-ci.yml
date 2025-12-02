@@ -928,8 +928,15 @@ mirror:github:
 
 workflow:
   rules:
+    # Merge train pipelines (combined state testing)
+    - if: $CI_MERGE_REQUEST_EVENT_TYPE == "merge_train"
+    # Merged result pipelines (pre-merge validation)
+    - if: $CI_MERGE_REQUEST_EVENT_TYPE == "merged_result"
+    # Regular branch pipelines
     - if: $CI_COMMIT_BRANCH
+    # MR pipelines
     - if: $CI_MERGE_REQUEST_IID
+    # Tag pipelines
     - if: $CI_COMMIT_TAG
     - when: always
 
@@ -996,4 +1003,44 @@ announce-release:
     - RELEASE_ACTION=announce tsx .gitlab/release-automation/scripts/release-buttons.ts
   rules:
     - if: $CI_COMMIT_BRANCH == "main"
+      when: manual
+# ============================================================================
+# AUTOMATED RELEASE MR CREATION
+# ============================================================================
+
+create-release-mrs:
+  stage: .pre
+  image: alpine:latest
+  before_script:
+    - apk add --no-cache curl jq
+  script:
+    - |
+      echo "🚀 Checking for milestones needing release MRs..."
+      
+      MILESTONES=$(curl -s --header "PRIVATE-TOKEN: $CI_JOB_TOKEN" \
+        "$CI_API_V4_URL/projects/$CI_PROJECT_ID/milestones?state=active")
+      
+      echo "$MILESTONES" | jq -r '.[] | select(.title | startswith("v")) | .id + " " + .title' | while read MILESTONE_ID MILESTONE_TITLE; do
+        EXISTING_MR=$(curl -s --header "PRIVATE-TOKEN: $CI_JOB_TOKEN" \
+          "$CI_API_V4_URL/projects/$CI_PROJECT_ID/merge_requests?state=opened&source_branch=development&target_branch=main&milestone=$MILESTONE_TITLE" \
+          | jq -r '.[0].iid // empty')
+        
+        if [ -z "$EXISTING_MR" ]; then
+          curl --request POST \
+            --header "PRIVATE-TOKEN: $CI_JOB_TOKEN" \
+            --header "Content-Type: application/json" \
+            --data "{
+              \"source_branch\": \"development\",
+              \"target_branch\": \"main\",
+              \"title\": \"Draft: 🚀 Release $MILESTONE_TITLE\",
+              \"description\": \"## Release $MILESTONE_TITLE\\n\\nDraft MR for next release. Features merge to development and accumulate here.\\n\\n### When Ready\\n1. Mark as ready\\n2. Add to merge train\\n3. Train merges to main\\n4. Release automation runs\",
+              \"milestone_id\": $MILESTONE_ID,
+              \"draft\": true,
+              \"labels\": \"type::release,status::draft\"
+            }" \
+            "$CI_API_V4_URL/projects/$CI_PROJECT_ID/merge_requests"
+        fi
+      done
+  rules:
+    - if: $CI_COMMIT_BRANCH == "development"
       when: manual

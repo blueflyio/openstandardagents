@@ -2,7 +2,7 @@
 # Uses agents from blueflyio/agent-platform
 
 variables:
-  AGENT_PLATFORM_GROUP: blueflyio/agent-platform
+  AGENT_PLATFORM_PROJECT: blueflyio/agent-platform/gitlab_components
 
 # GitHub PR Sync Agent
 github:sync:agent:
@@ -22,23 +22,21 @@ github:sync:agent:
       allow_failure: true
 
 # Code Review Agent
-# Code Review Agent
 # Note: Requires blueflyio/agent-platform project to be created
 # Currently set to allow_failure until agent-platform is deployed
 code:review:agent:
   stage: .pre
   allow_failure: true
   trigger:
-    project: ${AGENT_PLATFORM_GROUP}
+    project: ${AGENT_PLATFORM_PROJECT}
     strategy: depend
   variables:
-    AGENT_NAME: gitlab-lib-ci
-    AGENT_TASK: code-review
+    AGENT_NAME: code-review
+    TARGET_PROJECT: $CI_PROJECT_PATH
     MR_IID: $CI_MERGE_REQUEST_IID
   rules:
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event" && $AGENT_PLATFORM_GROUP != null
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
       when: on_success
-    - when: never
 
 # Documentation Sync Agent
 docs:sync:agent:
@@ -61,16 +59,15 @@ security:scan:agent:
   stage: test
   allow_failure: true
   trigger:
-    project: ${AGENT_PLATFORM_GROUP}
+    project: ${AGENT_PLATFORM_PROJECT}
     strategy: depend
   variables:
-    AGENT_NAME: gitlab-lib-ci
-    AGENT_TASK: security-scan
+    AGENT_NAME: security-scan
+    TARGET_PROJECT: $CI_PROJECT_PATH
     SCAN_TYPE: full
   rules:
-    - if: ($CI_PIPELINE_SOURCE == "merge_request_event" || $CI_PIPELINE_SOURCE == "schedule") && $AGENT_PLATFORM_GROUP != null
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event" || $CI_PIPELINE_SOURCE == "schedule"
       when: on_success
-    - when: never
 
 # TypeScript Build Agent
 ts:build:agent:
