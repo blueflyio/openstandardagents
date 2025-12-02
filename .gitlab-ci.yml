@@ -1074,14 +1074,16 @@ generate:llms-txt:
   image: python:3.11-slim
   script:
     - pip install llms-txt
-    - llms_txt2ctx llms.txt > llms-ctx.txt
-    - llms_txt2ctx llms.txt --optional True > llms-ctx-full.txt
+    - llms_txt2ctx llms.txt -o llms-ctx.txt
+    - llms_txt2ctx llms.txt -o llms-ctx-full.txt --include-optional
   artifacts:
     paths:
       - llms.txt
       - llms-ctx.txt
       - llms-ctx-full.txt
     expire_in: never
-  only:
-    - main
-    - development
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+      when: on_success
+    - if: $CI_COMMIT_BRANCH == "development"
+      when: on_success
