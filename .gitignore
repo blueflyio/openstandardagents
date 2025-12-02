@@ -27,7 +27,6 @@ coverage/
 *.tsbuildinfo
 
 # Development directories (not part of npm package)
-.agents/
 .cursor/
 .claude/
 
@@ -498,3 +497,4 @@ dmypy.json
 .pyre/
 # Wiki is now version controlled in .gitlab/wiki/
 # (was previously ignored, now tracked for v0.2.3)
+.DS_Store

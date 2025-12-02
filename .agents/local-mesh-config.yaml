@@ -1,0 +1,42 @@
+# Local Agent Mesh Configuration
+# For testing multi-agent coordination locally
+
+apiVersion: mesh.ossa.io/v1
+kind: AgentMesh
+metadata:
+  name: local-agent-mesh
+  namespace: local-development
+
+spec:
+  agents:
+    - name: example-agent
+      namespace: local
+      endpoint: http://localhost:8080
+      healthCheck: http://localhost:8080/health
+      capabilities:
+        - task-execution
+      dependencies: []
+
+  communication:
+    protocol: json-rpc
+    version: "2.0"
+    transport: http
+    timeout: 30
+
+    authentication:
+      type: none  # No auth for local development
+
+    retryPolicy:
+      maxRetries: 3
+      initialBackoff: 1s
+      maxBackoff: 10s
+
+  observability:
+    logging:
+      level: debug
+      format: json
+
+    metrics:
+      enabled: false  # Disable for local dev
+
+  workflows: []
