@@ -457,11 +457,13 @@ test:unit:
   coverage: '/All files[^|]*\|[^|]*\s+([\d\.]+)/'
   artifacts:
     reports:
+      junit: test-results/junit.xml
       coverage_report:
         coverage_format: cobertura
         path: coverage/cobertura-coverage.xml
     paths:
       - coverage/
+      - test-results/
     expire_in: 7 days
   allow_failure: false
   rules:
