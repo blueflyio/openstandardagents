@@ -36,7 +36,7 @@ variables:
 
 webhook:validate:
   stage: .pre
-  image: node:${NODE_VERSION:-22}-alpine
+  image: node:22-alpine
   rules:
     - if: $CI_PIPELINE_SOURCE == "trigger"
       when: always
@@ -96,7 +96,7 @@ webhook:validate:
 
 agent:router:
   stage: setup
-  image: node:${NODE_VERSION:-22}-alpine
+  image: node:22-alpine
   needs:
     - webhook:validate
   rules:
@@ -228,7 +228,7 @@ agent:router:
 # Issue Triage Agent
 agent:issue-triage:
   stage: build
-  image: node:${NODE_VERSION:-22}-alpine
+  image: node:22-alpine
   needs:
     - webhook:validate
     - agent:router
@@ -332,7 +332,7 @@ agent:issue-triage:
 # MR Manager Agent
 agent:mr-manager:
   stage: build
-  image: node:${NODE_VERSION:-22}-alpine
+  image: node:22-alpine
   needs:
     - webhook:validate
     - agent:router
@@ -485,7 +485,7 @@ agent:report:
 # Manual issue triage trigger
 manual:triage-issue:
   stage: build
-  image: node:${NODE_VERSION:-22}-alpine
+  image: node:22-alpine
   variables:
     AGENT_NAME: "issue-triage"
     MANIFEST_PATH: "${OSSA_MANIFEST_PATH}/issue-triage/manifest.ossa.yaml"
@@ -533,7 +533,7 @@ manual:triage-issue:
 # Manual MR processing trigger
 manual:process-mr:
   stage: build
-  image: node:${NODE_VERSION:-22}-alpine
+  image: node:22-alpine
   variables:
     AGENT_NAME: "mr-manager"
     MANIFEST_PATH: "${OSSA_MANIFEST_PATH}/mr-manager/manifest.ossa.yaml"
