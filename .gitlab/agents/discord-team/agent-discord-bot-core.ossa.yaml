@@ -1,0 +1,56 @@
+apiVersion: ossa/v0.2.8
+kind: Agent
+metadata:
+  name: discord-bot-core
+  namespace: milestone-v0.3.0
+  labels:
+    issue: "3"
+    wave: "1"
+    priority: critical
+spec:
+  description: Implement core Discord bot in agent-buildkit with slash commands and event handling
+  
+  issue:
+    id: 3
+    title: "Implement Discord Bot Core in agent-buildkit"
+    branch: feature/3-discord-bot-core
+    
+  tasks:
+    - id: setup-project
+      name: Create Discord bot project structure
+      actions:
+        - Create bot/ directory in agent-buildkit
+        - Setup TypeScript configuration
+        - Add discord.js dependencies
+        - Configure environment variables
+        
+    - id: implement-core
+      name: Implement bot core functionality
+      actions:
+        - Bot initialization and login
+        - Event handler system
+        - Command registration system
+        - Error handling and logging
+        
+    - id: basic-commands
+      name: Implement basic slash commands
+      actions:
+        - /ping - Health check
+        - /help - Command list
+        - /about - Bot information
+        
+    - id: testing
+      name: Add tests and CI
+      actions:
+        - Unit tests for core functions
+        - Integration tests for commands
+        - CI pipeline configuration
+        
+  deliverables:
+    - Working Discord bot core
+    - Basic slash commands
+    - Tests with 80%+ coverage
+    - CI pipeline passing
+    - MR to development branch
+    
+  estimated_time: 8h

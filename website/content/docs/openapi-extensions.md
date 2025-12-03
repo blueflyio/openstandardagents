@@ -112,7 +112,7 @@ paths:
     "version": "1.0.0"
   },
   "x-ossa-metadata": {
-    "version": "0.2.2",
+    "version": "0.2.8",
     "compliance": {
       "level": "enterprise",
       "frameworks": ["OSSA", "OpenAPI 3.1", "RFC7807"]
@@ -545,7 +545,7 @@ components:
       schema:
         type: string
         pattern: "^\\d+\\.\\d+\\.\\d+(-[a-zA-Z0-9]+)?$"
-      example: "0.2.2"
+      example: "0.2.8"
 
 paths:
   /api/v1/execute:

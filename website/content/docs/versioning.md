@@ -15,7 +15,7 @@ MAJOR.MINOR.PATCH[-PRERELEASE][+BUILD]
 ```
 
 Examples:
-- `0.2.2` - Stable patch release
+- `0.2.8` - Stable patch release
 - `0.3.0` - Minor feature release
 - `1.0.0` - Major release with breaking changes
 - `0.3.0-dev.1` - Development pre-release
@@ -29,13 +29,13 @@ Examples:
 - **Purpose**: Active development and testing
 - **Releases**: Pre-release versions with `-dev` tag
 - **Version bumps**: Automatic via semantic-release
-- **Example versions**: `0.2.3-dev.0`, `0.2.3-dev.1`
+- **Example versions**: `0.2.8-dev.0`, `0.2.8-dev.1`
 
 ### `main` Branch
 - **Purpose**: Stable production releases
 - **Releases**: Stable versions (no pre-release tag)
 - **Version bumps**: Automatic via semantic-release
-- **Example versions**: `0.2.3`, `0.3.0`, `1.0.0`
+- **Example versions**: `0.2.8`, `0.3.0`, `1.0.0`
 
 ---
 
@@ -82,7 +82,7 @@ Migration guide available at docs/migration-v1.md
 Semantic-release analyzes commits since the last release:
 
 ```
-Last release: v0.2.2
+Last release: v0.2.8
 New commits:
   - fix: resolve validation error      → PATCH
   - feat: add KAgent bridge support    → MINOR (overrides PATCH)
@@ -95,7 +95,7 @@ Next version: v0.3.0
 
 On `development` branch:
 ```
-Current: v0.2.2
+Current: v0.2.8
 Commits: feat, fix, docs
 Result: v0.3.0-dev.0 (first dev release)
         v0.3.0-dev.1 (second dev release)
@@ -148,9 +148,9 @@ OSSA schema versions follow specification versions:
 ```
 Package Version  → Schema Directory
 -----------------------------------------
-v0.2.2          → spec/v0.2.6/
-v0.3.0          → spec/v0.2.6/
-v1.0.0          → spec/v0.2.6/
+v0.2.8          → spec/v0.2.8/
+v0.3.0          → spec/v0.2.8/
+v1.0.0          → spec/v0.2.8/
 ```
 
 ### Schema Compatibility
@@ -190,8 +190,8 @@ E --> F[Manual trigger to publish to npmjs.com]
 
 | Version | Release Date | Type | Highlights |
 |---------|--------------|------|------------|
-| 0.2.2 | 2025-10-28 | Patch | Schema fixes, CI improvements |
-| 0.2.0 | 2025-10-27 | Minor | Added KAgent bridge, MCP tools |
+| 0.2.8 | 2025-10-28 | Patch | Schema fixes, CI improvements |
+| 0.2.8 | 2025-10-27 | Minor | Added KAgent bridge, MCP tools |
 | 0.1.9 | 2024-XX-XX | Minor | Extensions, taxonomy, observability |
 | 0.1.8 | 2024-XX-XX | Minor | Initial stable release |
 
@@ -285,4 +285,4 @@ git commit -m "chore: update docs [skip ci]"
 ---
 
 **Last Updated**: 2025-10-28
-**Version**: 0.2.2
+**Version**: 0.2.8

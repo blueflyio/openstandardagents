@@ -92,7 +92,7 @@ Commands:
 
 ### Package Contents
 
-- **JSON Schema**: `spec/v0.2.x/ossa-0.2.x.schema.json` (see latest in `spec/v0.2.6/`)
+- **JSON Schema**: `spec/v0.2.x/ossa-0.2.x.schema.json` (see latest in `spec/v0.2.8/`)
 - **TypeScript Types**: Available via package exports
 - **CLI Tool**: `bin/ossa` executable
 
@@ -151,5 +151,5 @@ npm install -g @bluefly/open-standards-scalable-agents@latest
 
 - [5-Minute Overview](5-Minute-Overview)
 - [Hello World Tutorial](Hello-World)
-- [CLI Reference](../Technical/CLI-Reference)
+- [CLI Reference](../CLI-Reference)
 

@@ -274,7 +274,7 @@ The run command respects these environment variables:
 ```bash
 # Create the manifest
 cat > support.ossa.yaml << EOF
-apiVersion: ossa/v0.2.4
+apiVersion: ossa/v0.2.8
 kind: Agent
 metadata:
   name: support-agent
@@ -302,8 +302,8 @@ ossa run examples/openai/swarm-agent.ossa.json -v
 
 ## Next Steps
 
-- [CLI Reference](/docs/cli/run-command) - Complete command reference
-- [OpenAI Adapter](/docs/adapters/openai-adapter) - OpenAI adapter configuration
-- [Manifest Reference](/docs/schema-reference) - Full manifest schema
-- [Framework Extensions](/docs/openapi-extensions) - Extension system
-- [Migration Guides](/docs/migration-guides) - Migrate from other frameworks
+- [CLI Reference](../cli/run-command) - Complete command reference
+- [OpenAI Adapter](../adapters/openai-adapter) - OpenAI adapter configuration
+- [Manifest Reference](../schema-reference) - Full manifest schema
+- [Framework Extensions](../openapi-extensions) - Extension system
+- [Migration Guides](../migration-guides) - Migrate from other frameworks

@@ -1,0 +1,122 @@
+apiVersion: ossa/v0.2.8
+kind: Agent
+metadata:
+  name: discord-milestone-orchestrator
+  namespace: milestone-v0.3.0
+  labels:
+    role: orchestrator
+    milestone: v0.3.0
+    tier: coordination
+spec:
+  description: |
+    Orchestrator agent for Discord Bot Integration milestone (v0.3.0).
+    Coordinates 8 specialized agents working in parallel to complete
+    all milestone issues within 5-7 days wall time.
+  
+  capabilities:
+    - gitlab-api
+    - issue-management
+    - branch-coordination
+    - merge-request-orchestration
+    - team-coordination
+  
+  team:
+    size: 8
+    execution_model: parallel-waves
+    estimated_wall_time: 5-7 days
+    
+    agents:
+      - id: agent-bootstrap-discord
+        issue: "#2"
+        type: infrastructure
+        priority: critical
+        wave: 1
+        estimated_hours: 3
+        
+      - id: agent-discord-bot-core
+        issue: "#3"
+        type: development
+        priority: critical
+        wave: 1
+        estimated_hours: 8
+        
+      - id: agent-ossa-validation
+        issue: "#4"
+        type: feature
+        priority: high
+        wave: 2
+        estimated_hours: 4
+        depends_on: [agent-discord-bot-core]
+        
+      - id: agent-sync-examples
+        issue: "#5"
+        type: integration
+        priority: medium
+        wave: 2
+        estimated_hours: 3
+        depends_on: [agent-discord-bot-core]
+        
+      - id: agent-devops-notifications
+        issue: "#6"
+        type: integration
+        priority: high
+        wave: 2
+        estimated_hours: 4
+        depends_on: [agent-discord-bot-core]
+        
+      - id: agent-llm-integration
+        issue: "#7"
+        type: feature
+        priority: medium
+        wave: 3
+        estimated_hours: 6
+        depends_on: [agent-discord-bot-core]
+        
+      - id: agent-moderation
+        issue: "#8"
+        type: feature
+        priority: low
+        wave: 3
+        estimated_hours: 4
+        depends_on: [agent-discord-bot-core]
+        
+      - id: agent-manifest-creator
+        issue: "#10"
+        type: documentation
+        priority: medium
+        wave: 3
+        estimated_hours: 2
+        depends_on: [agent-discord-bot-core]
+  
+  workflow:
+    - stage: wave-1-critical
+      parallel: true
+      agents: [agent-bootstrap-discord, agent-discord-bot-core]
+      
+    - stage: wave-2-integrations
+      parallel: true
+      agents: [agent-ossa-validation, agent-sync-examples, agent-devops-notifications]
+      wait_for: wave-1-critical
+      
+    - stage: wave-3-features
+      parallel: true
+      agents: [agent-llm-integration, agent-moderation, agent-manifest-creator]
+      wait_for: wave-2-integrations
+  
+  coordination:
+    branch_strategy: feature-per-issue
+    merge_strategy: development-first
+    review_required: false  # Bot agents auto-merge on green pipeline
+    
+  monitoring:
+    metrics:
+      - issues_completed
+      - mrs_merged
+      - pipeline_success_rate
+      - wall_time_actual
+    
+  integrations:
+    gitlab:
+      project: blueflyio/openstandardagents.org
+      milestone: v0.3.0
+      token: ${GITLAB_TOKEN}

@@ -80,8 +80,8 @@ OSSA doesn't dictate deployment. Deploy to YOUR infrastructure:
 
 ## Next Steps
 
-- Review [Examples](/docs/examples/migration-guides)
-- Read the [Schema Reference](/docs/schema-reference)
+- Review [Examples](../examples/migration-guides)
+- Read the [Schema Reference](../schema-reference)
 - Visit the [GitHub Repository](https://github.com/blueflyio/openstandardagents)
 
 ## Need More Features?

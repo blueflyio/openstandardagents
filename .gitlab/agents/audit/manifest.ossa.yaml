@@ -1,0 +1,46 @@
+apiVersion: ossa/v0.2.8
+kind: Agent
+metadata:
+  name: milestone-audit-agent
+  version: 1.0.0
+  description: Audits closed issues to verify completion
+  labels:
+    type: critic
+    priority: high
+
+spec:
+  role: |
+    Audit closed issues in v0.2.8 milestone:
+    - #25: Broken links - verify all links work
+    - #23: OrbStack deployments - verify config exists
+    - #22: Branch protection - verify policies enforced
+    - #21: E2E tests - verify tests exist and run
+    - #20: Version audit - verify all versions are 0.2.8
+    
+    Report findings and reopen if incomplete
+  
+  llm:
+    provider: anthropic
+    model: claude-3-5-sonnet-20241022
+    temperature: 0.1
+  
+  tasks:
+    - name: audit_issue_25
+      check: All links in docs return 200
+      test: curl -sL each link
+    
+    - name: audit_issue_23
+      check: OrbStack config exists
+      test: Check for orbstack files
+    
+    - name: audit_issue_22
+      check: Branch protection enabled
+      test: Query GitLab API
+    
+    - name: audit_issue_21
+      check: E2E tests exist
+      test: Check tests/ directory
+    
+    - name: audit_issue_20
+      check: All versions are 0.2.8
+      test: grep for old versions
