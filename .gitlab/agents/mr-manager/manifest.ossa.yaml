@@ -1,0 +1,108 @@
+apiVersion: ossa/v0.2.8
+kind: Agent
+metadata:
+  name: mr-manager
+  namespace: gitlab-automation
+  labels:
+    tier: automation
+    domain: ci-cd
+    trigger: webhook
+spec:
+  description: |
+    Automated MR lifecycle management agent. Handles MR validation,
+    labeling, assignment, and merge train coordination.
+  
+  capabilities:
+    - gitlab-api
+    - merge-request-management
+    - pipeline-coordination
+    - label-management
+  
+  triggers:
+    - type: webhook
+      events:
+        - merge_request.open
+        - merge_request.update
+        - merge_request.approved
+        - note.merge_request
+      filters:
+        - target_branch: [development, main]
+  
+  tasks:
+    - id: validate-mr
+      name: Validate MR Requirements
+      type: validation
+      config:
+        checks:
+          - conventional-commit-title
+          - description-present
+          - no-wip-commits
+          - pipeline-passing
+      
+    - id: auto-label
+      name: Apply Automatic Labels
+      type: labeling
+      dependsOn: [validate-mr]
+      config:
+        rules:
+          - pattern: "^feat:"
+            labels: [type::feature, semver::minor]
+          - pattern: "^fix:"
+            labels: [type::bug, semver::patch]
+          - pattern: "^docs:"
+            labels: [type::documentation]
+          - pattern: "^chore:"
+            labels: [type::maintenance]
+    
+    - id: assign-reviewers
+      name: Auto-assign Reviewers
+      type: assignment
+      dependsOn: [auto-label]
+      config:
+        strategy: round-robin
+        reviewers:
+          - username: flux423
+            areas: [ci-cd, infrastructure]
+    
+    - id: merge-train
+      name: Add to Merge Train
+      type: merge-coordination
+      dependsOn: [validate-mr]
+      config:
+        conditions:
+          - pipeline: success
+          - approvals: 1
+          - discussions_resolved: true
+        target_branches: [main]
+    
+    - id: notify
+      name: Send Notifications
+      type: notification
+      config:
+        channels:
+          - type: gitlab-comment
+            template: |
+              ## 🤖 MR Manager Report
+              
+              **Status**: {{status}}
+              **Labels**: {{labels}}
+              **Reviewers**: {{reviewers}}
+              
+              {{#if merge_train}}
+              ✅ Added to merge train
+              {{/if}}
+
+  integrations:
+    gitlab:
+      api_version: v4
+      token: ${GITLAB_TOKEN}
+      project: blueflyio/openstandardagents.org
+    
+  monitoring:
+    metrics:
+      - mr_processing_time
+      - validation_failures
+      - merge_train_additions
+    logs:
+      level: info
+      format: json

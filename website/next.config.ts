@@ -2,8 +2,10 @@ import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
   output: 'export',
-  distDir: 'out',
   trailingSlash: true,
+  experimental: {
+    optimizeCss: true,
+  },
   images: {
     unoptimized: true,
   },
@@ -16,9 +18,6 @@ const nextConfig: NextConfig = {
   // Performance optimizations
   compiler: {
     removeConsole: process.env.NODE_ENV === 'production',
-  },
-  experimental: {
-    optimizeCss: true,
   },
   // Reduce bundle size by excluding server-only modules
   webpack: (config, { isServer }) => {

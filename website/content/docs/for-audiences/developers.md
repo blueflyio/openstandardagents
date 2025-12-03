@@ -99,7 +99,7 @@ import { GenerationService } from '@bluefly/open-standards-scalable-agents/gener
 
 // Validate
 const validationService = new ValidationService();
-const result = await validationService.validate(manifest, '0.2.2');
+const result = await validationService.validate(manifest, '0.2.8');
 
 // Generate
 const generationService = new GenerationService();

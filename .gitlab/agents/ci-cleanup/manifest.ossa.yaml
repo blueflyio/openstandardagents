@@ -1,0 +1,58 @@
+apiVersion: ossa/v0.2.8
+kind: Agent
+metadata:
+  name: ci-cleanup-agent
+  version: 1.0.0
+  description: Fixes CI pipeline warnings and failures for issue #26
+  labels:
+    issue: "26"
+    type: worker
+    priority: high
+
+spec:
+  role: |
+    Fix CI pipeline issues:
+    1. Update deprecated npm packages
+    2. Fix build artifacts path
+    3. Clean up ESLint warnings
+    4. Fix E2E test selectors
+    5. Configure build cache
+    
+    Work in feature branch: feature/26-ci-cleanup
+    Create MR to development when done
+  
+  llm:
+    provider: anthropic
+    model: claude-3-5-sonnet-20241022
+    temperature: 0.1
+  
+  tasks:
+    - name: update_npm_packages
+      priority: high
+      actions:
+        - Update rimraf to v5+
+        - Update glob to v10+
+        - Update eslint to v9+
+        - Remove inflight dependency
+    
+    - name: fix_eslint_warnings
+      priority: medium
+      actions:
+        - Remove unused imports
+        - Replace img with Image component
+        - Replace a with Link component
+    
+    - name: fix_e2e_tests
+      priority: medium
+      actions:
+        - Use data-testid selectors
+        - Fix viewport handling for mobile
+        - Add proper waits
+  
+  workflow:
+    branch: feature/26-ci-cleanup
+    target: development
+    validation:
+      - npm run lint
+      - npm run build
+      - npm run test

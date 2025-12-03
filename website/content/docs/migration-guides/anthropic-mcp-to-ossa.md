@@ -317,7 +317,7 @@ buildkit agents create simple-agent \
 
 **2. Agent Manifest (`agent.yml`):**
 ```yaml
-ossaVersion: "0.2.6"
+ossaVersion: "0.2.8"
 agent:
   id: simple-agent
   name: simple-agent
@@ -707,7 +707,7 @@ server.connect(transport);
 
 **Agent Manifest (`agent.yml`):**
 ```yaml
-ossaVersion: "0.2.6"
+ossaVersion: "0.2.8"
 agent:
   id: filesystem-agent
   name: filesystem-agent
@@ -1124,7 +1124,7 @@ server.connect(transport);
 
 **Agent Manifest (`agent.yml`):**
 ```yaml
-ossaVersion: "0.2.6"
+ossaVersion: "0.2.8"
 agent:
   id: database-agent
   name: database-agent
@@ -1462,7 +1462,7 @@ bridge:
 
 ```yaml
 # orchestrator-agent.yml
-ossaVersion: "0.2.6"
+ossaVersion: "0.2.8"
 agent:
   id: orchestrator
   role: orchestration
@@ -1502,7 +1502,7 @@ agent:
 
 ```yaml
 # gateway-agent.yml
-ossaVersion: "0.2.6"
+ossaVersion: "0.2.8"
 agent:
   id: mcp-gateway
   role: workflow

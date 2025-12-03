@@ -9,7 +9,7 @@ Create `.ossarc.json` or `.ossarc.yaml` in your project root:
 ```json
 {
   "registry": "https://registry.ossa.dev",
-  "defaultVersion": "0.2.5-RC",
+  "defaultVersion": "0.2.8-RC",
   "validation": {
     "strict": true,
     "allowUnknownFields": false

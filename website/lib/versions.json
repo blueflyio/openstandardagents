@@ -26,7 +26,7 @@
       "type": "stable",
       "published": false,
       "available": true,
-      "schemaPath": "spec/v0.2.8/ossa-0.2.8.schema.json"
+      "schemaPath": "/Users/flux423/Sites/LLM/worktrees/openstandardagents.org/mr56-rebase/spec/v0.2.8/ossa-0.2.8.schema.json"
     },
     {
       "version": "0.2.7",
@@ -43,7 +43,7 @@
       "type": "stable",
       "published": false,
       "available": true,
-      "schemaPath": "spec/v0.2.6/ossa-0.2.6.schema.json"
+      "schemaPath": "/Users/flux423/Sites/LLM/worktrees/openstandardagents.org/mr56-rebase/spec/v0.2.6/ossa-0.2.6.schema.json"
     },
     {
       "version": "0.2.5",
@@ -52,7 +52,7 @@
       "type": "stable",
       "published": false,
       "available": true,
-      "schemaPath": "spec/v0.2.5/ossa-0.2.5.schema.json"
+      "schemaPath": "/Users/flux423/Sites/LLM/worktrees/openstandardagents.org/mr56-rebase/spec/v0.2.5/ossa-0.2.5.schema.json"
     },
     {
       "version": "0.2.3",
@@ -61,7 +61,7 @@
       "type": "stable",
       "published": false,
       "available": true,
-      "schemaPath": "spec/v0.2.3/ossa-0.2.3.schema.json"
+      "schemaPath": "/Users/flux423/Sites/LLM/worktrees/openstandardagents.org/mr56-rebase/spec/v0.2.3/ossa-0.2.3.schema.json"
     },
     {
       "version": "0.2.2",
@@ -70,7 +70,7 @@
       "type": "stable",
       "published": false,
       "available": true,
-      "schemaPath": "spec/v0.2.2/ossa-0.2.2.schema.json"
+      "schemaPath": "/Users/flux423/Sites/LLM/worktrees/openstandardagents.org/mr56-rebase/spec/v0.2.2/ossa-0.2.2.schema.json"
     },
     {
       "version": "0.2.1",
@@ -79,7 +79,7 @@
       "type": "stable",
       "published": false,
       "available": true,
-      "schemaPath": "spec/v0.2.1/ossa-0.2.1.schema.json"
+      "schemaPath": "/Users/flux423/Sites/LLM/worktrees/openstandardagents.org/mr56-rebase/spec/v0.2.1/ossa-0.2.1.schema.json"
     },
     {
       "version": "0.2.0",
@@ -88,7 +88,7 @@
       "type": "stable",
       "published": false,
       "available": true,
-      "schemaPath": "spec/v0.2.0/ossa-0.2.0.schema.json"
+      "schemaPath": "/Users/flux423/Sites/LLM/worktrees/openstandardagents.org/mr56-rebase/spec/v0.2.0/ossa-0.2.0.schema.json"
     },
     {
       "version": "0.1.9",

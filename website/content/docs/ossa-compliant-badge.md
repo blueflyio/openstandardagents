@@ -132,9 +132,9 @@ Projects that have achieved OSSA compliance:
 
 | Project | Level | Version | Link |
 |---------|-------|---------|------|
-| Agent Buildkit | Advanced | v0.2.3 | [GitHub](https://github.com/blueflyio/openstandardagents) |
-| Agent Studio | Advanced | v0.2.3 | [GitHub](https://github.com/blueflyio/openstandardagents) |
-| KAgent | Advanced | v0.2.3 | [GitHub](https://github.com/blueflyio/openstandardagents) |
+| Agent Buildkit | Advanced | v0.2.8 | [GitHub](https://github.com/blueflyio/openstandardagents) |
+| Agent Studio | Advanced | v0.2.8 | [GitHub](https://github.com/blueflyio/openstandardagents) |
+| KAgent | Advanced | v0.2.8 | [GitHub](https://github.com/blueflyio/openstandardagents) |
 
 **Add your project**: Submit a merge request to update this table!
 
@@ -145,7 +145,7 @@ Projects that have achieved OSSA compliance:
 ### Minimal OSSA Manifest
 
 ```yaml
-apiVersion: ossa/v0.2.3
+apiVersion: ossa/v0.2.8
 kind: Agent
 
 metadata:
@@ -170,7 +170,7 @@ spec:
 ### With Platform Extensions
 
 ```yaml
-apiVersion: ossa/v0.2.3
+apiVersion: ossa/v0.2.8
 kind: Agent
 
 metadata:
@@ -234,7 +234,7 @@ extensions:
 
 ## Resources
 
-- **OSSA Specification**: [spec/v0.2.6/](Specification/v0.2.3/)
+- **OSSA Specification**: [spec/v0.2.8/](Specification/v0.2.8/)
 - **Examples**: [examples/](Examples/)
 - **CLI Documentation**: [docs/cli/](./cli/)
 - **Contributing**: [CONTRIBUTING.md](../CONTRIBUTING.md)

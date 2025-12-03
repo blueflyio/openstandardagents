@@ -16,7 +16,7 @@ Root level of OpenAPI spec
 
 ```yaml
 x-ossa-metadata:
-  version: string              # OSSA specification version (e.g., "0.2.2", "1.0.0")
+  version: string              # OSSA specification version (e.g., "0.2.8", "1.0.0")
   compliance:
     level: string              # "basic" | "standard" | "advanced" | "enterprise"
     frameworks: string[]       # List of compliance frameworks
@@ -38,7 +38,7 @@ x-ossa-metadata:
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `version` | string | OSSA specification version (e.g., "0.2.2", "1.0.0") |
+| `version` | string | OSSA specification version (e.g., "0.2.8", "1.0.0") |
 | `compliance.level` | string | Compliance level: "basic" \| "standard" \| "advanced" \| "enterprise" |
 | `compliance.frameworks` | string[] | List of compliance frameworks (e.g., ["OSSA", "OpenAPI 3.1"]) |
 | `governance.approved` | boolean | Whether specification has been approved |
@@ -94,7 +94,7 @@ paths:
     "version": "1.0.0"
   },
   "x-ossa-metadata": {
-    "version": "0.2.2",
+    "version": "0.2.8",
     "compliance": {
       "level": "enterprise",
       "frameworks": ["OSSA", "OpenAPI 3.1", "RFC7807"]
@@ -139,7 +139,7 @@ Root level or `info` section of OpenAPI spec
 
 ```yaml
 x-ossa:
-  version: string              # OSSA specification version (e.g., "0.2.2")
+  version: string              # OSSA specification version (e.g., "0.2.8")
   agent:
     id: string                 # Unique agent identifier (DNS subdomain format)
     type: string               # Agent type (see table below)
@@ -153,7 +153,7 @@ x-ossa:
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `version` | string | OSSA specification version (e.g., "0.2.2") |
+| `version` | string | OSSA specification version (e.g., "0.2.8") |
 | `agent.id` | string | Unique agent identifier (DNS subdomain format) |
 | `agent.type` | string | Agent type (see table below) |
 | `agent.compliance.standards` | string[] | Architectural standards (e.g., ["openapi-first", "dry", "solid"]) |
@@ -329,7 +329,7 @@ components:
       schema:
         type: string
         pattern: "^\\d+\\.\\d+\\.\\d+(-[a-zA-Z0-9]+)?$"
-      example: "0.2.2"
+      example: "0.2.8"
 
 paths:
   /api/v1/execute:

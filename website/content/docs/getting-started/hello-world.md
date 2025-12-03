@@ -162,8 +162,8 @@ This example includes:
 
 1. ✅ Hello World complete
 2. → [First Agent Creation](First-Agent) - Build a real agent
-3. → [Examples & Patterns](../Examples/Getting-Started-Examples) - See more examples
-4. → [Schema Reference](../Technical/Schema-Reference) - Deep dive into the spec
+3. → [Examples & Patterns](../../examples/Getting-Started-Examples) - See more examples
+4. → [Schema Reference](../Schema-Reference) - Deep dive into the spec
 
 ## Common Questions
 

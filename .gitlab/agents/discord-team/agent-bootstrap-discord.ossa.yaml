@@ -1,0 +1,49 @@
+apiVersion: ossa/v0.2.8
+kind: Agent
+metadata:
+  name: bootstrap-discord-server
+  namespace: milestone-v0.3.0
+  labels:
+    issue: "2"
+    wave: "1"
+    priority: critical
+spec:
+  description: Bootstrap Discord server structure with channels, roles, and permissions
+  
+  issue:
+    id: 2
+    title: "Bootstrap Discord Server Structure"
+    branch: feature/2-bootstrap-discord-server
+    
+  tasks:
+    - id: create-channels
+      name: Create Discord channel structure
+      actions:
+        - Create #announcements (read-only)
+        - Create #general
+        - Create #ossa-help
+        - Create #examples
+        - Create #devops-notifications
+        - Create #bot-commands
+        
+    - id: setup-roles
+      name: Configure roles and permissions
+      actions:
+        - Create @OSSA-Maintainer role
+        - Create @OSSA-Contributor role
+        - Create @Bot role
+        - Set channel permissions
+        
+    - id: document-setup
+      name: Document server structure
+      actions:
+        - Create README with server layout
+        - Document bot permissions needed
+        - Add to project docs
+        
+  deliverables:
+    - Discord server configured
+    - Documentation in docs/discord/server-setup.md
+    - MR to development branch
+    
+  estimated_time: 3h

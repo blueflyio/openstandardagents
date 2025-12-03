@@ -87,12 +87,12 @@ function resolveMarkdownLink(href: string, currentPath: string): string {
       const upLevels = (normalized.match(/\.\.\//g) || []).length;
       normalized = normalized.replace(/\.\.\//g, '');
       const newDir = currentDir.slice(0, -upLevels);
-      return `/docs/${newDir.join('/')}/${normalized}${anchorPart}`;
+      return `/${newDir.join('/')}/${normalized}${anchorPart}`;
     }
 
     // Same directory or subdirectory
     if (currentDir.length > 0) {
-      return `/docs/${currentDir.join('/')}/${normalized}${anchorPart}`;
+      return `/${currentDir.join('/')}/${normalized}${anchorPart}`;
     }
     return `/docs/${normalized}${anchorPart}`;
   }
