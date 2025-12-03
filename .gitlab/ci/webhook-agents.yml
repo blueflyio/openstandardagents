@@ -476,6 +476,11 @@ agent:report:
 # ============================================================================
 # MANUAL TRIGGERS
 # ============================================================================
+# To run these jobs:
+#   1. Go to: CI/CD → Pipelines → Run pipeline
+#   2. Select branch: development
+#   3. Add variable: MANUAL_ISSUE_IID=90 (or MANUAL_MR_IID=185)
+#   4. Run pipeline - the job will execute automatically
 
 # Manual issue triage trigger
 manual:triage-issue:
@@ -485,6 +490,10 @@ manual:triage-issue:
     AGENT_NAME: "issue-triage"
     MANIFEST_PATH: "${OSSA_MANIFEST_PATH}/issue-triage/manifest.ossa.yaml"
   rules:
+    # Run automatically when MANUAL_ISSUE_IID is provided
+    - if: $MANUAL_ISSUE_IID
+      when: on_success
+    # Also available as manual job in any pipeline
     - when: manual
       allow_failure: true
   before_script:
@@ -529,6 +538,10 @@ manual:process-mr:
     AGENT_NAME: "mr-manager"
     MANIFEST_PATH: "${OSSA_MANIFEST_PATH}/mr-manager/manifest.ossa.yaml"
   rules:
+    # Run automatically when MANUAL_MR_IID is provided
+    - if: $MANUAL_MR_IID
+      when: on_success
+    # Also available as manual job in any pipeline
     - when: manual
       allow_failure: true
   before_script:
