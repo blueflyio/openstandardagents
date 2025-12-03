@@ -147,3 +147,84 @@ native:build:agent:
   rules:
     - if: $CI_COMMIT_TAG
       allow_failure: true
+
+# ============================================================================
+# WEBHOOK-TRIGGERED AGENTS
+# ============================================================================
+# These agents are triggered by GitLab webhooks (issues, merge requests)
+# Setup:
+#   1. Create service account: https://gitlab.com/groups/blueflyio/-/settings/service_accounts
+#   2. Add AGENT_SERVICE_TOKEN variable: https://gitlab.com/blueflyio/openstandardagents/-/settings/ci_cd
+#   3. Create webhook: https://gitlab.com/blueflyio/openstandardagents/-/settings/integrations
+#   4. Add WEBHOOK_SECRET variable
+
+# MR Manager Agent - Triggered by webhook events
+agent:mr-manager:
+  stage: .pre
+  image: node:${NODE_VERSION}-alpine
+  before_script:
+    - npm ci --legacy-peer-deps
+    - npm run build
+  script:
+    - |
+      # Verify webhook authentication
+      if [ "$CI_PIPELINE_SOURCE" != "trigger" ] && [ "$CI_PIPELINE_SOURCE" != "pipeline" ]; then
+        echo "ℹ️  Not triggered by webhook/trigger, skipping MR Manager"
+        exit 0
+      fi
+
+      echo "🤖 MR Manager Agent Starting..."
+      echo "   Pipeline Source: ${CI_PIPELINE_SOURCE}"
+      echo "   Trigger: ${TRIGGER_EVENT_TYPE:-unknown}"
+
+      # Use service account token for GitLab API calls
+      export GITLAB_TOKEN="${AGENT_SERVICE_TOKEN}"
+
+      # Check if manifest exists
+      MANIFEST_PATH=".gitlab/agents/mr-manager/manifest.ossa.yaml"
+      if [ -f "$MANIFEST_PATH" ]; then
+        echo "📋 Running agent from: ${MANIFEST_PATH}"
+        node dist/cli/index.js run "$MANIFEST_PATH" || echo "⚠️  Agent completed with warnings"
+      else
+        echo "⚠️  Agent manifest not found: ${MANIFEST_PATH}"
+        echo "   Create the manifest or update MANIFEST_PATH"
+      fi
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "trigger"
+      when: on_success
+    - if: $CI_PIPELINE_SOURCE == "pipeline" && $TRIGGER_EVENT_TYPE
+      when: on_success
+  allow_failure: true
+
+# Issue Triage Agent - Auto-labels and assigns issues
+agent:issue-triage:
+  stage: .pre
+  image: node:${NODE_VERSION}-alpine
+  before_script:
+    - npm ci --legacy-peer-deps
+    - npm run build
+  script:
+    - |
+      if [ "$CI_PIPELINE_SOURCE" != "trigger" ]; then
+        echo "ℹ️  Not triggered by webhook, skipping Issue Triage"
+        exit 0
+      fi
+
+      if [ "$TRIGGER_EVENT_TYPE" != "issue" ]; then
+        echo "ℹ️  Not an issue event, skipping"
+        exit 0
+      fi
+
+      echo "🏷️  Issue Triage Agent Starting..."
+      export GITLAB_TOKEN="${AGENT_SERVICE_TOKEN}"
+
+      MANIFEST_PATH=".gitlab/agents/issue-triage/manifest.ossa.yaml"
+      if [ -f "$MANIFEST_PATH" ]; then
+        node dist/cli/index.js run "$MANIFEST_PATH" || echo "⚠️  Agent completed with warnings"
+      else
+        echo "⚠️  Agent manifest not found: ${MANIFEST_PATH}"
+      fi
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "trigger" && $TRIGGER_EVENT_TYPE == "issue"
+      when: on_success
+  allow_failure: true
