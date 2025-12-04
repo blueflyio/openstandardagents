@@ -142,7 +142,59 @@ export interface OssaAgent {
       retentionPolicy?: string;
     };
   };
-  extensions?: Record<string, unknown>;
+  extensions?: {
+    agents_md?: AgentsMdExtension;
+    cursor?: CursorExtension;
+    [key: string]: unknown;
+  };
+}
+
+/**
+ * agents.md section configuration
+ */
+export interface AgentsMdSection {
+  enabled?: boolean;
+  source?: string;
+  custom?: string;
+  title_format?: string;
+}
+
+/**
+ * agents.md extension configuration
+ */
+export interface AgentsMdExtension {
+  enabled?: boolean;
+  generate?: boolean;
+  output_path?: string;
+  sections?: {
+    dev_environment?: AgentsMdSection;
+    testing?: AgentsMdSection;
+    pr_instructions?: AgentsMdSection;
+  };
+  sync?: {
+    on_manifest_change?: boolean;
+    include_comments?: boolean;
+  };
+  cursor_integration?: boolean;
+}
+
+/**
+ * Cursor extension configuration
+ */
+export interface CursorExtension {
+  enabled?: boolean;
+  agent_type?: string;
+  workspace_config?: {
+    rules_file?: string;
+    context_files?: string[];
+    ignore_patterns?: string[];
+    agents_md_path?: string;
+  };
+  capabilities?: Record<string, boolean>;
+  model?: {
+    provider?: string;
+    name?: string;
+  };
 }
 
 /**
