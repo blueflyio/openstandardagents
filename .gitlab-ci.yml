@@ -1138,3 +1138,50 @@ generate:llms-txt:
       when: on_success
     - if: $CI_COMMIT_BRANCH == "development"
       when: on_success
+
+# ============================================================================
+# POST-RELEASE SYNC - Sync main back to development after releases
+# ============================================================================
+
+sync:main-to-development:
+  stage: .post
+  image: alpine:latest
+  before_script:
+    - apk add --no-cache git curl jq
+    - git config user.email "ci@bluefly.io"
+    - git config user.name "GitLab CI"
+    - git remote set-url origin https://oauth2:${GITLAB_PUSH_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git
+  script:
+    - |
+      echo "🔄 Syncing main → development..."
+
+      git fetch origin main development
+      git checkout development
+      git pull origin development
+
+      # Check if main has commits not in development
+      BEHIND=$(git rev-list --count development..origin/main)
+
+      if [ "$BEHIND" -gt 0 ]; then
+        echo "development is $BEHIND commits behind main"
+
+        # Create sync MR automatically
+        curl --request POST \
+          --header "PRIVATE-TOKEN: ${GITLAB_PUSH_TOKEN}" \
+          --header "Content-Type: application/json" \
+          --data '{
+            "source_branch": "main",
+            "target_branch": "development",
+            "title": "chore: sync main → development post-release [skip ci]",
+            "description": "Automated sync after release. Contains release commits.",
+            "remove_source_branch": false,
+            "squash": true
+          }' \
+          "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/merge_requests"
+      else
+        echo "✅ development is up-to-date with main"
+      fi
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main" && $CI_COMMIT_TAG
+      when: on_success
+    - when: never
