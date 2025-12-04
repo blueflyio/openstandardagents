@@ -23,7 +23,8 @@ function findAgents(): Agent[] {
     const manifestPath = join(AGENTS_DIR, entry, 'manifest.ossa.yaml');
     try {
       const content = readFileSync(manifestPath, 'utf-8');
-      const data = yaml.load(content) as any;
+      // Use safeLoad to prevent arbitrary code execution (CWE-502)
+      const data = yaml.load(content, { schema: yaml.JSON_SCHEMA }) as Record<string, unknown>;
       
       if (data?.agent) {
         agents.push({
