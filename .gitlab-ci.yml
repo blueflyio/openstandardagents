@@ -22,7 +22,7 @@ include:
   - template: Jobs/SAST.gitlab-ci.yml
   - template: Jobs/Secret-Detection.gitlab-ci.yml
   - template: Jobs/Dependency-Scanning.gitlab-ci.yml
-  # Merge trains enabled via workflow rules (see lines 1005-1008)
+  # Merge trains enabled via workflow rules (see workflow section at bottom)
   # Component available but private - uncomment when gitlab_components is public
   # - component: gitlab.com/blueflyio/agent-platform/gitlab_components/merge-train@main
 
@@ -1045,10 +1045,13 @@ workflow:
     - if: $CI_MERGE_REQUEST_EVENT_TYPE == "merge_train"
     # Merged result pipelines (pre-merge validation)
     - if: $CI_MERGE_REQUEST_EVENT_TYPE == "merged_result"
+    # Regular MR pipelines
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    # Prevent duplicate pipelines (skip branch pipeline if MR is open)
+    - if: $CI_COMMIT_BRANCH && $CI_OPEN_MERGE_REQUESTS
+      when: never
     # Regular branch pipelines
     - if: $CI_COMMIT_BRANCH
-    # MR pipelines
-    - if: $CI_MERGE_REQUEST_IID
     # Tag pipelines
     - if: $CI_COMMIT_TAG
     - when: always
