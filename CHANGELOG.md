@@ -5,6 +5,39 @@ All notable changes to OSSA (Open Standard for Scalable AI Agents) will be docum
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.9] - 2025-12-04
+
+### Added
+
+- **Reasoning Strategies** (`spec.reasoning`): Declarative configuration for agent reasoning
+  - Strategy selection: ReAct, Chain of Thought (CoT), Tree of Thought (ToT), custom
+  - Step and depth limits for controlled reasoning
+  - Reasoning trace export to observability (OTEL, JSON, Markdown)
+  - Self-reflection configuration with confidence thresholds
+  - Refs: #107
+
+- **Prompt Management** (`spec.prompts`): Structured prompt templating and versioning
+  - System and user prompt templates with file references
+  - Semantic versioning for A/B testing
+  - Template variable interpolation
+  - Few-shot examples array (up to 20 examples)
+  - External prompt registry integration (Langfuse, PromptLayer)
+  - Refs: #108
+
+- **Knowledge Graph Integration** (`spec.knowledge_graph`): Native graph database support
+  - Provider support: Neo4j, Neptune, Dgraph, Memgraph, custom
+  - Connection configuration with credential references
+  - Schema constraints for entity and relationship types
+  - Sync modes: real-time, batch, on-demand
+  - Refs: #109
+
+- **agents.md Extension**: OpenAI repository-level agent guidance support
+
+### Documentation
+
+- Added `examples/advanced/reasoning-agent.yaml` demonstrating all new features
+- Updated schema description with v0.2.9 capabilities
+
 ## [0.2.8] - 2025-11-30
 
 ### Fixed
