@@ -102,7 +102,9 @@
     "prepare": "husky install || true",
     "sync:pr": "tsx src/cli/commands/github-sync.command.ts pr",
     "sync:batch": "tsx src/cli/commands/github-sync.command.ts batch",
-    "sync:list": "tsx src/cli/commands/github-sync.command.ts list"
+    "sync:list": "tsx src/cli/commands/github-sync.command.ts list",
+    "compliance:audit": "tsx scripts/compliance-audit.ts",
+    "compliance:audit:project": "tsx scripts/compliance-audit.ts"
   },
   "keywords": [
     "ossa",
