@@ -953,6 +953,34 @@ release:npm:
       git commit -m "chore(release): v${RELEASE_VERSION} [skip ci]" || echo "No changes to commit"
       git push origin main --tags
 
+      # Create GitLab Release
+      echo "📋 Creating GitLab Release..."
+      curl --request POST \
+        --header "PRIVATE-TOKEN: ${GITLAB_PUSH_TOKEN}" \
+        --header "Content-Type: application/json" \
+        --data "{
+          \"name\": \"Release v${RELEASE_VERSION}\",
+          \"tag_name\": \"v${RELEASE_VERSION}\",
+          \"description\": \"## What's Changed\\n\\nSee [CHANGELOG.md](https://gitlab.com/${CI_PROJECT_PATH}/-/blob/main/spec/v${RELEASE_VERSION}/CHANGELOG.md) for details.\\n\\n## Milestone\\n\\n${MILESTONE_TITLE}\\n\\n## Assets\\n- [npm package](https://www.npmjs.com/package/@bluefly/openstandardagents/v/${RELEASE_VERSION})\\n- [JSON Schema](https://openstandardagents.org/schema/)\",
+          \"assets\": {
+            \"links\": [
+              {
+                \"name\": \"npm package\",
+                \"url\": \"https://www.npmjs.com/package/@bluefly/openstandardagents/v/${RELEASE_VERSION}\",
+                \"link_type\": \"package\"
+              },
+              {
+                \"name\": \"JSON Schema\",
+                \"url\": \"https://openstandardagents.org/schema/\",
+                \"link_type\": \"other\"
+              }
+            ]
+          }
+        }" \
+        "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/releases"
+
+      echo "✅ GitLab Release created: https://${CI_SERVER_HOST}/${CI_PROJECT_PATH}/-/releases/v${RELEASE_VERSION}"
+
       echo "✅ Release v${RELEASE_VERSION} completed!"
   rules:
     - if: $CI_COMMIT_BRANCH == "main" && $MILESTONE_READY == "true" && $ENABLE_RELEASE == "true"
