@@ -1,0 +1,137 @@
+# OSSA Agent Manifest: GitHub PR Triage Agent
+# Triages pull requests from GitHub mirror and syncs to GitLab
+apiVersion: ossa/v0.2.8
+kind: Agent
+
+metadata:
+  name: github-pr-triage
+  version: 1.0.0
+  description: |
+    Triages GitHub pull requests, validates contributions,
+    and creates corresponding merge requests on GitLab.
+  labels:
+    platform: github
+    domain: devops
+    workflow: pr-triage
+  annotations:
+    documentation: https://openstandardagents.org/docs/agents/github-pr-triage
+    source: https://gitlab.com/blueflyio/openstandardagents
+
+spec:
+  taxonomy:
+    domain: devops
+    subdomain: code-review
+    capability: pr-triage
+
+  role: |
+    You are a GitHub PR triage agent for the OSSA (Open Standard for Scalable AI Agents) project.
+
+    Your responsibilities:
+    1. Welcome contributors and explain the GitHub-to-GitLab workflow
+    2. Validate PR titles follow Conventional Commits format
+    3. Check PR content for:
+       - Schema changes (spec/**) - require careful review
+       - CLI changes (src/**) - require tests
+       - Documentation changes (docs/**) - can be fast-tracked
+       - Example additions (examples/**) - require validation
+    4. Auto-label PRs based on content type
+    5. Create corresponding GitLab MR when approved
+    6. Sync comments and reviews between platforms
+
+    Be welcoming to new contributors. Many are unfamiliar with the dual-repo workflow.
+    Provide clear guidance on how to contribute effectively.
+
+  llm:
+    provider: openai
+    model: gpt-4o
+    temperature: 0.3
+    maxTokens: 2000
+
+  tools:
+    - type: http
+      name: github-api
+      description: GitHub REST API for PR operations
+      endpoint: https://api.github.com
+      auth:
+        type: bearer
+        tokenPath: GITHUB_TOKEN
+      config:
+        headers:
+          Accept: application/vnd.github+json
+          X-GitHub-Api-Version: "2022-11-28"
+
+    - type: http
+      name: gitlab-api
+      description: GitLab API for MR creation
+      endpoint: https://gitlab.com/api/v4
+      auth:
+        type: bearer
+        tokenPath: GITLAB_TOKEN
+
+    - type: mcp
+      name: git-operations
+      description: Git operations for branch sync
+      server: git-mcp
+      capabilities:
+        - name: clone
+        - name: checkout
+        - name: push
+        - name: diff
+
+  autonomy:
+    level: supervised
+    approval_required: false
+    allowed_actions:
+      - label_pr
+      - comment_pr
+      - request_changes
+      - create_gitlab_mr
+      - sync_comments
+    blocked_actions:
+      - merge_pr
+      - close_pr_without_reason
+      - delete_branch
+
+  constraints:
+    cost:
+      maxTokensPerDay: 50000
+      maxTokensPerRequest: 4000
+    performance:
+      maxLatencySeconds: 30
+      timeoutSeconds: 120
+
+  observability:
+    logging:
+      level: info
+      format: json
+    metrics:
+      enabled: true
+      customMetrics:
+        - name: prs_triaged
+          type: counter
+          description: Number of PRs triaged
+        - name: gitlab_mrs_created
+          type: counter
+          description: Number of GitLab MRs created from GitHub PRs
+
+extensions:
+  cursor:
+    enabled: false
+
+  agents_md:
+    enabled: true
+    generate: true
+    output_path: .github/AGENTS.md
+    sections:
+      dev_environment:
+        enabled: true
+        custom: |
+          - This repo is a GitHub mirror of GitLab
+          - PRs here trigger triage to GitLab
+          - Use Conventional Commits for PR titles
+      pr_instructions:
+        enabled: true
+        custom: |
+          - PRs are reviewed here then synced to GitLab
+          - CI/CD runs on GitLab, not GitHub
+          - Maintainers will create GitLab MR from approved PRs

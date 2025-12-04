@@ -4,6 +4,7 @@ Thank you for your interest in contributing to **OSSA (Open Standard for Scalabl
 
 ## 📋 Table of Contents
 
+- [Repository Structure](#repository-structure)
 - [Code of Conduct](#code-of-conduct)
 - [Getting Started](#getting-started)
 - [Development Workflow](#development-workflow)
@@ -12,6 +13,60 @@ Thank you for your interest in contributing to **OSSA (Open Standard for Scalabl
 - [Pull Request Process](#pull-request-process)
 - [Testing](#testing)
 - [Documentation](#documentation)
+
+## 🏗️ Repository Structure
+
+OSSA uses a **dual-repository workflow**:
+
+| Repository | Purpose | Access |
+|------------|---------|--------|
+| [GitLab](https://gitlab.com/blueflyio/openstandardagents) | Primary development, CI/CD, releases | Private (core team) |
+| [GitHub](https://github.com/blueflyio/openstandardagents) | Public mirror, community contributions | Public |
+
+### How It Works
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                     Community Contribution Flow                  │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│   GitHub (Public)              GitLab (Private)                 │
+│   ┌─────────────┐              ┌─────────────┐                 │
+│   │   Issue     │──── sync ───▶│   Issue     │                 │
+│   │   or PR     │              │   or MR     │                 │
+│   └─────────────┘              └──────┬──────┘                 │
+│                                       │                         │
+│                                       ▼                         │
+│                                ┌─────────────┐                 │
+│                                │   CI/CD     │                 │
+│                                │   Tests     │                 │
+│                                └──────┬──────┘                 │
+│                                       │                         │
+│                                       ▼                         │
+│   ┌─────────────┐              ┌─────────────┐                 │
+│   │   Mirror    │◀── push ────│   Merge     │                 │
+│   │   Updated   │              │   to main   │                 │
+│   └─────────────┘              └─────────────┘                 │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### Where to Contribute
+
+| Contribution Type | Where | Notes |
+|-------------------|-------|-------|
+| Bug reports | GitHub Issues | Auto-synced to GitLab |
+| Feature requests | GitHub Issues | Auto-synced to GitLab |
+| Code changes | GitHub PR | Reviewed here, merged on GitLab |
+| Documentation | GitHub PR | Same as code |
+| Security issues | Email only | ops@openstandardagents.org |
+
+### Why Dual Repositories?
+
+1. **Privacy**: Internal development, CI/CD secrets, and infrastructure stay private
+2. **Public Access**: Open specification accessible to the community
+3. **Best of Both**: GitLab's superior CI/CD + GitHub's community reach
+4. **Agent-Powered**: OSSA agents automate sync between platforms
 
 ## 🤝 Code of Conduct
 
