@@ -451,34 +451,101 @@ async function auditDORAMetrics(projectId: string): Promise<ComplianceCheck[]> {
   return checks;
 }
 
-async function auditComplianceFramework(projectId: string): Promise<ComplianceCheck[]> {
+async function auditSecurityPolicies(projectId: string): Promise<ComplianceCheck[]> {
   const checks: ComplianceCheck[] = [];
-  const category = 'Compliance Framework';
+  const category = 'Security Policies';
 
   try {
     const project = await gitlab.Projects.show(projectId);
 
-    // Check if compliance framework is set
-    if (project.compliance_frameworks && project.compliance_frameworks.length > 0) {
+    // Check for security policies project (modern approach)
+    // Security policies are stored in a separate project linked via .gitlab/security-policies/policy.yml
+    try {
+      const policyFile = await gitlab.RepositoryFiles.show(projectId, '.gitlab/security-policies/policy.yml', 'HEAD');
+      const policyContent = Buffer.from(policyFile.content, 'base64').toString('utf-8');
+
+      // Check for scan execution policies
+      if (policyContent.includes('scan_execution_policy:')) {
+        checks.push(createCheck(
+          category,
+          'Scan Execution Policies',
+          'pass',
+          'Scan execution policies are defined to enforce security scans'
+        ));
+
+        // Check specific scan types
+        if (policyContent.includes('scan: sast')) {
+          checks.push(createCheck(category, 'SAST Policy', 'pass', 'SAST enforcement policy configured'));
+        }
+        if (policyContent.includes('scan: secret_detection')) {
+          checks.push(createCheck(category, 'Secret Detection Policy', 'pass', 'Secret detection enforcement policy configured'));
+        }
+        if (policyContent.includes('scan: dependency_scanning')) {
+          checks.push(createCheck(category, 'Dependency Scanning Policy', 'pass', 'Dependency scanning enforcement policy configured'));
+        }
+        if (policyContent.includes('scan: container_scanning')) {
+          checks.push(createCheck(category, 'Container Scanning Policy', 'pass', 'Container scanning enforcement policy configured'));
+        }
+      } else {
+        checks.push(createCheck(
+          category,
+          'Scan Execution Policies',
+          'warning',
+          'No scan execution policies found',
+          'Add scan_execution_policy to enforce security scans: Secure > Policies > New policy'
+        ));
+      }
+
+      // Check for scan result policies (approval gates)
+      if (policyContent.includes('scan_result_policy:')) {
+        checks.push(createCheck(
+          category,
+          'Scan Result Policies',
+          'pass',
+          'Scan result policies are defined to block vulnerable code'
+        ));
+
+        if (policyContent.includes('vulnerabilities_allowed: 0')) {
+          checks.push(createCheck(
+            category,
+            'Zero Vulnerability Policy',
+            'pass',
+            'Zero-tolerance vulnerability policy configured for critical findings'
+          ));
+        }
+      } else {
+        checks.push(createCheck(
+          category,
+          'Scan Result Policies',
+          'warning',
+          'No scan result policies found',
+          'Add scan_result_policy to require approvals for vulnerabilities'
+        ));
+      }
+
+      // Check for pipeline execution policies
+      if (policyContent.includes('pipeline_execution_policy:')) {
+        checks.push(createCheck(
+          category,
+          'Pipeline Execution Policies',
+          'pass',
+          'Pipeline execution policies inject compliance jobs'
+        ));
+      }
+
+    } catch {
+      // Check if linked to group security policies project
       checks.push(createCheck(
         category,
-        'Compliance Framework Applied',
-        'pass',
-        `Compliance framework applied: ${project.compliance_frameworks.map((f: any) => f.name).join(', ')}`
-      ));
-    } else {
-      checks.push(createCheck(
-        category,
-        'Compliance Framework Applied',
+        'Security Policies',
         'info',
-        'No compliance framework applied',
-        'Apply framework: Settings > General > Compliance framework (Ultimate only)'
+        'No local security policies found - may be inherited from group',
+        'Configure policies: Secure > Policies or link to group security-policies project'
       ));
     }
 
-    // Check for merge trains
-    const mrSettings = await gitlab.Projects.show(projectId);
-    if (mrSettings.merge_trains_enabled) {
+    // Check for merge trains (still relevant)
+    if (project.merge_trains_enabled) {
       checks.push(createCheck(
         category,
         'Merge Trains Enabled',
@@ -517,10 +584,10 @@ async function auditComplianceFramework(projectId: string): Promise<ComplianceCh
   } catch (error: any) {
     checks.push(createCheck(
       category,
-      'Compliance Framework Check',
+      'Security Policies Check',
       'info',
-      `Could not check compliance framework: ${error.message}`,
-      'Some features require GitLab Premium/Ultimate'
+      `Could not check security policies: ${error.message}`,
+      'Security policies require GitLab Ultimate'
     ));
   }
 
@@ -621,7 +688,7 @@ async function runAudit(projectId: string): Promise<AuditReport> {
   checks.push(...await auditMergeRequestApprovals(projectId));
   checks.push(...await auditSecurityScanning(projectId));
   checks.push(...await auditDORAMetrics(projectId));
-  checks.push(...await auditComplianceFramework(projectId));
+  checks.push(...await auditSecurityPolicies(projectId));
   checks.push(...await auditPipelineConfiguration(projectId));
 
   // Calculate summary
