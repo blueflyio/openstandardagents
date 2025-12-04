@@ -15,7 +15,7 @@ disable_overriding_approvers_per_merge_request: true
 
 # Merge checks
 only_allow_merge_if_all_status_checks_passed: true
-squash_option: default_on # Encourage squashing for cleaner history
+squash_option: encourage # Strongly encourage squashing for cleaner git history (Issue #95)
 
 # Branch protection (configure in GitLab UI)
 # - Protect 'main' and 'development' branches
