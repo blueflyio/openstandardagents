@@ -202,6 +202,9 @@
         },
         "knowledge_graph": {
           "$ref": "#/definitions/KnowledgeGraph"
+        },
+        "identity": {
+          "$ref": "#/definitions/Identity"
         }
       },
       "additionalProperties": true
@@ -3558,6 +3561,94 @@
           }
         }
       },
+      "additionalProperties": false
+    },
+    "Identity": {
+      "type": "object",
+      "description": "Agent identity configuration for tracing and observability. Defines how runtime identifiers are generated for debugging multi-instance deployments.",
+      "properties": {
+        "instance_id": {
+          "type": "object",
+          "description": "Unique identifier for this agent instance (distinguishes same agent on different pods)",
+          "required": ["generation", "scope"],
+          "properties": {
+            "generation": {
+              "type": "string",
+              "enum": ["uuid_v4", "ulid", "custom"],
+              "default": "uuid_v4",
+              "description": "ID generation strategy"
+            },
+            "scope": {
+              "type": "string",
+              "enum": ["pod", "process", "request"],
+              "default": "pod",
+              "description": "When to generate new instance ID"
+            },
+            "custom_generator": {
+              "type": "string",
+              "description": "Custom generator function reference (when generation=custom)"
+            }
+          }
+        },
+        "session_id": {
+          "type": "object",
+          "description": "Identifier for conversation/workflow session",
+          "properties": {
+            "generation": {
+              "type": "string",
+              "enum": ["uuid_v4", "ulid", "custom"],
+              "default": "uuid_v4"
+            },
+            "scope": {
+              "type": "string",
+              "enum": ["conversation", "workflow", "batch"],
+              "default": "conversation",
+              "description": "Session boundary"
+            }
+          }
+        },
+        "interaction_id": {
+          "type": "object",
+          "description": "Unique identifier for each prompt/response turn (critical for log correlation)",
+          "required": ["generation", "scope"],
+          "properties": {
+            "generation": {
+              "type": "string",
+              "enum": ["uuid_v4", "ulid", "custom"],
+              "default": "uuid_v4"
+            },
+            "scope": {
+              "type": "string",
+              "enum": ["turn", "request"],
+              "default": "turn",
+              "description": "Interaction boundary"
+            }
+          }
+        },
+        "propagation": {
+          "type": "object",
+          "description": "How identity propagates across agent boundaries",
+          "properties": {
+            "inherit_session": {
+              "type": "boolean",
+              "default": true,
+              "description": "Child agents inherit parent session_id"
+            },
+            "trace_context": {
+              "type": "string",
+              "enum": ["w3c", "b3", "jaeger", "none"],
+              "default": "w3c",
+              "description": "Trace context propagation format"
+            },
+            "baggage": {
+              "type": "boolean",
+              "default": true,
+              "description": "Enable W3C Baggage for custom context"
+            }
+          }
+        }
+      },
+      "required": ["instance_id", "interaction_id"],
       "additionalProperties": false
     }
   }
