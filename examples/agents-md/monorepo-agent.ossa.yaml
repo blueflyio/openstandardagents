@@ -1,0 +1,180 @@
+# OSSA Agent Manifest with agents.md Extension
+# Demonstrates monorepo support with nested AGENTS.md files
+apiVersion: ossa/v0.2.9
+kind: Agent
+metadata:
+  name: monorepo-assistant
+  version: 1.0.0
+  description: Multi-package monorepo coding agent with nested agents.md support
+  labels:
+    domain: development
+    framework: agents-md
+    architecture: monorepo
+
+spec:
+  role: |
+    You are an expert developer working on a monorepo containing multiple packages.
+    Each package has its own conventions and testing requirements.
+    Always check the local AGENTS.md file in the current directory for package-specific guidance.
+
+  llm:
+    provider: anthropic
+    model: claude-3-5-sonnet-20241022
+    temperature: 0.1
+
+  tools:
+    - type: mcp
+      name: filesystem
+      server: filesystem
+      capabilities:
+        - name: read_file
+        - name: write_file
+        - name: search_files
+    - type: mcp
+      name: git
+      server: git
+      capabilities:
+        - name: status
+        - name: diff
+        - name: log
+    - type: http
+      name: npm-registry
+      endpoint: https://registry.npmjs.org
+      capabilities:
+        - name: search_packages
+
+  constraints:
+    cost:
+      maxTokensPerDay: 100000
+      maxTokensPerRequest: 8000
+    performance:
+      maxLatencySeconds: 60
+      timeoutSeconds: 180
+
+  autonomy:
+    level: autonomous
+    approval_required: false
+    allowed_actions:
+      - read
+      - write
+      - test
+      - lint
+      - format
+    blocked_actions:
+      - publish
+      - deploy
+      - delete_branch
+
+extensions:
+  agents_md:
+    enabled: true
+    generate: true
+    output_path: AGENTS.md
+
+    sections:
+      dev_environment:
+        enabled: true
+        title: "Development Environment"
+        custom: |
+          - This is a pnpm workspace monorepo
+          - Run `pnpm install` from root to install all dependencies
+          - Use `pnpm -F <package>` to run commands in specific packages
+          - Turborepo is used for task orchestration
+
+      testing:
+        enabled: true
+        title: "Testing Requirements"
+        custom: |
+          - Run `pnpm test` to execute all tests
+          - Run `pnpm -F <package> test` for package-specific tests
+          - Coverage threshold is 80% for all packages
+          - E2E tests are in `apps/web/e2e/`
+
+      pr_instructions:
+        enabled: true
+        title: "Pull Request Guidelines"
+        custom: |
+          - Use conventional commits: `feat:`, `fix:`, `chore:`, etc.
+          - PRs must pass CI checks before merge
+          - Changesets are required for publishable packages
+          - Run `pnpm changeset` to create a changeset
+
+      code_style:
+        enabled: true
+        custom: |
+          - TypeScript strict mode in all packages
+          - Biome for linting and formatting
+          - Run `pnpm lint` and `pnpm format` before committing
+
+      custom:
+        - title: "Package Structure"
+          content: |
+            - `apps/` - Application packages (web, api, cli)
+            - `packages/` - Shared library packages
+            - `tooling/` - Build and development tools
+
+    sync:
+      on_manifest_change: true
+      include_comments: true
+      watch: false
+
+    mapping:
+      tools_to_dev_environment: true
+      constraints_to_testing: true
+      autonomy_to_pr_instructions: true
+
+    # Nested AGENTS.md files for each package
+    nested_files:
+      - path: apps/web
+        inherit: true
+        sections:
+          dev_environment:
+            custom: |
+              - Next.js 14 application
+              - Run `pnpm -F web dev` to start dev server
+              - Uses App Router and Server Components
+          testing:
+            custom: |
+              - Playwright for E2E tests
+              - React Testing Library for component tests
+              - Run `pnpm -F web test:e2e` for E2E
+
+      - path: apps/api
+        inherit: true
+        sections:
+          dev_environment:
+            custom: |
+              - Hono API server
+              - Run `pnpm -F api dev` to start
+              - OpenAPI spec in `openapi.yaml`
+          testing:
+            custom: |
+              - Vitest for unit tests
+              - Integration tests require Docker
+              - Run `docker-compose up -d` first
+
+      - path: packages/ui
+        inherit: true
+        sections:
+          dev_environment:
+            custom: |
+              - Shared React component library
+              - Run `pnpm -F ui storybook` for component preview
+              - Uses Radix UI primitives
+          testing:
+            custom: |
+              - Storybook visual tests
+              - Run `pnpm -F ui test:visual`
+
+  cursor:
+    enabled: true
+    agent_type: composer
+    workspace_config:
+      context_files:
+        - "**/*.ts"
+        - "**/*.tsx"
+        - "**/package.json"
+      ignore_patterns:
+        - "**/node_modules/**"
+        - "**/dist/**"
+        - "**/.turbo/**"
