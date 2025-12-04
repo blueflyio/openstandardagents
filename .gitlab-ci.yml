@@ -22,7 +22,8 @@ include:
   - template: Jobs/SAST.gitlab-ci.yml
   - template: Jobs/Secret-Detection.gitlab-ci.yml
   - template: Jobs/Dependency-Scanning.gitlab-ci.yml
-  # TODO: Add merge-train component when gitlab_components is made public/internal
+  # Merge trains enabled via workflow rules (see lines 1005-1008)
+  # Component available but private - uncomment when gitlab_components is public
   # - component: gitlab.com/blueflyio/agent-platform/gitlab_components/merge-train@main
 
 #   - CI/CD variable ENABLE_RELEASE must be set to "true"
@@ -997,7 +998,17 @@ mirror:github:
   allow_failure: true
 
 # ============================================================================
-# WORKFLOW
+# WORKFLOW - MERGE TRAINS ENABLED
+# ============================================================================
+# Merge trains prevent branch divergence by:
+# 1. Queuing MRs instead of racing to merge
+# 2. Testing merged state before allowing merge
+# 3. Auto-rebasing when target branch updates
+# 4. Failing fast on conflicts
+#
+# Enabled for: development, main branches
+# Eliminates: Manual sync commits between releases
+# See: https://docs.gitlab.com/ee/ci/pipelines/merge_trains.html
 # ============================================================================
 
 workflow:
