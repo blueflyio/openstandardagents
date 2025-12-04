@@ -2,7 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "https://openstandardagents.org/schemas/v0.2.9/agent.json",
   "title": "OSSA v0.2.9 Agent Manifest Schema",
-  "description": "Open Standard for Scalable AI Agents (OSSA) - The OpenAPI for AI Agents. Specification for declarative agent definition with framework-agnostic portability. v0.2.9 adds agents.md extension for OpenAI repository-level agent guidance.",
+  "description": "Open Standard for Scalable AI Agents (OSSA) - The OpenAPI for AI Agents. Specification for declarative agent definition with framework-agnostic portability. v0.2.9 adds agents.md extension for OpenAI repository-level agent guidance, reasoning strategies (ReAct, CoT, ToT), prompt templates with versioning, and knowledge graph integration.",
   "type": "object",
   "required": [
     "apiVersion",
@@ -193,6 +193,15 @@
         },
         "deployment": {
           "$ref": "#/definitions/Deployment"
+        },
+        "reasoning": {
+          "$ref": "#/definitions/Reasoning"
+        },
+        "prompts": {
+          "$ref": "#/definitions/Prompts"
+        },
+        "knowledge_graph": {
+          "$ref": "#/definitions/KnowledgeGraph"
         }
       },
       "additionalProperties": true
@@ -3314,6 +3323,237 @@
                   "description": "Time to wait for graceful shutdown"
                 }
               }
+            }
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "Reasoning": {
+      "type": "object",
+      "description": "Reasoning strategy configuration for agent decision-making (ReAct, CoT, ToT)",
+      "properties": {
+        "strategy": {
+          "type": "string",
+          "enum": ["react", "cot", "tree_of_thought", "custom"],
+          "default": "react",
+          "description": "Reasoning strategy: ReAct (Reason+Act), Chain of Thought, Tree of Thought, or custom"
+        },
+        "max_steps": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100,
+          "default": 10,
+          "description": "Maximum reasoning steps before termination"
+        },
+        "max_depth": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 20,
+          "default": 5,
+          "description": "Maximum depth for tree-based strategies"
+        },
+        "trace_enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Export reasoning traces to observability system"
+        },
+        "export_format": {
+          "type": "string",
+          "enum": ["otel", "json", "markdown"],
+          "default": "otel",
+          "description": "Format for reasoning trace export"
+        },
+        "self_reflection": {
+          "type": "object",
+          "description": "Self-reflection configuration for reasoning verification",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": false,
+              "description": "Enable self-reflection during reasoning"
+            },
+            "trigger": {
+              "type": "string",
+              "enum": ["every_step", "on_failure", "on_uncertainty"],
+              "default": "on_failure",
+              "description": "When to trigger self-reflection"
+            },
+            "threshold": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1,
+              "default": 0.7,
+              "description": "Confidence threshold for uncertainty-based reflection"
+            }
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "Prompts": {
+      "type": "object",
+      "description": "Structured prompt management with templating and versioning",
+      "properties": {
+        "system": {
+          "type": "object",
+          "description": "System prompt configuration",
+          "properties": {
+            "template": {
+              "type": "string",
+              "description": "Path to system prompt template file (relative to manifest)"
+            },
+            "version": {
+              "type": "string",
+              "pattern": "^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)$",
+              "description": "Semantic version of prompt template for A/B testing"
+            },
+            "variables": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "string"
+              },
+              "description": "Template variables for interpolation"
+            }
+          }
+        },
+        "user": {
+          "type": "object",
+          "description": "User prompt template configuration",
+          "properties": {
+            "template": {
+              "type": "string",
+              "description": "Path to user prompt template file"
+            },
+            "variables": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "few_shot_examples": {
+          "type": "array",
+          "description": "Few-shot examples for in-context learning",
+          "maxItems": 20,
+          "items": {
+            "type": "object",
+            "required": ["input", "output"],
+            "properties": {
+              "input": {
+                "type": "string",
+                "description": "Example user input"
+              },
+              "output": {
+                "type": "string",
+                "description": "Expected agent output"
+              },
+              "context": {
+                "type": "string",
+                "description": "Optional context for the example"
+              }
+            }
+          }
+        },
+        "registry": {
+          "type": "object",
+          "description": "External prompt registry configuration",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": false
+            },
+            "provider": {
+              "type": "string",
+              "enum": ["local", "langfuse", "promptlayer", "custom"],
+              "description": "Prompt registry provider"
+            },
+            "endpoint": {
+              "type": "string",
+              "format": "uri",
+              "description": "Registry API endpoint"
+            }
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "KnowledgeGraph": {
+      "type": "object",
+      "description": "Knowledge graph integration for entity relationships and persistent memory",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable knowledge graph integration"
+        },
+        "provider": {
+          "type": "string",
+          "enum": ["neo4j", "neptune", "dgraph", "memgraph", "custom"],
+          "description": "Knowledge graph provider"
+        },
+        "connection": {
+          "type": "object",
+          "description": "Connection configuration",
+          "required": ["endpoint"],
+          "properties": {
+            "endpoint": {
+              "type": "string",
+              "description": "Connection endpoint URI (e.g., bolt://localhost:7687)"
+            },
+            "database": {
+              "type": "string",
+              "description": "Database name"
+            },
+            "credentials_ref": {
+              "type": "string",
+              "description": "Reference to credentials (K8s secret, env var name)"
+            }
+          }
+        },
+        "schema": {
+          "type": "object",
+          "description": "Graph schema constraints",
+          "properties": {
+            "entity_types": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Allowed entity types in the graph",
+              "examples": [["Agent", "Tool", "Session", "Interaction"]]
+            },
+            "relationship_types": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Allowed relationship types",
+              "examples": [["INVOKED", "DELEGATED_TO", "RESPONDED_TO"]]
+            }
+          }
+        },
+        "sync": {
+          "type": "object",
+          "description": "Synchronization configuration",
+          "properties": {
+            "mode": {
+              "type": "string",
+              "enum": ["real_time", "batch", "on_demand"],
+              "default": "batch",
+              "description": "Sync mode"
+            },
+            "batch_size": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 100,
+              "description": "Number of entities per batch"
+            },
+            "interval": {
+              "type": "string",
+              "pattern": "^\\d+[smh]$",
+              "description": "Sync interval (e.g., 60s, 5m, 1h)"
             }
           }
         }
