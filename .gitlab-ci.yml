@@ -581,6 +581,65 @@ quality:gates:
 # STAGE 6 - RELEASE (NPM - Milestone-Gated)
 # ============================================================================
 
+# GENERATE CHANGELOG from milestone issues
+release:changelog:
+  stage: release
+  image: node:${NODE_VERSION}-alpine
+  before_script:
+    - apk add --no-cache git curl jq bash
+    - npm ci --legacy-peer-deps
+    - npm install -g tsx
+  script:
+    - |
+      #!/bin/bash
+      set -e
+
+      echo "📝 CHANGELOG GENERATION"
+      echo "======================="
+
+      if [ "$MILESTONE_READY" != "true" ]; then
+        echo "⚠️  No release-ready milestone - skipping"
+        exit 0
+      fi
+
+      echo "Milestone: ${MILESTONE_TITLE}"
+      echo "Version: v${RELEASE_VERSION}"
+      echo "Milestone ID: ${MILESTONE_ID}"
+      echo ""
+
+      # Generate changelog from milestone issues
+      MILESTONE_ID=${MILESTONE_ID} \
+      RELEASE_VERSION=${RELEASE_VERSION} \
+      CHANGELOG_OUTPUT="RELEASE_NOTES.md" \
+      tsx .gitlab/release-automation/scripts/generate-changelog.ts
+
+      # Also create version-specific changelog
+      VERSION_CHANGELOG="spec/v${RELEASE_VERSION}/CHANGELOG.md"
+      mkdir -p "spec/v${RELEASE_VERSION}"
+      cp RELEASE_NOTES.md "$VERSION_CHANGELOG"
+
+      echo ""
+      echo "✅ Changelog generated successfully"
+      cat RELEASE_NOTES.md
+  artifacts:
+    paths:
+      - RELEASE_NOTES.md
+      - spec/v*/CHANGELOG.md
+      - changelog.env
+    reports:
+      dotenv: changelog.env
+    expire_in: 30 days
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main" && $MILESTONE_READY == "true"
+      when: on_success
+    - if: $CI_COMMIT_BRANCH == "main"
+      when: manual
+  needs:
+    - job: detect:milestone-and-tags
+      optional: true
+      artifacts: true
+  allow_failure: false
+
 # PRE-RELEASE VALIDATION - Critical checks before any release
 release:validate:
   stage: release
@@ -824,6 +883,7 @@ release:npm:
   dependencies:
     - build:dist
     - detect:milestone-and-tags
+    - release:changelog
   before_script:
     - apk add --no-cache git curl jq bash
     - npm ci --legacy-peer-deps
@@ -836,10 +896,10 @@ release:npm:
     - |
       #!/bin/bash
       set -e
-      
+
       echo "🚀 MILESTONE-GATED RELEASE"
       echo "=========================="
-      
+
       # Check ENABLE_RELEASE gate
       if [ "$ENABLE_RELEASE" != "true" ]; then
         echo "🚫 RELEASE BLOCKED: ENABLE_RELEASE not set"
@@ -850,7 +910,7 @@ release:npm:
         echo " Value: true"
         exit 0
       fi
-      
+
       # Check milestone readiness
       if [ "$MILESTONE_READY" != "true" ]; then
         echo "🚫 RELEASE BLOCKED: No release-ready milestone"
@@ -860,11 +920,12 @@ release:npm:
         echo " 2. ❌ Milestone must be closed and 100% complete"
         exit 0
       fi
-      
+
       echo "✅ Release gate passed"
       echo "   ENABLE_RELEASE: ${ENABLE_RELEASE}"
       echo "   Milestone: ${MILESTONE_TITLE}"
       echo "   Version: v${RELEASE_VERSION}"
+      echo "   Issues Closed: ${ISSUE_COUNT:-0}"
 
       # Update package.json
       npm version ${RELEASE_VERSION} --no-git-tag-version --allow-same-version
@@ -903,85 +964,110 @@ release:npm:
         echo "❌ npm publish failed"
         exit 1
       fi
-      
+
       # Create git tag with comprehensive release information
       PROD_TAG="v${RELEASE_VERSION}"
       RELEASE_DATE=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
-      
-      # Extract release notes from CHANGELOG if available
-      CHANGELOG_FILE="spec/v${RELEASE_VERSION}/CHANGELOG.md"
-      if [ ! -f "$CHANGELOG_FILE" ]; then
-        CHANGELOG_FILE="spec/v${RELEASE_VERSION}-RC/CHANGELOG.md"
+
+      # Load changelog content if available
+      CHANGELOG_CONTENT=""
+      if [ -f "RELEASE_NOTES.md" ]; then
+        CHANGELOG_CONTENT=$(cat RELEASE_NOTES.md)
       fi
-      
-      if [ -f "$CHANGELOG_FILE" ]; then
-        # Extract overview and key features from CHANGELOG
-        OVERVIEW=$(grep -A 5 "^## Overview" "$CHANGELOG_FILE" 2>/dev/null | head -6 | tail -5 | sed 's/^/  /' || echo "")
-        KEY_FEATURES=$(grep -A 20 "^## What's New" "$CHANGELOG_FILE" 2>/dev/null | head -21 | tail -20 | sed 's/^/  /' || echo "")
-      else
-        OVERVIEW=""
-        KEY_FEATURES=""
-      fi
-      
+
       # Build comprehensive tag message using heredoc
       read -r -d '' TAG_MESSAGE << EOF || true
       Release v${RELEASE_VERSION}
 
-      Milestone - ${MILESTONE_TITLE}
-      Pipeline - ${CI_PIPELINE_ID}
-      Released - ${RELEASE_DATE}
-      Commit - ${CI_COMMIT_SHA}
+      Milestone: ${MILESTONE_TITLE}
+      Issues Closed: ${ISSUE_COUNT:-0}
+      Pipeline: ${CI_PIPELINE_ID}
+      Released: ${RELEASE_DATE}
+      Commit: ${CI_COMMIT_SHA}
 
-      ${OVERVIEW}
+      See full changelog: https://gitlab.com/${CI_PROJECT_PATH}/-/blob/main/spec/v${RELEASE_VERSION}/CHANGELOG.md
 
-      ${KEY_FEATURES}
-
-      Documentation
-      - Schema - https://openstandardagents.org/schema/
-      - Changelog - https://github.com/blueflyio/openstandardagents/blob/main/CHANGELOG.md
-      - Migration Guide - https://openstandardagents.org/docs/migration-guides/
-      - Examples - https://openstandardagents.org/examples/
-
-      npm Package - @bluefly/openstandardagents@${RELEASE_VERSION}
-      GitLab Release - https://${CI_SERVER_HOST}/${CI_PROJECT_PATH}/-/releases/v${RELEASE_VERSION}
+      Links:
+      - npm Package: https://www.npmjs.com/package/@bluefly/openstandardagents/v/${RELEASE_VERSION}
+      - Documentation: https://openstandardagents.org/
+      - Milestone: ${MILESTONE_URL:-https://gitlab.com/${CI_PROJECT_PATH}/-/milestones}
       EOF
-      
+
       git tag -a "$PROD_TAG" -m "$TAG_MESSAGE" "$CI_COMMIT_SHA"
-      
+
       # Commit and push
-      git add package.json package-lock.json README.md spec/ || true
+      git add package.json package-lock.json README.md spec/ RELEASE_NOTES.md || true
       git commit -m "chore(release): v${RELEASE_VERSION} [skip ci]" || echo "No changes to commit"
       git push origin main --tags
 
-      # Create GitLab Release
-      echo "📋 Creating GitLab Release..."
-      curl --request POST \
-        --header "PRIVATE-TOKEN: ${GITLAB_PUSH_TOKEN}" \
-        --header "Content-Type: application/json" \
-        --data "{
-          \"name\": \"Release v${RELEASE_VERSION}\",
-          \"tag_name\": \"v${RELEASE_VERSION}\",
-          \"description\": \"## What's Changed\\n\\nSee [CHANGELOG.md](https://gitlab.com/${CI_PROJECT_PATH}/-/blob/main/spec/v${RELEASE_VERSION}/CHANGELOG.md) for details.\\n\\n## Milestone\\n\\n${MILESTONE_TITLE}\\n\\n## Assets\\n- [npm package](https://www.npmjs.com/package/@bluefly/openstandardagents/v/${RELEASE_VERSION})\\n- [JSON Schema](https://openstandardagents.org/schema/)\",
-          \"assets\": {
-            \"links\": [
+      # Create GitLab Release with auto-generated changelog
+      echo "📋 Creating GitLab Release with milestone integration..."
+
+      # Prepare changelog for release description
+      RELEASE_DESCRIPTION="${CHANGELOG_CONTENT}"
+
+      # If no changelog, use fallback
+      if [ -z "$RELEASE_DESCRIPTION" ]; then
+        RELEASE_DESCRIPTION="## Release v${RELEASE_VERSION}\n\nMilestone: ${MILESTONE_TITLE} (${MILESTONE_URL})\n\nSee CHANGELOG.md for details."
+      fi
+
+      # Create release with milestone linkage
+      RELEASE_PAYLOAD=$(jq -n \
+        --arg name "Release v${RELEASE_VERSION}" \
+        --arg tag "v${RELEASE_VERSION}" \
+        --arg desc "$RELEASE_DESCRIPTION" \
+        --arg milestone "${MILESTONE_TITLE}" \
+        --arg npm_url "https://www.npmjs.com/package/@bluefly/openstandardagents/v/${RELEASE_VERSION}" \
+        --arg schema_url "https://openstandardagents.org/schema/" \
+        --arg docs_url "https://openstandardagents.org/" \
+        --arg milestone_url "${MILESTONE_URL}" \
+        '{
+          name: $name,
+          tag_name: $tag,
+          description: $desc,
+          milestones: [$milestone],
+          assets: {
+            links: [
               {
-                \"name\": \"npm package\",
-                \"url\": \"https://www.npmjs.com/package/@bluefly/openstandardagents/v/${RELEASE_VERSION}\",
-                \"link_type\": \"package\"
+                name: "npm package",
+                url: $npm_url,
+                link_type: "package"
               },
               {
-                \"name\": \"JSON Schema\",
-                \"url\": \"https://openstandardagents.org/schema/\",
-                \"link_type\": \"other\"
+                name: "JSON Schema",
+                url: $schema_url,
+                link_type: "other"
+              },
+              {
+                name: "Documentation",
+                url: $docs_url,
+                link_type: "other"
+              },
+              {
+                name: "Milestone",
+                url: $milestone_url,
+                link_type: "other"
               }
             ]
           }
-        }" \
+        }')
+
+      curl --request POST \
+        --header "PRIVATE-TOKEN: ${GITLAB_PUSH_TOKEN}" \
+        --header "Content-Type: application/json" \
+        --data "$RELEASE_PAYLOAD" \
         "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/releases"
 
       echo "✅ GitLab Release created: https://${CI_SERVER_HOST}/${CI_PROJECT_PATH}/-/releases/v${RELEASE_VERSION}"
 
       echo "✅ Release v${RELEASE_VERSION} completed!"
+      echo ""
+      echo "📊 Release Summary:"
+      echo "   Version: v${RELEASE_VERSION}"
+      echo "   Milestone: ${MILESTONE_TITLE}"
+      echo "   Issues: ${ISSUE_COUNT:-0}"
+      echo "   npm: https://www.npmjs.com/package/@bluefly/openstandardagents/v/${RELEASE_VERSION}"
+      echo "   Release: https://${CI_SERVER_HOST}/${CI_PROJECT_PATH}/-/releases/v${RELEASE_VERSION}"
   rules:
     - if: $CI_COMMIT_BRANCH == "main" && $MILESTONE_READY == "true" && $ENABLE_RELEASE == "true"
       when: on_success
@@ -992,6 +1078,7 @@ release:npm:
     - build:dist
     - release:preview
     - release:validate
+    - release:changelog
     - validate:docs-consistency
     - detect:milestone-and-tags
 
