@@ -157,84 +157,97 @@ detect:milestone-and-tags:
         fi
       fi
       
-      # Also detect closed milestones for release readiness
+      # Detect ACTIVE milestones ready for release
+      # NEW FLOW: Milestone stays ACTIVE, release closes it
       echo ""
       echo "RELEASE READINESS CHECK"
       echo "========================"
+      echo "Looking for ACTIVE milestone with all issues closed..."
+      echo ""
 
-      # Get all milestones
+      # Get ACTIVE milestones only
       ALL_MILESTONES=$(curl -sS -G "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/milestones" \
         --header "PRIVATE-TOKEN: ${GITLAB_PUSH_TOKEN}" \
         --data-urlencode "per_page=100" \
-        --data-urlencode "state=all")
-      
+        --data-urlencode "state=active")
+
       # Initialize milestone env file
-      cat > milestone-version.env << 'EOF'
-      RELEASE_VERSION=
-      MILESTONE_TITLE=
-      MILESTONE_ID=
-      MILESTONE_READY=false
-      EOF
-      
-      # Find closed milestone ready for release - use process substitution to avoid subshell
+      echo "RELEASE_VERSION=" > milestone-version.env
+      echo "MILESTONE_TITLE=" >> milestone-version.env
+      echo "MILESTONE_ID=" >> milestone-version.env
+      echo "MILESTONE_URL=" >> milestone-version.env
+      echo "MILESTONE_READY=false" >> milestone-version.env
+      echo "ISSUE_COUNT=0" >> milestone-version.env
+      echo "OPEN_ISSUE_COUNT=0" >> milestone-version.env
+
+      # Find ACTIVE milestone with all issues closed (ready for release)
       FOUND_MILESTONE=false
       while read -r milestone_json; do
         [ -z "$milestone_json" ] && continue
         [ "$FOUND_MILESTONE" = "true" ] && break
-      
+
         TITLE=$(echo "$milestone_json" | jq -r '.title // ""' 2>/dev/null || echo "")
         ID=$(echo "$milestone_json" | jq -r '.id // ""' 2>/dev/null || echo "")
-        STATE=$(echo "$milestone_json" | jq -r '.state // ""' 2>/dev/null || echo "")
-      
+        WEB_URL=$(echo "$milestone_json" | jq -r '.web_url // ""' 2>/dev/null || echo "")
+
         VERSION=$(echo "$TITLE" | grep -oE 'v?[0-9]+\.[0-9]+\.[0-9]+(-[A-Za-z0-9]+)?' | head -1 | sed 's/^v//')
 
-        if [ -n "$VERSION" ] && [ "$STATE" = "closed" ]; then
-          # Skip if already released
+        if [ -n "$VERSION" ]; then
+          # Skip if already released (tag exists)
           if git tag -l 2>/dev/null | grep -qE "^v?${VERSION}$"; then
+            echo "⏭️  Skipping ${VERSION} - already released"
             continue
           fi
 
           # Get milestone stats
           MILESTONE_STATS=$(curl -sS -G "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/milestones/${ID}" \
             --header "PRIVATE-TOKEN: ${GITLAB_PUSH_TOKEN}" 2>/dev/null || echo "{}")
-      
+
           TOTAL_ISSUES=$(echo "$MILESTONE_STATS" | jq -r '.total_issues_count // 0' 2>/dev/null || echo "0")
           CLOSED_ISSUES=$(echo "$MILESTONE_STATS" | jq -r '.closed_issues_count // 0' 2>/dev/null || echo "0")
           OPEN_ISSUES=$((TOTAL_ISSUES - CLOSED_ISSUES))
 
-          # Check if 100% complete
+          echo "📊 Milestone: ${TITLE}"
+          echo "   Total issues: ${TOTAL_ISSUES}"
+          echo "   Closed: ${CLOSED_ISSUES}"
+          echo "   Open: ${OPEN_ISSUES}"
+          echo ""
+
+          # Check if 100% complete (all issues closed)
           if [ "$OPEN_ISSUES" -eq 0 ] && [ "$TOTAL_ISSUES" -gt 0 ]; then
-            cat > milestone-version.env << EOF
-      RELEASE_VERSION=${VERSION}
-      MILESTONE_TITLE=${TITLE}
-      MILESTONE_ID=${ID}
-      MILESTONE_READY=true
-      EOF
-            echo "Release-ready milestone found: v${VERSION}"
+            echo "RELEASE_VERSION=${VERSION}" > milestone-version.env
+            echo "MILESTONE_TITLE=${TITLE}" >> milestone-version.env
+            echo "MILESTONE_ID=${ID}" >> milestone-version.env
+            echo "MILESTONE_URL=${WEB_URL}" >> milestone-version.env
+            echo "MILESTONE_READY=true" >> milestone-version.env
+            echo "ISSUE_COUNT=${TOTAL_ISSUES}" >> milestone-version.env
+            echo "OPEN_ISSUE_COUNT=0" >> milestone-version.env
+            echo "✅ Release-ready: ${TITLE} (${TOTAL_ISSUES} issues closed)"
             FOUND_MILESTONE=true
             break
           elif [ "$TOTAL_ISSUES" -eq 0 ]; then
-            cat > milestone-version.env << EOF
-      RELEASE_VERSION=${VERSION}
-      MILESTONE_TITLE=${TITLE}
-      MILESTONE_ID=${ID}
-      MILESTONE_READY=true
-      EOF
-            echo "Release-ready milestone found: v${VERSION} (empty milestone)"
-            FOUND_MILESTONE=true
-            break
+            echo "⚠️  Milestone ${TITLE} has no issues - skipping"
+          else
+            # Milestone has open issues - NOT ready but record for validation
+            echo "RELEASE_VERSION=${VERSION}" > milestone-version.env
+            echo "MILESTONE_TITLE=${TITLE}" >> milestone-version.env
+            echo "MILESTONE_ID=${ID}" >> milestone-version.env
+            echo "MILESTONE_URL=${WEB_URL}" >> milestone-version.env
+            echo "MILESTONE_READY=false" >> milestone-version.env
+            echo "ISSUE_COUNT=${TOTAL_ISSUES}" >> milestone-version.env
+            echo "OPEN_ISSUE_COUNT=${OPEN_ISSUES}" >> milestone-version.env
+            echo "❌ NOT ready: ${OPEN_ISSUES} issues still open"
+            echo "   Close all issues before releasing!"
           fi
         fi
-      done < <(echo "$ALL_MILESTONES" | jq -c '.[] | select(.state == "closed")' 2>/dev/null || echo "")
-      
+      done < <(echo "$ALL_MILESTONES" | jq -c '.[]' 2>/dev/null || echo "")
+
       # If no milestone found, ensure env file exists
       if [ ! -s milestone-version.env ]; then
-        cat > milestone-version.env << 'EOF'
-      RELEASE_VERSION=
-      MILESTONE_TITLE=
-      MILESTONE_ID=
-      MILESTONE_READY=false
-      EOF
+        echo "RELEASE_VERSION=" > milestone-version.env
+        echo "MILESTONE_TITLE=" >> milestone-version.env
+        echo "MILESTONE_ID=" >> milestone-version.env
+        echo "MILESTONE_READY=false" >> milestone-version.env
         echo "ℹ️  No release-ready milestone found"
       fi
       
@@ -661,6 +674,36 @@ release:validate:
       ERRORS=0
       WARNINGS=0
 
+      # 0. MILESTONE GATE CHECK - All issues must be closed!
+      echo "📋 0. Milestone Gate (All Issues Closed)"
+      if [ "$MILESTONE_READY" = "true" ]; then
+        echo "   ✅ Milestone ready: ${MILESTONE_TITLE}"
+        echo "   ✅ All ${ISSUE_COUNT:-0} issues closed"
+      elif [ -n "$MILESTONE_TITLE" ] && [ "${OPEN_ISSUE_COUNT:-0}" -gt 0 ]; then
+        echo "   ❌ ERROR: Cannot release - ${OPEN_ISSUE_COUNT} issues still OPEN!"
+        echo ""
+        echo "   Open issues in ${MILESTONE_TITLE}:"
+        # Fetch and display open issues
+        OPEN_ISSUES_LIST=$(curl -sS -G "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/issues" \
+          --header "PRIVATE-TOKEN: ${GITLAB_PUSH_TOKEN}" \
+          --data-urlencode "milestone=${MILESTONE_TITLE}" \
+          --data-urlencode "state=opened" \
+          --data-urlencode "per_page=100" 2>/dev/null || echo "[]")
+
+        echo "$OPEN_ISSUES_LIST" | jq -r '.[] | "   - #\(.iid): \(.title)"' 2>/dev/null || echo "   (Could not fetch issues)"
+        echo ""
+        echo "   👉 Close all issues before releasing!"
+        ERRORS=$((ERRORS + 1))
+      elif [ -z "$MILESTONE_TITLE" ]; then
+        echo "   ⚠️  WARNING: No milestone detected"
+        echo "   Release will proceed without milestone linkage"
+        WARNINGS=$((WARNINGS + 1))
+      else
+        echo "   ⚠️  WARNING: Milestone has 0 issues"
+        WARNINGS=$((WARNINGS + 1))
+      fi
+      echo ""
+
       # 1. VERSION CONSISTENCY CHECK
       echo "📋 1. Version Consistency"
       VERSION=$(node -p "require('./package.json').version")
@@ -830,6 +873,9 @@ release:validate:
   needs:
     - build:dist
     - test:unit
+    - job: detect:milestone-and-tags
+      optional: true
+      artifacts: true
 
 release:preview:
   stage: release
@@ -1060,14 +1106,37 @@ release:npm:
 
       echo "✅ GitLab Release created: https://${CI_SERVER_HOST}/${CI_PROJECT_PATH}/-/releases/v${RELEASE_VERSION}"
 
+      # CLOSE THE MILESTONE after successful release
+      echo ""
+      echo "🔒 Closing milestone: ${MILESTONE_TITLE}..."
+      if [ -n "$MILESTONE_ID" ]; then
+        CLOSE_RESULT=$(curl -sS --request PUT \
+          --header "PRIVATE-TOKEN: ${GITLAB_PUSH_TOKEN}" \
+          --header "Content-Type: application/json" \
+          --data '{"state_event": "close"}' \
+          "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/milestones/${MILESTONE_ID}" 2>/dev/null)
+
+        CLOSE_STATE=$(echo "$CLOSE_RESULT" | jq -r '.state // "unknown"' 2>/dev/null)
+        if [ "$CLOSE_STATE" = "closed" ]; then
+          echo "✅ Milestone closed successfully"
+        else
+          echo "⚠️  Could not close milestone (state: ${CLOSE_STATE})"
+          echo "   Manual close required: ${MILESTONE_URL}"
+        fi
+      else
+        echo "⚠️  No MILESTONE_ID - cannot close milestone"
+      fi
+
+      echo ""
       echo "✅ Release v${RELEASE_VERSION} completed!"
       echo ""
       echo "📊 Release Summary:"
       echo "   Version: v${RELEASE_VERSION}"
-      echo "   Milestone: ${MILESTONE_TITLE}"
+      echo "   Milestone: ${MILESTONE_TITLE} (CLOSED)"
       echo "   Issues: ${ISSUE_COUNT:-0}"
       echo "   npm: https://www.npmjs.com/package/@bluefly/openstandardagents/v/${RELEASE_VERSION}"
       echo "   Release: https://${CI_SERVER_HOST}/${CI_PROJECT_PATH}/-/releases/v${RELEASE_VERSION}"
+      echo "   Milestone: ${MILESTONE_URL}"
   rules:
     - if: $CI_COMMIT_BRANCH == "main" && $MILESTONE_READY == "true" && $ENABLE_RELEASE == "true"
       when: on_success
