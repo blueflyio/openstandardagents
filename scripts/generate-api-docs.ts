@@ -154,7 +154,8 @@ function main() {
     try {
       const specPath = join(coreDir, file);
       const specContent = readFileSync(specPath, 'utf-8');
-      const spec = yaml.load(specContent) as OpenAPISpec;
+      // Use JSON_SCHEMA to prevent arbitrary code execution (CWE-502)
+      const spec = yaml.load(specContent, { schema: yaml.JSON_SCHEMA }) as OpenAPISpec;
       
       const docContent = generateAPIDoc(spec, file);
       const outputFile = join(OUTPUT_DIR, file.replace('.openapi.yaml', '.md'));

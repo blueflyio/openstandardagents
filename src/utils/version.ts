@@ -83,7 +83,7 @@ export function getVersionInfo(forceRefresh = false): VersionInfo {
     return cachedVersionInfo;
   }
 
-  let version = '0.2.8'; // Ultimate fallback
+  let version = '0.2.9'; // Ultimate fallback
 
   // Try to find package.json
   // Strategy 1: From this file's location (works in dist)

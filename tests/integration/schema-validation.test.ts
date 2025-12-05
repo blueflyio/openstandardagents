@@ -3,17 +3,25 @@
  * Tests comprehensive schema validation with platform extensions
  */
 
-import { describe, it, expect } from '@jest/globals';
+import { describe, it, expect, beforeAll } from '@jest/globals';
 import { container } from '../../src/di-container.js';
 import { ValidationService } from '../../src/services/validation.service.js';
 import { ManifestRepository } from '../../src/repositories/manifest.repository.js';
-import type { OssaAgent } from '../../src/types/index.js';
+import { SchemaRepository } from '../../src/repositories/schema.repository.js';
+import type { OssaAgent, SchemaVersion } from '../../src/types/index.js';
 import * as fs from 'fs';
 import * as path from 'path';
 
 describe('Schema Validation Integration', () => {
   const validationService = container.get(ValidationService);
   const manifestRepo = container.get(ManifestRepository);
+  const schemaRepo = container.get(SchemaRepository);
+  // Use current schema version dynamically from SchemaRepository
+  let CURRENT_SCHEMA_VERSION: SchemaVersion;
+
+  beforeAll(() => {
+    CURRENT_SCHEMA_VERSION = schemaRepo.getCurrentVersion() as SchemaVersion;
+  });
 
   it('should validate all example agents', async () => {
     const examplesDir = path.join(process.cwd(), 'examples');
@@ -53,8 +61,8 @@ describe('Schema Validation Integration', () => {
               continue;
             }
 
-            // Map ossa/v0.2 or ossa/v0.2.x to latest v0.2.x schema
-            const result = await validationService.validate(manifest, '0.2.8');
+            // Map ossa/v0.2 or ossa/v0.2.x to current schema version
+            const result = await validationService.validate(manifest, CURRENT_SCHEMA_VERSION);
 
             // Log errors for debugging
             if (result.errors.length > 0) {
@@ -103,7 +111,7 @@ describe('Schema Validation Integration', () => {
 
   it('should validate platform extensions', async () => {
     const manifest = {
-      apiVersion: 'ossa/v0.2.8',
+      apiVersion: `ossa/v${CURRENT_SCHEMA_VERSION}`,
       kind: 'Agent',
       metadata: {
         name: 'test-agent',
@@ -128,13 +136,13 @@ describe('Schema Validation Integration', () => {
       },
     };
 
-    const result = await validationService.validate(manifest, '0.2.8');
+    const result = await validationService.validate(manifest, CURRENT_SCHEMA_VERSION);
     expect(result.valid).toBe(true);
   });
 
   it('should catch platform-specific validation errors', async () => {
     const manifest = {
-      apiVersion: 'ossa/v0.2.8',
+      apiVersion: `ossa/v${CURRENT_SCHEMA_VERSION}`,
       kind: 'Agent',
       metadata: {
         name: 'test-agent',
@@ -154,14 +162,14 @@ describe('Schema Validation Integration', () => {
       },
     };
 
-    const result = await validationService.validate(manifest, '0.2.8');
+    const result = await validationService.validate(manifest, CURRENT_SCHEMA_VERSION);
     expect(result.valid).toBe(false);
     expect(result.errors.length).toBeGreaterThan(0);
   });
 
   it('should validate cross-platform compatibility', async () => {
     const manifest = {
-      apiVersion: 'ossa/v0.2.8',
+      apiVersion: `ossa/v${CURRENT_SCHEMA_VERSION}`,
       kind: 'Agent',
       metadata: {
         name: 'multi-platform-agent',
@@ -190,7 +198,7 @@ describe('Schema Validation Integration', () => {
       },
     };
 
-    const result = await validationService.validate(manifest, '0.2.8');
+    const result = await validationService.validate(manifest, CURRENT_SCHEMA_VERSION);
     if (result.errors.length > 0) {
       console.error(
         'Cross-platform validation errors:',
