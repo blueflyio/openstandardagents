@@ -205,6 +205,53 @@
         },
         "identity": {
           "$ref": "#/definitions/Identity"
+        },
+        "runtimes": {
+          "type": "object",
+          "description": "Runtime environment configurations for executing the agent across different platforms",
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "enabled": {
+                "type": "boolean",
+                "description": "Whether this runtime is enabled for the agent"
+              },
+              "endpoint": {
+                "type": "string",
+                "description": "API endpoint for the runtime service",
+                "format": "uri"
+              },
+              "model": {
+                "type": "string",
+                "enum": ["opus", "sonnet", "haiku"],
+                "description": "AI model to use (for AI-powered runtimes like Claude Code)"
+              },
+              "allowedTools": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "List of tools that can be used in this runtime (supports glob patterns like 'Bash(git:*)')"
+              }
+            },
+            "additionalProperties": true
+          },
+          "examples": [
+            {
+              "gitlab-duo": {
+                "enabled": true,
+                "endpoint": "http://gdk.test:5052"
+              },
+              "claude-code": {
+                "enabled": true,
+                "model": "opus",
+                "allowedTools": ["Edit", "Write", "Read", "Bash(git:*)", "Bash(glab:*)"]
+              },
+              "cursor": {
+                "enabled": false
+              }
+            }
+          ]
         }
       },
       "additionalProperties": true
