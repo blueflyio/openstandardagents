@@ -265,7 +265,7 @@ export class ClaudeAdapter {
    */
   async chatStream(
     userMessage: string,
-    options?: ClaudeRunOptions
+    _options?: ClaudeRunOptions
   ): Promise<AsyncIterable<string>> {
     // Add user message to history
     this.conversationHistory.push({
