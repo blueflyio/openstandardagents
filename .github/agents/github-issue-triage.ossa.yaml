@@ -1,6 +1,6 @@
 # OSSA Agent Manifest: GitHub Issue Triage Agent
 # Triages issues from GitHub and syncs to GitLab
-apiVersion: ossa/v0.2.8
+apiVersion: ossa/v0.2.9
 kind: Agent
 
 metadata:

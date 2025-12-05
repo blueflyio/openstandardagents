@@ -1,5 +1,5 @@
 {
-  "apiVersion": "ossa/v0.2.8",
+  "apiVersion": "ossa/v0.2.9",
   "kind": "Agent",
   "metadata": {
     "name": "rag-query-agent",
