@@ -429,7 +429,7 @@
 
     "WorkflowSpec": {
       "type": "object",
-      "description": "Specification for workflow composition (kind: Workflow) - composes Tasks and Agents into executable pipelines",
+      "description": "Specification for workflow composition (kind: Workflow) - placeholder for issue #99",
       "required": ["steps"],
       "properties": {
         "triggers": {
@@ -439,14 +439,6 @@
             "$ref": "#/definitions/Trigger"
           }
         },
-        "inputs": {
-          "$ref": "#/definitions/JSONSchemaDefinition",
-          "description": "JSON Schema for workflow input validation"
-        },
-        "outputs": {
-          "$ref": "#/definitions/JSONSchemaDefinition",
-          "description": "JSON Schema for workflow output validation"
-        },
         "steps": {
           "type": "array",
           "description": "Workflow steps (Tasks and/or Agents)",
@@ -455,85 +447,13 @@
             "$ref": "#/definitions/WorkflowStep"
           }
         },
-        "context": {
-          "type": "object",
-          "description": "Shared context available to all steps",
-          "properties": {
-            "variables": {
-              "type": "object",
-              "description": "Workflow-level variables",
-              "additionalProperties": true
-            },
-            "secrets": {
-              "type": "array",
-              "description": "Secret references available to steps",
-              "items": {
-                "type": "object",
-                "properties": {
-                  "name": {
-                    "type": "string",
-                    "description": "Secret name available to steps"
-                  },
-                  "ref": {
-                    "type": "string",
-                    "description": "Secret reference (e.g., vault://secret/api-key)"
-                  }
-                },
-                "required": ["name", "ref"]
-              }
-            }
-          },
-          "additionalProperties": false
-        },
-        "concurrency": {
-          "type": "object",
-          "description": "Concurrency control",
-          "properties": {
-            "group": {
-              "type": "string",
-              "description": "Concurrency group name (workflows in same group are serialized)"
-            },
-            "cancel_in_progress": {
-              "type": "boolean",
-              "default": false,
-              "description": "Cancel running workflow if new one starts in same group"
-            }
-          },
-          "additionalProperties": false
-        },
         "error_handling": {
           "type": "object",
-          "description": "Workflow-level error handling",
           "properties": {
             "on_failure": {
               "type": "string",
-              "enum": ["halt", "continue", "rollback", "notify", "compensate"],
-              "default": "halt",
-              "description": "Action on step failure"
-            },
-            "compensation_steps": {
-              "type": "array",
-              "description": "Steps to run on rollback/compensate",
-              "items": {
-                "$ref": "#/definitions/WorkflowStep"
-              }
-            },
-            "notification": {
-              "type": "object",
-              "description": "Notification on failure",
-              "properties": {
-                "channels": {
-                  "type": "array",
-                  "items": {
-                    "type": "string",
-                    "enum": ["email", "slack", "webhook", "pagerduty"]
-                  }
-                },
-                "template": {
-                  "type": "string",
-                  "description": "Notification template reference"
-                }
-              }
+              "enum": ["halt", "continue", "rollback", "notify"],
+              "default": "halt"
             },
             "retry_policy": {
               "type": "object",
@@ -541,79 +461,21 @@
                 "max_attempts": {
                   "type": "integer",
                   "minimum": 1,
-                  "maximum": 10,
                   "default": 3
                 },
                 "backoff": {
                   "type": "string",
-                  "enum": ["fixed", "exponential", "linear"],
+                  "enum": ["fixed", "exponential"],
                   "default": "exponential"
-                },
-                "initial_delay_ms": {
-                  "type": "integer",
-                  "minimum": 100,
-                  "default": 1000
-                },
-                "max_delay_ms": {
-                  "type": "integer",
-                  "default": 60000
                 }
               }
             }
-          },
-          "additionalProperties": false
+          }
         },
         "timeout_seconds": {
           "type": "integer",
           "minimum": 1,
-          "maximum": 86400,
-          "description": "Maximum workflow execution time in seconds"
-        },
-        "observability": {
-          "type": "object",
-          "description": "Workflow observability configuration",
-          "properties": {
-            "tracing": {
-              "type": "object",
-              "properties": {
-                "enabled": {
-                  "type": "boolean",
-                  "default": true
-                },
-                "propagate_context": {
-                  "type": "boolean",
-                  "default": true,
-                  "description": "Propagate trace context to steps"
-                }
-              }
-            },
-            "metrics": {
-              "type": "object",
-              "properties": {
-                "enabled": {
-                  "type": "boolean",
-                  "default": true
-                },
-                "custom_labels": {
-                  "type": "object",
-                  "additionalProperties": {
-                    "type": "string"
-                  }
-                }
-              }
-            },
-            "logging": {
-              "type": "object",
-              "properties": {
-                "level": {
-                  "type": "string",
-                  "enum": ["debug", "info", "warn", "error"],
-                  "default": "info"
-                }
-              }
-            }
-          },
-          "additionalProperties": false
+          "description": "Maximum workflow execution time"
         }
       },
       "additionalProperties": false
@@ -704,27 +566,22 @@
 
     "WorkflowStep": {
       "type": "object",
-      "description": "A step in a workflow - can be a Task, Agent, or control structure",
-      "required": ["id"],
+      "description": "A step in a workflow",
+      "required": ["id", "kind"],
       "properties": {
         "id": {
           "type": "string",
           "pattern": "^[a-z][a-z0-9_-]*$",
           "description": "Step identifier (unique within workflow)"
         },
-        "name": {
-          "type": "string",
-          "description": "Human-readable step name for display"
-        },
         "kind": {
           "type": "string",
-          "enum": ["Task", "Agent", "Parallel", "Conditional", "Loop"],
+          "enum": ["Task", "Agent"],
           "description": "Step type"
         },
         "ref": {
           "type": "string",
-          "description": "Reference to Task or Agent manifest file",
-          "examples": ["./tasks/publish-content.yaml", "./agents/content-reviewer.yaml"]
+          "description": "Reference to Task or Agent manifest file"
         },
         "inline": {
           "type": "object",
@@ -732,182 +589,45 @@
         },
         "input": {
           "type": "object",
-          "description": "Input mapping using expression syntax",
-          "additionalProperties": true,
-          "examples": [
-            {
-              "content": "${{ steps.fetch.output.content }}",
-              "priority": "${{ workflow.input.priority }}"
-            }
-          ]
-        },
-        "output": {
-          "type": "object",
-          "description": "Output mapping to workflow context",
-          "properties": {
-            "to": {
-              "type": "string",
-              "description": "Variable name to store output"
-            },
-            "fields": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              },
-              "description": "Specific fields to extract from output"
-            }
-          }
+          "description": "Input mapping (can reference previous step outputs)",
+          "additionalProperties": true
         },
         "condition": {
           "type": "string",
           "description": "Condition expression for conditional execution",
-          "examples": [
-            "${{ steps.review.output.approved }}",
-            "${{ workflow.input.priority == 'high' }}",
-            "${{ steps.check.output.status == 'ready' && context.retry_count < 3 }}"
-          ]
-        },
-        "depends_on": {
-          "type": "array",
-          "description": "Explicit dependencies on other steps",
-          "items": {
-            "type": "string"
-          },
-          "examples": [["fetch", "validate"]]
+          "examples": ["${{ steps.review.output.approved }}", "${{ input.priority == 'high' }}"]
         },
         "parallel": {
           "type": "array",
-          "description": "Steps to run in parallel (for kind: Parallel)",
-          "items": {
-            "$ref": "#/definitions/WorkflowStep"
-          }
-        },
-        "branches": {
-          "type": "array",
-          "description": "Conditional branches (for kind: Conditional)",
-          "items": {
-            "type": "object",
-            "properties": {
-              "condition": {
-                "type": "string",
-                "description": "Branch condition expression"
-              },
-              "steps": {
-                "type": "array",
-                "items": {
-                  "$ref": "#/definitions/WorkflowStep"
-                }
-              }
-            },
-            "required": ["condition", "steps"]
-          }
-        },
-        "else": {
-          "type": "array",
-          "description": "Steps to run if no branch condition matches (for kind: Conditional)",
-          "items": {
-            "$ref": "#/definitions/WorkflowStep"
-          }
-        },
-        "loop": {
-          "type": "object",
-          "description": "Loop configuration (for kind: Loop)",
-          "properties": {
-            "over": {
-              "type": "string",
-              "description": "Expression returning array to iterate over",
-              "examples": ["${{ steps.fetch.output.items }}", "${{ workflow.input.recipients }}"]
-            },
-            "as": {
-              "type": "string",
-              "description": "Variable name for current item",
-              "default": "item"
-            },
-            "index": {
-              "type": "string",
-              "description": "Variable name for current index",
-              "default": "index"
-            },
-            "parallelism": {
-              "type": "integer",
-              "minimum": 1,
-              "description": "Maximum parallel iterations"
-            }
-          },
-          "required": ["over"]
-        },
-        "steps": {
-          "type": "array",
-          "description": "Nested steps (for Loop and Conditional kinds)",
+          "description": "Steps to run in parallel at this position",
           "items": {
             "$ref": "#/definitions/WorkflowStep"
           }
         },
         "retry": {
           "type": "object",
-          "description": "Step-specific retry configuration",
           "properties": {
             "max_attempts": {
               "type": "integer",
               "minimum": 1,
-              "maximum": 10,
               "default": 3
             },
             "backoff_strategy": {
               "type": "string",
-              "enum": ["fixed", "exponential", "linear"],
+              "enum": ["fixed", "exponential"],
               "default": "exponential"
-            },
-            "initial_delay_ms": {
-              "type": "integer",
-              "minimum": 100,
-              "default": 1000
-            },
-            "retryable_errors": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              },
-              "description": "Error codes that should trigger retry"
             }
           }
         },
         "timeout_seconds": {
           "type": "integer",
           "minimum": 1,
-          "maximum": 86400,
           "description": "Step-specific timeout"
         },
         "continue_on_error": {
           "type": "boolean",
           "default": false,
           "description": "Continue workflow even if this step fails"
-        },
-        "on_error": {
-          "type": "object",
-          "description": "Step-specific error handling",
-          "properties": {
-            "action": {
-              "type": "string",
-              "enum": ["fail", "continue", "goto", "compensate"],
-              "default": "fail"
-            },
-            "goto": {
-              "type": "string",
-              "description": "Step ID to jump to on error (for action: goto)"
-            },
-            "compensation": {
-              "$ref": "#/definitions/WorkflowStep",
-              "description": "Compensation step to run on error"
-            }
-          }
-        },
-        "labels": {
-          "type": "object",
-          "description": "Step labels for filtering and organization",
-          "additionalProperties": {
-            "type": "string"
-          }
         }
       },
       "additionalProperties": false
