@@ -1,0 +1,99 @@
+{
+  "swarm": {
+    "name": "v0.2.9-release-completion",
+    "description": "Complete remaining v0.2.9 Stability & Polish milestone issues",
+    "parallel": true,
+    "max_concurrent": 5
+  },
+  "tasks": [
+    {
+      "id": "task-97-security-fix",
+      "issue": 97,
+      "title": "Investigate vulnerability: Deserialization of Untrusted Data",
+      "status": "completed",
+      "priority": "P0",
+      "agent": "security-agent",
+      "notes": "MR !196 created - fix/97-yaml-safe-load branch"
+    },
+    {
+      "id": "task-90-flow-verification",
+      "issue": 90,
+      "title": "[TEST] Full Agent Flow Verification - Post Merge",
+      "status": "pending",
+      "priority": "P2",
+      "agent": "test-agent",
+      "actions": [
+        "Review test scenarios in .gitlab/agents/",
+        "Execute integration tests",
+        "Document test results"
+      ],
+      "worktree": "worktrees/openstandardagents/90-test-flow-verification"
+    },
+    {
+      "id": "task-89-webhook-verification",
+      "issue": 89,
+      "title": "[TEST] Webhook Agent Verification - Issue Triage",
+      "status": "pending",
+      "priority": "P2",
+      "agent": "test-agent",
+      "actions": [
+        "Test webhook agent with sample issue",
+        "Verify triage labels applied correctly",
+        "Document test coverage"
+      ],
+      "worktree": "worktrees/openstandardagents/89-webhook-verification"
+    },
+    {
+      "id": "task-74-releases",
+      "issue": 74,
+      "title": "feat: Automated GitLab Releases with Milestone Integration",
+      "status": "pending",
+      "priority": "P1",
+      "agent": "release-agent",
+      "actions": [
+        "Implement release automation in .gitlab-ci.yml",
+        "Add milestone linking",
+        "Test release workflow"
+      ],
+      "worktree": "worktrees/openstandardagents/74-automated-releases"
+    },
+    {
+      "id": "task-59-dogfooding",
+      "issue": 59,
+      "title": "feat(dogfooding): GitLab Ultimate OSSA agents",
+      "status": "pending",
+      "priority": "P1",
+      "agent": "agents-agent",
+      "actions": [
+        "Create issue-triage agent manifest",
+        "Create mr-review agent manifest",
+        "Create ci-cd agent manifest",
+        "Register agents in catalog"
+      ],
+      "worktree": "worktrees/openstandardagents/59-dogfooding-agents"
+    },
+    {
+      "id": "task-84-compliance-audit",
+      "issue": 84,
+      "title": "feat(buildkit): Automated GitLab Ultimate compliance audit system",
+      "status": "pending",
+      "priority": "P1",
+      "agent": "buildkit-agent",
+      "actions": [
+        "Implement compliance audit command",
+        "Add GitLab Ultimate API integration",
+        "Document in buildkit help"
+      ],
+      "worktree": "worktrees/openstandardagents/84-compliance-audit"
+    }
+  ],
+  "release_blockers": [
+    {
+      "issue": 97,
+      "status": "in_review",
+      "mr": 196,
+      "notes": "Security fix - MUST merge before release"
+    }
+  ],
+  "notes": "All 17 open issues remain in v0.2.9 milestone. Only #73 was moved to v0.3.0 (already done)."
+}
