@@ -1164,13 +1164,16 @@ mirror:github:
     - git config --global user.name "GitLab CI"
   script:
     - |
-      if [ -z "$GITHUB_MIRROR_TOKEN" ]; then
-        echo "ℹ️  GITHUB_MIRROR_TOKEN not set - skipping"
+      # Use GH_TOKEN (group variable) or GITHUB_MIRROR_TOKEN (legacy)
+      MIRROR_TOKEN="${GH_TOKEN:-$GITHUB_MIRROR_TOKEN}"
+
+      if [ -z "$MIRROR_TOKEN" ]; then
+        echo "ℹ️  No GitHub token set (GH_TOKEN or GITHUB_MIRROR_TOKEN) - skipping"
         exit 0
       fi
 
       echo "🔄 Syncing to GitHub..."
-      git remote add github https://${GITHUB_MIRROR_TOKEN}@github.com/blueflyio/openstandardagents.git || true
+      git remote add github https://${MIRROR_TOKEN}@github.com/blueflyio/openstandardagents.git || true
       git push github --all --force || true
       git push github --tags --force || true
       echo "✅ GitHub mirror synced"
@@ -1179,6 +1182,118 @@ mirror:github:
       when: on_success
     - if: $CI_COMMIT_BRANCH == "main"
       when: on_success
+  allow_failure: true
+
+# ============================================================================
+# POST-RELEASE CLEANUP
+# ============================================================================
+# After successful release:
+# 1. Tag all issues with released::v{VERSION}
+# 2. Tag all MRs with released::v{VERSION}
+# 3. Create next milestone (patch increment)
+
+post-release:cleanup:
+  stage: .post
+  image: alpine:latest
+  before_script:
+    - apk add --no-cache curl jq bash
+  script:
+    - |
+      #!/bin/bash
+      set -e
+
+      echo "🧹 POST-RELEASE CLEANUP"
+      echo "======================="
+
+      # Check if release just happened
+      if [ -z "$RELEASE_VERSION" ] || [ -z "$MILESTONE_ID" ]; then
+        echo "ℹ️  No release detected - skipping cleanup"
+        exit 0
+      fi
+
+      VERSION="${RELEASE_VERSION}"
+      LABEL_NAME="released::v${VERSION}"
+
+      echo "📌 Version: v${VERSION}"
+      echo "📌 Milestone: ${MILESTONE_TITLE}"
+      echo ""
+
+      # 1. Create release label if not exists
+      echo "Creating label: ${LABEL_NAME}"
+      curl --request POST \
+        --header "PRIVATE-TOKEN: ${GITLAB_PUSH_TOKEN}" \
+        --data "name=${LABEL_NAME}&color=#00FF00&description=Released in v${VERSION}" \
+        "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/labels" 2>/dev/null || echo "Label may already exist"
+
+      # 2. Tag all closed issues in milestone
+      echo ""
+      echo "📌 Tagging issues..."
+      ISSUES=$(curl -sS -G \
+        --header "PRIVATE-TOKEN: ${GITLAB_PUSH_TOKEN}" \
+        "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/issues" \
+        --data-urlencode "milestone=${MILESTONE_TITLE}" \
+        --data-urlencode "state=closed" \
+        --data-urlencode "per_page=100")
+
+      echo "$ISSUES" | jq -r '.[].iid' | while read ISSUE_IID; do
+        [ -z "$ISSUE_IID" ] && continue
+        curl -sS --request PUT \
+          --header "PRIVATE-TOKEN: ${GITLAB_PUSH_TOKEN}" \
+          --data "add_labels=${LABEL_NAME}" \
+          "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/issues/${ISSUE_IID}" > /dev/null
+        echo "  ✓ Tagged issue #${ISSUE_IID}"
+      done
+
+      # 3. Tag all merged MRs in milestone
+      echo ""
+      echo "📌 Tagging merge requests..."
+      MRS=$(curl -sS -G \
+        --header "PRIVATE-TOKEN: ${GITLAB_PUSH_TOKEN}" \
+        "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/merge_requests" \
+        --data-urlencode "milestone=${MILESTONE_TITLE}" \
+        --data-urlencode "state=merged" \
+        --data-urlencode "per_page=100")
+
+      echo "$MRS" | jq -r '.[].iid' | while read MR_IID; do
+        [ -z "$MR_IID" ] && continue
+        curl -sS --request PUT \
+          --header "PRIVATE-TOKEN: ${GITLAB_PUSH_TOKEN}" \
+          --data "add_labels=${LABEL_NAME}" \
+          "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/merge_requests/${MR_IID}" > /dev/null
+        echo "  ✓ Tagged MR !${MR_IID}"
+      done
+
+      # 4. Create next milestone (patch increment)
+      echo ""
+      echo "📅 Creating next milestone..."
+      NEXT_VERSION=$(echo "$VERSION" | awk -F. '{print $1"."$2"."$3+1}')
+
+      NEXT_MILESTONE=$(curl -sS --request POST \
+        --header "PRIVATE-TOKEN: ${GITLAB_PUSH_TOKEN}" \
+        --header "Content-Type: application/json" \
+        --data "{
+          \"title\": \"v${NEXT_VERSION}\",
+          \"description\": \"Next patch release (auto-created after v${VERSION})\"
+        }" \
+        "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/milestones" 2>/dev/null)
+
+      NEXT_ID=$(echo "$NEXT_MILESTONE" | jq -r '.id // empty')
+      if [ -n "$NEXT_ID" ]; then
+        echo "  ✓ Created milestone v${NEXT_VERSION}"
+      else
+        echo "  ⚠️  Milestone v${NEXT_VERSION} may already exist"
+      fi
+
+      echo ""
+      echo "✅ POST-RELEASE CLEANUP COMPLETE"
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main" && $MILESTONE_READY == "true" && $ENABLE_RELEASE == "true"
+      when: on_success
+  needs:
+    - job: release:npm
+      artifacts: true
+    - job: detect:milestone-and-tags
+      artifacts: true
   allow_failure: true
 
 # ============================================================================
