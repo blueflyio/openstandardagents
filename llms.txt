@@ -13,7 +13,7 @@ Key features:
 
 ## Core Specification
 
-- [OSSA Schema v0.2.8](https://gitlab.com/blueflyio/openstandardagents/-/blob/main/spec/ossa-schema.yaml): Complete agent definition schema with capabilities, triggers, and outputs
+- [OSSA Schema v0.2.9](https://gitlab.com/blueflyio/openstandardagents/-/blob/main/spec/ossa-schema.yaml): Complete agent definition schema with capabilities, triggers, and outputs
 - [AgentFlow Lifecycle](https://gitlab.com/blueflyio/openstandardagents/-/wikis/AgentFlow-Lifecycle): 9-state workflow (Triage → To Do → In Progress → Done/Canceled)
 - [Custom Fields](https://gitlab.com/blueflyio/openstandardagents/-/wikis/Custom-Field-Enforcement): 8 fields for agent coordination (agent_assigned, agent_status, commit_type, priority, release_type)
 - [Bot Waves](https://gitlab.com/blueflyio/openstandardagents/-/wikis/Specialized-Bot-Deployment): 5-wave orchestration model for parallel agent execution

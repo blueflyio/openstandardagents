@@ -1,7 +1,7 @@
 # OSSA Quickstart Example - Customer Support Agent
 # Run with: ossa run examples/quickstart/support-agent.ossa.yaml
 
-apiVersion: ossa/v0.2.8
+apiVersion: ossa/v0.2.9
 kind: Agent
 
 metadata:
