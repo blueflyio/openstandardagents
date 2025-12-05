@@ -2,7 +2,7 @@
 # Production-grade specification for Kubernetes-native agent deployment
 # Compatible with kagent.dev/v1alpha1 CRDs
 
-apiVersion: ossa/v0.2.8
+apiVersion: ossa/v0.2.9
 kind: ExtensionSchema
 metadata:
   name: kagent-extension
