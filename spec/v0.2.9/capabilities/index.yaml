@@ -1,0 +1,25 @@
+# OSSA Capability Registry v0.2.9
+
+domains:
+  memory:
+    description: "Agent memory and context retrieval capabilities"
+    capabilities:
+      - ossa:memory/semantic_search@1.0
+      - ossa:memory/kg_query@1.0
+      - ossa:memory/context_fusion@1.0
+
+  ml:
+    description: "Machine learning model inference capabilities"
+    capabilities:
+      - ossa:ml/predict@1.0
+
+  security:
+    description: "Security scanning and compliance capabilities"
+    capabilities:
+      - ossa:security/scan_vulnerabilities@1.0
+
+  code:
+    description: "Code quality and testing capabilities"
+    capabilities:
+      - ossa:code/lint@2.0
+      - ossa:code/test@1.0

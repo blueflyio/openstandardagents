@@ -47,7 +47,7 @@ export class WebhookService {
       const validated = MilestoneWebhookPayloadSchema.parse(payload);
       const actions: WebhookResponse['actions'] = [];
 
-      const { project, object_attributes: milestone } = validated;
+      const { object_attributes: milestone } = validated;
 
       // Determine if this is a create or close event
       const isNewMilestone =
@@ -114,7 +114,7 @@ export class WebhookService {
   private async handleMilestoneCreate(
     payload: MilestoneWebhookPayload
   ): Promise<{ type: string; status: string; details?: Record<string, unknown> } | null> {
-    const { project, object_attributes: milestone } = payload;
+    const { object_attributes: milestone } = payload;
     const version = milestone.title.replace(/^v/, '');
 
     // Create initial dev tag
@@ -142,7 +142,7 @@ export class WebhookService {
   private async handleMilestoneClose(
     payload: MilestoneWebhookPayload
   ): Promise<{ type: string; status: string; details?: Record<string, unknown> } | null> {
-    const { project, object_attributes: milestone } = payload;
+    const { object_attributes: milestone } = payload;
     const version = milestone.title.replace(/^v/, '');
 
     // Get milestone statistics

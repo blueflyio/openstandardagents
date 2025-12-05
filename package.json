@@ -1,8 +1,8 @@
 {
   "name": "@bluefly/openstandardagents",
-  "version": "0.2.8",
+  "version": "0.2.9",
   "exports": {
-    "./schema": "./spec/v0.2.8/ossa-0.2.8.schema.json",
+    "./schema": "./spec/v0.2.9/ossa-0.2.9.schema.json",
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
@@ -102,7 +102,9 @@
     "prepare": "husky install || true",
     "sync:pr": "tsx src/cli/commands/github-sync.command.ts pr",
     "sync:batch": "tsx src/cli/commands/github-sync.command.ts batch",
-    "sync:list": "tsx src/cli/commands/github-sync.command.ts list"
+    "sync:list": "tsx src/cli/commands/github-sync.command.ts list",
+    "compliance:audit": "tsx scripts/compliance-audit.ts",
+    "compliance:audit:project": "tsx scripts/compliance-audit.ts"
   },
   "keywords": [
     "ossa",

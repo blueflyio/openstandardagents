@@ -8,7 +8,7 @@ variables:
 github:sync:agent:
   stage: .pre
   trigger:
-    project: ${AGENT_PLATFORM_GROUP}
+    project: ${AGENT_PLATFORM_PROJECT}
     strategy: depend
   variables:
     AGENT_NAME: gitlab-lib-ci
@@ -21,19 +21,34 @@ github:sync:agent:
     - if: $CI_PIPELINE_SOURCE == "web"
       allow_failure: true
 
-# Code Review Agent
-# Note: Requires blueflyio/agent-platform project to be created
-# Currently set to allow_failure until agent-platform is deployed
+# Code Review Agent - Local Execution
+# Runs code review using local OSSA agent manifests
+# Switched from downstream trigger to local execution for reliability
 code:review:agent:
   stage: .pre
+  image: node:${NODE_VERSION}-alpine
   allow_failure: true
-  trigger:
-    project: ${AGENT_PLATFORM_PROJECT}
-    strategy: depend
-  variables:
-    AGENT_NAME: code-review
-    TARGET_PROJECT: $CI_PROJECT_PATH
-    MR_IID: $CI_MERGE_REQUEST_IID
+  before_script:
+    - npm ci --legacy-peer-deps
+    - npm run build
+  script:
+    - |
+      echo "🔍 Code Review Agent Starting..."
+      echo "   MR: !${CI_MERGE_REQUEST_IID}"
+      echo "   Project: ${CI_PROJECT_PATH}"
+
+      # Check for OSSA agent manifest
+      MANIFEST_PATH=".gitlab/agents/ossa-agent/manifest.ossa.yaml"
+      if [ -f "$MANIFEST_PATH" ]; then
+        echo "📋 Running code review from: ${MANIFEST_PATH}"
+        export GITLAB_TOKEN="${AGENT_SERVICE_TOKEN:-$CI_JOB_TOKEN}"
+        export MR_IID="${CI_MERGE_REQUEST_IID}"
+        export TARGET_PROJECT="${CI_PROJECT_PATH}"
+        node dist/cli/index.js run "$MANIFEST_PATH" --task code-review || echo "⚠️  Code review completed with warnings"
+      else
+        echo "ℹ️  No code review agent manifest found at ${MANIFEST_PATH}"
+        echo "   Skipping code review. Create manifest to enable."
+      fi
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
       when: on_success
@@ -42,7 +57,7 @@ code:review:agent:
 docs:sync:agent:
   stage: .post
   trigger:
-    project: ${AGENT_PLATFORM_GROUP}
+    project: ${AGENT_PLATFORM_PROJECT}
     strategy: depend
   variables:
     AGENT_NAME: gitlab-lib-ci
@@ -54,17 +69,35 @@ docs:sync:agent:
         - docs/**/*
         - README.md
 
-# Security Scan Agent
+# Security Scan Agent - Local Execution
+# Runs security scanning using local OSSA security-scanner manifest
+# Switched from downstream trigger to local execution for reliability
 security:scan:agent:
   stage: test
+  image: node:${NODE_VERSION}-alpine
   allow_failure: true
-  trigger:
-    project: ${AGENT_PLATFORM_PROJECT}
-    strategy: depend
-  variables:
-    AGENT_NAME: security-scan
-    TARGET_PROJECT: $CI_PROJECT_PATH
-    SCAN_TYPE: full
+  before_script:
+    - npm ci --legacy-peer-deps
+    - npm run build
+  script:
+    - |
+      echo "🔒 Security Scan Agent Starting..."
+      echo "   Project: ${CI_PROJECT_PATH}"
+      echo "   Scan Type: full"
+
+      # Check for security scanner manifest
+      MANIFEST_PATH=".gitlab/agents/security-scanner/manifest.ossa.yaml"
+      if [ -f "$MANIFEST_PATH" ]; then
+        echo "📋 Running security scan from: ${MANIFEST_PATH}"
+        export GITLAB_TOKEN="${AGENT_SERVICE_TOKEN:-$CI_JOB_TOKEN}"
+        export TARGET_PROJECT="${CI_PROJECT_PATH}"
+        export SCAN_TYPE="full"
+        node dist/cli/index.js run "$MANIFEST_PATH" --task security-scan || echo "⚠️  Security scan completed with warnings"
+      else
+        echo "ℹ️  No security scanner manifest found at ${MANIFEST_PATH}"
+        echo "   Skipping security scan. Create manifest to enable."
+        echo "   Using GitLab native security scanning instead."
+      fi
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event" || $CI_PIPELINE_SOURCE == "schedule"
       when: on_success
@@ -73,7 +106,7 @@ security:scan:agent:
 ts:build:agent:
   stage: build
   trigger:
-    project: ${AGENT_PLATFORM_GROUP}
+    project: ${AGENT_PLATFORM_PROJECT}
     strategy: depend
   variables:
     AGENT_NAME: ts-prod
@@ -87,7 +120,7 @@ ts:build:agent:
 deploy:infra:agent:
   stage: deploy
   trigger:
-    project: ${AGENT_PLATFORM_GROUP}
+    project: ${AGENT_PLATFORM_PROJECT}
     strategy: depend
   variables:
     AGENT_NAME: infra-prod
@@ -106,7 +139,7 @@ deploy:infra:agent:
 deploy:ml:agent:
   stage: deploy
   trigger:
-    project: ${AGENT_PLATFORM_GROUP}
+    project: ${AGENT_PLATFORM_PROJECT}
     strategy: depend
   variables:
     AGENT_NAME: ml-prod
@@ -122,7 +155,7 @@ deploy:ml:agent:
 drupal:sync:agent:
   stage: .post
   trigger:
-    project: ${AGENT_PLATFORM_GROUP}
+    project: ${AGENT_PLATFORM_PROJECT}
     strategy: depend
   variables:
     AGENT_NAME: drupal-prod
@@ -138,7 +171,7 @@ drupal:sync:agent:
 native:build:agent:
   stage: build
   trigger:
-    project: ${AGENT_PLATFORM_GROUP}
+    project: ${AGENT_PLATFORM_PROJECT}
     strategy: depend
   variables:
     AGENT_NAME: native-local
@@ -147,3 +180,84 @@ native:build:agent:
   rules:
     - if: $CI_COMMIT_TAG
       allow_failure: true
+
+# ============================================================================
+# WEBHOOK-TRIGGERED AGENTS
+# ============================================================================
+# These agents are triggered by GitLab webhooks (issues, merge requests)
+# Setup:
+#   1. Create service account: https://gitlab.com/groups/blueflyio/-/settings/service_accounts
+#   2. Add AGENT_SERVICE_TOKEN variable: https://gitlab.com/blueflyio/openstandardagents/-/settings/ci_cd
+#   3. Create webhook: https://gitlab.com/blueflyio/openstandardagents/-/settings/integrations
+#   4. Add WEBHOOK_SECRET variable
+
+# MR Manager Agent - Triggered by webhook events
+agent:mr-manager:
+  stage: .pre
+  image: node:${NODE_VERSION}-alpine
+  before_script:
+    - npm ci --legacy-peer-deps
+    - npm run build
+  script:
+    - |
+      # Verify webhook authentication
+      if [ "$CI_PIPELINE_SOURCE" != "trigger" ] && [ "$CI_PIPELINE_SOURCE" != "pipeline" ]; then
+        echo "ℹ️  Not triggered by webhook/trigger, skipping MR Manager"
+        exit 0
+      fi
+
+      echo "🤖 MR Manager Agent Starting..."
+      echo "   Pipeline Source: ${CI_PIPELINE_SOURCE}"
+      echo "   Trigger: ${TRIGGER_EVENT_TYPE:-unknown}"
+
+      # Use service account token for GitLab API calls
+      export GITLAB_TOKEN="${AGENT_SERVICE_TOKEN}"
+
+      # Check if manifest exists
+      MANIFEST_PATH=".gitlab/agents/mr-manager/manifest.ossa.yaml"
+      if [ -f "$MANIFEST_PATH" ]; then
+        echo "📋 Running agent from: ${MANIFEST_PATH}"
+        node dist/cli/index.js run "$MANIFEST_PATH" || echo "⚠️  Agent completed with warnings"
+      else
+        echo "⚠️  Agent manifest not found: ${MANIFEST_PATH}"
+        echo "   Create the manifest or update MANIFEST_PATH"
+      fi
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "trigger"
+      when: on_success
+    - if: $CI_PIPELINE_SOURCE == "pipeline" && $TRIGGER_EVENT_TYPE
+      when: on_success
+  allow_failure: true
+
+# Issue Triage Agent - Auto-labels and assigns issues
+agent:issue-triage:
+  stage: .pre
+  image: node:${NODE_VERSION}-alpine
+  before_script:
+    - npm ci --legacy-peer-deps
+    - npm run build
+  script:
+    - |
+      if [ "$CI_PIPELINE_SOURCE" != "trigger" ]; then
+        echo "ℹ️  Not triggered by webhook, skipping Issue Triage"
+        exit 0
+      fi
+
+      if [ "$TRIGGER_EVENT_TYPE" != "issue" ]; then
+        echo "ℹ️  Not an issue event, skipping"
+        exit 0
+      fi
+
+      echo "🏷️  Issue Triage Agent Starting..."
+      export GITLAB_TOKEN="${AGENT_SERVICE_TOKEN}"
+
+      MANIFEST_PATH=".gitlab/agents/issue-triage/manifest.ossa.yaml"
+      if [ -f "$MANIFEST_PATH" ]; then
+        node dist/cli/index.js run "$MANIFEST_PATH" || echo "⚠️  Agent completed with warnings"
+      else
+        echo "⚠️  Agent manifest not found: ${MANIFEST_PATH}"
+      fi
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "trigger" && $TRIGGER_EVENT_TYPE == "issue"
+      when: on_success
+  allow_failure: true

@@ -2,10 +2,13 @@
 
 > **The OpenAPI for AI Agents**
 > 
-> - **🐙 GitHub**: [github.com/blueflyio/openstandardagents](https://github.com/blueflyio/openstandardagents)
+> - **🦊 GitLab**: [gitlab.com/blueflyio/openstandardagents](https://gitlab.com/blueflyio/openstandardagents) (Primary)
+> - **🐙 GitHub**: [github.com/blueflyio/openstandardagents](https://github.com/blueflyio/openstandardagents) (Mirror)
 > - **📦 npm**: [@bluefly/openstandardagents](https://www.npmjs.com/package/@bluefly/openstandardagents)
 > - **🌐 Website**: [openstandardagents.org](https://openstandardagents.org)
 > - **💬 Discord**: [Join our community](https://discord.gg/ossa)
+>
+> ⚠️ **Note**: GitHub is a read-only mirror. All development happens on GitLab.
 
 ---
 
@@ -93,7 +96,7 @@ ossa export --to crewai
 ## Minimal Example
 
 ```yaml
-apiVersion: ossa/v0.2.8
+apiVersion: ossa/v0.2.9
 kind: Agent
 
 metadata:
@@ -214,7 +217,7 @@ Features:
 - **Getting Started**: [openstandardagents.org/docs/getting-started/](https://openstandardagents.org/docs/getting-started/)
 - **Full Documentation**: [openstandardagents.org/docs/](https://openstandardagents.org/docs/)
 - **Schema Reference**: [openstandardagents.org/schema/](https://openstandardagents.org/schema/)
-- **Specification**: [spec/v0.2.8/ossa-0.2.8.schema.json](https://github.com/blueflyio/openstandardagents/blob/main/spec/v0.2.8/ossa-0.2.8.schema.json)
+- **Specification**: [spec/v0.2.9/ossa-0.2.9.schema.json](https://github.com/blueflyio/openstandardagents/blob/main/spec/v0.2.9/ossa-0.2.9.schema.json)
 - **Examples**: [openstandardagents.org/examples/](https://openstandardagents.org/examples/)
 - **Blog**: [openstandardagents.org/blog/](https://openstandardagents.org/blog/)
 
@@ -235,7 +238,7 @@ Features:
 **LangChain/AutoGen/Semantic Kernel**: Framework-specific implementations  
 **MCP**: Formal standard focused on context, not full agent lifecycle
 
-- **Specification**: [spec/v0.2.8/ossa-0.2.8.schema.json](spec/v0.2.8/ossa-0.2.8.schema.json)
+- **Specification**: [spec/v0.2.9/ossa-0.2.9.schema.json](spec/v0.2.9/ossa-0.2.9.schema.json)
 - **Examples**: [examples/](examples/)
 - **API Reference**: [docs/](docs/)
 - **Deployment Guides**: [GitHub Mirroring](https://openstandardagents.org/docs/deployment/github-mirroring)
@@ -247,18 +250,22 @@ Features:
 
 OSSA is an open-source, community-driven project. We welcome contributions!
 
-**Repository**: [github.com/blueflyio/openstandardagents](https://github.com/blueflyio/openstandardagents)  
-**Issues**: [github.com/blueflyio/openstandardagents/issues](https://github.com/blueflyio/openstandardagents/issues)  
-**Discussions**: [github.com/blueflyio/openstandardagents/discussions](https://github.com/blueflyio/openstandardagents/discussions)
+**Primary Repository**: [GitLab](https://gitlab.com/blueflyio/openstandardagents)  
+**GitHub Mirror**: [GitHub](https://github.com/blueflyio/openstandardagents) (read-only, automatically synced)
+
+> ⚠️ **Important**: The GitHub repository is a read-only mirror. All development happens on GitLab.
+> 
+> - ✅ **GitLab**: Create issues, merge requests, discussions
+> - ❌ **GitHub**: Do not create PRs or issues - they will not be reviewed
 
 ### How to Contribute
 
-1. Fork the repository on GitHub
+1. Fork the repository on [GitLab](https://gitlab.com/blueflyio/openstandardagents)
 2. Create a feature branch
 3. Make your changes
-4. Submit a pull request
+4. Submit a merge request on GitLab
 
-See [CONTRIBUTING.md](https://github.com/blueflyio/openstandardagents/blob/main/CONTRIBUTING.md) for detailed guidelines.
+See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines.
 
 ### Ways to Contribute
 

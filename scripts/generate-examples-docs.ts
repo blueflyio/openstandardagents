@@ -31,7 +31,8 @@ function findYamlFiles(dir: string, category: string = ''): Example[] {
     } else if (entry.match(/\.(yaml|yml)$/)) {
       try {
         const content = readFileSync(fullPath, 'utf-8');
-        const data = yaml.load(content) as any;
+        // Use JSON_SCHEMA to prevent arbitrary code execution (CWE-502)
+        const data = yaml.load(content, { schema: yaml.JSON_SCHEMA }) as any;
         
         if (data?.agent) {
           examples.push({
