@@ -1,8 +1,8 @@
-# CI/CD Optimization Agent - OSSA v0.2.8 Compliant
+# CI/CD Optimization Agent - OSSA v0.2.9 Compliant
 # Triggered by GitLab webhooks for pipeline optimization and analysis
 # Part of BlueFly.io Agent Platform
 
-apiVersion: ossa/v0.2.8
+apiVersion: ossa/v0.2.9
 kind: Agent
 metadata:
   name: ci-cd

@@ -188,7 +188,7 @@ Report via email: **ops@openstandardagents.org**
 
 ### Schema Versioning
 
-- Current: `ossa/v0.2.8` (latest stable)
+- Current: `ossa/v0.2.9` (latest stable)
 - Development: `ossa/v0.2.9` (in progress)
 - Format: `ossa/v{major}.{minor}.{patch}`
 

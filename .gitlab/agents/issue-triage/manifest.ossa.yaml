@@ -1,8 +1,8 @@
-# Issue Triage Agent - OSSA v0.2.8 Compliant
+# Issue Triage Agent - OSSA v0.2.9 Compliant
 # Triggered by GitLab webhooks for intelligent issue classification
 # Part of BlueFly.io Agent Platform
 
-apiVersion: ossa/v0.2.8
+apiVersion: ossa/v0.2.9
 kind: Agent
 metadata:
   name: issue-triage

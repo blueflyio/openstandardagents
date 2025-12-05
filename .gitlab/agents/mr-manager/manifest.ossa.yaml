@@ -1,8 +1,8 @@
-# MR Manager Agent - OSSA v0.2.8 Compliant
+# MR Manager Agent - OSSA v0.2.9 Compliant
 # Triggered by GitLab webhooks for merge request lifecycle management
 # Part of BlueFly.io Agent Platform
 
-apiVersion: ossa/v0.2.8
+apiVersion: ossa/v0.2.9
 kind: Agent
 metadata:
   name: mr-manager

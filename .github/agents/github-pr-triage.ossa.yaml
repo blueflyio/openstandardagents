@@ -1,6 +1,6 @@
 # OSSA Agent Manifest: GitHub PR Triage Agent
 # Triages pull requests from GitHub mirror and syncs to GitLab
-apiVersion: ossa/v0.2.8
+apiVersion: ossa/v0.2.9
 kind: Agent
 
 metadata:
