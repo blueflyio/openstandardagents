@@ -211,7 +211,7 @@ class ReleaseAutomationService extends SetupService {
   private readonly requiredDependencies = ['@gitbeaker/rest', '@octokit/rest'];
   private readonly requiredEnvVars = ['GITLAB_TOKEN', 'NPM_TOKEN', 'GITHUB_TOKEN'];
 
-  async setup(options: SetupOptions): Promise<void> {
+  async setup(_options: SetupOptions): Promise<void> {
     this.log('🚀 Release Automation Setup', 'info');
     this.log('==============================', 'info');
     this.log('');
