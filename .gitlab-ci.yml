@@ -1333,18 +1333,25 @@ workflow:
 # RELEASE AUTOMATION - Enterprise Grade
 # ============================================================================
 
-# Auto-increment dev tag on merge to development
+# Legacy dev tag increment (replaced by auto-tag:on-merge)
+# Kept for backwards compatibility - can be removed after verification
 increment-dev-tag:
   stage: .post
   image: node:${NODE_VERSION}
   before_script:
+    - apk add --no-cache git bash
+    # Configure git authentication
+    - git config --global credential.helper store
+    - echo "https://gitlab-ci-token:${CI_JOB_TOKEN}@${CI_SERVER_HOST}" > ~/.git-credentials
     - npm ci
     - npm install -g tsx
   script:
-    - tsx .gitlab/release-automation/scripts/increment-dev-tag.ts
+    - echo "ℹ️  This job is replaced by auto-tag:on-merge"
+    - echo "   Keeping for backwards compatibility"
+    # - tsx .gitlab/release-automation/scripts/increment-dev-tag.ts
   rules:
     - if: $CI_COMMIT_BRANCH == "development" && $CI_PIPELINE_SOURCE == "push"
-      when: on_success
+      when: manual
   allow_failure: true
 
 # Manual release buttons (main branch only)
