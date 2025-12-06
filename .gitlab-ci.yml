@@ -20,6 +20,7 @@ include:
   - local: '.gitlab/ci/webhook-agents.yml'  # OSSA v0.2.9 webhook-triggered agents
   - local: '.gitlab/ci/merge-train-optimized.yml'  # Optimized merge train pipeline
   - local: '.gitlab/ci/milestone-workflow.yml'  # Milestone-driven workflow enforcement
+  - local: '.gitlab/ci/release-environments.yml'  # Per-release environment tracking
   # Security scanning from Auto DevOps
   - template: Jobs/SAST.gitlab-ci.yml
   - template: Jobs/Secret-Detection.gitlab-ci.yml
