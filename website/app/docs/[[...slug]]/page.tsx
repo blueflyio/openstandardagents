@@ -705,8 +705,9 @@ export default async function DocsPage({ params }: PageProps) {
 
         <div className="flex min-h-screen">
           <DocsSidebar />
-          <div className="flex-1 flex flex-col">
-            <main className="flex-1 container mx-auto max-w-6xl px-4 py-12">
+          {/* Main content - add left margin on lg screens to account for fixed sidebar */}
+          <div className="flex-1 flex flex-col lg:ml-64">
+            <main className="flex-1 container mx-auto max-w-6xl px-4 py-12 pt-16 lg:pt-12">
               {/* Quick Links Section */}
               <section className="mb-12">
                 <div className="grid md:grid-cols-3 gap-6 mb-8">
@@ -828,8 +829,9 @@ export default async function DocsPage({ params }: PageProps) {
   return (
     <div className="flex min-h-screen">
       <DocsSidebar />
-      <div className="flex-1 flex flex-col">
-        <main className="flex-1 container mx-auto max-w-4xl px-4 py-8">
+      {/* Main content - add left margin on lg screens to account for fixed sidebar */}
+      <div className="flex-1 flex flex-col lg:ml-64">
+        <main className="flex-1 container mx-auto max-w-4xl px-4 py-8 pt-16 lg:pt-8">
           <article className="prose prose-lg max-w-none">
             <h1>{doc.metadata.title}</h1>
             {doc.metadata.description && (
