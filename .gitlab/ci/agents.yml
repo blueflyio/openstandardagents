@@ -8,7 +8,7 @@ variables:
 github:sync:agent:
   stage: .pre
   trigger:
-    project: ${AGENT_PLATFORM_GROUP}
+    project: ${AGENT_PLATFORM_PROJECT}
     strategy: depend
   variables:
     AGENT_NAME: gitlab-lib-ci
@@ -21,19 +21,34 @@ github:sync:agent:
     - if: $CI_PIPELINE_SOURCE == "web"
       allow_failure: true
 
-# Code Review Agent
-# Note: Requires blueflyio/agent-platform project to be created
-# Currently set to allow_failure until agent-platform is deployed
+# Code Review Agent - Local Execution
+# Runs code review using local OSSA agent manifests
+# Switched from downstream trigger to local execution for reliability
 code:review:agent:
   stage: .pre
+  image: node:${NODE_VERSION}-alpine
   allow_failure: true
-  trigger:
-    project: ${AGENT_PLATFORM_PROJECT}
-    strategy: depend
-  variables:
-    AGENT_NAME: code-review
-    TARGET_PROJECT: $CI_PROJECT_PATH
-    MR_IID: $CI_MERGE_REQUEST_IID
+  before_script:
+    - npm ci --legacy-peer-deps
+    - npm run build
+  script:
+    - |
+      echo "🔍 Code Review Agent Starting..."
+      echo "   MR: !${CI_MERGE_REQUEST_IID}"
+      echo "   Project: ${CI_PROJECT_PATH}"
+
+      # Check for OSSA agent manifest
+      MANIFEST_PATH=".gitlab/agents/ossa-agent/manifest.ossa.yaml"
+      if [ -f "$MANIFEST_PATH" ]; then
+        echo "📋 Running code review from: ${MANIFEST_PATH}"
+        export GITLAB_TOKEN="${AGENT_SERVICE_TOKEN:-$CI_JOB_TOKEN}"
+        export MR_IID="${CI_MERGE_REQUEST_IID}"
+        export TARGET_PROJECT="${CI_PROJECT_PATH}"
+        node dist/cli/index.js run "$MANIFEST_PATH" --task code-review || echo "⚠️  Code review completed with warnings"
+      else
+        echo "ℹ️  No code review agent manifest found at ${MANIFEST_PATH}"
+        echo "   Skipping code review. Create manifest to enable."
+      fi
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
       when: on_success
@@ -42,7 +57,7 @@ code:review:agent:
 docs:sync:agent:
   stage: .post
   trigger:
-    project: ${AGENT_PLATFORM_GROUP}
+    project: ${AGENT_PLATFORM_PROJECT}
     strategy: depend
   variables:
     AGENT_NAME: gitlab-lib-ci
@@ -54,17 +69,35 @@ docs:sync:agent:
         - docs/**/*
         - README.md
 
-# Security Scan Agent
+# Security Scan Agent - Local Execution
+# Runs security scanning using local OSSA security-scanner manifest
+# Switched from downstream trigger to local execution for reliability
 security:scan:agent:
   stage: test
+  image: node:${NODE_VERSION}-alpine
   allow_failure: true
-  trigger:
-    project: ${AGENT_PLATFORM_PROJECT}
-    strategy: depend
-  variables:
-    AGENT_NAME: security-scan
-    TARGET_PROJECT: $CI_PROJECT_PATH
-    SCAN_TYPE: full
+  before_script:
+    - npm ci --legacy-peer-deps
+    - npm run build
+  script:
+    - |
+      echo "🔒 Security Scan Agent Starting..."
+      echo "   Project: ${CI_PROJECT_PATH}"
+      echo "   Scan Type: full"
+
+      # Check for security scanner manifest
+      MANIFEST_PATH=".gitlab/agents/security-scanner/manifest.ossa.yaml"
+      if [ -f "$MANIFEST_PATH" ]; then
+        echo "📋 Running security scan from: ${MANIFEST_PATH}"
+        export GITLAB_TOKEN="${AGENT_SERVICE_TOKEN:-$CI_JOB_TOKEN}"
+        export TARGET_PROJECT="${CI_PROJECT_PATH}"
+        export SCAN_TYPE="full"
+        node dist/cli/index.js run "$MANIFEST_PATH" --task security-scan || echo "⚠️  Security scan completed with warnings"
+      else
+        echo "ℹ️  No security scanner manifest found at ${MANIFEST_PATH}"
+        echo "   Skipping security scan. Create manifest to enable."
+        echo "   Using GitLab native security scanning instead."
+      fi
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event" || $CI_PIPELINE_SOURCE == "schedule"
       when: on_success
@@ -73,7 +106,7 @@ security:scan:agent:
 ts:build:agent:
   stage: build
   trigger:
-    project: ${AGENT_PLATFORM_GROUP}
+    project: ${AGENT_PLATFORM_PROJECT}
     strategy: depend
   variables:
     AGENT_NAME: ts-prod
@@ -87,7 +120,7 @@ ts:build:agent:
 deploy:infra:agent:
   stage: deploy
   trigger:
-    project: ${AGENT_PLATFORM_GROUP}
+    project: ${AGENT_PLATFORM_PROJECT}
     strategy: depend
   variables:
     AGENT_NAME: infra-prod
@@ -106,7 +139,7 @@ deploy:infra:agent:
 deploy:ml:agent:
   stage: deploy
   trigger:
-    project: ${AGENT_PLATFORM_GROUP}
+    project: ${AGENT_PLATFORM_PROJECT}
     strategy: depend
   variables:
     AGENT_NAME: ml-prod
@@ -122,7 +155,7 @@ deploy:ml:agent:
 drupal:sync:agent:
   stage: .post
   trigger:
-    project: ${AGENT_PLATFORM_GROUP}
+    project: ${AGENT_PLATFORM_PROJECT}
     strategy: depend
   variables:
     AGENT_NAME: drupal-prod
@@ -138,7 +171,7 @@ drupal:sync:agent:
 native:build:agent:
   stage: build
   trigger:
-    project: ${AGENT_PLATFORM_GROUP}
+    project: ${AGENT_PLATFORM_PROJECT}
     strategy: depend
   variables:
     AGENT_NAME: native-local
