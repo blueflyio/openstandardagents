@@ -8,7 +8,9 @@ export function Footer() {
           <section aria-labelledby="footer-about">
             <h3 id="footer-about" className="text-white font-semibold mb-4">Open Standard Agents</h3>
             <p className="text-sm">
-              OSSA is an Open Standard for AI Agents. The vendor-neutral specification was created by Thomas Scola, founder of Bluefly.io.
+              OSSA is an open standard for AI agents. The vendor-neutral specification was created by{' '}
+              <a href="https://www.linkedin.com/in/thomasscola/" target="_blank" rel="noopener noreferrer" className="text-white hover:underline">Thomas Scola</a>, founder of{' '}
+              <a href="https://bluefly.io" target="_blank" rel="noopener noreferrer" className="text-white hover:underline">Bluefly.io</a>.
             </p>
           </section>
           <nav aria-labelledby="footer-docs">

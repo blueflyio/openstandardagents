@@ -1,41 +1,88 @@
 #!/usr/bin/env node
 
 /**
- * Sync version from package.json to lib/version.ts
+ * Sync version from npm registry (source of truth) to lib/version.ts
+ * Falls back to package.json if npm registry is unreachable
  *
  * Run: npm run sync-version
  * Automatically runs on: npm run dev, npm run build
+ *
+ * IMPORTANT: This script fetches the latest version from npm registry,
+ * so the website always displays the latest published version without
+ * needing to manually update package.json.
  */
 
 const fs = require('fs');
 const path = require('path');
+const https = require('https');
 
+const NPM_PACKAGE = '@bluefly/openstandardagents';
 const packageJsonPath = path.join(__dirname, '..', 'package.json');
 const versionTsPath = path.join(__dirname, '..', 'lib', 'version.ts');
-
-// Read package.json
-const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
-const version = packageJson.version;
-
-// Read versions.json if it exists
 const versionsJsonPath = path.join(__dirname, '..', 'lib', 'versions.json');
-let versionsData = { all: [], stable: version, dev: null };
-try {
-  if (fs.existsSync(versionsJsonPath)) {
-    versionsData = JSON.parse(fs.readFileSync(versionsJsonPath, 'utf8'));
-  }
-} catch (e) {
-  // Ignore if versions.json doesn't exist yet
+
+// Fetch latest version from npm registry
+function fetchNpmVersion() {
+  return new Promise((resolve, reject) => {
+    const url = `https://registry.npmjs.org/${NPM_PACKAGE}/latest`;
+    https.get(url, (res) => {
+      let data = '';
+      res.on('data', chunk => data += chunk);
+      res.on('end', () => {
+        try {
+          const pkg = JSON.parse(data);
+          resolve(pkg.version);
+        } catch (e) {
+          reject(e);
+        }
+      });
+    }).on('error', reject);
+  });
 }
 
-// Extract major.minor for display version (doesn't change on patch releases)
-const versionParts = version.split('.');
-const displayVersion = `${versionParts[0]}.${versionParts[1]}.x`;
+async function syncVersion() {
+  let version;
+  let source;
 
-// Generate version.ts content
-const versionTsContent = `// OSSA version constants
-// AUTO-GENERATED - DO NOT EDIT DIRECTLY
-// Update package.json version instead, then run: npm run sync-version
+  // Try npm registry first (source of truth for published versions)
+  try {
+    version = await fetchNpmVersion();
+    source = 'npm registry';
+    console.log(`📦 Fetched version ${version} from npm registry`);
+  } catch (error) {
+    // Fallback to package.json
+    const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
+    version = packageJson.version;
+    source = 'package.json (fallback)';
+    console.log(`⚠️  npm registry unreachable, using package.json: ${version}`);
+  }
+
+  // Also update package.json to keep in sync
+  const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
+  if (packageJson.version !== version) {
+    packageJson.version = version;
+    fs.writeFileSync(packageJsonPath, JSON.stringify(packageJson, null, 2) + '\n');
+    console.log(`📝 Updated package.json to ${version}`);
+  }
+
+  // Read versions.json if it exists
+  let versionsData = { all: [], stable: version, dev: null };
+  try {
+    if (fs.existsSync(versionsJsonPath)) {
+      versionsData = JSON.parse(fs.readFileSync(versionsJsonPath, 'utf8'));
+    }
+  } catch (e) {
+    // Ignore if versions.json doesn't exist yet
+  }
+
+  // Extract major.minor for display version
+  const versionParts = version.split('.');
+  const displayVersion = `${versionParts[0]}.${versionParts[1]}.x`;
+
+  // Generate version.ts content
+  const versionTsContent = `// OSSA version constants
+// AUTO-GENERATED from ${source} - DO NOT EDIT DIRECTLY
+// Run: npm run sync-version (fetches latest from npm registry)
 
 import versionsData from './versions.json';
 
@@ -74,7 +121,12 @@ export function getSpecPath(ver = OSSA_VERSION): string {
 }
 `;
 
-// Write version.ts
-fs.writeFileSync(versionTsPath, versionTsContent);
+  // Write version.ts
+  fs.writeFileSync(versionTsPath, versionTsContent);
+  console.log(`✅ Synced version ${version} to lib/version.ts (from ${source})`);
+}
 
-console.log(`✅ Synced version ${version} to lib/version.ts`);
+syncVersion().catch(error => {
+  console.error('❌ Error syncing version:', error.message);
+  process.exit(1);
+});

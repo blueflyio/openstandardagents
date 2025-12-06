@@ -12,7 +12,7 @@ export function Header() {
 
   return (
     <header className="bg-white border-b border-gray-300 sticky top-0 z-50" role="banner">
-      <nav className="container mx-auto max-w-6xl px-4" aria-label="Main navigation">
+      <nav className="container mx-auto max-w-[1440px] px-4" aria-label="Main navigation">
         <div className="flex items-center justify-between h-16">
           <Link href="/" className="flex items-center space-x-2 group">
             <img

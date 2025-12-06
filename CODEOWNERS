@@ -1,0 +1,40 @@
+# CODEOWNERS for openstandardagents.org
+# https://docs.gitlab.com/ee/user/project/codeowners/
+#
+# These owners will be requested for review when changes are made
+# to the corresponding files or directories.
+
+# Default owners for everything
+* @bluefly
+
+# OSSA Specification - requires spec maintainers review
+/spec/                      @bluefly
+/website/spec/              @bluefly
+*.schema.json               @bluefly
+
+# Website source code
+/website/                   @bluefly
+/website/app/               @bluefly
+/website/components/        @bluefly
+/website/lib/               @bluefly
+
+# Infrastructure and DevOps
+/k8s/                       @bluefly
+/.gitlab/                   @bluefly
+/.gitlab-ci.yml             @bluefly
+/Dockerfile                 @bluefly
+/docker-compose*.yml        @bluefly
+/devfile.yaml               @bluefly
+
+# Agent manifests - OSSA compliance required
+/.gitlab/agents/            @bluefly
+/.gitlab/duo/               @bluefly
+/.agents/                   @bluefly
+*.ossa.yaml                 @bluefly
+
+# CI/CD configuration
+/.gitlab/ci/                @bluefly
+
+# Security-sensitive files
+CODEOWNERS                  @bluefly
+.gitlab-ci.yml              @bluefly

@@ -1,0 +1,99 @@
+# OSSA Validator Agent for GitLab Duo AI Catalog
+# https://docs.gitlab.com/user/duo_agent_platform/
+#
+# Validates OSSA agent manifests against the official schema
+
+apiVersion: duo/v1
+kind: Agent
+metadata:
+  name: ossa-validator
+  catalog:
+    published: true
+    visibility: group
+    tags:
+      - validation
+      - ossa
+      - compliance
+      - schema
+    description: "Validates OSSA agent manifests against v0.2.9 schema"
+spec:
+  description: |
+    OSSA specification validator agent for GitLab Duo.
+
+    Validates agent manifests in `.agents/**/*.yaml` and `.gitlab/agents/**/*.yaml`
+    against the OSSA v0.2.9 JSON Schema. Reports violations with specific line
+    references and suggests fixes.
+
+    Features:
+    - Schema validation against OSSA v0.2.9
+    - Required field checks
+    - Type validation
+    - Best practices recommendations
+    - Auto-fix suggestions via MR comments
+
+  model:
+    provider: anthropic
+    model: claude-sonnet-4-20250514
+    temperature: 0.1
+
+  tools:
+    - read_file
+    - find_files
+    - create_merge_request_note
+    - get_file_content
+
+  context:
+    - type: file
+      path: spec/ossa-manifest.schema.json
+      description: "OSSA manifest JSON Schema"
+    - type: url
+      url: https://openstandardagents.org/schema
+      description: "Latest OSSA schema reference"
+
+  prompt: |
+    You are an OSSA specification validator for the Open Standard Agents project.
+
+    Your responsibilities:
+    1. Find all OSSA manifest files (*.ossa.yaml, manifest.yaml, manifest.json)
+    2. Validate each against the OSSA v0.2.9 schema
+    3. Report validation errors with:
+       - File path and line number
+       - Specific field that failed validation
+       - Expected value or format
+       - Suggested fix
+    4. Post findings as MR comments
+
+    Validation checks:
+    - Required fields: apiVersion, kind, metadata.name, spec
+    - Valid apiVersion: ossa/v0.2.9 or ossa/v0.2.8
+    - Valid kind: Agent, Tool, Workflow, Extension
+    - Proper YAML formatting
+    - No deprecated fields
+
+    Output format for each violation:
+    ```
+    ❌ [file:line] field_name
+       Error: description of the issue
+       Expected: expected value or format
+       Fix: suggested correction
+    ```
+
+    If all manifests are valid:
+    ```
+    ✅ OSSA Validation Passed
+       Validated: X manifests
+       Schema: OSSA v0.2.9
+    ```
+
+  triggers:
+    - event: merge_request_created
+      conditions:
+        - changed_files:
+            - ".agents/**/*.yaml"
+            - ".gitlab/agents/**/*.yaml"
+            - "spec/**"
+    - event: merge_request_updated
+      conditions:
+        - changed_files:
+            - ".agents/**/*.yaml"
+            - ".gitlab/agents/**/*.yaml"

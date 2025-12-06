@@ -14,18 +14,18 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   title: {
-    default: 'Open Standard Agents - Industry Standard for Agent Orchestration',
+    default: 'Open Standard Agents v0.2.9 - Enterprise Multi-Agent Specification',
     template: '%s | Open Standard Agents',
   },
-  description: 'The vendor-neutral specification for multi-agent systems. Write once, deploy anywhere. Zero vendor lock-in.',
-  keywords: ['OSSA', 'AI Agents', 'OpenAPI', 'Standard', 'Specification', 'AI', 'Machine Learning', 'Agent Framework'],
+  description: 'Production-ready specification for autonomous agent systems with formal security models, multi-agent orchestration (A2A), and OpenTelemetry observability. Write once, deploy anywhere.',
+  keywords: ['OSSA', 'AI Agents', 'OpenAPI', 'Standard', 'Specification', 'AI', 'Machine Learning', 'Agent Framework', 'A2A Protocol', 'Multi-Agent', 'OpenTelemetry', 'Agent Security'],
   authors: [{ name: 'OSSA Standards Team' }],
   creator: 'OSSA Standards Team',
   publisher: 'OSSA Standards Team',
   metadataBase: new URL('https://openstandardagents.org'),
   openGraph: {
-    title: 'Open Standard Agents - Industry Standard for Agent Orchestration',
-    description: 'The vendor-neutral specification for multi-agent systems. Write once, deploy anywhere.',
+    title: 'Open Standard Agents v0.2.9 - Enterprise Multi-Agent Specification',
+    description: 'Production-ready specification for autonomous agent systems with formal security models, multi-agent orchestration, and OpenTelemetry observability.',
     type: 'website',
     locale: 'en_US',
     siteName: 'Open Standard Agents',
@@ -34,14 +34,14 @@ export const metadata: Metadata = {
         url: '/og-image.png',
         width: 1200,
         height: 630,
-        alt: 'OSSA - Open Standard for Scalable AI Agents',
+        alt: 'OSSA v0.2.9 - Enterprise Multi-Agent Specification',
       },
     ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Open Standard Agents - Industry Standard for Agent Orchestration',
-    description: 'The vendor-neutral specification for multi-agent systems',
+    title: 'OSSA v0.2.9 - Enterprise Multi-Agent Specification',
+    description: 'Production-ready spec for multi-agent systems with A2A Protocol, security models, and OpenTelemetry',
     creator: '@openstandardagents',
   },
   robots: {

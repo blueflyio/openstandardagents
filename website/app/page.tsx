@@ -26,31 +26,31 @@ export default function HomePage() {
           <p className="text-2xl md:text-3xl lg:text-4xl mb-6 font-bold">
             Vendor-neutral, compliance-ready, enterprise-grade
           </p>
-          <div className="max-w-4xl mx-auto mb-8 space-y-3">
-            <p className="text-lg md:text-xl text-gray-100 flex items-center justify-center gap-2">
+          <div className="flex flex-wrap justify-center gap-x-8 gap-y-3 max-w-4xl mx-auto mb-8">
+            <div className="text-gray-100 flex items-center gap-2">
               <svg className="w-5 h-5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
               </svg>
-              Switch between AI providers without code changes
-            </p>
-            <p className="text-lg md:text-xl text-gray-100 flex items-center justify-center gap-2">
+              <span className="whitespace-nowrap">Zero vendor lock-in</span>
+            </div>
+            <div className="text-gray-100 flex items-center gap-2">
               <svg className="w-5 h-5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
               </svg>
-              Built-in compliance and security frameworks
-            </p>
-            <p className="text-lg md:text-xl text-gray-100 flex items-center justify-center gap-2">
+              <span className="whitespace-nowrap">Built-in compliance</span>
+            </div>
+            <div className="text-gray-100 flex items-center gap-2">
               <svg className="w-5 h-5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
               </svg>
-              Standardized agent lifecycle and governance
-            </p>
-            <p className="text-lg md:text-xl text-gray-100 flex items-center justify-center gap-2">
+              <span className="whitespace-nowrap">Standardized lifecycle</span>
+            </div>
+            <div className="text-gray-100 flex items-center gap-2">
               <svg className="w-5 h-5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
               </svg>
-              Multi-runtime support (Node.js, Python, more)
-            </p>
+              <span className="whitespace-nowrap">Multi-runtime</span>
+            </div>
           </div>
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
             <Link href="#get-started" className="text-lg px-8 py-4 bg-[#3224c9] text-white font-bold rounded-lg shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all border-2 border-white hover:bg-white hover:text-[#3224c9]">
@@ -98,9 +98,10 @@ export default function HomePage() {
           <div className="text-center mb-16">
             <h2 className="text-5xl font-bold mb-6">What is Open Standard Agents?</h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              Open Standard Agents (OSSA) is an open, vendor-neutral specification for defining AI agents,
-              similar to how OpenAPI standardizes REST APIs. It enables interoperability across frameworks,
-              runtimes, and organizations.
+              OSSA is an open standard for AI agents. The vendor-neutral specification was created by{' '}
+              <a href="https://www.linkedin.com/in/thomasscola/" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-medium">Thomas Scola</a>, founder of{' '}
+              <a href="https://bluefly.io" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-medium">Bluefly.io</a>.
+              It enables interoperability across frameworks, runtimes, and organizations.
             </p>
           </div>
 
@@ -150,132 +151,205 @@ export default function HomePage() {
             </Card>
           </div>
 
-          {/* OpenAPI Comparison */}
-          <div className="bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 rounded-2xl p-8 md:p-12 mt-16 border-2 border-blue-100 shadow-xl">
-            <div className="text-center mb-12">
-              <h3 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-primary via-secondary to-primary bg-clip-text text-transparent">
+          {/* OpenAPI Comparison - Horizontal Layout */}
+          <div className="bg-white rounded-2xl p-8 md:p-12 mt-16 border border-gray-200 shadow-lg">
+            <div className="text-center mb-10">
+              <h3 className="text-3xl md:text-4xl font-bold mb-3 text-gray-900">
                 The OpenAPI for Agents
               </h3>
-              <div className="w-24 h-1 bg-gradient-to-r from-primary to-secondary mx-auto rounded-full"></div>
+              <p className="text-gray-600 max-w-2xl mx-auto">Just as OpenAPI standardized REST APIs, OSSA standardizes AI agent definitions</p>
             </div>
-            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-[1440px] mx-auto">
-              <Card variant="default" padding="md" elevation={2} hover className="border-2 border-blue-100">
-                <h4 className="text-xl font-bold mb-5 text-primary pb-3 border-b-2 border-blue-100">OpenAPI for REST</h4>
-                <ul className="space-y-3 text-gray-700">
-                  <li className="flex items-start gap-3">
-                    <svg className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                    </svg>
-                    <span className="font-medium">Standardizes REST API contracts</span>
+
+            {/* Side by side comparison */}
+            <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+              {/* OpenAPI Column */}
+              <div className="bg-gray-50 rounded-xl p-6 border border-gray-200">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-10 h-10 bg-gray-800 rounded-lg flex items-center justify-center">
+                    <span className="text-white font-bold text-sm">API</span>
+                  </div>
+                  <h4 className="text-xl font-bold text-gray-800">OpenAPI</h4>
+                </div>
+                <p className="text-gray-600 text-sm mb-4">Industry standard for REST APIs</p>
+                <ul className="space-y-2 text-sm text-gray-700">
+                  <li className="flex items-center gap-2">
+                    <span className="text-gray-400">→</span> Defines endpoints & schemas
                   </li>
-                  <li className="flex items-start gap-3">
-                    <svg className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                    </svg>
-                    <span className="font-medium">Enables API interoperability</span>
+                  <li className="flex items-center gap-2">
+                    <span className="text-gray-400">→</span> Enables code generation
                   </li>
-                  <li className="flex items-start gap-3">
-                    <svg className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                    </svg>
-                    <span className="font-medium">Vendor-neutral specification</span>
+                  <li className="flex items-center gap-2">
+                    <span className="text-gray-400">→</span> Powers API documentation
                   </li>
-                  <li className="flex items-start gap-3">
-                    <svg className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                    </svg>
-                    <span className="font-medium">JSON Schema validation</span>
+                  <li className="flex items-center gap-2">
+                    <span className="text-gray-400">→</span> Vendor-neutral standard
                   </li>
                 </ul>
-              </Card>
-              <Card variant="default" padding="md" elevation={2} hover className="border-2 border-blue-100">
-                <h4 className="text-xl font-bold mb-5 text-secondary pb-3 border-b-2 border-cyan-100">OSSA for AI Agents</h4>
-                <ul className="space-y-3 text-gray-700">
-                  <li className="flex items-start gap-3">
-                    <svg className="w-5 h-5 text-secondary mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                    </svg>
-                    <span className="font-medium">Standardizes AI agent contracts</span>
+              </div>
+
+              {/* OSSA Column */}
+              <div className="bg-gradient-to-br from-primary/5 to-secondary/5 rounded-xl p-6 border-2 border-primary/20">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-10 h-10 bg-gradient-to-br from-primary to-secondary rounded-lg flex items-center justify-center">
+                    <span className="text-white font-bold text-sm">AI</span>
+                  </div>
+                  <h4 className="text-xl font-bold text-primary">OSSA</h4>
+                </div>
+                <p className="text-gray-600 text-sm mb-4">Industry standard for AI Agents</p>
+                <ul className="space-y-2 text-sm text-gray-700">
+                  <li className="flex items-center gap-2">
+                    <span className="text-primary">→</span> Defines agents & capabilities
                   </li>
-                  <li className="flex items-start gap-3">
-                    <svg className="w-5 h-5 text-secondary mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                    </svg>
-                    <span className="font-medium">Enables agent interoperability</span>
+                  <li className="flex items-center gap-2">
+                    <span className="text-primary">→</span> Enables agent portability
                   </li>
-                  <li className="flex items-start gap-3">
-                    <svg className="w-5 h-5 text-secondary mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                    </svg>
-                    <span className="font-medium">Vendor-neutral specification</span>
+                  <li className="flex items-center gap-2">
+                    <span className="text-primary">→</span> Powers agent orchestration
                   </li>
-                  <li className="flex items-start gap-3">
-                    <svg className="w-5 h-5 text-secondary mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                    </svg>
-                    <span className="font-medium">JSON Schema validation</span>
+                  <li className="flex items-center gap-2">
+                    <span className="text-primary">→</span> Vendor-neutral standard
                   </li>
                 </ul>
-              </Card>
-              <Card variant="default" padding="md" elevation={2} hover className="border-2 border-blue-100">
-                <h4 className="text-xl font-bold mb-5 text-primary pb-3 border-b-2 border-blue-100">OpenAPI Integration</h4>
-                <ul className="space-y-3 text-gray-700">
-                  <li className="flex items-start gap-3">
-                    <svg className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                    </svg>
-                    <span className="font-medium">Seamless OpenAPI compatibility</span>
-                  </li>
-                  <li className="flex items-start gap-3">
-                    <svg className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                    </svg>
-                    <span className="font-medium">Import existing OpenAPI specs</span>
-                  </li>
-                  <li className="flex items-start gap-3">
-                    <svg className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                    </svg>
-                    <span className="font-medium">Export agents as OpenAPI</span>
-                  </li>
-                  <li className="flex items-start gap-3">
-                    <svg className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                    </svg>
-                    <span className="font-medium">Unified API and agent standards</span>
-                  </li>
-                </ul>
-              </Card>
-              <Card variant="default" padding="md" elevation={2} hover className="border-2 border-blue-100">
-                <h4 className="text-xl font-bold mb-5 text-secondary pb-3 border-b-2 border-cyan-100">API-to-Agent Bridge</h4>
-                <ul className="space-y-3 text-gray-700">
-                  <li className="flex items-start gap-3">
-                    <svg className="w-5 h-5 text-secondary mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                    </svg>
-                    <span className="font-medium">Connect REST APIs to agents</span>
-                  </li>
-                  <li className="flex items-start gap-3">
-                    <svg className="w-5 h-5 text-secondary mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                    </svg>
-                    <span className="font-medium">Use OpenAPI as agent tools</span>
-                  </li>
-                  <li className="flex items-start gap-3">
-                    <svg className="w-5 h-5 text-secondary mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                    </svg>
-                    <span className="font-medium">Automatic API discovery</span>
-                  </li>
-                  <li className="flex items-start gap-3">
-                    <svg className="w-5 h-5 text-secondary mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                    </svg>
-                    <span className="font-medium">Bidirectional integration</span>
-                  </li>
-                </ul>
-              </Card>
+              </div>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* What's New in v0.2.9 Section */}
+      <section className="py-20 px-4 bg-gradient-to-br from-indigo-50 via-purple-50 to-blue-50">
+        <div className="container mx-auto max-w-[1440px]">
+          <div className="text-center mb-12">
+            <span className="inline-block px-4 py-2 bg-gradient-to-r from-primary to-secondary text-white rounded-full text-sm font-bold mb-4">
+              New Release
+            </span>
+            <h2 className="text-4xl md:text-5xl font-bold mb-4">What&apos;s New in v0.2.9</h2>
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+              The Foundation Release brings enterprise-grade specifications for production multi-agent systems.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+            <Card variant="default" padding="lg" elevation={2} hover className="border-l-4 border-l-green-500">
+              <CardHeader>
+                <CardTitle className="text-lg text-green-700">Enterprise Security</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ul className="space-y-2 text-gray-700 text-sm">
+                  <li className="flex items-start gap-2">
+                    <svg className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                    </svg>
+                    <span>Formal security model with authentication &amp; authorization</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <svg className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                    </svg>
+                    <span>Secrets management &amp; sandboxing requirements</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <svg className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                    </svg>
+                    <span>FedRAMP, SOC2, HIPAA compliance profiles</span>
+                  </li>
+                </ul>
+              </CardContent>
+            </Card>
+
+            <Card variant="default" padding="lg" elevation={2} hover className="border-l-4 border-l-blue-500">
+              <CardHeader>
+                <CardTitle className="text-lg text-blue-700">Multi-Agent Orchestration</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ul className="space-y-2 text-gray-700 text-sm">
+                  <li className="flex items-start gap-2">
+                    <svg className="w-4 h-4 text-blue-500 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                    </svg>
+                    <span>A2A Protocol for agent-to-agent communication</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <svg className="w-4 h-4 text-blue-500 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                    </svg>
+                    <span>Capability URI scheme with registry format</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <svg className="w-4 h-4 text-blue-500 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                    </svg>
+                    <span>Instance, session, and interaction IDs</span>
+                  </li>
+                </ul>
+              </CardContent>
+            </Card>
+
+            <Card variant="default" padding="lg" elevation={2} hover className="border-l-4 border-l-purple-500">
+              <CardHeader>
+                <CardTitle className="text-lg text-purple-700">Observability</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ul className="space-y-2 text-gray-700 text-sm">
+                  <li className="flex items-start gap-2">
+                    <svg className="w-4 h-4 text-purple-500 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                    </svg>
+                    <span>OpenTelemetry semantic conventions</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <svg className="w-4 h-4 text-purple-500 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                    </svg>
+                    <span>Reasoning trace export (ReAct, CoT, ToT)</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <svg className="w-4 h-4 text-purple-500 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                    </svg>
+                    <span>Versioned prompt template management</span>
+                  </li>
+                </ul>
+              </CardContent>
+            </Card>
+
+            <Card variant="default" padding="lg" elevation={2} hover className="border-l-4 border-l-orange-500">
+              <CardHeader>
+                <CardTitle className="text-lg text-orange-700">Developer Experience</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ul className="space-y-2 text-gray-700 text-sm">
+                  <li className="flex items-start gap-2">
+                    <svg className="w-4 h-4 text-orange-500 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                    </svg>
+                    <span>Conformance testing (Basic, Standard, Enterprise)</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <svg className="w-4 h-4 text-orange-500 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                    </svg>
+                    <span>agents.md &amp; llms.txt integration</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <svg className="w-4 h-4 text-orange-500 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                    </svg>
+                    <span>Enhanced CLI validation tools</span>
+                  </li>
+                </ul>
+              </CardContent>
+            </Card>
+          </div>
+
+          <div className="text-center">
+            <Link href="/changelog" className="btn-primary mr-4">
+              View Full Changelog
+            </Link>
+            <Link href="https://www.npmjs.com/package/@bluefly/openstandardagents/v/0.2.9" className="btn-outline" target="_blank" rel="noopener noreferrer">
+              npm v0.2.9
+            </Link>
           </div>
         </div>
       </section>
@@ -513,38 +587,37 @@ osa export --to langchain`}</code>
             </p>
           </div>
 
-          {/* Logos Grid - Row 1 */}
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-8 items-center justify-items-center mb-8">
+          {/* Logos Grid - Row 1: LLM Providers with real OSSA examples */}
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-4 gap-8 items-center justify-items-center mb-8">
             <Logo domain="openai.com" name="OpenAI" />
             <Logo domain="anthropic.com" name="Anthropic" />
-            <Logo domain="deepmind.google" name="Gemini" />
-            <Logo domain="microsoft.com" name="Microsoft" />
             <Logo domain="langchain.com" name="LangChain" />
-            <Logo domain="huggingface.co" name="Hugging Face" />
+            <Logo domain="langchain.com" name="LangGraph" />
           </div>
 
-          {/* Logos Grid - Row 2 */}
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-8 items-center justify-items-center mb-12">
-            <Logo domain="kagent.dev" name="kAgent" />
+          {/* Logos Grid - Row 2: Frameworks with real OSSA examples */}
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-8 items-center justify-items-center mb-8">
             <Logo domain="crewai.com" name="CrewAI" />
-            <Logo domain="langflow.com" name="Langflow" />
             <Logo domain="llamaindex.ai" name="LlamaIndex" />
-            <Logo domain="langchain.com" name="LangGraph" />
-            <Logo domain="modelcontextprotocol.io" name="MCP" />
+            <Logo domain="langflow.com" name="Langflow" />
+            <Logo domain="microsoft.github.io" name="AutoGen" />
+            <Logo domain="vercel.com" name="Vercel AI" />
+          </div>
+
+          {/* Logos Grid - Row 3: Platforms with real OSSA examples */}
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-4 gap-8 items-center justify-items-center mb-12">
+            <Logo domain="kagent.dev" name="kAgent" />
+            <Logo domain="cursor.com" name="Cursor" />
+            <Logo domain="anthropic.com" name="Claude Code" />
             <Logo domain="drupal.org" name="Drupal" />
-            <Logo domain="librechat.com" name="LibreChat" />
-            <Logo domain="docker.com" name="Docker" />
-            <Logo domain="kubernetes.io" name="Kubernetes" />
-            <Logo domain="aws.amazon.com" name="AWS" />
-            <Logo domain="github.com" name="GitHub" />
           </div>
 
           <div className="text-center">
             <p className="text-lg text-gray-600 mb-6">
-              And many more frameworks, platforms, and tools...
+              All integrations include working OSSA manifest examples in our repository.
             </p>
-            <Link href="/docs/ecosystem/framework-support/" className="btn-primary">
-              View All Integrations
+            <Link href="/examples/" className="btn-primary">
+              Browse Examples
             </Link>
           </div>
         </div>
@@ -568,7 +641,7 @@ osa export --to langchain`}</code>
               </CardHeader>
               <CardContent>
                 <p className="text-gray-700">
-                  Works with LangChain, Anthropic, OpenAI, CrewAI, Langflow, AutoGen, and more.
+                  Works with LangChain, OpenAI, Anthropic, CrewAI, LlamaIndex, AutoGen, and kAgent.
                   No vendor lock-in.
                 </p>
               </CardContent>
