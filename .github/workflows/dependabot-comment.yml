@@ -4,6 +4,9 @@ on:
   pull_request:
     types: [opened]
 
+permissions:
+  pull-requests: write
+
 jobs:
   comment:
     if: github.actor == 'dependabot[bot]'
@@ -19,16 +22,10 @@ jobs:
               repo: context.repo.repo,
               body: `🤖 **Dependabot Update**
 
-This PR will be batched with other dependency updates and synced to our internal GitLab for testing.
+This dependency update will be reviewed and merged if CI passes.
 
-**Process:**
-1. We batch Dependabot PRs weekly
-2. Test on GitLab CI
-3. Merge and sync back to GitHub
-4. This PR will auto-close when changes appear in main
+**Auto-merge:** Minor and patch updates are auto-merged after CI passes.
+**Major updates:** Require manual review.
 
-**Timeline:** Usually within 7 days.
-
----
-*This is a public mirror. Development at [gitlab.com/blueflyio/openstandardagents](https://gitlab.com/blueflyio/openstandardagents).*`
+Thanks for keeping OSSA dependencies up to date!`
             })
