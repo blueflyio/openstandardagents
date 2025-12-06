@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { DocsSearch } from './DocsSearch';
 import { VersionSelector } from './VersionSelector';
 
@@ -62,6 +62,7 @@ const navigation = [
 
 export function DocsSidebar() {
   const pathname = usePathname();
+  const [isMobileOpen, setIsMobileOpen] = useState(false);
 
   // Calculate initial open sections based on pathname to avoid hydration mismatch
   const getInitialOpenSections = (): string[] => {
@@ -76,6 +77,21 @@ export function DocsSidebar() {
   };
 
   const [openSections, setOpenSections] = useState<string[]>(getInitialOpenSections);
+
+  // Close mobile menu on navigation
+  useEffect(() => {
+    setIsMobileOpen(false);
+  }, [pathname]);
+
+  // Close on escape key
+  const handleEscape = useCallback((e: KeyboardEvent) => {
+    if (e.key === 'Escape') setIsMobileOpen(false);
+  }, []);
+
+  useEffect(() => {
+    document.addEventListener('keydown', handleEscape);
+    return () => document.removeEventListener('keydown', handleEscape);
+  }, [handleEscape]);
 
   // Update open sections when pathname changes (for client-side navigation)
   useEffect(() => {
@@ -103,53 +119,90 @@ export function DocsSidebar() {
   };
 
   return (
-    <aside className="w-64 bg-gray-100 border-r border-gray-300 p-4 overflow-y-auto h-screen sticky top-0">
-      <nav>
-        <Link href="/docs" className="block mb-6 font-semibold text-primary hover:text-accent">
-          Documentation
-        </Link>
-        <div className="mb-6">
-          <DocsSearch />
-        </div>
-        <div className="mb-6">
-          <VersionSelector />
-        </div>
-        {navigation.map((section) => (
-          <div key={section.title} className="mb-4">
-            <button
-              onClick={() => toggleSection(section.title)}
-              className="w-full text-left font-semibold text-gray-900 mb-2 flex items-center justify-between"
-            >
-              <span>{section.title}</span>
-              <span className="text-gray-500">
-                {openSections.includes(section.title) ? '−' : '+'}
-              </span>
-            </button>
-            {openSections.includes(section.title) && (
-              <ul className="space-y-1 ml-2">
-                {section.items.map((item) => {
-                  const isActive = pathname === item.href;
-                  return (
-                    <li key={item.href}>
-                      <Link
-                        href={item.href}
-                        className={`block px-2 py-1 rounded text-sm transition-colors ${
-                          isActive
-                            ? 'bg-primary text-white'
-                            : 'text-gray-700 hover:bg-gray-200'
-                        }`}
-                      >
-                        {item.label}
-                      </Link>
-                    </li>
-                  );
-                })}
-              </ul>
-            )}
+    <>
+      {/* Mobile hamburger button - fixed at top left */}
+      <button
+        onClick={() => setIsMobileOpen(!isMobileOpen)}
+        className="lg:hidden fixed top-4 left-4 z-50 p-2 bg-white rounded-md shadow-md border border-gray-200"
+        aria-label="Toggle navigation"
+      >
+        <svg
+          className="w-6 h-6 text-gray-700"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          {isMobileOpen ? (
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+          ) : (
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+          )}
+        </svg>
+      </button>
+
+      {/* Backdrop overlay for mobile */}
+      {isMobileOpen && (
+        <div
+          className="lg:hidden fixed inset-0 bg-black/50 z-30"
+          onClick={() => setIsMobileOpen(false)}
+        />
+      )}
+
+      {/* Sidebar */}
+      <aside
+        className={`
+          w-64 bg-gray-100 border-r border-gray-300 p-4 overflow-y-auto h-screen
+          fixed lg:sticky top-0 z-40
+          transform transition-transform duration-300 ease-in-out
+          ${isMobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+        `}
+      >
+        <nav className="pt-12 lg:pt-0">
+          <Link href="/docs" className="block mb-6 font-semibold text-primary hover:text-accent">
+            Documentation
+          </Link>
+          <div className="mb-6">
+            <DocsSearch />
           </div>
-        ))}
-      </nav>
-    </aside>
+          <div className="mb-6">
+            <VersionSelector />
+          </div>
+          {navigation.map((section) => (
+            <div key={section.title} className="mb-4">
+              <button
+                onClick={() => toggleSection(section.title)}
+                className="w-full text-left font-semibold text-gray-900 mb-2 flex items-center justify-between"
+              >
+                <span>{section.title}</span>
+                <span className="text-gray-500">
+                  {openSections.includes(section.title) ? '−' : '+'}
+                </span>
+              </button>
+              {openSections.includes(section.title) && (
+                <ul className="space-y-1 ml-2">
+                  {section.items.map((item) => {
+                    const isActive = pathname === item.href;
+                    return (
+                      <li key={item.href}>
+                        <Link
+                          href={item.href}
+                          className={`block px-2 py-1 rounded text-sm transition-colors ${
+                            isActive
+                              ? 'bg-primary text-white'
+                              : 'text-gray-700 hover:bg-gray-200'
+                          }`}
+                        >
+                          {item.label}
+                        </Link>
+                      </li>
+                    );
+                  })}
+                </ul>
+              )}
+            </div>
+          ))}
+        </nav>
+      </aside>
+    </>
   );
 }
-
