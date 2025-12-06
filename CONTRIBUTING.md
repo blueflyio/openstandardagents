@@ -4,6 +4,7 @@ Thank you for your interest in contributing to **OSSA (Open Standard for Scalabl
 
 ## 📋 Table of Contents
 
+- [Repository Structure](#repository-structure)
 - [Code of Conduct](#code-of-conduct)
 - [Getting Started](#getting-started)
 - [Development Workflow](#development-workflow)
@@ -12,6 +13,60 @@ Thank you for your interest in contributing to **OSSA (Open Standard for Scalabl
 - [Pull Request Process](#pull-request-process)
 - [Testing](#testing)
 - [Documentation](#documentation)
+
+## 🏗️ Repository Structure
+
+OSSA uses a **dual-repository workflow**:
+
+| Repository | Purpose | Access |
+|------------|---------|--------|
+| [GitLab](https://gitlab.com/blueflyio/openstandardagents) | Primary development, CI/CD, releases | Private (core team) |
+| [GitHub](https://github.com/blueflyio/openstandardagents) | Public mirror, community contributions | Public |
+
+### How It Works
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                     Community Contribution Flow                  │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│   GitHub (Public)              GitLab (Private)                 │
+│   ┌─────────────┐              ┌─────────────┐                 │
+│   │   Issue     │──── sync ───▶│   Issue     │                 │
+│   │   or PR     │              │   or MR     │                 │
+│   └─────────────┘              └──────┬──────┘                 │
+│                                       │                         │
+│                                       ▼                         │
+│                                ┌─────────────┐                 │
+│                                │   CI/CD     │                 │
+│                                │   Tests     │                 │
+│                                └──────┬──────┘                 │
+│                                       │                         │
+│                                       ▼                         │
+│   ┌─────────────┐              ┌─────────────┐                 │
+│   │   Mirror    │◀── push ────│   Merge     │                 │
+│   │   Updated   │              │   to main   │                 │
+│   └─────────────┘              └─────────────┘                 │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### Where to Contribute
+
+| Contribution Type | Where | Notes |
+|-------------------|-------|-------|
+| Bug reports | GitHub Issues | Auto-synced to GitLab |
+| Feature requests | GitHub Issues | Auto-synced to GitLab |
+| Code changes | GitHub PR | Reviewed here, merged on GitLab |
+| Documentation | GitHub PR | Same as code |
+| Security issues | Email only | ops@openstandardagents.org |
+
+### Why Dual Repositories?
+
+1. **Privacy**: Internal development, CI/CD secrets, and infrastructure stay private
+2. **Public Access**: Open specification accessible to the community
+3. **Best of Both**: GitLab's superior CI/CD + GitHub's community reach
+4. **Agent-Powered**: OSSA agents automate sync between platforms
 
 ## 🤝 Code of Conduct
 
@@ -169,12 +224,56 @@ git commit -m "docs: update getting started guide"
    - Security audit passes
 4. **Request review** from maintainers
 5. **Address feedback**
-6. **Squash commits** if needed (optional)
-7. **Merge** using "Squash and Merge" or "Rebase and Merge"
+6. **Squash commits** for feature branches (recommended)
+7. **Merge** using "Squash and Merge" (default for feature branches)
+
+### Squash Merge Workflow
+
+**This project encourages squash merging for feature branches** to maintain a clean, readable git history.
+
+#### When to Squash
+
+- **Feature branches** (`feat/*`, `fix/*`, `refactor/*`): Always squash
+- **Documentation branches** (`docs/*`): Squash if multiple commits
+- **Major releases**: May preserve commit history (case-by-case)
+
+#### Best Practices
+
+1. **Enable squash** when creating the merge request (encouraged by default)
+2. **Write a clear squash commit message** following conventional commits format
+3. **Include issue references** in the squash commit message (e.g., `Closes #123`)
+4. **Summarize all changes** in the squash commit body if multiple features were added
+
+#### Squash Commit Message Format
+
+When squashing, the final commit message should be:
+
+```
+<type>(<scope>): <summary of all changes>
+
+- Detailed change 1
+- Detailed change 2
+- Detailed change 3
+
+Closes #123
+```
+
+**Example:**
+
+```
+feat(validation): add multi-framework extension support
+
+- Add CrewAI extension validator
+- Add LangGraph extension validator
+- Update schema documentation with examples
+- Add integration tests for all validators
+
+Closes #123, Closes #124
+```
 
 ### PR Title Convention
 
-PR titles should follow the conventional commit format:
+PR titles should follow the conventional commit format (this becomes the squash commit title):
 
 ```
 feat: add LangGraph extension support

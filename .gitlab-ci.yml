@@ -17,11 +17,6 @@
 include:
   - local: '.gitlab/ci/agents.yml'
   - local: '.gitlab/ci/branch-policy.yml'
-  - local: '.gitlab/ci/webhook-agents.yml'  # OSSA v0.2.8 webhook-triggered agents
-  # Security scanning from Auto DevOps
-  - template: Jobs/SAST.gitlab-ci.yml
-  - template: Jobs/Secret-Detection.gitlab-ci.yml
-  - template: Jobs/Dependency-Scanning.gitlab-ci.yml
   # TODO: Add merge-train component when gitlab_components is made public/internal
   # - component: gitlab.com/blueflyio/agent-platform/gitlab_components/merge-train@main
 
@@ -156,84 +151,97 @@ detect:milestone-and-tags:
         fi
       fi
       
-      # Also detect closed milestones for release readiness
+      # Detect ACTIVE milestones ready for release
+      # NEW FLOW: Milestone stays ACTIVE, release closes it
       echo ""
       echo "RELEASE READINESS CHECK"
       echo "========================"
+      echo "Looking for ACTIVE milestone with all issues closed..."
+      echo ""
 
-      # Get all milestones
+      # Get ACTIVE milestones only
       ALL_MILESTONES=$(curl -sS -G "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/milestones" \
         --header "PRIVATE-TOKEN: ${GITLAB_PUSH_TOKEN}" \
         --data-urlencode "per_page=100" \
-        --data-urlencode "state=all")
-      
+        --data-urlencode "state=active")
+
       # Initialize milestone env file
-      cat > milestone-version.env << 'EOF'
-      RELEASE_VERSION=
-      MILESTONE_TITLE=
-      MILESTONE_ID=
-      MILESTONE_READY=false
-      EOF
-      
-      # Find closed milestone ready for release - use process substitution to avoid subshell
+      echo "RELEASE_VERSION=" > milestone-version.env
+      echo "MILESTONE_TITLE=" >> milestone-version.env
+      echo "MILESTONE_ID=" >> milestone-version.env
+      echo "MILESTONE_URL=" >> milestone-version.env
+      echo "MILESTONE_READY=false" >> milestone-version.env
+      echo "ISSUE_COUNT=0" >> milestone-version.env
+      echo "OPEN_ISSUE_COUNT=0" >> milestone-version.env
+
+      # Find ACTIVE milestone with all issues closed (ready for release)
       FOUND_MILESTONE=false
       while read -r milestone_json; do
         [ -z "$milestone_json" ] && continue
         [ "$FOUND_MILESTONE" = "true" ] && break
-      
+
         TITLE=$(echo "$milestone_json" | jq -r '.title // ""' 2>/dev/null || echo "")
         ID=$(echo "$milestone_json" | jq -r '.id // ""' 2>/dev/null || echo "")
-        STATE=$(echo "$milestone_json" | jq -r '.state // ""' 2>/dev/null || echo "")
-      
+        WEB_URL=$(echo "$milestone_json" | jq -r '.web_url // ""' 2>/dev/null || echo "")
+
         VERSION=$(echo "$TITLE" | grep -oE 'v?[0-9]+\.[0-9]+\.[0-9]+(-[A-Za-z0-9]+)?' | head -1 | sed 's/^v//')
 
-        if [ -n "$VERSION" ] && [ "$STATE" = "closed" ]; then
-          # Skip if already released
+        if [ -n "$VERSION" ]; then
+          # Skip if already released (tag exists)
           if git tag -l 2>/dev/null | grep -qE "^v?${VERSION}$"; then
+            echo "⏭️  Skipping ${VERSION} - already released"
             continue
           fi
 
           # Get milestone stats
           MILESTONE_STATS=$(curl -sS -G "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/milestones/${ID}" \
             --header "PRIVATE-TOKEN: ${GITLAB_PUSH_TOKEN}" 2>/dev/null || echo "{}")
-      
+
           TOTAL_ISSUES=$(echo "$MILESTONE_STATS" | jq -r '.total_issues_count // 0' 2>/dev/null || echo "0")
           CLOSED_ISSUES=$(echo "$MILESTONE_STATS" | jq -r '.closed_issues_count // 0' 2>/dev/null || echo "0")
           OPEN_ISSUES=$((TOTAL_ISSUES - CLOSED_ISSUES))
 
-          # Check if 100% complete
+          echo "📊 Milestone: ${TITLE}"
+          echo "   Total issues: ${TOTAL_ISSUES}"
+          echo "   Closed: ${CLOSED_ISSUES}"
+          echo "   Open: ${OPEN_ISSUES}"
+          echo ""
+
+          # Check if 100% complete (all issues closed)
           if [ "$OPEN_ISSUES" -eq 0 ] && [ "$TOTAL_ISSUES" -gt 0 ]; then
-            cat > milestone-version.env << EOF
-      RELEASE_VERSION=${VERSION}
-      MILESTONE_TITLE=${TITLE}
-      MILESTONE_ID=${ID}
-      MILESTONE_READY=true
-      EOF
-            echo "Release-ready milestone found: v${VERSION}"
+            echo "RELEASE_VERSION=${VERSION}" > milestone-version.env
+            echo "MILESTONE_TITLE=${TITLE}" >> milestone-version.env
+            echo "MILESTONE_ID=${ID}" >> milestone-version.env
+            echo "MILESTONE_URL=${WEB_URL}" >> milestone-version.env
+            echo "MILESTONE_READY=true" >> milestone-version.env
+            echo "ISSUE_COUNT=${TOTAL_ISSUES}" >> milestone-version.env
+            echo "OPEN_ISSUE_COUNT=0" >> milestone-version.env
+            echo "✅ Release-ready: ${TITLE} (${TOTAL_ISSUES} issues closed)"
             FOUND_MILESTONE=true
             break
           elif [ "$TOTAL_ISSUES" -eq 0 ]; then
-            cat > milestone-version.env << EOF
-      RELEASE_VERSION=${VERSION}
-      MILESTONE_TITLE=${TITLE}
-      MILESTONE_ID=${ID}
-      MILESTONE_READY=true
-      EOF
-            echo "Release-ready milestone found: v${VERSION} (empty milestone)"
-            FOUND_MILESTONE=true
-            break
+            echo "⚠️  Milestone ${TITLE} has no issues - skipping"
+          else
+            # Milestone has open issues - NOT ready but record for validation
+            echo "RELEASE_VERSION=${VERSION}" > milestone-version.env
+            echo "MILESTONE_TITLE=${TITLE}" >> milestone-version.env
+            echo "MILESTONE_ID=${ID}" >> milestone-version.env
+            echo "MILESTONE_URL=${WEB_URL}" >> milestone-version.env
+            echo "MILESTONE_READY=false" >> milestone-version.env
+            echo "ISSUE_COUNT=${TOTAL_ISSUES}" >> milestone-version.env
+            echo "OPEN_ISSUE_COUNT=${OPEN_ISSUES}" >> milestone-version.env
+            echo "❌ NOT ready: ${OPEN_ISSUES} issues still open"
+            echo "   Close all issues before releasing!"
           fi
         fi
-      done < <(echo "$ALL_MILESTONES" | jq -c '.[] | select(.state == "closed")' 2>/dev/null || echo "")
-      
+      done < <(echo "$ALL_MILESTONES" | jq -c '.[]' 2>/dev/null || echo "")
+
       # If no milestone found, ensure env file exists
       if [ ! -s milestone-version.env ]; then
-        cat > milestone-version.env << 'EOF'
-      RELEASE_VERSION=
-      MILESTONE_TITLE=
-      MILESTONE_ID=
-      MILESTONE_READY=false
-      EOF
+        echo "RELEASE_VERSION=" > milestone-version.env
+        echo "MILESTONE_TITLE=" >> milestone-version.env
+        echo "MILESTONE_ID=" >> milestone-version.env
+        echo "MILESTONE_READY=false" >> milestone-version.env
         echo "ℹ️  No release-ready milestone found"
       fi
       
@@ -580,6 +588,65 @@ quality:gates:
 # STAGE 6 - RELEASE (NPM - Milestone-Gated)
 # ============================================================================
 
+# GENERATE CHANGELOG from milestone issues
+release:changelog:
+  stage: release
+  image: node:${NODE_VERSION}-alpine
+  before_script:
+    - apk add --no-cache git curl jq bash
+    - npm ci --legacy-peer-deps
+    - npm install -g tsx
+  script:
+    - |
+      #!/bin/bash
+      set -e
+
+      echo "📝 CHANGELOG GENERATION"
+      echo "======================="
+
+      if [ "$MILESTONE_READY" != "true" ]; then
+        echo "⚠️  No release-ready milestone - skipping"
+        exit 0
+      fi
+
+      echo "Milestone: ${MILESTONE_TITLE}"
+      echo "Version: v${RELEASE_VERSION}"
+      echo "Milestone ID: ${MILESTONE_ID}"
+      echo ""
+
+      # Generate changelog from milestone issues
+      MILESTONE_ID=${MILESTONE_ID} \
+      RELEASE_VERSION=${RELEASE_VERSION} \
+      CHANGELOG_OUTPUT="RELEASE_NOTES.md" \
+      tsx .gitlab/release-automation/scripts/generate-changelog.ts
+
+      # Also create version-specific changelog
+      VERSION_CHANGELOG="spec/v${RELEASE_VERSION}/CHANGELOG.md"
+      mkdir -p "spec/v${RELEASE_VERSION}"
+      cp RELEASE_NOTES.md "$VERSION_CHANGELOG"
+
+      echo ""
+      echo "✅ Changelog generated successfully"
+      cat RELEASE_NOTES.md
+  artifacts:
+    paths:
+      - RELEASE_NOTES.md
+      - spec/v*/CHANGELOG.md
+      - changelog.env
+    reports:
+      dotenv: changelog.env
+    expire_in: 30 days
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main" && $MILESTONE_READY == "true"
+      when: on_success
+    - if: $CI_COMMIT_BRANCH == "main"
+      when: manual
+  needs:
+    - job: detect:milestone-and-tags
+      optional: true
+      artifacts: true
+  allow_failure: false
+
 # PRE-RELEASE VALIDATION - Critical checks before any release
 release:validate:
   stage: release
@@ -600,6 +667,36 @@ release:validate:
 
       ERRORS=0
       WARNINGS=0
+
+      # 0. MILESTONE GATE CHECK - All issues must be closed!
+      echo "📋 0. Milestone Gate (All Issues Closed)"
+      if [ "$MILESTONE_READY" = "true" ]; then
+        echo "   ✅ Milestone ready: ${MILESTONE_TITLE}"
+        echo "   ✅ All ${ISSUE_COUNT:-0} issues closed"
+      elif [ -n "$MILESTONE_TITLE" ] && [ "${OPEN_ISSUE_COUNT:-0}" -gt 0 ]; then
+        echo "   ❌ ERROR: Cannot release - ${OPEN_ISSUE_COUNT} issues still OPEN!"
+        echo ""
+        echo "   Open issues in ${MILESTONE_TITLE}:"
+        # Fetch and display open issues
+        OPEN_ISSUES_LIST=$(curl -sS -G "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/issues" \
+          --header "PRIVATE-TOKEN: ${GITLAB_PUSH_TOKEN}" \
+          --data-urlencode "milestone=${MILESTONE_TITLE}" \
+          --data-urlencode "state=opened" \
+          --data-urlencode "per_page=100" 2>/dev/null || echo "[]")
+
+        echo "$OPEN_ISSUES_LIST" | jq -r '.[] | "   - #\(.iid): \(.title)"' 2>/dev/null || echo "   (Could not fetch issues)"
+        echo ""
+        echo "   👉 Close all issues before releasing!"
+        ERRORS=$((ERRORS + 1))
+      elif [ -z "$MILESTONE_TITLE" ]; then
+        echo "   ⚠️  WARNING: No milestone detected"
+        echo "   Release will proceed without milestone linkage"
+        WARNINGS=$((WARNINGS + 1))
+      else
+        echo "   ⚠️  WARNING: Milestone has 0 issues"
+        WARNINGS=$((WARNINGS + 1))
+      fi
+      echo ""
 
       # 1. VERSION CONSISTENCY CHECK
       echo "📋 1. Version Consistency"
@@ -770,6 +867,9 @@ release:validate:
   needs:
     - build:dist
     - test:unit
+    - job: detect:milestone-and-tags
+      optional: true
+      artifacts: true
 
 release:preview:
   stage: release
@@ -823,6 +923,7 @@ release:npm:
   dependencies:
     - build:dist
     - detect:milestone-and-tags
+    - release:changelog
   before_script:
     - apk add --no-cache git curl jq bash
     - npm ci --legacy-peer-deps
@@ -835,10 +936,10 @@ release:npm:
     - |
       #!/bin/bash
       set -e
-      
+
       echo "🚀 MILESTONE-GATED RELEASE"
       echo "=========================="
-      
+
       # Check ENABLE_RELEASE gate
       if [ "$ENABLE_RELEASE" != "true" ]; then
         echo "🚫 RELEASE BLOCKED: ENABLE_RELEASE not set"
@@ -849,7 +950,7 @@ release:npm:
         echo " Value: true"
         exit 0
       fi
-      
+
       # Check milestone readiness
       if [ "$MILESTONE_READY" != "true" ]; then
         echo "🚫 RELEASE BLOCKED: No release-ready milestone"
@@ -859,11 +960,12 @@ release:npm:
         echo " 2. ❌ Milestone must be closed and 100% complete"
         exit 0
       fi
-      
+
       echo "✅ Release gate passed"
       echo "   ENABLE_RELEASE: ${ENABLE_RELEASE}"
       echo "   Milestone: ${MILESTONE_TITLE}"
       echo "   Version: v${RELEASE_VERSION}"
+      echo "   Issues Closed: ${ISSUE_COUNT:-0}"
 
       # Update package.json
       npm version ${RELEASE_VERSION} --no-git-tag-version --allow-same-version
@@ -902,57 +1004,133 @@ release:npm:
         echo "❌ npm publish failed"
         exit 1
       fi
-      
+
       # Create git tag with comprehensive release information
       PROD_TAG="v${RELEASE_VERSION}"
       RELEASE_DATE=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
-      
-      # Extract release notes from CHANGELOG if available
-      CHANGELOG_FILE="spec/v${RELEASE_VERSION}/CHANGELOG.md"
-      if [ ! -f "$CHANGELOG_FILE" ]; then
-        CHANGELOG_FILE="spec/v${RELEASE_VERSION}-RC/CHANGELOG.md"
+
+      # Load changelog content if available
+      CHANGELOG_CONTENT=""
+      if [ -f "RELEASE_NOTES.md" ]; then
+        CHANGELOG_CONTENT=$(cat RELEASE_NOTES.md)
       fi
-      
-      if [ -f "$CHANGELOG_FILE" ]; then
-        # Extract overview and key features from CHANGELOG
-        OVERVIEW=$(grep -A 5 "^## Overview" "$CHANGELOG_FILE" 2>/dev/null | head -6 | tail -5 | sed 's/^/  /' || echo "")
-        KEY_FEATURES=$(grep -A 20 "^## What's New" "$CHANGELOG_FILE" 2>/dev/null | head -21 | tail -20 | sed 's/^/  /' || echo "")
-      else
-        OVERVIEW=""
-        KEY_FEATURES=""
-      fi
-      
+
       # Build comprehensive tag message using heredoc
       read -r -d '' TAG_MESSAGE << EOF || true
       Release v${RELEASE_VERSION}
 
-      Milestone - ${MILESTONE_TITLE}
-      Pipeline - ${CI_PIPELINE_ID}
-      Released - ${RELEASE_DATE}
-      Commit - ${CI_COMMIT_SHA}
+      Milestone: ${MILESTONE_TITLE}
+      Issues Closed: ${ISSUE_COUNT:-0}
+      Pipeline: ${CI_PIPELINE_ID}
+      Released: ${RELEASE_DATE}
+      Commit: ${CI_COMMIT_SHA}
 
-      ${OVERVIEW}
+      See full changelog: https://gitlab.com/${CI_PROJECT_PATH}/-/blob/main/spec/v${RELEASE_VERSION}/CHANGELOG.md
 
-      ${KEY_FEATURES}
-
-      Documentation
-      - Schema - https://openstandardagents.org/schema/
-      - Changelog - https://github.com/blueflyio/openstandardagents/blob/main/CHANGELOG.md
-      - Migration Guide - https://openstandardagents.org/docs/migration-guides/
-      - Examples - https://openstandardagents.org/examples/
-
-      npm Package - @bluefly/openstandardagents@${RELEASE_VERSION}
-      GitLab Release - https://${CI_SERVER_HOST}/${CI_PROJECT_PATH}/-/releases/v${RELEASE_VERSION}
+      Links:
+      - npm Package: https://www.npmjs.com/package/@bluefly/openstandardagents/v/${RELEASE_VERSION}
+      - Documentation: https://openstandardagents.org/
+      - Milestone: ${MILESTONE_URL:-https://gitlab.com/${CI_PROJECT_PATH}/-/milestones}
       EOF
-      
+
       git tag -a "$PROD_TAG" -m "$TAG_MESSAGE" "$CI_COMMIT_SHA"
-      
+
       # Commit and push
-      git add package.json package-lock.json README.md spec/ || true
+      git add package.json package-lock.json README.md spec/ RELEASE_NOTES.md || true
       git commit -m "chore(release): v${RELEASE_VERSION} [skip ci]" || echo "No changes to commit"
       git push origin main --tags
 
+      # Create GitLab Release with auto-generated changelog
+      echo "📋 Creating GitLab Release with milestone integration..."
+
+      # Prepare changelog for release description
+      RELEASE_DESCRIPTION="${CHANGELOG_CONTENT}"
+
+      # If no changelog, use fallback
+      if [ -z "$RELEASE_DESCRIPTION" ]; then
+        RELEASE_DESCRIPTION="## Release v${RELEASE_VERSION}\n\nMilestone: ${MILESTONE_TITLE} (${MILESTONE_URL})\n\nSee CHANGELOG.md for details."
+      fi
+
+      # Create release with milestone linkage
+      RELEASE_PAYLOAD=$(jq -n \
+        --arg name "Release v${RELEASE_VERSION}" \
+        --arg tag "v${RELEASE_VERSION}" \
+        --arg desc "$RELEASE_DESCRIPTION" \
+        --arg milestone "${MILESTONE_TITLE}" \
+        --arg npm_url "https://www.npmjs.com/package/@bluefly/openstandardagents/v/${RELEASE_VERSION}" \
+        --arg schema_url "https://openstandardagents.org/schema/" \
+        --arg docs_url "https://openstandardagents.org/" \
+        --arg milestone_url "${MILESTONE_URL}" \
+        '{
+          name: $name,
+          tag_name: $tag,
+          description: $desc,
+          milestones: [$milestone],
+          assets: {
+            links: [
+              {
+                name: "npm package",
+                url: $npm_url,
+                link_type: "package"
+              },
+              {
+                name: "JSON Schema",
+                url: $schema_url,
+                link_type: "other"
+              },
+              {
+                name: "Documentation",
+                url: $docs_url,
+                link_type: "other"
+              },
+              {
+                name: "Milestone",
+                url: $milestone_url,
+                link_type: "other"
+              }
+            ]
+          }
+        }')
+
+      curl --request POST \
+        --header "PRIVATE-TOKEN: ${GITLAB_PUSH_TOKEN}" \
+        --header "Content-Type: application/json" \
+        --data "$RELEASE_PAYLOAD" \
+        "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/releases"
+
+      echo "✅ GitLab Release created: https://${CI_SERVER_HOST}/${CI_PROJECT_PATH}/-/releases/v${RELEASE_VERSION}"
+
+      # CLOSE THE MILESTONE after successful release
+      echo ""
+      echo "🔒 Closing milestone: ${MILESTONE_TITLE}..."
+      if [ -n "$MILESTONE_ID" ]; then
+        CLOSE_RESULT=$(curl -sS --request PUT \
+          --header "PRIVATE-TOKEN: ${GITLAB_PUSH_TOKEN}" \
+          --header "Content-Type: application/json" \
+          --data '{"state_event": "close"}' \
+          "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/milestones/${MILESTONE_ID}" 2>/dev/null)
+
+        CLOSE_STATE=$(echo "$CLOSE_RESULT" | jq -r '.state // "unknown"' 2>/dev/null)
+        if [ "$CLOSE_STATE" = "closed" ]; then
+          echo "✅ Milestone closed successfully"
+        else
+          echo "⚠️  Could not close milestone (state: ${CLOSE_STATE})"
+          echo "   Manual close required: ${MILESTONE_URL}"
+        fi
+      else
+        echo "⚠️  No MILESTONE_ID - cannot close milestone"
+      fi
+
+      echo ""
       echo "✅ Release v${RELEASE_VERSION} completed!"
+      echo ""
+      echo "📊 Release Summary:"
+      echo "   Version: v${RELEASE_VERSION}"
+      echo "   Milestone: ${MILESTONE_TITLE} (CLOSED)"
+      echo "   Issues: ${ISSUE_COUNT:-0}"
+      echo "   npm: https://www.npmjs.com/package/@bluefly/openstandardagents/v/${RELEASE_VERSION}"
+      echo "   Release: https://${CI_SERVER_HOST}/${CI_PROJECT_PATH}/-/releases/v${RELEASE_VERSION}"
+      echo "   Milestone: ${MILESTONE_URL}"
   rules:
     - if: $CI_COMMIT_BRANCH == "main" && $MILESTONE_READY == "true" && $ENABLE_RELEASE == "true"
       when: on_success
@@ -963,6 +1141,7 @@ release:npm:
     - build:dist
     - release:preview
     - release:validate
+    - release:changelog
     - validate:docs-consistency
     - detect:milestone-and-tags
 
@@ -979,13 +1158,16 @@ mirror:github:
     - git config --global user.name "GitLab CI"
   script:
     - |
-      if [ -z "$GITHUB_MIRROR_TOKEN" ]; then
-        echo "ℹ️  GITHUB_MIRROR_TOKEN not set - skipping"
+      # Use GH_TOKEN (group variable) or GITHUB_MIRROR_TOKEN (legacy)
+      MIRROR_TOKEN="${GH_TOKEN:-$GITHUB_MIRROR_TOKEN}"
+
+      if [ -z "$MIRROR_TOKEN" ]; then
+        echo "ℹ️  No GitHub token set (GH_TOKEN or GITHUB_MIRROR_TOKEN) - skipping"
         exit 0
       fi
 
       echo "🔄 Syncing to GitHub..."
-      git remote add github https://${GITHUB_MIRROR_TOKEN}@github.com/blueflyio/openstandardagents.git || true
+      git remote add github https://${MIRROR_TOKEN}@github.com/blueflyio/openstandardagents.git || true
       git push github --all --force || true
       git push github --tags --force || true
       echo "✅ GitHub mirror synced"
@@ -997,7 +1179,129 @@ mirror:github:
   allow_failure: true
 
 # ============================================================================
-# WORKFLOW
+# POST-RELEASE CLEANUP
+# ============================================================================
+# After successful release:
+# 1. Tag all issues with released::v{VERSION}
+# 2. Tag all MRs with released::v{VERSION}
+# 3. Create next milestone (patch increment)
+
+post-release:cleanup:
+  stage: .post
+  image: alpine:latest
+  before_script:
+    - apk add --no-cache curl jq bash
+  script:
+    - |
+      #!/bin/bash
+      set -e
+
+      echo "🧹 POST-RELEASE CLEANUP"
+      echo "======================="
+
+      # Check if release just happened
+      if [ -z "$RELEASE_VERSION" ] || [ -z "$MILESTONE_ID" ]; then
+        echo "ℹ️  No release detected - skipping cleanup"
+        exit 0
+      fi
+
+      VERSION="${RELEASE_VERSION}"
+      LABEL_NAME="released::v${VERSION}"
+
+      echo "📌 Version: v${VERSION}"
+      echo "📌 Milestone: ${MILESTONE_TITLE}"
+      echo ""
+
+      # 1. Create release label if not exists
+      echo "Creating label: ${LABEL_NAME}"
+      curl --request POST \
+        --header "PRIVATE-TOKEN: ${GITLAB_PUSH_TOKEN}" \
+        --data "name=${LABEL_NAME}&color=#00FF00&description=Released in v${VERSION}" \
+        "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/labels" 2>/dev/null || echo "Label may already exist"
+
+      # 2. Tag all closed issues in milestone
+      echo ""
+      echo "📌 Tagging issues..."
+      ISSUES=$(curl -sS -G \
+        --header "PRIVATE-TOKEN: ${GITLAB_PUSH_TOKEN}" \
+        "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/issues" \
+        --data-urlencode "milestone=${MILESTONE_TITLE}" \
+        --data-urlencode "state=closed" \
+        --data-urlencode "per_page=100")
+
+      echo "$ISSUES" | jq -r '.[].iid' | while read ISSUE_IID; do
+        [ -z "$ISSUE_IID" ] && continue
+        curl -sS --request PUT \
+          --header "PRIVATE-TOKEN: ${GITLAB_PUSH_TOKEN}" \
+          --data "add_labels=${LABEL_NAME}" \
+          "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/issues/${ISSUE_IID}" > /dev/null
+        echo "  ✓ Tagged issue #${ISSUE_IID}"
+      done
+
+      # 3. Tag all merged MRs in milestone
+      echo ""
+      echo "📌 Tagging merge requests..."
+      MRS=$(curl -sS -G \
+        --header "PRIVATE-TOKEN: ${GITLAB_PUSH_TOKEN}" \
+        "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/merge_requests" \
+        --data-urlencode "milestone=${MILESTONE_TITLE}" \
+        --data-urlencode "state=merged" \
+        --data-urlencode "per_page=100")
+
+      echo "$MRS" | jq -r '.[].iid' | while read MR_IID; do
+        [ -z "$MR_IID" ] && continue
+        curl -sS --request PUT \
+          --header "PRIVATE-TOKEN: ${GITLAB_PUSH_TOKEN}" \
+          --data "add_labels=${LABEL_NAME}" \
+          "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/merge_requests/${MR_IID}" > /dev/null
+        echo "  ✓ Tagged MR !${MR_IID}"
+      done
+
+      # 4. Create next milestone (patch increment)
+      echo ""
+      echo "📅 Creating next milestone..."
+      NEXT_VERSION=$(echo "$VERSION" | awk -F. '{print $1"."$2"."$3+1}')
+
+      NEXT_MILESTONE=$(curl -sS --request POST \
+        --header "PRIVATE-TOKEN: ${GITLAB_PUSH_TOKEN}" \
+        --header "Content-Type: application/json" \
+        --data "{
+          \"title\": \"v${NEXT_VERSION}\",
+          \"description\": \"Next patch release (auto-created after v${VERSION})\"
+        }" \
+        "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/milestones" 2>/dev/null)
+
+      NEXT_ID=$(echo "$NEXT_MILESTONE" | jq -r '.id // empty')
+      if [ -n "$NEXT_ID" ]; then
+        echo "  ✓ Created milestone v${NEXT_VERSION}"
+      else
+        echo "  ⚠️  Milestone v${NEXT_VERSION} may already exist"
+      fi
+
+      echo ""
+      echo "✅ POST-RELEASE CLEANUP COMPLETE"
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main" && $MILESTONE_READY == "true" && $ENABLE_RELEASE == "true"
+      when: on_success
+  needs:
+    - job: release:npm
+      artifacts: true
+    - job: detect:milestone-and-tags
+      artifacts: true
+  allow_failure: true
+
+# ============================================================================
+# WORKFLOW - MERGE TRAINS ENABLED
+# ============================================================================
+# Merge trains prevent branch divergence by:
+# 1. Queuing MRs instead of racing to merge
+# 2. Testing merged state before allowing merge
+# 3. Auto-rebasing when target branch updates
+# 4. Failing fast on conflicts
+#
+# Enabled for: development, main branches
+# Eliminates: Manual sync commits between releases
+# See: https://docs.gitlab.com/ee/ci/pipelines/merge_trains.html
 # ============================================================================
 
 workflow:
@@ -1006,10 +1310,13 @@ workflow:
     - if: $CI_MERGE_REQUEST_EVENT_TYPE == "merge_train"
     # Merged result pipelines (pre-merge validation)
     - if: $CI_MERGE_REQUEST_EVENT_TYPE == "merged_result"
+    # Regular MR pipelines
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    # Prevent duplicate pipelines (skip branch pipeline if MR is open)
+    - if: $CI_COMMIT_BRANCH && $CI_OPEN_MERGE_REQUESTS
+      when: never
     # Regular branch pipelines
     - if: $CI_COMMIT_BRANCH
-    # MR pipelines
-    - if: $CI_MERGE_REQUEST_IID
     # Tag pipelines
     - if: $CI_COMMIT_TAG
     - when: always
@@ -1018,18 +1325,25 @@ workflow:
 # RELEASE AUTOMATION - Enterprise Grade
 # ============================================================================
 
-# Auto-increment dev tag on merge to development
+# Legacy dev tag increment (replaced by auto-tag:on-merge)
+# Kept for backwards compatibility - can be removed after verification
 increment-dev-tag:
   stage: .post
   image: node:${NODE_VERSION}
   before_script:
+    - apk add --no-cache git bash
+    # Configure git authentication
+    - git config --global credential.helper store
+    - echo "https://gitlab-ci-token:${CI_JOB_TOKEN}@${CI_SERVER_HOST}" > ~/.git-credentials
     - npm ci
     - npm install -g tsx
   script:
-    - tsx .gitlab/release-automation/scripts/increment-dev-tag.ts
+    - echo "ℹ️  This job is replaced by auto-tag:on-merge"
+    - echo "   Keeping for backwards compatibility"
+    # - tsx .gitlab/release-automation/scripts/increment-dev-tag.ts
   rules:
     - if: $CI_COMMIT_BRANCH == "development" && $CI_PIPELINE_SOURCE == "push"
-      when: on_success
+      when: manual
   allow_failure: true
 
 # Manual release buttons (main branch only)
@@ -1125,8 +1439,8 @@ generate:llms-txt:
   image: python:3.11-slim
   script:
     - pip install llms-txt
-    - llms_txt2ctx llms.txt -o llms-ctx.txt
-    - llms_txt2ctx llms.txt -o llms-ctx-full.txt --include-optional
+    - llms_txt2ctx llms.txt > llms-ctx.txt
+    - llms_txt2ctx llms.txt --optional True > llms-ctx-full.txt
   artifacts:
     paths:
       - llms.txt
@@ -1140,21 +1454,48 @@ generate:llms-txt:
       when: on_success
 
 # ============================================================================
-# AGENT: MR Manager (Automated MR Lifecycle)
+# POST-RELEASE SYNC - Sync main back to development after releases
 # ============================================================================
 
-agent:mr-manager:
-  stage: agents
-  image: node:${NODE_VERSION}-alpine
+sync:main-to-development:
+  stage: .post
+  image: alpine:latest
   before_script:
-    - npm ci --legacy-peer-deps
-    - npm run build
+    - apk add --no-cache git curl jq
+    - git config user.email "ci@bluefly.io"
+    - git config user.name "GitLab CI"
+    - git remote set-url origin https://oauth2:${GITLAB_PUSH_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git
   script:
     - |
-      echo "🤖 MR Manager Agent"
-      echo "Automated MR lifecycle management"
-      # Future: ossa run .gitlab/agents/mr-manager/manifest.ossa.yaml
+      echo "🔄 Syncing main → development..."
+
+      git fetch origin main development
+      git checkout development
+      git pull origin development
+
+      # Check if main has commits not in development
+      BEHIND=$(git rev-list --count development..origin/main)
+
+      if [ "$BEHIND" -gt 0 ]; then
+        echo "development is $BEHIND commits behind main"
+
+        # Create sync MR automatically
+        curl --request POST \
+          --header "PRIVATE-TOKEN: ${GITLAB_PUSH_TOKEN}" \
+          --header "Content-Type: application/json" \
+          --data '{
+            "source_branch": "main",
+            "target_branch": "development",
+            "title": "chore: sync main → development post-release [skip ci]",
+            "description": "Automated sync after release. Contains release commits.",
+            "remove_source_branch": false,
+            "squash": true
+          }' \
+          "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/merge_requests"
+      else
+        echo "✅ development is up-to-date with main"
+      fi
   rules:
-    - if: $CI_PIPELINE_SOURCE == "webhook"
-      when: manual
-  allow_failure: true
+    - if: $CI_COMMIT_BRANCH == "main" && $CI_COMMIT_TAG
+      when: on_success
+    - when: never

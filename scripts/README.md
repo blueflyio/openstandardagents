@@ -4,6 +4,31 @@ Automated validation and maintenance scripts for OSSA.
 
 ## Scripts
 
+### compliance-audit.ts
+
+Automated GitLab Ultimate compliance audit system. Checks projects for:
+- Branch protection (main/development, force push)
+- Merge request approvals and requirements
+- Security scanning (SAST, dependency scanning, secret detection)
+- DORA metrics configuration
+- Compliance frameworks and merge trains
+- Pipeline configuration and success rates
+
+```bash
+# Audit default project
+npm run compliance:audit
+
+# Audit specific project
+npm run compliance:audit:project blueflyio/other-project
+
+# Direct execution with custom output
+tsx scripts/compliance-audit.ts blueflyio/openstandardagents report.json
+```
+
+**Requirements**: `GITLAB_TOKEN` environment variable
+
+**Output**: Console report + JSON file with detailed compliance status
+
 ### validate-all.js
 
 Comprehensive validation suite:

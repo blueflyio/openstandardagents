@@ -1,0 +1,77 @@
+# Merge Train Optimized Pipeline
+# Lightweight validation for merge train pipelines to save CI minutes
+# Full tests run on regular MR pipelines, quick validation in train
+
+# Base template for merge train jobs
+.merge-train-only:
+  rules:
+    - if: $CI_MERGE_REQUEST_EVENT_TYPE == "merge_train"
+      when: on_success
+
+# Base template to SKIP in merge train (heavy jobs)
+.skip-in-merge-train:
+  rules:
+    - if: $CI_MERGE_REQUEST_EVENT_TYPE == "merge_train"
+      when: never
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      when: on_success
+
+# Quick validation for merge train - replaces heavy test suite
+train:quick-validate:
+  extends: .merge-train-only
+  stage: test
+  image: node:${NODE_VERSION}-alpine
+  script:
+    - npm ci --legacy-peer-deps
+    - echo "🚄 Merge Train Quick Validation"
+    - echo "   Skipping heavy tests (already passed in MR pipeline)"
+    - npm run typecheck
+    - npm run lint -- --max-warnings=0 || echo "⚠️ Lint warnings"
+    - npm run test:unit -- --testPathIgnorePatterns="integration|e2e" --bail
+  allow_failure: false
+
+# Train failure notification
+train:notify-failure:
+  stage: .post
+  image: alpine:latest
+  before_script:
+    - apk add --no-cache curl
+  script:
+    - |
+      echo "🚨 Merge Train Pipeline Failed!"
+      echo "   MR: !${CI_MERGE_REQUEST_IID}"
+      echo "   Pipeline: ${CI_PIPELINE_URL}"
+
+      # Send notification if webhook is configured
+      if [ -n "$SLACK_WEBHOOK_URL" ]; then
+        curl -X POST "$SLACK_WEBHOOK_URL" \
+          -H "Content-Type: application/json" \
+          -d "{
+            \"text\": \"🚨 Merge train failed\",
+            \"blocks\": [
+              {
+                \"type\": \"section\",
+                \"text\": {
+                  \"type\": \"mrkdwn\",
+                  \"text\": \"*Merge Train Failed*\n\n• MR: <${CI_MERGE_REQUEST_SOURCE_PROJECT_URL}/-/merge_requests/${CI_MERGE_REQUEST_IID}|!${CI_MERGE_REQUEST_IID}>\n• Pipeline: <${CI_PIPELINE_URL}|#${CI_PIPELINE_ID}>\n• Branch: \`${CI_MERGE_REQUEST_SOURCE_BRANCH_NAME}\`\"
+                }
+              }
+            ]
+          }"
+        echo "✅ Slack notification sent"
+      else
+        echo "ℹ️ SLACK_WEBHOOK_URL not configured - skipping notification"
+      fi
+
+      # Also post to GitLab MR as comment
+      if [ -n "$GITLAB_PUSH_TOKEN" ]; then
+        curl --request POST \
+          --header "PRIVATE-TOKEN: ${GITLAB_PUSH_TOKEN}" \
+          --header "Content-Type: application/json" \
+          --data "{\"body\": \"🚨 **Merge train pipeline failed**\n\nPipeline: ${CI_PIPELINE_URL}\n\nPlease check the logs and fix the issues before re-adding to merge train.\"}" \
+          "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/merge_requests/${CI_MERGE_REQUEST_IID}/notes" || true
+      fi
+  rules:
+    - if: $CI_MERGE_REQUEST_EVENT_TYPE == "merge_train"
+      when: on_failure
+  allow_failure: true

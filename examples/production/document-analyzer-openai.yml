@@ -1,7 +1,7 @@
 # OSSA Agent with OpenAI Bridge Configuration Example
 # Document Analyzer Agent - Proof of Concept
 
-apiVersion: ossa/v0.2.8
+apiVersion: ossa/v0.2.9
 kind: Agent
 metadata:
   name: document-analyzer
