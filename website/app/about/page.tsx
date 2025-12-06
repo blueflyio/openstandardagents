@@ -12,7 +12,7 @@ export default function AboutPage() {
     <>
       {/* Hero Section */}
       <div className="bg-gradient-to-br from-secondary via-primary to-accent text-white py-20 px-4">
-        <div className="container mx-auto max-w-4xl text-center">
+        <div className="container mx-auto max-w-[1440px] px-4 text-center">
           <div className="inline-flex items-center justify-center w-20 h-20 bg-white/20 backdrop-blur-sm rounded-full mb-6">
             <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
@@ -25,8 +25,8 @@ export default function AboutPage() {
         </div>
       </div>
 
-      <div className="container mx-auto max-w-7xl px-4 py-12">
-        <div className="max-w-4xl mx-auto">
+      <div className="container mx-auto max-w-[1440px] px-4 py-12">
+        <div className="max-w-5xl mx-auto">
           <section className="mb-16">
             <div className="flex items-center mb-6">
               <div className="w-12 h-12 bg-gradient-to-br from-secondary via-primary to-accent rounded-lg flex items-center justify-center mr-4">

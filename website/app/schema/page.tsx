@@ -12,13 +12,13 @@ function getStableVersion(): string {
     const versionsPath = path.join(process.cwd(), 'lib', 'versions.json');
     if (fs.existsSync(versionsPath)) {
       const versions = JSON.parse(fs.readFileSync(versionsPath, 'utf8'));
-      return versions.stable || '0.2.8';
+      return versions.stable || '0.2.9';
     }
   } catch (error) {
     console.error('Error reading versions.json:', error);
   }
-  // Fallback to 0.2.8 if versions.json not available
-  return '0.2.8';
+  // Fallback to 0.2.9 if versions.json not available
+  return '0.2.9';
 }
 
 // Try to load schema dynamically - fallback to stable version
