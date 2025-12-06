@@ -1,5 +1,8 @@
 # CODEOWNERS - Require review from domain experts
 # https://docs.gitlab.com/ee/user/project/codeowners/
+# 
+# For autonomous releases, approval rules are configured to allow
+# auto-merge when all checks pass (Settings → Merge Requests → Approval Rules)
 
 # Default owners for everything
 * @bluefly
