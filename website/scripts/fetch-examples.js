@@ -11,7 +11,8 @@ const fs = require('fs');
 const path = require('path');
 
 const GITLAB_API = 'https://gitlab.com/api/v4';
-const PROJECT_ID = 'blueflyio%2Fopenstandardagents';
+// Use numeric project ID for reliable cross-project job token access
+const PROJECT_ID = '76265294';  // blueflyio/openstandardagents
 const EXAMPLES_PATH = 'examples';
 const REF = 'main';
 
@@ -82,13 +83,21 @@ function getCategory(filePath) {
   return 'Getting Started';
 }
 
+// Get auth headers for GitLab API
+function getAuthHeaders() {
+  const headers = {};
+  // WEB_TOKEN is a project access token for cross-project access
+  const token = process.env.WEB_TOKEN || process.env.GITLAB_TOKEN;
+  if (token) {
+    headers['PRIVATE-TOKEN'] = token;
+  }
+  return headers;
+}
+
 // Fetch JSON from GitLab API
 function fetchJson(url) {
   return new Promise((resolve, reject) => {
-    const headers = {};
-    if (process.env.GITLAB_TOKEN) {
-      headers['PRIVATE-TOKEN'] = process.env.GITLAB_TOKEN;
-    }
+    const headers = getAuthHeaders();
 
     https.get(url, { headers }, (res) => {
       let data = '';
@@ -110,10 +119,7 @@ function fetchFile(filePath) {
   const url = `${GITLAB_API}/projects/${PROJECT_ID}/repository/files/${encodedPath}/raw?ref=${REF}`;
 
   return new Promise((resolve, reject) => {
-    const headers = {};
-    if (process.env.GITLAB_TOKEN) {
-      headers['PRIVATE-TOKEN'] = process.env.GITLAB_TOKEN;
-    }
+    const headers = getAuthHeaders();
 
     https.get(url, { headers }, (res) => {
       if (res.statusCode === 404) {
