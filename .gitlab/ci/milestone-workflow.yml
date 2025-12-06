@@ -1,0 +1,188 @@
+# Milestone-Driven Workflow Enforcement
+# Ensures proper branching strategy and milestone assignment
+
+# Validate branch targeting rules
+validate:branch-target:
+  stage: validate
+  image: alpine:latest
+  script:
+    - |
+      #!/bin/sh
+      set -e
+
+      echo "🎯 BRANCH TARGET VALIDATION"
+      echo "==========================="
+      echo ""
+      echo "Source: ${CI_MERGE_REQUEST_SOURCE_BRANCH_NAME}"
+      echo "Target: ${CI_MERGE_REQUEST_TARGET_BRANCH_NAME}"
+      echo ""
+
+      # Feature/bugfix/chore branches can target development or release/*
+      case "$CI_MERGE_REQUEST_SOURCE_BRANCH_NAME" in
+        feature/*|bugfix/*|chore/*|fix/*|docs/*|refactor/*|test/*|feat/*|hotfix/*)
+          case "$CI_MERGE_REQUEST_TARGET_BRANCH_NAME" in
+            development|release/*)
+              echo "✅ Feature branch correctly targets ${CI_MERGE_REQUEST_TARGET_BRANCH_NAME}"
+              ;;
+            *)
+              echo "❌ ERROR: Feature branches must target 'development' or 'release/*'"
+              echo ""
+              echo "Your branch: ${CI_MERGE_REQUEST_SOURCE_BRANCH_NAME}"
+              echo "Targeting:   ${CI_MERGE_REQUEST_TARGET_BRANCH_NAME}"
+              echo ""
+              echo "Please retarget this MR to 'development' or a release branch"
+              exit 1
+              ;;
+          esac
+          ;;
+        release/*)
+          if [ "$CI_MERGE_REQUEST_TARGET_BRANCH_NAME" != "development" ] && \
+             [ "$CI_MERGE_REQUEST_TARGET_BRANCH_NAME" != "main" ]; then
+            echo "❌ ERROR: Release branches must target 'development' or 'main'"
+            exit 1
+          fi
+          echo "✅ Release branch targeting ${CI_MERGE_REQUEST_TARGET_BRANCH_NAME}"
+          ;;
+        *)
+          echo "ℹ️ Non-standard branch naming - manual review required"
+          ;;
+      esac
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+  allow_failure: false
+
+# Validate milestone assignment for release-related MRs
+validate:milestone-assignment:
+  stage: validate
+  image: alpine:latest
+  before_script:
+    - apk add --no-cache curl jq
+  script:
+    - |
+      #!/bin/sh
+      set -e
+
+      echo "📋 MILESTONE VALIDATION"
+      echo "======================="
+      echo ""
+
+      # Get MR details
+      MR_DATA=$(curl -sS --header "JOB-TOKEN: ${CI_JOB_TOKEN}" \
+        "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/merge_requests/${CI_MERGE_REQUEST_IID}")
+
+      MILESTONE=$(echo "$MR_DATA" | jq -r '.milestone.title // empty')
+      LABELS=$(echo "$MR_DATA" | jq -r '.labels | join(", ")')
+
+      echo "MR: !${CI_MERGE_REQUEST_IID}"
+      echo "Milestone: ${MILESTONE:-not assigned}"
+      echo "Labels: ${LABELS:-none}"
+      echo ""
+
+      # Release branches MUST have milestone
+      case "$CI_MERGE_REQUEST_SOURCE_BRANCH_NAME" in
+        release/*|hotfix/*)
+          if [ -z "$MILESTONE" ]; then
+            echo "❌ ERROR: Release branches MUST have a milestone assigned"
+            echo ""
+            echo "Please assign a milestone to this MR before merging."
+            echo "This ensures the release is tracked properly."
+            exit 1
+          fi
+          echo "✅ Release branch has milestone: ${MILESTONE}"
+          ;;
+        *)
+          if [ -z "$MILESTONE" ]; then
+            echo "⚠️ WARNING: No milestone assigned"
+            echo "   Consider assigning a milestone for tracking"
+          else
+            echo "✅ Milestone assigned: ${MILESTONE}"
+          fi
+          ;;
+      esac
+
+      # Check if targeting main - must come from development
+      if [ "$CI_MERGE_REQUEST_TARGET_BRANCH_NAME" = "main" ]; then
+        if [ "$CI_MERGE_REQUEST_SOURCE_BRANCH_NAME" != "development" ]; then
+          echo ""
+          echo "❌ ERROR: Only 'development' can merge to 'main'"
+          echo ""
+          echo "Workflow:"
+          echo "  1. feature/* → development (✅ allowed)"
+          echo "  2. development → main (✅ allowed)"
+          echo "  3. ${CI_MERGE_REQUEST_SOURCE_BRANCH_NAME} → main (❌ blocked)"
+          exit 1
+        fi
+
+        if [ -z "$MILESTONE" ]; then
+          echo ""
+          echo "❌ ERROR: MRs to 'main' MUST have a milestone (this is a release!)"
+          exit 1
+        fi
+        echo "✅ Release MR to main with milestone: ${MILESTONE}"
+      fi
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+  allow_failure: false
+
+# Auto-label MRs based on branch naming
+auto:label-mr:
+  stage: .pre
+  image: alpine:latest
+  before_script:
+    - apk add --no-cache curl jq
+  script:
+    - |
+      #!/bin/sh
+
+      echo "🏷️ AUTO-LABELING MR"
+      echo "==================="
+
+      # Determine label from branch name
+      case "$CI_MERGE_REQUEST_SOURCE_BRANCH_NAME" in
+        feature/*)
+          LABEL="type::feature"
+          ;;
+        bugfix/*|fix/*)
+          LABEL="type::bug"
+          ;;
+        chore/*)
+          LABEL="type::chore"
+          ;;
+        docs/*)
+          LABEL="type::docs"
+          ;;
+        refactor/*)
+          LABEL="type::refactor"
+          ;;
+        test/*)
+          LABEL="type::test"
+          ;;
+        release/*)
+          LABEL="type::release"
+          ;;
+        hotfix/*)
+          LABEL="type::hotfix"
+          ;;
+        *)
+          echo "ℹ️ No auto-label for branch pattern"
+          exit 0
+          ;;
+      esac
+
+      echo "Branch: ${CI_MERGE_REQUEST_SOURCE_BRANCH_NAME}"
+      echo "Label: ${LABEL}"
+
+      # Add label to MR (requires token with API access)
+      if [ -n "$GITLAB_PUSH_TOKEN" ]; then
+        curl -sS --request PUT \
+          --header "PRIVATE-TOKEN: ${GITLAB_PUSH_TOKEN}" \
+          --data "add_labels=${LABEL}" \
+          "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/merge_requests/${CI_MERGE_REQUEST_IID}" > /dev/null
+
+        echo "✅ Added label: ${LABEL}"
+      else
+        echo "ℹ️ GITLAB_PUSH_TOKEN not set - skipping auto-label"
+      fi
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+  allow_failure: true
