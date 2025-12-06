@@ -1,0 +1,52 @@
+# Release Branch Environments
+# Creates environment per release branch for tracking and deployment
+
+# Deploy to release environment when MR merges to release/*
+deploy:release-env:
+  stage: deploy
+  image: alpine:latest
+  script:
+    - |
+      echo "🚀 Deploying to release environment"
+      echo "   Branch: ${CI_COMMIT_BRANCH}"
+      echo "   Commit: ${CI_COMMIT_SHORT_SHA}"
+      echo "   Pipeline: ${CI_PIPELINE_ID}"
+  environment:
+    name: release/$CI_COMMIT_BRANCH
+    url: https://gitlab.com/blueflyio/openstandardagents/-/tree/$CI_COMMIT_BRANCH
+    on_stop: stop:release-env
+    auto_stop_in: 30 days
+  rules:
+    - if: $CI_COMMIT_BRANCH =~ /^release\/.*/
+      when: on_success
+
+# Stop release environment (manual or auto after 30 days)
+stop:release-env:
+  stage: deploy
+  image: alpine:latest
+  script:
+    - echo "🛑 Stopping release environment ${CI_COMMIT_BRANCH}"
+  environment:
+    name: release/$CI_COMMIT_BRANCH
+    action: stop
+  rules:
+    - if: $CI_COMMIT_BRANCH =~ /^release\/.*/
+      when: manual
+  allow_failure: true
+
+# Validate release branch before merge to main
+validate:release-to-main:
+  stage: validate
+  image: node:${NODE_VERSION}-alpine
+  script:
+    - npm ci --legacy-peer-deps
+    - echo "🔍 Validating release branch for production"
+    - npm run build
+    - npm run test
+    - npm run validate
+  environment:
+    name: release/$CI_MERGE_REQUEST_SOURCE_BRANCH_NAME
+    action: verify
+  rules:
+    - if: $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "main" && $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME =~ /^release\/.*/
+      when: on_success
