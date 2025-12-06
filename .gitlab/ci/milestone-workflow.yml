@@ -17,19 +17,23 @@ validate:branch-target:
       echo "Target: ${CI_MERGE_REQUEST_TARGET_BRANCH_NAME}"
       echo ""
 
-      # Feature/bugfix/chore branches must target development
+      # Feature/bugfix/chore branches can target development or release/*
       case "$CI_MERGE_REQUEST_SOURCE_BRANCH_NAME" in
-        feature/*|bugfix/*|chore/*|fix/*|docs/*|refactor/*|test/*)
-          if [ "$CI_MERGE_REQUEST_TARGET_BRANCH_NAME" != "development" ]; then
-            echo "❌ ERROR: Feature branches must target 'development'"
-            echo ""
-            echo "Your branch: ${CI_MERGE_REQUEST_SOURCE_BRANCH_NAME}"
-            echo "Targeting:   ${CI_MERGE_REQUEST_TARGET_BRANCH_NAME}"
-            echo ""
-            echo "Please retarget this MR to 'development'"
-            exit 1
-          fi
-          echo "✅ Feature branch correctly targets development"
+        feature/*|bugfix/*|chore/*|fix/*|docs/*|refactor/*|test/*|feat/*|hotfix/*)
+          case "$CI_MERGE_REQUEST_TARGET_BRANCH_NAME" in
+            development|release/*)
+              echo "✅ Feature branch correctly targets ${CI_MERGE_REQUEST_TARGET_BRANCH_NAME}"
+              ;;
+            *)
+              echo "❌ ERROR: Feature branches must target 'development' or 'release/*'"
+              echo ""
+              echo "Your branch: ${CI_MERGE_REQUEST_SOURCE_BRANCH_NAME}"
+              echo "Targeting:   ${CI_MERGE_REQUEST_TARGET_BRANCH_NAME}"
+              echo ""
+              echo "Please retarget this MR to 'development' or a release branch"
+              exit 1
+              ;;
+          esac
           ;;
         release/*)
           if [ "$CI_MERGE_REQUEST_TARGET_BRANCH_NAME" != "development" ] && \
