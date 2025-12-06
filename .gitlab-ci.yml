@@ -170,7 +170,7 @@ build:website:
   image: node:20-alpine
   variables:
     NODE_ENV: development
-    GITLAB_TOKEN: $CI_JOB_TOKEN  # Enable authenticated access to private repos
+    GITLAB_TOKEN: $CI_JOB_TOKEN  # Enable authenticated access to private repos (#28)
   before_script:
     - cd website
     - npm ci --prefer-offline --no-audit

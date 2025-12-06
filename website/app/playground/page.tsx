@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import dynamic from 'next/dynamic';
 import { STABLE_VERSION, STABLE_VERSION_TAG } from '@/lib/version';
+import { validateManifest, ValidationResult } from '@/lib/validate';
 
 const MonacoEditor = dynamic(() => import('@monaco-editor/react'), {
   ssr: false,
@@ -139,49 +140,15 @@ extensions:
 export default function PlaygroundPage() {
   const [templates] = useState(getTemplates(STABLE_VERSION));
   const [code, setCode] = useState(templates.simple);
-  const [validationResult, setValidationResult] = useState<{
-    valid: boolean;
-    errors: Array<{ path: string; message: string }>;
-  } | null>(null);
+  const [validationResult, setValidationResult] = useState<ValidationResult | null>(null);
   const [isValidating, setIsValidating] = useState(false);
   const [activeTemplate, setActiveTemplate] = useState('simple');
 
   const handleValidate = async (): Promise<void> => {
     setIsValidating(true);
     try {
-      // For static export, we'll use a client-side validation approach
-      // Load schema and validate in browser - use dynamic version
-      const schemaResponse = await fetch(`/schemas/ossa-${STABLE_VERSION}.schema.json`);
-      if (!schemaResponse.ok) {
-        throw new Error('Failed to load schema');
-      }
-      const schema = await schemaResponse.json();
-
-      // Simple validation - in production, use a proper JSON Schema validator
-      const parsed = code.includes('apiVersion:')
-        ? (await import('yaml')).parse(code)
-        : JSON.parse(code);
-
-      // Basic validation checks
-      const errors: Array<{ path: string; message: string }> = [];
-
-      if (!parsed.apiVersion) {
-        errors.push({ path: '', message: 'Missing required field: apiVersion' });
-      }
-      if (!parsed.kind) {
-        errors.push({ path: '', message: 'Missing required field: kind' });
-      }
-      if (!parsed.metadata) {
-        errors.push({ path: '', message: 'Missing required field: metadata' });
-      }
-      if (!parsed.spec) {
-        errors.push({ path: '', message: 'Missing required field: spec' });
-      }
-
-      setValidationResult({
-        valid: errors.length === 0,
-        errors,
-      });
+      const result = await validateManifest(code);
+      setValidationResult(result);
     } catch (error) {
       setValidationResult({
         valid: false,
@@ -191,6 +158,7 @@ export default function PlaygroundPage() {
             message: error instanceof Error ? error.message : 'Validation error',
           },
         ],
+        warnings: []
       });
     } finally {
       setIsValidating(false);
@@ -414,11 +382,34 @@ export default function PlaygroundPage() {
                 </div>
               </div>
 
+              {/* Show warnings if any */}
+              {validationResult.warnings && validationResult.warnings.length > 0 && (
+                <div className="bg-amber-50 rounded-lg p-4 mt-4 border border-amber-200">
+                  <div className="text-sm font-semibold text-amber-800 mb-3">⚠️ Recommendations:</div>
+                  <div className="space-y-2">
+                    {validationResult.warnings.map((warning, index) => (
+                      <div key={index} className="flex items-start text-sm">
+                        <span className="text-amber-500 mr-2 mt-0.5">⚠</span>
+                        <div>
+                          {warning.path && <span className="text-amber-700 font-medium">{warning.path}: </span>}
+                          <span className="text-gray-700">{warning.message}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               <div className="mt-4 pt-4 border-t border-green-200">
                 <p className="text-sm text-green-800 font-semibold mb-2">✅ Ready for deployment</p>
                 <p className="text-sm text-gray-700">
                   This manifest can be used with kAgent, LangChain, CrewAI, OpenAI, and other OSSA-compatible frameworks.
                 </p>
+                {validationResult.schemaVersion && (
+                  <p className="text-xs text-gray-500 mt-2">
+                    Validated against OSSA v{validationResult.schemaVersion} schema
+                  </p>
+                )}
               </div>
             </div>
           ) : (
