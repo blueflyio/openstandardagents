@@ -17,16 +17,7 @@
 include:
   - local: '.gitlab/ci/agents.yml'
   - local: '.gitlab/ci/branch-policy.yml'
-  - local: '.gitlab/ci/webhook-agents.yml'  # OSSA v0.2.9 webhook-triggered agents
-  - local: '.gitlab/ci/merge-train-optimized.yml'  # Optimized merge train pipeline
-  - local: '.gitlab/ci/milestone-workflow.yml'  # Milestone-driven workflow enforcement
-  - local: '.gitlab/ci/release-environments.yml'  # Per-release environment tracking
-  # Security scanning from Auto DevOps
-  - template: Jobs/SAST.gitlab-ci.yml
-  - template: Jobs/Secret-Detection.gitlab-ci.yml
-  - template: Jobs/Dependency-Scanning.gitlab-ci.yml
-  # Merge trains enabled via workflow rules (see workflow section at bottom)
-  # Component available but private - uncomment when gitlab_components is public
+  # TODO: Add merge-train component when gitlab_components is made public/internal
   # - component: gitlab.com/blueflyio/agent-platform/gitlab_components/merge-train@main
 
 #   - CI/CD variable ENABLE_RELEASE must be set to "true"
