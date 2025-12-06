@@ -8,7 +8,7 @@ variables:
 github:sync:agent:
   stage: .pre
   trigger:
-    project: ${AGENT_PLATFORM_GROUP}
+    project: ${AGENT_PLATFORM_PROJECT}
     strategy: depend
   variables:
     AGENT_NAME: gitlab-lib-ci
@@ -57,7 +57,7 @@ code:review:agent:
 docs:sync:agent:
   stage: .post
   trigger:
-    project: ${AGENT_PLATFORM_GROUP}
+    project: ${AGENT_PLATFORM_PROJECT}
     strategy: depend
   variables:
     AGENT_NAME: gitlab-lib-ci
@@ -106,7 +106,7 @@ security:scan:agent:
 ts:build:agent:
   stage: build
   trigger:
-    project: ${AGENT_PLATFORM_GROUP}
+    project: ${AGENT_PLATFORM_PROJECT}
     strategy: depend
   variables:
     AGENT_NAME: ts-prod
@@ -120,7 +120,7 @@ ts:build:agent:
 deploy:infra:agent:
   stage: deploy
   trigger:
-    project: ${AGENT_PLATFORM_GROUP}
+    project: ${AGENT_PLATFORM_PROJECT}
     strategy: depend
   variables:
     AGENT_NAME: infra-prod
@@ -139,7 +139,7 @@ deploy:infra:agent:
 deploy:ml:agent:
   stage: deploy
   trigger:
-    project: ${AGENT_PLATFORM_GROUP}
+    project: ${AGENT_PLATFORM_PROJECT}
     strategy: depend
   variables:
     AGENT_NAME: ml-prod
@@ -155,7 +155,7 @@ deploy:ml:agent:
 drupal:sync:agent:
   stage: .post
   trigger:
-    project: ${AGENT_PLATFORM_GROUP}
+    project: ${AGENT_PLATFORM_PROJECT}
     strategy: depend
   variables:
     AGENT_NAME: drupal-prod
@@ -171,7 +171,7 @@ drupal:sync:agent:
 native:build:agent:
   stage: build
   trigger:
-    project: ${AGENT_PLATFORM_GROUP}
+    project: ${AGENT_PLATFORM_PROJECT}
     strategy: depend
   variables:
     AGENT_NAME: native-local

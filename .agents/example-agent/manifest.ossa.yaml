@@ -1,7 +1,7 @@
 # Example OSSA Agent - Local Development Template
 # Copy this to create your own agent
 
-apiVersion: ossa/v0.2.8
+apiVersion: ossa/v0.2.9
 kind: Agent
 
 metadata:
