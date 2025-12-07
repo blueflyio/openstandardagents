@@ -1,5 +1,5 @@
 # Branch Policy Enforcement
-# Ensures main branch only receives merges from development
+# Ensures main branch only receives merges from development or release branches
 
 validate:branch-policy:
   stage: validate
@@ -29,18 +29,25 @@ validate:branch-policy:
         exit 0
       fi
 
+      # Check if source branch is a release branch
+      case "$CI_MERGE_REQUEST_SOURCE_BRANCH_NAME" in
+        release/*)
+          echo "✅ ALLOWED: Merge from release branch → main"
+          exit 0
+          ;;
+      esac
+
       # Block all other merges to main
       echo "❌ BLOCKED: Direct merges to main are not allowed"
       echo ""
-      echo "Policy: main branch only accepts merges from development"
+      echo "Policy: main branch only accepts merges from development or release/* branches"
       echo ""
       echo "Required workflow:"
-      echo "  1. Create feature branch from development"
-      echo "  2. Merge feature → development"
-      echo "  3. Merge development → main"
+      echo "  Option 1: Feature → development → main"
+      echo "  Option 2: Feature → release/vX.X.X → main"
       echo ""
       echo "Your branch: $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME"
-      echo "Please merge to development first, then create MR from development to main"
+      echo "Please merge to development or a release branch first"
       
       exit 1
   allow_failure: false
