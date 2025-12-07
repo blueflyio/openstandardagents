@@ -29,7 +29,6 @@ bin/ @bluefly
 tests/ @bluefly
 
 # Documentation (wiki is primary, but README matters)
-README.md @bluefly
 docs/ @bluefly
 
 # Examples - showcase best practices
