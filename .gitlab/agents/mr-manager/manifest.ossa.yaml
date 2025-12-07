@@ -14,9 +14,27 @@ spec:
   role: orchestrator
   
   llm:
-    provider: anthropic
-    model: claude-3-5-sonnet-20241022
+    provider: ${LLM_PROVIDER:-anthropic}
+    model: ${LLM_MODEL:-claude-sonnet}  # Use env var, defaults to latest sonnet
     temperature: 0.1
+
+    fallback_models:
+      - provider: ${LLM_FALLBACK_PROVIDER_1:-openai}
+        model: ${LLM_FALLBACK_MODEL_1:-gpt-4o}
+      - provider: ${LLM_FALLBACK_PROVIDER_2:-anthropic}
+        model: ${LLM_FALLBACK_MODEL_2:-claude-haiku}
+
+    retry_config:
+      max_attempts: 3
+      backoff_strategy: exponential
+
+    cost_tracking:
+      enabled: true
+      budget_alert_threshold: 20.00
+      cost_allocation_tags:
+        project: ossa-agents
+        team: platform
+        service: mr-manager
   
   capabilities:
     - name: create_mr_from_issue
