@@ -61,7 +61,7 @@
     "version:enhanced": "tsx scripts/enhanced-version-manager.ts",
     "version:check": "tsx scripts/sync-versions.ts --check",
     "docs:process": "tsx scripts/process-doc-templates.ts",
-    "prebuild": "npm run version:sync && npm run version:examples && npm run docs:process",
+    "prebuild": "npm run version:sync && npm run docs:process",
     "build": "tsc && npm run copy-assets",
     "copy-assets": "cp -r spec dist/",
     "dev": "tsc --watch",
