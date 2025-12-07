@@ -38,6 +38,12 @@
     "extensions": {
       "type": "object",
       "description": "Framework-specific extensions",
+      "properties": {
+        "knowledge_sources": {
+          "$ref": "#/definitions/KnowledgeSourcesExtension",
+          "description": "Context retrieval layer configurations for unified knowledge access"
+        }
+      },
       "additionalProperties": true
     },
     "runtime": {
@@ -49,7 +55,9 @@
     {
       "if": {
         "properties": {
-          "kind": { "const": "Agent" }
+          "kind": {
+            "const": "Agent"
+          }
         }
       },
       "then": {
@@ -58,13 +66,17 @@
             "$ref": "#/definitions/AgentSpec"
           }
         },
-        "required": ["spec"]
+        "required": [
+          "spec"
+        ]
       }
     },
     {
       "if": {
         "properties": {
-          "kind": { "const": "Task" }
+          "kind": {
+            "const": "Task"
+          }
         }
       },
       "then": {
@@ -73,13 +85,17 @@
             "$ref": "#/definitions/TaskSpec"
           }
         },
-        "required": ["spec"]
+        "required": [
+          "spec"
+        ]
       }
     },
     {
       "if": {
         "properties": {
-          "kind": { "const": "Workflow" }
+          "kind": {
+            "const": "Workflow"
+          }
         }
       },
       "then": {
@@ -88,14 +104,18 @@
             "$ref": "#/definitions/WorkflowSpec"
           }
         },
-        "required": ["spec"]
+        "required": [
+          "spec"
+        ]
       }
     }
   ],
   "definitions": {
     "Metadata": {
       "type": "object",
-      "required": ["name"],
+      "required": [
+        "name"
+      ],
       "properties": {
         "name": {
           "type": "string",
@@ -131,27 +151,40 @@
       },
       "additionalProperties": false
     },
-
     "TaskSpec": {
       "type": "object",
       "description": "Specification for deterministic, non-agentic workflow steps (kind: Task)",
-      "required": ["execution"],
+      "required": [
+        "execution"
+      ],
       "properties": {
         "execution": {
           "type": "object",
           "description": "Execution configuration for the task",
-          "required": ["type"],
+          "required": [
+            "type"
+          ],
           "properties": {
             "type": {
               "type": "string",
-              "enum": ["deterministic", "idempotent", "transactional"],
+              "enum": [
+                "deterministic",
+                "idempotent",
+                "transactional"
+              ],
               "default": "deterministic",
               "description": "Execution type: deterministic (pure function), idempotent (safe to retry), transactional (all-or-nothing)"
             },
             "runtime": {
               "type": "string",
               "description": "Target runtime environment",
-              "examples": ["drupal", "symfony", "node", "python", "any"]
+              "examples": [
+                "drupal",
+                "symfony",
+                "node",
+                "python",
+                "any"
+              ]
             },
             "entrypoint": {
               "type": "string",
@@ -177,8 +210,14 @@
           },
           "uniqueItems": true,
           "examples": [
-            ["publish_content", "send_notification"],
-            ["transform_data", "validate_schema"]
+            [
+              "publish_content",
+              "send_notification"
+            ],
+            [
+              "transform_data",
+              "validate_schema"
+            ]
           ]
         },
         "input": {
@@ -222,7 +261,11 @@
                 },
                 "backoff_strategy": {
                   "type": "string",
-                  "enum": ["fixed", "exponential", "linear"],
+                  "enum": [
+                    "fixed",
+                    "exponential",
+                    "linear"
+                  ],
                   "default": "exponential"
                 },
                 "initial_delay_ms": {
@@ -235,7 +278,11 @@
             },
             "on_item_error": {
               "type": "string",
-              "enum": ["skip", "fail", "retry"],
+              "enum": [
+                "skip",
+                "fail",
+                "retry"
+              ],
               "default": "retry",
               "description": "Behavior when individual item fails"
             }
@@ -247,7 +294,9 @@
           "description": "Other tasks or agents this task depends on",
           "items": {
             "type": "object",
-            "required": ["ref"],
+            "required": [
+              "ref"
+            ],
             "properties": {
               "ref": {
                 "type": "string",
@@ -255,7 +304,10 @@
               },
               "kind": {
                 "type": "string",
-                "enum": ["Task", "Agent"],
+                "enum": [
+                  "Task",
+                  "Agent"
+                ],
                 "description": "Kind of dependency"
               },
               "optional": {
@@ -272,7 +324,9 @@
           "description": "Conditions that must be true before task execution",
           "items": {
             "type": "object",
-            "required": ["expression"],
+            "required": [
+              "expression"
+            ],
             "properties": {
               "expression": {
                 "type": "string",
@@ -291,7 +345,9 @@
           "description": "Conditions that must be true after task execution",
           "items": {
             "type": "object",
-            "required": ["expression"],
+            "required": [
+              "expression"
+            ],
             "properties": {
               "expression": {
                 "type": "string",
@@ -310,7 +366,12 @@
           "properties": {
             "on_error": {
               "type": "string",
-              "enum": ["fail", "retry", "fallback", "ignore"],
+              "enum": [
+                "fail",
+                "retry",
+                "fallback",
+                "ignore"
+              ],
               "default": "fail"
             },
             "fallback_task": {
@@ -322,7 +383,12 @@
               "description": "Map error codes to actions",
               "additionalProperties": {
                 "type": "string",
-                "enum": ["fail", "retry", "fallback", "ignore"]
+                "enum": [
+                  "fail",
+                  "retry",
+                  "fallback",
+                  "ignore"
+                ]
               }
             }
           },
@@ -337,7 +403,12 @@
               "properties": {
                 "level": {
                   "type": "string",
-                  "enum": ["debug", "info", "warn", "error"],
+                  "enum": [
+                    "debug",
+                    "info",
+                    "warn",
+                    "error"
+                  ],
                   "default": "info"
                 },
                 "include_input": {
@@ -388,11 +459,12 @@
       },
       "additionalProperties": false
     },
-
     "AgentSpec": {
       "type": "object",
       "description": "Specification for agentic loops with LLM (kind: Agent) - inherits from v0.2.9",
-      "required": ["role"],
+      "required": [
+        "role"
+      ],
       "properties": {
         "role": {
           "type": "string",
@@ -426,11 +498,12 @@
       },
       "additionalProperties": true
     },
-
     "WorkflowSpec": {
       "type": "object",
       "description": "Specification for workflow composition (kind: Workflow) - composes Tasks and Agents into executable pipelines",
-      "required": ["steps"],
+      "required": [
+        "steps"
+      ],
       "properties": {
         "triggers": {
           "type": "array",
@@ -479,7 +552,10 @@
                     "description": "Secret reference (e.g., vault://secret/api-key)"
                   }
                 },
-                "required": ["name", "ref"]
+                "required": [
+                  "name",
+                  "ref"
+                ]
               }
             }
           },
@@ -507,7 +583,13 @@
           "properties": {
             "on_failure": {
               "type": "string",
-              "enum": ["halt", "continue", "rollback", "notify", "compensate"],
+              "enum": [
+                "halt",
+                "continue",
+                "rollback",
+                "notify",
+                "compensate"
+              ],
               "default": "halt",
               "description": "Action on step failure"
             },
@@ -526,7 +608,12 @@
                   "type": "array",
                   "items": {
                     "type": "string",
-                    "enum": ["email", "slack", "webhook", "pagerduty"]
+                    "enum": [
+                      "email",
+                      "slack",
+                      "webhook",
+                      "pagerduty"
+                    ]
                   }
                 },
                 "template": {
@@ -546,7 +633,11 @@
                 },
                 "backoff": {
                   "type": "string",
-                  "enum": ["fixed", "exponential", "linear"],
+                  "enum": [
+                    "fixed",
+                    "exponential",
+                    "linear"
+                  ],
                   "default": "exponential"
                 },
                 "initial_delay_ms": {
@@ -607,7 +698,12 @@
               "properties": {
                 "level": {
                   "type": "string",
-                  "enum": ["debug", "info", "warn", "error"],
+                  "enum": [
+                    "debug",
+                    "info",
+                    "warn",
+                    "error"
+                  ],
                   "default": "info"
                 }
               }
@@ -618,7 +714,6 @@
       },
       "additionalProperties": false
     },
-
     "RuntimeBinding": {
       "type": "object",
       "description": "Runtime-specific capability bindings",
@@ -626,12 +721,23 @@
         "type": {
           "type": "string",
           "description": "Runtime type identifier",
-          "examples": ["drupal", "symfony_messenger", "kagent", "temporal", "node"]
+          "examples": [
+            "drupal",
+            "symfony_messenger",
+            "kagent",
+            "temporal",
+            "node"
+          ]
         },
         "transport": {
           "type": "string",
           "description": "Message transport for async runtimes",
-          "examples": ["async", "sync", "amqp", "redis"]
+          "examples": [
+            "async",
+            "sync",
+            "amqp",
+            "redis"
+          ]
         },
         "bindings": {
           "type": "object",
@@ -663,15 +769,21 @@
       },
       "additionalProperties": false
     },
-
     "Trigger": {
       "type": "object",
       "description": "Workflow trigger configuration",
-      "required": ["type"],
+      "required": [
+        "type"
+      ],
       "properties": {
         "type": {
           "type": "string",
-          "enum": ["webhook", "cron", "event", "manual"],
+          "enum": [
+            "webhook",
+            "cron",
+            "event",
+            "manual"
+          ],
           "description": "Trigger type"
         },
         "path": {
@@ -681,17 +793,28 @@
         "schedule": {
           "type": "string",
           "description": "Cron expression (for type=cron)",
-          "examples": ["0 8 * * *", "*/15 * * * *"]
+          "examples": [
+            "0 8 * * *",
+            "*/15 * * * *"
+          ]
         },
         "source": {
           "type": "string",
           "description": "Event source (for type=event)",
-          "examples": ["drupal", "kafka", "webhook"]
+          "examples": [
+            "drupal",
+            "kafka",
+            "webhook"
+          ]
         },
         "event": {
           "type": "string",
           "description": "Event name (for type=event)",
-          "examples": ["node.created", "user.login", "order.placed"]
+          "examples": [
+            "node.created",
+            "user.login",
+            "order.placed"
+          ]
         },
         "filter": {
           "type": "object",
@@ -701,11 +824,12 @@
       },
       "additionalProperties": false
     },
-
     "WorkflowStep": {
       "type": "object",
       "description": "A step in a workflow - can be a Task, Agent, or control structure",
-      "required": ["id"],
+      "required": [
+        "id"
+      ],
       "properties": {
         "id": {
           "type": "string",
@@ -718,13 +842,22 @@
         },
         "kind": {
           "type": "string",
-          "enum": ["Task", "Agent", "Parallel", "Conditional", "Loop"],
+          "enum": [
+            "Task",
+            "Agent",
+            "Parallel",
+            "Conditional",
+            "Loop"
+          ],
           "description": "Step type"
         },
         "ref": {
           "type": "string",
           "description": "Reference to Task or Agent manifest file",
-          "examples": ["./tasks/publish-content.yaml", "./agents/content-reviewer.yaml"]
+          "examples": [
+            "./tasks/publish-content.yaml",
+            "./agents/content-reviewer.yaml"
+          ]
         },
         "inline": {
           "type": "object",
@@ -773,7 +906,12 @@
           "items": {
             "type": "string"
           },
-          "examples": [["fetch", "validate"]]
+          "examples": [
+            [
+              "fetch",
+              "validate"
+            ]
+          ]
         },
         "parallel": {
           "type": "array",
@@ -799,7 +937,10 @@
                 }
               }
             },
-            "required": ["condition", "steps"]
+            "required": [
+              "condition",
+              "steps"
+            ]
           }
         },
         "else": {
@@ -816,7 +957,10 @@
             "over": {
               "type": "string",
               "description": "Expression returning array to iterate over",
-              "examples": ["${{ steps.fetch.output.items }}", "${{ workflow.input.recipients }}"]
+              "examples": [
+                "${{ steps.fetch.output.items }}",
+                "${{ workflow.input.recipients }}"
+              ]
             },
             "as": {
               "type": "string",
@@ -834,7 +978,9 @@
               "description": "Maximum parallel iterations"
             }
           },
-          "required": ["over"]
+          "required": [
+            "over"
+          ]
         },
         "steps": {
           "type": "array",
@@ -855,7 +1001,11 @@
             },
             "backoff_strategy": {
               "type": "string",
-              "enum": ["fixed", "exponential", "linear"],
+              "enum": [
+                "fixed",
+                "exponential",
+                "linear"
+              ],
               "default": "exponential"
             },
             "initial_delay_ms": {
@@ -889,7 +1039,12 @@
           "properties": {
             "action": {
               "type": "string",
-              "enum": ["fail", "continue", "goto", "compensate"],
+              "enum": [
+                "fail",
+                "continue",
+                "goto",
+                "compensate"
+              ],
               "default": "fail"
             },
             "goto": {
@@ -912,14 +1067,21 @@
       },
       "additionalProperties": false
     },
-
     "JSONSchemaDefinition": {
       "type": "object",
       "description": "JSON Schema definition for input/output validation",
       "properties": {
         "type": {
           "type": "string",
-          "enum": ["object", "array", "string", "number", "integer", "boolean", "null"]
+          "enum": [
+            "object",
+            "array",
+            "string",
+            "number",
+            "integer",
+            "boolean",
+            "null"
+          ]
         },
         "properties": {
           "type": "object",
@@ -935,19 +1097,31 @@
           "type": "object"
         },
         "additionalProperties": {
-          "type": ["boolean", "object"]
+          "type": [
+            "boolean",
+            "object"
+          ]
         }
       },
       "additionalProperties": true
     },
-
     "LLMConfig": {
       "type": "object",
-      "required": ["provider", "model"],
+      "required": [
+        "provider",
+        "model"
+      ],
       "properties": {
         "provider": {
           "type": "string",
-          "enum": ["openai", "anthropic", "google", "azure", "ollama", "custom"]
+          "enum": [
+            "openai",
+            "anthropic",
+            "google",
+            "azure",
+            "ollama",
+            "custom"
+          ]
         },
         "model": {
           "type": "string"
@@ -964,14 +1138,23 @@
       },
       "additionalProperties": true
     },
-
     "Tool": {
       "type": "object",
-      "required": ["type"],
+      "required": [
+        "type"
+      ],
       "properties": {
         "type": {
           "type": "string",
-          "enum": ["mcp", "kubernetes", "http", "grpc", "function", "a2a", "custom"]
+          "enum": [
+            "mcp",
+            "kubernetes",
+            "http",
+            "grpc",
+            "function",
+            "a2a",
+            "custom"
+          ]
         },
         "name": {
           "type": "string"
@@ -985,10 +1168,11 @@
       },
       "additionalProperties": true
     },
-
     "Capability": {
       "type": "object",
-      "required": ["name"],
+      "required": [
+        "name"
+      ],
       "properties": {
         "name": {
           "type": "string"
@@ -1005,65 +1189,92 @@
       },
       "additionalProperties": true
     },
-
     "Autonomy": {
       "type": "object",
       "properties": {
         "level": {
           "type": "string",
-          "enum": ["supervised", "autonomous", "fully_autonomous"]
+          "enum": [
+            "supervised",
+            "autonomous",
+            "fully_autonomous"
+          ]
         },
         "approval_required": {
           "type": "boolean"
         },
         "allowed_actions": {
           "type": "array",
-          "items": { "type": "string" }
+          "items": {
+            "type": "string"
+          }
         },
         "blocked_actions": {
           "type": "array",
-          "items": { "type": "string" }
+          "items": {
+            "type": "string"
+          }
         }
       },
       "additionalProperties": false
     },
-
     "Constraints": {
       "type": "object",
       "properties": {
         "cost": {
           "type": "object",
           "properties": {
-            "maxTokensPerDay": { "type": "integer" },
-            "maxTokensPerRequest": { "type": "integer" },
-            "maxCostPerDay": { "type": "number" }
+            "maxTokensPerDay": {
+              "type": "integer"
+            },
+            "maxTokensPerRequest": {
+              "type": "integer"
+            },
+            "maxCostPerDay": {
+              "type": "number"
+            }
           }
         },
         "performance": {
           "type": "object",
           "properties": {
-            "maxLatencySeconds": { "type": "number" },
-            "maxConcurrentRequests": { "type": "integer" },
-            "timeoutSeconds": { "type": "number" }
+            "maxLatencySeconds": {
+              "type": "number"
+            },
+            "maxConcurrentRequests": {
+              "type": "integer"
+            },
+            "timeoutSeconds": {
+              "type": "number"
+            }
           }
         }
       },
       "additionalProperties": false
     },
-
     "State": {
       "type": "object",
       "properties": {
         "mode": {
           "type": "string",
-          "enum": ["stateless", "session", "long_running"]
+          "enum": [
+            "stateless",
+            "session",
+            "long_running"
+          ]
         },
         "storage": {
           "type": "object",
           "properties": {
             "type": {
               "type": "string",
-              "enum": ["memory", "vector-db", "kv", "rdbms", "custom"]
+              "enum": [
+                "memory",
+                "vector-db",
+                "kv",
+                "rdbms",
+                "custom"
+              ]
             },
             "retention": {
               "type": "string"
@@ -1073,54 +1284,395 @@
       },
       "additionalProperties": false
     },
-
     "AgentObservability": {
       "type": "object",
       "properties": {
         "tracing": {
           "type": "object",
           "properties": {
-            "enabled": { "type": "boolean" },
-            "exporter": { "type": "string" }
+            "enabled": {
+              "type": "boolean"
+            },
+            "exporter": {
+              "type": "string"
+            }
           }
         },
         "metrics": {
           "type": "object",
           "properties": {
-            "enabled": { "type": "boolean" },
-            "exporter": { "type": "string" }
+            "enabled": {
+              "type": "boolean"
+            },
+            "exporter": {
+              "type": "string"
+            }
           }
         },
         "logging": {
           "type": "object",
           "properties": {
-            "level": { "type": "string" },
-            "format": { "type": "string" }
+            "level": {
+              "type": "string"
+            },
+            "format": {
+              "type": "string"
+            }
           }
         }
       },
       "additionalProperties": false
     },
-
     "Safety": {
       "type": "object",
       "properties": {
         "content_filtering": {
           "type": "object",
           "properties": {
-            "enabled": { "type": "boolean" },
-            "categories": { "type": "array", "items": { "type": "string" } }
+            "enabled": {
+              "type": "boolean"
+            },
+            "categories": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
           }
         },
         "guardrails": {
           "type": "object",
           "properties": {
-            "enabled": { "type": "boolean" },
-            "max_tool_calls": { "type": "integer" }
+            "enabled": {
+              "type": "boolean"
+            },
+            "max_tool_calls": {
+              "type": "integer"
+            }
           }
         }
       },
       "additionalProperties": false
+    },
+    "KnowledgeSourcesExtension": {
+      "type": "array",
+      "description": "Context retrieval layer configurations for unified knowledge access across multiple data sources",
+      "items": {
+        "$ref": "#/definitions/KnowledgeSource"
+      }
+    },
+    "KnowledgeSource": {
+      "type": "object",
+      "description": "A context retrieval layer providing unified semantic search across data sources",
+      "required": [
+        "name",
+        "provider"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_-]*$",
+          "description": "Unique identifier for this knowledge source"
+        },
+        "provider": {
+          "type": "string",
+          "enum": [
+            "airweave",
+            "langchain",
+            "llamaindex",
+            "weaviate",
+            "pinecone",
+            "qdrant",
+            "custom"
+          ],
+          "description": "Context retrieval provider type"
+        },
+        "config": {
+          "type": "object",
+          "description": "Provider-specific configuration",
+          "properties": {
+            "api_url": {
+              "type": "string",
+              "format": "uri",
+              "description": "API endpoint URL for the knowledge source"
+            },
+            "collection_id": {
+              "type": "string",
+              "description": "Collection/corpus identifier (Airweave, Weaviate)"
+            },
+            "index_name": {
+              "type": "string",
+              "description": "Index name (Pinecone, Qdrant)"
+            },
+            "namespace": {
+              "type": "string",
+              "description": "Namespace for multi-tenancy (Pinecone)"
+            },
+            "class_name": {
+              "type": "string",
+              "description": "Schema class name (Weaviate)"
+            },
+            "retriever_type": {
+              "type": "string",
+              "description": "Retriever implementation type (LangChain)",
+              "examples": [
+                "vectorstore",
+                "multi_query",
+                "contextual_compression"
+              ]
+            },
+            "vectorstore": {
+              "type": "string",
+              "description": "Underlying vector store (LangChain)",
+              "examples": [
+                "pinecone",
+                "weaviate",
+                "qdrant",
+                "chroma"
+              ]
+            },
+            "embedding_model": {
+              "type": "string",
+              "description": "Embedding model identifier",
+              "examples": [
+                "text-embedding-3-large",
+                "text-embedding-ada-002"
+              ]
+            }
+          },
+          "additionalProperties": true
+        },
+        "auth": {
+          "$ref": "#/definitions/AuthConfig",
+          "description": "Authentication configuration for the knowledge source"
+        },
+        "search": {
+          "type": "object",
+          "description": "Search configuration and retrieval strategy",
+          "properties": {
+            "default_strategy": {
+              "type": "string",
+              "enum": [
+                "hybrid",
+                "neural",
+                "semantic",
+                "keyword",
+                "bm25"
+              ],
+              "default": "hybrid",
+              "description": "Default search strategy: hybrid (semantic + keyword), neural (vector-only), keyword (BM25)"
+            },
+            "reranking": {
+              "type": "boolean",
+              "default": false,
+              "description": "Enable result reranking for improved relevance"
+            },
+            "recency_bias": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1,
+              "description": "Weight for recency in ranking (0=ignore, 1=heavily favor recent)"
+            },
+            "max_results": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 10,
+              "description": "Maximum number of results to return"
+            },
+            "score_threshold": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1,
+              "description": "Minimum similarity score threshold for results"
+            },
+            "filters": {
+              "type": "object",
+              "description": "Default filters to apply to all queries",
+              "additionalProperties": true
+            },
+            "top_k": {
+              "type": "integer",
+              "minimum": 1,
+              "description": "Number of top results to retrieve (alias for max_results)"
+            }
+          },
+          "additionalProperties": false
+        },
+        "mcp_bridge": {
+          "type": "object",
+          "description": "Expose knowledge source via Model Context Protocol (MCP)",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": false,
+              "description": "Enable MCP bridge for this knowledge source"
+            },
+            "expose_as": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9_-]*$",
+              "description": "Tool name when exposed via MCP"
+            },
+            "server_type": {
+              "type": "string",
+              "enum": [
+                "stdio",
+                "sse"
+              ],
+              "default": "stdio",
+              "description": "MCP server transport type"
+            }
+          },
+          "additionalProperties": false
+        },
+        "sources": {
+          "type": "array",
+          "description": "Documentation of data sources aggregated in this collection",
+          "items": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string",
+                "description": "Data source type",
+                "examples": [
+                  "gitlab",
+                  "slack",
+                  "notion",
+                  "confluence",
+                  "github",
+                  "google_drive"
+                ]
+              },
+              "description": {
+                "type": "string",
+                "description": "Human-readable description of this source"
+              },
+              "project": {
+                "type": "string",
+                "description": "Project/workspace identifier (GitLab project, Notion workspace, etc.)"
+              },
+              "workspace": {
+                "type": "string",
+                "description": "Workspace identifier (Slack, Notion)"
+              },
+              "channels": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "Channel/room identifiers (Slack, Teams)"
+              }
+            },
+            "additionalProperties": true
+          }
+        },
+        "context_injection": {
+          "type": "object",
+          "description": "Configuration for automatic context injection into agent prompts",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": false,
+              "description": "Enable automatic context injection"
+            },
+            "max_tokens": {
+              "type": "integer",
+              "minimum": 100,
+              "maximum": 100000,
+              "default": 8192,
+              "description": "Maximum tokens to inject from knowledge source"
+            },
+            "priority": {
+              "type": "string",
+              "enum": [
+                "recency",
+                "relevance",
+                "custom"
+              ],
+              "default": "relevance",
+              "description": "Prioritization strategy for context selection"
+            },
+            "format": {
+              "type": "string",
+              "enum": [
+                "markdown",
+                "json",
+                "xml",
+                "plain"
+              ],
+              "default": "markdown",
+              "description": "Format for injected context"
+            }
+          },
+          "additionalProperties": false
+        },
+        "cache": {
+          "type": "object",
+          "description": "Caching configuration for query results",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": true,
+              "description": "Enable result caching"
+            },
+            "ttl": {
+              "type": "integer",
+              "minimum": 60,
+              "maximum": 86400,
+              "default": 3600,
+              "description": "Cache time-to-live in seconds"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "AuthConfig": {
+      "type": "object",
+      "description": "Authentication configuration for external services",
+      "required": [
+        "type"
+      ],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": [
+            "api_key",
+            "bearer_token",
+            "oauth2",
+            "basic",
+            "none"
+          ],
+          "description": "Authentication type"
+        },
+        "credentials": {
+          "type": "string",
+          "description": "Credential reference (e.g., 'secret:airweave-key', 'env:API_KEY')",
+          "examples": [
+            "secret:airweave-api-key",
+            "env:OPENAI_API_KEY",
+            "${WEAVIATE_API_KEY}"
+          ]
+        },
+        "header": {
+          "type": "string",
+          "description": "Custom header name for authentication",
+          "examples": [
+            "X-API-Key",
+            "Authorization"
+          ]
+        },
+        "prefix": {
+          "type": "string",
+          "description": "Token prefix (e.g., 'Bearer', 'ApiKey')",
+          "examples": [
+            "Bearer",
+            "ApiKey"
+          ]
+        }
+      },
+      "additionalProperties": true
     }
   }
 }
