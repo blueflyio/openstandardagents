@@ -41,7 +41,7 @@
 # =============================================================================
 # DOCUMENTATION (Wiki Aggregator syncs)
 # =============================================================================
-/docs/                     @blueflyio/ossa-docs-team @bot-wiki-aggregator
+/docs/ @bluefly
 README.md                  @blueflyio/ossa-docs-team @bot-wiki-aggregator
 CONTRIBUTING.md            @blueflyio/ossa-docs-team @bot-wiki-aggregator
 CHANGELOG.md               @blueflyio/ossa-docs-team @bot-wiki-aggregator
