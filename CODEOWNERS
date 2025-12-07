@@ -28,9 +28,9 @@
 # =============================================================================
 # CI/CD & INFRASTRUCTURE (CI Bot + K8s Agents)
 # =============================================================================
-/.gitlab-ci.yml            @flux423 @blueflyio/platform-team @bot-ci-local
-/.gitlab/                  @flux423 @blueflyio/platform-team @bot-ci-local
-/infrastructure/           @flux423 @blueflyio/platform-team @bot-ci-local
+/.gitlab-ci.yml            @bluefly @blueflyio/platform-team @bot-ci-local
+/.gitlab/                  @bluefly @blueflyio/platform-team @bot-ci-local
+/infrastructure/           @bluefly @blueflyio/platform-team @bot-ci-local
 
 # =============================================================================
 # AGENTS (OSSA Bot validates agent manifests)
@@ -41,7 +41,7 @@
 # =============================================================================
 # DOCUMENTATION (Wiki Aggregator syncs)
 # =============================================================================
-/docs/                     @blueflyio/ossa-docs-team @bot-wiki-aggregator
+/docs/ @bluefly
 README.md                  @blueflyio/ossa-docs-team @bot-wiki-aggregator
 CONTRIBUTING.md            @blueflyio/ossa-docs-team @bot-wiki-aggregator
 CHANGELOG.md               @blueflyio/ossa-docs-team @bot-wiki-aggregator
@@ -49,15 +49,15 @@ CHANGELOG.md               @blueflyio/ossa-docs-team @bot-wiki-aggregator
 # =============================================================================
 # RELEASE & VERSIONING (CI Bot manages releases)
 # =============================================================================
-package.json               @flux423 @blueflyio/ossa-maintainers @bot-ci-local
-package-lock.json          @flux423 @blueflyio/ossa-maintainers @bot-ci-local
-.releaserc.json            @flux423 @blueflyio/ossa-maintainers @bot-ci-local
-.version.json              @flux423 @blueflyio/ossa-maintainers @bot-ci-local
+package.json               @bluefly @blueflyio/ossa-maintainers @bot-ci-local
+package-lock.json          @bluefly @blueflyio/ossa-maintainers @bot-ci-local
+.releaserc.json            @bluefly @blueflyio/ossa-maintainers @bot-ci-local
+.version.json              @bluefly @blueflyio/ossa-maintainers @bot-ci-local
 
 # =============================================================================
 # SCRIPTS (TypeScript Bot + CI Bot)
 # =============================================================================
-/scripts/                  @flux423 @blueflyio/platform-team @bot-typescript-local @bot-ci-local
+/scripts/                  @bluefly @blueflyio/platform-team @bot-typescript-local @bot-ci-local
 
 # =============================================================================
 # BOT & AGENT TOKEN MAPPING
