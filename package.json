@@ -106,7 +106,7 @@
     "compliance:audit": "tsx scripts/compliance-audit.ts",
     "compliance:audit:project": "tsx scripts/compliance-audit.ts",
     "docs:check": "echo \"Checking docs...\" && test -f README.md && test -f CHANGELOG.md",
-    "version:examples": "sh scripts/sync-example-versions.sh"
+    "version:examples": "tsx scripts/version-examples.ts"
   },
   "keywords": [
     "ossa",
