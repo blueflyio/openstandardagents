@@ -1,0 +1,352 @@
+# Example: OSSA Workflow executed via Symfony Messenger
+# Demonstrates multi-step workflow with async Task orchestration
+apiVersion: ossa/v0.3.0
+kind: Workflow
+metadata:
+  name: user-onboarding-symfony
+  version: 1.0.0
+  description: Complete user onboarding process with email verification
+  labels:
+    runtime: symfony
+    transport: messenger
+    domain: user-management
+
+spec:
+  triggers:
+    - type: event
+      source: symfony.event_dispatcher
+      event: user.registered
+    - type: api
+      endpoint: /api/onboarding/start
+      method: POST
+
+  inputs:
+    type: object
+    properties:
+      user_id:
+        type: string
+        format: uuid
+      email:
+        type: string
+        format: email
+      username:
+        type: string
+      registration_source:
+        type: string
+        enum: [web, mobile, api, oauth]
+        default: web
+    required:
+      - user_id
+      - email
+      - username
+
+  outputs:
+    type: object
+    properties:
+      onboarding_status:
+        type: string
+        enum: [completed, pending_verification, failed]
+      verification_token_sent:
+        type: boolean
+      welcome_email_sent:
+        type: boolean
+      profile_created:
+        type: boolean
+      total_steps_completed:
+        type: integer
+
+  steps:
+    # Step 1: Validate email address
+    - id: validate_email
+      kind: Task
+      name: Validate user email
+      inline:
+        execution:
+          type: deterministic
+          runtime: symfony
+          entrypoint: "App\\TaskHandler\\EmailValidatorHandler::execute"
+        input:
+          type: object
+          properties:
+            email:
+              type: string
+              format: email
+        output:
+          type: object
+          properties:
+            valid:
+              type: boolean
+            normalized_email:
+              type: string
+            domain_check:
+              type: boolean
+      input:
+        email: "${{ workflow.input.email }}"
+      timeout_seconds: 10
+      retry:
+        max_attempts: 2
+
+    # Step 2: Create user profile
+    - id: create_profile
+      kind: Task
+      name: Create user profile
+      inline:
+        execution:
+          type: deterministic
+          runtime: symfony
+          entrypoint: "App\\TaskHandler\\ProfileCreatorHandler::execute"
+        input:
+          type: object
+          properties:
+            user_id:
+              type: string
+            email:
+              type: string
+            username:
+              type: string
+        output:
+          type: object
+          properties:
+            profile_id:
+              type: string
+            success:
+              type: boolean
+      input:
+        user_id: "${{ workflow.input.user_id }}"
+        email: "${{ steps.validate_email.output.normalized_email }}"
+        username: "${{ workflow.input.username }}"
+      depends_on:
+        - validate_email
+      timeout_seconds: 30
+
+    # Step 3: Generate verification token
+    - id: generate_token
+      kind: Task
+      name: Generate email verification token
+      inline:
+        execution:
+          type: deterministic
+          runtime: symfony
+          entrypoint: "App\\TaskHandler\\TokenGeneratorHandler::execute"
+        input:
+          type: object
+          properties:
+            user_id:
+              type: string
+            expiry_hours:
+              type: integer
+        output:
+          type: object
+          properties:
+            token:
+              type: string
+            expires_at:
+              type: string
+              format: date-time
+      input:
+        user_id: "${{ workflow.input.user_id }}"
+        expiry_hours: 24
+      depends_on:
+        - create_profile
+
+    # Step 4: Send verification email
+    - id: send_verification_email
+      kind: Task
+      name: Send email verification
+      ref: ./symfony-messenger-task.yaml
+      input:
+        to: "${{ steps.validate_email.output.normalized_email }}"
+        subject: "Verify your email address"
+        template: "email/verification"
+        variables:
+          username: "${{ workflow.input.username }}"
+          verification_url: "https://example.com/verify?token=${{ steps.generate_token.output.token }}"
+          expires_at: "${{ steps.generate_token.output.expires_at }}"
+        priority: high
+      depends_on:
+        - generate_token
+      retry:
+        max_attempts: 3
+        backoff_strategy: exponential
+
+    # Step 5: Send welcome email (parallel with verification)
+    - id: send_welcome_email
+      kind: Task
+      name: Send welcome email
+      ref: ./symfony-messenger-task.yaml
+      input:
+        to: "${{ steps.validate_email.output.normalized_email }}"
+        subject: "Welcome to Our Platform"
+        template: "email/welcome"
+        variables:
+          username: "${{ workflow.input.username }}"
+          profile_url: "https://example.com/profile/${{ workflow.input.user_id }}"
+        priority: normal
+      depends_on:
+        - create_profile
+      # Runs in parallel with send_verification_email
+
+    # Step 6: Create initial preferences
+    - id: create_preferences
+      kind: Task
+      name: Initialize user preferences
+      inline:
+        execution:
+          type: deterministic
+          runtime: symfony
+          entrypoint: "App\\TaskHandler\\PreferencesHandler::execute"
+        input:
+          type: object
+          properties:
+            user_id:
+              type: string
+            defaults:
+              type: object
+        output:
+          type: object
+          properties:
+            preferences_id:
+              type: string
+            applied_defaults:
+              type: array
+      input:
+        user_id: "${{ workflow.input.user_id }}"
+        defaults:
+          language: en
+          timezone: UTC
+          notifications:
+            email: true
+            push: false
+          newsletter: true
+          theme: auto
+      depends_on:
+        - create_profile
+
+    # Step 7: Sync to external services
+    - id: sync_external
+      kind: Task
+      name: Sync to external services
+      inline:
+        execution:
+          type: deterministic
+          runtime: symfony
+          entrypoint: "App\\TaskHandler\\ExternalSyncHandler::execute"
+      input:
+        user_id: "${{ workflow.input.user_id }}"
+        services:
+          - analytics
+          - crm
+          - mailing_list
+        data:
+          email: "${{ steps.validate_email.output.normalized_email }}"
+          source: "${{ workflow.input.registration_source }}"
+      depends_on:
+        - create_preferences
+      # Optional step - failure doesn't fail workflow
+      error_handling:
+        on_error: continue
+
+    # Step 8: Track onboarding event
+    - id: track_event
+      kind: Task
+      name: Track onboarding analytics
+      inline:
+        execution:
+          type: deterministic
+          runtime: symfony
+          entrypoint: "App\\TaskHandler\\AnalyticsHandler::execute"
+      input:
+        event_name: "user.onboarding.completed"
+        user_id: "${{ workflow.input.user_id }}"
+        properties:
+          source: "${{ workflow.input.registration_source }}"
+          profile_created: "${{ steps.create_profile.output.success }}"
+          verification_sent: true
+          welcome_sent: true
+          preferences_set: true
+          external_synced: "${{ steps.sync_external.status == 'completed' }}"
+      depends_on:
+        - send_verification_email
+        - send_welcome_email
+        - sync_external
+
+  error_handling:
+    on_failure: compensate
+    compensation_steps:
+      - id: cleanup_profile
+        kind: Task
+        name: Remove incomplete profile
+        inline:
+          execution:
+            type: deterministic
+            runtime: symfony
+            entrypoint: "App\\TaskHandler\\ProfileCleanupHandler::execute"
+        input:
+          user_id: "${{ workflow.input.user_id }}"
+        condition: "${{ steps.create_profile.status == 'completed' }}"
+
+      - id: notify_admin
+        kind: Task
+        name: Notify admin of failed onboarding
+        ref: ./symfony-messenger-task.yaml
+        input:
+          to: admin@example.com
+          subject: "User onboarding failed"
+          template: "admin/onboarding-failure"
+          variables:
+            user_id: "${{ workflow.input.user_id }}"
+            email: "${{ workflow.input.email }}"
+            error: "${{ workflow.error.message }}"
+            failed_step: "${{ workflow.error.step_id }}"
+
+  timeout_seconds: 300
+
+  observability:
+    logging:
+      level: info
+      include_step_results: true
+    metrics:
+      enabled: true
+      custom_labels:
+        registration_source: "${{ workflow.input.registration_source }}"
+        workflow_type: onboarding
+    tracing:
+      enabled: true
+      sample_rate: 1.0
+
+# Symfony Messenger configuration for workflow
+runtime:
+  type: symfony
+  messenger:
+    transport: ossa_workflows
+    routing_key: workflow.onboarding
+    priority: high
+
+    # Step coordination settings
+    step_dispatch:
+      transport: ossa_tasks
+      parallel_execution: true  # Allow parallel step execution when possible
+      batch_size: 10
+
+    # Workflow state storage
+    state_store:
+      type: redis
+      key_prefix: "ossa:workflow:"
+      ttl_hours: 168  # 7 days
+
+    # Headers for all messages
+    headers:
+      X-OSSA-Workflow-Type: user-onboarding
+      X-OSSA-Version: v0.3.0
+
+  # Service bindings
+  bindings:
+    create_profile:
+      service: "@App\\Service\\ProfileService"
+      method: "create"
+    generate_token:
+      service: "@App\\Service\\TokenService"
+      method: "generate"
+    analytics:
+      service: "@App\\Service\\AnalyticsService"
+      method: "track"
