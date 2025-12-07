@@ -119,7 +119,7 @@ spec:
         recipient: ${{ steps.fetch-content.output.author_email }}
         template: content_review_complete
         variables:
-          status: ${{ steps.ai-review.output.approved ? 'approved' : 'needs_revision' }}
+          status: ${{ steps.ai-review.output.approved }}
           feedback: ${{ steps.ai-review.output.feedback }}
 
   # Shared context
