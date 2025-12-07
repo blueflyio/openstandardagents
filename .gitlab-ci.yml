@@ -41,6 +41,7 @@ stages:
   - build
   - test
   - quality
+  - release
   - deploy
   - release
   - mirror
