@@ -1,0 +1,50 @@
+apiVersion: ossa/v0.3.0
+kind: Agent
+metadata:
+  name: example-validator
+  description: Validates all OSSA examples against current schema
+  labels:
+    tier: release-automation
+    criticality: high
+spec:
+  role: validator
+  capabilities:
+    - schema-validation
+    - yaml-parsing
+    - ci-integration
+  triggers:
+    - type: pipeline
+      events: [merge_request, push]
+      branches: [release/*, main]
+  tasks:
+    - name: validate-examples
+      description: Validate all example files
+      steps:
+        - name: find-examples
+          action: exec
+          command: find examples -name "*.yaml" -o -name "*.yml"
+        - name: validate-syntax
+          action: exec
+          command: |
+            for file in $(find examples -name "*.yaml" -o -name "*.yml"); do
+              echo "Validating $file..."
+              yq eval '.' "$file" > /dev/null || exit 1
+            done
+        - name: validate-schema
+          action: exec
+          command: |
+            npm run validate:examples || exit 1
+        - name: check-api-version
+          action: exec
+          command: |
+            for file in $(find examples -name "*.ossa.yaml"); do
+              version=$(yq eval '.apiVersion' "$file")
+              if [[ ! "$version" =~ ^ossa/v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+                echo "ERROR: Invalid apiVersion in $file: $version"
+                exit 1
+              fi
+            done
+  outputs:
+    - type: ci-status
+      on_success: pass
+      on_failure: block

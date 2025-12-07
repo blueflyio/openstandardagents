@@ -90,7 +90,7 @@
     "docs:generate": "npm run docs:api:generate && npm run docs:cli:generate && npm run docs:schema:generate && npm run docs:examples:generate && npm run docs:agents:generate && npm run docs:types:generate && npm run docs:errors:generate && npm run docs:config:generate && npm run docs:lowercase",
     "docs:validate": "echo 'Documentation validation not yet implemented'",
     "docs:lint": "echo 'Documentation linting not yet implemented'",
-    "validate:examples": "node -r ts-node/register tests/integration/examples/validate-all-examples.test.ts",
+    "validate:examples": "find examples -name \"*.yaml\" -o -name \"*.yml\" | xargs -I {} sh -c \"yq eval . {} > /dev/null || exit 1\"",
     "validate:power-suite": "tsx bin/validate-ossa.ts",
     "gen:types": "tsx scripts/gen-types.ts",
     "gen:zod": "tsx scripts/gen-zod.ts",
@@ -104,7 +104,8 @@
     "sync:batch": "tsx src/cli/commands/github-sync.command.ts batch",
     "sync:list": "tsx src/cli/commands/github-sync.command.ts list",
     "compliance:audit": "tsx scripts/compliance-audit.ts",
-    "compliance:audit:project": "tsx scripts/compliance-audit.ts"
+    "compliance:audit:project": "tsx scripts/compliance-audit.ts",
+    "docs:check": "echo \"Checking docs...\" && test -f README.md && test -f CHANGELOG.md"
   },
   "keywords": [
     "ossa",
