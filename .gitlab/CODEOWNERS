@@ -2,3 +2,33 @@
 # Solo developer workflow - all approvals go through @bluefly
 
 * @bluefly
+
+# OSSA Specification - Core maintainers
+spec/ @bluefly
+schemas/ @bluefly
+
+# CI/CD Configuration - DevOps/Platform team
+.gitlab-ci.yml @bluefly
+.gitlab/ci/ @bluefly
+.gitlab/release-automation/ @bluefly
+
+# Package configuration - Maintainers only
+package.json @bluefly
+package-lock.json @bluefly
+tsconfig.json @bluefly
+
+# Source code
+src/ @bluefly
+bin/ @bluefly
+
+# Tests
+tests/ @bluefly
+
+# Documentation (wiki is primary, but README matters)
+docs/ @bluefly
+
+# Examples - showcase best practices
+examples/ @bluefly
+
+# Infrastructure
+infrastructure/ @bluefly
