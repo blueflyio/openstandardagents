@@ -17,6 +17,7 @@
 include:
   - local: '.gitlab/ci/agents.yml'
   - local: '.gitlab/ci/branch-policy.yml'
+  - local: '.gitlab/ci/release-automation.yml'  # Release automation agents
   # TODO: Add merge-train component when gitlab_components is made public/internal
   # - component: gitlab.com/blueflyio/agent-platform/gitlab_components/merge-train@main
 
