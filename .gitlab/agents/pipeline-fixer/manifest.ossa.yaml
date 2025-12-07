@@ -1,0 +1,463 @@
+# ============================================================================
+# OSSA Pipeline Fixer Agent
+# ============================================================================
+#
+# PURPOSE:
+#   Automatically detect and fix common CI/CD pipeline failures. Analyzes
+#   job logs, identifies root causes, and applies fixes or suggests
+#   remediation steps.
+#
+# ============================================================================
+
+apiVersion: ossa/v0.3.0
+kind: Agent
+
+metadata:
+  name: pipeline-fixer
+  version: 1.0.0
+  description: |
+    Automated CI/CD pipeline failure detection and remediation agent.
+    Analyzes failing jobs, identifies root causes, and applies fixes
+    for common issues like dependency conflicts, test flakes, and
+    configuration errors.
+
+  labels:
+    environment: production
+    team: devops
+    domain: ci-cd
+    capability: pipeline-automation
+    integration: gitlab
+
+  annotations:
+    documentation: https://openstandardagents.org/docs/agents/pipeline-fixer
+    support: ops@openstandardagents.org
+
+spec:
+  # ==========================================================================
+  # TAXONOMY: CI/CD Domain
+  # ==========================================================================
+  taxonomy:
+    domain: ci-cd
+    subdomain: pipeline-automation
+    capability: failure-remediation
+
+  # ==========================================================================
+  # ROLE: Pipeline Troubleshooting Expert
+  # ==========================================================================
+  role: |
+    You are an expert CI/CD engineer specializing in GitLab pipeline
+    troubleshooting and automated remediation.
+
+    Your responsibilities:
+    1. Analyze failing pipeline job logs
+    2. Identify root causes of failures
+    3. Apply automated fixes for common issues
+    4. Create merge requests with fixes
+    5. Retry pipelines after fixes
+    6. Escalate complex issues to humans
+
+    Common failure patterns you can fix:
+    - Dependency version conflicts (npm, composer, pip)
+    - Flaky tests (add retry, increase timeout)
+    - Missing environment variables
+    - Docker build failures (cache, layer issues)
+    - Resource limits (memory, disk)
+    - Network timeouts (retry logic)
+    - Linting/formatting issues (auto-fix)
+
+    For each failure:
+    1. Download job logs
+    2. Parse error messages
+    3. Match against known patterns
+    4. Apply fix or suggest remediation
+    5. Create MR if code changes needed
+    6. Retry pipeline
+
+  # ==========================================================================
+  # LLM CONFIGURATION
+  # ==========================================================================
+  llm:
+    provider: anthropic
+    model: claude-3-5-sonnet-20241022
+    temperature: 0.1
+    maxTokens: 8000
+
+  # ==========================================================================
+  # TOOLS: GitLab CI/CD Integration
+  # ==========================================================================
+  tools:
+    - type: mcp
+      name: gitlab-api
+      description: |
+        Access GitLab CI/CD API for pipelines, jobs, and logs.
+      config:
+        server: gitlab-mcp
+        scope: ci-cd
+      auth:
+        type: bearer
+        tokenPath: /var/secrets/gitlab-token
+
+    - type: mcp
+      name: filesystem
+      description: |
+        Read and modify CI configuration files.
+      config:
+        server: filesystem-mcp
+        allowed_paths:
+          - '.gitlab-ci.yml'
+          - '.gitlab/**'
+          - 'package*.json'
+          - 'composer*.json'
+
+    - type: a2a
+      name: agent-mesh
+      description: |
+        Communicate with gitops-deployer and mr-reviewer agents.
+      endpoint: http://agent-mesh:9090/a2a
+      config:
+        protocol: json-rpc
+        version: "2.0"
+
+  # ==========================================================================
+  # CAPABILITIES: Pipeline Operations
+  # ==========================================================================
+  capabilities:
+    - name: analyze_failure
+      description: Analyze a failing pipeline job
+      input_schema:
+        type: object
+        properties:
+          project_id:
+            type: string
+          job_id:
+            type: integer
+        required:
+          - project_id
+          - job_id
+      output_schema:
+        type: object
+        properties:
+          failure_type:
+            type: string
+            enum:
+              - dependency_conflict
+              - test_failure
+              - build_error
+              - config_error
+              - resource_limit
+              - network_timeout
+              - lint_error
+              - unknown
+          root_cause:
+            type: string
+          suggested_fix:
+            type: string
+          auto_fixable:
+            type: boolean
+          success:
+            type: boolean
+
+    - name: apply_fix
+      description: Apply automated fix for a failure
+      input_schema:
+        type: object
+        properties:
+          project_id:
+            type: string
+          failure_type:
+            type: string
+          fix_config:
+            type: object
+        required:
+          - project_id
+          - failure_type
+      output_schema:
+        type: object
+        properties:
+          fix_applied:
+            type: boolean
+          mr_created:
+            type: boolean
+          mr_url:
+            type: string
+          success:
+            type: boolean
+
+    - name: retry_pipeline
+      description: Retry a failed pipeline
+      input_schema:
+        type: object
+        properties:
+          project_id:
+            type: string
+          pipeline_id:
+            type: integer
+        required:
+          - project_id
+          - pipeline_id
+      output_schema:
+        type: object
+        properties:
+          new_pipeline_id:
+            type: integer
+          success:
+            type: boolean
+
+  # ==========================================================================
+  # TRIGGERS
+  # ==========================================================================
+  triggers:
+    - type: webhook
+      name: on_pipeline_failed
+      event: pipeline
+      filter:
+        status: failed
+      description: Analyze on pipeline failure
+
+    - type: webhook
+      name: on_job_failed
+      event: job
+      filter:
+        status: failed
+      description: Analyze on job failure
+
+  # ==========================================================================
+  # AUTONOMY
+  # ==========================================================================
+  autonomy:
+    level: autonomous
+    approval_required: false
+
+    allowed_actions:
+      - analyze_failure
+      - apply_fix
+      - retry_pipeline
+      - create_merge_requests
+
+    blocked_actions:
+      - delete_pipelines
+      - modify_protected_branches
+
+  # ==========================================================================
+  # CONSTRAINTS
+  # ==========================================================================
+  constraints:
+    cost:
+      maxTokensPerDay: 200000
+      maxCostPerDay: 20.00
+      currency: USD
+
+    performance:
+      maxLatencySeconds: 120
+      timeoutSeconds: 300
+
+    resources:
+      cpu: "1000m"
+      memory: "2Gi"
+
+  # ==========================================================================
+  # OBSERVABILITY
+  # ==========================================================================
+  observability:
+    tracing:
+      enabled: true
+      exporter: otlp
+
+    metrics:
+      enabled: true
+      exporter: prometheus
+      customMetrics:
+        - name: pipeline_fixes_applied
+          type: counter
+        - name: fix_success_rate
+          type: gauge
+
+    logging:
+      level: info
+      format: json
+
+---
+# ============================================================================
+# OSSA GitOps Deployer Agent
+# ============================================================================
+
+apiVersion: ossa/v0.3.0
+kind: Agent
+
+metadata:
+  name: gitops-deployer
+  version: 1.0.0
+  description: |
+    GitOps deployment agent for Kubernetes. Syncs manifests from Git
+    repositories to Kubernetes clusters using GitLab Agent for Kubernetes.
+
+  labels:
+    environment: production
+    team: devops
+    domain: gitops
+    capability: deployment
+    integration: gitlab-k8s
+
+spec:
+  taxonomy:
+    domain: gitops
+    subdomain: kubernetes-deployment
+    capability: manifest-sync
+
+  role: |
+    You are a GitOps deployment specialist managing Kubernetes deployments
+    via Git repositories.
+
+    Your responsibilities:
+    1. Sync Kubernetes manifests from Git to clusters
+    2. Validate manifests before deployment
+    3. Monitor deployment health
+    4. Rollback on failures
+    5. Manage secrets securely via External Secrets
+    6. Coordinate with other agents for deployment workflows
+
+    GitOps principles you enforce:
+    - Git as single source of truth
+    - Declarative configuration
+    - Automated reconciliation
+    - Self-healing deployments
+
+  llm:
+    provider: anthropic
+    model: claude-3-5-sonnet-20241022
+    temperature: 0.1
+    maxTokens: 4096
+
+  tools:
+    - type: mcp
+      name: gitlab-k8s-agent
+      description: |
+        GitLab Agent for Kubernetes integration.
+      config:
+        server: gitlab-k8s-mcp
+        agentPath: .gitlab/agents/k8s-agent
+
+    - type: mcp
+      name: kubernetes
+      description: |
+        Kubernetes API access for deployments.
+      config:
+        server: kubernetes-mcp
+      auth:
+        type: mtls
+        certPath: /var/secrets/k8s-client-cert.pem
+
+  capabilities:
+    - name: sync_manifests
+      description: Sync manifests from Git to cluster
+      input_schema:
+        type: object
+        properties:
+          source_path:
+            type: string
+          target_namespace:
+            type: string
+          dry_run:
+            type: boolean
+            default: false
+        required:
+          - source_path
+          - target_namespace
+      output_schema:
+        type: object
+        properties:
+          resources_synced:
+            type: integer
+          success:
+            type: boolean
+
+    - name: validate_manifests
+      description: Validate Kubernetes manifests
+      input_schema:
+        type: object
+        properties:
+          manifest_path:
+            type: string
+        required:
+          - manifest_path
+      output_schema:
+        type: object
+        properties:
+          valid:
+            type: boolean
+          errors:
+            type: array
+            items:
+              type: string
+
+    - name: rollback_deployment
+      description: Rollback a deployment to previous version
+      input_schema:
+        type: object
+        properties:
+          deployment:
+            type: string
+          namespace:
+            type: string
+          revision:
+            type: integer
+        required:
+          - deployment
+          - namespace
+      output_schema:
+        type: object
+        properties:
+          rolled_back:
+            type: boolean
+          new_revision:
+            type: integer
+
+  triggers:
+    - type: webhook
+      name: on_manifest_push
+      event: push
+      filter:
+        paths:
+          - 'kubernetes/**'
+          - 'k8s/**'
+          - 'manifests/**'
+      description: Sync on manifest changes
+
+    - type: schedule
+      name: reconciliation
+      schedule: "*/5 * * * *"
+      description: Reconcile every 5 minutes
+
+  autonomy:
+    level: supervised
+    approval_required: true
+
+    allowed_actions:
+      - sync_manifests
+      - validate_manifests
+      - rollback_deployment
+
+    blocked_actions:
+      - delete_namespaces
+      - modify_crds
+
+  constraints:
+    cost:
+      maxTokensPerDay: 100000
+      maxCostPerDay: 10.00
+      currency: USD
+
+    performance:
+      maxLatencySeconds: 60
+      timeoutSeconds: 300
+
+  observability:
+    tracing:
+      enabled: true
+    metrics:
+      enabled: true
+      customMetrics:
+        - name: deployments_synced
+          type: counter
+        - name: sync_failures
+          type: counter
