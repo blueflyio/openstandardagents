@@ -26,11 +26,14 @@ validate:examples:
         
         # Check apiVersion for OSSA files
         if [[ "$file" == *.ossa.yaml ]]; then
-          VERSION=$(yq eval '.apiVersion' "$file")
-          if [[ ! "$VERSION" =~ ^ossa/v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-            echo "❌ Invalid apiVersion in $file: $VERSION"
-            FAILED=1
-          fi
+          # Handle multi-document YAML files by checking each apiVersion separately
+          VERSIONS=$(yq eval '.apiVersion' "$file")
+          while IFS= read -r VERSION; do
+            if [[ ! "$VERSION" =~ ^ossa/v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+              echo "❌ Invalid apiVersion in $file: $VERSION"
+              FAILED=1
+            fi
+          done <<< "$VERSIONS"
         fi
       done
       
