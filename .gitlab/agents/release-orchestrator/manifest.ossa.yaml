@@ -79,4 +79,4 @@ extensions:
   gitlab_duo:
     enabled: true
     flow_execution: true
-    model: claude-sonnet-4
+    model: ${GITLAB_DUO_MODEL:-claude-sonnet}  # Use env var, defaults to latest sonnet
