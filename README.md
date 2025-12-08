@@ -257,7 +257,7 @@ OSSA is an open-source, community-driven project. We welcome contributions!
 1. Fork the repository on [GitHub](https://github.com/blueflyio/openstandardagents)
 2. Create a feature branch
 3. Make your changes
-4. Submit a pull request
+4. Submit a merge request on GitLab
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines.
 
