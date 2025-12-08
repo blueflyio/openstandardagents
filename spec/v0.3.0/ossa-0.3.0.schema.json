@@ -1,0 +1,1512 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://openstandardagents.org/schemas/v0.3.0/manifest.json",
+  "title": "OSSA v0.3.0 Manifest Schema",
+  "description": "Open Standard for Scalable AI Agents (OSSA) v0.3.0 - Unified Task Schema. Supports Agent (agentic loops with LLM), Task (deterministic workflow steps), and Workflow (composition of Tasks and Agents) kinds.",
+  "type": "object",
+  "required": [
+    "apiVersion",
+    "kind",
+    "metadata"
+  ],
+  "properties": {
+    "apiVersion": {
+      "type": "string",
+      "pattern": "^ossa/v(0\\.3\\.[0-9]+(-[a-zA-Z0-9]+)?|0\\.2\\.[2-9](-dev)?|1)(\\.[0-9]+)?(-[a-zA-Z0-9]+)?$",
+      "description": "OSSA API version (v0.3.0+ supports Task and Workflow kinds)",
+      "examples": [
+        "ossa/v0.3.0",
+        "ossa/v1",
+        "ossa/v0.2.9"
+      ]
+    },
+    "kind": {
+      "type": "string",
+      "enum": [
+        "Agent",
+        "Task",
+        "Workflow"
+      ],
+      "description": "Resource type: Agent (agentic loops), Task (deterministic steps), or Workflow (composition)"
+    },
+    "metadata": {
+      "$ref": "#/definitions/Metadata"
+    },
+    "spec": {
+      "description": "Specification varies based on kind"
+    },
+    "extensions": {
+      "type": "object",
+      "description": "Framework-specific extensions",
+      "properties": {
+        "mcp": {
+          "$ref": "#/definitions/MCPExtension"
+        }
+      },
+      "additionalProperties": true
+    },
+    "runtime": {
+      "$ref": "#/definitions/RuntimeBinding",
+      "description": "Runtime-specific capability bindings (for Task and Workflow kinds)"
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "Agent"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "spec": {
+            "$ref": "#/definitions/AgentSpec"
+          }
+        },
+        "required": [
+          "spec"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "Task"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "spec": {
+            "$ref": "#/definitions/TaskSpec"
+          }
+        },
+        "required": [
+          "spec"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "Workflow"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "spec": {
+            "$ref": "#/definitions/WorkflowSpec"
+          }
+        },
+        "required": [
+          "spec"
+        ]
+      }
+    }
+  ],
+  "definitions": {
+    "Metadata": {
+      "type": "object",
+      "required": [
+        "name"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "pattern": "^[a-z0-9]([-a-z0-9]*[a-z0-9])?$",
+          "maxLength": 253,
+          "description": "Resource identifier (DNS-1123 subdomain format for Kubernetes compatibility)"
+        },
+        "version": {
+          "type": "string",
+          "pattern": "^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-((?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\\+([0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?$",
+          "description": "Semantic version (semver 2.0.0)"
+        },
+        "description": {
+          "type": "string",
+          "maxLength": 2000,
+          "description": "Human-readable description"
+        },
+        "labels": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string",
+            "maxLength": 63
+          },
+          "description": "Key-value labels for organization and filtering"
+        },
+        "annotations": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "Arbitrary metadata for tooling"
+        }
+      },
+      "additionalProperties": false
+    },
+    "TaskSpec": {
+      "type": "object",
+      "description": "Specification for deterministic, non-agentic workflow steps (kind: Task)",
+      "required": [
+        "execution"
+      ],
+      "properties": {
+        "execution": {
+          "type": "object",
+          "description": "Execution configuration for the task",
+          "required": [
+            "type"
+          ],
+          "properties": {
+            "type": {
+              "type": "string",
+              "enum": [
+                "deterministic",
+                "idempotent",
+                "transactional"
+              ],
+              "default": "deterministic",
+              "description": "Execution type: deterministic (pure function), idempotent (safe to retry), transactional (all-or-nothing)"
+            },
+            "runtime": {
+              "type": "string",
+              "description": "Target runtime environment",
+              "examples": [
+                "drupal",
+                "symfony",
+                "node",
+                "python",
+                "any"
+              ]
+            },
+            "entrypoint": {
+              "type": "string",
+              "description": "Entry point for execution (class::method, function name, or script path)"
+            },
+            "timeout_seconds": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 86400,
+              "default": 300,
+              "description": "Maximum execution time in seconds"
+            }
+          },
+          "additionalProperties": false
+        },
+        "capabilities": {
+          "type": "array",
+          "description": "Abstract capabilities this task requires (bound at runtime)",
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_]*$",
+            "description": "Capability identifier (e.g., publish_content, send_email)"
+          },
+          "uniqueItems": true,
+          "examples": [
+            [
+              "publish_content",
+              "send_notification"
+            ],
+            [
+              "transform_data",
+              "validate_schema"
+            ]
+          ]
+        },
+        "input": {
+          "$ref": "#/definitions/JSONSchemaDefinition",
+          "description": "JSON Schema for task input validation"
+        },
+        "output": {
+          "$ref": "#/definitions/JSONSchemaDefinition",
+          "description": "JSON Schema for task output validation"
+        },
+        "batch": {
+          "type": "object",
+          "description": "Batch processing configuration",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": false,
+              "description": "Enable batch processing mode"
+            },
+            "parallelism": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1000,
+              "default": 10,
+              "description": "Maximum parallel executions"
+            },
+            "chunk_size": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 100,
+              "description": "Items per batch chunk"
+            },
+            "retry": {
+              "type": "object",
+              "properties": {
+                "max_attempts": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 10,
+                  "default": 3
+                },
+                "backoff_strategy": {
+                  "type": "string",
+                  "enum": [
+                    "fixed",
+                    "exponential",
+                    "linear"
+                  ],
+                  "default": "exponential"
+                },
+                "initial_delay_ms": {
+                  "type": "integer",
+                  "minimum": 100,
+                  "default": 1000
+                }
+              },
+              "additionalProperties": false
+            },
+            "on_item_error": {
+              "type": "string",
+              "enum": [
+                "skip",
+                "fail",
+                "retry"
+              ],
+              "default": "retry",
+              "description": "Behavior when individual item fails"
+            }
+          },
+          "additionalProperties": false
+        },
+        "dependencies": {
+          "type": "array",
+          "description": "Other tasks or agents this task depends on",
+          "items": {
+            "type": "object",
+            "required": [
+              "ref"
+            ],
+            "properties": {
+              "ref": {
+                "type": "string",
+                "description": "Reference to dependency (file path or name)"
+              },
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "Task",
+                  "Agent"
+                ],
+                "description": "Kind of dependency"
+              },
+              "optional": {
+                "type": "boolean",
+                "default": false,
+                "description": "Whether this dependency is optional"
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "preconditions": {
+          "type": "array",
+          "description": "Conditions that must be true before task execution",
+          "items": {
+            "type": "object",
+            "required": [
+              "expression"
+            ],
+            "properties": {
+              "expression": {
+                "type": "string",
+                "description": "Condition expression (e.g., '${{ input.status == \"draft\" }}')"
+              },
+              "error_message": {
+                "type": "string",
+                "description": "Error message if condition fails"
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "postconditions": {
+          "type": "array",
+          "description": "Conditions that must be true after task execution",
+          "items": {
+            "type": "object",
+            "required": [
+              "expression"
+            ],
+            "properties": {
+              "expression": {
+                "type": "string",
+                "description": "Condition expression"
+              },
+              "error_message": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "error_handling": {
+          "type": "object",
+          "description": "Error handling configuration",
+          "properties": {
+            "on_error": {
+              "type": "string",
+              "enum": [
+                "fail",
+                "retry",
+                "fallback",
+                "ignore"
+              ],
+              "default": "fail"
+            },
+            "fallback_task": {
+              "type": "string",
+              "description": "Reference to fallback task on failure"
+            },
+            "error_mapping": {
+              "type": "object",
+              "description": "Map error codes to actions",
+              "additionalProperties": {
+                "type": "string",
+                "enum": [
+                  "fail",
+                  "retry",
+                  "fallback",
+                  "ignore"
+                ]
+              }
+            }
+          },
+          "additionalProperties": false
+        },
+        "observability": {
+          "type": "object",
+          "description": "Observability configuration",
+          "properties": {
+            "logging": {
+              "type": "object",
+              "properties": {
+                "level": {
+                  "type": "string",
+                  "enum": [
+                    "debug",
+                    "info",
+                    "warn",
+                    "error"
+                  ],
+                  "default": "info"
+                },
+                "include_input": {
+                  "type": "boolean",
+                  "default": false,
+                  "description": "Log input data (caution: may contain sensitive data)"
+                },
+                "include_output": {
+                  "type": "boolean",
+                  "default": false,
+                  "description": "Log output data"
+                }
+              }
+            },
+            "metrics": {
+              "type": "object",
+              "properties": {
+                "enabled": {
+                  "type": "boolean",
+                  "default": true
+                },
+                "custom_labels": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "string"
+                  }
+                }
+              }
+            },
+            "tracing": {
+              "type": "object",
+              "properties": {
+                "enabled": {
+                  "type": "boolean",
+                  "default": true
+                },
+                "sample_rate": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 1,
+                  "default": 1
+                }
+              }
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "AgentSpec": {
+      "type": "object",
+      "description": "Specification for agentic loops with LLM (kind: Agent) - inherits from v0.2.9",
+      "required": [
+        "role"
+      ],
+      "properties": {
+        "role": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Agent role/system prompt"
+        },
+        "llm": {
+          "$ref": "#/definitions/LLMConfig"
+        },
+        "tools": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Tool"
+          }
+        },
+        "autonomy": {
+          "$ref": "#/definitions/Autonomy"
+        },
+        "constraints": {
+          "$ref": "#/definitions/Constraints"
+        },
+        "state": {
+          "$ref": "#/definitions/State"
+        },
+        "observability": {
+          "$ref": "#/definitions/AgentObservability"
+        },
+        "safety": {
+          "$ref": "#/definitions/Safety"
+        }
+      },
+      "additionalProperties": true
+    },
+    "WorkflowSpec": {
+      "type": "object",
+      "description": "Specification for workflow composition (kind: Workflow) - composes Tasks and Agents into executable pipelines",
+      "required": [
+        "steps"
+      ],
+      "properties": {
+        "triggers": {
+          "type": "array",
+          "description": "Events that trigger workflow execution",
+          "items": {
+            "$ref": "#/definitions/Trigger"
+          }
+        },
+        "inputs": {
+          "$ref": "#/definitions/JSONSchemaDefinition",
+          "description": "JSON Schema for workflow input validation"
+        },
+        "outputs": {
+          "$ref": "#/definitions/JSONSchemaDefinition",
+          "description": "JSON Schema for workflow output validation"
+        },
+        "steps": {
+          "type": "array",
+          "description": "Workflow steps (Tasks and/or Agents)",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/definitions/WorkflowStep"
+          }
+        },
+        "context": {
+          "type": "object",
+          "description": "Shared context available to all steps",
+          "properties": {
+            "variables": {
+              "type": "object",
+              "description": "Workflow-level variables",
+              "additionalProperties": true
+            },
+            "secrets": {
+              "type": "array",
+              "description": "Secret references available to steps",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "description": "Secret name available to steps"
+                  },
+                  "ref": {
+                    "type": "string",
+                    "description": "Secret reference (e.g., vault://secret/api-key)"
+                  }
+                },
+                "required": [
+                  "name",
+                  "ref"
+                ]
+              }
+            }
+          },
+          "additionalProperties": false
+        },
+        "concurrency": {
+          "type": "object",
+          "description": "Concurrency control",
+          "properties": {
+            "group": {
+              "type": "string",
+              "description": "Concurrency group name (workflows in same group are serialized)"
+            },
+            "cancel_in_progress": {
+              "type": "boolean",
+              "default": false,
+              "description": "Cancel running workflow if new one starts in same group"
+            }
+          },
+          "additionalProperties": false
+        },
+        "error_handling": {
+          "type": "object",
+          "description": "Workflow-level error handling",
+          "properties": {
+            "on_failure": {
+              "type": "string",
+              "enum": [
+                "halt",
+                "continue",
+                "rollback",
+                "notify",
+                "compensate"
+              ],
+              "default": "halt",
+              "description": "Action on step failure"
+            },
+            "compensation_steps": {
+              "type": "array",
+              "description": "Steps to run on rollback/compensate",
+              "items": {
+                "$ref": "#/definitions/WorkflowStep"
+              }
+            },
+            "notification": {
+              "type": "object",
+              "description": "Notification on failure",
+              "properties": {
+                "channels": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "enum": [
+                      "email",
+                      "slack",
+                      "webhook",
+                      "pagerduty"
+                    ]
+                  }
+                },
+                "template": {
+                  "type": "string",
+                  "description": "Notification template reference"
+                }
+              }
+            },
+            "retry_policy": {
+              "type": "object",
+              "properties": {
+                "max_attempts": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 10,
+                  "default": 3
+                },
+                "backoff": {
+                  "type": "string",
+                  "enum": [
+                    "fixed",
+                    "exponential",
+                    "linear"
+                  ],
+                  "default": "exponential"
+                },
+                "initial_delay_ms": {
+                  "type": "integer",
+                  "minimum": 100,
+                  "default": 1000
+                },
+                "max_delay_ms": {
+                  "type": "integer",
+                  "default": 60000
+                }
+              }
+            }
+          },
+          "additionalProperties": false
+        },
+        "timeout_seconds": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 86400,
+          "description": "Maximum workflow execution time in seconds"
+        },
+        "observability": {
+          "type": "object",
+          "description": "Workflow observability configuration",
+          "properties": {
+            "tracing": {
+              "type": "object",
+              "properties": {
+                "enabled": {
+                  "type": "boolean",
+                  "default": true
+                },
+                "propagate_context": {
+                  "type": "boolean",
+                  "default": true,
+                  "description": "Propagate trace context to steps"
+                }
+              }
+            },
+            "metrics": {
+              "type": "object",
+              "properties": {
+                "enabled": {
+                  "type": "boolean",
+                  "default": true
+                },
+                "custom_labels": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "string"
+                  }
+                }
+              }
+            },
+            "logging": {
+              "type": "object",
+              "properties": {
+                "level": {
+                  "type": "string",
+                  "enum": [
+                    "debug",
+                    "info",
+                    "warn",
+                    "error"
+                  ],
+                  "default": "info"
+                }
+              }
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "RuntimeBinding": {
+      "type": "object",
+      "description": "Runtime-specific capability bindings",
+      "properties": {
+        "type": {
+          "type": "string",
+          "description": "Runtime type identifier",
+          "examples": [
+            "drupal",
+            "symfony_messenger",
+            "kagent",
+            "temporal",
+            "node"
+          ]
+        },
+        "transport": {
+          "type": "string",
+          "description": "Message transport for async runtimes",
+          "examples": [
+            "async",
+            "sync",
+            "amqp",
+            "redis"
+          ]
+        },
+        "bindings": {
+          "type": "object",
+          "description": "Map of capability names to runtime-specific handlers",
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "handler": {
+                "type": "string",
+                "description": "Handler class/function (e.g., 'Drupal\\node\\NodeQuery::getList')"
+              },
+              "mcp_server": {
+                "type": "string",
+                "description": "MCP server name for MCP-based bindings"
+              },
+              "tool": {
+                "type": "string",
+                "description": "Tool name within MCP server"
+              },
+              "config": {
+                "type": "object",
+                "description": "Additional binding configuration",
+                "additionalProperties": true
+              }
+            },
+            "additionalProperties": false
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "Trigger": {
+      "type": "object",
+      "description": "Workflow trigger configuration",
+      "required": [
+        "type"
+      ],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": [
+            "webhook",
+            "cron",
+            "event",
+            "manual"
+          ],
+          "description": "Trigger type"
+        },
+        "path": {
+          "type": "string",
+          "description": "Webhook path (for type=webhook)"
+        },
+        "schedule": {
+          "type": "string",
+          "description": "Cron expression (for type=cron)",
+          "examples": [
+            "0 8 * * *",
+            "*/15 * * * *"
+          ]
+        },
+        "source": {
+          "type": "string",
+          "description": "Event source (for type=event)",
+          "examples": [
+            "drupal",
+            "kafka",
+            "webhook"
+          ]
+        },
+        "event": {
+          "type": "string",
+          "description": "Event name (for type=event)",
+          "examples": [
+            "node.created",
+            "user.login",
+            "order.placed"
+          ]
+        },
+        "filter": {
+          "type": "object",
+          "description": "Event filter conditions",
+          "additionalProperties": true
+        }
+      },
+      "additionalProperties": false
+    },
+    "WorkflowStep": {
+      "type": "object",
+      "description": "A step in a workflow - can be a Task, Agent, or control structure",
+      "required": [
+        "id"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_-]*$",
+          "description": "Step identifier (unique within workflow)"
+        },
+        "name": {
+          "type": "string",
+          "description": "Human-readable step name for display"
+        },
+        "kind": {
+          "type": "string",
+          "enum": [
+            "Task",
+            "Agent",
+            "Parallel",
+            "Conditional",
+            "Loop"
+          ],
+          "description": "Step type"
+        },
+        "ref": {
+          "type": "string",
+          "description": "Reference to Task or Agent manifest file",
+          "examples": [
+            "./tasks/publish-content.yaml",
+            "./agents/content-reviewer.yaml"
+          ]
+        },
+        "inline": {
+          "type": "object",
+          "description": "Inline Task or Agent specification (alternative to ref)"
+        },
+        "input": {
+          "type": "object",
+          "description": "Input mapping using expression syntax",
+          "additionalProperties": true,
+          "examples": [
+            {
+              "content": "${{ steps.fetch.output.content }}",
+              "priority": "${{ workflow.input.priority }}"
+            }
+          ]
+        },
+        "output": {
+          "type": "object",
+          "description": "Output mapping to workflow context",
+          "properties": {
+            "to": {
+              "type": "string",
+              "description": "Variable name to store output"
+            },
+            "fields": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Specific fields to extract from output"
+            }
+          }
+        },
+        "condition": {
+          "type": "string",
+          "description": "Condition expression for conditional execution",
+          "examples": [
+            "${{ steps.review.output.approved }}",
+            "${{ workflow.input.priority == 'high' }}",
+            "${{ steps.check.output.status == 'ready' && context.retry_count < 3 }}"
+          ]
+        },
+        "depends_on": {
+          "type": "array",
+          "description": "Explicit dependencies on other steps",
+          "items": {
+            "type": "string"
+          },
+          "examples": [
+            [
+              "fetch",
+              "validate"
+            ]
+          ]
+        },
+        "parallel": {
+          "type": "array",
+          "description": "Steps to run in parallel (for kind: Parallel)",
+          "items": {
+            "$ref": "#/definitions/WorkflowStep"
+          }
+        },
+        "branches": {
+          "type": "array",
+          "description": "Conditional branches (for kind: Conditional)",
+          "items": {
+            "type": "object",
+            "properties": {
+              "condition": {
+                "type": "string",
+                "description": "Branch condition expression"
+              },
+              "steps": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/definitions/WorkflowStep"
+                }
+              }
+            },
+            "required": [
+              "condition",
+              "steps"
+            ]
+          }
+        },
+        "else": {
+          "type": "array",
+          "description": "Steps to run if no branch condition matches (for kind: Conditional)",
+          "items": {
+            "$ref": "#/definitions/WorkflowStep"
+          }
+        },
+        "loop": {
+          "type": "object",
+          "description": "Loop configuration (for kind: Loop)",
+          "properties": {
+            "over": {
+              "type": "string",
+              "description": "Expression returning array to iterate over",
+              "examples": [
+                "${{ steps.fetch.output.items }}",
+                "${{ workflow.input.recipients }}"
+              ]
+            },
+            "as": {
+              "type": "string",
+              "description": "Variable name for current item",
+              "default": "item"
+            },
+            "index": {
+              "type": "string",
+              "description": "Variable name for current index",
+              "default": "index"
+            },
+            "parallelism": {
+              "type": "integer",
+              "minimum": 1,
+              "description": "Maximum parallel iterations"
+            }
+          },
+          "required": [
+            "over"
+          ]
+        },
+        "steps": {
+          "type": "array",
+          "description": "Nested steps (for Loop and Conditional kinds)",
+          "items": {
+            "$ref": "#/definitions/WorkflowStep"
+          }
+        },
+        "retry": {
+          "type": "object",
+          "description": "Step-specific retry configuration",
+          "properties": {
+            "max_attempts": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 10,
+              "default": 3
+            },
+            "backoff_strategy": {
+              "type": "string",
+              "enum": [
+                "fixed",
+                "exponential",
+                "linear"
+              ],
+              "default": "exponential"
+            },
+            "initial_delay_ms": {
+              "type": "integer",
+              "minimum": 100,
+              "default": 1000
+            },
+            "retryable_errors": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Error codes that should trigger retry"
+            }
+          }
+        },
+        "timeout_seconds": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 86400,
+          "description": "Step-specific timeout"
+        },
+        "continue_on_error": {
+          "type": "boolean",
+          "default": false,
+          "description": "Continue workflow even if this step fails"
+        },
+        "on_error": {
+          "type": "object",
+          "description": "Step-specific error handling",
+          "properties": {
+            "action": {
+              "type": "string",
+              "enum": [
+                "fail",
+                "continue",
+                "goto",
+                "compensate"
+              ],
+              "default": "fail"
+            },
+            "goto": {
+              "type": "string",
+              "description": "Step ID to jump to on error (for action: goto)"
+            },
+            "compensation": {
+              "$ref": "#/definitions/WorkflowStep",
+              "description": "Compensation step to run on error"
+            }
+          }
+        },
+        "labels": {
+          "type": "object",
+          "description": "Step labels for filtering and organization",
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "JSONSchemaDefinition": {
+      "type": "object",
+      "description": "JSON Schema definition for input/output validation",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": [
+            "object",
+            "array",
+            "string",
+            "number",
+            "integer",
+            "boolean",
+            "null"
+          ]
+        },
+        "properties": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "required": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "items": {
+          "type": "object"
+        },
+        "additionalProperties": {
+          "type": [
+            "boolean",
+            "object"
+          ]
+        }
+      },
+      "additionalProperties": true
+    },
+    "LLMConfig": {
+      "type": "object",
+      "required": [
+        "provider",
+        "model"
+      ],
+      "properties": {
+        "provider": {
+          "type": "string",
+          "enum": [
+            "openai",
+            "anthropic",
+            "google",
+            "azure",
+            "ollama",
+            "custom"
+          ]
+        },
+        "model": {
+          "type": "string"
+        },
+        "temperature": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 2
+        },
+        "maxTokens": {
+          "type": "integer",
+          "minimum": 1
+        }
+      },
+      "additionalProperties": true
+    },
+    "Tool": {
+      "type": "object",
+      "required": [
+        "type"
+      ],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": [
+            "mcp",
+            "kubernetes",
+            "http",
+            "grpc",
+            "function",
+            "a2a",
+            "custom"
+          ]
+        },
+        "name": {
+          "type": "string"
+        },
+        "capabilities": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Capability"
+          }
+        }
+      },
+      "additionalProperties": true
+    },
+    "Capability": {
+      "type": "object",
+      "required": [
+        "name"
+      ],
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "input_schema": {
+          "type": "object"
+        },
+        "output_schema": {
+          "type": "object"
+        }
+      },
+      "additionalProperties": true
+    },
+    "Autonomy": {
+      "type": "object",
+      "properties": {
+        "level": {
+          "type": "string",
+          "enum": [
+            "supervised",
+            "autonomous",
+            "fully_autonomous"
+          ]
+        },
+        "approval_required": {
+          "type": "boolean"
+        },
+        "allowed_actions": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "blocked_actions": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "Constraints": {
+      "type": "object",
+      "properties": {
+        "cost": {
+          "type": "object",
+          "properties": {
+            "maxTokensPerDay": {
+              "type": "integer"
+            },
+            "maxTokensPerRequest": {
+              "type": "integer"
+            },
+            "maxCostPerDay": {
+              "type": "number"
+            }
+          }
+        },
+        "performance": {
+          "type": "object",
+          "properties": {
+            "maxLatencySeconds": {
+              "type": "number"
+            },
+            "maxConcurrentRequests": {
+              "type": "integer"
+            },
+            "timeoutSeconds": {
+              "type": "number"
+            }
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "State": {
+      "type": "object",
+      "properties": {
+        "mode": {
+          "type": "string",
+          "enum": [
+            "stateless",
+            "session",
+            "long_running"
+          ]
+        },
+        "storage": {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string",
+              "enum": [
+                "memory",
+                "vector-db",
+                "kv",
+                "rdbms",
+                "custom"
+              ]
+            },
+            "retention": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "AgentObservability": {
+      "type": "object",
+      "properties": {
+        "tracing": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean"
+            },
+            "exporter": {
+              "type": "string"
+            }
+          }
+        },
+        "metrics": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean"
+            },
+            "exporter": {
+              "type": "string"
+            }
+          }
+        },
+        "logging": {
+          "type": "object",
+          "properties": {
+            "level": {
+              "type": "string"
+            },
+            "format": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "Safety": {
+      "type": "object",
+      "properties": {
+        "content_filtering": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean"
+            },
+            "categories": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "guardrails": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean"
+            },
+            "max_tool_calls": {
+              "type": "integer"
+            }
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "MCPExtension": {
+      "type": "object",
+      "description": "Model Context Protocol (MCP) extension for agents - supports tools, resources, and prompts",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Whether MCP is enabled for this agent"
+        },
+        "server_type": {
+          "type": "string",
+          "enum": [
+            "stdio",
+            "http",
+            "sse"
+          ],
+          "description": "MCP server transport mechanism"
+        },
+        "server_name": {
+          "type": "string",
+          "description": "Name of the MCP server"
+        },
+        "tools": {
+          "type": "array",
+          "description": "MCP tools (functions/actions the agent can invoke)",
+          "items": {
+            "$ref": "#/definitions/MCPTool"
+          }
+        },
+        "resources": {
+          "type": "array",
+          "description": "MCP resources (read-only context/data sources)",
+          "items": {
+            "$ref": "#/definitions/MCPResource"
+          }
+        },
+        "prompts": {
+          "type": "array",
+          "description": "MCP prompts (templated workflows and interactions)",
+          "items": {
+            "$ref": "#/definitions/MCPPrompt"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "MCPTool": {
+      "type": "object",
+      "description": "MCP tool definition - actions/functions the agent can invoke",
+      "required": [
+        "name"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Unique tool name"
+        },
+        "description": {
+          "type": "string",
+          "description": "Human-readable description of what the tool does"
+        },
+        "input_schema": {
+          "$ref": "#/definitions/JSONSchemaDefinition",
+          "description": "JSON Schema for tool input parameters"
+        }
+      },
+      "additionalProperties": false
+    },
+    "MCPResource": {
+      "type": "object",
+      "description": "MCP resource definition - read-only context and data sources",
+      "required": [
+        "uri",
+        "name"
+      ],
+      "properties": {
+        "uri": {
+          "type": "string",
+          "format": "uri",
+          "description": "Unique resource identifier (URI)"
+        },
+        "name": {
+          "type": "string",
+          "description": "Human-readable resource name"
+        },
+        "description": {
+          "type": "string",
+          "description": "Description of the resource and its contents"
+        },
+        "mimeType": {
+          "type": "string",
+          "description": "MIME type of the resource content",
+          "examples": [
+            "text/plain",
+            "application/json",
+            "text/markdown",
+            "image/png"
+          ]
+        },
+        "metadata": {
+          "type": "object",
+          "description": "Additional resource metadata",
+          "additionalProperties": true
+        }
+      },
+      "additionalProperties": false
+    },
+    "MCPPrompt": {
+      "type": "object",
+      "description": "MCP prompt definition - templated messages and workflows",
+      "required": [
+        "name"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Unique prompt identifier"
+        },
+        "description": {
+          "type": "string",
+          "description": "Human-readable description of the prompt purpose"
+        },
+        "arguments": {
+          "type": "array",
+          "description": "Template arguments that can be substituted",
+          "items": {
+            "$ref": "#/definitions/MCPPromptArgument"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "MCPPromptArgument": {
+      "type": "object",
+      "description": "Argument definition for MCP prompts",
+      "required": [
+        "name"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Argument name"
+        },
+        "description": {
+          "type": "string",
+          "description": "Description of what this argument represents"
+        },
+        "required": {
+          "type": "boolean",
+          "default": false,
+          "description": "Whether this argument is required"
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

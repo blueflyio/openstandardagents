@@ -213,20 +213,3 @@ spec:
 # Fast local models for planning
 OLLAMA_BASE_URL=http://localhost:11434
 PLANNING_MODEL=mistral:7b
-ANALYSIS_MODEL=qwen2.5:7b
-DOC_MODEL=codellama:7b
-
-# Premium models for development
-ANTHROPIC_API_KEY=sk-ant-...
-DEVELOPMENT_MODEL=claude-3-5-sonnet-20241022
-REVIEW_MODEL=claude-3-5-sonnet-20241022
-
-# Cost controls
-MAX_PLANNING_COST=0.01
-MAX_DEVELOPMENT_COST=1.00
-MAX_TOTAL_COST=2.00
-
-# Performance settings
-PLANNING_TIMEOUT=10s
-DEVELOPMENT_TIMEOUT=300s
-REVIEW_TIMEOUT=120s
