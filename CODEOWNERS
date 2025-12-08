@@ -1,1 +1,75 @@
-* @bluefly
+# CODEOWNERS for openstandardagents (OSSA Spec)
+# https://docs.gitlab.com/ee/user/project/codeowners/
+
+# =============================================================================
+# DEFAULT OWNERS
+# =============================================================================
+* @blueflyio/ossa-maintainers @bluefly
+
+# =============================================================================
+# SPEC & SCHEMA (Critical - Requires OSSA Bot + TypeScript Bot)
+# =============================================================================
+/spec/                     @blueflyio/ossa-spec-maintainers @bot-ossa-local
+/spec/**/*.schema.json     @blueflyio/ossa-spec-maintainers @bot-typescript-local @bot-ossa-local
+/spec/**/CHANGELOG.md      @blueflyio/ossa-spec-maintainers @bot-wiki-aggregator
+
+# =============================================================================
+# CLI & SOURCE CODE (TypeScript Bot + Dev Bot)
+# =============================================================================
+/src/                      @blueflyio/ossa-dev-team @bot-typescript-local @bot-native-local
+/bin/                      @blueflyio/ossa-dev-team @bot-typescript-local
+/tests/                    @blueflyio/ossa-dev-team @bot-typescript-local
+
+# =============================================================================
+# EXAMPLES (OSSA Bot validates, Dev Bot implements)
+# =============================================================================
+/examples/                 @blueflyio/ossa-examples-team @bot-ossa-local @bot-native-local
+
+# =============================================================================
+# CI/CD & INFRASTRUCTURE (CI Bot + K8s Agents)
+# =============================================================================
+/.gitlab-ci.yml            @flux423 @blueflyio/platform-team @bot-ci-local
+/.gitlab/                  @flux423 @blueflyio/platform-team @bot-ci-local
+/infrastructure/           @flux423 @blueflyio/platform-team @bot-ci-local
+
+# =============================================================================
+# AGENTS (OSSA Bot validates agent manifests)
+# =============================================================================
+/.agents/                  @blueflyio/ossa-agent-team @bot-ossa-local
+/agents/                   @blueflyio/ossa-agent-team @bot-ossa-local
+
+# =============================================================================
+# DOCUMENTATION (Wiki Aggregator syncs)
+# =============================================================================
+/docs/                     @blueflyio/ossa-docs-team @bot-wiki-aggregator
+README.md                  @blueflyio/ossa-docs-team @bot-wiki-aggregator
+CONTRIBUTING.md            @blueflyio/ossa-docs-team @bot-wiki-aggregator
+CHANGELOG.md               @blueflyio/ossa-docs-team @bot-wiki-aggregator
+
+# =============================================================================
+# RELEASE & VERSIONING (CI Bot manages releases)
+# =============================================================================
+package.json               @flux423 @blueflyio/ossa-maintainers @bot-ci-local
+package-lock.json          @flux423 @blueflyio/ossa-maintainers @bot-ci-local
+.releaserc.json            @flux423 @blueflyio/ossa-maintainers @bot-ci-local
+.version.json              @flux423 @blueflyio/ossa-maintainers @bot-ci-local
+
+# =============================================================================
+# SCRIPTS (TypeScript Bot + CI Bot)
+# =============================================================================
+/scripts/                  @flux423 @blueflyio/platform-team @bot-typescript-local @bot-ci-local
+
+# =============================================================================
+# BOT & AGENT TOKEN MAPPING
+# =============================================================================
+# GITLAB_BOT_TS_TOKEN      -> @bot-typescript-local  (TypeScript code)
+# GITLAB_BOT_OSSA_TOKEN    -> @bot-ossa-local        (OSSA validation)
+# GITLAB_BOT_CI_TOKEN      -> @bot-ci-local          (CI/CD pipelines)
+# GITLAB_BOT_DEV_TOKEN     -> @bot-native-local      (General dev)
+# GITLAB_BOT_WIKI_TOKEN    -> @bot-wiki-aggregator   (Documentation sync)
+#
+# K8s Agents (GitOps deployments):
+# AGENT_K8_TS_LOCAL        -> TypeScript local namespace
+# AGENT_K8_TS_PROD         -> TypeScript production namespace
+# AGENT_K8_GITLAB_LIB_CI   -> GitLab components CI
+# AGENT_K8_INFRA_PROD      -> Infrastructure production
