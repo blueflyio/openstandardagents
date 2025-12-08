@@ -68,10 +68,29 @@ spec:
     - Auto-fix available (yes/no)
 
   llm:
-    provider: openai
-    model: gpt-4-turbo
+    provider: ${LLM_PROVIDER:-openai}
+    model: ${LLM_MODEL:-gpt-4o}  # Use env var, defaults to latest gpt-4o
     temperature: 0.1
     maxTokens: 5000
+    topP: 0.9
+
+    fallback_models:
+      - provider: ${LLM_FALLBACK_PROVIDER_1:-anthropic}
+        model: ${LLM_FALLBACK_MODEL_1:-claude-sonnet}
+      - provider: ${LLM_FALLBACK_PROVIDER_2:-openai}
+        model: ${LLM_FALLBACK_MODEL_2:-gpt-4o-mini}
+
+    retry_config:
+      max_attempts: 3
+      backoff_strategy: exponential
+
+    cost_tracking:
+      enabled: true
+      budget_alert_threshold: 20.00
+      cost_allocation_tags:
+        project: ossa-agents
+        team: platform-engineering
+        service: config-validator
 
   tools:
     - type: mcp

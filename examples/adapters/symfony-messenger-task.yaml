@@ -1,0 +1,57 @@
+apiVersion: ossa/v0.3.0
+kind: Task
+metadata:
+  name: symfony-order-processing
+  description: Order processing workflow using Symfony Messenger
+  labels:
+    symfony.component: messenger
+    symfony.version: "7.x"
+spec:
+  steps:
+    - name: validate-order
+      action: symfony.messenger.dispatch
+      inputs:
+        message_class: App\Message\ValidateOrder
+        payload:
+          order_id: "{{ input.order_id }}"
+          customer_id: "{{ input.customer_id }}"
+    
+    - name: check-inventory
+      action: symfony.messenger.dispatch
+      inputs:
+        message_class: App\Message\CheckInventory
+        payload:
+          items: "{{ input.items }}"
+        transport: async
+    
+    - name: process-payment
+      action: symfony.messenger.dispatch
+      inputs:
+        message_class: App\Message\ProcessPayment
+        payload:
+          order_id: "{{ input.order_id }}"
+          amount: "{{ input.total }}"
+        transport: high_priority
+        retry_strategy:
+          max_attempts: 3
+          delay: 1000
+          multiplier: 2
+    
+    - name: send-confirmation
+      action: symfony.messenger.dispatch
+      inputs:
+        message_class: App\Message\SendOrderConfirmation
+        payload:
+          order_id: "{{ input.order_id }}"
+          email: "{{ input.customer_email }}"
+        transport: async
+
+runtime:
+  symfony:
+    component: messenger
+    default_transport: async
+    failure_transport: failed
+    middleware:
+      - validation
+      - doctrine_transaction
+      - send_message
