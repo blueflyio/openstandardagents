@@ -1,35 +1,35 @@
 # CODEOWNERS - Master Approver
-# Solo developer workflow - all approvals go through @bluefly
+# Solo developer workflow - all approvals go through @Branch
 
-* @bluefly
+* @Branch
 
 # OSSA Specification - Core maintainers
-spec/ @bluefly
-schemas/ @bluefly
+spec/ @Branch
+schemas/ @Branch
 
 # CI/CD Configuration - DevOps/Platform team
-.gitlab-ci.yml @bluefly
-.gitlab/ci/ @bluefly
-.gitlab/release-automation/ @bluefly
+.gitlab-ci.yml @Branch
+.gitlab/ci/ @Branch
+.gitlab/release-automation/ @Branch
 
 # Package configuration - Maintainers only
-package.json @bluefly
-package-lock.json @bluefly
-tsconfig.json @bluefly
+package.json @Branch
+package-lock.json @Branch
+tsconfig.json @Branch
 
 # Source code
-src/ @bluefly
-bin/ @bluefly
+src/ @Branch
+bin/ @Branch
 
 # Tests
-tests/ @bluefly
+tests/ @Branch
 
 # Documentation (wiki is primary, but README matters)
-docs/ @bluefly
-README.md @bluefly
+docs/ @Branch
+README.md @Branch
 
 # Examples - showcase best practices
-examples/ @bluefly
+examples/ @Branch
 
 # Infrastructure
-infrastructure/ @bluefly
+infrastructure/ @Branch
