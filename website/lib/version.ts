@@ -1,6 +1,6 @@
 // OSSA version constants
-// AUTO-GENERATED - DO NOT EDIT DIRECTLY
-// Update package.json version instead, then run: npm run sync-version
+// AUTO-GENERATED from npm registry - DO NOT EDIT DIRECTLY
+// Run: npm run sync-version (fetches latest from npm registry)
 
 import versionsData from './versions.json';
 
