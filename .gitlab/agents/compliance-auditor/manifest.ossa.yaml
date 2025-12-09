@@ -95,10 +95,29 @@ spec:
     - Auditor evidence (logs, configs, screenshots)
 
   llm:
-    provider: anthropic
-    model: claude-3-5-sonnet-20241022
+    provider: ${LLM_PROVIDER:-anthropic}
+    model: ${LLM_MODEL:-claude-sonnet}  # Use env var, defaults to latest sonnet
     temperature: 0.0  # Deterministic for compliance
     maxTokens: 10000  # Large context for detailed audit reports
+    topP: 0.9
+
+    fallback_models:
+      - provider: ${LLM_FALLBACK_PROVIDER_1:-openai}
+        model: ${LLM_FALLBACK_MODEL_1:-gpt-4o}
+      - provider: ${LLM_FALLBACK_PROVIDER_2:-anthropic}
+        model: ${LLM_FALLBACK_MODEL_2:-claude-haiku}
+
+    retry_config:
+      max_attempts: 3
+      backoff_strategy: exponential
+
+    cost_tracking:
+      enabled: true
+      budget_alert_threshold: 40.00
+      cost_allocation_tags:
+        project: ossa-agents
+        team: compliance
+        service: compliance-auditor
 
   tools:
     - type: mcp
@@ -252,6 +271,111 @@ spec:
       ssl: true
       sslMode: require
       encryption: pgcrypto  # PostgreSQL encryption extension
+
+  reliability:
+    sla:
+      availability_percent: 99.9
+      latency_p95_ms: 30000
+      error_rate_percent: 0.1
+    circuit_breaker:
+      enabled: true
+      failure_threshold: 3
+      timeout_seconds: 60
+      half_open_requests: 2
+    health_check:
+      enabled: true
+      interval_seconds: 30
+      timeout_seconds: 10
+    failover:
+      enabled: true
+      strategy: active-passive
+
+  security:
+    authentication:
+      required: true
+      methods:
+        - mtls
+        - bearer
+    authorization:
+      model: rbac
+      roles:
+        - compliance-auditor
+        - agent-operator
+      permissions:
+        - kubernetes:read
+        - audit:read
+        - vault:audit
+    encryption:
+      in_transit:
+        enabled: true
+        tls_version: "1.3"
+      at_rest:
+        enabled: true
+        algorithm: aes-256-gcm
+        key_management: vault
+    audit:
+      enabled: true
+      log_level: detailed
+      retention_days: 2555  # 7 years for compliance
+      pii_redaction: true
+    compliance:
+      frameworks:
+        - soc2
+        - hipaa
+        - pci-dss
+        - gdpr
+        - fedramp
+
+  safety:
+    content_filtering:
+      enabled: true
+      categories:
+        - pii
+        - phi  # Protected Health Information
+        - pci  # Payment Card Industry data
+      threshold: high
+      action: block
+    rate_limiting:
+      enabled: true
+      requests_per_minute: 60
+      burst_limit: 10
+    guardrails:
+      enabled: true
+      policies:
+        - name: audit_log_protection
+          type: output
+          rules:
+            - no_modify_audit_logs
+        - name: encryption_enforcement
+          type: output
+          rules:
+            - no_disable_encryption
+      max_tool_calls: 100
+      max_execution_time_seconds: 300
+
+  deployment:
+    strategy: rolling
+    rollback:
+      enabled: true
+      automatic: true
+    versioning:
+      scheme: semver
+      compatibility: backward
+    lifecycle:
+      startup_probe:
+        enabled: true
+        initial_delay_seconds: 10
+        period_seconds: 10
+        failure_threshold: 6
+      readiness_probe:
+        enabled: true
+        period_seconds: 10
+      liveness_probe:
+        enabled: true
+        period_seconds: 30
+      graceful_shutdown:
+        enabled: true
+        timeout_seconds: 60
 
   extensions:
     kagent:
