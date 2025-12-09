@@ -376,7 +376,7 @@ export class GenerationService {
         baseManifest.extensions = {
           cursor: {
             enabled: true,
-            agent_type: platformData.agent_type || 'composer',
+            agent_type: (typeof platformData.agent_type === 'string' ? platformData.agent_type : 'composer'),
             workspace_config: platformData.workspace_config || {},
           },
         };
@@ -403,7 +403,7 @@ export class GenerationService {
         baseManifest.extensions = {
           crewai: {
             enabled: true,
-            agent_type: platformData.agent_type || 'worker',
+            agent_type: (typeof platformData.agent_type === 'string' ? platformData.agent_type : 'worker'),
             role: platformData.role,
             goal: platformData.goal,
             backstory: platformData.backstory,

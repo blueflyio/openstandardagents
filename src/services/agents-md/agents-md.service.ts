@@ -318,7 +318,9 @@ export class AgentsMdService {
   async parseAgentsMd(agentsMdPath: string): Promise<Partial<OssaAgent>> {
     const content = await fs.readFile(agentsMdPath, 'utf-8');
     const manifest: Partial<OssaAgent> = {
-      spec: {},
+      spec: {
+        role: '', // Will be populated from content analysis
+      },
     };
 
     // Extract role hints from content
