@@ -28,7 +28,7 @@ export type PrimitiveValue = string | number | boolean | null;
 /**
  * Array of values (for recursive structure)
  */
-export type ValueArray = PolicyValue[];
+export interface ValueArray extends Array<PolicyValue> {}
 
 /**
  * Object of values (for recursive structure)
@@ -170,7 +170,7 @@ export interface NotificationChannel {
   /** Channel type */
   type: 'email' | 'slack' | 'pagerduty' | 'webhook' | 'sms';
   /** Channel-specific configuration */
-  config: Record<string, PolicyValue>;
+  config: Record<string, any>;
 }
 
 /**
@@ -182,7 +182,7 @@ export interface NotificationConfig {
   /** Notification message (supports template variables) */
   message: string;
   /** Additional notification metadata */
-  metadata?: Record<string, PolicyValue>;
+  metadata?: Record<string, any>;
 }
 
 /**
@@ -196,7 +196,7 @@ export interface AuditConfig {
   /** Compliance frameworks */
   compliance?: string[];
   /** Additional audit metadata */
-  metadata?: Record<string, PolicyValue>;
+  metadata?: Record<string, any>;
 }
 
 /**
@@ -249,7 +249,7 @@ export interface PolicyRule {
   enabled?: boolean;
 
   /** Rule metadata */
-  metadata?: Record<string, PolicyValue>;
+  metadata?: Record<string, any>;
 }
 
 // ============================================================================
@@ -275,7 +275,7 @@ export interface EscalationTarget {
   /** Target identifier (user ID, group name, etc.) */
   identifier: string;
   /** Additional target metadata */
-  metadata?: Record<string, PolicyValue>;
+  metadata?: Record<string, any>;
 }
 
 /**
@@ -307,7 +307,7 @@ export interface EscalationPolicy {
   channels?: NotificationChannel[];
 
   /** Escalation metadata */
-  metadata?: Record<string, PolicyValue>;
+  metadata?: Record<string, any>;
 }
 
 // ============================================================================
@@ -330,7 +330,7 @@ export interface PolicyContext {
   action: {
     type: string;
     target: string;
-    params: Record<string, PolicyValue>;
+    params: Record<string, any>;
   };
 
   /** Cost metrics */
@@ -369,7 +369,7 @@ export interface PolicyContext {
   };
 
   /** Custom context fields */
-  [key: string]: PolicyValue | Record<string, PolicyValue> | string[] | undefined;
+  [key: string]: any;
 }
 
 // ============================================================================
@@ -396,7 +396,7 @@ export interface PolicyDocument {
   escalations?: EscalationPolicy[];
 
   /** Policy metadata */
-  metadata?: Record<string, PolicyValue>;
+  metadata?: Record<string, any>;
 }
 
 // ============================================================================
@@ -433,7 +433,7 @@ export interface PolicyErrorDetails {
   };
 
   /** Additional error context */
-  context?: Record<string, PolicyValue | string[]>;
+  context?: Record<string, any>;
 }
 
 /**
@@ -585,27 +585,19 @@ export function resolveVariable(
   variable: Variable,
   context: PolicyContext
 ): PolicyValue {
-  let value: unknown = context;
+  let value: any = context;
 
   for (const key of variable.path) {
     if (value === null || value === undefined) {
       throw new PolicyError({
         type: 'ContextError',
         message: `Cannot resolve variable: $${variable.path.join('.')}`,
-        context: { path: variable.path, availableKeys: [] },
+        context: { path: variable.path, availableKeys: Object.keys(value || {}) },
       });
     }
 
-    if (typeof value === 'object') {
-      value = (value as Record<string, unknown>)[key];
-    } else {
-      throw new PolicyError({
-        type: 'ContextError',
-        message: `Cannot resolve variable: $${variable.path.join('.')}`,
-        context: { path: variable.path, availableKeys: [] },
-      });
-    }
+    value = value[key];
   }
 
-  return value as PolicyValue;
+  return value;
 }
