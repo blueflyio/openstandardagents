@@ -1,0 +1,81 @@
+apiVersion: ossa/v0.3.0
+kind: Agent
+metadata:
+  name: dependency-healer-npm
+  description: NPM dependency healer with security focus
+spec:
+  model:
+    provider: openai
+    name: gpt-4-turbo
+  
+  tools:
+    - name: audit_dependencies
+      description: Security audit of all dependencies
+      action: |
+        npm audit --json | jq '.vulnerabilities'
+    
+    - name: check_outdated
+      description: Find outdated packages
+      action: |
+        npm outdated --json
+    
+    - name: detect_unused
+      description: Find unused dependencies
+      action: |
+        depcheck --json
+    
+    - name: analyze_bundle_size
+      description: Check dependency impact on bundle
+      action: |
+        npm-why package-name
+        webpack-bundle-analyzer stats.json
+  
+  healing_rules:
+    - name: fix-critical-vulnerabilities
+      condition: critical_vulnerability_detected
+      priority: immediate
+      actions:
+        - update_to_patched_version
+        - create_security_pr
+        - notify_security_team
+    
+    - name: update-minor-versions
+      condition: minor_version_available
+      priority: normal
+      actions:
+        - test_compatibility
+        - update_if_tests_pass
+        - create_update_pr
+    
+    - name: remove-unused-deps
+      condition: unused_dependency_detected
+      priority: low
+      actions:
+        - verify_not_used
+        - remove_from_package_json
+        - run_tests
+    
+    - name: deduplicate-deps
+      condition: duplicate_versions_detected
+      actions:
+        - run_npm_dedupe
+        - verify_functionality
+        - commit_lockfile
+  
+  policies:
+    security:
+      max_vulnerability_age_days: 7
+      allowed_severity: [low, moderate]
+      blocked_packages:
+        - event-stream  # Known malicious
+        - flatmap-stream
+    
+    updates:
+      auto_update: [patch]
+      manual_review: [minor, major]
+      test_before_merge: true
+    
+    bundle:
+      max_size_mb: 5
+      warn_on_large_deps: true
+      size_threshold_kb: 500
