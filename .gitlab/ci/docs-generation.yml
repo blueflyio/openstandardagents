@@ -1,0 +1,35 @@
+# Documentation Generation CI
+# Automatically generates README, docs, and other generated files
+
+docs:generate:
+  stage: build
+  image: node:22-alpine
+  before_script:
+    - apk add --no-cache git
+    - npm ci --legacy-peer-deps
+  script:
+    - echo "🔧 Generating documentation..."
+    - npm run docs:generate
+    - npm run docs:process
+    
+    # Check if there are changes
+    - |
+      if git diff --quiet; then
+        echo "✅ No documentation changes needed"
+        exit 0
+      fi
+    
+    # Commit and push changes
+    - git config user.name "GitLab CI"
+    - git config user.email "ci@gitlab.com"
+    - git add docs/ README.md
+    - git commit -m "docs: auto-generate documentation [skip ci]"
+    - git push https://oauth2:${CI_JOB_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git HEAD:${CI_COMMIT_REF_NAME}
+    
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+      when: on_success
+    - if: $CI_COMMIT_BRANCH =~ /^release\//
+      when: on_success
+    - when: never
+  allow_failure: false
