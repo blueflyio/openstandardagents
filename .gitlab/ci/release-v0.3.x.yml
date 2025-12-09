@@ -30,17 +30,39 @@ create-dev-tag:v0.3.x:
       echo "Commit: ${CI_COMMIT_SHA}"
       echo ""
       
-      # Base version for v0.3.x releases
-      BASE_VERSION="0.3.0"
+      # Detect next version based on latest tag on main
+      # If main has v0.3.1, next version is v0.3.2
+      # If main has v0.3.2, next version is v0.3.3, etc.
       
-      # Get latest dev tag for v0.3.0
+      # Fetch main branch tags
+      git fetch origin main:main --tags 2>/dev/null || true
+      
+      # Get latest release tag from main (v0.3.X format)
+      LATEST_RELEASE_TAG=$(git tag -l "v0.3.*" 2>/dev/null | grep -v "dev" | sort -V | tail -1 || echo "")
+      
+      if [ -z "$LATEST_RELEASE_TAG" ]; then
+        # No release tags yet, start with v0.3.0
+        BASE_VERSION="0.3.0"
+      else
+        # Extract version number (e.g., v0.3.1 -> 0.3.1)
+        VERSION_NUM=$(echo "$LATEST_RELEASE_TAG" | sed 's/^v//')
+        # Increment patch version (0.3.1 -> 0.3.2)
+        MAJOR_MINOR=$(echo "$VERSION_NUM" | cut -d. -f1-2)
+        PATCH=$(echo "$VERSION_NUM" | cut -d. -f3)
+        NEXT_PATCH=$((PATCH + 1))
+        BASE_VERSION="${MAJOR_MINOR}.${NEXT_PATCH}"
+        echo "Latest release tag: ${LATEST_RELEASE_TAG}"
+        echo "Next version: v${BASE_VERSION}"
+      fi
+      
+      # Get latest dev tag for this version
       LATEST_DEV_TAG=$(git tag -l "v${BASE_VERSION}-dev*" 2>/dev/null | sort -V | tail -1 || echo "")
       
       if [ -z "$LATEST_DEV_TAG" ]; then
-        # First dev tag
+        # First dev tag for this version
         NEXT_NUM=1
       else
-        # Extract number from latest tag (e.g., v0.3.0-dev1 -> 1)
+        # Extract number from latest tag (e.g., v0.3.2-dev1 -> 1)
         CURRENT_NUM=$(echo "$LATEST_DEV_TAG" | sed -n 's/.*-dev\([0-9]*\)/\1/p' | head -1)
         if [ -z "$CURRENT_NUM" ]; then
           CURRENT_NUM=0
@@ -109,18 +131,28 @@ detect-release-version:v0.3.x:
       echo "VERSION DETECTION FOR release/v0.3.x → main"
       echo "============================================"
       
-      BASE_VERSION="0.3.0"
+      # Detect version from latest dev tags
+      # Find the highest version with dev tags (e.g., if we have v0.3.2-dev1, v0.3.2-dev2, use v0.3.2)
+      LATEST_DEV_TAG=$(git tag -l "v0.3.*-dev*" 2>/dev/null | sort -V | tail -1 || echo "")
       
-      # Check if final version tag already exists
-      if git tag -l "v${BASE_VERSION}" | grep -q "^v${BASE_VERSION}$"; then
-        echo "Version v${BASE_VERSION} already released"
+      if [ -z "$LATEST_DEV_TAG" ]; then
+        echo "No dev tags found"
         echo "RELEASE_VERSION=" > release-version.env
         echo "RELEASE_READY=false" >> release-version.env
         exit 0
       fi
       
-      # Get latest dev tag
-      LATEST_DEV_TAG=$(git tag -l "v${BASE_VERSION}-dev*" 2>/dev/null | sort -V | tail -1 || echo "")
+      # Extract version from dev tag (e.g., v0.3.2-dev5 -> v0.3.2)
+      BASE_VERSION=$(echo "$LATEST_DEV_TAG" | sed 's/-dev[0-9]*$//' | sed 's/^v//')
+      RELEASE_VERSION="v${BASE_VERSION}"
+      
+      # Check if final version tag already exists
+      if git tag -l "$RELEASE_VERSION" | grep -q "^${RELEASE_VERSION}$"; then
+        echo "Version ${RELEASE_VERSION} already released"
+        echo "RELEASE_VERSION=" > release-version.env
+        echo "RELEASE_READY=false" >> release-version.env
+        exit 0
+      fi
       
       if [ -z "$LATEST_DEV_TAG" ]; then
         echo "No dev tags found for v${BASE_VERSION}"
