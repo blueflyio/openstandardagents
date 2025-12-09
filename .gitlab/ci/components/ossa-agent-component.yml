@@ -10,7 +10,6 @@ spec:
     agent_name:
       description: "Name of the OSSA agent to execute"
       type: string
-      required: true
     agent_path:
       description: "Path to agent manifest file"
       type: string

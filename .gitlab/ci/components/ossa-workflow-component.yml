@@ -9,7 +9,6 @@ spec:
     workflow_path:
       description: "Path to workflow manifest file"
       type: string
-      required: true
     workflow_inputs:
       description: "JSON string of workflow inputs"
       type: string
