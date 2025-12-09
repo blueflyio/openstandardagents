@@ -39,13 +39,19 @@
       "type": "object",
       "description": "Framework-specific extensions",
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> origin/fix/rebase-release-0.3.0-on-main
       "properties": {
         "mcp": {
           "$ref": "#/definitions/MCPExtension"
         }
       },
+<<<<<<< HEAD
 =======
 >>>>>>> origin/feature/ai-foundations
+=======
+>>>>>>> origin/fix/rebase-release-0.3.0-on-main
       "additionalProperties": true
     },
     "runtime": {
@@ -58,12 +64,18 @@
       "if": {
         "properties": {
 <<<<<<< HEAD
+<<<<<<< HEAD
           "kind": {
             "const": "Agent"
           }
 =======
           "kind": { "const": "Agent" }
 >>>>>>> origin/feature/ai-foundations
+=======
+          "kind": {
+            "const": "Agent"
+          }
+>>>>>>> origin/fix/rebase-release-0.3.0-on-main
         }
       },
       "then": {
@@ -73,17 +85,24 @@
           }
         },
 <<<<<<< HEAD
+<<<<<<< HEAD
         "required": [
           "spec"
         ]
 =======
         "required": ["spec"]
 >>>>>>> origin/feature/ai-foundations
+=======
+        "required": [
+          "spec"
+        ]
+>>>>>>> origin/fix/rebase-release-0.3.0-on-main
       }
     },
     {
       "if": {
         "properties": {
+<<<<<<< HEAD
 <<<<<<< HEAD
           "kind": {
             "const": "Task"
@@ -91,6 +110,11 @@
 =======
           "kind": { "const": "Task" }
 >>>>>>> origin/feature/ai-foundations
+=======
+          "kind": {
+            "const": "Task"
+          }
+>>>>>>> origin/fix/rebase-release-0.3.0-on-main
         }
       },
       "then": {
@@ -100,17 +124,24 @@
           }
         },
 <<<<<<< HEAD
+<<<<<<< HEAD
         "required": [
           "spec"
         ]
 =======
         "required": ["spec"]
 >>>>>>> origin/feature/ai-foundations
+=======
+        "required": [
+          "spec"
+        ]
+>>>>>>> origin/fix/rebase-release-0.3.0-on-main
       }
     },
     {
       "if": {
         "properties": {
+<<<<<<< HEAD
 <<<<<<< HEAD
           "kind": {
             "const": "Workflow"
@@ -118,6 +149,11 @@
 =======
           "kind": { "const": "Workflow" }
 >>>>>>> origin/feature/ai-foundations
+=======
+          "kind": {
+            "const": "Workflow"
+          }
+>>>>>>> origin/fix/rebase-release-0.3.0-on-main
         }
       },
       "then": {
@@ -127,12 +163,18 @@
           }
         },
 <<<<<<< HEAD
+<<<<<<< HEAD
         "required": [
           "spec"
         ]
 =======
         "required": ["spec"]
 >>>>>>> origin/feature/ai-foundations
+=======
+        "required": [
+          "spec"
+        ]
+>>>>>>> origin/fix/rebase-release-0.3.0-on-main
       }
     }
   ],
@@ -140,12 +182,18 @@
     "Metadata": {
       "type": "object",
 <<<<<<< HEAD
+<<<<<<< HEAD
       "required": [
         "name"
       ],
 =======
       "required": ["name"],
 >>>>>>> origin/feature/ai-foundations
+=======
+      "required": [
+        "name"
+      ],
+>>>>>>> origin/fix/rebase-release-0.3.0-on-main
       "properties": {
         "name": {
           "type": "string",
@@ -182,12 +230,16 @@
       "additionalProperties": false
     },
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> origin/fix/rebase-release-0.3.0-on-main
     "TaskSpec": {
       "type": "object",
       "description": "Specification for deterministic, non-agentic workflow steps (kind: Task)",
       "required": [
         "execution"
       ],
+<<<<<<< HEAD
 =======
 
     "TaskSpec": {
@@ -195,11 +247,16 @@
       "description": "Specification for deterministic, non-agentic workflow steps (kind: Task)",
       "required": ["execution"],
 >>>>>>> origin/feature/ai-foundations
+=======
+>>>>>>> origin/fix/rebase-release-0.3.0-on-main
       "properties": {
         "execution": {
           "type": "object",
           "description": "Execution configuration for the task",
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> origin/fix/rebase-release-0.3.0-on-main
           "required": [
             "type"
           ],
@@ -211,6 +268,7 @@
                 "idempotent",
                 "transactional"
               ],
+<<<<<<< HEAD
 =======
           "required": ["type"],
           "properties": {
@@ -218,6 +276,8 @@
               "type": "string",
               "enum": ["deterministic", "idempotent", "transactional"],
 >>>>>>> origin/feature/ai-foundations
+=======
+>>>>>>> origin/fix/rebase-release-0.3.0-on-main
               "default": "deterministic",
               "description": "Execution type: deterministic (pure function), idempotent (safe to retry), transactional (all-or-nothing)"
             },
@@ -225,6 +285,9 @@
               "type": "string",
               "description": "Target runtime environment",
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> origin/fix/rebase-release-0.3.0-on-main
               "examples": [
                 "drupal",
                 "symfony",
@@ -232,9 +295,12 @@
                 "python",
                 "any"
               ]
+<<<<<<< HEAD
 =======
               "examples": ["drupal", "symfony", "node", "python", "any"]
 >>>>>>> origin/feature/ai-foundations
+=======
+>>>>>>> origin/fix/rebase-release-0.3.0-on-main
             },
             "entrypoint": {
               "type": "string",
@@ -261,6 +327,9 @@
           "uniqueItems": true,
           "examples": [
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> origin/fix/rebase-release-0.3.0-on-main
             [
               "publish_content",
               "send_notification"
@@ -269,10 +338,13 @@
               "transform_data",
               "validate_schema"
             ]
+<<<<<<< HEAD
 =======
             ["publish_content", "send_notification"],
             ["transform_data", "validate_schema"]
 >>>>>>> origin/feature/ai-foundations
+=======
+>>>>>>> origin/fix/rebase-release-0.3.0-on-main
           ]
         },
         "input": {
@@ -317,14 +389,20 @@
                 "backoff_strategy": {
                   "type": "string",
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> origin/fix/rebase-release-0.3.0-on-main
                   "enum": [
                     "fixed",
                     "exponential",
                     "linear"
                   ],
+<<<<<<< HEAD
 =======
                   "enum": ["fixed", "exponential", "linear"],
 >>>>>>> origin/feature/ai-foundations
+=======
+>>>>>>> origin/fix/rebase-release-0.3.0-on-main
                   "default": "exponential"
                 },
                 "initial_delay_ms": {
@@ -338,14 +416,20 @@
             "on_item_error": {
               "type": "string",
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> origin/fix/rebase-release-0.3.0-on-main
               "enum": [
                 "skip",
                 "fail",
                 "retry"
               ],
+<<<<<<< HEAD
 =======
               "enum": ["skip", "fail", "retry"],
 >>>>>>> origin/feature/ai-foundations
+=======
+>>>>>>> origin/fix/rebase-release-0.3.0-on-main
               "default": "retry",
               "description": "Behavior when individual item fails"
             }
@@ -358,12 +442,18 @@
           "items": {
             "type": "object",
 <<<<<<< HEAD
+<<<<<<< HEAD
             "required": [
               "ref"
             ],
 =======
             "required": ["ref"],
 >>>>>>> origin/feature/ai-foundations
+=======
+            "required": [
+              "ref"
+            ],
+>>>>>>> origin/fix/rebase-release-0.3.0-on-main
             "properties": {
               "ref": {
                 "type": "string",
@@ -372,13 +462,19 @@
               "kind": {
                 "type": "string",
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> origin/fix/rebase-release-0.3.0-on-main
                 "enum": [
                   "Task",
                   "Agent"
                 ],
+<<<<<<< HEAD
 =======
                 "enum": ["Task", "Agent"],
 >>>>>>> origin/feature/ai-foundations
+=======
+>>>>>>> origin/fix/rebase-release-0.3.0-on-main
                 "description": "Kind of dependency"
               },
               "optional": {
@@ -396,12 +492,18 @@
           "items": {
             "type": "object",
 <<<<<<< HEAD
+<<<<<<< HEAD
             "required": [
               "expression"
             ],
 =======
             "required": ["expression"],
 >>>>>>> origin/feature/ai-foundations
+=======
+            "required": [
+              "expression"
+            ],
+>>>>>>> origin/fix/rebase-release-0.3.0-on-main
             "properties": {
               "expression": {
                 "type": "string",
@@ -421,12 +523,18 @@
           "items": {
             "type": "object",
 <<<<<<< HEAD
+<<<<<<< HEAD
             "required": [
               "expression"
             ],
 =======
             "required": ["expression"],
 >>>>>>> origin/feature/ai-foundations
+=======
+            "required": [
+              "expression"
+            ],
+>>>>>>> origin/fix/rebase-release-0.3.0-on-main
             "properties": {
               "expression": {
                 "type": "string",
@@ -446,15 +554,21 @@
             "on_error": {
               "type": "string",
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> origin/fix/rebase-release-0.3.0-on-main
               "enum": [
                 "fail",
                 "retry",
                 "fallback",
                 "ignore"
               ],
+<<<<<<< HEAD
 =======
               "enum": ["fail", "retry", "fallback", "ignore"],
 >>>>>>> origin/feature/ai-foundations
+=======
+>>>>>>> origin/fix/rebase-release-0.3.0-on-main
               "default": "fail"
             },
             "fallback_task": {
@@ -467,15 +581,21 @@
               "additionalProperties": {
                 "type": "string",
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> origin/fix/rebase-release-0.3.0-on-main
                 "enum": [
                   "fail",
                   "retry",
                   "fallback",
                   "ignore"
                 ]
+<<<<<<< HEAD
 =======
                 "enum": ["fail", "retry", "fallback", "ignore"]
 >>>>>>> origin/feature/ai-foundations
+=======
+>>>>>>> origin/fix/rebase-release-0.3.0-on-main
               }
             }
           },
@@ -491,15 +611,21 @@
                 "level": {
                   "type": "string",
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> origin/fix/rebase-release-0.3.0-on-main
                   "enum": [
                     "debug",
                     "info",
                     "warn",
                     "error"
                   ],
+<<<<<<< HEAD
 =======
                   "enum": ["debug", "info", "warn", "error"],
 >>>>>>> origin/feature/ai-foundations
+=======
+>>>>>>> origin/fix/rebase-release-0.3.0-on-main
                   "default": "info"
                 },
                 "include_input": {
@@ -551,12 +677,16 @@
       "additionalProperties": false
     },
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> origin/fix/rebase-release-0.3.0-on-main
     "AgentSpec": {
       "type": "object",
       "description": "Specification for agentic loops with LLM (kind: Agent) - inherits from v0.2.9",
       "required": [
         "role"
       ],
+<<<<<<< HEAD
 =======
 
     "AgentSpec": {
@@ -564,6 +694,8 @@
       "description": "Specification for agentic loops with LLM (kind: Agent) - inherits from v0.2.9",
       "required": ["role"],
 >>>>>>> origin/feature/ai-foundations
+=======
+>>>>>>> origin/fix/rebase-release-0.3.0-on-main
       "properties": {
         "role": {
           "type": "string",
@@ -598,12 +730,16 @@
       "additionalProperties": true
     },
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> origin/fix/rebase-release-0.3.0-on-main
     "WorkflowSpec": {
       "type": "object",
       "description": "Specification for workflow composition (kind: Workflow) - composes Tasks and Agents into executable pipelines",
       "required": [
         "steps"
       ],
+<<<<<<< HEAD
 =======
 
     "WorkflowSpec": {
@@ -611,6 +747,8 @@
       "description": "Specification for workflow composition (kind: Workflow) - composes Tasks and Agents into executable pipelines",
       "required": ["steps"],
 >>>>>>> origin/feature/ai-foundations
+=======
+>>>>>>> origin/fix/rebase-release-0.3.0-on-main
       "properties": {
         "triggers": {
           "type": "array",
@@ -660,13 +798,19 @@
                   }
                 },
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> origin/fix/rebase-release-0.3.0-on-main
                 "required": [
                   "name",
                   "ref"
                 ]
+<<<<<<< HEAD
 =======
                 "required": ["name", "ref"]
 >>>>>>> origin/feature/ai-foundations
+=======
+>>>>>>> origin/fix/rebase-release-0.3.0-on-main
               }
             }
           },
@@ -695,6 +839,9 @@
             "on_failure": {
               "type": "string",
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> origin/fix/rebase-release-0.3.0-on-main
               "enum": [
                 "halt",
                 "continue",
@@ -702,9 +849,12 @@
                 "notify",
                 "compensate"
               ],
+<<<<<<< HEAD
 =======
               "enum": ["halt", "continue", "rollback", "notify", "compensate"],
 >>>>>>> origin/feature/ai-foundations
+=======
+>>>>>>> origin/fix/rebase-release-0.3.0-on-main
               "default": "halt",
               "description": "Action on step failure"
             },
@@ -724,15 +874,21 @@
                   "items": {
                     "type": "string",
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> origin/fix/rebase-release-0.3.0-on-main
                     "enum": [
                       "email",
                       "slack",
                       "webhook",
                       "pagerduty"
                     ]
+<<<<<<< HEAD
 =======
                     "enum": ["email", "slack", "webhook", "pagerduty"]
 >>>>>>> origin/feature/ai-foundations
+=======
+>>>>>>> origin/fix/rebase-release-0.3.0-on-main
                   }
                 },
                 "template": {
@@ -753,14 +909,20 @@
                 "backoff": {
                   "type": "string",
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> origin/fix/rebase-release-0.3.0-on-main
                   "enum": [
                     "fixed",
                     "exponential",
                     "linear"
                   ],
+<<<<<<< HEAD
 =======
                   "enum": ["fixed", "exponential", "linear"],
 >>>>>>> origin/feature/ai-foundations
+=======
+>>>>>>> origin/fix/rebase-release-0.3.0-on-main
                   "default": "exponential"
                 },
                 "initial_delay_ms": {
@@ -822,15 +984,21 @@
                 "level": {
                   "type": "string",
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> origin/fix/rebase-release-0.3.0-on-main
                   "enum": [
                     "debug",
                     "info",
                     "warn",
                     "error"
                   ],
+<<<<<<< HEAD
 =======
                   "enum": ["debug", "info", "warn", "error"],
 >>>>>>> origin/feature/ai-foundations
+=======
+>>>>>>> origin/fix/rebase-release-0.3.0-on-main
                   "default": "info"
                 }
               }
@@ -842,9 +1010,12 @@
       "additionalProperties": false
     },
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 
 >>>>>>> origin/feature/ai-foundations
+=======
+>>>>>>> origin/fix/rebase-release-0.3.0-on-main
     "RuntimeBinding": {
       "type": "object",
       "description": "Runtime-specific capability bindings",
@@ -853,6 +1024,9 @@
           "type": "string",
           "description": "Runtime type identifier",
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> origin/fix/rebase-release-0.3.0-on-main
           "examples": [
             "drupal",
             "symfony_messenger",
@@ -860,23 +1034,32 @@
             "temporal",
             "node"
           ]
+<<<<<<< HEAD
 =======
           "examples": ["drupal", "symfony_messenger", "kagent", "temporal", "node"]
 >>>>>>> origin/feature/ai-foundations
+=======
+>>>>>>> origin/fix/rebase-release-0.3.0-on-main
         },
         "transport": {
           "type": "string",
           "description": "Message transport for async runtimes",
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> origin/fix/rebase-release-0.3.0-on-main
           "examples": [
             "async",
             "sync",
             "amqp",
             "redis"
           ]
+<<<<<<< HEAD
 =======
           "examples": ["async", "sync", "amqp", "redis"]
 >>>>>>> origin/feature/ai-foundations
+=======
+>>>>>>> origin/fix/rebase-release-0.3.0-on-main
         },
         "bindings": {
           "type": "object",
@@ -909,6 +1092,9 @@
       "additionalProperties": false
     },
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> origin/fix/rebase-release-0.3.0-on-main
     "Trigger": {
       "type": "object",
       "description": "Workflow trigger configuration",
@@ -924,6 +1110,7 @@
             "event",
             "manual"
           ],
+<<<<<<< HEAD
 =======
 
     "Trigger": {
@@ -935,6 +1122,8 @@
           "type": "string",
           "enum": ["webhook", "cron", "event", "manual"],
 >>>>>>> origin/feature/ai-foundations
+=======
+>>>>>>> origin/fix/rebase-release-0.3.0-on-main
           "description": "Trigger type"
         },
         "path": {
@@ -945,39 +1134,57 @@
           "type": "string",
           "description": "Cron expression (for type=cron)",
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> origin/fix/rebase-release-0.3.0-on-main
           "examples": [
             "0 8 * * *",
             "*/15 * * * *"
           ]
+<<<<<<< HEAD
 =======
           "examples": ["0 8 * * *", "*/15 * * * *"]
 >>>>>>> origin/feature/ai-foundations
+=======
+>>>>>>> origin/fix/rebase-release-0.3.0-on-main
         },
         "source": {
           "type": "string",
           "description": "Event source (for type=event)",
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> origin/fix/rebase-release-0.3.0-on-main
           "examples": [
             "drupal",
             "kafka",
             "webhook"
           ]
+<<<<<<< HEAD
 =======
           "examples": ["drupal", "kafka", "webhook"]
 >>>>>>> origin/feature/ai-foundations
+=======
+>>>>>>> origin/fix/rebase-release-0.3.0-on-main
         },
         "event": {
           "type": "string",
           "description": "Event name (for type=event)",
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> origin/fix/rebase-release-0.3.0-on-main
           "examples": [
             "node.created",
             "user.login",
             "order.placed"
           ]
+<<<<<<< HEAD
 =======
           "examples": ["node.created", "user.login", "order.placed"]
 >>>>>>> origin/feature/ai-foundations
+=======
+>>>>>>> origin/fix/rebase-release-0.3.0-on-main
         },
         "filter": {
           "type": "object",
@@ -988,12 +1195,16 @@
       "additionalProperties": false
     },
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> origin/fix/rebase-release-0.3.0-on-main
     "WorkflowStep": {
       "type": "object",
       "description": "A step in a workflow - can be a Task, Agent, or control structure",
       "required": [
         "id"
       ],
+<<<<<<< HEAD
 =======
 
     "WorkflowStep": {
@@ -1001,6 +1212,8 @@
       "description": "A step in a workflow - can be a Task, Agent, or control structure",
       "required": ["id"],
 >>>>>>> origin/feature/ai-foundations
+=======
+>>>>>>> origin/fix/rebase-release-0.3.0-on-main
       "properties": {
         "id": {
           "type": "string",
@@ -1014,6 +1227,9 @@
         "kind": {
           "type": "string",
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> origin/fix/rebase-release-0.3.0-on-main
           "enum": [
             "Task",
             "Agent",
@@ -1021,22 +1237,31 @@
             "Conditional",
             "Loop"
           ],
+<<<<<<< HEAD
 =======
           "enum": ["Task", "Agent", "Parallel", "Conditional", "Loop"],
 >>>>>>> origin/feature/ai-foundations
+=======
+>>>>>>> origin/fix/rebase-release-0.3.0-on-main
           "description": "Step type"
         },
         "ref": {
           "type": "string",
           "description": "Reference to Task or Agent manifest file",
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> origin/fix/rebase-release-0.3.0-on-main
           "examples": [
             "./tasks/publish-content.yaml",
             "./agents/content-reviewer.yaml"
           ]
+<<<<<<< HEAD
 =======
           "examples": ["./tasks/publish-content.yaml", "./agents/content-reviewer.yaml"]
 >>>>>>> origin/feature/ai-foundations
+=======
+>>>>>>> origin/fix/rebase-release-0.3.0-on-main
         },
         "inline": {
           "type": "object",
@@ -1086,15 +1311,21 @@
             "type": "string"
           },
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> origin/fix/rebase-release-0.3.0-on-main
           "examples": [
             [
               "fetch",
               "validate"
             ]
           ]
+<<<<<<< HEAD
 =======
           "examples": [["fetch", "validate"]]
 >>>>>>> origin/feature/ai-foundations
+=======
+>>>>>>> origin/fix/rebase-release-0.3.0-on-main
         },
         "parallel": {
           "type": "array",
@@ -1121,13 +1352,19 @@
               }
             },
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> origin/fix/rebase-release-0.3.0-on-main
             "required": [
               "condition",
               "steps"
             ]
+<<<<<<< HEAD
 =======
             "required": ["condition", "steps"]
 >>>>>>> origin/feature/ai-foundations
+=======
+>>>>>>> origin/fix/rebase-release-0.3.0-on-main
           }
         },
         "else": {
@@ -1145,13 +1382,19 @@
               "type": "string",
               "description": "Expression returning array to iterate over",
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> origin/fix/rebase-release-0.3.0-on-main
               "examples": [
                 "${{ steps.fetch.output.items }}",
                 "${{ workflow.input.recipients }}"
               ]
+<<<<<<< HEAD
 =======
               "examples": ["${{ steps.fetch.output.items }}", "${{ workflow.input.recipients }}"]
 >>>>>>> origin/feature/ai-foundations
+=======
+>>>>>>> origin/fix/rebase-release-0.3.0-on-main
             },
             "as": {
               "type": "string",
@@ -1170,12 +1413,18 @@
             }
           },
 <<<<<<< HEAD
+<<<<<<< HEAD
           "required": [
             "over"
           ]
 =======
           "required": ["over"]
 >>>>>>> origin/feature/ai-foundations
+=======
+          "required": [
+            "over"
+          ]
+>>>>>>> origin/fix/rebase-release-0.3.0-on-main
         },
         "steps": {
           "type": "array",
@@ -1197,14 +1446,20 @@
             "backoff_strategy": {
               "type": "string",
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> origin/fix/rebase-release-0.3.0-on-main
               "enum": [
                 "fixed",
                 "exponential",
                 "linear"
               ],
+<<<<<<< HEAD
 =======
               "enum": ["fixed", "exponential", "linear"],
 >>>>>>> origin/feature/ai-foundations
+=======
+>>>>>>> origin/fix/rebase-release-0.3.0-on-main
               "default": "exponential"
             },
             "initial_delay_ms": {
@@ -1239,15 +1494,21 @@
             "action": {
               "type": "string",
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> origin/fix/rebase-release-0.3.0-on-main
               "enum": [
                 "fail",
                 "continue",
                 "goto",
                 "compensate"
               ],
+<<<<<<< HEAD
 =======
               "enum": ["fail", "continue", "goto", "compensate"],
 >>>>>>> origin/feature/ai-foundations
+=======
+>>>>>>> origin/fix/rebase-release-0.3.0-on-main
               "default": "fail"
             },
             "goto": {
@@ -1271,9 +1532,12 @@
       "additionalProperties": false
     },
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 
 >>>>>>> origin/feature/ai-foundations
+=======
+>>>>>>> origin/fix/rebase-release-0.3.0-on-main
     "JSONSchemaDefinition": {
       "type": "object",
       "description": "JSON Schema definition for input/output validation",
@@ -1281,6 +1545,9 @@
         "type": {
           "type": "string",
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> origin/fix/rebase-release-0.3.0-on-main
           "enum": [
             "object",
             "array",
@@ -1290,9 +1557,12 @@
             "boolean",
             "null"
           ]
+<<<<<<< HEAD
 =======
           "enum": ["object", "array", "string", "number", "integer", "boolean", "null"]
 >>>>>>> origin/feature/ai-foundations
+=======
+>>>>>>> origin/fix/rebase-release-0.3.0-on-main
         },
         "properties": {
           "type": "object",
@@ -1309,18 +1579,27 @@
         },
         "additionalProperties": {
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> origin/fix/rebase-release-0.3.0-on-main
           "type": [
             "boolean",
             "object"
           ]
+<<<<<<< HEAD
 =======
           "type": ["boolean", "object"]
 >>>>>>> origin/feature/ai-foundations
+=======
+>>>>>>> origin/fix/rebase-release-0.3.0-on-main
         }
       },
       "additionalProperties": true
     },
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> origin/fix/rebase-release-0.3.0-on-main
     "LLMConfig": {
       "type": "object",
       "required": [
@@ -1338,6 +1617,7 @@
             "ollama",
             "custom"
           ]
+<<<<<<< HEAD
 =======
 
     "LLMConfig": {
@@ -1348,6 +1628,8 @@
           "type": "string",
           "enum": ["openai", "anthropic", "google", "azure", "ollama", "custom"]
 >>>>>>> origin/feature/ai-foundations
+=======
+>>>>>>> origin/fix/rebase-release-0.3.0-on-main
         },
         "model": {
           "type": "string"
@@ -1365,6 +1647,9 @@
       "additionalProperties": true
     },
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> origin/fix/rebase-release-0.3.0-on-main
     "Tool": {
       "type": "object",
       "required": [
@@ -1382,6 +1667,7 @@
             "a2a",
             "custom"
           ]
+<<<<<<< HEAD
 =======
 
     "Tool": {
@@ -1392,6 +1678,8 @@
           "type": "string",
           "enum": ["mcp", "kubernetes", "http", "grpc", "function", "a2a", "custom"]
 >>>>>>> origin/feature/ai-foundations
+=======
+>>>>>>> origin/fix/rebase-release-0.3.0-on-main
         },
         "name": {
           "type": "string"
@@ -1406,17 +1694,23 @@
       "additionalProperties": true
     },
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> origin/fix/rebase-release-0.3.0-on-main
     "Capability": {
       "type": "object",
       "required": [
         "name"
       ],
+<<<<<<< HEAD
 =======
 
     "Capability": {
       "type": "object",
       "required": ["name"],
 >>>>>>> origin/feature/ai-foundations
+=======
+>>>>>>> origin/fix/rebase-release-0.3.0-on-main
       "properties": {
         "name": {
           "type": "string"
@@ -1434,23 +1728,32 @@
       "additionalProperties": true
     },
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 
 >>>>>>> origin/feature/ai-foundations
+=======
+>>>>>>> origin/fix/rebase-release-0.3.0-on-main
     "Autonomy": {
       "type": "object",
       "properties": {
         "level": {
           "type": "string",
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> origin/fix/rebase-release-0.3.0-on-main
           "enum": [
             "supervised",
             "autonomous",
             "fully_autonomous"
           ]
+<<<<<<< HEAD
 =======
           "enum": ["supervised", "autonomous", "fully_autonomous"]
 >>>>>>> origin/feature/ai-foundations
+=======
+>>>>>>> origin/fix/rebase-release-0.3.0-on-main
         },
         "approval_required": {
           "type": "boolean"
@@ -1458,6 +1761,9 @@
         "allowed_actions": {
           "type": "array",
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> origin/fix/rebase-release-0.3.0-on-main
           "items": {
             "type": "string"
           }
@@ -1467,6 +1773,7 @@
           "items": {
             "type": "string"
           }
+<<<<<<< HEAD
 =======
           "items": { "type": "string" }
         },
@@ -1474,14 +1781,19 @@
           "type": "array",
           "items": { "type": "string" }
 >>>>>>> origin/feature/ai-foundations
+=======
+>>>>>>> origin/fix/rebase-release-0.3.0-on-main
         }
       },
       "additionalProperties": false
     },
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 
 >>>>>>> origin/feature/ai-foundations
+=======
+>>>>>>> origin/fix/rebase-release-0.3.0-on-main
     "Constraints": {
       "type": "object",
       "properties": {
@@ -1489,6 +1801,9 @@
           "type": "object",
           "properties": {
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> origin/fix/rebase-release-0.3.0-on-main
             "maxTokensPerDay": {
               "type": "integer"
             },
@@ -1498,17 +1813,23 @@
             "maxCostPerDay": {
               "type": "number"
             }
+<<<<<<< HEAD
 =======
             "maxTokensPerDay": { "type": "integer" },
             "maxTokensPerRequest": { "type": "integer" },
             "maxCostPerDay": { "type": "number" }
 >>>>>>> origin/feature/ai-foundations
+=======
+>>>>>>> origin/fix/rebase-release-0.3.0-on-main
           }
         },
         "performance": {
           "type": "object",
           "properties": {
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> origin/fix/rebase-release-0.3.0-on-main
             "maxLatencySeconds": {
               "type": "number"
             },
@@ -1518,34 +1839,46 @@
             "timeoutSeconds": {
               "type": "number"
             }
+<<<<<<< HEAD
 =======
             "maxLatencySeconds": { "type": "number" },
             "maxConcurrentRequests": { "type": "integer" },
             "timeoutSeconds": { "type": "number" }
 >>>>>>> origin/feature/ai-foundations
+=======
+>>>>>>> origin/fix/rebase-release-0.3.0-on-main
           }
         }
       },
       "additionalProperties": false
     },
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 
 >>>>>>> origin/feature/ai-foundations
+=======
+>>>>>>> origin/fix/rebase-release-0.3.0-on-main
     "State": {
       "type": "object",
       "properties": {
         "mode": {
           "type": "string",
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> origin/fix/rebase-release-0.3.0-on-main
           "enum": [
             "stateless",
             "session",
             "long_running"
           ]
+<<<<<<< HEAD
 =======
           "enum": ["stateless", "session", "long_running"]
 >>>>>>> origin/feature/ai-foundations
+=======
+>>>>>>> origin/fix/rebase-release-0.3.0-on-main
         },
         "storage": {
           "type": "object",
@@ -1553,6 +1886,9 @@
             "type": {
               "type": "string",
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> origin/fix/rebase-release-0.3.0-on-main
               "enum": [
                 "memory",
                 "vector-db",
@@ -1560,9 +1896,12 @@
                 "rdbms",
                 "custom"
               ]
+<<<<<<< HEAD
 =======
               "enum": ["memory", "vector-db", "kv", "rdbms", "custom"]
 >>>>>>> origin/feature/ai-foundations
+=======
+>>>>>>> origin/fix/rebase-release-0.3.0-on-main
             },
             "retention": {
               "type": "string"
@@ -1573,9 +1912,12 @@
       "additionalProperties": false
     },
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 
 >>>>>>> origin/feature/ai-foundations
+=======
+>>>>>>> origin/fix/rebase-release-0.3.0-on-main
     "AgentObservability": {
       "type": "object",
       "properties": {
@@ -1583,57 +1925,78 @@
           "type": "object",
           "properties": {
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> origin/fix/rebase-release-0.3.0-on-main
             "enabled": {
               "type": "boolean"
             },
             "exporter": {
               "type": "string"
             }
+<<<<<<< HEAD
 =======
             "enabled": { "type": "boolean" },
             "exporter": { "type": "string" }
 >>>>>>> origin/feature/ai-foundations
+=======
+>>>>>>> origin/fix/rebase-release-0.3.0-on-main
           }
         },
         "metrics": {
           "type": "object",
           "properties": {
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> origin/fix/rebase-release-0.3.0-on-main
             "enabled": {
               "type": "boolean"
             },
             "exporter": {
               "type": "string"
             }
+<<<<<<< HEAD
 =======
             "enabled": { "type": "boolean" },
             "exporter": { "type": "string" }
 >>>>>>> origin/feature/ai-foundations
+=======
+>>>>>>> origin/fix/rebase-release-0.3.0-on-main
           }
         },
         "logging": {
           "type": "object",
           "properties": {
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> origin/fix/rebase-release-0.3.0-on-main
             "level": {
               "type": "string"
             },
             "format": {
               "type": "string"
             }
+<<<<<<< HEAD
 =======
             "level": { "type": "string" },
             "format": { "type": "string" }
 >>>>>>> origin/feature/ai-foundations
+=======
+>>>>>>> origin/fix/rebase-release-0.3.0-on-main
           }
         }
       },
       "additionalProperties": false
     },
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 
 >>>>>>> origin/feature/ai-foundations
+=======
+>>>>>>> origin/fix/rebase-release-0.3.0-on-main
     "Safety": {
       "type": "object",
       "properties": {
@@ -1641,6 +2004,9 @@
           "type": "object",
           "properties": {
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> origin/fix/rebase-release-0.3.0-on-main
             "enabled": {
               "type": "boolean"
             },
@@ -1650,31 +2016,43 @@
                 "type": "string"
               }
             }
+<<<<<<< HEAD
 =======
             "enabled": { "type": "boolean" },
             "categories": { "type": "array", "items": { "type": "string" } }
 >>>>>>> origin/feature/ai-foundations
+=======
+>>>>>>> origin/fix/rebase-release-0.3.0-on-main
           }
         },
         "guardrails": {
           "type": "object",
           "properties": {
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> origin/fix/rebase-release-0.3.0-on-main
             "enabled": {
               "type": "boolean"
             },
             "max_tool_calls": {
               "type": "integer"
             }
+<<<<<<< HEAD
 =======
             "enabled": { "type": "boolean" },
             "max_tool_calls": { "type": "integer" }
 >>>>>>> origin/feature/ai-foundations
+=======
+>>>>>>> origin/fix/rebase-release-0.3.0-on-main
           }
         }
       },
       "additionalProperties": false
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> origin/fix/rebase-release-0.3.0-on-main
     },
     "MCPExtension": {
       "type": "object",
@@ -1832,9 +2210,13 @@
       "additionalProperties": false
     }
   }
+<<<<<<< HEAD
 }
 =======
     }
   }
 }
 >>>>>>> origin/feature/ai-foundations
+=======
+}
+>>>>>>> origin/fix/rebase-release-0.3.0-on-main
