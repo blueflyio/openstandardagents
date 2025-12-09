@@ -1,6 +1,6 @@
 # 🚀 Final Setup Steps
 
-## ✅ Completed
+## Completed
 - [x] Automation code committed
 - [x] Merge request created: https://gitlab.com/blueflyio/openstandardagents.org/-/merge_requests/93
 - [x] Branch pushed: `chore/automate-ossa-sync`
@@ -22,7 +22,7 @@ Click "Merge" when pipeline passes.
    - **Interval pattern**: Custom (`0 */6 * * *`)
    - **Cron timezone**: UTC
    - **Target branch**: `development`
-   - **Active**: ✅ Checked
+   - **Active**: Checked
 4. Click "Save pipeline schedule"
 
 **Option B: API (Requires Maintainer Token)**
@@ -61,7 +61,7 @@ glab ci view -b development
 glab ci trace -b development -j sync:auto
 ```
 
-## 🎯 What Happens Next
+## What Happens Next
 
 ### Immediately After Merge
 - Every push to `development` or `main` triggers `sync:auto` job
@@ -78,13 +78,13 @@ glab ci trace -b development -j sync:auto
 - Immediately syncs new version
 - Creates MR to development
 
-## 📊 Expected Results
+## Expected Results
 
 **Before**: 5 hours manual work per release  
 **After**: 2 minutes automated  
 **Savings**: 100+ hours per year
 
-## 🆘 Troubleshooting
+## Troubleshooting
 
 ### Sync Job Fails
 ```bash
@@ -102,7 +102,7 @@ glab ci trace -b development -j sync:auto
 - Check cron syntax is correct
 - Ensure target branch exists
 
-## 📚 Documentation
+## Documentation
 
 - **Full Guide**: `AUTOMATION.md`
 - **Summary**: `AUTOMATION-SUMMARY.md`
