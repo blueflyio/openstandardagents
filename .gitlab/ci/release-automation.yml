@@ -1,4 +1,7 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> origin/fix/merge-main-to-release-0.3.0
 # Release Automation CI Jobs
 
 validate:examples:
@@ -80,6 +83,7 @@ generate:changelog:
   rules:
     - if: '$CI_COMMIT_TAG =~ /^v[0-9]+\.[0-9]+\.[0-9]+$/'
       when: always
+<<<<<<< HEAD
 
 # Auto-close issues when MRs merge to release branches
 auto-close-issues:
@@ -508,3 +512,5 @@ update:release-issue-status:
       when: on_success
   allow_failure: true
 >>>>>>> origin/feature/ai-foundations
+=======
+>>>>>>> origin/fix/merge-main-to-release-0.3.0
