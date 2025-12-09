@@ -250,17 +250,11 @@ Features:
 
 OSSA is an open-source, community-driven project. We welcome contributions!
 
-**Primary Repository**: [GitLab](https://gitlab.com/blueflyio/openstandardagents)  
-**GitHub Mirror**: [GitHub](https://github.com/blueflyio/openstandardagents) (read-only, automatically synced)
-
-> ⚠️ **Important**: The GitHub repository is a read-only mirror. All development happens on GitLab.
-> 
-> - ✅ **GitLab**: Create issues, merge requests, discussions
-> - ❌ **GitHub**: Do not create PRs or issues - they will not be reviewed
+**GitHub is the primary public repository for OSSA.**
 
 ### How to Contribute
 
-1. Fork the repository on [GitLab](https://gitlab.com/blueflyio/openstandardagents)
+1. Fork the repository on [GitHub](https://github.com/blueflyio/openstandardagents)
 2. Create a feature branch
 3. Make your changes
 4. Submit a merge request on GitLab

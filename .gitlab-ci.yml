@@ -5,8 +5,8 @@
 # - NPM releases - Milestone-gated + ENABLE_RELEASE variable required
 #
 # Workflow
-# 1. Feature branches → merge to release/* (CI validates)
-# 2. Release/* → merge to main via merge train (CI validates)
+# 1. Feature branches → merge to release/* branch based on milestone/issue/MR (CI validates)
+# 2. Release/* branches → merge to main via merge train (CI validates)
 # 3. Click "Deploy Website" button → GitLab Pages deploys
 # 4. To release - Set ENABLE_RELEASE=true + close milestone → automatic npm publish + git tag
 #
@@ -17,16 +17,8 @@
 include:
   - local: '.gitlab/ci/agents.yml'
   - local: '.gitlab/ci/branch-policy.yml'
-  - local: '.gitlab/ci/webhook-agents.yml'  # OSSA v0.2.9 webhook-triggered agents
-  - local: '.gitlab/ci/merge-train-optimized.yml'  # Optimized merge train pipeline
-  - local: '.gitlab/ci/milestone-workflow.yml'  # Milestone-driven workflow enforcement
-  - local: '.gitlab/ci/release-workflow.yml'  # Release branch workflow with dev tag automation
-  # Security scanning from Auto DevOps
-  - template: Jobs/SAST.gitlab-ci.yml
-  - template: Jobs/Secret-Detection.gitlab-ci.yml
-  - template: Jobs/Dependency-Scanning.gitlab-ci.yml
-  # Merge trains enabled via workflow rules (see workflow section at bottom)
-  # Component available but private - uncomment when gitlab_components is public
+  - local: '.gitlab/ci/release-automation.yml'  # Release automation agents
+  # TODO: Add merge-train component when gitlab_components is made public/internal
   # - component: gitlab.com/blueflyio/agent-platform/gitlab_components/merge-train@main
 
 #   - CI/CD variable ENABLE_RELEASE must be set to "true"
@@ -60,9 +52,8 @@ variables:
   LEFTHOOK: "0"
 
 # ============================================================================
-# STAGE 0 - MILESTONE DETECTION FOR RELEASES
+# STAGE 0 - VERSION DETECTION & DEV TAG MANAGEMENT
 # ============================================================================
-# Dev tag management is handled by release-workflow.yml (tag-based approach)
 
 detect:milestone-and-tags:
   stage: version-detect
@@ -93,6 +84,74 @@ detect:milestone-and-tags:
       DEV_MILESTONE_ID=
       EOF
 
+      # Only run on main and release/* branches
+      if [ "$CI_COMMIT_BRANCH" != "main" ] && [[ ! "$CI_COMMIT_BRANCH" =~ ^release/ ]]; then
+        echo "Skipping dev tag management (not on main or release/* branch)"
+      else
+        # Get all milestones
+        DEV_MILESTONES=$(curl -sS -G "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/milestones" \
+        --header "PRIVATE-TOKEN: ${GITLAB_PUSH_TOKEN}" \
+        --data-urlencode "per_page=100" \
+          --data-urlencode "state=all" 2>/dev/null || echo "[]")
+
+        if [ "$DEV_MILESTONES" != "[]" ] && [ -n "$DEV_MILESTONES" ]; then
+          # Process milestones - use process substitution to avoid subshell
+          while read -r dev_milestone_json; do
+            [ -z "$dev_milestone_json" ] && continue
+
+            DEV_TITLE=$(echo "$dev_milestone_json" | jq -r '.title // ""' 2>/dev/null || echo "")
+            DEV_ID=$(echo "$dev_milestone_json" | jq -r '.id // ""' 2>/dev/null || echo "")
+            DEV_VERSION=$(echo "$DEV_TITLE" | grep -oE 'v?[0-9]+\.[0-9]+\.[0-9]+(-[A-Za-z0-9]+)?' | head -1 | sed 's/^v//')
+
+            [ -z "$DEV_VERSION" ] && continue
+
+        # Skip if already released
+            if git tag -l 2>/dev/null | grep -qE "^v?${DEV_VERSION}$"; then
+              echo "Skipping ${DEV_VERSION} (already released)"
+          continue
+        fi
+
+            # Get latest dev tag for this version
+            LATEST_DEV_TAG=$(git tag -l "${DEV_VERSION}-dev-*" 2>/dev/null | sort -V | tail -1)
+            CURRENT_BUILD=$(echo "$LATEST_DEV_TAG" | sed "s/.*-dev-//" | grep -E '^[0-9]+$' || echo "0")
+            [ -z "$CURRENT_BUILD" ] && CURRENT_BUILD=0
+            NEXT_BUILD=$((CURRENT_BUILD + 1))
+
+            # Check if we need a new tag
+            if [ -n "$LATEST_DEV_TAG" ]; then
+              TAG_COMMIT=$(git rev-list -n 1 "$LATEST_DEV_TAG" 2>/dev/null || echo "")
+              if [ "$CI_COMMIT_SHA" = "$TAG_COMMIT" ]; then
+                echo "No changes since ${LATEST_DEV_TAG}, skipping"
+                continue
+              fi
+            fi
+
+            NEW_TAG="${DEV_VERSION}-dev-${NEXT_BUILD}"
+            echo "Creating dev tag: ${NEW_TAG}"
+
+            # Create and push tag
+            if git tag -a "$NEW_TAG" -m "Dev build ${NEXT_BUILD} for milestone ${DEV_ID}" "$CI_COMMIT_SHA" 2>/dev/null; then
+              if git push origin "$NEW_TAG" 2>/dev/null; then
+                echo "Created dev tag: ${NEW_TAG}"
+                cat > dev-tags.env << EOF
+      DEV_TAG_VERSION=${DEV_VERSION}
+      DEV_TAG_NAME=${NEW_TAG}
+      DEV_TAG_BUILD=${NEXT_BUILD}
+      DEV_MILESTONE_ID=${DEV_ID}
+      EOF
+              else
+                echo "Failed to push tag ${NEW_TAG}"
+                git tag -d "$NEW_TAG" 2>/dev/null || true
+              fi
+            else
+              echo "Tag ${NEW_TAG} already exists or failed to create"
+            fi
+
+            break  # Only create one dev tag per pipeline
+          done < <(echo "$DEV_MILESTONES" | jq -c '.[]' 2>/dev/null || echo "")
+        fi
+      fi
+      
       # Detect ACTIVE milestones ready for release
       # NEW FLOW: Milestone stays ACTIVE, release closes it
       echo ""
@@ -187,6 +246,11 @@ detect:milestone-and-tags:
         echo "ℹ️  No release-ready milestone found"
       fi
       
+      # Merge dev-tags.env into milestone-version.env
+      if [ -s dev-tags.env ]; then
+        cat dev-tags.env >> milestone-version.env
+      fi
+      
       echo ""
       echo "📋 Summary:"
       cat milestone-version.env
@@ -195,9 +259,12 @@ detect:milestone-and-tags:
       dotenv: milestone-version.env
     paths:
       - milestone-version.env
+      - dev-tags.env
     expire_in: 1 day
   rules:
-    - if: $CI_COMMIT_BRANCH == "main" || $CI_COMMIT_BRANCH =~ /^release\//
+    - if: $CI_COMMIT_BRANCH == "main"
+      when: always
+    - if: $CI_COMMIT_BRANCH =~ /^release\//
       when: always
   allow_failure: true
 
@@ -288,9 +355,9 @@ validate:version-sync:
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
       when: always
-    - if: $CI_COMMIT_BRANCH =~ /^release\//
-      when: always
     - if: $CI_COMMIT_BRANCH == "main"
+      when: always
+    - if: $CI_COMMIT_BRANCH =~ /^release\//
       when: always
     - changes:
       - package.json
@@ -309,7 +376,7 @@ validate:version-sync:
 #   extends: .version-bump-agent
 #   variables:
 #     BUMP_TYPE: "patch"
-#     TARGET_BRANCH: "main"
+#     TARGET_BRANCH: "release/0.3.0"
 #   rules:
 #     - if: '$BUMP_VERSION == "true"'
 #       when: manual
@@ -361,9 +428,9 @@ validate:scripts-version:
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
       when: always
-    - if: $CI_COMMIT_BRANCH =~ /^release\//
-      when: always
     - if: $CI_COMMIT_BRANCH == "main"
+      when: always
+    - if: $CI_COMMIT_BRANCH =~ /^release\//
       when: always
     - changes:
       - package.json
@@ -1235,7 +1302,7 @@ post-release:cleanup:
 # 3. Auto-rebasing when target branch updates
 # 4. Failing fast on conflicts
 #
-# Enabled for: release/* and main branches
+# Enabled for: release/*, main branches
 # Eliminates: Manual sync commits between releases
 # See: https://docs.gitlab.com/ee/ci/pipelines/merge_trains.html
 # ============================================================================
@@ -1251,28 +1318,37 @@ workflow:
     # Prevent duplicate pipelines (skip branch pipeline if MR is open)
     - if: $CI_COMMIT_BRANCH && $CI_OPEN_MERGE_REQUESTS
       when: never
-    # Regular branch pipelines
-    - if: $CI_COMMIT_BRANCH
     # Tag pipelines
     - if: $CI_COMMIT_TAG
+    # Regular branch pipelines (main and release/*)
+    - if: $CI_COMMIT_BRANCH == "main"
+    - if: $CI_COMMIT_BRANCH =~ /^release\//
+    # Always allow other pipeline sources (API, web, scheduled, etc.)
     - when: always
 
 # ============================================================================
 # RELEASE AUTOMATION - Enterprise Grade
 # ============================================================================
 
-# Auto-increment dev tag on merge to release branches
+# Legacy dev tag increment (replaced by auto-tag:on-merge)
+# Kept for backwards compatibility - can be removed after verification
 increment-dev-tag:
   stage: .post
   image: node:${NODE_VERSION}
   before_script:
+    - apk add --no-cache git bash
+    # Configure git authentication
+    - git config --global credential.helper store
+    - echo "https://gitlab-ci-token:${CI_JOB_TOKEN}@${CI_SERVER_HOST}" > ~/.git-credentials
     - npm ci
     - npm install -g tsx
   script:
-    - tsx .gitlab/release-automation/scripts/increment-dev-tag.ts
+    - echo "ℹ️  This job is replaced by auto-tag:on-merge"
+    - echo "   Keeping for backwards compatibility"
+    # - tsx .gitlab/release-automation/scripts/increment-dev-tag.ts
   rules:
     - if: $CI_COMMIT_BRANCH =~ /^release\// && $CI_PIPELINE_SOURCE == "push"
-      when: on_success
+      when: manual
   allow_failure: true
 
 # Manual release buttons (main branch only)
@@ -1338,8 +1414,9 @@ create-release-mrs:
         "$CI_API_V4_URL/projects/$CI_PROJECT_ID/milestones?state=active")
       
       echo "$MILESTONES" | jq -r '.[] | select(.title | startswith("v")) | .id + " " + .title' | while read MILESTONE_ID MILESTONE_TITLE; do
-        # Find release branch for this milestone (e.g., release/v0.3.x for v0.3.0)
-        RELEASE_BRANCH=$(echo "$MILESTONE_TITLE" | sed 's/v\([0-9]\+\.[0-9]\+\).*/release\/v\1.x/')
+        # Extract version from milestone title (e.g., "v0.3.0" -> "release/0.3.0")
+        RELEASE_BRANCH="release/$(echo "$MILESTONE_TITLE" | sed 's/^v//')"
+        
         EXISTING_MR=$(curl -s --header "PRIVATE-TOKEN: $CI_JOB_TOKEN" \
           "$CI_API_V4_URL/projects/$CI_PROJECT_ID/merge_requests?state=opened&source_branch=$RELEASE_BRANCH&target_branch=main&milestone=$MILESTONE_TITLE" \
           | jq -r '.[0].iid // empty')
@@ -1352,7 +1429,7 @@ create-release-mrs:
               \"source_branch\": \"$RELEASE_BRANCH\",
               \"target_branch\": \"main\",
               \"title\": \"Draft: 🚀 Release $MILESTONE_TITLE\",
-              \"description\": \"## Release $MILESTONE_TITLE\\n\\nDraft MR for next release. Features merge to release branches and accumulate here.\\n\\n### When Ready\\n1. Mark as ready\\n2. Add to merge train\\n3. Train merges to main\\n4. Release automation runs\",
+              \"description\": \"## Release $MILESTONE_TITLE\\n\\nDraft MR for next release. Features merge to $RELEASE_BRANCH based on milestone/issue/MR.\\n\\n### When Ready\\n1. Mark as ready\\n2. Add to merge train\\n3. Train merges to main\\n4. Release automation runs\",
               \"milestone_id\": $MILESTONE_ID,
               \"draft\": true,
               \"labels\": \"type::release,status::draft\"
@@ -1385,5 +1462,6 @@ generate:llms-txt:
       when: on_success
 
 # ============================================================================
-# POST-RELEASE: No sync needed - release branches merge directly to main
+# POST-RELEASE SYNC - Removed (no development branch)
 # ============================================================================
+# Release branches merge directly to main, no sync needed
