@@ -17,43 +17,31 @@ validate:branch-target:
       echo "Target: ${CI_MERGE_REQUEST_TARGET_BRANCH_NAME}"
       echo ""
 
-      # Feature/bugfix/chore branches must target release branches
+      # Feature/bugfix/chore branches can target development or release/*
       case "$CI_MERGE_REQUEST_SOURCE_BRANCH_NAME" in
-        feature/*|bugfix/*|chore/*|fix/*|docs/*|refactor/*|test/*)
-          if [[ ! "$CI_MERGE_REQUEST_TARGET_BRANCH_NAME" =~ ^release/ ]]; then
-            echo "❌ ERROR: Feature branches must target a release branch (release/*)"
-            echo ""
-            echo "Your branch: ${CI_MERGE_REQUEST_SOURCE_BRANCH_NAME}"
-            echo "Targeting:   ${CI_MERGE_REQUEST_TARGET_BRANCH_NAME}"
-            echo ""
-            echo "Workflow: feature/* → release/* → main"
-            echo "Please retarget this MR to a release branch (e.g., release/v0.3.x)"
-            exit 1
-          fi
-          echo "✅ Feature branch correctly targets release branch: ${CI_MERGE_REQUEST_TARGET_BRANCH_NAME}"
-          ;;
-        release/*)
-          # Release branches can target: main, or other release branches
+        feature/*|bugfix/*|chore/*|fix/*|docs/*|refactor/*|test/*|feat/*|hotfix/*)
           case "$CI_MERGE_REQUEST_TARGET_BRANCH_NAME" in
-            main)
-              echo "✅ Release branch targeting main (production release)"
-              ;;
-            release/*)
-              echo "✅ Release branch targeting another release branch: ${CI_MERGE_REQUEST_TARGET_BRANCH_NAME}"
-              echo "   This allows release branches to merge into release trains (e.g., release/0.3.0 → release/v0.3.x)"
+            development|release/*)
+              echo "✅ Feature branch correctly targets ${CI_MERGE_REQUEST_TARGET_BRANCH_NAME}"
               ;;
             *)
-              echo "❌ ERROR: Release branches must target 'main' or another 'release/*' branch"
+              echo "❌ ERROR: Feature branches must target 'development' or 'release/*'"
               echo ""
               echo "Your branch: ${CI_MERGE_REQUEST_SOURCE_BRANCH_NAME}"
               echo "Targeting:   ${CI_MERGE_REQUEST_TARGET_BRANCH_NAME}"
               echo ""
-              echo "Allowed targets for release branches:"
-              echo "  - main (for final production release)"
-              echo "  - release/* (for release branch consolidation)"
+              echo "Please retarget this MR to 'development' or a release branch"
               exit 1
               ;;
           esac
+          ;;
+        release/*)
+          if [ "$CI_MERGE_REQUEST_TARGET_BRANCH_NAME" != "development" ] && \
+             [ "$CI_MERGE_REQUEST_TARGET_BRANCH_NAME" != "main" ]; then
+            echo "❌ ERROR: Release branches must target 'development' or 'main'"
+            exit 1
+          fi
+          echo "✅ Release branch targeting ${CI_MERGE_REQUEST_TARGET_BRANCH_NAME}"
           ;;
         *)
           echo "ℹ️ Non-standard branch naming - manual review required"
@@ -112,15 +100,15 @@ validate:milestone-assignment:
           ;;
       esac
 
-      # Check if targeting main - must come from release branch
+      # Check if targeting main - must come from development
       if [ "$CI_MERGE_REQUEST_TARGET_BRANCH_NAME" = "main" ]; then
-        if [[ ! "$CI_MERGE_REQUEST_SOURCE_BRANCH_NAME" =~ ^release/ ]]; then
+        if [ "$CI_MERGE_REQUEST_SOURCE_BRANCH_NAME" != "development" ]; then
           echo ""
-          echo "❌ ERROR: Only release branches (release/*) can merge to 'main'"
+          echo "❌ ERROR: Only 'development' can merge to 'main'"
           echo ""
-          echo "Workflow: feature/* → release/* → main"
-          echo "  1. feature/* → release/* (✅ allowed)"
-          echo "  2. release/* → main (✅ allowed)"
+          echo "Workflow:"
+          echo "  1. feature/* → development (✅ allowed)"
+          echo "  2. development → main (✅ allowed)"
           echo "  3. ${CI_MERGE_REQUEST_SOURCE_BRANCH_NAME} → main (❌ blocked)"
           exit 1
         fi
