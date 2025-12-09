@@ -1,0 +1,140 @@
+# Example: Batch Email Campaign Workflow
+# Demonstrates loops, parallel execution, and batch processing
+apiVersion: ossa/v0.3.0
+kind: Workflow
+metadata:
+  name: batch-email-campaign
+  version: 1.0.0
+  description: Send personalized email campaign to subscriber segments
+  labels:
+    domain: marketing
+    type: batch
+
+spec:
+  triggers:
+    - type: cron
+      schedule: "0 9 * * 1"  # Every Monday at 9 AM
+    - type: manual
+
+  inputs:
+    type: object
+    properties:
+      campaign_id:
+        type: string
+      segment_ids:
+        type: array
+        items:
+          type: string
+      test_mode:
+        type: boolean
+        default: false
+    required:
+      - campaign_id
+      - segment_ids
+
+  outputs:
+    type: object
+    properties:
+      total_sent:
+        type: integer
+      total_failed:
+        type: integer
+      segments_processed:
+        type: integer
+
+  steps:
+    # Step 1: Fetch campaign content
+    - id: fetch-campaign
+      kind: Task
+      ref: ./tasks/fetch-campaign.yaml
+      input:
+        campaign_id: ${{ workflow.input.campaign_id }}
+
+    # Step 2: Use AI to generate personalization variants
+    - id: generate-variants
+      kind: Agent
+      ref: ./agents/content-personalizer.yaml
+      input:
+        base_content: ${{ steps.fetch-campaign.output.content }}
+        segments: ${{ workflow.input.segment_ids }}
+      timeout_seconds: 300
+
+    # Step 3: Process each segment in parallel
+    - id: process-segments
+      kind: Loop
+      loop:
+        over: ${{ workflow.input.segment_ids }}
+        as: segment_id
+        parallelism: 3  # Process 3 segments concurrently
+      steps:
+        # Get subscribers in segment
+        - id: fetch-subscribers
+          kind: Task
+          ref: ./tasks/fetch-subscribers.yaml
+          input:
+            segment_id: ${{ segment_id }}
+            limit: ${{ workflow.input.test_mode && 10 }}
+
+        # Send emails in batch
+        - id: send-emails
+          kind: Task
+          ref: ./tasks/batch-email-sender.yaml
+          input:
+            recipients: ${{ steps.fetch-subscribers.output.subscribers }}
+            template_id: ${{ steps.fetch-campaign.output.template_id }}
+            content: ${{ steps.generate-variants.output.variants[segment_id] }}
+            from_email: ${{ steps.fetch-campaign.output.from_email }}
+            subject: ${{ steps.fetch-campaign.output.subject }}
+          continue_on_error: true  # Continue with other segments if one fails
+
+    # Step 4: Aggregate results
+    - id: aggregate-results
+      kind: Task
+      ref: ./tasks/aggregate-campaign-results.yaml
+      input:
+        segment_results: ${{ steps.process-segments.output }}
+        campaign_id: ${{ workflow.input.campaign_id }}
+
+    # Step 5: Send campaign report
+    - id: send-report
+      kind: Task
+      ref: ./tasks/send-notification.yaml
+      input:
+        recipient: marketing@example.com
+        template: campaign_complete
+        variables:
+          campaign_id: ${{ workflow.input.campaign_id }}
+          total_sent: ${{ steps.aggregate-results.output.total_sent }}
+          total_failed: ${{ steps.aggregate-results.output.total_failed }}
+
+  context:
+    variables:
+      max_emails_per_second: 100
+    secrets:
+      - name: smtp_credentials
+        ref: vault://secret/smtp
+      - name: openai_api_key
+        ref: vault://secret/openai
+
+  error_handling:
+    on_failure: notify
+    notification:
+      channels:
+        - email
+        - pagerduty
+      template: campaign_failure
+    retry_policy:
+      max_attempts: 2
+      backoff: exponential
+      initial_delay_ms: 5000
+
+  timeout_seconds: 7200  # 2 hours for large campaigns
+
+  observability:
+    tracing:
+      enabled: true
+    metrics:
+      enabled: true
+      custom_labels:
+        workflow_type: email_campaign
+        campaign_id: ${{ workflow.input.campaign_id }}
