@@ -29,8 +29,8 @@ bin/ @bluefly
 tests/ @bluefly
 
 # Documentation (wiki is primary, but README matters)
+# Note: docs/ covered by default * @bluefly rule above
 README.md @bluefly
-docs/ @bluefly
 
 # Examples - showcase best practices
 examples/ @bluefly
