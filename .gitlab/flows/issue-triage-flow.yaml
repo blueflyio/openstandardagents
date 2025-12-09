@@ -1,0 +1,46 @@
+image: node:22-alpine
+injectGatewayToken: true
+
+commands:
+  - echo "📋 Starting Issue Triage Flow"
+
+steps:
+  - id: analyze_issue
+    agent: issue-triage
+    with:
+      project_id: "{{ event.project.id }}"
+      issue_id: "{{ event.issue.id }}"
+      analysis_type: comprehensive
+
+  - id: route_issue
+    agent: issue-triage
+    with:
+      action: route
+      issue_analysis: "{{ analyze_issue.output }}"
+      routing_rules:
+        - domain: security
+          target_agent: security-scanner
+        - domain: performance
+          target_agent: performance-optimizer
+        - domain: cost
+          target_agent: cost-analyzer
+    needs:
+      - analyze_issue
+
+  - id: apply_labels
+    tool: UpdateIssue
+    with:
+      project_id: "{{ event.project.id }}"
+      issue_id: "{{ event.issue.id }}"
+      labels: "{{ route_issue.output.suggested_labels | join(',') }}"
+    needs:
+      - route_issue
+
+  - id: assign_agent
+    tool: UpdateIssue
+    with:
+      project_id: "{{ event.project.id }}"
+      issue_id: "{{ event.issue.id }}"
+      assignee_ids: ["{{ route_issue.output.assigned_agent_id }}"]
+    needs:
+      - route_issue

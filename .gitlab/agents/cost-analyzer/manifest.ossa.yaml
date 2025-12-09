@@ -1,25 +1,5 @@
-# ============================================================================
-# OSSA Cost Analyzer Agent - GitLab Kubernetes Deployment
-# ============================================================================
-#
-# PURPOSE:
-#   Automated cloud cost analysis and optimization for Kubernetes workloads.
-#   Tracks resource usage, identifies cost optimization opportunities, and
-#   provides recommendations for right-sizing, spot instances, and reserved capacity.
-#
-# CAPABILITIES:
-#   - Real-time cost tracking per namespace/pod/service
-#   - Idle resource detection (underutilized pods)
-#   - Right-sizing recommendations (CPU/memory optimization)
-#   - Spot instance vs on-demand cost comparison
-#   - Reserved instance purchase recommendations
-#   - Cost allocation and chargeback reporting
-#
-# ============================================================================
-
-apiVersion: ossa/v0.2.9
+apiVersion: ossa/v0.3.0
 kind: Agent
-
 metadata:
   name: cost-analyzer
   version: 1.0.0
@@ -27,26 +7,23 @@ metadata:
     Automated cloud cost analysis and optimization agent for Kubernetes.
     Tracks resource costs, detects waste, and provides actionable recommendations
     for right-sizing, spot instances, and reserved capacity purchases.
-
   labels:
     environment: production
     team: finops
     domain: cost-management
     capability: optimization
     financial-impact: high
-
+    ossa-version: v0.3.0
   annotations:
     documentation: https://openstandardagents.org/docs/agents/cost-analyzer
     support: ops@openstandardagents.org
     runbook: https://openstandardagents.org/docs/runbooks/cost-analyzer
-    target: "20% cost reduction in 90 days"
-
+    target: 20% cost reduction in 90 days
 spec:
   taxonomy:
     domain: financial-operations
     subdomain: cost-optimization
     capability: analysis
-
   role: |
     You are an expert FinOps engineer specializing in Kubernetes cost optimization.
 
@@ -73,32 +50,27 @@ spec:
     - Estimated savings ($ and %)
     - Implementation effort (low/medium/high)
     - Risk level (safe/moderate/high-risk)
-
   llm:
     provider: ${LLM_PROVIDER:-anthropic}
-    model: ${LLM_MODEL:-claude-sonnet}  # Use env var, defaults to latest sonnet
+    model: ${LLM_MODEL:-claude-sonnet}
     temperature: 0.1
     maxTokens: 7000
     topP: 0.9
-
     fallback_models:
       - provider: ${LLM_FALLBACK_PROVIDER_1:-openai}
         model: ${LLM_FALLBACK_MODEL_1:-gpt-4o}
       - provider: ${LLM_FALLBACK_PROVIDER_2:-anthropic}
         model: ${LLM_FALLBACK_MODEL_2:-claude-haiku}
-
     retry_config:
       max_attempts: 3
       backoff_strategy: exponential
-
     cost_tracking:
       enabled: true
-      budget_alert_threshold: 20.00
+      budget_alert_threshold: 20
       cost_allocation_tags:
         project: ossa-agents
         team: finops
         service: cost-analyzer
-
   tools:
     - type: http
       name: kubecost-api
@@ -108,7 +80,6 @@ spec:
       config:
         method: GET
         timeout: 30
-
     - type: http
       name: aws-cost-explorer
       description: |
@@ -121,7 +92,6 @@ spec:
         type: aws-sigv4
         accessKeyPath: /var/secrets/aws-access-key
         secretKeyPath: /var/secrets/aws-secret-key
-
     - type: mcp
       name: kubernetes-metrics
       description: |
@@ -129,7 +99,6 @@ spec:
       config:
         server: kubernetes-mcp
         metricsServer: metrics.k8s.io
-
     - type: http
       name: prometheus-query
       description: |
@@ -138,7 +107,6 @@ spec:
       config:
         method: POST
         timeout: 30
-
     - type: a2a
       name: performance-optimizer
       description: |
@@ -149,7 +117,6 @@ spec:
       auth:
         type: mtls
         certPath: /var/secrets/a2a-client-cert.pem
-
     - type: http
       name: slack-webhook
       description: |
@@ -158,45 +125,37 @@ spec:
       config:
         method: POST
         timeout: 5
-
   autonomy:
     level: autonomous
     approval_required: false
-
     allowed_actions:
       - query_cost_data
       - analyze_resource_usage
       - generate_cost_reports
       - detect_cost_anomalies
       - recommend_optimizations
-
     blocked_actions:
-      - apply_right_sizing  # Requires human approval
+      - apply_right_sizing
       - purchase_reserved_instances
       - terminate_resources
-
   constraints:
     cost:
       maxTokensPerDay: 250000
       maxTokensPerRequest: 7000
-      maxCostPerDay: 25.00
+      maxCostPerDay: 25
       currency: USD
-
     performance:
       maxLatencySeconds: 60
       maxConcurrentRequests: 10
       timeoutSeconds: 120
-
     resources:
-      cpu: "500m"
-      memory: "1Gi"
-
+      cpu: 500m
+      memory: 1Gi
   observability:
     tracing:
       enabled: true
       exporter: otlp
       endpoint: http://jaeger-collector:4318
-
     metrics:
       enabled: true
       exporter: prometheus
@@ -204,19 +163,19 @@ spec:
       customMetrics:
         - name: monthly_cost_usd
           type: gauge
-          description: "Total monthly Kubernetes cost"
-          labels: [namespace, workload_type]
+          description: Total monthly Kubernetes cost
+          labels:
+            - namespace
+            - workload_type
         - name: potential_savings_usd
           type: gauge
-          description: "Potential monthly savings from recommendations"
+          description: Potential monthly savings from recommendations
         - name: cost_anomalies_detected_total
           type: counter
-          description: "Cost anomalies detected"
-
+          description: Cost anomalies detected
     logging:
       level: info
       format: json
-
   state:
     backend: postgres
     config:
@@ -225,12 +184,11 @@ spec:
       database: cost_analysis
       schema: cost_data
       ssl: true
-
   reliability:
     sla:
-      availability_percent: 99.0
+      availability_percent: 99
       latency_p95_ms: 15000
-      error_rate_percent: 1.0
+      error_rate_percent: 1
     circuit_breaker:
       enabled: true
       failure_threshold: 5
@@ -242,7 +200,6 @@ spec:
       timeout_seconds: 5
     failover:
       enabled: false
-
   security:
     authentication:
       required: true
@@ -262,8 +219,7 @@ spec:
       enabled: true
       log_level: standard
       retention_days: 365
-      pii_redaction: false  # Financial data, no PII
-
+      pii_redaction: false
   safety:
     rate_limiting:
       enabled: true
@@ -282,7 +238,6 @@ spec:
             - no_reserved_instance_purchase
       max_tool_calls: 50
       max_execution_time_seconds: 180
-
   deployment:
     strategy: rolling
     rollback:
@@ -306,7 +261,6 @@ spec:
       graceful_shutdown:
         enabled: true
         timeout_seconds: 30
-
   extensions:
     kagent:
       kubernetes:
@@ -315,18 +269,15 @@ spec:
           app: cost-analyzer
           team: finops
         resourceLimits:
-          cpu: "500m"
-          memory: "1Gi"
+          cpu: 500m
+          memory: 1Gi
         serviceAccount: cost-analyzer-sa
-
       guardrails:
         requireApproval: false
-
         allowedActions:
           - kubecost:query:*
           - aws:describe:*
           - prometheus:query:*
-
       a2aConfig:
         enabled: true
         protocol: json-rpc
@@ -334,42 +285,41 @@ spec:
           - http://performance-optimizer:8080/a2a
         authentication:
           type: mtls
-
       meshIntegration:
         enabled: true
         istioIntegration: true
         mtlsMode: STRICT
-
-# ============================================================================
-# COST OPTIMIZATION STRATEGIES
-# ============================================================================
-#
-# 1. Idle Resource Elimination:
-#    - Detect pods with CPU < 20% and memory < 20% for 7+ days
-#    - Recommend termination or downsizing
-#    - Estimated savings: $5,000-10,000/month
-#
-# 2. Right-Sizing:
-#    - Analyze actual CPU/memory usage vs requests/limits
-#    - Recommend reducing requests by 30-50% if consistently underutilized
-#    - Estimated savings: $15,000-25,000/month
-#
-# 3. Spot Instances:
-#    - Identify dev/test/batch workloads safe for interruption
-#    - Recommend spot instance node pools (60-90% savings)
-#    - Estimated savings: $20,000-40,000/month
-#
-# 4. Reserved Instances:
-#    - Analyze production workload stability (7+ day consistent usage)
-#    - Recommend 1-year or 3-year reserved instances (30-70% savings)
-#    - Estimated savings: $30,000-50,000/month
-#
-# 5. Autoscaling:
-#    - Implement HPA for CPU/memory-based scaling
-#    - Implement VPA for automatic pod right-sizing
-#    - Implement Cluster Autoscaler for node scaling
-#    - Estimated savings: $10,000-20,000/month
-#
-# TOTAL POTENTIAL SAVINGS: $80,000-145,000/month (20-35% reduction)
-#
-# ============================================================================
+extensions:
+  kagent:
+    api_version: kagent.dev/v1alpha2
+    kubernetes:
+      namespace: agent-system
+      labels:
+        app.kubernetes.io/name: cost-analyzer
+        app.kubernetes.io/part-of: ossa-showcase
+        openstandardagents.org/version: v0.3.0
+      resourceLimits:
+        cpu: "1"
+        memory: 2Gi
+    deployment:
+      replicas:
+        min: 1
+        max: 3
+      strategy: rolling-update
+    a2aConfig:
+      enabled: true
+      protocol: json-rpc
+    meshIntegration:
+      enabled: true
+      istioIntegration: true
+  gitlab_duo:
+    enabled: true
+    flow_execution: true
+    model: ${GITLAB_DUO_MODEL:-claude-sonnet-4.5-20250929}
+    knowledge_graph:
+      enabled: true
+      index_on_push: true
+  mcp:
+    enabled: true
+    server_type: stdio
+    server_name: cost-analyzer-mcp

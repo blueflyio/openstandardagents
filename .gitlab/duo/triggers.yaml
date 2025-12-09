@@ -1,0 +1,100 @@
+# ============================================================================
+# GitLab Duo Agent Platform Triggers Configuration
+# ============================================================================
+# Defines autonomous triggers for OSSA agents via GitLab Duo
+# Each trigger links events to agent flows for autonomous execution
+# ============================================================================
+
+triggers:
+  # ========================================================================
+  # Release Orchestration Trigger
+  # ========================================================================
+  - name: release-orchestration-trigger
+    description: "Autonomous release orchestration on milestone closure"
+    service_account: bot-release-orchestrator
+    event_types:
+      - mention
+      - assign
+    flow_config:
+      source: configuration_path
+      path: .gitlab/flows/release-orchestration-flow.yaml
+    conditions:
+      - milestone.state == "closed"
+      - milestone.title matches "^v\\d+\\.\\d+\\.\\d+"
+
+  # ========================================================================
+  # Pipeline Optimization Trigger
+  # ========================================================================
+  - name: pipeline-optimization-trigger
+    description: "Autonomous pipeline analysis and optimization"
+    service_account: bot-ci-cd-optimizer
+    event_types:
+      - pipeline_failed
+      - pipeline_slow
+    flow_config:
+      source: configuration_path
+      path: .gitlab/flows/pipeline-optimization-flow.yaml
+    conditions:
+      - pipeline.status == "failed" || pipeline.duration > 1800
+
+  # ========================================================================
+  # Security Remediation Trigger
+  # ========================================================================
+  - name: security-remediation-trigger
+    description: "Autonomous security vulnerability remediation"
+    service_account: bot-security-scanner
+    event_types:
+      - security_scan_failed
+      - vulnerability_detected
+    flow_config:
+      source: configuration_path
+      path: .gitlab/flows/security-remediation-flow.yaml
+    conditions:
+      - security_scan.severity >= "high"
+
+  # ========================================================================
+  # Code Review Trigger
+  # ========================================================================
+  - name: code-review-trigger
+    description: "Autonomous code review on merge request"
+    service_account: bot-code-reviewer
+    event_types:
+      - assign_reviewer
+      - merge_request_opened
+    flow_config:
+      source: configuration_path
+      path: .gitlab/flows/code-review-flow.yaml
+    conditions:
+      - merge_request.target_branch == "main"
+      - merge_request.draft == false
+
+  # ========================================================================
+  # Issue Triage Trigger
+  # ========================================================================
+  - name: issue-triage-trigger
+    description: "Autonomous issue triage and routing"
+    service_account: bot-issue-triage
+    event_types:
+      - issue_created
+      - assign
+    flow_config:
+      source: configuration_path
+      path: .gitlab/flows/issue-triage-flow.yaml
+    conditions:
+      - issue.state == "opened"
+
+  # ========================================================================
+  # Documentation Sync Trigger
+  # ========================================================================
+  - name: documentation-sync-trigger
+    description: "Autonomous documentation synchronization"
+    service_account: bot-doc-agent
+    event_types:
+      - push
+      - schedule
+    flow_config:
+      source: configuration_path
+      path: .gitlab/flows/documentation-sync-flow.yaml
+    conditions:
+      - push.paths matches ".*\\.(md|yaml|yml|json)$"
+      - schedule.cron == "0 */6 * * *"

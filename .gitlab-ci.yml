@@ -18,6 +18,9 @@ include:
   - local: '.gitlab/ci/agents.yml'
   - local: '.gitlab/ci/branch-policy.yml'
   - local: '.gitlab/ci/release-workflow.yml'
+  - local: '.gitlab/ci/ossa-integration.yml'
+  - local: '.gitlab/ci/components/ossa-agent-component.yml'
+  - local: '.gitlab/ci/components/ossa-workflow-component.yml'
   # TODO: Add merge-train component when gitlab_components is made public/internal
   # - component: gitlab.com/blueflyio/agent-platform/gitlab_components/merge-train@main
 
@@ -286,8 +289,32 @@ validate:ossa:
   script:
     - npm ci --legacy-peer-deps
     - npm run build
-    - echo "Validating example manifests..."
-    - node dist/cli/index.js validate examples/getting-started/hello-world-complete.ossa.yaml || echo "⚠️  Validation warnings (non-blocking)"
+    - echo "Validating all OSSA v0.3.0 manifests..."
+    - |
+      echo "🔍 Validating agent manifests..."
+      for manifest in .gitlab/agents/*/manifest.ossa.yaml; do
+        if [ -f "$manifest" ]; then
+          echo "  Validating: $manifest"
+          node dist/cli/index.js validate "$manifest" || echo "  ⚠️  Validation warnings for $manifest (non-blocking)"
+        fi
+      done
+    - |
+      echo "🔍 Validating workflow manifests..."
+      for workflow in .gitlab/workflows/*.ossa.yaml; do
+        if [ -f "$workflow" ]; then
+          echo "  Validating: $workflow"
+          node dist/cli/index.js validate "$workflow" || echo "  ⚠️  Validation warnings for $workflow (non-blocking)"
+        fi
+      done
+    - |
+      echo "🔍 Validating task manifests..."
+      for task in .gitlab/tasks/*.ossa.yaml; do
+        if [ -f "$task" ]; then
+          echo "  Validating: $task"
+          node dist/cli/index.js validate "$task" || echo "  ⚠️  Validation warnings for $task (non-blocking)"
+        fi
+      done
+    - echo "✅ OSSA v0.3.0 manifest validation complete"
   allow_failure: true
   rules:
     - when: always
