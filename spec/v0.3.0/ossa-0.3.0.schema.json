@@ -38,11 +38,14 @@
     "extensions": {
       "type": "object",
       "description": "Framework-specific extensions",
+<<<<<<< HEAD
       "properties": {
         "mcp": {
           "$ref": "#/definitions/MCPExtension"
         }
       },
+=======
+>>>>>>> origin/feature/ai-foundations
       "additionalProperties": true
     },
     "runtime": {
@@ -54,9 +57,13 @@
     {
       "if": {
         "properties": {
+<<<<<<< HEAD
           "kind": {
             "const": "Agent"
           }
+=======
+          "kind": { "const": "Agent" }
+>>>>>>> origin/feature/ai-foundations
         }
       },
       "then": {
@@ -65,17 +72,25 @@
             "$ref": "#/definitions/AgentSpec"
           }
         },
+<<<<<<< HEAD
         "required": [
           "spec"
         ]
+=======
+        "required": ["spec"]
+>>>>>>> origin/feature/ai-foundations
       }
     },
     {
       "if": {
         "properties": {
+<<<<<<< HEAD
           "kind": {
             "const": "Task"
           }
+=======
+          "kind": { "const": "Task" }
+>>>>>>> origin/feature/ai-foundations
         }
       },
       "then": {
@@ -84,17 +99,25 @@
             "$ref": "#/definitions/TaskSpec"
           }
         },
+<<<<<<< HEAD
         "required": [
           "spec"
         ]
+=======
+        "required": ["spec"]
+>>>>>>> origin/feature/ai-foundations
       }
     },
     {
       "if": {
         "properties": {
+<<<<<<< HEAD
           "kind": {
             "const": "Workflow"
           }
+=======
+          "kind": { "const": "Workflow" }
+>>>>>>> origin/feature/ai-foundations
         }
       },
       "then": {
@@ -103,18 +126,26 @@
             "$ref": "#/definitions/WorkflowSpec"
           }
         },
+<<<<<<< HEAD
         "required": [
           "spec"
         ]
+=======
+        "required": ["spec"]
+>>>>>>> origin/feature/ai-foundations
       }
     }
   ],
   "definitions": {
     "Metadata": {
       "type": "object",
+<<<<<<< HEAD
       "required": [
         "name"
       ],
+=======
+      "required": ["name"],
+>>>>>>> origin/feature/ai-foundations
       "properties": {
         "name": {
           "type": "string",
@@ -150,16 +181,25 @@
       },
       "additionalProperties": false
     },
+<<<<<<< HEAD
     "TaskSpec": {
       "type": "object",
       "description": "Specification for deterministic, non-agentic workflow steps (kind: Task)",
       "required": [
         "execution"
       ],
+=======
+
+    "TaskSpec": {
+      "type": "object",
+      "description": "Specification for deterministic, non-agentic workflow steps (kind: Task)",
+      "required": ["execution"],
+>>>>>>> origin/feature/ai-foundations
       "properties": {
         "execution": {
           "type": "object",
           "description": "Execution configuration for the task",
+<<<<<<< HEAD
           "required": [
             "type"
           ],
@@ -171,12 +211,20 @@
                 "idempotent",
                 "transactional"
               ],
+=======
+          "required": ["type"],
+          "properties": {
+            "type": {
+              "type": "string",
+              "enum": ["deterministic", "idempotent", "transactional"],
+>>>>>>> origin/feature/ai-foundations
               "default": "deterministic",
               "description": "Execution type: deterministic (pure function), idempotent (safe to retry), transactional (all-or-nothing)"
             },
             "runtime": {
               "type": "string",
               "description": "Target runtime environment",
+<<<<<<< HEAD
               "examples": [
                 "drupal",
                 "symfony",
@@ -184,6 +232,9 @@
                 "python",
                 "any"
               ]
+=======
+              "examples": ["drupal", "symfony", "node", "python", "any"]
+>>>>>>> origin/feature/ai-foundations
             },
             "entrypoint": {
               "type": "string",
@@ -209,6 +260,7 @@
           },
           "uniqueItems": true,
           "examples": [
+<<<<<<< HEAD
             [
               "publish_content",
               "send_notification"
@@ -217,6 +269,10 @@
               "transform_data",
               "validate_schema"
             ]
+=======
+            ["publish_content", "send_notification"],
+            ["transform_data", "validate_schema"]
+>>>>>>> origin/feature/ai-foundations
           ]
         },
         "input": {
@@ -260,11 +316,15 @@
                 },
                 "backoff_strategy": {
                   "type": "string",
+<<<<<<< HEAD
                   "enum": [
                     "fixed",
                     "exponential",
                     "linear"
                   ],
+=======
+                  "enum": ["fixed", "exponential", "linear"],
+>>>>>>> origin/feature/ai-foundations
                   "default": "exponential"
                 },
                 "initial_delay_ms": {
@@ -277,11 +337,15 @@
             },
             "on_item_error": {
               "type": "string",
+<<<<<<< HEAD
               "enum": [
                 "skip",
                 "fail",
                 "retry"
               ],
+=======
+              "enum": ["skip", "fail", "retry"],
+>>>>>>> origin/feature/ai-foundations
               "default": "retry",
               "description": "Behavior when individual item fails"
             }
@@ -293,9 +357,13 @@
           "description": "Other tasks or agents this task depends on",
           "items": {
             "type": "object",
+<<<<<<< HEAD
             "required": [
               "ref"
             ],
+=======
+            "required": ["ref"],
+>>>>>>> origin/feature/ai-foundations
             "properties": {
               "ref": {
                 "type": "string",
@@ -303,10 +371,14 @@
               },
               "kind": {
                 "type": "string",
+<<<<<<< HEAD
                 "enum": [
                   "Task",
                   "Agent"
                 ],
+=======
+                "enum": ["Task", "Agent"],
+>>>>>>> origin/feature/ai-foundations
                 "description": "Kind of dependency"
               },
               "optional": {
@@ -323,9 +395,13 @@
           "description": "Conditions that must be true before task execution",
           "items": {
             "type": "object",
+<<<<<<< HEAD
             "required": [
               "expression"
             ],
+=======
+            "required": ["expression"],
+>>>>>>> origin/feature/ai-foundations
             "properties": {
               "expression": {
                 "type": "string",
@@ -344,9 +420,13 @@
           "description": "Conditions that must be true after task execution",
           "items": {
             "type": "object",
+<<<<<<< HEAD
             "required": [
               "expression"
             ],
+=======
+            "required": ["expression"],
+>>>>>>> origin/feature/ai-foundations
             "properties": {
               "expression": {
                 "type": "string",
@@ -365,12 +445,16 @@
           "properties": {
             "on_error": {
               "type": "string",
+<<<<<<< HEAD
               "enum": [
                 "fail",
                 "retry",
                 "fallback",
                 "ignore"
               ],
+=======
+              "enum": ["fail", "retry", "fallback", "ignore"],
+>>>>>>> origin/feature/ai-foundations
               "default": "fail"
             },
             "fallback_task": {
@@ -382,12 +466,16 @@
               "description": "Map error codes to actions",
               "additionalProperties": {
                 "type": "string",
+<<<<<<< HEAD
                 "enum": [
                   "fail",
                   "retry",
                   "fallback",
                   "ignore"
                 ]
+=======
+                "enum": ["fail", "retry", "fallback", "ignore"]
+>>>>>>> origin/feature/ai-foundations
               }
             }
           },
@@ -402,12 +490,16 @@
               "properties": {
                 "level": {
                   "type": "string",
+<<<<<<< HEAD
                   "enum": [
                     "debug",
                     "info",
                     "warn",
                     "error"
                   ],
+=======
+                  "enum": ["debug", "info", "warn", "error"],
+>>>>>>> origin/feature/ai-foundations
                   "default": "info"
                 },
                 "include_input": {
@@ -458,12 +550,20 @@
       },
       "additionalProperties": false
     },
+<<<<<<< HEAD
     "AgentSpec": {
       "type": "object",
       "description": "Specification for agentic loops with LLM (kind: Agent) - inherits from v0.2.9",
       "required": [
         "role"
       ],
+=======
+
+    "AgentSpec": {
+      "type": "object",
+      "description": "Specification for agentic loops with LLM (kind: Agent) - inherits from v0.2.9",
+      "required": ["role"],
+>>>>>>> origin/feature/ai-foundations
       "properties": {
         "role": {
           "type": "string",
@@ -497,12 +597,20 @@
       },
       "additionalProperties": true
     },
+<<<<<<< HEAD
     "WorkflowSpec": {
       "type": "object",
       "description": "Specification for workflow composition (kind: Workflow) - composes Tasks and Agents into executable pipelines",
       "required": [
         "steps"
       ],
+=======
+
+    "WorkflowSpec": {
+      "type": "object",
+      "description": "Specification for workflow composition (kind: Workflow) - composes Tasks and Agents into executable pipelines",
+      "required": ["steps"],
+>>>>>>> origin/feature/ai-foundations
       "properties": {
         "triggers": {
           "type": "array",
@@ -551,10 +659,14 @@
                     "description": "Secret reference (e.g., vault://secret/api-key)"
                   }
                 },
+<<<<<<< HEAD
                 "required": [
                   "name",
                   "ref"
                 ]
+=======
+                "required": ["name", "ref"]
+>>>>>>> origin/feature/ai-foundations
               }
             }
           },
@@ -582,6 +694,7 @@
           "properties": {
             "on_failure": {
               "type": "string",
+<<<<<<< HEAD
               "enum": [
                 "halt",
                 "continue",
@@ -589,6 +702,9 @@
                 "notify",
                 "compensate"
               ],
+=======
+              "enum": ["halt", "continue", "rollback", "notify", "compensate"],
+>>>>>>> origin/feature/ai-foundations
               "default": "halt",
               "description": "Action on step failure"
             },
@@ -607,12 +723,16 @@
                   "type": "array",
                   "items": {
                     "type": "string",
+<<<<<<< HEAD
                     "enum": [
                       "email",
                       "slack",
                       "webhook",
                       "pagerduty"
                     ]
+=======
+                    "enum": ["email", "slack", "webhook", "pagerduty"]
+>>>>>>> origin/feature/ai-foundations
                   }
                 },
                 "template": {
@@ -632,11 +752,15 @@
                 },
                 "backoff": {
                   "type": "string",
+<<<<<<< HEAD
                   "enum": [
                     "fixed",
                     "exponential",
                     "linear"
                   ],
+=======
+                  "enum": ["fixed", "exponential", "linear"],
+>>>>>>> origin/feature/ai-foundations
                   "default": "exponential"
                 },
                 "initial_delay_ms": {
@@ -697,12 +821,16 @@
               "properties": {
                 "level": {
                   "type": "string",
+<<<<<<< HEAD
                   "enum": [
                     "debug",
                     "info",
                     "warn",
                     "error"
                   ],
+=======
+                  "enum": ["debug", "info", "warn", "error"],
+>>>>>>> origin/feature/ai-foundations
                   "default": "info"
                 }
               }
@@ -713,6 +841,10 @@
       },
       "additionalProperties": false
     },
+<<<<<<< HEAD
+=======
+
+>>>>>>> origin/feature/ai-foundations
     "RuntimeBinding": {
       "type": "object",
       "description": "Runtime-specific capability bindings",
@@ -720,6 +852,7 @@
         "type": {
           "type": "string",
           "description": "Runtime type identifier",
+<<<<<<< HEAD
           "examples": [
             "drupal",
             "symfony_messenger",
@@ -727,16 +860,23 @@
             "temporal",
             "node"
           ]
+=======
+          "examples": ["drupal", "symfony_messenger", "kagent", "temporal", "node"]
+>>>>>>> origin/feature/ai-foundations
         },
         "transport": {
           "type": "string",
           "description": "Message transport for async runtimes",
+<<<<<<< HEAD
           "examples": [
             "async",
             "sync",
             "amqp",
             "redis"
           ]
+=======
+          "examples": ["async", "sync", "amqp", "redis"]
+>>>>>>> origin/feature/ai-foundations
         },
         "bindings": {
           "type": "object",
@@ -768,6 +908,7 @@
       },
       "additionalProperties": false
     },
+<<<<<<< HEAD
     "Trigger": {
       "type": "object",
       "description": "Workflow trigger configuration",
@@ -783,6 +924,17 @@
             "event",
             "manual"
           ],
+=======
+
+    "Trigger": {
+      "type": "object",
+      "description": "Workflow trigger configuration",
+      "required": ["type"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["webhook", "cron", "event", "manual"],
+>>>>>>> origin/feature/ai-foundations
           "description": "Trigger type"
         },
         "path": {
@@ -792,28 +944,40 @@
         "schedule": {
           "type": "string",
           "description": "Cron expression (for type=cron)",
+<<<<<<< HEAD
           "examples": [
             "0 8 * * *",
             "*/15 * * * *"
           ]
+=======
+          "examples": ["0 8 * * *", "*/15 * * * *"]
+>>>>>>> origin/feature/ai-foundations
         },
         "source": {
           "type": "string",
           "description": "Event source (for type=event)",
+<<<<<<< HEAD
           "examples": [
             "drupal",
             "kafka",
             "webhook"
           ]
+=======
+          "examples": ["drupal", "kafka", "webhook"]
+>>>>>>> origin/feature/ai-foundations
         },
         "event": {
           "type": "string",
           "description": "Event name (for type=event)",
+<<<<<<< HEAD
           "examples": [
             "node.created",
             "user.login",
             "order.placed"
           ]
+=======
+          "examples": ["node.created", "user.login", "order.placed"]
+>>>>>>> origin/feature/ai-foundations
         },
         "filter": {
           "type": "object",
@@ -823,12 +987,20 @@
       },
       "additionalProperties": false
     },
+<<<<<<< HEAD
     "WorkflowStep": {
       "type": "object",
       "description": "A step in a workflow - can be a Task, Agent, or control structure",
       "required": [
         "id"
       ],
+=======
+
+    "WorkflowStep": {
+      "type": "object",
+      "description": "A step in a workflow - can be a Task, Agent, or control structure",
+      "required": ["id"],
+>>>>>>> origin/feature/ai-foundations
       "properties": {
         "id": {
           "type": "string",
@@ -841,6 +1013,7 @@
         },
         "kind": {
           "type": "string",
+<<<<<<< HEAD
           "enum": [
             "Task",
             "Agent",
@@ -848,15 +1021,22 @@
             "Conditional",
             "Loop"
           ],
+=======
+          "enum": ["Task", "Agent", "Parallel", "Conditional", "Loop"],
+>>>>>>> origin/feature/ai-foundations
           "description": "Step type"
         },
         "ref": {
           "type": "string",
           "description": "Reference to Task or Agent manifest file",
+<<<<<<< HEAD
           "examples": [
             "./tasks/publish-content.yaml",
             "./agents/content-reviewer.yaml"
           ]
+=======
+          "examples": ["./tasks/publish-content.yaml", "./agents/content-reviewer.yaml"]
+>>>>>>> origin/feature/ai-foundations
         },
         "inline": {
           "type": "object",
@@ -905,12 +1085,16 @@
           "items": {
             "type": "string"
           },
+<<<<<<< HEAD
           "examples": [
             [
               "fetch",
               "validate"
             ]
           ]
+=======
+          "examples": [["fetch", "validate"]]
+>>>>>>> origin/feature/ai-foundations
         },
         "parallel": {
           "type": "array",
@@ -936,10 +1120,14 @@
                 }
               }
             },
+<<<<<<< HEAD
             "required": [
               "condition",
               "steps"
             ]
+=======
+            "required": ["condition", "steps"]
+>>>>>>> origin/feature/ai-foundations
           }
         },
         "else": {
@@ -956,10 +1144,14 @@
             "over": {
               "type": "string",
               "description": "Expression returning array to iterate over",
+<<<<<<< HEAD
               "examples": [
                 "${{ steps.fetch.output.items }}",
                 "${{ workflow.input.recipients }}"
               ]
+=======
+              "examples": ["${{ steps.fetch.output.items }}", "${{ workflow.input.recipients }}"]
+>>>>>>> origin/feature/ai-foundations
             },
             "as": {
               "type": "string",
@@ -977,9 +1169,13 @@
               "description": "Maximum parallel iterations"
             }
           },
+<<<<<<< HEAD
           "required": [
             "over"
           ]
+=======
+          "required": ["over"]
+>>>>>>> origin/feature/ai-foundations
         },
         "steps": {
           "type": "array",
@@ -1000,11 +1196,15 @@
             },
             "backoff_strategy": {
               "type": "string",
+<<<<<<< HEAD
               "enum": [
                 "fixed",
                 "exponential",
                 "linear"
               ],
+=======
+              "enum": ["fixed", "exponential", "linear"],
+>>>>>>> origin/feature/ai-foundations
               "default": "exponential"
             },
             "initial_delay_ms": {
@@ -1038,12 +1238,16 @@
           "properties": {
             "action": {
               "type": "string",
+<<<<<<< HEAD
               "enum": [
                 "fail",
                 "continue",
                 "goto",
                 "compensate"
               ],
+=======
+              "enum": ["fail", "continue", "goto", "compensate"],
+>>>>>>> origin/feature/ai-foundations
               "default": "fail"
             },
             "goto": {
@@ -1066,12 +1270,17 @@
       },
       "additionalProperties": false
     },
+<<<<<<< HEAD
+=======
+
+>>>>>>> origin/feature/ai-foundations
     "JSONSchemaDefinition": {
       "type": "object",
       "description": "JSON Schema definition for input/output validation",
       "properties": {
         "type": {
           "type": "string",
+<<<<<<< HEAD
           "enum": [
             "object",
             "array",
@@ -1081,6 +1290,9 @@
             "boolean",
             "null"
           ]
+=======
+          "enum": ["object", "array", "string", "number", "integer", "boolean", "null"]
+>>>>>>> origin/feature/ai-foundations
         },
         "properties": {
           "type": "object",
@@ -1096,14 +1308,19 @@
           "type": "object"
         },
         "additionalProperties": {
+<<<<<<< HEAD
           "type": [
             "boolean",
             "object"
           ]
+=======
+          "type": ["boolean", "object"]
+>>>>>>> origin/feature/ai-foundations
         }
       },
       "additionalProperties": true
     },
+<<<<<<< HEAD
     "LLMConfig": {
       "type": "object",
       "required": [
@@ -1121,6 +1338,16 @@
             "ollama",
             "custom"
           ]
+=======
+
+    "LLMConfig": {
+      "type": "object",
+      "required": ["provider", "model"],
+      "properties": {
+        "provider": {
+          "type": "string",
+          "enum": ["openai", "anthropic", "google", "azure", "ollama", "custom"]
+>>>>>>> origin/feature/ai-foundations
         },
         "model": {
           "type": "string"
@@ -1137,6 +1364,7 @@
       },
       "additionalProperties": true
     },
+<<<<<<< HEAD
     "Tool": {
       "type": "object",
       "required": [
@@ -1154,6 +1382,16 @@
             "a2a",
             "custom"
           ]
+=======
+
+    "Tool": {
+      "type": "object",
+      "required": ["type"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["mcp", "kubernetes", "http", "grpc", "function", "a2a", "custom"]
+>>>>>>> origin/feature/ai-foundations
         },
         "name": {
           "type": "string"
@@ -1167,11 +1405,18 @@
       },
       "additionalProperties": true
     },
+<<<<<<< HEAD
     "Capability": {
       "type": "object",
       "required": [
         "name"
       ],
+=======
+
+    "Capability": {
+      "type": "object",
+      "required": ["name"],
+>>>>>>> origin/feature/ai-foundations
       "properties": {
         "name": {
           "type": "string"
@@ -1188,22 +1433,31 @@
       },
       "additionalProperties": true
     },
+<<<<<<< HEAD
+=======
+
+>>>>>>> origin/feature/ai-foundations
     "Autonomy": {
       "type": "object",
       "properties": {
         "level": {
           "type": "string",
+<<<<<<< HEAD
           "enum": [
             "supervised",
             "autonomous",
             "fully_autonomous"
           ]
+=======
+          "enum": ["supervised", "autonomous", "fully_autonomous"]
+>>>>>>> origin/feature/ai-foundations
         },
         "approval_required": {
           "type": "boolean"
         },
         "allowed_actions": {
           "type": "array",
+<<<<<<< HEAD
           "items": {
             "type": "string"
           }
@@ -1213,16 +1467,28 @@
           "items": {
             "type": "string"
           }
+=======
+          "items": { "type": "string" }
+        },
+        "blocked_actions": {
+          "type": "array",
+          "items": { "type": "string" }
+>>>>>>> origin/feature/ai-foundations
         }
       },
       "additionalProperties": false
     },
+<<<<<<< HEAD
+=======
+
+>>>>>>> origin/feature/ai-foundations
     "Constraints": {
       "type": "object",
       "properties": {
         "cost": {
           "type": "object",
           "properties": {
+<<<<<<< HEAD
             "maxTokensPerDay": {
               "type": "integer"
             },
@@ -1232,11 +1498,17 @@
             "maxCostPerDay": {
               "type": "number"
             }
+=======
+            "maxTokensPerDay": { "type": "integer" },
+            "maxTokensPerRequest": { "type": "integer" },
+            "maxCostPerDay": { "type": "number" }
+>>>>>>> origin/feature/ai-foundations
           }
         },
         "performance": {
           "type": "object",
           "properties": {
+<<<<<<< HEAD
             "maxLatencySeconds": {
               "type": "number"
             },
@@ -1246,27 +1518,41 @@
             "timeoutSeconds": {
               "type": "number"
             }
+=======
+            "maxLatencySeconds": { "type": "number" },
+            "maxConcurrentRequests": { "type": "integer" },
+            "timeoutSeconds": { "type": "number" }
+>>>>>>> origin/feature/ai-foundations
           }
         }
       },
       "additionalProperties": false
     },
+<<<<<<< HEAD
+=======
+
+>>>>>>> origin/feature/ai-foundations
     "State": {
       "type": "object",
       "properties": {
         "mode": {
           "type": "string",
+<<<<<<< HEAD
           "enum": [
             "stateless",
             "session",
             "long_running"
           ]
+=======
+          "enum": ["stateless", "session", "long_running"]
+>>>>>>> origin/feature/ai-foundations
         },
         "storage": {
           "type": "object",
           "properties": {
             "type": {
               "type": "string",
+<<<<<<< HEAD
               "enum": [
                 "memory",
                 "vector-db",
@@ -1274,6 +1560,9 @@
                 "rdbms",
                 "custom"
               ]
+=======
+              "enum": ["memory", "vector-db", "kv", "rdbms", "custom"]
+>>>>>>> origin/feature/ai-foundations
             },
             "retention": {
               "type": "string"
@@ -1283,51 +1572,75 @@
       },
       "additionalProperties": false
     },
+<<<<<<< HEAD
+=======
+
+>>>>>>> origin/feature/ai-foundations
     "AgentObservability": {
       "type": "object",
       "properties": {
         "tracing": {
           "type": "object",
           "properties": {
+<<<<<<< HEAD
             "enabled": {
               "type": "boolean"
             },
             "exporter": {
               "type": "string"
             }
+=======
+            "enabled": { "type": "boolean" },
+            "exporter": { "type": "string" }
+>>>>>>> origin/feature/ai-foundations
           }
         },
         "metrics": {
           "type": "object",
           "properties": {
+<<<<<<< HEAD
             "enabled": {
               "type": "boolean"
             },
             "exporter": {
               "type": "string"
             }
+=======
+            "enabled": { "type": "boolean" },
+            "exporter": { "type": "string" }
+>>>>>>> origin/feature/ai-foundations
           }
         },
         "logging": {
           "type": "object",
           "properties": {
+<<<<<<< HEAD
             "level": {
               "type": "string"
             },
             "format": {
               "type": "string"
             }
+=======
+            "level": { "type": "string" },
+            "format": { "type": "string" }
+>>>>>>> origin/feature/ai-foundations
           }
         }
       },
       "additionalProperties": false
     },
+<<<<<<< HEAD
+=======
+
+>>>>>>> origin/feature/ai-foundations
     "Safety": {
       "type": "object",
       "properties": {
         "content_filtering": {
           "type": "object",
           "properties": {
+<<<<<<< HEAD
             "enabled": {
               "type": "boolean"
             },
@@ -1337,21 +1650,31 @@
                 "type": "string"
               }
             }
+=======
+            "enabled": { "type": "boolean" },
+            "categories": { "type": "array", "items": { "type": "string" } }
+>>>>>>> origin/feature/ai-foundations
           }
         },
         "guardrails": {
           "type": "object",
           "properties": {
+<<<<<<< HEAD
             "enabled": {
               "type": "boolean"
             },
             "max_tool_calls": {
               "type": "integer"
             }
+=======
+            "enabled": { "type": "boolean" },
+            "max_tool_calls": { "type": "integer" }
+>>>>>>> origin/feature/ai-foundations
           }
         }
       },
       "additionalProperties": false
+<<<<<<< HEAD
     },
     "MCPExtension": {
       "type": "object",
@@ -1510,3 +1833,8 @@
     }
   }
 }
+=======
+    }
+  }
+}
+>>>>>>> origin/feature/ai-foundations
