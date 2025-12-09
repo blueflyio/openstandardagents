@@ -130,7 +130,7 @@ spec:
                 enum: [compliance-engine, agent-tracer, external]
               retention:
                 type: string
-                pattern: "^\d+[years|months|days]$"
+                pattern: "^\\d+[years|months|days]$"
               description: "Audit logging configuration"
 
       meshIntegration:
