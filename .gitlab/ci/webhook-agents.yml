@@ -478,7 +478,7 @@ agent:report:
 # ============================================================================
 # To run these jobs:
 #   1. Go to: CI/CD → Pipelines → Run pipeline
-#   2. Select branch: development
+#   2. Select branch: release/* (or any branch)
 #   3. Add variable: MANUAL_ISSUE_IID=90 (or MANUAL_MR_IID=185)
 #   4. Run pipeline - the job will execute automatically
 
