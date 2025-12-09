@@ -85,13 +85,13 @@ create-dev-tag:v0.3.x:
       # Create annotated tag
       git tag -a "$NEW_TAG" -m "Dev build ${NEXT_NUM} for release/v0.3.x
 
-      Auto-generated development tag
+      Auto-generated dev tag
       - Version: ${BASE_VERSION}
       - Dev iteration: ${NEXT_NUM}
       - Commit: ${CI_COMMIT_SHA:0:8}
       - Pipeline: ${CI_PIPELINE_URL}
       
-      This is a development release and should not be used in production." "$CI_COMMIT_SHA"
+      This is a dev/pre-release tag and should not be used in production." "$CI_COMMIT_SHA"
       
       # Push tag
       if git push origin "$NEW_TAG" 2>/dev/null; then
@@ -109,7 +109,7 @@ create-dev-tag:v0.3.x:
       dotenv: dev-tag.env
     expire_in: 1 week
   rules:
-    - if: $CI_COMMIT_BRANCH == "release/v0.3.x" && $CI_PIPELINE_SOURCE == "push"
+    - if: $CI_COMMIT_BRANCH =~ /^release\/v0\.3\./ && $CI_PIPELINE_SOURCE == "push"
       when: on_success
   allow_failure: false
 
@@ -174,7 +174,7 @@ detect-release-version:v0.3.x:
   rules:
     - if: $CI_COMMIT_BRANCH == "main" && $CI_COMMIT_MESSAGE =~ /Merge branch 'release\/v0\.3\.x'/
       when: on_success
-    - if: $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "main" && $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME == "release/v0.3.x"
+    - if: $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "main" && $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME =~ /^release\/v0\.3\./
       when: on_success
 
 # ============================================================================
@@ -238,6 +238,6 @@ create-release-tag:v0.3.x:
   rules:
     - if: $CI_COMMIT_BRANCH == "main" && $CI_COMMIT_MESSAGE =~ /Merge branch 'release\/v0\.3\.x'/
       when: on_success
-    - if: $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "main" && $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME == "release/v0.3.x"
+    - if: $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "main" && $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME =~ /^release\/v0\.3\./
       when: manual
   allow_failure: false

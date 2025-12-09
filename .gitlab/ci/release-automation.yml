@@ -89,11 +89,11 @@ create:release-issues:
           "" \
           "#### Code Complete" \
           "- [ ] All milestone issues closed (except this one)" \
-          "- [ ] All milestone MRs merged to development" \
+          "- [ ] All milestone MRs merged to release branch" \
           "- [ ] No open blockers or critical bugs" \
           "" \
           "#### Quality Gates" \
-          "- [ ] CI pipeline passing on development" \
+          "- [ ] CI pipeline passing on release branch" \
           "- [ ] Schema validates: npm run validate:schema" \
           "- [ ] Tests passing: npm test" \
           "- [ ] No TypeScript errors: npm run typecheck" \
@@ -116,7 +116,7 @@ create:release-issues:
           "When all checklist items are complete:" \
           "" \
           "1. Close this issue" \
-          "2. Automation creates MR: development to main" \
+          "2. Automation creates MR: release branch to main" \
           "3. After merge: npm publish + git tag (automatic)" \
           "" \
           "---" \
@@ -161,8 +161,8 @@ create:release-issues:
     # Run manually
     - if: $CI_PIPELINE_SOURCE == "web"
       when: manual
-    # Run when development branch updates (new milestone might exist)
-    - if: $CI_COMMIT_BRANCH == "development"
+    # Run when release branches update (new milestone might exist)
+    - if: $CI_COMMIT_BRANCH =~ /^release\//
       when: manual
   allow_failure: true
 
@@ -240,9 +240,12 @@ trigger:release-on-issue-close:
 
       echo "✅ All milestone issues closed"
 
+      # Determine release branch from milestone (e.g., v0.3.0 -> release/v0.3.x)
+      RELEASE_BRANCH=$(echo "$MILESTONE_TITLE" | sed 's/v\([0-9]\+\.[0-9]\+\).*/release\/v\1.x/')
+      
       # Check for existing release MR
       EXISTING_MR=$(curl -sS --header "PRIVATE-TOKEN: ${GITLAB_PUSH_TOKEN}" \
-        "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/merge_requests?state=opened&source_branch=development&target_branch=main&per_page=10" \
+        "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/merge_requests?state=opened&source_branch=${RELEASE_BRANCH}&target_branch=main&per_page=10" \
         | jq -r '.[0].iid // empty')
 
       if [ -n "$EXISTING_MR" ]; then
@@ -268,12 +271,12 @@ trigger:release-on-issue-close:
           "" \
           "This MR releases v${VERSION} to production." \
           "" \
-          "All milestone issues have been completed and merged to development." \
+          "All milestone issues have been completed and merged to release branch." \
           "" \
           "### Release Checklist" \
           "" \
           "- [x] All milestone issues closed" \
-          "- [x] All MRs merged to development" \
+          "- [x] All MRs merged to release branch" \
           "- [ ] Pipeline passes" \
           "- [ ] Merge via merge train" \
           "" \
@@ -291,7 +294,7 @@ trigger:release-on-issue-close:
             --arg desc "$MR_BODY" \
             --arg milestone "$MILESTONE_ID" \
             '{
-              source_branch: "development",
+              source_branch: $RELEASE_BRANCH,
               target_branch: "main",
               title: $title,
               description: $desc,
@@ -396,6 +399,6 @@ update:release-issue-status:
         echo "   ✅ Updated with status: ${CLOSED}/${TOTAL} complete"
       done
   rules:
-    - if: $CI_COMMIT_BRANCH == "development"
+    - if: $CI_COMMIT_BRANCH =~ /^release\//
       when: on_success
   allow_failure: true

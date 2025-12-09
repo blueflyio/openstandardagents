@@ -52,7 +52,7 @@ review:deploy:
               - containerPort: 3000
               env:
               - name: NODE_ENV
-                value: "development"
+                value: "review"
               - name: MR_NUMBER
                 value: "${CI_MERGE_REQUEST_IID}"
       ---

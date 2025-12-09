@@ -50,6 +50,6 @@ validate:no-hardcoded-models:
       echo "✅ No hardcoded models found"
   rules:
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
-    - if: '$CI_COMMIT_BRANCH == "development"'
+    - if: '$CI_COMMIT_BRANCH =~ /^release\//'
     - if: '$CI_COMMIT_BRANCH == "main"'
   allow_failure: false
