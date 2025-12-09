@@ -75,10 +75,29 @@ spec:
     - Risk level (safe/moderate/high-risk)
 
   llm:
-    provider: openai
-    model: gpt-4-turbo
+    provider: ${LLM_PROVIDER:-anthropic}
+    model: ${LLM_MODEL:-claude-sonnet}  # Use env var, defaults to latest sonnet
     temperature: 0.1
     maxTokens: 7000
+    topP: 0.9
+
+    fallback_models:
+      - provider: ${LLM_FALLBACK_PROVIDER_1:-openai}
+        model: ${LLM_FALLBACK_MODEL_1:-gpt-4o}
+      - provider: ${LLM_FALLBACK_PROVIDER_2:-anthropic}
+        model: ${LLM_FALLBACK_MODEL_2:-claude-haiku}
+
+    retry_config:
+      max_attempts: 3
+      backoff_strategy: exponential
+
+    cost_tracking:
+      enabled: true
+      budget_alert_threshold: 20.00
+      cost_allocation_tags:
+        project: ossa-agents
+        team: finops
+        service: cost-analyzer
 
   tools:
     - type: http
@@ -206,6 +225,87 @@ spec:
       database: cost_analysis
       schema: cost_data
       ssl: true
+
+  reliability:
+    sla:
+      availability_percent: 99.0
+      latency_p95_ms: 15000
+      error_rate_percent: 1.0
+    circuit_breaker:
+      enabled: true
+      failure_threshold: 5
+      timeout_seconds: 60
+      half_open_requests: 3
+    health_check:
+      enabled: true
+      interval_seconds: 30
+      timeout_seconds: 5
+    failover:
+      enabled: false
+
+  security:
+    authentication:
+      required: true
+      methods:
+        - mtls
+        - bearer
+    authorization:
+      model: rbac
+      roles:
+        - cost-analyzer
+        - finops
+      permissions:
+        - kubernetes:metrics:read
+        - kubecost:read
+        - aws:describe
+    audit:
+      enabled: true
+      log_level: standard
+      retention_days: 365
+      pii_redaction: false  # Financial data, no PII
+
+  safety:
+    rate_limiting:
+      enabled: true
+      requests_per_minute: 60
+      burst_limit: 20
+    guardrails:
+      enabled: true
+      policies:
+        - name: read_only_resources
+          type: output
+          rules:
+            - no_terminate_resources
+        - name: no_purchase_without_approval
+          type: output
+          rules:
+            - no_reserved_instance_purchase
+      max_tool_calls: 50
+      max_execution_time_seconds: 180
+
+  deployment:
+    strategy: rolling
+    rollback:
+      enabled: true
+      automatic: false
+    versioning:
+      scheme: semver
+      compatibility: backward
+    lifecycle:
+      startup_probe:
+        enabled: true
+        initial_delay_seconds: 5
+        period_seconds: 10
+        failure_threshold: 3
+      readiness_probe:
+        enabled: true
+        period_seconds: 10
+      liveness_probe:
+        enabled: true
+        period_seconds: 30
+      graceful_shutdown:
+        enabled: true
+        timeout_seconds: 30
 
   extensions:
     kagent:

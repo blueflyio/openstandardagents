@@ -5,6 +5,11 @@
 
 import { ErrorObject } from 'ajv';
 
+// Export Task types (v0.3.0)
+export * from './task';
+export type { OssaTask, TaskSpec, RuntimeBinding } from './task';
+export { isOssaTask, createTaskManifest } from './task';
+
 /**
  * Capability definition (OpenAPI-style operation)
  */
