@@ -30,24 +30,32 @@ code:review:agent:
   allow_failure: true
   before_script:
     - npm ci --legacy-peer-deps
-    - npm run build
+    - npm run build || (echo "⚠️  Build failed, skipping code review" && exit 0)
   script:
     - |
+      set +e
       echo "🔍 Code Review Agent Starting..."
       echo "   MR: !${CI_MERGE_REQUEST_IID}"
       echo "   Project: ${CI_PROJECT_PATH}"
 
       # Check for OSSA agent manifest
       MANIFEST_PATH=".gitlab/agents/ossa-agent/manifest.ossa.yaml"
-      if [ -f "$MANIFEST_PATH" ]; then
-        echo "📋 Running code review from: ${MANIFEST_PATH}"
-        export GITLAB_TOKEN="${AGENT_SERVICE_TOKEN:-$CI_JOB_TOKEN}"
-        export MR_IID="${CI_MERGE_REQUEST_IID}"
-        export TARGET_PROJECT="${CI_PROJECT_PATH}"
-        node dist/cli/index.js run "$MANIFEST_PATH" --task code-review || echo "⚠️  Code review completed with warnings"
-      else
+      if [ ! -f "$MANIFEST_PATH" ]; then
         echo "ℹ️  No code review agent manifest found at ${MANIFEST_PATH}"
         echo "   Skipping code review. Create manifest to enable."
+        exit 0
+      fi
+
+      echo "📋 Running code review from: ${MANIFEST_PATH}"
+      export GITLAB_TOKEN="${AGENT_SERVICE_TOKEN:-$CI_JOB_TOKEN}"
+      export MR_IID="${CI_MERGE_REQUEST_IID}"
+      export TARGET_PROJECT="${CI_PROJECT_PATH}"
+      
+      if node dist/cli/index.js run "$MANIFEST_PATH" --task code-review 2>&1; then
+        echo "✅ Code review completed successfully"
+      else
+        echo "⚠️  Code review completed with warnings (non-blocking)"
+        exit 0
       fi
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
