@@ -24,23 +24,23 @@ validate:branch-policy:
       echo ""
 
       # Check if source branch is a release branch
-      if [[ "$CI_MERGE_REQUEST_SOURCE_BRANCH_NAME" =~ ^release/ ]]; then
-        echo "✅ ALLOWED: Merge from release branch → main"
-        exit 0
-      fi
+      case "$CI_MERGE_REQUEST_SOURCE_BRANCH_NAME" in
+        release/*)
+          echo "✅ ALLOWED: Merge from release branch → main"
+          exit 0
+          ;;
+      esac
 
       # Block all other merges to main
       echo "❌ BLOCKED: Direct merges to main are not allowed"
       echo ""
-      echo "Policy: main branch only accepts merges from release/* branches"
+      echo "Policy: main branch ONLY accepts merges from release/* branches"
       echo ""
       echo "Required workflow:"
-      echo "  1. Create feature branch from release/*"
-      echo "  2. Merge feature → release/*"
-      echo "  3. Merge release/* → main"
+      echo "  Feature → release/vX.X.X → main"
       echo ""
       echo "Your branch: $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME"
-      echo "Please merge to a release branch first, then create MR from release branch to main"
+      echo "Please merge to a release branch first"
       
       exit 1
   allow_failure: false
