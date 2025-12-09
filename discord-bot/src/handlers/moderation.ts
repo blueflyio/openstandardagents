@@ -230,7 +230,7 @@ export class ModerationHandler {
 
   private async logModerationAction(
     action: string,
-    user: any,
+    user: GuildMember | { tag: string; id: string },
     reason: string,
     color: number
   ): Promise<void> {
@@ -241,11 +241,14 @@ export class ModerationHandler {
       const channel = await this.client.channels.fetch(moderationLogChannel);
       if (!channel?.isTextBased()) return;
 
+      const userTag = 'user' in user ? user.user.tag : user.tag;
+      const userId = 'user' in user ? user.user.id : user.id;
+
       const embed = new EmbedBuilder()
         .setColor(color)
         .setTitle(`🛡️ Moderation: ${action}`)
         .addFields(
-          { name: 'User', value: `${user.tag} (${user.id})`, inline: true },
+          { name: 'User', value: `${userTag} (${userId})`, inline: true },
           { name: 'Reason', value: reason }
         )
         .setTimestamp();

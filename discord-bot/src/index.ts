@@ -5,6 +5,7 @@ import {
   REST,
   Routes,
   CommandInteraction,
+  SlashCommandBuilder,
 } from 'discord.js';
 import express from 'express';
 import bodyParser from 'body-parser';
@@ -19,7 +20,7 @@ import * as askCommand from './commands/ask';
 import * as bootstrapCommand from './commands/bootstrap';
 
 interface Command {
-  data: any;
+  data: SlashCommandBuilder | { name: string; toJSON: () => unknown };
   execute: (interaction: CommandInteraction) => Promise<void>;
 }
 

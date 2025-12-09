@@ -16,7 +16,7 @@ interface ValidationResult {
 class OSSAValidator {
   private ajv: Ajv;
   private validateManifest?: ValidateFunction;
-  private manifestSchema: any;
+  private manifestSchema: Record<string, any> = {};
 
   constructor() {
     this.ajv = new Ajv({ allErrors: true, strict: false });
@@ -182,9 +182,9 @@ class OSSAValidator {
     return { valid: !!valid, errors };
   }
 
-  getSchemaForField(fieldPath: string): any {
+  getSchemaForField(fieldPath: string): Record<string, any> | null {
     const parts = fieldPath.split('.');
-    let schema = this.manifestSchema.properties;
+    let schema: Record<string, any> | undefined = this.manifestSchema.properties;
 
     for (const part of parts) {
       if (!schema || !schema[part]) {
@@ -193,7 +193,7 @@ class OSSAValidator {
       schema = schema[part].properties || schema[part];
     }
 
-    return schema;
+    return schema || null;
   }
 
   getFieldDescription(fieldPath: string): string | null {

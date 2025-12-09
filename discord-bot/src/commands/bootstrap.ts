@@ -135,9 +135,15 @@ export async function execute(interaction: CommandInteraction): Promise<void> {
             );
 
             if (!existingChannel) {
-              const createOptions: any = {
+              const createOptions: {
+                name: string;
+                type: ChannelType.GuildText | ChannelType.GuildVoice | ChannelType.GuildCategory;
+                parent?: string;
+                reason: string;
+                topic?: string;
+              } = {
                 name: channelConfig.name,
-                type: channelConfig.type,
+                type: channelConfig.type as ChannelType.GuildText | ChannelType.GuildVoice | ChannelType.GuildCategory,
                 parent: category?.id,
                 reason: 'OSSA server bootstrap',
               };
