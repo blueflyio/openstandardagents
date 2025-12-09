@@ -68,6 +68,7 @@ dist/
 build/
 out/
 lib/
+!scripts/lib/
 *.tsbuildinfo
 
 # Compiled JavaScript
