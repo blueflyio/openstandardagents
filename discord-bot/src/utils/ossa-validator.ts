@@ -13,10 +13,12 @@ interface ValidationResult {
   errors: ValidationError[];
 }
 
+type JSONSchema = Record<string, unknown>;
+
 class OSSAValidator {
   private ajv: Ajv;
   private validateManifest?: ValidateFunction;
-  private manifestSchema: Record<string, any> = {};
+  private manifestSchema: JSONSchema = {};
 
   constructor() {
     this.ajv = new Ajv({ allErrors: true, strict: false });
@@ -161,7 +163,7 @@ class OSSAValidator {
     logger.info('OSSA validator initialized with manifest schema');
   }
 
-  validate(manifest: any): ValidationResult {
+  validate(manifest: unknown): ValidationResult {
     if (!this.validateManifest) {
       throw new Error('Validator not initialized. Call initialize() first.');
     }
@@ -182,15 +184,17 @@ class OSSAValidator {
     return { valid: !!valid, errors };
   }
 
-  getSchemaForField(fieldPath: string): Record<string, any> | null {
+  getSchemaForField(fieldPath: string): JSONSchema | null {
     const parts = fieldPath.split('.');
-    let schema: Record<string, any> | undefined = this.manifestSchema.properties;
+    const schemaProperties = (this.manifestSchema.properties as JSONSchema | undefined);
+    let schema: JSONSchema | undefined = schemaProperties;
 
     for (const part of parts) {
-      if (!schema || !schema[part]) {
+      if (!schema || typeof schema[part] !== 'object' || schema[part] === null) {
         return null;
       }
-      schema = schema[part].properties || schema[part];
+      const partSchema = schema[part] as JSONSchema;
+      schema = (partSchema.properties as JSONSchema | undefined) || partSchema;
     }
 
     return schema || null;

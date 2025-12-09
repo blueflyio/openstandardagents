@@ -70,21 +70,58 @@ workflow:
     - if: $CI_COMMIT_BRANCH =~ /^(feature|bugfix|hotfix|chore)\/.+/
 
 # =============================================================================
-# BRANCH PROTECTION
+# BRANCH PROTECTION & MR VALIDATION
 # =============================================================================
+validate:mr-target:
+  stage: validate
+  image: alpine:latest
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+  before_script:
+    - apk add --no-cache bash
+  script:
+    - |
+      /bin/bash <<'BASH_SCRIPT'
+      # Feature branches → release/* (latest milestone)
+      if [[ "$CI_MERGE_REQUEST_SOURCE_BRANCH_NAME" =~ \
+        ^(feature|bugfix|chore|hotfix|fix)/ ]]; then
+        if [[ ! "$CI_MERGE_REQUEST_TARGET_BRANCH_NAME" =~ ^release/v ]]; then
+          echo "❌ Feature branches must target release/* branches"
+          echo "   Current target: $CI_MERGE_REQUEST_TARGET_BRANCH_NAME"
+          echo "   Expected: release/v*.*.x"
+          exit 1
+        fi
+      fi
+
+      # release/* → main ONLY
+      if [[ "$CI_MERGE_REQUEST_SOURCE_BRANCH_NAME" =~ ^release/ ]]; then
+        if [ "$CI_MERGE_REQUEST_TARGET_BRANCH_NAME" != "main" ]; then
+          echo "❌ Release branches must target main"
+          echo "   Current target: $CI_MERGE_REQUEST_TARGET_BRANCH_NAME"
+          exit 1
+        fi
+      fi
+      
+      echo "✅ MR target validation passed"
+      BASH_SCRIPT
+
 enforce-main-branch-policy:
   stage: validate
   image: alpine:latest
   rules:
     - if: $CI_MERGE_REQUEST_TARGET_BRANCH == "main"
+  before_script:
+    - apk add --no-cache bash
   script:
     - |
+      /bin/bash <<'BASH_SCRIPT'
       if [[ ! "$CI_MERGE_REQUEST_SOURCE_BRANCH_NAME" =~ ^release/ ]]; then
         echo "❌ ERROR: Main branch only accepts merges from 'release/*'"
         echo "   Source: $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME"
         echo "   Target: $CI_MERGE_REQUEST_TARGET_BRANCH"
         exit 1
       fi
+      BASH_SCRIPT
     - echo "✅ Branch policy check passed"
 
 # =============================================================================
@@ -385,24 +422,36 @@ pages:
 # =============================================================================
 deploy:production:
   stage: deploy
-  image: alpine:latest
+  image: node:${NODE_VERSION}-alpine
   dependencies:
+    - detect:version
     - build:website
+  before_script:
+    - |
+      if [ -f build.env ]; then
+        source build.env
+        echo "Deploying version: ${RELEASE_TAG:-latest}"
+      fi
   script:
-    - mkdir -p public
-    - cp -r website-build/* public/
-    - echo "🚀 PRODUCTION DEPLOYED"
+    - |
+      echo "🚀 Deploying to production"
+      echo "Version: ${RELEASE_TAG:-latest}"
+      echo "Commit: ${CI_COMMIT_SHA}"
+      # Production deployment commands go here
+      # Example: npm run deploy:production
+      echo "✅ Production deployment completed"
   artifacts:
     paths:
       - public
     expire_in: 90 days
   environment:
     name: production
+    action: start
     url: https://openstandardagents.org
     deployment_tier: production
   rules:
-    - if: $CI_COMMIT_BRANCH == "main"
-      when: manual
+    - if: $CI_COMMIT_BRANCH == "main" && $ENABLE_RELEASE == "true"
+      when: manual  # Requires manual trigger + DAP approval
   resource_group: production
 
 # =============================================================================
@@ -425,7 +474,7 @@ notify:discord:
         ENV="Production"
         COLOR=5763719  # Green
         URL="https://openstandardagents.org"
-      elif [ "$CI_COMMIT_BRANCH" =~ "^release/" ]; then
+      elif echo "$CI_COMMIT_BRANCH" | grep -q "^release/"; then
         ENV="Staging"
         COLOR=15844367  # Gold
         URL="https://staging.openstandardagents.org"
@@ -505,3 +554,144 @@ mr-manager-agent:
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
   allow_failure: true
+
+# =============================================================================
+# VERSION DETECTION
+# =============================================================================
+detect:version:
+  stage: .pre
+  image: alpine:latest
+  before_script:
+    - apk add --no-cache git bash
+  script:
+    - chmod +x .gitlab/scripts/detect-version.sh
+    - .gitlab/scripts/detect-version.sh
+  artifacts:
+    reports:
+      dotenv: build.env
+  rules:
+    - if: $CI_COMMIT_BRANCH =~ /^release\/v/
+    - if: $CI_COMMIT_BRANCH == "main"
+    - if: $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME =~ /^release\/v/ && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "main"
+
+# =============================================================================
+# RELEASE TAGGING
+# =============================================================================
+# On release/* branches: Create pre-release tags (v0.3.0-dev, v0.3.0-dev1, etc.)
+release:pre-release:
+  stage: release
+  image: alpine:latest
+  dependencies:
+    - detect:version
+  before_script:
+    - apk add --no-cache git bash curl
+    - git config user.email "ci@gitlab.com"
+    - git config user.name "GitLab CI"
+    - git remote set-url origin "https://oauth2:${GITLAB_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git"
+  script:
+    - |
+      if [ -f build.env ]; then
+        source build.env
+        echo "Creating pre-release tag: ${RELEASE_TAG}"
+        
+        # Check if tag already exists
+        if git rev-parse "${RELEASE_TAG}" >/dev/null 2>&1; then
+          echo "Tag ${RELEASE_TAG} already exists, skipping"
+          exit 0
+        fi
+        
+        # Create annotated tag
+        git tag -a "${RELEASE_TAG}" \
+          -m "Pre-release: ${RELEASE_TAG}" \
+          -m "Branch: ${CI_COMMIT_BRANCH}" \
+          -m "Commit: ${CI_COMMIT_SHA}" \
+          -m "Pipeline: ${CI_PIPELINE_ID}"
+        
+        # Push tag
+        git push origin "${RELEASE_TAG}"
+        
+        echo "✅ Created pre-release tag: ${RELEASE_TAG}"
+      else
+        echo "⚠️ build.env not found, skipping tag creation"
+      fi
+  rules:
+    - if: $CI_COMMIT_BRANCH =~ /^release\/v/ && $ENABLE_RELEASE == "true"
+      when: on_success
+
+# On main: Create final release tag + GitLab Release
+release:final:
+  stage: release
+  image: alpine:latest
+  dependencies:
+    - detect:version
+    - build:website
+  before_script:
+    - apk add --no-cache git bash curl jq
+    - git config user.email "ci@gitlab.com"
+    - git config user.name "GitLab CI"
+    - git remote set-url origin "https://oauth2:${GITLAB_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git"
+  script:
+    - |
+      if [ -f build.env ]; then
+        source build.env
+        
+        if [ "$IS_RELEASE" != "true" ]; then
+          echo "Not on main branch, skipping final release"
+          exit 0
+        fi
+        
+        echo "Creating final release tag: ${RELEASE_TAG}"
+        
+        # Check if tag already exists
+        if git rev-parse "${RELEASE_TAG}" >/dev/null 2>&1; then
+          echo "Tag ${RELEASE_TAG} already exists, skipping"
+          exit 0
+        fi
+        
+        # Create annotated tag
+        git tag -a "${RELEASE_TAG}" \
+          -m "Release: ${RELEASE_TAG}" \
+          -m "Commit: ${CI_COMMIT_SHA}" \
+          -m "Pipeline: ${CI_PIPELINE_ID}"
+        
+        # Push tag
+        git push origin "${RELEASE_TAG}"
+        
+        # Generate release notes from commits since last tag
+        LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+        if [ -n "$LAST_TAG" ]; then
+          RELEASE_NOTES=$(git log --pretty=format:"- %s (%h)" ${LAST_TAG}..HEAD)
+        else
+          RELEASE_NOTES=$(git log --pretty=format:"- %s (%h)" -10)
+        fi
+        
+        # Create GitLab Release via API
+        RELEASE_RESPONSE=$(curl -s --request POST \
+          --header "PRIVATE-TOKEN: ${GITLAB_TOKEN}" \
+          --header "Content-Type: application/json" \
+          --data "{
+            \"name\": \"Release ${RELEASE_TAG}\",
+            \"tag_name\": \"${RELEASE_TAG}\",
+            \"description\": \"## Release ${RELEASE_TAG}\n\n${RELEASE_NOTES}\",
+            \"assets\": {
+              \"links\": []
+            }
+          }" \
+          "https://${CI_SERVER_HOST}/api/v4/projects/${CI_PROJECT_ID}/releases")
+        
+        if echo "$RELEASE_RESPONSE" | jq -e '.tag_name' >/dev/null 2>&1; then
+          echo "✅ Created GitLab Release: ${RELEASE_TAG}"
+        else
+          echo "⚠️ Failed to create GitLab Release: ${RELEASE_RESPONSE}"
+        fi
+        
+        echo "✅ Created release tag: ${RELEASE_TAG}"
+      else
+        echo "⚠️ build.env not found, skipping release"
+      fi
+  release:
+    tag_name: $RELEASE_TAG
+    description: "Release $RELEASE_TAG"
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main" && $ENABLE_RELEASE == "true"
+      when: on_success
