@@ -109,17 +109,15 @@ spec:
     - PRESERVE original issue content - only add, don't modify
 
   llm:
-    provider: ${LLM_PROVIDER:-anthropic}
-    model: ${LLM_MODEL:-claude-haiku}  # Use env var, defaults to fast haiku for triage
+    provider: anthropic
+    model: claude-3-5-haiku-20241022  # Fast model for triage
     temperature: 0.1  # Very low for consistent classification
     maxTokens: 8000
     topP: 0.9
 
     fallback_models:
-      - provider: ${LLM_FALLBACK_PROVIDER_1:-openai}
-        model: ${LLM_FALLBACK_MODEL_1:-gpt-4o-mini}
-      - provider: ${LLM_FALLBACK_PROVIDER_2:-anthropic}
-        model: ${LLM_FALLBACK_MODEL_2:-claude-sonnet}
+      - provider: openai
+        model: gpt-4o-mini
 
     retry_config:
       max_attempts: 3

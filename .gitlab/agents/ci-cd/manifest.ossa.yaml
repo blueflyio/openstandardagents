@@ -106,17 +106,17 @@ spec:
     - PRESERVE pipeline history for rollback
 
   llm:
-    provider: ${LLM_PROVIDER:-anthropic}
-    model: ${LLM_MODEL:-claude-sonnet}  # Use env var, defaults to latest sonnet
+    provider: anthropic
+    model: claude-sonnet-4-5-20250929
     temperature: 0.2  # Low temperature for consistent analysis
     maxTokens: 16000
     topP: 0.9
 
     fallback_models:
-      - provider: ${LLM_FALLBACK_PROVIDER_1:-openai}
-        model: ${LLM_FALLBACK_MODEL_1:-gpt-4o}
-      - provider: ${LLM_FALLBACK_PROVIDER_2:-anthropic}
-        model: ${LLM_FALLBACK_MODEL_2:-claude-haiku}
+      - provider: openai
+        model: gpt-4o
+      - provider: anthropic
+        model: claude-3-5-haiku-20241022
 
     retry_config:
       max_attempts: 3
