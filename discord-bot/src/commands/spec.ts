@@ -62,13 +62,13 @@ async function handleFieldLookup(interaction: CommandInteraction, field: string)
 
   if (schema) {
     if (schema.type) {
-      embed.addFields({ name: 'Type', value: `\`${schema.type}\``, inline: true });
+      embed.addFields({ name: 'Type', value: `\`${String(schema.type)}\``, inline: true });
     }
-    if (schema.enum) {
+    if (schema.enum && Array.isArray(schema.enum)) {
       embed.addFields({ name: 'Allowed Values', value: schema.enum.map((v: string) => `\`${v}\``).join(', ') });
     }
     if (schema.pattern) {
-      embed.addFields({ name: 'Pattern', value: `\`${schema.pattern}\`` });
+      embed.addFields({ name: 'Pattern', value: `\`${String(schema.pattern)}\`` });
     }
     if (schema.required) {
       embed.addFields({ name: 'Required', value: 'Yes', inline: true });
