@@ -20,7 +20,7 @@ include:
   - local: '.gitlab/ci/webhook-agents.yml'  # OSSA v0.2.9 webhook-triggered agents
   - local: '.gitlab/ci/merge-train-optimized.yml'  # Optimized merge train pipeline
   - local: '.gitlab/ci/milestone-workflow.yml'  # Milestone-driven workflow enforcement
-  - local: '.gitlab/ci/release-v0.3.x.yml'  # Release/v0.3.x workflow with dev tag automation
+  - local: '.gitlab/ci/release-workflow.yml'  # Release branch workflow with dev tag automation
   # Security scanning from Auto DevOps
   - template: Jobs/SAST.gitlab-ci.yml
   - template: Jobs/Secret-Detection.gitlab-ci.yml
@@ -60,8 +60,9 @@ variables:
   LEFTHOOK: "0"
 
 # ============================================================================
-# STAGE 0 - VERSION DETECTION & DEV TAG MANAGEMENT
+# STAGE 0 - MILESTONE DETECTION FOR RELEASES
 # ============================================================================
+# Dev tag management is handled by release-workflow.yml (tag-based approach)
 
 detect:milestone-and-tags:
   stage: version-detect
@@ -92,74 +93,6 @@ detect:milestone-and-tags:
       DEV_MILESTONE_ID=
       EOF
 
-      # Only run on main and release/* branches
-      if [ "$CI_COMMIT_BRANCH" != "main" ] && [[ ! "$CI_COMMIT_BRANCH" =~ ^release/ ]]; then
-        echo "Skipping dev tag management (not on main or release/* branch)"
-      else
-        # Get all milestones
-        DEV_MILESTONES=$(curl -sS -G "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/milestones" \
-        --header "PRIVATE-TOKEN: ${GITLAB_PUSH_TOKEN}" \
-        --data-urlencode "per_page=100" \
-          --data-urlencode "state=all" 2>/dev/null || echo "[]")
-
-        if [ "$DEV_MILESTONES" != "[]" ] && [ -n "$DEV_MILESTONES" ]; then
-          # Process milestones - use process substitution to avoid subshell
-          while read -r dev_milestone_json; do
-            [ -z "$dev_milestone_json" ] && continue
-
-            DEV_TITLE=$(echo "$dev_milestone_json" | jq -r '.title // ""' 2>/dev/null || echo "")
-            DEV_ID=$(echo "$dev_milestone_json" | jq -r '.id // ""' 2>/dev/null || echo "")
-            DEV_VERSION=$(echo "$DEV_TITLE" | grep -oE 'v?[0-9]+\.[0-9]+\.[0-9]+(-[A-Za-z0-9]+)?' | head -1 | sed 's/^v//')
-
-            [ -z "$DEV_VERSION" ] && continue
-
-        # Skip if already released
-            if git tag -l 2>/dev/null | grep -qE "^v?${DEV_VERSION}$"; then
-              echo "Skipping ${DEV_VERSION} (already released)"
-          continue
-        fi
-
-            # Get latest dev tag for this version
-            LATEST_DEV_TAG=$(git tag -l "${DEV_VERSION}-dev-*" 2>/dev/null | sort -V | tail -1)
-            CURRENT_BUILD=$(echo "$LATEST_DEV_TAG" | sed "s/.*-dev-//" | grep -E '^[0-9]+$' || echo "0")
-            [ -z "$CURRENT_BUILD" ] && CURRENT_BUILD=0
-            NEXT_BUILD=$((CURRENT_BUILD + 1))
-
-            # Check if we need a new tag
-            if [ -n "$LATEST_DEV_TAG" ]; then
-              TAG_COMMIT=$(git rev-list -n 1 "$LATEST_DEV_TAG" 2>/dev/null || echo "")
-              if [ "$CI_COMMIT_SHA" = "$TAG_COMMIT" ]; then
-                echo "No changes since ${LATEST_DEV_TAG}, skipping"
-                continue
-              fi
-            fi
-
-            NEW_TAG="${DEV_VERSION}-dev-${NEXT_BUILD}"
-            echo "Creating dev tag: ${NEW_TAG}"
-
-            # Create and push tag
-            if git tag -a "$NEW_TAG" -m "Dev build ${NEXT_BUILD} for milestone ${DEV_ID}" "$CI_COMMIT_SHA" 2>/dev/null; then
-              if git push origin "$NEW_TAG" 2>/dev/null; then
-                echo "Created dev tag: ${NEW_TAG}"
-                cat > dev-tags.env << EOF
-      DEV_TAG_VERSION=${DEV_VERSION}
-      DEV_TAG_NAME=${NEW_TAG}
-      DEV_TAG_BUILD=${NEXT_BUILD}
-      DEV_MILESTONE_ID=${DEV_ID}
-      EOF
-              else
-                echo "Failed to push tag ${NEW_TAG}"
-                git tag -d "$NEW_TAG" 2>/dev/null || true
-              fi
-            else
-              echo "Tag ${NEW_TAG} already exists or failed to create"
-            fi
-
-            break  # Only create one dev tag per pipeline
-          done < <(echo "$DEV_MILESTONES" | jq -c '.[]' 2>/dev/null || echo "")
-        fi
-      fi
-      
       # Detect ACTIVE milestones ready for release
       # NEW FLOW: Milestone stays ACTIVE, release closes it
       echo ""
@@ -254,11 +187,6 @@ detect:milestone-and-tags:
         echo "ℹ️  No release-ready milestone found"
       fi
       
-      # Merge dev-tags.env into milestone-version.env
-      if [ -s dev-tags.env ]; then
-        cat dev-tags.env >> milestone-version.env
-      fi
-      
       echo ""
       echo "📋 Summary:"
       cat milestone-version.env
@@ -267,7 +195,6 @@ detect:milestone-and-tags:
       dotenv: milestone-version.env
     paths:
       - milestone-version.env
-      - dev-tags.env
     expire_in: 1 day
   rules:
     - if: $CI_COMMIT_BRANCH == "main" || $CI_COMMIT_BRANCH =~ /^release\//

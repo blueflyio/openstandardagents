@@ -1,16 +1,16 @@
-# Release/v0.3.x Workflow Configuration
-# Implements dev tag automation for release/v0.3.x branch
+# Release Branch Workflow Configuration
+# Implements dev tag automation for release/* branches
 #
 # Workflow:
-# 1. Feature branches merge into release/v0.3.x
+# 1. Feature branches merge into release/* branches
 # 2. On merge: Auto-creates -dev tags (v0.3.0-dev1, v0.3.0-dev2, etc.)
-# 3. On merge release/v0.3.x → main: Creates final patch tag (v0.3.0)
+# 3. On merge release/* → main: Creates final release tag
 
 # ============================================================================
-# DEV TAG AUTOMATION FOR release/v0.3.x
+# DEV TAG AUTOMATION FOR release/* BRANCHES
 # ============================================================================
 
-create-dev-tag:v0.3.x:
+create-dev-tag:release:
   stage: .post
   image: alpine:latest
   before_script:
@@ -24,25 +24,31 @@ create-dev-tag:v0.3.x:
       #!/bin/bash
       set -e
       
-      echo "DEV TAG AUTOMATION FOR release/v0.3.x"
-      echo "======================================"
+      echo "DEV TAG AUTOMATION FOR release/* BRANCHES"
+      echo "=========================================="
       echo "Branch: ${CI_COMMIT_BRANCH}"
       echo "Commit: ${CI_COMMIT_SHA}"
       echo ""
       
-      # Detect next version based on latest tag on main
-      # If main has v0.3.1, next version is v0.3.2
-      # If main has v0.3.2, next version is v0.3.3, etc.
+      # Extract major.minor from branch name (e.g., release/v0.3.x -> 0.3)
+      BRANCH_VERSION=$(echo "$CI_COMMIT_BRANCH" | sed -n 's|^release/v\([0-9]\+\.[0-9]\+\).*|\1|p')
+      
+      if [ -z "$BRANCH_VERSION" ]; then
+        echo "Could not extract version from branch name: $CI_COMMIT_BRANCH"
+        exit 0
+      fi
+      
+      echo "Branch version: $BRANCH_VERSION"
       
       # Fetch main branch tags
       git fetch origin main:main --tags 2>/dev/null || true
       
-      # Get latest release tag from main (v0.3.X format)
-      LATEST_RELEASE_TAG=$(git tag -l "v0.3.*" 2>/dev/null | grep -v "dev" | sort -V | tail -1 || echo "")
+      # Get latest release tag for this major.minor (e.g., v0.3.*)
+      LATEST_RELEASE_TAG=$(git tag -l "v${BRANCH_VERSION}.*" 2>/dev/null | grep -v "dev" | sort -V | tail -1 || echo "")
       
       if [ -z "$LATEST_RELEASE_TAG" ]; then
-        # No release tags yet, start with v0.3.0
-        BASE_VERSION="0.3.0"
+        # No release tags yet, start with X.Y.0
+        BASE_VERSION="${BRANCH_VERSION}.0"
       else
         # Extract version number (e.g., v0.3.1 -> 0.3.1)
         VERSION_NUM=$(echo "$LATEST_RELEASE_TAG" | sed 's/^v//')
@@ -83,7 +89,7 @@ create-dev-tag:v0.3.x:
       echo "Creating dev tag: $NEW_TAG"
       
       # Create annotated tag
-      git tag -a "$NEW_TAG" -m "Dev build ${NEXT_NUM} for release/v0.3.x
+      git tag -a "$NEW_TAG" -m "Dev build ${NEXT_NUM} for ${CI_COMMIT_BRANCH}
 
       Auto-generated dev tag
       - Version: ${BASE_VERSION}
@@ -109,15 +115,15 @@ create-dev-tag:v0.3.x:
       dotenv: dev-tag.env
     expire_in: 1 week
   rules:
-    - if: $CI_COMMIT_BRANCH =~ /^release\/v0\.3\./ && $CI_PIPELINE_SOURCE == "push"
+    - if: $CI_COMMIT_BRANCH =~ /^release\// && $CI_PIPELINE_SOURCE == "push"
       when: on_success
   allow_failure: false
 
 # ============================================================================
-# VERSION DETECTION FOR release/v0.3.x → main MERGE
+# VERSION DETECTION FOR release/* → main MERGE
 # ============================================================================
 
-detect-release-version:v0.3.x:
+detect-release-version:
   stage: version-detect
   image: alpine:latest
   before_script:
@@ -128,8 +134,8 @@ detect-release-version:v0.3.x:
       #!/bin/bash
       set -e
       
-      echo "VERSION DETECTION FOR release/v0.3.x → main"
-      echo "============================================"
+      echo "VERSION DETECTION FOR release/* → main"
+      echo "======================================"
       
       # Detect version from latest dev tags
       # Find the highest version with dev tags (e.g., if we have v0.3.2-dev1, v0.3.2-dev2, use v0.3.2)
@@ -172,16 +178,16 @@ detect-release-version:v0.3.x:
       dotenv: release-version.env
     expire_in: 1 week
   rules:
-    - if: $CI_COMMIT_BRANCH == "main" && $CI_COMMIT_MESSAGE =~ /Merge branch 'release\/v0\.3\.x'/
+    - if: $CI_COMMIT_BRANCH == "main" && $CI_COMMIT_MESSAGE =~ /Merge branch 'release\//
       when: on_success
-    - if: $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "main" && $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME =~ /^release\/v0\.3\./
+    - if: $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "main" && $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME =~ /^release\//
       when: on_success
 
 # ============================================================================
 # CREATE FINAL RELEASE TAG ON MERGE TO main
 # ============================================================================
 
-create-release-tag:v0.3.x:
+create-release-tag:
   stage: release
   image: alpine:latest
   before_script:
@@ -217,7 +223,7 @@ create-release-tag:v0.3.x:
       # Create annotated release tag
       git tag -a "$RELEASE_VERSION" -m "Release ${RELEASE_VERSION}
 
-      Production release from release/v0.3.x branch
+      Production release from ${CI_COMMIT_BRANCH} branch
       - Version: ${RELEASE_VERSION}
       - Commit: ${CI_COMMIT_SHA:0:8}
       - Pipeline: ${CI_PIPELINE_URL}
@@ -236,8 +242,8 @@ create-release-tag:v0.3.x:
   needs:
     - detect-release-version:v0.3.x
   rules:
-    - if: $CI_COMMIT_BRANCH == "main" && $CI_COMMIT_MESSAGE =~ /Merge branch 'release\/v0\.3\.x'/
+    - if: $CI_COMMIT_BRANCH == "main" && $CI_COMMIT_MESSAGE =~ /Merge branch 'release\//
       when: on_success
-    - if: $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "main" && $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME =~ /^release\/v0\.3\./
+    - if: $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "main" && $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME =~ /^release\//
       when: manual
   allow_failure: false
