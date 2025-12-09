@@ -20,7 +20,6 @@ include:
   - local: '.gitlab/ci/webhook-agents.yml'  # OSSA v0.2.9 webhook-triggered agents
   - local: '.gitlab/ci/merge-train-optimized.yml'  # Optimized merge train pipeline
   - local: '.gitlab/ci/milestone-workflow.yml'  # Milestone-driven workflow enforcement
-  - local: '.gitlab/ci/release-v0.3.x.yml'  # Release/v0.3.x workflow with dev tag automation
   # Security scanning from Auto DevOps
   - template: Jobs/SAST.gitlab-ci.yml
   - template: Jobs/Secret-Detection.gitlab-ci.yml
@@ -92,9 +91,9 @@ detect:milestone-and-tags:
       DEV_MILESTONE_ID=
       EOF
 
-      # Only run on main, development, and release/v0.3.x branches
-      if [ "$CI_COMMIT_BRANCH" != "main" ] && [ "$CI_COMMIT_BRANCH" != "development" ] && [ "$CI_COMMIT_BRANCH" != "release/v0.3.x" ]; then
-        echo "Skipping dev tag management (not on main/development/release/v0.3.x branch)"
+      # Only run on main and development branches
+      if [ "$CI_COMMIT_BRANCH" != "main" ] && [ "$CI_COMMIT_BRANCH" != "development" ]; then
+        echo "Skipping dev tag management (not on main/development branch)"
       else
         # Get all milestones
         DEV_MILESTONES=$(curl -sS -G "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/milestones" \
