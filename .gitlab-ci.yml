@@ -1053,7 +1053,7 @@ release:npm:
       fi
 
       # Create release with milestone linkage
-      RELEASE_PAYLOAD=$(jq -n \
+      if ! RELEASE_PAYLOAD=$(jq -n \
         --arg name "Release v${RELEASE_VERSION}" \
         --arg tag "v${RELEASE_VERSION}" \
         --arg desc "$RELEASE_DESCRIPTION" \
@@ -1091,7 +1091,14 @@ release:npm:
               }
             ]
           }
-        }')
+        }' 2>&1); then
+        echo "❌ ERROR: Failed to create release payload JSON"
+        echo "   Error: ${RELEASE_PAYLOAD}"
+        echo "   Tag v${RELEASE_VERSION} was created successfully"
+        echo "   npm package published successfully"
+        echo "   Release must be created manually"
+        exit 1
+      fi
 
       # Create GitLab Release (non-blocking - tag already created)
       RELEASE_RESPONSE=$(curl -sS -w "\n%{http_code}" --request POST \
@@ -1100,18 +1107,19 @@ release:npm:
         --data "$RELEASE_PAYLOAD" \
         "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/releases" 2>&1) || true
       
-      HTTP_CODE=$(echo "$RELEASE_RESPONSE" | tail -n1)
-      RELEASE_BODY=$(echo "$RELEASE_RESPONSE" | sed '$d')
+      HTTP_CODE=$(echo "$RELEASE_RESPONSE" | tail -n1 || echo "000")
+      RELEASE_BODY=$(echo "$RELEASE_RESPONSE" | sed '$d' || echo "")
       
       if [ "$HTTP_CODE" = "201" ] || [ "$HTTP_CODE" = "200" ]; then
         echo "✅ GitLab Release created: https://${CI_SERVER_HOST}/${CI_PROJECT_PATH}/-/releases/v${RELEASE_VERSION}"
       else
-        echo "⚠️  WARNING: Failed to create GitLab Release (non-blocking)"
+        echo "❌ ERROR: Failed to create GitLab Release"
         echo "   HTTP Status: ${HTTP_CODE}"
         echo "   Response: ${RELEASE_BODY}"
         echo "   Tag v${RELEASE_VERSION} was created successfully"
         echo "   npm package published successfully"
-        echo "   You can manually create the release at: https://${CI_SERVER_HOST}/${CI_PROJECT_PATH}/-/releases/new"
+        echo "   Release must be created manually at: https://${CI_SERVER_HOST}/${CI_PROJECT_PATH}/-/releases/new"
+        exit 1
       fi
 
       # CLOSE THE MILESTONE after successful release
