@@ -240,7 +240,7 @@ create-release-tag:
         exit 1
       fi
   needs:
-    - detect-release-version:v0.3.x
+    - detect-release-version
   rules:
     - if: $CI_COMMIT_BRANCH == "main" && $CI_COMMIT_MESSAGE =~ /Merge branch 'release\//
       when: on_success
