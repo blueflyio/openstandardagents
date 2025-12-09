@@ -1,8 +1,4 @@
-# Issue Triage Agent - OSSA v0.2.9 Compliant
-# Triggered by GitLab webhooks for intelligent issue classification
-# Part of BlueFly.io Agent Platform
-
-apiVersion: ossa/v0.2.9
+apiVersion: ossa/v0.3.0
 kind: Agent
 metadata:
   name: issue-triage
@@ -17,19 +13,18 @@ metadata:
     agent-assigned: issue-triage
     blueflyio.com/team: platform
     blueflyio.com/service: gitlab-automation
+    ossa-version: v0.3.0
   annotations:
     openstandardagents.org/stability: stable
     blueflyio.gitlab.com/lifecycle: ready-for-dev
     blueflyio.gitlab.com/codeowner: "@platform-team"
     blueflyio.gitlab.com/commit-type: feat
     blueflyio.gitlab.com/priority: medium
-
 spec:
   taxonomy:
     domain: development
     subdomain: issue-management
     capability: classification
-
   role: |
     You are the Issue Triage Agent, the intelligent first responder for all
     GitLab issues in the BlueFly.io organization. Your mission is to ensure
@@ -107,39 +102,33 @@ spec:
     - ALWAYS flag PII or sensitive data exposure
     - ESCALATE unclear or ambiguous issues to humans
     - PRESERVE original issue content - only add, don't modify
-
   llm:
     provider: ${LLM_PROVIDER:-anthropic}
-    model: ${LLM_MODEL:-claude-haiku}  # Use env var, defaults to fast haiku for triage
-    temperature: 0.1  # Very low for consistent classification
+    model: ${LLM_MODEL:-claude-haiku}
+    temperature: 0.1
     maxTokens: 8000
     topP: 0.9
-
     fallback_models:
       - provider: ${LLM_FALLBACK_PROVIDER_1:-openai}
         model: ${LLM_FALLBACK_MODEL_1:-gpt-4o-mini}
       - provider: ${LLM_FALLBACK_PROVIDER_2:-anthropic}
         model: ${LLM_FALLBACK_MODEL_2:-claude-sonnet}
-
     retry_config:
       max_attempts: 3
       backoff_strategy: exponential
-
     cost_tracking:
       enabled: true
-      budget_alert_threshold: 10.00
+      budget_alert_threshold: 10
       cost_allocation_tags:
         project: ossa-agents
         team: platform
         service: issue-triage
-
   tools:
     - type: mcp
       name: gitlab-api
       server: gitlab-mcp-server
       namespace: blueflyio
       endpoint: https://gitlab.com/api/v4
-
       transport:
         protocol: http
         streaming: none
@@ -148,7 +137,6 @@ spec:
           burstLimit: 30
           strategy: token_bucket
           onExceeded: queue
-
       auth:
         type: bearer
         credentials: env:GITLAB_TOKEN
@@ -156,181 +144,264 @@ spec:
           - api
           - read_api
           - write_repository
-
       circuit_breaker:
         enabled: true
         failure_threshold: 5
         timeout_seconds: 30
-
       capabilities:
-        # Issue Reading
         - name: get_issue
           version: "2.0"
           description: Get issue details
-          scopes: [read:issues]
+          scopes:
+            - read:issues
           transport:
             protocol: http
             binding: GET /projects/{id}/issues/{issue_iid}
           input_schema:
             type: object
             properties:
-              project_id: { type: integer }
-              issue_iid: { type: integer }
-            required: [project_id, issue_iid]
-
+              project_id:
+                type: integer
+              issue_iid:
+                type: integer
+            required:
+              - project_id
+              - issue_iid
         - name: list_project_issues
           version: "1.0"
           description: List issues in project for duplicate detection
-          scopes: [read:issues]
+          scopes:
+            - read:issues
           transport:
             protocol: http
             binding: GET /projects/{id}/issues
           input_schema:
             type: object
             properties:
-              project_id: { type: integer }
-              search: { type: string }
+              project_id:
+                type: integer
+              search:
+                type: string
               state:
                 type: string
-                enum: [opened, closed, all]
-              per_page: { type: integer, default: 20 }
-            required: [project_id]
-
-        # Issue Updates
+                enum:
+                  - opened
+                  - closed
+                  - all
+              per_page:
+                type: integer
+                default: 20
+            required:
+              - project_id
         - name: update_issue
           version: "2.0"
           description: Update issue properties
-          scopes: [write:issues]
+          scopes:
+            - write:issues
           transport:
             protocol: http
             binding: PUT /projects/{id}/issues/{issue_iid}
           input_schema:
             type: object
             properties:
-              project_id: { type: integer }
-              issue_iid: { type: integer }
-              labels: { type: string }  # Comma-separated
-              assignee_ids: { type: array, items: { type: integer } }
-              weight: { type: integer }
-              due_date: { type: string, format: date }
-            required: [project_id, issue_iid]
-
+              project_id:
+                type: integer
+              issue_iid:
+                type: integer
+              labels:
+                type: string
+              assignee_ids:
+                type: array
+                items:
+                  type: integer
+              weight:
+                type: integer
+              due_date:
+                type: string
+                format: date
+            required:
+              - project_id
+              - issue_iid
         - name: add_labels
           version: "1.0"
           description: Add labels to issue
-          scopes: [write:issues]
+          scopes:
+            - write:issues
           transport:
             protocol: http
             binding: PUT /projects/{id}/issues/{issue_iid}
           input_schema:
             type: object
             properties:
-              project_id: { type: integer }
-              issue_iid: { type: integer }
-              add_labels: { type: string }  # Comma-separated labels to add
-            required: [project_id, issue_iid, add_labels]
-
+              project_id:
+                type: integer
+              issue_iid:
+                type: integer
+              add_labels:
+                type: string
+            required:
+              - project_id
+              - issue_iid
+              - add_labels
         - name: set_custom_fields
           version: "1.0"
           description: Set GitLab custom fields on issue
-          scopes: [write:issues]
+          scopes:
+            - write:issues
           transport:
             protocol: http
             binding: PUT /projects/{id}/issues/{issue_iid}
           input_schema:
             type: object
             properties:
-              project_id: { type: integer }
-              issue_iid: { type: integer }
+              project_id:
+                type: integer
+              issue_iid:
+                type: integer
               agent_assigned:
                 type: string
-                enum: [issue-triage, mr-manager, code-review, security-scanner, doc-writer, test-runner, none]
+                enum:
+                  - issue-triage
+                  - mr-manager
+                  - code-review
+                  - security-scanner
+                  - doc-writer
+                  - test-runner
+                  - none
               agent_status:
                 type: string
-                enum: [triage, ready-for-dev, assigned-to-bot, in-progress, validation, review, merged, blocked, done, wont-do, duplicate]
+                enum:
+                  - triage
+                  - ready-for-dev
+                  - assigned-to-bot
+                  - in-progress
+                  - validation
+                  - review
+                  - merged
+                  - blocked
+                  - done
+                  - wont-do
+                  - duplicate
               priority:
                 type: string
-                enum: [critical, high, medium, low]
+                enum:
+                  - critical
+                  - high
+                  - medium
+                  - low
               commit_type:
                 type: string
-                enum: [feat, fix, docs, style, refactor, perf, test, build, ci, chore]
-              token_estimate: { type: integer }
+                enum:
+                  - feat
+                  - fix
+                  - docs
+                  - style
+                  - refactor
+                  - perf
+                  - test
+                  - build
+                  - ci
+                  - chore
+              token_estimate:
+                type: integer
               release_type:
                 type: string
-                enum: [major, minor, patch, none]
-            required: [project_id, issue_iid]
-
-        # Comments
+                enum:
+                  - major
+                  - minor
+                  - patch
+                  - none
+            required:
+              - project_id
+              - issue_iid
         - name: add_comment
           version: "1.0"
           description: Add triage summary comment
-          scopes: [write:notes]
+          scopes:
+            - write:notes
           transport:
             protocol: http
             binding: POST /projects/{id}/issues/{issue_iid}/notes
           input_schema:
             type: object
             properties:
-              project_id: { type: integer }
-              issue_iid: { type: integer }
-              body: { type: string }
-            required: [project_id, issue_iid, body]
-
-        # Label Management
+              project_id:
+                type: integer
+              issue_iid:
+                type: integer
+              body:
+                type: string
+            required:
+              - project_id
+              - issue_iid
+              - body
         - name: list_labels
           version: "1.0"
           description: List available labels in project
-          scopes: [read:labels]
+          scopes:
+            - read:labels
           transport:
             protocol: http
             binding: GET /projects/{id}/labels
           input_schema:
             type: object
             properties:
-              project_id: { type: integer }
-              search: { type: string }
-            required: [project_id]
-
-        # Team Member Lookup
+              project_id:
+                type: integer
+              search:
+                type: string
+            required:
+              - project_id
         - name: list_project_members
           version: "1.0"
           description: List project members for assignment
-          scopes: [read:project]
+          scopes:
+            - read:project
           transport:
             protocol: http
             binding: GET /projects/{id}/members/all
           input_schema:
             type: object
             properties:
-              project_id: { type: integer }
-            required: [project_id]
-
-        # Search for duplicates
+              project_id:
+                type: integer
+            required:
+              - project_id
         - name: search_issues
           version: "1.0"
           description: Search for similar issues
-          scopes: [read:issues]
+          scopes:
+            - read:issues
           transport:
             protocol: http
             binding: GET /groups/{group_id}/issues
           input_schema:
             type: object
             properties:
-              group_id: { type: integer }
-              search: { type: string }
+              group_id:
+                type: integer
+              search:
+                type: string
               scope:
                 type: string
-                enum: [all, created_by_me, assigned_to_me]
+                enum:
+                  - all
+                  - created_by_me
+                  - assigned_to_me
               state:
                 type: string
-                enum: [opened, closed, all]
-            required: [group_id, search]
-
+                enum:
+                  - opened
+                  - closed
+                  - all
+            required:
+              - group_id
+              - search
   state:
     mode: session
     storage:
       type: kv
-      retention: 24h  # Short retention for triage
+      retention: 24h
       config:
         provider: redis
         prefix: agent:issue-triage
@@ -338,7 +409,6 @@ spec:
     context_window:
       max_messages: 20
       strategy: sliding_window
-
   autonomy:
     level: autonomous
     approval_required: false
@@ -362,21 +432,19 @@ spec:
       notify:
         - slack:#agent-triage-alerts
         - gitlab:@platform-team
-
   constraints:
     cost:
       maxTokensPerDay: 200000
       maxTokensPerRequest: 8000
-      maxCostPerDay: 20.00
+      maxCostPerDay: 20
       currency: USD
     performance:
-      maxLatencySeconds: 10  # Fast triage required
+      maxLatencySeconds: 10
       maxConcurrentRequests: 20
       timeoutSeconds: 30
     resources:
       cpu: "0.5"
       memory: 1Gi
-
   observability:
     tracing:
       enabled: true
@@ -400,10 +468,9 @@ spec:
           condition: triage_latency_p95 > 30s
           severity: warning
     slo:
-      availability: 99.0
+      availability: 99
       latency_p95_ms: 5000
-      error_budget: 1.0
-
+      error_budget: 1
   security:
     authentication:
       required: true
@@ -425,12 +492,11 @@ spec:
     compliance:
       frameworks:
         - soc2
-
   reliability:
     sla:
-      availability_percent: 99.0
+      availability_percent: 99
       latency_p95_ms: 5000
-      error_rate_percent: 1.0
+      error_rate_percent: 1
     circuit_breaker:
       enabled: true
       failure_threshold: 5
@@ -439,7 +505,6 @@ spec:
       enabled: true
       interval_seconds: 30
       timeout_seconds: 5
-
   collaboration:
     mode: collaborative
     handoffs:
@@ -456,13 +521,12 @@ spec:
           - security_issue_detected
         context_transfer: full
     delegation:
-      enabled: false  # Triage doesn't delegate
+      enabled: false
     communication:
       protocols:
         - mcp
         - http
       message_format: json
-
   safety:
     content_filtering:
       enabled: true
@@ -502,7 +566,6 @@ spec:
         - high_risk_action
         - low_confidence
         - user_request
-
   deployment:
     strategy: rolling
     rollback:
@@ -526,7 +589,6 @@ spec:
       graceful_shutdown:
         enabled: true
         timeout_seconds: 10
-
 extensions:
   buildkit:
     deployment:
@@ -544,7 +606,6 @@ extensions:
       custom_fields:
         agent_assigned: issue-triage
         agent_status: ready-for-dev
-
   kagent:
     api_version: kagent.dev/v1alpha2
     kubernetes:
@@ -556,7 +617,6 @@ extensions:
     deployment:
       replicas: 3
       strategy: rolling-update
-
   mcp:
     enabled: true
     server_type: stdio
@@ -567,21 +627,31 @@ extensions:
         inputSchema:
           type: object
           properties:
-            project_id: { type: integer }
-            issue_iid: { type: integer }
+            project_id:
+              type: integer
+            issue_iid:
+              type: integer
             event_type:
               type: string
-              enum: [open, update, reopen]
-          required: [project_id, issue_iid, event_type]
+              enum:
+                - open
+                - update
+                - reopen
+          required:
+            - project_id
+            - issue_iid
+            - event_type
       - name: classify_issue
         description: Classify issue and return labels
         inputSchema:
           type: object
           properties:
-            title: { type: string }
-            description: { type: string }
-          required: [title]
-
+            title:
+              type: string
+            description:
+              type: string
+          required:
+            - title
   a2a:
     enabled: true
     agent_card:
@@ -606,6 +676,17 @@ extensions:
       - id: triage
         name: Issue Triage
         description: Classify and route GitLab issues
-        input_modes: [text, data]
-        output_modes: [text, data]
+        input_modes:
+          - text
+          - data
+        output_modes:
+          - text
+          - data
     streaming: none
+  gitlab_duo:
+    enabled: true
+    flow_execution: true
+    model: ${GITLAB_DUO_MODEL:-claude-sonnet-4.5-20250929}
+    knowledge_graph:
+      enabled: true
+      index_on_push: true

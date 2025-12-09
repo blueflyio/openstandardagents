@@ -1,29 +1,5 @@
-# ============================================================================
-# OSSA Database Migrator Agent - GitLab Kubernetes Deployment
-# ============================================================================
-#
-# PURPOSE:
-#   Automated database schema migration management for PostgreSQL, MySQL, and
-#   MongoDB. Validates migrations, manages rollback procedures, and coordinates
-#   zero-downtime deployments with application updates.
-#
-# CAPABILITIES:
-#   - Schema migration validation and dry-run
-#   - Automated migration execution with transaction safety
-#   - Rollback procedure generation and execution
-#   - Data integrity verification (checksums, row counts)
-#   - Zero-downtime migration strategies (expand-contract pattern)
-#   - Multi-database coordination (PostgreSQL, MySQL, MongoDB)
-#
-# DEPLOYMENT:
-#   Runs as supervised agent requiring approval for migrations.
-#   Coordinates with rollback-coordinator for automated rollback on failure.
-#
-# ============================================================================
-
-apiVersion: ossa/v0.2.9
+apiVersion: ossa/v0.3.0
 kind: Agent
-
 metadata:
   name: db-migrator
   version: 1.0.0
@@ -31,32 +7,23 @@ metadata:
     Automated database migration agent supporting PostgreSQL, MySQL, and MongoDB.
     Validates schema changes, executes migrations with transaction safety, generates
     rollback procedures, and verifies data integrity throughout the process.
-
   labels:
     environment: production
     team: data-engineering
     domain: database
     capability: schema-migration
     dora-metric: deployment-frequency
-
+    ossa-version: v0.3.0
   annotations:
     documentation: https://openstandardagents.org/docs/agents/db-migrator
     support: ops@openstandardagents.org
     runbook: https://openstandardagents.org/docs/runbooks/db-migrator
-    safety: "transactional-rollback-enabled"
-
+    safety: transactional-rollback-enabled
 spec:
-  # ==========================================================================
-  # TAXONOMY: Database Operations Domain
-  # ==========================================================================
   taxonomy:
     domain: data-engineering
     subdomain: schema-management
     capability: automated-migrations
-
-  # ==========================================================================
-  # ROLE: Database Migration Expertise
-  # ==========================================================================
   role: |
     You are an expert database migration engineer specializing in safe, zero-downtime deployments.
 
@@ -85,39 +52,27 @@ spec:
     - Downtime required (none/seconds/minutes)
     - Rollback procedure (auto-generated SQL)
     - Data integrity checks (checksums, row counts)
-
-  # ==========================================================================
-  # LLM CONFIGURATION: High-Precision SQL Analysis
-  # ==========================================================================
   llm:
     provider: ${LLM_PROVIDER:-anthropic}
-    model: ${LLM_MODEL:-claude-sonnet}  # Use env var, defaults to latest sonnet
-    temperature: 0.0  # Deterministic for SQL safety
-    maxTokens: 10000  # Large context for complex migrations
-
+    model: ${LLM_MODEL:-claude-sonnet}
+    temperature: 0
+    maxTokens: 10000
     fallback_models:
       - provider: ${LLM_FALLBACK_PROVIDER_1:-openai}
         model: ${LLM_FALLBACK_MODEL_1:-gpt-4o}
       - provider: ${LLM_FALLBACK_PROVIDER_2:-anthropic}
         model: ${LLM_FALLBACK_MODEL_2:-claude-haiku}
-
     retry_config:
       max_attempts: 3
       backoff_strategy: exponential
-
     cost_tracking:
       enabled: true
-      budget_alert_threshold: 25.00
+      budget_alert_threshold: 25
       cost_allocation_tags:
         project: ossa-agents
         team: data-engineering
         service: db-migrator
-
-  # ==========================================================================
-  # TOOLS: Database Management & Migration
-  # ==========================================================================
   tools:
-    # PostgreSQL migration engine
     - type: mcp
       name: postgres-migrator
       description: |
@@ -130,8 +85,6 @@ spec:
       auth:
         type: password
         passwordPath: /var/secrets/postgres-admin-password
-
-    # MySQL migration engine
     - type: mcp
       name: mysql-migrator
       description: |
@@ -144,8 +97,6 @@ spec:
       auth:
         type: password
         passwordPath: /var/secrets/mysql-admin-password
-
-    # MongoDB schema validator
     - type: mcp
       name: mongodb-validator
       description: |
@@ -158,8 +109,6 @@ spec:
       auth:
         type: password
         passwordPath: /var/secrets/mongodb-admin-password
-
-    # Migration version control (Flyway/Liquibase)
     - type: http
       name: flyway-api
       description: |
@@ -172,8 +121,6 @@ spec:
       auth:
         type: bearer
         tokenPath: /var/secrets/flyway-token
-
-    # Data integrity validator
     - type: function
       name: integrity-checker
       description: |
@@ -181,9 +128,11 @@ spec:
         before and after migrations for data integrity verification.
       config:
         handler: integrity_check_handler
-        algorithms: [md5, sha256, row_count, constraint_check]
-
-    # Agent-to-Agent: rollback coordination
+        algorithms:
+          - md5
+          - sha256
+          - row_count
+          - constraint_check
     - type: a2a
       name: rollback-coordinator
       description: |
@@ -196,57 +145,40 @@ spec:
       auth:
         type: mtls
         certPath: /var/secrets/a2a-client-cert.pem
-
-  # ==========================================================================
-  # AUTONOMY: Supervised (Requires Approval for Production Migrations)
-  # ==========================================================================
   autonomy:
     level: supervised
-    approval_required: true  # All production migrations require approval
-
+    approval_required: true
     allowed_actions:
       - validate_migration_syntax
       - dry_run_migration_staging
       - generate_rollback_sql
       - check_data_integrity
       - read_migration_history
-
     blocked_actions:
-      - execute_production_migration  # Requires approval
+      - execute_production_migration
       - drop_tables
       - drop_databases
       - disable_constraints
-
-  # ==========================================================================
-  # CONSTRAINTS: Migration Execution Limits
-  # ==========================================================================
   constraints:
     cost:
       maxTokensPerDay: 200000
       maxTokensPerRequest: 10000
-      maxCostPerDay: 20.00
+      maxCostPerDay: 20
       currency: USD
-
     performance:
-      maxLatencySeconds: 600  # 10 min for large migrations
-      maxConcurrentRequests: 1  # Serial migration execution only
-      timeoutSeconds: 1800  # 30 min migration timeout
-
+      maxLatencySeconds: 600
+      maxConcurrentRequests: 1
+      timeoutSeconds: 1800
     resources:
-      cpu: "500m"
-      memory: "1Gi"
-      ephemeralStorage: "2Gi"
-
-  # ==========================================================================
-  # OBSERVABILITY: Migration Audit Trail
-  # ==========================================================================
+      cpu: 500m
+      memory: 1Gi
+      ephemeralStorage: 2Gi
   observability:
     tracing:
       enabled: true
       exporter: otlp
       endpoint: http://jaeger-collector:4318
-      samplingRate: 1.0  # 100% trace all migrations
-
+      samplingRate: 1
     metrics:
       enabled: true
       exporter: prometheus
@@ -254,26 +186,24 @@ spec:
       customMetrics:
         - name: migrations_executed_total
           type: counter
-          description: "Total migrations executed"
-          labels: [database_type, status, risk_level]
+          description: Total migrations executed
+          labels:
+            - database_type
+            - status
+            - risk_level
         - name: migration_duration_seconds
           type: histogram
-          description: "Migration execution duration"
+          description: Migration execution duration
         - name: rollbacks_triggered_total
           type: counter
-          description: "Total rollbacks triggered"
-
+          description: Total rollbacks triggered
     logging:
       level: info
       format: json
       auditLog:
         enabled: true
         destination: /var/log/database/migration-audit.log
-        retention: 7years  # 7 year retention for compliance
-
-  # ==========================================================================
-  # STATE: Migration History & Rollback Procedures
-  # ==========================================================================
+        retention: 7years
   state:
     backend: postgres
     config:
@@ -283,32 +213,23 @@ spec:
       schema: flyway_schema_history
       ssl: true
       sslMode: require
-
-  # ==========================================================================
-  # EXTENSIONS: kAgent Kubernetes Integration
-  # ==========================================================================
   extensions:
     kagent:
       kubernetes:
         namespace: data-system
-
         labels:
           app: db-migrator
           team: data-engineering
           dora-metric: deployment-frequency
-
         annotations:
-          description: "Automated database migration agent"
-          contact: "ops@openstandardagents.org"
-          safety: "transactional-rollback-enabled"
-
+          description: Automated database migration agent
+          contact: ops@openstandardagents.org
+          safety: transactional-rollback-enabled
         resourceLimits:
-          cpu: "500m"
-          memory: "1Gi"
-          ephemeralStorage: "2Gi"
-
+          cpu: 500m
+          memory: 1Gi
+          ephemeralStorage: 2Gi
         serviceAccount: db-migrator-sa
-
         securityContext:
           runAsNonRoot: true
           runAsUser: 65534
@@ -316,71 +237,67 @@ spec:
           capabilities:
             drop:
               - ALL
-
       guardrails:
-        requireApproval: true  # Mandatory approval for production
-
+        requireApproval: true
         costLimits:
           maxTokensPerDay: 200000
-          maxCostPerDay: 20.00
+          maxCostPerDay: 20
           currency: USD
-
         allowedActions:
           - postgres:select:*
           - postgres:insert:flyway_schema_history
-          - postgres:execute:migration  # With approval only
+          - postgres:execute:migration
           - mysql:execute:migration
           - mongodb:execute:migration
-
         auditLog:
           destination: compliance-engine
           retention: 7years
-
       a2aConfig:
         enabled: true
         protocol: json-rpc
-
         endpoints:
           - http://rollback-coordinator:8080/a2a
           - http://monitoring-agent:8080/a2a
-
         authentication:
           type: mtls
           certPath: /var/secrets/a2a-client-cert.pem
           keyPath: /var/secrets/a2a-client-key.pem
-
       meshIntegration:
         enabled: true
         istioIntegration: true
         ambientMesh: true
         mtlsMode: STRICT
-
-# ============================================================================
-# DEPLOYMENT NOTES
-# ============================================================================
-#
-# Migration Workflow:
-#   1. Developer creates migration file (V001__add_user_table.sql)
-#   2. CI/CD triggers db-migrator agent
-#   3. Agent validates syntax and generates rollback SQL
-#   4. Agent executes dry-run in staging
-#   5. Agent requests approval for production migration
-#   6. Human approves via GitLab UI
-#   7. Agent executes production migration in transaction
-#   8. Agent verifies data integrity (checksums, row counts)
-#   9. If failure: rollback-coordinator triggers automatic rollback
-#   10. Agent records migration in flyway_schema_history
-#
-# Zero-Downtime Strategy (Expand-Contract):
-#   Phase 1 (Expand): Add new column with default value
-#   Phase 2 (Dual-Write): Application writes to both old and new columns
-#   Phase 3 (Backfill): Migrate data from old to new column
-#   Phase 4 (Contract): Remove old column after all data migrated
-#
-# Prerequisites:
-#   - Flyway server for migration version control
-#   - PostgreSQL primary with read replicas
-#   - Staging environment mirroring production schema
-#   - Backup verified within last 24 hours
-#
-# ============================================================================
+extensions:
+  kagent:
+    api_version: kagent.dev/v1alpha2
+    kubernetes:
+      namespace: agent-system
+      labels:
+        app.kubernetes.io/name: db-migrator
+        app.kubernetes.io/part-of: ossa-showcase
+        openstandardagents.org/version: v0.3.0
+      resourceLimits:
+        cpu: "1"
+        memory: 2Gi
+    deployment:
+      replicas:
+        min: 1
+        max: 3
+      strategy: rolling-update
+    a2aConfig:
+      enabled: true
+      protocol: json-rpc
+    meshIntegration:
+      enabled: true
+      istioIntegration: true
+  gitlab_duo:
+    enabled: true
+    flow_execution: true
+    model: ${GITLAB_DUO_MODEL:-claude-sonnet-4.5-20250929}
+    knowledge_graph:
+      enabled: true
+      index_on_push: true
+  mcp:
+    enabled: true
+    server_type: stdio
+    server_name: db-migrator-mcp

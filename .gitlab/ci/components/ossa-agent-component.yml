@@ -1,0 +1,83 @@
+# ============================================================================
+# GitLab CI Component: OSSA Agent Execution
+# ============================================================================
+# Reusable component for running OSSA agents in GitLab CI/CD pipelines
+# Supports all agent types with KAgent and GitLab Duo integration
+# ============================================================================
+
+spec:
+  inputs:
+    agent_name:
+      description: "Name of the OSSA agent to execute"
+      type: string
+      required: true
+    agent_path:
+      description: "Path to agent manifest file"
+      type: string
+      default: ".gitlab/agents/${agent_name}/manifest.ossa.yaml"
+    task:
+      description: "Specific task to execute (optional)"
+      type: string
+      default: ""
+    inputs:
+      description: "JSON string of inputs to pass to agent"
+      type: string
+      default: "{}"
+    k8s_namespace:
+      description: "Kubernetes namespace for agent execution"
+      type: string
+      default: "agent-system"
+    image:
+      description: "Container image for agent execution"
+      type: string
+      default: "node:22-alpine"
+    node_version:
+      description: "Node.js version"
+      type: string
+      default: "22"
+
+---
+.ossa_agent_base:
+  image: ${image}
+  before_script:
+    - apk add --no-cache git curl jq bash
+    - npm ci --legacy-peer-deps
+    - npm run build
+  script:
+    - |
+      echo "🤖 Executing OSSA Agent: ${agent_name}"
+      echo "   Manifest: ${agent_path}"
+      echo "   Task: ${task:-default}"
+      echo "   Inputs: ${inputs}"
+      
+      # Validate agent manifest exists
+      if [ ! -f "${agent_path}" ]; then
+        echo "❌ ERROR: Agent manifest not found: ${agent_path}"
+        exit 1
+      fi
+      
+      # Validate manifest against OSSA v0.3.0 schema
+      if ! node dist/cli/index.js validate "${agent_path}"; then
+        echo "❌ ERROR: Agent manifest validation failed"
+        exit 1
+      fi
+      
+      # Execute agent
+      if [ -n "${task}" ]; then
+        node dist/cli/index.js run "${agent_path}" --task "${task}" --inputs "${inputs}"
+      else
+        node dist/cli/index.js run "${agent_path}" --inputs "${inputs}"
+      fi
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      when: on_success
+    - if: $CI_COMMIT_BRANCH == "main" || $CI_COMMIT_BRANCH == "development"
+      when: on_success
+
+ossa:agent:
+  extends: .ossa_agent_base
+  variables:
+    agent_name: ${agent_name}
+    agent_path: ${agent_path}
+    task: ${task}
+    inputs: ${inputs}

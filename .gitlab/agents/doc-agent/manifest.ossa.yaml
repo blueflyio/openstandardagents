@@ -1,8 +1,4 @@
-# Documentation Agent - OSSA v0.2.9 Compliant
-# Automated documentation generation, validation, and wiki sync
-# Part of BlueFly.io Agent Platform
-
-apiVersion: ossa/v0.2.9
+apiVersion: ossa/v0.3.0
 kind: Agent
 metadata:
   name: doc-agent
@@ -17,19 +13,18 @@ metadata:
     agent-assigned: doc-agent
     blueflyio.com/team: platform
     blueflyio.com/service: documentation-automation
+    ossa-version: v0.3.0
   annotations:
     openstandardagents.org/stability: stable
     blueflyio.gitlab.com/lifecycle: ready-for-dev
     blueflyio.gitlab.com/codeowner: "@platform-team"
     blueflyio.gitlab.com/commit-type: docs
     blueflyio.gitlab.com/priority: high
-
 spec:
   taxonomy:
     domain: documentation
     subdomain: automation
     capability: documentation-generation
-
   role: |
     You are the Documentation Agent, an expert in technical documentation generation,
     validation, and maintenance. Your mission is to ensure all project documentation
@@ -88,80 +83,80 @@ spec:
     - PRESERVE existing documentation structure
     - ESCALATE major changes to humans
     - MAINTAIN version history
-
   llm:
     provider: ${LLM_PROVIDER:-anthropic}
-    model: ${LLM_MODEL:-claude-sonnet}  # Use env var, defaults to latest sonnet
-    temperature: 0.2  # Low temperature for consistent documentation
+    model: ${LLM_MODEL:-claude-sonnet}
+    temperature: 0.2
     maxTokens: 16000
     topP: 0.9
-
     fallback_models:
       - provider: ${LLM_FALLBACK_PROVIDER_1:-openai}
         model: ${LLM_FALLBACK_MODEL_1:-gpt-4o}
       - provider: ${LLM_FALLBACK_PROVIDER_2:-anthropic}
         model: ${LLM_FALLBACK_MODEL_2:-claude-haiku}
-
     retry_config:
       max_attempts: 3
       backoff_strategy: exponential
-
     cost_tracking:
       enabled: true
-      budget_alert_threshold: 20.00
+      budget_alert_threshold: 20
       cost_allocation_tags:
         project: ossa-agents
         team: platform
         service: doc-agent
-
   tools:
     - type: mcp
       name: filesystem
       server: filesystem-mcp-server
       endpoint: stdio
-
       transport:
         protocol: stdio
         streaming: none
-
       capabilities:
         - name: read_file
           version: "1.0"
           description: Read file contents
-          scopes: [read:files]
+          scopes:
+            - read:files
           input_schema:
             type: object
             properties:
-              path: { type: string }
-            required: [path]
-
+              path:
+                type: string
+            required:
+              - path
         - name: write_file
           version: "1.0"
           description: Write documentation files
-          scopes: [write:files]
+          scopes:
+            - write:files
           input_schema:
             type: object
             properties:
-              path: { type: string }
-              content: { type: string }
-            required: [path, content]
-
+              path:
+                type: string
+              content:
+                type: string
+            required:
+              - path
+              - content
         - name: list_directory
           version: "1.0"
           description: List directory contents
-          scopes: [read:files]
+          scopes:
+            - read:files
           input_schema:
             type: object
             properties:
-              path: { type: string }
-            required: [path]
-
+              path:
+                type: string
+            required:
+              - path
     - type: mcp
       name: gitlab-api
       server: gitlab-mcp-server
       namespace: blueflyio
       endpoint: https://gitlab.com/api/v4
-
       transport:
         protocol: http
         streaming: none
@@ -170,7 +165,6 @@ spec:
           burstLimit: 10
           strategy: token_bucket
           onExceeded: queue
-
       auth:
         type: bearer
         credentials: env:GITLAB_TOKEN
@@ -178,91 +172,110 @@ spec:
           - api
           - read_api
           - read_repository
-
       circuit_breaker:
         enabled: true
         failure_threshold: 5
         timeout_seconds: 60
-
       capabilities:
         - name: get_wiki_page
           version: "1.0"
           description: Get wiki page content
-          scopes: [read:wiki]
+          scopes:
+            - read:wiki
           transport:
             protocol: http
             binding: GET /projects/{id}/wikis/{slug}
           input_schema:
             type: object
             properties:
-              project_id: { type: integer }
-              slug: { type: string }
-            required: [project_id, slug]
-
+              project_id:
+                type: integer
+              slug:
+                type: string
+            required:
+              - project_id
+              - slug
         - name: create_wiki_page
           version: "1.0"
           description: Create new wiki page
-          scopes: [write:wiki]
+          scopes:
+            - write:wiki
           transport:
             protocol: http
             binding: POST /projects/{id}/wikis
           input_schema:
             type: object
             properties:
-              project_id: { type: integer }
-              title: { type: string }
-              content: { type: string }
+              project_id:
+                type: integer
+              title:
+                type: string
+              content:
+                type: string
               format:
                 type: string
-                enum: [markdown, rdoc, asciidoc]
+                enum:
+                  - markdown
+                  - rdoc
+                  - asciidoc
                 default: markdown
-            required: [project_id, title, content]
-
+            required:
+              - project_id
+              - title
+              - content
         - name: update_wiki_page
           version: "1.0"
           description: Update existing wiki page
-          scopes: [write:wiki]
+          scopes:
+            - write:wiki
           transport:
             protocol: http
             binding: PUT /projects/{id}/wikis/{slug}
           input_schema:
             type: object
             properties:
-              project_id: { type: integer }
-              slug: { type: string }
-              content: { type: string }
-              title: { type: string }
-            required: [project_id, slug, content]
-
+              project_id:
+                type: integer
+              slug:
+                type: string
+              content:
+                type: string
+              title:
+                type: string
+            required:
+              - project_id
+              - slug
+              - content
         - name: list_wiki_pages
           version: "1.0"
           description: List all wiki pages
-          scopes: [read:wiki]
+          scopes:
+            - read:wiki
           transport:
             protocol: http
             binding: GET /projects/{id}/wikis
           input_schema:
             type: object
             properties:
-              project_id: { type: integer }
-              with_content: { type: boolean, default: false }
-            required: [project_id]
-
+              project_id:
+                type: integer
+              with_content:
+                type: boolean
+                default: false
+            required:
+              - project_id
     - type: library
       name: openapi_parser
       description: Parse OpenAPI/Swagger specifications
-      version: "3.1.0"
-
+      version: 3.1.0
     - type: library
       name: markdown_generator
       description: Generate formatted markdown documentation
-      version: "1.0.0"
-
+      version: 1.0.0
     - type: library
       name: link_checker
       description: Validate links in documentation
-      version: "1.0.0"
-
+      version: 1.0.0
   capabilities:
     - name: generate_api_docs
       description: Generate API documentation from OpenAPI specifications
@@ -272,11 +285,11 @@ spec:
           spec_dir:
             type: string
             description: Directory containing OpenAPI specs
-            default: "openapi"
+            default: openapi
           output_dir:
             type: string
             description: Output directory for generated docs
-            default: "website/content/docs/api-reference"
+            default: website/content/docs/api-reference
         required:
           - spec_dir
       output_schema:
@@ -288,7 +301,6 @@ spec:
               type: string
           success:
             type: boolean
-
     - name: generate_cli_docs
       description: Generate CLI documentation from command source files
       input_schema:
@@ -297,11 +309,11 @@ spec:
           cli_dir:
             type: string
             description: Directory containing CLI command files
-            default: "src/cli/commands"
+            default: src/cli/commands
           output_dir:
             type: string
             description: Output directory for generated docs
-            default: "website/content/docs/cli-reference"
+            default: website/content/docs/cli-reference
         required:
           - cli_dir
       output_schema:
@@ -313,7 +325,6 @@ spec:
               type: string
           success:
             type: boolean
-
     - name: generate_schema_docs
       description: Generate schema documentation from JSON Schema
       input_schema:
@@ -325,7 +336,7 @@ spec:
           output_dir:
             type: string
             description: Output directory for generated docs
-            default: "website/content/docs/schema-reference"
+            default: website/content/docs/schema-reference
         required:
           - schema_path
       output_schema:
@@ -335,7 +346,6 @@ spec:
             type: integer
           success:
             type: boolean
-
     - name: validate_docs
       description: Validate documentation completeness and quality
       input_schema:
@@ -344,7 +354,7 @@ spec:
           docs_dir:
             type: string
             description: Directory to validate
-            default: "website/content/docs"
+            default: website/content/docs
           check_links:
             type: boolean
             description: Check for broken links
@@ -372,7 +382,6 @@ spec:
               type: string
           success:
             type: boolean
-
     - name: sync_wiki
       description: Sync documentation to GitLab wiki
       input_schema:
@@ -394,7 +403,6 @@ spec:
             type: integer
           success:
             type: boolean
-
   state:
     mode: stateless
     storage:
@@ -408,7 +416,6 @@ spec:
       max_messages: 50
       max_tokens: 32000
       strategy: truncation
-
   autonomy:
     level: supervised
     approval_required: false
@@ -430,21 +437,19 @@ spec:
       notify:
         - slack:#documentation
         - gitlab:@platform-team
-
   constraints:
     cost:
       maxTokensPerDay: 200000
       maxTokensPerRequest: 16000
-      maxCostPerDay: 30.00
+      maxCostPerDay: 30
       currency: USD
     performance:
       maxLatencySeconds: 30
       maxConcurrentRequests: 5
       timeoutSeconds: 120
     resources:
-      cpu: "500m"
+      cpu: 500m
       memory: 1Gi
-
   observability:
     tracing:
       enabled: true
@@ -481,12 +486,11 @@ spec:
         - name: sync_failure
           condition: wiki_sync_failed
           severity: error
-
   reliability:
     sla:
-      availability_percent: 99.0
+      availability_percent: 99
       latency_p95_ms: 10000
-      error_rate_percent: 2.0
+      error_rate_percent: 2
     circuit_breaker:
       enabled: true
       failure_threshold: 5
@@ -498,7 +502,6 @@ spec:
       timeout_seconds: 5
     failover:
       enabled: false
-
   safety:
     content_filtering:
       enabled: true
@@ -531,7 +534,6 @@ spec:
             - require_validation
       max_tool_calls: 50
       max_execution_time_seconds: 300
-
   deployment:
     strategy: rolling
     rollback:
@@ -555,7 +557,6 @@ spec:
       graceful_shutdown:
         enabled: true
         timeout_seconds: 30
-
 extensions:
   buildkit:
     deployment:
@@ -567,7 +568,7 @@ extensions:
       runtime: docker
       resources:
         limits:
-          cpu: "500m"
+          cpu: 500m
           memory: 1Gi
     gitlab:
       custom_fields:
@@ -575,7 +576,6 @@ extensions:
         agent_status: ready-for-dev
         commit_type: docs
         priority: high
-
   mcp:
     enabled: true
     server_type: stdio
@@ -588,23 +588,34 @@ extensions:
           properties:
             source_type:
               type: string
-              enum: [openapi, cli, schema]
-            source_path: { type: string }
-            output_path: { type: string }
-          required: [source_type, source_path]
+              enum:
+                - openapi
+                - cli
+                - schema
+            source_path:
+              type: string
+            output_path:
+              type: string
+          required:
+            - source_type
+            - source_path
       - name: validate_docs
         description: Validate documentation quality
         inputSchema:
           type: object
           properties:
-            docs_path: { type: string }
+            docs_path:
+              type: string
             checks:
               type: array
               items:
                 type: string
-                enum: [links, examples, completeness]
-          required: [docs_path]
-
+                enum:
+                  - links
+                  - examples
+                  - completeness
+          required:
+            - docs_path
   a2a:
     enabled: true
     agent_card:
@@ -630,6 +641,38 @@ extensions:
       - id: generate_documentation
         name: Generate Documentation
         description: Generate technical documentation from source
-        input_modes: [data]
-        output_modes: [text, data]
+        input_modes:
+          - data
+        output_modes:
+          - text
+          - data
     streaming: none
+  kagent:
+    api_version: kagent.dev/v1alpha2
+    kubernetes:
+      namespace: agent-system
+      labels:
+        app.kubernetes.io/name: doc-agent
+        app.kubernetes.io/part-of: ossa-showcase
+        openstandardagents.org/version: v0.3.0
+      resourceLimits:
+        cpu: "1"
+        memory: 2Gi
+    deployment:
+      replicas:
+        min: 1
+        max: 3
+      strategy: rolling-update
+    a2aConfig:
+      enabled: true
+      protocol: json-rpc
+    meshIntegration:
+      enabled: true
+      istioIntegration: true
+  gitlab_duo:
+    enabled: true
+    flow_execution: true
+    model: ${GITLAB_DUO_MODEL:-claude-sonnet-4.5-20250929}
+    knowledge_graph:
+      enabled: true
+      index_on_push: true

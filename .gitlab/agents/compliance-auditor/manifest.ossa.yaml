@@ -1,25 +1,5 @@
-# ============================================================================
-# OSSA Compliance Auditor Agent - GitLab Kubernetes Deployment
-# ============================================================================
-#
-# PURPOSE:
-#   Automated compliance auditing for regulatory frameworks (SOC 2, HIPAA,
-#   PCI-DSS, GDPR, FedRAMP). Validates Kubernetes configurations, audit logs,
-#   and operational practices against compliance requirements.
-#
-# CAPABILITIES:
-#   - SOC 2 compliance validation (access controls, encryption, logging)
-#   - HIPAA compliance for healthcare workloads (PHI encryption, audit trails)
-#   - PCI-DSS compliance for payment processing (network segmentation, encryption)
-#   - GDPR compliance (data residency, right to erasure, consent management)
-#   - FedRAMP compliance for government workloads (FIPS 140-2, NIST controls)
-#   - Continuous compliance monitoring and automated remediation
-#
-# ============================================================================
-
-apiVersion: ossa/v0.2.9
+apiVersion: ossa/v0.3.0
 kind: Agent
-
 metadata:
   name: compliance-auditor
   version: 1.0.0
@@ -27,26 +7,23 @@ metadata:
     Automated compliance auditing agent for regulatory frameworks (SOC 2, HIPAA,
     PCI-DSS, GDPR, FedRAMP). Validates Kubernetes configurations, audit logs, and
     operational practices against compliance requirements.
-
   labels:
     environment: production
     team: compliance
     domain: governance
     capability: audit
-    frameworks: "SOC2,HIPAA,PCI-DSS,GDPR,FedRAMP"
-
+    frameworks: SOC2,HIPAA,PCI-DSS,GDPR,FedRAMP
+    ossa-version: v0.3.0
   annotations:
     documentation: https://openstandardagents.org/docs/agents/compliance-auditor
     support: ops@openstandardagents.org
     runbook: https://openstandardagents.org/docs/runbooks/compliance-auditor
-    certifications: "SOC 2 Type II, HIPAA, PCI-DSS Level 1"
-
+    certifications: SOC 2 Type II, HIPAA, PCI-DSS Level 1
 spec:
   taxonomy:
     domain: governance-risk-compliance
     subdomain: regulatory-compliance
     capability: automated-auditing
-
   role: |
     You are an expert compliance auditor specializing in regulatory frameworks.
 
@@ -93,32 +70,27 @@ spec:
     - Affected resources (namespace/pod/service)
     - Remediation steps
     - Auditor evidence (logs, configs, screenshots)
-
   llm:
     provider: ${LLM_PROVIDER:-anthropic}
-    model: ${LLM_MODEL:-claude-sonnet}  # Use env var, defaults to latest sonnet
-    temperature: 0.0  # Deterministic for compliance
-    maxTokens: 10000  # Large context for detailed audit reports
+    model: ${LLM_MODEL:-claude-sonnet}
+    temperature: 0
+    maxTokens: 10000
     topP: 0.9
-
     fallback_models:
       - provider: ${LLM_FALLBACK_PROVIDER_1:-openai}
         model: ${LLM_FALLBACK_MODEL_1:-gpt-4o}
       - provider: ${LLM_FALLBACK_PROVIDER_2:-anthropic}
         model: ${LLM_FALLBACK_MODEL_2:-claude-haiku}
-
     retry_config:
       max_attempts: 3
       backoff_strategy: exponential
-
     cost_tracking:
       enabled: true
-      budget_alert_threshold: 40.00
+      budget_alert_threshold: 40
       cost_allocation_tags:
         project: ossa-agents
         team: compliance
         service: compliance-auditor
-
   tools:
     - type: mcp
       name: kubernetes-audit
@@ -130,7 +102,6 @@ spec:
       auth:
         type: mtls
         certPath: /var/secrets/k8s-audit-cert.pem
-
     - type: http
       name: vault-compliance
       description: |
@@ -142,7 +113,6 @@ spec:
       auth:
         type: token
         tokenPath: /var/secrets/vault-token
-
     - type: http
       name: falco-alerts
       description: |
@@ -151,7 +121,6 @@ spec:
       config:
         method: GET
         timeout: 10
-
     - type: mcp
       name: postgres-audit
       description: |
@@ -160,7 +129,6 @@ spec:
         server: postgres-mcp
         database: audit_db
         auditSchema: pgaudit
-
     - type: http
       name: splunk-query
       description: |
@@ -172,7 +140,6 @@ spec:
       auth:
         type: bearer
         tokenPath: /var/secrets/splunk-token
-
     - type: a2a
       name: security-scanner
       description: |
@@ -183,7 +150,6 @@ spec:
       auth:
         type: mtls
         certPath: /var/secrets/a2a-client-cert.pem
-
     - type: http
       name: jira-api
       description: |
@@ -195,46 +161,38 @@ spec:
       auth:
         type: bearer
         tokenPath: /var/secrets/jira-token
-
   autonomy:
     level: autonomous
     approval_required: false
-
     allowed_actions:
       - audit_kubernetes_configs
       - audit_access_logs
       - audit_encryption_settings
       - generate_compliance_reports
       - create_violation_tickets
-
     blocked_actions:
       - modify_audit_logs
       - disable_encryption
       - grant_access_permissions
-
   constraints:
     cost:
       maxTokensPerDay: 500000
       maxTokensPerRequest: 10000
-      maxCostPerDay: 50.00
+      maxCostPerDay: 50
       currency: USD
-
     performance:
       maxLatencySeconds: 120
       maxConcurrentRequests: 10
       timeoutSeconds: 300
-
     resources:
-      cpu: "1000m"
-      memory: "2Gi"
-
+      cpu: 1000m
+      memory: 2Gi
   observability:
     tracing:
       enabled: true
       exporter: otlp
       endpoint: http://jaeger-collector:4318
-      samplingRate: 1.0  # 100% trace all compliance audits
-
+      samplingRate: 1
     metrics:
       enabled: true
       exporter: prometheus
@@ -242,25 +200,27 @@ spec:
       customMetrics:
         - name: compliance_violations_total
           type: counter
-          description: "Total compliance violations detected"
-          labels: [framework, severity, control_id]
+          description: Total compliance violations detected
+          labels:
+            - framework
+            - severity
+            - control_id
         - name: compliance_score
           type: gauge
-          description: "Overall compliance score (0-100)"
-          labels: [framework]
+          description: Overall compliance score (0-100)
+          labels:
+            - framework
         - name: audit_duration_seconds
           type: histogram
-          description: "Compliance audit duration"
-
+          description: Compliance audit duration
     logging:
       level: info
       format: json
       auditLog:
         enabled: true
         destination: /var/log/compliance/audit.log
-        retention: 7years  # 7 year retention for regulatory requirements
-        tamperProof: true  # Write-once, append-only logging
-
+        retention: 7years
+        tamperProof: true
   state:
     backend: postgres
     config:
@@ -270,8 +230,7 @@ spec:
       schema: audit_trail
       ssl: true
       sslMode: require
-      encryption: pgcrypto  # PostgreSQL encryption extension
-
+      encryption: pgcrypto
   reliability:
     sla:
       availability_percent: 99.9
@@ -289,7 +248,6 @@ spec:
     failover:
       enabled: true
       strategy: active-passive
-
   security:
     authentication:
       required: true
@@ -316,7 +274,7 @@ spec:
     audit:
       enabled: true
       log_level: detailed
-      retention_days: 2555  # 7 years for compliance
+      retention_days: 2555
       pii_redaction: true
     compliance:
       frameworks:
@@ -325,14 +283,13 @@ spec:
         - pci-dss
         - gdpr
         - fedramp
-
   safety:
     content_filtering:
       enabled: true
       categories:
         - pii
-        - phi  # Protected Health Information
-        - pci  # Payment Card Industry data
+        - phi
+        - pci
       threshold: high
       action: block
     rate_limiting:
@@ -352,7 +309,6 @@ spec:
             - no_disable_encryption
       max_tool_calls: 100
       max_execution_time_seconds: 300
-
   deployment:
     strategy: rolling
     rollback:
@@ -376,7 +332,6 @@ spec:
       graceful_shutdown:
         enabled: true
         timeout_seconds: 60
-
   extensions:
     kagent:
       kubernetes:
@@ -384,12 +339,12 @@ spec:
         labels:
           app: compliance-auditor
           team: compliance
-          frameworks: "SOC2,HIPAA,PCI-DSS,GDPR,FedRAMP"
+          frameworks: SOC2,HIPAA,PCI-DSS,GDPR,FedRAMP
         annotations:
-          certifications: "SOC 2 Type II, HIPAA, PCI-DSS Level 1"
+          certifications: SOC 2 Type II, HIPAA, PCI-DSS Level 1
         resourceLimits:
-          cpu: "1000m"
-          memory: "2Gi"
+          cpu: 1000m
+          memory: 2Gi
         serviceAccount: compliance-auditor-sa
         securityContext:
           runAsNonRoot: true
@@ -398,26 +353,21 @@ spec:
           capabilities:
             drop:
               - ALL
-
       guardrails:
         requireApproval: false
-
         costLimits:
           maxTokensPerDay: 500000
-          maxCostPerDay: 50.00
+          maxCostPerDay: 50
           currency: USD
-
         allowedActions:
-          - kubernetes:get:*  # Read-only cluster access
+          - kubernetes:get:*
           - vault:audit:*
           - postgres:select:audit_trail
           - splunk:search:*
-
         auditLog:
           destination: compliance-engine
           retention: 7years
           tamperProof: true
-
       a2aConfig:
         enabled: true
         protocol: json-rpc
@@ -428,45 +378,42 @@ spec:
           type: mtls
           certPath: /var/secrets/a2a-client-cert.pem
           keyPath: /var/secrets/a2a-client-key.pem
-
       meshIntegration:
         enabled: true
         istioIntegration: true
         ambientMesh: true
-        mtlsMode: STRICT  # Required for compliance
-
-# ============================================================================
-# COMPLIANCE AUDIT SCHEDULE
-# ============================================================================
-#
-# Continuous Monitoring:
-#   - Real-time audit log ingestion (Kubernetes, Vault, PostgreSQL, Splunk)
-#   - Immediate violation detection and alerting
-#   - Automated ticket creation for remediation
-#
-# Daily Audits:
-#   - Access control validation (RBAC, least privilege)
-#   - Encryption settings verification (at rest, in transit)
-#   - Audit log retention validation (1-7 years depending on framework)
-#
-# Weekly Audits:
-#   - Security incident review and response validation
-#   - Backup and disaster recovery testing
-#   - Vulnerability scan analysis
-#
-# Monthly Audits:
-#   - Compliance score calculation and trending
-#   - Evidence collection for auditor review
-#   - Compliance dashboard updates
-#
-# Quarterly Audits:
-#   - Full compliance framework validation (SOC 2, HIPAA, PCI-DSS, GDPR, FedRAMP)
-#   - External auditor evidence package preparation
-#   - Risk assessment and gap analysis
-#
-# Annual Audits:
-#   - Penetration testing coordination (PCI-DSS requirement)
-#   - SOC 2 Type II audit preparation
-#   - Compliance certification renewals
-#
-# ============================================================================
+        mtlsMode: STRICT
+extensions:
+  kagent:
+    api_version: kagent.dev/v1alpha2
+    kubernetes:
+      namespace: agent-system
+      labels:
+        app.kubernetes.io/name: compliance-auditor
+        app.kubernetes.io/part-of: ossa-showcase
+        openstandardagents.org/version: v0.3.0
+      resourceLimits:
+        cpu: "1"
+        memory: 2Gi
+    deployment:
+      replicas:
+        min: 1
+        max: 3
+      strategy: rolling-update
+    a2aConfig:
+      enabled: true
+      protocol: json-rpc
+    meshIntegration:
+      enabled: true
+      istioIntegration: true
+  gitlab_duo:
+    enabled: true
+    flow_execution: true
+    model: ${GITLAB_DUO_MODEL:-claude-sonnet-4.5-20250929}
+    knowledge_graph:
+      enabled: true
+      index_on_push: true
+  mcp:
+    enabled: true
+    server_type: stdio
+    server_name: compliance-auditor-mcp
