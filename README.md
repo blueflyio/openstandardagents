@@ -166,7 +166,9 @@ OSSA integrates seamlessly with leading AI frameworks, platforms, and tools:
 
 **Platforms**: Kubernetes, Docker, AWS, Azure, GCP
 
-**Tools**: MCP, Drupal, LibreChat, Cursor, VS Code
+**Tools**: MCP, Drupal, LibreChat, Cursor, VS Code, OpenAI agents.md
+
+**Extensions**: agents.md (OpenAI), Cursor IDE, MCP Servers, KAgent, Drupal, and more
 
 [View All Integrations](https://openstandardagents.org/docs/ecosystem/framework-support/)
 
