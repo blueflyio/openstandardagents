@@ -121,10 +121,14 @@ spec:
       name: slack-webhook
       description: |
         Send cost reports and recommendations to Slack.
-      endpoint: https://hooks.slack.com/services/T00000000/B00000000/XXXXXXXXXXXXXXXXXXXX
+        Configure SLACK_WEBHOOK_URL environment variable with your Slack webhook URL.
+      endpoint: ${SLACK_WEBHOOK_URL:-}
       config:
         method: POST
         timeout: 5
+      auth:
+        type: bearer
+        credentials: env:SLACK_WEBHOOK_URL
   autonomy:
     level: autonomous
     approval_required: false
