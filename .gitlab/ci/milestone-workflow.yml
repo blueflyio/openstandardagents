@@ -32,12 +32,28 @@ validate:branch-target:
           echo "✅ Feature branch correctly targets development"
           ;;
         release/*)
-          if [ "$CI_MERGE_REQUEST_TARGET_BRANCH_NAME" != "development" ] && \
-             [ "$CI_MERGE_REQUEST_TARGET_BRANCH_NAME" != "main" ]; then
-            echo "❌ ERROR: Release branches must target 'development' or 'main'"
-            exit 1
-          fi
-          echo "✅ Release branch targeting ${CI_MERGE_REQUEST_TARGET_BRANCH_NAME}"
+          # Release branches can target: development, main, or other release branches
+          case "$CI_MERGE_REQUEST_TARGET_BRANCH_NAME" in
+            development|main)
+              echo "✅ Release branch targeting ${CI_MERGE_REQUEST_TARGET_BRANCH_NAME}"
+              ;;
+            release/*)
+              echo "✅ Release branch targeting another release branch: ${CI_MERGE_REQUEST_TARGET_BRANCH_NAME}"
+              echo "   This allows release branches to merge into release trains (e.g., release/0.3.0 → release/v0.3.x)"
+              ;;
+            *)
+              echo "❌ ERROR: Release branches must target 'development', 'main', or another 'release/*' branch"
+              echo ""
+              echo "Your branch: ${CI_MERGE_REQUEST_SOURCE_BRANCH_NAME}"
+              echo "Targeting:   ${CI_MERGE_REQUEST_TARGET_BRANCH_NAME}"
+              echo ""
+              echo "Allowed targets for release branches:"
+              echo "  - development (for initial release work)"
+              echo "  - main (for final production release)"
+              echo "  - release/* (for release branch consolidation)"
+              exit 1
+              ;;
+          esac
           ;;
         *)
           echo "ℹ️ Non-standard branch naming - manual review required"
