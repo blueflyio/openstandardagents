@@ -120,10 +120,14 @@ spec:
         template: content_review_complete
         variables:
 <<<<<<< HEAD
+<<<<<<< HEAD
           status: ${{ steps.ai-review.output.approved }}
 =======
           status: ${{ steps.ai-review.output.approved ? 'approved' : 'needs_revision' }}
 >>>>>>> origin/feature/ai-foundations
+=======
+          status: ${{ steps.ai-review.output.approved ? 'approved' : 'needs_revision' }}
+>>>>>>> origin/fix/rebase-release-0.3.0-on-main
           feedback: ${{ steps.ai-review.output.feedback }}
 
   # Shared context
