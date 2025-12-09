@@ -25,17 +25,19 @@ Examples:
 
 ## Branching Strategy
 
-### `development` Branch
-- **Purpose**: Active development and testing
-- **Releases**: Pre-release versions with `-dev` tag
-- **Version bumps**: Automatic via semantic-release
-- **Example versions**: `0.2.8-dev.0`, `0.2.8-dev.1`
+### Release Branches (`release/v*.*.x`)
+- **Purpose**: Active development and testing for a specific minor version
+- **Format**: `release/v0.3.x`, `release/v0.4.x`, `release/v1.0.x`, etc.
+- **Releases**: Pre-release versions with `-dev` or `-rc` tags
+- **Version Detection**: Dynamic from branch name (e.g., `release/v0.3.x` → `v0.3.0-dev`)
+- **Example versions**: `v0.3.0-dev`, `v0.3.0-dev1`, `v0.3.0-rc1`, `v0.3.1-dev`
+- **Patch Releases**: Automatically detects latest patch version and increments (e.g., `v0.3.1`, `v0.3.2`)
 
 ### `main` Branch
 - **Purpose**: Stable production releases
-- **Releases**: Stable versions (no pre-release tag)
-- **Version bumps**: Automatic via semantic-release
-- **Example versions**: `0.2.8`, `0.3.0`, `1.0.0`
+- **Releases**: Final semantic versions (no pre-release tag)
+- **Version Detection**: From release branch when merged (e.g., `release/v0.3.x` → `main` → `v0.3.0`)
+- **Example versions**: `v0.2.8`, `v0.3.0`, `v0.3.1`, `v1.0.0`
 
 ---
 
@@ -93,42 +95,57 @@ Next version: v0.3.0
 
 ### Development Pre-releases
 
-On `development` branch:
+On `release/v0.3.x` branch:
 ```
-Current: v0.2.8
+Current: v0.3.0 (latest tag)
 Commits: feat, fix, docs
-Result: v0.3.0-dev.0 (first dev release)
-        v0.3.0-dev.1 (second dev release)
-        ...
+Result: v0.3.0-dev (first dev release)
+        v0.3.0-dev1 (second dev release)
+        v0.3.0-rc1 (release candidate)
         v0.3.0 (when merged to main)
+```
+
+### Patch Releases
+
+Patch releases are automatically detected and incremented:
+```
+Existing tags: v0.3.0, v0.3.1
+New commit on release/v0.3.x
+Result: v0.3.2-dev (next patch version)
+        v0.3.2 (when merged to main)
 ```
 
 ---
 
 ## Release Process
 
-### Automated (Recommended)
+### GitLab Issue-Based Workflow (Recommended)
 
-1. **Commit with conventional format**:
-   ```bash
-   git commit -m "feat: add semantic-release automation"
-   ```
+1. **Create GitLab Issue**:
+   - Describe the change (bug fix, feature, etc.)
+   - Assign to appropriate milestone
+   - Label appropriately (bugfix, feature, chore, etc.)
 
-2. **Push to branch**:
-   ```bash
-   git push origin development  # Creates v0.3.0-dev.0
-   # OR
-   git push origin main          # Creates v0.3.0
-   ```
+2. **Create Merge Request from Issue**:
+   - Use GitLab's "Create merge request" button from issue page
+   - Source branch: `feature/`, `bugfix/`, `chore/`, or `hotfix/` prefix
+   - Target branch: `release/v0.3.x` (or current release branch)
+   - CI automatically validates MR target
 
-3. **Semantic-release automatically**:
-   - Analyzes commits
-   - Determines version bump
-   - Updates `package.json`
-   - Updates `CHANGELOG.md`
-   - Creates git tag
-   - Creates GitLab release
-   - Publishes to GitLab Packages
+3. **CI/CD Automatically**:
+   - Runs tests and validation
+   - On merge to `release/v0.3.x`: Creates dev/rc tags (e.g., `v0.3.0-dev`, `v0.3.1-dev`)
+   - On merge to `main`: Creates final release tag (e.g., `v0.3.0`, `v0.3.1`)
+   - Creates GitLab Release with changelog
+   - Version detection is dynamic from branch name
+
+### Dynamic Version Detection
+
+The version detection script (`.gitlab/scripts/detect-version.sh`) automatically:
+- Extracts version from release branch name: `release/v0.3.x` → `v0.3.0`
+- Detects latest patch version and increments: `v0.3.1`, `v0.3.2`, etc.
+- Creates appropriate pre-release tags: `-dev`, `-dev1`, `-rc1`, etc.
+- Works for any release branch: `release/v0.3.x`, `release/v0.4.x`, `release/v1.0.x`
 
 ### Manual Release (Not Recommended)
 
@@ -208,10 +225,20 @@ Semantic-release configuration:
 
 ### `.gitlab-ci.yml`
 CI/CD pipeline:
-- `semantic-release:development` job
-- `semantic-release:main` job
-- `publish:gitlab-packages` job
-- `publish:npmjs:manual` job
+- `detect:version` - Dynamic version detection from branch name
+- `release:pre-release` - Creates dev/rc tags on release branches
+- `release:final` - Creates final release tags on main
+- `validate:mr-target` - Ensures MRs target release branches
+- `publish:gitlab-packages` - Publishes to GitLab Packages
+- `publish:npmjs:manual` - Manual npm publishing
+
+### `.gitlab/scripts/detect-version.sh`
+Dynamic version detection script:
+- Extracts MAJOR.MINOR from release branch name
+- Detects latest patch version from existing tags
+- Increments patch version for new releases
+- Supports dev and rc pre-release tags
+- Works dynamically for any release branch version
 
 ---
 
@@ -219,23 +246,27 @@ CI/CD pipeline:
 
 ### Q: How do I create a pre-release?
 
-**A**: Commit to `development` branch with conventional commits:
-```bash
-git checkout development
-git commit -m "feat: experimental MCP bridge"
-git push origin development
-# Creates v0.3.0-dev.0
-```
+**A**: Create MR targeting `release/v0.3.x` branch:
+1. Create GitLab issue describing the change
+2. Create MR from issue targeting `release/v0.3.x`
+3. Merge after CI passes
+4. CI automatically creates dev tag: `v0.3.0-dev`, `v0.3.1-dev`, etc.
 
 ### Q: How do I create a stable release?
 
-**A**: Merge `development` to `main`:
-```bash
-git checkout main
-git merge development --no-ff
-git push origin main
-# Creates v0.3.0
-```
+**A**: Merge `release/v0.3.x` to `main`:
+1. Create MR from `release/v0.3.x` to `main`
+2. Ensure all tests pass
+3. Merge after approval
+4. CI automatically creates final release tag: `v0.3.0`, `v0.3.1`, etc.
+
+### Q: How does patch version detection work?
+
+**A**: The version detection script automatically:
+- Scans existing tags for the MAJOR.MINOR version
+- Finds the latest patch version (e.g., `v0.3.2`)
+- Increments for new release (e.g., `v0.3.3-dev`)
+- Works for any release branch dynamically
 
 ### Q: How do I force a specific version?
 
