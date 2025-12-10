@@ -44,15 +44,15 @@ spec:
     - Remediation steps (upgrade version, apply patch, configuration change)
     - Estimated effort (low/medium/high)
   llm:
-    provider: ${LLM_PROVIDER:-anthropic}
+    provider: anthropic
     model: ${LLM_MODEL:-claude-sonnet}
     temperature: 0.1
     maxTokens: 8000
     topP: 0.9
     fallback_models:
-      - provider: ${LLM_FALLBACK_PROVIDER_1:-openai}
+      - provider: openai
         model: ${LLM_FALLBACK_MODEL_1:-gpt-4o}
-      - provider: ${LLM_FALLBACK_PROVIDER_2:-anthropic}
+      - provider: anthropic
         model: ${LLM_FALLBACK_MODEL_2:-claude-haiku}
     retry_config:
       max_attempts: 3
@@ -250,17 +250,17 @@ spec:
     content_filtering:
       enabled: true
       categories:
-        - credentials
-        - api_keys
+        - violence
+        - hate
       threshold: high
       action: block
     pii_detection:
       enabled: true
       types:
-        - api_key
-        - password
-        - private_key
-        - aws_secret
+        - ssn
+        - email
+        - phone
+        - credit_card
       action: redact
     rate_limiting:
       enabled: true
@@ -367,37 +367,14 @@ spec:
             http:
               http2MaxRequests: 1000
               maxRequestsPerConnection: 2
-extensions:
-  kagent:
-    api_version: kagent.dev/v1alpha2
-    kubernetes:
-      namespace: agent-system
-      labels:
-        app.kubernetes.io/name: security-scanner
-        app.kubernetes.io/part-of: ossa-showcase
-        openstandardagents.org/version: v0.3.0
-      resourceLimits:
-        cpu: "1"
-        memory: 2Gi
-    deployment:
-      replicas:
-        min: 1
-        max: 3
-      strategy: rolling-update
-    a2aConfig:
+    gitlab_duo:
       enabled: true
-      protocol: json-rpc
-    meshIntegration:
+      flow_execution: true
+      model: ${GITLAB_DUO_MODEL:-claude-sonnet-4.5-20250929}
+      knowledge_graph:
+        enabled: true
+        index_on_push: true
+    mcp:
       enabled: true
-      istioIntegration: true
-  gitlab_duo:
-    enabled: true
-    flow_execution: true
-    model: ${GITLAB_DUO_MODEL:-claude-sonnet-4.5-20250929}
-    knowledge_graph:
-      enabled: true
-      index_on_push: true
-  mcp:
-    enabled: true
-    server_type: stdio
-    server_name: security-scanner-mcp
+      server_type: stdio
+      server_name: security-scanner-mcp
