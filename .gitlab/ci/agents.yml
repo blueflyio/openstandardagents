@@ -51,7 +51,7 @@ code:review:agent:
       export MR_IID="${CI_MERGE_REQUEST_IID}"
       export TARGET_PROJECT="${CI_PROJECT_PATH}"
       
-      if node dist/cli/index.js run "$MANIFEST_PATH" --task code-review 2>&1; then
+      if node dist/cli/index.js run "$MANIFEST_PATH" 2>&1; then
         echo "✅ Code review completed successfully"
       else
         echo "⚠️  Code review completed with warnings (non-blocking)"
@@ -100,7 +100,7 @@ security:scan:agent:
         export GITLAB_TOKEN="${AGENT_SERVICE_TOKEN:-$CI_JOB_TOKEN}"
         export TARGET_PROJECT="${CI_PROJECT_PATH}"
         export SCAN_TYPE="full"
-        node dist/cli/index.js run "$MANIFEST_PATH" --task security-scan || echo "⚠️  Security scan completed with warnings"
+        node dist/cli/index.js run "$MANIFEST_PATH" || echo "⚠️  Security scan completed with warnings"
       else
         echo "ℹ️  No security scanner manifest found at ${MANIFEST_PATH}"
         echo "   Skipping security scan. Create manifest to enable."

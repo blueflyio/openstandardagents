@@ -76,11 +76,8 @@ spec:
       fi
 
       # Execute agent
-      if [ -n "${task}" ]; then
-        node dist/cli/index.js run "${agent_path}" --task "${task}" --inputs "${inputs}"
-      else
-        node dist/cli/index.js run "${agent_path}" --inputs "${inputs}"
-      fi
+      # Note: task and inputs are defined in the agent manifest, not passed as CLI args
+      node dist/cli/index.js run "${agent_path}"
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
       when: on_success
