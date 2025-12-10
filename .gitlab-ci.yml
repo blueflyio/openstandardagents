@@ -248,7 +248,7 @@ build:website:
   image: node:20-alpine
   variables:
     NODE_ENV: development
-    GITLAB_TOKEN: $CI_JOB_TOKEN
+    GITLAB_TOKEN: $CI_JOB_TOKEN  # Enable authenticated access to private repos
   before_script:
     - cd website
     - npm ci --prefer-offline --no-audit
@@ -299,6 +299,8 @@ container_scanning:
   stage: security
   variables:
     CS_IMAGE: $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA
+    CS_REGISTRY_USER: gitlab-ci-token
+    CS_REGISTRY_PASSWORD: $CI_JOB_TOKEN
   dependencies:
     - build:docker
   allow_failure: true
