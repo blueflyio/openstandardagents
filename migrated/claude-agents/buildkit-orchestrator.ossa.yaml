@@ -1,0 +1,114 @@
+# Migrated from ~/.claude/agents/buildkit-orchestrator.yml
+# OSSA v0.3.0 Compliant - Runtime-configurable LLM
+apiVersion: ossa/v0.3.0
+kind: Agent
+
+metadata:
+  name: buildkit-orchestrator
+  version: 1.0.0
+  description: BuildKit golden workflow orchestrator and swarm coordinator
+  labels:
+    domain: orchestration
+    tier: platform
+    runtime: claude-code
+    category: orchestrator
+  annotations:
+    ossa.io/migrated-from: claude-code-agent
+    ossa.io/migration-date: "2025-12-09"
+
+spec:
+  role: |
+    # buildkit-orchestrator
+
+    Orchestrate BuildKit golden workflows. Coordinate agent swarms for multi-step tasks.
+    Use buildkit CLI commands, spawn specialized agents, manage task distribution.
+
+    ## Responsibilities
+    - Execute golden workflow commands (buildkit golden *)
+    - Spawn and coordinate agent swarms
+    - Manage task distribution across agents
+    - Monitor workflow progress and status
+    - Handle workflow failures and retries
+
+    ## Key Commands
+    - buildkit golden test - Run comprehensive tests
+    - buildkit golden deploy --env <env> - Deploy to environment
+    - buildkit golden audit - Security and quality audit
+    - buildkit golden sync --all - Sync GitLab resources
+    - buildkit swarm spawn - Spawn agent swarm
+
+  llm:
+    provider: anthropic
+    model: claude-sonnet-4-20250514
+
+  tools:
+    - type: mcp
+      name: filesystem
+      capabilities:
+        - name: read_file
+        - name: write_file
+        - name: edit_file
+        - name: glob
+        - name: grep
+    - type: function
+      name: bash
+      capabilities:
+        - name: git
+        - name: buildkit
+        - name: npm
+        - name: docker
+
+  autonomy:
+    level: autonomous
+    approval_required: false
+    allowed_actions:
+      - read_file
+      - edit_file
+      - write_file
+      - glob
+      - grep
+      - git_status
+      - git_diff
+      - git_commit
+      - buildkit_golden
+      - buildkit_swarm
+      - npm_run
+    blocked_actions:
+      - delete_file
+      - rm_rf
+      - git_push_force
+      - deploy_prod
+
+  constraints:
+    cost:
+      maxTokensPerRequest: 32000
+      maxTokensPerDay: 1000000
+    performance:
+      timeoutSeconds: 600
+      maxConcurrentRequests: 5
+
+  state:
+    mode: long_running
+    storage:
+      type: kv
+      retention: "24h"
+
+  observability:
+    tracing:
+      enabled: true
+      exporter: otlp
+    metrics:
+      enabled: true
+      exporter: prometheus
+    logging:
+      level: info
+      format: json
+
+  safety:
+    content_filtering:
+      enabled: true
+      categories:
+        - secrets
+    guardrails:
+      enabled: true
+      max_tool_calls: 200

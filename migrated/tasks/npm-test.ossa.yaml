@@ -1,0 +1,74 @@
+# OSSA v0.3.0 Task: NPM Test
+# Deterministic task - no LLM required
+apiVersion: ossa/v0.3.0
+kind: Task
+
+metadata:
+  name: npm-test
+  version: 1.0.0
+  description: Run NPM test suite with Jest
+  labels:
+    domain: typescript
+    tier: test
+    category: quality
+  annotations:
+    ossa.io/created-date: "2025-12-09"
+
+spec:
+  execution:
+    type: deterministic
+    runtime: node
+    entrypoint: npm run test
+    timeout_seconds: 600
+
+  capabilities:
+    - run_tests
+    - generate_coverage
+
+  input:
+    type: object
+    properties:
+      working_directory:
+        type: string
+        description: Directory containing package.json
+      coverage:
+        type: boolean
+        description: Generate coverage report
+      test_pattern:
+        type: string
+        description: Test file pattern to run
+    required:
+      - working_directory
+
+  output:
+    type: object
+    properties:
+      passed:
+        type: boolean
+        description: All tests passed
+      total_tests:
+        type: integer
+        description: Total number of tests
+      passed_tests:
+        type: integer
+        description: Number of passed tests
+      failed_tests:
+        type: integer
+        description: Number of failed tests
+      coverage_percent:
+        type: number
+        description: Code coverage percentage
+
+  error_handling:
+    on_error: fail
+
+  observability:
+    logging:
+      level: info
+      include_output: true
+    metrics:
+      enabled: true
+      custom_labels:
+        stage: test
+    tracing:
+      enabled: true
