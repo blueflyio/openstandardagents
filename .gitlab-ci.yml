@@ -17,10 +17,15 @@
 include:
   - local: '.gitlab/ci/agents.yml'
   - local: '.gitlab/ci/branch-policy.yml'
+  - local: '.gitlab/ci/milestone-workflow.yml'
   - local: '.gitlab/ci/release-workflow.yml'
   - local: '.gitlab/ci/ossa-integration.yml'
   - local: '.gitlab/ci/components/ossa-agent-component.yml'
   - local: '.gitlab/ci/components/ossa-workflow-component.yml'
+  # Security scanning from Auto DevOps
+  - template: Jobs/SAST.gitlab-ci.yml
+  - template: Jobs/Secret-Detection.gitlab-ci.yml
+  - template: Jobs/Dependency-Scanning.gitlab-ci.yml
   # TODO: Add merge-train component when gitlab_components is made public/internal
   # - component: gitlab.com/blueflyio/agent-platform/gitlab_components/merge-train@main
 

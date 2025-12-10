@@ -10,10 +10,11 @@ spec:
     agent_name:
       description: "Name of the OSSA agent to execute"
       type: string
+      default: ""
     agent_path:
       description: "Path to agent manifest file"
       type: string
-      default: ".gitlab/agents/${agent_name}/manifest.ossa.yaml"
+      default: ""
     task:
       description: "Specific task to execute (optional)"
       type: string
@@ -37,17 +38,30 @@ spec:
 
 ---
 .ossa_agent_base:
-  image: ${image}
+  image: node:22-alpine
   before_script:
     - apk add --no-cache git curl jq bash
     - npm ci --legacy-peer-deps
     - npm run build
   script:
     - |
-      echo "🤖 Executing OSSA Agent: ${agent_name}"
+      # Determine agent_path if not provided
+      if [ -z "${agent_path}" ]; then
+        if [ -z "${agent_name}" ]; then
+          echo "ℹ️ No agent_name or agent_path specified, skipping agent execution"
+          exit 0
+        fi
+        agent_path=".gitlab/agents/${agent_name}/manifest.ossa.yaml"
+      fi
+      
+      echo "🤖 Executing OSSA Agent: ${agent_name:-$(basename $(dirname ${agent_path}))}"
       echo "   Manifest: ${agent_path}"
       echo "   Task: ${task:-default}"
       echo "   Inputs: ${inputs}"
+      
+      # Use GITLAB_TOKEN from job variables (set to service account token),
+      # fallback to service account tokens, then CI_JOB_TOKEN
+      export GITLAB_TOKEN="${GITLAB_TOKEN:-${SERVICE_ACCOUNT_VERSION_MANAGER_TOKEN:-${SERVICE_ACCOUNT_DEPLOYMENT_TOKEN:-${SERVICE_ACCOUNT_SECURITY_TOKEN:-${CI_JOB_TOKEN}}}}}"
       
       # Validate agent manifest exists
       if [ ! -f "${agent_path}" ]; then
@@ -76,7 +90,11 @@ spec:
 ossa:agent:
   extends: .ossa_agent_base
   variables:
-    agent_name: ${agent_name}
-    agent_path: ${agent_path}
-    task: ${task}
-    inputs: ${inputs}
+    agent_name: ""
+    agent_path: ""
+    task: ""
+    inputs: "{}"
+  rules:
+    - if: $agent_name || $agent_path
+      when: on_success
+    - when: never
