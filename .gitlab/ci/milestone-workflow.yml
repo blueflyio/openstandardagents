@@ -17,27 +17,30 @@ validate:branch-target:
       echo "Target: ${CI_MERGE_REQUEST_TARGET_BRANCH_NAME}"
       echo ""
 
-      # Feature/bugfix/chore branches must target development
+      # Feature/bugfix/chore branches can target release/* or main
       case "$CI_MERGE_REQUEST_SOURCE_BRANCH_NAME" in
-        feature/*|bugfix/*|chore/*|fix/*|docs/*|refactor/*|test/*)
-          if [ "$CI_MERGE_REQUEST_TARGET_BRANCH_NAME" != "development" ]; then
-            echo "❌ ERROR: Feature branches must target 'development'"
-            echo ""
-            echo "Your branch: ${CI_MERGE_REQUEST_SOURCE_BRANCH_NAME}"
-            echo "Targeting:   ${CI_MERGE_REQUEST_TARGET_BRANCH_NAME}"
-            echo ""
-            echo "Please retarget this MR to 'development'"
-            exit 1
-          fi
-          echo "✅ Feature branch correctly targets development"
+        feature/*|bugfix/*|chore/*|fix/*|docs/*|refactor/*|test/*|feat/*|hotfix/*)
+          case "$CI_MERGE_REQUEST_TARGET_BRANCH_NAME" in
+            release/*|main)
+              echo "✅ Feature branch correctly targets ${CI_MERGE_REQUEST_TARGET_BRANCH_NAME}"
+              ;;
+            *)
+              echo "❌ ERROR: Feature branches must target 'release/*' or 'main'"
+              echo ""
+              echo "Your branch: ${CI_MERGE_REQUEST_SOURCE_BRANCH_NAME}"
+              echo "Targeting:   ${CI_MERGE_REQUEST_TARGET_BRANCH_NAME}"
+              echo ""
+              echo "Please retarget this MR to a release branch or main"
+              exit 1
+              ;;
+          esac
           ;;
         release/*)
-          if [ "$CI_MERGE_REQUEST_TARGET_BRANCH_NAME" != "development" ] && \
-             [ "$CI_MERGE_REQUEST_TARGET_BRANCH_NAME" != "main" ]; then
-            echo "❌ ERROR: Release branches must target 'development' or 'main'"
+          if [ "$CI_MERGE_REQUEST_TARGET_BRANCH_NAME" != "main" ]; then
+            echo "❌ ERROR: Release branches must target 'main'"
             exit 1
           fi
-          echo "✅ Release branch targeting ${CI_MERGE_REQUEST_TARGET_BRANCH_NAME}"
+          echo "✅ Release branch targeting main"
           ;;
         *)
           echo "ℹ️ Non-standard branch naming - manual review required"
@@ -96,25 +99,28 @@ validate:milestone-assignment:
           ;;
       esac
 
-      # Check if targeting main - must come from development
+      # Check if targeting main - must come from release/*
       if [ "$CI_MERGE_REQUEST_TARGET_BRANCH_NAME" = "main" ]; then
-        if [ "$CI_MERGE_REQUEST_SOURCE_BRANCH_NAME" != "development" ]; then
-          echo ""
-          echo "❌ ERROR: Only 'development' can merge to 'main'"
-          echo ""
-          echo "Workflow:"
-          echo "  1. feature/* → development (✅ allowed)"
-          echo "  2. development → main (✅ allowed)"
-          echo "  3. ${CI_MERGE_REQUEST_SOURCE_BRANCH_NAME} → main (❌ blocked)"
-          exit 1
-        fi
-
-        if [ -z "$MILESTONE" ]; then
-          echo ""
-          echo "❌ ERROR: MRs to 'main' MUST have a milestone (this is a release!)"
-          exit 1
-        fi
-        echo "✅ Release MR to main with milestone: ${MILESTONE}"
+        case "$CI_MERGE_REQUEST_SOURCE_BRANCH_NAME" in
+          release/*)
+            if [ -z "$MILESTONE" ]; then
+              echo ""
+              echo "❌ ERROR: Release MRs to 'main' MUST have a milestone"
+              exit 1
+            fi
+            echo "✅ Release MR to main with milestone: ${MILESTONE}"
+            ;;
+          *)
+            echo ""
+            echo "❌ ERROR: Only 'release/*' branches can merge to 'main'"
+            echo ""
+            echo "Workflow:"
+            echo "  1. feature/* → release/* (✅ allowed)"
+            echo "  2. release/* → main (✅ allowed)"
+            echo "  3. ${CI_MERGE_REQUEST_SOURCE_BRANCH_NAME} → main (❌ blocked)"
+            exit 1
+            ;;
+        esac
       fi
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
