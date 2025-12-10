@@ -247,3 +247,61 @@ create-release-tag:
     - if: $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "main" && $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME =~ /^release\//
       when: manual
   allow_failure: false
+
+# ============================================================================
+# VERSION SYNC AFTER PATCH DETERMINATION
+# ============================================================================
+
+sync-version-files:
+  stage: version-detect
+  image: node:${NODE_VERSION}-alpine
+  # NOTE: Cannot use needs: [create-dev-tag:release] as it runs in .post stage (after this stage)
+  # Job gracefully handles missing dev-tag.env file
+  variables:
+    NPM_CONFIG_LEGACY_PEER_DEPS: "1"
+  before_script:
+    - npm ci --legacy-peer-deps
+  script:
+    - |
+      #!/bin/bash
+      set -e
+      
+      echo "SYNCING VERSION FILES AFTER PATCH DETERMINATION"
+      echo "==============================================="
+      
+      # Source dev tag info from previous job
+      source dev-tag.env || true
+      
+      if [ -z "$DEV_TAG_VERSION" ]; then
+        echo "No dev tag version found, skipping version sync"
+        exit 0
+      fi
+      
+      echo "Detected version: $DEV_TAG_VERSION"
+      echo "Syncing all version files..."
+      
+      # Set environment variable for CI version sync script
+      export CI_DETERMINED_VERSION="$DEV_TAG_VERSION"
+      export CI_BRANCH_VERSION=$(echo "$DEV_TAG_VERSION" | cut -d. -f1-2)
+      export CI_PATCH_VERSION=$(echo "$DEV_TAG_VERSION" | cut -d. -f3)
+      
+      # Run CI version sync
+      npx tsx scripts/ci-version-sync.ts
+      
+      # Commit version changes
+      git config user.email "ci@bluefly.io"
+      git config user.name "GitLab CI"
+      git remote set-url origin https://oauth2:${GITLAB_PUSH_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git
+      
+      git add package.json .version.json README.md CHANGELOG.md 2>/dev/null || true
+      
+      if git diff --staged --quiet; then
+        echo "No version changes to commit"
+      else
+        git commit -m "chore(version): sync version files to ${DEV_TAG_VERSION} [skip ci]" || echo "Commit failed or no changes"
+        git push origin ${CI_COMMIT_BRANCH} || echo "Push failed"
+      fi
+  rules:
+    - if: $CI_COMMIT_BRANCH =~ /^release\// && $CI_PIPELINE_SOURCE == "push"
+      when: on_success
+  allow_failure: true

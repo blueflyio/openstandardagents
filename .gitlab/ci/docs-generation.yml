@@ -1,5 +1,6 @@
 # Documentation Generation CI
-# Automatically generates README, docs, and other generated files
+# Automatically generates README, docs, examples, and other generated files
+# Keeps documentation, examples, and templates synchronized with current version
 
 docs:generate:
   stage: build
@@ -9,27 +10,76 @@ docs:generate:
     - npm ci --legacy-peer-deps
   script:
     - echo "🔧 Generating documentation..."
+
+    # Generate API documentation, CLI docs, schema docs, etc.
     - npm run docs:generate
+
+    # Process templates - replaces {{VERSION}}, {{LAST_UPDATED}}, etc.
+    - echo "📝 Processing documentation templates..."
     - npm run docs:process
-    
+
+    # Sync example versions
+    - echo "🔄 Syncing example versions..."
+    - |
+      if [ -f "scripts/sync-example-versions.sh" ]; then
+        sh scripts/sync-example-versions.sh
+      fi
+
     # Check if there are changes
     - |
       if git diff --quiet; then
         echo "✅ No documentation changes needed"
         exit 0
       fi
-    
+
+    - echo "📦 Changes detected, committing..."
+    - git status --short
+
     # Commit and push changes
     - git config user.name "GitLab CI"
     - git config user.email "ci@gitlab.com"
-    - git add docs/ README.md
-    - git commit -m "docs: auto-generate documentation [skip ci]"
+
+    # Add all documentation, examples, and README changes
+    - git add docs/ examples/ README.md
+
+    # Create detailed commit message
+    - |
+      cat > commit-msg.txt << 'EOF'
+      docs: auto-generate documentation and sync versions
+
+      - Generated API, CLI, schema documentation
+      - Processed templates with version ${CI_COMMIT_SHORT_SHA}
+      - Synced examples with current version
+      - Updated integration guides
+
+      [skip ci]
+      EOF
+
+    - git commit -F commit-msg.txt
     - git push https://oauth2:${CI_JOB_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git HEAD:${CI_COMMIT_REF_NAME}
-    
+
+    - echo "✅ Documentation updated successfully"
+
   rules:
+    # Run on main branch
     - if: $CI_COMMIT_BRANCH == "main"
       when: on_success
+
+    # Run on release branches
     - if: $CI_COMMIT_BRANCH =~ /^release\//
       when: on_success
+
+    # Skip if commit message contains [skip docs]
+    - if: $CI_COMMIT_MESSAGE =~ /\[skip docs\]/
+      when: never
+
     - when: never
+
   allow_failure: false
+
+  artifacts:
+    paths:
+      - docs/
+      - examples/
+      - README.md
+    expire_in: 1 day

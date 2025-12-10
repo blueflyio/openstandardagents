@@ -1,6 +1,7 @@
 {
-  "current": "0.2.9",
+  "current": "0.3.0",
   "latest_stable": "0.2.5-RC",
+  "spec_version": "0.3.0",
   "spec_path": "spec/v{version}",
   "schema_file": "ossa-{version}.schema.json"
 }
