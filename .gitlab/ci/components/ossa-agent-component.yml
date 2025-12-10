@@ -68,13 +68,13 @@ spec:
         echo "❌ ERROR: Agent manifest not found: ${agent_path}"
         exit 1
       fi
-      
+
       # Validate manifest against OSSA v0.3.0 schema
       if ! node dist/cli/index.js validate "${agent_path}"; then
         echo "❌ ERROR: Agent manifest validation failed"
         exit 1
       fi
-      
+
       # Execute agent
       if [ -n "${task}" ]; then
         node dist/cli/index.js run "${agent_path}" --task "${task}" --inputs "${inputs}"

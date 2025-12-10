@@ -45,3 +45,4 @@ runtime:
       capability: gitlab_api_write
       binding: service_account
       service_account: gitlab-task-sa
+
