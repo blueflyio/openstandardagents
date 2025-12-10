@@ -9,7 +9,7 @@ interface LogoProps {
 // Use SimpleIcons or direct logo URLs where available
 const LOGO_FALLBACKS: Record<string, string> = {
   'kagent.dev': 'https://www.google.com/s2/favicons?sz=256&domain=kagent.dev',
-  'langchain.com': 'https://simpleicons.org/icons/langchain.svg',
+  'langchain.com': 'https://cdn.simpleicons.org/langchain',
   'crewai.com': 'https://www.google.com/s2/favicons?sz=128&domain=crewai.com',
   'llamaindex.ai': 'https://www.google.com/s2/favicons?sz=128&domain=llamaindex.ai',
   'modelcontextprotocol.io': 'https://simpleicons.org/icons/anthropic.svg',
@@ -19,23 +19,23 @@ const LOGO_FALLBACKS: Record<string, string> = {
   'anthropic.com': 'https://simpleicons.org/icons/anthropic.svg',
   'cursor.sh': 'https://www.google.com/s2/favicons?sz=256&domain=cursor.sh',
   'microsoft.com': 'https://www.google.com/s2/favicons?sz=256&domain=microsoft.com',
-  'vercel.com': 'https://simpleicons.org/icons/vercel.svg',
-  'drupal.org': 'https://simpleicons.org/icons/drupal.svg',
-  'huggingface.co': 'https://simpleicons.org/icons/huggingface.svg',
-  'google.com': 'https://simpleicons.org/icons/google.svg',
+  'vercel.com': 'https://cdn.simpleicons.org/vercel',
+  'drupal.org': 'https://cdn.simpleicons.org/drupal',
+  'huggingface.co': 'https://cdn.simpleicons.org/huggingface',
+  'google.com': 'https://cdn.simpleicons.org/google',
   'deepmind.google': 'https://www.google.com/s2/favicons?sz=256&domain=deepmind.google',
   'aws.amazon.com': 'https://www.google.com/s2/favicons?sz=128&domain=aws.amazon.com',
-  'azure.com': 'https://simpleicons.org/icons/microsoftazure.svg',
-  'github.com': 'https://simpleicons.org/icons/github.svg',
-  'docker.com': 'https://simpleicons.org/icons/docker.svg',
-  'kubernetes.io': 'https://simpleicons.org/icons/kubernetes.svg',
+  'azure.com': 'https://cdn.simpleicons.org/microsoftazure',
+  'github.com': 'https://cdn.simpleicons.org/github',
+  'docker.com': 'https://cdn.simpleicons.org/docker',
+  'kubernetes.io': 'https://cdn.simpleicons.org/kubernetes',
 };
 
 export function Logo({ domain, name }: LogoProps) {
   const getLogoSrc = () => {
     // Check for name-based fallbacks first (for cases where domain is shared)
     if (name === 'LangGraph' && domain === 'langchain.com') {
-      return 'https://simpleicons.org/icons/langchain.svg';
+      return 'https://cdn.simpleicons.org/langchain';
     }
     if (name === 'LlamaIndex') {
       return 'https://www.google.com/s2/favicons?sz=128&domain=llamaindex.ai';
@@ -47,10 +47,10 @@ export function Logo({ domain, name }: LogoProps) {
       return 'https://www.google.com/s2/favicons?sz=256&domain=microsoft.com';
     }
     if (name === 'Vercel AI') {
-      return 'https://simpleicons.org/icons/vercel.svg';
+      return 'https://cdn.simpleicons.org/vercel';
     }
     if (name === 'MCP') {
-      return 'https://simpleicons.org/icons/anthropic.svg';
+      return 'https://cdn.simpleicons.org/anthropic';
     }
     if (name === 'Kagent' || name === 'kAgent') {
       return 'https://www.google.com/s2/favicons?sz=256&domain=kagent.dev';

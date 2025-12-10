@@ -36,9 +36,11 @@ spec:
               cpu: "100m"
       volumes:
         - name: website-content
-          hostPath:
-            path: /Users/flux423/Sites/LLM/openstandardagents.org/website/out
-            type: Directory
+          emptyDir: {}
+          # For local development, mount from built website:
+          # hostPath:
+          #   path: ./website/out
+          #   type: Directory
         - name: nginx-config
           configMap:
             name: ossa-website-nginx-config

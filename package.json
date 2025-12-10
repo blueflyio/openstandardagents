@@ -36,6 +36,8 @@
   "author": "BlueFly.io",
   "license": "Apache-2.0",
   "devDependencies": {
+    "@playwright/test": "^1.57.0",
+    "@types/node": "^24.10.1",
     "prettier": "^3.2.0",
     "typescript": "^5.7.0"
   },
