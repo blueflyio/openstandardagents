@@ -19,9 +19,10 @@ include:
   - local: '.gitlab/ci/branch-policy.yml'
   - local: '.gitlab/ci/milestone-workflow.yml'
   - local: '.gitlab/ci/release-workflow.yml'
-  - local: '.gitlab/ci/ossa-integration.yml'
-  - local: '.gitlab/ci/components/ossa-agent-component.yml'
-  - local: '.gitlab/ci/components/ossa-workflow-component.yml'
+  # TEMPORARILY DISABLED: OSSA agents need v0.3.0 schema fixes (env var syntax not supported)
+  # - local: '.gitlab/ci/ossa-integration.yml'
+  # - local: '.gitlab/ci/components/ossa-agent-component.yml'
+  # - local: '.gitlab/ci/components/ossa-workflow-component.yml'
   # Security scanning from Auto DevOps
   - template: Jobs/SAST.gitlab-ci.yml
   - template: Jobs/Secret-Detection.gitlab-ci.yml
@@ -270,7 +271,7 @@ detect:milestone-and-tags:
       - dev-tags.env
     expire_in: 1 day
   rules:
-    - if: $CI_COMMIT_BRANCH == "main" || $CI_COMMIT_BRANCH == "development"
+    - if: $CI_COMMIT_BRANCH == "main" || $CI_COMMIT_BRANCH == "development" || $CI_COMMIT_BRANCH =~ /^release\/v[0-9]+\.[0-9]+\.x$/
       when: always
   allow_failure: true
 
@@ -670,9 +671,9 @@ release:changelog:
       dotenv: changelog.env
     expire_in: 30 days
   rules:
-    - if: $CI_COMMIT_BRANCH == "main" && $MILESTONE_READY == "true"
+    - if: ($CI_COMMIT_BRANCH == "main" || $CI_COMMIT_BRANCH =~ /^release\/v[0-9]+\.[0-9]+\.x$/) && $MILESTONE_READY == "true"
       when: on_success
-    - if: $CI_COMMIT_BRANCH == "main"
+    - if: ($CI_COMMIT_BRANCH == "main" || $CI_COMMIT_BRANCH =~ /^release\/v[0-9]+\.[0-9]+\.x$/)
       when: manual
   needs:
     - job: detect:milestone-and-tags
@@ -1186,9 +1187,9 @@ release:npm:
       echo "   Release: https://${CI_SERVER_HOST}/${CI_PROJECT_PATH}/-/releases/v${RELEASE_VERSION}"
       echo "   Milestone: ${MILESTONE_URL}"
   rules:
-    - if: $CI_COMMIT_BRANCH == "main" && $MILESTONE_READY == "true" && $ENABLE_RELEASE == "true"
+    - if: ($CI_COMMIT_BRANCH == "main" || $CI_COMMIT_BRANCH =~ /^release\/v[0-9]+\.[0-9]+\.x$/) && $MILESTONE_READY == "true" && $ENABLE_RELEASE == "true"
       when: on_success
-    - if: $CI_COMMIT_BRANCH == "main" && $ENABLE_RELEASE == "true"
+    - if: ($CI_COMMIT_BRANCH == "main" || $CI_COMMIT_BRANCH =~ /^release\/v[0-9]+\.[0-9]+\.x$/) && $ENABLE_RELEASE == "true"
       when: manual
   needs:
     - quality:gates
