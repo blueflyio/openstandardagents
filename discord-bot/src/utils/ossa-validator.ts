@@ -202,7 +202,8 @@ class OSSAValidator {
 
   getFieldDescription(fieldPath: string): string | null {
     const schema = this.getSchemaForField(fieldPath);
-    return schema?.description || null;
+    const description = schema?.description;
+    return typeof description === 'string' ? description : null;
   }
 }
 
