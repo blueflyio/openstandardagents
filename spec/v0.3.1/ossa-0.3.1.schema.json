@@ -1,0 +1,1988 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://openstandardagents.org/schemas/v0.3.1/manifest.json",
+  "title": "OSSA v0.3.1 Manifest Schema",
+  "description": "Open Standard for Scalable AI Agents (OSSA) v0.3.1 - Agent-to-Agent Messaging Extension. Extends v0.3.0 with standardized messaging capabilities for cross-framework agent communication.",
+  "type": "object",
+  "required": [
+    "apiVersion",
+    "kind",
+    "metadata"
+  ],
+  "properties": {
+    "apiVersion": {
+      "type": "string",
+      "pattern": "^ossa/v(0\\.3\\.[0-9]+(-[a-zA-Z0-9]+)?|0\\.2\\.[2-9](-dev)?|1)(\\.[0-9]+)?(-[a-zA-Z0-9]+)?$",
+      "description": "OSSA API version (v0.3.1+ supports Agent-to-Agent Messaging)",
+      "examples": [
+        "ossa/v0.3.1",
+        "ossa/v0.3.0",
+        "ossa/v1"
+      ]
+    },
+    "kind": {
+      "type": "string",
+      "enum": [
+        "Agent",
+        "Task",
+        "Workflow",
+        "MessageRouting"
+      ],
+      "description": "Resource type: Agent (agentic loops), Task (deterministic steps), Workflow (composition), or MessageRouting (routing rules)"
+    },
+    "metadata": {
+      "$ref": "#/definitions/Metadata"
+    },
+    "spec": {
+      "description": "Specification varies based on kind"
+    },
+    "extensions": {
+      "type": "object",
+      "description": "Framework-specific extensions",
+      "properties": {
+        "mcp": {
+          "$ref": "#/definitions/MCPExtension"
+        }
+      },
+      "additionalProperties": true
+    },
+    "runtime": {
+      "$ref": "#/definitions/RuntimeBinding",
+      "description": "Runtime-specific capability bindings (for Task and Workflow kinds)"
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "Agent"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "spec": {
+            "$ref": "#/definitions/AgentSpec"
+          }
+        },
+        "required": [
+          "spec"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "Task"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "spec": {
+            "$ref": "#/definitions/TaskSpec"
+          }
+        },
+        "required": [
+          "spec"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "Workflow"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "spec": {
+            "$ref": "#/definitions/WorkflowSpec"
+          }
+        },
+        "required": [
+          "spec"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "MessageRouting"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "spec": {
+            "$ref": "#/definitions/MessageRoutingSpec"
+          }
+        },
+        "required": [
+          "spec"
+        ]
+      }
+    }
+  ],
+  "definitions": {
+    "Metadata": {
+      "type": "object",
+      "required": [
+        "name"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "pattern": "^[a-z0-9]([-a-z0-9]*[a-z0-9])?$",
+          "maxLength": 253,
+          "description": "Resource identifier (DNS-1123 subdomain format for Kubernetes compatibility)"
+        },
+        "version": {
+          "type": "string",
+          "pattern": "^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-((?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\\+([0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?$",
+          "description": "Semantic version (semver 2.0.0)"
+        },
+        "description": {
+          "type": "string",
+          "maxLength": 2000,
+          "description": "Human-readable description"
+        },
+        "labels": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string",
+            "maxLength": 63
+          },
+          "description": "Key-value labels for organization and filtering"
+        },
+        "annotations": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "Arbitrary metadata for tooling"
+        }
+      },
+      "additionalProperties": false
+    },
+    "MessagingExtension": {
+      "type": "object",
+      "description": "Agent-to-agent messaging configuration (v0.3.1+)",
+      "properties": {
+        "publishes": {
+          "type": "array",
+          "description": "Channels this agent publishes to",
+          "items": {
+            "$ref": "#/definitions/PublishedChannel"
+          }
+        },
+        "subscribes": {
+          "type": "array",
+          "description": "Channels this agent subscribes to",
+          "items": {
+            "$ref": "#/definitions/Subscription"
+          }
+        },
+        "commands": {
+          "type": "array",
+          "description": "Commands this agent accepts (RPC-style operations)",
+          "items": {
+            "$ref": "#/definitions/Command"
+          }
+        },
+        "reliability": {
+          "$ref": "#/definitions/ReliabilityConfig",
+          "description": "Message reliability configuration"
+        }
+      },
+      "additionalProperties": false
+    },
+    "PublishedChannel": {
+      "type": "object",
+      "description": "Channel that an agent publishes messages to",
+      "required": [
+        "channel",
+        "schema"
+      ],
+      "properties": {
+        "channel": {
+          "type": "string",
+          "pattern": "^[a-z0-9]+(?:\\.[a-z0-9]+)*$",
+          "description": "Channel name (dot-separated, lowercase)",
+          "examples": [
+            "security.vulnerabilities",
+            "dependency.updates",
+            "incident.response.triggered"
+          ]
+        },
+        "description": {
+          "type": "string",
+          "description": "Human-readable description of what messages are published"
+        },
+        "schema": {
+          "$ref": "#/definitions/JSONSchemaDefinition",
+          "description": "JSON Schema for message payload"
+        },
+        "examples": {
+          "type": "array",
+          "description": "Example message payloads",
+          "items": {
+            "type": "object"
+          }
+        },
+        "contentType": {
+          "type": "string",
+          "default": "application/json",
+          "description": "Content type of the message payload"
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Tags for categorization and filtering"
+        }
+      },
+      "additionalProperties": false
+    },
+    "Subscription": {
+      "type": "object",
+      "description": "Channel subscription configuration",
+      "required": [
+        "channel"
+      ],
+      "properties": {
+        "channel": {
+          "type": "string",
+          "pattern": "^[a-z0-9]+(?:\\.[a-z0-9*]+)*$",
+          "description": "Channel name or pattern (supports * wildcard)",
+          "examples": [
+            "security.vulnerabilities",
+            "dependency.*",
+            "incident.response.*"
+          ]
+        },
+        "description": {
+          "type": "string",
+          "description": "Human-readable description of subscription purpose"
+        },
+        "schema": {
+          "$ref": "#/definitions/JSONSchemaDefinition",
+          "description": "Expected message schema for validation"
+        },
+        "handler": {
+          "type": "string",
+          "description": "Handler function name or reference",
+          "examples": [
+            "process_vulnerability",
+            "handle_dependency_update"
+          ]
+        },
+        "filter": {
+          "type": "object",
+          "description": "Filter conditions for message processing",
+          "properties": {
+            "expression": {
+              "type": "string",
+              "description": "Filter expression (e.g., '${{ message.severity in [\"high\", \"critical\"] }}')"
+            },
+            "fields": {
+              "type": "object",
+              "description": "Simple field-value filters",
+              "additionalProperties": true
+            }
+          },
+          "additionalProperties": false
+        },
+        "priority": {
+          "type": "string",
+          "enum": [
+            "low",
+            "normal",
+            "high",
+            "critical"
+          ],
+          "default": "normal",
+          "description": "Subscription priority for message ordering"
+        },
+        "maxConcurrency": {
+          "type": "integer",
+          "minimum": 1,
+          "default": 1,
+          "description": "Maximum concurrent message processing"
+        }
+      },
+      "additionalProperties": false
+    },
+    "Command": {
+      "type": "object",
+      "description": "RPC-style command that an agent accepts",
+      "required": [
+        "name",
+        "inputSchema"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_]*$",
+          "description": "Command name (snake_case)",
+          "examples": [
+            "scan_package",
+            "analyze_vulnerability",
+            "trigger_incident"
+          ]
+        },
+        "description": {
+          "type": "string",
+          "description": "Human-readable description of the command"
+        },
+        "inputSchema": {
+          "$ref": "#/definitions/JSONSchemaDefinition",
+          "description": "JSON Schema for command input"
+        },
+        "outputSchema": {
+          "$ref": "#/definitions/JSONSchemaDefinition",
+          "description": "JSON Schema for command output"
+        },
+        "timeoutSeconds": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 3600,
+          "default": 30,
+          "description": "Command execution timeout in seconds"
+        },
+        "idempotent": {
+          "type": "boolean",
+          "default": false,
+          "description": "Whether the command is idempotent (safe to retry)"
+        },
+        "async": {
+          "type": "boolean",
+          "default": false,
+          "description": "Whether the command executes asynchronously"
+        }
+      },
+      "additionalProperties": false
+    },
+    "ReliabilityConfig": {
+      "type": "object",
+      "description": "Message delivery reliability configuration",
+      "properties": {
+        "deliveryGuarantee": {
+          "type": "string",
+          "enum": [
+            "at-least-once",
+            "at-most-once",
+            "exactly-once"
+          ],
+          "default": "at-least-once",
+          "description": "Message delivery guarantee level"
+        },
+        "retry": {
+          "type": "object",
+          "description": "Retry configuration for failed deliveries",
+          "properties": {
+            "maxAttempts": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 10,
+              "default": 3,
+              "description": "Maximum retry attempts"
+            },
+            "backoff": {
+              "type": "object",
+              "properties": {
+                "strategy": {
+                  "type": "string",
+                  "enum": [
+                    "exponential",
+                    "linear",
+                    "fixed"
+                  ],
+                  "default": "exponential"
+                },
+                "initialDelayMs": {
+                  "type": "integer",
+                  "minimum": 100,
+                  "default": 1000
+                },
+                "maxDelayMs": {
+                  "type": "integer",
+                  "minimum": 1000,
+                  "default": 30000
+                },
+                "multiplier": {
+                  "type": "number",
+                  "minimum": 1,
+                  "default": 2
+                }
+              },
+              "additionalProperties": false
+            }
+          },
+          "additionalProperties": false
+        },
+        "dlq": {
+          "type": "object",
+          "description": "Dead letter queue configuration",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": true,
+              "description": "Enable dead letter queue for failed messages"
+            },
+            "channel": {
+              "type": "string",
+              "default": "messaging.dlq",
+              "description": "DLQ channel name"
+            },
+            "retentionDays": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 365,
+              "default": 30,
+              "description": "Days to retain DLQ messages"
+            }
+          },
+          "additionalProperties": false
+        },
+        "ordering": {
+          "type": "object",
+          "description": "Message ordering configuration",
+          "properties": {
+            "guarantee": {
+              "type": "string",
+              "enum": [
+                "none",
+                "per-source",
+                "per-channel",
+                "global"
+              ],
+              "default": "none",
+              "description": "Message ordering guarantee level"
+            },
+            "timeoutSeconds": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 300,
+              "description": "Ordering window timeout"
+            }
+          },
+          "additionalProperties": false
+        },
+        "acknowledgment": {
+          "type": "object",
+          "description": "Message acknowledgment configuration",
+          "properties": {
+            "mode": {
+              "type": "string",
+              "enum": [
+                "auto",
+                "manual"
+              ],
+              "default": "auto",
+              "description": "Acknowledgment mode"
+            },
+            "timeoutSeconds": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 60,
+              "description": "Acknowledgment timeout"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "MessageEnvelope": {
+      "type": "object",
+      "description": "Standard message envelope format for agent-to-agent communication",
+      "required": [
+        "id",
+        "timestamp",
+        "source",
+        "channel",
+        "payload"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid",
+          "description": "Unique message identifier"
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Message creation timestamp (ISO 8601)"
+        },
+        "source": {
+          "type": "string",
+          "description": "Source agent name"
+        },
+        "channel": {
+          "type": "string",
+          "description": "Target channel name"
+        },
+        "payload": {
+          "type": "object",
+          "description": "Message payload (schema defined by channel)"
+        },
+        "metadata": {
+          "$ref": "#/definitions/MessageMetadata"
+        }
+      },
+      "additionalProperties": false
+    },
+    "MessageMetadata": {
+      "type": "object",
+      "description": "Message metadata for tracing, routing, and reliability",
+      "properties": {
+        "correlationId": {
+          "type": "string",
+          "description": "Correlation ID for request/response patterns"
+        },
+        "traceId": {
+          "type": "string",
+          "description": "Distributed trace ID (W3C Trace Context)"
+        },
+        "spanId": {
+          "type": "string",
+          "description": "Span ID within trace"
+        },
+        "baggage": {
+          "type": "object",
+          "description": "W3C Baggage for cross-service context propagation",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "priority": {
+          "type": "string",
+          "enum": [
+            "low",
+            "normal",
+            "high",
+            "critical"
+          ],
+          "default": "normal",
+          "description": "Message priority"
+        },
+        "ttlSeconds": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Time-to-live in seconds (message expires after)"
+        },
+        "retryCount": {
+          "type": "integer",
+          "minimum": 0,
+          "default": 0,
+          "description": "Current retry attempt count"
+        },
+        "contentType": {
+          "type": "string",
+          "default": "application/json",
+          "description": "Payload content type"
+        },
+        "headers": {
+          "type": "object",
+          "description": "Custom headers for framework-specific extensions",
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "MessageRoutingSpec": {
+      "type": "object",
+      "description": "Message routing configuration (kind: MessageRouting)",
+      "required": [
+        "rules"
+      ],
+      "properties": {
+        "rules": {
+          "type": "array",
+          "description": "Routing rules for message delivery",
+          "items": {
+            "$ref": "#/definitions/RoutingRule"
+          }
+        },
+        "defaultRoute": {
+          "type": "object",
+          "description": "Default routing when no rules match",
+          "properties": {
+            "action": {
+              "type": "string",
+              "enum": [
+                "drop",
+                "dlq",
+                "broadcast"
+              ],
+              "default": "drop",
+              "description": "Action for unrouted messages"
+            },
+            "targets": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Default targets (for action: broadcast)"
+            }
+          },
+          "additionalProperties": false
+        },
+        "transforms": {
+          "type": "object",
+          "description": "Named message transformations",
+          "additionalProperties": {
+            "$ref": "#/definitions/MessageTransform"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "RoutingRule": {
+      "type": "object",
+      "description": "Individual routing rule",
+      "required": [
+        "source",
+        "channel",
+        "targets"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique rule identifier for tracing"
+        },
+        "source": {
+          "type": "string",
+          "description": "Source agent name or pattern (* for all)",
+          "examples": [
+            "dependency-healer",
+            "security-*",
+            "*"
+          ]
+        },
+        "channel": {
+          "type": "string",
+          "description": "Source channel name or pattern",
+          "examples": [
+            "security.vulnerabilities",
+            "security.*",
+            "*"
+          ]
+        },
+        "targets": {
+          "type": "array",
+          "description": "Target agent names",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1
+        },
+        "filter": {
+          "type": "object",
+          "description": "Conditional filter for routing",
+          "properties": {
+            "expression": {
+              "type": "string",
+              "description": "Filter expression",
+              "examples": [
+                "${{ message.severity in ['high', 'critical'] }}",
+                "${{ message.payload.type == 'security' }}"
+              ]
+            },
+            "fields": {
+              "type": "object",
+              "description": "Simple field-value filters",
+              "additionalProperties": true,
+              "examples": [
+                {
+                  "severity": [
+                    "high",
+                    "critical"
+                  ]
+                }
+              ]
+            }
+          },
+          "additionalProperties": false
+        },
+        "transform": {
+          "type": "string",
+          "description": "Name of transform to apply (defined in spec.transforms)"
+        },
+        "priority": {
+          "type": "string",
+          "enum": [
+            "low",
+            "normal",
+            "high",
+            "critical"
+          ],
+          "default": "normal",
+          "description": "Routing priority (affects delivery order)"
+        },
+        "enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Whether this rule is active"
+        }
+      },
+      "additionalProperties": false
+    },
+    "MessageTransform": {
+      "type": "object",
+      "description": "Message transformation configuration",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": [
+            "jmespath",
+            "jsonata",
+            "template",
+            "custom"
+          ],
+          "description": "Transform type"
+        },
+        "expression": {
+          "type": "string",
+          "description": "Transform expression"
+        },
+        "outputSchema": {
+          "$ref": "#/definitions/JSONSchemaDefinition",
+          "description": "Expected output schema after transformation"
+        }
+      },
+      "additionalProperties": false
+    },
+    "TaskSpec": {
+      "type": "object",
+      "description": "Specification for deterministic, non-agentic workflow steps (kind: Task)",
+      "required": [
+        "execution"
+      ],
+      "properties": {
+        "execution": {
+          "type": "object",
+          "description": "Execution configuration for the task",
+          "required": [
+            "type"
+          ],
+          "properties": {
+            "type": {
+              "type": "string",
+              "enum": [
+                "deterministic",
+                "idempotent",
+                "transactional"
+              ],
+              "default": "deterministic",
+              "description": "Execution type: deterministic (pure function), idempotent (safe to retry), transactional (all-or-nothing)"
+            },
+            "runtime": {
+              "type": "string",
+              "description": "Target runtime environment",
+              "examples": [
+                "drupal",
+                "symfony",
+                "node",
+                "python",
+                "any"
+              ]
+            },
+            "entrypoint": {
+              "type": "string",
+              "description": "Entry point for execution (class::method, function name, or script path)"
+            },
+            "timeout_seconds": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 86400,
+              "default": 300,
+              "description": "Maximum execution time in seconds"
+            }
+          },
+          "additionalProperties": false
+        },
+        "capabilities": {
+          "type": "array",
+          "description": "Abstract capabilities this task requires (bound at runtime)",
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_]*$",
+            "description": "Capability identifier (e.g., publish_content, send_email)"
+          },
+          "uniqueItems": true
+        },
+        "input": {
+          "$ref": "#/definitions/JSONSchemaDefinition",
+          "description": "JSON Schema for task input validation"
+        },
+        "output": {
+          "$ref": "#/definitions/JSONSchemaDefinition",
+          "description": "JSON Schema for task output validation"
+        },
+        "messaging": {
+          "$ref": "#/definitions/MessagingExtension",
+          "description": "Agent-to-agent messaging configuration (v0.3.1+)"
+        },
+        "batch": {
+          "type": "object",
+          "description": "Batch processing configuration",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": false
+            },
+            "parallelism": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1000,
+              "default": 10
+            },
+            "chunk_size": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 100
+            },
+            "retry": {
+              "type": "object",
+              "properties": {
+                "max_attempts": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 10,
+                  "default": 3
+                },
+                "backoff_strategy": {
+                  "type": "string",
+                  "enum": [
+                    "fixed",
+                    "exponential",
+                    "linear"
+                  ],
+                  "default": "exponential"
+                },
+                "initial_delay_ms": {
+                  "type": "integer",
+                  "minimum": 100,
+                  "default": 1000
+                }
+              },
+              "additionalProperties": false
+            },
+            "on_item_error": {
+              "type": "string",
+              "enum": [
+                "skip",
+                "fail",
+                "retry"
+              ],
+              "default": "retry"
+            }
+          },
+          "additionalProperties": false
+        },
+        "dependencies": {
+          "type": "array",
+          "description": "Other tasks or agents this task depends on",
+          "items": {
+            "type": "object",
+            "required": [
+              "ref"
+            ],
+            "properties": {
+              "ref": {
+                "type": "string"
+              },
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "Task",
+                  "Agent"
+                ]
+              },
+              "optional": {
+                "type": "boolean",
+                "default": false
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "preconditions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "expression"
+            ],
+            "properties": {
+              "expression": {
+                "type": "string"
+              },
+              "error_message": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "postconditions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "expression"
+            ],
+            "properties": {
+              "expression": {
+                "type": "string"
+              },
+              "error_message": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "error_handling": {
+          "type": "object",
+          "properties": {
+            "on_error": {
+              "type": "string",
+              "enum": [
+                "fail",
+                "retry",
+                "fallback",
+                "ignore"
+              ],
+              "default": "fail"
+            },
+            "fallback_task": {
+              "type": "string"
+            },
+            "error_mapping": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "string",
+                "enum": [
+                  "fail",
+                  "retry",
+                  "fallback",
+                  "ignore"
+                ]
+              }
+            }
+          },
+          "additionalProperties": false
+        },
+        "observability": {
+          "type": "object",
+          "properties": {
+            "logging": {
+              "type": "object",
+              "properties": {
+                "level": {
+                  "type": "string",
+                  "enum": [
+                    "debug",
+                    "info",
+                    "warn",
+                    "error"
+                  ],
+                  "default": "info"
+                },
+                "include_input": {
+                  "type": "boolean",
+                  "default": false
+                },
+                "include_output": {
+                  "type": "boolean",
+                  "default": false
+                }
+              }
+            },
+            "metrics": {
+              "type": "object",
+              "properties": {
+                "enabled": {
+                  "type": "boolean",
+                  "default": true
+                },
+                "custom_labels": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "string"
+                  }
+                }
+              }
+            },
+            "tracing": {
+              "type": "object",
+              "properties": {
+                "enabled": {
+                  "type": "boolean",
+                  "default": true
+                },
+                "sample_rate": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 1,
+                  "default": 1
+                }
+              }
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "AgentSpec": {
+      "type": "object",
+      "description": "Specification for agentic loops with LLM (kind: Agent) - extended with messaging in v0.3.1",
+      "required": [
+        "role"
+      ],
+      "properties": {
+        "role": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Agent role/system prompt"
+        },
+        "llm": {
+          "$ref": "#/definitions/LLMConfig"
+        },
+        "tools": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Tool"
+          }
+        },
+        "messaging": {
+          "$ref": "#/definitions/MessagingExtension",
+          "description": "Agent-to-agent messaging configuration (v0.3.1+)"
+        },
+        "autonomy": {
+          "$ref": "#/definitions/Autonomy"
+        },
+        "constraints": {
+          "$ref": "#/definitions/Constraints"
+        },
+        "state": {
+          "$ref": "#/definitions/State"
+        },
+        "observability": {
+          "$ref": "#/definitions/AgentObservability"
+        },
+        "safety": {
+          "$ref": "#/definitions/Safety"
+        }
+      },
+      "additionalProperties": true
+    },
+    "WorkflowSpec": {
+      "type": "object",
+      "description": "Specification for workflow composition (kind: Workflow) - extended with messaging in v0.3.1",
+      "required": [
+        "steps"
+      ],
+      "properties": {
+        "triggers": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Trigger"
+          }
+        },
+        "inputs": {
+          "$ref": "#/definitions/JSONSchemaDefinition"
+        },
+        "outputs": {
+          "$ref": "#/definitions/JSONSchemaDefinition"
+        },
+        "steps": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/definitions/WorkflowStep"
+          }
+        },
+        "messaging": {
+          "$ref": "#/definitions/MessagingExtension",
+          "description": "Agent-to-agent messaging configuration (v0.3.1+)"
+        },
+        "context": {
+          "type": "object",
+          "properties": {
+            "variables": {
+              "type": "object",
+              "additionalProperties": true
+            },
+            "secrets": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "ref": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "name",
+                  "ref"
+                ]
+              }
+            }
+          },
+          "additionalProperties": false
+        },
+        "concurrency": {
+          "type": "object",
+          "properties": {
+            "group": {
+              "type": "string"
+            },
+            "cancel_in_progress": {
+              "type": "boolean",
+              "default": false
+            }
+          },
+          "additionalProperties": false
+        },
+        "error_handling": {
+          "type": "object",
+          "properties": {
+            "on_failure": {
+              "type": "string",
+              "enum": [
+                "halt",
+                "continue",
+                "rollback",
+                "notify",
+                "compensate"
+              ],
+              "default": "halt"
+            },
+            "compensation_steps": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/WorkflowStep"
+              }
+            },
+            "notification": {
+              "type": "object",
+              "properties": {
+                "channels": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "enum": [
+                      "email",
+                      "slack",
+                      "webhook",
+                      "pagerduty"
+                    ]
+                  }
+                },
+                "template": {
+                  "type": "string"
+                }
+              }
+            },
+            "retry_policy": {
+              "type": "object",
+              "properties": {
+                "max_attempts": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 10,
+                  "default": 3
+                },
+                "backoff": {
+                  "type": "string",
+                  "enum": [
+                    "fixed",
+                    "exponential",
+                    "linear"
+                  ],
+                  "default": "exponential"
+                },
+                "initial_delay_ms": {
+                  "type": "integer",
+                  "minimum": 100,
+                  "default": 1000
+                },
+                "max_delay_ms": {
+                  "type": "integer",
+                  "default": 60000
+                }
+              }
+            }
+          },
+          "additionalProperties": false
+        },
+        "timeout_seconds": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 86400
+        },
+        "observability": {
+          "type": "object",
+          "properties": {
+            "tracing": {
+              "type": "object",
+              "properties": {
+                "enabled": {
+                  "type": "boolean",
+                  "default": true
+                },
+                "propagate_context": {
+                  "type": "boolean",
+                  "default": true
+                }
+              }
+            },
+            "metrics": {
+              "type": "object",
+              "properties": {
+                "enabled": {
+                  "type": "boolean",
+                  "default": true
+                },
+                "custom_labels": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "string"
+                  }
+                }
+              }
+            },
+            "logging": {
+              "type": "object",
+              "properties": {
+                "level": {
+                  "type": "string",
+                  "enum": [
+                    "debug",
+                    "info",
+                    "warn",
+                    "error"
+                  ],
+                  "default": "info"
+                }
+              }
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "RuntimeBinding": {
+      "type": "object",
+      "description": "Runtime-specific capability bindings",
+      "properties": {
+        "type": {
+          "type": "string",
+          "examples": [
+            "drupal",
+            "symfony_messenger",
+            "kagent",
+            "temporal",
+            "node"
+          ]
+        },
+        "transport": {
+          "type": "string",
+          "examples": [
+            "async",
+            "sync",
+            "amqp",
+            "redis"
+          ]
+        },
+        "bindings": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "handler": {
+                "type": "string"
+              },
+              "mcp_server": {
+                "type": "string"
+              },
+              "tool": {
+                "type": "string"
+              },
+              "config": {
+                "type": "object",
+                "additionalProperties": true
+              }
+            },
+            "additionalProperties": false
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "Trigger": {
+      "type": "object",
+      "required": [
+        "type"
+      ],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": [
+            "webhook",
+            "cron",
+            "event",
+            "manual",
+            "message"
+          ]
+        },
+        "path": {
+          "type": "string"
+        },
+        "schedule": {
+          "type": "string"
+        },
+        "source": {
+          "type": "string"
+        },
+        "event": {
+          "type": "string"
+        },
+        "channel": {
+          "type": "string",
+          "description": "Message channel (for type: message)"
+        },
+        "filter": {
+          "type": "object",
+          "additionalProperties": true
+        }
+      },
+      "additionalProperties": false
+    },
+    "WorkflowStep": {
+      "type": "object",
+      "required": [
+        "id"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_-]*$"
+        },
+        "name": {
+          "type": "string"
+        },
+        "kind": {
+          "type": "string",
+          "enum": [
+            "Task",
+            "Agent",
+            "Parallel",
+            "Conditional",
+            "Loop"
+          ]
+        },
+        "ref": {
+          "type": "string"
+        },
+        "inline": {
+          "type": "object"
+        },
+        "input": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "output": {
+          "type": "object",
+          "properties": {
+            "to": {
+              "type": "string"
+            },
+            "fields": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "condition": {
+          "type": "string"
+        },
+        "depends_on": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "parallel": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/WorkflowStep"
+          }
+        },
+        "branches": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "condition": {
+                "type": "string"
+              },
+              "steps": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/definitions/WorkflowStep"
+                }
+              }
+            },
+            "required": [
+              "condition",
+              "steps"
+            ]
+          }
+        },
+        "else": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/WorkflowStep"
+          }
+        },
+        "loop": {
+          "type": "object",
+          "properties": {
+            "over": {
+              "type": "string"
+            },
+            "as": {
+              "type": "string",
+              "default": "item"
+            },
+            "index": {
+              "type": "string",
+              "default": "index"
+            },
+            "parallelism": {
+              "type": "integer",
+              "minimum": 1
+            }
+          },
+          "required": [
+            "over"
+          ]
+        },
+        "steps": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/WorkflowStep"
+          }
+        },
+        "retry": {
+          "type": "object",
+          "properties": {
+            "max_attempts": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 10,
+              "default": 3
+            },
+            "backoff_strategy": {
+              "type": "string",
+              "enum": [
+                "fixed",
+                "exponential",
+                "linear"
+              ],
+              "default": "exponential"
+            },
+            "initial_delay_ms": {
+              "type": "integer",
+              "minimum": 100,
+              "default": 1000
+            },
+            "retryable_errors": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "timeout_seconds": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 86400
+        },
+        "continue_on_error": {
+          "type": "boolean",
+          "default": false
+        },
+        "on_error": {
+          "type": "object",
+          "properties": {
+            "action": {
+              "type": "string",
+              "enum": [
+                "fail",
+                "continue",
+                "goto",
+                "compensate"
+              ],
+              "default": "fail"
+            },
+            "goto": {
+              "type": "string"
+            },
+            "compensation": {
+              "$ref": "#/definitions/WorkflowStep"
+            }
+          }
+        },
+        "labels": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "JSONSchemaDefinition": {
+      "type": "object",
+      "description": "JSON Schema definition for input/output validation",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": [
+            "object",
+            "array",
+            "string",
+            "number",
+            "integer",
+            "boolean",
+            "null"
+          ]
+        },
+        "properties": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "required": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "items": {
+          "type": "object"
+        },
+        "additionalProperties": {
+          "type": [
+            "boolean",
+            "object"
+          ]
+        },
+        "enum": {
+          "type": "array"
+        },
+        "description": {
+          "type": "string"
+        },
+        "default": {}
+      },
+      "additionalProperties": true
+    },
+    "LLMConfig": {
+      "type": "object",
+      "required": [
+        "provider",
+        "model"
+      ],
+      "properties": {
+        "provider": {
+          "type": "string",
+          "enum": [
+            "openai",
+            "anthropic",
+            "google",
+            "azure",
+            "ollama",
+            "custom"
+          ]
+        },
+        "model": {
+          "type": "string"
+        },
+        "temperature": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 2
+        },
+        "maxTokens": {
+          "type": "integer",
+          "minimum": 1
+        }
+      },
+      "additionalProperties": true
+    },
+    "Tool": {
+      "type": "object",
+      "required": [
+        "type"
+      ],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": [
+            "mcp",
+            "kubernetes",
+            "http",
+            "grpc",
+            "function",
+            "a2a",
+            "message",
+            "custom"
+          ]
+        },
+        "name": {
+          "type": "string"
+        },
+        "capabilities": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Capability"
+          }
+        }
+      },
+      "additionalProperties": true
+    },
+    "Capability": {
+      "type": "object",
+      "required": [
+        "name"
+      ],
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "input_schema": {
+          "type": "object"
+        },
+        "output_schema": {
+          "type": "object"
+        }
+      },
+      "additionalProperties": true
+    },
+    "Autonomy": {
+      "type": "object",
+      "properties": {
+        "level": {
+          "type": "string",
+          "enum": [
+            "supervised",
+            "autonomous",
+            "fully_autonomous"
+          ]
+        },
+        "approval_required": {
+          "type": "boolean"
+        },
+        "allowed_actions": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "blocked_actions": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "Constraints": {
+      "type": "object",
+      "properties": {
+        "cost": {
+          "type": "object",
+          "properties": {
+            "maxTokensPerDay": {
+              "type": "integer"
+            },
+            "maxTokensPerRequest": {
+              "type": "integer"
+            },
+            "maxCostPerDay": {
+              "type": "number"
+            }
+          }
+        },
+        "performance": {
+          "type": "object",
+          "properties": {
+            "maxLatencySeconds": {
+              "type": "number"
+            },
+            "maxConcurrentRequests": {
+              "type": "integer"
+            },
+            "timeoutSeconds": {
+              "type": "number"
+            }
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "State": {
+      "type": "object",
+      "properties": {
+        "mode": {
+          "type": "string",
+          "enum": [
+            "stateless",
+            "session",
+            "long_running"
+          ]
+        },
+        "storage": {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string",
+              "enum": [
+                "memory",
+                "vector-db",
+                "kv",
+                "rdbms",
+                "custom"
+              ]
+            },
+            "retention": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "AgentObservability": {
+      "type": "object",
+      "properties": {
+        "tracing": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean"
+            },
+            "exporter": {
+              "type": "string"
+            }
+          }
+        },
+        "metrics": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean"
+            },
+            "exporter": {
+              "type": "string"
+            }
+          }
+        },
+        "logging": {
+          "type": "object",
+          "properties": {
+            "level": {
+              "type": "string"
+            },
+            "format": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "Safety": {
+      "type": "object",
+      "properties": {
+        "content_filtering": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean"
+            },
+            "categories": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "guardrails": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean"
+            },
+            "max_tool_calls": {
+              "type": "integer"
+            }
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "MCPExtension": {
+      "type": "object",
+      "description": "Model Context Protocol (MCP) extension for agents",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": true
+        },
+        "server_type": {
+          "type": "string",
+          "enum": [
+            "stdio",
+            "http",
+            "sse"
+          ]
+        },
+        "server_name": {
+          "type": "string"
+        },
+        "tools": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/MCPTool"
+          }
+        },
+        "resources": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/MCPResource"
+          }
+        },
+        "prompts": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/MCPPrompt"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "MCPTool": {
+      "type": "object",
+      "required": [
+        "name"
+      ],
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "input_schema": {
+          "$ref": "#/definitions/JSONSchemaDefinition"
+        }
+      },
+      "additionalProperties": false
+    },
+    "MCPResource": {
+      "type": "object",
+      "required": [
+        "uri",
+        "name"
+      ],
+      "properties": {
+        "uri": {
+          "type": "string",
+          "format": "uri"
+        },
+        "name": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "mimeType": {
+          "type": "string"
+        },
+        "metadata": {
+          "type": "object",
+          "additionalProperties": true
+        }
+      },
+      "additionalProperties": false
+    },
+    "MCPPrompt": {
+      "type": "object",
+      "required": [
+        "name"
+      ],
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "arguments": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/MCPPromptArgument"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "MCPPromptArgument": {
+      "type": "object",
+      "required": [
+        "name"
+      ],
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "required": {
+          "type": "boolean",
+          "default": false
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}
