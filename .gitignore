@@ -16,6 +16,7 @@ out/
 # IDE
 .idea/
 .vscode/
+.cursor/
 *.swp
 *.swo
 .DS_Store
@@ -48,3 +49,9 @@ website/public/examples/
 # Spec folder (fetched from blueflyio/openstandardagents main branch)
 spec/
 worktrees/
+
+# Playwright
+test-results/
+playwright-report/
+playwright/.cache/
+.cache/ms-playwright/

@@ -1,0 +1,65 @@
+# =============================================================================
+# Webhook-Triggered Sync Pipeline
+# Triggered by OSSA package releases via GitLab webhook
+# =============================================================================
+
+sync:webhook:
+  stage: sync
+  image: node:20-alpine
+  variables:
+    NODE_ENV: development
+    GIT_STRATEGY: clone
+  before_script:
+    - apk add --no-cache git
+    - git config user.email "ci@blueflyio.com"
+    - git config user.name "GitLab CI Bot"
+    - cd website
+    - npm ci --prefer-offline --no-audit
+  script:
+    - echo "🔄 OSSA release webhook triggered"
+    - echo "Version: ${OSSA_VERSION:-latest}"
+    - |
+      if [ -n "$OSSA_VERSION" ]; then
+        npm install @bluefly/ossa@${OSSA_VERSION}
+      else
+        npm install @bluefly/ossa@latest
+      fi
+    - npm run fetch-spec
+    - npm run fetch-versions
+    - npm run sync-version
+    - npm run fetch-examples
+    - npm run sync-wiki
+    - |
+      VERSION=${OSSA_VERSION:-$(npm view @bluefly/ossa version)}
+      BRANCH="chore/sync-ossa-${VERSION}"
+      
+      git checkout -b "$BRANCH"
+      git add -A
+      git commit -m "chore(ci): sync OSSA spec v${VERSION}
+
+Triggered by OSSA package release webhook.
+
+Closes #${CI_MERGE_REQUEST_IID:-auto}
+
+[skip ci]"
+      git push https://oauth2:${CI_JOB_TOKEN}@gitlab.com/${CI_PROJECT_PATH}.git HEAD:"$BRANCH"
+      
+      # Create MR
+      curl --request POST \
+        --header "PRIVATE-TOKEN: ${CI_JOB_TOKEN}" \
+        --header "Content-Type: application/json" \
+        --data "{
+          \"source_branch\": \"$BRANCH\",
+          \"target_branch\": \"release/v0.3.0\",
+          \"title\": \"chore(ci): sync OSSA spec v${VERSION}\",
+          \"description\": \"Automated sync triggered by OSSA v${VERSION} release.\n\n✅ Spec synced\n✅ Examples updated\n✅ Wiki synced\",
+          \"remove_source_branch\": true,
+          \"labels\": [\"automation\", \"ossa-sync\"]
+        }" \
+        "https://gitlab.com/api/v4/projects/${CI_PROJECT_ID}/merge_requests"
+      
+      echo "✅ MR created"
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "trigger"
+      when: always
+  allow_failure: false

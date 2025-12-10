@@ -1,22 +1,23 @@
 {
-  "stable": "0.2.9",
-  "latest": "0.2.9",
-  "dev": "0.3.0-dev",
+  "stable": "0.3.0",
+  "latest": "0.3.0",
+  "dev": "0.3.1-dev",
   "all": [
+    {
+      "version": "0.3.0",
+      "tag": "v0.3.0",
+      "apiVersion": "ossa/v0.3.0",
+      "type": "stable",
+      "published": true,
+      "available": true
+    },
     {
       "version": "0.2.9",
       "tag": "v0.2.9",
       "apiVersion": "ossa/v0.2.9",
       "type": "stable",
       "published": true,
-      "available": true,
-      "releaseDate": "2025-12-05",
-      "highlights": [
-        "Enterprise Security & Compliance",
-        "Multi-Agent Orchestration (A2A Protocol)",
-        "OpenTelemetry Observability",
-        "Conformance Testing"
-      ]
+      "available": true
     },
     {
       "version": "0.2.8",
@@ -35,17 +36,9 @@
       "available": true
     },
     {
-      "version": "0.2.6",
-      "tag": "v0.2.6",
-      "apiVersion": "ossa/v0.2.6",
-      "type": "stable",
-      "published": true,
-      "available": true
-    },
-    {
-      "version": "0.2.5",
-      "tag": "v0.2.5",
-      "apiVersion": "ossa/v0.2.5",
+      "version": "0.2.5-RC",
+      "tag": "v0.2.5-RC",
+      "apiVersion": "ossa/v0.2.5-RC",
       "type": "stable",
       "published": true,
       "available": true
@@ -59,38 +52,6 @@
       "available": true
     },
     {
-      "version": "0.2.3",
-      "tag": "v0.2.3",
-      "apiVersion": "ossa/v0.2.3",
-      "type": "stable",
-      "published": true,
-      "available": true
-    },
-    {
-      "version": "0.2.2",
-      "tag": "v0.2.2",
-      "apiVersion": "ossa/v0.2.2",
-      "type": "stable",
-      "published": true,
-      "available": true
-    },
-    {
-      "version": "0.2.1",
-      "tag": "v0.2.1",
-      "apiVersion": "ossa/v0.2.1",
-      "type": "stable",
-      "published": true,
-      "available": true
-    },
-    {
-      "version": "0.2.0",
-      "tag": "v0.2.0",
-      "apiVersion": "ossa/v0.2.0",
-      "type": "stable",
-      "published": true,
-      "available": true
-    },
-    {
       "version": "0.1.9",
       "tag": "v0.1.9",
       "apiVersion": "ossa/v0.1.9",
@@ -99,9 +60,9 @@
       "available": true
     },
     {
-      "version": "0.3.0-dev",
-      "tag": "v0.3.0-dev",
-      "apiVersion": "ossa/v0.3.0-dev",
+      "version": "0.3.1-dev",
+      "tag": "v0.3.1-dev",
+      "apiVersion": "ossa/v0.3.1-dev",
       "type": "dev",
       "published": false,
       "available": false

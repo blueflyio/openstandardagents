@@ -234,9 +234,9 @@ spec:
                     Current
                   </span>
                 </div>
-                <p className="text-gray-700 mb-2 font-medium">November 2024</p>
+                <p className="text-gray-700 mb-2 font-medium">December 2024</p>
                 <p className="text-gray-700">
-                  Enhanced platform extensions, improved validation, and expanded tool support.
+                  Updated email references, enhanced platform extensions, and improved validation.
                 </p>
               </div>
 
@@ -247,9 +247,9 @@ spec:
                     Previous
                   </span>
                 </div>
-                <p className="text-gray-700 mb-2">October 2024</p>
+                <p className="text-gray-700 mb-2">November 2024</p>
                 <p className="text-gray-700">
-                  Initial platform extensions and improved schema structure.
+                  Enhanced platform extensions, improved validation, and expanded tool support.
                 </p>
               </div>
 

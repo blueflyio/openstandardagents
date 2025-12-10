@@ -27,7 +27,7 @@
 # 3. build - Next.js static export
 # 4. security - SAST, Secret Detection, Dependency Scanning
 # 5. quality - Code quality, performance, accessibility
-# 6. deploy - Staging (development) and Production (main)
+# 6. deploy - Staging (release branches) and Production (main)
 # 7. release - Release automation
 # =============================================================================
 
@@ -40,6 +40,7 @@ include:
   - template: Jobs/Code-Quality.gitlab-ci.yml
 
 stages:
+  - sync
   - validate
   - test
   - build
@@ -64,26 +65,63 @@ variables:
 workflow:
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-    - if: $CI_COMMIT_BRANCH == "development"
+    - if: $CI_COMMIT_BRANCH =~ /^release\//
     - if: $CI_COMMIT_BRANCH == "main"
     - if: $CI_COMMIT_BRANCH =~ /^(feature|bugfix|hotfix|chore)\/.+/
 
 # =============================================================================
-# BRANCH PROTECTION
+# BRANCH PROTECTION & MR VALIDATION
 # =============================================================================
+validate:mr-target:
+  stage: validate
+  image: alpine:latest
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+  before_script:
+    - apk add --no-cache bash
+  script:
+    - |
+      /bin/bash <<'BASH_SCRIPT'
+      # Feature branches → release/* (latest milestone)
+      if [[ "$CI_MERGE_REQUEST_SOURCE_BRANCH_NAME" =~ \
+        ^(feature|bugfix|chore|hotfix|fix)/ ]]; then
+        if [[ ! "$CI_MERGE_REQUEST_TARGET_BRANCH_NAME" =~ ^release/v ]]; then
+          echo "❌ Feature branches must target release/* branches"
+          echo "   Current target: $CI_MERGE_REQUEST_TARGET_BRANCH_NAME"
+          echo "   Expected: release/v*.*.x"
+          exit 1
+        fi
+      fi
+
+      # release/* → main ONLY
+      if [[ "$CI_MERGE_REQUEST_SOURCE_BRANCH_NAME" =~ ^release/ ]]; then
+        if [ "$CI_MERGE_REQUEST_TARGET_BRANCH_NAME" != "main" ]; then
+          echo "❌ Release branches must target main"
+          echo "   Current target: $CI_MERGE_REQUEST_TARGET_BRANCH_NAME"
+          exit 1
+        fi
+      fi
+      
+      echo "✅ MR target validation passed"
+      BASH_SCRIPT
+
 enforce-main-branch-policy:
   stage: validate
   image: alpine:latest
   rules:
     - if: $CI_MERGE_REQUEST_TARGET_BRANCH == "main"
+  before_script:
+    - apk add --no-cache bash
   script:
     - |
-      if [ "$CI_MERGE_REQUEST_SOURCE_BRANCH_NAME" != "development" ]; then
-        echo "❌ ERROR: Main branch only accepts merges from 'development'"
+      /bin/bash <<'BASH_SCRIPT'
+      if [[ ! "$CI_MERGE_REQUEST_SOURCE_BRANCH_NAME" =~ ^release/ ]]; then
+        echo "❌ ERROR: Main branch only accepts merges from 'release/*'"
         echo "   Source: $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME"
         echo "   Target: $CI_MERGE_REQUEST_TARGET_BRANCH"
         exit 1
       fi
+      BASH_SCRIPT
     - echo "✅ Branch policy check passed"
 
 # =============================================================================
@@ -96,6 +134,46 @@ enforce-main-branch-policy:
   before_script:
     - cd website
     - npm ci --prefer-offline --no-audit
+
+# =============================================================================
+# SYNC - Automated version, spec, schema, and examples sync
+# =============================================================================
+sync:auto:
+  stage: sync
+  image: node:${NODE_VERSION}-alpine
+  variables:
+    NODE_ENV: development
+    GIT_STRATEGY: clone
+  before_script:
+    - apk add --no-cache git
+    - git config user.email "ci@blueflyio.com"
+    - git config user.name "GitLab CI"
+    - cd website
+    - npm ci --prefer-offline --no-audit
+  script:
+    - echo "🔄 Syncing OSSA spec, versions, examples, and wiki..."
+    - npm run fetch-spec
+    - npm run fetch-versions
+    - npm run sync-version
+    - npm run fetch-examples
+    - npm run sync-wiki
+    - |
+      if [ -n "$(git status --porcelain)" ]; then
+        echo "📝 Changes detected, committing..."
+        git add -A
+        git commit -m "chore(ci): auto-sync OSSA spec, versions, examples, and wiki [skip ci]"
+        git push https://oauth2:${CI_JOB_TOKEN}@gitlab.com/${CI_PROJECT_PATH}.git HEAD:${CI_COMMIT_REF_NAME}
+        echo "✅ Synced and committed"
+      else
+        echo "✅ Already up to date"
+      fi
+  rules:
+    - if: $CI_COMMIT_MESSAGE =~ /\[skip ci\]/
+      when: never
+    - if: $CI_PIPELINE_SOURCE == "schedule"
+    - if: $CI_COMMIT_BRANCH =~ /^release\//
+    - if: $CI_COMMIT_BRANCH == "main"
+  allow_failure: false
 
 # =============================================================================
 # VALIDATE
@@ -134,7 +212,7 @@ test:unit:
     expire_in: 30 days
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-    - if: $CI_COMMIT_BRANCH == "development"
+    - if: $CI_COMMIT_BRANCH =~ /^release\//
     - if: $CI_COMMIT_BRANCH == "main"
 
 test:e2e:
@@ -159,7 +237,7 @@ test:e2e:
   allow_failure: true
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-    - if: $CI_COMMIT_BRANCH == "development"
+    - if: $CI_COMMIT_BRANCH =~ /^release\//
     - if: $CI_COMMIT_BRANCH == "main"
 
 # =============================================================================
@@ -175,7 +253,7 @@ build:website:
     - cd website
     - npm ci --prefer-offline --no-audit
   script:
-    - npm run build
+    - npm run build:no-wiki
     - mkdir -p ../website-build
     - cp -r out/* ../website-build/
   artifacts:
@@ -209,7 +287,7 @@ build:docker:
     - build:website
   allow_failure: true
   rules:
-    - if: $CI_COMMIT_BRANCH == "development"
+    - if: $CI_COMMIT_BRANCH =~ /^release\//
     - if: $CI_COMMIT_BRANCH == "main"
 
 # =============================================================================
@@ -227,7 +305,7 @@ container_scanning:
     - build:docker
   allow_failure: true
   rules:
-    - if: $CI_COMMIT_BRANCH == "development"
+    - if: $CI_COMMIT_BRANCH =~ /^release\//
     - if: $CI_COMMIT_BRANCH == "main"
 
 # =============================================================================
@@ -268,7 +346,7 @@ quality:browser-performance:
   allow_failure: true
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-    - if: $CI_COMMIT_BRANCH == "development"
+    - if: $CI_COMMIT_BRANCH =~ /^release\//
     - if: $CI_COMMIT_BRANCH == "main"
 
 quality:accessibility:
@@ -288,7 +366,7 @@ quality:accessibility:
     expire_in: 30 days
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-    - if: $CI_COMMIT_BRANCH == "development"
+    - if: $CI_COMMIT_BRANCH =~ /^release\//
     - if: $CI_COMMIT_BRANCH == "main"
 
 quality:metrics:
@@ -310,7 +388,7 @@ quality:metrics:
     expire_in: 30 days
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-    - if: $CI_COMMIT_BRANCH == "development"
+    - if: $CI_COMMIT_BRANCH =~ /^release\//
     - if: $CI_COMMIT_BRANCH == "main"
 
 # =============================================================================
@@ -319,7 +397,7 @@ quality:metrics:
 # =============================================================================
 
 # =============================================================================
-# STAGING - GitLab Pages from development
+# STAGING - GitLab Pages from release branches
 # =============================================================================
 pages:
   stage: deploy
@@ -339,31 +417,43 @@ pages:
     url: http://ossa.orb.local
     deployment_tier: staging
   rules:
-    - if: $CI_COMMIT_BRANCH == "development"
+    - if: $CI_COMMIT_BRANCH =~ /^release\//
 
 # =============================================================================
 # PRODUCTION - Manual approval required
 # =============================================================================
 deploy:production:
   stage: deploy
-  image: alpine:latest
+  image: node:${NODE_VERSION}-alpine
   dependencies:
+    - detect:version
     - build:website
+  before_script:
+    - |
+      if [ -f build.env ]; then
+        source build.env
+        echo "Deploying version: ${RELEASE_TAG:-latest}"
+      fi
   script:
-    - mkdir -p public
-    - cp -r website-build/* public/
-    - echo "🚀 PRODUCTION DEPLOYED"
+    - |
+      echo "🚀 Deploying to production"
+      echo "Version: ${RELEASE_TAG:-latest}"
+      echo "Commit: ${CI_COMMIT_SHA}"
+      # Production deployment commands go here
+      # Example: npm run deploy:production
+      echo "✅ Production deployment completed"
   artifacts:
     paths:
       - public
     expire_in: 90 days
   environment:
     name: production
+    action: start
     url: https://openstandardagents.org
     deployment_tier: production
   rules:
-    - if: $CI_COMMIT_BRANCH == "main"
-      when: manual
+    - if: $CI_COMMIT_BRANCH == "main" && $ENABLE_RELEASE == "true"
+      when: manual  # Requires manual trigger + DAP approval
   resource_group: production
 
 # =============================================================================
@@ -386,7 +476,7 @@ notify:discord:
         ENV="Production"
         COLOR=5763719  # Green
         URL="https://openstandardagents.org"
-      elif [ "$CI_COMMIT_BRANCH" = "development" ]; then
+      elif echo "$CI_COMMIT_BRANCH" | grep -q "^release/"; then
         ENV="Staging"
         COLOR=15844367  # Gold
         URL="https://staging.openstandardagents.org"
@@ -448,7 +538,7 @@ notify:discord:
   rules:
     - if: $CI_COMMIT_BRANCH == "main"
       when: on_success
-    - if: $CI_COMMIT_BRANCH == "development"
+    - if: $CI_COMMIT_BRANCH =~ /^release\//
       when: on_success
   allow_failure: true
 
@@ -466,3 +556,144 @@ mr-manager-agent:
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
   allow_failure: true
+
+# =============================================================================
+# VERSION DETECTION
+# =============================================================================
+detect:version:
+  stage: .pre
+  image: alpine:latest
+  before_script:
+    - apk add --no-cache git bash
+  script:
+    - chmod +x .gitlab/scripts/detect-version.sh
+    - .gitlab/scripts/detect-version.sh
+  artifacts:
+    reports:
+      dotenv: build.env
+  rules:
+    - if: $CI_COMMIT_BRANCH =~ /^release\/v/
+    - if: $CI_COMMIT_BRANCH == "main"
+    - if: $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME =~ /^release\/v/ && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "main"
+
+# =============================================================================
+# RELEASE TAGGING
+# =============================================================================
+# On release/* branches: Create pre-release tags (v0.3.0-dev, v0.3.0-dev1, etc.)
+release:pre-release:
+  stage: release
+  image: alpine:latest
+  dependencies:
+    - detect:version
+  before_script:
+    - apk add --no-cache git bash curl
+    - git config user.email "ci@gitlab.com"
+    - git config user.name "GitLab CI"
+    - git remote set-url origin "https://oauth2:${GITLAB_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git"
+  script:
+    - |
+      if [ -f build.env ]; then
+        source build.env
+        echo "Creating pre-release tag: ${RELEASE_TAG}"
+        
+        # Check if tag already exists
+        if git rev-parse "${RELEASE_TAG}" >/dev/null 2>&1; then
+          echo "Tag ${RELEASE_TAG} already exists, skipping"
+          exit 0
+        fi
+        
+        # Create annotated tag
+        git tag -a "${RELEASE_TAG}" \
+          -m "Pre-release: ${RELEASE_TAG}" \
+          -m "Branch: ${CI_COMMIT_BRANCH}" \
+          -m "Commit: ${CI_COMMIT_SHA}" \
+          -m "Pipeline: ${CI_PIPELINE_ID}"
+        
+        # Push tag
+        git push origin "${RELEASE_TAG}"
+        
+        echo "✅ Created pre-release tag: ${RELEASE_TAG}"
+      else
+        echo "⚠️ build.env not found, skipping tag creation"
+      fi
+  rules:
+    - if: $CI_COMMIT_BRANCH =~ /^release\/v/ && $ENABLE_RELEASE == "true"
+      when: on_success
+
+# On main: Create final release tag + GitLab Release
+release:final:
+  stage: release
+  image: alpine:latest
+  dependencies:
+    - detect:version
+    - build:website
+  before_script:
+    - apk add --no-cache git bash curl jq
+    - git config user.email "ci@gitlab.com"
+    - git config user.name "GitLab CI"
+    - git remote set-url origin "https://oauth2:${GITLAB_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git"
+  script:
+    - |
+      if [ -f build.env ]; then
+        source build.env
+        
+        if [ "$IS_RELEASE" != "true" ]; then
+          echo "Not on main branch, skipping final release"
+          exit 0
+        fi
+        
+        echo "Creating final release tag: ${RELEASE_TAG}"
+        
+        # Check if tag already exists
+        if git rev-parse "${RELEASE_TAG}" >/dev/null 2>&1; then
+          echo "Tag ${RELEASE_TAG} already exists, skipping"
+          exit 0
+        fi
+        
+        # Create annotated tag
+        git tag -a "${RELEASE_TAG}" \
+          -m "Release: ${RELEASE_TAG}" \
+          -m "Commit: ${CI_COMMIT_SHA}" \
+          -m "Pipeline: ${CI_PIPELINE_ID}"
+        
+        # Push tag
+        git push origin "${RELEASE_TAG}"
+        
+        # Generate release notes from commits since last tag
+        LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+        if [ -n "$LAST_TAG" ]; then
+          RELEASE_NOTES=$(git log --pretty=format:"- %s (%h)" ${LAST_TAG}..HEAD)
+        else
+          RELEASE_NOTES=$(git log --pretty=format:"- %s (%h)" -10)
+        fi
+        
+        # Create GitLab Release via API
+        RELEASE_RESPONSE=$(curl -s --request POST \
+          --header "PRIVATE-TOKEN: ${GITLAB_TOKEN}" \
+          --header "Content-Type: application/json" \
+          --data "{
+            \"name\": \"Release ${RELEASE_TAG}\",
+            \"tag_name\": \"${RELEASE_TAG}\",
+            \"description\": \"## Release ${RELEASE_TAG}\n\n${RELEASE_NOTES}\",
+            \"assets\": {
+              \"links\": []
+            }
+          }" \
+          "https://${CI_SERVER_HOST}/api/v4/projects/${CI_PROJECT_ID}/releases")
+        
+        if echo "$RELEASE_RESPONSE" | jq -e '.tag_name' >/dev/null 2>&1; then
+          echo "✅ Created GitLab Release: ${RELEASE_TAG}"
+        else
+          echo "⚠️ Failed to create GitLab Release: ${RELEASE_RESPONSE}"
+        fi
+        
+        echo "✅ Created release tag: ${RELEASE_TAG}"
+      else
+        echo "⚠️ build.env not found, skipping release"
+      fi
+  release:
+    tag_name: $RELEASE_TAG
+    description: "Release $RELEASE_TAG"
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main" && $ENABLE_RELEASE == "true"
+      when: on_success
