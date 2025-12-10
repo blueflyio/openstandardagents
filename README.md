@@ -96,7 +96,7 @@ ossa export --to crewai
 ## Minimal Example
 
 ```yaml
-apiVersion: ossa/v0.2.9
+apiVersion: ossa/v0.3.0
 kind: Agent
 
 metadata:
@@ -219,7 +219,7 @@ Features:
 - **Getting Started**: [openstandardagents.org/docs/getting-started/](https://openstandardagents.org/docs/getting-started/)
 - **Full Documentation**: [openstandardagents.org/docs/](https://openstandardagents.org/docs/)
 - **Schema Reference**: [openstandardagents.org/schema/](https://openstandardagents.org/schema/)
-- **Specification**: [spec/v0.2.9/ossa-0.2.9.schema.json](https://github.com/blueflyio/openstandardagents/blob/main/spec/v0.2.9/ossa-0.2.9.schema.json)
+- **Specification**: [spec/v0.3.0/ossa-0.3.0.schema.json](https://github.com/blueflyio/openstandardagents/blob/main/spec/v0.3.0/ossa-0.3.0.schema.json)
 - **Examples**: [openstandardagents.org/examples/](https://openstandardagents.org/examples/)
 - **Blog**: [openstandardagents.org/blog/](https://openstandardagents.org/blog/)
 
@@ -240,7 +240,7 @@ Features:
 **LangChain/AutoGen/Semantic Kernel**: Framework-specific implementations  
 **MCP**: Formal standard focused on context, not full agent lifecycle
 
-- **Specification**: [spec/v0.2.9/ossa-0.2.9.schema.json](spec/v0.2.9/ossa-0.2.9.schema.json)
+- **Specification**: [spec/v0.3.0/ossa-0.3.0.schema.json](spec/v0.3.0/ossa-0.3.0.schema.json)
 - **Examples**: [examples/](examples/)
 - **API Reference**: [docs/](docs/)
 - **Deployment Guides**: [GitHub Mirroring](https://openstandardagents.org/docs/deployment/github-mirroring)
