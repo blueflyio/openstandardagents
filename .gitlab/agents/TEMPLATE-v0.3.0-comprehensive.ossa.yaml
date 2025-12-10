@@ -541,3 +541,4 @@ runtime:
       capability: kubernetes_cluster_access
       binding: service_account
       service_account: k8s-agent-sa
+

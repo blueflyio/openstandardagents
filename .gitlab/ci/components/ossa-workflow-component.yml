@@ -41,12 +41,12 @@ spec:
         echo "❌ ERROR: Workflow manifest not found: ${workflow_path}"
         exit 1
       fi
-      
+
       if ! node dist/cli/index.js validate "${workflow_path}"; then
         echo "❌ ERROR: Workflow manifest validation failed"
         exit 1
       fi
-      
+
       node dist/cli/index.js workflow execute "${workflow_path}" --inputs "${workflow_inputs}"
 
 ossa:workflow:

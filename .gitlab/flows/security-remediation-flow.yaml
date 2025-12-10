@@ -63,3 +63,4 @@ steps:
       labels: ["security", "compliance", "automated"]
     needs:
       - create_remediation_mr
+

@@ -98,3 +98,4 @@ triggers:
     conditions:
       - push.paths matches ".*\\.(md|yaml|yml|json)$"
       - schedule.cron == "0 */6 * * *"
+
