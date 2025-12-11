@@ -199,6 +199,15 @@ async function main() {
     }
 
     fs.writeFileSync(outputFile, JSON.stringify(examples, null, 2));
+    
+    // Fix hardcoded apiVersion in examples
+    const { execSync } = require("child_process");
+    try {
+      execSync("node scripts/fix-examples-versions.js", { cwd: __dirname + "/..", stdio: "inherit" });
+    } catch (e) {
+      console.warn("⚠️  Could not fix example versions:", e.message);
+    }
+    
     console.log(`\n✅ Generated ${outputFile} with ${examples.length} examples`);
   } catch (error) {
     console.error('❌ Error fetching examples:', error.message);
@@ -207,3 +216,11 @@ async function main() {
 }
 
 main();
+
+    // Fix hardcoded apiVersion in examples
+    const { execSync } = require('child_process');
+    try {
+      execSync('node scripts/fix-examples-versions.js', { cwd: __dirname + '/..', stdio: 'inherit' });
+    } catch (e) {
+      console.warn('⚠️  Could not fix example versions:', e.message);
+    }

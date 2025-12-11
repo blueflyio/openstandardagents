@@ -216,7 +216,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* What's New in v0.2.9 Section */}
+      {/* What's New Section */}
       <section className="py-20 px-4 bg-gradient-to-br from-indigo-50 via-purple-50 to-blue-50">
         <div className="container mx-auto max-w-[1440px]">
           <div className="text-center mb-12">

@@ -199,8 +199,17 @@ test:unit:
   extends: .node-setup
   stage: test
   script:
-    - npm run test
-  allow_failure: true
+    - npm run test -- --coverage --reporters=default --reporters=jest-junit
+  coverage: '/All files[^|]*\|[^|]*\s+([\d\.]+)/'
+  artifacts:
+    reports:
+      junit: website/junit.xml
+      coverage_report:
+        coverage_format: cobertura
+        path: website/coverage/cobertura-coverage.xml
+    paths:
+      - website/coverage
+    expire_in: 30 days
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
     - if: $CI_COMMIT_BRANCH =~ /^release\//
@@ -214,13 +223,6 @@ test:e2e:
     key: playwright-cache
     paths:
       - .cache/ms-playwright
-  before_script:
-    - cd website
-    - npm ci --prefer-offline --no-audit
-    - npm run fetch-spec
-    - npm run fetch-examples
-    - npm run fetch-versions
-    - npm run sync-version
   script:
     - npx playwright install --with-deps
     - npm run test:e2e -- --reporter=junit --reporter=html
@@ -695,70 +697,3 @@ release:final:
   rules:
     - if: $CI_COMMIT_BRANCH == "main" && $ENABLE_RELEASE == "true"
       when: on_success
-  before_script:
-    - cd website
-    - npm ci --prefer-offline --no-audit
-    - npm run fetch-spec
-    - npm run fetch-examples
-    - npm run fetch-versions
-    - npm run sync-version
-
-# =============================================================================
-# BRANCH PROTECTION - Prevent release branch deletion
-# =============================================================================
-protect:release-branches:
-  stage: .pre
-  image: alpine:latest
-  before_script:
-    - apk add --no-cache curl jq
-  script:
-    - |
-      if [[ "$CI_COMMIT_BRANCH" =~ ^release/v ]]; then
-        echo "Protecting release branch: $CI_COMMIT_BRANCH"
-        
-        # Check if branch protection exists
-        PROTECTION_RESPONSE=$(curl -s --header "PRIVATE-TOKEN: ${GITLAB_TOKEN:-$CI_JOB_TOKEN}" \
-          "https://${CI_SERVER_HOST}/api/v4/projects/${CI_PROJECT_ID}/protected_branches/${CI_COMMIT_BRANCH}" 2>/dev/null || echo "{}")
-        
-        if echo "$PROTECTION_RESPONSE" | jq -e '.name' >/dev/null 2>&1; then
-          echo "Branch protection already exists for $CI_COMMIT_BRANCH"
-        else
-          echo "Creating branch protection for $CI_COMMIT_BRANCH"
-          
-          # Create branch protection with prevent deletion
-          PROTECT_RESPONSE=$(curl -s -X POST \
-            --header "PRIVATE-TOKEN: ${GITLAB_TOKEN:-$CI_JOB_TOKEN}" \
-            --header "Content-Type: application/json" \
-            --data "{
-              \"name\": \"${CI_COMMIT_BRANCH}\",
-              \"allow_force_push\": false,
-              \"allowed_to_merge\": [{\"access_level\": 40}],
-              \"allowed_to_push\": [{\"access_level\": 40}],
-              \"code_owner_approval_required\": false
-            }" \
-            "https://${CI_SERVER_HOST}/api/v4/projects/${CI_PROJECT_ID}/protected_branches" 2>/dev/null || echo "{}")
-          
-          if echo "$PROTECT_RESPONSE" | jq -e '.name' >/dev/null 2>&1; then
-            echo "✅ Branch protection created for $CI_COMMIT_BRANCH"
-          else
-            echo "⚠️  Could not create branch protection (may require maintainer/admin access)"
-            echo "Response: $PROTECT_RESPONSE"
-          fi
-        fi
-        
-        # Ensure MR doesn't delete the branch
-        if [ -n "$CI_MERGE_REQUEST_IID" ]; then
-          echo "Updating MR #$CI_MERGE_REQUEST_IID to prevent branch deletion"
-          curl -s -X PUT \
-            --header "PRIVATE-TOKEN: ${GITLAB_TOKEN:-$CI_JOB_TOKEN}" \
-            --header "Content-Type: application/json" \
-            --data '{"remove_source_branch": false}' \
-            "https://${CI_SERVER_HOST}/api/v4/projects/${CI_PROJECT_ID}/merge_requests/${CI_MERGE_REQUEST_IID}" >/dev/null || true
-        fi
-      else
-        echo "Not a release branch, skipping protection"
-      fi
-  rules:
-    - if: $CI_COMMIT_BRANCH =~ /^release\/v/
-      when: on_success
-  allow_failure: true
