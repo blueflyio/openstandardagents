@@ -220,6 +220,7 @@ Features:
 - **Full Documentation**: [openstandardagents.org/docs/](https://openstandardagents.org/docs/)
 - **Schema Reference**: [openstandardagents.org/schema/](https://openstandardagents.org/schema/)
 - **Specification**: [spec/v0.3.0/ossa-0.3.0.schema.json](https://github.com/blueflyio/openstandardagents/blob/main/spec/v0.3.0/ossa-0.3.0.schema.json)
+- **Messaging Extension**: [spec/v0.3.1/messaging.md](spec/v0.3.1/messaging.md) - Agent-to-agent messaging (v0.3.0+) - Note: messaging.md is in v0.3.1 folder but applies to v0.3.0+
 - **Examples**: [openstandardagents.org/examples/](https://openstandardagents.org/examples/)
 - **Blog**: [openstandardagents.org/blog/](https://openstandardagents.org/blog/)
 

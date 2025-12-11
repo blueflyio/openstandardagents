@@ -2,7 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "https://openstandardagents.org/schemas/v0.3.0/manifest.json",
   "title": "OSSA v0.3.0 Manifest Schema",
-  "description": "Open Standard for Scalable AI Agents (OSSA) v0.3.0 - Unified Task Schema. Supports Agent (agentic loops with LLM), Task (deterministic workflow steps), and Workflow (composition of Tasks and Agents) kinds.",
+  "description": "Open Standard for Scalable AI Agents (OSSA) v0.3.0 - Unified Task Schema. Supports Agent (agentic loops with LLM), Task (deterministic workflow steps), and Workflow (composition of Tasks and Agents) kinds Includes Agent-to-Agent Messaging Extension.",
   "type": "object",
   "required": [
     "apiVersion",
@@ -493,6 +493,10 @@
         },
         "safety": {
           "$ref": "#/definitions/Safety"
+        },
+        "messaging": {
+          "$ref": "#/definitions/MessagingExtension",
+          "description": "Agent-to-agent messaging configuration (v0.3.0+)"
         }
       },
       "additionalProperties": true
@@ -1504,6 +1508,336 @@
           "type": "boolean",
           "default": false,
           "description": "Whether this argument is required"
+        }
+      },
+      "additionalProperties": false
+    },
+    "MessagingExtension": {
+      "type": "object",
+      "description": "Agent-to-agent messaging configuration (v0.3.1+)",
+      "properties": {
+        "publishes": {
+          "type": "array",
+          "description": "Channels this agent publishes to",
+          "items": {
+            "$ref": "#/definitions/PublishedChannel"
+          }
+        },
+        "subscribes": {
+          "type": "array",
+          "description": "Channels this agent subscribes to",
+          "items": {
+            "$ref": "#/definitions/Subscription"
+          }
+        },
+        "commands": {
+          "type": "array",
+          "description": "Commands this agent accepts (RPC-style operations)",
+          "items": {
+            "$ref": "#/definitions/Command"
+          }
+        },
+        "reliability": {
+          "$ref": "#/definitions/ReliabilityConfig",
+          "description": "Message reliability configuration"
+        }
+      },
+      "additionalProperties": false
+    },
+    "PublishedChannel": {
+      "type": "object",
+      "description": "Channel that an agent publishes messages to",
+      "required": [
+        "channel",
+        "schema"
+      ],
+      "properties": {
+        "channel": {
+          "type": "string",
+          "pattern": "^[a-z0-9]+(?:\\.[a-z0-9]+)*$",
+          "description": "Channel name (dot-separated, lowercase)",
+          "examples": [
+            "security.vulnerabilities",
+            "dependency.updates",
+            "incident.response.triggered"
+          ]
+        },
+        "description": {
+          "type": "string",
+          "description": "Human-readable description of what messages are published"
+        },
+        "schema": {
+          "$ref": "#/definitions/JSONSchemaDefinition",
+          "description": "JSON Schema for message payload"
+        },
+        "examples": {
+          "type": "array",
+          "description": "Example message payloads",
+          "items": {
+            "type": "object"
+          }
+        },
+        "contentType": {
+          "type": "string",
+          "default": "application/json",
+          "description": "Content type of the message payload"
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Tags for categorization and filtering"
+        }
+      },
+      "additionalProperties": false
+    },
+    "Subscription": {
+      "type": "object",
+      "description": "Channel subscription configuration",
+      "required": [
+        "channel"
+      ],
+      "properties": {
+        "channel": {
+          "type": "string",
+          "pattern": "^[a-z0-9]+(?:\\.[a-z0-9*]+)*$",
+          "description": "Channel name or pattern (supports * wildcard)",
+          "examples": [
+            "security.vulnerabilities",
+            "dependency.*",
+            "incident.response.*"
+          ]
+        },
+        "description": {
+          "type": "string",
+          "description": "Human-readable description of subscription purpose"
+        },
+        "schema": {
+          "$ref": "#/definitions/JSONSchemaDefinition",
+          "description": "Expected message schema for validation"
+        },
+        "handler": {
+          "type": "string",
+          "description": "Handler function name or reference",
+          "examples": [
+            "process_vulnerability",
+            "handle_dependency_update"
+          ]
+        },
+        "filter": {
+          "type": "object",
+          "description": "Filter conditions for message processing",
+          "properties": {
+            "expression": {
+              "type": "string",
+              "description": "Filter expression (e.g., '${{ message.severity in [\"high\", \"critical\"] }}')"
+            },
+            "fields": {
+              "type": "object",
+              "description": "Simple field-value filters",
+              "additionalProperties": true
+            }
+          },
+          "additionalProperties": false
+        },
+        "priority": {
+          "type": "string",
+          "enum": [
+            "low",
+            "normal",
+            "high",
+            "critical"
+          ],
+          "default": "normal",
+          "description": "Subscription priority for message ordering"
+        },
+        "maxConcurrency": {
+          "type": "integer",
+          "minimum": 1,
+          "default": 1,
+          "description": "Maximum concurrent message processing"
+        }
+      },
+      "additionalProperties": false
+    },
+    "Command": {
+      "type": "object",
+      "description": "RPC-style command that an agent accepts",
+      "required": [
+        "name",
+        "inputSchema"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_]*$",
+          "description": "Command name (snake_case)",
+          "examples": [
+            "scan_package",
+            "analyze_vulnerability",
+            "trigger_incident"
+          ]
+        },
+        "description": {
+          "type": "string",
+          "description": "Human-readable description of the command"
+        },
+        "inputSchema": {
+          "$ref": "#/definitions/JSONSchemaDefinition",
+          "description": "JSON Schema for command input"
+        },
+        "outputSchema": {
+          "$ref": "#/definitions/JSONSchemaDefinition",
+          "description": "JSON Schema for command output"
+        },
+        "timeoutSeconds": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 3600,
+          "default": 30,
+          "description": "Command execution timeout in seconds"
+        },
+        "idempotent": {
+          "type": "boolean",
+          "default": false,
+          "description": "Whether the command is idempotent (safe to retry)"
+        },
+        "async": {
+          "type": "boolean",
+          "default": false,
+          "description": "Whether the command executes asynchronously"
+        }
+      },
+      "additionalProperties": false
+    },
+    "ReliabilityConfig": {
+      "type": "object",
+      "description": "Message delivery reliability configuration",
+      "properties": {
+        "deliveryGuarantee": {
+          "type": "string",
+          "enum": [
+            "at-least-once",
+            "at-most-once",
+            "exactly-once"
+          ],
+          "default": "at-least-once",
+          "description": "Message delivery guarantee level"
+        },
+        "retry": {
+          "type": "object",
+          "description": "Retry configuration for failed deliveries",
+          "properties": {
+            "maxAttempts": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 10,
+              "default": 3,
+              "description": "Maximum retry attempts"
+            },
+            "backoff": {
+              "type": "object",
+              "properties": {
+                "strategy": {
+                  "type": "string",
+                  "enum": [
+                    "exponential",
+                    "linear",
+                    "fixed"
+                  ],
+                  "default": "exponential"
+                },
+                "initialDelayMs": {
+                  "type": "integer",
+                  "minimum": 100,
+                  "default": 1000
+                },
+                "maxDelayMs": {
+                  "type": "integer",
+                  "minimum": 1000,
+                  "default": 30000
+                },
+                "multiplier": {
+                  "type": "number",
+                  "minimum": 1,
+                  "default": 2
+                }
+              },
+              "additionalProperties": false
+            }
+          },
+          "additionalProperties": false
+        },
+        "dlq": {
+          "type": "object",
+          "description": "Dead letter queue configuration",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": true,
+              "description": "Enable dead letter queue for failed messages"
+            },
+            "channel": {
+              "type": "string",
+              "default": "messaging.dlq",
+              "description": "DLQ channel name"
+            },
+            "retentionDays": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 365,
+              "default": 30,
+              "description": "Days to retain DLQ messages"
+            }
+          },
+          "additionalProperties": false
+        },
+        "ordering": {
+          "type": "object",
+          "description": "Message ordering configuration",
+          "properties": {
+            "guarantee": {
+              "type": "string",
+              "enum": [
+                "none",
+                "per-source",
+                "per-channel",
+                "global"
+              ],
+              "default": "none",
+              "description": "Message ordering guarantee level"
+            },
+            "timeoutSeconds": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 300,
+              "description": "Ordering window timeout"
+            }
+          },
+          "additionalProperties": false
+        },
+        "acknowledgment": {
+          "type": "object",
+          "description": "Message acknowledgment configuration",
+          "properties": {
+            "mode": {
+              "type": "string",
+              "enum": [
+                "auto",
+                "manual"
+              ],
+              "default": "auto",
+              "description": "Acknowledgment mode"
+            },
+            "timeoutSeconds": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 60,
+              "description": "Acknowledgment timeout"
+            }
+          },
+          "additionalProperties": false
         }
       },
       "additionalProperties": false

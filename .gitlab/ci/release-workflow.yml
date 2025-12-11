@@ -50,7 +50,7 @@ create-dev-tag:release:
         # No release tags yet, start with X.Y.0
         BASE_VERSION="${BRANCH_VERSION}.0"
       else
-        # Extract version number (e.g., v0.3.1 -> 0.3.1)
+        # Extract version number (e.g., v0.3.0 -> 0.3.0)
         VERSION_NUM=$(echo "$LATEST_RELEASE_TAG" | sed 's/^v//')
         # Increment patch version (0.3.1 -> 0.3.2)
         MAJOR_MINOR=$(echo "$VERSION_NUM" | cut -d. -f1-2)

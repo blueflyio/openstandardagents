@@ -26,6 +26,13 @@ export class SchemaRepository implements ISchemaRepository {
   }
 
   /**
+   * Check if version is a template placeholder (e.g., {{VERSION}})
+   */
+  private isTemplateVersion(version: string): boolean {
+    return /^\{\{[A-Z_]+\}\}$/.test(version);
+  }
+
+  /**
    * Get the latest/current version from package.json or spec directory
    */
   getCurrentVersion(): string {
@@ -35,9 +42,10 @@ export class SchemaRepository implements ISchemaRepository {
     if (fs.existsSync(packageJsonPath)) {
       try {
         const pkg = JSON.parse(fs.readFileSync(packageJsonPath, 'utf-8'));
-        if (pkg.version) {
+        if (pkg.version && !this.isTemplateVersion(pkg.version)) {
           return pkg.version;
         }
+        // If version is a template placeholder, fall through to spec directory discovery
       } catch {
         // Fall through to spec directory discovery
       }
