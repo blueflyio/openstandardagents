@@ -1,25 +1,105 @@
 #!/usr/bin/env node
 
 /**
- * Sync version from npm registry (source of truth) to lib/version.ts
- * Falls back to package.json if npm registry is unreachable
+ * Sync version from GitLab tags (source of truth) to lib/version.ts
+ * Falls back to npm registry or package.json if GitLab is unreachable
  *
  * Run: npm run sync-version
  * Automatically runs on: npm run dev, npm run build
  *
- * IMPORTANT: This script fetches the latest version from npm registry,
- * so the website always displays the latest published version without
- * needing to manually update package.json.
+ * IMPORTANT: This script only updates the website on major/minor releases,
+ * not on patch releases. This prevents constant website updates for bug fixes.
+ *
+ * Priority:
+ * 1. GitLab tags API (includes dev tags)
+ * 2. npm registry (fallback)
+ * 3. package.json (final fallback)
  */
 
 const fs = require('fs');
 const path = require('path');
 const https = require('https');
 
+const GITLAB_PROJECT = 'blueflyio/openstandardagents';
+const GITLAB_API_BASE = 'https://gitlab.com/api/v4';
 const NPM_PACKAGE = '@bluefly/openstandardagents';
 const packageJsonPath = path.join(__dirname, '..', 'package.json');
 const versionTsPath = path.join(__dirname, '..', 'lib', 'version.ts');
 const versionsJsonPath = path.join(__dirname, '..', 'lib', 'versions.json');
+
+// Check if we're in REVIEW/local environment
+const isReviewEnv = process.env.REVIEW === 'true' || process.env.CI_ENVIRONMENT_NAME === 'review' || 
+                    process.env.ORB === 'true' || process.env.ORBSTACK === 'true';
+
+// Fetch latest tag from GitLab tags API
+function fetchGitLabLatestTag() {
+  return new Promise((resolve, reject) => {
+    // Use WEB_TOKEN in CI (configured in GitLab CI/CD variables)
+    // Falls back to CI_JOB_TOKEN, GITLAB_TOKEN for local/REVIEW env
+    // WEB_TOKEN has cross-project access to openstandardagents project
+    const token = process.env.WEB_TOKEN || process.env.CI_JOB_TOKEN || process.env.GITLAB_TOKEN || '';
+    const projectPath = encodeURIComponent(GITLAB_PROJECT);
+    const url = `${GITLAB_API_BASE}/projects/${projectPath}/repository/tags?per_page=100&order_by=updated&sort=desc`;
+    
+    const options = {
+      headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+    };
+    
+    https.get(url, options, (res) => {
+      let data = '';
+      res.on('data', chunk => data += chunk);
+      res.on('end', () => {
+        try {
+          if (res.statusCode === 404) {
+            reject(new Error('Project not found or private - set GITLAB_TOKEN env var for authentication'));
+            return;
+          }
+          if (res.statusCode !== 200) {
+            reject(new Error(`GitLab API returned ${res.statusCode}: ${data.substring(0, 100)}`));
+            return;
+          }
+          const tags = JSON.parse(data);
+          
+          if (!tags || tags.length === 0) {
+            reject(new Error('No tags found'));
+            return;
+          }
+          
+          // Filter to stable versions (no -dev, -pre, -rc suffixes) or get latest dev tag if in REVIEW
+          let stableTags = tags.filter(t => {
+            const name = t.name.replace(/^v/, ''); // Remove 'v' prefix
+            return !name.includes('-dev') && !name.includes('-pre') && !name.includes('-rc') && 
+                   !name.includes('alpha') && !name.includes('beta');
+          });
+          
+          // In REVIEW env, prefer dev tags, otherwise use stable
+          if (isReviewEnv && stableTags.length === 0) {
+            // Get latest dev tag
+            const devTags = tags.filter(t => {
+              const name = t.name.replace(/^v/, '');
+              return name.includes('-dev');
+            });
+            if (devTags.length > 0) {
+              stableTags = [devTags[0]]; // Use latest dev tag
+            }
+          }
+          
+          if (stableTags.length === 0) {
+            // Fallback to first tag
+            stableTags = [tags[0]];
+          }
+          
+          // Get version without 'v' prefix
+          const latestTag = stableTags[0];
+          const version = latestTag.name.replace(/^v/, '');
+          resolve(version);
+        } catch (e) {
+          reject(e);
+        }
+      });
+    }).on('error', reject);
+  });
+}
 
 // Fetch latest version from npm registry
 function fetchNpmVersion() {
@@ -41,52 +121,98 @@ function fetchNpmVersion() {
 }
 
 async function syncVersion() {
-  let version;
+  let latestVersion;
   let source;
+  let shouldUpdate = false;
 
-  // Try npm registry first (source of truth for published versions)
+  // Get current version from package.json
+  const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
+  const currentVersion = packageJson.version;
+  const [currentMajor, currentMinor] = currentVersion.split('.').map(Number);
+
+  // Try GitLab tags first (includes dev tags, good for REVIEW env)
   try {
-    version = await fetchNpmVersion();
-    source = 'npm registry';
-    console.log(`📦 Fetched version ${version} from npm registry`);
-  } catch (error) {
-    // Fallback to package.json
-    const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
-    version = packageJson.version;
-    source = 'package.json (fallback)';
-    console.log(`⚠️  npm registry unreachable, using package.json: ${version}`);
+    latestVersion = await fetchGitLabLatestTag();
+    const [latestMajor, latestMinor] = latestVersion.split('.').map(Number);
+    
+    // Only update if major or minor version changed (not patch)
+    if (latestMajor > currentMajor || (latestMajor === currentMajor && latestMinor > currentMinor)) {
+      shouldUpdate = true;
+      source = `GitLab tags${isReviewEnv ? ' (REVIEW env)' : ''} (major/minor update)`;
+      console.log(`📦 New major/minor version detected from GitLab: ${latestVersion} (was ${currentVersion})`);
+    } else {
+      // Keep current version, but use latest patch for display
+      shouldUpdate = false;
+      source = `GitLab tags${isReviewEnv ? ' (REVIEW env)' : ''} (patch only, no update needed)`;
+      console.log(`📦 Latest GitLab tag ${latestVersion} is a patch release, keeping website at ${currentVersion}`);
+      // Use current version for website, but latest for reference
+      latestVersion = currentVersion;
+    }
+  } catch (gitlabError) {
+    // Silently fall back to npm - GitLab might be unavailable
+    // In CI, WEB_TOKEN should be configured for cross-project access to openstandardagents
+    if (process.env.CI) {
+      console.log(`ℹ️  GitLab tags API unavailable in CI (expected), using npm registry`);
+    } else {
+      console.log(`⚠️  GitLab tags API unreachable: ${gitlabError.message}`);
+    }
+    
+    // Fallback to npm registry
+    try {
+      latestVersion = await fetchNpmVersion();
+      const [latestMajor, latestMinor] = latestVersion.split('.').map(Number);
+      
+      if (latestMajor > currentMajor || (latestMajor === currentMajor && latestMinor > currentMinor)) {
+        shouldUpdate = true;
+        source = 'npm registry (major/minor update, fallback)';
+        console.log(`📦 New major/minor version detected from npm: ${latestVersion} (was ${currentVersion})`);
+      } else {
+        shouldUpdate = false;
+        source = 'npm registry (patch only, no update needed, fallback)';
+        console.log(`📦 Latest npm version ${latestVersion} is a patch release, keeping website at ${currentVersion}`);
+        latestVersion = currentVersion;
+      }
+    } catch (npmError) {
+      // Final fallback to package.json
+      latestVersion = currentVersion;
+      source = 'package.json (fallback)';
+      console.log(`⚠️  npm registry unreachable, using package.json: ${latestVersion}`);
+    }
   }
 
-  // Also update package.json to keep in sync
-  const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
-  if (packageJson.version !== version) {
-    packageJson.version = version;
+  // Only update package.json if major/minor changed
+  if (shouldUpdate && packageJson.version !== latestVersion) {
+    packageJson.version = latestVersion;
     fs.writeFileSync(packageJsonPath, JSON.stringify(packageJson, null, 2) + '\n');
-    console.log(`📝 Updated package.json to ${version}`);
+    console.log(`📝 Updated package.json to ${latestVersion}`);
   }
 
   // Read versions.json if it exists
-  let versionsData = { all: [], stable: version, dev: null };
+  let versionsData = { all: [], stable: latestVersion, dev: null };
   try {
     if (fs.existsSync(versionsJsonPath)) {
       versionsData = JSON.parse(fs.readFileSync(versionsJsonPath, 'utf8'));
+      // Update stable version in versions.json
+      versionsData.stable = latestVersion;
+      versionsData.latest = latestVersion;
     }
   } catch (e) {
     // Ignore if versions.json doesn't exist yet
   }
 
   // Extract major.minor for display version
-  const versionParts = version.split('.');
+  const versionParts = latestVersion.split('.');
   const displayVersion = `${versionParts[0]}.${versionParts[1]}.x`;
 
   // Generate version.ts content
   const versionTsContent = `// OSSA version constants
 // AUTO-GENERATED from ${source} - DO NOT EDIT DIRECTLY
-// Run: npm run sync-version (fetches latest from npm registry)
+// Run: npm run sync-version (fetches latest from GitLab tags or npm registry)
+// NOTE: Website only updates on major/minor releases, not patches
 
 import versionsData from './versions.json';
 
-export const OSSA_VERSION = "${version}";
+export const OSSA_VERSION = "${latestVersion}";
 export const OSSA_VERSION_TAG = \`v\${OSSA_VERSION}\`;
 export const OSSA_API_VERSION = \`ossa/v\${OSSA_VERSION}\`;
 export const OSSA_SCHEMA_VERSION = OSSA_VERSION;
@@ -121,9 +247,14 @@ export function getSpecPath(ver = OSSA_VERSION): string {
 }
 `;
 
-  // Write version.ts
+  // Always write version.ts (it may have updated version info even if we don't update package.json)
   fs.writeFileSync(versionTsPath, versionTsContent);
-  console.log(`✅ Synced version ${version} to lib/version.ts (from ${source})`);
+  
+  if (shouldUpdate) {
+    console.log(`✅ Updated website to version ${latestVersion} (from ${source})`);
+  } else {
+    console.log(`✅ Synced version info (no update needed - patch release only)`);
+  }
 }
 
 syncVersion().catch(error => {
