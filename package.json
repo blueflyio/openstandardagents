@@ -20,7 +20,8 @@
     "website:dev": "pnpm --filter website dev",
     "website:build": "pnpm --filter website build",
     "bot:dev": "pnpm --filter discord-bot dev",
-    "bot:start": "pnpm --filter discord-bot start"
+    "bot:start": "pnpm --filter discord-bot start",
+    "typecheck": "pnpm -r typecheck"
   },
   "repository": {
     "type": "git",

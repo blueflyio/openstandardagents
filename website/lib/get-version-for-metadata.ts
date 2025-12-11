@@ -1,4 +1,5 @@
 import fs from 'fs';
+import { STABLE_VERSION } from './version';
 import path from 'path';
 
 /**
@@ -11,7 +12,7 @@ export function getVersionForMetadata(): { version: string; tag: string; display
     const versionsPath = path.join(process.cwd(), 'lib', 'versions.json');
     if (fs.existsSync(versionsPath)) {
       const versions = JSON.parse(fs.readFileSync(versionsPath, 'utf8'));
-      const stable = versions.stable || '0.2.9';
+      const stable = versions.stable || STABLE_VERSION;
       const [major, minor] = stable.split('.').map(Number);
       return {
         version: stable,
@@ -45,8 +46,8 @@ export function getVersionForMetadata(): { version: string; tag: string; display
 
   // Final fallback
   return {
-    version: '0.2.9',
-    tag: 'v0.2.9',
+    version: STABLE_VERSION,
+    tag: `v${STABLE_VERSION}`,
     displayVersion: '0.2.x',
   };
 }
