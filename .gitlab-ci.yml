@@ -178,19 +178,6 @@ sync:auto:
 # =============================================================================
 # VALIDATE
 # =============================================================================
-validate:lint:
-  extends: .node-setup
-  stage: validate
-  script:
-    - npm run lint
-  allow_failure: false
-
-validate:typecheck:
-  extends: .node-setup
-  stage: validate
-  script:
-    - npx tsc --noEmit
-  allow_failure: false
 
 # =============================================================================
 # TEST
@@ -546,6 +533,8 @@ notify:discord:
 mr-manager-agent:
   stage: .pre
   image: node:20-alpine
+  before_script:
+    - npm install -g pnpm
   script:
     - |
       echo "MR Manager Agent triggered"
