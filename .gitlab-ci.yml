@@ -130,7 +130,7 @@ enforce-main-branch-policy:
 .node-setup:
   image: node:${NODE_VERSION}-alpine
   variables:
-    NODE_ENV: development
+    NODE_ENV: production
   before_script:
     - cd website
     - npm ci --prefer-offline --no-audit
@@ -142,7 +142,7 @@ sync:auto:
   stage: sync
   image: node:${NODE_VERSION}-alpine
   variables:
-    NODE_ENV: development
+    NODE_ENV: production
     GIT_STRATEGY: clone
   before_script:
     - apk add --no-cache git
@@ -232,7 +232,7 @@ build:website:
   stage: build
   image: node:20-alpine
   variables:
-    NODE_ENV: development
+    NODE_ENV: production
     GITLAB_TOKEN: $CI_JOB_TOKEN  # Enable authenticated access to private repos
   before_script:
     - cd website
