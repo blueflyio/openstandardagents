@@ -2,7 +2,7 @@ import Link from 'next/link';
 import type { Metadata } from 'next';
 import { Logo } from '@/components/Logo';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
-import { OSSA_DISPLAY_VERSION_TAG } from '@/lib/version';
+import { OSSA_DISPLAY_VERSION_TAG, STABLE_VERSION_TAG, STABLE_VERSION } from '@/lib/version';
 
 export const metadata: Metadata = {
   title: 'Open Standard Agents - Industry Standard for Agent Orchestration',
@@ -223,7 +223,7 @@ export default function HomePage() {
             <span className="inline-block px-4 py-2 bg-gradient-to-r from-primary to-secondary text-white rounded-full text-sm font-bold mb-4">
               New Release
             </span>
-            <h2 className="text-4xl md:text-5xl font-bold mb-4">What&apos;s New in v0.2.9</h2>
+            <h2 className="text-4xl md:text-5xl font-bold mb-4">What's New in {STABLE_VERSION_TAG}</h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
               The Foundation Release brings enterprise-grade specifications for production multi-agent systems.
             </p>
@@ -347,8 +347,8 @@ export default function HomePage() {
             <Link href="/changelog" className="btn-primary mr-4">
               View Full Changelog
             </Link>
-            <Link href="https://www.npmjs.com/package/@bluefly/openstandardagents/v/0.2.9" className="btn-outline" target="_blank" rel="noopener noreferrer">
-              npm v0.2.9
+            <Link href={`https://www.npmjs.com/package/@bluefly/openstandardagents/v/${STABLE_VERSION}`} className="btn-outline" target="_blank" rel="noopener noreferrer">
+              npm {STABLE_VERSION_TAG}
             </Link>
           </div>
         </div>

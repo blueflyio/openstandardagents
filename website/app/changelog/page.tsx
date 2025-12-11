@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import type { Metadata } from 'next';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
+import { STABLE_VERSION, STABLE_VERSION_TAG } from '@/lib/version';
 
 export const metadata: Metadata = {
   title: 'Changelog - OSSA Release History',
@@ -26,7 +27,7 @@ interface Release {
 
 const releases: Release[] = [
   {
-    version: '0.2.9',
+    version: STABLE_VERSION,
     name: 'Foundation Release',
     date: 'December 5, 2025',
     highlights: [
@@ -70,7 +71,7 @@ const releases: Release[] = [
       },
     ],
     links: {
-      npm: 'https://www.npmjs.com/package/@bluefly/openstandardagents/v/0.2.9',
+      npm: `https://www.npmjs.com/package/@bluefly/openstandardagents/v/${STABLE_VERSION}`,
       github: 'https://github.com/blueflyio/openstandardagents',
     },
   },
