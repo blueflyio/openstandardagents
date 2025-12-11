@@ -18,10 +18,11 @@ export const validateCommand = new Command('validate')
   .argument('<path>', 'Path to OSSA manifest or OpenAPI spec (YAML or JSON)')
   .option(
     '-s, --schema <version>',
-    'Schema version (0.2.9, 0.2.8, 0.2.6, 0.2.5, 0.2.3, 0.2.2, or 1.0)',
+    'Schema version (0.3.0, 0.2.9, 0.2.8, 0.2.6, 0.2.5, 0.2.3, 0.2.2, or 1.0)',
     '0.2.9'
   )
   .option('--openapi', 'Validate as OpenAPI specification with OSSA extensions')
+  .option('--check-messaging', 'Validate messaging extension (v0.3.0+)')
   .option('-v, --verbose', 'Verbose output with detailed information')
   .description(
     'Validate OSSA agent manifest or OpenAPI spec against JSON schema'
@@ -29,7 +30,7 @@ export const validateCommand = new Command('validate')
   .action(
     async (
       path: string,
-      options: { schema: string; openapi?: boolean; verbose?: boolean }
+      options: { schema: string; openapi?: boolean; checkMessaging?: boolean; verbose?: boolean }
     ) => {
       try {
         // Get services from DI container
@@ -97,6 +98,27 @@ export const validateCommand = new Command('validate')
               }
             }
 
+            if (m.spec?.messaging) {
+              console.log(chalk.gray('\nMessaging Configuration:'));
+              if (m.spec.messaging.publishes) {
+                console.log(`  Publishes: ${chalk.cyan(m.spec.messaging.publishes.length)} channel(s)`);
+                m.spec.messaging.publishes.forEach((ch: any) => {
+                  console.log(`    - ${chalk.cyan(ch.channel)}`);
+                });
+              }
+              if (m.spec.messaging.subscribes) {
+                console.log(`  Subscribes: ${chalk.cyan(m.spec.messaging.subscribes.length)} channel(s)`);
+                m.spec.messaging.subscribes.forEach((sub: any) => {
+                  console.log(`    - ${chalk.cyan(sub.channel)}`);
+                });
+              }
+              if (m.spec.messaging.commands) {
+                console.log(`  Commands: ${chalk.cyan(m.spec.messaging.commands.length)}`);
+                m.spec.messaging.commands.forEach((cmd: any) => {
+                  console.log(`    - ${chalk.cyan(cmd.name)}`);
+                });
+              }
+            }
             if (m.agent?.capabilities) {
               console.log(
                 `  Capabilities: ${chalk.cyan(m.agent.capabilities.length)}`

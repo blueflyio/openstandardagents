@@ -15,6 +15,18 @@ export * from './workflow';
 export type { OssaWorkflow, WorkflowSpec, WorkflowStep } from './workflow';
 export { isOssaWorkflow, createWorkflowManifest, createStep, expr } from './workflow';
 
+// Export Messaging types (v0.3.0)
+export * from './messaging';
+export type {
+  MessagingExtension,
+  PublishedChannel,
+  Subscription,
+  Command,
+  ReliabilityConfig,
+  MessageEnvelope,
+  RoutingRule,
+} from './messaging';
+
 /**
  * Capability definition (OpenAPI-style operation)
  */
@@ -111,6 +123,53 @@ export interface OssaAgent {
       logging?: {
         level?: string;
         format?: string;
+      };
+    };
+    messaging?: {
+      publishes?: Array<{
+        channel: string;
+        description?: string;
+        schema: Record<string, unknown>;
+        examples?: Record<string, unknown>[];
+        contentType?: string;
+        tags?: string[];
+      }>;
+      subscribes?: Array<{
+        channel: string;
+        description?: string;
+        schema?: Record<string, unknown>;
+        handler?: string;
+        filter?: {
+          expression?: string;
+          fields?: Record<string, unknown>;
+        };
+        priority?: 'low' | 'normal' | 'high' | 'critical';
+        maxConcurrency?: number;
+      }>;
+      commands?: Array<{
+        name: string;
+        description?: string;
+        inputSchema: Record<string, unknown>;
+        outputSchema?: Record<string, unknown>;
+        timeoutSeconds?: number;
+        idempotent?: boolean;
+        async?: boolean;
+      }>;
+      reliability?: {
+        deliveryGuarantee?: 'at-least-once' | 'at-most-once' | 'exactly-once';
+        retry?: {
+          maxAttempts?: number;
+          backoffMs?: number;
+          maxBackoffMs?: number;
+        };
+        deadLetterQueue?: {
+          enabled?: boolean;
+          maxRetries?: number;
+        };
+        ordering?: {
+          enabled?: boolean;
+          key?: string;
+        };
       };
     };
   };

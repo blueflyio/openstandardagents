@@ -6,12 +6,12 @@
  * Designed to run in CI after patch version is determined.
  * 
  * Environment Variables:
- * - CI_DETERMINED_VERSION: Full version (e.g., "0.3.1") set by CI
+ * - CI_DETERMINED_VERSION: Full version (e.g., "0.3.0") set by CI
  * - CI_BRANCH_VERSION: Major.minor from branch (e.g., "0.3") 
  * - CI_PATCH_VERSION: Patch number (e.g., "1")
  * 
  * Usage:
- *   CI_DETERMINED_VERSION=0.3.1 tsx scripts/ci-version-sync.ts
+ *   CI_DETERMINED_VERSION=0.3.0 tsx scripts/ci-version-sync.ts
  */
 
 import fs from 'fs';
