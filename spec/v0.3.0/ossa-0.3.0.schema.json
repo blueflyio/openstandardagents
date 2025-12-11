@@ -460,15 +460,32 @@
     },
     "AgentSpec": {
       "type": "object",
-      "description": "Specification for agentic loops with LLM (kind: Agent) - inherits from v0.2.9",
-      "required": [
-        "role"
-      ],
+      "description": "Specification for agentic loops with LLM (kind: Agent) - inherits from v0.2.9. Either 'role' or 'prompts.system.template' is required.",
       "properties": {
         "role": {
           "type": "string",
           "minLength": 1,
-          "description": "Agent role/system prompt"
+          "description": "Agent role/system prompt (alternative: use prompts.system.template)"
+        },
+        "prompts": {
+          "type": "object",
+          "description": "Structured prompts configuration (alternative to role)",
+          "properties": {
+            "system": {
+              "type": "object",
+              "properties": {
+                "template": {
+                  "type": "string",
+                  "description": "System prompt template"
+                },
+                "version": {
+                  "type": "string",
+                  "description": "Prompt version"
+                }
+              }
+            }
+          },
+          "additionalProperties": true
         },
         "llm": {
           "$ref": "#/definitions/LLMConfig"
@@ -1116,30 +1133,158 @@
       ],
       "properties": {
         "provider": {
-          "type": "string",
-          "enum": [
-            "openai",
-            "anthropic",
-            "google",
-            "azure",
-            "ollama",
-            "custom"
+          "description": "LLM provider - literal value or environment variable with default (e.g., ${LLM_PROVIDER:-anthropic})",
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "openai",
+                "anthropic",
+                "google",
+                "azure",
+                "ollama",
+                "custom"
+              ]
+            },
+            {
+              "type": "string",
+              "pattern": "^\\$\\{[A-Za-z_][A-Za-z0-9_]*(?::-[a-zA-Z0-9_-]+)?\\}$",
+              "description": "Environment variable reference with optional default"
+            }
           ]
         },
         "model": {
-          "type": "string"
+          "type": "string",
+          "description": "Model identifier (e.g., gpt-4o, claude-sonnet-4.5-20250929)"
+        },
+        "temperature": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 2,
+          "description": "Sampling temperature for response generation"
+        },
+        "maxTokens": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Maximum tokens in response"
+        },
+        "fallback_models": {
+          "type": "array",
+          "description": "Ordered list of fallback LLM configurations for resilience",
+          "items": {
+            "$ref": "#/definitions/FallbackLLM"
+          }
+        },
+        "retry_config": {
+          "$ref": "#/definitions/RetryConfig",
+          "description": "Retry and backoff configuration for transient failures"
+        },
+        "cost_tracking": {
+          "$ref": "#/definitions/CostTracking",
+          "description": "Cost governance and allocation tracking"
+        }
+      },
+      "additionalProperties": true
+    },
+    "FallbackLLM": {
+      "type": "object",
+      "description": "Fallback LLM configuration for resilience",
+      "required": [
+        "provider",
+        "model"
+      ],
+      "properties": {
+        "provider": {
+          "description": "LLM provider - literal value or environment variable",
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "openai",
+                "anthropic",
+                "google",
+                "azure",
+                "ollama",
+                "custom"
+              ]
+            },
+            {
+              "type": "string",
+              "pattern": "^\\$\\{[A-Za-z_][A-Za-z0-9_]*(?::-[a-zA-Z0-9_-]+)?\\}$"
+            }
+          ]
+        },
+        "model": {
+          "type": "string",
+          "description": "Model identifier"
         },
         "temperature": {
           "type": "number",
           "minimum": 0,
           "maximum": 2
-        },
-        "maxTokens": {
-          "type": "integer",
-          "minimum": 1
         }
       },
-      "additionalProperties": true
+      "additionalProperties": false
+    },
+    "RetryConfig": {
+      "type": "object",
+      "description": "Retry and backoff configuration for LLM calls",
+      "properties": {
+        "max_attempts": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10,
+          "default": 3,
+          "description": "Maximum number of retry attempts"
+        },
+        "backoff_strategy": {
+          "type": "string",
+          "enum": [
+            "none",
+            "linear",
+            "exponential"
+          ],
+          "default": "exponential",
+          "description": "Backoff strategy between retries"
+        },
+        "initial_delay_ms": {
+          "type": "integer",
+          "minimum": 0,
+          "default": 1000,
+          "description": "Initial delay in milliseconds before first retry"
+        },
+        "max_delay_ms": {
+          "type": "integer",
+          "minimum": 0,
+          "default": 30000,
+          "description": "Maximum delay between retries"
+        }
+      },
+      "additionalProperties": false
+    },
+    "CostTracking": {
+      "type": "object",
+      "description": "Cost governance and allocation tracking for LLM usage",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable cost tracking for this agent"
+        },
+        "budget_alert_threshold": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Alert threshold in dollars for budget monitoring"
+        },
+        "cost_allocation_tags": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "Tags for cost allocation and chargeback (e.g., project, team, service)"
+        }
+      },
+      "additionalProperties": false
     },
     "Tool": {
       "type": "object",
@@ -1153,11 +1298,22 @@
             "mcp",
             "kubernetes",
             "http",
+            "api",
             "grpc",
             "function",
             "a2a",
+            "webhook",
+            "schedule",
+            "pipeline",
+            "workflow",
+            "artifact",
+            "git-commit",
+            "ci-status",
+            "comment",
+            "library",
             "custom"
-          ]
+          ],
+          "description": "Tool/trigger type: mcp (Model Context Protocol), kubernetes (K8s API), http (HTTP endpoints), api (REST APIs), grpc (gRPC), function (local), a2a (agent-to-agent), webhook (event triggers), schedule (cron triggers), pipeline (CI/CD events), workflow (status changes), artifact (file outputs), git-commit (commit outputs), ci-status (pipeline status), comment (MR/issue comments), library (reusable logic), custom"
         },
         "name": {
           "type": "string"
@@ -1172,28 +1328,51 @@
       "additionalProperties": true
     },
     "Capability": {
-      "type": "object",
-      "required": [
-        "name"
-      ],
-      "properties": {
-        "name": {
-          "type": "string"
+      "description": "Capability definition - can be a simple string name or a detailed object",
+      "anyOf": [
+        {
+          "type": "string",
+          "description": "Simple capability name"
         },
-        "description": {
-          "type": "string"
-        },
-        "input_schema": {
-          "type": "object"
-        },
-        "output_schema": {
-          "type": "object"
+        {
+          "type": "object",
+          "required": [
+            "name"
+          ],
+          "properties": {
+            "name": {
+              "type": "string"
+            },
+            "version": {
+              "type": "string",
+              "description": "Capability version"
+            },
+            "description": {
+              "type": "string"
+            },
+            "scopes": {
+              "type": "array",
+              "items": { "type": "string" },
+              "description": "Required scopes/permissions"
+            },
+            "transport": {
+              "type": "object",
+              "description": "Transport binding configuration"
+            },
+            "input_schema": {
+              "type": "object"
+            },
+            "output_schema": {
+              "type": "object"
+            }
+          },
+          "additionalProperties": true
         }
-      },
-      "additionalProperties": true
+      ]
     },
     "Autonomy": {
       "type": "object",
+      "description": "Agent autonomy configuration",
       "properties": {
         "level": {
           "type": "string",
@@ -1201,62 +1380,118 @@
             "supervised",
             "autonomous",
             "fully_autonomous"
-          ]
+          ],
+          "description": "Autonomy level: supervised (human approval), autonomous (self-directed), fully_autonomous (no oversight)"
         },
         "approval_required": {
-          "type": "boolean"
+          "type": "boolean",
+          "description": "Whether human approval is required for actions"
         },
         "allowed_actions": {
           "type": "array",
           "items": {
             "type": "string"
-          }
+          },
+          "description": "Actions the agent is allowed to perform"
         },
         "blocked_actions": {
           "type": "array",
           "items": {
             "type": "string"
-          }
+          },
+          "description": "Actions the agent is explicitly blocked from"
+        },
+        "escalation_policy": {
+          "type": "object",
+          "description": "Policy for escalating to humans or other agents",
+          "properties": {
+            "triggers": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Conditions that trigger escalation"
+            },
+            "notify": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Notification channels (e.g., slack:#channel, gitlab:@team)"
+            }
+          },
+          "additionalProperties": true
         }
       },
-      "additionalProperties": false
+      "additionalProperties": true
     },
     "Constraints": {
       "type": "object",
+      "description": "Agent resource and operational constraints",
       "properties": {
         "cost": {
           "type": "object",
+          "description": "Cost constraints for LLM usage",
           "properties": {
             "maxTokensPerDay": {
-              "type": "integer"
+              "type": "integer",
+              "description": "Maximum tokens per day"
             },
             "maxTokensPerRequest": {
-              "type": "integer"
+              "type": "integer",
+              "description": "Maximum tokens per request"
             },
             "maxCostPerDay": {
-              "type": "number"
+              "type": "number",
+              "description": "Maximum cost per day"
+            },
+            "currency": {
+              "type": "string",
+              "description": "Currency for cost tracking (e.g., USD, EUR)"
             }
-          }
+          },
+          "additionalProperties": true
         },
         "performance": {
           "type": "object",
+          "description": "Performance constraints",
           "properties": {
             "maxLatencySeconds": {
-              "type": "number"
+              "type": "number",
+              "description": "Maximum response latency in seconds"
             },
             "maxConcurrentRequests": {
-              "type": "integer"
+              "type": "integer",
+              "description": "Maximum concurrent requests"
             },
             "timeoutSeconds": {
-              "type": "number"
+              "type": "number",
+              "description": "Request timeout in seconds"
             }
-          }
+          },
+          "additionalProperties": true
+        },
+        "resources": {
+          "type": "object",
+          "description": "Compute resource constraints (Kubernetes-style)",
+          "properties": {
+            "cpu": {
+              "type": "string",
+              "description": "CPU limit (e.g., '1', '500m')"
+            },
+            "memory": {
+              "type": "string",
+              "description": "Memory limit (e.g., '2Gi', '512Mi')"
+            }
+          },
+          "additionalProperties": true
         }
       },
-      "additionalProperties": false
+      "additionalProperties": true
     },
     "State": {
       "type": "object",
+      "description": "Agent state management configuration",
       "properties": {
         "mode": {
           "type": "string",
@@ -1264,10 +1499,12 @@
             "stateless",
             "session",
             "long_running"
-          ]
+          ],
+          "description": "State persistence mode"
         },
         "storage": {
           "type": "object",
+          "description": "State storage configuration",
           "properties": {
             "type": {
               "type": "string",
@@ -1277,85 +1514,273 @@
                 "kv",
                 "rdbms",
                 "custom"
-              ]
+              ],
+              "description": "Storage backend type"
             },
             "retention": {
-              "type": "string"
+              "type": "string",
+              "description": "Data retention period (e.g., '30d', '1h')"
+            },
+            "config": {
+              "type": "object",
+              "description": "Storage-specific configuration",
+              "properties": {
+                "provider": {
+                  "type": "string",
+                  "description": "Storage provider (e.g., redis, postgres, pinecone)"
+                },
+                "prefix": {
+                  "type": "string",
+                  "description": "Key prefix for namespacing"
+                },
+                "endpoint": {
+                  "type": "string",
+                  "description": "Storage endpoint URL"
+                }
+              },
+              "additionalProperties": true
+            },
+            "encryption": {
+              "type": "object",
+              "description": "Storage encryption configuration",
+              "properties": {
+                "enabled": {
+                  "type": "boolean"
+                },
+                "algorithm": {
+                  "type": "string",
+                  "description": "Encryption algorithm (e.g., aes-256-gcm)"
+                },
+                "keyRef": {
+                  "type": "string",
+                  "description": "Reference to encryption key (e.g., env:ENCRYPTION_KEY)"
+                }
+              },
+              "additionalProperties": true
             }
-          }
+          },
+          "additionalProperties": true
+        },
+        "context_window": {
+          "type": "object",
+          "description": "Context window management for conversation history",
+          "properties": {
+            "max_messages": {
+              "type": "integer",
+              "description": "Maximum messages to retain"
+            },
+            "max_tokens": {
+              "type": "integer",
+              "description": "Maximum tokens in context"
+            },
+            "strategy": {
+              "type": "string",
+              "enum": [
+                "truncation",
+                "summarization",
+                "sliding_window"
+              ],
+              "description": "Strategy for managing context overflow"
+            }
+          },
+          "additionalProperties": true
         }
       },
-      "additionalProperties": false
+      "additionalProperties": true
     },
     "AgentObservability": {
       "type": "object",
+      "description": "Agent observability configuration",
       "properties": {
         "tracing": {
           "type": "object",
+          "description": "Distributed tracing configuration",
           "properties": {
             "enabled": {
               "type": "boolean"
             },
             "exporter": {
-              "type": "string"
+              "type": "string",
+              "description": "Trace exporter (e.g., otlp, jaeger, zipkin)"
+            },
+            "endpoint": {
+              "type": "string",
+              "description": "Trace collector endpoint"
             }
-          }
+          },
+          "additionalProperties": true
         },
         "metrics": {
           "type": "object",
+          "description": "Metrics collection configuration",
           "properties": {
             "enabled": {
               "type": "boolean"
             },
             "exporter": {
-              "type": "string"
+              "type": "string",
+              "description": "Metrics exporter (e.g., prometheus, otlp)"
+            },
+            "endpoint": {
+              "type": "string",
+              "description": "Metrics endpoint"
+            },
+            "port": {
+              "type": "integer",
+              "description": "Metrics server port"
+            },
+            "customMetrics": {
+              "type": "array",
+              "description": "Custom metrics definitions",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "name": { "type": "string" },
+                  "type": { "type": "string", "enum": ["counter", "gauge", "histogram"] },
+                  "description": { "type": "string" }
+                }
+              }
             }
-          }
+          },
+          "additionalProperties": true
         },
         "logging": {
           "type": "object",
+          "description": "Logging configuration",
           "properties": {
             "level": {
-              "type": "string"
+              "type": "string",
+              "enum": ["debug", "info", "warn", "error"],
+              "description": "Log level"
             },
             "format": {
-              "type": "string"
+              "type": "string",
+              "enum": ["json", "text"],
+              "description": "Log format"
             }
-          }
+          },
+          "additionalProperties": true
+        },
+        "alerting": {
+          "type": "object",
+          "description": "Alerting configuration",
+          "properties": {
+            "enabled": { "type": "boolean" },
+            "channels": {
+              "type": "array",
+              "items": { "type": "string" }
+            },
+            "rules": {
+              "type": "array",
+              "items": { "type": "object" }
+            }
+          },
+          "additionalProperties": true
+        },
+        "slo": {
+          "type": "object",
+          "description": "Service level objectives",
+          "properties": {
+            "availability": { "type": "number" },
+            "latency_p95_ms": { "type": "integer" },
+            "error_budget": { "type": "number" }
+          },
+          "additionalProperties": true
         }
       },
-      "additionalProperties": false
+      "additionalProperties": true
     },
     "Safety": {
       "type": "object",
+      "description": "Agent safety and security configuration",
       "properties": {
         "content_filtering": {
           "type": "object",
+          "description": "Content filtering for inputs/outputs",
           "properties": {
-            "enabled": {
-              "type": "boolean"
-            },
+            "enabled": { "type": "boolean" },
             "categories": {
               "type": "array",
-              "items": {
-                "type": "string"
-              }
+              "items": { "type": "string" },
+              "description": "Categories to filter (e.g., pii, credentials)"
+            },
+            "threshold": {
+              "type": "string",
+              "enum": ["low", "medium", "high"],
+              "description": "Filtering sensitivity"
+            },
+            "action": {
+              "type": "string",
+              "enum": ["warn", "block", "redact"],
+              "description": "Action when content matches"
             }
-          }
+          },
+          "additionalProperties": true
+        },
+        "pii_detection": {
+          "type": "object",
+          "description": "PII detection and handling",
+          "properties": {
+            "enabled": { "type": "boolean" },
+            "types": {
+              "type": "array",
+              "items": { "type": "string" },
+              "description": "PII types to detect (email, phone, ssn, api_key, etc.)"
+            },
+            "action": {
+              "type": "string",
+              "enum": ["warn", "block", "redact"],
+              "description": "Action when PII detected"
+            }
+          },
+          "additionalProperties": true
+        },
+        "rate_limiting": {
+          "type": "object",
+          "description": "Rate limiting configuration",
+          "properties": {
+            "enabled": { "type": "boolean" },
+            "requests_per_minute": { "type": "integer" },
+            "burst_limit": { "type": "integer" }
+          },
+          "additionalProperties": true
         },
         "guardrails": {
           "type": "object",
+          "description": "Guardrails for agent behavior",
           "properties": {
-            "enabled": {
-              "type": "boolean"
+            "enabled": { "type": "boolean" },
+            "policies": {
+              "type": "array",
+              "items": { "type": "object" },
+              "description": "Policy definitions"
             },
             "max_tool_calls": {
-              "type": "integer"
+              "type": "integer",
+              "description": "Maximum tool calls per turn"
+            },
+            "max_execution_time_seconds": {
+              "type": "integer",
+              "description": "Maximum execution time"
             }
-          }
+          },
+          "additionalProperties": true
+        },
+        "human_in_loop": {
+          "type": "object",
+          "description": "Human-in-the-loop configuration",
+          "properties": {
+            "enabled": { "type": "boolean" },
+            "triggers": {
+              "type": "array",
+              "items": { "type": "string" },
+              "description": "Conditions that require human approval"
+            }
+          },
+          "additionalProperties": true
         }
       },
-      "additionalProperties": false
+      "additionalProperties": true
     },
     "MCPExtension": {
       "type": "object",
@@ -1420,10 +1845,14 @@
         },
         "input_schema": {
           "$ref": "#/definitions/JSONSchemaDefinition",
-          "description": "JSON Schema for tool input parameters"
+          "description": "JSON Schema for tool input parameters (snake_case)"
+        },
+        "inputSchema": {
+          "$ref": "#/definitions/JSONSchemaDefinition",
+          "description": "JSON Schema for tool input parameters (camelCase - MCP SDK convention)"
         }
       },
-      "additionalProperties": false
+      "additionalProperties": true
     },
     "MCPResource": {
       "type": "object",
