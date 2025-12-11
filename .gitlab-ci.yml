@@ -564,6 +564,58 @@ detect:version:
     - if: $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME =~ /^release\/v/ && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "main"
 
 # =============================================================================
+# CHANGELOG AUTOMATION (git-cliff)
+# =============================================================================
+changelog:generate:
+  stage: release
+  image: alpine:latest
+  dependencies:
+    - detect:version
+  before_script:
+    - apk add --no-cache git bash curl
+    - git config user.email "ci@gitlab.com"
+    - git config user.name "GitLab CI"
+    - git remote set-url origin "https://oauth2:${GITLAB_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git"
+    # Install git-cliff
+    - curl -sSfL https://github.com/orhun/git-cliff/releases/download/v2.7.0/git-cliff-2.7.0-x86_64-unknown-linux-musl.tar.gz | tar -xz
+    - mv git-cliff-2.7.0/git-cliff /usr/local/bin/
+    - chmod +x /usr/local/bin/git-cliff
+  script:
+    - |
+      echo "📝 Generating CHANGELOG.md with git-cliff..."
+
+      # Fetch all tags for proper changelog generation
+      git fetch --tags
+
+      # Generate changelog
+      if [ -f build.env ]; then
+        source build.env
+        git cliff --tag "${RELEASE_TAG}" -o CHANGELOG.md
+      else
+        git cliff -o CHANGELOG.md
+      fi
+
+      # Check if changelog changed
+      if [ -n "$(git status --porcelain CHANGELOG.md)" ]; then
+        echo "📝 Changelog updated, committing..."
+        git add CHANGELOG.md
+        git commit -m "chore(release): update CHANGELOG.md [skip ci]"
+        git push origin HEAD:${CI_COMMIT_REF_NAME}
+        echo "✅ Changelog committed and pushed"
+      else
+        echo "✅ Changelog already up to date"
+      fi
+  artifacts:
+    paths:
+      - CHANGELOG.md
+    expire_in: 30 days
+  rules:
+    - if: $CI_COMMIT_BRANCH =~ /^release\/v/ && $CI_COMMIT_MESSAGE !~ /\[skip ci\]/
+      when: on_success
+    - if: $CI_COMMIT_BRANCH == "main" && $CI_COMMIT_MESSAGE !~ /\[skip ci\]/
+      when: on_success
+
+# =============================================================================
 # RELEASE TAGGING
 # =============================================================================
 # On release/* branches: Create pre-release tags (v0.3.0-dev, v0.3.0-dev1, etc.)
