@@ -666,7 +666,59 @@ quality:gates:
 # STAGE 6 - RELEASE (NPM - Milestone-Gated)
 # ============================================================================
 
-# GENERATE CHANGELOG from milestone issues
+# AUTOMATED CHANGELOG GENERATION (git-cliff)
+# Runs on every merge to release branches - generates Keep a Changelog format
+changelog:generate:
+  stage: release
+  image: alpine:latest
+  variables:
+    GIT_STRATEGY: clone
+    GIT_DEPTH: 0  # Full history needed for changelog generation
+  before_script:
+    - apk add --no-cache git curl bash
+    # Install git-cliff
+    - curl -sSfL https://github.com/orhun/git-cliff/releases/download/v2.7.0/git-cliff-2.7.0-x86_64-unknown-linux-musl.tar.gz | tar xz
+    - mv git-cliff-*/git-cliff /usr/local/bin/
+    - chmod +x /usr/local/bin/git-cliff
+    - git config --global user.email "ci@openstandardagents.org"
+    - git config --global user.name "OSSA CI Bot"
+  script:
+    - |
+      echo "Generating changelog with git-cliff..."
+      echo "Branch: $CI_COMMIT_BRANCH"
+      echo "Commit: $CI_COMMIT_SHA"
+
+      # Generate changelog
+      git cliff --output CHANGELOG.md
+
+      # Check if changelog changed
+      if git diff --quiet CHANGELOG.md 2>/dev/null; then
+        echo "No changelog updates needed"
+        exit 0
+      fi
+
+      echo "Changelog updated:"
+      head -100 CHANGELOG.md
+
+      # Commit and push if there are changes
+      git add CHANGELOG.md
+      git commit -m "chore(release): update changelog [skip ci]"
+
+      # Push using CI token
+      git remote set-url origin "https://gitlab-ci-token:${CI_JOB_TOKEN}@gitlab.com/${CI_PROJECT_PATH}.git"
+      git push origin HEAD:$CI_COMMIT_BRANCH
+
+      echo "Changelog committed and pushed"
+  rules:
+    # Run on merges to release branches
+    - if: $CI_COMMIT_BRANCH =~ /^release\/v[0-9]+\.[0-9]+\.x$/
+      when: on_success
+    # Run on merges to main
+    - if: $CI_COMMIT_BRANCH == "main"
+      when: on_success
+  allow_failure: true  # Don't block pipeline if changelog fails
+
+# GENERATE CHANGELOG from milestone issues (legacy - for release notes)
 release:changelog:
   stage: release
   image: node:${NODE_VERSION}-alpine
