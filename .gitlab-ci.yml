@@ -736,13 +736,6 @@ release:final:
   rules:
     - if: $CI_COMMIT_BRANCH == "main" && $ENABLE_RELEASE == "true"
       when: on_success
-  before_script:
-    - cd website
-    - npm ci --prefer-offline --no-audit
-    - npm run fetch-spec
-    - npm run fetch-examples
-    - npm run fetch-versions
-    - npm run sync-version
 
 # =============================================================================
 # BRANCH PROTECTION - Prevent release branch deletion
@@ -756,16 +749,16 @@ protect:release-branches:
     - |
       if [[ "$CI_COMMIT_BRANCH" =~ ^release/v ]]; then
         echo "Protecting release branch: $CI_COMMIT_BRANCH"
-        
+
         # Check if branch protection exists
         PROTECTION_RESPONSE=$(curl -s --header "PRIVATE-TOKEN: ${GITLAB_TOKEN:-$CI_JOB_TOKEN}" \
           "https://${CI_SERVER_HOST}/api/v4/projects/${CI_PROJECT_ID}/protected_branches/${CI_COMMIT_BRANCH}" 2>/dev/null || echo "{}")
-        
+
         if echo "$PROTECTION_RESPONSE" | jq -e '.name' >/dev/null 2>&1; then
           echo "Branch protection already exists for $CI_COMMIT_BRANCH"
         else
           echo "Creating branch protection for $CI_COMMIT_BRANCH"
-          
+
           # Create branch protection with prevent deletion
           PROTECT_RESPONSE=$(curl -s -X POST \
             --header "PRIVATE-TOKEN: ${GITLAB_TOKEN:-$CI_JOB_TOKEN}" \
@@ -778,7 +771,7 @@ protect:release-branches:
               \"code_owner_approval_required\": false
             }" \
             "https://${CI_SERVER_HOST}/api/v4/projects/${CI_PROJECT_ID}/protected_branches" 2>/dev/null || echo "{}")
-          
+
           if echo "$PROTECT_RESPONSE" | jq -e '.name' >/dev/null 2>&1; then
             echo "✅ Branch protection created for $CI_COMMIT_BRANCH"
           else
@@ -786,7 +779,7 @@ protect:release-branches:
             echo "Response: $PROTECT_RESPONSE"
           fi
         fi
-        
+
         # Ensure MR doesn't delete the branch
         if [ -n "$CI_MERGE_REQUEST_IID" ]; then
           echo "Updating MR #$CI_MERGE_REQUEST_IID to prevent branch deletion"
