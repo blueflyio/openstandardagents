@@ -1,7 +1,6 @@
 // OSSA version constants
-// AUTO-GENERATED from GitLab tags (patch only, no update needed) - DO NOT EDIT DIRECTLY
-// Run: npm run sync-version (fetches latest from GitLab tags or npm registry)
-// NOTE: Website only updates on major/minor releases, not patches
+// AUTO-GENERATED from npm registry - DO NOT EDIT DIRECTLY
+// Run: npm run sync-version (fetches latest from npm registry)
 
 import versionsData from './versions.json';
 
