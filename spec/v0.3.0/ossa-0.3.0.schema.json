@@ -1943,7 +1943,7 @@
     },
     "MessagingExtension": {
       "type": "object",
-      "description": "Agent-to-agent messaging configuration (v0.3.1+)",
+      "description": "Agent-to-agent messaging configuration (v0.3.0+)",
       "properties": {
         "publishes": {
           "type": "array",
