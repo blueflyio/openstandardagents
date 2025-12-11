@@ -656,7 +656,8 @@ release:pre-release:
         echo "⚠️ build.env not found, skipping tag creation"
       fi
   rules:
-    - if: $CI_COMMIT_BRANCH =~ /^release\/v/ && $ENABLE_RELEASE == "true"
+    # Auto-create dev tags on release branches (no manual approval needed)
+    - if: $CI_COMMIT_BRANCH =~ /^release\/v/
       when: on_success
 
 # On main: Create final release tag + GitLab Release
