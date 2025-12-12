@@ -99,7 +99,7 @@ class LLMRouter {
     logger.info('Querying Anthropic', { question: question.substring(0, 50) });
 
     const response = await this.anthropicClient.messages.create({
-      model: config.ai.model || 'claude-3-5-sonnet-20241022',
+      model: config.ai.model || 'claude-sonnet-4-5-20250929',
       max_tokens: 1024,
       system: context,
       messages: [
@@ -130,7 +130,7 @@ class LLMRouter {
     logger.info('Querying OpenAI', { question: question.substring(0, 50) });
 
     const response = await this.openaiClient.chat.completions.create({
-      model: config.ai.model || 'gpt-4-turbo-preview',
+      model: config.ai.model || 'gpt-4o',
       max_tokens: 1024,
       messages: [
         { role: 'system', content: context },

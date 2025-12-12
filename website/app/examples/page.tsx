@@ -1,7 +1,23 @@
 import fs from 'fs';
 import path from 'path';
 import { Suspense } from 'react';
+import type { Metadata } from 'next';
 import { ExamplesViewer } from '@/components/examples/ExamplesViewer';
+
+export const metadata: Metadata = {
+  title: 'Examples Gallery - OSSA',
+  description: 'Browse 100+ real-world OSSA manifest examples. Learn from production-ready implementations across LangChain, CrewAI, OpenAI, Anthropic, and more.',
+  openGraph: {
+    title: 'OSSA Examples Gallery',
+    description: 'Browse 100+ real-world OSSA manifest examples across multiple AI frameworks.',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'OSSA Examples Gallery',
+    description: 'Browse 100+ real-world OSSA manifest examples across multiple AI frameworks.',
+  },
+};
 
 interface ExampleFile {
   name: string;

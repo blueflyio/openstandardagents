@@ -4,6 +4,7 @@ import './globals.scss';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { StructuredData } from '@/components/StructuredData';
+import { GoogleAnalytics } from '@/components/GoogleAnalytics';
 import { getVersionForMetadata } from '@/lib/get-version-for-metadata';
 
 const versionInfo = getVersionForMetadata();
@@ -104,6 +105,7 @@ export default function RootLayout({
         />
       </head>
       <body suppressHydrationWarning>
+        <GoogleAnalytics />
         <div className="flex flex-col min-h-screen">
           <a
             href="#main-content"
