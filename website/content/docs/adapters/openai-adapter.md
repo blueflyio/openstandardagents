@@ -26,7 +26,7 @@ export OPENAI_API_KEY=sk-your-key-here
 ### 2. Create Agent Manifest
 
 ```yaml
-apiVersion: ossa/v0.2.8
+apiVersion: ossa/v0.2.9
 kind: Agent
 metadata:
   name: my-agent
@@ -415,7 +415,7 @@ Use `--max-turns` to limit API calls.
 ### Basic Chat Agent
 
 ```yaml
-apiVersion: ossa/v0.2.8
+apiVersion: ossa/v0.2.9
 kind: Agent
 metadata:
   name: chat-agent
@@ -431,7 +431,7 @@ spec:
 ### Customer Support Agent
 
 ```yaml
-apiVersion: ossa/v0.2.8
+apiVersion: ossa/v0.2.9
 kind: Agent
 metadata:
   name: support-agent
@@ -473,7 +473,7 @@ extensions:
 ### Code Assistant
 
 ```yaml
-apiVersion: ossa/v0.2.8
+apiVersion: ossa/v0.2.9
 kind: Agent
 metadata:
   name: code-assistant
@@ -521,7 +521,7 @@ extensions:
 ### Multi-Tool Agent
 
 ```yaml
-apiVersion: ossa/v0.2.8
+apiVersion: ossa/v0.2.9
 kind: Agent
 metadata:
   name: multi-tool-agent

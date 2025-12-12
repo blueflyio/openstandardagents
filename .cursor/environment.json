@@ -7,7 +7,7 @@
   "project": {
     "type": "standard",
     "packageManager": "npm",
-    "root": "/Users/flux423/Sites/blueflyio/openstandardagents"
+    "root": "."
   },
 
   "runtime": {
@@ -26,7 +26,7 @@
     "development": {
       "NODE_ENV": "development",
       "LOG_LEVEL": "debug",
-      "OSSA_SCHEMA_PATH": "./spec/v0.2.5-RC/ossa-0.2.5-RC.schema.json"
+      "OSSA_SCHEMA_PATH": "./spec/v0.3.0/ossa-0.3.0.schema.json"
     }
   },
 

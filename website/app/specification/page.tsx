@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import type { Metadata } from 'next';
-import { STABLE_VERSION_TAG, STABLE_VERSION } from '@/lib/version';
+import { STABLE_VERSION_TAG, STABLE_VERSION, OSSA_DISPLAY_VERSION } from '@/lib/version';
 import { StructuredData } from '@/components/StructuredData';
 
 export const metadata: Metadata = {
@@ -14,6 +14,10 @@ export const metadata: Metadata = {
   },
 };
 
+// Dynamic date formatting for display
+const currentDate = new Date();
+const releaseMonthYear = currentDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+
 export default function SpecificationPage() {
   return (
     <>
@@ -23,7 +27,7 @@ export default function SpecificationPage() {
           title: 'OSSA Specification',
           description: 'Complete technical specification for defining, validating, and deploying AI agents',
           version: STABLE_VERSION,
-          datePublished: '2024-11-01',
+          datePublished: new Date().toISOString().split('T')[0],
           dateModified: new Date().toISOString().split('T')[0],
         }}
       />
@@ -63,7 +67,7 @@ export default function SpecificationPage() {
               <div className="grid md:grid-cols-2 gap-6 mt-6 pt-6 border-t-2 border-blue-200">
                 <div>
                   <h4 className="font-bold mb-2 text-gray-900">Release Date</h4>
-                  <p className="text-gray-700 text-lg">November 2024</p>
+                  <p className="text-gray-700 text-lg">{releaseMonthYear}</p>
                 </div>
                 <div>
                   <h4 className="font-bold mb-2 text-gray-900">Status</h4>

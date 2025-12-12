@@ -24,7 +24,7 @@ Multi-agent workflows allow you to:
 Agents execute one after another, passing data between them:
 
 ```yaml
-apiVersion: ossa/v0.3.1
+apiVersion: ossa/v0.2.9
 kind: Workflow
 metadata:
   name: sequential-pipeline
@@ -65,7 +65,7 @@ spec:
 Execute multiple agents in parallel, then aggregate results:
 
 ```yaml
-apiVersion: ossa/v0.3.1
+apiVersion: ossa/v0.2.9
 kind: Workflow
 metadata:
   name: scatter-gather
@@ -105,7 +105,7 @@ spec:
 A coordinator agent delegates to specialized worker agents:
 
 ```yaml
-apiVersion: ossa/v0.3.1
+apiVersion: ossa/v0.2.9
 kind: Workflow
 metadata:
   name: coordinator-pattern
@@ -152,7 +152,7 @@ spec:
 Route requests to appropriate agents based on rules:
 
 ```yaml
-apiVersion: ossa/v0.3.1
+apiVersion: ossa/v0.2.9
 kind: Workflow
 metadata:
   name: dispatcher-pattern
@@ -192,7 +192,7 @@ spec:
 Distributed transaction with compensation:
 
 ```yaml
-apiVersion: ossa/v0.3.1
+apiVersion: ossa/v0.2.9
 kind: Workflow
 metadata:
   name: saga-pattern
@@ -238,7 +238,7 @@ spec:
 Distribute work to multiple agents, then collect results:
 
 ```yaml
-apiVersion: ossa/v0.3.1
+apiVersion: ossa/v0.2.9
 kind: Workflow
 metadata:
   name: fan-out-fan-in
@@ -408,7 +408,7 @@ buildkit workflow validate workflow.yaml
 ### Before: Single Agent
 
 ```yaml
-apiVersion: ossa/v0.3.1
+apiVersion: ossa/v0.2.9
 kind: Agent
 metadata:
   name: code-reviewer
@@ -420,7 +420,7 @@ spec:
 ### After: Workflow Composition
 
 ```yaml
-apiVersion: ossa/v0.3.1
+apiVersion: ossa/v0.2.9
 kind: Workflow
 metadata:
   name: code-review-workflow

@@ -86,7 +86,9 @@ async function fetchVersions() {
     if (!processedVersions.has(version)) {
       const schemaPath = path.join(SPEC_DIR, `v${version}`, `ossa-${version}.schema.json`);
       const schemaExists = fs.existsSync(schemaPath);
-      
+      // Use relative path for schemaPath (relative to project root)
+      const relativeSchemaPath = `spec/v${version}/ossa-${version}.schema.json`;
+
       // Determine version type for local versions
       let versionType = 'local';
       if (version === '0.2.4-dev') {
@@ -101,7 +103,7 @@ async function fetchVersions() {
         // Stable versions (like 0.2.3)
         versionType = 'stable';
       }
-      
+
       allVersions.push({
         version,
         tag: `v${version}`,
@@ -109,7 +111,8 @@ async function fetchVersions() {
         type: versionType,
         published: false,
         available: schemaExists,
-        schemaPath: schemaExists ? schemaPath : undefined,
+        // Only store relative path, never absolute paths
+        schemaPath: schemaExists ? relativeSchemaPath : undefined,
       });
       processedVersions.add(version);
     }

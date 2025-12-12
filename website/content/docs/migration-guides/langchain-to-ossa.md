@@ -173,7 +173,7 @@ print(result)
 **Step 1: Create agent manifest** - `.agents/assistant-agent/agent.yml`
 
 ```yaml
-ossaVersion: "0.2.8"
+ossaVersion: "0.2.9"
 metadata:
   name: assistant-agent
   version: "1.0.0"
@@ -395,7 +395,7 @@ agent.start().catch((error) => {
 ```json
 {
   "name": "assistant-agent",
-  "version": "1.0.0",
+  "version": "0.2.9",
   "description": "OSSA assistant agent with calculator and weather capabilities",
   "main": "dist/index.js",
   "scripts": {
@@ -471,7 +471,7 @@ agent.run("What's my name?")  # Should remember "Alice"
 **Agent manifest** - `.agents/conversational-agent/agent.yml`
 
 ```yaml
-ossaVersion: "0.2.8"
+ossaVersion: "0.2.9"
 metadata:
   name: conversational-agent
   version: "1.0.0"
@@ -799,7 +799,7 @@ print(f"Story: {result['story']}")
 **Agent manifest** - `.agents/story-writer-agent/agent.yml`
 
 ```yaml
-ossaVersion: "0.2.8"
+ossaVersion: "0.2.9"
 metadata:
   name: story-writer-agent
   version: "1.0.0"
@@ -1257,7 +1257,7 @@ final = editor.run(f"Edit this draft: {draft}")
 Use orchestrator agent with A2A (Agent-to-Agent) communication:
 
 ```yaml
-ossaVersion: "0.2.8"
+ossaVersion: "0.2.9"
 agent:
   id: article-orchestrator
   name: Article Orchestrator
