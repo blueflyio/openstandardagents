@@ -1,7 +1,7 @@
 # GitLab CI/CD Template for OSSA Agents with Ultimate Observability
 #
 # Version: {{VERSION}}
-# Last Updated: 2025-12-12
+# Last Updated: 2025-12-11
 # OSSA Spec Version: {{VERSION}}
 #
 # This template demonstrates how to integrate OSSA agents with GitLab Ultimate's

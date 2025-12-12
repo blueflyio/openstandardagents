@@ -1,0 +1,255 @@
+# GitLab CI Configuration for OSSA Agent Integration
+# Automatically invokes agents based on MR content and file changes
+
+stages:
+  - validate
+  - agents
+  - review
+  - post-review
+
+variables:
+  AGENT_API_BASE: "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}"
+  AGENT_TIMEOUT: "300"
+
+# =============================================================================
+# VALIDATION STAGE - Schema and syntax checks
+# =============================================================================
+
+validate:yaml:
+  stage: validate
+  image: python:3.11-slim
+  script:
+    - pip install yamllint
+    - yamllint -d relaxed .
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      changes:
+        - "**/*.yml"
+        - "**/*.yaml"
+
+validate:ossa:
+  stage: validate
+  image: node:20-slim
+  script:
+    - npm install -g @bluefly/ossa-cli
+    - ossa validate --strict
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      changes:
+        - "**/*.ossa.yaml"
+        - ".agents/**/*"
+  allow_failure: false
+
+validate:gitlab-ci:
+  stage: validate
+  image: alpine:latest
+  script:
+    - apk add --no-cache curl jq
+    - |
+      for file in $(find . -name ".gitlab-ci*.yml" -o -name "*.gitlab-ci.yml"); do
+        echo "Validating $file"
+        curl --silent --request POST \
+          --header "PRIVATE-TOKEN: ${GITLAB_TOKEN}" \
+          --header "Content-Type: application/json" \
+          --data "$(jq -Rs '{content: .}' < "$file")" \
+          "${CI_API_V4_URL}/ci/lint" | jq -e '.valid == true'
+      done
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      changes:
+        - ".gitlab-ci.yml"
+        - ".gitlab/ci/**/*"
+
+# =============================================================================
+# AGENT STAGE - Invoke agents based on file changes
+# =============================================================================
+
+.agent-base:
+  stage: agents
+  image: curlimages/curl:latest
+  variables:
+    GIT_STRATEGY: none
+  before_script:
+    - |
+      invoke_agent() {
+        local agent=$1
+        local command=$2
+        local payload=$3
+        
+        curl --silent --request POST \
+          --header "PRIVATE-TOKEN: ${AGENT_TOKEN}" \
+          --header "Content-Type: application/json" \
+          --data "{
+            \"body\": \"@${agent} ${command}\",
+            \"merge_request_iid\": ${CI_MERGE_REQUEST_IID}
+          }" \
+          "${AGENT_API_BASE}/merge_requests/${CI_MERGE_REQUEST_IID}/notes"
+      }
+
+agent:mr-reviewer:
+  extends: .agent-base
+  script:
+    - invoke_agent "bot-mr-reviewer" "/review full"
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+  allow_failure: true
+
+agent:ossa-validator:
+  extends: .agent-base
+  script:
+    - invoke_agent "bot-ossa-validator" "/ossa validate --strict"
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      changes:
+        - "**/*.ossa.yaml"
+        - ".agents/**/*"
+  allow_failure: true
+
+agent:drupal-standards:
+  extends: .agent-base
+  script:
+    - invoke_agent "bot-drupal-standards" "/drupal check"
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      changes:
+        - "web/modules/**/*"
+        - "web/themes/**/*"
+        - "web/profiles/**/*"
+  allow_failure: true
+
+agent:ci-fixer:
+  extends: .agent-base
+  script:
+    - invoke_agent "bot-gitlab-ci-fixer" "/ci validate"
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      changes:
+        - ".gitlab-ci.yml"
+        - ".gitlab/ci/**/*"
+  allow_failure: true
+
+agent:config-auditor:
+  extends: .agent-base
+  script:
+    - invoke_agent "bot-config-auditor" "/audit config"
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      changes:
+        - "config/**/*"
+        - "web/sites/*/config/**/*"
+  allow_failure: true
+
+agent:recipe-validator:
+  extends: .agent-base
+  script:
+    - invoke_agent "bot-drupal-recipe-scaffolder" "/recipe validate"
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      changes:
+        - "recipes/**/*"
+  allow_failure: true
+
+agent:theme-tester:
+  extends: .agent-base
+  script:
+    - invoke_agent "bot-theme-tester" "/test theme --visual-regression"
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      changes:
+        - "web/themes/**/*"
+        - "**/*.css"
+        - "**/*.scss"
+  allow_failure: true
+
+# =============================================================================
+# REVIEW STAGE - Aggregate agent responses
+# =============================================================================
+
+review:aggregate:
+  stage: review
+  image: alpine:latest
+  script:
+    - apk add --no-cache curl jq
+    - |
+      echo "Fetching agent review comments..."
+      
+      COMMENTS=$(curl --silent --request GET \
+        --header "PRIVATE-TOKEN: ${GITLAB_TOKEN}" \
+        "${AGENT_API_BASE}/merge_requests/${CI_MERGE_REQUEST_IID}/notes?per_page=100")
+      
+      # Count agent responses
+      AGENT_RESPONSES=$(echo "$COMMENTS" | jq '[.[] | select(.author.username | startswith("bot-"))] | length')
+      
+      echo "Agent responses: $AGENT_RESPONSES"
+      
+      # Check for blocking issues
+      BLOCKING=$(echo "$COMMENTS" | jq '[.[] | select(.author.username | startswith("bot-")) | select(.body | contains("🚨") or contains("BLOCKING"))] | length')
+      
+      if [ "$BLOCKING" -gt 0 ]; then
+        echo "⚠️ Found $BLOCKING blocking issues from agents"
+        exit 1
+      fi
+      
+      echo "✅ No blocking issues from agents"
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+  needs:
+    - job: agent:mr-reviewer
+      optional: true
+    - job: agent:ossa-validator
+      optional: true
+    - job: agent:drupal-standards
+      optional: true
+    - job: agent:ci-fixer
+      optional: true
+
+# =============================================================================
+# POST-REVIEW STAGE - Documentation and notifications
+# =============================================================================
+
+post-review:docs-sync:
+  stage: post-review
+  extends: .agent-base
+  script:
+    - invoke_agent "bot-wiki-aggregator" "/sync docs"
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      changes:
+        - "docs/**/*"
+        - "**/*.md"
+      when: manual
+  allow_failure: true
+
+post-review:canvas:
+  stage: post-review
+  extends: .agent-base
+  script:
+    - invoke_agent "bot-canvas-builder" "/canvas architecture --update"
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      changes:
+        - ".agents/**/*"
+        - "src/services/**/*"
+      when: manual
+  allow_failure: true
+
+# =============================================================================
+# HOTFIX OVERRIDE - Expedited processing for hotfixes
+# =============================================================================
+
+.hotfix-rules:
+  rules:
+    - if: $CI_MERGE_REQUEST_LABELS =~ /hotfix/
+      variables:
+        AGENT_PRIORITY: "critical"
+        AGENT_TIMEOUT: "60"
+
+agent:hotfix-review:
+  extends:
+    - .agent-base
+    - .hotfix-rules
+  script:
+    - invoke_agent "bot-mr-reviewer" "/review urgent --security"
+  rules:
+    - if: $CI_MERGE_REQUEST_LABELS =~ /hotfix/
+      when: always
