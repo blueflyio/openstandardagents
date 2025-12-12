@@ -284,6 +284,8 @@ export interface AgentTemplate {
   name: string;
   role: string;
   description?: string;
+  /** Agent version (not OSSA spec version) */
+  version?: string;
   runtimeType?: string;
   capabilities?: Capability[];
 }

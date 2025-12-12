@@ -140,7 +140,9 @@ describe('MigrationService', () => {
         spec: { role: 'test', llm: { provider: 'openai', model: 'gpt-4' }, tools: [] }
       };
       const result = await service.migrate(input);
-      expect(result.spec.llm?.provider).toBe('openai');
+      // Migration now converts to runtime-configurable LLM with env var defaults
+      // The original provider becomes the default in the env var template
+      expect(result.spec.llm?.provider).toBe('${LLM_PROVIDER:-openai}');
     });
 
     it('should throw for unsupported format', async () => {

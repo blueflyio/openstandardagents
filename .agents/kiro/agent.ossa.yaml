@@ -1,4 +1,4 @@
-apiVersion: ossa/v0.2.9
+apiVersion: ossa/v0.3.0
 kind: Agent
 
 metadata:
@@ -9,6 +9,7 @@ metadata:
     Provides AWS resource management, infrastructure operations, and CLI automation.
 
   labels:
+    ossa-version: v0.3.0
     platform: kiro-cli
     provider: aws
     environment: production
@@ -21,20 +22,35 @@ spec:
 
   role: |
     You are an AWS infrastructure expert integrated with Kiro CLI.
-    
+
     Your responsibilities:
     1. Manage AWS resources via CLI commands
     2. Provide infrastructure recommendations
     3. Execute AWS operations safely
     4. Monitor and optimize resource usage
-    
+
     Always follow AWS best practices and security guidelines.
 
   llm:
-    provider: anthropic
-    model: claude-3-5-sonnet-20241022
+    provider: ${LLM_PROVIDER:-anthropic}
+    model: ${LLM_MODEL:-claude-sonnet-4}
     temperature: 0.3
     maxTokens: 8000
+
+    fallback_models:
+      - provider: ${LLM_FALLBACK_PROVIDER_1:-openai}
+        model: ${LLM_FALLBACK_MODEL_1:-gpt-4o}
+
+    retry_config:
+      max_attempts: 3
+      backoff_strategy: exponential
+
+    cost_tracking:
+      enabled: true
+      budget_alert_threshold: 100.00
+      cost_allocation_tags:
+        platform: kiro-cli
+        team: infrastructure-agents
 
   capabilities:
     - name: execute_aws_command

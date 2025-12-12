@@ -1,9 +1,10 @@
 /**
- * OSSA Workflow Types (v0.3.0)
+ * OSSA Workflow Types
  * Type definitions for kind: Workflow - composition of Tasks and Agents
  */
 
 import { JSONSchemaDefinition } from './task';
+import { getApiVersion } from '../utils/version.js';
 
 /**
  * Trigger types
@@ -306,7 +307,7 @@ export function createWorkflowManifest(
   options?: Partial<OssaWorkflow>
 ): OssaWorkflow {
   return {
-    apiVersion: 'ossa/v0.3.0',
+    apiVersion: getApiVersion(),
     kind: 'Workflow',
     metadata: {
       name,

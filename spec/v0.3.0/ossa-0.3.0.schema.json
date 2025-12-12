@@ -1288,9 +1288,7 @@
     },
     "Tool": {
       "type": "object",
-      "required": [
-        "type"
-      ],
+      "description": "Tool definition - supports both top-level type and source.type formats for backwards compatibility",
       "properties": {
         "type": {
           "type": "string",
@@ -1316,7 +1314,35 @@
           "description": "Tool/trigger type: mcp (Model Context Protocol), kubernetes (K8s API), http (HTTP endpoints), api (REST APIs), grpc (gRPC), function (local), a2a (agent-to-agent), webhook (event triggers), schedule (cron triggers), pipeline (CI/CD events), workflow (status changes), artifact (file outputs), git-commit (commit outputs), ci-status (pipeline status), comment (MR/issue comments), library (reusable logic), custom"
         },
         "name": {
-          "type": "string"
+          "type": "string",
+          "description": "Tool name identifier"
+        },
+        "description": {
+          "type": "string",
+          "description": "Human-readable description of what the tool does"
+        },
+        "source": {
+          "type": "object",
+          "description": "Tool source configuration (alternative to top-level type)",
+          "properties": {
+            "type": {
+              "type": "string",
+              "enum": ["mcp", "http", "api", "grpc", "function", "a2a", "custom"],
+              "description": "Source type"
+            },
+            "uri": {
+              "type": "string",
+              "description": "Source URI (e.g., mcp://server/tool)"
+            }
+          }
+        },
+        "input": {
+          "type": "object",
+          "description": "Input schema for the tool"
+        },
+        "output": {
+          "type": "object",
+          "description": "Output schema for the tool"
         },
         "capabilities": {
           "type": "array",
@@ -1325,6 +1351,11 @@
           }
         }
       },
+      "anyOf": [
+        { "required": ["type"] },
+        { "required": ["source"] },
+        { "required": ["name"] }
+      ],
       "additionalProperties": true
     },
     "Capability": {
@@ -1378,14 +1409,19 @@
           "type": "string",
           "enum": [
             "supervised",
+            "assisted",
+            "advisory",
             "autonomous",
             "fully_autonomous"
           ],
-          "description": "Autonomy level: supervised (human approval), autonomous (self-directed), fully_autonomous (no oversight)"
+          "description": "Autonomy level: supervised (requires approval), assisted (semi-autonomous with guardrails), advisory (suggestions only), autonomous (self-directed), fully_autonomous (no oversight)"
         },
         "approval_required": {
-          "type": "boolean",
-          "description": "Whether human approval is required for actions"
+          "description": "Actions requiring human approval - can be boolean or array of action names",
+          "oneOf": [
+            { "type": "boolean" },
+            { "type": "array", "items": { "type": "string" } }
+          ]
         },
         "allowed_actions": {
           "type": "array",
@@ -1498,9 +1534,10 @@
           "enum": [
             "stateless",
             "session",
+            "persistent",
             "long_running"
           ],
-          "description": "State persistence mode"
+          "description": "State persistence mode: stateless (no persistence), session (per-session), persistent (durable), long_running (long-lived process)"
         },
         "storage": {
           "type": "object",
@@ -1510,8 +1547,10 @@
               "type": "string",
               "enum": [
                 "memory",
+                "redis",
                 "vector-db",
                 "kv",
+                "postgres",
                 "rdbms",
                 "custom"
               ],
