@@ -54,7 +54,7 @@ export default function HomePage() {
             </div>
           </div>
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
-            <Link href="#get-started" className="text-lg px-8 py-4 bg-[#3224c9] text-white font-bold rounded-lg shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all border-2 border-white hover:bg-white hover:text-[#3224c9]">
+            <Link href="#get-started" className="text-lg px-8 py-4 bg-primary text-white font-bold rounded-lg shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all border-2 border-white hover:bg-white hover:text-primary">
               Get Started
             </Link>
             <Link href="https://github.com/blueflyio/openstandardagents" className="btn-outline border-white text-white hover:bg-white hover:text-primary text-lg px-8 py-4" target="_blank" rel="noopener noreferrer">
@@ -334,7 +334,7 @@ osa export --to langchain`}</code>
           </div>
 
           <div className="text-center">
-            <Link href="/docs/getting-started/5-minute-overview/" className="btn-primary text-lg px-8 py-4">
+            <Link href="/docs/getting-started/5-minute-overview" className="btn-primary text-lg px-8 py-4">
               Read Full Getting Started Guide
             </Link>
           </div>
@@ -473,7 +473,7 @@ osa export --to langchain`}</code>
           {/* Logos Grid - Row 3: Platforms with real OSSA examples */}
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-4 gap-8 items-center justify-items-center mb-12">
             <Logo domain="kagent.dev" name="kAgent" />
-            <Logo domain="cursor.com" name="Cursor" />
+            <Logo domain="cursor.sh" name="Cursor" />
             <Logo domain="anthropic.com" name="Claude Code" />
             <Logo domain="drupal.org" name="Drupal" />
           </div>

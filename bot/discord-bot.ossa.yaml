@@ -100,7 +100,7 @@ spec:
       routing: auto
       
     ossa:
-      cli_version: v0.2.8
+      cli_version: v0.2.9
       validation_enabled: true
       
     discord:

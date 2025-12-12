@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { Client, TextChannel, EmbedBuilder } from 'discord.js';
+import crypto from 'crypto';
 import { config } from '../config';
 import logger from '../utils/logger';
 
@@ -82,8 +83,15 @@ export class GitLabWebhookHandler {
   }
 
   verifySignature(req: Request): boolean {
-    const token = req.headers['x-gitlab-token'];
-    return token === config.webhook.gitlabSecret;
+    const token = req.headers['x-gitlab-token'] as string | undefined;
+    const secret = config.webhook.gitlabSecret;
+    if (!token || !secret) return false;
+    // Use timing-safe comparison to prevent timing attacks
+    try {
+      return crypto.timingSafeEqual(Buffer.from(token), Buffer.from(secret));
+    } catch {
+      return false;
+    }
   }
 
   async handle(req: Request, res: Response): Promise<void> {
