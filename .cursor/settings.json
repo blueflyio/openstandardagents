@@ -41,7 +41,7 @@
   "yaml.schemaStore.enable": true,
   "yaml.schemaStore.url": "https://www.schemastore.org/api/json/catalog.json",
   "yaml.schemas": {
-    "spec/v0.2.5-RC/ossa-0.2.5-RC.schema.json": [
+    "spec/v0.3.0/ossa-0.3.0.schema.json": [
       "**/*.ossa.yaml",
       "**/*.ossa.yml",
       "**/agent.yml",

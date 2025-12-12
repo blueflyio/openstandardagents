@@ -194,9 +194,10 @@ test:unit:
     - if: $CI_COMMIT_BRANCH == "main"
 
 test:e2e:
-  extends: .node-setup
   stage: test
   image: mcr.microsoft.com/playwright:v1.48.0-jammy
+  variables:
+    NODE_ENV: development  # Required for Next.js dev server
   cache:
     key: playwright-cache
     paths:

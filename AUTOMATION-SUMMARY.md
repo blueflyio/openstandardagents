@@ -89,7 +89,7 @@ scripts/setup-automation.sh       # Setup script
 ### 1. Enable Scheduled Pipeline
 
 ```bash
-cd /Users/flux423/Sites/LLM/openstandardagents.org
+cd <project-root>
 export GITLAB_TOKEN=glpat-xxxxxxxxxxxx
 ./scripts/setup-automation.sh
 ```

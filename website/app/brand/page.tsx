@@ -1,10 +1,15 @@
 import Link from 'next/link';
 import type { Metadata } from 'next';
+import { OSSA_VERSION, OSSA_DISPLAY_VERSION } from '@/lib/version';
 
 export const metadata: Metadata = {
   title: 'Brand Guide - OSSA',
   description: 'Official brand guidelines for the Open Standard for Scalable AI Agents (OSSA). The OpenAPI for AI Agents.',
 };
+
+// Get current month/year for dynamic date display
+const currentDate = new Date();
+const monthYear = currentDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
 
 export default function BrandPage() {
   return (
@@ -16,7 +21,7 @@ export default function BrandPage() {
           <p className="text-xl text-white/90">
             Official brand guidelines for the Open Standard for Scalable AI Agents
           </p>
-          <p className="text-sm text-white/70 mt-4">Version 1.0.0 | Last Updated: November 2025</p>
+          <p className="text-sm text-white/70 mt-4">Version {OSSA_DISPLAY_VERSION} | Last Updated: {monthYear}</p>
         </div>
       </div>
 

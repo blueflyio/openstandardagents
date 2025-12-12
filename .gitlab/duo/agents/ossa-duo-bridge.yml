@@ -4,7 +4,7 @@
 # This agent allows GitLab Duo to invoke OSSA agents via MCP
 # and OSSA agents to use GitLab Duo capabilities
 
-apiVersion: ossa/v0.2.9
+apiVersion: ossa/v0.3.0
 kind: Agent
 metadata:
   name: ossa-duo-bridge
