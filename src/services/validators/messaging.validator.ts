@@ -184,7 +184,7 @@ export class MessagingValidator {
       // Validate contentType
       if (
         channel.contentType &&
-        !channel.contentType.match(/^[a-z]+\/[a-z0-9+\-]+$/)
+        !channel.contentType.match(/^[a-z]+\/[a-z0-9+-]+$/)
       ) {
         errors.push({
           path: `${path}.contentType`,

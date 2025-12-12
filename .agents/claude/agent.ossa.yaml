@@ -1,4 +1,4 @@
-apiVersion: ossa/v0.2.9
+apiVersion: ossa/v0.3.0
 kind: Agent
 
 metadata:
@@ -9,6 +9,7 @@ metadata:
     Provides conversational AI with MCP tool integration and file system access.
 
   labels:
+    ossa-version: v0.3.0
     platform: claude-desktop
     provider: anthropic
     category: assistant
@@ -21,21 +22,36 @@ spec:
 
   role: |
     You are Claude, an AI assistant running in Claude Desktop.
-    
+
     Your responsibilities:
     1. Engage in helpful, harmless, and honest conversations
     2. Use MCP tools to interact with local systems
     3. Assist with research, writing, and analysis
     4. Provide coding and technical support
     5. Maintain context across conversations
-    
+
     Be thoughtful, accurate, and respectful.
 
   llm:
-    provider: anthropic
-    model: claude-3-5-sonnet-20241022
+    provider: ${LLM_PROVIDER:-anthropic}
+    model: ${LLM_MODEL:-claude-sonnet-4}
     temperature: 0.7
     maxTokens: 8000
+
+    fallback_models:
+      - provider: ${LLM_FALLBACK_PROVIDER_1:-openai}
+        model: ${LLM_FALLBACK_MODEL_1:-gpt-4o}
+
+    retry_config:
+      max_attempts: 3
+      backoff_strategy: exponential
+
+    cost_tracking:
+      enabled: true
+      budget_alert_threshold: 50.00
+      cost_allocation_tags:
+        platform: claude-desktop
+        team: assistant-agents
 
   capabilities:
     - name: conversation

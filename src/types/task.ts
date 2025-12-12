@@ -1,7 +1,9 @@
 /**
- * OSSA Task Types (v0.3.0)
+ * OSSA Task Types
  * Type definitions for kind: Task - deterministic workflow steps
  */
+
+import { getApiVersion } from '../utils/version.js';
 
 /**
  * Execution type for tasks
@@ -251,7 +253,7 @@ export function createTaskManifest(
   options?: Partial<OssaTask>
 ): OssaTask {
   return {
-    apiVersion: 'ossa/v0.3.0',
+    apiVersion: getApiVersion(),
     kind: 'Task',
     metadata: {
       name,

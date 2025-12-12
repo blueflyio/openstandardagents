@@ -1,10 +1,13 @@
 /**
  * Generation Service
  * Generates OSSA agent manifests from templates
+ *
+ * IMPORTANT: NO hardcoded versions - all versions come from package.json
  */
 
 import { injectable } from 'inversify';
 import type { AgentTemplate, OssaAgent } from '../types/index.js';
+import { getApiVersion } from '../utils/version.js';
 
 type Platform =
   | 'cursor'
@@ -27,13 +30,14 @@ export class GenerationService {
    */
   async generate(template: AgentTemplate): Promise<OssaAgent> {
     const tools = this.generateTools(template);
+    const currentApiVersion = getApiVersion();
 
     const manifest: OssaAgent = {
-      apiVersion: 'ossa/v0.3.0',
+      apiVersion: currentApiVersion,
       kind: 'Agent',
       metadata: {
         name: this.normalizeId(template.id),
-        version: '0.1.0',
+        version: template.version || '1.0.0', // Agent version, not OSSA version
         description: template.description || `${template.name} agent`,
         labels: {},
         annotations: {},
@@ -326,8 +330,9 @@ export class GenerationService {
     platformData: Record<string, unknown>,
     platform: Platform
   ): Promise<OssaAgent> {
+    const currentApiVersion = getApiVersion();
     const baseManifest: OssaAgent = {
-      apiVersion: 'ossa/v0.2.4',
+      apiVersion: currentApiVersion,
       kind: 'Agent',
       metadata: {
         name:

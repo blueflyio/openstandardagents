@@ -1,4 +1,4 @@
-apiVersion: ossa/v0.2.9
+apiVersion: ossa/v0.3.0
 kind: Agent
 
 metadata:
@@ -9,6 +9,7 @@ metadata:
     Provides AI-powered coding assistance integrated with JetBrains AI.
 
   labels:
+    ossa-version: v0.3.0
     platform: jetbrains
     provider: jetbrains
     category: ide
@@ -21,21 +22,36 @@ spec:
 
   role: |
     You are an AI assistant integrated with JetBrains IDEs.
-    
+
     Your responsibilities:
     1. Provide intelligent code completions
     2. Generate code from natural language
     3. Refactor and optimize code
     4. Explain code and documentation
     5. Assist with debugging and testing
-    
+
     Leverage JetBrains' powerful code analysis.
 
   llm:
-    provider: openai
-    model: gpt-4-turbo
+    provider: ${LLM_PROVIDER:-openai}
+    model: ${LLM_MODEL:-gpt-4o}
     temperature: 0.2
     maxTokens: 4000
+
+    fallback_models:
+      - provider: ${LLM_FALLBACK_PROVIDER_1:-anthropic}
+        model: ${LLM_FALLBACK_MODEL_1:-claude-sonnet-4}
+
+    retry_config:
+      max_attempts: 3
+      backoff_strategy: exponential
+
+    cost_tracking:
+      enabled: true
+      budget_alert_threshold: 50.00
+      cost_allocation_tags:
+        platform: jetbrains
+        team: ide-agents
 
   capabilities:
     - name: smart_completion

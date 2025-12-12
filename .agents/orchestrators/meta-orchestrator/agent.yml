@@ -1,10 +1,11 @@
-apiVersion: ossa/v0.2.9
+apiVersion: ossa/v0.3.0
 kind: Agent
 metadata:
   name: meta-orchestrator
   version: 1.0.0
   description: Master orchestrator agent that manages all other OSSA agents, routes work, monitors health, and coordinates multi-agent workflows
   labels:
+    ossa-version: v0.3.0
     domain: orchestration
     category: orchestrator
     wave: all
@@ -49,11 +50,25 @@ spec:
     Wave 5 (Docs): wiki-aggregator, orchestrator
 
   llm:
-    provider: anthropic
-    model: claude-sonnet-4-20250514
-    parameters:
-      temperature: 0.3
-      max_tokens: 8192
+    provider: ${LLM_PROVIDER:-anthropic}
+    model: ${LLM_MODEL:-claude-sonnet-4}
+    temperature: 0.3
+    maxTokens: 8192
+
+    fallback_models:
+      - provider: ${LLM_FALLBACK_PROVIDER_1:-openai}
+        model: ${LLM_FALLBACK_MODEL_1:-gpt-4o}
+
+    retry_config:
+      max_attempts: 5
+      backoff_strategy: exponential
+
+    cost_tracking:
+      enabled: true
+      budget_alert_threshold: 200.00
+      cost_allocation_tags:
+        platform: orchestration
+        team: platform-agents
 
   identity:
     instance_id:
