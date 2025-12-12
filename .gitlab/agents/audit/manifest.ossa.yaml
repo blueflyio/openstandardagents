@@ -10,12 +10,12 @@ metadata:
 
 spec:
   role: |
-    Audit closed issues in v0.2.8 milestone:
+    Audit closed issues in current milestone:
     - #25: Broken links - verify all links work
     - #23: OrbStack deployments - verify config exists
     - #22: Branch protection - verify policies enforced
     - #21: E2E tests - verify tests exist and run
-    - #20: Version audit - verify all versions are 0.2.8
+    - #20: Version audit - verify all versions are current
     
     Report findings and reopen if incomplete
   
