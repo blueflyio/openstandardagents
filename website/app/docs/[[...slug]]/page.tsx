@@ -2,9 +2,14 @@ import { notFound } from 'next/navigation';
 import fs from 'fs';
 import path from 'path';
 import matter from 'gray-matter';
+import type { Metadata } from 'next';
 import { DocsSidebar } from '@/components/docs/DocsSidebar';
 import { MarkdownContent } from '@/components/docs/MarkdownContent';
 import Link from 'next/link';
+
+type MetadataProps = {
+  params: Promise<{ slug?: string[] }>;
+};
 
 // GitHub API utilities
 const GITHUB_OWNER = 'blueflyio';
@@ -244,6 +249,56 @@ export function generateStaticParams(): Array<{ slug: string[] }> {
     console.error('Error in generateStaticParams:', error);
     return [{ slug: [] }];
   }
+}
+
+export async function generateMetadata({ params }: MetadataProps): Promise<Metadata> {
+  const { slug: slugParam } = await params;
+  const slug = slugParam || [];
+
+  // Default metadata for root docs page
+  if (slug.length === 0) {
+    return {
+      title: 'Documentation - OSSA',
+      description: 'Complete documentation for the Open Standard for Scalable AI Agents. Learn to build portable, framework-agnostic AI agents.',
+      openGraph: {
+        title: 'OSSA Documentation',
+        description: 'Complete guides for building portable, framework-agnostic AI agents.',
+        type: 'website',
+      },
+      twitter: {
+        card: 'summary_large_image',
+        title: 'OSSA Documentation',
+        description: 'Complete guides for building portable, framework-agnostic AI agents.',
+      },
+    };
+  }
+
+  const doc = getDocContent(slug);
+
+  if (!doc) {
+    return {
+      title: 'Page Not Found - OSSA Docs',
+      description: 'The requested documentation page could not be found.',
+    };
+  }
+
+  const title = `${doc.metadata.title} - OSSA Docs`;
+  const description = doc.metadata.description || `Learn about ${doc.metadata.title} in the OSSA documentation.`;
+
+  return {
+    title,
+    description,
+    openGraph: {
+      title: doc.metadata.title,
+      description,
+      type: 'article',
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: doc.metadata.title,
+      description,
+    },
+  };
 }
 
 export default async function DocsPage({ params }: PageProps) {

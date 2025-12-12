@@ -232,7 +232,7 @@ npm run format
 | `GITHUB_WEBHOOK_SECRET` | No | GitHub webhook secret |
 | `ANTHROPIC_API_KEY` | One of AI | Anthropic API key for Claude |
 | `OPENAI_API_KEY` | One of AI | OpenAI API key for GPT |
-| `AI_MODEL` | No | AI model to use (default: claude-3-5-sonnet-20241022) |
+| `AI_MODEL` | No | AI model to use (default: claude-sonnet-4-5-20250929) |
 | `CLEANUP_CHANNELS` | No | Comma-separated channel IDs for auto-cleanup |
 | `MESSAGE_RETENTION_HOURS` | No | Hours to keep messages (default: 72) |
 | `SPAM_THRESHOLD` | No | Messages before spam detection (default: 5) |

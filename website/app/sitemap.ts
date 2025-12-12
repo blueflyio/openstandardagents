@@ -60,11 +60,46 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const baseUrl = 'https://openstandardagents.org';
   const pages = getAllPages();
 
-  return pages.map((page) => ({
-    url: `${baseUrl}${page === '' ? '' : page}`,
-    lastModified: new Date(),
-    changeFrequency: page.startsWith('/blog') ? 'weekly' : 'monthly',
-    priority: page === '' ? 1.0 : page.startsWith('/docs') ? 0.9 : 0.8,
-  }));
+  return pages.map((page) => {
+    // Determine priority based on page type
+    let priority = 0.8;
+    let changeFrequency: 'always' | 'hourly' | 'daily' | 'weekly' | 'monthly' | 'yearly' | 'never' = 'monthly';
+
+    if (page === '') {
+      priority = 1.0;
+      changeFrequency = 'weekly';
+    } else if (page === '/docs') {
+      priority = 0.95;
+      changeFrequency = 'weekly';
+    } else if (page.startsWith('/docs/getting-started')) {
+      priority = 0.9;
+      changeFrequency = 'weekly';
+    } else if (page.startsWith('/docs')) {
+      priority = 0.85;
+      changeFrequency = 'weekly';
+    } else if (page === '/examples' || page === '/playground') {
+      priority = 0.85;
+      changeFrequency = 'weekly';
+    } else if (page === '/schema') {
+      priority = 0.9;
+      changeFrequency = 'weekly';
+    } else if (page === '/blog') {
+      priority = 0.8;
+      changeFrequency = 'daily';
+    } else if (page.startsWith('/blog/')) {
+      priority = 0.7;
+      changeFrequency = 'monthly';
+    } else if (page === '/brand' || page === '/license') {
+      priority = 0.5;
+      changeFrequency = 'yearly';
+    }
+
+    return {
+      url: `${baseUrl}${page === '' ? '' : page}`,
+      lastModified: new Date(),
+      changeFrequency,
+      priority,
+    };
+  });
 }
 
