@@ -2,7 +2,7 @@
 
 <!-- AUTO-GENERATED: This file is automatically updated by CI/CD -->
 <!-- Version: {{VERSION}} -->
-<!-- Last Updated: 2025-12-12 -->
+<!-- Last Updated: 2025-12-11 -->
 
 This guide documents how to integrate OSSA agents (v{{VERSION}}) with GitLab Ultimate's observability features, enabling comprehensive monitoring, tracing, and performance analysis of your AI agents.
 
