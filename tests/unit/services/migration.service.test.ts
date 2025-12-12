@@ -9,18 +9,18 @@ describe('MigrationService', () => {
   });
 
   describe('migrate', () => {
-    it('should handle v0.2.2 format', async () => {
+    it('should handle k8s-style format', async () => {
       const input = {
-        apiVersion: 'ossa/v1',
+        apiVersion: 'ossa/v0.3.0',
         kind: 'Agent',
         metadata: { name: 'test', version: '1.0.0' },
         spec: { role: 'test' }
       };
       const result = await service.migrate(input);
-      expect(result.apiVersion).toBe('ossa/v1');
+      expect(result.apiVersion).toBe('ossa/v0.3.0');
     });
 
-    it('should migrate v1.0 to v0.2.2 with full metadata', async () => {
+    it('should migrate legacy v1.0 to k8s-style with full metadata', async () => {
       const v1Input = {
         ossaVersion: '1.0',
         agent: {
@@ -54,7 +54,7 @@ describe('MigrationService', () => {
         }
       };
       const result = await service.migrate(v1Input);
-      expect(result.apiVersion).toBe('ossa/v1');
+      expect(result.apiVersion).toBe('ossa/v0.3.0');
       expect(result.metadata.name).toBe('test-agent');
       expect(result.metadata.labels?.test).toBe('true');
       expect(result.metadata.annotations?.author).toContain('Author 1');

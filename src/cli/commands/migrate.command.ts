@@ -47,8 +47,8 @@ export const migrateCommand = new Command('migrate')
         // Check if migration is needed
         if (!migrationService.needsMigration(legacyManifest)) {
           const m = legacyManifest as OssaAgent;
-          if (m.apiVersion === 'ossa/v1' && m.kind === 'Agent') {
-            console.log(chalk.green('✓ Manifest is already in v0.2.2 format'));
+          if (typeof m.apiVersion === 'string' && m.apiVersion.startsWith('ossa/v') && m.kind === 'Agent') {
+            console.log(chalk.green('✓ Manifest is already in k8s-style format'));
           } else {
             console.log(
               chalk.yellow(
