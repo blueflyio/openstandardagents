@@ -51,8 +51,8 @@ export class MigrationService {
   ): Promise<OssaAgent> {
     const m = manifest as Record<string, unknown>;
 
-    // Detect source version
-    if (m.apiVersion === 'ossa/v1' && m.kind === 'Agent') {
+    // Detect source version - check for any ossa/v0.x.x format
+    if (typeof m.apiVersion === 'string' && m.apiVersion.startsWith('ossa/v') && m.kind === 'Agent') {
       // Already in k8s-style format
       return manifest as OssaAgent;
     }
@@ -75,7 +75,7 @@ export class MigrationService {
    */
   private migrateV1ToKubeStyle(v1: V1Manifest): OssaAgent {
     const migrated: OssaAgent = {
-      apiVersion: 'ossa/v1',
+      apiVersion: 'ossa/v0.3.0',
       kind: 'Agent',
       metadata: {
         name: v1.agent.id,

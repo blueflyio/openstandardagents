@@ -264,7 +264,7 @@ agent:issue-triage:
         exit 1
       fi
 
-      # Validate manifest against OSSA schema
+      # Validate manifest against OSSA schema (auto-detected from apiVersion)
       echo "📋 Validating OSSA manifest..."
       if node dist/cli/index.js validate "${MANIFEST_PATH}"; then
         echo "✅ Manifest validation passed"
@@ -368,7 +368,7 @@ agent:mr-manager:
         exit 1
       fi
 
-      # Validate manifest against OSSA schema
+      # Validate manifest against OSSA schema (auto-detected from apiVersion)
       echo "📋 Validating OSSA manifest..."
       if node dist/cli/index.js validate "${MANIFEST_PATH}"; then
         echo "✅ Manifest validation passed"

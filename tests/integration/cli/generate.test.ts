@@ -41,7 +41,7 @@ describe('ossa generate command', () => {
     const content = fs.readFileSync(outputPath, 'utf-8');
     const manifest = parseYaml(content);
 
-    expect(manifest.apiVersion).toBe('ossa/v1');
+    expect(manifest.apiVersion).toBe('ossa/v0.3.0');
     expect(manifest.kind).toBe('Agent');
     expect(manifest.metadata.name).toBe('chat-bot');
     expect(manifest.spec.role).toBe('chat');

@@ -18,8 +18,7 @@ export const validateCommand = new Command('validate')
   .argument('<path>', 'Path to OSSA manifest or OpenAPI spec (YAML or JSON)')
   .option(
     '-s, --schema <version>',
-    'Schema version (0.3.0, 0.2.9, 0.2.8, 0.2.6, 0.2.5, 0.2.3, 0.2.2, or 1.0)',
-    '0.2.9'
+    'Schema version to validate against (auto-detected from apiVersion if not specified)'
   )
   .option('--openapi', 'Validate as OpenAPI specification with OSSA extensions')
   .option('--check-messaging', 'Validate messaging extension (v0.3.0+)')
@@ -30,7 +29,7 @@ export const validateCommand = new Command('validate')
   .action(
     async (
       path: string,
-      options: { schema: string; openapi?: boolean; checkMessaging?: boolean; verbose?: boolean }
+      options: { schema?: string; openapi?: boolean; checkMessaging?: boolean; verbose?: boolean }
     ) => {
       try {
         // Get services from DI container
@@ -65,8 +64,11 @@ export const validateCommand = new Command('validate')
               chalk.green('✓ OpenAPI spec is valid with OSSA extensions')
             );
           } else {
+            // Extract version from result manifest or use provided option
+            const m = result.manifest as OssaAgent;
+            const detectedVersion = m?.apiVersion?.replace('ossa/', '') || options.schema || 'unknown';
             console.log(
-              chalk.green('✓ Agent manifest is valid OSSA ' + options.schema)
+              chalk.green('✓ Agent manifest is valid OSSA ' + detectedVersion)
             );
           }
 
