@@ -16,7 +16,9 @@ describe('Cursor + agents.md Integration', () => {
 
   beforeEach(async () => {
     service = new AgentsMdService();
-    tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'cursor-agents-md-test-'));
+    tempDir = await fs.mkdtemp(
+      path.join(os.tmpdir(), 'cursor-agents-md-test-')
+    );
   });
 
   afterEach(async () => {
@@ -120,15 +122,15 @@ Run tests with \`npm test\`.`;
 
     const result = await service.parseAgentsMd(agentsMdPath);
 
-    expect(result.extensions?.cursor?.workspace_config?.context_files).toContain(
-      'README.md'
-    );
-    expect(result.extensions?.cursor?.workspace_config?.context_files).toContain(
-      'CONTRIBUTING.md'
-    );
-    expect(result.extensions?.cursor?.workspace_config?.context_files).toContain(
-      'docs/architecture.md'
-    );
+    expect(
+      result.extensions?.cursor?.workspace_config?.context_files
+    ).toContain('README.md');
+    expect(
+      result.extensions?.cursor?.workspace_config?.context_files
+    ).toContain('CONTRIBUTING.md');
+    expect(
+      result.extensions?.cursor?.workspace_config?.context_files
+    ).toContain('docs/architecture.md');
   });
 
   it('should generate Cursor-compatible content when cursor_integration is true', async () => {
@@ -228,12 +230,18 @@ Run tests with \`npm test\`.`;
     await service.writeAgentsMd(manifest, agentsMdPath);
 
     // Verify both files exist
-    expect(await fs.access(manifestPath).then(() => true).catch(() => false)).toBe(
-      true
-    );
-    expect(await fs.access(agentsMdPath).then(() => true).catch(() => false)).toBe(
-      true
-    );
+    expect(
+      await fs
+        .access(manifestPath)
+        .then(() => true)
+        .catch(() => false)
+    ).toBe(true);
+    expect(
+      await fs
+        .access(agentsMdPath)
+        .then(() => true)
+        .catch(() => false)
+    ).toBe(true);
 
     // Verify AGENTS.md content
     const content = await fs.readFile(agentsMdPath, 'utf-8');

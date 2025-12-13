@@ -13,7 +13,10 @@ describe('OSSA v0.3.0 Task Schema', () => {
 
   beforeAll(() => {
     // Load the v0.3.0 schema
-    const schemaPath = path.join(__dirname, '../../spec/v0.3.0/ossa-0.3.0.schema.json');
+    const schemaPath = path.join(
+      __dirname,
+      '../../spec/v0.3.0/ossa-0.3.0.schema.json'
+    );
     schema = JSON.parse(fs.readFileSync(schemaPath, 'utf-8'));
 
     // Setup AJV validator
@@ -55,7 +58,7 @@ describe('OSSA v0.3.0 Task Schema', () => {
             type: 'deterministic',
           },
           annotations: {
-            'owner': 'platform-team',
+            owner: 'platform-team',
           },
         },
         spec: {
@@ -136,7 +139,8 @@ describe('OSSA v0.3.0 Task Schema', () => {
               handler: 'Drupal\\node\\Entity\\Node::setPublished',
             },
             send_notification: {
-              handler: 'Drupal\\ai_agents\\Service\\NotificationService::notify',
+              handler:
+                'Drupal\\ai_agents\\Service\\NotificationService::notify',
             },
           },
         },
@@ -145,7 +149,10 @@ describe('OSSA v0.3.0 Task Schema', () => {
       const validate = ajv.getSchema('ossa-0.3.0');
       const valid = validate!(manifest);
       if (!valid) {
-        console.error('Validation errors:', JSON.stringify(validate!.errors, null, 2));
+        console.error(
+          'Validation errors:',
+          JSON.stringify(validate!.errors, null, 2)
+        );
       }
       expect(valid).toBe(true);
     });

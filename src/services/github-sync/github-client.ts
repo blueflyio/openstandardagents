@@ -21,19 +21,22 @@ export class GitHubClient {
     return GitHubPRSchema.parse(data);
   }
 
-  async listPRs(filters?: { author?: string; state?: 'open' | 'closed' }): Promise<GitHubPR[]> {
+  async listPRs(filters?: {
+    author?: string;
+    state?: 'open' | 'closed';
+  }): Promise<GitHubPR[]> {
     const { data } = await this.octokit.pulls.list({
       owner: this.owner,
       repo: this.repo,
       state: filters?.state || 'open',
     });
-    
-    let prs = data.map(pr => GitHubPRSchema.parse(pr));
-    
+
+    let prs = data.map((pr) => GitHubPRSchema.parse(pr));
+
     if (filters?.author) {
-      prs = prs.filter(pr => pr.author.login === filters.author);
+      prs = prs.filter((pr) => pr.author.login === filters.author);
     }
-    
+
     return prs;
   }
 

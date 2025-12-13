@@ -1141,24 +1141,8 @@
                 "openai",
                 "anthropic",
                 "google",
-                "google-vertex",
                 "azure",
-                "azure-openai",
-                "aws-bedrock",
-                "groq",
-                "together",
-                "fireworks",
-                "anyscale",
                 "ollama",
-                "openrouter",
-                "deepseek",
-                "mistral",
-                "cohere",
-                "huggingface",
-                "replicate",
-                "perplexity",
-                "cerebras",
-                "sambanova",
                 "custom"
               ]
             },
@@ -1219,24 +1203,8 @@
                 "openai",
                 "anthropic",
                 "google",
-                "google-vertex",
                 "azure",
-                "azure-openai",
-                "aws-bedrock",
-                "groq",
-                "together",
-                "fireworks",
-                "anyscale",
                 "ollama",
-                "openrouter",
-                "deepseek",
-                "mistral",
-                "cohere",
-                "huggingface",
-                "replicate",
-                "perplexity",
-                "cerebras",
-                "sambanova",
                 "custom"
               ]
             },
@@ -1320,7 +1288,9 @@
     },
     "Tool": {
       "type": "object",
-      "description": "Tool definition - supports both top-level type and source.type formats for backwards compatibility",
+      "required": [
+        "type"
+      ],
       "properties": {
         "type": {
           "type": "string",
@@ -1346,35 +1316,7 @@
           "description": "Tool/trigger type: mcp (Model Context Protocol), kubernetes (K8s API), http (HTTP endpoints), api (REST APIs), grpc (gRPC), function (local), a2a (agent-to-agent), webhook (event triggers), schedule (cron triggers), pipeline (CI/CD events), workflow (status changes), artifact (file outputs), git-commit (commit outputs), ci-status (pipeline status), comment (MR/issue comments), library (reusable logic), custom"
         },
         "name": {
-          "type": "string",
-          "description": "Tool name identifier"
-        },
-        "description": {
-          "type": "string",
-          "description": "Human-readable description of what the tool does"
-        },
-        "source": {
-          "type": "object",
-          "description": "Tool source configuration (alternative to top-level type)",
-          "properties": {
-            "type": {
-              "type": "string",
-              "enum": ["mcp", "http", "api", "grpc", "function", "a2a", "custom"],
-              "description": "Source type"
-            },
-            "uri": {
-              "type": "string",
-              "description": "Source URI (e.g., mcp://server/tool)"
-            }
-          }
-        },
-        "input": {
-          "type": "object",
-          "description": "Input schema for the tool"
-        },
-        "output": {
-          "type": "object",
-          "description": "Output schema for the tool"
+          "type": "string"
         },
         "capabilities": {
           "type": "array",
@@ -1383,11 +1325,6 @@
           }
         }
       },
-      "anyOf": [
-        { "required": ["type"] },
-        { "required": ["source"] },
-        { "required": ["name"] }
-      ],
       "additionalProperties": true
     },
     "Capability": {
@@ -1441,19 +1378,14 @@
           "type": "string",
           "enum": [
             "supervised",
-            "assisted",
-            "advisory",
             "autonomous",
             "fully_autonomous"
           ],
-          "description": "Autonomy level: supervised (requires approval), assisted (semi-autonomous with guardrails), advisory (suggestions only), autonomous (self-directed), fully_autonomous (no oversight)"
+          "description": "Autonomy level: supervised (human approval), autonomous (self-directed), fully_autonomous (no oversight)"
         },
         "approval_required": {
-          "description": "Actions requiring human approval - can be boolean or array of action names",
-          "oneOf": [
-            { "type": "boolean" },
-            { "type": "array", "items": { "type": "string" } }
-          ]
+          "type": "boolean",
+          "description": "Whether human approval is required for actions"
         },
         "allowed_actions": {
           "type": "array",
@@ -1566,10 +1498,9 @@
           "enum": [
             "stateless",
             "session",
-            "persistent",
             "long_running"
           ],
-          "description": "State persistence mode: stateless (no persistence), session (per-session), persistent (durable), long_running (long-lived process)"
+          "description": "State persistence mode"
         },
         "storage": {
           "type": "object",
@@ -1579,10 +1510,8 @@
               "type": "string",
               "enum": [
                 "memory",
-                "redis",
                 "vector-db",
                 "kv",
-                "postgres",
                 "rdbms",
                 "custom"
               ],
@@ -2014,7 +1943,7 @@
     },
     "MessagingExtension": {
       "type": "object",
-      "description": "Agent-to-agent messaging configuration (v0.3.0+)",
+      "description": "Agent-to-agent messaging configuration (v0.3.1+)",
       "properties": {
         "publishes": {
           "type": "array",
@@ -2338,452 +2267,6 @@
             }
           },
           "additionalProperties": false
-        }
-      },
-      "additionalProperties": false
-    },
-    "ExecutionProfiles": {
-      "type": "object",
-      "description": "Execution profile presets for different use cases (Google A2A compatible)",
-      "properties": {
-        "default": {
-          "description": "Default profile name or env var reference",
-          "anyOf": [
-            {
-              "type": "string",
-              "enum": ["fast", "balanced", "deep", "safe"]
-            },
-            {
-              "type": "string",
-              "pattern": "^\\$\\{[A-Za-z_][A-Za-z0-9_]*(?::-[a-zA-Z0-9_-]+)?\\}$"
-            }
-          ]
-        },
-        "profiles": {
-          "type": "object",
-          "additionalProperties": {
-            "$ref": "#/definitions/ExecutionProfileConfig"
-          },
-          "description": "Named profile configurations"
-        }
-      },
-      "additionalProperties": false
-    },
-    "ExecutionProfileConfig": {
-      "type": "object",
-      "description": "Individual execution profile configuration",
-      "properties": {
-        "maxTokens": {
-          "type": "integer",
-          "minimum": 1,
-          "maximum": 200000,
-          "description": "Maximum tokens for this profile"
-        },
-        "temperature": {
-          "type": "number",
-          "minimum": 0,
-          "maximum": 2,
-          "description": "Sampling temperature"
-        },
-        "topP": {
-          "type": "number",
-          "minimum": 0,
-          "maximum": 1,
-          "description": "Nucleus sampling threshold"
-        },
-        "reasoning_enabled": {
-          "type": "boolean",
-          "default": false,
-          "description": "Enable extended thinking/reasoning (Claude, o1)"
-        },
-        "validation_required": {
-          "type": "boolean",
-          "default": false,
-          "description": "Require output validation before returning"
-        },
-        "audit_log": {
-          "type": "boolean",
-          "default": false,
-          "description": "Enable audit logging for compliance"
-        },
-        "description": {
-          "type": "string",
-          "description": "Human-readable profile description"
-        },
-        "model_override": {
-          "type": "string",
-          "description": "Override model for this profile"
-        }
-      },
-      "additionalProperties": false
-    },
-    "FunctionDefinition": {
-      "type": "object",
-      "description": "Function definition in A2A/OpenAI format for structured function calling",
-      "required": ["name", "description", "parameters"],
-      "properties": {
-        "name": {
-          "type": "string",
-          "pattern": "^[a-zA-Z_][a-zA-Z0-9_]*$",
-          "maxLength": 64,
-          "description": "Function name (alphanumeric with underscores)"
-        },
-        "description": {
-          "type": "string",
-          "maxLength": 1024,
-          "description": "What the function does - used by LLM to decide when to call"
-        },
-        "parameters": {
-          "$ref": "#/definitions/JSONSchemaDefinition",
-          "description": "JSON Schema for function input parameters"
-        },
-        "returns": {
-          "$ref": "#/definitions/JSONSchemaDefinition",
-          "description": "JSON Schema for return value"
-        },
-        "strict": {
-          "type": "boolean",
-          "default": true,
-          "description": "Enforce strict schema validation (OpenAI structured outputs)"
-        },
-        "examples": {
-          "type": "array",
-          "description": "Example invocations for few-shot learning",
-          "items": {
-            "type": "object",
-            "properties": {
-              "input": { "type": "object" },
-              "output": { "type": "object" },
-              "description": { "type": "string" }
-            }
-          }
-        },
-        "deprecated": {
-          "type": "boolean",
-          "default": false,
-          "description": "Mark function as deprecated"
-        },
-        "deprecation_message": {
-          "type": "string",
-          "description": "Message to show when deprecated function is used"
-        }
-      },
-      "additionalProperties": false
-    },
-    "EnhancedRuntimeBinding": {
-      "type": "object",
-      "description": "Multi-runtime compatibility declaration with scheduling and resource management",
-      "properties": {
-        "type": {
-          "description": "Primary runtime type",
-          "anyOf": [
-            {
-              "type": "string",
-              "enum": ["unified", "google-a2a", "gitlab-duo", "ossa-mesh", "mcp", "local"]
-            },
-            {
-              "type": "string",
-              "pattern": "^\\$\\{[A-Za-z_][A-Za-z0-9_]*(?::-[a-zA-Z0-9_-]+)?\\}$"
-            }
-          ],
-          "default": "unified"
-        },
-        "supports": {
-          "type": "array",
-          "description": "List of compatible runtimes for portability",
-          "items": {
-            "type": "string",
-            "enum": [
-              "google-a2a",
-              "gitlab-duo",
-              "ossa-mesh",
-              "mcp",
-              "local-execution",
-              "kubernetes",
-              "serverless",
-              "lambda",
-              "cloudflare-workers",
-              "docker",
-              "podman"
-            ]
-          },
-          "uniqueItems": true
-        },
-        "scheduling": {
-          "$ref": "#/definitions/SchedulingConfig"
-        },
-        "resource_limits": {
-          "$ref": "#/definitions/ResourceLimits"
-        },
-        "extensions": {
-          "type": "array",
-          "description": "External runtime extensions (A2A compatible)",
-          "items": {
-            "$ref": "#/definitions/RuntimeExtension"
-          }
-        },
-        "affinity": {
-          "type": "object",
-          "description": "Placement preferences (Kubernetes-style)",
-          "properties": {
-            "node_selector": {
-              "type": "object",
-              "additionalProperties": { "type": "string" }
-            },
-            "preferred_zones": {
-              "type": "array",
-              "items": { "type": "string" }
-            }
-          }
-        }
-      },
-      "additionalProperties": false
-    },
-    "SchedulingConfig": {
-      "type": "object",
-      "description": "Agent scheduling configuration",
-      "properties": {
-        "strategy": {
-          "type": "string",
-          "enum": ["fair", "priority", "deadline", "cost-optimized", "latency-optimized"],
-          "default": "fair",
-          "description": "Scheduling strategy for concurrent requests"
-        },
-        "priority": {
-          "type": "string",
-          "enum": ["critical", "high", "normal", "low", "background"],
-          "default": "normal",
-          "description": "Base priority level"
-        },
-        "max_concurrent": {
-          "type": "integer",
-          "minimum": 1,
-          "maximum": 10000,
-          "default": 10,
-          "description": "Maximum concurrent executions"
-        },
-        "timeout_seconds": {
-          "type": "integer",
-          "minimum": 1,
-          "maximum": 86400,
-          "default": 300,
-          "description": "Execution timeout"
-        },
-        "queue_config": {
-          "type": "object",
-          "properties": {
-            "max_size": { "type": "integer", "minimum": 1 },
-            "overflow_action": {
-              "type": "string",
-              "enum": ["reject", "drop_oldest", "wait"]
-            }
-          }
-        }
-      },
-      "additionalProperties": false
-    },
-    "ResourceLimits": {
-      "type": "object",
-      "description": "Compute resource constraints (Kubernetes-style)",
-      "properties": {
-        "memory_mb": {
-          "type": "integer",
-          "minimum": 64,
-          "description": "Memory limit in MB"
-        },
-        "cpu_millicores": {
-          "type": "integer",
-          "minimum": 100,
-          "description": "CPU limit in millicores (1000 = 1 CPU)"
-        },
-        "gpu_required": {
-          "type": "boolean",
-          "default": false,
-          "description": "Whether GPU is required"
-        },
-        "gpu_type": {
-          "type": "string",
-          "enum": ["nvidia-t4", "nvidia-a10g", "nvidia-a100", "nvidia-h100", "any"],
-          "description": "Required GPU type"
-        },
-        "gpu_memory_gb": {
-          "type": "integer",
-          "description": "Required GPU memory in GB"
-        },
-        "ephemeral_storage_gb": {
-          "type": "integer",
-          "description": "Ephemeral storage limit in GB"
-        }
-      },
-      "additionalProperties": false
-    },
-    "RuntimeExtension": {
-      "type": "object",
-      "description": "External runtime extension (A2A compatible)",
-      "required": ["type", "name"],
-      "properties": {
-        "type": {
-          "type": "string",
-          "enum": ["http", "grpc", "mcp", "websocket", "kafka", "pubsub", "redis", "sqs"],
-          "description": "Extension transport type"
-        },
-        "name": {
-          "type": "string",
-          "description": "Extension identifier"
-        },
-        "endpoint": {
-          "type": "string",
-          "description": "Extension endpoint URL or connection string"
-        },
-        "credentials_ref": {
-          "type": "string",
-          "description": "Reference to credentials (e.g., env:API_KEY, vault://path)"
-        },
-        "timeout_seconds": {
-          "type": "integer",
-          "minimum": 1,
-          "default": 30
-        },
-        "retry_config": {
-          "$ref": "#/definitions/RetryConfig"
-        }
-      },
-      "additionalProperties": false
-    },
-    "ComplianceExtension": {
-      "type": "object",
-      "description": "Compliance and governance extension for enterprise requirements",
-      "properties": {
-        "frameworks": {
-          "type": "array",
-          "items": {
-            "type": "string",
-            "enum": [
-              "soc2",
-              "soc2-type2",
-              "iso27001",
-              "iso42001",
-              "nist-800-53",
-              "nist-ai-rmf",
-              "fedramp-low",
-              "fedramp-moderate",
-              "fedramp-high",
-              "gdpr",
-              "hipaa",
-              "pci-dss",
-              "ccpa",
-              "eu-ai-act"
-            ]
-          },
-          "description": "Compliance frameworks this agent adheres to"
-        },
-        "data_residency": {
-          "type": "object",
-          "properties": {
-            "region": {
-              "type": "string",
-              "description": "Required data residency region"
-            },
-            "allowed_regions": {
-              "type": "array",
-              "items": { "type": "string" }
-            },
-            "blocked_regions": {
-              "type": "array",
-              "items": { "type": "string" }
-            }
-          }
-        },
-        "audit_logging": {
-          "type": "object",
-          "properties": {
-            "enabled": { "type": "boolean", "default": true },
-            "retention_days": { "type": "integer", "default": 90 },
-            "immutable": { "type": "boolean", "default": true },
-            "destination": {
-              "type": "string",
-              "enum": ["cloudwatch", "stackdriver", "splunk", "elasticsearch", "s3"]
-            }
-          }
-        },
-        "access_controls": {
-          "type": "object",
-          "properties": {
-            "require_mfa": { "type": "boolean", "default": false },
-            "allowed_roles": {
-              "type": "array",
-              "items": { "type": "string" }
-            },
-            "ip_allowlist": {
-              "type": "array",
-              "items": { "type": "string" }
-            },
-            "session_timeout_minutes": { "type": "integer" }
-          }
-        },
-        "data_classification": {
-          "type": "string",
-          "enum": ["public", "internal", "confidential", "restricted", "top-secret"],
-          "description": "Data classification level"
-        },
-        "certifications": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "properties": {
-              "name": { "type": "string" },
-              "expiry": { "type": "string", "format": "date" },
-              "certificate_url": { "type": "string", "format": "uri" }
-            }
-          }
-        }
-      },
-      "additionalProperties": false
-    },
-    "KnowledgeGraphConfig": {
-      "type": "object",
-      "description": "Knowledge graph integration for agent context",
-      "properties": {
-        "enabled": {
-          "type": "boolean",
-          "default": false
-        },
-        "provider": {
-          "type": "string",
-          "enum": ["neo4j", "neptune", "tigergraph", "dgraph", "memgraph", "arangodb", "custom"]
-        },
-        "connection": {
-          "type": "object",
-          "properties": {
-            "endpoint": { "type": "string" },
-            "credentials_ref": { "type": "string" },
-            "database": { "type": "string" },
-            "tls_enabled": { "type": "boolean", "default": true }
-          }
-        },
-        "query_patterns": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "properties": {
-              "name": { "type": "string" },
-              "query": { "type": "string" },
-              "language": {
-                "type": "string",
-                "enum": ["cypher", "gremlin", "sparql", "graphql"]
-              },
-              "description": { "type": "string" }
-            }
-          }
-        },
-        "auto_index": {
-          "type": "boolean",
-          "default": false,
-          "description": "Automatically index agent interactions"
-        },
-        "embedding_model": {
-          "type": "string",
-          "description": "Model for generating graph embeddings"
         }
       },
       "additionalProperties": false

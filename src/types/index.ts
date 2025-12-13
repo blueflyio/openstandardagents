@@ -13,7 +13,12 @@ export { isOssaTask, createTaskManifest } from './task';
 // Export Workflow types (v0.3.0)
 export * from './workflow';
 export type { OssaWorkflow, WorkflowSpec, WorkflowStep } from './workflow';
-export { isOssaWorkflow, createWorkflowManifest, createStep, expr } from './workflow';
+export {
+  isOssaWorkflow,
+  createWorkflowManifest,
+  createStep,
+  expr,
+} from './workflow';
 
 // Export Messaging types (v0.3.0)
 export * from './messaging';
@@ -62,6 +67,15 @@ export interface OssaAgent {
     description?: string;
     labels?: Record<string, string>;
     annotations?: Record<string, string>;
+    lifecycle?: {
+      state?: 'active' | 'deprecated' | 'retired';
+      maturity?: 'alpha' | 'beta' | 'stable' | 'deprecated' | 'retired';
+      deprecation?: {
+        sunsetDate?: string;
+        replacement?: string;
+        reason?: string;
+      };
+    };
   };
   spec?: {
     role: string;
@@ -172,6 +186,23 @@ export interface OssaAgent {
         };
       };
     };
+    environments?: Record<
+      string,
+      {
+        version: string;
+        deployedAt: string;
+        deployedBy: string;
+        status: 'deployed' | 'healthy' | 'degraded' | 'failed';
+        endpoint?: string;
+      }
+    >;
+    dependencies?: Array<{
+      type: 'agent' | 'service' | 'data';
+      name: string;
+      version?: string;
+      optional?: boolean;
+      description?: string;
+    }>;
   };
   // Legacy v0.1.9 format (for backward compatibility)
   ossaVersion?: string;
@@ -315,6 +346,6 @@ export interface ISchemaRepository {
 }
 
 export interface IManifestRepository {
-  load(path: string): Promise<unknown>;
+  load(path: string): Promise<OssaAgent>;
   save(path: string, manifest: OssaAgent): Promise<void>;
 }

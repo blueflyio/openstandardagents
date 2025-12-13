@@ -39,16 +39,12 @@ export class ClaudeAdapter {
     // Validate manifest
     const validation = this.parser.validate();
     if (!validation.valid) {
-      throw new Error(
-        `Invalid OSSA manifest: ${validation.errors.join(', ')}`
-      );
+      throw new Error(`Invalid OSSA manifest: ${validation.errors.join(', ')}`);
     }
 
     // Check if Anthropic integration is enabled
     if (!this.parser.isAnthropicEnabled()) {
-      console.warn(
-        'Warning: Anthropic extension is disabled in manifest'
-      );
+      console.warn('Warning: Anthropic extension is disabled in manifest');
     }
 
     // Initialize tools
@@ -129,10 +125,7 @@ export class ClaudeAdapter {
   /**
    * Send a message and get a response
    */
-  async chat(
-    userMessage: string,
-    options?: ClaudeRunOptions
-  ): Promise<string> {
+  async chat(userMessage: string, options?: ClaudeRunOptions): Promise<string> {
     // Add user message to history
     this.conversationHistory.push({
       role: 'user',
@@ -364,9 +357,7 @@ export class ClaudeAdapter {
   ): Promise<ClaudeAdapter> {
     const fs = await import('fs/promises');
     const manifestContent = await fs.readFile(manifestPath, 'utf-8');
-    const manifest = JSON.parse(
-      manifestContent
-    ) as OssaManifestWithAnthropic;
+    const manifest = JSON.parse(manifestContent) as OssaManifestWithAnthropic;
 
     return new ClaudeAdapter({
       manifest,

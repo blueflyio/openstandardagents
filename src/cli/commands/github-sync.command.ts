@@ -32,7 +32,7 @@ export function createGitHubSyncCommand(): Command {
       const service = createService();
       const prs = await service.listSyncablePRs({ author: options.author });
       console.log(`Found ${prs.length} PRs:`);
-      prs.forEach(pr => {
+      prs.forEach((pr) => {
         console.log(`  #${pr.number}: ${pr.title} (by ${pr.author.login})`);
       });
     });
@@ -48,7 +48,8 @@ function createService(): GitHubSyncService {
       token: process.env.GITHUB_TOKEN || '',
     },
     gitlab: {
-      projectId: process.env.GITLAB_PROJECT_ID || 'blueflyio%2Fopenstandardagents',
+      projectId:
+        process.env.GITLAB_PROJECT_ID || 'blueflyio%2Fopenstandardagents',
       token: process.env.GITLAB_TOKEN || '',
     },
   };

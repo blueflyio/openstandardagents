@@ -65,9 +65,14 @@ export class TagService extends BaseCrudService<
       }
 
       // Create tag via GitLab API
-      const tag = await this.gitlab.Tags.create(this.projectId, validated.name, validated.ref, {
-        message: validated.message || `Tag ${validated.name}`,
-      });
+      const tag = await this.gitlab.Tags.create(
+        this.projectId,
+        validated.name,
+        validated.ref,
+        {
+          message: validated.message || `Tag ${validated.name}`,
+        }
+      );
 
       const result: Tag = {
         name: tag.name,
@@ -109,7 +114,8 @@ export class TagService extends BaseCrudService<
         version: this.extractVersion(tag.name),
         commitSha: tag.commit?.id || '',
         message: tag.message || '',
-        createdAt: (tag as { createdAt?: string }).createdAt || new Date().toISOString(),
+        createdAt:
+          (tag as { createdAt?: string }).createdAt || new Date().toISOString(),
         ref: (tag as { target?: string }).target || 'unknown',
       };
 
@@ -219,7 +225,9 @@ export class TagService extends BaseCrudService<
    * Helper: Extract version from tag name
    */
   private extractVersion(tagName: string): string {
-    return tagName.replace(/^v/, '').replace(/-dev\.[0-9]+$/, '').replace(/-rc\.[0-9]+$/, '');
+    return tagName
+      .replace(/^v/, '')
+      .replace(/-dev\.[0-9]+$/, '')
+      .replace(/-rc\.[0-9]+$/, '');
   }
 }
-

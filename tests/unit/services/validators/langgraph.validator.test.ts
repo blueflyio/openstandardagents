@@ -87,7 +87,9 @@ describe('LangGraphValidator', () => {
       const result = validator.validate(manifest);
       expect(result.valid).toBe(false);
       expect(result.errors).toHaveLength(1);
-      expect(result.errors[0].message).toContain('graph_config must be an object');
+      expect(result.errors[0].message).toContain(
+        'graph_config must be an object'
+      );
     });
 
     it('should validate nodes is an array', () => {
@@ -206,7 +208,9 @@ describe('LangGraphValidator', () => {
       const result = validator.validate(manifest);
       expect(result.valid).toBe(false);
       expect(result.errors).toHaveLength(1);
-      expect(result.errors[0].message).toContain('checkpoint_config must be an object');
+      expect(result.errors[0].message).toContain(
+        'checkpoint_config must be an object'
+      );
     });
 
     it('should accept valid checkpoint_config', () => {
@@ -240,7 +244,9 @@ describe('LangGraphValidator', () => {
       const result = validator.validate(manifest);
       expect(result.valid).toBe(false);
       expect(result.errors).toHaveLength(1);
-      expect(result.errors[0].message).toContain('max_iterations must be at least 1');
+      expect(result.errors[0].message).toContain(
+        'max_iterations must be at least 1'
+      );
     });
 
     it('should validate max_iterations is a number', () => {
@@ -255,7 +261,9 @@ describe('LangGraphValidator', () => {
       };
       const result = validator.validate(manifest);
       expect(result.valid).toBe(false);
-      expect(result.errors[0].message).toContain('max_iterations must be at least 1');
+      expect(result.errors[0].message).toContain(
+        'max_iterations must be at least 1'
+      );
     });
 
     it('should accept valid max_iterations', () => {
@@ -285,7 +293,9 @@ describe('LangGraphValidator', () => {
       const result = validator.validate(manifest);
       expect(result.valid).toBe(false);
       expect(result.errors).toHaveLength(1);
-      expect(result.errors[0].message).toContain('interrupt_before must be an array');
+      expect(result.errors[0].message).toContain(
+        'interrupt_before must be an array'
+      );
     });
 
     it('should accept valid interrupt_before array', () => {
@@ -329,7 +339,9 @@ describe('LangGraphValidator', () => {
       const result = validator.validate(manifest);
       expect(result.valid).toBe(false);
       expect(result.errors).toHaveLength(1);
-      expect(result.errors[0].message).toContain('interrupt_after must be an array');
+      expect(result.errors[0].message).toContain(
+        'interrupt_after must be an array'
+      );
     });
 
     it('should accept valid interrupt_after array', () => {
@@ -371,7 +383,9 @@ describe('LangGraphValidator', () => {
       };
       const result = validator.validate(manifest);
       expect(result.valid).toBe(true);
-      expect(result.warnings).toContain('Best practice: Define graph_config for LangGraph state machine');
+      expect(result.warnings).toContain(
+        'Best practice: Define graph_config for LangGraph state machine'
+      );
     });
 
     it('should warn if checkpoint_config is missing', () => {
@@ -388,7 +402,9 @@ describe('LangGraphValidator', () => {
       };
       const result = validator.validate(manifest);
       expect(result.valid).toBe(true);
-      expect(result.warnings).toContain('Best practice: Configure checkpoint_config for state persistence');
+      expect(result.warnings).toContain(
+        'Best practice: Configure checkpoint_config for state persistence'
+      );
     });
 
     it('should not warn when both graph_config and checkpoint_config are provided', () => {

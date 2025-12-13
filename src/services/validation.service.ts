@@ -73,7 +73,11 @@ export class ValidationService implements IValidationService {
     // Use dynamic version detection if not provided
     if (!version) {
       // Try to extract version from manifest's apiVersion field
-      if (manifest && typeof manifest === 'object' && 'apiVersion' in manifest) {
+      if (
+        manifest &&
+        typeof manifest === 'object' &&
+        'apiVersion' in manifest
+      ) {
         const apiVersion = (manifest as { apiVersion: string }).apiVersion;
         const match = apiVersion?.match(/^ossa\/v(.+)$/);
         if (match) {
@@ -100,23 +104,31 @@ export class ValidationService implements IValidationService {
 
       // 5. Validate messaging extension (v0.3.0+)
       const messagingErrors: ErrorObject[] = [];
-      if (manifest && typeof manifest === 'object' && 'apiVersion' in manifest && 'spec' in manifest) {
+      if (
+        manifest &&
+        typeof manifest === 'object' &&
+        'apiVersion' in manifest &&
+        'spec' in manifest
+      ) {
         const apiVersion = (manifest as { apiVersion: string }).apiVersion;
         const spec = (manifest as { spec: any }).spec;
         if (spec?.messaging) {
           const messagingValidator = new MessagingValidator();
-          const messagingValidationErrors = messagingValidator.validateMessagingExtension(
-            spec.messaging,
-            apiVersion
-          );
+          const messagingValidationErrors =
+            messagingValidator.validateMessagingExtension(
+              spec.messaging,
+              apiVersion
+            );
           // Convert ValidationError[] to ErrorObject[]
-          messagingErrors.push(...messagingValidationErrors.map(err => ({
-            instancePath: err.path,
-            schemaPath: err.path,
-            keyword: 'messaging',
-            params: {},
-            message: err.message,
-          })));
+          messagingErrors.push(
+            ...messagingValidationErrors.map((err) => ({
+              instancePath: err.path,
+              schemaPath: err.path,
+              keyword: 'messaging',
+              params: {},
+              message: err.message,
+            }))
+          );
         }
       }
 
@@ -125,13 +137,15 @@ export class ValidationService implements IValidationService {
         manifest as OssaAgent
       );
       const allErrors = [
-        ...(valid ? [] : (validator.errors || []).map((err) => ({
-          instancePath: err.instancePath || err.schemaPath || '',
-          schemaPath: err.schemaPath || '',
-          keyword: err.keyword || 'validation',
-          params: err.params || {},
-          message: err.message || 'Validation error',
-        }))),
+        ...(valid
+          ? []
+          : (validator.errors || []).map((err) => ({
+              instancePath: err.instancePath || err.schemaPath || '',
+              schemaPath: err.schemaPath || '',
+              keyword: err.keyword || 'validation',
+              params: err.params || {},
+              message: err.message || 'Validation error',
+            }))),
         ...messagingErrors,
         ...platformResults.errors,
       ];

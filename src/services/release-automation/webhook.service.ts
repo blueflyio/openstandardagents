@@ -39,9 +39,7 @@ export class WebhookService {
   /**
    * Handle milestone webhook
    */
-  async handleMilestoneWebhook(
-    payload: unknown
-  ): Promise<WebhookResponse> {
+  async handleMilestoneWebhook(payload: unknown): Promise<WebhookResponse> {
     try {
       // Validate payload with Zod
       const validated = MilestoneWebhookPayloadSchema.parse(payload);
@@ -113,7 +111,11 @@ export class WebhookService {
    */
   private async handleMilestoneCreate(
     payload: MilestoneWebhookPayload
-  ): Promise<{ type: string; status: string; details?: Record<string, unknown> } | null> {
+  ): Promise<{
+    type: string;
+    status: string;
+    details?: Record<string, unknown>;
+  } | null> {
     const { object_attributes: milestone } = payload;
     const version = milestone.title.replace(/^v/, '');
 
@@ -141,7 +143,11 @@ export class WebhookService {
    */
   private async handleMilestoneClose(
     payload: MilestoneWebhookPayload
-  ): Promise<{ type: string; status: string; details?: Record<string, unknown> } | null> {
+  ): Promise<{
+    type: string;
+    status: string;
+    details?: Record<string, unknown>;
+  } | null> {
     const { object_attributes: milestone } = payload;
     const version = milestone.title.replace(/^v/, '');
 
@@ -190,9 +196,11 @@ export class WebhookService {
   /**
    * Handle development branch push
    */
-  private async handleDevelopmentPush(
-    payload: PushWebhookPayload
-  ): Promise<{ type: string; status: string; details?: Record<string, unknown> } | null> {
+  private async handleDevelopmentPush(payload: PushWebhookPayload): Promise<{
+    type: string;
+    status: string;
+    details?: Record<string, unknown>;
+  } | null> {
     // Auto-increment dev tag
     // This would be implemented based on current version detection
     // For now, return success
@@ -207,4 +215,3 @@ export class WebhookService {
     };
   }
 }
-

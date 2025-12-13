@@ -89,11 +89,14 @@ export class SymfonyAdapter {
   async execute(manifest: OSSAManifest): Promise<SymfonyExecutionResult> {
     const message = this.convertToMessage(manifest);
 
-    const response = await fetch(`${this.config.baseUrl}/api/ossa/messenger/dispatch`, {
-      method: 'POST',
-      headers: this.getHeaders(),
-      body: JSON.stringify(message),
-    });
+    const response = await fetch(
+      `${this.config.baseUrl}/api/ossa/messenger/dispatch`,
+      {
+        method: 'POST',
+        headers: this.getHeaders(),
+        body: JSON.stringify(message),
+      }
+    );
 
     if (!response.ok) {
       const error = (await response.json()) as { message?: string };
@@ -133,11 +136,14 @@ export class SymfonyAdapter {
       data: { transportNames: ['sync'] },
     });
 
-    const response = await fetch(`${this.config.baseUrl}/api/ossa/messenger/handle`, {
-      method: 'POST',
-      headers: this.getHeaders(),
-      body: JSON.stringify(message),
-    });
+    const response = await fetch(
+      `${this.config.baseUrl}/api/ossa/messenger/handle`,
+      {
+        method: 'POST',
+        headers: this.getHeaders(),
+        body: JSON.stringify(message),
+      }
+    );
 
     const result = (await response.json()) as {
       message_id: string;
@@ -252,7 +258,10 @@ export class SymfonyAdapter {
   /**
    * Create Task message
    */
-  private createTaskMessage(manifest: OSSAManifest, stamps: MessengerStamp[]): MessengerMessage {
+  private createTaskMessage(
+    manifest: OSSAManifest,
+    stamps: MessengerStamp[]
+  ): MessengerMessage {
     const spec = manifest.spec as {
       execution?: {
         type?: string;
@@ -268,7 +277,8 @@ export class SymfonyAdapter {
     };
 
     return {
-      class: spec.extensions?.symfony?.service || 'App\\Message\\OSSATaskMessage',
+      class:
+        spec.extensions?.symfony?.service || 'App\\Message\\OSSATaskMessage',
       payload: {
         taskId: manifest.metadata.name,
         executionType: spec.execution?.type || 'deterministic',
@@ -302,7 +312,9 @@ export class SymfonyAdapter {
     };
 
     return {
-      class: spec.extensions?.symfony?.service || 'App\\Message\\OSSAWorkflowMessage',
+      class:
+        spec.extensions?.symfony?.service ||
+        'App\\Message\\OSSAWorkflowMessage',
       payload: {
         workflowId: manifest.metadata.name,
         steps: spec.steps || [],
@@ -314,7 +326,10 @@ export class SymfonyAdapter {
   /**
    * Create Agent message
    */
-  private createAgentMessage(manifest: OSSAManifest, stamps: MessengerStamp[]): MessengerMessage {
+  private createAgentMessage(
+    manifest: OSSAManifest,
+    stamps: MessengerStamp[]
+  ): MessengerMessage {
     const spec = manifest.spec as {
       role?: string;
       llm?: {
@@ -336,7 +351,8 @@ export class SymfonyAdapter {
     };
 
     return {
-      class: spec.extensions?.symfony?.service || 'App\\Message\\OSSAAgentMessage',
+      class:
+        spec.extensions?.symfony?.service || 'App\\Message\\OSSAAgentMessage',
       payload: {
         agentId: manifest.metadata.name,
         role: spec.role,

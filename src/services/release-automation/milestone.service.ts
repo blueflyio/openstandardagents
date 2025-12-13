@@ -152,7 +152,7 @@ export class MilestoneService extends BaseCrudService<
       dueDate?: string;
       startDate?: string;
     } = {};
-    
+
     if (validated.title) updateParams.title = validated.title;
     if (validated.description) updateParams.description = validated.description;
     if (validated.state === 'closed') updateParams.stateEvent = 'close';
@@ -168,17 +168,17 @@ export class MilestoneService extends BaseCrudService<
 
     const statistics = await this.getMilestoneStatistics(updated.id);
 
-      const result: Milestone = {
-        id: updated.id,
-        title: String(updated.title),
-        description: String(updated.description || ''),
-        state: updated.state as 'active' | 'closed',
-        dueDate: updated.dueDate ? String(updated.dueDate) : null,
-        startDate: updated.startDate ? String(updated.startDate) : null,
-        createdAt: String(updated.createdAt),
-        updatedAt: String(updated.updatedAt),
-        statistics,
-      };
+    const result: Milestone = {
+      id: updated.id,
+      title: String(updated.title),
+      description: String(updated.description || ''),
+      state: updated.state as 'active' | 'closed',
+      dueDate: updated.dueDate ? String(updated.dueDate) : null,
+      startDate: updated.startDate ? String(updated.startDate) : null,
+      createdAt: String(updated.createdAt),
+      updatedAt: String(updated.updatedAt),
+      statistics,
+    };
 
     return this.validateEntity(result);
   }
@@ -239,9 +239,10 @@ export class MilestoneService extends BaseCrudService<
       );
 
       // Note: GitLab API doesn't always return total, so we estimate
-      const total = items.length >= validatedFilters.perPage 
-        ? items.length + validatedFilters.perPage 
-        : items.length;
+      const total =
+        items.length >= validatedFilters.perPage
+          ? items.length + validatedFilters.perPage
+          : items.length;
 
       return {
         items,
@@ -293,4 +294,3 @@ export class MilestoneService extends BaseCrudService<
     }
   }
 }
-

@@ -26,7 +26,12 @@ export interface DrupalAdapterConfig {
   defaultExecutionModel?: DrupalExecutionModel;
 }
 
-export type DrupalExecutionModel = 'eca' | 'maestro' | 'flowdrop' | 'ai-agent-runner' | 'minikanban';
+export type DrupalExecutionModel =
+  | 'eca'
+  | 'maestro'
+  | 'flowdrop'
+  | 'ai-agent-runner'
+  | 'minikanban';
 
 export interface OSSAManifest {
   apiVersion: string;
@@ -67,7 +72,10 @@ export class DrupalAdapter {
   /**
    * Execute an OSSA manifest in Drupal
    */
-  async execute(manifest: OSSAManifest, model?: DrupalExecutionModel): Promise<DrupalExecutionResult> {
+  async execute(
+    manifest: OSSAManifest,
+    model?: DrupalExecutionModel
+  ): Promise<DrupalExecutionResult> {
     const executionModel = model || this.selectExecutionModel(manifest);
 
     // Authenticate if needed
@@ -136,14 +144,20 @@ export class DrupalAdapter {
     }
   }
 
-  private async sessionLogin(username: string, password: string): Promise<string> {
-    const response = await fetch(`${this.config.baseUrl}/user/login?_format=json`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ name: username, pass: password }),
-    });
+  private async sessionLogin(
+    username: string,
+    password: string
+  ): Promise<string> {
+    const response = await fetch(
+      `${this.config.baseUrl}/user/login?_format=json`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ name: username, pass: password }),
+      }
+    );
 
     if (!response.ok) {
       throw new Error(`Drupal login failed: ${response.statusText}`);
@@ -156,16 +170,24 @@ export class DrupalAdapter {
   /**
    * Execute via ECA (Event-Condition-Action)
    */
-  private async executeECA(manifest: OSSAManifest): Promise<DrupalExecutionResult> {
+  private async executeECA(
+    manifest: OSSAManifest
+  ): Promise<DrupalExecutionResult> {
     const ecaModel = this.convertToECAModel(manifest);
 
-    const response = await fetch(`${this.config.baseUrl}/api/ossa/eca/execute`, {
-      method: 'POST',
-      headers: this.getHeaders(),
-      body: JSON.stringify(ecaModel),
-    });
+    const response = await fetch(
+      `${this.config.baseUrl}/api/ossa/eca/execute`,
+      {
+        method: 'POST',
+        headers: this.getHeaders(),
+        body: JSON.stringify(ecaModel),
+      }
+    );
 
-    const result = (await response.json()) as { execution_id: string; output?: unknown };
+    const result = (await response.json()) as {
+      execution_id: string;
+      output?: unknown;
+    };
 
     return {
       success: response.ok,
@@ -178,16 +200,24 @@ export class DrupalAdapter {
   /**
    * Execute via Maestro (BPM Workflow)
    */
-  private async executeMaestro(manifest: OSSAManifest): Promise<DrupalExecutionResult> {
+  private async executeMaestro(
+    manifest: OSSAManifest
+  ): Promise<DrupalExecutionResult> {
     const maestroProcess = this.convertToMaestroProcess(manifest);
 
-    const response = await fetch(`${this.config.baseUrl}/api/ossa/maestro/start`, {
-      method: 'POST',
-      headers: this.getHeaders(),
-      body: JSON.stringify(maestroProcess),
-    });
+    const response = await fetch(
+      `${this.config.baseUrl}/api/ossa/maestro/start`,
+      {
+        method: 'POST',
+        headers: this.getHeaders(),
+        body: JSON.stringify(maestroProcess),
+      }
+    );
 
-    const result = (await response.json()) as { process_id: string; output?: unknown };
+    const result = (await response.json()) as {
+      process_id: string;
+      output?: unknown;
+    };
 
     return {
       success: response.ok,
@@ -200,16 +230,24 @@ export class DrupalAdapter {
   /**
    * Execute via FlowDrop (Visual DAG)
    */
-  private async executeFlowDrop(manifest: OSSAManifest): Promise<DrupalExecutionResult> {
+  private async executeFlowDrop(
+    manifest: OSSAManifest
+  ): Promise<DrupalExecutionResult> {
     const flowDropDAG = this.convertToFlowDropDAG(manifest);
 
-    const response = await fetch(`${this.config.baseUrl}/api/ossa/flowdrop/execute`, {
-      method: 'POST',
-      headers: this.getHeaders(),
-      body: JSON.stringify(flowDropDAG),
-    });
+    const response = await fetch(
+      `${this.config.baseUrl}/api/ossa/flowdrop/execute`,
+      {
+        method: 'POST',
+        headers: this.getHeaders(),
+        body: JSON.stringify(flowDropDAG),
+      }
+    );
 
-    const result = (await response.json()) as { execution_id: string; output?: unknown };
+    const result = (await response.json()) as {
+      execution_id: string;
+      output?: unknown;
+    };
 
     return {
       success: response.ok,
@@ -222,16 +260,24 @@ export class DrupalAdapter {
   /**
    * Execute via AI Agent Runner
    */
-  private async executeAIAgentRunner(manifest: OSSAManifest): Promise<DrupalExecutionResult> {
+  private async executeAIAgentRunner(
+    manifest: OSSAManifest
+  ): Promise<DrupalExecutionResult> {
     const agentConfig = this.convertToAgentRunnerConfig(manifest);
 
-    const response = await fetch(`${this.config.baseUrl}/api/ossa/agent-runner/start`, {
-      method: 'POST',
-      headers: this.getHeaders(),
-      body: JSON.stringify(agentConfig),
-    });
+    const response = await fetch(
+      `${this.config.baseUrl}/api/ossa/agent-runner/start`,
+      {
+        method: 'POST',
+        headers: this.getHeaders(),
+        body: JSON.stringify(agentConfig),
+      }
+    );
 
-    const result = (await response.json()) as { agent_id: string; output?: unknown };
+    const result = (await response.json()) as {
+      agent_id: string;
+      output?: unknown;
+    };
 
     return {
       success: response.ok,
@@ -244,16 +290,24 @@ export class DrupalAdapter {
   /**
    * Execute via Minikanban
    */
-  private async executeMinikanban(manifest: OSSAManifest): Promise<DrupalExecutionResult> {
+  private async executeMinikanban(
+    manifest: OSSAManifest
+  ): Promise<DrupalExecutionResult> {
     const kanbanTasks = this.convertToMinikanbanTasks(manifest);
 
-    const response = await fetch(`${this.config.baseUrl}/api/ossa/minikanban/create`, {
-      method: 'POST',
-      headers: this.getHeaders(),
-      body: JSON.stringify(kanbanTasks),
-    });
+    const response = await fetch(
+      `${this.config.baseUrl}/api/ossa/minikanban/create`,
+      {
+        method: 'POST',
+        headers: this.getHeaders(),
+        body: JSON.stringify(kanbanTasks),
+      }
+    );
 
-    const result = (await response.json()) as { board_id: string; output?: unknown };
+    const result = (await response.json()) as {
+      board_id: string;
+      output?: unknown;
+    };
 
     return {
       success: response.ok,

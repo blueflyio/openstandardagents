@@ -15,11 +15,14 @@ export interface EnvironmentDeployment {
 
 export class DeploymentService {
   async deploy(
-    manifest: any,
+    manifest: OssaAgent,
     manifestPath: string,
     environment: string,
     version?: string
   ): Promise<void> {
+    if (!manifest.metadata || !manifest.spec) {
+      throw new Error('Invalid manifest: missing metadata or spec');
+    }
     const deployVersion = version || manifest.metadata.version || '1.0.0';
 
     if (!manifest.spec.environments) {
@@ -33,17 +36,22 @@ export class DeploymentService {
       status: 'deployed',
     };
 
-    const { ManifestRepository } = await import('../../repositories/manifest.repository.js');
+    const { ManifestRepository } = await import(
+      '../../repositories/manifest.repository.js'
+    );
     const repo = new ManifestRepository();
     await repo.save(manifestPath, manifest);
   }
 
   async promote(
-    manifest: any,
+    manifest: OssaAgent,
     manifestPath: string,
     fromEnv: string,
     toEnv: string
   ): Promise<void> {
+    if (!manifest.spec) {
+      throw new Error('Invalid manifest: missing spec');
+    }
     if (!manifest.spec.environments?.[fromEnv]) {
       throw new Error(`Agent not deployed to ${fromEnv}`);
     }
@@ -61,12 +69,20 @@ export class DeploymentService {
       status: 'deployed',
     };
 
-    const { ManifestRepository } = await import('../../repositories/manifest.repository.js');
+    const { ManifestRepository } = await import(
+      '../../repositories/manifest.repository.js'
+    );
     const repo = new ManifestRepository();
     await repo.save(manifestPath, manifest);
   }
 
-  getStatus(manifest: any, environment?: string): Record<string, EnvironmentDeployment> | EnvironmentDeployment {
+  getStatus(
+    manifest: OssaAgent,
+    environment?: string
+  ): Record<string, EnvironmentDeployment> | EnvironmentDeployment {
+    if (!manifest.spec) {
+      throw new Error('Invalid manifest: missing spec');
+    }
     const environments = manifest.spec.environments || {};
 
     if (environment) {
@@ -81,11 +97,14 @@ export class DeploymentService {
   }
 
   async retire(
-    manifest: any,
+    manifest: OssaAgent,
     manifestPath: string,
     effectiveDate: string,
     replacement?: string
   ): Promise<void> {
+    if (!manifest.metadata) {
+      throw new Error('Invalid manifest: missing metadata');
+    }
     if (!manifest.metadata.lifecycle) {
       manifest.metadata.lifecycle = {
         state: 'active',
@@ -109,7 +128,9 @@ export class DeploymentService {
       manifest.metadata.lifecycle.deprecation.replacement = replacement;
     }
 
-    const { ManifestRepository } = await import('../../repositories/manifest.repository.js');
+    const { ManifestRepository } = await import(
+      '../../repositories/manifest.repository.js'
+    );
     const repo = new ManifestRepository();
     await repo.save(manifestPath, manifest);
   }

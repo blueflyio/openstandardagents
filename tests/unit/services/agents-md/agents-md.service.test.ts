@@ -341,7 +341,9 @@ Test content`;
 
       expect(result.valid).toBe(false);
       expect(result.warnings.length).toBeGreaterThan(0);
-      expect(result.warnings).toContain('Missing "Testing instructions" section');
+      expect(result.warnings).toContain(
+        'Missing "Testing instructions" section'
+      );
     });
 
     it('should return error if file not found', async () => {
@@ -406,12 +408,12 @@ See \`README.md\` and \`CONTRIBUTING.md\` for details.`;
 
       const result = await service.parseAgentsMd('AGENTS.md');
 
-      expect(result.extensions?.cursor?.workspace_config?.context_files).toContain(
-        'README.md'
-      );
-      expect(result.extensions?.cursor?.workspace_config?.context_files).toContain(
-        'CONTRIBUTING.md'
-      );
+      expect(
+        result.extensions?.cursor?.workspace_config?.context_files
+      ).toContain('README.md');
+      expect(
+        result.extensions?.cursor?.workspace_config?.context_files
+      ).toContain('CONTRIBUTING.md');
     });
   });
 
@@ -436,7 +438,9 @@ See \`README.md\` and \`CONTRIBUTING.md\` for details.`;
         },
       };
 
-      (fs.readFile as jest.Mock).mockResolvedValue(JSON.stringify(mockManifest));
+      (fs.readFile as jest.Mock).mockResolvedValue(
+        JSON.stringify(mockManifest)
+      );
       (fs.writeFile as jest.Mock).mockResolvedValue(undefined);
 
       await service.syncAgentsMd('manifest.json', false);
@@ -464,11 +468,13 @@ See \`README.md\` and \`CONTRIBUTING.md\` for details.`;
         },
       };
 
-      (fs.readFile as jest.Mock).mockResolvedValue(JSON.stringify(mockManifest));
-
-      await expect(service.syncAgentsMd('manifest.json', false)).rejects.toThrow(
-        'Sync on manifest change is not enabled'
+      (fs.readFile as jest.Mock).mockResolvedValue(
+        JSON.stringify(mockManifest)
       );
+
+      await expect(
+        service.syncAgentsMd('manifest.json', false)
+      ).rejects.toThrow('Sync on manifest change is not enabled');
     });
   });
 });

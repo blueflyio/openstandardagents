@@ -76,7 +76,10 @@ export class TestRunnerService {
     }
   }
 
-  private async runIntegrationTest(test: any, manifest: OssaAgent): Promise<void> {
+  private async runIntegrationTest(
+    test: any,
+    manifest: OssaAgent
+  ): Promise<void> {
     await this.runUnitTest(test, manifest);
   }
 

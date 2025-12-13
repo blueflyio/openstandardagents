@@ -93,7 +93,11 @@ export class MigrationService {
     }
 
     // Detect source version - check for ossa/v0.x.x format
-    if (typeof m.apiVersion === 'string' && m.apiVersion.startsWith('ossa/v') && m.kind === 'Agent') {
+    if (
+      typeof m.apiVersion === 'string' &&
+      m.apiVersion.startsWith('ossa/v') &&
+      m.kind === 'Agent'
+    ) {
       // Check if it's already at current version
       if (m.apiVersion === currentApiVersion) {
         return manifest as OssaAgent;
@@ -137,8 +141,11 @@ export class MigrationService {
     if (!migrated.metadata.annotations) {
       migrated.metadata.annotations = {};
     }
-    migrated.metadata.annotations['ossa.io/migration'] = `${sourceVersion}-to-${currentApiVersion}`;
-    migrated.metadata.annotations['ossa.io/migrated-date'] = new Date().toISOString().split('T')[0];
+    migrated.metadata.annotations['ossa.io/migration'] =
+      `${sourceVersion}-to-${currentApiVersion}`;
+    migrated.metadata.annotations['ossa.io/migrated-date'] = new Date()
+      .toISOString()
+      .split('T')[0];
 
     // Enhance LLM config with new features
     if (migrated.spec) {
@@ -163,7 +170,10 @@ export class MigrationService {
         // Normalize temperature/maxTokens field names
         if (llm.parameters) {
           const params = llm.parameters as Record<string, unknown>;
-          if (params.temperature !== undefined && llm.temperature === undefined) {
+          if (
+            params.temperature !== undefined &&
+            llm.temperature === undefined
+          ) {
             llm.temperature = params.temperature;
           }
           if (params.max_tokens !== undefined && llm.maxTokens === undefined) {
@@ -268,21 +278,29 @@ export class MigrationService {
     if (spec?.llm) {
       const llm = spec.llm as Record<string, unknown>;
       if (llm.fallback_models) {
-        summary.addedFeatures.push('Fallback models for multi-provider resilience');
+        summary.addedFeatures.push(
+          'Fallback models for multi-provider resilience'
+        );
       }
       if (llm.retry_config) {
-        summary.addedFeatures.push('Retry configuration with exponential backoff');
+        summary.addedFeatures.push(
+          'Retry configuration with exponential backoff'
+        );
       }
       if (llm.cost_tracking) {
         summary.addedFeatures.push('Cost tracking with budget alerts');
       }
       if (String(llm.provider).includes('${')) {
-        summary.addedFeatures.push('Runtime-configurable LLM via environment variables');
+        summary.addedFeatures.push(
+          'Runtime-configurable LLM via environment variables'
+        );
       }
     }
 
     if (spec?.safety) {
-      summary.addedFeatures.push('Safety configuration (content filtering, guardrails)');
+      summary.addedFeatures.push(
+        'Safety configuration (content filtering, guardrails)'
+      );
     }
 
     if (spec?.observability) {
@@ -297,7 +315,9 @@ export class MigrationService {
       summary.addedFeatures.push('Cost and rate constraints');
     }
 
-    summary.changes.push(`Updated apiVersion from ${sourceVersion} to ossa/v${versionInfo.version}`);
+    summary.changes.push(
+      `Updated apiVersion from ${sourceVersion} to ossa/v${versionInfo.version}`
+    );
     summary.changes.push(`Added ossa-version: v${versionInfo.version} label`);
 
     return summary;

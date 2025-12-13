@@ -33,8 +33,23 @@ const COMMON_TYPOS: Record<string, string[]> = {
  * Known enum values for validation
  */
 const KNOWN_ENUMS: Record<string, string[]> = {
-  provider: ['anthropic', 'openai', 'google', 'cohere', 'mistral', 'meta', 'local'],
-  role: ['chat', 'worker', 'workflow', 'compliance', 'orchestrator', 'specialist'],
+  provider: [
+    'anthropic',
+    'openai',
+    'google',
+    'cohere',
+    'mistral',
+    'meta',
+    'local',
+  ],
+  role: [
+    'chat',
+    'worker',
+    'workflow',
+    'compliance',
+    'orchestrator',
+    'specialist',
+  ],
   kind: ['Agent', 'Task', 'Workflow', 'Policy'],
   deliveryGuarantee: ['at-least-once', 'at-most-once', 'exactly-once'],
   priority: ['low', 'normal', 'high', 'critical'],
@@ -45,7 +60,11 @@ const KNOWN_ENUMS: Record<string, string[]> = {
  * Provider-specific model mappings (for helpful suggestions)
  */
 const PROVIDER_MODELS: Record<string, string[]> = {
-  anthropic: ['claude-opus-4-5-20251101', 'claude-sonnet-4-5-20250929', 'claude-3-5-sonnet-20241022'],
+  anthropic: [
+    'claude-opus-4-5-20251101',
+    'claude-sonnet-4-5-20250929',
+    'claude-3-5-sonnet-20241022',
+  ],
   openai: ['gpt-4o', 'gpt-4-turbo', 'gpt-3.5-turbo'],
   google: ['gemini-pro', 'gemini-ultra'],
 };
@@ -87,8 +106,8 @@ function levenshteinDistance(a: string, b: string): number {
       } else {
         matrix[i][j] = Math.min(
           matrix[i - 1][j - 1] + 1, // substitution
-          matrix[i][j - 1] + 1,     // insertion
-          matrix[i - 1][j] + 1      // deletion
+          matrix[i][j - 1] + 1, // insertion
+          matrix[i - 1][j] + 1 // deletion
         );
       }
     }
@@ -100,12 +119,18 @@ function levenshteinDistance(a: string, b: string): number {
 /**
  * Find the closest match from a list of valid values
  */
-function findClosestMatch(invalid: string, validValues: string[]): string | null {
+function findClosestMatch(
+  invalid: string,
+  validValues: string[]
+): string | null {
   let minDistance = Infinity;
   let closest: string | null = null;
 
   for (const valid of validValues) {
-    const distance = levenshteinDistance(invalid.toLowerCase(), valid.toLowerCase());
+    const distance = levenshteinDistance(
+      invalid.toLowerCase(),
+      valid.toLowerCase()
+    );
     // Only suggest if distance is reasonable (less than 40% of the word length)
     if (distance < minDistance && distance <= Math.max(3, valid.length * 0.4)) {
       minDistance = distance;
@@ -149,7 +174,11 @@ function getValueAtPath(manifest: unknown, path: string): unknown {
 /**
  * Format a single validation error with helpful context
  */
-function formatError(error: ErrorObject, index: number, manifest?: unknown): string {
+function formatError(
+  error: ErrorObject,
+  index: number,
+  manifest?: unknown
+): string {
   const path = error.instancePath || '/';
   const fieldName = extractFieldName(path);
   const lines: string[] = [];
@@ -161,21 +190,25 @@ function formatError(error: ErrorObject, index: number, manifest?: unknown): str
   }
 
   // Error header with number
-  lines.push(chalk.red(`\n${index + 1}. Validation Error at ${chalk.bold(path)}`));
+  lines.push(
+    chalk.red(`\n${index + 1}. Validation Error at ${chalk.bold(path)}`)
+  );
   lines.push('');
 
   // Handle different error types
   switch (error.keyword) {
     case 'required': {
       const missingProp = error.params?.missingProperty as string;
-      lines.push(chalk.red(`   Missing required field: ${chalk.bold(missingProp)}`));
+      lines.push(
+        chalk.red(`   Missing required field: ${chalk.bold(missingProp)}`)
+      );
       lines.push('');
 
       // Check for common typos
       if (COMMON_TYPOS[missingProp]) {
         const typos = COMMON_TYPOS[missingProp];
         lines.push(chalk.yellow(`   💡 Did you mean one of these?`));
-        typos.forEach(typo => {
+        typos.forEach((typo) => {
           lines.push(chalk.yellow(`      • ${typo}`));
         });
         lines.push('');
@@ -191,10 +224,14 @@ function formatError(error: ErrorObject, index: number, manifest?: unknown): str
       const allowedValues = error.params?.allowedValues as string[];
       const invalidValue = actualValue;
 
-      lines.push(chalk.red(`   Invalid value: ${chalk.bold(JSON.stringify(invalidValue))}`));
+      lines.push(
+        chalk.red(
+          `   Invalid value: ${chalk.bold(JSON.stringify(invalidValue))}`
+        )
+      );
       lines.push('');
       lines.push(chalk.cyan('   Expected one of:'));
-      allowedValues.forEach(val => {
+      allowedValues.forEach((val) => {
         lines.push(chalk.cyan(`      • ${val}`));
       });
       lines.push('');
@@ -203,17 +240,33 @@ function formatError(error: ErrorObject, index: number, manifest?: unknown): str
       if (typeof invalidValue === 'string') {
         const suggestion = findClosestMatch(invalidValue, allowedValues);
         if (suggestion) {
-          lines.push(chalk.yellow(`   💡 Did you mean "${chalk.bold(suggestion)}"?`));
+          lines.push(
+            chalk.yellow(`   💡 Did you mean "${chalk.bold(suggestion)}"?`)
+          );
           lines.push('');
         }
 
         // Special case: provider suggestions
-        if (fieldName === 'provider' && invalidValue.toLowerCase().includes('claude')) {
-          lines.push(chalk.yellow(`   💡 Claude models use provider: ${chalk.bold('anthropic')}`));
+        if (
+          fieldName === 'provider' &&
+          invalidValue.toLowerCase().includes('claude')
+        ) {
+          lines.push(
+            chalk.yellow(
+              `   💡 Claude models use provider: ${chalk.bold('anthropic')}`
+            )
+          );
           lines.push('');
         }
-        if (fieldName === 'provider' && invalidValue.toLowerCase().includes('gpt')) {
-          lines.push(chalk.yellow(`   💡 GPT models use provider: ${chalk.bold('openai')}`));
+        if (
+          fieldName === 'provider' &&
+          invalidValue.toLowerCase().includes('gpt')
+        ) {
+          lines.push(
+            chalk.yellow(
+              `   💡 GPT models use provider: ${chalk.bold('openai')}`
+            )
+          );
           lines.push('');
         }
       }
@@ -234,10 +287,14 @@ function formatError(error: ErrorObject, index: number, manifest?: unknown): str
       // Helpful suggestion
       if (expectedType === 'array' && actualType === 'string') {
         lines.push(chalk.yellow(`   💡 This field expects an array. Try:`));
-        lines.push(chalk.yellow(`      ${fieldName}: [${JSON.stringify(actualValue)}]`));
+        lines.push(
+          chalk.yellow(`      ${fieldName}: [${JSON.stringify(actualValue)}]`)
+        );
         lines.push('');
       } else if (expectedType === 'string' && actualType === 'array') {
-        lines.push(chalk.yellow(`   💡 This field expects a single value, not an array`));
+        lines.push(
+          chalk.yellow(`   💡 This field expects a single value, not an array`)
+        );
         lines.push('');
       }
       break;
@@ -251,8 +308,14 @@ function formatError(error: ErrorObject, index: number, manifest?: unknown): str
 
       // Special handling for apiVersion pattern
       if (fieldName === 'apiVersion') {
-        lines.push(chalk.yellow(`   💡 apiVersion should follow format: ${chalk.bold('ossa/v0.3.0')}`));
-        lines.push(chalk.yellow(`      Your value: ${JSON.stringify(actualValue)}`));
+        lines.push(
+          chalk.yellow(
+            `   💡 apiVersion should follow format: ${chalk.bold('ossa/v0.3.0')}`
+          )
+        );
+        lines.push(
+          chalk.yellow(`      Your value: ${JSON.stringify(actualValue)}`)
+        );
         lines.push('');
       }
       break;
@@ -260,14 +323,18 @@ function formatError(error: ErrorObject, index: number, manifest?: unknown): str
 
     case 'additionalProperties': {
       const additionalProp = error.params?.additionalProperty as string;
-      lines.push(chalk.red(`   Unexpected property: ${chalk.bold(additionalProp)}`));
+      lines.push(
+        chalk.red(`   Unexpected property: ${chalk.bold(additionalProp)}`)
+      );
       lines.push('');
 
       // Check if it's a typo
       const knownFields = Object.keys(COMMON_TYPOS);
       const suggestion = findClosestMatch(additionalProp, knownFields);
       if (suggestion) {
-        lines.push(chalk.yellow(`   💡 Did you mean "${chalk.bold(suggestion)}"?`));
+        lines.push(
+          chalk.yellow(`   💡 Did you mean "${chalk.bold(suggestion)}"?`)
+        );
         lines.push('');
       }
       break;
@@ -305,7 +372,10 @@ function formatError(error: ErrorObject, index: number, manifest?: unknown): str
 /**
  * Format multiple validation errors into a helpful error message
  */
-export function formatValidationErrors(errors: ErrorObject[], manifest?: unknown): string {
+export function formatValidationErrors(
+  errors: ErrorObject[],
+  manifest?: unknown
+): string {
   const lines: string[] = [];
 
   // Header
@@ -324,9 +394,13 @@ export function formatValidationErrors(errors: ErrorObject[], manifest?: unknown
   lines.push(chalk.cyan('   • Check spelling of field names (case-sensitive)'));
   lines.push(chalk.cyan('   • Verify apiVersion format: ossa/v0.3.0'));
   lines.push(chalk.cyan('   • Use --verbose for detailed error information'));
-  lines.push(chalk.cyan('   • Check examples/claude-code/ for reference manifests'));
+  lines.push(
+    chalk.cyan('   • Check examples/claude-code/ for reference manifests')
+  );
   lines.push('');
-  lines.push(chalk.blue('📚 Full documentation: https://openstandardagents.org/docs'));
+  lines.push(
+    chalk.blue('📚 Full documentation: https://openstandardagents.org/docs')
+  );
   lines.push('');
 
   return lines.join('\n');
@@ -335,7 +409,10 @@ export function formatValidationErrors(errors: ErrorObject[], manifest?: unknown
 /**
  * Create a helpful suggestion based on manifest content
  */
-export function suggestFix(manifest: unknown, error: ErrorObject): string | null {
+export function suggestFix(
+  manifest: unknown,
+  error: ErrorObject
+): string | null {
   if (!manifest || typeof manifest !== 'object') {
     return null;
   }
@@ -344,12 +421,18 @@ export function suggestFix(manifest: unknown, error: ErrorObject): string | null
   const suggestions: string[] = [];
 
   // Check for common mistakes
-  if (error.keyword === 'required' && error.params?.missingProperty === 'apiVersion') {
+  if (
+    error.keyword === 'required' &&
+    error.params?.missingProperty === 'apiVersion'
+  ) {
     suggestions.push('Add apiVersion field:');
     suggestions.push('  apiVersion: ossa/v0.3.0');
   }
 
-  if (error.keyword === 'required' && error.params?.missingProperty === 'kind') {
+  if (
+    error.keyword === 'required' &&
+    error.params?.missingProperty === 'kind'
+  ) {
     suggestions.push('Add kind field:');
     suggestions.push('  kind: Agent');
   }
@@ -364,9 +447,13 @@ export function suggestFix(manifest: unknown, error: ErrorObject): string | null
 
       if (provider && model) {
         const validModels = PROVIDER_MODELS[provider];
-        if (validModels && !validModels.some(m => model.includes(m))) {
-          suggestions.push(`Warning: Model "${model}" may not be valid for provider "${provider}"`);
-          suggestions.push(`Valid ${provider} models: ${validModels.join(', ')}`);
+        if (validModels && !validModels.some((m) => model.includes(m))) {
+          suggestions.push(
+            `Warning: Model "${model}" may not be valid for provider "${provider}"`
+          );
+          suggestions.push(
+            `Valid ${provider} models: ${validModels.join(', ')}`
+          );
         }
       }
     }
@@ -378,7 +465,11 @@ export function suggestFix(manifest: unknown, error: ErrorObject): string | null
 /**
  * Format a single error for compact output (non-verbose)
  */
-export function formatErrorCompact(error: ErrorObject, index: number, manifest?: unknown): string {
+export function formatErrorCompact(
+  error: ErrorObject,
+  index: number,
+  manifest?: unknown
+): string {
   const path = error.instancePath || 'root';
   const fieldName = extractFieldName(path);
 
@@ -398,7 +489,9 @@ export function formatErrorCompact(error: ErrorObject, index: number, manifest?:
     message = `invalid value ${JSON.stringify(actualValue)}`;
   } else if (error.keyword === 'type') {
     const expectedType = error.params?.type as string;
-    const actualType = Array.isArray(actualValue) ? 'array' : typeof actualValue;
+    const actualType = Array.isArray(actualValue)
+      ? 'array'
+      : typeof actualValue;
     message = `expected ${expectedType}, got ${actualType}`;
   }
 

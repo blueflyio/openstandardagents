@@ -10,8 +10,9 @@ import { ManifestRepository } from '../../repositories/manifest.repository.js';
 import { AgentsMdService } from '../../services/agents-md/agents-md.service.js';
 import type { OssaAgent } from '../../types/index.js';
 
-export const agentsMdCommand = new Command('agents-md')
-  .description('Generate, validate, and sync OpenAI agents.md files from OSSA manifests');
+export const agentsMdCommand = new Command('agents-md').description(
+  'Generate, validate, and sync OpenAI agents.md files from OSSA manifests'
+);
 
 // Generate subcommand
 agentsMdCommand
@@ -20,27 +21,31 @@ agentsMdCommand
   .option('-o, --output <path>', 'Output path for AGENTS.md', 'AGENTS.md')
   .option('-v, --verbose', 'Verbose output')
   .description('Generate AGENTS.md from OSSA manifest')
-  .action(async (manifestPath: string, options: { output: string; verbose?: boolean }) => {
-    try {
-      console.log(chalk.blue(`Generating AGENTS.md from ${manifestPath}...`));
+  .action(
+    async (
+      manifestPath: string,
+      options: { output: string; verbose?: boolean }
+    ) => {
+      try {
+        console.log(chalk.blue(`Generating AGENTS.md from ${manifestPath}...`));
 
-      // Get services
-      const manifestRepo = container.get(ManifestRepository);
-      const agentsMdService = container.get(AgentsMdService);
+        // Get services
+        const manifestRepo = container.get(ManifestRepository);
+        const agentsMdService = container.get(AgentsMdService);
 
-      // Load manifest
-      const manifest = (await manifestRepo.load(manifestPath)) as OssaAgent;
+        // Load manifest
+        const manifest = (await manifestRepo.load(manifestPath)) as OssaAgent;
 
-      // Check if agents_md extension is enabled
-      if (!manifest.extensions?.agents_md?.enabled) {
-        console.error(
-          chalk.red('Error: agents_md extension is not enabled in manifest')
-        );
-        console.log(
-          chalk.yellow('\n💡 Add the following to your manifest to enable:')
-        );
-        console.log(
-          chalk.gray(`
+        // Check if agents_md extension is enabled
+        if (!manifest.extensions?.agents_md?.enabled) {
+          console.error(
+            chalk.red('Error: agents_md extension is not enabled in manifest')
+          );
+          console.log(
+            chalk.yellow('\n💡 Add the following to your manifest to enable:')
+          );
+          console.log(
+            chalk.gray(`
 extensions:
   agents_md:
     enabled: true
@@ -53,50 +58,47 @@ extensions:
       pr_instructions:
         enabled: true
 `)
+          );
+          process.exit(1);
+        }
+
+        // Generate AGENTS.md
+        await agentsMdService.writeAgentsMd(manifest, options.output);
+
+        console.log(chalk.green(`✓ AGENTS.md generated successfully`));
+        console.log(chalk.gray(`\nOutput: ${chalk.cyan(options.output)}`));
+
+        if (options.verbose) {
+          const content = await agentsMdService.generateAgentsMd(manifest);
+          console.log(chalk.gray('\nGenerated content:'));
+          console.log(chalk.gray('─'.repeat(50)));
+          console.log(content);
+          console.log(chalk.gray('─'.repeat(50)));
+        }
+
+        console.log(chalk.yellow('\n💡 Next steps:'));
+        console.log(chalk.gray(`  1. Review the generated AGENTS.md file`));
+        console.log(
+          chalk.gray(
+            `  2. Validate: ${chalk.white(`ossa agents-md validate ${options.output} ${manifestPath}`)}`
+          )
+        );
+        console.log(
+          chalk.gray(
+            `  3. Commit to your repository for AI coding agents to use`
+          )
+        );
+
+        process.exit(0);
+      } catch (error) {
+        console.error(
+          chalk.red('Error:'),
+          error instanceof Error ? error.message : String(error)
         );
         process.exit(1);
       }
-
-      // Generate AGENTS.md
-      await agentsMdService.writeAgentsMd(manifest, options.output);
-
-      console.log(chalk.green(`✓ AGENTS.md generated successfully`));
-      console.log(chalk.gray(`\nOutput: ${chalk.cyan(options.output)}`));
-
-      if (options.verbose) {
-        const content = await agentsMdService.generateAgentsMd(manifest);
-        console.log(chalk.gray('\nGenerated content:'));
-        console.log(chalk.gray('─'.repeat(50)));
-        console.log(content);
-        console.log(chalk.gray('─'.repeat(50)));
-      }
-
-      console.log(chalk.yellow('\n💡 Next steps:'));
-      console.log(
-        chalk.gray(
-          `  1. Review the generated AGENTS.md file`
-        )
-      );
-      console.log(
-        chalk.gray(
-          `  2. Validate: ${chalk.white(`ossa agents-md validate ${options.output} ${manifestPath}`)}`
-        )
-      );
-      console.log(
-        chalk.gray(
-          `  3. Commit to your repository for AI coding agents to use`
-        )
-      );
-
-      process.exit(0);
-    } catch (error) {
-      console.error(
-        chalk.red('Error:'),
-        error instanceof Error ? error.message : String(error)
-      );
-      process.exit(1);
     }
-  });
+  );
 
 // Validate subcommand
 agentsMdCommand
@@ -198,7 +200,10 @@ extensions:
         }
 
         // Sync
-        await agentsMdService.syncAgentsMd(manifestPath, options.watch || false);
+        await agentsMdService.syncAgentsMd(
+          manifestPath,
+          options.watch || false
+        );
 
         console.log(chalk.green('✓ AGENTS.md synced successfully'));
 
