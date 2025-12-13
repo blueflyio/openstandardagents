@@ -493,8 +493,10 @@ manual:triage-issue:
     # Run automatically when MANUAL_ISSUE_IID is provided
     - if: $MANUAL_ISSUE_IID
       when: on_success
-    # Also available as manual job in any pipeline
-    - when: manual
+      allow_failure: false
+    # Make job manual and optional when variable is not set
+    - if: $MANUAL_ISSUE_IID == null
+      when: manual
       allow_failure: true
   before_script:
     - apk add --no-cache jq curl
@@ -541,8 +543,10 @@ manual:process-mr:
     # Run automatically when MANUAL_MR_IID is provided
     - if: $MANUAL_MR_IID
       when: on_success
-    # Also available as manual job in any pipeline
-    - when: manual
+      allow_failure: false
+    # Make job manual and optional when variable is not set
+    - if: $MANUAL_MR_IID == null
+      when: manual
       allow_failure: true
   before_script:
     - apk add --no-cache jq curl
