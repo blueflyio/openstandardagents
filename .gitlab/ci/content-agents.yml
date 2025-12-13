@@ -1,0 +1,568 @@
+# Content Team Agent CI Pipeline
+# Automates the living website content system using OSSA agents
+#
+# Service Accounts Required:
+# - @ossa-researcher: RESEARCHER_TOKEN
+# - @ossa-author: AUTHOR_TOKEN
+# - @ossa-editor: EDITOR_TOKEN
+# - @ossa-publisher: PUBLISHER_TOKEN
+# - @ossa-moderator: MODERATOR_TOKEN
+
+variables:
+  CONTENT_TEAM_PATH: .gitlab/agents/content-team
+  OSSA_VERSION: "0.3.0"
+
+# ============================================================================
+# Stage Definitions
+# ============================================================================
+
+stages:
+  - validate
+  - research
+  - author
+  - edit
+  - publish
+  - moderate
+
+# ============================================================================
+# Agent Validation
+# ============================================================================
+
+content:validate-agents:
+  stage: validate
+  image: node:20-alpine
+  script:
+    - npm install -g ajv-cli
+    - |
+      echo "🔍 Validating content team agent manifests..."
+      for manifest in $CONTENT_TEAM_PATH/*.ossa.yaml; do
+        echo "Validating: $manifest"
+        # Convert YAML to JSON and validate against OSSA schema
+        npx js-yaml "$manifest" | ajv validate -s spec/ossa-schema-v0.3.0.json -d -
+        if [ $? -eq 0 ]; then
+          echo "✅ $manifest is valid"
+        else
+          echo "❌ $manifest failed validation"
+          exit 1
+        fi
+      done
+      echo "✅ All content team agents validated"
+  rules:
+    - changes:
+        - .gitlab/agents/content-team/**/*
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+
+# ============================================================================
+# Research Agent Jobs
+# ============================================================================
+
+content:research-cycle:
+  stage: research
+  image: python:3.11-slim
+  variables:
+    GITLAB_TOKEN: ${RESEARCHER_TOKEN}
+  script:
+    - pip install requests pyyaml arxiv
+    - |
+      echo "🔬 Running research agent cycle..."
+      python3 << 'EOF'
+      import os
+      import json
+      import requests
+      from datetime import datetime, timedelta
+
+      # Research sources
+      SOURCES = {
+          'arxiv': ['multi-agent systems', 'agent specification', 'LLM orchestration'],
+          'github': ['ai-agents', 'langchain', 'crewai', 'autogen'],
+          'news': ['AI agents enterprise', 'agent framework']
+      }
+
+      findings = {
+          'date': datetime.now().isoformat(),
+          'arxiv': [],
+          'github': [],
+          'opportunities': []
+      }
+
+      # Search arXiv
+      import arxiv
+      for query in SOURCES['arxiv']:
+          search = arxiv.Search(query=query, max_results=5, sort_by=arxiv.SortCriterion.SubmittedDate)
+          for result in search.results():
+              findings['arxiv'].append({
+                  'title': result.title,
+                  'url': result.entry_id,
+                  'summary': result.summary[:200],
+                  'date': result.published.isoformat()
+              })
+
+      # Generate content opportunities
+      for paper in findings['arxiv'][:3]:
+          findings['opportunities'].append({
+              'title': f"Research Review: {paper['title'][:50]}",
+              'type': 'blog',
+              'source': paper['url'],
+              'priority': 'medium'
+          })
+
+      print(json.dumps(findings, indent=2))
+
+      # Save findings
+      with open('research-findings.json', 'w') as f:
+          json.dump(findings, f, indent=2)
+      EOF
+  artifacts:
+    paths:
+      - research-findings.json
+    expire_in: 1 week
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "schedule"
+      variables:
+        SCHEDULE_TYPE: "research"
+    - if: $TRIGGER_RESEARCH == "true"
+
+content:create-opportunities:
+  stage: research
+  image: python:3.11-slim
+  needs:
+    - job: content:research-cycle
+      optional: true
+  variables:
+    GITLAB_TOKEN: ${RESEARCHER_TOKEN}
+  script:
+    - pip install requests python-gitlab
+    - |
+      echo "📝 Creating content opportunity issues..."
+      python3 << 'EOF'
+      import os
+      import json
+      import gitlab
+
+      gl = gitlab.Gitlab('https://gitlab.com', private_token=os.environ['GITLAB_TOKEN'])
+      project = gl.projects.get('blueflyio/openstandardagents.org')
+
+      # Load research findings
+      try:
+          with open('research-findings.json') as f:
+              findings = json.load(f)
+      except FileNotFoundError:
+          print("No research findings, skipping")
+          exit(0)
+
+      for opp in findings.get('opportunities', []):
+          # Check if issue already exists
+          existing = project.issues.list(search=opp['title'][:30])
+          if existing:
+              print(f"Issue already exists for: {opp['title']}")
+              continue
+
+          # Create new issue
+          issue = project.issues.create({
+              'title': f"Content: {opp['title']}",
+              'description': f"""## Research Brief
+
+      **Type**: {opp['type']}
+      **Priority**: {opp['priority']}
+
+      ### Source
+      {opp['source']}
+
+      ---
+      *Created by @ossa-researcher*
+      """,
+              'labels': ['content-opportunity', 'needs-author', f"priority::{opp['priority']}"]
+          })
+          print(f"✅ Created issue #{issue.iid}: {opp['title']}")
+      EOF
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "schedule"
+      variables:
+        SCHEDULE_TYPE: "research"
+
+# ============================================================================
+# Author Agent Jobs
+# ============================================================================
+
+content:author-draft:
+  stage: author
+  image: python:3.11-slim
+  variables:
+    GITLAB_TOKEN: ${AUTHOR_TOKEN}
+    ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
+  script:
+    - pip install requests python-gitlab anthropic pyyaml
+    - |
+      echo "✍️ Running author agent for content drafting..."
+      python3 << 'EOF'
+      import os
+      import gitlab
+      import anthropic
+      from datetime import datetime
+
+      gl = gitlab.Gitlab('https://gitlab.com', private_token=os.environ['GITLAB_TOKEN'])
+      project = gl.projects.get('blueflyio/openstandardagents.org')
+
+      # Find issues needing author
+      issues = project.issues.list(labels=['needs-author', 'content-opportunity'], state='opened')
+
+      if not issues:
+          print("No issues need authoring")
+          exit(0)
+
+      client = anthropic.Anthropic()
+
+      for issue in issues[:1]:  # Process one at a time
+          print(f"📝 Processing issue #{issue.iid}: {issue.title}")
+
+          # Generate draft using Claude
+          prompt = f"""You are the OSSA Author Bot. Create a blog post draft for:
+
+      Title: {issue.title}
+      Description: {issue.description}
+
+      Requirements:
+      1. Every claim must have a citation with [Source](url)
+      2. Include "Treating Agents as First-Class Citizens" positioning
+      3. Include OSSA YAML code examples
+      4. SEO-optimized with proper headings
+      5. Meta description under 160 chars
+
+      Output the complete markdown with frontmatter."""
+
+          response = client.messages.create(
+              model="claude-sonnet-4-20250514",
+              max_tokens=8000,
+              messages=[{"role": "user", "content": prompt}]
+          )
+
+          draft_content = response.content[0].text
+
+          # Create branch and commit
+          branch_name = f"content/{issue.iid}-draft"
+          filename = f"website/content/blog/{datetime.now().strftime('%Y-%m-%d')}-{issue.iid}.md"
+
+          try:
+              project.branches.create({'branch': branch_name, 'ref': 'release/v0.3.x'})
+          except:
+              pass  # Branch might exist
+
+          project.files.create({
+              'file_path': filename,
+              'branch': branch_name,
+              'content': draft_content,
+              'commit_message': f"content(blog): Draft for #{issue.iid}\n\nAuthored by @ossa-author",
+              'author_email': 'author@openstandardagents.org',
+              'author_name': 'OSSA Author Bot'
+          })
+
+          # Create MR
+          mr = project.mergerequests.create({
+              'source_branch': branch_name,
+              'target_branch': 'release/v0.3.x',
+              'title': f"content: {issue.title}",
+              'description': f"Draft for #{issue.iid}\n\n*Authored by @ossa-author*",
+              'labels': ['content', 'needs-editor-review']
+          })
+
+          # Update issue
+          issue.notes.create({'body': f"Draft created in !{mr.iid}\n\n*@ossa-author*"})
+          issue.labels = [l for l in issue.labels if l != 'needs-author'] + ['draft-complete']
+          issue.save()
+
+          print(f"✅ Created MR !{mr.iid} for #{issue.iid}")
+      EOF
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "webhook"
+      variables:
+        TRIGGER_TYPE: "author"
+    - if: $TRIGGER_AUTHOR == "true"
+
+# ============================================================================
+# Editor Agent Jobs
+# ============================================================================
+
+content:editor-review:
+  stage: edit
+  image: python:3.11-slim
+  variables:
+    GITLAB_TOKEN: ${EDITOR_TOKEN}
+    ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
+  script:
+    - pip install requests python-gitlab anthropic pyyaml
+    - |
+      echo "📝 Running editor agent for content review..."
+      python3 << 'EOF'
+      import os
+      import gitlab
+      import anthropic
+      import requests
+      import re
+
+      gl = gitlab.Gitlab('https://gitlab.com', private_token=os.environ['GITLAB_TOKEN'])
+      project = gl.projects.get('blueflyio/openstandardagents.org')
+
+      # Find MRs needing editor review
+      mrs = project.mergerequests.list(labels=['needs-editor-review'], state='opened')
+
+      if not mrs:
+          print("No MRs need editing")
+          exit(0)
+
+      client = anthropic.Anthropic()
+
+      for mr in mrs[:1]:
+          print(f"📋 Reviewing MR !{mr.iid}: {mr.title}")
+
+          # Get changed files
+          changes = mr.changes()
+          content = ""
+          for change in changes.get('changes', []):
+              if change['new_path'].endswith('.md'):
+                  content = change.get('diff', '')
+
+          # Validate links
+          links = re.findall(r'\[([^\]]+)\]\(([^)]+)\)', content)
+          broken_links = []
+          for text, url in links:
+              if url.startswith('http'):
+                  try:
+                      resp = requests.head(url, timeout=5, allow_redirects=True)
+                      if resp.status_code >= 400:
+                          broken_links.append({'text': text, 'url': url, 'status': resp.status_code})
+                  except:
+                      broken_links.append({'text': text, 'url': url, 'status': 'timeout'})
+
+          # AI review
+          review_prompt = f"""Review this content for:
+      1. Technical accuracy
+      2. Citation quality (every claim backed)
+      3. SEO metadata
+      4. "First-class citizens" positioning
+      5. Code example validity
+
+      Content:
+      {content[:4000]}
+
+      Broken links found: {broken_links}
+
+      Provide structured review with score out of 100."""
+
+          response = client.messages.create(
+              model="claude-sonnet-4-20250514",
+              max_tokens=2000,
+              messages=[{"role": "user", "content": review_prompt}]
+          )
+
+          review = response.content[0].text
+
+          # Post review
+          mr.notes.create({'body': f"""## 📋 Editorial Review
+
+      {review}
+
+      ### Link Validation
+      {"✅ All links valid" if not broken_links else "❌ Broken links: " + str(broken_links)}
+
+      ---
+      *Reviewed by @ossa-editor*
+      """})
+
+          # Update labels based on review
+          if 'Approved' in review or 'Score: 8' in review or 'Score: 9' in review:
+              mr.labels = [l for l in mr.labels if l != 'needs-editor-review'] + ['editor-approved', 'needs-publisher']
+              mr.save()
+              print(f"✅ MR !{mr.iid} approved")
+          else:
+              mr.labels = [l for l in mr.labels if l != 'needs-editor-review'] + ['revision-requested']
+              mr.save()
+              print(f"⚠️ MR !{mr.iid} needs revision")
+      EOF
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "webhook"
+      variables:
+        TRIGGER_TYPE: "editor"
+    - if: $TRIGGER_EDITOR == "true"
+
+# ============================================================================
+# Publisher Agent Jobs
+# ============================================================================
+
+content:publisher-merge:
+  stage: publish
+  image: python:3.11-slim
+  variables:
+    GITLAB_TOKEN: ${PUBLISHER_TOKEN}
+  script:
+    - pip install requests python-gitlab
+    - |
+      echo "🚀 Running publisher agent..."
+      python3 << 'EOF'
+      import os
+      import gitlab
+
+      gl = gitlab.Gitlab('https://gitlab.com', private_token=os.environ['GITLAB_TOKEN'])
+      project = gl.projects.get('blueflyio/openstandardagents.org')
+
+      # Find approved MRs
+      mrs = project.mergerequests.list(labels=['editor-approved', 'needs-publisher'], state='opened')
+
+      for mr in mrs:
+          print(f"📦 Publishing MR !{mr.iid}: {mr.title}")
+
+          # Merge the MR
+          try:
+              mr.merge(
+                  squash=True,
+                  merge_commit_message=f"{mr.title}\n\nPublished by @ossa-publisher"
+              )
+              print(f"✅ MR !{mr.iid} merged")
+
+              # Post notification
+              mr.notes.create({'body': """## 🚀 Published!
+
+      Content has been merged and will be live shortly.
+
+      ---
+      *Published by @ossa-publisher*
+      """})
+          except Exception as e:
+              print(f"❌ Failed to merge: {e}")
+      EOF
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "schedule"
+      variables:
+        SCHEDULE_TYPE: "publish"
+    - if: $TRIGGER_PUBLISH == "true"
+
+# ============================================================================
+# Moderator Agent Jobs
+# ============================================================================
+
+content:moderator-audit:
+  stage: moderate
+  image: python:3.11-slim
+  variables:
+    GITLAB_TOKEN: ${MODERATOR_TOKEN}
+  script:
+    - pip install requests python-gitlab pyyaml
+    - |
+      echo "🔍 Running moderator audit..."
+      python3 << 'EOF'
+      import os
+      import glob
+      import re
+      import requests
+      from datetime import datetime, timedelta
+      import gitlab
+      import yaml
+
+      gl = gitlab.Gitlab('https://gitlab.com', private_token=os.environ['GITLAB_TOKEN'])
+      project = gl.projects.get('blueflyio/openstandardagents.org')
+
+      audit_results = {
+          'date': datetime.now().isoformat(),
+          'broken_links': [],
+          'stale_content': [],
+          'schema_errors': []
+      }
+
+      # Check all content files
+      content_files = glob.glob('website/content/**/*.md', recursive=True)
+
+      for filepath in content_files:
+          with open(filepath) as f:
+              content = f.read()
+
+          # Extract frontmatter date
+          if content.startswith('---'):
+              end = content.find('---', 3)
+              frontmatter = yaml.safe_load(content[3:end])
+              if 'date' in frontmatter:
+                  content_date = datetime.fromisoformat(frontmatter['date'].replace('Z', '+00:00'))
+                  if datetime.now(content_date.tzinfo) - content_date > timedelta(days=90):
+                      audit_results['stale_content'].append({
+                          'file': filepath,
+                          'date': frontmatter['date'],
+                          'age_days': (datetime.now(content_date.tzinfo) - content_date).days
+                      })
+
+          # Check links
+          links = re.findall(r'https?://[^\s\)\"\'>]+', content)
+          for url in links[:10]:  # Limit to 10 per file
+              try:
+                  resp = requests.head(url, timeout=5, allow_redirects=True)
+                  if resp.status_code >= 400:
+                      audit_results['broken_links'].append({
+                          'file': filepath,
+                          'url': url,
+                          'status': resp.status_code
+                      })
+              except:
+                  audit_results['broken_links'].append({
+                      'file': filepath,
+                      'url': url,
+                      'status': 'timeout'
+                  })
+
+      # Create audit report issue
+      report = f"""# 📊 Content Health Audit - {datetime.now().strftime('%Y-%m-%d')}
+
+      ## Summary
+      - **Files Audited**: {len(content_files)}
+      - **Broken Links**: {len(audit_results['broken_links'])}
+      - **Stale Content**: {len(audit_results['stale_content'])}
+
+      ## Broken Links
+      {"".join([f"- `{l['file']}`: [{l['url']}]({l['url']}) - {l['status']}\n" for l in audit_results['broken_links']]) or "None found"}
+
+      ## Stale Content (>90 days)
+      {"".join([f"- `{s['file']}` - {s['age_days']} days old\n" for s in audit_results['stale_content']]) or "None found"}
+
+      ---
+      *Audited by @ossa-moderator*
+      """
+
+      if audit_results['broken_links'] or audit_results['stale_content']:
+          issue = project.issues.create({
+              'title': f"📊 Content Audit Report - {datetime.now().strftime('%Y-%m-%d')}",
+              'description': report,
+              'labels': ['content-report', 'automated']
+          })
+          print(f"✅ Created audit report #{issue.iid}")
+      else:
+          print("✅ No issues found in audit")
+      EOF
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "schedule"
+      variables:
+        SCHEDULE_TYPE: "moderate"
+    - if: $TRIGGER_MODERATE == "true"
+
+# ============================================================================
+# Content Orchestrator - Full Cycle
+# ============================================================================
+
+content:full-cycle:
+  stage: research
+  image: python:3.11-slim
+  variables:
+    GITLAB_TOKEN: ${CONTENT_ORCHESTRATOR_TOKEN}
+  script:
+    - |
+      echo "🎭 Content Orchestrator - Full Cycle"
+      echo "This triggers the complete content pipeline:"
+      echo "1. Research → 2. Author → 3. Edit → 4. Publish → 5. Moderate"
+      echo ""
+      echo "Agents Involved:"
+      echo "- @ossa-researcher: Finding content opportunities"
+      echo "- @ossa-author: Creating drafts"
+      echo "- @ossa-editor: Reviewing content"
+      echo "- @ossa-publisher: Merging approved content"
+      echo "- @ossa-moderator: Auditing published content"
+  needs: []
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "schedule"
+      variables:
+        SCHEDULE_TYPE: "full-cycle"
+    - if: $TRIGGER_FULL_CYCLE == "true"
