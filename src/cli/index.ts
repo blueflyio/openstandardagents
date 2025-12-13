@@ -20,6 +20,7 @@ import { releaseCommandGroup } from './commands/release.command.js';
 import { setupCommand } from './commands/setup.command.js';
 import { syncCommand } from './commands/sync.command.js';
 import { agentsMdCommand } from './commands/agents-md.command.js';
+import { quickstartCommand } from './commands/quickstart.command.js';
 
 // Load package.json for version (lazy to avoid Jest module resolution issues)
 import * as fs from 'fs';
@@ -109,6 +110,7 @@ program
   .version(getVersion());
 
 // Register commands
+program.addCommand(quickstartCommand); // First for discoverability
 program.addCommand(validateCommand);
 program.addCommand(generateCommand);
 program.addCommand(migrateCommand);

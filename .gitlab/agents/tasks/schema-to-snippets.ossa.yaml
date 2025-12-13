@@ -1,0 +1,79 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# Task: Generate VS Code Snippets from JSON Schema
+# ═══════════════════════════════════════════════════════════════════════════════
+#
+# This is a DETERMINISTIC task - no LLM required.
+# Input: JSON Schema file
+# Output: VS Code snippets JSON file
+#
+# ═══════════════════════════════════════════════════════════════════════════════
+
+apiVersion: ossa/v0.3.0
+kind: Task
+metadata:
+  name: schema-to-snippets
+  version: 1.0.0
+  description: Generate VS Code snippets from OSSA JSON Schema examples
+  labels:
+    category: code-generation
+    ide: vscode
+    deterministic: "true"
+
+spec:
+  execution:
+    type: deterministic
+    runtime: node
+    timeout_seconds: 60
+
+  capabilities:
+    - read_file
+    - write_file
+    - json_parse
+    - template_render
+
+  input:
+    type: object
+    required: [schema_path, output_path]
+    properties:
+      schema_path:
+        type: string
+        description: Path to JSON Schema file
+        examples:
+          - spec/v0.3.0/ossa-0.3.0.schema.json
+      output_path:
+        type: string
+        description: Path for generated snippets file
+        examples:
+          - tools/vscode-ossa/snippets/ossa-snippets.json
+      prefix:
+        type: string
+        default: "ossa"
+        description: Snippet prefix for triggering
+
+  output:
+    type: object
+    properties:
+      snippets_file:
+        type: string
+        description: Path to generated snippets file
+      snippets_count:
+        type: integer
+        description: Number of snippets generated
+      snippet_names:
+        type: array
+        items:
+          type: string
+        description: Names of generated snippets
+
+  error_handling:
+    on_error: fail
+
+runtime:
+  type: node
+  bindings:
+    template_render:
+      handler: "./scripts/schema-to-snippets.js"
+      config:
+        scope: yaml
+        include_descriptions: true
+        tab_stops: true
