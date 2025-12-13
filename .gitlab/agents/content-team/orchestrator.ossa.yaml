@@ -1,0 +1,145 @@
+apiVersion: ossa/v0.3.0
+kind: Agent
+metadata:
+  name: content-orchestrator
+  namespace: website-automation
+  version: 1.0.0
+  description: |
+    Master orchestrator for the living website content system.
+    Coordinates author, editor, publisher, and moderator agents to maintain
+    openstandardagents.org as a self-documenting, agent-driven website.
+  labels:
+    tier: orchestrator
+    domain: content
+    trigger: scheduled
+  author:
+    name: OSSA Content Team
+    email: content-bot@openstandardagents.org
+    gitlab_service_account: ossa-content-orchestrator
+
+spec:
+  role: |
+    You are the Content Orchestrator for openstandardagents.org - the first living,
+    breathing website built entirely by AI agents following the OSSA specification.
+
+    Your mission: Coordinate the content team to keep the website fresh, accurate,
+    and demonstrating OSSA's own capabilities. The website IS the proof of concept.
+
+    Team Members (GitLab Service Accounts):
+    - @ossa-researcher: Discovers trends, news, and research to write about
+    - @ossa-author: Creates new blog posts and documentation
+    - @ossa-editor: Reviews and improves content quality
+    - @ossa-publisher: Manages publication workflow and scheduling
+    - @ossa-moderator: Ensures content quality and compliance
+
+    Workflow:
+    1. Weekly: Research agent scans for OSSA-relevant news and trends
+    2. Research triggers Author to draft new content
+    3. Editor reviews and enhances drafts
+    4. Publisher schedules and deploys approved content
+    5. Moderator audits published content for accuracy
+
+  llm:
+    provider: anthropic
+    model: claude-sonnet-4-20250514
+    temperature: 0.3
+    max_tokens: 4096
+
+  agents:
+    - name: content-researcher
+      path: .gitlab/agents/content-team/researcher.ossa.yaml
+      wave: 1
+      schedule: "0 6 * * 1"  # Monday 6am
+
+    - name: content-author
+      path: .gitlab/agents/content-team/author.ossa.yaml
+      wave: 2
+      depends_on: [content-researcher]
+
+    - name: content-editor
+      path: .gitlab/agents/content-team/editor.ossa.yaml
+      wave: 3
+      depends_on: [content-author]
+
+    - name: content-publisher
+      path: .gitlab/agents/content-team/publisher.ossa.yaml
+      wave: 4
+      depends_on: [content-editor]
+
+    - name: content-moderator
+      path: .gitlab/agents/content-team/moderator.ossa.yaml
+      wave: 5
+      schedule: "0 0 * * 0"  # Sunday midnight audit
+
+  workflow:
+    execution: parallel_waves
+
+    triggers:
+      - type: schedule
+        cron: "0 6 * * 1"  # Weekly Monday 6am content cycle
+
+      - type: webhook
+        events:
+          - issue.labeled
+        filters:
+          - label: content-request
+
+      - type: manual
+        command: /content-cycle
+
+    safety_checks:
+      - verify_feature_branch
+      - verify_content_review
+      - verify_no_direct_push
+      - verify_mr_approval
+
+    content_policies:
+      - all_claims_backed_by_research
+      - cite_sources_inline
+      - no_unsubstantiated_claims
+      - maintain_brand_voice
+      - seo_metadata_required
+
+  integrations:
+    gitlab:
+      api_version: v4
+      token: ${CONTENT_ORCHESTRATOR_TOKEN}
+      project: blueflyio/openstandardagents.org
+
+    anthropic:
+      api_key: ${ANTHROPIC_API_KEY}
+
+    web_research:
+      enabled: true
+      sources:
+        - arxiv.org
+        - github.com/trending
+        - news.ycombinator.com
+        - nextbigteng.substack.com
+        - developers.googleblog.com
+
+  reporting:
+    channels:
+      - type: gitlab-issue
+        label: content-report
+        template: weekly-content-report
+
+      - type: discord
+        channel: content-updates
+
+    metrics:
+      - content_pieces_published
+      - average_edit_cycles
+      - research_sources_cited
+      - seo_score_average
+      - time_to_publish
+
+  monitoring:
+    logs:
+      level: info
+      format: json
+    alerts:
+      - condition: content_stale_7_days
+        severity: warning
+      - condition: publish_failure
+        severity: critical

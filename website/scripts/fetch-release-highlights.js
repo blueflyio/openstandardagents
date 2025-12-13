@@ -183,6 +183,71 @@ function extractBulletPoints(content) {
   return bullets;
 }
 
+// Generate default highlights data structure
+function generateDefaultHighlightsData(version = '0.2.9') {
+  return {
+    version,
+    releaseDate: new Date().toISOString().split('T')[0],
+    overview: 'The latest OSSA release brings enterprise-grade specifications for production multi-agent systems.',
+    features: [],
+    categories: [],
+    homepage: [
+      {
+        title: 'Enterprise Security',
+        color: 'green',
+        bullets: [
+          'Formal security model with authentication & authorization',
+          'Secrets management & sandboxing requirements',
+          'FedRAMP, SOC2, HIPAA compliance profiles'
+        ]
+      },
+      {
+        title: 'Multi-Agent Orchestration',
+        color: 'blue',
+        bullets: [
+          'A2A Protocol for agent-to-agent communication',
+          'Capability URI scheme with registry format',
+          'Instance, session, and interaction IDs'
+        ]
+      },
+      {
+        title: 'Observability',
+        color: 'purple',
+        bullets: [
+          'OpenTelemetry semantic conventions',
+          'Reasoning trace export (ReAct, CoT, ToT)',
+          'Versioned prompt template management'
+        ]
+      },
+      {
+        title: 'Developer Experience',
+        color: 'orange',
+        bullets: [
+          'Conformance testing (Basic, Standard, Enterprise)',
+          'agents.md & llms.txt integration',
+          'Enhanced CLI validation tools'
+        ]
+      }
+    ]
+  };
+}
+
+// Generate and write default highlights
+function generateDefaultHighlights() {
+  const highlights = generateDefaultHighlightsData();
+  
+  // Ensure output directory exists
+  const outputDir = path.dirname(OUTPUT_PATH);
+  if (!fs.existsSync(outputDir)) {
+    fs.mkdirSync(outputDir, { recursive: true });
+  }
+  
+  fs.writeFileSync(OUTPUT_PATH, JSON.stringify(highlights, null, 2));
+  console.log(`\n✅ Generated ${OUTPUT_PATH} with default highlights`);
+  console.log(`   Version: ${highlights.version}`);
+  console.log(`   Homepage cards: ${highlights.homepage.length}`);
+}
+
 // Group features by category for homepage display
 function groupByCategory(features) {
   const grouped = {};
@@ -241,25 +306,40 @@ function generateHomepageHighlights(highlights) {
 async function main() {
   console.log('🔄 Fetching release highlights from spec CHANGELOGs...\n');
 
+  // Check if spec directory exists
+  if (!fs.existsSync(SPEC_DIR)) {
+    console.log('⚠️  Spec directory not found, generating default highlights...');
+    generateDefaultHighlights();
+    return;
+  }
+
   // Find all version directories
-  const versions = fs.readdirSync(SPEC_DIR)
-    .filter(f => f.startsWith('v') && fs.statSync(path.join(SPEC_DIR, f)).isDirectory())
-    .sort((a, b) => {
-      // Sort by semver descending
-      const parseVersion = v => v.replace('v', '').split(/[-.]/).map(n => parseInt(n) || 0);
-      const aParts = parseVersion(a);
-      const bParts = parseVersion(b);
-      for (let i = 0; i < Math.max(aParts.length, bParts.length); i++) {
-        if ((aParts[i] || 0) !== (bParts[i] || 0)) {
-          return (bParts[i] || 0) - (aParts[i] || 0);
+  let versions;
+  try {
+    versions = fs.readdirSync(SPEC_DIR)
+      .filter(f => f.startsWith('v') && fs.statSync(path.join(SPEC_DIR, f)).isDirectory())
+      .sort((a, b) => {
+        // Sort by semver descending
+        const parseVersion = v => v.replace('v', '').split(/[-.]/).map(n => parseInt(n) || 0);
+        const aParts = parseVersion(a);
+        const bParts = parseVersion(b);
+        for (let i = 0; i < Math.max(aParts.length, bParts.length); i++) {
+          if ((aParts[i] || 0) !== (bParts[i] || 0)) {
+            return (bParts[i] || 0) - (aParts[i] || 0);
+          }
         }
-      }
-      return 0;
-    });
+        return 0;
+      });
+  } catch (error) {
+    console.log('⚠️  Error reading spec directory, generating default highlights...');
+    generateDefaultHighlights();
+    return;
+  }
 
   if (versions.length === 0) {
-    console.log('⚠️  No version directories found in spec/');
-    process.exit(1);
+    console.log('⚠️  No version directories found in spec/, generating default highlights...');
+    generateDefaultHighlights();
+    return;
   }
 
   const latestVersion = versions[0];
@@ -297,51 +377,7 @@ async function main() {
   if (!highlights || highlights.features.length === 0) {
     // Generate default highlights
     console.log('  Generating default highlights...');
-    highlights = {
-      version: latestVersion.replace('v', ''),
-      releaseDate: new Date().toISOString().split('T')[0],
-      overview: 'The latest OSSA release brings enterprise-grade specifications for production multi-agent systems.',
-      features: [],
-      categories: [],
-      homepage: [
-        {
-          title: 'Enterprise Security',
-          color: 'green',
-          bullets: [
-            'Formal security model with authentication & authorization',
-            'Secrets management & sandboxing requirements',
-            'FedRAMP, SOC2, HIPAA compliance profiles'
-          ]
-        },
-        {
-          title: 'Multi-Agent Orchestration',
-          color: 'blue',
-          bullets: [
-            'A2A Protocol for agent-to-agent communication',
-            'Capability URI scheme with registry format',
-            'Instance, session, and interaction IDs'
-          ]
-        },
-        {
-          title: 'Observability',
-          color: 'purple',
-          bullets: [
-            'OpenTelemetry semantic conventions',
-            'Reasoning trace export (ReAct, CoT, ToT)',
-            'Versioned prompt template management'
-          ]
-        },
-        {
-          title: 'Developer Experience',
-          color: 'orange',
-          bullets: [
-            'Conformance testing (Basic, Standard, Enterprise)',
-            'agents.md & llms.txt integration',
-            'Enhanced CLI validation tools'
-          ]
-        }
-      ]
-    };
+    highlights = generateDefaultHighlightsData(latestVersion ? latestVersion.replace('v', '') : '0.2.9');
   } else {
     // Generate homepage-ready format
     highlights.homepage = generateHomepageHighlights(highlights);
