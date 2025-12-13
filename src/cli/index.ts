@@ -125,3 +125,23 @@ program.addCommand(agentsMdCommand);
 
 // Parse arguments
 program.parse();
+
+// Registry commands
+import { publishCommand } from './commands/publish.command.js';
+import { searchCommand } from './commands/search.command.js';
+import { installCommand } from './commands/install.command.js';
+import { infoCommand } from './commands/info.command.js';
+
+// Deploy commands
+// // import { deployGroup } from './commands/deploy.command.js';
+
+// Test command
+// // import { testCommand } from './commands/test.command.js';
+
+// Register new commands
+program.addCommand(publishCommand);
+program.addCommand(searchCommand);
+program.addCommand(installCommand);
+program.addCommand(infoCommand);
+// // program.addCommand(deployGroup);
+// // program.addCommand(testCommand);
