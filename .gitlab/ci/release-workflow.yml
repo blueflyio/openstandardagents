@@ -17,8 +17,8 @@ create-dev-tag:release:
     - apk add --no-cache curl jq git bash
     - git config user.email "ci@bluefly.io"
     - git config user.name "GitLab CI"
+    - git fetch --tags --force || true
     - git remote set-url origin https://oauth2:${GITLAB_PUSH_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git
-    - git fetch --unshallow --tags --force || git fetch --tags --force || true
   script:
     - |
       #!/bin/bash
@@ -194,19 +194,19 @@ create-release-tag:
     - apk add --no-cache curl jq git bash
     - git config user.email "ci@bluefly.io"
     - git config user.name "GitLab CI"
+    - git fetch --tags --force || true
     - git remote set-url origin https://oauth2:${GITLAB_PUSH_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git
-    - git fetch --unshallow --tags --force || git fetch --tags --force || true
   script:
     - |
       #!/bin/bash
       set -e
       
-      source release-version.env || true
-      
-      if [ "$RELEASE_READY" != "true" ] || [ -z "$RELEASE_VERSION" ]; then
-        echo "Release not ready or version not detected"
+      if [ ! -f release-version.env ]; then
+        echo "release-version.env not found, skipping tag creation"
         exit 0
       fi
+      
+      source release-version.env
       
       echo "CREATING FINAL RELEASE TAG"
       echo "=========================="
@@ -240,11 +240,11 @@ create-release-tag:
         exit 1
       fi
   needs:
-    - detect-release-version
+    - job: detect-release-version
+      artifacts: true
   rules:
-    - if: $CI_COMMIT_BRANCH == "main" && $CI_COMMIT_MESSAGE =~ /Merge branch 'release\//
-      when: on_success
-    - if: $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "main" && $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME =~ /^release\//
+    - if: $CI_COMMIT_BRANCH == "main" && $CI_COMMIT_MESSAGE =~ /Merge branch 'release/
+    - if: $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "main" && $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME =~ /^release//
       when: manual
   allow_failure: false
 
