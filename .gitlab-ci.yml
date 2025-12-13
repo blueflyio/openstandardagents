@@ -38,6 +38,8 @@ include:
   - template: Jobs/Dependency-Scanning.gitlab-ci.yml
   - template: Jobs/Container-Scanning.gitlab-ci.yml
   - template: Jobs/Code-Quality.gitlab-ci.yml
+  # OSSA Agent Pipelines
+  #- local: .gitlab/ci/seo-automation.yml
 
 stages:
   - sync
