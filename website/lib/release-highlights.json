@@ -1,0 +1,146 @@
+{
+  "version": "0.2.8",
+  "releaseDate": "2025-11-24",
+  "overview": "OSSA v0.2.8 introduces significant new features for transport metadata, state management, enhanced security, and capability versioning. This release enhances OSSA integration with Google ADK, A2A protocol, OpenAI Agents SDK, and Microsoft Autogen Framework.",
+  "categories": [
+    {
+      "name": "orchestration",
+      "color": "blue",
+      "icon": "workflow",
+      "keywords": [
+        "orchestration",
+        "multi-agent",
+        "a2a",
+        "protocol",
+        "agent-to-agent",
+        "capability",
+        "registry",
+        "session",
+        "instance"
+      ]
+    },
+    {
+      "name": "security",
+      "color": "green",
+      "icon": "shield",
+      "keywords": [
+        "security",
+        "auth",
+        "scopes",
+        "compliance",
+        "hipaa",
+        "gdpr",
+        "soc2",
+        "fedramp",
+        "secrets",
+        "sandboxing"
+      ]
+    }
+  ],
+  "features": [
+    {
+      "title": "Transport Metadata for Capabilities",
+      "description": "Support for protocol-specific transport configuration, enabling streaming and advanced communication patterns.",
+      "category": "orchestration",
+      "color": "blue",
+      "bullets": [
+        "`none` - Standard request/response",
+        "`request` - Client streams to server",
+        "`response` - Server streams to client (SSE, streaming LLM)"
+      ]
+    },
+    {
+      "title": "State/Memory Block",
+      "description": "Agent state management configuration for stateful and long-running agents.",
+      "category": "orchestration",
+      "color": "blue",
+      "bullets": [
+        "`memory` - In-process (lost on restart)",
+        "`vector-db` - Vector database (Pinecone, Weaviate, Chroma)",
+        "`kv` - Key-value store (Redis, DynamoDB)"
+      ]
+    },
+    {
+      "title": "Enhanced Security with Scopes",
+      "description": "Fine-grained permission scopes and compliance tags for capabilities.",
+      "category": "security",
+      "color": "green",
+      "bullets": [
+        "`read:data`, `write:data` - Data access",
+        "`admin:system`, `admin:users` - Administrative operations",
+        "`execute:code`, `execute:query` - Execution permissions"
+      ]
+    },
+    {
+      "title": "Capability Versioning",
+      "description": "Independent versioning and deprecation for capabilities.",
+      "category": "orchestration",
+      "color": "blue",
+      "bullets": [
+        "Independent capability lifecycle management",
+        "Clear migration paths for breaking changes",
+        "Backward compatibility tracking"
+      ]
+    },
+    {
+      "title": "Google ADK Extension",
+      "description": "Integration with Google's Agent Development Kit (ADK).",
+      "category": "orchestration",
+      "color": "blue",
+      "bullets": [
+        "`llm_agent` - Single LLM-powered agent",
+        "`sequential_agent` - Pipeline of agents",
+        "`parallel_agent` - Concurrent agent execution"
+      ]
+    },
+    {
+      "title": "Schema Updates",
+      "description": "#### apiVersion Pattern",
+      "category": "security",
+      "color": "green",
+      "bullets": [
+        "`ossa/v0.2.2`",
+        "`ossa/v0.2.4`",
+        "`ossa/v0.2.8`"
+      ]
+    }
+  ],
+  "homepage": [
+    {
+      "title": "Multi-Agent Orchestration",
+      "color": "blue",
+      "bullets": [
+        "`none` - Standard request/response",
+        "`request` - Client streams to server",
+        "`response` - Server streams to client (SSE, streaming LLM)"
+      ]
+    },
+    {
+      "title": "Enterprise Security",
+      "color": "green",
+      "bullets": [
+        "`read:data`, `write:data` - Data access",
+        "`admin:system`, `admin:users` - Administrative operations",
+        "`execute:code`, `execute:query` - Execution permissions"
+      ]
+    },
+    {
+      "title": "Observability",
+      "color": "purple",
+      "bullets": [
+        "Tracing and monitoring",
+        "Performance metrics",
+        "Debug tooling"
+      ]
+    },
+    {
+      "title": "Developer Experience",
+      "color": "orange",
+      "bullets": [
+        "CLI tools",
+        "Validation utilities",
+        "IDE integrations"
+      ]
+    }
+  ]
+}

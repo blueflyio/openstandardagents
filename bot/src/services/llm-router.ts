@@ -40,7 +40,7 @@ export class LLMRouter {
   
   private async askClaude(question: string): Promise<string> {
     const message = await this.anthropic.messages.create({
-      model: 'claude-3-5-sonnet-20241022',
+      model: 'claude-sonnet-4-5-20250929',
       max_tokens: 1024,
       messages: [{
         role: 'user',
@@ -54,7 +54,7 @@ export class LLMRouter {
   
   private async askGPT(question: string): Promise<string> {
     const completion = await this.openai.chat.completions.create({
-      model: 'gpt-4-turbo-preview',
+      model: 'gpt-4o',
       max_tokens: 1024,
       messages: [{
         role: 'system',

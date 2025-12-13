@@ -4,6 +4,10 @@ import './globals.scss';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { StructuredData } from '@/components/StructuredData';
+import { GoogleAnalytics } from '@/components/GoogleAnalytics';
+import { getVersionForMetadata } from '@/lib/get-version-for-metadata';
+
+const versionInfo = getVersionForMetadata();
 
 const inter = Inter({
   subsets: ['latin'],
@@ -14,7 +18,7 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   title: {
-    default: 'Open Standard Agents v0.2.9 - Enterprise Multi-Agent Specification',
+    default: `Open Standard Agents ${versionInfo.tag} - Enterprise Multi-Agent Specification`,
     template: '%s | Open Standard Agents',
   },
   description: 'Production-ready specification for autonomous agent systems with formal security models, multi-agent orchestration (A2A), and OpenTelemetry observability. Write once, deploy anywhere.',
@@ -24,7 +28,7 @@ export const metadata: Metadata = {
   publisher: 'OSSA Standards Team',
   metadataBase: new URL('https://openstandardagents.org'),
   openGraph: {
-    title: 'Open Standard Agents v0.2.9 - Enterprise Multi-Agent Specification',
+    title: `Open Standard Agents ${versionInfo.tag} - Enterprise Multi-Agent Specification`,
     description: 'Production-ready specification for autonomous agent systems with formal security models, multi-agent orchestration, and OpenTelemetry observability.',
     type: 'website',
     locale: 'en_US',
@@ -34,13 +38,13 @@ export const metadata: Metadata = {
         url: '/og-image.png',
         width: 1200,
         height: 630,
-        alt: 'OSSA v0.2.9 - Enterprise Multi-Agent Specification',
+        alt: `OSSA ${versionInfo.tag} - Enterprise Multi-Agent Specification`,
       },
     ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'OSSA v0.2.9 - Enterprise Multi-Agent Specification',
+    title: `OSSA ${versionInfo.tag} - Enterprise Multi-Agent Specification`,
     description: 'Production-ready spec for multi-agent systems with A2A Protocol, security models, and OpenTelemetry',
     creator: '@openstandardagents',
   },
@@ -101,6 +105,7 @@ export default function RootLayout({
         />
       </head>
       <body suppressHydrationWarning>
+        <GoogleAnalytics />
         <div className="flex flex-col min-h-screen">
           <a
             href="#main-content"

@@ -30,7 +30,7 @@ cd .agents/my-agent
 Edit `agent.yml`:
 
 ```yaml
-ossaVersion: "0.2.8"
+ossaVersion: "0.2.9"
 
 agent:
   id: my-agent

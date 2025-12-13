@@ -44,13 +44,17 @@ Closes #${CI_MERGE_REQUEST_IID:-auto}
 [skip ci]"
       git push https://oauth2:${CI_JOB_TOKEN}@gitlab.com/${CI_PROJECT_PATH}.git HEAD:"$BRANCH"
       
+      # Determine target branch dynamically from version (major.minor.x)
+      MAJOR_MINOR=$(echo "$VERSION" | sed 's/\([0-9]*\.[0-9]*\).*/\1/')
+      TARGET_BRANCH="release/v${MAJOR_MINOR}.x"
+
       # Create MR
       curl --request POST \
         --header "PRIVATE-TOKEN: ${CI_JOB_TOKEN}" \
         --header "Content-Type: application/json" \
         --data "{
           \"source_branch\": \"$BRANCH\",
-          \"target_branch\": \"release/v0.3.0\",
+          \"target_branch\": \"$TARGET_BRANCH\",
           \"title\": \"chore(ci): sync OSSA spec v${VERSION}\",
           \"description\": \"Automated sync triggered by OSSA v${VERSION} release.\n\n✅ Spec synced\n✅ Examples updated\n✅ Wiki synced\",
           \"remove_source_branch\": true,

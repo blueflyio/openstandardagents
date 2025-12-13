@@ -69,7 +69,7 @@ This points to OrbStack's Kubernetes ingress controller.
 
 ## Related Domains
 
-See [Local Development Domains](/Users/flux423/Sites/LLM/technical-docs/local-development-domains.md) for a complete list of all local development domains.
+See the technical docs wiki for a complete list of all local development domains.
 
 ### Key OSSA Domains
 - `ossa.orb.local` - Main website (this deployment)
