@@ -196,9 +196,7 @@ export class MessagingValidator {
     return errors;
   }
 
-  private validateSubscribes(
-    subscribes: Subscription[]
-  ): ValidationError[] {
+  private validateSubscribes(subscribes: Subscription[]): ValidationError[] {
     const errors: ValidationError[] = [];
 
     if (!Array.isArray(subscribes)) {
@@ -233,8 +231,7 @@ export class MessagingValidator {
       ) {
         errors.push({
           path: `${path}.priority`,
-          message:
-            'priority must be one of: low, normal, high, critical',
+          message: 'priority must be one of: low, normal, high, critical',
         });
       }
 
@@ -379,8 +376,7 @@ export class MessagingValidator {
         ) {
           errors.push({
             path: 'messaging.reliability.retry.backoff.strategy',
-            message:
-              'strategy must be one of: exponential, linear, constant',
+            message: 'strategy must be one of: exponential, linear, constant',
           });
         }
       }
@@ -415,7 +411,18 @@ export class MessagingValidator {
     }
 
     // Basic JSON Schema validation
-    if (schema.type && !['object', 'array', 'string', 'number', 'integer', 'boolean', 'null'].includes(schema.type)) {
+    if (
+      schema.type &&
+      ![
+        'object',
+        'array',
+        'string',
+        'number',
+        'integer',
+        'boolean',
+        'null',
+      ].includes(schema.type)
+    ) {
       errors.push({
         path: 'type',
         message: `invalid schema type: ${schema.type}`,

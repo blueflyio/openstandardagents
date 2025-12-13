@@ -62,7 +62,10 @@ describe('Schema Validation Integration', () => {
             }
 
             // Map ossa/v0.2 or ossa/v0.2.x to current schema version
-            const result = await validationService.validate(manifest, CURRENT_SCHEMA_VERSION);
+            const result = await validationService.validate(
+              manifest,
+              CURRENT_SCHEMA_VERSION
+            );
 
             // Log errors for debugging
             if (result.errors.length > 0) {
@@ -136,7 +139,10 @@ describe('Schema Validation Integration', () => {
       },
     };
 
-    const result = await validationService.validate(manifest, CURRENT_SCHEMA_VERSION);
+    const result = await validationService.validate(
+      manifest,
+      CURRENT_SCHEMA_VERSION
+    );
     expect(result.valid).toBe(true);
   });
 
@@ -162,7 +168,10 @@ describe('Schema Validation Integration', () => {
       },
     };
 
-    const result = await validationService.validate(manifest, CURRENT_SCHEMA_VERSION);
+    const result = await validationService.validate(
+      manifest,
+      CURRENT_SCHEMA_VERSION
+    );
     expect(result.valid).toBe(false);
     expect(result.errors.length).toBeGreaterThan(0);
   });
@@ -198,7 +207,10 @@ describe('Schema Validation Integration', () => {
       },
     };
 
-    const result = await validationService.validate(manifest, CURRENT_SCHEMA_VERSION);
+    const result = await validationService.validate(
+      manifest,
+      CURRENT_SCHEMA_VERSION
+    );
     if (result.errors.length > 0) {
       console.error(
         'Cross-platform validation errors:',

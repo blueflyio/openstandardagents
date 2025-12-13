@@ -9,7 +9,6 @@ variables:
 .ossa-runner:
   image: node:${OSSA_NODE_VERSION}-alpine
   variables:
-    NODE_ENV: production
     NPM_CONFIG_LEGACY_PEER_DEPS: "1"
   before_script:
     - apk add --no-cache git python3 make g++

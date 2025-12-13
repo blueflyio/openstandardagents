@@ -32,7 +32,10 @@ describe('GitHubSyncService', () => {
   });
 
   it('should reject invalid config', () => {
-    const invalid = { ...mockConfig, github: { ...mockConfig.github, token: 123 } };
+    const invalid = {
+      ...mockConfig,
+      github: { ...mockConfig.github, token: 123 },
+    };
     expect(() => new GitHubSyncService(invalid as any)).toThrow();
   });
 });

@@ -56,17 +56,21 @@ function findPackageJson(startDir: string): string | null {
 /**
  * Parse version string into components
  */
-function parseVersion(version: string): Pick<VersionInfo, 'major' | 'minor' | 'patch' | 'prerelease'> {
+function parseVersion(
+  version: string
+): Pick<VersionInfo, 'major' | 'minor' | 'patch' | 'prerelease'> {
   // Handle versions like "0.3.0", "0.3.0-RC", "0.3.0-beta.1"
   const match = version.match(/^(\d+)\.(\d+)\.(\d+)(?:-(.+))?$/);
   if (!match) {
-    throw new Error(`Invalid version format: ${version}. Version must be read from package.json.`);
+    throw new Error(
+      `Invalid version format: ${version}. Version must be read from package.json.`
+    );
   }
   return {
     major: parseInt(match[1], 10),
     minor: parseInt(match[2], 10),
     patch: parseInt(match[3], 10),
-    prerelease: match[4]
+    prerelease: match[4],
   };
 }
 
@@ -120,10 +124,15 @@ function readVersionFromPackageJson(): string {
   try {
     const specDir = path.resolve(process.cwd(), 'spec');
     if (fs.existsSync(specDir)) {
-      const versions = fs.readdirSync(specDir)
-        .filter(d => d.startsWith('v') && fs.statSync(path.join(specDir, d)).isDirectory())
-        .map(d => d.substring(1)) // Remove 'v' prefix
-        .filter(v => /^\d+\.\d+\.\d+/.test(v))
+      const versions = fs
+        .readdirSync(specDir)
+        .filter(
+          (d) =>
+            d.startsWith('v') &&
+            fs.statSync(path.join(specDir, d)).isDirectory()
+        )
+        .map((d) => d.substring(1)) // Remove 'v' prefix
+        .filter((v) => /^\d+\.\d+\.\d+/.test(v))
         .sort((a, b) => {
           const [aMajor, aMinor, aPatch] = a.split('.').map(Number);
           const [bMajor, bMinor, bPatch] = b.split('.').map(Number);
@@ -141,8 +150,8 @@ function readVersionFromPackageJson(): string {
   // NO FALLBACK - fail loudly
   throw new Error(
     'OSSA_VERSION_ERROR: Could not determine version dynamically. ' +
-    'Ensure package.json exists with a valid version, or set OSSA_VERSION env var. ' +
-    'NEVER hardcode version strings.'
+      'Ensure package.json exists with a valid version, or set OSSA_VERSION env var. ' +
+      'NEVER hardcode version strings.'
   );
 }
 
@@ -174,7 +183,7 @@ export function getVersionInfo(forceRefresh = false): VersionInfo {
     schemaDir,
     schemaFile,
     schemaPath: `spec/${schemaDir}/${schemaFile}`,
-    apiVersion: `ossa/v${version}`
+    apiVersion: `ossa/v${version}`,
   };
 
   return cachedVersionInfo;

@@ -264,4 +264,3 @@ export class ReleaseService extends BaseCrudService<
     return 'draft';
   }
 }
-

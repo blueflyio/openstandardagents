@@ -3,10 +3,7 @@
  * Parses OSSA manifest files and extracts Claude/Anthropic-specific configuration
  */
 
-import type {
-  OssaManifestWithAnthropic,
-  AnthropicExtension,
-} from './types.js';
+import type { OssaManifestWithAnthropic, AnthropicExtension } from './types.js';
 
 /**
  * Parse and validate OSSA manifest for Claude adapter
@@ -81,9 +78,7 @@ export class ManifestParser {
    */
   getTemperature(): number {
     // Check Anthropic extension first
-    if (
-      this.manifest.extensions?.anthropic?.temperature !== undefined
-    ) {
+    if (this.manifest.extensions?.anthropic?.temperature !== undefined) {
       return this.manifest.extensions.anthropic.temperature;
     }
 

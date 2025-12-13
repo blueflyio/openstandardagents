@@ -87,9 +87,12 @@ function getVersion(): string {
   try {
     const specDir = path.resolve(__dirname, '../../spec');
     if (fs.existsSync(specDir)) {
-      const dirs = fs.readdirSync(specDir)
+      const dirs = fs
+        .readdirSync(specDir)
         .filter((d: string) => d.startsWith('v'))
-        .sort((a: string, b: string) => b.localeCompare(a, undefined, { numeric: true }));
+        .sort((a: string, b: string) =>
+          b.localeCompare(a, undefined, { numeric: true })
+        );
       if (dirs.length > 0) {
         return dirs[0].slice(1); // Remove 'v' prefix
       }
@@ -99,7 +102,9 @@ function getVersion(): string {
   }
 
   // Should never reach here if package.json exists
-  throw new Error('Unable to determine OSSA version. Ensure package.json exists.');
+  throw new Error(
+    'Unable to determine OSSA version. Ensure package.json exists.'
+  );
 }
 
 program
@@ -135,15 +140,15 @@ import { installCommand } from './commands/install.command.js';
 import { infoCommand } from './commands/info.command.js';
 
 // Deploy commands
-// // import { deployGroup } from './commands/deploy.command.js';
+import { deployGroup } from './commands/deploy.command.js';
 
 // Test command
-// // import { testCommand } from './commands/test.command.js';
+import { testCommand } from './commands/test.command.js';
 
 // Register new commands
 program.addCommand(publishCommand);
 program.addCommand(searchCommand);
 program.addCommand(installCommand);
 program.addCommand(infoCommand);
-// // program.addCommand(deployGroup);
-// // program.addCommand(testCommand);
+program.addCommand(deployGroup);
+program.addCommand(testCommand);

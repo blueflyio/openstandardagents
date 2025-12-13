@@ -10,7 +10,10 @@ import { container } from '../../di-container.js';
 import { ManifestRepository } from '../../repositories/manifest.repository.js';
 import { ValidationService } from '../../services/validation.service.js';
 import { OpenAIAdapter } from '../../services/runtime/openai.adapter.js';
-import { formatValidationErrors, formatErrorCompact } from '../utils/error-formatter.js';
+import {
+  formatValidationErrors,
+  formatErrorCompact,
+} from '../utils/error-formatter.js';
 // SchemaVersion not used in this file
 
 export const runCommand = new Command('run')
@@ -50,13 +53,21 @@ export const runCommand = new Command('run')
             if (options.verbose) {
               console.error(formatValidationErrors(result.errors, manifest));
             } else {
-              console.error(chalk.red.bold('\n✗ Agent manifest validation failed'));
-              console.error(chalk.red(`Found ${result.errors.length} error(s):\n`));
+              console.error(
+                chalk.red.bold('\n✗ Agent manifest validation failed')
+              );
+              console.error(
+                chalk.red(`Found ${result.errors.length} error(s):\n`)
+              );
               result.errors.forEach((error, index) => {
                 console.error(formatErrorCompact(error, index, manifest));
               });
-              console.error(chalk.gray('\nUse --verbose for detailed error information'));
-              console.error(chalk.blue('📚 Docs: https://openstandardagents.org/docs\n'));
+              console.error(
+                chalk.gray('\nUse --verbose for detailed error information')
+              );
+              console.error(
+                chalk.blue('📚 Docs: https://openstandardagents.org/docs\n')
+              );
             }
             process.exit(1);
           }

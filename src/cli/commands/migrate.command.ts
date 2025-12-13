@@ -73,9 +73,17 @@ export const migrateCommand = new Command('migrate')
         if (!migrationService.needsMigration(legacyManifest)) {
           const m = legacyManifest as OssaAgent;
           if (m.apiVersion === `ossa/v${currentVersion}`) {
-            console.log(chalk.green(`✓ Manifest is already at v${currentVersion}`));
-          } else if (typeof m.apiVersion === 'string' && m.apiVersion.startsWith('ossa/v') && m.kind === 'Agent') {
-            console.log(chalk.green('✓ Manifest is already at current version'));
+            console.log(
+              chalk.green(`✓ Manifest is already at v${currentVersion}`)
+            );
+          } else if (
+            typeof m.apiVersion === 'string' &&
+            m.apiVersion.startsWith('ossa/v') &&
+            m.kind === 'Agent'
+          ) {
+            console.log(
+              chalk.green('✓ Manifest is already at current version')
+            );
           } else {
             console.log(
               chalk.yellow(
@@ -91,7 +99,10 @@ export const migrateCommand = new Command('migrate')
 
         // Show migration summary if requested
         if (options.summary || options.verbose) {
-          const summary = migrationService.getMigrationSummary(legacyManifest, migratedManifest);
+          const summary = migrationService.getMigrationSummary(
+            legacyManifest,
+            migratedManifest
+          );
           console.log(chalk.cyan('\n📋 Migration Summary:'));
           console.log(chalk.gray(`  From: ${summary.sourceVersion}`));
           console.log(chalk.gray(`  To: ${summary.targetVersion}`));
@@ -149,7 +160,10 @@ export const migrateCommand = new Command('migrate')
                 );
               }
               // Otherwise add version.ossa before extension
-              return path.replace(/\.(yaml|yml|json)$/, `.v${currentVersion}.ossa.$1`);
+              return path.replace(
+                /\.(yaml|yml|json)$/,
+                `.v${currentVersion}.ossa.$1`
+              );
             })();
 
           // Save migrated manifest

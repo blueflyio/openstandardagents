@@ -316,14 +316,14 @@ describe('AgentsMdExtension Schema Validation', () => {
 
     examplePaths.forEach((examplePath) => {
       const fullPath = path.resolve(__dirname, examplePath);
-      
+
       // Skip if file doesn't exist (examples might not be built yet)
       if (!fs.existsSync(fullPath)) {
         return;
       }
 
       const content = fs.readFileSync(fullPath, 'utf-8');
-      
+
       // Parse YAML (simple approach - in real tests would use yaml parser)
       // For now, just check file exists
       expect(fs.existsSync(fullPath)).toBe(true);

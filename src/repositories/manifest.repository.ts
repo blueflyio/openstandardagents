@@ -16,7 +16,7 @@ export class ManifestRepository implements IManifestRepository {
    * @param filePath - Path to manifest file (YAML or JSON)
    * @returns Parsed manifest object
    */
-  async load(filePath: string): Promise<unknown> {
+  async load(filePath: string): Promise<OssaAgent> {
     const resolvedPath = path.resolve(filePath);
 
     if (!fs.existsSync(resolvedPath)) {

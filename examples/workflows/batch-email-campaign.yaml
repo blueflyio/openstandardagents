@@ -73,15 +73,7 @@ spec:
           ref: ./tasks/fetch-subscribers.yaml
           input:
             segment_id: ${{ segment_id }}
-<<<<<<< HEAD
-<<<<<<< HEAD
-            limit: ${{ workflow.input.test_mode && 10 }}
-=======
             limit: ${{ workflow.input.test_mode ? 10 : null }}
->>>>>>> origin/feature/ai-foundations
-=======
-            limit: ${{ workflow.input.test_mode ? 10 : null }}
->>>>>>> origin/fix/rebase-release-0.3.0-on-main
 
         # Send emails in batch
         - id: send-emails
@@ -90,15 +82,7 @@ spec:
           input:
             recipients: ${{ steps.fetch-subscribers.output.subscribers }}
             template_id: ${{ steps.fetch-campaign.output.template_id }}
-<<<<<<< HEAD
-<<<<<<< HEAD
-            content: ${{ steps.generate-variants.output.variants[segment_id] }}
-=======
             content: ${{ steps.generate-variants.output.variants[segment_id] || steps.fetch-campaign.output.content }}
->>>>>>> origin/feature/ai-foundations
-=======
-            content: ${{ steps.generate-variants.output.variants[segment_id] || steps.fetch-campaign.output.content }}
->>>>>>> origin/fix/rebase-release-0.3.0-on-main
             from_email: ${{ steps.fetch-campaign.output.from_email }}
             subject: ${{ steps.fetch-campaign.output.subject }}
           continue_on_error: true  # Continue with other segments if one fails

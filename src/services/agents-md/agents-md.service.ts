@@ -6,7 +6,11 @@
 import { injectable } from 'inversify';
 import * as fs from 'fs/promises';
 import * as path from 'path';
-import type { OssaAgent, AgentsMdExtension, AgentsMdSection } from '../../types/index.js';
+import type {
+  OssaAgent,
+  AgentsMdExtension,
+  AgentsMdSection,
+} from '../../types/index.js';
 
 /**
  * Service for generating and managing agents.md files from OSSA manifests
@@ -19,8 +23,10 @@ export class AgentsMdService {
    * @returns Generated AGENTS.md content as string
    */
   async generateAgentsMd(manifest: OssaAgent): Promise<string> {
-    const extension = manifest.extensions?.agents_md as AgentsMdExtension | undefined;
-    
+    const extension = manifest.extensions?.agents_md as
+      | AgentsMdExtension
+      | undefined;
+
     if (!extension?.enabled) {
       throw new Error('agents_md extension is not enabled in manifest');
     }
@@ -30,8 +36,12 @@ export class AgentsMdService {
 
     // Add header comment if enabled
     if (includeComments) {
-      sections.push('<!-- Generated from OSSA manifest - DO NOT EDIT MANUALLY -->');
-      sections.push('<!-- To update, modify the OSSA manifest and regenerate -->');
+      sections.push(
+        '<!-- Generated from OSSA manifest - DO NOT EDIT MANUALLY -->'
+      );
+      sections.push(
+        '<!-- To update, modify the OSSA manifest and regenerate -->'
+      );
       sections.push('');
     }
 
@@ -90,17 +100,21 @@ export class AgentsMdService {
     if (config?.source === 'spec.tools' && manifest.spec?.tools) {
       lines.push('');
       lines.push('## Tool Setup');
-      
+
       manifest.spec.tools.forEach((tool) => {
         if (tool.type === 'mcp' && tool.server) {
-          lines.push(`- **${tool.name || tool.server}**: MCP server integration`);
+          lines.push(
+            `- **${tool.name || tool.server}**: MCP server integration`
+          );
           if (tool.namespace) {
             lines.push(`  - Namespace: \`${tool.namespace}\``);
           }
         } else if (tool.type === 'http' && tool.endpoint) {
           lines.push(`- **${tool.name || 'HTTP Tool'}**: ${tool.endpoint}`);
         } else if (tool.type === 'kubernetes') {
-          lines.push(`- **${tool.name || 'Kubernetes Tool'}**: Kubernetes integration`);
+          lines.push(
+            `- **${tool.name || 'Kubernetes Tool'}**: Kubernetes integration`
+          );
         }
       });
     } else {
@@ -132,7 +146,7 @@ export class AgentsMdService {
     // Derive from spec.constraints if source is specified
     if (config?.source === 'spec.constraints' && manifest.spec?.constraints) {
       lines.push('');
-      
+
       if (manifest.spec.constraints.performance) {
         lines.push('## Performance Requirements');
         const perf = manifest.spec.constraints.performance;
@@ -157,7 +171,9 @@ export class AgentsMdService {
       lines.push('');
       lines.push('- Run all tests before committing: `npm test`');
       lines.push('- Ensure code coverage meets project standards');
-      lines.push('- Validate against OSSA schema: `ossa validate manifest.yaml`');
+      lines.push(
+        '- Validate against OSSA schema: `ossa validate manifest.yaml`'
+      );
     }
 
     return lines.join('\n');
@@ -181,7 +197,7 @@ export class AgentsMdService {
     // Derive from spec.autonomy if source is specified
     if (config?.source === 'spec.autonomy' && manifest.spec?.autonomy) {
       lines.push('');
-      
+
       if (manifest.spec.autonomy.approval_required) {
         lines.push('- **Human approval required** for all changes');
       }
@@ -200,7 +216,7 @@ export class AgentsMdService {
     } else {
       // Default content with title format if specified
       lines.push('');
-      
+
       if (config?.title_format) {
         const titleExample = this.formatTitle(config.title_format, manifest);
         lines.push(`## PR Title Format`);
@@ -222,16 +238,16 @@ export class AgentsMdService {
    */
   private formatTitle(format: string, manifest: OssaAgent): string {
     let result = format;
-    
+
     // Replace template variables
     if (manifest.metadata?.labels) {
       Object.entries(manifest.metadata.labels).forEach(([key, value]) => {
         result = result.replace(`{metadata.labels.${key}}`, value);
       });
     }
-    
+
     result = result.replace('{title}', 'Your PR title here');
-    
+
     return result;
   }
 
@@ -241,9 +257,11 @@ export class AgentsMdService {
    * @param outputPath - Optional output path (defaults to extension config)
    */
   async writeAgentsMd(manifest: OssaAgent, outputPath?: string): Promise<void> {
-    const extension = manifest.extensions?.agents_md as AgentsMdExtension | undefined;
+    const extension = manifest.extensions?.agents_md as
+      | AgentsMdExtension
+      | undefined;
     const targetPath = outputPath || extension?.output_path || 'AGENTS.md';
-    
+
     const content = await this.generateAgentsMd(manifest);
     await fs.writeFile(targetPath, content, 'utf-8');
   }
@@ -274,8 +292,14 @@ export class AgentsMdService {
     const content = await fs.readFile(agentsMdPath, 'utf-8');
 
     // Check for required sections
-    const requiredSections = ['# Dev environment tips', '# Testing instructions', '# PR instructions'];
-    const extension = manifest.extensions?.agents_md as AgentsMdExtension | undefined;
+    const requiredSections = [
+      '# Dev environment tips',
+      '# Testing instructions',
+      '# PR instructions',
+    ];
+    const extension = manifest.extensions?.agents_md as
+      | AgentsMdExtension
+      | undefined;
 
     if (extension?.sections?.dev_environment?.enabled !== false) {
       if (!content.includes('# Dev environment tips')) {
@@ -300,7 +324,9 @@ export class AgentsMdService {
       // Regenerate and compare
       const expected = await this.generateAgentsMd(manifest);
       if (content.trim() !== expected.trim()) {
-        warnings.push('AGENTS.md content differs from manifest - consider regenerating');
+        warnings.push(
+          'AGENTS.md content differs from manifest - consider regenerating'
+        );
       }
     }
 
@@ -325,7 +351,7 @@ export class AgentsMdService {
 
     // Extract role hints from content
     const roleHints: string[] = [];
-    
+
     // Look for common patterns that indicate agent behavior
     if (content.toLowerCase().includes('code review')) {
       roleHints.push('code review');
@@ -343,7 +369,7 @@ export class AgentsMdService {
 
     // Extract tool hints from commands mentioned
     const tools: Array<{ type: string; name: string }> = [];
-    
+
     // Look for npm commands
     if (content.includes('npm test') || content.includes('npm run')) {
       tools.push({ type: 'function', name: 'npm_commands' });
@@ -360,7 +386,7 @@ export class AgentsMdService {
 
     // Populate cursor extension context files
     const contextFiles: string[] = [];
-    
+
     // Extract file references (simple pattern matching)
     const filePattern = /`([^`]+\.(md|json|yaml|yml|ts|js|py))`/g;
     let match;
@@ -386,13 +412,18 @@ export class AgentsMdService {
    * @param manifestPath - Path to OSSA manifest
    * @param watch - Whether to watch for changes
    */
-  async syncAgentsMd(manifestPath: string, watch: boolean = false): Promise<void> {
+  async syncAgentsMd(
+    manifestPath: string,
+    watch: boolean = false
+  ): Promise<void> {
     // Load manifest
     const manifestContent = await fs.readFile(manifestPath, 'utf-8');
     const manifest = JSON.parse(manifestContent) as OssaAgent;
 
-    const extension = manifest.extensions?.agents_md as AgentsMdExtension | undefined;
-    
+    const extension = manifest.extensions?.agents_md as
+      | AgentsMdExtension
+      | undefined;
+
     if (!extension?.enabled) {
       throw new Error('agents_md extension is not enabled');
     }

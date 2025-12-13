@@ -8,7 +8,10 @@ import { Command } from 'commander';
 import { container } from '../../di-container.js';
 import { ManifestRepository } from '../../repositories/manifest.repository.js';
 import { ValidationService } from '../../services/validation.service.js';
-import { formatValidationErrors, formatErrorCompact } from '../utils/error-formatter.js';
+import {
+  formatValidationErrors,
+  formatErrorCompact,
+} from '../utils/error-formatter.js';
 import type {
   OssaAgent,
   SchemaVersion,
@@ -30,7 +33,12 @@ export const validateCommand = new Command('validate')
   .action(
     async (
       path: string,
-      options: { schema?: string; openapi?: boolean; checkMessaging?: boolean; verbose?: boolean }
+      options: {
+        schema?: string;
+        openapi?: boolean;
+        checkMessaging?: boolean;
+        verbose?: boolean;
+      }
     ) => {
       try {
         // Get services from DI container
@@ -67,7 +75,10 @@ export const validateCommand = new Command('validate')
           } else {
             // Extract version from result manifest or use provided option
             const m = result.manifest as OssaAgent;
-            const detectedVersion = m?.apiVersion?.replace('ossa/', '') || options.schema || 'unknown';
+            const detectedVersion =
+              m?.apiVersion?.replace('ossa/', '') ||
+              options.schema ||
+              'unknown';
             console.log(
               chalk.green('✓ Agent manifest is valid OSSA ' + detectedVersion)
             );
@@ -104,19 +115,25 @@ export const validateCommand = new Command('validate')
             if (m.spec?.messaging) {
               console.log(chalk.gray('\nMessaging Configuration:'));
               if (m.spec.messaging.publishes) {
-                console.log(`  Publishes: ${chalk.cyan(m.spec.messaging.publishes.length)} channel(s)`);
+                console.log(
+                  `  Publishes: ${chalk.cyan(m.spec.messaging.publishes.length)} channel(s)`
+                );
                 m.spec.messaging.publishes.forEach((ch: any) => {
                   console.log(`    - ${chalk.cyan(ch.channel)}`);
                 });
               }
               if (m.spec.messaging.subscribes) {
-                console.log(`  Subscribes: ${chalk.cyan(m.spec.messaging.subscribes.length)} channel(s)`);
+                console.log(
+                  `  Subscribes: ${chalk.cyan(m.spec.messaging.subscribes.length)} channel(s)`
+                );
                 m.spec.messaging.subscribes.forEach((sub: any) => {
                   console.log(`    - ${chalk.cyan(sub.channel)}`);
                 });
               }
               if (m.spec.messaging.commands) {
-                console.log(`  Commands: ${chalk.cyan(m.spec.messaging.commands.length)}`);
+                console.log(
+                  `  Commands: ${chalk.cyan(m.spec.messaging.commands.length)}`
+                );
                 m.spec.messaging.commands.forEach((cmd: any) => {
                   console.log(`    - ${chalk.cyan(cmd.name)}`);
                 });
@@ -160,12 +177,18 @@ export const validateCommand = new Command('validate')
           } else {
             // Compact error messages
             console.error(chalk.red.bold('\n✗ Validation Failed'));
-            console.error(chalk.red(`Found ${result.errors.length} error(s):\n`));
+            console.error(
+              chalk.red(`Found ${result.errors.length} error(s):\n`)
+            );
             result.errors.forEach((error, index) => {
               console.error(formatErrorCompact(error, index, manifest));
             });
-            console.error(chalk.gray('\nUse --verbose for detailed error information'));
-            console.error(chalk.blue('📚 Docs: https://openstandardagents.org/docs\n'));
+            console.error(
+              chalk.gray('\nUse --verbose for detailed error information')
+            );
+            console.error(
+              chalk.blue('📚 Docs: https://openstandardagents.org/docs\n')
+            );
           }
 
           process.exit(1);
