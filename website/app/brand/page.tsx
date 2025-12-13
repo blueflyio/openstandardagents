@@ -1,10 +1,15 @@
 import Link from 'next/link';
 import type { Metadata } from 'next';
+import { OSSA_VERSION, OSSA_DISPLAY_VERSION } from '@/lib/version';
 
 export const metadata: Metadata = {
   title: 'Brand Guide - OSSA',
   description: 'Official brand guidelines for the Open Standard for Scalable AI Agents (OSSA). The OpenAPI for AI Agents.',
 };
+
+// Get current month/year for dynamic date display
+const currentDate = new Date();
+const monthYear = currentDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
 
 export default function BrandPage() {
   return (
@@ -16,7 +21,7 @@ export default function BrandPage() {
           <p className="text-xl text-white/90">
             Official brand guidelines for the Open Standard for Scalable AI Agents
           </p>
-          <p className="text-sm text-white/70 mt-4">Version 1.0.0 | Last Updated: November 2025</p>
+          <p className="text-sm text-white/70 mt-4">Version {OSSA_DISPLAY_VERSION} | Last Updated: {monthYear}</p>
         </div>
       </div>
 
@@ -76,19 +81,19 @@ export default function BrandPage() {
         <section className="mb-16 bg-gray-50 p-8 rounded-lg">
           <h2 className="text-3xl font-bold text-primary mb-6">Download Assets</h2>
           <div className="grid md:grid-cols-3 gap-6">
-            <a href="/brand/OSSA-Brand-Guide.pdf" className="block p-6 bg-white rounded-lg border-2 border-gray-200 hover:border-primary transition-colors">
+            <a href="/brand/OSSA-Brand-Guide.html" target="_blank" className="block p-6 bg-white rounded-lg border-2 border-gray-200 hover:border-primary transition-colors">
               <svg className="w-12 h-12 text-primary mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
               </svg>
-              <h3 className="font-bold mb-2">Brand Guide PDF</h3>
+              <h3 className="font-bold mb-2">Brand Guide</h3>
               <p className="text-sm text-gray-600">Complete brand guidelines</p>
             </a>
-            <a href="/brand/assets.zip" className="block p-6 bg-white rounded-lg border-2 border-gray-200 hover:border-primary transition-colors">
+            <a href="/brand/ossa-logo.svg" download className="block p-6 bg-white rounded-lg border-2 border-gray-200 hover:border-primary transition-colors">
               <svg className="w-12 h-12 text-primary mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
               </svg>
-              <h3 className="font-bold mb-2">Asset Package</h3>
-              <p className="text-sm text-gray-600">Logos, colors, templates</p>
+              <h3 className="font-bold mb-2">Logo SVG</h3>
+              <p className="text-sm text-gray-600">Vector logo file</p>
             </a>
             <a href="https://github.com/blueflyio/openstandardagents/tree/main/docs/brand-guide" target="_blank" rel="noopener noreferrer" className="block p-6 bg-white rounded-lg border-2 border-gray-200 hover:border-primary transition-colors">
               <svg className="w-12 h-12 text-primary mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

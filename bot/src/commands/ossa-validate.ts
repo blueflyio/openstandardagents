@@ -4,6 +4,7 @@ import { promisify } from 'util';
 import { writeFile, unlink } from 'fs/promises';
 import { tmpdir } from 'os';
 import { join } from 'path';
+import { OSSA_VERSION_TAG } from '../config/version.js';
 
 const execAsync = promisify(exec);
 
@@ -51,7 +52,7 @@ export const ossaValidateCommand = {
         .setTitle(isValid ? '✅ Manifest Valid' : '❌ Validation Failed')
         .setDescription(`File: ${attachment.name}`)
         .addFields(
-          { name: 'Result', value: isValid ? 'Manifest is valid OSSA v0.2.8' : 'Validation errors found' }
+          { name: 'Result', value: isValid ? `Manifest is valid OSSA ${OSSA_VERSION_TAG}` : 'Validation errors found' }
         );
       
       if (stderr) {

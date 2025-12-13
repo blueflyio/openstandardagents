@@ -37,5 +37,9 @@ export default defineConfig({
     command: 'npm run dev',
     url: 'http://localhost:3000',
     reuseExistingServer: !process.env.CI,
+    timeout: 120 * 1000, // 2 minutes for CI builds
+    env: {
+      NODE_ENV: 'development', // Required for Next.js dev server
+    },
   },
 });

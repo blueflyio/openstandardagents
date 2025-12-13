@@ -58,7 +58,7 @@ export const config: Config = {
   ai: {
     anthropicApiKey: process.env.ANTHROPIC_API_KEY,
     openaiApiKey: process.env.OPENAI_API_KEY,
-    model: process.env.AI_MODEL || 'claude-3-5-sonnet-20241022',
+    model: process.env.AI_MODEL || 'claude-sonnet-4-5-20250929',
   },
   moderation: {
     welcomeMessage:

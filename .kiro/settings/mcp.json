@@ -7,7 +7,7 @@
         "@yoda.digital/gitlab-mcp-server"
       ],
       "env": {
-        "GITLAB_TOKEN": "***REMOVED***",
+        "GITLAB_TOKEN": "${GITLAB_TOKEN}",
         "GITLAB_URL": "https://gitlab.com"
       },
       "disabled": false

@@ -2,7 +2,9 @@ import { notFound } from 'next/navigation';
 import fs from 'fs';
 import path from 'path';
 import matter from 'gray-matter';
+import type { Metadata } from 'next';
 import { MarkdownContent } from '@/components/docs/MarkdownContent';
+import { StructuredData } from '@/components/StructuredData';
 import Link from 'next/link';
 
 interface PageProps {
@@ -10,6 +12,10 @@ interface PageProps {
     slug: string;
   }>;
 }
+
+type MetadataProps = {
+  params: Promise<{ slug: string }>;
+};
 
 const blogDirectory = path.join(process.cwd(), 'content/blog');
 
@@ -98,6 +104,40 @@ export async function generateStaticParams() {
   }));
 }
 
+export async function generateMetadata({ params }: MetadataProps): Promise<Metadata> {
+  const { slug } = await params;
+  const post = getBlogPost(slug);
+
+  if (!post) {
+    return {
+      title: 'Post Not Found - OSSA Blog',
+      description: 'The requested blog post could not be found.',
+    };
+  }
+
+  const title = `${post.metadata.title} - OSSA Blog`;
+  const description = post.metadata.excerpt || `Read ${post.metadata.title} on the OSSA blog.`;
+
+  return {
+    title,
+    description,
+    authors: [{ name: post.metadata.author }],
+    openGraph: {
+      title: post.metadata.title,
+      description,
+      type: 'article',
+      publishedTime: post.metadata.date,
+      authors: [post.metadata.author],
+      tags: post.metadata.tags,
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: post.metadata.title,
+      description,
+    },
+  };
+}
+
 export default async function BlogPostPage({ params }: PageProps) {
   const { slug } = await params;
   const post = getBlogPost(slug);
@@ -108,6 +148,21 @@ export default async function BlogPostPage({ params }: PageProps) {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* Structured Data for SEO */}
+      <StructuredData
+        type="Article"
+        data={{
+          title: post.metadata.title,
+          date: post.metadata.date,
+          author: post.metadata.author,
+          description: post.metadata.excerpt,
+          mainEntityOfPage: {
+            '@type': 'WebPage',
+            '@id': `https://openstandardagents.org/blog/${slug}`,
+          },
+          image: 'https://openstandardagents.org/og-image.png',
+        }}
+      />
       {/* Hero Section */}
       <div className="bg-gradient-to-br from-primary via-blue-600 to-secondary text-white py-16 px-4">
         <div className="container mx-auto max-w-4xl">

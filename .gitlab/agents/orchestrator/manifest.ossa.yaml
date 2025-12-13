@@ -1,4 +1,4 @@
-apiVersion: ossa/v0.2.8
+apiVersion: ossa/v0.3.0
 kind: Agent
 metadata:
   name: team-orchestrator
@@ -10,7 +10,7 @@ metadata:
 
 spec:
   role: |
-    Orchestrate agent team to complete v0.2.8 milestone:
+    Orchestrate agent team to complete milestone tasks:
     
     Wave 1 (Parallel):
     - audit-agent: Verify closed issues

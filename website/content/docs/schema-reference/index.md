@@ -6,6 +6,15 @@ Complete reference for the OSSA agent manifest schema.
 
 The OSSA schema defines the structure of agent manifests. Every field serves a specific purpose in the agent lifecycle.
 
+## Resource Kinds
+
+OSSA supports multiple resource kinds (v0.3.1+):
+
+- **[Agent](./agent-spec.md)** - Single agent definition
+- **[Workflow](./workflow-spec.md)** - Multi-agent composition
+- **[Task](./task-spec.md)** - Deterministic task definition
+- **[MessageRouting](./message-routing-spec.md)** - Message routing rules
+
 ## Core Fields
 
 ### Agent Identification
@@ -16,6 +25,11 @@ The OSSA schema defines the structure of agent manifests. Every field serves a s
 
 ### Agent Capabilities
 - [agent.capabilities](./agent-capabilities.md) - What the agent can do
+
+### Workflow Composition
+- [workflow.spec](./workflow-spec.md) - Workflow specification
+- [workflow.steps](./workflow-spec.md#workflowstep-object) - Workflow steps
+- [workflow.triggers](./workflow-spec.md#triggers) - Workflow triggers
 
 ## Schema Versions
 

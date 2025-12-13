@@ -21,7 +21,7 @@
 #
 # ============================================================================
 
-apiVersion: ossa/v0.2.6
+apiVersion: ossa/v0.3.0
 kind: Agent
 
 metadata:
@@ -59,13 +59,13 @@ spec:
     5. **Moderation**: Maintain community guidelines and safety
 
     Always be helpful, concise, and professional. When users ask about OSSA:
-    - Reference the official spec (v0.2.6)
+    - Reference the official spec (latest version)
     - Provide example manifests when relevant
     - Link to documentation at https://openstandardagents.org
     - Validate manifests before suggesting them
 
     For technical questions, use your knowledge of:
-    - OSSA specification v0.2.6
+    - OSSA specification (latest version)
     - Kubernetes agent deployment
     - Multi-agent orchestration
     - Google ADK, OpenAI Agents, MCP bridges
@@ -102,7 +102,7 @@ spec:
     - type: function
       name: validate_manifest
       description: |
-        Validate OSSA manifest files against the v0.2.6 schema.
+        Validate OSSA manifest files against the current schema.
         Checks syntax, required fields, and best practices.
       transport:
         protocol: http
