@@ -8,6 +8,7 @@ import { Command } from 'commander';
 import { container } from '../../di-container.js';
 import { ManifestRepository } from '../../repositories/manifest.repository.js';
 import { ValidationService } from '../../services/validation.service.js';
+import { formatValidationErrors, formatErrorCompact } from '../utils/error-formatter.js';
 import type {
   OssaAgent,
   SchemaVersion,
@@ -152,21 +153,20 @@ export const validateCommand = new Command('validate')
 
           process.exit(0);
         } else {
-          console.error(chalk.red('✗ Validation failed\n'));
-          console.error(chalk.red('Errors:'));
-
-          result.errors.forEach((error, index) => {
-            const path = error.instancePath || 'root';
-            const message = error.message || 'Unknown error';
-
-            console.error(chalk.red(`  ${index + 1}. ${path}: ${message}`));
-
-            if (options.verbose && error.params) {
-              console.error(
-                chalk.gray(`     Params: ${JSON.stringify(error.params)}`)
-              );
-            }
-          });
+          // Use the new error formatter for better error messages
+          if (options.verbose) {
+            // Detailed, helpful error messages with manifest context
+            console.error(formatValidationErrors(result.errors, manifest));
+          } else {
+            // Compact error messages
+            console.error(chalk.red.bold('\n✗ Validation Failed'));
+            console.error(chalk.red(`Found ${result.errors.length} error(s):\n`));
+            result.errors.forEach((error, index) => {
+              console.error(formatErrorCompact(error, index, manifest));
+            });
+            console.error(chalk.gray('\nUse --verbose for detailed error information'));
+            console.error(chalk.blue('📚 Docs: https://openstandardagents.org/docs\n'));
+          }
 
           process.exit(1);
         }
