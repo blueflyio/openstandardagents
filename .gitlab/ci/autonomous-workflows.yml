@@ -1,0 +1,42 @@
+# Autonomous Workflows - OSSA Self-Evolution
+# Agents work continuously to evolve the standard
+
+stages:
+  - intelligence
+  - research
+  - evolution
+
+intelligence:master-orchestrator:
+  stage: intelligence
+  image: node:20
+  script:
+    - npm install -g @bluefly/openstandardagents
+    - ossa run .gitlab/agents/intelligence-orchestrator/manifest.ossa.yaml --runtime anthropic --message "Coordinate all evolution agents and make strategic decisions"
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "schedule"
+  schedule:
+    - cron: "0 0 * * *"  # Midnight daily
+  allow_failure: false
+
+research:ecosystem-scan:
+  stage: research
+  image: node:20
+  script:
+    - npm install -g @bluefly/openstandardagents
+    - ossa run .gitlab/agents/ecosystem-monitor/manifest.ossa.yaml --runtime anthropic --message "Scan ecosystem and identify trends"
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "schedule"
+  schedule:
+    - cron: "0 */6 * * *"  # Every 6 hours
+  allow_failure: true
+
+evolution:auto-schema-update:
+  stage: evolution
+  image: node:20
+  script:
+    - npm install -g @bluefly/openstandardagents
+    - ossa run .gitlab/agents/schema-evolution/manifest.ossa.yaml --runtime anthropic --message "Evolve schema based on approved proposals"
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "webhook"
+  when: manual
+  allow_failure: true

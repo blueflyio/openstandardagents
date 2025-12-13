@@ -1,0 +1,22 @@
+# Evolution Dashboard Generation
+# Creates visual dashboard of OSSA evolution
+
+dashboard:generate:
+  stage: monitor
+  image: node:20
+  script:
+    - npm install -g @bluefly/openstandardagents
+    - |
+      echo "Generating OSSA Evolution Dashboard..."
+      ossa run .gitlab/agents/evolution-dashboard/manifest.ossa.yaml \
+        --runtime anthropic \
+        --message "Generate comprehensive evolution dashboard showing: issues created, releases published, schema versions, agent activity, and community engagement metrics"
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "schedule"
+  schedule:
+    - cron: "0 0 * * 0"  # Weekly on Sunday
+  artifacts:
+    paths:
+      - evolution-dashboard.json
+    expire_in: 30 days
+  allow_failure: true
