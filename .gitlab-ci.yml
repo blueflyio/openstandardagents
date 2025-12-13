@@ -78,7 +78,44 @@ detect:milestone-and-tags:
     - |
       #!/bin/bash
       set +e  # Don't exit on error - we handle errors manually
-      
+
+      # Rate-limited API call function with exponential backoff
+      safe_api_call() {
+        local url="$1"
+        local max_retries=3
+        local retry=0
+        local wait_time=2
+
+        while [ $retry -lt $max_retries ]; do
+          local response=$(curl -sS -w "\n%{http_code}" "$url" \
+            --header "PRIVATE-TOKEN: ${GITLAB_PUSH_TOKEN}" \
+            "${@:2}")
+
+          local http_code=$(echo "$response" | tail -n1)
+          local body=$(echo "$response" | sed '$d')
+
+          if [ "$http_code" = "429" ]; then
+            retry=$((retry + 1))
+            echo "⚠️  Rate limit hit, retrying in ${wait_time}s (attempt $retry/$max_retries)" >&2
+            sleep $wait_time
+            wait_time=$((wait_time * 2))
+            continue
+          elif [ "$http_code" -ge 200 ] && [ "$http_code" -lt 300 ]; then
+            echo "$body"
+            return 0
+          else
+            echo "⚠️  API call failed with HTTP $http_code" >&2
+            retry=$((retry + 1))
+            sleep $wait_time
+            wait_time=$((wait_time * 2))
+            continue
+          fi
+        done
+
+        echo "[]"
+        return 1
+      }
+
       echo "DEV TAG MANAGEMENT"
       echo "=================="
       echo "Branch: ${CI_COMMIT_BRANCH}"
@@ -98,11 +135,9 @@ detect:milestone-and-tags:
       if [ "$CI_COMMIT_BRANCH" != "main" ] && [ "$CI_COMMIT_BRANCH" != "development" ]; then
         echo "Skipping dev tag management (not on main/development branch)"
       else
-        # Get all milestones
-        DEV_MILESTONES=$(curl -sS -G "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/milestones" \
-        --header "PRIVATE-TOKEN: ${GITLAB_PUSH_TOKEN}" \
-        --data-urlencode "per_page=100" \
-          --data-urlencode "state=all" 2>/dev/null || echo "[]")
+        # Get all milestones (with rate limiting)
+        DEV_MILESTONES=$(safe_api_call "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/milestones" \
+          -G --data-urlencode "per_page=100" --data-urlencode "state=all" || echo "[]")
 
         if [ "$DEV_MILESTONES" != "[]" ] && [ -n "$DEV_MILESTONES" ]; then
           # Process milestones - use process substitution to avoid subshell
@@ -488,6 +523,13 @@ validate:docs-consistency:
 build:dist:
   stage: build
   image: node:${NODE_VERSION}-alpine
+  timeout: 30 minutes
+  retry:
+    max: 2
+    when:
+      - runner_system_failure
+      - stuck_or_timeout_failure
+      - api_failure
   script:
     - npm ci --legacy-peer-deps
     - npm run build
@@ -509,6 +551,13 @@ build:dist:
 test:lint:
   stage: test
   image: node:${NODE_VERSION}-alpine
+  timeout: 20 minutes
+  retry:
+    max: 2
+    when:
+      - runner_system_failure
+      - stuck_or_timeout_failure
+      - api_failure
   script:
     - npm ci --legacy-peer-deps
     - npm run build
@@ -538,6 +587,13 @@ test:code-quality:
 test:unit:
   stage: test
   image: node:${NODE_VERSION}-alpine
+  timeout: 20 minutes
+  retry:
+    max: 2
+    when:
+      - runner_system_failure
+      - stuck_or_timeout_failure
+      - api_failure
   dependencies:
     - build:dist
   before_script:
@@ -983,6 +1039,18 @@ release:preview:
 release:npm:
   stage: release
   image: node:${NODE_VERSION}-alpine
+  timeout: 15 minutes
+  retry:
+    max: 2
+    when:
+      - runner_system_failure
+      - stuck_or_timeout_failure
+      - api_failure
+  environment:
+    name: npm-registry
+    url: https://www.npmjs.com/package/@bluefly/openstandardagents
+    deployment_tier: production
+    auto_stop_in: never
   dependencies:
     - build:dist
     - detect:milestone-and-tags
