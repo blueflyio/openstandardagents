@@ -42,9 +42,15 @@ detect-ossa-version:
       echo "Detected OSSA_VERSION=$OSSA_VERSION"
       echo ""
 
-      # Export for subsequent jobs
-      echo "OSSA_VERSION=$OSSA_VERSION" >> ossa-version.env
-      echo "DETECTED_VERSION=$OSSA_VERSION" >> ossa-version.env
+      # Clean version: remove "v" prefix, remove "(GROUP)" suffix, convert .x to .0
+      OSSA_VERSION_CLEAN=$(echo "$OSSA_VERSION" | sed 's/^v//' | sed 's/ (.*)$//' | sed 's/.x$/.0/')
+      
+      # Export for subsequent jobs (use clean version without v prefix for parseVersion)
+      echo "OSSA_VERSION=$OSSA_VERSION_CLEAN" >> ossa-version.env
+      echo "DETECTED_VERSION=$OSSA_VERSION_CLEAN" >> ossa-version.env
+      # Export for subsequent jobs (use clean version without v prefix for parseVersion)
+      echo "OSSA_VERSION=$OSSA_VERSION_CLEAN" >> ossa-version.env
+      echo "DETECTED_VERSION=$OSSA_VERSION_CLEAN" >> ossa-version.env
 
       # Show what will be injected
       echo "Version injection preview"
@@ -65,6 +71,9 @@ validate-and-inject-version:
   image: node:22
   needs: [detect-ossa-version]
   before_script:
+    - |
+      apt-get update -qq && DEBIAN_FRONTEND=noninteractive apt-get install -y -qq gettext-base
+      which envsubst || (echo "ERROR: envsubst not found after install" && exit 1)
     - npm ci
     - npm run build
   script:
@@ -106,7 +115,7 @@ validate-and-inject-version:
       # Validate all manifests with injected versions
       echo "Validating manifests..."
       echo "----------------------"
-      npx ossa validate .gitlab/agents/**/*.ossa.yaml --schema-version "$OSSA_VERSION" || {
+      npx ossa validate .gitlab/agents/**/*.ossa.yaml --schema "$OSSA_VERSION" || {
         echo ""
         echo "Validation failed!"
         echo "Check manifests in .gitlab/agents/"
