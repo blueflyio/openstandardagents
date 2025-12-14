@@ -514,6 +514,13 @@
         "messaging": {
           "$ref": "#/definitions/MessagingExtension",
           "description": "Agent-to-agent messaging configuration (v0.3.0+)"
+        },
+        "functions": {
+          "type": "array",
+          "description": "A2A/OpenAI-style function definitions for structured tool calling",
+          "items": {
+            "$ref": "#/definitions/FunctionDefinition"
+          }
         }
       },
       "additionalProperties": true
@@ -736,18 +743,46 @@
     },
     "RuntimeBinding": {
       "type": "object",
-      "description": "Runtime-specific capability bindings",
+      "description": "Multi-runtime compatibility declaration",
       "properties": {
         "type": {
           "type": "string",
-          "description": "Runtime type identifier",
-          "examples": [
+          "description": "Primary runtime type",
+          "enum": [
+            "unified",
+            "google-a2a",
+            "gitlab-duo",
+            "ossa-mesh",
+            "mcp",
+            "local",
             "drupal",
             "symfony_messenger",
             "kagent",
             "temporal",
             "node"
-          ]
+          ],
+          "default": "unified"
+        },
+        "supports": {
+          "type": "array",
+          "description": "List of compatible runtimes",
+          "items": {
+            "type": "string",
+            "enum": [
+              "google-a2a",
+              "gitlab-duo",
+              "ossa-mesh",
+              "mcp",
+              "local-execution",
+              "kubernetes",
+              "serverless",
+              "lambda",
+              "cloudflare-workers",
+              "drupal",
+              "symfony"
+            ]
+          },
+          "uniqueItems": true
         },
         "transport": {
           "type": "string",
@@ -758,6 +793,21 @@
             "amqp",
             "redis"
           ]
+        },
+        "scheduling": {
+          "$ref": "#/definitions/SchedulingConfig",
+          "description": "Agent scheduling configuration"
+        },
+        "resource_limits": {
+          "$ref": "#/definitions/ResourceLimits",
+          "description": "Compute resource constraints"
+        },
+        "extensions": {
+          "type": "array",
+          "description": "External runtime extensions",
+          "items": {
+            "$ref": "#/definitions/RuntimeExtension"
+          }
         },
         "bindings": {
           "type": "object",
@@ -1182,6 +1232,30 @@
         "cost_tracking": {
           "$ref": "#/definitions/CostTracking",
           "description": "Cost governance and allocation tracking"
+        },
+        "profile": {
+          "description": "Execution profile for task-specific optimization (A2A compatible)",
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "fast",
+                "balanced",
+                "deep",
+                "safe"
+              ]
+            },
+            {
+              "type": "string",
+              "pattern": "^\\$\\{[A-Za-z_][A-Za-z0-9_]*(?::-[a-zA-Z0-9_-]+)?\\}$",
+              "description": "Environment variable reference with optional default"
+            }
+          ],
+          "default": "balanced"
+        },
+        "execution_profiles": {
+          "$ref": "#/definitions/ExecutionProfiles",
+          "description": "Custom execution profile definitions"
         }
       },
       "additionalProperties": true
@@ -2252,6 +2326,196 @@
             }
           },
           "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "ExecutionProfiles": {
+      "type": "object",
+      "description": "Execution profile presets for different use cases",
+      "properties": {
+        "default": {
+          "type": "string",
+          "description": "Default profile name"
+        },
+        "profiles": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/definitions/ExecutionProfileConfig"
+          }
+        }
+      }
+    },
+    "ExecutionProfileConfig": {
+      "type": "object",
+      "description": "Individual execution profile configuration",
+      "properties": {
+        "maxTokens": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Maximum tokens for this profile"
+        },
+        "temperature": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 2,
+          "description": "Sampling temperature"
+        },
+        "reasoning_enabled": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable extended thinking/reasoning"
+        },
+        "validation_required": {
+          "type": "boolean",
+          "default": false,
+          "description": "Require output validation"
+        },
+        "audit_log": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable detailed audit logging"
+        },
+        "description": {
+          "type": "string",
+          "description": "Profile description"
+        }
+      },
+      "additionalProperties": false
+    },
+    "FunctionDefinition": {
+      "type": "object",
+      "description": "Function definition in A2A/OpenAI format",
+      "required": [
+        "name",
+        "description",
+        "parameters"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "pattern": "^[a-zA-Z_][a-zA-Z0-9_]*$",
+          "description": "Function name"
+        },
+        "description": {
+          "type": "string",
+          "description": "What the function does"
+        },
+        "parameters": {
+          "$ref": "#/definitions/JSONSchemaDefinition",
+          "description": "JSON Schema for function parameters"
+        },
+        "returns": {
+          "$ref": "#/definitions/JSONSchemaDefinition",
+          "description": "JSON Schema for return value"
+        },
+        "strict": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enforce strict schema validation"
+        }
+      },
+      "additionalProperties": false
+    },
+    "SchedulingConfig": {
+      "type": "object",
+      "description": "Agent scheduling configuration",
+      "properties": {
+        "strategy": {
+          "type": "string",
+          "enum": [
+            "fair",
+            "priority",
+            "deadline",
+            "cost-optimized"
+          ],
+          "default": "fair",
+          "description": "Scheduling strategy"
+        },
+        "priority": {
+          "type": "string",
+          "enum": [
+            "critical",
+            "high",
+            "normal",
+            "low",
+            "background"
+          ],
+          "default": "normal",
+          "description": "Execution priority"
+        },
+        "max_concurrent": {
+          "type": "integer",
+          "minimum": 1,
+          "default": 10,
+          "description": "Maximum concurrent executions"
+        },
+        "timeout_seconds": {
+          "type": "integer",
+          "minimum": 1,
+          "default": 300,
+          "description": "Execution timeout in seconds"
+        }
+      },
+      "additionalProperties": false
+    },
+    "ResourceLimits": {
+      "type": "object",
+      "description": "Compute resource constraints (Kubernetes-style)",
+      "properties": {
+        "memory_mb": {
+          "type": "integer",
+          "minimum": 64,
+          "description": "Memory limit in megabytes"
+        },
+        "cpu_millicores": {
+          "type": "integer",
+          "minimum": 100,
+          "description": "CPU limit in millicores (1000 = 1 CPU)"
+        },
+        "gpu_required": {
+          "type": "boolean",
+          "default": false,
+          "description": "Requires GPU acceleration"
+        },
+        "gpu_type": {
+          "type": "string",
+          "description": "Required GPU type (e.g., nvidia-a100, nvidia-h100)"
+        }
+      },
+      "additionalProperties": false
+    },
+    "RuntimeExtension": {
+      "type": "object",
+      "description": "External runtime extension (A2A compatible)",
+      "required": [
+        "type",
+        "name"
+      ],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": [
+            "http",
+            "grpc",
+            "mcp",
+            "websocket",
+            "kafka",
+            "pubsub"
+          ],
+          "description": "Extension protocol type"
+        },
+        "name": {
+          "type": "string",
+          "description": "Extension name"
+        },
+        "endpoint": {
+          "type": "string",
+          "description": "Extension endpoint URL"
+        },
+        "credentials_ref": {
+          "type": "string",
+          "description": "Reference to credentials for authentication"
         }
       },
       "additionalProperties": false
