@@ -59,7 +59,7 @@ function findPackageJson(startDir: string): string | null {
 function parseVersion(
   version: string
 ): Pick<VersionInfo, 'major' | 'minor' | 'patch' | 'prerelease'> {
-  // Handle versions like "0.3.0", "0.3.0-RC", "0.3.0-beta.1"
+  // Handle versions like "0.2.8", "0.2.8-RC", "0.2.8-beta.1"
   const match = version.match(/^(\d+)\.(\d+)\.(\d+)(?:-(.+))?$/);
   if (!match) {
     throw new Error(
@@ -183,7 +183,7 @@ export function getVersionInfo(forceRefresh = false): VersionInfo {
     schemaDir,
     schemaFile,
     schemaPath: `spec/${schemaDir}/${schemaFile}`,
-    apiVersion: `ossa/v${version}`,
+    apiVersion: `ossa/${schemaDir}`,
   };
 
   return cachedVersionInfo;

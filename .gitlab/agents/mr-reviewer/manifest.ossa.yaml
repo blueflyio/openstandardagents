@@ -48,14 +48,14 @@ spec:
     
     Tone: Professional but friendly, constructive, specific and actionable, acknowledge good work.
   llm:
-    provider: ${LLM_PROVIDER:-anthropic}
-    model: ${LLM_MODEL:-claude-sonnet-4.5-20250929}
+    provider: anthropic
+    model: claude-sonnet-4.5-20250929
     temperature: 0.1
     fallback_models:
-      - provider: ${LLM_FALLBACK_PROVIDER_1:-openai}
-        model: ${LLM_FALLBACK_MODEL_1:-gpt-4o}
-      - provider: ${LLM_FALLBACK_PROVIDER_2:-anthropic}
-        model: ${LLM_FALLBACK_MODEL_2:-claude-haiku-3.5}
+      - provider: openai
+        model: gpt-4o
+      - provider: anthropic
+        model: claude-haiku-3.5
     retry_config:
       max_attempts: 3
       backoff_strategy: exponential
@@ -104,18 +104,12 @@ spec:
             echo "Posting review to MR..."
             # Post review comments to GitLab MR
   tools:
-    - type: api
+    - type: http
       name: gitlab_api
-      base_url: https://gitlab.com/api/v4
-      authentication:
-        type: token
-        token_env: GITLAB_TOKEN
     - type: function
       name: diff_analyzer
-      description: Analyze code diffs for quality issues
     - type: function
       name: security_scanner
-      description: Security vulnerability scanner
   observability:
     logging:
       level: info
@@ -137,4 +131,4 @@ extensions:
   gitlab_duo:
     enabled: true
     flow_execution: true
-    model: ${GITLAB_DUO_MODEL:-claude-sonnet-4.5-20250929}
+    model: claude-sonnet-4.5-20250929

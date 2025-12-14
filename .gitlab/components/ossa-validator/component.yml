@@ -60,7 +60,6 @@ spec:
       enum: ['markdown', 'json', 'junit']
 
 ---
-# OSSA Validation Job Template
 ossa:validate:
   stage: validate
   image: node:18-alpine
@@ -84,17 +83,17 @@ ossa:validate:
   script:
     # Find and validate all OpenAPI specifications
     - |
-      echo "🔍 Discovering OpenAPI specifications..."
+      echo "INFO: Discovering OpenAPI specifications..."
       SPECS_FOUND=0
 
       for pattern in $[[ inputs.spec_paths | join(' ') ]]; do
         for spec in $(find . -path "./node_modules" -prune -o -name "$pattern" -print 2>/dev/null); do
           if [ -f "$spec" ]; then
-            echo "📋 Found spec: $spec"
+            echo "INFO: Found spec: $spec"
             SPECS_FOUND=$((SPECS_FOUND + 1))
 
             # Validate individual spec
-            echo "🔍 Validating $spec..."
+            echo "INFO: Validating $spec..."
 
             ossa validate openapi "$spec" \
               --ossa-version "$OSSA_VERSION" \
@@ -106,9 +105,9 @@ ossa:validate:
 
             # Check validation result
             if [ $? -eq 0 ]; then
-              echo "✅ $spec - OSSA compliant"
+              echo " $spec - OSSA compliant"
             else
-              echo "❌ $spec - Validation failed"
+              echo "ERROR: $spec - Validation failed"
               echo "VALIDATION_FAILED=true" >> validation.env
             fi
           fi
@@ -116,16 +115,16 @@ ossa:validate:
       done
 
       if [ $SPECS_FOUND -eq 0 ]; then
-        echo "⚠️  No OpenAPI specifications found"
+        echo "WARNING: No OpenAPI specifications found"
         echo "Searched patterns: $[[ inputs.spec_paths | join(', ') ]]"
         exit 0
       fi
 
-      echo "📊 Validated $SPECS_FOUND specification(s)"
+      echo "INFO: Validated $SPECS_FOUND specification(s)"
 
     # Project-wide validation
     - |
-      echo "📁 Running project-wide OSSA validation..."
+      echo "INFO: Running project-wide OSSA validation..."
       ossa validate project . \
         --config .ossa.config.yaml \
         $[[ inputs.generate_report == true && '--report reports/ossa-validation/project-compliance.md' || '' ]]
@@ -133,7 +132,7 @@ ossa:validate:
     # Generate summary report
     - |
       if [ "$[[ inputs.generate_report ]]" = "true" ]; then
-        echo "📋 Generating validation summary..."
+        echo "INFO: Generating validation summary..."
 
         cat > reports/ossa-validation/summary.md << EOF
       # OSSA Validation Summary
@@ -148,11 +147,11 @@ ossa:validate:
       EOF
 
         if [ -f validation.env ] && grep -q "VALIDATION_FAILED=true" validation.env; then
-          echo "**Status:** ❌ FAILED" >> reports/ossa-validation/summary.md
+          echo "**Status:** ERROR: FAILED" >> reports/ossa-validation/summary.md
           echo "" >> reports/ossa-validation/summary.md
           echo "Some specifications failed OSSA compliance validation." >> reports/ossa-validation/summary.md
         else
-          echo "**Status:** ✅ PASSED" >> reports/ossa-validation/summary.md
+          echo "**Status:**  PASSED" >> reports/ossa-validation/summary.md
           echo "" >> reports/ossa-validation/summary.md
           echo "All specifications are OSSA compliant!" >> reports/ossa-validation/summary.md
         fi
@@ -170,10 +169,10 @@ ossa:validate:
     # Check for failures and exit appropriately
     - |
       if [ -f validation.env ] && grep -q "VALIDATION_FAILED=true" validation.env; then
-        echo "❌ OSSA validation failed"
+        echo "ERROR: OSSA validation failed"
         exit 1
       else
-        echo "✅ OSSA validation passed"
+        echo " OSSA validation passed"
       fi
 
   artifacts:
@@ -200,7 +199,7 @@ ossa:validate:strict:
     - !reference [ossa:validate, script]
     - |
       # Additional strict validation
-      echo "🔒 Running strict OSSA validation..."
+      echo "INFO: Running strict OSSA validation..."
 
       # Check for advanced OSSA features
       if [ "$CONFORMANCE_TIER" = "enterprise" ]; then
@@ -226,7 +225,7 @@ ossa:validate:security:
     - !reference [ossa:validate, script]
     - |
       # Security-focused validation
-      echo "🔐 Running security-focused OSSA validation..."
+      echo "INFO: Running security-focused OSSA validation..."
 
       # Validate security schemes are properly implemented
       ossa validate security . \
