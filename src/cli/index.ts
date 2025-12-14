@@ -21,6 +21,8 @@ import { setupCommand } from './commands/setup.command.js';
 import { syncCommand } from './commands/sync.command.js';
 import { agentsMdCommand } from './commands/agents-md.command.js';
 import { quickstartCommand } from './commands/quickstart.command.js';
+import { dependenciesCommand } from './commands/dependencies.command.js';
+import { contractCommand } from './commands/contract.command.js';
 
 // Load package.json for version (lazy to avoid Jest module resolution issues)
 import * as fs from 'fs';
@@ -117,6 +119,8 @@ program
 // Register commands
 program.addCommand(quickstartCommand); // First for discoverability
 program.addCommand(validateCommand);
+program.addCommand(dependenciesCommand);
+program.addCommand(contractCommand);
 program.addCommand(generateCommand);
 program.addCommand(migrateCommand);
 program.addCommand(initCommand);
