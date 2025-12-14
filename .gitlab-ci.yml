@@ -1352,6 +1352,10 @@ release:npm:
       echo "  Release: https://${CI_SERVER_HOST}/${CI_PROJECT_PATH}/-/releases/v${RELEASE_VERSION}"
       echo "  Milestone: ${MILESTONE_URL}"
   rules:
+    # Hotfix branches should NOT create production releases
+    - if: $CI_COMMIT_BRANCH =~ /^hotfix\//
+      when: never
+    # Only main branch creates production releases
     - if: $CI_COMMIT_BRANCH == "main" && $MILESTONE_READY == "true" && $ENABLE_RELEASE == "true"
       when: on_success
     - if: $CI_COMMIT_BRANCH == "main" && $ENABLE_RELEASE == "true"
@@ -1377,18 +1381,32 @@ create-patch-version:
     - git fetch --unshallow --tags || git fetch --tags || true
   script:
     - |
-      echo "📦 Automated Patch Version Creation"
+      echo "Automated Patch Version Creation"
       echo "===================================="
 
-      # Extract version from branch name (e.g., release/v0.1.x -> 0.1)
-      BRANCH_VERSION=$(echo "$CI_COMMIT_BRANCH" | sed -E 's/release\/v?([0-9]+\.[0-9]+)\.x/\1/')
+      # Check if this is a hotfix branch
+      if echo "$CI_COMMIT_BRANCH" | grep -qE "^hotfix/"; then
+        echo "Hotfix branch detected - creating dev tag only"
+        # For hotfix, use current version from package.json or latest release tag
+        if [ -f "package.json" ]; then
+          CURRENT_VERSION=$(node -p "require('./package.json').version" 2>/dev/null || echo "0.3.0")
+        else
+          CURRENT_VERSION="0.3.0"
+        fi
+        # Extract major.minor from version (e.g., 0.3.0 -> 0.3)
+        BRANCH_VERSION=$(echo "$CURRENT_VERSION" | sed -E 's/^([0-9]+\.[0-9]+)\.[0-9]+$/\1/')
+        echo "Hotfix dev tag series: v${BRANCH_VERSION}.0-dev.x"
+      else
+        # Extract version from branch name (e.g., release/v0.1.x -> 0.1)
+        BRANCH_VERSION=$(echo "$CI_COMMIT_BRANCH" | sed -E 's/release\/v?([0-9]+\.[0-9]+)\.x/\1/')
 
-      if [ -z "$BRANCH_VERSION" ] || [ "$BRANCH_VERSION" = "$CI_COMMIT_BRANCH" ]; then
-        echo "WARNING: Not a release branch format (release/v0.X.x)"
-        exit 0
+        if [ -z "$BRANCH_VERSION" ] || [ "$BRANCH_VERSION" = "$CI_COMMIT_BRANCH" ]; then
+          echo "WARNING: Not a release branch format (release/v0.X.x)"
+          exit 0
+        fi
+
+        echo "Release series: v${BRANCH_VERSION}.x"
       fi
-
-      echo "Release series: v${BRANCH_VERSION}.x"
 
       # Get latest dev tag for this release series (v0.3.0-dev.1, v0.3.0-dev.2, etc.)
       LATEST_DEV_TAG=$(git tag -l "v${BRANCH_VERSION}.0-dev.*" | sort -V | tail -n1)
@@ -1466,8 +1484,12 @@ create-patch-version:
         exit 1
       fi
   rules:
+    # Hotfix branches can create dev tags
+    - if: $CI_COMMIT_BRANCH =~ /^hotfix\//
+      when: on_success
+    # Release branches create dev tags
     - if: $CI_COMMIT_BRANCH =~ /^release\/v[0-9]+\.[0-9]+\.x$/
-      when: on_success  # Manual so you can review before creating tag
+      when: on_success
   allow_failure: false
 
 create-release:
