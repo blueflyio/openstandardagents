@@ -45,6 +45,7 @@ include:
 # Last updated - 2025-11-25
 
 stages:
+  - .pre           # GitLab reserved pre-stage (used by create-release-mrs)
   - setup          # Version detection and sync happen here (earliest stage)
   - version-detect # Used by included CI files (release-workflow.yml, version-bump-agent.yml)
   - validate       # Validation jobs (can use version from setup)
@@ -54,6 +55,7 @@ stages:
   - deploy         # Deployment
   - release        # Release automation
   - mirror         # Mirror to external repos
+  - .post          # GitLab reserved post-stage (post-release jobs)
 
 variables:
   NODE_VERSION: "22"
@@ -69,6 +71,7 @@ detect:version:
   stage: setup
   image: alpine:latest
   before_script:
+    - apk add --no-cache curl jq
     - apk add --no-cache git bash
     - chmod +x .gitlab/scripts/detect-version.sh
   script:
@@ -85,6 +88,7 @@ detect:milestone-and-tags:
   stage: setup
   image: alpine:latest
   before_script:
+    - apk add --no-cache curl jq
     - apk add --no-cache curl jq git bash
     - git config user.email "ci@bluefly.io"
     - git config user.name "GitLab CI"
@@ -363,7 +367,7 @@ validate:gitlab-ci:
         if [ -f "$file" ]; then
           echo "Validating $file"
           RESPONSE=$(curl --silent --request POST \
-            --header "PRIVATE-TOKEN: ${CI_JOB_TOKEN}" \
+            --header "JOB-TOKEN: ${CI_JOB_TOKEN}" \
             --header "Content-Type: application/json" \
             --data "$(jq -Rs '{content: .}' < "$file")" \
             "${CI_API_V4_URL}/ci/lint")
@@ -393,6 +397,7 @@ check:divergence:
   stage: validate
   image: alpine:latest
   before_script:
+    - apk add --no-cache curl jq
     - apk add --no-cache git
   script:
     - |
@@ -426,6 +431,7 @@ check:ds-store:
   stage: validate
   image: alpine:latest
   before_script:
+    - apk add --no-cache curl jq
     - apk add --no-cache git
   script:
     - |
@@ -491,6 +497,7 @@ validate:scripts-version:
   stage: validate
   image: node:${NODE_VERSION}-alpine
   before_script:
+    - apk add --no-cache curl jq
     - npm ci --legacy-peer-deps
   script:
     - |
@@ -532,6 +539,7 @@ validate:docs-consistency:
   stage: validate
   image: node:${NODE_VERSION}-alpine
   before_script:
+    - apk add --no-cache curl jq
     - npm ci --legacy-peer-deps
   script:
     - |
@@ -579,6 +587,7 @@ build:dist:
       optional: true
       artifacts: true
   before_script:
+    - apk add --no-cache curl jq
     - test -f build.env && . build.env || echo "No build.env found (using defaults)"
   script:
     - npm ci --legacy-peer-deps
@@ -609,6 +618,7 @@ test:lint:
       optional: true
       artifacts: true
   before_script:
+    - apk add --no-cache curl jq
     - test -f build.env && . build.env || echo "No build.env found (using defaults)"
   script:
     - npm ci --legacy-peer-deps
@@ -658,6 +668,7 @@ test:unit:
       optional: true
       artifacts: true
   before_script:
+    - apk add --no-cache curl jq
     - test -f build.env && . build.env || echo "No build.env found (using defaults)"
     - npm ci --legacy-peer-deps
   script:
@@ -726,6 +737,7 @@ changelog:generate:
     GIT_STRATEGY: clone
     GIT_DEPTH: 0  # Full history needed for changelog generation
   before_script:
+    - apk add --no-cache curl jq
     - apk add --no-cache git curl bash
     # Install git-cliff
     - curl -sSfL https://github.com/orhun/git-cliff/releases/download/v2.7.0/git-cliff-2.7.0-x86_64-unknown-linux-musl.tar.gz | tar xz
@@ -774,6 +786,7 @@ release:changelog:
   stage: release
   image: node:${NODE_VERSION}-alpine
   before_script:
+    - apk add --no-cache curl jq
     - apk add --no-cache git curl jq bash
     - npm ci --legacy-peer-deps
     - npm install -g tsx
@@ -839,6 +852,7 @@ release:validate:
   dependencies:
     - build:dist
   before_script:
+    - apk add --no-cache curl jq
     - apk add --no-cache git jq bash curl
     - npm ci --legacy-peer-deps
   script:
@@ -1062,6 +1076,7 @@ release:preview:
   dependencies:
     - build:dist
   before_script:
+    - apk add --no-cache curl jq
     - apk add --no-cache git
     - npm ci --legacy-peer-deps
   script:
@@ -1122,6 +1137,7 @@ release:npm:
     - detect:milestone-and-tags
     - release:changelog
   before_script:
+    - apk add --no-cache curl jq
     - apk add --no-cache git curl jq bash
     - npm ci --legacy-peer-deps
     - git config --global user.email "ci@bluefly.io"
@@ -1346,6 +1362,7 @@ create-patch-version:
   stage: release
   image: alpine:latest
   before_script:
+    - apk add --no-cache curl jq
     - apk add --no-cache git curl
     - git config --global user.email "ci@bluefly.io"
     - git config --global user.name "GitLab CI"
@@ -1449,6 +1466,7 @@ mirror:github:
   stage: mirror
   image: alpine:latest
   before_script:
+    - apk add --no-cache curl jq
     - apk add --no-cache git
     - git config --global user.email "ci@bluefly.io"
     - git config --global user.name "GitLab CI"
@@ -1486,6 +1504,7 @@ post-release:cleanup:
   stage: .post
   image: alpine:latest
   before_script:
+    - apk add --no-cache curl jq
     - apk add --no-cache curl jq bash
   script:
     - |
@@ -1626,6 +1645,7 @@ increment-dev-tag:
   stage: .post
   image: node:${NODE_VERSION}
   before_script:
+    - apk add --no-cache curl jq
     - npm ci
     - npm install -g tsx
   script:
@@ -1640,6 +1660,7 @@ release-to-npm:
   stage: release
   image: node:${NODE_VERSION}
   before_script:
+    - apk add --no-cache curl jq
     - npm ci
   script:
     - RELEASE_ACTION=npm tsx .gitlab/release-automation/scripts/release-buttons.ts
@@ -1656,6 +1677,7 @@ release-to-github:
   image: node:${NODE_VERSION}
   needs: [release-to-npm]
   before_script:
+    - apk add --no-cache curl jq
     - npm ci
   script:
     - RELEASE_ACTION=github tsx .gitlab/release-automation/scripts/release-buttons.ts
@@ -1675,6 +1697,7 @@ announce-release:
   image: node:${NODE_VERSION}
   needs: [release-to-github]
   before_script:
+    - apk add --no-cache curl jq
     - npm ci
   script:
     - RELEASE_ACTION=announce tsx .gitlab/release-automation/scripts/release-buttons.ts
@@ -1692,19 +1715,20 @@ create-release-mrs:
     - apk add --no-cache curl jq
   script:
     - |
+      : "${GITLAB_PUSH_TOKEN:?GITLAB_PUSH_TOKEN not set}"
       echo "Checking for milestones needing release MRs..."
       
-      MILESTONES=$(curl -s --header "PRIVATE-TOKEN: $CI_JOB_TOKEN" \
+      MILESTONES=$(curl -s --header "PRIVATE-TOKEN: $GITLAB_PUSH_TOKEN" \
         "$CI_API_V4_URL/projects/$CI_PROJECT_ID/milestones?state=active")
       
       echo "$MILESTONES" | jq -r '.[] | select(.title | startswith("v")) | .id + " " + .title' | while read MILESTONE_ID MILESTONE_TITLE; do
-        EXISTING_MR=$(curl -s --header "PRIVATE-TOKEN: $CI_JOB_TOKEN" \
+        EXISTING_MR=$(curl -s --header "PRIVATE-TOKEN: $GITLAB_PUSH_TOKEN" \
           "$CI_API_V4_URL/projects/$CI_PROJECT_ID/merge_requests?state=opened&source_branch=development&target_branch=main&milestone=$MILESTONE_TITLE" \
           | jq -r '.[0].iid // empty')
         
         if [ -z "$EXISTING_MR" ]; then
           curl --request POST \
-            --header "PRIVATE-TOKEN: $CI_JOB_TOKEN" \
+            --header "PRIVATE-TOKEN: $GITLAB_PUSH_TOKEN" \
             --header "Content-Type: application/json" \
             --data "{
               \"source_branch\": \"development\",
@@ -1750,6 +1774,7 @@ dependency:update:
   stage: .post
   image: node:${NODE_VERSION}-alpine
   before_script:
+    - apk add --no-cache curl jq
     - apk add --no-cache git
   script:
     - |
@@ -1771,6 +1796,7 @@ sync:main-to-development:
   stage: .post
   image: alpine:latest
   before_script:
+    - apk add --no-cache curl jq
     - apk add --no-cache git curl jq
     - git config user.email "ci@bluefly.io"
     - git config user.name "GitLab CI"
@@ -1817,6 +1843,7 @@ create-rc-tag:main:
   stage: release
   image: alpine:latest
   before_script:
+    - apk add --no-cache curl jq
     - apk add --no-cache git curl
     - git config --global user.email "ci@bluefly.io"
     - git config --global user.name "GitLab CI"

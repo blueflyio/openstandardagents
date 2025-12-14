@@ -2,169 +2,157 @@
 # NO HARDCODED VERSIONS IN MANIFESTS
 # Version detection from Git tags, milestones, and branches
 # Injected at deploy time via envsubst
+#
+# Professional-grade implementation following GitLab best practices:
+# - Uses existing version-detect stage
+# - Strict shell scripting (set -euo pipefail)
+# - Restricted envsubst (only specific variables)
+# - Renders to separate directory (doesn't overwrite source)
+# - Pinned image versions (no latest)
+# - Conditional execution (only when manifests exist)
 
 detect-ossa-version:
   stage: version-detect
-  image: alpine:latest
+  image: node:22-alpine
+  needs:
+    - job: detect:version
+      optional: true
+      artifacts: true
+    - job: version:sync:placeholders
+      optional: true
+      artifacts: true
   before_script:
-    - apk add --no-cache git bash
+    - apk add --no-cache bash git findutils
   script:
-    - |
-      #!/bin/bash
-      set -e
-
-      echo "Detecting OSSA Version..."
-      echo "========================="
-      echo ""
-
-      # Priority 1 - Git tag (releases)
-      if [ -n "$CI_COMMIT_TAG" ]; then
-        OSSA_VERSION="$CI_COMMIT_TAG"
-        echo "Using Git tag - $OSSA_VERSION"
-
-      # Priority 2 - Milestone (feature branches)
-      elif [ -n "$CI_MERGE_REQUEST_MILESTONE" ]; then
-        OSSA_VERSION=$(echo "$CI_MERGE_REQUEST_MILESTONE" | sed 's/\.x$//')
-        echo "Using milestone - $OSSA_VERSION"
-
-      # Priority 3 - Release branch name
-      elif echo "$CI_COMMIT_BRANCH" | grep -qE '^release/v[0-9]+\.[0-9]+\.x$'; then
-        OSSA_VERSION=$(echo "$CI_COMMIT_BRANCH" | sed -E 's/release\/v?([0-9]+\.[0-9]+)\.x/v\1/')
-        echo "Using release branch - $OSSA_VERSION"
-
-      # Fallback - Default version
-      else
-        OSSA_VERSION="v0.3"
-        echo "Using default version - $OSSA_VERSION"
-      fi
-
-      echo ""
-      echo "Detected OSSA_VERSION=$OSSA_VERSION"
-      echo ""
-
-      # Clean version: remove "v" prefix, remove "(GROUP)" suffix, convert .x to .0
-      OSSA_VERSION_CLEAN=$(echo "$OSSA_VERSION" | sed 's/^v//' | sed 's/ (.*)$//' | sed 's/.x$/.0/')
-      
-      # Export for subsequent jobs (use clean version without v prefix for parseVersion)
-      echo "OSSA_VERSION=$OSSA_VERSION_CLEAN" >> ossa-version.env
-      echo "DETECTED_VERSION=$OSSA_VERSION_CLEAN" >> ossa-version.env
-      # Export for subsequent jobs (use clean version without v prefix for parseVersion)
-      echo "OSSA_VERSION=$OSSA_VERSION_CLEAN" >> ossa-version.env
-      echo "DETECTED_VERSION=$OSSA_VERSION_CLEAN" >> ossa-version.env
-
-      # Show what will be injected
-      echo "Version injection preview"
-      echo "-------------------------"
-      echo "apiVersion - ossa/\${OSSA_VERSION} becomes ossa/$OSSA_VERSION"
-      echo "version - \${CI_COMMIT_SHA} becomes $CI_COMMIT_SHA"
-      echo ""
-
+    - bash .gitlab/scripts/detect-ossa-version.sh
   artifacts:
     reports:
       dotenv: ossa-version.env
+    paths:
+      - ossa-version.env
     expire_in: 1 day
   rules:
-    - when: always
+    - exists:
+        - .gitlab/agents/**/*.ossa.yaml
+    - when: never
 
 validate-and-inject-version:
   stage: validate
-  image: node:22
-  needs: [detect-ossa-version]
+  image: node:22-alpine
+  needs:
+    - job: detect-ossa-version
+      optional: true
+      artifacts: true
+    - job: version:sync:placeholders
+      optional: true
+      artifacts: true
   before_script:
+    - apk add --no-cache bash gettext findutils
     - |
-      apt-get update -qq && DEBIAN_FRONTEND=noninteractive apt-get install -y -qq gettext-base
-      which envsubst || (echo "ERROR: envsubst not found after install" && exit 1)
+      # Sync version if package.json has placeholder (needed for CLI to load)
+      if [ -f "package.json" ] && grep -q '"version": "{{VERSION}}"' package.json; then
+        echo "package.json has {{VERSION}} placeholder, syncing version..."
+        # Try to get version from build.env if available
+        if [ -f "build.env" ]; then
+          set -a
+          source build.env
+          set +a
+          if [ -n "${VERSION:-}" ]; then
+            echo "Syncing version ${VERSION} to package.json..."
+            node -e "const fs = require('fs'); const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8')); pkg.version = '${VERSION}'; fs.writeFileSync('package.json', JSON.stringify(pkg, null, 2) + '\n');"
+          else
+            # Fallback: use latest spec directory
+            LATEST_SPEC=$(find spec -maxdepth 1 -type d -name "v*" -print | sort -V | tail -1 || true)
+            if [ -n "$LATEST_SPEC" ]; then
+              VERSION=$(basename "$LATEST_SPEC" | sed 's/^v//')
+              echo "Using version from spec directory: ${VERSION}"
+              node -e "const fs = require('fs'); const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8')); pkg.version = '${VERSION}'; fs.writeFileSync('package.json', JSON.stringify(pkg, null, 2) + '\n');"
+            fi
+          fi
+        fi
+      fi
     - npm ci
     - npm run build
   script:
     - |
-      #!/bin/bash
-      set -e
-
-      echo "Injecting OSSA version into manifests..."
-      echo "========================================="
-      echo "OSSA_VERSION=$OSSA_VERSION"
-      echo "CI_COMMIT_SHA=$CI_COMMIT_SHA"
-      echo ""
-
-      # Count manifests
-      MANIFEST_COUNT=$(find .gitlab/agents -name "*.ossa.yaml" -type f | wc -l)
-      echo "Found $MANIFEST_COUNT OSSA manifests"
-      echo ""
-
-      # Inject version into all OSSA manifests
-      if [ $MANIFEST_COUNT -gt 0 ]; then
-        find .gitlab/agents -name "*.ossa.yaml" -type f | while read manifest; do
-          echo "Processing $manifest"
-
-          # Use envsubst to replace variables
-          envsubst < "$manifest" > "$manifest.tmp"
-          mv "$manifest.tmp" "$manifest"
-
-          # Show what was injected (first few lines)
-          echo "  apiVersion - $(grep "^apiVersion" "$manifest" || echo "not found")"
-          echo "  version - $(grep "^  version" "$manifest" | head -1 || echo "not found")"
-        done
-        echo ""
-        echo "Version injection complete"
-      else
-        echo "No OSSA manifests found, skipping injection"
+      set -euo pipefail
+      
+      # Detect version if not set from detect-ossa-version job
+      if [ -z "${OSSA_VERSION:-}" ]; then
+        echo "OSSA_VERSION not set from detect-ossa-version, detecting from package.json..."
+        if [ -f "package.json" ]; then
+          PACKAGE_VERSION=$(node -p "require('./package.json').version" 2>/dev/null || echo "")
+          if [ -n "$PACKAGE_VERSION" ] && [ "$PACKAGE_VERSION" != "{{VERSION}}" ]; then
+            OSSA_VERSION="$PACKAGE_VERSION"
+            echo "Using version from package.json: $OSSA_VERSION"
+          fi
+        fi
+        
+        # Fallback: detect from spec directories
+        if [ -z "${OSSA_VERSION:-}" ] && [ -d "spec" ]; then
+          LATEST_SPEC=$(find spec -maxdepth 1 -type d -name "v*" -print | sort -V | tail -1 || true)
+          if [ -n "$LATEST_SPEC" ]; then
+            OSSA_VERSION=$(basename "$LATEST_SPEC" | sed 's/^v//')
+            echo "Using latest spec directory: v$OSSA_VERSION"
+          fi
+        fi
       fi
-      echo ""
-
-      # Validate all manifests with injected versions
-      echo "Validating manifests..."
-      echo "----------------------"
-      npx ossa validate .gitlab/agents/**/*.ossa.yaml --schema "$OSSA_VERSION" || {
-        echo ""
-        echo "Validation failed!"
-        echo "Check manifests in .gitlab/agents/"
+      
+      # Validate version format (must be X.Y.Z)
+      if [ -z "${OSSA_VERSION:-}" ]; then
+        echo "ERROR: Could not determine OSSA version" >&2
+        echo "Tried: detect-ossa-version job, package.json, spec/ directories" >&2
         exit 1
-      }
+      fi
+      
+      # Ensure version is in X.Y.Z format (remove 'v' prefix if present)
+      OSSA_VERSION="${OSSA_VERSION#v}"
+      
+      # Validate format
+      if ! echo "$OSSA_VERSION" | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+'; then
+        echo "ERROR: Invalid version format: $OSSA_VERSION (expected X.Y.Z)" >&2
+        exit 1
+      fi
+      
+      echo "Using OSSA_VERSION: $OSSA_VERSION"
+      export OSSA_VERSION
 
-      echo ""
-      echo "All manifests valid with OSSA version $OSSA_VERSION"
+      SRC_DIR=".gitlab/agents"
+      OUT_DIR=".gitlab/agents_rendered"
+      rm -rf "$OUT_DIR"
+      mkdir -p "$OUT_DIR"
 
+      count="$(find "$SRC_DIR" -type f -name "*.ossa.yaml" | wc -l | tr -d " ")"
+      echo "Found $count OSSA manifests"
+
+      find "$SRC_DIR" -type f -name "*.ossa.yaml" -print0 | while IFS= read -r -d "" manifest; do
+        rel="${manifest#${SRC_DIR}/}"
+        out="${OUT_DIR}/${rel}"
+        mkdir -p "$(dirname "$out")"
+        envsubst '$OSSA_VERSION $CI_COMMIT_SHA' < "$manifest" > "$out"
+      done
+
+      find "$OUT_DIR" -type f -name "*.ossa.yaml" -exec npx ossa validate {} --schema "$OSSA_VERSION" \;
   artifacts:
     paths:
-      - .gitlab/agents/
+      - .gitlab/agents_rendered/
     expire_in: 1 day
   rules:
-    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
-    - if: '$CI_COMMIT_BRANCH == "main"'
-    - if: '$CI_COMMIT_BRANCH == "development"'
-    - if: '$CI_COMMIT_BRANCH =~ /^release\//'
+    - exists:
+        - .gitlab/agents/**/*.ossa.yaml
+    - when: never
 
 deploy-agents-with-version:
   stage: deploy
-  image: bitnami/kubectl:latest
+  image: bitnami/kubectl:1.30
   needs: [validate-and-inject-version]
   script:
     - |
-      #!/bin/bash
-      set -e
-
-      echo "Deploying OSSA agents to Kubernetes..."
-      echo "======================================"
-      echo "OSSA_VERSION=$OSSA_VERSION"
-      echo ""
-
-      # Deploy to K8s with version injected
-      DEPLOYED=0
-      for agent in .gitlab/agents/**/*.ossa.yaml; do
-        if [ -f "$agent" ]; then
-          echo "Deploying $agent"
-          kubectl apply -f "$agent" --dry-run=client || {
-            echo "Dry-run failed for $agent"
-            exit 1
-          }
-          DEPLOYED=$((DEPLOYED + 1))
-        fi
+      set -euo pipefail
+      DIR=".gitlab/agents_rendered"
+      find "$DIR" -type f -name "*.ossa.yaml" -print0 | while IFS= read -r -d "" f; do
+        kubectl apply -f "$f" --dry-run=client
       done
-
-      echo ""
-      echo "Deployed $DEPLOYED agents with OSSA version $OSSA_VERSION"
-
   rules:
     - if: '$CI_COMMIT_BRANCH == "main"'
       when: manual
