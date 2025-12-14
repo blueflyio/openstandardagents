@@ -389,14 +389,6 @@
                   "ignore"
                 ]
               }
-            },
-            "aggregation": {
-              "$ref": "#/definitions/ErrorAggregation",
-              "description": "Error aggregation and alerting"
-            },
-            "dead_letter_queue": {
-              "$ref": "#/definitions/DeadLetterQueue",
-              "description": "Dead letter queue for failed executions"
             }
           },
           "additionalProperties": false
@@ -529,67 +521,6 @@
           "items": {
             "$ref": "#/definitions/FunctionDefinition"
           }
-        },
-        "health": {
-          "$ref": "#/definitions/HealthMonitoring",
-          "description": "Health monitoring configuration"
-        },
-        "secrets": {
-          "$ref": "#/definitions/SecretsManagement",
-          "description": "Secrets management configuration"
-        },
-        "rollback": {
-          "type": "object",
-          "description": "Rollback triggers and automation",
-          "properties": {
-            "triggers": {
-              "type": "array",
-              "items": {
-                "type": "string",
-                "enum": [
-                  "health_check_failure",
-                  "error_rate_threshold",
-                  "cost_exceeded",
-                  "manual_trigger"
-                ]
-              },
-              "description": "Conditions that trigger rollback"
-            },
-            "automation": {
-              "type": "object",
-              "description": "Rollback automation configuration",
-              "properties": {
-                "enabled": {
-                  "type": "boolean",
-                  "default": false,
-                  "description": "Enable automatic rollback"
-                },
-                "approval_required": {
-                  "type": "boolean",
-                  "default": true,
-                  "description": "Require approval before rollback"
-                },
-                "notification_channels": {
-                  "type": "array",
-                  "items": {
-                    "type": "string",
-                    "enum": [
-                      "slack",
-                      "email",
-                      "webhook"
-                    ]
-                  },
-                  "description": "Notification channels for rollback events"
-                }
-              },
-              "additionalProperties": false
-            }
-          },
-          "additionalProperties": false
-        },
-        "testing": {
-          "$ref": "#/definitions/TestingConfig",
-          "description": "Testing strategy configuration (optional)"
         }
       },
       "additionalProperties": true
@@ -1401,10 +1332,6 @@
           "minimum": 0,
           "default": 30000,
           "description": "Maximum delay between retries"
-        },
-        "circuit_breaker": {
-          "$ref": "#/definitions/CircuitBreakerConfig",
-          "description": "Circuit breaker configuration"
         }
       },
       "additionalProperties": false
@@ -1499,9 +1426,7 @@
             },
             "scopes": {
               "type": "array",
-              "items": {
-                "type": "string"
-              },
+              "items": { "type": "string" },
               "description": "Required scopes/permissions"
             },
             "transport": {
@@ -1733,73 +1658,6 @@
             }
           },
           "additionalProperties": true
-        },
-        "versioning": {
-          "type": "object",
-          "description": "State versioning configuration",
-          "properties": {
-            "enabled": {
-              "type": "boolean",
-              "default": false,
-              "description": "Enable state versioning"
-            },
-            "strategy": {
-              "type": "string",
-              "enum": [
-                "optimistic_locking",
-                "pessimistic_locking",
-                "none"
-              ],
-              "default": "optimistic_locking",
-              "description": "Versioning strategy"
-            }
-          },
-          "additionalProperties": false
-        },
-        "conflict_resolution": {
-          "type": "object",
-          "description": "Conflict resolution configuration",
-          "properties": {
-            "strategy": {
-              "type": "string",
-              "enum": [
-                "last_write_wins",
-                "merge_on_conflict",
-                "fail_on_conflict"
-              ],
-              "default": "last_write_wins",
-              "description": "Conflict resolution strategy"
-            },
-            "merge_on_conflict": {
-              "type": "boolean",
-              "default": false,
-              "description": "Attempt to merge conflicting state"
-            }
-          },
-          "additionalProperties": false
-        },
-        "persistence": {
-          "type": "object",
-          "description": "State persistence configuration",
-          "properties": {
-            "enabled": {
-              "type": "boolean",
-              "default": true,
-              "description": "Enable state persistence"
-            },
-            "backup_interval_seconds": {
-              "type": "integer",
-              "minimum": 1,
-              "default": 300,
-              "description": "Backup interval in seconds"
-            },
-            "restore_on_startup": {
-              "type": "boolean",
-              "default": true,
-              "description": "Restore state on agent startup"
-            }
-          },
-          "additionalProperties": false
         }
       },
       "additionalProperties": true
@@ -1851,20 +1709,9 @@
               "items": {
                 "type": "object",
                 "properties": {
-                  "name": {
-                    "type": "string"
-                  },
-                  "type": {
-                    "type": "string",
-                    "enum": [
-                      "counter",
-                      "gauge",
-                      "histogram"
-                    ]
-                  },
-                  "description": {
-                    "type": "string"
-                  }
+                  "name": { "type": "string" },
+                  "type": { "type": "string", "enum": ["counter", "gauge", "histogram"] },
+                  "description": { "type": "string" }
                 }
               }
             }
@@ -1877,20 +1724,12 @@
           "properties": {
             "level": {
               "type": "string",
-              "enum": [
-                "debug",
-                "info",
-                "warn",
-                "error"
-              ],
+              "enum": ["debug", "info", "warn", "error"],
               "description": "Log level"
             },
             "format": {
               "type": "string",
-              "enum": [
-                "json",
-                "text"
-              ],
+              "enum": ["json", "text"],
               "description": "Log format"
             }
           },
@@ -1900,20 +1739,14 @@
           "type": "object",
           "description": "Alerting configuration",
           "properties": {
-            "enabled": {
-              "type": "boolean"
-            },
+            "enabled": { "type": "boolean" },
             "channels": {
               "type": "array",
-              "items": {
-                "type": "string"
-              }
+              "items": { "type": "string" }
             },
             "rules": {
               "type": "array",
-              "items": {
-                "type": "object"
-              }
+              "items": { "type": "object" }
             }
           },
           "additionalProperties": true
@@ -1922,15 +1755,9 @@
           "type": "object",
           "description": "Service level objectives",
           "properties": {
-            "availability": {
-              "type": "number"
-            },
-            "latency_p95_ms": {
-              "type": "integer"
-            },
-            "error_budget": {
-              "type": "number"
-            }
+            "availability": { "type": "number" },
+            "latency_p95_ms": { "type": "integer" },
+            "error_budget": { "type": "number" }
           },
           "additionalProperties": true
         }
@@ -1945,32 +1772,20 @@
           "type": "object",
           "description": "Content filtering for inputs/outputs",
           "properties": {
-            "enabled": {
-              "type": "boolean"
-            },
+            "enabled": { "type": "boolean" },
             "categories": {
               "type": "array",
-              "items": {
-                "type": "string"
-              },
+              "items": { "type": "string" },
               "description": "Categories to filter (e.g., pii, credentials)"
             },
             "threshold": {
               "type": "string",
-              "enum": [
-                "low",
-                "medium",
-                "high"
-              ],
+              "enum": ["low", "medium", "high"],
               "description": "Filtering sensitivity"
             },
             "action": {
               "type": "string",
-              "enum": [
-                "warn",
-                "block",
-                "redact"
-              ],
+              "enum": ["warn", "block", "redact"],
               "description": "Action when content matches"
             }
           },
@@ -1980,23 +1795,15 @@
           "type": "object",
           "description": "PII detection and handling",
           "properties": {
-            "enabled": {
-              "type": "boolean"
-            },
+            "enabled": { "type": "boolean" },
             "types": {
               "type": "array",
-              "items": {
-                "type": "string"
-              },
+              "items": { "type": "string" },
               "description": "PII types to detect (email, phone, ssn, api_key, etc.)"
             },
             "action": {
               "type": "string",
-              "enum": [
-                "warn",
-                "block",
-                "redact"
-              ],
+              "enum": ["warn", "block", "redact"],
               "description": "Action when PII detected"
             }
           },
@@ -2006,15 +1813,9 @@
           "type": "object",
           "description": "Rate limiting configuration",
           "properties": {
-            "enabled": {
-              "type": "boolean"
-            },
-            "requests_per_minute": {
-              "type": "integer"
-            },
-            "burst_limit": {
-              "type": "integer"
-            }
+            "enabled": { "type": "boolean" },
+            "requests_per_minute": { "type": "integer" },
+            "burst_limit": { "type": "integer" }
           },
           "additionalProperties": true
         },
@@ -2022,14 +1823,10 @@
           "type": "object",
           "description": "Guardrails for agent behavior",
           "properties": {
-            "enabled": {
-              "type": "boolean"
-            },
+            "enabled": { "type": "boolean" },
             "policies": {
               "type": "array",
-              "items": {
-                "type": "object"
-              },
+              "items": { "type": "object" },
               "description": "Policy definitions"
             },
             "max_tool_calls": {
@@ -2047,22 +1844,14 @@
           "type": "object",
           "description": "Human-in-the-loop configuration",
           "properties": {
-            "enabled": {
-              "type": "boolean"
-            },
+            "enabled": { "type": "boolean" },
             "triggers": {
               "type": "array",
-              "items": {
-                "type": "string"
-              },
+              "items": { "type": "string" },
               "description": "Conditions that require human approval"
             }
           },
           "additionalProperties": true
-        },
-        "security_boundaries": {
-          "$ref": "#/definitions/SecurityBoundaries",
-          "description": "Security boundaries and access control"
         }
       },
       "additionalProperties": true
@@ -2692,643 +2481,6 @@
         "gpu_type": {
           "type": "string",
           "description": "Required GPU type (e.g., nvidia-a100, nvidia-h100)"
-        }
-      },
-      "additionalProperties": false
-    },
-    "HealthMonitoring": {
-      "type": "object",
-      "description": "Agent health monitoring configuration",
-      "properties": {
-        "enabled": {
-          "type": "boolean",
-          "default": true,
-          "description": "Enable health monitoring"
-        },
-        "endpoints": {
-          "type": "object",
-          "description": "Health check endpoints",
-          "properties": {
-            "health": {
-              "type": "string",
-              "default": "/health",
-              "description": "Health check endpoint path"
-            },
-            "ready": {
-              "type": "string",
-              "default": "/health/ready",
-              "description": "Readiness check endpoint path"
-            },
-            "live": {
-              "type": "string",
-              "default": "/health/live",
-              "description": "Liveness check endpoint path"
-            }
-          },
-          "additionalProperties": false
-        },
-        "interval_seconds": {
-          "type": "integer",
-          "minimum": 1,
-          "default": 30,
-          "description": "Health check interval in seconds"
-        },
-        "timeout_seconds": {
-          "type": "integer",
-          "minimum": 1,
-          "default": 5,
-          "description": "Health check timeout in seconds"
-        },
-        "failure_threshold": {
-          "type": "integer",
-          "minimum": 1,
-          "default": 3,
-          "description": "Number of consecutive failures before marking unhealthy"
-        },
-        "restart_policy": {
-          "type": "object",
-          "description": "Agent restart policy",
-          "properties": {
-            "enabled": {
-              "type": "boolean",
-              "default": false,
-              "description": "Enable automatic restart on failure"
-            },
-            "max_restarts": {
-              "type": "integer",
-              "minimum": 0,
-              "default": 3,
-              "description": "Maximum restart attempts"
-            },
-            "restart_delay_seconds": {
-              "type": "integer",
-              "minimum": 0,
-              "default": 10,
-              "description": "Delay before restart in seconds"
-            }
-          },
-          "additionalProperties": false
-        },
-        "metrics": {
-          "type": "object",
-          "description": "Health metrics collection",
-          "properties": {
-            "enabled": {
-              "type": "boolean",
-              "default": true
-            },
-            "export_health_status": {
-              "type": "boolean",
-              "default": true
-            },
-            "export_uptime": {
-              "type": "boolean",
-              "default": true
-            },
-            "export_restart_count": {
-              "type": "boolean",
-              "default": true
-            }
-          },
-          "additionalProperties": false
-        }
-      },
-      "additionalProperties": false
-    },
-    "CircuitBreakerConfig": {
-      "type": "object",
-      "description": "Circuit breaker configuration for resilience",
-      "properties": {
-        "enabled": {
-          "type": "boolean",
-          "default": false,
-          "description": "Enable circuit breaker"
-        },
-        "failure_threshold": {
-          "type": "integer",
-          "minimum": 1,
-          "default": 5,
-          "description": "Number of failures before opening circuit"
-        },
-        "timeout_ms": {
-          "type": "integer",
-          "minimum": 1000,
-          "default": 60000,
-          "description": "Circuit open timeout in milliseconds"
-        },
-        "half_open_max_calls": {
-          "type": "integer",
-          "minimum": 1,
-          "default": 3,
-          "description": "Maximum calls in half-open state"
-        },
-        "success_threshold": {
-          "type": "integer",
-          "minimum": 1,
-          "default": 2,
-          "description": "Successes needed to close circuit from half-open"
-        }
-      },
-      "additionalProperties": false
-    },
-    "ErrorAggregation": {
-      "type": "object",
-      "description": "Error aggregation and alerting configuration",
-      "properties": {
-        "enabled": {
-          "type": "boolean",
-          "default": false,
-          "description": "Enable error aggregation"
-        },
-        "window_seconds": {
-          "type": "integer",
-          "minimum": 1,
-          "default": 300,
-          "description": "Aggregation time window in seconds"
-        },
-        "threshold": {
-          "type": "integer",
-          "minimum": 1,
-          "default": 10,
-          "description": "Error count threshold for alerts"
-        },
-        "alert_channels": {
-          "type": "array",
-          "items": {
-            "type": "string",
-            "enum": [
-              "slack",
-              "pagerduty",
-              "email",
-              "webhook"
-            ]
-          },
-          "description": "Alert notification channels"
-        },
-        "categorization": {
-          "type": "object",
-          "description": "Error categorization",
-          "properties": {
-            "enabled": {
-              "type": "boolean",
-              "default": true
-            },
-            "categories": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              },
-              "description": "Error categories (e.g., timeout, rate_limit, validation)"
-            }
-          },
-          "additionalProperties": false
-        }
-      },
-      "additionalProperties": false
-    },
-    "DeadLetterQueue": {
-      "type": "object",
-      "description": "Dead letter queue configuration for failed executions",
-      "properties": {
-        "enabled": {
-          "type": "boolean",
-          "default": false,
-          "description": "Enable dead letter queue"
-        },
-        "storage": {
-          "type": "object",
-          "description": "DLQ storage configuration",
-          "properties": {
-            "type": {
-              "type": "string",
-              "enum": [
-                "redis",
-                "s3",
-                "database",
-                "file"
-              ],
-              "description": "Storage backend type"
-            },
-            "endpoint": {
-              "type": "string",
-              "description": "Storage endpoint URL"
-            },
-            "retention_days": {
-              "type": "integer",
-              "minimum": 1,
-              "default": 7,
-              "description": "Retention period in days"
-            }
-          },
-          "additionalProperties": true
-        },
-        "alert_on_size": {
-          "type": "integer",
-          "minimum": 0,
-          "default": 100,
-          "description": "Alert when queue size exceeds this value"
-        },
-        "replay_enabled": {
-          "type": "boolean",
-          "default": false,
-          "description": "Enable replay of failed executions"
-        }
-      },
-      "additionalProperties": false
-    },
-    "SecretsManagement": {
-      "type": "object",
-      "description": "Secrets management configuration for agents",
-      "properties": {
-        "provider": {
-          "type": "string",
-          "enum": [
-            "gitlab_vault",
-            "hashicorp_vault",
-            "aws_secrets_manager",
-            "azure_key_vault",
-            "kubernetes_secrets"
-          ],
-          "default": "gitlab_vault",
-          "description": "Secrets provider"
-        },
-        "injection": {
-          "type": "object",
-          "description": "Secret injection method",
-          "properties": {
-            "method": {
-              "type": "string",
-              "enum": [
-                "env_vars",
-                "files",
-                "api"
-              ],
-              "default": "env_vars",
-              "description": "Injection method"
-            },
-            "prefix": {
-              "type": "string",
-              "default": "AGENT_SECRET_",
-              "description": "Environment variable prefix"
-            },
-            "file_path": {
-              "type": "string",
-              "description": "File path for file-based injection"
-            }
-          },
-          "additionalProperties": false
-        },
-        "rotation": {
-          "type": "object",
-          "description": "Secret rotation configuration",
-          "properties": {
-            "enabled": {
-              "type": "boolean",
-              "default": false
-            },
-            "interval_days": {
-              "type": "integer",
-              "minimum": 1,
-              "default": 90,
-              "description": "Rotation interval in days"
-            },
-            "auto_rotate": {
-              "type": "boolean",
-              "default": false,
-              "description": "Automatically rotate secrets"
-            },
-            "notification": {
-              "type": "boolean",
-              "default": true,
-              "description": "Notify on rotation"
-            }
-          },
-          "additionalProperties": false
-        },
-        "encryption": {
-          "type": "object",
-          "description": "Secret encryption configuration",
-          "properties": {
-            "at_rest": {
-              "type": "boolean",
-              "default": true,
-              "description": "Encrypt secrets at rest"
-            },
-            "in_transit": {
-              "type": "boolean",
-              "default": true,
-              "description": "Encrypt secrets in transit"
-            },
-            "algorithm": {
-              "type": "string",
-              "enum": [
-                "AES-256-GCM",
-                "AES-256-CBC",
-                "ChaCha20-Poly1305"
-              ],
-              "default": "AES-256-GCM",
-              "description": "Encryption algorithm"
-            }
-          },
-          "additionalProperties": false
-        },
-        "access_control": {
-          "type": "object",
-          "description": "Secret access control",
-          "properties": {
-            "rbac": {
-              "type": "boolean",
-              "default": true,
-              "description": "Enable RBAC for secret access"
-            },
-            "audit_logging": {
-              "type": "boolean",
-              "default": true,
-              "description": "Log all secret access"
-            }
-          },
-          "additionalProperties": false
-        },
-        "secrets": {
-          "type": "array",
-          "description": "Secret references",
-          "items": {
-            "type": "object",
-            "properties": {
-              "name": {
-                "type": "string",
-                "description": "Secret name"
-              },
-              "ref": {
-                "type": "string",
-                "description": "Secret reference (e.g., vault://secret/api-key)"
-              },
-              "scope": {
-                "type": "string",
-                "description": "Secret scope (agent, workflow, global)"
-              },
-              "rotate": {
-                "type": "boolean",
-                "default": false,
-                "description": "Enable rotation for this secret"
-              }
-            },
-            "required": [
-              "name",
-              "ref"
-            ],
-            "additionalProperties": false
-          }
-        }
-      },
-      "additionalProperties": false
-    },
-    "SecurityBoundaries": {
-      "type": "object",
-      "description": "Security boundaries and access control configuration",
-      "properties": {
-        "network_policies": {
-          "type": "object",
-          "description": "Network policies between agents",
-          "properties": {
-            "enabled": {
-              "type": "boolean",
-              "default": false
-            },
-            "default": {
-              "type": "string",
-              "enum": [
-                "allow_all",
-                "deny_all"
-              ],
-              "default": "deny_all",
-              "description": "Default network policy"
-            },
-            "allow_list": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              },
-              "description": "Allowed agent-to-agent communication patterns"
-            }
-          },
-          "additionalProperties": false
-        },
-        "rbac": {
-          "type": "object",
-          "description": "Role-based access control",
-          "properties": {
-            "enabled": {
-              "type": "boolean",
-              "default": false
-            },
-            "roles": {
-              "type": "array",
-              "items": {
-                "type": "string",
-                "enum": [
-                  "agent_executor",
-                  "agent_admin",
-                  "agent_auditor",
-                  "agent_viewer"
-                ]
-              },
-              "description": "Assigned roles"
-            }
-          },
-          "additionalProperties": false
-        },
-        "authentication": {
-          "type": "object",
-          "description": "Authentication configuration",
-          "properties": {
-            "agent_to_agent": {
-              "type": "string",
-              "enum": [
-                "mtls",
-                "oauth2",
-                "api_key",
-                "none"
-              ],
-              "default": "mtls",
-              "description": "Agent-to-agent authentication method"
-            },
-            "api_access": {
-              "type": "string",
-              "enum": [
-                "oauth2",
-                "api_key",
-                "jwt",
-                "none"
-              ],
-              "default": "oauth2",
-              "description": "API access authentication method"
-            },
-            "service_accounts": {
-              "type": "boolean",
-              "default": true,
-              "description": "Use service accounts for authentication"
-            }
-          },
-          "additionalProperties": false
-        },
-        "audit_logging": {
-          "type": "object",
-          "description": "Audit logging configuration",
-          "properties": {
-            "enabled": {
-              "type": "boolean",
-              "default": true
-            },
-            "events": {
-              "type": "array",
-              "items": {
-                "type": "string",
-                "enum": [
-                  "agent_execution",
-                  "secret_access",
-                  "config_change",
-                  "rollback",
-                  "authentication"
-                ]
-              },
-              "description": "Events to audit"
-            },
-            "retention_days": {
-              "type": "integer",
-              "minimum": 1,
-              "default": 90,
-              "description": "Audit log retention in days"
-            }
-          },
-          "additionalProperties": false
-        },
-        "compliance": {
-          "type": "object",
-          "description": "Compliance framework checks",
-          "properties": {
-            "frameworks": {
-              "type": "array",
-              "items": {
-                "type": "string",
-                "enum": [
-                  "nist_800_53",
-                  "soc2",
-                  "iso_27001",
-                  "hipaa",
-                  "gdpr"
-                ]
-              },
-              "description": "Compliance frameworks"
-            },
-            "checks": {
-              "type": "object",
-              "description": "Compliance check schedule",
-              "properties": {
-                "frequency": {
-                  "type": "string",
-                  "enum": [
-                    "daily",
-                    "weekly",
-                    "monthly"
-                  ],
-                  "default": "daily"
-                },
-                "auto_remediate": {
-                  "type": "boolean",
-                  "default": false,
-                  "description": "Automatically remediate compliance issues"
-                }
-              },
-              "additionalProperties": false
-            }
-          },
-          "additionalProperties": false
-        }
-      },
-      "additionalProperties": false
-    },
-    "TestingConfig": {
-      "type": "object",
-      "description": "Testing strategy configuration (optional)",
-      "properties": {
-        "framework": {
-          "type": "string",
-          "enum": [
-            "jest",
-            "mocha",
-            "vitest",
-            "pytest",
-            "phpunit"
-          ],
-          "default": "jest",
-          "description": "Test framework"
-        },
-        "mock_llm": {
-          "type": "object",
-          "description": "Mock LLM provider configuration",
-          "properties": {
-            "enabled": {
-              "type": "boolean",
-              "default": true
-            },
-            "provider": {
-              "type": "string",
-              "enum": [
-                "local_mock",
-                "vcr",
-                "fixtures"
-              ],
-              "default": "local_mock",
-              "description": "Mock provider type"
-            },
-            "responses_file": {
-              "type": "string",
-              "description": "Path to mock responses file"
-            }
-          },
-          "additionalProperties": false
-        },
-        "coverage": {
-          "type": "object",
-          "description": "Test coverage requirements",
-          "properties": {
-            "threshold": {
-              "type": "integer",
-              "minimum": 0,
-              "maximum": 100,
-              "default": 80,
-              "description": "Minimum coverage percentage"
-            },
-            "enforce": {
-              "type": "boolean",
-              "default": false,
-              "description": "Enforce coverage threshold in CI"
-            }
-          },
-          "additionalProperties": false
-        },
-        "test_data": {
-          "type": "object",
-          "description": "Test data management",
-          "properties": {
-            "management": {
-              "type": "string",
-              "enum": [
-                "git_lfs",
-                "fixtures",
-                "generated"
-              ],
-              "default": "fixtures",
-              "description": "Test data management strategy"
-            },
-            "fixtures_path": {
-              "type": "string",
-              "default": "tests/fixtures/",
-              "description": "Path to test fixtures"
-            }
-          },
-          "additionalProperties": false
         }
       },
       "additionalProperties": false
