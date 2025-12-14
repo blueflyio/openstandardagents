@@ -54,7 +54,7 @@ spec:
         agent_path=".gitlab/agents/${agent_name}/manifest.ossa.yaml"
       fi
       
-      echo "🤖 Executing OSSA Agent: ${agent_name:-$(basename $(dirname ${agent_path}))}"
+      echo "INFO: Executing OSSA Agent: ${agent_name:-$(basename $(dirname ${agent_path}))}"
       echo "   Manifest: ${agent_path}"
       echo "   Task: ${task:-default}"
       echo "   Inputs: ${inputs}"

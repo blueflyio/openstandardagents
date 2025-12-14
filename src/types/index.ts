@@ -186,22 +186,12 @@ export interface OssaAgent {
         };
       };
     };
-    environments?: Record<
-      string,
-      {
-        version: string;
-        deployedAt: string;
-        deployedBy: string;
-        status: 'deployed' | 'healthy' | 'degraded' | 'failed';
-        endpoint?: string;
-      }
-    >;
-    dependencies?: Array<{
-      type: 'agent' | 'service' | 'data';
-      name: string;
-      version?: string;
-      optional?: boolean;
-      description?: string;
+    environments?: Record<string, {
+      version: string;
+      deployedAt: string;
+      deployedBy: string;
+      status: 'deployed' | 'healthy' | 'degraded' | 'failed';
+      endpoint?: string;
     }>;
   };
   // Legacy v0.1.9 format (for backward compatibility)

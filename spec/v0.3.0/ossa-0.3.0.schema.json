@@ -1983,40 +1983,37 @@
       "properties": {
         "channel": {
           "type": "string",
-          "pattern": "^[a-z0-9]+(?:\\.[a-z0-9]+)*$",
-          "description": "Channel name (dot-separated, lowercase)",
-          "examples": [
-            "security.vulnerabilities",
-            "dependency.updates",
-            "incident.response.triggered"
-          ]
+          "pattern": "^[a-z][a-z0-9_]*(\\.[a-z][a-z0-9_]*)*$",
+          "description": "Channel name (e.g., 'security.vulnerabilities')"
         },
         "description": {
           "type": "string",
-          "description": "Human-readable description of what messages are published"
+          "description": "Human-readable description of the channel"
         },
         "schema": {
-          "$ref": "#/definitions/JSONSchemaDefinition",
-          "description": "JSON Schema for message payload"
+          "type": "object",
+          "description": "JSON Schema for published messages",
+          "additionalProperties": true
         },
         "examples": {
           "type": "array",
-          "description": "Example message payloads",
+          "description": "Example messages",
           "items": {
-            "type": "object"
+            "type": "object",
+            "additionalProperties": true
           }
         },
         "contentType": {
           "type": "string",
-          "default": "application/json",
-          "description": "Content type of the message payload"
+          "description": "Content type of messages",
+          "default": "application/json"
         },
         "tags": {
           "type": "array",
+          "description": "Tags for categorization",
           "items": {
             "type": "string"
-          },
-          "description": "Tags for categorization and filtering"
+          }
         }
       },
       "additionalProperties": false
@@ -2030,41 +2027,33 @@
       "properties": {
         "channel": {
           "type": "string",
-          "pattern": "^[a-z0-9]+(?:\\.[a-z0-9*]+)*$",
-          "description": "Channel name or pattern (supports * wildcard)",
-          "examples": [
-            "security.vulnerabilities",
-            "dependency.*",
-            "incident.response.*"
-          ]
+          "pattern": "^[a-z][a-z0-9_]*(\\.[a-z][a-z0-9_]*)*$",
+          "description": "Channel name to subscribe to"
         },
         "description": {
           "type": "string",
-          "description": "Human-readable description of subscription purpose"
+          "description": "Human-readable description"
         },
         "schema": {
-          "$ref": "#/definitions/JSONSchemaDefinition",
-          "description": "Expected message schema for validation"
+          "type": "object",
+          "description": "Expected message schema",
+          "additionalProperties": true
         },
         "handler": {
           "type": "string",
-          "description": "Handler function name or reference",
-          "examples": [
-            "process_vulnerability",
-            "handle_dependency_update"
-          ]
+          "description": "Handler function name"
         },
         "filter": {
           "type": "object",
-          "description": "Filter conditions for message processing",
+          "description": "Message filter configuration",
           "properties": {
             "expression": {
               "type": "string",
-              "description": "Filter expression (e.g., '${{ message.severity in [\"high\", \"critical\"] }}')"
+              "description": "Filter expression"
             },
             "fields": {
               "type": "object",
-              "description": "Simple field-value filters",
+              "description": "Field-based filters",
               "additionalProperties": true
             }
           },
@@ -2079,12 +2068,11 @@
             "critical"
           ],
           "default": "normal",
-          "description": "Subscription priority for message ordering"
+          "description": "Message priority"
         },
         "maxConcurrency": {
           "type": "integer",
           "minimum": 1,
-          "default": 1,
           "description": "Maximum concurrent message processing"
         }
       },
@@ -2101,36 +2089,32 @@
         "name": {
           "type": "string",
           "pattern": "^[a-z][a-z0-9_]*$",
-          "description": "Command name (snake_case)",
-          "examples": [
-            "scan_package",
-            "analyze_vulnerability",
-            "trigger_incident"
-          ]
+          "description": "Command name (snake_case)"
         },
         "description": {
           "type": "string",
-          "description": "Human-readable description of the command"
+          "description": "Human-readable description"
         },
         "inputSchema": {
-          "$ref": "#/definitions/JSONSchemaDefinition",
-          "description": "JSON Schema for command input"
+          "type": "object",
+          "description": "JSON Schema for command input",
+          "additionalProperties": true
         },
         "outputSchema": {
-          "$ref": "#/definitions/JSONSchemaDefinition",
-          "description": "JSON Schema for command output"
+          "type": "object",
+          "description": "JSON Schema for command output",
+          "additionalProperties": true
         },
         "timeoutSeconds": {
           "type": "integer",
           "minimum": 1,
           "maximum": 3600,
-          "default": 30,
           "description": "Command execution timeout in seconds"
         },
         "idempotent": {
           "type": "boolean",
           "default": false,
-          "description": "Whether the command is idempotent (safe to retry)"
+          "description": "Whether the command is idempotent"
         },
         "async": {
           "type": "boolean",
@@ -2152,45 +2136,50 @@
             "exactly-once"
           ],
           "default": "at-least-once",
-          "description": "Message delivery guarantee level"
+          "description": "Message delivery guarantee"
         },
         "retry": {
           "type": "object",
-          "description": "Retry configuration for failed deliveries",
+          "description": "Retry configuration",
           "properties": {
             "maxAttempts": {
               "type": "integer",
-              "minimum": 1,
+              "minimum": 0,
               "maximum": 10,
               "default": 3,
               "description": "Maximum retry attempts"
             },
             "backoff": {
               "type": "object",
+              "description": "Backoff strategy configuration",
               "properties": {
                 "strategy": {
                   "type": "string",
                   "enum": [
                     "exponential",
                     "linear",
-                    "fixed"
+                    "constant"
                   ],
-                  "default": "exponential"
+                  "default": "exponential",
+                  "description": "Backoff strategy"
                 },
                 "initialDelayMs": {
                   "type": "integer",
-                  "minimum": 100,
-                  "default": 1000
+                  "minimum": 0,
+                  "default": 1000,
+                  "description": "Initial delay in milliseconds"
                 },
                 "maxDelayMs": {
                   "type": "integer",
-                  "minimum": 1000,
-                  "default": 30000
+                  "minimum": 0,
+                  "default": 60000,
+                  "description": "Maximum delay in milliseconds"
                 },
                 "multiplier": {
                   "type": "number",
                   "minimum": 1,
-                  "default": 2
+                  "default": 2,
+                  "description": "Backoff multiplier"
                 }
               },
               "additionalProperties": false
@@ -2204,20 +2193,19 @@
           "properties": {
             "enabled": {
               "type": "boolean",
-              "default": true,
-              "description": "Enable dead letter queue for failed messages"
+              "default": false,
+              "description": "Enable dead letter queue"
             },
             "channel": {
               "type": "string",
-              "default": "messaging.dlq",
-              "description": "DLQ channel name"
+              "description": "Dead letter queue channel name"
             },
             "retentionDays": {
               "type": "integer",
               "minimum": 1,
-              "maximum": 365,
-              "default": 30,
-              "description": "Days to retain DLQ messages"
+              "maximum": 90,
+              "default": 7,
+              "description": "Message retention in days"
             }
           },
           "additionalProperties": false
@@ -2229,19 +2217,16 @@
             "guarantee": {
               "type": "string",
               "enum": [
-                "none",
                 "per-source",
-                "per-channel",
                 "global"
               ],
-              "default": "none",
-              "description": "Message ordering guarantee level"
+              "default": "per-source",
+              "description": "Ordering guarantee level"
             },
             "timeoutSeconds": {
               "type": "integer",
               "minimum": 1,
-              "default": 300,
-              "description": "Ordering window timeout"
+              "description": "Ordering timeout in seconds"
             }
           },
           "additionalProperties": false
@@ -2253,17 +2238,17 @@
             "mode": {
               "type": "string",
               "enum": [
-                "auto",
-                "manual"
+                "manual",
+                "automatic"
               ],
-              "default": "auto",
+              "default": "automatic",
               "description": "Acknowledgment mode"
             },
             "timeoutSeconds": {
               "type": "integer",
               "minimum": 1,
-              "default": 60,
-              "description": "Acknowledgment timeout"
+              "default": 30,
+              "description": "Acknowledgment timeout in seconds"
             }
           },
           "additionalProperties": false

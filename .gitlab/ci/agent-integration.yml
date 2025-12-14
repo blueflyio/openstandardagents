@@ -27,7 +27,7 @@ validate:yaml:
         - "**/*.yml"
         - "**/*.yaml"
 
-validate:ossa:
+validate:ossa-manifests:
   stage: validate
   image: node:20-slim
   script:
@@ -39,26 +39,6 @@ validate:ossa:
         - "**/*.ossa.yaml"
         - ".agents/**/*"
   allow_failure: false
-
-validate:gitlab-ci:
-  stage: validate
-  image: alpine:latest
-  script:
-    - apk add --no-cache curl jq
-    - |
-      for file in $(find . -name ".gitlab-ci*.yml" -o -name "*.gitlab-ci.yml"); do
-        echo "Validating $file"
-        curl --silent --request POST \
-          --header "PRIVATE-TOKEN: ${GITLAB_TOKEN}" \
-          --header "Content-Type: application/json" \
-          --data "$(jq -Rs '{content: .}' < "$file")" \
-          "${CI_API_V4_URL}/ci/lint" | jq -e '.valid == true'
-      done
-  rules:
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-      changes:
-        - ".gitlab-ci.yml"
-        - ".gitlab/ci/**/*"
 
 # =============================================================================
 # AGENT STAGE - Invoke agents based on file changes

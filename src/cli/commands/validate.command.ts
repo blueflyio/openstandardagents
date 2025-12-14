@@ -22,7 +22,8 @@ export const validateCommand = new Command('validate')
   .argument('<path>', 'Path to OSSA manifest or OpenAPI spec (YAML or JSON)')
   .option(
     '-s, --schema <version>',
-    'Schema version to validate against (auto-detected from apiVersion if not specified)'
+    'Schema version (0.3.0, 0.2.9, 0.2.8, 0.2.6, 0.2.5, 0.2.3, 0.2.2, or 1.0)',
+    '0.2.9'
   )
   .option('--openapi', 'Validate as OpenAPI specification with OSSA extensions')
   .option('--check-messaging', 'Validate messaging extension (v0.3.0+)')
@@ -34,7 +35,7 @@ export const validateCommand = new Command('validate')
     async (
       path: string,
       options: {
-        schema?: string;
+        schema: string;
         openapi?: boolean;
         checkMessaging?: boolean;
         verbose?: boolean;

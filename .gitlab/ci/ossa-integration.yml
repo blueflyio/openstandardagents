@@ -142,7 +142,7 @@ deploy:agents:kagent:
   before_script:
     - apk add --no-cache git curl kubectl
     - |
-      echo "🚀 Deploying OSSA agents to Kubernetes via KAgent"
+      echo "INFO: Deploying OSSA agents to Kubernetes via KAgent"
       echo "   Namespace: agent-system"
       echo "   Agents: All v0.3.0 agents"
   script:
