@@ -10,6 +10,89 @@
       set -e
       # Verify kubectl is available
       kubectl version --client || (echo "ERROR: kubectl not available" && exit 1)
+      
+      # GitLab automatically injects kubeconfig when environment.kubernetes is set
+      # Wait a moment for GitLab to inject it
+      echo "Waiting for GitLab to inject kubeconfig..."
+      sleep 2
+      
+      # Check if KUBECONFIG is set (GitLab sets this automatically)
+      # Fallback to KUBECONFIG_DEV or KUBECONFIG_PROD if available
+      # These may be file paths or base64-encoded content
+      if [ -z "${KUBECONFIG}" ]; then
+        KUBECONFIG_FILE=""
+        if [ -n "${KUBECONFIG_DEV}" ]; then
+          echo "Found KUBECONFIG_DEV, checking if it's a file path or content..."
+          if [ -f "${KUBECONFIG_DEV}" ]; then
+            echo "Using KUBECONFIG_DEV as file path"
+            export KUBECONFIG="${KUBECONFIG_DEV}"
+          else
+            echo "KUBECONFIG_DEV appears to be content, writing to temp file..."
+            KUBECONFIG_FILE=$(mktemp /tmp/kubeconfig.XXXXXX)
+            echo "${KUBECONFIG_DEV}" | base64 -d > "${KUBECONFIG_FILE}" 2>/dev/null || echo "${KUBECONFIG_DEV}" > "${KUBECONFIG_FILE}"
+            export KUBECONFIG="${KUBECONFIG_FILE}"
+            echo "Wrote kubeconfig to ${KUBECONFIG_FILE}"
+          fi
+        elif [ -n "${KUBECONFIG_PROD}" ]; then
+          echo "Found KUBECONFIG_PROD, checking if it's a file path or content..."
+          if [ -f "${KUBECONFIG_PROD}" ]; then
+            echo "Using KUBECONFIG_PROD as file path"
+            export KUBECONFIG="${KUBECONFIG_PROD}"
+          else
+            echo "KUBECONFIG_PROD appears to be content, writing to temp file..."
+            KUBECONFIG_FILE=$(mktemp /tmp/kubeconfig.XXXXXX)
+            echo "${KUBECONFIG_PROD}" | base64 -d > "${KUBECONFIG_FILE}" 2>/dev/null || echo "${KUBECONFIG_PROD}" > "${KUBECONFIG_FILE}"
+            export KUBECONFIG="${KUBECONFIG_FILE}"
+            echo "Wrote kubeconfig to ${KUBECONFIG_FILE}"
+          fi
+        elif [ -f "${HOME}/.kube/config" ]; then
+          echo "Using default kubeconfig from ${HOME}/.kube/config"
+          export KUBECONFIG="${HOME}/.kube/config"
+        else
+          echo "ERROR: KUBECONFIG not set and no fallback available"
+          echo ""
+          echo "GitLab should automatically set KUBECONFIG when environment.kubernetes is set."
+          echo "This means the GitLab Kubernetes Agent is not properly configured."
+          echo ""
+          echo "Required steps:"
+          echo "  1. Register the agent in GitLab UI: Infrastructure > Kubernetes clusters > Connect a cluster"
+          echo "  2. Ensure agent is running and connected (check agent status in GitLab)"
+          echo "  3. Verify agent config.yaml has ci_access for this project with 'review' environment"
+          echo "  4. The agent must be registered in the SAME project where CI runs (blueflyio/openstandardagents.org)"
+          echo ""
+          echo "Note: Found KUBECONFIG_DEV and KUBECONFIG_PROD variables, but GitLab agent kubeconfig is missing."
+          echo "This suggests the agent is not registered or not connected for this project."
+          exit 1
+        fi
+      else
+        echo "Using GitLab-provided KUBECONFIG"
+      fi
+      
+      # Verify we can connect
+      echo "Verifying kubectl connection to cluster..."
+      echo "Current context: $(kubectl config current-context 2>&1)"
+      echo "KUBECONFIG: ${KUBECONFIG:-not set}"
+      
+      # Try cluster-info, but don't fail immediately - the cluster might be local/OrbStack
+      if ! kubectl cluster-info >/dev/null 2>&1; then
+        echo "WARNING: kubectl cluster-info failed, but continuing..."
+        echo "This may be normal for local clusters (OrbStack)"
+        echo "Testing with a simple command instead..."
+        if ! kubectl get nodes >/dev/null 2>&1 && ! kubectl get namespaces >/dev/null 2>&1; then
+          echo "ERROR: Cannot connect to Kubernetes cluster"
+          echo "Both cluster-info and get commands failed"
+          echo ""
+          echo "Available contexts:"
+          kubectl config get-contexts 2>&1 || echo "No contexts available"
+          echo ""
+          echo "Kubeconfig file exists: $([ -f "${KUBECONFIG}" ] && echo "yes" || echo "no")"
+          echo "Kubeconfig file size: $(wc -c < "${KUBECONFIG}" 2>/dev/null || echo "0") bytes"
+          exit 1
+        fi
+        echo "Connection verified via get command"
+      else
+        echo "Successfully connected to Kubernetes cluster"
+      fi"
 
 review:deploy:
   extends: .review_app_base
@@ -31,13 +114,11 @@ review:deploy:
       }
       trap cleanup ERR
       
-      # Wait for GitLab Kubernetes Agent connection (if needed)
-      # The agent connection is established automatically when environment.kubernetes is set
-      # But we need to verify kubectl can access the cluster
-      echo "Verifying cluster access..."
-      if ! kubectl cluster-info >/dev/null 2>&1; then
-        echo "WARNING: kubectl cluster-info failed, but continuing..."
-        echo "GitLab Kubernetes Agent should provide connection via environment.kubernetes"
+      # kubectl connection is already verified in before_script
+      # Just confirm we're still connected before deploying
+      if ! kubectl get namespaces >/dev/null 2>&1; then
+        echo "ERROR: Lost connection to Kubernetes cluster"
+        exit 1
       fi
       
       # Create namespace

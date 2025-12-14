@@ -7,7 +7,7 @@ import { WhatsNewSection } from '@/components/WhatsNewSection';
 
 export const metadata: Metadata = {
   title: 'Open Standard Agents - Industry Standard for Agent Orchestration',
-  description: 'The vendor-neutral specification for multi-agent systems treating agents as first-class citizens. Write once, deploy anywhere. Zero vendor lock-in.',
+  description: 'The vendor-neutral specification for multi-agent systems. Write once, deploy anywhere. Zero vendor lock-in.',
 };
 
 export default function HomePage() {
@@ -24,9 +24,6 @@ export default function HomePage() {
           <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold mb-6 leading-tight">
             Open Standard for AI Agents
           </h1>
-          <p className="text-xl md:text-2xl mt-4 font-medium text-gray-100 italic">
-            "Treating Agents as First-Class Citizens"
-          </p>
           <p className="text-2xl md:text-3xl lg:text-4xl mb-6 font-bold">
             Vendor-neutral, compliance-ready, enterprise-grade
           </p>
@@ -102,7 +99,7 @@ export default function HomePage() {
           <div className="text-center mb-16">
             <h2 className="text-5xl font-bold mb-6">What is Open Standard Agents?</h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              OSSA is an open standard for AI agents that treats agents as first-class citizens in your software architecture. The vendor-neutral specification was created by{' '}
+              OSSA is an open standard for AI agents. The vendor-neutral specification was created by{' '}
               <a href="https://www.linkedin.com/in/thomasscola/" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-medium">Thomas Scola</a>, founder of{' '}
               <a href="https://bluefly.io" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-medium">Bluefly.io</a>.
               It enables interoperability across frameworks, runtimes, and organizations.
@@ -251,19 +248,6 @@ export default function HomePage() {
                 Community-driven standard, not controlled by any single company. Works with LangChain, CrewAI, AutoGen,
                 and any framework. Your agents, your choice.
               </p>
-            </Card>
-            <Card variant="default" padding="lg" elevation={1}>
-              <h3 className="text-2xl font-bold mb-3 text-gray-900">First-Class Citizens: Agent-Centric Design</h3>
-              <p className="text-lg text-gray-700 leading-relaxed mb-3">
-                OSSA treats AI agents as primary users of your system, not humans. Agents have their own identities, capabilities,
-                and lifecycles—enabling true agent-to-agent collaboration and autonomy.
-              </p>
-              <a href="https://nextbigteng.substack.com/p/ai-agents-as-first-class-citizens-in-software-development"
-                 target="_blank"
-                 rel="noopener noreferrer"
-                 className="text-primary hover:underline text-sm">
-                Research: AI Agents as First-Class Citizens (Janelle Teng, Bessemer)
-              </a>
             </Card>
           </div>
           <Card variant="featured" padding="lg" elevation={3}>

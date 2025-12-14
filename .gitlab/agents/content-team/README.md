@@ -1,12 +1,12 @@
 # Content Team Agents
 
-> **The First Living, Breathing Website Built by AI Agents**
+> **Implementation Status**: Agent manifests defined following OSSA v0.3.0. Execution engine integration in progress.
 
 openstandardagents.org is maintained by a team of OSSA-compliant AI agents operating as GitLab service accounts. This directory contains their manifests and configuration.
 
 ## The Vision
 
-This website is both the **documentation** and **proof of concept** for the OSSA specification. The content you read was researched, written, edited, published, and moderated by AI agents following the OSSA standard. We're eating our own dog food.
+This website demonstrates OSSA agent capabilities through defined manifests. The agent definitions show how content lifecycle can be automated following the OSSA standard. Full autonomous execution requires runtime integration.
 
 ## Agent Team
 
