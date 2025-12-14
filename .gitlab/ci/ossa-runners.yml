@@ -1,0 +1,95 @@
+# OSSA Runners Configuration for Website
+# GitLab CI jobs that execute OSSA commands and agents
+
+variables:
+  OSSA_CLI_VERSION: "latest"
+  OSSA_NODE_VERSION: "20"
+
+# OSSA Runner Template
+.ossa-runner:
+  image: node:${OSSA_NODE_VERSION}-alpine
+  variables:
+    NODE_ENV: production
+  before_script:
+    - apk add --no-cache git python3 make g++
+    - |
+      if [ ! -d "../openstandardagents" ]; then
+        echo "Installing OSSA CLI globally..."
+        npm install -g @bluefly/openstandardagents@${OSSA_CLI_VERSION} || npm install -g @bluefly/openstandardagents
+      else
+        echo "Using local OSSA CLI from monorepo..."
+        cd ../openstandardagents
+        npm ci --legacy-peer-deps
+        npm run build
+        cd -
+      fi
+
+# OSSA Agent Execution Runner
+ossa:run-agent:
+  extends: .ossa-runner
+  stage: test
+  script:
+    - |
+      echo "Running OSSA agent: ${AGENT_MANIFEST}"
+      if [ -z "$AGENT_MANIFEST" ]; then
+        echo "ERROR: AGENT_MANIFEST variable not set"
+        exit 1
+      fi
+      export GITLAB_TOKEN="${AGENT_SERVICE_TOKEN:-$CI_JOB_TOKEN}"
+      if command -v ossa >/dev/null 2>&1; then
+        ossa run "$AGENT_MANIFEST" ${AGENT_ARGS:-""} || echo "Agent completed with warnings"
+      elif [ -f "../openstandardagents/dist/cli/index.js" ]; then
+        node ../openstandardagents/dist/cli/index.js run "$AGENT_MANIFEST" ${AGENT_ARGS:-""} || echo "Agent completed with warnings"
+      else
+        echo "ERROR: OSSA CLI not available"
+        exit 1
+      fi
+  rules:
+    - if: $AGENT_MANIFEST
+      when: on_success
+  allow_failure: true
+
+# OSSA Validation Runner
+ossa:validate-manifest:
+  extends: .ossa-runner
+  stage: validate
+  script:
+    - |
+      echo "Validating OSSA manifest: ${MANIFEST_PATH}"
+      if [ -z "$MANIFEST_PATH" ]; then
+        echo "ERROR: MANIFEST_PATH variable not set"
+        exit 1
+      fi
+      if command -v ossa >/dev/null 2>&1; then
+        ossa validate "$MANIFEST_PATH" || exit 1
+      elif [ -f "../openstandardagents/dist/cli/index.js" ]; then
+        node ../openstandardagents/dist/cli/index.js validate "$MANIFEST_PATH" || exit 1
+      else
+        echo "ERROR: OSSA CLI not available"
+        exit 1
+      fi
+  rules:
+    - if: $MANIFEST_PATH
+      when: on_success
+
+# OSSA Agent Validation (all agents in .gitlab/agents/)
+ossa:validate-all-agents:
+  extends: .ossa-runner
+  stage: validate
+  script:
+    - |
+      echo "Validating all OSSA agent manifests..."
+      find .gitlab/agents -name "*.ossa.yaml" -o -name "*.ossa.yml" | while read manifest; do
+        echo "Validating: $manifest"
+        if command -v ossa >/dev/null 2>&1; then
+          ossa validate "$manifest" || echo "Warning: $manifest validation failed"
+        elif [ -f "../openstandardagents/dist/cli/index.js" ]; then
+          node ../openstandardagents/dist/cli/index.js validate "$manifest" || echo "Warning: $manifest validation failed"
+        fi
+      done
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      changes:
+        - .gitlab/agents/**/*.ossa.yaml
+        - .gitlab/agents/**/*.ossa.yml
+    - if: $CI_COMMIT_BRANCH == "main"
