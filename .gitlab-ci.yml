@@ -1411,7 +1411,7 @@ create-patch-version:
         fi
 
         # Extract dev number and increment
-        DEV_NUM=$(echo "$LATEST_DEV_TAG" | sed -E "s/v${BRANCH_VERSION}.0-dev.([0-9]+)/\1//")
+        DEV_NUM=$(echo "$LATEST_DEV_TAG" | sed -E "s/v${BRANCH_VERSION}\.0-dev\.([0-9]+)/\1/")
         if [ -z "$DEV_NUM" ] || [ "$DEV_NUM" = "$LATEST_DEV_TAG" ]; then
           DEV_NUM=0
         fi

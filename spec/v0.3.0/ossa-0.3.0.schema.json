@@ -1193,6 +1193,12 @@
                 "google",
                 "azure",
                 "ollama",
+                "mistral",
+                "cohere",
+                "groq",
+                "together",
+                "fireworks",
+                "deepseek",
                 "custom"
               ]
             },
@@ -1279,6 +1285,12 @@
                 "google",
                 "azure",
                 "ollama",
+                "mistral",
+                "cohere",
+                "groq",
+                "together",
+                "fireworks",
+                "deepseek",
                 "custom"
               ]
             },
@@ -1426,7 +1438,9 @@
             },
             "scopes": {
               "type": "array",
-              "items": { "type": "string" },
+              "items": {
+                "type": "string"
+              },
               "description": "Required scopes/permissions"
             },
             "transport": {
@@ -1709,9 +1723,20 @@
               "items": {
                 "type": "object",
                 "properties": {
-                  "name": { "type": "string" },
-                  "type": { "type": "string", "enum": ["counter", "gauge", "histogram"] },
-                  "description": { "type": "string" }
+                  "name": {
+                    "type": "string"
+                  },
+                  "type": {
+                    "type": "string",
+                    "enum": [
+                      "counter",
+                      "gauge",
+                      "histogram"
+                    ]
+                  },
+                  "description": {
+                    "type": "string"
+                  }
                 }
               }
             }
@@ -1724,12 +1749,20 @@
           "properties": {
             "level": {
               "type": "string",
-              "enum": ["debug", "info", "warn", "error"],
+              "enum": [
+                "debug",
+                "info",
+                "warn",
+                "error"
+              ],
               "description": "Log level"
             },
             "format": {
               "type": "string",
-              "enum": ["json", "text"],
+              "enum": [
+                "json",
+                "text"
+              ],
               "description": "Log format"
             }
           },
@@ -1739,14 +1772,20 @@
           "type": "object",
           "description": "Alerting configuration",
           "properties": {
-            "enabled": { "type": "boolean" },
+            "enabled": {
+              "type": "boolean"
+            },
             "channels": {
               "type": "array",
-              "items": { "type": "string" }
+              "items": {
+                "type": "string"
+              }
             },
             "rules": {
               "type": "array",
-              "items": { "type": "object" }
+              "items": {
+                "type": "object"
+              }
             }
           },
           "additionalProperties": true
@@ -1755,9 +1794,15 @@
           "type": "object",
           "description": "Service level objectives",
           "properties": {
-            "availability": { "type": "number" },
-            "latency_p95_ms": { "type": "integer" },
-            "error_budget": { "type": "number" }
+            "availability": {
+              "type": "number"
+            },
+            "latency_p95_ms": {
+              "type": "integer"
+            },
+            "error_budget": {
+              "type": "number"
+            }
           },
           "additionalProperties": true
         }
@@ -1772,20 +1817,32 @@
           "type": "object",
           "description": "Content filtering for inputs/outputs",
           "properties": {
-            "enabled": { "type": "boolean" },
+            "enabled": {
+              "type": "boolean"
+            },
             "categories": {
               "type": "array",
-              "items": { "type": "string" },
+              "items": {
+                "type": "string"
+              },
               "description": "Categories to filter (e.g., pii, credentials)"
             },
             "threshold": {
               "type": "string",
-              "enum": ["low", "medium", "high"],
+              "enum": [
+                "low",
+                "medium",
+                "high"
+              ],
               "description": "Filtering sensitivity"
             },
             "action": {
               "type": "string",
-              "enum": ["warn", "block", "redact"],
+              "enum": [
+                "warn",
+                "block",
+                "redact"
+              ],
               "description": "Action when content matches"
             }
           },
@@ -1795,15 +1852,23 @@
           "type": "object",
           "description": "PII detection and handling",
           "properties": {
-            "enabled": { "type": "boolean" },
+            "enabled": {
+              "type": "boolean"
+            },
             "types": {
               "type": "array",
-              "items": { "type": "string" },
+              "items": {
+                "type": "string"
+              },
               "description": "PII types to detect (email, phone, ssn, api_key, etc.)"
             },
             "action": {
               "type": "string",
-              "enum": ["warn", "block", "redact"],
+              "enum": [
+                "warn",
+                "block",
+                "redact"
+              ],
               "description": "Action when PII detected"
             }
           },
@@ -1813,9 +1878,15 @@
           "type": "object",
           "description": "Rate limiting configuration",
           "properties": {
-            "enabled": { "type": "boolean" },
-            "requests_per_minute": { "type": "integer" },
-            "burst_limit": { "type": "integer" }
+            "enabled": {
+              "type": "boolean"
+            },
+            "requests_per_minute": {
+              "type": "integer"
+            },
+            "burst_limit": {
+              "type": "integer"
+            }
           },
           "additionalProperties": true
         },
@@ -1823,10 +1894,14 @@
           "type": "object",
           "description": "Guardrails for agent behavior",
           "properties": {
-            "enabled": { "type": "boolean" },
+            "enabled": {
+              "type": "boolean"
+            },
             "policies": {
               "type": "array",
-              "items": { "type": "object" },
+              "items": {
+                "type": "object"
+              },
               "description": "Policy definitions"
             },
             "max_tool_calls": {
@@ -1844,10 +1919,14 @@
           "type": "object",
           "description": "Human-in-the-loop configuration",
           "properties": {
-            "enabled": { "type": "boolean" },
+            "enabled": {
+              "type": "boolean"
+            },
             "triggers": {
               "type": "array",
-              "items": { "type": "string" },
+              "items": {
+                "type": "string"
+              },
               "description": "Conditions that require human approval"
             }
           },
