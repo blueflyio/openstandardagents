@@ -42,7 +42,7 @@ console.log(`\n🔄 Fixing version references to v${version} (display: ${display
 
 let totalReplaced = 0;
 
-// 1. Fix examples.json
+// 1. Fix examples.json - supports placeholders and direct replacement
 function fixExamples() {
   const examplesPath = path.join(__dirname, '..', 'public', 'examples.json');
   if (!fs.existsSync(examplesPath)) {
@@ -56,6 +56,12 @@ function fixExamples() {
   examples.forEach(example => {
     if (example.content) {
       const oldContent = example.content;
+      
+      // Replace {{OSSA_VERSION}} placeholders first (template system)
+      example.content = example.content.replace(/\{\{OSSA_VERSION\}\}/g, version);
+      example.content = example.content.replace(/\{\{OSSA_DISPLAY_VERSION\}\}/g, displayVersion);
+      example.content = example.content.replace(/\{\{OSSA_API_VERSION\}\}/g, `ossa/v${version}`);
+      
       // Replace apiVersion: ossa/vX.X.X
       example.content = example.content.replace(
         /apiVersion:\s*ossa\/v\d+\.\d+\.\d+/gi,
@@ -77,7 +83,7 @@ function fixExamples() {
   return replaced;
 }
 
-// 2. Fix markdown docs
+// 2. Fix markdown docs - supports both placeholders and direct replacement
 function fixDocs() {
   const docsPath = path.join(__dirname, '..', 'content', 'docs');
   if (!fs.existsSync(docsPath)) {
@@ -98,6 +104,11 @@ function fixDocs() {
       } else if (file.endsWith('.md') || file.endsWith('.mdx')) {
         let content = fs.readFileSync(filePath, 'utf8');
         const oldContent = content;
+
+        // Replace {{OSSA_VERSION}} placeholders first (template system)
+        content = content.replace(/\{\{OSSA_VERSION\}\}/g, version);
+        content = content.replace(/\{\{OSSA_DISPLAY_VERSION\}\}/g, displayVersion);
+        content = content.replace(/\{\{OSSA_API_VERSION\}\}/g, `ossa/v${version}`);
 
         // Replace apiVersion: ossa/vX.X.X (exact versions)
         content = content.replace(
