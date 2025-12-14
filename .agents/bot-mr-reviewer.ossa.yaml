@@ -1,0 +1,168 @@
+ossa: v0.3.0
+
+kind: worker
+metadata:
+  name: bot-mr-reviewer
+  namespace: openstandardagents.org
+  version: 1.0.0
+  title: MR Reviewer Agent
+  description: >-
+    Automated merge request reviewer that analyzes code changes,
+    checks for best practices, and provides actionable feedback.
+  labels:
+    component: review
+    domain: gitlab
+    tier: automation
+  annotations:
+    maintainer: devops@bluefly.io
+    documentation: https://gitlab.com/blueflyio/openstandardagents.org/-/wikis/agents/mr-reviewer
+    service-account: bot-mr-reviewer
+
+spec:
+  capabilities:
+    - code-review
+    - best-practices
+    - security-analysis
+    - documentation-check
+
+  llm:
+    model:
+      primary: claude-sonnet-4-20250514
+      fallback:
+        - claude-3-5-sonnet-20241022
+        - gpt-4o
+    execution_profile: balanced
+    token_limits:
+      max_input: 100000
+      max_output: 4096
+    cost_tracking:
+      enabled: true
+      budget_alert_threshold: 10.00
+
+  safety:
+    content_filtering:
+      enabled: true
+      categories:
+        - code-injection
+        - secrets
+    guardrails:
+      - id: no-auto-merge
+        description: Never auto-merge or approve without human review
+        action: block
+      - id: sensitive-files
+        description: Flag changes to sensitive files
+        action: warn
+        patterns:
+          - "**/.env*"
+          - "**/secrets*"
+          - "**/*credentials*"
+
+  observability:
+    tracing:
+      enabled: true
+      exporter: otlp
+    metrics:
+      enabled: true
+      custom:
+        - name: reviews_completed
+          type: counter
+        - name: issues_found
+          type: counter
+    logging:
+      level: info
+
+  tools:
+    - name: gitlab-api
+      type: mcp
+      config:
+        server: gitlab-mcp
+        operations:
+          - get_mr_changes
+          - post_mr_comment
+          - get_mr_discussions
+          - add_mr_label
+    - name: code-analysis
+      type: builtin
+      config:
+        languages:
+          - typescript
+          - javascript
+          - yaml
+          - json
+          - markdown
+
+  commands:
+    review:
+      description: Perform code review on MR
+      parameters:
+        scope:
+          type: string
+          enum: [full, quick, security]
+          default: full
+        focus:
+          type: string
+          description: Focus area (e.g., website, spec, ci)
+      handler: |
+        Analyze the merge request changes and provide:
+        1. Code quality assessment
+        2. Best practices compliance
+        3. Security considerations
+        4. Documentation completeness
+        5. Test coverage review
+
+        Format response as markdown with clear sections.
+        Use emoji indicators: ✅ good, ⚠️ warning, ❌ blocking
+
+    urgent:
+      description: Expedited review for hotfixes
+      parameters:
+        security:
+          type: boolean
+          default: true
+      handler: |
+        Perform rapid review focusing on:
+        1. Critical issues only
+        2. Security implications
+        3. Rollback safety
+
+        Respond within 60 seconds.
+        Mark blocking issues with 🚨 BLOCKING prefix.
+
+  triggers:
+    - type: webhook
+      source: gitlab
+      events:
+        - merge_request.opened
+        - merge_request.updated
+        - merge_request.reopened
+      filter:
+        labels_not_include:
+          - skip-review
+          - wip
+
+  outputs:
+    schema:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [approved, changes_requested, blocked]
+        blocking_issues:
+          type: array
+          items:
+            type: object
+            properties:
+              file:
+                type: string
+              line:
+                type: integer
+              message:
+                type: string
+              severity:
+                type: string
+        warnings:
+          type: array
+          items:
+            type: string
+        summary:
+          type: string

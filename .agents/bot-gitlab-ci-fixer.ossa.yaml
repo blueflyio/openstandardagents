@@ -1,0 +1,201 @@
+ossa: v0.3.0
+
+kind: worker
+metadata:
+  name: bot-gitlab-ci-fixer
+  namespace: openstandardagents.org
+  version: 1.0.0
+  title: GitLab CI Fixer Agent
+  description: >-
+    Validates and fixes GitLab CI/CD pipeline configurations.
+    Provides automated remediation for common CI issues.
+  labels:
+    component: ci-cd
+    domain: gitlab
+    tier: automation
+  annotations:
+    maintainer: devops@bluefly.io
+    documentation: https://gitlab.com/blueflyio/openstandardagents.org/-/wikis/agents/ci-fixer
+    service-account: bot-gitlab-ci-fixer
+
+spec:
+  capabilities:
+    - ci-validation
+    - yaml-linting
+    - pipeline-optimization
+    - auto-fix
+
+  llm:
+    model:
+      primary: claude-sonnet-4-20250514
+      fallback:
+        - claude-3-5-sonnet-20241022
+    execution_profile: speed
+    token_limits:
+      max_input: 50000
+      max_output: 4096
+
+  safety:
+    content_filtering:
+      enabled: true
+      categories:
+        - secrets
+        - credentials
+    guardrails:
+      - id: no-secret-exposure
+        description: Never suggest exposing secrets in logs
+        action: block
+      - id: runner-security
+        description: Validate runner tag security
+        action: warn
+
+  observability:
+    tracing:
+      enabled: true
+      exporter: otlp
+    metrics:
+      enabled: true
+      custom:
+        - name: pipelines_validated
+          type: counter
+        - name: fixes_suggested
+          type: counter
+        - name: auto_fixes_applied
+          type: counter
+    logging:
+      level: info
+
+  tools:
+    - name: gitlab-api
+      type: mcp
+      config:
+        server: gitlab-mcp
+        operations:
+          - lint_ci_config
+          - get_file_content
+          - post_mr_comment
+          - suggest_changes
+    - name: yaml-lint
+      type: builtin
+      config:
+        rules:
+          - line-length
+          - indentation
+          - key-duplicates
+    - name: ci-linter
+      type: builtin
+      config:
+        validate_includes: true
+        check_references: true
+
+  commands:
+    validate:
+      description: Validate GitLab CI configuration
+      parameters:
+        path:
+          type: string
+          default: .gitlab-ci.yml
+        strict:
+          type: boolean
+          default: false
+      handler: |
+        Validate the CI configuration:
+        1. YAML syntax validation
+        2. GitLab CI schema compliance
+        3. Job dependency validation
+        4. Variable reference checking
+        5. Include file resolution
+
+        Report issues with line numbers and suggestions.
+
+    lint:
+      description: Lint CI configuration for best practices
+      handler: |
+        Check for best practices:
+        1. Stage ordering
+        2. Cache optimization
+        3. Artifact management
+        4. Job naming conventions
+        5. Rule conditions
+
+    fix:
+      description: Suggest or apply fixes to CI issues
+      parameters:
+        aggressive:
+          type: boolean
+          default: false
+          description: Apply more aggressive optimizations
+        hotfix:
+          type: boolean
+          default: false
+          description: Quick fixes only for hotfix branches
+      handler: |
+        Analyze CI configuration and:
+        1. Identify fixable issues
+        2. Generate fix suggestions
+        3. Provide diff-style patches
+        4. Explain each fix
+
+        For aggressive mode, include:
+        - Cache optimization
+        - Job parallelization
+        - Artifact size reduction
+
+    simulate:
+      description: Simulate pipeline execution
+      parameters:
+        branch:
+          type: string
+        variables:
+          type: object
+      handler: |
+        Simulate pipeline for given conditions:
+        1. Evaluate rules
+        2. Determine which jobs run
+        3. Calculate job dependencies
+        4. Estimate execution time
+
+  triggers:
+    - type: webhook
+      source: gitlab
+      events:
+        - merge_request.opened
+        - merge_request.updated
+      filter:
+        changes_include:
+          - ".gitlab-ci.yml"
+          - ".gitlab/ci/**/*.yml"
+          - ".gitlab/ci/**/*.yaml"
+
+  outputs:
+    schema:
+      type: object
+      properties:
+        valid:
+          type: boolean
+        errors:
+          type: array
+          items:
+            type: object
+            properties:
+              line:
+                type: integer
+              message:
+                type: string
+              fix:
+                type: string
+        warnings:
+          type: array
+          items:
+            type: string
+        fixes:
+          type: array
+          items:
+            type: object
+            properties:
+              file:
+                type: string
+              diff:
+                type: string
+              description:
+                type: string
