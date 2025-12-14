@@ -1,8 +1,8 @@
-apiVersion: ossa/v0.3.0
+apiVersion: ossa/${OSSA_VERSION}
 kind: Agent
 metadata:
   name: security-scanner
-  version: 1.0.0
+  version: "${CI_COMMIT_SHA}"
   description: |
     Autonomous security vulnerability scanner for Kubernetes deployments.
     Performs container image scanning, RBAC audits, secret detection, and
@@ -188,13 +188,10 @@ spec:
         destination: /var/log/security/audit.log
         retention: 365
   state:
-    backend: redis
-    config:
-      host: redis-cluster.default.svc.cluster.local
-      port: 6379
-      database: 2
-      ttl: 86400
-      keyPrefix: "security-scanner:"
+    mode: session
+    storage:
+      type: kv
+      retention: "86400"
   reliability:
     sla:
       availability_percent: 99.5
@@ -243,7 +240,6 @@ spec:
     compliance:
       frameworks:
         - soc2
-        - cis-kubernetes
       data_residency:
         - US
   safety:
