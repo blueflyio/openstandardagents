@@ -87,6 +87,7 @@ detect:version:
 detect:milestone-and-tags:
   stage: setup
   image: alpine:latest
+  timeout: 10 minutes
   before_script:
     - apk add --no-cache curl jq
     - apk add --no-cache curl jq git bash
@@ -97,18 +98,18 @@ detect:milestone-and-tags:
   script:
     - |
       #!/bin/bash
-      set +e  # Don't exit on error - we handle errors manually
+      set -euo pipefail
 
       # Rate-limited API call function with exponential backoff
       safe_api_call() {
         local url="$1"
-        local max_retries=3
+        local max_retries=5
         local retry=0
         local wait_time=2
 
         while [ $retry -lt $max_retries ]; do
           local response=$(curl -sS -w "\n%{http_code}" "$url" \
-            --header "PRIVATE-TOKEN: ${GITLAB_PUSH_TOKEN}" \
+            --header "PRIVATE-TOKEN: ${CI_JOB_TOKEN}" \
             "${@:2}")
 
           local http_code=$(echo "$response" | tail -n1)
@@ -227,7 +228,7 @@ detect:milestone-and-tags:
 
       # Get ACTIVE milestones only
       ALL_MILESTONES=$(curl -sS -G "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/milestones" \
-        --header "PRIVATE-TOKEN: ${GITLAB_PUSH_TOKEN}" \
+        --header "PRIVATE-TOKEN: ${CI_JOB_TOKEN}" \
         --data-urlencode "per_page=100" \
         --data-urlencode "state=active")
 
@@ -261,7 +262,7 @@ detect:milestone-and-tags:
 
           # Get milestone stats
           MILESTONE_STATS=$(curl -sS -G "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/milestones/${ID}" \
-            --header "PRIVATE-TOKEN: ${GITLAB_PUSH_TOKEN}" 2>/dev/null || echo "{}")
+            --header "PRIVATE-TOKEN: ${CI_JOB_TOKEN}" 2>/dev/null || echo "{}")
 
           TOTAL_ISSUES=$(echo "$MILESTONE_STATS" | jq -r '.total_issues_count // 0' 2>/dev/null || echo "0")
           CLOSED_ISSUES=$(echo "$MILESTONE_STATS" | jq -r '.closed_issues_count // 0' 2>/dev/null || echo "0")
@@ -792,6 +793,7 @@ changelog:generate:
 release:changelog:
   stage: release
   image: node:${NODE_VERSION}-alpine
+  timeout: 10 minutes
   before_script:
     - apk add --no-cache curl jq
     - apk add --no-cache git curl jq bash
@@ -801,8 +803,7 @@ release:changelog:
   script:
     - |
       #!/bin/bash
-      set -e
-
+      set -euo pipefail
       echo "CHANGELOG GENERATION"
       echo "======================="
 
@@ -837,7 +838,7 @@ release:changelog:
       - changelog.env
     reports:
       dotenv: changelog.env
-    expire_in: 30 days
+    expire_in: 7 days
   rules:
     - if: $CI_COMMIT_BRANCH == "main" && $MILESTONE_READY == "true"
       when: on_success
@@ -856,6 +857,7 @@ release:changelog:
 release:validate:
   stage: release
   image: node:${NODE_VERSION}-alpine
+  timeout: 10 minutes
   dependencies:
     - build:dist
   before_script:
@@ -865,8 +867,7 @@ release:validate:
   script:
     - |
       #!/bin/bash
-      set -e
-
+      set -euo pipefail
       echo "🔒 PRE-RELEASE VALIDATION"
       echo "========================="
       echo ""
@@ -880,12 +881,12 @@ release:validate:
         echo "   Milestone ready: ${MILESTONE_TITLE}"
         echo "   All ${ISSUE_COUNT:-0} issues closed"
       elif [ -n "$MILESTONE_TITLE" ] && [ "${OPEN_ISSUE_COUNT:-0}" -gt 0 ]; then
-        echo "  ERROR: ERROR: Cannot release - ${OPEN_ISSUE_COUNT} issues still OPEN!"
+        echo "ERROR: Cannot release - ${OPEN_ISSUE_COUNT} issues still OPEN!"
         echo ""
         echo "  Open issues in ${MILESTONE_TITLE}:"
         # Fetch and display open issues
         OPEN_ISSUES_LIST=$(curl -sS -G "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/issues" \
-          --header "PRIVATE-TOKEN: ${GITLAB_PUSH_TOKEN}" \
+          --header "PRIVATE-TOKEN: ${CI_JOB_TOKEN}" \
           --data-urlencode "milestone=${MILESTONE_TITLE}" \
           --data-urlencode "state=opened" \
           --data-urlencode "per_page=100" 2>/dev/null || echo "[]")
@@ -895,11 +896,11 @@ release:validate:
         echo "  👉 Close all issues before releasing!"
         ERRORS=$((ERRORS + 1))
       elif [ -z "$MILESTONE_TITLE" ]; then
-        echo "  WARNING:  WARNING: No milestone detected"
+        echo "WARNING: No milestone detected"
         echo "  Release will proceed without milestone linkage"
         WARNINGS=$((WARNINGS + 1))
       else
-        echo "  WARNING:  WARNING: Milestone has 0 issues"
+        echo "WARNING: Milestone has 0 issues"
         WARNINGS=$((WARNINGS + 1))
       fi
       echo ""
@@ -912,7 +913,7 @@ release:validate:
       # Check schema exists for this version
       SCHEMA_PATH="spec/v${VERSION}/ossa-${VERSION}.schema.json"
       if [ ! -f "$SCHEMA_PATH" ]; then
-        echo "  ERROR: ERROR: Schema not found: ${SCHEMA_PATH}"
+        echo "ERROR: Schema not found: ${SCHEMA_PATH}"
         ERRORS=$((ERRORS + 1))
       else
         echo "   Schema exists: ${SCHEMA_PATH}"
@@ -922,7 +923,7 @@ release:validate:
       if grep -q "v${VERSION}" README.md; then
         echo "   README version badge matches"
       else
-        echo "  WARNING:  WARNING: README may not reference v${VERSION}"
+        echo "WARNING: README may not reference v${VERSION}"
         WARNINGS=$((WARNINGS + 1))
       fi
 
@@ -934,7 +935,7 @@ release:validate:
       if jq empty "$SCHEMA_PATH" 2>/dev/null; then
         echo "   Schema is valid JSON"
       else
-        echo "  ERROR: ERROR: Schema is not valid JSON"
+        echo "ERROR: Schema is not valid JSON"
         ERRORS=$((ERRORS + 1))
       fi
 
@@ -943,7 +944,7 @@ release:validate:
       if [ -n "$SCHEMA_VERSION" ]; then
         echo "   Schema apiVersion: ${SCHEMA_VERSION}"
       else
-        echo "  WARNING:  WARNING: Could not detect apiVersion in schema"
+        echo "WARNING: Could not detect apiVersion in schema"
         WARNINGS=$((WARNINGS + 1))
       fi
 
@@ -962,7 +963,7 @@ release:validate:
         else
           EXAMPLE_API=$(grep -oE "apiVersion.*ossa/v[0-9.]+" "$example" 2>/dev/null | head -1 || \
                         jq -r '.apiVersion // "unknown"' "$example" 2>/dev/null || echo "unknown")
-          echo "  ERROR: ERROR: ${example} has ${EXAMPLE_API}, expected ossa/v${VERSION}"
+          echo "ERROR: ${example} has ${EXAMPLE_API}, expected ossa/v${VERSION}"
           EXAMPLE_ERRORS=$((EXAMPLE_ERRORS + 1))
         fi
       done
@@ -979,14 +980,14 @@ release:validate:
       if [ -f "dist/cli/index.js" ]; then
         echo "   CLI built: dist/cli/index.js"
       else
-        echo "  ERROR: ERROR: CLI not built"
+        echo "ERROR: CLI not built"
         ERRORS=$((ERRORS + 1))
       fi
 
       if [ -d "dist/lib" ]; then
         echo "   Library built: dist/lib/"
       else
-        echo "  WARNING:  WARNING: dist/lib/ not found"
+        echo "WARNING: dist/lib/ not found"
         WARNINGS=$((WARNINGS + 1))
       fi
 
@@ -1000,10 +1001,10 @@ release:validate:
       if [ "$SCHEMA_EXPORT" = "$EXPECTED_EXPORT" ]; then
         echo "   Schema export correct: ${SCHEMA_EXPORT}"
       elif [ -z "$SCHEMA_EXPORT" ]; then
-        echo "  WARNING:  WARNING: No ./schema export defined"
+        echo "WARNING: No ./schema export defined"
         WARNINGS=$((WARNINGS + 1))
       else
-        echo "  ERROR: ERROR: Schema export mismatch"
+        echo "ERROR: Schema export mismatch"
         echo "     Expected: ${EXPECTED_EXPORT}"
         echo "     Got: ${SCHEMA_EXPORT}"
         ERRORS=$((ERRORS + 1))
@@ -1016,7 +1017,7 @@ release:validate:
       if npm run test 2>&1; then
         echo "   All tests passed"
       else
-        echo "  ERROR: ERROR: Tests failed"
+        echo "ERROR: Tests failed"
         ERRORS=$((ERRORS + 1))
       fi
 
@@ -1027,7 +1028,7 @@ release:validate:
       if npm run typecheck 2>&1; then
         echo "   TypeScript compilation clean"
       else
-        echo "  ERROR: ERROR: TypeScript errors"
+        echo "ERROR: TypeScript errors"
         ERRORS=$((ERRORS + 1))
       fi
 
@@ -1038,7 +1039,7 @@ release:validate:
       if node -e "const pkg = require('./package.json'); const scripts = JSON.stringify(pkg.scripts || {}); if (scripts.match(/spec\\/v0\\.[0-9]/)) { process.exit(1); }" 2>/dev/null; then
         echo "   No hardcoded versions in scripts"
       else
-        echo "  ERROR: ERROR: Hardcoded versions found in package.json scripts"
+        echo "ERROR: Hardcoded versions found in package.json scripts"
         ERRORS=$((ERRORS + 1))
       fi
 
@@ -1155,8 +1156,7 @@ release:npm:
   script:
     - |
       #!/bin/bash
-      set -e
-
+      set -euo pipefail
       echo "MILESTONE-GATED RELEASE"
       echo "=========================="
 
@@ -1199,20 +1199,15 @@ release:npm:
         exit 1
       fi
 
-      # Configure npm
+      # Configure npm using npm config (safer than .npmrc file)
       GITLAB_HOST="${CI_SERVER_HOST}"
+      npm config set @bluefly:registry "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/npm/"
+      npm config set "//${GITLAB_HOST}/api/v4/projects/${CI_PROJECT_ID}/packages/npm/:_authToken" "${CI_JOB_TOKEN}"
       if [ -n "$NPM_TOKEN" ]; then
-        cat > .npmrc << EOF
-      @bluefly:registry=${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/npm/
-      //${GITLAB_HOST}/api/v4/projects/${CI_PROJECT_ID}/packages/npm/:_authToken=${CI_JOB_TOKEN}
-      //registry.npmjs.org/:_authToken=${NPM_TOKEN}
-      EOF
-      else
-        cat > .npmrc << EOF
-      @bluefly:registry=${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/npm/
-      //${GITLAB_HOST}/api/v4/projects/${CI_PROJECT_ID}/packages/npm/:_authToken=${CI_JOB_TOKEN}
-      EOF
+        npm config set "//registry.npmjs.org/:_authToken" "${NPM_TOKEN}"
       fi
+      # Ensure .npmrc is not committed
+      echo ".npmrc" >> .gitignore || true
 
       # Final tests
       echo "🧪 Running final tests..."
@@ -1313,7 +1308,7 @@ release:npm:
         }')
 
       curl --request POST \
-        --header "PRIVATE-TOKEN: ${GITLAB_PUSH_TOKEN}" \
+        --header "PRIVATE-TOKEN: ${CI_JOB_TOKEN}" \
         --header "Content-Type: application/json" \
         --data "$RELEASE_PAYLOAD" \
         "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/releases"
@@ -1325,7 +1320,7 @@ release:npm:
       echo "🔒 Closing milestone: ${MILESTONE_TITLE}..."
       if [ -n "$MILESTONE_ID" ]; then
         CLOSE_RESULT=$(curl -sS --request PUT \
-          --header "PRIVATE-TOKEN: ${GITLAB_PUSH_TOKEN}" \
+          --header "PRIVATE-TOKEN: ${CI_JOB_TOKEN}" \
           --header "Content-Type: application/json" \
           --data '{"state_event": "close"}' \
           "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/milestones/${MILESTONE_ID}" 2>/dev/null)
@@ -1468,7 +1463,7 @@ create-patch-version:
           }')
         
         RELEASE_RESPONSE=$(curl -sS --request POST \
-          --header "PRIVATE-TOKEN: ${GITLAB_PUSH_TOKEN}" \
+          --header "PRIVATE-TOKEN: ${CI_JOB_TOKEN}" \
           --header "Content-Type: application/json" \
           --data "$RELEASE_PAYLOAD" \
           "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/releases" 2>&1)
@@ -1570,8 +1565,7 @@ post-release:cleanup:
   script:
     - |
       #!/bin/bash
-      set -e
-
+      set -euo pipefail
       echo "🧹 POST-RELEASE CLEANUP"
       echo "======================="
 
@@ -1591,7 +1585,7 @@ post-release:cleanup:
       # 1. Create release label if not exists
       echo "Creating label: ${LABEL_NAME}"
       curl --request POST \
-        --header "PRIVATE-TOKEN: ${GITLAB_PUSH_TOKEN}" \
+        --header "PRIVATE-TOKEN: ${CI_JOB_TOKEN}" \
         --data "name=${LABEL_NAME}&color=#00FF00&description=Released in v${VERSION}" \
         "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/labels" 2>/dev/null || echo "Label may already exist"
 
@@ -1599,7 +1593,7 @@ post-release:cleanup:
       echo ""
       echo "📌 Tagging issues..."
       ISSUES=$(curl -sS -G \
-        --header "PRIVATE-TOKEN: ${GITLAB_PUSH_TOKEN}" \
+        --header "PRIVATE-TOKEN: ${CI_JOB_TOKEN}" \
         "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/issues" \
         --data-urlencode "milestone=${MILESTONE_TITLE}" \
         --data-urlencode "state=closed" \
@@ -1608,7 +1602,7 @@ post-release:cleanup:
       echo "$ISSUES" | jq -r '.[].iid' | while read ISSUE_IID; do
         [ -z "$ISSUE_IID" ] && continue
         curl -sS --request PUT \
-          --header "PRIVATE-TOKEN: ${GITLAB_PUSH_TOKEN}" \
+          --header "PRIVATE-TOKEN: ${CI_JOB_TOKEN}" \
           --data "add_labels=${LABEL_NAME}" \
           "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/issues/${ISSUE_IID}" > /dev/null
         echo " ✓ Tagged issue #${ISSUE_IID}"
@@ -1618,7 +1612,7 @@ post-release:cleanup:
       echo ""
       echo "📌 Tagging merge requests..."
       MRS=$(curl -sS -G \
-        --header "PRIVATE-TOKEN: ${GITLAB_PUSH_TOKEN}" \
+        --header "PRIVATE-TOKEN: ${CI_JOB_TOKEN}" \
         "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/merge_requests" \
         --data-urlencode "milestone=${MILESTONE_TITLE}" \
         --data-urlencode "state=merged" \
@@ -1627,7 +1621,7 @@ post-release:cleanup:
       echo "$MRS" | jq -r '.[].iid' | while read MR_IID; do
         [ -z "$MR_IID" ] && continue
         curl -sS --request PUT \
-          --header "PRIVATE-TOKEN: ${GITLAB_PUSH_TOKEN}" \
+          --header "PRIVATE-TOKEN: ${CI_JOB_TOKEN}" \
           --data "add_labels=${LABEL_NAME}" \
           "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/merge_requests/${MR_IID}" > /dev/null
         echo " ✓ Tagged MR !${MR_IID}"
@@ -1639,7 +1633,7 @@ post-release:cleanup:
       NEXT_VERSION=$(echo "$VERSION" | awk -F. '{print $1"."$2"."$3+1}')
 
       NEXT_MILESTONE=$(curl -sS --request POST \
-        --header "PRIVATE-TOKEN: ${GITLAB_PUSH_TOKEN}" \
+        --header "PRIVATE-TOKEN: ${CI_JOB_TOKEN}" \
         --header "Content-Type: application/json" \
         --data "{
           \"title\": \"v${NEXT_VERSION}\",
@@ -1878,7 +1872,7 @@ sync:main-to-development:
 
         # Create sync MR automatically
         curl --request POST \
-          --header "PRIVATE-TOKEN: ${GITLAB_PUSH_TOKEN}" \
+          --header "PRIVATE-TOKEN: ${CI_JOB_TOKEN}" \
           --header "Content-Type: application/json" \
           --data '{
             "source_branch": "main",
