@@ -579,6 +579,13 @@ validate:docs-consistency:
 build:dist:
   stage: build
   image: node:${NODE_VERSION}-alpine
+  timeout: 30 minutes
+  retry:
+    max: 2
+    when:
+      - runner_system_failure
+      - stuck_or_timeout_failure
+      - api_failure
   needs:
     - job: version:sync:placeholders
       optional: true
