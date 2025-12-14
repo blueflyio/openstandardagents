@@ -38,8 +38,12 @@ include:
   - template: Jobs/Dependency-Scanning.gitlab-ci.yml
   - template: Jobs/Container-Scanning.gitlab-ci.yml
   - template: Jobs/Code-Quality.gitlab-ci.yml
-  # Custom OSSA agent automation
-  - local: '.gitlab/ci/seo-automation.yml'
+  # OSSA Agent Pipelines
+  #- local: .gitlab/ci/seo-automation.yml
+  # Review App Configuration (disabled - OrbStack incompatible)
+  # - local: .gitlab/ci/review-app.yml
+  # Security Checks
+  - local: .gitlab/ci/security-checks.yml
 
 stages:
   - sync
@@ -54,6 +58,9 @@ stages:
 variables:
   NODE_VERSION: "20"
   PLAYWRIGHT_BROWSERS_PATH: "$CI_PROJECT_DIR/.cache/ms-playwright"
+  # Enable CI_JOB_TOKEN push permissions for registry
+  CI_JOB_TOKEN_PUSH_ENABLED: "true"
+
   # Auto DevOps variables
   SAST_EXCLUDED_PATHS: "spec, test, tests, tmp, node_modules, .cache"
   SECRET_DETECTION_EXCLUDED_PATHS: "node_modules, .cache"
@@ -165,7 +172,6 @@ sync:auto:
         git add -A
         git commit -m "chore(ci): auto-sync OSSA spec, versions, examples, and wiki [skip ci]"
         git remote set-url origin "https://oauth2:${CI_JOB_TOKEN}@gitlab.com/${CI_PROJECT_PATH}.git"
-        git remote set-url origin "https://oauth2:${CI_JOB_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git"
         git push origin HEAD:${CI_COMMIT_REF_NAME}
         echo "✅ Synced and committed"
       else
@@ -260,23 +266,14 @@ build:docker:
     DOCKER_DRIVER: overlay2
     IMAGE_TAG: $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA
   script:
-    - cd website
-    - |
-      cat > Dockerfile << 'EOF'
-      FROM node:20-alpine
-      WORKDIR /app
-      COPY out ./out
-      RUN npm install -g serve
-      EXPOSE 3000
-      CMD ["serve", "-s", "out", "-l", "3000"]
-      EOF
-    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
-    - docker build -t $IMAGE_TAG .
+    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
+    - docker build -f Dockerfile -t $IMAGE_TAG .
     - docker push $IMAGE_TAG
   dependencies:
     - build:website
   allow_failure: true
   rules:
+    - if: $CI_MERGE_REQUEST_IID
     - if: $CI_COMMIT_BRANCH =~ /^release\//
     - if: $CI_COMMIT_BRANCH == "main"
 
@@ -382,8 +379,8 @@ quality:metrics:
     - if: $CI_COMMIT_BRANCH == "main"
 
 # =============================================================================
-# REVIEW - Disabled (GitLab artifact URLs don't work for SPAs)
-# Use OrbStack environment for local testing instead
+# REVIEW APPS - Deploy to OrbStack Kubernetes
+# Review app jobs are defined in .gitlab/ci/review-app.yml
 # =============================================================================
 
 # =============================================================================
@@ -580,7 +577,7 @@ changelog:generate:
     - apk add --no-cache git bash curl
     - git config user.email "ci@gitlab.com"
     - git config user.name "GitLab CI"
-    - git remote set-url origin "https://oauth2:${CI_JOB_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git"
+    - git remote set-url origin "https://oauth2:${GITLAB_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git"
     # Install git-cliff
     - curl -sSfL https://github.com/orhun/git-cliff/releases/download/v2.7.0/git-cliff-2.7.0-x86_64-unknown-linux-musl.tar.gz | tar -xz
     - mv git-cliff-2.7.0/git-cliff /usr/local/bin/
@@ -605,7 +602,6 @@ changelog:generate:
         echo "📝 Changelog updated, committing..."
         git add CHANGELOG.md
         git commit -m "chore(release): update CHANGELOG.md [skip ci]"
-        git remote set-url origin "https://oauth2:${CI_JOB_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git"
         git push origin HEAD:${CI_COMMIT_REF_NAME}
         echo "✅ Changelog committed and pushed"
       else
@@ -634,7 +630,7 @@ release:pre-release:
     - apk add --no-cache git bash curl
     - git config user.email "ci@gitlab.com"
     - git config user.name "GitLab CI"
-    - git remote set-url origin "https://oauth2:${CI_JOB_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git"
+    - git remote set-url origin "https://oauth2:${GITLAB_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git"
   script:
     - |
       if [ -f build.env ]; then
@@ -677,7 +673,7 @@ release:final:
     - apk add --no-cache git bash curl jq
     - git config user.email "ci@gitlab.com"
     - git config user.name "GitLab CI"
-    - git remote set-url origin "https://oauth2:${CI_JOB_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git"
+    - git remote set-url origin "https://oauth2:${GITLAB_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git"
   script:
     - |
       if [ -f build.env ]; then
@@ -715,7 +711,7 @@ release:final:
         
         # Create GitLab Release via API
         RELEASE_RESPONSE=$(curl -s --request POST \
-          --header "PRIVATE-TOKEN: ${CI_JOB_TOKEN}" \
+          --header "PRIVATE-TOKEN: ${GITLAB_TOKEN}" \
           --header "Content-Type: application/json" \
           --data "{
             \"name\": \"Release ${RELEASE_TAG}\",

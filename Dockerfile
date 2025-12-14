@@ -17,10 +17,8 @@ RUN apk add --no-cache git
 COPY website/package.json website/package-lock.json* ./
 RUN npm ci --prefer-offline 2>/dev/null || npm install
 
-# Copy website source and dependencies
+# Copy website source
 COPY website ./
-COPY spec ./spec
-COPY docs ./docs
 
 # Build static export
 ENV NODE_ENV=production

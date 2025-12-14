@@ -205,58 +205,6 @@ class OSSAValidator {
     const description = schema?.description;
     return typeof description === 'string' ? description : null;
   }
-
-  validateWorkflowManifest(workflow: unknown): { valid: boolean; kind?: string } {
-    if (!workflow || typeof workflow !== 'object') {
-      return { valid: false };
-    }
-
-    const wf = workflow as Record<string, unknown>;
-
-    // Basic workflow validation
-    if (wf.kind !== 'Workflow') {
-      return { valid: false };
-    }
-
-    if (!wf.apiVersion || typeof wf.apiVersion !== 'string') {
-      return { valid: false };
-    }
-
-    if (!wf.metadata || typeof wf.metadata !== 'object') {
-      return { valid: false };
-    }
-
-    const metadata = wf.metadata as Record<string, unknown>;
-    if (!metadata.name || typeof metadata.name !== 'string') {
-      return { valid: false };
-    }
-
-    if (!wf.spec || typeof wf.spec !== 'object') {
-      return { valid: false };
-    }
-
-    const spec = wf.spec as Record<string, unknown>;
-    if (!Array.isArray(spec.steps) || spec.steps.length === 0) {
-      return { valid: false };
-    }
-
-    // Validate steps have required fields
-    for (const step of spec.steps) {
-      if (typeof step !== 'object' || step === null) {
-        return { valid: false };
-      }
-      const stepObj = step as Record<string, unknown>;
-      if (!stepObj.id || !stepObj.kind) {
-        return { valid: false };
-      }
-    }
-
-    return { valid: true, kind: 'Workflow' };
-  }
-
-  getSupportedKinds(): string[] {
-    return ['Agent', 'Task', 'Workflow', 'MessageRouting'];
-  }
 }
 
 export const validator = new OSSAValidator();

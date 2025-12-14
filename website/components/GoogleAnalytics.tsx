@@ -1,49 +1,18 @@
 'use client';
 
 import Script from 'next/script';
-import { useEffect, useState } from 'react';
 
-// Primary: Use build-time env var
-// Fallback: Load from CI-generated config at runtime
-const BUILD_TIME_GA_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
-
-interface AnalyticsConfig {
-  measurementId: string;
-  enabled: boolean;
-  settings: {
-    anonymize_ip: boolean;
-    send_page_view: boolean;
-    cookie_flags: string;
-  };
-}
+const GA_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
 
 export function GoogleAnalytics() {
-  const [gaId, setGaId] = useState<string | undefined>(BUILD_TIME_GA_ID);
-
-  useEffect(() => {
-    // If no build-time ID, try to load from CI-generated config
-    if (!BUILD_TIME_GA_ID) {
-      fetch('/analytics-config.json')
-        .then(res => res.json())
-        .then((config: AnalyticsConfig) => {
-          if (config.enabled && config.measurementId) {
-            setGaId(config.measurementId);
-          }
-        })
-        .catch(() => {
-          // Config not available, analytics disabled
-        });
-    }
-  }, []);
-
-  if (!gaId) {
+  if (!GA_MEASUREMENT_ID) {
     return null;
   }
 
   return (
     <>
       <Script
-        src={`https://www.googletagmanager.com/gtag/js?id=${gaId}`}
+        src={`https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`}
         strategy="afterInteractive"
       />
       <Script id="google-analytics" strategy="afterInteractive">
@@ -51,7 +20,7 @@ export function GoogleAnalytics() {
           window.dataLayer = window.dataLayer || [];
           function gtag(){dataLayer.push(arguments);}
           gtag('js', new Date());
-          gtag('config', '${gaId}', {
+          gtag('config', '${GA_MEASUREMENT_ID}', {
             page_path: window.location.pathname,
             anonymize_ip: true,
             cookie_flags: 'SameSite=None;Secure'
@@ -64,20 +33,16 @@ export function GoogleAnalytics() {
 
 // Track page views for client-side navigation
 export function trackPageView(url: string) {
-  if (typeof window !== 'undefined' && window.gtag) {
-    // Get the GA ID from the first gtag config call
-    const gaId = BUILD_TIME_GA_ID || (window as { __GA_ID__?: string }).__GA_ID__;
-    if (gaId) {
-      window.gtag('config', gaId, {
-        page_path: url,
-      });
-    }
+  if (typeof window !== 'undefined' && GA_MEASUREMENT_ID && window.gtag) {
+    window.gtag('config', GA_MEASUREMENT_ID, {
+      page_path: url,
+    });
   }
 }
 
 // Track custom events
 export function trackEvent(action: string, category: string, label?: string, value?: number) {
-  if (typeof window !== 'undefined' && window.gtag) {
+  if (typeof window !== 'undefined' && GA_MEASUREMENT_ID && window.gtag) {
     window.gtag('event', action, {
       event_category: category,
       event_label: label,
