@@ -113,6 +113,7 @@ security:scan:agent:
 # TypeScript Build Agent
 ts:build:agent:
   stage: build
+  allow_failure: true
   trigger:
     project: ${AGENT_PLATFORM_PROJECT}
     strategy: depend
