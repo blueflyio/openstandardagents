@@ -94,6 +94,15 @@ validate:mr-target:
     - |
       /bin/bash <<'BASH_SCRIPT'
       # Feature branches → release/* (latest milestone)
+      # Reject invalid branch names (workloads/, content/, etc. from automation)
+      if [[ "$CI_MERGE_REQUEST_SOURCE_BRANCH_NAME" =~ ^(workloads|content)/ ]]; then
+        echo "❌ Invalid branch name: $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME"
+        echo "   Branch names must start with: feature/, bugfix/, chore/, hotfix/, fix/, or release/"
+        echo "   This branch appears to be from GitLab Duo or content automation."
+        echo "   Please use proper branch naming: feature/ISSUE-desc or bugfix/ISSUE-desc"
+        exit 1
+      fi
+
       if [[ "$CI_MERGE_REQUEST_SOURCE_BRANCH_NAME" =~ \
         ^(feature|bugfix|chore|hotfix|fix)/ ]]; then
         if [[ ! "$CI_MERGE_REQUEST_TARGET_BRANCH_NAME" =~ ^release/v ]]; then
