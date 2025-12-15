@@ -8,6 +8,7 @@ import { Command } from 'commander';
 import * as fs from 'fs';
 import readline from 'readline';
 import type { OssaAgent } from '../../types/index.js';
+import { getApiVersion } from '../../utils/version.js';
 
 const rl = readline.createInterface({
   input: process.stdin,
@@ -89,7 +90,7 @@ export const initCommand = new Command('init')
         }
 
         const manifest: OssaAgent = {
-          apiVersion: 'ossa/v0.2.4',
+          apiVersion: getApiVersion(),
           kind: 'Agent',
           metadata: {
             name: agentName,

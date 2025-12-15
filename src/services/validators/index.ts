@@ -13,3 +13,4 @@ export { AutoGenValidator } from './autogen.validator.js';
 export { VercelAIValidator } from './vercel-ai.validator.js';
 export { LlamaIndexValidator } from './llamaindex.validator.js';
 export { LangGraphValidator } from './langgraph.validator.js';
+export { MessagingValidator } from './messaging.validator.js';

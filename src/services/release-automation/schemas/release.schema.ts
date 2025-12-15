@@ -147,8 +147,8 @@ export const CreateMilestoneRequestSchema = z.object({
     message: 'Milestone title must contain version (e.g., v0.2.9)',
   }),
   description: z.string().optional(),
-        dueDate: z.string().optional(),
-        startDate: z.string().optional(),
+  dueDate: z.string().optional(),
+  startDate: z.string().optional(),
 });
 
 /**
@@ -270,17 +270,20 @@ export const WebhookResponseSchema = z.object({
         details: z.record(z.string(), z.unknown()).optional(),
       })
     )
-    .default([]).optional(),
+    .default([])
+    .optional(),
 });
 
 /**
  * Error Response
  */
-export const ErrorResponseSchema = z.object({
-  message: z.string(),
-  code: z.string().optional(),
-  details: z.record(z.string(), z.unknown()).optional(),
-}).passthrough();
+export const ErrorResponseSchema = z
+  .object({
+    message: z.string(),
+    code: z.string().optional(),
+    details: z.record(z.string(), z.unknown()).optional(),
+  })
+  .passthrough();
 
 /**
  * List Response (with pagination)
@@ -329,4 +332,3 @@ export type MilestoneWebhookPayload = z.infer<
 export type PushWebhookPayload = z.infer<typeof PushWebhookPayloadSchema>;
 export type WebhookResponse = z.infer<typeof WebhookResponseSchema>;
 export type ErrorResponse = z.infer<typeof ErrorResponseSchema>;
-

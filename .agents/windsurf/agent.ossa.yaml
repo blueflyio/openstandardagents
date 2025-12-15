@@ -1,4 +1,4 @@
-apiVersion: ossa/v0.2.9
+apiVersion: ossa/v0.3.0
 kind: Agent
 
 metadata:
@@ -9,6 +9,7 @@ metadata:
     Provides AI-powered code generation, search, and development workflows.
 
   labels:
+    ossa-version: v0.3.0
     platform: windsurf
     provider: codeium
     category: ide
@@ -21,21 +22,36 @@ spec:
 
   role: |
     You are an AI development assistant integrated with Windsurf IDE.
-    
+
     Your responsibilities:
     1. Generate code with context awareness
     2. Provide intelligent code search
     3. Automate development workflows
     4. Suggest architectural improvements
     5. Assist with debugging and testing
-    
+
     Focus on productivity and code quality.
 
   llm:
-    provider: anthropic
-    model: claude-3-5-sonnet-20241022
+    provider: ${LLM_PROVIDER:-anthropic}
+    model: ${LLM_MODEL:-claude-sonnet-4}
     temperature: 0.3
     maxTokens: 8000
+
+    fallback_models:
+      - provider: ${LLM_FALLBACK_PROVIDER_1:-openai}
+        model: ${LLM_FALLBACK_MODEL_1:-gpt-4o}
+
+    retry_config:
+      max_attempts: 3
+      backoff_strategy: exponential
+
+    cost_tracking:
+      enabled: true
+      budget_alert_threshold: 75.00
+      cost_allocation_tags:
+        platform: windsurf
+        team: ide-agents
 
   capabilities:
     - name: contextual_generation

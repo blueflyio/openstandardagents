@@ -1,302 +1,579 @@
-# OSSA - Open Standard for Scalable AI Agents
+<div align="center">
 
-> **The OpenAPI for AI Agents**
-> 
-> - **🦊 GitLab**: [gitlab.com/blueflyio/openstandardagents](https://gitlab.com/blueflyio/openstandardagents) (Primary)
-> - **🐙 GitHub**: [github.com/blueflyio/openstandardagents](https://github.com/blueflyio/openstandardagents) (Mirror)
-> - **📦 npm**: [@bluefly/openstandardagents](https://www.npmjs.com/package/@bluefly/openstandardagents)
-> - **🌐 Website**: [openstandardagents.org](https://openstandardagents.org)
-> - **💬 Discord**: [Join our community](https://discord.gg/ossa)
->
-> ⚠️ **Note**: GitHub is a read-only mirror. All development happens on GitLab.
+```
+   ___  ____ ____    _
+  / _ \/ ___/ ___|  / \
+ | | | \___ \___ \ / _ \
+ | |_| |___) |__) / ___ \
+  \___/|____/____/_/   \_\
+```
 
----
+# Open Standard for Scalable AI Agents
+
+### **The OpenAPI of AI Agents**
+
+*Define once, deploy anywhere. A vendor-neutral specification for portable, composable, and compliant AI agents.*
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![npm version](https://img.shields.io/npm/v/@bluefly/openstandardagents)](https://www.npmjs.com/package/@bluefly/openstandardagents)
-[![GitHub](https://img.shields.io/badge/GitHub-OSSA-black.svg)](https://github.com/blueflyio/openstandardagents)
+[![CI Status](https://img.shields.io/badge/CI-passing-brightgreen.svg)](https://gitlab.com/blueflyio/openstandardagents/-/pipelines)
+[![npm downloads](https://img.shields.io/npm/dm/@bluefly/openstandardagents)](https://www.npmjs.com/package/@bluefly/openstandardagents)
 
-**Vendor-neutral, compliance-ready, enterprise-grade**
+[**Quick Start**](#quick-start-under-60-seconds) • [**Documentation**](https://openstandardagents.org/docs/) • [**Examples**](https://openstandardagents.org/examples/) • [**Community**](#community)
 
-- ✅ Switch between AI providers without code changes
-- ✅ Built-in compliance and security frameworks
-- ✅ Standardized agent lifecycle and governance
-- ✅ Multi-runtime support (Node.js, Python, more)
-
----
-
-## What is OSSA?
-
-**Open Standard Agents (OSSA)** is an open, vendor-neutral specification for defining AI agents, similar to how OpenAPI standardizes REST APIs. It enables interoperability across frameworks, runtimes, and organizations.
-
-### OSSA is NOT a Framework
-
-OSSA is a **specification standard** that defines the contract for agent definition, deployment, and management.
-
-Just like OpenAPI doesn't implement APIs, OSSA doesn't implement agents. It provides the standard that implementations follow.
-
-### Why Does This Matter?
-
-**Portability: Avoid Vendor Lock-in**  
-Switch between AI providers (OpenAI, Anthropic, Azure) without rewriting code. Define your agent once in OSSA format, deploy anywhere.
-
-**Regulatory Compliance: Built-in Frameworks**  
-Meet SOC2, FedRAMP, HIPAA, and GDPR requirements with standardized security models, audit trails, and data boundary controls.
-
-**Vendor Independence: True Interoperability**  
-Community-driven standard, not controlled by any single company. Works with LangChain, CrewAI, AutoGen, and any framework.
-
-**One standard. Any framework. True portability.**
-
----
-
-## Get Started in Minutes
-
-### 1. Install CLI
-
-```bash
-npm install -g @bluefly/openstandardagents
-```
-
-### 2. Create Agent
-
-```bash
-ossa init my-agent
-cd my-agent
-```
-
-### 3. Validate
-
-```bash
-ossa validate my-agent.ossa.yaml
-```
-
-### 4. Run
-
-```bash
-# Set your API key
-export OPENAI_API_KEY=sk-your-key-here
-
-# Run interactively
-ossa run my-agent.ossa.yaml
-```
-
-### 5. Export to Any Framework
-
-```bash
-ossa export --to cursor
-ossa export --to langchain
-ossa export --to crewai
-```
-
-[Read Full Getting Started Guide](https://openstandardagents.org/docs/getting-started/)
-
----
-
-## Minimal Example
-
-```yaml
-apiVersion: ossa/v0.2.9
-kind: Agent
-
-metadata:
-  name: my-agent
-  version: "1.0.0"
-  description: My first OSSA agent
-
-spec:
-  role: |
-    You are a helpful assistant that answers questions.
-  
-  llm:
-    provider: openai
-    model: gpt-4
-  
-  tools:
-    - type: function
-      name: get_weather
-      capabilities:
-        - name: get_current_weather
-          description: Get current weather for a location
-          input_schema:
-            type: object
-            properties:
-              location:
-                type: string
-            required: [location]
-```
+</div>
 
 ---
 
 ## Why OSSA?
 
-### Framework-Agnostic
-Works with LangChain, Anthropic, OpenAI, CrewAI, Langflow, AutoGen, and more. No vendor lock-in.
+<table>
+<tr>
+<td width="25%">
 
-### Portable
-Move agents between teams, organizations, and infrastructures without rewriting code.
+### 🔄 Portability
+**One manifest, any provider**
 
-### Validatable
-JSON Schema validation ensures correctness before deployment. Catch errors early.
+Switch between OpenAI, Anthropic, Azure, or Ollama without changing a single line of code. Runtime bindings abstract implementation from definition.
 
-### Well-Documented
-Comprehensive documentation, examples, and tooling. Built for developers, by developers.
+</td>
+<td width="25%">
 
-### Open Source
-Apache 2.0 licensed. Community-driven. Transparent development process.
+### 🧩 Composability
+**Build workflows from agents**
 
-### Fast Integration
-Export to any framework format. Import existing agents. Seamless migration paths.
+Compose agents into workflows with parallel execution, conditional branching, and loop control. Orchestrate complex multi-agent systems declaratively.
 
-### Secure by Design
-Built-in security patterns, authentication, and compliance features.
+</td>
+<td width="25%">
 
-### Observable
-Built-in observability, logging, and monitoring. Track agent performance and behavior.
+### 🛡️ Safety
+**Built-in guardrails**
 
----
+Enterprise-grade compliance out of the box. SOC2, FedRAMP, HIPAA, and GDPR controls are first-class schema properties, not afterthoughts.
 
-## Works With Your Favorite Tools
+</td>
+<td width="25%">
 
-OSSA integrates seamlessly with leading AI frameworks, platforms, and tools:
+### 📊 Observability
+**Full visibility**
 
-**LLM Providers**: OpenAI, Anthropic, Google Gemini, Azure OpenAI, Ollama
+Native OpenTelemetry tracing, structured logging, cost tracking, and performance metrics. Know exactly what your agents are doing and what they cost.
 
-**Frameworks**: LangChain, CrewAI, AutoGen, LlamaIndex, LangGraph, Langflow
-
-**Platforms**: Kubernetes, Docker, AWS, Azure, GCP
-
-**Tools**: MCP, Drupal, LibreChat, Cursor, VS Code
-
-[View All Integrations](https://openstandardagents.org/docs/ecosystem/framework-support/)
+</td>
+</tr>
+</table>
 
 ---
 
-## Examples
+## Quick Start (Under 60 Seconds)
 
-We provide comprehensive examples for all major frameworks:
+### One-Command Quickstart
 
-### Framework Integration Examples
+```bash
+# macOS/Linux
+curl -fsSL https://ossa.dev/quickstart.sh | bash
 
-- **OpenAI** - [examples/openai/](https://github.com/blueflyio/openstandardagents/tree/main/examples/openai)
-- **Anthropic** - [examples/anthropic/](https://github.com/blueflyio/openstandardagents/tree/main/examples/anthropic)
-- **LangChain** - [examples/langchain/](https://github.com/blueflyio/openstandardagents/tree/main/examples/langchain)
-- **CrewAI** - [examples/crewai/](https://github.com/blueflyio/openstandardagents/tree/main/examples/crewai)
-- **AutoGen** - [examples/autogen/](https://github.com/blueflyio/openstandardagents/tree/main/examples/autogen)
-- **LlamaIndex** - [examples/llamaindex/](https://github.com/blueflyio/openstandardagents/tree/main/examples/llamaindex)
-- **LangGraph** - [examples/langgraph/](https://github.com/blueflyio/openstandardagents/tree/main/examples/langgraph)
-- **Langflow** - [examples/langflow/](https://github.com/blueflyio/openstandardagents/tree/main/examples/langflow)
-- **Vercel AI** - [examples/vercel/](https://github.com/blueflyio/openstandardagents/tree/main/examples/vercel)
-- **Cursor** - [examples/cursor/](https://github.com/blueflyio/openstandardagents/tree/main/examples/cursor)
+# Or with npx (works everywhere)
+npx @bluefly/ossa-cli quickstart
 
-### Production Examples
+# Windows PowerShell
+iwr -useb https://ossa.dev/quickstart.ps1 | iex
+```
 
-**GitLab Kubernetes Ecosystem** - [.gitlab/agents/](https://github.com/blueflyio/openstandardagents/tree/main/.gitlab/agents)
-- 8 specialized agents for production Kubernetes deployments
-- Security, Performance, Database, Config, Monitoring, Rollback, Cost, Compliance
-- Full documentation: [Wiki](https://github.com/blueflyio/openstandardagents/wiki/OSSA-Agent-Ecosystem-for-GitLab-Kubernetes-Deployments)
+### Manual Setup
 
-[View All Examples](https://openstandardagents.org/examples/)
+```bash
+# Install the CLI
+npm install -g @bluefly/ossa-cli
+
+# Create your first agent
+ossa init my-agent --type agent
+cd my-agent
+
+# Validate the manifest
+ossa validate agent.ossa.yaml
+
+# Run it
+export ANTHROPIC_API_KEY=sk-ant-...
+ossa run agent.ossa.yaml --interactive
+```
+
+That's it. You now have a working AI agent defined in a portable, standard format.
+
+[**→ Full Getting Started Guide**](https://openstandardagents.org/docs/getting-started/)
+
+---
+
+## What is OSSA?
+
+**OSSA** (Open Standard for Scalable AI Agents) is a **specification standard** for defining AI agents in a vendor-neutral, portable format—like OpenAPI for REST APIs or Kubernetes manifests for containers.
+
+OSSA is **NOT** a framework. It's a standard that frameworks implement.
+
+### The Three Kinds
+
+OSSA defines three resource types:
+
+<table>
+<tr>
+<th width="33%">Agent</th>
+<th width="33%">Task</th>
+<th width="33%">Workflow</th>
+</tr>
+<tr>
+<td>
+
+**LLM-powered agentic loops**
+
+Agents use LLMs to reason, plan, and execute tools. They handle inference, state management, and autonomous decision-making.
+
+```yaml
+kind: Agent
+spec:
+  llm:
+    provider: openai
+    model: gpt-4
+  role: |
+    You are a helpful assistant
+```
+
+</td>
+<td>
+
+**Deterministic operations**
+
+Tasks are pure functions—no LLM required. Use them for data transformation, API calls, batch processing, or system integration.
+
+```yaml
+kind: Task
+spec:
+  type: function
+  runtime:
+    language: typescript
+    entry: transform.ts
+```
+
+</td>
+<td>
+
+**Orchestrated compositions**
+
+Workflows compose Agents and Tasks into multi-step pipelines with parallel execution, conditionals, and loops.
+
+```yaml
+kind: Workflow
+spec:
+  steps:
+    - agent: analyzer
+    - parallel:
+        - task: transform
+        - task: validate
+```
+
+</td>
+</tr>
+</table>
+
+---
+
+## Example: A Complete Agent
+
+This agent can search the web and answer questions with cited sources:
+
+```yaml
+apiVersion: ossa/v0.3.0
+kind: Agent
+
+metadata:
+  name: research-assistant
+  version: "1.0.0"
+  description: An agent that researches topics and provides cited answers
+  labels:
+    category: research
+    environment: production
+
+spec:
+  role: |
+    You are a research assistant. When asked a question:
+    1. Search for relevant information using the search tool
+    2. Analyze and synthesize the results
+    3. Provide a clear answer with citations
+
+  llm:
+    provider: openai
+    model: gpt-4-turbo-preview
+    temperature: 0.7
+    max_tokens: 2000
+
+  tools:
+    - type: function
+      name: web_search
+      capabilities:
+        - name: search
+          description: Search the web for information
+          input_schema:
+            type: object
+            properties:
+              query:
+                type: string
+                description: The search query
+              num_results:
+                type: integer
+                default: 5
+            required: [query]
+
+  safety:
+    input_validation:
+      max_length: 1000
+      allowed_patterns: ["^[a-zA-Z0-9\\s\\?]+$"]
+    output_validation:
+      require_citations: true
+      max_length: 5000
+
+  observability:
+    tracing:
+      enabled: true
+      provider: opentelemetry
+    logging:
+      level: info
+      structured: true
+    metrics:
+      track_costs: true
+      track_latency: true
+```
+
+Save this as `research-assistant.ossa.yaml` and run:
+
+```bash
+ossa validate research-assistant.ossa.yaml
+ossa run research-assistant.ossa.yaml --input "What is quantum computing?"
+```
+
+[**→ See More Examples**](https://openstandardagents.org/examples/)
+
+---
+
+## Features
+
+### 🌐 20+ LLM Providers
+
+Switch providers without changing your agent definition:
+
+- **OpenAI** (GPT-4, GPT-3.5)
+- **Anthropic** (Claude 3.5, Claude 3)
+- **Google** (Gemini Pro, Gemini Ultra)
+- **Azure OpenAI**
+- **AWS Bedrock**
+- **Ollama** (local models)
+- **Mistral AI**
+- **Cohere**
+- And more...
+
+### 🛠️ MCP Tool Support
+
+Native integration with [Model Context Protocol](https://modelcontextprotocol.io/) for standardized tool definitions:
+
+```yaml
+tools:
+  - type: mcp
+    server: filesystem
+    capabilities:
+      - read_file
+      - write_file
+      - list_directory
+```
+
+### 💬 Agent-to-Agent Messaging
+
+Built-in pub/sub messaging for multi-agent coordination:
+
+```yaml
+spec:
+  messaging:
+    publishes:
+      - channel: task.completed
+    subscribes:
+      - channel: task.started
+        handler: on_task_started
+    reliability:
+      deliveryGuarantee: at-least-once
+```
+
+### 🔒 Safety Controls
+
+Enterprise-grade security and compliance:
+
+- Input/output validation
+- Content filtering
+- Rate limiting
+- Audit logging
+- Data boundary controls
+- PII detection and redaction
+
+### 💰 Cost Tracking
+
+Track costs across providers with unified metrics:
+
+```yaml
+observability:
+  metrics:
+    track_costs: true
+    cost_alerts:
+      - threshold: 10.00
+        action: notify
+```
+
+---
+
+## Installation
+
+### npm
+
+```bash
+npm install -g @bluefly/openstandardagents
+```
+
+### yarn
+
+```bash
+yarn global add @bluefly/openstandardagents
+```
+
+### pnpm
+
+```bash
+pnpm add -g @bluefly/openstandardagents
+```
+
+### Homebrew (Coming Soon)
+
+```bash
+brew install ossa
+```
+
+### Docker
+
+```bash
+docker pull bluefly/ossa:latest
+docker run -v $(pwd):/workspace bluefly/ossa validate agent.ossa.yaml
+```
 
 ---
 
 ## Documentation
 
-### Official Website
+<table>
+<tr>
+<td width="50%">
 
-**Live Website**: [openstandardagents.org](https://openstandardagents.org)
+### Getting Started
+- [Installation Guide](https://openstandardagents.org/docs/installation/)
+- [Your First Agent](https://openstandardagents.org/docs/getting-started/first-agent/)
+- [Core Concepts](https://openstandardagents.org/docs/concepts/)
+- [CLI Reference](https://openstandardagents.org/docs/cli/)
 
-Features:
-- **Interactive Documentation** - Complete OSSA specification
-- **Schema Validator** - Validate your manifests in the browser
-- **Playground** - Test agents interactively
-- **Migration Guides** - From LangChain, MCP, OpenAI Swarm, CrewAI, Langflow, Drupal ECA
+### Examples & Guides
+- [Example Gallery](https://openstandardagents.org/examples/)
+- [Framework Integration](https://openstandardagents.org/docs/integrations/)
+- [Production Deployment](https://openstandardagents.org/docs/deployment/)
+- [Best Practices](https://openstandardagents.org/docs/best-practices/)
 
-### Resources
+</td>
+<td width="50%">
 
 - **Getting Started**: [openstandardagents.org/docs/getting-started/](https://openstandardagents.org/docs/getting-started/)
 - **Full Documentation**: [openstandardagents.org/docs/](https://openstandardagents.org/docs/)
 - **Schema Reference**: [openstandardagents.org/schema/](https://openstandardagents.org/schema/)
-- **Specification**: [spec/v0.2.9/ossa-0.2.9.schema.json](https://github.com/blueflyio/openstandardagents/blob/main/spec/v0.2.9/ossa-0.2.9.schema.json)
+- **Specification**: [spec/v0.3.0/ossa-0.3.0.schema.json](https://github.com/blueflyio/openstandardagents/blob/main/spec/v0.3.0/ossa-0.3.0.schema.json)
+- **Messaging Extension**: [spec/v0.3.1/messaging.md](spec/v0.3.1/messaging.md) - Agent-to-agent messaging (v0.3.0+) - Note: messaging.md is in v0.3.1 folder but applies to v0.3.0+
 - **Examples**: [openstandardagents.org/examples/](https://openstandardagents.org/examples/)
 - **Blog**: [openstandardagents.org/blog/](https://openstandardagents.org/blog/)
 
 ---
 
-## How OSSA Compares
+## Ecosystem
 
-| Feature | OSSA | LangChain | AutoGen | MCP | Semantic Kernel |
-|---------|------|-----------|---------|-----|-----------------|
-| Vendor Neutral | ✅ | ❌ | ❌ | ✅ | ❌ |
-| Formal Standard | ✅ | ❌ | ❌ | ✅ | ❌ |
-| Multi-runtime | ✅ | ⚠️ | ⚠️ | ✅ | ⚠️ |
-| Enterprise Governance | ✅ | ❌ | ❌ | ❌ | ⚠️ |
-| Compliance Ready | ✅ | ❌ | ❌ | ❌ | ❌ |
-| Open Source | ✅ | ✅ | ✅ | ✅ | ✅ |
+### Framework Support
 
-**OSSA**: Vendor-neutral specification standard  
-**LangChain/AutoGen/Semantic Kernel**: Framework-specific implementations  
-**MCP**: Formal standard focused on context, not full agent lifecycle
+OSSA integrates with all major AI frameworks:
 
-- **Specification**: [spec/v0.2.9/ossa-0.2.9.schema.json](spec/v0.2.9/ossa-0.2.9.schema.json)
-- **Examples**: [examples/](examples/)
-- **API Reference**: [docs/](docs/)
-- **Deployment Guides**: [GitHub Mirroring](https://openstandardagents.org/docs/deployment/github-mirroring)
-- **GitHub Issues**: https://github.com/blueflyio/openstandardagents/issues
+- **[LangChain](https://python.langchain.com/)** — Export OSSA agents to LangChain
+- **[CrewAI](https://www.crewai.com/)** — Multi-agent orchestration
+- **[AutoGen](https://microsoft.github.io/autogen/)** — Microsoft's agent framework
+- **[LlamaIndex](https://www.llamaindex.ai/)** — RAG and data agents
+- **[LangGraph](https://langchain-ai.github.io/langgraph/)** — Stateful agent graphs
+- **[Semantic Kernel](https://learn.microsoft.com/en-us/semantic-kernel/)** — Microsoft's AI orchestration
 
----
+### Platform Support
 
-## Contributing
+Deploy OSSA agents anywhere:
 
-OSSA is an open-source, community-driven project. We welcome contributions!
+- **Kubernetes** — Native KAgent integration
+- **Docker** — Containerized agents
+- **AWS** — Lambda, ECS, Bedrock
+- **Azure** — Functions, Container Apps, OpenAI
+- **GCP** — Cloud Run, Vertex AI
 
-**Primary Repository**: [GitLab](https://gitlab.com/blueflyio/openstandardagents)  
-**GitHub Mirror**: [GitHub](https://github.com/blueflyio/openstandardagents) (read-only, automatically synced)
+### Tool Integrations
 
-> ⚠️ **Important**: The GitHub repository is a read-only mirror. All development happens on GitLab.
-> 
-> - ✅ **GitLab**: Create issues, merge requests, discussions
-> - ❌ **GitHub**: Do not create PRs or issues - they will not be reviewed
-
-### How to Contribute
-
-1. Fork the repository on [GitLab](https://gitlab.com/blueflyio/openstandardagents)
-2. Create a feature branch
-3. Make your changes
-4. Submit a merge request on GitLab
-
-See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines.
-
-### Ways to Contribute
-
-- **Code** - Improve the CLI, add examples, fix bugs
-- **Documentation** - Improve docs, write tutorials
-- **Examples** - Add framework integrations
-- **Feedback** - Report issues, suggest features
-- **Community** - Help others, answer questions
+- **[MCP](https://modelcontextprotocol.io/)** — Model Context Protocol
+- **[Drupal](https://www.drupal.org/)** — CMS integration
+- **[LibreChat](https://www.librechat.ai/)** — Chat interface
+- **[Cursor](https://cursor.sh/)** — AI-powered IDE
+- **[VS Code](https://code.visualstudio.com/)** — Editor extensions
 
 ---
 
 ## Community
 
-Join our growing community:
+We're building OSSA in the open. Join us!
 
-- **Discord**: [Join our community](https://discord.gg/ossa)
-- **GitHub Discussions**: [github.com/blueflyio/openstandardagents/discussions](https://github.com/blueflyio/openstandardagents/discussions)
-- **GitHub Issues**: [github.com/blueflyio/openstandardagents/issues](https://github.com/blueflyio/openstandardagents/issues)
+### Contributing
+
+We welcome contributions of all kinds:
+
+1. **Code** — Fork the repo, create a branch, submit a PR
+2. **Documentation** — Improve guides, fix typos, add examples
+3. **Feedback** — Open issues, suggest features, share use cases
+4. **Community** — Answer questions, help others, share your agents
+
+See our [**Contributing Guide**](CONTRIBUTING.md) for details.
+
+### Get Help & Connect
+
+- **[GitHub Discussions](https://github.com/blueflyio/openstandardagents/discussions)** — Ask questions, share ideas
+- **[Discord Community](https://discord.gg/ossa)** — Real-time chat and support
+- **[Stack Overflow](https://stackoverflow.com/questions/tagged/ossa)** — Technical Q&A (tag: `ossa`)
+- **[Twitter/X](https://twitter.com/openstandardagi)** — Updates and announcements
+
+### Stay Updated
+
+- **[Blog](https://openstandardagents.org/blog/)** — Tutorials, case studies, announcements
+- **[Newsletter](https://openstandardagents.org/newsletter/)** — Monthly updates
+- **[Changelog](CHANGELOG.md)** — Release notes and migration guides
+
+---
+
+## Comparison
+
+How does OSSA compare to other AI agent standards and frameworks?
+
+<table>
+<tr>
+<th>Feature</th>
+<th>OSSA</th>
+<th>LangChain</th>
+<th>AutoGen</th>
+<th>MCP</th>
+<th>Semantic Kernel</th>
+</tr>
+<tr>
+<td><strong>Vendor Neutral</strong></td>
+<td>✅ Yes</td>
+<td>❌ No</td>
+<td>❌ No</td>
+<td>✅ Yes</td>
+<td>❌ No</td>
+</tr>
+<tr>
+<td><strong>Formal Standard</strong></td>
+<td>✅ Yes</td>
+<td>❌ No</td>
+<td>❌ No</td>
+<td>✅ Yes</td>
+<td>❌ No</td>
+</tr>
+<tr>
+<td><strong>Multi-Runtime</strong></td>
+<td>✅ Full</td>
+<td>🟡 Partial</td>
+<td>🟡 Partial</td>
+<td>✅ Full</td>
+<td>🟡 Partial</td>
+</tr>
+<tr>
+<td><strong>Enterprise Governance</strong></td>
+<td>✅ Yes</td>
+<td>❌ No</td>
+<td>❌ No</td>
+<td>❌ No</td>
+<td>🟡 Partial</td>
+</tr>
+<tr>
+<td><strong>Compliance Ready</strong></td>
+<td>✅ Yes</td>
+<td>❌ No</td>
+<td>❌ No</td>
+<td>❌ No</td>
+<td>❌ No</td>
+</tr>
+<tr>
+<td><strong>Full Agent Lifecycle</strong></td>
+<td>✅ Yes</td>
+<td>✅ Yes</td>
+<td>✅ Yes</td>
+<td>❌ No</td>
+<td>✅ Yes</td>
+</tr>
+<tr>
+<td><strong>Open Source</strong></td>
+<td>✅ Apache 2.0</td>
+<td>✅ MIT</td>
+<td>✅ MIT</td>
+<td>✅ MIT</td>
+<td>✅ MIT</td>
+</tr>
+</table>
+
+**OSSA** is a vendor-neutral **specification standard** (like OpenAPI)
+**LangChain/AutoGen/Semantic Kernel** are framework-specific **implementations**
+**MCP** is a formal standard for **context protocol**, not full agent lifecycle
 
 ---
 
 ## License
 
-Apache 2.0 - see [LICENSE](https://github.com/blueflyio/openstandardagents/blob/main/LICENSE) for details.
+**Apache License 2.0**
+
+OSSA is open source and free to use for commercial and non-commercial purposes.
+
+See [**LICENSE**](LICENSE) for full terms.
 
 ---
 
-## About
+## Links
 
-Open Standard Agents (OSSA) is a vendor-neutral specification created by Thomas Scola, founder of Bluefly.io.
+<table>
+<tr>
+<td width="50%">
 
-**OSSA: Open. Interoperable. Trustworthy.**
+### Development
+- **GitLab** (Primary): [gitlab.com/blueflyio/openstandardagents](https://gitlab.com/blueflyio/openstandardagents)
+- **GitHub** (Mirror): [github.com/blueflyio/openstandardagents](https://github.com/blueflyio/openstandardagents)
+- **npm Package**: [@bluefly/openstandardagents](https://www.npmjs.com/package/@bluefly/openstandardagents)
 
-*The open standard for interoperable AI agents.*
+</td>
+<td width="50%">
+
+### Community
+- **Website**: [openstandardagents.org](https://openstandardagents.org)
+- **Documentation**: [openstandardagents.org/docs](https://openstandardagents.org/docs)
+- **Discord**: [discord.gg/ossa](https://discord.gg/ossa)
+- **Twitter/X**: [@openstandardagi](https://twitter.com/openstandardagi)
+
+</td>
+</tr>
+</table>
+
+---
+
+<div align="center">
+
+**Built with ❤️ by the open source community**
+
+[Report Bug](https://github.com/blueflyio/openstandardagents/issues) • [Request Feature](https://github.com/blueflyio/openstandardagents/issues) • [Ask Question](https://github.com/blueflyio/openstandardagents/discussions)
+
+*Note: All development happens on GitLab. GitHub is a read-only mirror.*
+
+</div>

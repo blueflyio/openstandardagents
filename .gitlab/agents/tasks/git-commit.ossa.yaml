@@ -1,0 +1,101 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# Task: Git Commit Generated Files
+# ═══════════════════════════════════════════════════════════════════════════════
+#
+# This is a DETERMINISTIC task - no LLM required.
+# Input: List of files to commit + message
+# Output: Commit SHA
+#
+# ═══════════════════════════════════════════════════════════════════════════════
+
+apiVersion: ossa/v0.3.0
+kind: Task
+metadata:
+  name: git-commit
+  version: 1.0.0
+  description: Commit generated files to git repository
+  labels:
+    category: vcs
+    deterministic: "true"
+
+spec:
+  execution:
+    type: deterministic
+    runtime: shell
+    timeout_seconds: 30
+
+  capabilities:
+    - git_add
+    - git_commit
+    - git_status
+
+  input:
+    type: object
+    required: [files, message]
+    properties:
+      files:
+        type: array
+        items:
+          type: string
+        description: List of file paths to stage and commit
+      message:
+        type: string
+        description: Commit message (Conventional Commits format)
+      skip_ci:
+        type: boolean
+        default: false
+        description: Add [skip ci] to commit message
+      author:
+        type: string
+        default: "OSSA Bot <ossa-bot@openstandardagents.org>"
+        description: Git author for the commit
+
+  output:
+    type: object
+    properties:
+      commit_sha:
+        type: string
+        description: SHA of the created commit
+      files_committed:
+        type: integer
+        description: Number of files committed
+      skipped:
+        type: boolean
+        description: True if no changes to commit
+
+  error_handling:
+    on_error: fail
+    error_mapping:
+      NO_CHANGES: skip
+      GIT_ERROR: fail
+
+runtime:
+  type: shell
+  script: |
+    #!/bin/bash
+    set -e
+
+    # Stage files
+    for file in $INPUT_FILES; do
+      git add "$file" 2>/dev/null || true
+    done
+
+    # Check for changes
+    if git diff --cached --quiet; then
+      echo '{"skipped": true, "files_committed": 0}'
+      exit 0
+    fi
+
+    # Build commit message
+    MESSAGE="$INPUT_MESSAGE"
+    if [ "$INPUT_SKIP_CI" = "true" ]; then
+      MESSAGE="$MESSAGE [skip ci]"
+    fi
+
+    # Commit
+    git commit -m "$MESSAGE" --author="$INPUT_AUTHOR"
+
+    # Output
+    SHA=$(git rev-parse HEAD)
+    COUNT=$(git diff-tree --no-commit-id --name-only -r HEAD | wc -l | tr -d ' ')
+    echo "{\"commit_sha\": \"$SHA\", \"files_committed\": $COUNT, \"skipped\": false}"

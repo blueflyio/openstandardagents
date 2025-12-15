@@ -6,9 +6,11 @@
 import { describe, it, expect } from '@jest/globals';
 import { container } from '../../src/di-container.js';
 import { GenerationService } from '../../src/services/generation.service.js';
+import { getApiVersion } from '../../src/utils/version.js';
 
 describe('Platform Import Integration', () => {
   const generationService = container.get(GenerationService);
+  const currentApiVersion = getApiVersion();
 
   it('should import from Cursor format', async () => {
     const cursorData = {
@@ -22,7 +24,7 @@ describe('Platform Import Integration', () => {
       cursorData,
       'cursor'
     );
-    expect(ossaManifest.apiVersion).toBe('ossa/v0.2.4');
+    expect(ossaManifest.apiVersion).toBe(currentApiVersion);
     expect(ossaManifest.kind).toBe('Agent');
     expect(ossaManifest.extensions.cursor).toBeDefined();
     expect(ossaManifest.extensions.cursor.agent_type).toBe('composer');
@@ -51,7 +53,7 @@ describe('Platform Import Integration', () => {
       openaiData,
       'openai'
     );
-    expect(ossaManifest.apiVersion).toBe('ossa/v0.2.4');
+    expect(ossaManifest.apiVersion).toBe(currentApiVersion);
     expect(ossaManifest.metadata.name).toBe('openai-agent');
     expect(ossaManifest.spec.role).toBe('You are a helpful assistant.');
     expect(ossaManifest.extensions.openai_agents).toBeDefined();
@@ -70,7 +72,7 @@ describe('Platform Import Integration', () => {
       crewaiData,
       'crewai'
     );
-    expect(ossaManifest.apiVersion).toBe('ossa/v0.2.4');
+    expect(ossaManifest.apiVersion).toBe(currentApiVersion);
     expect(ossaManifest.extensions.crewai).toBeDefined();
     expect(ossaManifest.extensions.crewai.role).toBe('Worker');
     expect(ossaManifest.extensions.crewai.goal).toBe('Complete tasks');
@@ -88,7 +90,7 @@ describe('Platform Import Integration', () => {
       anthropicData,
       'anthropic'
     );
-    expect(ossaManifest.apiVersion).toBe('ossa/v0.2.4');
+    expect(ossaManifest.apiVersion).toBe(currentApiVersion);
     expect(ossaManifest.spec.role).toBe('You are helpful.');
     expect(ossaManifest.extensions.anthropic).toBeDefined();
     expect(ossaManifest.extensions.anthropic.model).toBe(
@@ -105,7 +107,7 @@ describe('Platform Import Integration', () => {
       minimalData,
       'openai'
     );
-    expect(ossaManifest.apiVersion).toBe('ossa/v0.2.4');
+    expect(ossaManifest.apiVersion).toBe(currentApiVersion);
     expect(ossaManifest.metadata.name).toBe('minimal-agent');
   });
 });

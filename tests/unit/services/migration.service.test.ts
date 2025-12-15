@@ -9,18 +9,18 @@ describe('MigrationService', () => {
   });
 
   describe('migrate', () => {
-    it('should handle v0.2.2 format', async () => {
+    it('should handle k8s-style format', async () => {
       const input = {
-        apiVersion: 'ossa/v1',
+        apiVersion: 'ossa/v0.3.0',
         kind: 'Agent',
         metadata: { name: 'test', version: '1.0.0' },
-        spec: { role: 'test' }
+        spec: { role: 'test' },
       };
       const result = await service.migrate(input);
-      expect(result.apiVersion).toBe('ossa/v1');
+      expect(result.apiVersion).toBe('ossa/v0.3.0');
     });
 
-    it('should migrate v1.0 to v0.2.2 with full metadata', async () => {
+    it('should migrate legacy v1.0 to k8s-style with full metadata', async () => {
       const v1Input = {
         ossaVersion: '1.0',
         agent: {
@@ -34,27 +34,24 @@ describe('MigrationService', () => {
             provider: 'openai',
             model: 'gpt-4',
             temperature: 0.7,
-            maxTokens: 1000
+            maxTokens: 1000,
           },
-          capabilities: [
-            { name: 'tool1' },
-            { name: 'tool2' }
-          ],
+          capabilities: [{ name: 'tool1' }, { name: 'tool2' }],
           autonomy: { level: 'high' },
           constraints: { maxTime: 60 },
           observability: { enabled: true },
           integration: {
-            mcp: { server_name: 'test-server' }
-          }
+            mcp: { server_name: 'test-server' },
+          },
         },
         metadata: {
           authors: ['Author 1', 'Author 2'],
           license: 'MIT',
-          repository: 'https://github.com/test/repo'
-        }
+          repository: 'https://github.com/test/repo',
+        },
       };
       const result = await service.migrate(v1Input);
-      expect(result.apiVersion).toBe('ossa/v1');
+      expect(result.apiVersion).toBe('ossa/v0.3.0');
       expect(result.metadata.name).toBe('test-agent');
       expect(result.metadata.labels?.test).toBe('true');
       expect(result.metadata.annotations?.author).toContain('Author 1');
@@ -71,8 +68,8 @@ describe('MigrationService', () => {
           id: 'test',
           version: '1.0.0',
           role: 'assistant',
-          llm: { provider: 'auto', model: 'gpt-4' }
-        }
+          llm: { provider: 'auto', model: 'gpt-4' },
+        },
       };
       const result = await service.migrate(v1Input);
       expect(result.spec.llm?.provider).toBe('openai');
@@ -85,8 +82,8 @@ describe('MigrationService', () => {
           id: 'test',
           version: '1.0.0',
           role: 'assistant',
-          monitoring: { enabled: true }
-        }
+          monitoring: { enabled: true },
+        },
       };
       const result = await service.migrate(v1Input);
       expect(result).toBeDefined();
@@ -99,8 +96,8 @@ describe('MigrationService', () => {
           id: 'test',
           version: '1.0.0',
           role: 'assistant',
-          deployment: { platform: 'kubernetes' }
-        }
+          deployment: { platform: 'kubernetes' },
+        },
       };
       const result = await service.migrate(v1Input);
       expect(result).toBeDefined();
@@ -113,8 +110,8 @@ describe('MigrationService', () => {
           id: 'test',
           version: '1.0.0',
           role: 'assistant',
-          runtime: { timeout: 30 }
-        }
+          runtime: { timeout: 30 },
+        },
       };
       const result = await service.migrate(v1Input);
       expect(result).toBeDefined();
@@ -125,8 +122,8 @@ describe('MigrationService', () => {
         ossaVersion: '1.0',
         agent: {
           id: 'test',
-          role: 'assistant'
-        }
+          role: 'assistant',
+        },
       };
       const result = await service.migrate(v1Input);
       expect(result.metadata.version).toBeDefined();
@@ -137,15 +134,23 @@ describe('MigrationService', () => {
         apiVersion: 'ossa/v0.2.2',
         kind: 'Agent',
         metadata: { name: 'test', version: '1.0.0' },
-        spec: { role: 'test', llm: { provider: 'openai', model: 'gpt-4' }, tools: [] }
+        spec: {
+          role: 'test',
+          llm: { provider: 'openai', model: 'gpt-4' },
+          tools: [],
+        },
       };
       const result = await service.migrate(input);
-      expect(result.spec.llm?.provider).toBe('openai');
+      // Migration now converts to runtime-configurable LLM with env var defaults
+      // The original provider becomes the default in the env var template
+      expect(result.spec.llm?.provider).toBe('${LLM_PROVIDER:-openai}');
     });
 
     it('should throw for unsupported format', async () => {
       const invalid = { random: 'data' };
-      await expect(service.migrate(invalid)).rejects.toThrow('Unsupported manifest format');
+      await expect(service.migrate(invalid)).rejects.toThrow(
+        'Unsupported manifest format'
+      );
     });
   });
 });

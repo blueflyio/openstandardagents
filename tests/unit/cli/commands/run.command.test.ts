@@ -29,13 +29,16 @@ jest.unstable_mockModule('../../../../src/di-container.js', () => ({
 }));
 
 // Mock OpenAI adapter
-jest.unstable_mockModule('../../../../src/services/runtime/openai.adapter.js', () => ({
-  OpenAIAdapter: jest.fn().mockImplementation(() => ({
-    initialize: mockInitialize,
-    chat: mockChat,
-    getAgentInfo: mockGetAgentInfo,
-  })),
-}));
+jest.unstable_mockModule(
+  '../../../../src/services/runtime/openai.adapter.js',
+  () => ({
+    OpenAIAdapter: jest.fn().mockImplementation(() => ({
+      initialize: mockInitialize,
+      chat: mockChat,
+      getAgentInfo: mockGetAgentInfo,
+    })),
+  })
+);
 
 describe('Run Command', () => {
   let originalEnv: NodeJS.ProcessEnv;

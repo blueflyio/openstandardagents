@@ -1,0 +1,18 @@
+# GitLab Kubernetes Agent Configuration for OSSA Local Development
+# Connects to OrbStack Kubernetes for local review apps and testing
+
+ci_access:
+  projects:
+    - id: blueflyio/openstandardagents
+
+gitops:
+  manifest_projects:
+    - id: blueflyio/openstandardagents
+      default_namespace: ossa-dev
+      paths:
+        - glob: 'k8s/**/*.yaml'
+        - glob: '.gitlab/agents/*/deployment.yaml'
+
+observability:
+  logging:
+    level: info
