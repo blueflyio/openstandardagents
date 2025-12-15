@@ -5,6 +5,55 @@ All notable changes to OSSA (Open Standard for Scalable AI Agents) will be docum
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+- Enterprise-grade security configurations (ESLint, Prettier, Jest)
+- SECURITY.md with vulnerability reporting process
+- DEPLOYMENT.md with production deployment guide
+- Agent manifests for automated code review and release management
+- CI/CD hardening with timeouts and retry policies
+
+### Changed
+- Updated .gitlab-ci.yml with enterprise-grade CI/CD practices
+- Improved security with input validation and YAML injection protection
+
+## [0.3.0] - 2025-12-13
+
+### Added
+- **Schema v0.3.0**: lifecycle, environments, and dependencies fields (#151)
+- **Anthropic Runtime Adapter**: Claude runtime support (#153)
+- **Deploy & Lifecycle Commands**: `ossa deploy` and `ossa status` (#154)
+- **Test Runner**: `ossa test` command implementation (#155)
+- Agent-to-agent messaging extension for v0.3.1
+- GitLab Ultimate observability integration guide
+- Autonomous evolution system for self-updating OSSA standard
+- Comprehensive KAgent and GitLab Duo integration
+- Automated changelog generation with git-cliff
+
+### Changed
+- Migrated from `ossaVersion` to `apiVersion` in schema
+- Enhanced v0.3.0 schema for enterprise agent manifests
+- Restructured README for technical clarity
+- Improved release workflow with milestone-gated automation
+- Updated CI/CD flow to use release/* branches (removed development requirement)
+
+### Fixed
+- Git fetch authentication and release-version.env handling
+- TypeScript build errors and merge conflicts
+- Security scanner manifest compliance with v0.3.0 schema
+- Input sanitization in CLI commands
+- YAML injection vulnerabilities
+- CLI auto-detection of schema version from manifest apiVersion
+- Removed premature v0.3.1 content from v0.3.0 release
+
+### Security
+- Added input validation with path traversal protection
+- Implemented YAML safe parsing (disabled custom tags, merge keys)
+- Replaced hardcoded Slack webhook with environment variable
+- Enabled SAST, Secret Detection, and Dependency Scanning
+- Added rate limiting recommendations for API calls
+
 ## [0.2.9] - 2025-12-04
 
 ### Added

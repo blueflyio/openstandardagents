@@ -17,7 +17,7 @@ describe('ValidationService', () => {
         apiVersion: 'ossa/v0.2.8',
         kind: 'Agent',
         metadata: { name: 'test', version: '1.0.0' },
-        spec: { role: 'assistant' }
+        spec: { role: 'assistant' },
       };
       const result = await service.validate(manifest);
       expect(result.valid).toBe(true);
@@ -36,7 +36,7 @@ describe('ValidationService', () => {
         apiVersion: 'ossa/v0.2.8',
         kind: 'Agent',
         metadata: { name: 'test', version: '1.0.0' },
-        spec: { role: 'assistant' }
+        spec: { role: 'assistant' },
       };
       const result = await service.validate(manifest, '0.2.8');
       expect(result.valid).toBe(true);
@@ -47,7 +47,7 @@ describe('ValidationService', () => {
         apiVersion: 'ossa/v0.2.8',
         kind: 'Agent',
         metadata: { name: 'test', version: '1.0.0' },
-        spec: { role: 'assistant' }
+        spec: { role: 'assistant' },
       };
       const result = await service.validate(manifest);
       expect(result).toBeDefined();
@@ -61,14 +61,14 @@ describe('ValidationService', () => {
           apiVersion: 'ossa/v0.2.8',
           kind: 'Agent',
           metadata: { name: 'test1', version: '1.0.0' },
-          spec: { role: 'assistant' }
+          spec: { role: 'assistant' },
         },
         {
           apiVersion: 'ossa/v0.2.8',
           kind: 'Agent',
           metadata: { name: 'test2', version: '1.0.0' },
-          spec: { role: 'assistant' }
-        }
+          spec: { role: 'assistant' },
+        },
       ];
       const results = await service.validateMany(manifests);
       expect(results).toHaveLength(2);
@@ -82,9 +82,9 @@ describe('ValidationService', () => {
           apiVersion: 'ossa/v0.2.8',
           kind: 'Agent',
           metadata: { name: 'test', version: '1.0.0' },
-          spec: { role: 'assistant' }
+          spec: { role: 'assistant' },
         },
-        { invalid: 'data' }
+        { invalid: 'data' },
       ];
       const results = await service.validateMany(manifests);
       expect(results).toHaveLength(2);
@@ -103,8 +103,8 @@ describe('ValidationService', () => {
           apiVersion: 'ossa/v0.2.8',
           kind: 'Agent',
           metadata: { name: 'test', version: '1.0.0' },
-          spec: { role: 'assistant' }
-        }
+          spec: { role: 'assistant' },
+        },
       ];
       const results = await service.validateMany(manifests, '0.2.8');
       expect(results).toHaveLength(1);

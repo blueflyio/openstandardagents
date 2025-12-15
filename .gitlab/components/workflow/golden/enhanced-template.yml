@@ -1,7 +1,7 @@
 # Enhanced Golden CI Workflow with Agent Orchestration & Buildkit Commands
 # Version: 0.1.9 - Full Tool Utilization Edition
 #
-# ⚠️ NOTE: This is an ADVANCED EXAMPLE template showing full capabilities
+# WARNING: NOTE: This is an ADVANCED EXAMPLE template showing full capabilities
 # For production use, use template.yml which is the official component template
 # This file demonstrates how to leverage all available tools:
 # - buildkit (agent-buildkit) for agent orchestration
@@ -143,7 +143,7 @@ orchestrate:agents:
         $OSSA_CLI orchestrator spawn --workflow "$PIPELINE_TYPE" || true
       fi
 
-      echo "✅ Agent orchestration complete"
+      echo "INFO: Agent orchestration complete"
   artifacts:
     reports:
       dotenv: orchestration.env
@@ -178,7 +178,7 @@ validate:branch:
 
       # Enforce branch limits
       if [ "$FEATURE_COUNT" -gt "$MAX_FEATURE_BRANCHES" ]; then
-        echo "⚠️ Too many feature branches ($FEATURE_COUNT > $MAX_FEATURE_BRANCHES)"
+        echo "WARNING: Too many feature branches ($FEATURE_COUNT > $MAX_FEATURE_BRANCHES)"
         echo "Running cleanup agent..."
         $BUILDKIT_CLI agents spawn git-branch-management-specialist \
           --task "Cleanup stale feature branches older than $BRANCH_AGE_LIMIT"
@@ -187,10 +187,10 @@ validate:branch:
       # Validate branch naming
       case "$CI_COMMIT_BRANCH" in
         feature/*|bug/*|hotfix/*|chore/*|docs/*|test/*|perf/*|ci/*)
-          echo "✅ Valid branch name pattern"
+          echo "INFO: Valid branch name pattern"
           ;;
         development|main)
-          echo "✅ Protected branch"
+          echo "INFO: Protected branch"
           ;;
         *)
           echo "❌ Invalid branch name: $CI_COMMIT_BRANCH"
@@ -232,7 +232,7 @@ validate:version:
       fi
 
       echo "PROJECT_VERSION=$VERSION" >> version.env
-      echo "✅ Version detected: $VERSION"
+      echo "INFO: Version detected: $VERSION"
   artifacts:
     reports:
       dotenv: version.env
@@ -243,7 +243,7 @@ validate:ossa:
   needs: ['validate:version']
   script:
     - |
-      echo "🔍 Validating OSSA compliance..."
+      echo "INFO: Validating OSSA compliance..."
 
       # Run OSSA compliance check
       $OSSA_CLI compliance validate --version "$OSSA_VERSION" || true
@@ -252,7 +252,7 @@ validate:ossa:
       REQUIRED_FILES=".agents/registry.yml specs/openapi/openapi.yml"
       for file in $REQUIRED_FILES; do
         if [ ! -f "$file" ]; then
-          echo "⚠️ Missing OSSA required file: $file"
+          echo "WARNING: Missing OSSA required file: $file"
         fi
       done
 
@@ -261,7 +261,7 @@ validate:ossa:
         $BUILDKIT_CLI agents validate --directory .agents || true
       fi
 
-      echo "✅ OSSA validation complete"
+      echo "INFO: OSSA validation complete"
   rules:
     - if: '$ENABLE_OSSA_VALIDATION == "true"'
 
@@ -294,7 +294,7 @@ build:project:
           ;;
       esac
 
-      echo "✅ Build complete"
+      echo "INFO: Build complete"
   artifacts:
     paths:
       - dist/
@@ -330,7 +330,7 @@ test:tdd:
           ;;
       esac
 
-      echo "✅ TDD validation complete"
+      echo "INFO: TDD validation complete"
 
 test:integration:
   stage: test
@@ -348,7 +348,7 @@ test:integration:
         npm run test:integration || true
       fi
 
-      echo "✅ Integration tests complete"
+      echo "INFO: Integration tests complete"
   rules:
     - if: '$ENABLE_COMPREHENSIVE_TESTING == "true"'
 
@@ -374,7 +374,7 @@ security:scan:
       $BUILDKIT_CLI agents spawn security-audit-specialist \
         --task "Comprehensive security audit" || true
 
-      echo "✅ Security scanning complete"
+      echo "INFO: Security scanning complete"
   rules:
     - if: '$ENABLE_SECURITY_SCANNING == "true"'
 
@@ -408,7 +408,7 @@ quality:gates:
         fi
       fi
 
-      echo "✅ Quality gates passed"
+      echo "INFO: Quality gates passed"
 
 # ============================================
 # STAGE 7: INTEGRATE - Merge & Sync
@@ -438,9 +438,9 @@ integrate:feature:
         -m "Auto-merge: $CI_COMMIT_BRANCH → development"
 
       # Try to push (may fail due to permissions)
-      git push origin development || echo "⚠️ Push failed - manual merge required"
+      git push origin development || echo "WARNING: Push failed - manual merge required"
 
-      echo "✅ Feature integration complete"
+      echo "INFO: Feature integration complete"
   rules:
     - if: '$AUTO_MERGE_TO_DEV == "true" && $PIPELINE_TYPE == "feature"'
       when: on_success
@@ -467,7 +467,7 @@ integrate:sync:
           "https://$CI_SERVER_HOST/api/v4/projects/$AGENT_BUILDKIT_PROJECT_ID/trigger/pipeline" || true
       fi
 
-      echo "✅ Cross-project sync complete"
+      echo "INFO: Cross-project sync complete"
   rules:
     - if: '$PIPELINE_TYPE == "development"'
 
@@ -512,10 +512,10 @@ release:tag:
 
       # Fallback to git
       git tag -a "$TAG" -m "Pipeline: $CI_PIPELINE_ID" || true
-      git push origin "$TAG" || echo "⚠️ Tag push failed"
+      git push origin "$TAG" || echo "WARNING: Tag push failed"
 
       echo "RELEASE_TAG=$TAG" >> release.env
-      echo "✅ Tag created: $TAG"
+      echo "INFO: Tag created: $TAG"
   artifacts:
     reports:
       dotenv: release.env
@@ -537,7 +537,7 @@ release:changelog:
       $BUILDKIT_CLI agents spawn documentation-curator \
         --task "Update changelog and release notes" || true
 
-      echo "✅ Changelog generated"
+      echo "INFO: Changelog generated"
   artifacts:
     paths:
       - CHANGELOG.md
@@ -553,7 +553,7 @@ release:production:
       echo "🚀 Creating production release..."
 
       # This is the ONLY manual step
-      echo "⚠️ Manual approval required for production release"
+      echo "WARNING: Manual approval required for production release"
   release:
     tag_name: '$RELEASE_TAG'
     name: 'Release $RELEASE_TAG'
@@ -598,7 +598,7 @@ deploy:staging:
         $OPS_CLI health check --url "$STAGING_URL" || true
       fi
 
-      echo "✅ Staging deployment complete"
+      echo "INFO: Staging deployment complete"
   environment:
     name: staging
     url: $STAGING_URL
@@ -629,7 +629,7 @@ deploy:production:
       $BUILDKIT_CLI agents spawn performance-optimizer \
         --task "Validate production performance" || true
 
-      echo "✅ Production deployment complete"
+      echo "INFO: Production deployment complete"
   environment:
     name: production
     url: $PRODUCTION_URL
@@ -668,11 +668,11 @@ cleanup:branches:
         
         if [ "$AGE_DAYS" -gt 30 ]; then
           echo "Removing stale branch: $branch (${AGE_DAYS} days old)"
-          git push origin --delete "$branch" || echo "⚠️ Could not delete $branch"
+          git push origin --delete "$branch" || echo "WARNING: Could not delete $branch"
         fi
       done
 
-      echo "✅ Branch cleanup complete"
+      echo "INFO: Branch cleanup complete"
   rules:
     - if: '$CI_COMMIT_BRANCH == "development"'
       when: always
@@ -695,7 +695,7 @@ cleanup:artifacts:
         $OPS_CLI cleanup docker --keep-recent 5 || true
       fi
 
-      echo "✅ Artifact cleanup complete"
+      echo "INFO: Artifact cleanup complete"
   rules:
     - if: '$CI_PIPELINE_SOURCE == "schedule"'
   allow_failure: true
@@ -725,6 +725,6 @@ cleanup:artifacts:
       echo "- Security Score: ${SECURITY_SCORE}/100"
       echo "- Quality Gate: ${QUALITY_GATE_SCORE}/100"
       echo ""
-      echo "✅ Pipeline complete"
+      echo "INFO: Pipeline complete"
   when: always
   allow_failure: true

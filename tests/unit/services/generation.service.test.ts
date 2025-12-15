@@ -14,7 +14,7 @@ describe('GenerationService', () => {
         id: 'test-agent',
         name: 'Test Agent',
         role: 'assistant',
-        description: 'Test'
+        description: 'Test',
       };
       const manifest = await service.generate(template);
       expect(manifest.metadata.name).toBe('test-agent');
@@ -25,7 +25,7 @@ describe('GenerationService', () => {
       const template = {
         id: 'Test Agent 123!',
         name: 'Test',
-        role: 'assistant'
+        role: 'assistant',
       };
       const manifest = await service.generate(template);
       expect(manifest.metadata.name).toMatch(/^[a-z0-9-]+$/);
@@ -36,7 +36,7 @@ describe('GenerationService', () => {
         id: 'test',
         name: 'Test',
         role: 'assistant',
-        capabilities: [{ type: 'mcp', name: 'tool1' }]
+        capabilities: [{ type: 'mcp', name: 'tool1' }],
       };
       const manifest = await service.generate(template);
       expect(manifest.spec.tools?.length).toBeGreaterThan(0);

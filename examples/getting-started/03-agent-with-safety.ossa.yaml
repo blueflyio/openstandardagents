@@ -1,0 +1,868 @@
+# ╔═══════════════════════════════════════════════════════════════════════════════╗
+# ║                                                                               ║
+# ║   ██████╗ ███████╗███████╗ █████╗     ██╗   ██╗ ██████╗    ██████╗  ██████╗   ║
+# ║  ██╔═══██╗██╔════╝██╔════╝██╔══██╗    ██║   ██║██╔═████╗   ╚════██╗██╔═████╗  ║
+# ║  ██║   ██║███████╗███████╗███████║    ██║   ██║██║██╔██║    █████╔╝██║██╔██║  ║
+# ║  ██║   ██║╚════██║╚════██║██╔══██║    ╚██╗ ██╔╝████╔╝██║    ╚═══██╗████╔╝██║  ║
+# ║  ╚██████╔╝███████║███████║██║  ██║     ╚████╔╝ ╚██████╔╝██╗██████╔╝╚██████╔╝  ║
+# ║   ╚═════╝ ╚══════╝╚══════╝╚═╝  ╚═╝      ╚═══╝   ╚═════╝ ╚═╝╚═════╝  ╚═════╝   ║
+# ║                                                                               ║
+# ║          GETTING STARTED: 03 - PRODUCTION-READY AGENT WITH SAFETY            ║
+# ║                                                                               ║
+# ╚═══════════════════════════════════════════════════════════════════════════════╝
+#
+# ┌─────────────────────────────────────────────────────────────────────────────────┐
+# │ WHAT YOU'LL LEARN                                                               │
+# ├─────────────────────────────────────────────────────────────────────────────────┤
+# │                                                                                 │
+# │  ✓ PII Detection - automatically redact emails, SSNs, API keys, passwords      │
+# │  ✓ Content Filtering - block harmful, illegal, or inappropriate content        │
+# │  ✓ Rate Limiting - prevent abuse with token bucket algorithm                   │
+# │  ✓ Guardrails - set boundaries on agent behavior (max tool calls, depth)       │
+# │  ✓ Autonomy Levels - control human-in-the-loop requirements                    │
+# │  ✓ Observability - tracing, metrics, logging for production monitoring         │
+# │  ✓ Compliance - SOC2, GDPR, HIPAA considerations                               │
+# │                                                                                 │
+# └─────────────────────────────────────────────────────────────────────────────────┘
+#
+# ┌─────────────────────────────────────────────────────────────────────────────────┐
+# │ WHY SAFETY MATTERS                                                              │
+# ├─────────────────────────────────────────────────────────────────────────────────┤
+# │                                                                                 │
+# │  Without safety controls, agents can:                                           │
+# │  • Leak sensitive data (customer emails, API keys) in logs or responses         │
+# │  • Generate harmful content (hate speech, illegal instructions)                 │
+# │  • Exhaust budgets with runaway loops (infinite tool calls)                     │
+# │  • Make destructive decisions without human oversight                           │
+# │  • Violate compliance requirements (GDPR, HIPAA, SOC2)                          │
+# │                                                                                 │
+# │  Real-world incidents:                                                          │
+# │  ┌───────────────────────────────────────────────────────────────┐             │
+# │  │ INCIDENT                          IMPACT           PREVENTION  │             │
+# │  ├───────────────────────────────────────────────────────────────┤             │
+# │  │ Agent logs customer emails        GDPR fine        PII redact  │             │
+# │  │ Infinite loop: 10K API calls      $5000 cost       Guardrails  │             │
+# │  │ Deleted production database       Downtime         Autonomy    │             │
+# │  │ Generated malware instructions    Legal risk       Content     │             │
+# │  │ Exposed API keys in error msg     Security breach  PII detect  │             │
+# │  └───────────────────────────────────────────────────────────────┘             │
+# │                                                                                 │
+# │  THE RULE: If an agent touches production data or systems,                      │
+# │            it MUST have safety controls. No exceptions.                         │
+# │                                                                                 │
+# └─────────────────────────────────────────────────────────────────────────────────┘
+#
+# ┌─────────────────────────────────────────────────────────────────────────────────┐
+# │ THE FIVE LAYERS OF AGENT SAFETY                                                 │
+# ├─────────────────────────────────────────────────────────────────────────────────┤
+# │                                                                                 │
+# │  1. PII DETECTION & REDACTION                                                   │
+# │     ───────────────────────────                                                 │
+# │     Automatically find and mask sensitive data in inputs and outputs            │
+# │                                                                                 │
+# │     Example:                                                                    │
+# │     Input:  "My email is john@company.com and SSN is 123-45-6789"               │
+# │     Output: "My email is [REDACTED_EMAIL] and SSN is [REDACTED_SSN]"            │
+# │                                                                                 │
+# │     Detects: emails, phones, SSNs, credit cards, API keys, passwords, IPs       │
+# │     Actions: warn (log but allow), block (reject), redact (mask in-place)       │
+# │                                                                                 │
+# │  2. CONTENT FILTERING                                                           │
+# │     ──────────────────                                                          │
+# │     Block harmful or inappropriate content based on categories                  │
+# │                                                                                 │
+# │     Categories: hate_speech, violence, self_harm, illegal_activity,             │
+# │                 adult_content, spam, misinformation                             │
+# │     Thresholds: low (strict), medium (balanced), high (permissive)              │
+# │     Actions: block (reject request), log (allow but record), sanitize (rewrite) │
+# │                                                                                 │
+# │  3. RATE LIMITING                                                               │
+# │     ──────────────                                                              │
+# │     Prevent abuse and control costs with token bucket algorithm                 │
+# │                                                                                 │
+# │     Example: 30 requests/minute, burst of 5                                     │
+# │     • Normal: User makes 1 request/2 seconds → allowed                          │
+# │     • Burst:  User makes 5 requests in 1 second → allowed (uses burst)          │
+# │     • Abuse:  User makes 100 requests/second → blocked after 5                  │
+# │                                                                                 │
+# │  4. BEHAVIORAL GUARDRAILS                                                       │
+# │     ───────────────────────                                                     │
+# │     Set hard limits on agent behavior to prevent runaway loops                  │
+# │                                                                                 │
+# │     • max_tool_calls: 20        → Prevent infinite loops                        │
+# │     • max_iteration_depth: 5    → Limit reasoning chains                        │
+# │     • max_tokens_per_turn: 4000 → Control output length (and cost)              │
+# │     • require_confirmation_for: [delete, modify_permissions]                    │
+# │                                                                                 │
+# │  5. AUTONOMY CONTROLS                                                           │
+# │     ──────────────────────                                                      │
+# │     Define when human approval is required                                      │
+# │                                                                                 │
+# │     Levels:                                                                     │
+# │     • autonomous: Agent decides and acts (monitoring only)                      │
+# │     • assisted:   Agent proposes, human approves high-risk actions              │
+# │     • supervised: Human approves ALL actions before execution                   │
+# │                                                                                 │
+# └─────────────────────────────────────────────────────────────────────────────────┘
+#
+# ┌─────────────────────────────────────────────────────────────────────────────────┐
+# │ HOW TO RUN THIS EXAMPLE                                                         │
+# ├─────────────────────────────────────────────────────────────────────────────────┤
+# │                                                                                 │
+# │  STEP 1: Set environment variables                                              │
+# │  ────────────────────────────────                                               │
+# │  $ export ANTHROPIC_API_KEY=sk-ant-...                                          │
+# │  $ export OTEL_ENDPOINT=http://localhost:4317  # Optional: observability        │
+# │                                                                                 │
+# │  STEP 2: Validate safety configuration                                          │
+# │  ─────────────────────────────────────                                          │
+# │  $ ossa validate 03-agent-with-safety.ossa.yaml                                 │
+# │                                                                                 │
+# │  Expected output:                                                               │
+# │  ✓ Schema validation passed                                                     │
+# │  ✓ PII detection patterns loaded (7 types)                                      │
+# │  ✓ Content filter initialized (6 categories)                                    │
+# │  ✓ Rate limiting configured (30 req/min, burst 5)                               │
+# │  ✓ Guardrails validated                                                         │
+# │  ✓ Autonomy level: assisted                                                     │
+# │  ✓ Ready to run                                                                 │
+# │                                                                                 │
+# │  STEP 3: Test PII detection                                                     │
+# │  ─────────────────────────                                                      │
+# │  $ ossa run 03-agent-with-safety.ossa.yaml --interactive                        │
+# │                                                                                 │
+# │  > My email is test@example.com and my API key is sk-1234567890                 │
+# │  Agent: I see you provided contact information. [PII REDACTED]                  │
+# │                                                                                 │
+# │  Behind the scenes:                                                             │
+# │  • PII detector found: email + API key                                          │
+# │  • Input was redacted before sending to LLM                                     │
+# │  • Logs show: "My email is [REDACTED_EMAIL] and my API key is [REDACTED_KEY]"  │
+# │                                                                                 │
+# │  STEP 4: Test content filtering                                                 │
+# │  ──────────────────────────────                                                 │
+# │  > How do I hack into a database?                                               │
+# │  [BLOCKED] Content filter triggered: illegal_activity (confidence: high)        │
+# │            This request violates our usage policy.                              │
+# │                                                                                 │
+# │  STEP 5: Test rate limiting                                                     │
+# │  ─────────────────────────                                                      │
+# │  $ for i in {1..100}; do                                                        │
+# │      ossa run 03-agent-with-safety.ossa.yaml --input "Hello" &                  │
+# │    done                                                                         │
+# │                                                                                 │
+# │  Expected:                                                                      │
+# │  • First 5 requests: Succeed immediately (burst allowance)                      │
+# │  • Next 30 requests: Succeed at 1 request/2 seconds (rate limit)                │
+# │  • Remaining requests: Rejected with 429 Too Many Requests                      │
+# │                                                                                 │
+# │  STEP 6: Test guardrails (prevent infinite loops)                               │
+# │  ────────────────────────────────────────────────                               │
+# │  Modify the agent to have a buggy tool that calls itself recursively.           │
+# │  The agent will stop after 20 tool calls (max_tool_calls guardrail).            │
+# │                                                                                 │
+# │  STEP 7: Test autonomy controls                                                 │
+# │  ──────────────────────────────────                                             │
+# │  > Delete all user data                                                         │
+# │  Agent: This action requires human approval.                                    │
+# │         Action: delete_data                                                     │
+# │         Reason: Destructive operation on production data                        │
+# │         Approve? (yes/no):                                                      │
+# │                                                                                 │
+# │  STEP 8: Monitor with observability                                             │
+# │  ──────────────────────────────────────                                         │
+# │  If you have OpenTelemetry collector running:                                   │
+# │                                                                                 │
+# │  $ docker run -p 4317:4317 otel/opentelemetry-collector                         │
+# │  $ ossa run 03-agent-with-safety.ossa.yaml --trace                              │
+# │                                                                                 │
+# │  View traces in Jaeger/Zipkin to see:                                           │
+# │  • PII detection timings                                                        │
+# │  • Content filter decisions                                                     │
+# │  • Rate limit calculations                                                      │
+# │  • Tool call chains                                                             │
+# │                                                                                 │
+# └─────────────────────────────────────────────────────────────────────────────────┘
+#
+# ┌─────────────────────────────────────────────────────────────────────────────────┐
+# │ PII DETECTION: PATTERNS & EXAMPLES                                              │
+# ├─────────────────────────────────────────────────────────────────────────────────┤
+# │                                                                                 │
+# │  OSSA includes built-in regex patterns for common PII types:                    │
+# │                                                                                 │
+# │  EMAIL                                                                          │
+# │  ─────                                                                          │
+# │  Pattern: \b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b                   │
+# │  Examples:                                                                      │
+# │    ✓ john.doe@company.com     → [REDACTED_EMAIL]                                │
+# │    ✓ admin+test@example.org   → [REDACTED_EMAIL]                                │
+# │    ✗ not-an-email@            → (not matched)                                   │
+# │                                                                                 │
+# │  PHONE NUMBER                                                                   │
+# │  ────────────                                                                   │
+# │  Pattern: (\+\d{1,3}[- ]?)?\(?\d{3}\)?[- ]?\d{3}[- ]?\d{4}                      │
+# │  Examples:                                                                      │
+# │    ✓ (555) 123-4567           → [REDACTED_PHONE]                                │
+# │    ✓ +1-555-123-4567          → [REDACTED_PHONE]                                │
+# │    ✓ 5551234567               → [REDACTED_PHONE]                                │
+# │                                                                                 │
+# │  SOCIAL SECURITY NUMBER (US)                                                    │
+# │  ───────────────────────────                                                    │
+# │  Pattern: \b\d{3}-\d{2}-\d{4}\b                                                 │
+# │  Examples:                                                                      │
+# │    ✓ 123-45-6789              → [REDACTED_SSN]                                  │
+# │    ✗ 12-345-6789              → (invalid format, not matched)                   │
+# │                                                                                 │
+# │  CREDIT CARD                                                                    │
+# │  ───────────                                                                    │
+# │  Pattern: \b(?:\d{4}[- ]?){3}\d{4}\b  (Luhn algorithm validation)               │
+# │  Examples:                                                                      │
+# │    ✓ 4532-1234-5678-9010      → [REDACTED_CREDIT_CARD]                          │
+# │    ✓ 4532123456789010         → [REDACTED_CREDIT_CARD]                          │
+# │    ✗ 1234-5678-9012-3456      → (invalid Luhn checksum, not matched)            │
+# │                                                                                 │
+# │  API KEY                                                                        │
+# │  ───────                                                                        │
+# │  Pattern: \b(sk|pk|api)[-_]?[A-Za-z0-9]{20,}\b                                  │
+# │  Examples:                                                                      │
+# │    ✓ sk_live_abcd1234efgh5678 → [REDACTED_API_KEY]                              │
+# │    ✓ api-key-1234567890abcdef → [REDACTED_API_KEY]                              │
+# │    ✓ GITHUB_TOKEN=ghp_abc123  → [REDACTED_API_KEY]                              │
+# │                                                                                 │
+# │  PASSWORD (in common patterns)                                                  │
+# │  ────────────────────────────                                                   │
+# │  Pattern: (password|passwd|pwd)[=:]\s*\S+                                       │
+# │  Examples:                                                                      │
+# │    ✓ password=mySecret123      → password=[REDACTED_PASSWORD]                   │
+# │    ✓ "pwd": "hunter2"          → "pwd": "[REDACTED_PASSWORD]"                   │
+# │                                                                                 │
+# │  IP ADDRESS                                                                     │
+# │  ──────────                                                                     │
+# │  Pattern: \b(?:\d{1,3}\.){3}\d{1,3}\b                                           │
+# │  Examples:                                                                      │
+# │    ✓ 192.168.1.1               → [REDACTED_IP]                                  │
+# │    ✓ 10.0.0.1                  → [REDACTED_IP]                                  │
+# │    ✗ 999.999.999.999           → (invalid range, optional validation)           │
+# │                                                                                 │
+# │  CUSTOM PATTERNS                                                                │
+# │  ───────────────                                                                │
+# │  You can add custom PII patterns in safety.pii_detection.custom_patterns:       │
+# │                                                                                 │
+# │  ```yaml                                                                        │
+# │  custom_patterns:                                                               │
+# │    - name: employee_id                                                          │
+# │      pattern: "EMP-\\d{6}"                                                      │
+# │      replacement: "[REDACTED_EMPLOYEE_ID]"                                      │
+# │    - name: medical_record                                                       │
+# │      pattern: "MRN-\\d{8}"                                                      │
+# │      replacement: "[REDACTED_MRN]"                                              │
+# │  ```                                                                            │
+# │                                                                                 │
+# └─────────────────────────────────────────────────────────────────────────────────┘
+#
+# ┌─────────────────────────────────────────────────────────────────────────────────┐
+# │ RATE LIMITING: TOKEN BUCKET ALGORITHM EXPLAINED                                 │
+# ├─────────────────────────────────────────────────────────────────────────────────┤
+# │                                                                                 │
+# │  Token Bucket is the industry-standard algorithm for rate limiting.             │
+# │  It allows bursts while maintaining a long-term rate limit.                     │
+# │                                                                                 │
+# │  CONFIGURATION:                                                                 │
+# │  requests_per_minute: 30    → Steady-state rate (0.5 requests/second)           │
+# │  burst_limit: 5             → Max requests in a burst                           │
+# │                                                                                 │
+# │  HOW IT WORKS:                                                                  │
+# │                                                                                 │
+# │  1. BUCKET INITIALIZATION                                                       │
+# │     • Bucket capacity: burst_limit (5 tokens)                                   │
+# │     • Refill rate: requests_per_minute / 60 (0.5 tokens/second)                 │
+# │     • Current tokens: burst_limit (starts full)                                 │
+# │                                                                                 │
+# │  2. REQUEST PROCESSING                                                          │
+# │     • User makes request → check if bucket has ≥1 token                         │
+# │     • If yes: consume 1 token, allow request                                    │
+# │     • If no: reject with 429 Too Many Requests                                  │
+# │                                                                                 │
+# │  3. TOKEN REFILL                                                                │
+# │     • Every 2 seconds: add 1 token to bucket (up to capacity)                   │
+# │                                                                                 │
+# │  EXAMPLE TIMELINE:                                                              │
+# │                                                                                 │
+# │  Time    Request    Tokens Before    Action         Tokens After                │
+# │  ────    ───────    ─────────────    ──────         ────────────                │
+# │  0.0s    #1         5                Allow          4                           │
+# │  0.1s    #2         4                Allow          3                           │
+# │  0.2s    #3         3                Allow          2                           │
+# │  0.3s    #4         2                Allow          1                           │
+# │  0.4s    #5         1                Allow          0   ← burst exhausted       │
+# │  0.5s    #6         0                REJECT (429)   0   ← no tokens             │
+# │  2.0s    -          0 → 1            (refill)       1   ← +1 token              │
+# │  2.1s    #7         1                Allow          0                           │
+# │  4.0s    -          0 → 1            (refill)       1                           │
+# │  4.1s    #8         1                Allow          0                           │
+# │                                                                                 │
+# │  KEY INSIGHT:                                                                   │
+# │  • Bursts are allowed (first 5 requests succeed immediately)                    │
+# │  • Long-term rate is enforced (30 requests/minute = 1 every 2 seconds)          │
+# │  • Protects against abuse while allowing normal usage spikes                    │
+# │                                                                                 │
+# │  COST CALCULATION:                                                              │
+# │  With requests_per_minute: 30                                                   │
+# │  • Max requests per hour:   30 × 60 = 1,800                                     │
+# │  • Max requests per day:    1,800 × 24 = 43,200                                 │
+# │  • Max requests per month:  43,200 × 30 = 1,296,000                             │
+# │                                                                                 │
+# │  If average request costs $0.01 (Claude Sonnet):                                │
+# │  • Max monthly cost: 1,296,000 × $0.01 = $12,960                                │
+# │                                                                                 │
+# │  TUNING GUIDANCE:                                                               │
+# │  ┌────────────────────────────────────────────────────────────────┐            │
+# │  │ USE CASE              RATE LIMIT          BURST  RATIONALE      │            │
+# │  ├────────────────────────────────────────────────────────────────┤            │
+# │  │ Internal tool         60/min             10     Power users     │            │
+# │  │ Customer chatbot      30/min             5      Moderate use    │            │
+# │  │ Public API            10/min             2      Prevent abuse   │            │
+# │  │ Expensive operations  5/min              1      Cost control    │            │
+# │  └────────────────────────────────────────────────────────────────┘            │
+# │                                                                                 │
+# └─────────────────────────────────────────────────────────────────────────────────┘
+#
+# ┌─────────────────────────────────────────────────────────────────────────────────┐
+# │ COMPLIANCE CONSIDERATIONS                                                       │
+# ├─────────────────────────────────────────────────────────────────────────────────┤
+# │                                                                                 │
+# │  GDPR (General Data Protection Regulation)                                      │
+# │  ─────────────────────────────────────────                                      │
+# │  ✓ Enable PII detection with action: redact                                     │
+# │  ✓ Set observability.logging.include_prompts: false                             │
+# │  ✓ Set observability.logging.include_responses: false                           │
+# │  ✓ Implement data retention policies (delete logs after N days)                 │
+# │  ✓ Add audit trail for all PII access (who, when, why)                          │
+# │                                                                                 │
+# │  SOC2 (Service Organization Control 2)                                          │
+# │  ──────────────────────────────────────────                                     │
+# │  ✓ Enable observability.tracing and observability.metrics                       │
+# │  ✓ Set autonomy.level: assisted or supervised                                   │
+# │  ✓ Configure safety.guardrails with strict limits                               │
+# │  ✓ Enable safety.content_filtering for all categories                           │
+# │  ✓ Implement access controls (who can run the agent)                            │
+# │                                                                                 │
+# │  HIPAA (Health Insurance Portability and Accountability Act)                    │
+# │  ────────────────────────────────────────────────────────────────               │
+# │  ✓ Enable PII detection with custom patterns for PHI (Protected Health Info)    │
+# │  ✓ Encrypt logs and traces (observability.tracing.encryption: true)             │
+# │  ✓ Set autonomy.level: supervised (all actions require approval)                │
+# │  ✓ Implement audit logging for all agent interactions                           │
+# │  ✓ Use private LLM deployment (no data sent to third-party APIs)                │
+# │                                                                                 │
+# │  EXAMPLE HIPAA PII PATTERNS:                                                    │
+# │  ```yaml                                                                        │
+# │  pii_detection:                                                                 │
+# │    custom_patterns:                                                             │
+# │      - name: medical_record_number                                              │
+# │        pattern: "MRN[:\s]+\d{6,10}"                                             │
+# │      - name: patient_id                                                         │
+# │        pattern: "PT-\d{8}"                                                      │
+# │      - name: diagnosis_code                                                     │
+# │        pattern: "ICD-10:\s*[A-Z]\d{2}\.\d{1,3}"                                 │
+# │  ```                                                                            │
+# │                                                                                 │
+# └─────────────────────────────────────────────────────────────────────────────────┘
+#
+# ┌─────────────────────────────────────────────────────────────────────────────────┐
+# │ NEXT STEPS                                                                      │
+# ├─────────────────────────────────────────────────────────────────────────────────┤
+# │                                                                                 │
+# │  04-agent-with-messaging.ossa.yaml                                              │
+# │     Multi-agent coordination: pub/sub, commands, event-driven architecture      │
+# │     Learn: How agents communicate, reliability guarantees, message schemas      │
+# │                                                                                 │
+# │  05-workflow-composition.ossa.yaml                                              │
+# │     Orchestration: Compose agents and tasks into complex workflows              │
+# │     Learn: DAGs, error handling, parallel execution, compensation patterns      │
+# │                                                                                 │
+# └─────────────────────────────────────────────────────────────────────────────────┘
+#
+# ═══════════════════════════════════════════════════════════════════════════════════
+#                           THE ACTUAL MANIFEST STARTS HERE
+# ═══════════════════════════════════════════════════════════════════════════════════
+
+# ──────────────────────────────────────────────────────────────────────────────────
+# API VERSION & KIND
+# ──────────────────────────────────────────────────────────────────────────────────
+apiVersion: ossa/v0.3.0
+kind: Agent
+
+# ──────────────────────────────────────────────────────────────────────────────────
+# METADATA
+# ──────────────────────────────────────────────────────────────────────────────────
+metadata:
+  name: secure-assistant
+  version: 1.0.0
+
+  description: |
+    Production-ready enterprise assistant with comprehensive safety controls:
+    - PII detection and redaction (7 types)
+    - Content filtering (4 harmful categories)
+    - Rate limiting (30 req/min with burst protection)
+    - Behavioral guardrails (prevent runaway loops)
+    - Autonomy controls (human-in-the-loop for sensitive actions)
+    - Full observability (tracing, metrics, structured logging)
+
+    Compliance: SOC2, GDPR-ready, HIPAA-compatible (with custom PII patterns)
+
+  labels:
+    difficulty: intermediate
+    tutorial: "03"
+    compliance: soc2
+    environment: production
+
+# ──────────────────────────────────────────────────────────────────────────────────
+# SPEC
+# ──────────────────────────────────────────────────────────────────────────────────
+spec:
+  # ────────────────────────────────────────────────────────────────────────────────
+  # ROLE (System Prompt)
+  # ────────────────────────────────────────────────────────────────────────────────
+  # For production agents, the role should emphasize security and compliance
+  # ────────────────────────────────────────────────────────────────────────────────
+  role: |
+    You are a secure enterprise assistant for internal employee support.
+
+    Your responsibilities:
+    - Help employees find internal documentation and policies
+    - Answer workflow and process questions
+    - Provide guidance on tools and systems
+    - Escalate sensitive questions to human support staff
+
+    SECURITY REQUIREMENTS (CRITICAL):
+    1. **Confidentiality**: Never share confidential company information externally
+    2. **PII Protection**: All personally identifiable information is automatically
+       redacted, but you should still avoid requesting unnecessary PII
+    3. **Data Minimization**: Only request data necessary to answer the question
+    4. **Compliance**: Follow company data handling policies at all times
+
+    When you detect PII in user input, acknowledge it professionally:
+    ✓ "I see you provided contact information. [PII has been redacted]"
+    ✗ "Your email is john@company.com" (don't repeat PII)
+
+    For sensitive operations (delete, permissions changes):
+    - Explain the action clearly
+    - Explain the risks
+    - Request explicit confirmation
+    - Document the reason for the action
+
+  # ────────────────────────────────────────────────────────────────────────────────
+  # LLM CONFIGURATION
+  # ────────────────────────────────────────────────────────────────────────────────
+  llm:
+    provider: ${LLM_PROVIDER:-anthropic}
+    model: ${LLM_MODEL:-claude-sonnet-4-20250514}
+
+    # Temperature 0.5 - balanced between consistency and natural responses
+    # For compliance/security tasks, consider lowering to 0.2-0.3
+    temperature: 0.5
+
+    # ──────────────────────────────────────────────────────────────────────────────
+    # FALLBACK MODELS (High Availability)
+    # ──────────────────────────────────────────────────────────────────────────────
+    # Production agents should have fallback models to maintain uptime
+    # when the primary provider has issues
+    # ──────────────────────────────────────────────────────────────────────────────
+    fallback_models:
+      # Fallback to OpenAI if Anthropic fails
+      - provider: openai
+        model: gpt-4o
+
+        # Trigger conditions - when to use this fallback
+        trigger:
+          # Use fallback on any error from primary provider
+          on_error: true
+
+          # Retry primary provider 2 times before falling back
+          # This prevents flipping to fallback for transient errors
+          max_retries: 2
+
+          # Optional: trigger on specific error codes
+          # error_codes:
+          #   - 503  # Service unavailable
+          #   - 529  # Overloaded
+
+          # Optional: trigger on high latency
+          # latency_threshold_ms: 5000  # 5 seconds
+
+      # You can add more fallbacks (they're tried in order)
+      # - provider: google
+      #   model: gemini-2.0-flash
+      #   trigger:
+      #     on_error: true
+
+    # ──────────────────────────────────────────────────────────────────────────────
+    # COST TRACKING (Budget Management)
+    # ──────────────────────────────────────────────────────────────────────────────
+    # Track LLM costs and alert when budgets are approached
+    # ──────────────────────────────────────────────────────────────────────────────
+    cost_tracking:
+      enabled: true
+
+      # Alert threshold in dollars
+      # When cumulative costs reach this amount, trigger alert
+      # Costs reset monthly or per your billing cycle
+      budget_alert_threshold: 50.00
+
+      # Cost allocation tags - for tracking across teams/environments
+      # Appears in cost reports and observability traces
+      cost_allocation_tags:
+        team: platform
+        environment: production
+        cost_center: engineering
+
+      # Optional: hard budget limit (reject requests after this)
+      # budget_hard_limit: 100.00
+
+      # Optional: per-user budgets
+      # user_budget_limit: 5.00  # per user per month
+
+  # ────────────────────────────────────────────────────────────────────────────────
+  # AUTONOMY CONFIGURATION (Human-in-the-Loop Controls)
+  # ────────────────────────────────────────────────────────────────────────────────
+  # Define when human approval is required vs autonomous action
+  # ────────────────────────────────────────────────────────────────────────────────
+  autonomy:
+    # Autonomy level - controls default behavior
+    # ┌──────────────┬──────────────────────────────────────────────────────────┐
+    # │ LEVEL        │ BEHAVIOR                                                 │
+    # ├──────────────┼──────────────────────────────────────────────────────────┤
+    # │ autonomous   │ Agent acts independently (monitoring only)               │
+    # │ assisted     │ Agent proposes, human approves high-risk actions         │
+    # │ supervised   │ Human approves ALL actions before execution              │
+    # └──────────────┴──────────────────────────────────────────────────────────┘
+    level: assisted
+
+    # Actions that ALWAYS require human approval
+    # Even in autonomous mode, these will block and request confirmation
+    approval_required:
+      - delete_data         # Any data deletion
+      - modify_permissions  # Permission/access changes
+      - external_api_calls  # Calls to external services
+      - deploy_code         # Code deployments
+      - modify_production   # Production system changes
+
+    # Actions that are ALLOWED without approval (whitelist)
+    # In assisted mode, these run automatically
+    allowed_actions:
+      - read_documents      # Reading files, docs, wikis
+      - search_knowledge_base  # Searching internal KB
+      - generate_reports    # Creating reports/summaries
+      - send_notifications  # Sending alerts/emails
+
+    # Actions that are BLOCKED entirely (blacklist)
+    # Agent will refuse these actions even if approved
+    blocked_actions:
+      - access_production_database  # Direct DB access forbidden
+      - modify_security_settings    # Security changes forbidden
+      - access_secrets_directly     # Must use secrets manager
+
+    # Escalation policy - when to alert humans
+    escalation_policy:
+      # Conditions that trigger escalation
+      triggers:
+        - confidence_below_80_percent  # LLM confidence too low
+        - sensitive_topic_detected     # Content filter flagged input
+        - multiple_approval_requests   # Agent asking repeatedly
+        - unusual_access_pattern       # Anomaly detection
+
+      # Where to send escalation notifications
+      notify:
+        - slack:#security-alerts     # Slack channel
+        - email:security@company.com  # Email address
+        - pagerduty:agent-alerts     # PagerDuty integration
+
+      # Optional: escalation SLA
+      # response_timeout_minutes: 15  # Human must respond within 15min
+
+  # ────────────────────────────────────────────────────────────────────────────────
+  # SAFETY CONFIGURATION (Production-Critical)
+  # ────────────────────────────────────────────────────────────────────────────────
+  # Multi-layered safety controls for enterprise deployment
+  # ────────────────────────────────────────────────────────────────────────────────
+  safety:
+    # ──────────────────────────────────────────────────────────────────────────────
+    # CONTENT FILTERING (Harmful Content Detection)
+    # ──────────────────────────────────────────────────────────────────────────────
+    # Uses ML models to detect harmful categories in inputs and outputs
+    # ──────────────────────────────────────────────────────────────────────────────
+    content_filtering:
+      enabled: true
+
+      # Categories to filter
+      # Each uses a specialized ML classifier (typically BERT-based)
+      categories:
+        - hate_speech       # Discriminatory language, slurs
+        - violence          # Violent content, threats
+        - self_harm         # Self-injury instructions
+        - illegal_activity  # Hacking, fraud, illegal instructions
+        # - adult_content   # Sexually explicit (optional)
+        # - spam            # Spam/promotional content (optional)
+
+      # Detection threshold
+      # ┌────────┬──────────────┬─────────────────────────────────────────┐
+      # │ LEVEL  │ CONFIDENCE   │ TRADE-OFF                               │
+      # ├────────┼──────────────┼─────────────────────────────────────────┤
+      # │ low    │ >0.3 (30%)   │ Strict: catches more, more false pos    │
+      # │ medium │ >0.6 (60%)   │ Balanced: good precision/recall         │
+      # │ high   │ >0.9 (90%)   │ Permissive: very confident violations   │
+      # └────────┴──────────────┴─────────────────────────────────────────┘
+      threshold: medium
+
+      # Action when harmful content detected
+      # • block: Reject request, return error
+      # • log: Allow but log incident for review
+      # • sanitize: Attempt to rewrite content (experimental)
+      action: block
+
+      # Optional: Custom filter messages
+      # block_message: "This request violates our content policy."
+
+      # Optional: Apply to inputs, outputs, or both
+      # apply_to: [input, output]  # Default: both
+
+    # ──────────────────────────────────────────────────────────────────────────────
+    # PII DETECTION (Privacy Protection)
+    # ──────────────────────────────────────────────────────────────────────────────
+    # Automatically detect and redact personally identifiable information
+    # Uses regex patterns + NER models for high accuracy
+    # ──────────────────────────────────────────────────────────────────────────────
+    pii_detection:
+      enabled: true
+
+      # Built-in PII types (see documentation header for regex patterns)
+      types:
+        - email         # Email addresses
+        - phone         # Phone numbers (US + international)
+        - ssn           # Social Security Numbers (US)
+        - credit_card   # Credit card numbers (Luhn-validated)
+        - api_key       # API keys (sk-, pk-, ghp-, etc.)
+        - password      # Passwords in common patterns
+        - ip_address    # IP addresses (IPv4/IPv6)
+
+      # Action when PII detected
+      # • warn: Log detection but allow (for monitoring)
+      # • block: Reject request with PII
+      # • redact: Replace PII with placeholder (RECOMMENDED)
+      action: redact
+
+      # Redaction format
+      # When action=redact, PII is replaced with these placeholders
+      # redaction_format: "[REDACTED_{TYPE}]"  # Default
+
+      # Optional: Custom PII patterns (for your domain)
+      # See documentation header for examples (employee IDs, medical records, etc.)
+      # custom_patterns:
+      #   - name: employee_id
+      #     pattern: "EMP-\\d{6}"
+      #     replacement: "[REDACTED_EMPLOYEE_ID]"
+
+      # Optional: Exceptions (allow specific patterns)
+      # exceptions:
+      #   - "support@company.com"  # Company support email OK
+      #   - "demo@example.com"     # Example emails OK
+
+      # Optional: Apply to prompts, responses, or both
+      # apply_to: [prompt, response]  # Default: both
+
+    # ──────────────────────────────────────────────────────────────────────────────
+    # RATE LIMITING (Abuse Prevention)
+    # ──────────────────────────────────────────────────────────────────────────────
+    # Token bucket algorithm - see documentation header for details
+    # ──────────────────────────────────────────────────────────────────────────────
+    rate_limiting:
+      enabled: true
+
+      # Steady-state rate: requests per minute
+      # This is the LONG-TERM average rate allowed
+      # 30 req/min = 1 request every 2 seconds
+      requests_per_minute: 30
+
+      # Burst allowance: number of requests allowed in a burst
+      # Allows temporary spikes in usage
+      # First 5 requests can happen immediately, then rate limit kicks in
+      burst_limit: 5
+
+      # Optional: Rate limit scope
+      # • global: Single limit across all users
+      # • per_user: Each user gets their own bucket
+      # • per_ip: Each IP address gets their own bucket
+      # scope: per_user  # Default: global
+
+      # Optional: Custom rate limit by user tier
+      # user_tier_limits:
+      #   free: 10
+      #   pro: 60
+      #   enterprise: 300
+
+      # Optional: Response when rate limited
+      # retry_after_header: true  # Include Retry-After header
+
+    # ──────────────────────────────────────────────────────────────────────────────
+    # BEHAVIORAL GUARDRAILS (Prevent Runaway Agents)
+    # ──────────────────────────────────────────────────────────────────────────────
+    # Hard limits on agent behavior to prevent infinite loops and cost overruns
+    # ──────────────────────────────────────────────────────────────────────────────
+    guardrails:
+      enabled: true
+
+      # Maximum tool calls per request
+      # Prevents infinite loops where agent keeps calling tools
+      # Example: Agent calls search → read_file → search → read_file → ...
+      # After 20 tool calls, agent is forced to return response
+      max_tool_calls: 20
+
+      # Maximum iteration depth for reasoning chains
+      # Limits how many times agent can reflect/reconsider
+      # Prevents: "Let me think... actually... wait... let me reconsider..."
+      max_iteration_depth: 5
+
+      # Maximum tokens per response
+      # Controls output length (and cost)
+      # Claude Sonnet max: 8192, but 4000 is usually sufficient
+      max_tokens_per_turn: 4000
+
+      # Actions that require explicit user confirmation
+      # Agent will pause and ask "Are you sure?" before these
+      require_confirmation_for:
+        - destructive_actions     # Delete, drop, remove operations
+        - external_communications # Emails, API calls outside org
+        - data_modifications      # Update, modify database records
+        - cost_intensive_operations  # Large batch jobs
+
+      # Optional: Timeout limits
+      # max_execution_time_seconds: 300  # 5 minutes max per request
+      # max_total_cost_per_request: 1.00  # $1 max cost per request
+
+      # Optional: Loop detection
+      # detect_infinite_loops: true
+      # loop_detection_window: 5  # Check last 5 tool calls for patterns
+
+  # ────────────────────────────────────────────────────────────────────────────────
+  # OBSERVABILITY (Monitoring & Debugging)
+  # ────────────────────────────────────────────────────────────────────────────────
+  # Production agents MUST have comprehensive observability
+  # ────────────────────────────────────────────────────────────────────────────────
+  observability:
+    # ──────────────────────────────────────────────────────────────────────────────
+    # DISTRIBUTED TRACING (OpenTelemetry)
+    # ──────────────────────────────────────────────────────────────────────────────
+    # Track agent execution flow through multiple services
+    # Compatible with Jaeger, Zipkin, DataDog, New Relic, etc.
+    # ──────────────────────────────────────────────────────────────────────────────
+    tracing:
+      enabled: true
+
+      # Exporter type
+      # • otlp: OpenTelemetry Protocol (standard, recommended)
+      # • jaeger: Jaeger-specific format
+      # • zipkin: Zipkin-specific format
+      exporter: otlp
+
+      # OTLP endpoint - where to send traces
+      # Use environment variable for flexibility across environments:
+      # • Dev: http://localhost:4317 (local collector)
+      # • Prod: https://otlp.company.com (managed service)
+      endpoint: ${OTEL_ENDPOINT:-http://localhost:4317}
+
+      # Optional: Sampling rate (0.0 to 1.0)
+      # In high-traffic environments, sample subset of traces
+      # sampling_rate: 0.1  # Sample 10% of requests
+
+      # Optional: Custom trace attributes
+      # attributes:
+      #   service.version: 1.0.0
+      #   deployment.environment: production
+
+    # ──────────────────────────────────────────────────────────────────────────────
+    # METRICS (Time Series Data)
+    # ──────────────────────────────────────────────────────────────────────────────
+    # Emit metrics for monitoring dashboards (Grafana, Datadog, etc.)
+    # ──────────────────────────────────────────────────────────────────────────────
+    metrics:
+      enabled: true
+
+      # Metrics to collect (automatic):
+      # • agent.requests.total (counter)
+      # • agent.requests.duration (histogram)
+      # • agent.tool.calls.total (counter)
+      # • agent.llm.tokens.total (counter)
+      # • agent.llm.cost.total (counter)
+      # • agent.safety.pii.detected (counter)
+      # • agent.safety.content.blocked (counter)
+      # • agent.rate_limit.exceeded (counter)
+
+      # Custom labels added to ALL metrics
+      # Use for filtering/grouping in dashboards
+      custom_labels:
+        service: secure-assistant
+        environment: production
+        region: us-east-1
+
+      # Optional: Metrics export interval
+      # export_interval_seconds: 60  # Default: 60
+
+    # ──────────────────────────────────────────────────────────────────────────────
+    # LOGGING (Structured Logs)
+    # ──────────────────────────────────────────────────────────────────────────────
+    # JSON-structured logs for searching/analysis (Elasticsearch, Splunk, etc.)
+    # ──────────────────────────────────────────────────────────────────────────────
+    logging:
+      # Log level
+      # debug: Verbose (tool inputs/outputs, reasoning steps)
+      # info: Standard (requests, responses, decisions)
+      # warn: Warnings (safety triggers, fallbacks)
+      # error: Errors only
+      level: info
+
+      # Include full prompts in logs
+      # WARNING: Prompts may contain PII - set to false for compliance
+      include_prompts: false
+
+      # Include full responses in logs
+      # WARNING: Responses may contain PII - set to false for compliance
+      include_responses: false
+
+      # What IS logged (always):
+      # • Request IDs, timestamps
+      # • Safety events (PII detected, content blocked)
+      # • Autonomy events (approval requested, granted/denied)
+      # • Performance metrics (latency, cost)
+      # • Error messages and stack traces
+
+      # Optional: Log retention
+      # retention_days: 90  # Keep logs for 90 days (compliance requirement)
+
+      # Optional: Structured log fields
+      # fields:
+      #   user_id: ${USER_ID}
+      #   session_id: ${SESSION_ID}
+
+# ═══════════════════════════════════════════════════════════════════════════════════
+# SUMMARY: PRODUCTION SAFETY CHECKLIST
+# ═══════════════════════════════════════════════════════════════════════════════════
+#
+# Before deploying this agent to production, verify:
+#   ✓ PII detection enabled with action: redact
+#   ✓ Content filtering enabled for all relevant categories
+#   ✓ Rate limiting configured (prevents cost overruns and abuse)
+#   ✓ Guardrails prevent infinite loops (max_tool_calls, max_iteration_depth)
+#   ✓ Autonomy level appropriate for your risk tolerance
+#   ✓ Observability enabled (tracing, metrics, logging)
+#   ✓ Logging doesn't include PII (include_prompts: false)
+#   ✓ Fallback models configured (high availability)
+#   ✓ Cost tracking enabled with alerts
+#   ✓ Escalation policy defined (notify humans on issues)
+#
+# Next example (04-agent-with-messaging.ossa.yaml):
+#   → Multi-agent systems: pub/sub, commands, event-driven architecture
+#   → Learn how agents coordinate and communicate
+#   → Build agent swarms and pipelines
+#
+# ═══════════════════════════════════════════════════════════════════════════════════

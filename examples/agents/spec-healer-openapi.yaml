@@ -1,0 +1,59 @@
+apiVersion: ossa/v0.3.0
+kind: Agent
+metadata:
+  name: spec-healer-openapi
+  description: OpenAPI specification healer and validator
+spec:
+  model:
+    provider: anthropic
+    name: claude-3-5-sonnet-20241022
+  
+  tools:
+    - name: validate_openapi
+      description: Validate OpenAPI spec against standards
+      action: |
+        openapi-validator spec/openapi.yaml --errors-only
+    
+    - name: detect_breaking_changes
+      description: Compare specs and detect breaking changes
+      action: |
+        oasdiff breaking spec/v1.yaml spec/v2.yaml
+    
+    - name: generate_examples
+      description: Auto-generate request/response examples
+      action: |
+        openapi-examples-generator spec/openapi.yaml
+    
+    - name: sync_with_code
+      description: Ensure spec matches implementation
+      action: |
+        # Extract routes from code
+        # Compare with spec paths
+        # Flag mismatches
+        spectral lint spec/openapi.yaml --ruleset .spectral.yaml
+  
+  healing_rules:
+    - name: fix-missing-examples
+      condition: schema_without_examples
+      actions:
+        - generate_realistic_examples
+        - add_to_spec
+    
+    - name: fix-inconsistent-naming
+      condition: inconsistent_parameter_names
+      actions:
+        - standardize_to_camelCase
+        - update_all_references
+    
+    - name: add-missing-descriptions
+      condition: endpoint_without_description
+      actions:
+        - infer_from_code_comments
+        - generate_description
+    
+    - name: fix-security-definitions
+      condition: missing_security_schemes
+      actions:
+        - add_oauth2_flow
+        - add_api_key_header
+        - document_scopes

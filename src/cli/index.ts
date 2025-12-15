@@ -19,6 +19,10 @@ import { gitlabAgentCommand } from './commands/gitlab-agent.command.js';
 import { releaseCommandGroup } from './commands/release.command.js';
 import { setupCommand } from './commands/setup.command.js';
 import { syncCommand } from './commands/sync.command.js';
+import { agentsMdCommand } from './commands/agents-md.command.js';
+import { quickstartCommand } from './commands/quickstart.command.js';
+import { dependenciesCommand } from './commands/dependencies.command.js';
+import { contractCommand } from './commands/contract.command.js';
 
 // Load package.json for version (lazy to avoid Jest module resolution issues)
 import * as fs from 'fs';
@@ -85,9 +89,12 @@ function getVersion(): string {
   try {
     const specDir = path.resolve(__dirname, '../../spec');
     if (fs.existsSync(specDir)) {
-      const dirs = fs.readdirSync(specDir)
+      const dirs = fs
+        .readdirSync(specDir)
         .filter((d: string) => d.startsWith('v'))
-        .sort((a: string, b: string) => b.localeCompare(a, undefined, { numeric: true }));
+        .sort((a: string, b: string) =>
+          b.localeCompare(a, undefined, { numeric: true })
+        );
       if (dirs.length > 0) {
         return dirs[0].slice(1); // Remove 'v' prefix
       }
@@ -97,7 +104,9 @@ function getVersion(): string {
   }
 
   // Should never reach here if package.json exists
-  throw new Error('Unable to determine OSSA version. Ensure package.json exists.');
+  throw new Error(
+    'Unable to determine OSSA version. Ensure package.json exists.'
+  );
 }
 
 program
@@ -108,7 +117,10 @@ program
   .version(getVersion());
 
 // Register commands
+program.addCommand(quickstartCommand); // First for discoverability
 program.addCommand(validateCommand);
+program.addCommand(dependenciesCommand);
+program.addCommand(contractCommand);
 program.addCommand(generateCommand);
 program.addCommand(migrateCommand);
 program.addCommand(initCommand);
@@ -120,6 +132,27 @@ program.addCommand(gitlabAgentCommand);
 program.addCommand(releaseCommandGroup);
 program.addCommand(setupCommand);
 program.addCommand(syncCommand);
+program.addCommand(agentsMdCommand);
 
 // Parse arguments
 program.parse();
+
+// Registry commands
+import { publishCommand } from './commands/publish.command.js';
+import { searchCommand } from './commands/search.command.js';
+import { installCommand } from './commands/install.command.js';
+import { infoCommand } from './commands/info.command.js';
+
+// Deploy commands
+import { deployGroup } from './commands/deploy.command.js';
+
+// Test command
+import { testCommand } from './commands/test.command.js';
+
+// Register new commands
+program.addCommand(publishCommand);
+program.addCommand(searchCommand);
+program.addCommand(installCommand);
+program.addCommand(infoCommand);
+program.addCommand(deployGroup);
+program.addCommand(testCommand);

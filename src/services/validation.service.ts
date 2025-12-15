@@ -26,6 +26,7 @@ import { AutoGenValidator } from './validators/autogen.validator.js';
 import { VercelAIValidator } from './validators/vercel-ai.validator.js';
 import { LlamaIndexValidator } from './validators/llamaindex.validator.js';
 import { LangGraphValidator } from './validators/langgraph.validator.js';
+import { MessagingValidator } from './validators/messaging.validator.js';
 
 @injectable()
 export class ValidationService implements IValidationService {
@@ -72,7 +73,11 @@ export class ValidationService implements IValidationService {
     // Use dynamic version detection if not provided
     if (!version) {
       // Try to extract version from manifest's apiVersion field
-      if (manifest && typeof manifest === 'object' && 'apiVersion' in manifest) {
+      if (
+        manifest &&
+        typeof manifest === 'object' &&
+        'apiVersion' in manifest
+      ) {
         const apiVersion = (manifest as { apiVersion: string }).apiVersion;
         const match = apiVersion?.match(/^ossa\/v(.+)$/);
         if (match) {
@@ -97,19 +102,58 @@ export class ValidationService implements IValidationService {
       // 4. Generate warnings (best practices)
       const warnings = this.generateWarnings(manifest);
 
-      // 5. Run platform-specific validators
+      // 5. Validate messaging extension (v0.3.0+)
+      const messagingErrors: ErrorObject[] = [];
+      if (
+        manifest &&
+        typeof manifest === 'object' &&
+        'apiVersion' in manifest &&
+        'spec' in manifest
+      ) {
+        const apiVersion = (manifest as { apiVersion: string }).apiVersion;
+        const spec = (manifest as { spec: any }).spec;
+        if (spec?.messaging) {
+          const messagingValidator = new MessagingValidator();
+          const messagingValidationErrors =
+            messagingValidator.validateMessagingExtension(
+              spec.messaging,
+              apiVersion
+            );
+          // Convert ValidationError[] to ErrorObject[]
+          messagingErrors.push(
+            ...messagingValidationErrors.map((err) => ({
+              instancePath: err.path,
+              schemaPath: err.path,
+              keyword: 'messaging',
+              params: {},
+              message: err.message,
+            }))
+          );
+        }
+      }
+
+      // 6. Run platform-specific validators
       const platformResults = this.validatePlatformExtensions(
         manifest as OssaAgent
       );
       const allErrors = [
-        ...(valid ? [] : validator.errors || []),
+        ...(valid
+          ? []
+          : (validator.errors || []).map((err) => ({
+              instancePath: err.instancePath || err.schemaPath || '',
+              schemaPath: err.schemaPath || '',
+              keyword: err.keyword || 'validation',
+              params: err.params || {},
+              message: err.message || 'Validation error',
+            }))),
+        ...messagingErrors,
         ...platformResults.errors,
       ];
       const allWarnings = [...warnings, ...platformResults.warnings];
 
-      // 6. Return structured result
+      // 7. Return structured result
       return {
-        valid: valid && platformResults.valid,
+        valid: valid && platformResults.valid && messagingErrors.length === 0,
         errors: allErrors,
         warnings: allWarnings,
         manifest:

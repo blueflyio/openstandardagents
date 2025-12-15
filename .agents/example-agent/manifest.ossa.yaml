@@ -1,7 +1,7 @@
 # Example OSSA Agent - Local Development Template
 # Copy this to create your own agent
 
-apiVersion: ossa/v0.2.9
+apiVersion: ossa/v0.3.0
 kind: Agent
 
 metadata:
@@ -12,6 +12,7 @@ metadata:
     Customize this manifest for your use case.
 
   labels:
+    ossa-version: v0.3.0
     environment: development
     team: your-team
     domain: custom
@@ -24,19 +25,34 @@ spec:
 
   role: |
     You are an expert automation agent specializing in task execution.
-    
+
     Your responsibilities:
     1. Execute automated tasks based on user input
     2. Provide clear, actionable results
     3. Handle errors gracefully
-    
+
     Always be concise and accurate.
 
   llm:
-    provider: anthropic
-    model: claude-3-5-sonnet-20241022
+    provider: ${LLM_PROVIDER:-anthropic}
+    model: ${LLM_MODEL:-claude-sonnet-4}
     temperature: 0.7
     maxTokens: 4000
+
+    fallback_models:
+      - provider: ${LLM_FALLBACK_PROVIDER_1:-openai}
+        model: ${LLM_FALLBACK_MODEL_1:-gpt-4o}
+
+    retry_config:
+      max_attempts: 3
+      backoff_strategy: exponential
+
+    cost_tracking:
+      enabled: true
+      budget_alert_threshold: 25.00
+      cost_allocation_tags:
+        platform: local
+        team: development
 
   capabilities:
     - name: execute_task

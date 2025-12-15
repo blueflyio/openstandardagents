@@ -185,20 +185,20 @@ spec:
             timeoutSeconds: 3
             successThreshold: 1
             failureThreshold: 12 # 60 seconds max startup time
-        
-        # Graceful Shutdown
-        lifecycle:
-          preStop:
-            exec:
-              command:
-                - sh
-                - -c
-                - |
-                  echo "Initiating graceful shutdown..."
-                  sleep 5  # Allow current requests to complete
-        
-        # Volume Mounts
-        volumeMounts:
+          
+          # Graceful Shutdown
+          lifecycle:
+            preStop:
+              exec:
+                command:
+                  - sh
+                  - -c
+                  - |
+                    echo "Initiating graceful shutdown..."
+                    sleep 5  # Allow current requests to complete
+          
+          # Volume Mounts
+          volumeMounts:
             - name: config
               mountPath: /app/config
               readOnly: true

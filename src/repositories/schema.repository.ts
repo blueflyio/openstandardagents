@@ -26,6 +26,13 @@ export class SchemaRepository implements ISchemaRepository {
   }
 
   /**
+   * Check if version is a template placeholder (e.g., {{VERSION}})
+   */
+  private isTemplateVersion(version: string): boolean {
+    return /^\{\{[A-Z_]+\}\}$/.test(version);
+  }
+
+  /**
    * Get the latest/current version from package.json or spec directory
    */
   getCurrentVersion(): string {
@@ -35,9 +42,10 @@ export class SchemaRepository implements ISchemaRepository {
     if (fs.existsSync(packageJsonPath)) {
       try {
         const pkg = JSON.parse(fs.readFileSync(packageJsonPath, 'utf-8'));
-        if (pkg.version) {
+        if (pkg.version && !this.isTemplateVersion(pkg.version)) {
           return pkg.version;
         }
+        // If version is a template placeholder, fall through to spec directory discovery
       } catch {
         // Fall through to spec directory discovery
       }
@@ -119,7 +127,7 @@ export class SchemaRepository implements ISchemaRepository {
       ...this.discoverAvailableVersions(sourceSpecDir),
     ];
     const uniqueVersions = [...new Set(availableVersions)].sort();
-    
+
     throw new Error(
       `Schema not found for version ${version}. ` +
         `Available versions: ${uniqueVersions.join(', ')}`
@@ -174,7 +182,7 @@ export class SchemaRepository implements ISchemaRepository {
     // Check if spec directory has any version subdirectories
     try {
       const entries = fs.readdirSync(specDir, { withFileTypes: true });
-      return entries.some(e => e.isDirectory() && e.name.startsWith('v'));
+      return entries.some((e) => e.isDirectory() && e.name.startsWith('v'));
     } catch {
       return false;
     }
@@ -202,7 +210,7 @@ export class SchemaRepository implements ISchemaRepository {
     if (fs.existsSync(distSpecDir)) {
       try {
         const entries = fs.readdirSync(distSpecDir, { withFileTypes: true });
-        if (entries.some(e => e.isDirectory() && e.name.startsWith('v'))) {
+        if (entries.some((e) => e.isDirectory() && e.name.startsWith('v'))) {
           return process.cwd();
         }
       } catch {

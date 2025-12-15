@@ -5,6 +5,33 @@
 
 import { ErrorObject } from 'ajv';
 
+// Export Task types (v0.3.0)
+export * from './task';
+export type { OssaTask, TaskSpec, RuntimeBinding } from './task';
+export { isOssaTask, createTaskManifest } from './task';
+
+// Export Workflow types (v0.3.0)
+export * from './workflow';
+export type { OssaWorkflow, WorkflowSpec, WorkflowStep } from './workflow';
+export {
+  isOssaWorkflow,
+  createWorkflowManifest,
+  createStep,
+  expr,
+} from './workflow';
+
+// Export Messaging types (v0.3.0)
+export * from './messaging';
+export type {
+  MessagingExtension,
+  PublishedChannel,
+  Subscription,
+  Command,
+  ReliabilityConfig,
+  MessageEnvelope,
+  RoutingRule,
+} from './messaging';
+
 /**
  * Capability definition (OpenAPI-style operation)
  */
@@ -40,6 +67,15 @@ export interface OssaAgent {
     description?: string;
     labels?: Record<string, string>;
     annotations?: Record<string, string>;
+    lifecycle?: {
+      state?: 'active' | 'deprecated' | 'retired';
+      maturity?: 'alpha' | 'beta' | 'stable' | 'deprecated' | 'retired';
+      deprecation?: {
+        sunsetDate?: string;
+        replacement?: string;
+        reason?: string;
+      };
+    };
   };
   spec?: {
     role: string;
@@ -103,6 +139,60 @@ export interface OssaAgent {
         format?: string;
       };
     };
+    messaging?: {
+      publishes?: Array<{
+        channel: string;
+        description?: string;
+        schema: Record<string, unknown>;
+        examples?: Record<string, unknown>[];
+        contentType?: string;
+        tags?: string[];
+      }>;
+      subscribes?: Array<{
+        channel: string;
+        description?: string;
+        schema?: Record<string, unknown>;
+        handler?: string;
+        filter?: {
+          expression?: string;
+          fields?: Record<string, unknown>;
+        };
+        priority?: 'low' | 'normal' | 'high' | 'critical';
+        maxConcurrency?: number;
+      }>;
+      commands?: Array<{
+        name: string;
+        description?: string;
+        inputSchema: Record<string, unknown>;
+        outputSchema?: Record<string, unknown>;
+        timeoutSeconds?: number;
+        idempotent?: boolean;
+        async?: boolean;
+      }>;
+      reliability?: {
+        deliveryGuarantee?: 'at-least-once' | 'at-most-once' | 'exactly-once';
+        retry?: {
+          maxAttempts?: number;
+          backoffMs?: number;
+          maxBackoffMs?: number;
+        };
+        deadLetterQueue?: {
+          enabled?: boolean;
+          maxRetries?: number;
+        };
+        ordering?: {
+          enabled?: boolean;
+          key?: string;
+        };
+      };
+    };
+    environments?: Record<string, {
+      version: string;
+      deployedAt: string;
+      deployedBy: string;
+      status: 'deployed' | 'healthy' | 'degraded' | 'failed';
+      endpoint?: string;
+    }>;
   };
   // Legacy v0.1.9 format (for backward compatibility)
   ossaVersion?: string;
@@ -142,7 +232,59 @@ export interface OssaAgent {
       retentionPolicy?: string;
     };
   };
-  extensions?: Record<string, unknown>;
+  extensions?: {
+    agents_md?: AgentsMdExtension;
+    cursor?: CursorExtension;
+    [key: string]: unknown;
+  };
+}
+
+/**
+ * agents.md section configuration
+ */
+export interface AgentsMdSection {
+  enabled?: boolean;
+  source?: string;
+  custom?: string;
+  title_format?: string;
+}
+
+/**
+ * agents.md extension configuration
+ */
+export interface AgentsMdExtension {
+  enabled?: boolean;
+  generate?: boolean;
+  output_path?: string;
+  sections?: {
+    dev_environment?: AgentsMdSection;
+    testing?: AgentsMdSection;
+    pr_instructions?: AgentsMdSection;
+  };
+  sync?: {
+    on_manifest_change?: boolean;
+    include_comments?: boolean;
+  };
+  cursor_integration?: boolean;
+}
+
+/**
+ * Cursor extension configuration
+ */
+export interface CursorExtension {
+  enabled?: boolean;
+  agent_type?: string;
+  workspace_config?: {
+    rules_file?: string;
+    context_files?: string[];
+    ignore_patterns?: string[];
+    agents_md_path?: string;
+  };
+  capabilities?: Record<string, boolean>;
+  model?: {
+    provider?: string;
+    name?: string;
+  };
 }
 
 /**
@@ -163,6 +305,8 @@ export interface AgentTemplate {
   name: string;
   role: string;
   description?: string;
+  /** Agent version (not OSSA spec version) */
+  version?: string;
   runtimeType?: string;
   capabilities?: Capability[];
 }
@@ -192,6 +336,6 @@ export interface ISchemaRepository {
 }
 
 export interface IManifestRepository {
-  load(path: string): Promise<unknown>;
+  load(path: string): Promise<OssaAgent>;
   save(path: string, manifest: OssaAgent): Promise<void>;
 }

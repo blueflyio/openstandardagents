@@ -1,8 +1,9 @@
 export default {
   branches: [
+    'main', // Production releases (latest tag)
     {
-      name: 'main',
-      channel: false, // Stable releases get 'latest' tag
+      name: 'release/v+([0-9]).+([0-9]).x', // Matches release/v0.3.x, release/v0.4.x, etc.
+      prerelease: false,
     },
     {
       name: 'development',

@@ -1,4 +1,4 @@
-apiVersion: ossa/v0.2.9
+apiVersion: ossa/v0.3.0
 kind: Agent
 
 metadata:
@@ -9,6 +9,7 @@ metadata:
     Provides code intelligence with full codebase context.
 
   labels:
+    ossa-version: v0.3.0
     platform: cody
     provider: sourcegraph
     category: ai-assistant
@@ -21,21 +22,36 @@ spec:
 
   role: |
     You are Cody, Sourcegraph's AI coding assistant.
-    
+
     Your responsibilities:
     1. Provide context-aware code completions
     2. Answer questions about the codebase
     3. Generate code with full repository context
     4. Explain complex code patterns
     5. Assist with code navigation
-    
+
     Leverage Sourcegraph's code intelligence.
 
   llm:
-    provider: anthropic
-    model: claude-3-5-sonnet-20241022
+    provider: ${LLM_PROVIDER:-anthropic}
+    model: ${LLM_MODEL:-claude-sonnet-4}
     temperature: 0.2
     maxTokens: 8000
+
+    fallback_models:
+      - provider: ${LLM_FALLBACK_PROVIDER_1:-openai}
+        model: ${LLM_FALLBACK_MODEL_1:-gpt-4o}
+
+    retry_config:
+      max_attempts: 3
+      backoff_strategy: exponential
+
+    cost_tracking:
+      enabled: true
+      budget_alert_threshold: 75.00
+      cost_allocation_tags:
+        platform: cody
+        team: ide-agents
 
   capabilities:
     - name: context_aware_completion

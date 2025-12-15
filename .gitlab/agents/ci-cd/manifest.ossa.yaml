@@ -1,8 +1,4 @@
-# CI/CD Optimization Agent - OSSA v0.2.9 Compliant
-# Triggered by GitLab webhooks for pipeline optimization and analysis
-# Part of BlueFly.io Agent Platform
-
-apiVersion: ossa/v0.2.9
+apiVersion: ossa/v0.3.0
 kind: Agent
 metadata:
   name: ci-cd
@@ -18,19 +14,18 @@ metadata:
     agent-assigned: ci-cd
     blueflyio.com/team: platform
     blueflyio.com/service: gitlab-automation
+    ossa-version: v0.3.0
   annotations:
     openstandardagents.org/stability: stable
     blueflyio.gitlab.com/lifecycle: ready-for-dev
     blueflyio.gitlab.com/codeowner: "@platform-team"
     blueflyio.gitlab.com/commit-type: feat
     blueflyio.gitlab.com/priority: high
-
 spec:
   taxonomy:
     domain: infrastructure
     subdomain: ci-cd-optimization
     capability: pipeline-analysis
-
   role: |
     You are the CI/CD Optimization Agent, an expert in GitLab CI/CD pipeline
     performance and efficiency. Your mission is to ensure pipelines run fast,
@@ -104,39 +99,33 @@ spec:
     - ALWAYS validate changes in non-production first
     - ESCALATE breaking changes to humans
     - PRESERVE pipeline history for rollback
-
   llm:
-    provider: anthropic
-    model: claude-sonnet-4-5-20250929
-    temperature: 0.2  # Low temperature for consistent analysis
+    provider: ${LLM_PROVIDER:-anthropic}
+    model: ${LLM_MODEL:-claude-sonnet}
+    temperature: 0.2
     maxTokens: 16000
     topP: 0.9
-
     fallback_models:
-      - provider: openai
-        model: gpt-4o
-      - provider: anthropic
-        model: claude-3-5-haiku-20241022
-
+      - provider: ${LLM_FALLBACK_PROVIDER_1:-openai}
+        model: ${LLM_FALLBACK_MODEL_1:-gpt-4o}
+      - provider: ${LLM_FALLBACK_PROVIDER_2:-anthropic}
+        model: ${LLM_FALLBACK_MODEL_2:-claude-haiku}
     retry_config:
       max_attempts: 3
       backoff_strategy: exponential
-
     cost_tracking:
       enabled: true
-      budget_alert_threshold: 30.00
+      budget_alert_threshold: 30
       cost_allocation_tags:
         project: ossa-agents
         team: platform
         service: ci-cd-optimizer
-
   tools:
     - type: mcp
       name: gitlab-api
       server: gitlab-mcp-server
       namespace: blueflyio
       endpoint: https://gitlab.com/api/v4
-
       transport:
         protocol: http
         streaming: none
@@ -145,7 +134,6 @@ spec:
           burstLimit: 20
           strategy: token_bucket
           onExceeded: queue
-
       auth:
         type: bearer
         credentials: env:GITLAB_TOKEN
@@ -153,193 +141,243 @@ spec:
           - api
           - read_api
           - read_repository
-
       circuit_breaker:
         enabled: true
         failure_threshold: 5
         timeout_seconds: 60
-
       capabilities:
-        # Pipeline Analysis
         - name: get_pipeline
           version: "2.0"
           description: Get pipeline details and status
-          scopes: [read:pipelines]
+          scopes:
+            - read:pipelines
           transport:
             protocol: http
             binding: GET /projects/{id}/pipelines/{pipeline_id}
           input_schema:
             type: object
             properties:
-              project_id: { type: integer }
-              pipeline_id: { type: integer }
-            required: [project_id, pipeline_id]
-
+              project_id:
+                type: integer
+              pipeline_id:
+                type: integer
+            required:
+              - project_id
+              - pipeline_id
         - name: list_pipelines
           version: "2.0"
           description: List project pipelines for trend analysis
-          scopes: [read:pipelines]
+          scopes:
+            - read:pipelines
           transport:
             protocol: http
             binding: GET /projects/{id}/pipelines
           input_schema:
             type: object
             properties:
-              project_id: { type: integer }
+              project_id:
+                type: integer
               status:
                 type: string
-                enum: [running, pending, success, failed, canceled, skipped]
-              per_page: { type: integer, default: 20 }
-              updated_after: { type: string, format: date-time }
-            required: [project_id]
-
+                enum:
+                  - running
+                  - pending
+                  - success
+                  - failed
+                  - canceled
+                  - skipped
+              per_page:
+                type: integer
+                default: 20
+              updated_after:
+                type: string
+                format: date-time
+            required:
+              - project_id
         - name: get_pipeline_jobs
           version: "2.0"
           description: Get all jobs in a pipeline
-          scopes: [read:pipelines]
+          scopes:
+            - read:pipelines
           transport:
             protocol: http
             binding: GET /projects/{id}/pipelines/{pipeline_id}/jobs
           input_schema:
             type: object
             properties:
-              project_id: { type: integer }
-              pipeline_id: { type: integer }
-            required: [project_id, pipeline_id]
-
+              project_id:
+                type: integer
+              pipeline_id:
+                type: integer
+            required:
+              - project_id
+              - pipeline_id
         - name: get_job_trace
           version: "1.0"
           description: Get job execution log for analysis
-          scopes: [read:pipelines]
+          scopes:
+            - read:pipelines
           transport:
             protocol: http
             binding: GET /projects/{id}/jobs/{job_id}/trace
           input_schema:
             type: object
             properties:
-              project_id: { type: integer }
-              job_id: { type: integer }
-            required: [project_id, job_id]
-
-        # CI/CD Configuration
+              project_id:
+                type: integer
+              job_id:
+                type: integer
+            required:
+              - project_id
+              - job_id
         - name: get_ci_config
           version: "1.0"
           description: Get .gitlab-ci.yml content
-          scopes: [read:repository]
+          scopes:
+            - read:repository
           transport:
             protocol: http
             binding: GET /projects/{id}/repository/files/.gitlab-ci.yml
           input_schema:
             type: object
             properties:
-              project_id: { type: integer }
-              ref: { type: string, default: main }
-            required: [project_id]
-
+              project_id:
+                type: integer
+              ref:
+                type: string
+                default: main
+            required:
+              - project_id
         - name: validate_ci_config
           version: "1.0"
           description: Validate CI/CD configuration
-          scopes: [read:repository]
+          scopes:
+            - read:repository
           transport:
             protocol: http
             binding: POST /projects/{id}/ci/lint
           input_schema:
             type: object
             properties:
-              project_id: { type: integer }
-              content: { type: string }
-              dry_run: { type: boolean, default: true }
-            required: [project_id, content]
-
-        # Runner Analysis
+              project_id:
+                type: integer
+              content:
+                type: string
+              dry_run:
+                type: boolean
+                default: true
+            required:
+              - project_id
+              - content
         - name: list_runners
           version: "1.0"
           description: List project runners
-          scopes: [read:runners]
+          scopes:
+            - read:runners
           transport:
             protocol: http
             binding: GET /projects/{id}/runners
           input_schema:
             type: object
             properties:
-              project_id: { type: integer }
+              project_id:
+                type: integer
               status:
                 type: string
-                enum: [online, offline, stale, never_contacted]
-            required: [project_id]
-
+                enum:
+                  - online
+                  - offline
+                  - stale
+                  - never_contacted
+            required:
+              - project_id
         - name: get_runner_jobs
           version: "1.0"
           description: Get jobs executed by a runner
-          scopes: [read:runners]
+          scopes:
+            - read:runners
           transport:
             protocol: http
             binding: GET /runners/{runner_id}/jobs
           input_schema:
             type: object
             properties:
-              runner_id: { type: integer }
+              runner_id:
+                type: integer
               status:
                 type: string
-                enum: [running, success, failed, canceled]
-            required: [runner_id]
-
-        # Comments & Reporting
+                enum:
+                  - running
+                  - success
+                  - failed
+                  - canceled
+            required:
+              - runner_id
         - name: add_pipeline_comment
           version: "1.0"
           description: Add optimization report as MR comment
-          scopes: [write:notes]
+          scopes:
+            - write:notes
           transport:
             protocol: http
             binding: POST /projects/{id}/merge_requests/{mr_iid}/notes
           input_schema:
             type: object
             properties:
-              project_id: { type: integer }
-              mr_iid: { type: integer }
-              body: { type: string }
-            required: [project_id, mr_iid, body]
-
-        # Variables Analysis
+              project_id:
+                type: integer
+              mr_iid:
+                type: integer
+              body:
+                type: string
+            required:
+              - project_id
+              - mr_iid
+              - body
         - name: list_variables
           version: "1.0"
           description: List CI/CD variables
-          scopes: [read:variables]
+          scopes:
+            - read:variables
           transport:
             protocol: http
             binding: GET /projects/{id}/variables
           input_schema:
             type: object
             properties:
-              project_id: { type: integer }
-            required: [project_id]
-
+              project_id:
+                type: integer
+            required:
+              - project_id
     - type: mcp
       name: prometheus-metrics
       server: prometheus-mcp-server
       endpoint: ${PROMETHEUS_URL:-http://prometheus:9090}
-
       transport:
         protocol: http
         streaming: none
-
       auth:
         type: bearer
         credentials: env:PROMETHEUS_TOKEN
-
       capabilities:
         - name: query_pipeline_metrics
           version: "1.0"
           description: Query pipeline execution metrics
-          scopes: [read:metrics]
+          scopes:
+            - read:metrics
           input_schema:
             type: object
             properties:
-              query: { type: string }
-              start: { type: string, format: date-time }
-              end: { type: string, format: date-time }
-            required: [query]
-
+              query:
+                type: string
+              start:
+                type: string
+                format: date-time
+              end:
+                type: string
+                format: date-time
+            required:
+              - query
   state:
     mode: long_running
     storage:
@@ -357,7 +395,6 @@ spec:
       max_messages: 100
       max_tokens: 64000
       strategy: summarization
-
   autonomy:
     level: autonomous
     approval_required: false
@@ -384,12 +421,11 @@ spec:
       notify:
         - slack:#ci-cd-alerts
         - gitlab:@platform-team
-
   constraints:
     cost:
       maxTokensPerDay: 500000
       maxTokensPerRequest: 32000
-      maxCostPerDay: 50.00
+      maxCostPerDay: 50
       currency: USD
     performance:
       maxLatencySeconds: 45
@@ -398,7 +434,6 @@ spec:
     resources:
       cpu: "1"
       memory: 2Gi
-
   observability:
     tracing:
       enabled: true
@@ -440,10 +475,9 @@ spec:
           condition: runner_queue_length > 10
           severity: warning
     slo:
-      availability: 99.0
+      availability: 99
       latency_p95_ms: 15000
-      error_budget: 1.0
-
+      error_budget: 1
   security:
     authentication:
       required: true
@@ -483,12 +517,11 @@ spec:
         - soc2
       data_residency:
         - US
-
   reliability:
     sla:
-      availability_percent: 99.0
+      availability_percent: 99
       latency_p95_ms: 15000
-      error_rate_percent: 1.0
+      error_rate_percent: 1
     circuit_breaker:
       enabled: true
       failure_threshold: 5
@@ -501,7 +534,6 @@ spec:
     failover:
       enabled: true
       strategy: active-passive
-
   collaboration:
     mode: collaborative
     handoffs:
@@ -528,7 +560,6 @@ spec:
         - mcp
         - http
       message_format: json
-
   safety:
     content_filtering:
       enabled: true
@@ -568,7 +599,6 @@ spec:
         - high_risk_action
         - breaking_change
         - compliance_change
-
   deployment:
     strategy: rolling
     rollback:
@@ -592,7 +622,6 @@ spec:
       graceful_shutdown:
         enabled: true
         timeout_seconds: 30
-
 extensions:
   buildkit:
     deployment:
@@ -612,7 +641,6 @@ extensions:
         agent_status: ready-for-dev
         commit_type: feat
         priority: high
-
   kagent:
     api_version: kagent.dev/v1alpha2
     kubernetes:
@@ -624,7 +652,6 @@ extensions:
     deployment:
       replicas: 2
       strategy: rolling-update
-
   mcp:
     enabled: true
     server_type: stdio
@@ -635,18 +662,25 @@ extensions:
         inputSchema:
           type: object
           properties:
-            project_id: { type: integer }
-            pipeline_id: { type: integer }
-          required: [project_id, pipeline_id]
+            project_id:
+              type: integer
+            pipeline_id:
+              type: integer
+          required:
+            - project_id
+            - pipeline_id
       - name: recommend_optimizations
         description: Generate optimization recommendations for project
         inputSchema:
           type: object
           properties:
-            project_id: { type: integer }
-            analysis_period_days: { type: integer, default: 30 }
-          required: [project_id]
-
+            project_id:
+              type: integer
+            analysis_period_days:
+              type: integer
+              default: 30
+          required:
+            - project_id
   a2a:
     enabled: true
     agent_card:
@@ -672,6 +706,16 @@ extensions:
       - id: optimize_pipeline
         name: Optimize Pipeline
         description: Analyze and optimize GitLab CI/CD pipelines
-        input_modes: [data]
-        output_modes: [text, data]
+        input_modes:
+          - data
+        output_modes:
+          - text
+          - data
     streaming: none
+  gitlab_duo:
+    enabled: true
+    flow_execution: true
+    model: ${GITLAB_DUO_MODEL:-claude-sonnet-4.5-20250929}
+    knowledge_graph:
+      enabled: true
+      index_on_push: true

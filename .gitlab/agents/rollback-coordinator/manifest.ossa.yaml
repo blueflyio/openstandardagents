@@ -1,25 +1,5 @@
-# ============================================================================
-# OSSA Rollback Coordinator Agent - GitLab Kubernetes Deployment
-# ============================================================================
-#
-# PURPOSE:
-#   Automated rollback coordination for failed deployments and migrations.
-#   Monitors deployment health, triggers rollbacks on failure, and coordinates
-#   multi-component rollback workflows (application + database + config).
-#
-# CAPABILITIES:
-#   - Deployment health monitoring (readiness, liveness, error rates)
-#   - Automated rollback triggering on failure detection
-#   - Multi-component rollback coordination (app + db + config)
-#   - Traffic shifting and canary rollback
-#   - Database schema rollback coordination with db-migrator
-#   - Post-rollback verification and validation
-#
-# ============================================================================
-
-apiVersion: ossa/v0.2.9
+apiVersion: ossa/v0.3.0
 kind: Agent
-
 metadata:
   name: rollback-coordinator
   version: 1.0.0
@@ -27,26 +7,23 @@ metadata:
     Automated rollback coordination agent for Kubernetes deployments.
     Monitors deployment health, detects failures, triggers coordinated rollbacks
     across application, database, and configuration components.
-
   labels:
     environment: production
     team: sre
     domain: deployment
     capability: rollback-automation
     dora-metric: mttr
-
+    ossa-version: v0.3.0
   annotations:
     documentation: https://openstandardagents.org/docs/agents/rollback-coordinator
     support: ops@openstandardagents.org
     runbook: https://openstandardagents.org/docs/runbooks/rollback-coordinator
-    safety: "automated-rollback-enabled"
-
+    safety: automated-rollback-enabled
 spec:
   taxonomy:
     domain: deployment-automation
     subdomain: rollback-management
     capability: automated-recovery
-
   role: |
     You are an expert deployment rollback coordinator specializing in failure recovery.
 
@@ -75,13 +52,27 @@ spec:
     - Rollback strategy (immediate/canary/gradual)
     - Verification steps (health checks, smoke tests)
     - Post-mortem action items
-
   llm:
-    provider: anthropic
-    model: claude-3-5-sonnet-20241022
-    temperature: 0.0  # Deterministic for safety-critical operations
+    provider: ${LLM_PROVIDER:-anthropic}
+    model: ${LLM_MODEL:-claude-sonnet}
+    temperature: 0
     maxTokens: 8000
-
+    topP: 0.9
+    fallback_models:
+      - provider: ${LLM_FALLBACK_PROVIDER_1:-openai}
+        model: ${LLM_FALLBACK_MODEL_1:-gpt-4o}
+      - provider: ${LLM_FALLBACK_PROVIDER_2:-anthropic}
+        model: ${LLM_FALLBACK_MODEL_2:-claude-haiku}
+    retry_config:
+      max_attempts: 3
+      backoff_strategy: exponential
+    cost_tracking:
+      enabled: true
+      budget_alert_threshold: 15
+      cost_allocation_tags:
+        project: ossa-agents
+        team: sre
+        service: rollback-coordinator
   tools:
     - type: http
       name: kubernetes-rollback
@@ -94,7 +85,6 @@ spec:
       auth:
         type: bearer
         tokenPath: /var/secrets/k8s-token
-
     - type: http
       name: argo-rollouts
       description: |
@@ -106,7 +96,6 @@ spec:
       auth:
         type: bearer
         tokenPath: /var/secrets/argo-token
-
     - type: http
       name: istio-traffic-shift
       description: |
@@ -118,7 +107,6 @@ spec:
       auth:
         type: mtls
         certPath: /var/secrets/istio-client-cert.pem
-
     - type: a2a
       name: db-migrator
       description: |
@@ -130,7 +118,6 @@ spec:
       auth:
         type: mtls
         certPath: /var/secrets/a2a-client-cert.pem
-
     - type: http
       name: prometheus-query
       description: |
@@ -143,7 +130,6 @@ spec:
       auth:
         type: bearer
         tokenPath: /var/secrets/prometheus-token
-
     - type: http
       name: monitoring-agent
       description: |
@@ -155,11 +141,9 @@ spec:
       auth:
         type: mtls
         certPath: /var/secrets/a2a-client-cert.pem
-
   autonomy:
     level: autonomous
-    approval_required: false  # Automated rollback on failure detection
-
+    approval_required: false
     allowed_actions:
       - monitor_deployment_health
       - detect_failure_thresholds
@@ -167,27 +151,22 @@ spec:
       - coordinate_multi_component_rollback
       - verify_rollback_success
       - create_incident_report
-
     blocked_actions:
       - delete_namespace
       - delete_persistent_volumes
       - modify_cluster_config
-
   constraints:
     resource_limits:
-      cpu: "500m"
-      memory: "1Gi"
-      ephemeral_storage: "2Gi"
-
+      cpu: 500m
+      memory: 1Gi
+      ephemeral_storage: 2Gi
     rate_limits:
       rollbacks_per_hour: 10
       api_calls_per_minute: 60
-
     safety_checks:
       - verify_previous_revision_exists
       - check_rollback_will_not_break_dependencies
       - validate_database_rollback_sql_before_execution
-
   state:
     backend: postgres
     config:
@@ -197,29 +176,23 @@ spec:
       schema: rollback_history
       ssl: true
       sslMode: require
-
   extensions:
     kagent:
       kubernetes:
         namespace: deployment-system
-
         labels:
           app: rollback-coordinator
           team: sre
           dora-metric: mttr
-
         annotations:
-          description: "Automated rollback coordination agent"
-          contact: "ops@openstandardagents.org"
-          safety: "automated-rollback-enabled"
-
+          description: Automated rollback coordination agent
+          contact: ops@openstandardagents.org
+          safety: automated-rollback-enabled
         resourceLimits:
-          cpu: "500m"
-          memory: "1Gi"
-          ephemeralStorage: "2Gi"
-
+          cpu: 500m
+          memory: 1Gi
+          ephemeralStorage: 2Gi
         serviceAccount: rollback-coordinator-sa
-
         securityContext:
           runAsNonRoot: true
           runAsUser: 65534
@@ -227,15 +200,12 @@ spec:
           capabilities:
             drop:
               - ALL
-
       guardrails:
-        requireApproval: false  # Autonomous for safety-critical rollbacks
-
+        requireApproval: false
         costLimits:
           maxTokensPerDay: 100000
-          maxCostPerDay: 10.00
+          maxCostPerDay: 10
           currency: USD
-
         allowedActions:
           - kubernetes:rollback:deployment
           - kubernetes:rollback:statefulset
@@ -244,28 +214,22 @@ spec:
           - kubernetes:update:secret
           - istio:update:virtualservice
           - argo:rollback:rollout
-
         auditLog:
           destination: compliance-engine
           retention: 7years
-
       a2aConfig:
         enabled: true
         protocol: json-rpc
-
         endpoints:
           - http://db-migrator:8080/a2a
           - http://monitoring-agent:8080/a2a
-
         authentication:
           type: mtls
           certPath: /var/secrets/a2a-client-cert.pem
           keyPath: /var/secrets/a2a-client-key.pem
-
       meshIntegration:
         enabled: true
         serviceMesh: istio
-
         trafficPolicy:
           loadBalancer: round_robin
           connectionPool:
@@ -274,9 +238,42 @@ spec:
             http:
               http1MaxPendingRequests: 50
               http2MaxRequests: 100
-
         circuitBreaker:
           consecutiveErrors: 5
           interval: 30s
           baseEjectionTime: 30s
           maxEjectionPercent: 50
+extensions:
+  kagent:
+    api_version: kagent.dev/v1alpha2
+    kubernetes:
+      namespace: agent-system
+      labels:
+        app.kubernetes.io/name: rollback-coordinator
+        app.kubernetes.io/part-of: ossa-showcase
+        openstandardagents.org/version: v0.3.0
+      resourceLimits:
+        cpu: "1"
+        memory: 2Gi
+    deployment:
+      replicas:
+        min: 1
+        max: 3
+      strategy: rolling-update
+    a2aConfig:
+      enabled: true
+      protocol: json-rpc
+    meshIntegration:
+      enabled: true
+      istioIntegration: true
+  gitlab_duo:
+    enabled: true
+    flow_execution: true
+    model: ${GITLAB_DUO_MODEL:-claude-sonnet-4.5-20250929}
+    knowledge_graph:
+      enabled: true
+      index_on_push: true
+  mcp:
+    enabled: true
+    server_type: stdio
+    server_name: rollback-coordinator-mcp

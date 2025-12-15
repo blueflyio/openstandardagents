@@ -17,7 +17,7 @@ export {
   isPrerelease,
   getSupportedVersions,
   resolveSchemaPath,
-  type VersionInfo
+  type VersionInfo,
 } from './utils/version.js';
 
 // Repositories

@@ -36,7 +36,10 @@ const __dirname = path.dirname(__filename);
 
 const PackageJsonSchema = z.object({
   name: z.string(),
-  version: z.string().regex(/^\d+\.\d+\.\d+(-[a-zA-Z0-9.]+)?$/, 'Invalid semver version'),
+  version: z.string().refine(
+    (v) => /^\d+\.\d+\.\d+(-[a-zA-Z0-9.]+)?$/.test(v) || /^\{\{[A-Z_]+\}\}$/.test(v),
+    'Invalid semver version or template placeholder'
+  ),
   exports: z.object({
     './schema': z.string().optional(),
   }).passthrough().optional(),
@@ -95,6 +98,13 @@ const result: Result = {
 // ============================================================================
 // Version Management
 // ============================================================================
+
+/**
+ * Check if version is a template placeholder
+ */
+function isTemplateVersion(version: string): boolean {
+  return /^\{\{[A-Z_]+\}\}$/.test(version);
+}
 
 /**
  * Get current version from package.json with validation
@@ -425,6 +435,15 @@ function main(): void {
   const version = getCurrentVersion();
   console.log(`📦 Current version: ${version}`);
   console.log(`🔧 Mode: ${config.mode.toUpperCase()}\n`);
+
+  // Handle template versions (e.g., {{VERSION}})
+  if (isTemplateVersion(version)) {
+    console.log('ℹ️  Template version detected - skipping version sync operations');
+    console.log('   (Template versions are managed by CI/CD automation)\n');
+    console.log('='.repeat(50));
+    console.log('\n✅ Version validation passed (template mode)');
+    process.exit(0);
+  }
 
   // Run checks/fixes
   createSpecDirectory(version);
