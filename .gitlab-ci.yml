@@ -89,16 +89,21 @@ detect:milestone-and-tags:
   image: alpine:latest
   timeout: 10 minutes
   before_script:
-    - apk add --no-cache curl jq
     - apk add --no-cache curl jq git bash
     - git config user.email "ci@bluefly.io"
     - git config user.name "GitLab CI"
-    - git remote set-url origin https://oauth2:${GITLAB_PUSH_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git
+    - git remote set-url origin "https://oauth2:${CI_JOB_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git"
     - git fetch --unshallow --tags --force || git fetch --tags --force || true
   script:
     - |
       #!/bin/bash
       set -euo pipefail
+
+      # Validate required variables
+      if [ -z "${CI_API_V4_URL:-}" ] || [ -z "${CI_PROJECT_ID:-}" ] || [ -z "${CI_JOB_TOKEN:-}" ]; then
+        echo "ERROR: Missing required CI variables"
+        exit 1
+      fi
 
       # Rate-limited API call function with exponential backoff
       safe_api_call() {
@@ -107,13 +112,22 @@ detect:milestone-and-tags:
         local retry=0
         local wait_time=2
 
-        while [ $retry -lt $max_retries ]; do
-          local response=$(curl -sS -w "\n%{http_code}" "$url" \
-            --header "PRIVATE-TOKEN: ${CI_JOB_TOKEN}" \
-            "${@:2}")
+        if [ -z "$url" ]; then
+          echo "ERROR: safe_api_call called with empty URL" >&2
+          echo "[]"
+          return 1
+        fi
 
-          local http_code=$(echo "$response" | tail -n1)
-          local body=$(echo "$response" | sed '$d')
+        while [ $retry -lt $max_retries ]; do
+          local response
+          local http_code
+          local body
+
+          response=$(curl -sS -w "\n%{http_code}" "$url" \
+            --header "PRIVATE-TOKEN: ${CI_JOB_TOKEN}" 2>&1) || true
+
+          http_code=$(echo "$response" | tail -n1)
+          body=$(echo "$response" | sed '$d')
 
           if [ "$http_code" = "429" ]; then
             retry=$((retry + 1))
