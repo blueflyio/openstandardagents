@@ -1,6 +1,21 @@
 /**
  * OSSA Migrate Command
- * Migrate manifests to v0.2.2 format (from v0.1.9 or v1.0)
+ * Migrate manifests to current OSSA version
+ *
+ * Supported migrations:
+ * - v1.0 (legacy) → current version
+ * - Any older ossa/v0.x.x → current version
+ *
+ * Features added during migration:
+ * - Runtime-configurable LLM models via environment variables
+ * - Fallback models for multi-provider resilience
+ * - Cost tracking with budget alerts
+ * - Retry configuration with exponential backoff
+ * - Safety configuration (content filtering, guardrails)
+ * - Observability (tracing, metrics, logging)
+ *
+ * IMPORTANT: All version numbers are derived dynamically from package.json
+ * via getVersionInfo(). NO hardcoded versions.
  */
 
 import chalk from 'chalk';
@@ -10,6 +25,7 @@ import { ManifestRepository } from '../../repositories/manifest.repository.js';
 import { MigrationService } from '../../services/migration.service.js';
 import { ValidationService } from '../../services/validation.service.js';
 import type { OssaAgent } from '../../types/index.js';
+import { getVersionInfo } from '../../utils/version.js';
 
 export const migrateCommand = new Command('migrate')
   .argument('<source>', 'Path to manifest or directory to migrate')
@@ -18,11 +34,11 @@ export const migrateCommand = new Command('migrate')
     '-r, --recursive',
     'Recursively migrate all .ossa.yaml files in directory'
   )
-  .option('--to <version>', 'Target version (v0.2.2 or v1.0)', 'v0.2.2')
   .option('--dry-run', 'Show migration preview without writing file')
   .option('-v, --verbose', 'Verbose output')
+  .option('--summary', 'Show migration summary with added features')
   .description(
-    'Migrate OSSA manifests between versions (v0.1.9 to v0.2.2, v1.0 to v0.2.2)'
+    'Migrate OSSA manifests to current version (from v1.0 legacy or older versions)'
   )
   .action(
     async (
@@ -31,6 +47,7 @@ export const migrateCommand = new Command('migrate')
         output?: string;
         dryRun?: boolean;
         verbose?: boolean;
+        summary?: boolean;
       }
     ) => {
       try {
@@ -39,16 +56,34 @@ export const migrateCommand = new Command('migrate')
         const manifestRepo = container.get(ManifestRepository);
         const validationService = container.get(ValidationService);
 
-        console.log(chalk.blue(`Migrating ${source} to v0.2.2...`));
+        // Get current version dynamically
+        const versionInfo = getVersionInfo();
+        const currentVersion = versionInfo.version;
+
+        console.log(chalk.blue(`Migrating ${source} to v${currentVersion}...`));
 
         // Load legacy manifest
         const legacyManifest = await manifestRepo.load(source);
 
+        // Get source version for logging
+        const sourceVersion = migrationService.getSourceVersion(legacyManifest);
+        console.log(chalk.gray(`  Source version: ${sourceVersion}`));
+
         // Check if migration is needed
         if (!migrationService.needsMigration(legacyManifest)) {
           const m = legacyManifest as OssaAgent;
-          if (m.apiVersion === 'ossa/v1' && m.kind === 'Agent') {
-            console.log(chalk.green('✓ Manifest is already in v0.2.2 format'));
+          if (m.apiVersion === `ossa/v${currentVersion}`) {
+            console.log(
+              chalk.green(`✓ Manifest is already at v${currentVersion}`)
+            );
+          } else if (
+            typeof m.apiVersion === 'string' &&
+            m.apiVersion.startsWith('ossa/v') &&
+            m.kind === 'Agent'
+          ) {
+            console.log(
+              chalk.green('✓ Manifest is already at current version')
+            );
           } else {
             console.log(
               chalk.yellow(
@@ -62,10 +97,34 @@ export const migrateCommand = new Command('migrate')
         // Migrate
         const migratedManifest = await migrationService.migrate(legacyManifest);
 
-        // Validate migrated manifest
+        // Show migration summary if requested
+        if (options.summary || options.verbose) {
+          const summary = migrationService.getMigrationSummary(
+            legacyManifest,
+            migratedManifest
+          );
+          console.log(chalk.cyan('\n📋 Migration Summary:'));
+          console.log(chalk.gray(`  From: ${summary.sourceVersion}`));
+          console.log(chalk.gray(`  To: ${summary.targetVersion}`));
+          if (summary.addedFeatures.length > 0) {
+            console.log(chalk.green('\n  ✨ Added Features:'));
+            summary.addedFeatures.forEach((feature) => {
+              console.log(chalk.green(`    • ${feature}`));
+            });
+          }
+          if (summary.changes.length > 0) {
+            console.log(chalk.blue('\n  🔄 Changes:'));
+            summary.changes.forEach((change) => {
+              console.log(chalk.blue(`    • ${change}`));
+            });
+          }
+          console.log('');
+        }
+
+        // Validate migrated manifest (use 'current' to let validation service resolve)
         const validationResult = await validationService.validate(
           migratedManifest,
-          '0.2.2'
+          'current'
         );
 
         if (!validationResult.valid) {
@@ -83,7 +142,7 @@ export const migrateCommand = new Command('migrate')
           console.log(chalk.gray('\nMigrated Manifest Preview:'));
           console.log(chalk.white(JSON.stringify(migratedManifest, null, 2)));
         } else {
-          // Determine output path
+          // Determine output path dynamically based on current version
           const outputPath =
             options.output ||
             (() => {
@@ -97,11 +156,14 @@ export const migrateCommand = new Command('migrate')
               if (path.includes('.ossa.')) {
                 return path.replace(
                   /\.ossa\.(yaml|yml|json)$/,
-                  '.v0.2.2.ossa.$1'
+                  `.v${currentVersion}.ossa.$1`
                 );
               }
-              // Otherwise add .v0.2.2.ossa before extension
-              return path.replace(/\.(yaml|yml|json)$/, '.v0.2.2.ossa.$1');
+              // Otherwise add version.ossa before extension
+              return path.replace(
+                /\.(yaml|yml|json)$/,
+                `.v${currentVersion}.ossa.$1`
+              );
             })();
 
           // Save migrated manifest

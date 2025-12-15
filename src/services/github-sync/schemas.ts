@@ -8,9 +8,11 @@ export const GitHubPRSchema = z.object({
     login: z.string(),
   }),
   state: z.enum(['open', 'closed']),
-  labels: z.array(z.object({
-    name: z.string(),
-  })),
+  labels: z.array(
+    z.object({
+      name: z.string(),
+    })
+  ),
   created_at: z.string(),
   updated_at: z.string(),
 });

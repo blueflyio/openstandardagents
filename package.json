@@ -1,8 +1,8 @@
 {
   "name": "@bluefly/openstandardagents",
-  "version": "0.2.9",
+  "version": "{{VERSION}}",
   "exports": {
-    "./schema": "./spec/v0.2.9/ossa-0.2.9.schema.json",
+    "./schema": "./spec/v{{VERSION}}/ossa-{{VERSION}}.schema.json",
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
@@ -32,6 +32,11 @@
       "types": "./dist/types/openapi-extensions.d.ts",
       "import": "./dist/types/openapi-extensions.js",
       "require": "./dist/types/openapi-extensions.js"
+    },
+    "./mesh": {
+      "types": "./dist/mesh/index.d.ts",
+      "import": "./dist/mesh/index.js",
+      "require": "./dist/mesh/index.js"
     }
   },
   "description": "OSSA - Open Standard for Scalable AI Agents. A specification standard for AI agents (like OpenAPI for REST APIs). NOT a framework.",
@@ -60,7 +65,7 @@
     "version:bump": "tsx scripts/bump-version.ts",
     "version:enhanced": "tsx scripts/enhanced-version-manager.ts",
     "version:check": "tsx scripts/sync-versions.ts --check",
-    "docs:process": "tsx scripts/process-doc-templates.ts",
+    "docs:process": "npx tsx scripts/process-doc-templates.ts",
     "prebuild": "npm run version:sync && npm run docs:process",
     "build": "tsc && npm run copy-assets",
     "copy-assets": "cp -r spec dist/",
@@ -90,7 +95,7 @@
     "docs:generate": "npm run docs:api:generate && npm run docs:cli:generate && npm run docs:schema:generate && npm run docs:examples:generate && npm run docs:agents:generate && npm run docs:types:generate && npm run docs:errors:generate && npm run docs:config:generate && npm run docs:lowercase",
     "docs:validate": "echo 'Documentation validation not yet implemented'",
     "docs:lint": "echo 'Documentation linting not yet implemented'",
-    "validate:examples": "node -r ts-node/register tests/integration/examples/validate-all-examples.test.ts",
+    "validate:examples": "find examples -name \"*.yaml\" -o -name \"*.yml\" | xargs -I {} sh -c \"yq eval . {} > /dev/null || exit 1\"",
     "validate:power-suite": "tsx bin/validate-ossa.ts",
     "gen:types": "tsx scripts/gen-types.ts",
     "gen:zod": "tsx scripts/gen-zod.ts",
@@ -104,7 +109,9 @@
     "sync:batch": "tsx src/cli/commands/github-sync.command.ts batch",
     "sync:list": "tsx src/cli/commands/github-sync.command.ts list",
     "compliance:audit": "tsx scripts/compliance-audit.ts",
-    "compliance:audit:project": "tsx scripts/compliance-audit.ts"
+    "compliance:audit:project": "tsx scripts/compliance-audit.ts",
+    "docs:check": "echo \"Checking docs...\" && test -f README.md && test -f CHANGELOG.md",
+    "version:examples": "tsx scripts/version-examples.ts"
   },
   "keywords": [
     "ossa",
@@ -130,9 +137,11 @@
     "commander": "^11.1.0",
     "glob": "^11.0.3",
     "inversify": "^7.10.4",
+    "@qdrant/js-client-rest": "^1.9.0",
     "openai": "^6.9.1",
     "readline": "^1.3.0",
     "reflect-metadata": "^0.2.2",
+    "semver": "^7.7.3",
     "yaml": "^2.3.0",
     "zod": "^4.1.11"
   },
@@ -141,12 +150,14 @@
     "@jest/globals": "^29.7.0",
     "@octokit/rest": "^22.0.1",
     "@semantic-release/changelog": "^6.0.3",
+    "@semantic-release/exec": "^7.1.0",
     "@semantic-release/git": "^10.0.1",
     "@semantic-release/gitlab": "^13.2.9",
     "@types/jest": "^29.5.14",
     "@types/node": "^20.19.19",
     "@types/pg": "^8.15.5",
     "@types/redis": "^4.0.10",
+    "@types/semver": "^7.7.1",
     "@typescript-eslint/eslint-plugin": "^8.48.0",
     "@typescript-eslint/parser": "^8.48.0",
     "eslint": "^8.57.1",

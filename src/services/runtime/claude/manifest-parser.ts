@@ -3,10 +3,7 @@
  * Parses OSSA manifest files and extracts Claude/Anthropic-specific configuration
  */
 
-import type {
-  OssaManifestWithAnthropic,
-  AnthropicExtension,
-} from './types.js';
+import type { OssaManifestWithAnthropic, AnthropicExtension } from './types.js';
 
 /**
  * Parse and validate OSSA manifest for Claude adapter
@@ -81,9 +78,7 @@ export class ManifestParser {
    */
   getTemperature(): number {
     // Check Anthropic extension first
-    if (
-      this.manifest.extensions?.anthropic?.temperature !== undefined
-    ) {
+    if (this.manifest.extensions?.anthropic?.temperature !== undefined) {
       return this.manifest.extensions.anthropic.temperature;
     }
 
@@ -187,10 +182,10 @@ export class ManifestParser {
 
     // Check API version format
     if (this.manifest.apiVersion) {
-      const validVersionPattern = /^ossa\/v(0\.2\.[2-5]|1)/;
+      const validVersionPattern = /^ossa\/v(0\.[1-3]\.\d+|0\.2\.\d+-RC)/;
       if (!validVersionPattern.test(this.manifest.apiVersion)) {
         errors.push(
-          `Invalid apiVersion: ${this.manifest.apiVersion}. Must match pattern ossa/v0.2.x or ossa/v1`
+          `Invalid apiVersion: ${this.manifest.apiVersion}. Must match pattern ossa/v0.x.x`
         );
       }
     }

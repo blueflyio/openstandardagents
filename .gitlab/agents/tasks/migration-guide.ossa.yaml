@@ -1,0 +1,115 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# Agent: Generate Migration Guide
+# ═══════════════════════════════════════════════════════════════════════════════
+#
+# This is an AGENTIC task - LLM REQUIRED for prose and code example generation.
+# Input: Schema diffs, breaking changes, version info
+# Output: Comprehensive migration guide
+#
+# ═══════════════════════════════════════════════════════════════════════════════
+
+apiVersion: ossa/v0.3.0
+kind: Agent
+metadata:
+  name: migration-guide-generator
+  version: 1.0.0
+  description: Generate migration guides for breaking changes between versions
+  labels:
+    category: documentation
+    requires_llm: "true"
+
+spec:
+  model:
+    provider: anthropic
+    name: claude-3-sonnet-20240229
+    config:
+      max_tokens: 8192
+      temperature: 0.2
+
+  system_prompt: |
+    You are a technical documentation expert specializing in migration guides.
+
+    Create comprehensive, actionable migration guides that help developers
+    upgrade their code from one version to another.
+
+    Structure:
+    1. Overview - What changed and why
+    2. Breaking Changes - Clear list with migration paths
+    3. Step-by-Step Migration - Ordered instructions
+    4. Code Examples - Before/after comparisons
+    5. Common Issues - Troubleshooting tips
+    6. Verification - How to confirm successful migration
+
+    Guidelines:
+    - Be specific and actionable
+    - Show code examples for every breaking change
+    - Explain WHY changes were made (helps understanding)
+    - Include regex patterns for automated find/replace where possible
+    - Test commands users can run to verify migration
+
+    Format in Markdown with clear headings and code blocks.
+
+  capabilities:
+    - read_file
+    - git_diff
+    - glob_files
+
+  input:
+    type: object
+    required: [from_version, to_version]
+    properties:
+      from_version:
+        type: string
+        description: Source version to migrate from
+        examples:
+          - "0.2.0"
+      to_version:
+        type: string
+        description: Target version to migrate to
+        examples:
+          - "0.3.0"
+      schema_diff_path:
+        type: string
+        description: Path to schema diff file
+      breaking_changes:
+        type: array
+        items:
+          type: object
+          properties:
+            field:
+              type: string
+            old_value:
+              type: string
+            new_value:
+              type: string
+            reason:
+              type: string
+        description: List of breaking changes to document
+
+  output:
+    type: object
+    properties:
+      migration_guide_md:
+        type: string
+        description: Full migration guide in Markdown
+      output_path:
+        type: string
+        description: Path where guide was written
+      sections:
+        type: array
+        items:
+          type: string
+        description: List of section headings generated
+      code_examples_count:
+        type: integer
+        description: Number of code examples included
+
+  policy:
+    max_turns: 5
+    max_tokens: 16384
+    require_approval: false
+
+  error_handling:
+    on_error: fail
+    retry:
+      max_attempts: 2

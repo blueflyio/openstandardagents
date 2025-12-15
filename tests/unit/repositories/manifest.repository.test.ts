@@ -22,7 +22,9 @@ describe('ManifestRepository', () => {
   describe('load', () => {
     it('should load YAML manifest', async () => {
       const file = path.join(tempDir, 'test.yaml');
-      fs.writeFileSync(file, `
+      fs.writeFileSync(
+        file,
+        `
 apiVersion: ossa/v0.2.8
 kind: Agent
 metadata:
@@ -30,7 +32,8 @@ metadata:
   version: 1.0.0
 spec:
   role: assistant
-`);
+`
+      );
       const manifest = await repo.load(file);
       expect(manifest.metadata.name).toBe('test');
     });
@@ -41,7 +44,7 @@ spec:
         apiVersion: 'ossa/v0.2.8',
         kind: 'Agent',
         metadata: { name: 'test', version: '1.0.0' },
-        spec: { role: 'assistant' }
+        spec: { role: 'assistant' },
       };
       fs.writeFileSync(file, JSON.stringify(data));
       const manifest = await repo.load(file);
@@ -59,7 +62,7 @@ spec:
         apiVersion: 'ossa/v0.2.8',
         kind: 'Agent',
         metadata: { name: 'test', version: '1.0.0' },
-        spec: { role: 'assistant' }
+        spec: { role: 'assistant' },
       };
       const file = path.join(tempDir, 'out.yaml');
       await repo.save(file, manifest);
@@ -71,7 +74,7 @@ spec:
         apiVersion: 'ossa/v0.2.8',
         kind: 'Agent',
         metadata: { name: 'test', version: '1.0.0' },
-        spec: { role: 'assistant' }
+        spec: { role: 'assistant' },
       };
       const file = path.join(tempDir, 'out.json');
       await repo.save(file, manifest);

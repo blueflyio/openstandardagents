@@ -8,6 +8,10 @@ import { Command } from 'commander';
 import { container } from '../../di-container.js';
 import { ManifestRepository } from '../../repositories/manifest.repository.js';
 import { ValidationService } from '../../services/validation.service.js';
+import {
+  formatValidationErrors,
+  formatErrorCompact,
+} from '../utils/error-formatter.js';
 import type {
   OssaAgent,
   SchemaVersion,
@@ -18,10 +22,11 @@ export const validateCommand = new Command('validate')
   .argument('<path>', 'Path to OSSA manifest or OpenAPI spec (YAML or JSON)')
   .option(
     '-s, --schema <version>',
-    'Schema version (0.2.9, 0.2.8, 0.2.6, 0.2.5, 0.2.3, 0.2.2, or 1.0)',
+    'Schema version (0.3.0, 0.2.9, 0.2.8, 0.2.6, 0.2.5, 0.2.3, 0.2.2, or 1.0)',
     '0.2.9'
   )
   .option('--openapi', 'Validate as OpenAPI specification with OSSA extensions')
+  .option('--check-messaging', 'Validate messaging extension (v0.3.0+)')
   .option('-v, --verbose', 'Verbose output with detailed information')
   .description(
     'Validate OSSA agent manifest or OpenAPI spec against JSON schema'
@@ -29,7 +34,12 @@ export const validateCommand = new Command('validate')
   .action(
     async (
       path: string,
-      options: { schema: string; openapi?: boolean; verbose?: boolean }
+      options: {
+        schema: string;
+        openapi?: boolean;
+        checkMessaging?: boolean;
+        verbose?: boolean;
+      }
     ) => {
       try {
         // Get services from DI container
@@ -64,8 +74,14 @@ export const validateCommand = new Command('validate')
               chalk.green('✓ OpenAPI spec is valid with OSSA extensions')
             );
           } else {
+            // Extract version from result manifest or use provided option
+            const m = result.manifest as OssaAgent;
+            const detectedVersion =
+              m?.apiVersion?.replace('ossa/', '') ||
+              options.schema ||
+              'unknown';
             console.log(
-              chalk.green('✓ Agent manifest is valid OSSA ' + options.schema)
+              chalk.green('✓ Agent manifest is valid OSSA ' + detectedVersion)
             );
           }
 
@@ -97,6 +113,33 @@ export const validateCommand = new Command('validate')
               }
             }
 
+            if (m.spec?.messaging) {
+              console.log(chalk.gray('\nMessaging Configuration:'));
+              if (m.spec.messaging.publishes) {
+                console.log(
+                  `  Publishes: ${chalk.cyan(m.spec.messaging.publishes.length)} channel(s)`
+                );
+                m.spec.messaging.publishes.forEach((ch: any) => {
+                  console.log(`    - ${chalk.cyan(ch.channel)}`);
+                });
+              }
+              if (m.spec.messaging.subscribes) {
+                console.log(
+                  `  Subscribes: ${chalk.cyan(m.spec.messaging.subscribes.length)} channel(s)`
+                );
+                m.spec.messaging.subscribes.forEach((sub: any) => {
+                  console.log(`    - ${chalk.cyan(sub.channel)}`);
+                });
+              }
+              if (m.spec.messaging.commands) {
+                console.log(
+                  `  Commands: ${chalk.cyan(m.spec.messaging.commands.length)}`
+                );
+                m.spec.messaging.commands.forEach((cmd: any) => {
+                  console.log(`    - ${chalk.cyan(cmd.name)}`);
+                });
+              }
+            }
             if (m.agent?.capabilities) {
               console.log(
                 `  Capabilities: ${chalk.cyan(m.agent.capabilities.length)}`
@@ -128,21 +171,26 @@ export const validateCommand = new Command('validate')
 
           process.exit(0);
         } else {
-          console.error(chalk.red('✗ Validation failed\n'));
-          console.error(chalk.red('Errors:'));
-
-          result.errors.forEach((error, index) => {
-            const path = error.instancePath || 'root';
-            const message = error.message || 'Unknown error';
-
-            console.error(chalk.red(`  ${index + 1}. ${path}: ${message}`));
-
-            if (options.verbose && error.params) {
-              console.error(
-                chalk.gray(`     Params: ${JSON.stringify(error.params)}`)
-              );
-            }
-          });
+          // Use the new error formatter for better error messages
+          if (options.verbose) {
+            // Detailed, helpful error messages with manifest context
+            console.error(formatValidationErrors(result.errors, manifest));
+          } else {
+            // Compact error messages
+            console.error(chalk.red.bold('\n✗ Validation Failed'));
+            console.error(
+              chalk.red(`Found ${result.errors.length} error(s):\n`)
+            );
+            result.errors.forEach((error, index) => {
+              console.error(formatErrorCompact(error, index, manifest));
+            });
+            console.error(
+              chalk.gray('\nUse --verbose for detailed error information')
+            );
+            console.error(
+              chalk.blue('📚 Docs: https://openstandardagents.org/docs\n')
+            );
+          }
 
           process.exit(1);
         }

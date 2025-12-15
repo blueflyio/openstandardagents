@@ -228,9 +228,7 @@ export class CapabilityMapper {
     }
 
     if (tool.capabilities && tool.capabilities.length > 0) {
-      parts.push(
-        `capabilities: ${tool.capabilities.join(', ')}`
-      );
+      parts.push(`capabilities: ${tool.capabilities.join(', ')}`);
     }
 
     return parts.join(' | ');

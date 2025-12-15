@@ -8,13 +8,13 @@ export class GitHubSyncService {
 
   constructor(config: SyncConfig) {
     const validated = SyncConfigSchema.parse(config);
-    
+
     this.github = new GitHubClient(
       validated.github.token,
       validated.github.owner,
       validated.github.repo
     );
-    
+
     this.gitlab = new GitLabClient(
       validated.gitlab.token,
       validated.gitlab.projectId
@@ -26,9 +26,9 @@ export class GitHubSyncService {
    */
   async syncPR(prNumber: number): Promise<GitLabMR> {
     const pr = await this.github.getPR(prNumber);
-    
+
     const branchName = `github-pr-${prNumber}`;
-    
+
     const mr = await this.gitlab.createMR({
       title: `GitHub PR #${prNumber}: ${pr.title}`,
       description: this.buildMRDescription(pr),
@@ -37,10 +37,7 @@ export class GitHubSyncService {
       labels: ['github-pr'],
     });
 
-    await this.github.createComment(
-      prNumber,
-      this.buildPRComment(mr)
-    );
+    await this.github.createComment(prNumber, this.buildPRComment(mr));
 
     return mr;
   }
@@ -50,13 +47,13 @@ export class GitHubSyncService {
    */
   async batchSyncPRs(filters: { author?: string }): Promise<GitLabMR> {
     const prs = await this.github.listPRs(filters);
-    
+
     if (prs.length === 0) {
       throw new Error('No PRs found matching filters');
     }
 
     const branchName = `batch-${filters.author || 'prs'}-${Date.now()}`;
-    
+
     const mr = await this.gitlab.createMR({
       title: `Batch: ${prs.length} PRs from ${filters.author || 'GitHub'}`,
       description: this.buildBatchMRDescription(prs),
@@ -67,7 +64,7 @@ export class GitHubSyncService {
 
     // Comment on all PRs
     await Promise.all(
-      prs.map(pr =>
+      prs.map((pr) =>
         this.github.createComment(pr.number, this.buildBatchPRComment(mr))
       )
     );
@@ -94,9 +91,9 @@ ${pr.body || ''}
   }
 
   private buildBatchMRDescription(prs: GitHubPR[]): string {
-    const prList = prs.map(pr => 
-      `- #${pr.number}: ${pr.title} (by @${pr.author.login})`
-    ).join('\n');
+    const prList = prs
+      .map((pr) => `- #${pr.number}: ${pr.title} (by @${pr.author.login})`)
+      .join('\n');
 
     return `Batched ${prs.length} pull requests from GitHub:
 

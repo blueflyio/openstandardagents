@@ -1,0 +1,177 @@
+# OSSA agents.md Extension - Advanced Example
+# Demonstrates advanced features including Cursor integration and custom sections
+
+apiVersion: ossa/v0.2.8
+kind: Agent
+metadata:
+  name: fullstack-dev-agent
+  version: 2.1.0
+  description: Full-stack development agent with Cursor IDE integration
+  labels:
+    domain: development
+    subdomain: fullstack
+    environment: production
+
+spec:
+  role: |
+    You are a full-stack development agent that assists with both frontend
+    and backend development tasks. You follow best practices, write clean code,
+    and ensure comprehensive test coverage.
+
+  llm:
+    provider: anthropic
+    model: claude-sonnet-4-5-20250929
+    temperature: 0.4
+    maxTokens: 8000
+
+  tools:
+    - type: mcp
+      name: filesystem
+      server: filesystem-mcp
+      namespace: default
+      capabilities:
+        - read_file
+        - write_file
+        - list_directory
+
+    - type: mcp
+      name: database
+      server: postgres-mcp
+      namespace: production
+      capabilities:
+        - query
+        - migrate
+
+    - type: http
+      name: api_client
+      endpoint: https://api.example.com
+      auth:
+        type: bearer
+        credentials: ${API_TOKEN}
+
+  autonomy:
+    level: autonomous
+    approval_required: false
+    allowed_actions:
+      - create_files
+      - modify_code
+      - run_tests
+      - commit_changes
+    blocked_actions:
+      - delete_database
+      - modify_production_config
+
+  constraints:
+    cost:
+      maxTokensPerDay: 1000000
+      maxTokensPerRequest: 8000
+      maxCostPerDay: 50.00
+      currency: USD
+    performance:
+      maxLatencySeconds: 15
+      maxConcurrentRequests: 5
+      timeoutSeconds: 120
+    resources:
+      cpu: "2"
+      memory: 4Gi
+
+  observability:
+    tracing:
+      enabled: true
+      exporter: otlp
+      endpoint: https://trace.example.com
+    metrics:
+      enabled: true
+      exporter: prometheus
+    logging:
+      level: info
+      format: json
+
+extensions:
+  agents_md:
+    enabled: true
+    generate: true
+    output_path: .github/AGENTS.md
+    sections:
+      dev_environment:
+        enabled: true
+        source: spec.tools
+        custom: |
+          ## Prerequisites
+          - Node.js 20+
+          - PostgreSQL 15+
+          - Docker for local development
+
+          ## Setup
+          1. Install dependencies: `npm install`
+          2. Copy environment: `cp .env.example .env`
+          3. Start services: `docker-compose up -d`
+          4. Run migrations: `npm run migrate`
+
+      testing:
+        enabled: true
+        source: spec.constraints
+        custom: |
+          ## Test Requirements
+          - Unit tests: `npm run test:unit`
+          - Integration tests: `npm run test:integration`
+          - E2E tests: `npm run test:e2e`
+          - Coverage threshold: 80%
+
+          ## Performance Benchmarks
+          - API response time: < 200ms (p95)
+          - Database queries: < 50ms (p95)
+          - Memory usage: < 512MB
+
+      pr_instructions:
+        enabled: true
+        title_format: "[{metadata.labels.domain}] {title}"
+        custom: |
+          ## PR Guidelines
+          - Title format: `[domain] Brief description`
+          - Include issue reference: `Fixes #123`
+          - Add screenshots for UI changes
+          - Update CHANGELOG.md
+
+          ## Review Checklist
+          - [ ] Tests added/updated
+          - [ ] Documentation updated
+          - [ ] No breaking changes (or documented)
+          - [ ] Performance impact assessed
+          - [ ] Security implications reviewed
+
+    sync:
+      on_manifest_change: true
+      include_comments: true
+    cursor_integration: true
+
+  cursor:
+    enabled: true
+    agent_type: composer
+    workspace_config:
+      rules_file: .cursorrules
+      agents_md_path: .github/AGENTS.md
+      context_files:
+        - README.md
+        - CONTRIBUTING.md
+        - .github/AGENTS.md
+        - docs/architecture.md
+      ignore_patterns:
+        - "node_modules/**"
+        - "dist/**"
+        - "*.log"
+    capabilities:
+      code_generation: true
+      code_review: true
+      refactoring: true
+      testing: true
+    model:
+      provider: anthropic
+      name: claude-sonnet-4-5-20250929
+
+  anthropic:
+    enabled: true
+    model: claude-sonnet-4-5-20250929
+    max_tokens: 8000
+    temperature: 0.4
+    streaming: true

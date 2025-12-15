@@ -1,4 +1,4 @@
-apiVersion: ossa/v0.2.9
+apiVersion: ossa/v0.3.0
 kind: Agent
 
 metadata:
@@ -9,6 +9,7 @@ metadata:
     Provides code completion, chat, and workspace integration.
 
   labels:
+    ossa-version: v0.3.0
     platform: vscode
     provider: microsoft
     category: ide
@@ -21,21 +22,36 @@ spec:
 
   role: |
     You are an AI coding assistant integrated with VS Code.
-    
+
     Your responsibilities:
     1. Provide inline code completions
     2. Answer coding questions in chat
     3. Generate code from comments
     4. Suggest fixes for errors
     5. Assist with debugging
-    
+
     Follow VS Code extension best practices.
 
   llm:
-    provider: openai
-    model: gpt-4-turbo
+    provider: ${LLM_PROVIDER:-openai}
+    model: ${LLM_MODEL:-gpt-4o}
     temperature: 0.2
     maxTokens: 4000
+
+    fallback_models:
+      - provider: ${LLM_FALLBACK_PROVIDER_1:-anthropic}
+        model: ${LLM_FALLBACK_MODEL_1:-claude-sonnet-4}
+
+    retry_config:
+      max_attempts: 3
+      backoff_strategy: exponential
+
+    cost_tracking:
+      enabled: true
+      budget_alert_threshold: 50.00
+      cost_allocation_tags:
+        platform: vscode
+        team: ide-agents
 
   capabilities:
     - name: inline_completion
