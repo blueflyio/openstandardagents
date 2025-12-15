@@ -71,46 +71,46 @@ export type Value = PolicyValue;
  * Comparison operators for condition evaluation
  */
 export type ComparisonOperator =
-  | 'equals'        // ==
-  | 'notEquals'     // !=
-  | 'greaterThan'   // >
-  | 'lessThan'      // <
-  | 'greaterEqual'  // >=
-  | 'lessEqual'     // <=
-  | 'contains'      // substring/array membership
-  | 'matches'       // regex match
-  | 'in'            // value in array/set
-  | 'startsWith'    // string prefix
-  | 'endsWith';     // string suffix
+  | 'equals' // ==
+  | 'notEquals' // !=
+  | 'greaterThan' // >
+  | 'lessThan' // <
+  | 'greaterEqual' // >=
+  | 'lessEqual' // <=
+  | 'contains' // substring/array membership
+  | 'matches' // regex match
+  | 'in' // value in array/set
+  | 'startsWith' // string prefix
+  | 'endsWith'; // string suffix
 
 /**
  * Logical operators for combining conditions
  */
 export type LogicalOperator =
-  | 'and'   // &&
-  | 'or'    // ||
-  | 'not';  // !
+  | 'and' // &&
+  | 'or' // ||
+  | 'not'; // !
 
 /**
  * Action types that can be performed by policies
  */
 export type ActionType =
-  | 'allow'             // Permit action
-  | 'deny'              // Block action
-  | 'require_approval'  // Escalate to human
-  | 'log'               // Audit log only
-  | 'escalate'          // Trigger escalation policy
-  | 'notify'            // Send notification
-  | 'execute';          // Execute custom function
+  | 'allow' // Permit action
+  | 'deny' // Block action
+  | 'require_approval' // Escalate to human
+  | 'log' // Audit log only
+  | 'escalate' // Trigger escalation policy
+  | 'notify' // Send notification
+  | 'execute'; // Execute custom function
 
 /**
  * Action effects (final outcome)
  */
 export type Effect =
-  | 'allow'     // Action is permitted
-  | 'deny'      // Action is blocked
-  | 'escalate'  // Escalate to human
-  | 'log';      // Log and continue
+  | 'allow' // Action is permitted
+  | 'deny' // Action is blocked
+  | 'escalate' // Escalate to human
+  | 'log'; // Log and continue
 
 // ============================================================================
 // Conditions
@@ -369,7 +369,11 @@ export interface PolicyContext {
   };
 
   /** Custom context fields */
-  [key: string]: PolicyValue | Record<string, PolicyValue> | string[] | undefined;
+  [key: string]:
+    | PolicyValue
+    | Record<string, PolicyValue>
+    | string[]
+    | undefined;
 }
 
 // ============================================================================
@@ -407,11 +411,11 @@ export interface PolicyDocument {
  * Policy error types
  */
 export type PolicyErrorType =
-  | 'SyntaxError'       // Invalid DSL syntax
-  | 'ValidationError'   // Invalid condition/action
-  | 'EvaluationError'   // Runtime evaluation failure
-  | 'EscalationError'   // Escalation timeout/failure
-  | 'ContextError';     // Missing context variable
+  | 'SyntaxError' // Invalid DSL syntax
+  | 'ValidationError' // Invalid condition/action
+  | 'EvaluationError' // Runtime evaluation failure
+  | 'EscalationError' // Escalation timeout/failure
+  | 'ContextError'; // Missing context variable
 
 /**
  * Policy error details
@@ -528,10 +532,7 @@ export interface PolicyEvaluator {
   /**
    * Execute policy action
    */
-  executeAction(
-    action: PolicyAction,
-    context: PolicyContext
-  ): Promise<void>;
+  executeAction(action: PolicyAction, context: PolicyContext): Promise<void>;
 }
 
 // ============================================================================

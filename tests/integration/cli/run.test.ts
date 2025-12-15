@@ -38,15 +38,12 @@ spec:
       fs.writeFileSync(manifestPath, manifest);
 
       try {
-        execSync(
-          `node bin/ossa run ${manifestPath} -m "test" --no-validate`,
-          {
-            encoding: 'utf-8',
-            cwd,
-            stdio: 'pipe',
-            env: { ...process.env, OPENAI_API_KEY: 'sk-test' },
-          }
-        );
+        execSync(`node bin/ossa run ${manifestPath} -m "test" --no-validate`, {
+          encoding: 'utf-8',
+          cwd,
+          stdio: 'pipe',
+          env: { ...process.env, OPENAI_API_KEY: 'sk-test' },
+        });
       } catch (error: any) {
         // Command should fail due to validation
         expect(error.status).toBeGreaterThan(0);
@@ -116,7 +113,8 @@ spec:
         expect(true).toBe(false); // Should not reach here
       } catch (error: any) {
         expect(error.status).toBe(1);
-        const output = error.stderr?.toString() || error.stdout?.toString() || '';
+        const output =
+          error.stderr?.toString() || error.stdout?.toString() || '';
         expect(output).toContain('OPENAI_API_KEY');
       }
     });
@@ -150,7 +148,8 @@ spec:
         });
       } catch (error: any) {
         // May fail due to invalid API key, but should attempt to use openai
-        const output = error.stderr?.toString() || error.stdout?.toString() || '';
+        const output =
+          error.stderr?.toString() || error.stdout?.toString() || '';
         expect(output).not.toContain('Runtime');
         expect(output).not.toContain('not supported');
       }
@@ -174,19 +173,17 @@ spec:
       fs.writeFileSync(manifestPath, manifest);
 
       try {
-        execSync(
-          `node bin/ossa run ${manifestPath} -r anthropic -m "test"`,
-          {
-            encoding: 'utf-8',
-            cwd,
-            stdio: 'pipe',
-            env: { ...process.env, OPENAI_API_KEY: 'sk-test' },
-          }
-        );
+        execSync(`node bin/ossa run ${manifestPath} -r anthropic -m "test"`, {
+          encoding: 'utf-8',
+          cwd,
+          stdio: 'pipe',
+          env: { ...process.env, OPENAI_API_KEY: 'sk-test' },
+        });
         expect(true).toBe(false); // Should not reach here
       } catch (error: any) {
         expect(error.status).toBe(1);
-        const output = error.stderr?.toString() || error.stdout?.toString() || '';
+        const output =
+          error.stderr?.toString() || error.stdout?.toString() || '';
         expect(output).toContain('not supported');
       }
     });
@@ -343,16 +340,13 @@ spec:
       fs.writeFileSync(manifestPath, manifest);
 
       try {
-        execSync(
-          `node bin/ossa run ${manifestPath} --max-turns 5 -m "test"`,
-          {
-            encoding: 'utf-8',
-            cwd,
-            stdio: 'pipe',
-            env: { ...process.env, OPENAI_API_KEY: 'sk-test' },
-            timeout: 5000,
-          }
-        );
+        execSync(`node bin/ossa run ${manifestPath} --max-turns 5 -m "test"`, {
+          encoding: 'utf-8',
+          cwd,
+          stdio: 'pipe',
+          env: { ...process.env, OPENAI_API_KEY: 'sk-test' },
+          timeout: 5000,
+        });
       } catch (error: any) {
         // Command structure is correct
         const output = error.stderr?.toString() || '';
@@ -375,7 +369,8 @@ spec:
         expect(true).toBe(false); // Should not reach here
       } catch (error: any) {
         expect(error.status).toBe(1);
-        const output = error.stderr?.toString() || error.stdout?.toString() || '';
+        const output =
+          error.stderr?.toString() || error.stdout?.toString() || '';
         expect(output.length).toBeGreaterThan(0);
       }
     });
@@ -444,14 +439,19 @@ spec:
       } catch (error: any) {
         const output = error.stdout?.toString() || '';
         // Should show agent name in output
-        expect(output.includes('my-test-agent') || output.includes('Agent')).toBe(true);
+        expect(
+          output.includes('my-test-agent') || output.includes('Agent')
+        ).toBe(true);
       }
     });
   });
 
   describe('Example Manifests', () => {
     it('should run with example OpenAI agent', () => {
-      const examplePath = path.join(cwd, 'examples/openai/swarm-agent.ossa.json');
+      const examplePath = path.join(
+        cwd,
+        'examples/openai/swarm-agent.ossa.json'
+      );
 
       // Check if example exists
       if (!fs.existsSync(examplePath)) {

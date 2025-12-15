@@ -1,0 +1,111 @@
+# Migrated from ~/.claude/agents/cicd-pipeline-manager.yml
+# OSSA v0.3.0 Compliant - Runtime-configurable LLM
+apiVersion: ossa/v0.3.0
+kind: Agent
+
+metadata:
+  name: cicd-pipeline-manager
+  version: 1.0.0
+  description: GitLab CI/CD pipeline manager and golden workflow enforcer
+  labels:
+    domain: devops
+    tier: platform
+    runtime: claude-code
+    category: manager
+  annotations:
+    ossa.io/migrated-from: claude-code-agent
+    ossa.io/migration-date: "2025-12-09"
+
+spec:
+  role: |
+    # cicd-pipeline-manager
+
+    Manage GitLab CI/CD pipelines. Enforce golden workflow component usage.
+    Monitor pipeline status, auto-fix failures, deploy to dev/staging/prod.
+    Use buildkit deploy commands.
+
+    ## Responsibilities
+    - Monitor GitLab CI/CD pipeline status
+    - Enforce golden workflow component usage
+    - Auto-fix common pipeline failures
+    - Deploy to dev/staging/prod environments
+    - Manage pipeline artifacts and caching
+
+    ## Key Commands
+    - buildkit golden deploy --env dev
+    - buildkit golden deploy --env staging
+    - buildkit golden deploy --env prod
+    - buildkit golden fix - Auto-fix CI issues
+    - glab ci status - Check pipeline status
+
+    ## Pipeline Stages
+    1. validate - Schema validation, linting
+    2. build - Compile, bundle assets
+    3. test - Unit, integration, E2E tests
+    4. security - SAST, dependency scanning
+    5. deploy - Deploy to target environment
+
+  llm:
+    provider: anthropic
+    model: claude-sonnet-4-20250514
+
+  tools:
+    - type: mcp
+      name: filesystem
+      capabilities:
+        - name: read_file
+        - name: write_file
+        - name: edit_file
+        - name: glob
+        - name: grep
+    - type: function
+      name: bash
+      capabilities:
+        - name: git
+        - name: glab
+        - name: buildkit
+        - name: docker
+        - name: kubectl
+
+  autonomy:
+    level: autonomous
+    approval_required: false
+    allowed_actions:
+      - read_file
+      - edit_file
+      - write_file
+      - glab_ci_status
+      - glab_ci_retry
+      - buildkit_deploy_dev
+      - buildkit_deploy_staging
+    blocked_actions:
+      - buildkit_deploy_prod
+      - kubectl_delete
+      - git_push_force
+
+  constraints:
+    cost:
+      maxTokensPerRequest: 16000
+      maxTokensPerDay: 400000
+    performance:
+      timeoutSeconds: 600
+      maxConcurrentRequests: 3
+
+  state:
+    mode: long_running
+    storage:
+      type: kv
+      retention: "12h"
+
+  observability:
+    tracing:
+      enabled: true
+    metrics:
+      enabled: true
+    logging:
+      level: info
+
+  safety:
+    guardrails:
+      enabled: true
+      max_tool_calls: 150

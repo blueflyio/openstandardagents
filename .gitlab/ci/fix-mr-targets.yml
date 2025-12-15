@@ -1,0 +1,55 @@
+# Fix MRs Targeting Main - GitLab CI Job
+# This job fixes MRs incorrectly targeting main branch
+
+fix:mr-targets:
+  stage: .post
+  image: curlimages/curl:latest
+  before_script:
+    - apk add --no-cache jq
+  script:
+    - |
+      PROJECT_ID="76265294"
+      TARGET_BRANCH="release/v0.3.x"
+      GITLAB_URL="https://gitlab.com/api/v4"
+      
+      echo "Finding MRs targeting main branch..."
+      
+      # Get all open MRs targeting main
+      MR_DATA=$(curl -s --header "PRIVATE-TOKEN: ${GITLAB_TOKEN}" \
+        "${GITLAB_URL}/projects/${PROJECT_ID}/merge_requests?state=opened&target_branch=main&per_page=100")
+      
+      # Extract MR IDs
+      MR_IDS=$(echo "$MR_DATA" | jq -r '.[] | .iid')
+      
+      if [ -z "$MR_IDS" ]; then
+        echo "No MRs found targeting main"
+        exit 0
+      fi
+      
+      echo "Found MRs targeting main:"
+      echo "$MR_DATA" | jq -r '.[] | "  MR !\(.iid): \(.title) (Source: \(.source_branch))"'
+      echo ""
+      
+      # Update each MR
+      for MR_ID in $MR_IDS; do
+        echo "Updating MR !${MR_ID} to target ${TARGET_BRANCH}..."
+        
+        RESPONSE=$(curl -s --request PUT \
+          --header "PRIVATE-TOKEN: ${GITLAB_TOKEN}" \
+          --data "target_branch=${TARGET_BRANCH}" \
+          "${GITLAB_URL}/projects/${PROJECT_ID}/merge_requests/${MR_ID}")
+        
+        if echo "$RESPONSE" | jq -e '.id' > /dev/null 2>&1; then
+          echo "  MR !${MR_ID} updated successfully"
+        else
+          echo "  Failed to update MR !${MR_ID}:"
+          echo "$RESPONSE" | jq -r '.message // .error // .'
+        fi
+        echo ""
+      done
+      
+      echo "Done!"
+  rules:
+    - if: $FIX_MR_TARGETS == "true"
+      when: manual
+  allow_failure: true

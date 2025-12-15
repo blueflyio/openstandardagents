@@ -40,7 +40,7 @@
     },
     "extensions": {
       "type": "object",
-      "description": "Framework-specific extensions for integration with kagent, buildkit, drupal, librechat, mcp, langchain, crewai, openai_agents, cursor, langflow, autogen, vercel_ai, llamaindex, langgraph, anthropic, and other frameworks",
+      "description": "Framework-specific extensions for integration with kagent, buildkit, drupal, librechat, mcp, langchain, crewai, openai_agents, cursor, langflow, autogen, vercel_ai, llamaindex, langgraph, anthropic, agents_md, and other frameworks",
       "properties": {
         "kagent": {
           "$ref": "#/definitions/KAgentExtension"
@@ -92,6 +92,9 @@
         },
         "a2a": {
           "$ref": "#/definitions/A2AExtension"
+        },
+        "agents_md": {
+          "$ref": "#/definitions/AgentsMdExtension"
         }
       },
       "additionalProperties": true
@@ -1672,6 +1675,10 @@
                 "type": "string"
               },
               "description": "Glob patterns to exclude from context"
+            },
+            "agents_md_path": {
+              "type": "string",
+              "description": "Path to AGENTS.md file for Cursor to read (default: AGENTS.md)"
             }
           }
         },
@@ -2402,6 +2409,93 @@
               "description": "Webhook URL for push notifications"
             }
           }
+        }
+      },
+      "additionalProperties": true
+    },
+    "AgentsMdSection": {
+      "type": "object",
+      "description": "Configuration for a single agents.md section",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Whether this section is enabled"
+        },
+        "source": {
+          "type": "string",
+          "description": "OSSA manifest path to derive content from (e.g., 'spec.tools', 'spec.constraints')"
+        },
+        "custom": {
+          "type": "string",
+          "description": "Custom markdown content for this section"
+        },
+        "title_format": {
+          "type": "string",
+          "description": "Format string for section title (supports template variables)"
+        }
+      },
+      "additionalProperties": false
+    },
+    "AgentsMdExtension": {
+      "type": "object",
+      "description": "OpenAI agents.md repository guidance generation extension",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable agents.md generation"
+        },
+        "generate": {
+          "type": "boolean",
+          "default": true,
+          "description": "Auto-generate AGENTS.md from manifest"
+        },
+        "output_path": {
+          "type": "string",
+          "default": "AGENTS.md",
+          "description": "Output path for generated AGENTS.md file"
+        },
+        "sections": {
+          "type": "object",
+          "description": "Configuration for agents.md sections",
+          "properties": {
+            "dev_environment": {
+              "$ref": "#/definitions/AgentsMdSection",
+              "description": "Development environment setup instructions"
+            },
+            "testing": {
+              "$ref": "#/definitions/AgentsMdSection",
+              "description": "Testing instructions and requirements"
+            },
+            "pr_instructions": {
+              "$ref": "#/definitions/AgentsMdSection",
+              "description": "Pull request guidelines and requirements"
+            }
+          },
+          "additionalProperties": false
+        },
+        "sync": {
+          "type": "object",
+          "description": "Synchronization configuration",
+          "properties": {
+            "on_manifest_change": {
+              "type": "boolean",
+              "default": true,
+              "description": "Automatically sync AGENTS.md when manifest changes"
+            },
+            "include_comments": {
+              "type": "boolean",
+              "default": true,
+              "description": "Include explanatory comments in generated AGENTS.md"
+            }
+          },
+          "additionalProperties": false
+        },
+        "cursor_integration": {
+          "type": "boolean",
+          "default": false,
+          "description": "Generate Cursor-compatible content in AGENTS.md"
         }
       },
       "additionalProperties": true

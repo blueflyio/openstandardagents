@@ -1,0 +1,94 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# Task: Validate YAML Examples Against Schema
+# ═══════════════════════════════════════════════════════════════════════════════
+#
+# This is a DETERMINISTIC task - no LLM required.
+# Input: Schema + glob pattern for examples
+# Output: Validation report
+#
+# ═══════════════════════════════════════════════════════════════════════════════
+
+apiVersion: ossa/v0.3.0
+kind: Task
+metadata:
+  name: validate-examples
+  version: 1.0.0
+  description: Validate OSSA YAML examples against JSON Schema
+  labels:
+    category: validation
+    deterministic: "true"
+
+spec:
+  execution:
+    type: deterministic
+    runtime: node
+    timeout_seconds: 120
+
+  capabilities:
+    - read_file
+    - glob_files
+    - yaml_parse
+    - json_schema_validate
+
+  input:
+    type: object
+    required: [schema_path, examples_glob]
+    properties:
+      schema_path:
+        type: string
+        description: Path to JSON Schema file
+        examples:
+          - spec/v0.3.0/ossa-0.3.0.schema.json
+      examples_glob:
+        type: string
+        description: Glob pattern for example files
+        examples:
+          - "examples/**/*.ossa.yaml"
+          - "examples/getting-started/*.yaml"
+      strict:
+        type: boolean
+        default: true
+        description: Fail on any validation error
+
+  output:
+    type: object
+    properties:
+      valid_count:
+        type: integer
+        description: Number of valid examples
+      invalid_count:
+        type: integer
+        description: Number of invalid examples
+      total_count:
+        type: integer
+        description: Total examples checked
+      errors:
+        type: array
+        items:
+          type: object
+          properties:
+            file:
+              type: string
+            errors:
+              type: array
+              items:
+                type: string
+      report_path:
+        type: string
+        description: Path to detailed report file
+
+  error_handling:
+    on_error: continue  # Continue validating all files even if some fail
+
+runtime:
+  type: node
+  bindings:
+    glob_files:
+      handler: glob.sync
+    yaml_parse:
+      handler: yaml.parse
+    json_schema_validate:
+      handler: ajv.validate
+      config:
+        allErrors: true
+        verbose: true

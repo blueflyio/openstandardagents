@@ -21,10 +21,10 @@ describe('ossa validate command', () => {
     }
   });
 
-  it('should validate a correct v1.0 manifest', () => {
+  it('should validate a correct v0.3.0 manifest', () => {
     const manifestPath = path.join(tempDir, 'valid.ossa.yaml');
     const manifest = `
-apiVersion: ossa/v1
+apiVersion: ossa/v0.3.0
 kind: Agent
 metadata:
   name: test-agent
@@ -59,7 +59,7 @@ spec:
   it('should report validation errors for invalid manifest', () => {
     const manifestPath = path.join(tempDir, 'invalid.ossa.yaml');
     const manifest = `
-apiVersion: ossa/v1
+apiVersion: ossa/v0.3.0
 kind: Agent
 metadata:
   name: INVALID_ID
@@ -87,7 +87,7 @@ spec:
   it('should show verbose output when requested', () => {
     const manifestPath = path.join(tempDir, 'agent.ossa.yaml');
     const manifest = `
-    apiVersion: ossa/v1
+    apiVersion: ossa/v0.3.0
     kind: Agent
     metadata:
       name: test-agent
@@ -121,7 +121,7 @@ spec:
   it('should show warnings for missing best practices', () => {
     const manifestPath = path.join(tempDir, 'minimal.ossa.yaml');
     const manifest = `
-apiVersion: ossa/v1
+apiVersion: ossa/v0.3.0
 kind: Agent
 metadata:
   name: minimal

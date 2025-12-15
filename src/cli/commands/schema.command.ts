@@ -8,14 +8,15 @@ import { Command } from 'commander';
 import * as fs from 'fs';
 import { container } from '../../di-container.js';
 import { SchemaRepository } from '../../repositories/schema.repository.js';
+import { getVersion } from '../../utils/version.js';
 
 // __dirname not used in this file
 
 export const schemaCommand = new Command('schema')
   .option(
     '-v, --version <version>',
-    'Schema version (0.2.2, 0.2.3, 1.0)',
-    '0.2.3'
+    `Schema version (defaults to current: ${getVersion()})`,
+    getVersion()
   )
   .option(
     '-p, --path <path>',

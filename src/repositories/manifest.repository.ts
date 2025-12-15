@@ -5,9 +5,11 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
-import { parse as parseYaml, stringify as stringifyYaml } from 'yaml';
+import { stringify as stringifyYaml } from 'yaml';
 import { injectable } from 'inversify';
 import type { IManifestRepository, OssaAgent } from '../types/index';
+import { validateFilePath } from '../utils/path-validator.js';
+import { safeParseYAML } from '../utils/yaml-parser.js';
 
 @injectable()
 export class ManifestRepository implements IManifestRepository {
@@ -16,12 +18,9 @@ export class ManifestRepository implements IManifestRepository {
    * @param filePath - Path to manifest file (YAML or JSON)
    * @returns Parsed manifest object
    */
-  async load(filePath: string): Promise<unknown> {
-    const resolvedPath = path.resolve(filePath);
-
-    if (!fs.existsSync(resolvedPath)) {
-      throw new Error(`Manifest file not found: ${resolvedPath}`);
-    }
+  async load(filePath: string): Promise<OssaAgent> {
+    // Validate path for security
+    const resolvedPath = validateFilePath(filePath);
 
     const content = fs.readFileSync(resolvedPath, 'utf-8');
     const ext = path.extname(resolvedPath).toLowerCase();
@@ -30,7 +29,8 @@ export class ManifestRepository implements IManifestRepository {
       if (ext === '.json') {
         return JSON.parse(content);
       } else if (ext === '.yaml' || ext === '.yml') {
-        return parseYaml(content);
+        // Use safe YAML parsing to prevent injection attacks
+        return safeParseYAML(content);
       } else {
         throw new Error(
           `Unsupported file format: ${ext}. Must be .json, .yaml, or .yml`

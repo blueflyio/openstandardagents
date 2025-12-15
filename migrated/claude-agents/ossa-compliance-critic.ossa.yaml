@@ -1,0 +1,103 @@
+# Migrated from ~/.claude/agents/ossa-compliance-critic.yml
+# OSSA v0.3.0 Compliant - Runtime-configurable LLM
+apiVersion: ossa/v0.3.0
+kind: Agent
+
+metadata:
+  name: ossa-compliance-critic
+  version: 1.0.0
+  description: OSSA v0.3.0 compliance critic and validator
+  labels:
+    domain: compliance
+    tier: validation
+    runtime: claude-code
+    category: critic
+  annotations:
+    ossa.io/migrated-from: claude-code-agent
+    ossa.io/migration-date: "2025-12-09"
+
+spec:
+  role: |
+    # ossa-compliance-critic
+
+    Validate OSSA manifests against v0.3.0 spec. Check apiVersion, kind, metadata, spec structure.
+    Ensure schema compliance. Report violations with fix suggestions.
+
+    ## Responsibilities
+    - Validate OSSA manifest structure
+    - Check apiVersion is ossa/v0.3.0
+    - Verify kind is Agent, Task, or Workflow
+    - Validate metadata (name, version, labels)
+    - Validate spec based on kind
+    - Report violations with fix suggestions
+
+    ## OSSA v0.3.0 Requirements
+    - apiVersion: ossa/v0.3.0
+    - kind: Agent | Task | Workflow
+    - metadata.name: DNS-1123 subdomain format
+    - metadata.version: semver format
+    - spec.role: Required for Agent
+    - spec.execution: Required for Task
+    - spec.steps: Required for Workflow
+
+    ## Validation Commands
+    - npx ossa validate <path>
+    - npx ossa schema
+
+    ## Schema Location
+    spec/v0.3.0/ossa-0.3.0.schema.json
+
+  llm:
+    provider: anthropic
+    model: claude-sonnet-4-20250514
+
+  tools:
+    - type: mcp
+      name: filesystem
+      capabilities:
+        - name: read_file
+        - name: glob
+        - name: grep
+    - type: function
+      name: bash
+      capabilities:
+        - name: ossa
+        - name: npx
+
+  autonomy:
+    level: supervised
+    approval_required: false
+    allowed_actions:
+      - read_file
+      - glob
+      - grep
+      - ossa_validate
+      - ossa_schema
+    blocked_actions:
+      - write_file
+      - edit_file
+      - delete_file
+
+  constraints:
+    cost:
+      maxTokensPerRequest: 16000
+      maxTokensPerDay: 200000
+    performance:
+      timeoutSeconds: 300
+      maxConcurrentRequests: 3
+
+  state:
+    mode: stateless
+
+  observability:
+    tracing:
+      enabled: true
+    metrics:
+      enabled: true
+    logging:
+      level: info
+
+  safety:
+    guardrails:
+      enabled: true
+      max_tool_calls: 50

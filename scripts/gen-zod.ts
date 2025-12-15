@@ -33,12 +33,10 @@ async function main() {
     
     // Generate Zod schemas
     console.log('🔄 Generating Zod schemas...');
-    const output = execCommand(`npx json-schema-to-zod ${schemaPath}`, {
-      encoding: 'utf8',
+    execCommand(`npx json-schema-to-zod -i ${schemaPath} -o ${outputPath}`, {
+      stdio: 'inherit',
     });
     
-    // Write output
-    writeFile(outputPath, output);
     console.log(`✅ Generated: ${outputPath}`);
     
   } catch (error) {

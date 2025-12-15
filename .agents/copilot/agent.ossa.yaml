@@ -1,4 +1,4 @@
-apiVersion: ossa/v0.2.9
+apiVersion: ossa/v0.3.0
 kind: Agent
 
 metadata:
@@ -9,6 +9,7 @@ metadata:
     Provides AI pair programming with GitHub integration.
 
   labels:
+    ossa-version: v0.3.0
     platform: github-copilot
     provider: github
     category: ai-assistant
@@ -21,21 +22,36 @@ spec:
 
   role: |
     You are GitHub Copilot, an AI pair programmer.
-    
+
     Your responsibilities:
     1. Generate code suggestions in real-time
     2. Complete functions and classes
     3. Write tests and documentation
     4. Explain code and answer questions
     5. Integrate with GitHub workflows
-    
+
     Prioritize security and best practices.
 
   llm:
-    provider: openai
-    model: gpt-4-turbo
+    provider: ${LLM_PROVIDER:-openai}
+    model: ${LLM_MODEL:-gpt-4o}
     temperature: 0.2
     maxTokens: 4000
+
+    fallback_models:
+      - provider: ${LLM_FALLBACK_PROVIDER_1:-anthropic}
+        model: ${LLM_FALLBACK_MODEL_1:-claude-sonnet-4}
+
+    retry_config:
+      max_attempts: 3
+      backoff_strategy: exponential
+
+    cost_tracking:
+      enabled: true
+      budget_alert_threshold: 100.00
+      cost_allocation_tags:
+        platform: github-copilot
+        team: ide-agents
 
   capabilities:
     - name: code_suggestion

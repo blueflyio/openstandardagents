@@ -14,7 +14,7 @@ describe('AutoGenValidator', () => {
         apiVersion: 'ossa/v0.2.8',
         kind: 'Agent',
         metadata: { name: 'test', version: '1.0.0' },
-        spec: { role: 'assistant' }
+        spec: { role: 'assistant' },
       };
       const result = validator.validate(manifest);
       expect(result.valid).toBe(true);
@@ -26,7 +26,7 @@ describe('AutoGenValidator', () => {
         kind: 'Agent',
         metadata: { name: 'test', version: '1.0.0' },
         spec: { role: 'assistant' },
-        extensions: { autogen: { enabled: false } }
+        extensions: { autogen: { enabled: false } },
       };
       const result = validator.validate(manifest);
       expect(result.valid).toBe(true);
@@ -41,9 +41,9 @@ describe('AutoGenValidator', () => {
         extensions: {
           autogen: {
             enabled: true,
-            agent_type: 'assistant'
-          }
-        }
+            agent_type: 'assistant',
+          },
+        },
       };
       const result = validator.validate(manifest);
       expect(result.valid).toBe(true);

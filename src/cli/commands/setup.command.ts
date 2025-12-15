@@ -45,7 +45,10 @@ class SetupService {
     return process.cwd();
   }
 
-  protected log(message: string, type: 'info' | 'success' | 'warning' | 'error' = 'info'): void {
+  protected log(
+    message: string,
+    type: 'info' | 'success' | 'warning' | 'error' = 'info'
+  ): void {
     const colors = {
       info: chalk.blue,
       success: chalk.green,
@@ -55,7 +58,10 @@ class SetupService {
     console.log(colors[type](message));
   }
 
-  protected exec(command: string, options?: { cwd?: string; silent?: boolean }): string {
+  protected exec(
+    command: string,
+    options?: { cwd?: string; silent?: boolean }
+  ): string {
     try {
       const result = execSync(command, {
         cwd: options?.cwd || this.projectRoot,
@@ -89,7 +95,10 @@ class BranchProtectionService extends SetupService {
   private readonly hookFile = 'post-checkout';
 
   async setup(options: SetupOptions): Promise<void> {
-    this.log('🔒 Setting up branch protection for main and development...', 'info');
+    this.log(
+      '🔒 Setting up branch protection for main and development...',
+      'info'
+    );
     this.log('');
 
     // Ensure hooks directory exists
@@ -113,7 +122,11 @@ class BranchProtectionService extends SetupService {
   }
 
   private async createPostCheckoutHook(force: boolean): Promise<void> {
-    const hookPath = path.resolve(this.projectRoot, this.hooksDir, this.hookFile);
+    const hookPath = path.resolve(
+      this.projectRoot,
+      this.hooksDir,
+      this.hookFile
+    );
 
     if (fs.existsSync(hookPath) && !force) {
       this.log(`✅ Post-checkout hook already exists`, 'info');
@@ -209,7 +222,11 @@ exit 0
  */
 class ReleaseAutomationService extends SetupService {
   private readonly requiredDependencies = ['@gitbeaker/rest', '@octokit/rest'];
-  private readonly requiredEnvVars = ['GITLAB_TOKEN', 'NPM_TOKEN', 'GITHUB_TOKEN'];
+  private readonly requiredEnvVars = [
+    'GITLAB_TOKEN',
+    'NPM_TOKEN',
+    'GITHUB_TOKEN',
+  ];
 
   async setup(_options: SetupOptions): Promise<void> {
     this.log('🚀 Release Automation Setup', 'info');
@@ -245,19 +262,27 @@ class ReleaseAutomationService extends SetupService {
 
   private async checkBranch(): Promise<void> {
     try {
-      const branch = this.exec('git branch --show-current', { silent: true }).trim();
+      const branch = this.exec('git branch --show-current', {
+        silent: true,
+      }).trim();
       if (branch !== 'development') {
         this.log(
           `⚠️  Warning: Not on development branch (current: ${branch})`,
           'warning'
         );
-        this.log('   Switch to development first: git checkout development', 'warning');
+        this.log(
+          '   Switch to development first: git checkout development',
+          'warning'
+        );
         throw new Error('Must be on development branch');
       }
       this.log('✅ On development branch', 'success');
       this.log('');
     } catch (error) {
-      if (error instanceof Error && error.message === 'Must be on development branch') {
+      if (
+        error instanceof Error &&
+        error.message === 'Must be on development branch'
+      ) {
         throw error;
       }
       throw new Error('Failed to check git branch');
@@ -295,7 +320,7 @@ class ReleaseAutomationService extends SetupService {
     this.log('To set these:');
     this.log('  1. Go to: Settings → CI/CD → Variables');
     this.log('  2. Add each variable');
-    this.log('  3. Mark as \'Protected\' and \'Masked\'');
+    this.log("  3. Mark as 'Protected' and 'Masked'");
     this.log('');
   }
 
@@ -340,7 +365,9 @@ export const setupCommand = new Command('setup')
  */
 const branchProtectionSubcommand = new Command('branch-protection')
   .alias('bp')
-  .description('Setup git hooks to prevent checking out main/development locally')
+  .description(
+    'Setup git hooks to prevent checking out main/development locally'
+  )
   .option('-f, --force', 'Force overwrite existing hooks')
   .option('-v, --verbose', 'Verbose output')
   .action(async (options: { force?: boolean; verbose?: boolean }) => {
@@ -353,7 +380,10 @@ const branchProtectionSubcommand = new Command('branch-protection')
         console.error(chalk.red('Validation error:'), error.issues);
         process.exit(1);
       }
-      console.error(chalk.red('Error:'), error instanceof Error ? error.message : error);
+      console.error(
+        chalk.red('Error:'),
+        error instanceof Error ? error.message : error
+      );
       process.exit(1);
     }
   });
@@ -363,7 +393,9 @@ const branchProtectionSubcommand = new Command('branch-protection')
  */
 const releaseAutomationSubcommand = new Command('release-automation')
   .alias('ra')
-  .description('Setup release automation (dependencies, CI/CD variables, webhooks)')
+  .description(
+    'Setup release automation (dependencies, CI/CD variables, webhooks)'
+  )
   .option('-f, --force', 'Force setup even if checks fail')
   .option('-v, --verbose', 'Verbose output')
   .action(async (options: { force?: boolean; verbose?: boolean }) => {
@@ -376,7 +408,10 @@ const releaseAutomationSubcommand = new Command('release-automation')
         console.error(chalk.red('Validation error:'), error.issues);
         process.exit(1);
       }
-      console.error(chalk.red('Error:'), error instanceof Error ? error.message : error);
+      console.error(
+        chalk.red('Error:'),
+        error instanceof Error ? error.message : error
+      );
       process.exit(1);
     }
   });
@@ -384,4 +419,3 @@ const releaseAutomationSubcommand = new Command('release-automation')
 // Register subcommands
 setupCommand.addCommand(branchProtectionSubcommand);
 setupCommand.addCommand(releaseAutomationSubcommand);
-

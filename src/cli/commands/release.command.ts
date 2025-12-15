@@ -114,7 +114,9 @@ tagCommand
           perPage: parseInt(options.perPage, 10),
         });
 
-        console.log(chalk.blue(`📋 Tags (${result.pagination.total} total):\n`));
+        console.log(
+          chalk.blue(`📋 Tags (${result.pagination.total} total):\n`)
+        );
 
         if (result.items.length === 0) {
           console.log(chalk.yellow('   No tags found'));
@@ -264,11 +266,7 @@ milestoneCommand
   .option('-p, --page <page>', 'Page number', '1')
   .option('--per-page <count>', 'Items per page', '20')
   .action(
-    async (options: {
-      state?: string;
-      page: string;
-      perPage: string;
-    }) => {
+    async (options: { state?: string; page: string; perPage: string }) => {
       try {
         const config = getGitLabConfig();
         const milestoneService = new MilestoneService(
@@ -292,8 +290,7 @@ milestoneCommand
         }
 
         result.items.forEach((ms) => {
-          const stateColor =
-            ms.state === 'closed' ? chalk.green : chalk.yellow;
+          const stateColor = ms.state === 'closed' ? chalk.green : chalk.yellow;
           const progress = `${ms.statistics.closedIssues}/${ms.statistics.totalIssues}`;
           console.log(
             `   ${chalk.cyan(ms.title.padEnd(20))} ${stateColor(ms.state.padEnd(8))} ${chalk.gray(progress)}`
@@ -425,4 +422,3 @@ export const releaseCommandGroup = new Command('release')
   .addCommand(tagCommand)
   .addCommand(milestoneCommand)
   .addCommand(releaseCommand);
-
