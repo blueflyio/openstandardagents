@@ -34,7 +34,7 @@ detect-ossa-version:
   rules:
     - exists:
         - .gitlab/agents/**/*.ossa.yaml
-    - when: never
+    - when: always
 
 validate-and-inject-version:
   stage: validate
