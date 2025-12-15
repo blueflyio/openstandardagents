@@ -156,8 +156,9 @@ detect:milestone-and-tags:
       if [ "$CI_COMMIT_BRANCH" != "main" ] && [ "$CI_COMMIT_BRANCH" != "development" ]; then
         echo "Skipping dev tag management (not on main/development branch)"
       else
-        # Get all milestones (with rate limiting)
-        DEV_MILESTONES=$(safe_api_call "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/milestones" \
+        # Get all GROUP milestones (with rate limiting)
+        GROUP_PATH="blueflyio%2Fagent-platform"
+        DEV_MILESTONES=$(safe_api_call "${CI_API_V4_URL}/groups/${GROUP_PATH}/milestones" \
           -G --data-urlencode "per_page=100" --data-urlencode "state=all" || echo "[]")
 
         if [ "$DEV_MILESTONES" != "[]" ] && [ -n "$DEV_MILESTONES" ]; then
@@ -226,11 +227,22 @@ detect:milestone-and-tags:
       echo "Looking for ACTIVE milestone with all issues closed..."
       echo ""
 
-      # Get ACTIVE milestones only
-      ALL_MILESTONES=$(curl -sS -G "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/milestones" \
-        --header "PRIVATE-TOKEN: ${CI_JOB_TOKEN}" \
+      # Get ACTIVE milestones from GROUP (we use group milestones for version tracking)
+      # Group: blueflyio/agent-platform
+      GROUP_PATH="blueflyio%2Fagent-platform"
+      ALL_MILESTONES=$(curl -sS -G "${CI_API_V4_URL}/groups/${GROUP_PATH}/milestones" \
+        --header "PRIVATE-TOKEN: ${GITLAB_PUSH_TOKEN}" \
         --data-urlencode "per_page=100" \
-        --data-urlencode "state=active")
+        --data-urlencode "state=active" 2>/dev/null || echo "[]")
+
+      # Fallback to project milestones if group fetch fails
+      if [ "$ALL_MILESTONES" = "[]" ] || [ -z "$ALL_MILESTONES" ]; then
+        echo "WARNING: No group milestones found, trying project milestones..."
+        ALL_MILESTONES=$(curl -sS -G "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/milestones" \
+          --header "PRIVATE-TOKEN: ${GITLAB_PUSH_TOKEN}" \
+          --data-urlencode "per_page=100" \
+          --data-urlencode "state=active" 2>/dev/null || echo "[]")
+      fi
 
       # Initialize milestone env file
       echo "RELEASE_VERSION=" > milestone-version.env
@@ -260,13 +272,16 @@ detect:milestone-and-tags:
             continue
           fi
 
-          # Get milestone stats
-          MILESTONE_STATS=$(curl -sS -G "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/milestones/${ID}" \
-            --header "PRIVATE-TOKEN: ${CI_JOB_TOKEN}" 2>/dev/null || echo "{}")
+          # For GROUP milestones, query issues directly for THIS PROJECT
+          # Get all issues in this project assigned to this milestone
+          PROJECT_ISSUES=$(curl -sS -G "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/issues" \
+            --header "PRIVATE-TOKEN: ${GITLAB_PUSH_TOKEN}" \
+            --data-urlencode "milestone=${TITLE}" \
+            --data-urlencode "per_page=100" 2>/dev/null || echo "[]")
 
-          TOTAL_ISSUES=$(echo "$MILESTONE_STATS" | jq -r '.total_issues_count // 0' 2>/dev/null || echo "0")
-          CLOSED_ISSUES=$(echo "$MILESTONE_STATS" | jq -r '.closed_issues_count // 0' 2>/dev/null || echo "0")
-          OPEN_ISSUES=$((TOTAL_ISSUES - CLOSED_ISSUES))
+          TOTAL_ISSUES=$(echo "$PROJECT_ISSUES" | jq '. | length' 2>/dev/null || echo "0")
+          CLOSED_ISSUES=$(echo "$PROJECT_ISSUES" | jq '[.[] | select(.state == "closed")] | length' 2>/dev/null || echo "0")
+          OPEN_ISSUES=$(echo "$PROJECT_ISSUES" | jq '[.[] | select(.state == "opened")] | length' 2>/dev/null || echo "0")
 
           echo "📊 Milestone: ${TITLE}"
           echo "  Total issues: ${TOTAL_ISSUES}"
@@ -275,6 +290,7 @@ detect:milestone-and-tags:
           echo ""
 
           # Check if 100% complete (all issues closed)
+          # With GROUP milestones, 0 issues in this project is OK (other projects may have issues)
           if [ "$OPEN_ISSUES" -eq 0 ] && [ "$TOTAL_ISSUES" -gt 0 ]; then
             echo "RELEASE_VERSION=${VERSION}" > milestone-version.env
             echo "MILESTONE_TITLE=${TITLE}" >> milestone-version.env
@@ -283,11 +299,21 @@ detect:milestone-and-tags:
             echo "MILESTONE_READY=true" >> milestone-version.env
             echo "ISSUE_COUNT=${TOTAL_ISSUES}" >> milestone-version.env
             echo "OPEN_ISSUE_COUNT=0" >> milestone-version.env
-            echo "Release-ready: ${TITLE} (${TOTAL_ISSUES} issues closed)"
+            echo "✅ Release-ready: ${TITLE} (${TOTAL_ISSUES} issues closed in this project)"
             FOUND_MILESTONE=true
             break
           elif [ "$TOTAL_ISSUES" -eq 0 ]; then
-            echo "WARNING: Milestone ${TITLE} has no issues - skipping"
+            # With GROUP milestones, 0 issues in this project is OK - treat as ready
+            echo "RELEASE_VERSION=${VERSION}" > milestone-version.env
+            echo "MILESTONE_TITLE=${TITLE}" >> milestone-version.env
+            echo "MILESTONE_ID=${ID}" >> milestone-version.env
+            echo "MILESTONE_URL=${WEB_URL}" >> milestone-version.env
+            echo "MILESTONE_READY=true" >> milestone-version.env
+            echo "ISSUE_COUNT=0" >> milestone-version.env
+            echo "OPEN_ISSUE_COUNT=0" >> milestone-version.env
+            echo "✅ Release-ready: ${TITLE} (no issues in this project, group milestone)"
+            FOUND_MILESTONE=true
+            break
           else
             # Milestone has open issues - NOT ready but record for validation
             echo "RELEASE_VERSION=${VERSION}" > milestone-version.env
@@ -874,6 +900,14 @@ release:validate:
 
       ERRORS=0
       WARNINGS=0
+
+      # Set defaults for milestone variables (in case detect:milestone-and-tags didn't run)
+      MILESTONE_READY="${MILESTONE_READY:-false}"
+      MILESTONE_TITLE="${MILESTONE_TITLE:-}"
+      MILESTONE_ID="${MILESTONE_ID:-}"
+      ISSUE_COUNT="${ISSUE_COUNT:-0}"
+      OPEN_ISSUE_COUNT="${OPEN_ISSUE_COUNT:-0}"
+      RELEASE_VERSION="${RELEASE_VERSION:-}"
 
       # 0. MILESTONE GATE CHECK - All issues must be closed!
       echo "📋 0. Milestone Gate (All Issues Closed)"
