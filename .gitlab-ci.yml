@@ -129,7 +129,7 @@ detect:milestone-and-tags:
           local body
 
           response=$(curl -sS -w "\n%{http_code}" "$url" \
-            --header "PRIVATE-TOKEN: ${CI_JOB_TOKEN}" 2>&1) || true
+            --header "PRIVATE-TOKEN: ${GITLAB_TOKEN}" 2>&1) || true
 
           http_code=$(echo "$response" | tail -n1)
           body=$(echo "$response" | sed '$d')
@@ -247,7 +247,7 @@ detect:milestone-and-tags:
 
       # Get ACTIVE milestones only
       ALL_MILESTONES=$(curl -sS -G "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/milestones" \
-        --header "PRIVATE-TOKEN: ${CI_JOB_TOKEN}" \
+        --header "PRIVATE-TOKEN: ${GITLAB_TOKEN}" \
         --data-urlencode "per_page=100" \
         --data-urlencode "state=active")
 
@@ -281,7 +281,7 @@ detect:milestone-and-tags:
 
           # Get milestone stats
           MILESTONE_STATS=$(curl -sS -G "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/milestones/${ID}" \
-            --header "PRIVATE-TOKEN: ${CI_JOB_TOKEN}" 2>/dev/null || echo "{}")
+            --header "PRIVATE-TOKEN: ${GITLAB_TOKEN}" 2>/dev/null || echo "{}")
 
           TOTAL_ISSUES=$(echo "$MILESTONE_STATS" | jq -r '.total_issues_count // 0' 2>/dev/null || echo "0")
           CLOSED_ISSUES=$(echo "$MILESTONE_STATS" | jq -r '.closed_issues_count // 0' 2>/dev/null || echo "0")
