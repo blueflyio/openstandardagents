@@ -86,9 +86,9 @@ export class WebhookService {
       const validated = PushWebhookPayloadSchema.parse(payload);
       const actions: WebhookResponse['actions'] = [];
 
-      // Only process development branch pushes
-      if (validated.ref === 'refs/heads/development') {
-        const action = await this.handleDevelopmentPush(validated);
+      // Only process release branch pushes (release/v0.X.x)
+      if (validated.ref.match(/^refs\/heads\/release\/v\d+\.\d+\.x$/)) {
+        const action = await this.handleReleaseBranchPush(validated);
         if (action) actions.push(action);
       }
 
@@ -119,11 +119,18 @@ export class WebhookService {
     const { object_attributes: milestone } = payload;
     const version = milestone.title.replace(/^v/, '');
 
-    // Create initial dev tag
+    // Extract major.minor from version (e.g., 0.3.0 -> 0.3)
+    const versionMatch = version.match(/^(\d+\.\d+)/);
+    if (!versionMatch) {
+      throw new Error(`Invalid version format: ${version}`);
+    }
+    const releaseBranch = `release/v${versionMatch[1]}.x`;
+
+    // Create initial dev tag on the appropriate release branch
     const devTag = `v${version}-dev.0`;
     await this.tagService.create({
       name: devTag,
-      ref: 'development',
+      ref: releaseBranch,
       message: `Initial dev tag for ${milestone.title}`,
     });
 
@@ -134,6 +141,7 @@ export class WebhookService {
         milestoneId: milestone.id,
         tag: devTag,
         version,
+        releaseBranch,
       },
     };
   }
@@ -164,17 +172,24 @@ export class WebhookService {
       );
     }
 
-    // Create RC tag
+    // Extract major.minor from version to determine release branch
+    const versionMatch = version.match(/^(\d+\.\d+)/);
+    if (!versionMatch) {
+      throw new Error(`Invalid version format: ${version}`);
+    }
+    const releaseBranch = `release/v${versionMatch[1]}.x`;
+
+    // Create RC tag on the release branch
     const rcTag = `v${version}-rc.1`;
     await this.tagService.create({
       name: rcTag,
-      ref: 'development',
+      ref: releaseBranch,
       message: `Release candidate for ${milestone.title}`,
     });
 
-    // Create MR: development → main
+    // Create MR: release/v0.X.x → main
     const mr = await this.mergeRequestService.create({
-      sourceBranch: 'development',
+      sourceBranch: releaseBranch,
       targetBranch: 'main',
       title: `Release ${milestone.title}`,
       description: `Release candidate ${rcTag} for milestone ${milestone.title}`,
@@ -189,19 +204,20 @@ export class WebhookService {
         milestoneId: milestone.id,
         rcTag,
         mergeRequestId: mr.id,
+        releaseBranch,
       },
     };
   }
 
   /**
-   * Handle development branch push
+   * Handle release branch push
    */
-  private async handleDevelopmentPush(payload: PushWebhookPayload): Promise<{
+  private async handleReleaseBranchPush(payload: PushWebhookPayload): Promise<{
     type: string;
     status: string;
     details?: Record<string, unknown>;
   } | null> {
-    // Auto-increment dev tag
+    // Auto-increment dev tag on release branch
     // This would be implemented based on current version detection
     // For now, return success
 

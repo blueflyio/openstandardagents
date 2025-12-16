@@ -1,12 +1,12 @@
 # GitLab CI/CD Pipeline for OSSA
-# Decoupled Release Model
-# - Code flows freely - Feature → development → main (CI validates, no auto-release)
+# Release Branch Strategy
+# - Code flows: Feature → release/v0.X.x → main (CI validates, auto-release on merge to main)
 # - Website deployment - Manual button (independent of releases)
 # - NPM releases - Milestone-gated + ENABLE_RELEASE variable required
 #
 # Workflow
-# 1. Feature branches → merge to development (CI validates)
-# 2. Development → merge to main via merge train (CI validates)
+# 1. Feature branches → merge to release/v0.X.x (CI validates)
+# 2. Release branches → merge to main via merge train (CI validates)
 # 3. Click "Deploy Website" button → GitLab Pages deploys
 # 4. To release - Set ENABLE_RELEASE=true + close milestone → automatic npm publish + git tag
 #
@@ -166,9 +166,9 @@ detect:milestone-and-tags:
       DEV_MILESTONE_ID=
       EOF
 
-      # Only run on main and development branches
-      if [ "$CI_COMMIT_BRANCH" != "main" ] && [ "$CI_COMMIT_BRANCH" != "development" ]; then
-        echo "Skipping dev tag management (not on main/development branch)"
+      # Only run on main and release branches
+      if [ "$CI_COMMIT_BRANCH" != "main" ] && ! echo "$CI_COMMIT_BRANCH" | grep -qE "^release/v"; then
+        echo "Skipping dev tag management (not on main/release branch)"
       else
         # Get all milestones (with rate limiting)
         DEV_MILESTONES=$(safe_api_call "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/milestones" \
@@ -342,7 +342,9 @@ detect:milestone-and-tags:
       - dev-tags.env
     expire_in: 1 day
   rules:
-    - if: $CI_COMMIT_BRANCH == "main" || $CI_COMMIT_BRANCH == "development"
+    - if: $CI_COMMIT_BRANCH == "main"
+      when: always
+    - if: $CI_COMMIT_BRANCH =~ /^release\/v/
       when: always
   allow_failure: true
 
@@ -416,7 +418,7 @@ check:divergence:
     - apk add --no-cache git
   script:
     - |
-      if [ "$CI_MERGE_REQUEST_TARGET_BRANCH" = "main" ] || [ "$CI_MERGE_REQUEST_TARGET_BRANCH" = "development" ]; then
+      if [ "$CI_MERGE_REQUEST_TARGET_BRANCH" = "main" ] || echo "$CI_MERGE_REQUEST_TARGET_BRANCH" | grep -qE "^release/v"; then
         echo "🔍 Checking for divergent branches..."
         git fetch origin
         
@@ -470,7 +472,7 @@ validate:version-sync:
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
       when: always
-    - if: $CI_COMMIT_BRANCH == "development"
+    - if: $CI_COMMIT_BRANCH =~ /^release\/v/
       when: always
     - if: $CI_COMMIT_BRANCH == "main"
       when: always
@@ -491,7 +493,7 @@ validate:version-sync:
 #   extends: .version-bump-agent
 #   variables:
 #     BUMP_TYPE: "patch"
-#     TARGET_BRANCH: "development"
+#     TARGET_BRANCH: "release/v0.X.x"
 #   rules:
 #     - if: '$BUMP_VERSION == "true"'
 #       when: manual
@@ -541,7 +543,7 @@ validate:scripts-version:
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
       when: always
-    - if: $CI_COMMIT_BRANCH == "development"
+    - if: $CI_COMMIT_BRANCH =~ /^release\/v/
       when: always
     - if: $CI_COMMIT_BRANCH == "main"
       when: always
@@ -580,11 +582,11 @@ validate:docs-consistency:
   rules:
     - if: $CI_COMMIT_BRANCH == "main"
       when: always
-    - if: $CI_COMMIT_BRANCH == "development"
+    - if: $CI_COMMIT_BRANCH =~ /^release\/v/
       when: always
     - if: $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "main"
       when: always
-    - if: $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "development"
+    - if: $CI_MERGE_REQUEST_TARGET_BRANCH_NAME =~ /^release\/v/
       when: always
 
 # ============================================================================
@@ -1709,7 +1711,7 @@ workflow:
 # RELEASE AUTOMATION - Enterprise Grade
 # ============================================================================
 
-# Auto-increment dev tag on merge to development
+# Auto-increment dev tag on merge to release branches
 increment-dev-tag:
   stage: .post
   image: node:${NODE_VERSION}
@@ -1720,7 +1722,7 @@ increment-dev-tag:
   script:
     - tsx .gitlab/release-automation/scripts/increment-dev-tag.ts
   rules:
-    - if: $CI_COMMIT_BRANCH == "development" && $CI_PIPELINE_SOURCE == "push"
+    - if: $CI_COMMIT_BRANCH =~ /^release\/v/ && $CI_PIPELINE_SOURCE == "push"
       when: on_success
   allow_failure: true
 
@@ -1786,24 +1788,27 @@ create-release-mrs:
     - |
       : "${GITLAB_PUSH_TOKEN:?GITLAB_PUSH_TOKEN not set}"
       echo "Checking for milestones needing release MRs..."
-      
+
       MILESTONES=$(curl -s --header "PRIVATE-TOKEN: $GITLAB_PUSH_TOKEN" \
         "$CI_API_V4_URL/projects/$CI_PROJECT_ID/milestones?state=active")
-      
+
       echo "$MILESTONES" | jq -r '.[] | select(.title | startswith("v")) | .id + " " + .title' | while read MILESTONE_ID MILESTONE_TITLE; do
+        # Extract version from milestone title (e.g., v0.3.x from "v0.3.5")
+        RELEASE_BRANCH=$(echo "$MILESTONE_TITLE" | sed -E 's/v([0-9]+\.[0-9]+)\.[0-9]+/release\/v\1.x/')
+
         EXISTING_MR=$(curl -s --header "PRIVATE-TOKEN: $GITLAB_PUSH_TOKEN" \
-          "$CI_API_V4_URL/projects/$CI_PROJECT_ID/merge_requests?state=opened&source_branch=development&target_branch=main&milestone=$MILESTONE_TITLE" \
+          "$CI_API_V4_URL/projects/$CI_PROJECT_ID/merge_requests?state=opened&source_branch=${RELEASE_BRANCH}&target_branch=main&milestone=$MILESTONE_TITLE" \
           | jq -r '.[0].iid // empty')
-        
+
         if [ -z "$EXISTING_MR" ]; then
           curl --request POST \
             --header "PRIVATE-TOKEN: $GITLAB_PUSH_TOKEN" \
             --header "Content-Type: application/json" \
             --data "{
-              \"source_branch\": \"development\",
+              \"source_branch\": \"${RELEASE_BRANCH}\",
               \"target_branch\": \"main\",
               \"title\": \"Draft:  Release $MILESTONE_TITLE\",
-              \"description\": \"## Release $MILESTONE_TITLE\\n\\nDraft MR for next release. Features merge to development and accumulate here.\\n\\n### When Ready\\n1. Mark as ready\\n2. Add to merge train\\n3. Train merges to main\\n4. Release automation runs\",
+              \"description\": \"## Release $MILESTONE_TITLE\\n\\nDraft MR for next release. Features merge to ${RELEASE_BRANCH} and accumulate here.\\n\\n### When Ready\\n1. Mark as ready\\n2. Add to merge train\\n3. Train merges to main\\n4. Release automation runs\",
               \"milestone_id\": $MILESTONE_ID,
               \"draft\": true,
               \"labels\": \"type::release,status::draft\"
@@ -1812,7 +1817,7 @@ create-release-mrs:
         fi
       done
   rules:
-    - if: $CI_COMMIT_BRANCH == "development"
+    - if: $CI_COMMIT_BRANCH =~ /^release\/v/
       when: manual
 
 # Generate llms.txt context files
@@ -1832,11 +1837,11 @@ generate:llms-txt:
   rules:
     - if: $CI_COMMIT_BRANCH == "main"
       when: on_success
-    - if: $CI_COMMIT_BRANCH == "development"
+    - if: $CI_COMMIT_BRANCH =~ /^release\/v/
       when: on_success
 
 # ============================================================================
-# POST-RELEASE SYNC - Sync main back to development after releases
+# POST-RELEASE SYNC - Sync main back to release branches after releases
 # ============================================================================
 
 dependency:update:
@@ -1861,7 +1866,7 @@ dependency:update:
       when: manual
   allow_failure: true
 
-sync:main-to-development:
+sync:main-to-release:
   stage: .post
   image: alpine:latest
   before_script:
@@ -1872,33 +1877,37 @@ sync:main-to-development:
     - git remote set-url origin https://oauth2:${GITLAB_PUSH_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git
   script:
     - |
-      echo "Syncing main → development..."
+      echo "Syncing main → release branches..."
 
-      git fetch origin main development
-      git checkout development
-      git pull origin development
+      # Extract version from latest tag to determine release branch
+      LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.3.0")
+      RELEASE_BRANCH=$(echo "$LATEST_TAG" | sed -E 's/v([0-9]+\.[0-9]+)\.[0-9]+/release\/v\1.x/')
 
-      # Check if main has commits not in development
-      BEHIND=$(git rev-list --count development..origin/main)
+      git fetch origin main "$RELEASE_BRANCH"
+      git checkout "$RELEASE_BRANCH"
+      git pull origin "$RELEASE_BRANCH"
+
+      # Check if main has commits not in release branch
+      BEHIND=$(git rev-list --count "${RELEASE_BRANCH}..origin/main")
 
       if [ "$BEHIND" -gt 0 ]; then
-        echo "development is $BEHIND commits behind main"
+        echo "${RELEASE_BRANCH} is $BEHIND commits behind main"
 
         # Create sync MR automatically
         curl --request POST \
           --header "PRIVATE-TOKEN: ${CI_JOB_TOKEN}" \
           --header "Content-Type: application/json" \
-          --data '{
-            "source_branch": "main",
-            "target_branch": "development",
-            "title": "chore: sync main → development post-release [skip ci]",
-            "description": "Automated sync after release. Contains release commits.",
-            "remove_source_branch": false,
-            "squash": true
-          }' \
+          --data "{
+            \"source_branch\": \"main\",
+            \"target_branch\": \"${RELEASE_BRANCH}\",
+            \"title\": \"chore: sync main → ${RELEASE_BRANCH} post-release [skip ci]\",
+            \"description\": \"Automated sync after release. Contains release commits.\",
+            \"remove_source_branch\": false,
+            \"squash\": true
+          }" \
           "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/merge_requests"
       else
-        echo "development is up-to-date with main"
+        echo "${RELEASE_BRANCH} is up-to-date with main"
       fi
   rules:
     - if: $CI_COMMIT_BRANCH == "main" && $CI_COMMIT_TAG
