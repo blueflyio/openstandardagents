@@ -23,6 +23,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Miscellaneous
 
+- Add .worktrees/ to .gitignore ([5c2c88a](https://gitlab.com/blueflyio/openstandardagents/-/commit/5c2c88aa48e230476c1faa8b0dc4294197e16997))
+
 - Merge main into release/v0.3.x - resolve conflicts ([771d16d](https://gitlab.com/blueflyio/openstandardagents/-/commit/771d16da62644f63e229c08d9e7d18095472aeeb))
 ## [0.3.0-RC] - 2025-12-15
 
