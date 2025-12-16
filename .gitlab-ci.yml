@@ -1834,8 +1834,9 @@ create-release-mrs:
         fi
       done
   rules:
-    - if: $CI_COMMIT_BRANCH =~ /^release\/v/
+    - if: $CI_COMMIT_BRANCH =~ /^release\/v/ && $CI_PIPELINE_SOURCE == "schedule"
       when: manual
+    - when: never  # Skip on push events to not block automatic pipelines
 
 # Generate llms.txt context files
 generate:llms-txt:
