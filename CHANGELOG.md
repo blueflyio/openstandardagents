@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **ci**: Add automatic GitLab Release creation from tags ([e1bef4f](https://gitlab.com/blueflyio/openstandardagents/-/commit/e1bef4f0e35fe20682046d6bc8e4978f950fdb8b))
 ### Fixed
 
+- **ci**: Include release-workflow.yml - CRITICAL MISSING INCLUDE ([e79b017](https://gitlab.com/blueflyio/openstandardagents/-/commit/e79b017a2e170074985a88651aac17e7060ac75b))
 - **ci**: Use GitLab shared runners - unblock v0.3.0 release ([9b1e1c1](https://gitlab.com/blueflyio/openstandardagents/-/commit/9b1e1c171354f013b45ce70bfb521a954d47fe8c))
 - Use GITLAB_TOKEN for milestone API calls ([acde568](https://gitlab.com/blueflyio/openstandardagents/-/commit/acde568781f4f7fcb4aa70e5635b845e0e516429))
 
