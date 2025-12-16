@@ -13,6 +13,8 @@
 create-dev-tag:release:
   stage: .post
   image: alpine:latest
+  tags:
+    - saas-linux-small-amd64
   before_script:
     - apk add --no-cache curl jq git bash
     - git config user.email "ci@bluefly.io"
@@ -126,6 +128,8 @@ create-dev-tag:release:
 detect-release-version:
   stage: version-detect
   image: alpine:latest
+  tags:
+    - saas-linux-small-amd64
   before_script:
     - apk add --no-cache curl jq git
     - git fetch --tags --force || true
@@ -190,6 +194,8 @@ detect-release-version:
 create-release-tag:
   stage: release
   image: alpine:latest
+  tags:
+    - saas-linux-small-amd64
   before_script:
     - apk add --no-cache curl jq git bash
     - git config user.email "ci@bluefly.io"
@@ -255,6 +261,8 @@ create-release-tag:
 sync-version-files:
   stage: version-detect
   image: node:${NODE_VERSION}-alpine
+  tags:
+    - saas-linux-small-amd64
   # NOTE: Cannot use needs: [create-dev-tag:release] as it runs in .post stage (after this stage)
   # Job gracefully handles missing dev-tag.env file
   variables:
@@ -313,6 +321,8 @@ sync-version-files:
 create-gitlab-release:
   stage: .post
   image: alpine:latest
+  tags:
+    - saas-linux-small-amd64
   before_script:
     - apk add --no-cache git bash curl jq
   script:
