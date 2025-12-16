@@ -57,6 +57,11 @@ stages:
   - mirror         # Mirror to external repos
   - .post          # GitLab reserved post-stage (post-release jobs)
 
+# Use GitLab shared runners by default
+default:
+  tags:
+    - saas-linux-small-amd64
+
 variables:
   NODE_VERSION: "22"
   NPM_CONFIG_LEGACY_PEER_DEPS: "1"
