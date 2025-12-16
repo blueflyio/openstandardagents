@@ -22,6 +22,7 @@ include:
   - local: '.gitlab/ci/milestone-workflow.yml'  # Milestone-driven workflow enforcement
   - local: '.gitlab/ci/fix-mr-targets.yml'  # Fix MRs targeting main branch
   - local: '.gitlab/ci/ossa-version-management.yml'  # Dynamic OSSA version detection and injection
+  - local: '.gitlab/ci/release-workflow.yml'  # Dev tag automation and GitLab Release creation
   # Security scanning from Auto DevOps
   - template: Jobs/SAST.gitlab-ci.yml
   - template: Jobs/Secret-Detection.gitlab-ci.yml

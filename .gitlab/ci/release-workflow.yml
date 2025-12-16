@@ -343,9 +343,7 @@ create-gitlab-release:
 
       if [ -z "$CHANGELOG" ]; then
         echo "No changelog found for version ${VERSION}"
-        CHANGELOG="Release ${CI_COMMIT_TAG}
-
-See CHANGELOG.md for details."
+        CHANGELOG="Release ${CI_COMMIT_TAG}\n\nSee CHANGELOG.md for details."
       fi
 
       # Determine release name based on tag type
