@@ -1,5 +1,5 @@
 // OSSA version constants
-// AUTO-GENERATED from GitLab tags (patch only, no update needed) - DO NOT EDIT DIRECTLY
+// AUTO-GENERATED from GitLab tags (major/minor update) - DO NOT EDIT DIRECTLY
 // Run: npm run sync-version (fetches latest from GitLab tags or npm registry)
 // NOTE: Website only updates on major/minor releases, not patches
 
@@ -23,10 +23,6 @@ export const STABLE_VERSIONS = versionsData.all.filter((v: any) => v.type === 's
 export const DEV_VERSIONS = versionsData.all.filter((v: any) => v.type === 'dev' || v.type === 'prerelease');
 export const ALL_VERSIONS = versionsData.all;
 export const DEV_VERSION_TAG = versionsData.dev ? `v${versionsData.dev}` : undefined;
-
-// Latest tags - static exports for Turbopack
-export const LATEST_STABLE_TAG = "v0.2.9";
-export const LATEST_DEV_TAG = "v0.2.6-dev";
 
 // Utility to get version info
 export function getVersionInfo(version: string): any {
