@@ -56,7 +56,7 @@ OSSA follows semantic versioning. Development specs are marked with `-dev` suffi
 
 1. **AgentGraph Resource Type**
    ```yaml
-   apiVersion: ossa/v0.2.9-RC
+   apiVersion: ossa/v{{OSSA_VERSION}}-RC
    kind: AgentGraph  # New!
    metadata:
      name: customer-support-cluster
@@ -112,8 +112,8 @@ git clone https://github.com/blueflyio/openstandardagents.git
 cd openstandardagents
 
 # View development specs
-ls spec/v0.2.8/
-ls spec/v0.2.8/
+ls spec/{{OSSA_VERSION_TAG}}/
+ls spec/{{OSSA_VERSION_TAG}}/
 ```
 
 ### Validation
@@ -130,9 +130,9 @@ ossa validate your-agent.yaml --version 0.2.8-dev
 
 Development examples are in the spec directories:
 
-- `spec/v0.2.8/examples/customer-support-graph.ossa.yaml` - Sequential process
-- `spec/v0.2.8/examples/research-team.ossa.yaml` - Hierarchical process
-- `spec/v0.2.8/examples/parallel-processors.ossa.yaml` - Parallel process
+- `spec/{{OSSA_VERSION_TAG}}/examples/customer-support-graph.ossa.yaml` - Sequential process
+- `spec/{{OSSA_VERSION_TAG}}/examples/research-team.ossa.yaml` - Hierarchical process
+- `spec/{{OSSA_VERSION_TAG}}/examples/parallel-processors.ossa.yaml` - Parallel process
 
 ---
 
@@ -144,7 +144,7 @@ We welcome feedback on development specifications:
 2. **Discussions**: Comment on milestone issues
 3. **Pull Requests**: Submit improvements
 
-### v0.2.8 Issues
+### {{OSSA_VERSION_TAG}} Issues
 - [#220 - Transport metadata](https://github.com/blueflyio/openstandardagents/issues/220)
 - [#221 - State/memory block](https://github.com/blueflyio/openstandardagents/issues/221)
 - [#222 - Security scopes](https://github.com/blueflyio/openstandardagents/issues/222)
@@ -166,8 +166,8 @@ We welcome feedback on development specifications:
 
 | Version | Focus | Status | Target |
 |---------|-------|--------|--------|
-| v0.2.8 | Documentation & Examples | **Stable** | Released |
-| v0.2.8 | Transport & Security | Development | Feb 2025 |
+| {{OSSA_VERSION_TAG}} | Documentation & Examples | **Stable** | Released |
+| {{OSSA_VERSION_TAG}} | Transport & Security | Development | Feb 2025 |
 | v0.2.8-RC | Multi-Agent Composition | Development | Mar 2025 |
 | v0.3.0 | Gamma Release | Planned | Apr 2025 |
 | v1.0.0 | Genesis Release | Planned | TBD |

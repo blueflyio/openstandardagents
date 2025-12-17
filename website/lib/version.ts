@@ -5,14 +5,14 @@
 
 import versionsData from './versions.json';
 
-export const OSSA_VERSION = "0.2.9";
+export const OSSA_VERSION = "0.3.0-RC";
 export const OSSA_VERSION_TAG = `v${OSSA_VERSION}`;
 export const OSSA_API_VERSION = `ossa/v${OSSA_VERSION}`;
 export const OSSA_SCHEMA_VERSION = OSSA_VERSION;
 
 // Display version for marketing (doesn't change on patch releases)
-export const OSSA_DISPLAY_VERSION = "0.2.x";
-export const OSSA_DISPLAY_VERSION_TAG = "v0.2.x";
+export const OSSA_DISPLAY_VERSION = "0.3.x";
+export const OSSA_DISPLAY_VERSION_TAG = "v0.3.x";
 
 // Aliases for backward compatibility
 export const STABLE_VERSION = OSSA_VERSION;
@@ -23,6 +23,10 @@ export const STABLE_VERSIONS = versionsData.all.filter((v: any) => v.type === 's
 export const DEV_VERSIONS = versionsData.all.filter((v: any) => v.type === 'dev' || v.type === 'prerelease');
 export const ALL_VERSIONS = versionsData.all;
 export const DEV_VERSION_TAG = versionsData.dev ? `v${versionsData.dev}` : undefined;
+
+// Latest tags - static exports for Turbopack
+export const LATEST_STABLE_TAG = "v0.2.9";
+export const LATEST_DEV_TAG = "v0.2.6-dev";
 
 // Utility to get version info
 export function getVersionInfo(version: string): any {

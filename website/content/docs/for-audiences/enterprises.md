@@ -91,7 +91,7 @@ OSSA enables:
 ### Example: Compliance Agent
 
 ```yaml
-apiVersion: ossa/v0.2.x
+apiVersion: ossa/v{{OSSA_DISPLAY_VERSION}}
 kind: Agent
 
 metadata:
