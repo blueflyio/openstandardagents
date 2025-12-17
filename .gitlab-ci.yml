@@ -189,7 +189,8 @@ detect:milestone-and-tags:
           echo "Branch version: ${BRANCH_VERSION}.x"
 
           # Find next patch version (e.g., 0.3.0, 0.3.1, 0.3.2)
-          LATEST_RELEASE=$(git tag -l "v${BRANCH_VERSION}.*" 2>/dev/null | grep -v "dev\|RC" | sort -V | tail -1)
+          # Use || true to prevent pipefail exit when grep finds no matches
+          LATEST_RELEASE=$(git tag -l "v${BRANCH_VERSION}.*" 2>/dev/null | grep -v "dev\|RC" | sort -V | tail -1 || true)
 
           if [ -z "$LATEST_RELEASE" ]; then
             DEV_VERSION="${BRANCH_VERSION}.0"
