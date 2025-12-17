@@ -276,10 +276,16 @@ sync-version-files:
       
       echo "SYNCING VERSION FILES AFTER PATCH DETERMINATION"
       echo "==============================================="
-      
-      # Source dev tag info from previous job
-      source dev-tag.env || true
-      
+
+      # Source dev tag info from previous job (file may not exist - created in .post stage)
+      if [ -f "dev-tag.env" ]; then
+        . dev-tag.env
+      else
+        echo "dev-tag.env not found (created in .post stage after this job)"
+        echo "Skipping version sync - will run on next pipeline"
+        exit 0
+      fi
+
       if [ -z "$DEV_TAG_VERSION" ]; then
         echo "No dev tag version found, skipping version sync"
         exit 0
