@@ -46,6 +46,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Replace development branch refs with release branch strategy ([a3acb8c](https://gitlab.com/blueflyio/openstandardagents/-/commit/a3acb8c8c91da8e2c858d9f270bb0f4bf806e773))
 
+### Added
+
+- **ci**: Add automatic GitLab Release creation from tags ([7d939eb](https://gitlab.com/blueflyio/openstandardagents/-/commit/7d939ebd5f1bf6900cd58bf91d7cf6f46ac723f5))
+- **ci**: Add automatic GitLab Release creation from tags ([e1bef4f](https://gitlab.com/blueflyio/openstandardagents/-/commit/e1bef4f0e35fe20682046d6bc8e4978f950fdb8b))
+### Fixed
+
+- **ci**: Use JOB-TOKEN header for CI_JOB_TOKEN API calls ([7796994](https://gitlab.com/blueflyio/openstandardagents/-/commit/7796994f49f74203507e478d7cfcb74b1d9af75e))
+- **ci**: Handle missing dev-tag.env in version sync ([6301b94](https://gitlab.com/blueflyio/openstandardagents/-/commit/6301b9453d1799fdb1d8e9177a633a89c89b931f))
+- **ci**: Handle group milestones with CI_JOB_TOKEN ([38d55f4](https://gitlab.com/blueflyio/openstandardagents/-/commit/38d55f492dada77377017fedc92cfe29c06c2ca5))
+- **ci**: Handle group milestones and unset variables - CRITICAL ([05bd63e](https://gitlab.com/blueflyio/openstandardagents/-/commit/05bd63eed555be1849b383247034c931a6f276b5))
+- **ci**: Handle group milestones and unset variables - CRITICAL ([0340bf2](https://gitlab.com/blueflyio/openstandardagents/-/commit/0340bf2c0fd1e7f1ff6ff81ac435425b449b7ec2))
+- **ci**: Handle group milestones and unset variables - CRITICAL ([a7fd368](https://gitlab.com/blueflyio/openstandardagents/-/commit/a7fd36841a278645d928976e1734df354fe6f390))
+- **ci**: Handle group milestones and unset variables - CRITICAL ([b853e5b](https://gitlab.com/blueflyio/openstandardagents/-/commit/b853e5b96e05abf06aba48707c39d550a9528383))
+- **ci**: Include release-workflow.yml - CRITICAL MISSING INCLUDE ([e79b017](https://gitlab.com/blueflyio/openstandardagents/-/commit/e79b017a2e170074985a88651aac17e7060ac75b))
+- **ci**: Use GitLab shared runners - unblock v0.3.0 release ([9b1e1c1](https://gitlab.com/blueflyio/openstandardagents/-/commit/9b1e1c171354f013b45ce70bfb521a954d47fe8c))
+- Resolve conflicts with main for MR !513 ([7090fbf](https://gitlab.com/blueflyio/openstandardagents/-/commit/7090fbfa5ef77346c31e8009402f28351b054c5c))
+
+- Use GITLAB_TOKEN for milestone API calls ([acde568](https://gitlab.com/blueflyio/openstandardagents/-/commit/acde568781f4f7fcb4aa70e5635b845e0e516429))
+
+- Make detect:version run in MR pipelines ([6e85136](https://gitlab.com/blueflyio/openstandardagents/-/commit/6e851366f43abe50f32551a4c147478965bc4764))
+
+- Replace development branch refs with release branch strategy ([a3acb8c](https://gitlab.com/blueflyio/openstandardagents/-/commit/a3acb8c8c91da8e2c858d9f270bb0f4bf806e773))
+
 ### Miscellaneous
 
 - Add .worktrees/ to .gitignore ([5c2c88a](https://gitlab.com/blueflyio/openstandardagents/-/commit/5c2c88aa48e230476c1faa8b0dc4294197e16997))
