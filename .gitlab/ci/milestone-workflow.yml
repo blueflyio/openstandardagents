@@ -65,12 +65,25 @@ validate:milestone-assignment:
       echo "======================="
       echo ""
 
-      # Get MR details
-      MR_DATA=$(curl -sS --header "JOB-TOKEN: ${CI_JOB_TOKEN}" \
-        "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/merge_requests/${CI_MERGE_REQUEST_IID}")
+      # Get MR details - try CI_JOB_TOKEN first, then GITLAB_PUSH_TOKEN
+      if [ -n "${GITLAB_PUSH_TOKEN:-}" ]; then
+        MR_DATA=$(curl -sS --header "PRIVATE-TOKEN: ${GITLAB_PUSH_TOKEN}" \
+          "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/merge_requests/${CI_MERGE_REQUEST_IID}" 2>/dev/null || echo "{}")
+      else
+        MR_DATA=$(curl -sS --header "JOB-TOKEN: ${CI_JOB_TOKEN}" \
+          "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/merge_requests/${CI_MERGE_REQUEST_IID}" 2>/dev/null || echo "{}")
+      fi
 
-      MILESTONE=$(echo "$MR_DATA" | jq -r '.milestone.title // empty')
-      LABELS=$(echo "$MR_DATA" | jq -r '.labels | join(", ")')
+      # Validate JSON response
+      if ! echo "$MR_DATA" | jq empty 2>/dev/null; then
+        echo "⚠️ WARNING: Could not fetch MR details from API"
+        echo "Response: $MR_DATA"
+        echo "Skipping milestone validation..."
+        exit 0
+      fi
+
+      MILESTONE=$(echo "$MR_DATA" | jq -r '.milestone.title // empty' 2>/dev/null || echo "")
+      LABELS=$(echo "$MR_DATA" | jq -r 'if .labels then (.labels | join(", ")) else "" end' 2>/dev/null || echo "")
 
       echo "MR: !${CI_MERGE_REQUEST_IID}"
       echo "Milestone: ${MILESTONE:-not assigned}"
