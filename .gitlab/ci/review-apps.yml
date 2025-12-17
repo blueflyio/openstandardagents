@@ -1,0 +1,242 @@
+# =============================================================================
+# Review Apps CI/CD Configuration
+# =============================================================================
+# Deploys dynamic review environments to OrbStack K8s
+#
+# Flow:
+#   1. Feature MR → Release: Creates review app at ossa-mr-<MR_ID>.orb.local
+#   2. Release MR → Main: Creates staging at ossa-staging.orb.local
+#   3. Main branch: Manual button to deploy to GitLab Pages
+#
+# Prerequisites:
+#   1. CI/CD Variable: KUBE_CONFIG_B64 (base64 encoded kubeconfig)
+#      Generate: cat ~/.kube/config | base64 | pbcopy
+#      Or for OrbStack: kubectl config view --raw | base64 | pbcopy
+#   2. Local DNS: *.orb.local resolves to 192.168.139.2 (OrbStack ingress)
+#      Add to /etc/hosts: 192.168.139.2 ossa-staging.orb.local
+# =============================================================================
+
+variables:
+  REVIEW_NAMESPACE: ossa-review
+  ORBSTACK_DOMAIN: orb.local
+
+# =============================================================================
+# REVIEW APP - Feature → Release MRs
+# =============================================================================
+# Automatically deploys a review app for each MR targeting release branches
+review:deploy:
+  stage: deploy
+  image:
+    name: bitnami/kubectl:latest
+    entrypoint: [""]
+  dependencies:
+    - build:docker
+  variables:
+    GIT_STRATEGY: clone
+  before_script:
+    - |
+      # Install envsubst
+      apt-get update && apt-get install -y gettext-base curl ca-certificates
+
+      # Configure kubectl from CI variable
+      if [ -n "$KUBE_CONFIG_B64" ]; then
+        mkdir -p ~/.kube
+        echo "$KUBE_CONFIG_B64" | base64 -d > ~/.kube/config
+        chmod 600 ~/.kube/config
+        echo "✅ Kubectl configured from KUBE_CONFIG_B64"
+      else
+        echo "⚠️  KUBE_CONFIG_B64 not set - skipping K8s deployment"
+        echo "   To enable: Add KUBE_CONFIG_B64 CI/CD variable"
+        echo "   Generate: kubectl config view --raw | base64 | pbcopy"
+        exit 0
+      fi
+
+      # Verify kubectl connection
+      if ! kubectl cluster-info >/dev/null 2>&1; then
+        echo "⚠️  Cannot connect to Kubernetes cluster"
+        echo "   Check KUBE_CONFIG_B64 is valid and cluster is accessible"
+        exit 0
+      fi
+
+      # Set review app variables
+      export REVIEW_APP_NAME="ossa-mr-${CI_MERGE_REQUEST_IID}"
+      export REVIEW_APP_HOST="${REVIEW_APP_NAME}.${ORBSTACK_DOMAIN}"
+      export REVIEW_APP_IMAGE="${CI_REGISTRY_IMAGE}:${CI_COMMIT_SHA}"
+      export NAMESPACE="${REVIEW_NAMESPACE}"
+
+      echo "📦 Review App: ${REVIEW_APP_NAME}"
+      echo "🌐 URL: http://${REVIEW_APP_HOST}"
+      echo "🐳 Image: ${REVIEW_APP_IMAGE}"
+  script:
+    - |
+      # Skip if kubectl not configured
+      if [ ! -f ~/.kube/config ]; then
+        echo "Skipping - kubectl not configured"
+        exit 0
+      fi
+
+      # Create namespace if not exists
+      kubectl create namespace "${NAMESPACE}" --dry-run=client -o yaml | kubectl apply -f -
+
+      # Create registry secret if not exists
+      kubectl create secret docker-registry gitlab-registry \
+        --namespace="${NAMESPACE}" \
+        --docker-server="${CI_REGISTRY}" \
+        --docker-username="${CI_REGISTRY_USER}" \
+        --docker-password="${CI_REGISTRY_PASSWORD}" \
+        --dry-run=client -o yaml | kubectl apply -f -
+
+      # Deploy review app
+      envsubst < .gitlab/k8s/review-app.yaml | kubectl apply -f -
+
+      # Wait for rollout
+      kubectl rollout status deployment/"${REVIEW_APP_NAME}" -n "${NAMESPACE}" --timeout=120s
+
+      echo ""
+      echo "=============================================="
+      echo "✅ Review App Deployed!"
+      echo "=============================================="
+      echo "🌐 URL: http://${REVIEW_APP_HOST}"
+      echo "📋 MR: !${CI_MERGE_REQUEST_IID}"
+      echo "🔄 Branch: ${CI_MERGE_REQUEST_SOURCE_BRANCH_NAME}"
+      echo "=============================================="
+  environment:
+    name: review/${CI_MERGE_REQUEST_SOURCE_BRANCH_NAME}
+    url: http://ossa-mr-${CI_MERGE_REQUEST_IID}.orb.local
+    on_stop: review:stop
+    auto_stop_in: 1 week
+    deployment_tier: development
+  allow_failure: true
+  rules:
+    # Feature/bugfix MRs targeting release branches
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME =~ /^release\//
+      when: on_success
+
+# Stop review app when MR is closed/merged
+review:stop:
+  stage: deploy
+  image:
+    name: bitnami/kubectl:latest
+    entrypoint: [""]
+  variables:
+    GIT_STRATEGY: none
+  before_script:
+    - |
+      if [ -n "$KUBE_CONFIG_B64" ]; then
+        mkdir -p ~/.kube
+        echo "$KUBE_CONFIG_B64" | base64 -d > ~/.kube/config
+        chmod 600 ~/.kube/config
+      fi
+  script:
+    - |
+      if [ ! -f ~/.kube/config ]; then
+        echo "Skipping - kubectl not configured"
+        exit 0
+      fi
+
+      REVIEW_APP_NAME="ossa-mr-${CI_MERGE_REQUEST_IID}"
+      echo "🧹 Stopping review app: ${REVIEW_APP_NAME}"
+
+      kubectl delete deployment "${REVIEW_APP_NAME}" -n "${REVIEW_NAMESPACE}" --ignore-not-found=true
+      kubectl delete service "${REVIEW_APP_NAME}" -n "${REVIEW_NAMESPACE}" --ignore-not-found=true
+      kubectl delete ingress "${REVIEW_APP_NAME}" -n "${REVIEW_NAMESPACE}" --ignore-not-found=true
+
+      echo "✅ Review app stopped"
+  environment:
+    name: review/${CI_MERGE_REQUEST_SOURCE_BRANCH_NAME}
+    action: stop
+  allow_failure: true
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME =~ /^release\//
+      when: manual
+
+# =============================================================================
+# STAGING - Release → Main MRs
+# =============================================================================
+# Deploys staging preview when release branch merges to main
+staging:deploy:
+  stage: deploy
+  image:
+    name: bitnami/kubectl:latest
+    entrypoint: [""]
+  dependencies:
+    - build:docker
+  variables:
+    GIT_STRATEGY: clone
+  before_script:
+    - |
+      apt-get update && apt-get install -y gettext-base ca-certificates
+
+      # Configure kubectl from CI variable
+      if [ -n "$KUBE_CONFIG_B64" ]; then
+        mkdir -p ~/.kube
+        echo "$KUBE_CONFIG_B64" | base64 -d > ~/.kube/config
+        chmod 600 ~/.kube/config
+        echo "✅ Kubectl configured from KUBE_CONFIG_B64"
+      else
+        echo "⚠️  KUBE_CONFIG_B64 not set - skipping K8s deployment"
+        exit 0
+      fi
+
+      # Verify kubectl connection
+      if ! kubectl cluster-info >/dev/null 2>&1; then
+        echo "⚠️  Cannot connect to Kubernetes cluster"
+        exit 0
+      fi
+
+      # Set staging app variables
+      export REVIEW_APP_NAME="ossa-staging"
+      export REVIEW_APP_HOST="ossa-staging.${ORBSTACK_DOMAIN}"
+      export REVIEW_APP_IMAGE="${CI_REGISTRY_IMAGE}:${CI_COMMIT_SHA}"
+      export NAMESPACE="${REVIEW_NAMESPACE}"
+
+      echo "📦 Staging App: ${REVIEW_APP_NAME}"
+      echo "🌐 URL: http://${REVIEW_APP_HOST}"
+  script:
+    - |
+      # Skip if kubectl not configured
+      if [ ! -f ~/.kube/config ]; then
+        echo "Skipping - kubectl not configured"
+        exit 0
+      fi
+
+      # Create namespace if not exists
+      kubectl create namespace "${NAMESPACE}" --dry-run=client -o yaml | kubectl apply -f -
+
+      # Create registry secret
+      kubectl create secret docker-registry gitlab-registry \
+        --namespace="${NAMESPACE}" \
+        --docker-server="${CI_REGISTRY}" \
+        --docker-username="${CI_REGISTRY_USER}" \
+        --docker-password="${CI_REGISTRY_PASSWORD}" \
+        --dry-run=client -o yaml | kubectl apply -f -
+
+      # Deploy staging
+      envsubst < .gitlab/k8s/review-app.yaml | kubectl apply -f -
+
+      # Wait for rollout
+      kubectl rollout status deployment/"${REVIEW_APP_NAME}" -n "${NAMESPACE}" --timeout=120s
+
+      echo ""
+      echo "=============================================="
+      echo "✅ Staging Deployed!"
+      echo "=============================================="
+      echo "🌐 URL: http://${REVIEW_APP_HOST}"
+      echo "📋 MR: !${CI_MERGE_REQUEST_IID}"
+      echo "🔄 Source: ${CI_MERGE_REQUEST_SOURCE_BRANCH_NAME}"
+      echo "=============================================="
+  environment:
+    name: staging
+    url: http://ossa-staging.orb.local
+    deployment_tier: staging
+  allow_failure: true
+  rules:
+    # Release branch MRs targeting main
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME =~ /^release\// && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "main"
+      when: on_success
+
+# =============================================================================
+# PRODUCTION - Defined in main .gitlab-ci.yml as "pages" job
+# =============================================================================
+# The production deployment uses the special "pages" job name in .gitlab-ci.yml
+# which triggers GitLab Pages when manually clicked on main branch
