@@ -29,7 +29,7 @@ include:
   - template: Jobs/Dependency-Scanning.gitlab-ci.yml
   # Merge trains enabled via workflow rules (see workflow section at bottom)
   # Component available but private - uncomment when gitlab_components is public
-  # - component: gitlab.com/blueflyio/agent-platform/gitlab_components/merge-train@main
+  # - component: gitlab.com/blueflyio/gitlab_components/merge-train@main
 # OSSA Runners
   - local: '.gitlab/ci/ossa-runners.yml'
 #   - CI/CD variable ENABLE_RELEASE must be set to "true"
