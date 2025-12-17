@@ -11,8 +11,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **ci**: Add automatic GitLab Release creation from tags ([7d939eb](https://gitlab.com/blueflyio/openstandardagents/-/commit/7d939ebd5f1bf6900cd58bf91d7cf6f46ac723f5))
 - **ci**: Add automatic GitLab Release creation from tags ([e1bef4f](https://gitlab.com/blueflyio/openstandardagents/-/commit/e1bef4f0e35fe20682046d6bc8e4978f950fdb8b))
+### CI/CD
+
+- Trigger v0.3.x dev tag creation ([c92e580](https://gitlab.com/blueflyio/openstandardagents/-/commit/c92e580ff47901519d3d1133293d43d60d91fe4c))
+
+- Trigger dev tag creation [skip ci] ([f51c9bd](https://gitlab.com/blueflyio/openstandardagents/-/commit/f51c9bd7ffcaf50cd051b06d85bccea1f367d31d))
+
 ### Fixed
 
+- **ci**: CRITICAL - use branch name for version, not milestones ([63cc109](https://gitlab.com/blueflyio/openstandardagents/-/commit/63cc109e4aec53dde06c770ed8e2a517027b900f))
 - **ci**: Use JOB-TOKEN header for CI_JOB_TOKEN API calls ([7796994](https://gitlab.com/blueflyio/openstandardagents/-/commit/7796994f49f74203507e478d7cfcb74b1d9af75e))
 - **ci**: Handle missing dev-tag.env in version sync ([6301b94](https://gitlab.com/blueflyio/openstandardagents/-/commit/6301b9453d1799fdb1d8e9177a633a89c89b931f))
 - **ci**: Handle group milestones with CI_JOB_TOKEN ([38d55f4](https://gitlab.com/blueflyio/openstandardagents/-/commit/38d55f492dada77377017fedc92cfe29c06c2ca5))
