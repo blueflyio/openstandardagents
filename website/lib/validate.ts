@@ -25,29 +25,44 @@ export interface ValidationResult {
 // Cache for loaded schemas
 const schemaCache: Map<string, object> = new Map();
 
+// Available schema versions in order of preference (newest first)
+const AVAILABLE_SCHEMAS = ['0.2.9', '0.2.8', '0.2.3'];
+
 /**
  * Load schema from public directory (client-side)
+ * Falls back to latest available if requested version doesn't exist
  */
-async function loadSchema(version: string = OSSA_VERSION): Promise<object | null> {
-  const cacheKey = version;
-  if (schemaCache.has(cacheKey)) {
-    return schemaCache.get(cacheKey)!;
+async function loadSchema(version: string = OSSA_VERSION): Promise<{ schema: object; actualVersion: string } | null> {
+  // Normalize version (remove -RC, -dev suffixes for matching)
+  const normalizedVersion = version.replace(/-.*$/, '');
+
+  // Try versions in order: requested, then fallbacks
+  const versionsToTry = [normalizedVersion, ...AVAILABLE_SCHEMAS.filter(v => v !== normalizedVersion)];
+
+  for (const ver of versionsToTry) {
+    const cacheKey = ver;
+    if (schemaCache.has(cacheKey)) {
+      return { schema: schemaCache.get(cacheKey)!, actualVersion: ver };
+    }
+
+    try {
+      const schemaPath = `/schemas/ossa-${ver}.schema.json`;
+      const response = await fetch(schemaPath);
+      if (response.ok) {
+        const schema = await response.json();
+        schemaCache.set(cacheKey, schema);
+        if (ver !== normalizedVersion) {
+          console.log(`Schema ${version} not found, using ${ver} as fallback`);
+        }
+        return { schema, actualVersion: ver };
+      }
+    } catch (error) {
+      // Try next version
+    }
   }
 
-  try {
-    const schemaPath = getSchemaPath(version);
-    const response = await fetch(schemaPath);
-    if (!response.ok) {
-      console.error(`Failed to load schema: ${response.status}`);
-      return null;
-    }
-    const schema = await response.json();
-    schemaCache.set(cacheKey, schema);
-    return schema;
-  } catch (error) {
-    console.error('Error loading schema:', error);
-    return null;
-  }
+  console.error(`No schema found for ${version} or any fallback`);
+  return null;
 }
 
 /**
@@ -169,8 +184,11 @@ export async function validateManifest(
   const schemaVersion = options.version || manifestVersion || OSSA_VERSION;
 
   // Step 4: Load and validate against JSON Schema
-  const schema = await loadSchema(schemaVersion);
-  if (schema) {
+  const schemaResult = await loadSchema(schemaVersion);
+  let actualSchemaVersion = schemaVersion;
+
+  if (schemaResult) {
+    actualSchemaVersion = schemaResult.actualVersion;
     try {
       const ajv = new Ajv({
         allErrors: true,
@@ -179,7 +197,7 @@ export async function validateManifest(
       });
       addFormats(ajv);
 
-      const validate = ajv.compile(schema);
+      const validate = ajv.compile(schemaResult.schema);
       const isValid = validate(parsed);
 
       if (!isValid && validate.errors) {
@@ -191,13 +209,21 @@ export async function validateManifest(
             params: err.params as Record<string, unknown>
           };
 
-          // Enhance error messages
+          // Enhance error messages with fix suggestions
           if (err.keyword === 'additionalProperties') {
-            error.message = `Unknown property: ${(err.params as any)?.additionalProperty}`;
+            const prop = (err.params as any)?.additionalProperty;
+            error.message = `Unknown property: "${prop}". Remove it or check spelling.`;
           } else if (err.keyword === 'enum') {
-            error.message = `${err.message}. Allowed values: ${JSON.stringify((err.params as any)?.allowedValues)}`;
+            const allowed = (err.params as any)?.allowedValues;
+            error.message = `Invalid value. Allowed: ${JSON.stringify(allowed)}`;
           } else if (err.keyword === 'type') {
-            error.message = `Invalid type: expected ${(err.params as any)?.type}`;
+            const expected = (err.params as any)?.type;
+            error.message = `Invalid type: expected ${expected}`;
+          } else if (err.keyword === 'required') {
+            const missing = (err.params as any)?.missingProperty;
+            error.message = `Missing required property: "${missing}"`;
+          } else if (err.keyword === 'pattern') {
+            error.message = `Invalid format: ${err.message}`;
           }
 
           errors.push(error);
@@ -211,9 +237,9 @@ export async function validateManifest(
       });
     }
   } else {
-    warnings.push({
+    errors.push({
       path: '',
-      message: `Could not load schema for version ${schemaVersion}. Basic validation passed.`,
+      message: `Could not load any schema. Check your connection or try again.`,
       keyword: 'schema'
     });
   }
@@ -258,7 +284,7 @@ export async function validateManifest(
     errors,
     warnings,
     parsedManifest: parsed,
-    schemaVersion
+    schemaVersion: actualSchemaVersion
   };
 }
 
