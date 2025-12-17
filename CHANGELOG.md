@@ -7,23 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Added
-
-- **ci**: Add automatic GitLab Release creation from tags ([7d939eb](https://gitlab.com/blueflyio/openstandardagents/-/commit/7d939ebd5f1bf6900cd58bf91d7cf6f46ac723f5))
-- **ci**: Add automatic GitLab Release creation from tags ([e1bef4f](https://gitlab.com/blueflyio/openstandardagents/-/commit/e1bef4f0e35fe20682046d6bc8e4978f950fdb8b))
-### Fixed
-
-- **ci**: Include release-workflow.yml - CRITICAL MISSING INCLUDE ([e79b017](https://gitlab.com/blueflyio/openstandardagents/-/commit/e79b017a2e170074985a88651aac17e7060ac75b))
-- **ci**: Use GitLab shared runners - unblock v0.3.0 release ([9b1e1c1](https://gitlab.com/blueflyio/openstandardagents/-/commit/9b1e1c171354f013b45ce70bfb521a954d47fe8c))
-- Use GITLAB_TOKEN for milestone API calls ([acde568](https://gitlab.com/blueflyio/openstandardagents/-/commit/acde568781f4f7fcb4aa70e5635b845e0e516429))
-
-- Make detect:version run in MR pipelines ([6e85136](https://gitlab.com/blueflyio/openstandardagents/-/commit/6e851366f43abe50f32551a4c147478965bc4764))
-
-- Replace development branch refs with release branch strategy ([a3acb8c](https://gitlab.com/blueflyio/openstandardagents/-/commit/a3acb8c8c91da8e2c858d9f270bb0f4bf806e773))
-
 ### Miscellaneous
-
-- Add .worktrees/ to .gitignore ([5c2c88a](https://gitlab.com/blueflyio/openstandardagents/-/commit/5c2c88aa48e230476c1faa8b0dc4294197e16997))
 
 - Merge main into release/v0.3.x - resolve conflicts ([771d16d](https://gitlab.com/blueflyio/openstandardagents/-/commit/771d16da62644f63e229c08d9e7d18095472aeeb))
 ## [0.3.0-RC] - 2025-12-15
