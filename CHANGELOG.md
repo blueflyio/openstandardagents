@@ -7,12 +7,36 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- **ci**: Fix YAML syntax errors in multiline curl commands ([787329d](https://gitlab.com/blueflyio/openstandardagents/-/commit/787329ddc6f255f003c29d600f3173e6051e5b69))
+- **ci**: Update all gitlab.bluefly.io and agent-platform paths ([6219d5b](https://gitlab.com/blueflyio/openstandardagents/-/commit/6219d5b05b32a20207d1a9bc4ce2354a5dced29e))
+- **ci**: Update component paths to gitlab.com/blueflyio/gitlab_components ([a5103a8](https://gitlab.com/blueflyio/openstandardagents/-/commit/a5103a8577f2846d38def5e4b8eb8d557a12f1dd))
+- Sync main into release/v0.3.x ([115c160](https://gitlab.com/blueflyio/openstandardagents/-/commit/115c160918fe2027d2160e9fd54d767a5afae127))
+## [0.3.0-dev.12] - 2025-12-17
+
+### Fixed
+
+- **ci**: Detect PAT vs deploy token in CI_DEPLOY_OSSA ([2e29863](https://gitlab.com/blueflyio/openstandardagents/-/commit/2e29863c3a0cd02bfa4a317a30fd6f2d6860e758))
+- **ci**: Check CI_DEPLOY_OSSA directly with debug output ([9d1d58f](https://gitlab.com/blueflyio/openstandardagents/-/commit/9d1d58f40dc5ae727ef5e834eaaabd9b3417d885))
+- **ci**: Map CI_DEPLOY_OSSA group variable to GITLAB_PUSH_TOKEN ([c40709e](https://gitlab.com/blueflyio/openstandardagents/-/commit/c40709ec603c86de291df37bc7bcf9e00c7551e6))
+- **ci**: Support deploy tokens (gldt-*) for git push auth ([9acd90f](https://gitlab.com/blueflyio/openstandardagents/-/commit/9acd90fe84e49d4f44d2444312c2c162b004df4a))
+- **ci**: Refactor milestone detection to be read-only ([70ec64e](https://gitlab.com/blueflyio/openstandardagents/-/commit/70ec64e3e43e8c47ae3327c8c01021b1eddbd5f8))## [0.3.0-dev.11] - 2025-12-17
+
 ### Added
 
 - **ci**: Add automatic GitLab Release creation from tags ([7d939eb](https://gitlab.com/blueflyio/openstandardagents/-/commit/7d939ebd5f1bf6900cd58bf91d7cf6f46ac723f5))
 - **ci**: Add automatic GitLab Release creation from tags ([e1bef4f](https://gitlab.com/blueflyio/openstandardagents/-/commit/e1bef4f0e35fe20682046d6bc8e4978f950fdb8b))
+### CI/CD
+
+- Trigger v0.3.x dev tag creation ([c92e580](https://gitlab.com/blueflyio/openstandardagents/-/commit/c92e580ff47901519d3d1133293d43d60d91fe4c))
+
+- Trigger dev tag creation [skip ci] ([f51c9bd](https://gitlab.com/blueflyio/openstandardagents/-/commit/f51c9bd7ffcaf50cd051b06d85bccea1f367d31d))
+
 ### Fixed
 
+- **ci**: Handle no release tags case with pipefail ([7905d4d](https://gitlab.com/blueflyio/openstandardagents/-/commit/7905d4d3ced54c489387e04b77a09b1d5a04c5c9))
+- **ci**: CRITICAL - use branch name for version, not milestones ([63cc109](https://gitlab.com/blueflyio/openstandardagents/-/commit/63cc109e4aec53dde06c770ed8e2a517027b900f))
 - **ci**: Use JOB-TOKEN header for CI_JOB_TOKEN API calls ([7796994](https://gitlab.com/blueflyio/openstandardagents/-/commit/7796994f49f74203507e478d7cfcb74b1d9af75e))
 - **ci**: Handle missing dev-tag.env in version sync ([6301b94](https://gitlab.com/blueflyio/openstandardagents/-/commit/6301b9453d1799fdb1d8e9177a633a89c89b931f))
 - **ci**: Handle group milestones with CI_JOB_TOKEN ([38d55f4](https://gitlab.com/blueflyio/openstandardagents/-/commit/38d55f492dada77377017fedc92cfe29c06c2ca5))
