@@ -1,0 +1,108 @@
+ossa: v0.3.0
+
+kind: trigger
+metadata:
+  name: scheduled-tasks
+  namespace: openstandardagents.org
+  version: 1.0.0
+  title: Scheduled Task Triggers
+  description: >-
+    Cron-based trigger configuration for scheduled automation tasks.
+    Handles periodic sync, validation, and maintenance operations.
+  labels:
+    component: trigger
+    domain: scheduler
+    tier: infrastructure
+
+spec:
+  source:
+    type: schedule
+    provider: cron
+
+  schedules:
+    - name: version-sync
+      description: Sync versions from npm registry
+      cron: "0 */6 * * *"  # Every 6 hours
+      timezone: UTC
+      routing:
+        workflow: sync-versions
+      enabled: true
+
+    - name: spec-sync
+      description: Sync OSSA specification from package
+      cron: "0 0 * * *"  # Daily at midnight
+      timezone: UTC
+      routing:
+        workflow: sync-spec
+      enabled: true
+
+    - name: examples-sync
+      description: Sync example manifests
+      cron: "0 2 * * *"  # Daily at 2 AM
+      timezone: UTC
+      routing:
+        workflow: sync-examples
+      enabled: true
+
+    - name: wiki-sync
+      description: Sync wiki documentation
+      cron: "0 4 * * *"  # Daily at 4 AM
+      timezone: UTC
+      routing:
+        workflow: sync-wiki
+      enabled: true
+
+    - name: schema-validation
+      description: Validate all OSSA manifests in repo
+      cron: "0 6 * * 1"  # Weekly on Monday at 6 AM
+      timezone: UTC
+      routing:
+        agents:
+          - bot-ossa-validator
+        command: validate --all --strict
+      enabled: true
+
+    - name: dependency-check
+      description: Check for outdated dependencies
+      cron: "0 8 * * 1"  # Weekly on Monday at 8 AM
+      timezone: UTC
+      routing:
+        workflow: dependency-audit
+      enabled: true
+
+    - name: stale-mr-reminder
+      description: Remind about stale MRs
+      cron: "0 9 * * 1-5"  # Weekdays at 9 AM
+      timezone: UTC
+      routing:
+        workflow: stale-mr-notifier
+      config:
+        stale_days: 7
+        notification_channel: slack
+      enabled: true
+
+  concurrency:
+    max_concurrent: 3
+    queue_strategy: fifo
+
+  error_handling:
+    retry:
+      max_attempts: 2
+      backoff: linear
+      initial_delay: 60s
+    on_failure:
+      - log_error
+      - notify_channel: slack
+    on_timeout:
+      - kill_job
+      - log_warning
+
+  observability:
+    metrics:
+      enabled: true
+      labels:
+        - schedule_name
+        - execution_status
+    logging:
+      level: info
+      include_duration: true

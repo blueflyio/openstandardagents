@@ -11,25 +11,21 @@
 ### 1. ✅ OSSA Spec Sync
 - **Source**: `@bluefly/ossa` npm package
 - **Destination**: `public/spec/ossa-spec.yaml`
-- **Trigger**: Every push, every 6 hours, on OSSA release
 - **Script**: `scripts/fetch-spec.js`
 
 ### 2. ✅ Version Sync
 - **Source**: npm registry
 - **Destination**: `public/versions.json` + `src/config/version.ts`
-- **Trigger**: Every push, every 6 hours
 - **Scripts**: `scripts/fetch-versions.js`, `scripts/sync-version.js`
 
 ### 3. ✅ Examples Sync
 - **Source**: OSSA repository examples
 - **Destination**: `public/examples/`
-- **Trigger**: Every push, every 6 hours
 - **Script**: `scripts/fetch-examples.js`
 
 ### 4. ✅ Wiki Sync
 - **Source**: GitLab wiki
 - **Destination**: `content/wiki/`
-- **Trigger**: Every push, every 6 hours
 - **Script**: `scripts/sync-wiki.ts`
 
 ### 5. ✅ Schema Validation

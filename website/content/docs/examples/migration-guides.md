@@ -103,7 +103,7 @@ Migrate agents from existing frameworks to OSSA format.
 
 ```bash
 # Migrate agent between versions
-ossa migrate agent.yaml --target-version 0.2.8
+ossa migrate agent.yaml --target-version {{OSSA_VERSION}}
 ```
 
 ### Manual Migration
@@ -125,7 +125,7 @@ agent = create_agent(llm, tools)
 
 **After** (OSSA):
 ```yaml
-apiVersion: ossa/v0.2.9
+apiVersion: ossa/v{{OSSA_VERSION}}
 kind: Agent
 spec:
   role: Agent description

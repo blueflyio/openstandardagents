@@ -156,7 +156,6 @@ glab ci trace -b development -j sync:auto
 ## Benefits
 
 ✅ **Zero manual work** - Everything syncs automatically  
-✅ **Always up-to-date** - Checks every 6 hours  
 ✅ **Fast releases** - No 5-hour sync process  
 ✅ **Audit trail** - All changes via MRs  
 ✅ **Rollback ready** - Git history preserved  

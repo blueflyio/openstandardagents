@@ -78,7 +78,7 @@ OSSA solves these challenges through **standardization, interoperability, and go
   "manifestVersion": "1.0.0",
   "agent": {
     "name": "customer-support-agent",
-    "version": "0.2.9",
+    "version": "{{OSSA_VERSION}}",
     "type": "autonomous"
   }
 }

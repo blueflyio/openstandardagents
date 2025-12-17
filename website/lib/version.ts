@@ -5,14 +5,14 @@
 
 import versionsData from './versions.json';
 
-export const OSSA_VERSION = "0.2.9";
+export const OSSA_VERSION = "0.3.0-RC";
 export const OSSA_VERSION_TAG = `v${OSSA_VERSION}`;
 export const OSSA_API_VERSION = `ossa/v${OSSA_VERSION}`;
 export const OSSA_SCHEMA_VERSION = OSSA_VERSION;
 
 // Display version for marketing (doesn't change on patch releases)
-export const OSSA_DISPLAY_VERSION = "0.2.x";
-export const OSSA_DISPLAY_VERSION_TAG = "v0.2.x";
+export const OSSA_DISPLAY_VERSION = "0.3.x";
+export const OSSA_DISPLAY_VERSION_TAG = "v0.3.x";
 
 // Aliases for backward compatibility
 export const STABLE_VERSION = OSSA_VERSION;
