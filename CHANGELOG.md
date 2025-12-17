@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **ci**: Add automatic GitLab Release creation from tags ([e1bef4f](https://gitlab.com/blueflyio/openstandardagents/-/commit/e1bef4f0e35fe20682046d6bc8e4978f950fdb8b))
 ### Fixed
 
+- **ci**: Use JOB-TOKEN header for CI_JOB_TOKEN API calls ([7796994](https://gitlab.com/blueflyio/openstandardagents/-/commit/7796994f49f74203507e478d7cfcb74b1d9af75e))
 - **ci**: Handle missing dev-tag.env in version sync ([6301b94](https://gitlab.com/blueflyio/openstandardagents/-/commit/6301b9453d1799fdb1d8e9177a633a89c89b931f))
 - **ci**: Handle group milestones with CI_JOB_TOKEN ([38d55f4](https://gitlab.com/blueflyio/openstandardagents/-/commit/38d55f492dada77377017fedc92cfe29c06c2ca5))
 - **ci**: Handle group milestones and unset variables - CRITICAL ([05bd63e](https://gitlab.com/blueflyio/openstandardagents/-/commit/05bd63eed555be1849b383247034c931a6f276b5))
