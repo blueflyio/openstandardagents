@@ -1,0 +1,253 @@
+# OSSA Agent Taxonomy Schema
+# Hierarchical domain classification for AI agents
+
+apiVersion: ossa/v{{VERSION}}
+kind: Taxonomy
+metadata:
+  name: agent-taxonomy
+  version: "{{VERSION}}"
+  description: Formal agent taxonomy with hierarchical domains
+
+spec:
+  categories:
+    # ==========================================================================
+    # Category 1: Development & Engineering
+    # ==========================================================================
+    development:
+      description: Software development and engineering agents
+      domains:
+        code-generation:
+          description: Agents that generate source code
+          subtypes:
+            - frontend    # UI/UX code generation
+            - backend     # Server-side code
+            - fullstack   # End-to-end applications
+            - api         # API design and implementation
+            - mobile      # iOS/Android development
+
+        code-review:
+          description: Agents that review and improve code quality
+          subtypes:
+            - style       # Code style and formatting
+            - security    # Security vulnerability detection
+            - performance # Performance optimization
+            - architecture # Design pattern analysis
+
+        devops:
+          description: CI/CD and infrastructure automation
+          subtypes:
+            - ci-cd       # Pipeline automation
+            - iac         # Infrastructure as Code
+            - monitoring  # Observability and alerting
+            - deployment  # Release automation
+
+        testing:
+          description: Quality assurance and testing
+          subtypes:
+            - unit        # Unit test generation
+            - integration # Integration testing
+            - e2e         # End-to-end testing
+            - performance # Load and stress testing
+
+    # ==========================================================================
+    # Category 2: Data & Analytics
+    # ==========================================================================
+    data:
+      description: Data processing, analysis, and ML/AI agents
+      domains:
+        data-engineering:
+          description: Data pipeline and ETL agents
+          subtypes:
+            - etl         # Extract, Transform, Load
+            - streaming   # Real-time data processing
+            - quality     # Data quality validation
+            - migration   # Data migration automation
+
+        analytics:
+          description: Business intelligence and reporting
+          subtypes:
+            - bi          # Business intelligence
+            - visualization # Dashboard creation
+            - forecasting # Predictive analytics
+            - reporting   # Automated reporting
+
+        machine-learning:
+          description: ML model development and deployment
+          subtypes:
+            - training    # Model training pipelines
+            - inference   # Model serving and inference
+            - mlops       # ML operations
+            - automl      # Automated ML
+
+        research:
+          description: Data exploration and research
+          subtypes:
+            - exploration # Exploratory data analysis
+            - literature  # Literature review
+            - synthesis   # Research synthesis
+            - citation    # Citation management
+
+    # ==========================================================================
+    # Category 3: Content & Communication
+    # ==========================================================================
+    content:
+      description: Content creation, management, and communication
+      domains:
+        writing:
+          description: Text content generation
+          subtypes:
+            - technical   # Technical documentation
+            - marketing   # Marketing copy
+            - creative    # Creative writing
+            - translation # Language translation
+
+        media:
+          description: Multimedia content creation
+          subtypes:
+            - image       # Image generation/editing
+            - video       # Video production
+            - audio       # Audio/podcast creation
+            - design      # Graphic design
+
+        communication:
+          description: Communication and collaboration
+          subtypes:
+            - email       # Email drafting/management
+            - chat        # Chat/messaging
+            - meeting     # Meeting facilitation
+            - presentation # Presentation creation
+
+    # ==========================================================================
+    # Category 4: Business Operations
+    # ==========================================================================
+    operations:
+      description: Business process automation and operations
+      domains:
+        workflow:
+          description: Business workflow automation
+          subtypes:
+            - approval    # Approval workflows
+            - routing     # Task routing
+            - scheduling  # Resource scheduling
+            - notification # Alert and notification
+
+        finance:
+          description: Financial operations
+          subtypes:
+            - accounting  # Bookkeeping automation
+            - invoicing   # Invoice processing
+            - budgeting   # Budget management
+            - compliance  # Financial compliance
+
+        hr:
+          description: Human resources automation
+          subtypes:
+            - recruiting  # Talent acquisition
+            - onboarding  # Employee onboarding
+            - performance # Performance management
+            - benefits    # Benefits administration
+
+        customer:
+          description: Customer-facing operations
+          subtypes:
+            - support     # Customer support
+            - sales       # Sales automation
+            - marketing   # Marketing automation
+            - success     # Customer success
+
+    # ==========================================================================
+    # Category 5: Infrastructure & Security
+    # ==========================================================================
+    infrastructure:
+      description: IT infrastructure and security
+      domains:
+        cloud:
+          description: Cloud infrastructure management
+          subtypes:
+            - provisioning # Resource provisioning
+            - optimization # Cost optimization
+            - migration   # Cloud migration
+            - governance  # Cloud governance
+
+        security:
+          description: Security and compliance
+          subtypes:
+            - threat      # Threat detection
+            - compliance  # Regulatory compliance
+            - access      # Access management
+            - audit       # Security auditing
+
+        networking:
+          description: Network management
+          subtypes:
+            - configuration # Network configuration
+            - monitoring  # Network monitoring
+            - troubleshooting # Issue resolution
+            - optimization # Performance tuning
+
+    # ==========================================================================
+    # Category 6: Specialized Domains
+    # ==========================================================================
+    specialized:
+      description: Industry-specific and specialized agents
+      domains:
+        healthcare:
+          description: Healthcare and medical
+          subtypes:
+            - clinical    # Clinical decision support
+            - administrative # Healthcare admin
+            - research    # Medical research
+            - compliance  # HIPAA compliance
+
+        legal:
+          description: Legal and compliance
+          subtypes:
+            - contract    # Contract analysis
+            - research    # Legal research
+            - compliance  # Regulatory compliance
+            - discovery   # E-discovery
+
+        education:
+          description: Education and training
+          subtypes:
+            - tutoring    # Personalized tutoring
+            - assessment  # Testing and assessment
+            - curriculum  # Curriculum development
+            - administration # Educational admin
+
+  # ============================================================================
+  # Cross-Cutting Capabilities
+  # ============================================================================
+  capabilities:
+    reasoning:
+      - planning      # Multi-step planning
+      - analysis      # Data analysis
+      - synthesis     # Information synthesis
+      - evaluation    # Option evaluation
+
+    interaction:
+      - conversational # Natural conversation
+      - tool-use      # External tool usage
+      - collaboration # Multi-agent collaboration
+      - human-in-loop # Human oversight
+
+    execution:
+      - autonomous    # Fully autonomous
+      - supervised    # Human-supervised
+      - batch         # Batch processing
+      - real-time     # Real-time execution
+
+  # ============================================================================
+  # Validation Rules
+  # ============================================================================
+  validation:
+    required_fields:
+      - category
+      - domain
+    optional_fields:
+      - subtype
+      - capabilities
+    constraints:
+      - "category MUST be one of the defined categories"
+      - "domain MUST exist within the specified category"
+      - "subtype SHOULD exist within the specified domain"
