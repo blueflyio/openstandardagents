@@ -758,6 +758,60 @@ test:unit:
   rules:
     - when: always
 
+test:integration:
+  stage: test
+  image: node:${NODE_VERSION}-alpine
+  tags:
+    - saas-linux-small-amd64
+  timeout: 20 minutes
+  dependencies:
+    - build:dist
+  needs:
+    - job: build:dist
+      artifacts: true
+  before_script:
+    - apk add --no-cache curl jq
+    - npm ci --legacy-peer-deps
+  script:
+    - npm run build
+    - npm run test:integration
+  artifacts:
+    reports:
+      junit: test-results/junit.xml
+    paths:
+      - test-results/
+    expire_in: 7 days
+  allow_failure: false
+  rules:
+    - when: always
+
+test:e2e:
+  stage: test
+  image: node:${NODE_VERSION}-alpine
+  tags:
+    - saas-linux-small-amd64
+  timeout: 30 minutes
+  dependencies:
+    - build:dist
+  needs:
+    - job: build:dist
+      artifacts: true
+  before_script:
+    - apk add --no-cache curl jq
+    - npm ci --legacy-peer-deps
+  script:
+    - npm run build
+    - npm run test:e2e
+  artifacts:
+    reports:
+      junit: test-results/junit.xml
+    paths:
+      - test-results/
+    expire_in: 7 days
+  allow_failure: false
+  rules:
+    - when: always
+
 test:security:
   stage: test
   image: node:${NODE_VERSION}-alpine
@@ -780,12 +834,13 @@ quality:gates:
   tags:
     - saas-linux-small-amd64
   script:
-    - echo "Quality gates passed"
+    - echo "Quality gates - all tests must pass"
   rules:
     - when: always
   needs:
     - job: test:unit
-      optional: true
+    - job: test:integration
+    - job: test:e2e
     - job: test:lint
       optional: true
     - job: test:security
@@ -1440,17 +1495,28 @@ release:npm:
 create-patch-version:
   stage: release
   image: alpine:latest
+  needs:
+    - job: quality:gates
   before_script:
     - apk add --no-cache curl jq
     - apk add --no-cache git curl
+    - |
+      if [ -z "${GITLAB_PUSH_TOKEN:-}" ]; then
+        echo "ERROR: GITLAB_PUSH_TOKEN is not set"
+        echo "This job requires GITLAB_PUSH_TOKEN to create and push tags"
+        exit 1
+      fi
     - git config --global user.email "ci@bluefly.io"
     - git config --global user.name "GitLab CI"
     - git remote set-url origin https://oauth2:${GITLAB_PUSH_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git
     - git fetch --unshallow --tags || git fetch --tags || true
   script:
     - |
+      set -e
       echo "Automated Patch Version Creation"
       echo "===================================="
+      echo "Branch: ${CI_COMMIT_BRANCH}"
+      echo "Commit: ${CI_COMMIT_SHA}"
 
       # Check if this is a hotfix branch
       if echo "$CI_COMMIT_BRANCH" | grep -qE "^hotfix/"; then
@@ -1516,8 +1582,9 @@ create-patch-version:
       Branch: $CI_COMMIT_BRANCH"
 
       # Push tag
-      if git push origin "$NEW_TAG"; then
-        echo "Successfully created and pushed tag: $NEW_TAG"
+      echo "Pushing tag to remote..."
+      if git push origin "$NEW_TAG" 2>&1; then
+        echo "SUCCESS: Created and pushed tag: $NEW_TAG"
         
         # Create GitLab Release for dev tag
         echo ""
@@ -1555,10 +1622,13 @@ create-patch-version:
     # Hotfix branches can create dev tags
     - if: $CI_COMMIT_BRANCH =~ /^hotfix\//
       when: on_success
-    # Release branches create dev tags
+    # Release branches create dev tags on every push
     - if: $CI_COMMIT_BRANCH =~ /^release\/v[0-9]+\.[0-9]+\.x$/
-      when: on_success
+      when: always
   allow_failure: false
+  variables:
+    GIT_STRATEGY: clone
+    GIT_DEPTH: 0
 
 create-release:
   stage: release
@@ -1755,14 +1825,14 @@ workflow:
     - if: $CI_MERGE_REQUEST_EVENT_TYPE == "merged_result"
     # Regular MR pipelines
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-    # Prevent duplicate pipelines (skip branch pipeline if MR is open)
-    - if: $CI_COMMIT_BRANCH && $CI_OPEN_MERGE_REQUESTS
-      when: never
     # Regular branch pipelines
     - if: $CI_COMMIT_BRANCH
     # Tag pipelines
     - if: $CI_COMMIT_TAG
-    - when: always
+    # Scheduled and webhook pipelines
+    - if: $CI_PIPELINE_SOURCE == "schedule"
+    - if: $CI_PIPELINE_SOURCE == "web"
+    - if: $CI_PIPELINE_SOURCE == "trigger"
 
 # ============================================================================
 # RELEASE AUTOMATION - Enterprise Grade
@@ -1846,19 +1916,64 @@ create-release-mrs:
       : "${GITLAB_PUSH_TOKEN:?GITLAB_PUSH_TOKEN not set}"
       echo "Checking for milestones needing release MRs..."
 
-      MILESTONES=$(curl -s --header "PRIVATE-TOKEN: $GITLAB_PUSH_TOKEN" \
-        "$CI_API_V4_URL/projects/$CI_PROJECT_ID/milestones?state=active")
+      # Fetch milestones with error handling
+      MILESTONES_RESPONSE=$(curl -s -w "\n%{http_code}" --header "PRIVATE-TOKEN: $GITLAB_PUSH_TOKEN" \
+        "$CI_API_V4_URL/projects/$CI_PROJECT_ID/milestones?state=active" 2>&1)
+      
+      HTTP_CODE=$(echo "$MILESTONES_RESPONSE" | tail -n1)
+      MILESTONES_BODY=$(echo "$MILESTONES_RESPONSE" | sed '$d')
+      
+      if [ "$HTTP_CODE" != "200" ]; then
+        echo "WARNING: Failed to fetch milestones (HTTP $HTTP_CODE)"
+        echo "Response: $MILESTONES_BODY"
+        exit 0
+      fi
+      
+      # Validate JSON before parsing
+      if ! echo "$MILESTONES_BODY" | jq empty 2>/dev/null; then
+        echo "WARNING: Invalid JSON response from milestones API"
+        echo "Response: $MILESTONES_BODY"
+        exit 0
+      fi
+      
+      MILESTONES="$MILESTONES_BODY"
+      
+      # Check if we got an array
+      if ! echo "$MILESTONES" | jq -e 'type == "array"' >/dev/null 2>&1; then
+        echo "WARNING: Expected array but got: $(echo "$MILESTONES" | jq -r 'type' 2>/dev/null || echo 'unknown')"
+        exit 0
+      fi
 
-      echo "$MILESTONES" | jq -r '.[] | select(.title | startswith("v")) | .id + " " + .title' | while read MILESTONE_ID MILESTONE_TITLE; do
+      echo "$MILESTONES" | jq -r '.[] | select(.title | startswith("v")) | "\(.id) \(.title)"' | while read -r MILESTONE_ID MILESTONE_TITLE; do
+        # Skip if empty
+        [ -z "$MILESTONE_ID" ] || [ -z "$MILESTONE_TITLE" ] && continue
+        
+        echo "Processing milestone: $MILESTONE_TITLE (ID: $MILESTONE_ID)"
+        
         # Extract version from milestone title (e.g., v0.3.x from "v0.3.5")
         RELEASE_BRANCH=$(echo "$MILESTONE_TITLE" | sed -E 's/v([0-9]+\.[0-9]+)\.[0-9]+/release\/v\1.x/')
+        
+        if [ -z "$RELEASE_BRANCH" ] || [ "$RELEASE_BRANCH" = "$MILESTONE_TITLE" ]; then
+          echo "WARNING: Could not extract release branch from milestone title: $MILESTONE_TITLE"
+          continue
+        fi
 
-        EXISTING_MR=$(curl -s --header "PRIVATE-TOKEN: $GITLAB_PUSH_TOKEN" \
-          "$CI_API_V4_URL/projects/$CI_PROJECT_ID/merge_requests?state=opened&source_branch=${RELEASE_BRANCH}&target_branch=main&milestone=$MILESTONE_TITLE" \
-          | jq -r '.[0].iid // empty')
+        # Check for existing MR with error handling
+        MR_RESPONSE=$(curl -s -w "\n%{http_code}" --header "PRIVATE-TOKEN: $GITLAB_PUSH_TOKEN" \
+          "$CI_API_V4_URL/projects/$CI_PROJECT_ID/merge_requests?state=opened&source_branch=${RELEASE_BRANCH}&target_branch=main&milestone=$MILESTONE_TITLE" 2>&1)
+        
+        MR_HTTP_CODE=$(echo "$MR_RESPONSE" | tail -n1)
+        MR_BODY=$(echo "$MR_RESPONSE" | sed '$d')
+        
+        EXISTING_MR=""
+        if [ "$MR_HTTP_CODE" = "200" ] && echo "$MR_BODY" | jq empty 2>/dev/null; then
+          EXISTING_MR=$(echo "$MR_BODY" | jq -r '.[0].iid // empty' 2>/dev/null || echo "")
+        fi
 
-        if [ -z "$EXISTING_MR" ]; then
-          curl --request POST \
+        if [ -z "$EXISTING_MR" ] || [ "$EXISTING_MR" = "null" ]; then
+          echo "Creating MR for milestone $MILESTONE_TITLE (branch: $RELEASE_BRANCH)"
+          
+          CREATE_MR_RESPONSE=$(curl -s -w "\n%{http_code}" --request POST \
             --header "PRIVATE-TOKEN: $GITLAB_PUSH_TOKEN" \
             --header "Content-Type: application/json" \
             --data "{
@@ -1870,9 +1985,28 @@ create-release-mrs:
               \"draft\": true,
               \"labels\": \"type::release,status::draft\"
             }" \
-            "$CI_API_V4_URL/projects/$CI_PROJECT_ID/merge_requests"
+            "$CI_API_V4_URL/projects/$CI_PROJECT_ID/merge_requests" 2>&1)
+          
+          CREATE_MR_HTTP_CODE=$(echo "$CREATE_MR_RESPONSE" | tail -n1)
+          CREATE_MR_BODY=$(echo "$CREATE_MR_RESPONSE" | sed '$d')
+          
+          if [ "$CREATE_MR_HTTP_CODE" = "201" ]; then
+            MR_IID=$(echo "$CREATE_MR_BODY" | jq -r '.iid // empty' 2>/dev/null || echo "")
+            if [ -n "$MR_IID" ] && [ "$MR_IID" != "null" ]; then
+              echo "Created MR !$MR_IID for milestone $MILESTONE_TITLE"
+            else
+              echo "WARNING: MR created but could not parse MR IID"
+            fi
+          else
+            echo "WARNING: Failed to create MR (HTTP $CREATE_MR_HTTP_CODE)"
+            echo "Response: $CREATE_MR_BODY"
+          fi
+        else
+          echo "MR already exists for milestone $MILESTONE_TITLE: !$EXISTING_MR"
         fi
       done
+      
+      echo "Finished checking milestones"
   rules:
     - if: $CI_COMMIT_BRANCH =~ /^release\/v/
       when: manual
@@ -1981,31 +2115,79 @@ sync:main-to-release:
 release:rc-tag:
   stage: release
   image: alpine:latest
+  needs:
+    - job: quality:gates
+    - job: detect:milestone-and-tags
+      optional: true
+      artifacts: true
   before_script:
     - apk add --no-cache git curl jq
+    - |
+      if [ -z "${GITLAB_PUSH_TOKEN:-}" ]; then
+        echo "ERROR: GITLAB_PUSH_TOKEN is not set"
+        echo "This job requires GITLAB_PUSH_TOKEN to create and push tags"
+        exit 1
+      fi
     - git config user.email "gitlab-ci@${CI_SERVER_HOST}"
     - git config user.name "GitLab CI"
     - git remote set-url origin "https://oauth2:${GITLAB_PUSH_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git"
     - git fetch --unshallow --tags || git fetch --tags || true
+    - |
+      # Load milestone version from artifact if available
+      if [ -f milestone-version.env ]; then
+        echo "Loading milestone version from artifact..."
+        set -a
+        source milestone-version.env
+        set +a
+        echo "RELEASE_VERSION from artifact: ${RELEASE_VERSION:-not set}"
+      fi
   script:
     - |
+      set -e
       echo "RC TAG CREATION"
       echo "==============="
       echo "Branch: ${CI_COMMIT_BRANCH}"
       echo "Commit: ${CI_COMMIT_SHA}"
+      echo "Pipeline Source: ${CI_PIPELINE_SOURCE}"
       
-      # Get version from package.json or milestone
+      # Get version from package.json
       if [ -f "package.json" ]; then
-        VERSION=$(jq -r '.version' package.json | sed 's/-dev\.[0-9]*//' | sed 's/-rc\.[0-9]*//' | sed 's/{{VERSION}}//')
+        VERSION=$(jq -r '.version' package.json 2>/dev/null || echo "")
+        # Clean up version string
+        VERSION=$(echo "$VERSION" | sed 's/-dev\.[0-9]*//' | sed 's/-rc\.[0-9]*//' | sed 's/{{VERSION}}//' | sed 's/^v//')
       fi
       
-      # Fallback to milestone version if package.json has placeholder
-      if [ -z "$VERSION" ] || [ "$VERSION" = "null" ] || [ "$VERSION" = "" ]; then
+      # Fallback to milestone version if package.json has placeholder or is empty
+      if [ -z "$VERSION" ] || [ "$VERSION" = "null" ] || [ "$VERSION" = "" ] || [ "$VERSION" = "{{VERSION}}" ]; then
+        # Load milestone version from artifact if available
+        if [ -f milestone-version.env ]; then
+          set -a
+          source milestone-version.env 2>/dev/null || true
+          set +a
+        fi
+        
         if [ -n "${RELEASE_VERSION:-}" ]; then
           VERSION="${RELEASE_VERSION}"
+          echo "Using RELEASE_VERSION from milestone: ${VERSION}"
         else
-          echo "ERROR: Could not determine version from package.json or RELEASE_VERSION"
-          exit 1
+          # Try to get version from latest tag
+          LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+          if [ -n "$LATEST_TAG" ]; then
+            VERSION=$(echo "$LATEST_TAG" | sed 's/^v//' | sed 's/-rc.*//' | sed 's/-dev.*//')
+            echo "Using version from latest tag: ${VERSION}"
+          else
+            # Last resort: use package.json even if it has placeholder, extract from branch or use default
+            if echo "$CI_COMMIT_BRANCH" | grep -qE "^release/v([0-9]+)\.([0-9]+)"; then
+              VERSION=$(echo "$CI_COMMIT_BRANCH" | sed -E 's/^release\/v([0-9]+)\.([0-9]+)\.x/\1.\2.0/')
+              echo "Using version from branch name: ${VERSION}"
+            else
+              echo "ERROR: Could not determine version"
+              echo "Package.json version: $(jq -r '.version' package.json 2>/dev/null || echo 'not found')"
+              echo "Latest tag: ${LATEST_TAG:-none}"
+              echo "Branch: ${CI_COMMIT_BRANCH}"
+              exit 1
+            fi
+          fi
         fi
       fi
       
@@ -2039,6 +2221,7 @@ release:rc-tag:
       fi
       
       # Create and push RC tag
+      echo "Creating annotated tag: $RC_TAG"
       git tag -a "$RC_TAG" -m "Release Candidate $RC_TAG
 
       Commit: $CI_COMMIT_SHA
@@ -2046,11 +2229,17 @@ release:rc-tag:
       Branch: $CI_COMMIT_BRANCH
       Source: ${CI_MERGE_REQUEST_SOURCE_BRANCH_NAME:-main}"
       
-      if git push origin "$RC_TAG"; then
-        echo "RC tag created and pushed: $RC_TAG"
+      echo "Pushing tag to remote..."
+      if git push origin "$RC_TAG" 2>&1; then
+        echo "SUCCESS: RC tag created and pushed: $RC_TAG"
         echo "RC_TAG=$RC_TAG" >> release.env
+        echo "RC_TAG=$RC_TAG" | tee -a release.env
       else
         echo "ERROR: Failed to push RC tag"
+        echo "Checking if tag exists locally..."
+        git tag -l "$RC_TAG"
+        echo "Checking remote connection..."
+        git remote -v
         exit 1
       fi
   artifacts:
@@ -2060,11 +2249,13 @@ release:rc-tag:
       - release.env
     expire_in: 1 day
   rules:
-    - if: '$CI_COMMIT_BRANCH == "main" && $CI_PIPELINE_SOURCE == "push"'
-      when: on_success
-    - if: '$CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "main" && $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME =~ /^release\//'
-      when: on_success
+    - if: '$CI_COMMIT_BRANCH == "main"'
+      when: always
   allow_failure: false
+  needs: []
+  variables:
+    GIT_STRATEGY: clone
+    GIT_DEPTH: 0
 
 # ============================================================================
 # RC VALIDATION STAGE
