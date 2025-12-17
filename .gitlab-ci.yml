@@ -512,7 +512,7 @@ validate:scripts-version:
       fi
 
       # Check scripts don't have hardcoded version paths
-      if node -e "const pkg = require('./package.json'); const scripts = JSON.stringify(pkg.scripts || {}); if (scripts.match(/spec\\/v0\\.[0-9]/)) { process.exit(1); }" 2>/dev/null; then
+      if node -e "const pkg = require('./package.json'); const scripts = JSON.stringify(pkg.scripts || {}); if (scripts.match(/spec\/v0\.[0-9]/)) { process.exit(1); }" 2>/dev/null; then
         echo "Scripts field does not contain hardcoded version paths"
       else
         echo "ERROR: package.json scripts contain hardcoded version paths"
@@ -1108,7 +1108,7 @@ release:validate:
       echo ""
       echo "📋 8. Script Version Check"
 
-      if node -e "const pkg = require('./package.json'); const scripts = JSON.stringify(pkg.scripts || {}); if (scripts.match(/spec\\/v0\\.[0-9]/)) { process.exit(1); }" 2>/dev/null; then
+      if node -e "const pkg = require('./package.json'); const scripts = JSON.stringify(pkg.scripts || {}); if (scripts.match(/spec\/v0\.[0-9]/)) { process.exit(1); }" 2>/dev/null; then
         echo "   No hardcoded versions in scripts"
       else
         echo "ERROR: Hardcoded versions found in package.json scripts"
@@ -1340,7 +1340,11 @@ release:npm:
 
       # If no changelog, use fallback
       if [ -z "$RELEASE_DESCRIPTION" ]; then
-        RELEASE_DESCRIPTION="## Release v${RELEASE_VERSION}\n\nMilestone: ${MILESTONE_TITLE} (${MILESTONE_URL})\n\nSee CHANGELOG.md for details."
+        RELEASE_DESCRIPTION="## Release v${RELEASE_VERSION}
+
+Milestone: ${MILESTONE_TITLE} (${MILESTONE_URL})
+
+See CHANGELOG.md for details."
       fi
 
       # Create release with milestone linkage
@@ -1923,7 +1927,8 @@ create-release-mrs:
       echo "Checking for milestones needing release MRs..."
 
       # Fetch milestones with error handling
-      MILESTONES_RESPONSE=$(curl -s -w "\n%{http_code}" --header "PRIVATE-TOKEN: $GITLAB_PUSH_TOKEN" \
+      MILESTONES_RESPONSE=$(curl -s -w "
+%{http_code}" --header "PRIVATE-TOKEN: $GITLAB_PUSH_TOKEN" \
         "$CI_API_V4_URL/projects/$CI_PROJECT_ID/milestones?state=active" 2>&1)
       
       HTTP_CODE=$(echo "$MILESTONES_RESPONSE" | tail -n1)
@@ -1965,7 +1970,8 @@ create-release-mrs:
         fi
 
         # Check for existing MR with error handling
-        MR_RESPONSE=$(curl -s -w "\n%{http_code}" --header "PRIVATE-TOKEN: $GITLAB_PUSH_TOKEN" \
+        MR_RESPONSE=$(curl -s -w "
+%{http_code}" --header "PRIVATE-TOKEN: $GITLAB_PUSH_TOKEN" \
           "$CI_API_V4_URL/projects/$CI_PROJECT_ID/merge_requests?state=opened&source_branch=${RELEASE_BRANCH}&target_branch=main&milestone=$MILESTONE_TITLE" 2>&1)
         
         MR_HTTP_CODE=$(echo "$MR_RESPONSE" | tail -n1)
@@ -1979,14 +1985,15 @@ create-release-mrs:
         if [ -z "$EXISTING_MR" ] || [ "$EXISTING_MR" = "null" ]; then
           echo "Creating MR for milestone $MILESTONE_TITLE (branch: $RELEASE_BRANCH)"
           
-          CREATE_MR_RESPONSE=$(curl -s -w "\n%{http_code}" --request POST \
+          CREATE_MR_RESPONSE=$(curl -s -w "
+%{http_code}" --request POST \
             --header "PRIVATE-TOKEN: $GITLAB_PUSH_TOKEN" \
             --header "Content-Type: application/json" \
             --data "{
               \"source_branch\": \"${RELEASE_BRANCH}\",
               \"target_branch\": \"main\",
               \"title\": \"Draft:  Release $MILESTONE_TITLE\",
-              \"description\": \"## Release $MILESTONE_TITLE\\n\\nDraft MR for next release. Features merge to ${RELEASE_BRANCH} and accumulate here.\\n\\n### When Ready\\n1. Mark as ready\\n2. Add to merge train\\n3. Train merges to main\\n4. Release automation runs\",
+              \"description\": \"## Release $MILESTONE_TITLE\n\nDraft MR for next release. Features merge to ${RELEASE_BRANCH} and accumulate here.\n\n### When Ready\n1. Mark as ready\n2. Add to merge train\n3. Train merges to main\n4. Release automation runs\",
               \"milestone_id\": $MILESTONE_ID,
               \"draft\": true,
               \"labels\": \"type::release,status::draft\"
