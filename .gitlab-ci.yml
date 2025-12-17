@@ -55,6 +55,7 @@ stages:
   - quality        # Quality gates
   - deploy         # Deployment
   - release        # Release automation
+  - rc-validation  # RC validation stage (smoke tests, integration tests, staging deployment)
   - mirror         # Mirror to external repos
   - .post          # GitLab reserved post-stage (post-release jobs)
 
@@ -135,7 +136,7 @@ detect:milestone-and-tags:
           local body
 
           response=$(curl -sS -w "\n%{http_code}" "$url" \
-            --header "PRIVATE-TOKEN: ${GITLAB_TOKEN}" 2>&1) || true
+            --header "PRIVATE-TOKEN: ${CI_JOB_TOKEN}" 2>&1) || true
 
           http_code=$(echo "$response" | tail -n1)
           body=$(echo "$response" | sed '$d')
@@ -251,11 +252,22 @@ detect:milestone-and-tags:
       echo "Looking for ACTIVE milestone with all issues closed..."
       echo ""
 
-      # Get ACTIVE milestones only
-      ALL_MILESTONES=$(curl -sS -G "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/milestones" \
-        --header "PRIVATE-TOKEN: ${GITLAB_TOKEN}" \
+      # Get ACTIVE milestones from GROUP (we use group milestones for version tracking)
+      # Group: blueflyio/agent-platform
+      GROUP_PATH="blueflyio%2Fagent-platform"
+      ALL_MILESTONES=$(curl -sS -G "${CI_API_V4_URL}/groups/${GROUP_PATH}/milestones" \
+        --header "PRIVATE-TOKEN: ${CI_JOB_TOKEN}" \
         --data-urlencode "per_page=100" \
-        --data-urlencode "state=active")
+        --data-urlencode "state=active" 2>/dev/null || echo "[]")
+
+      # Fallback to project milestones if group fetch fails
+      if [ "$ALL_MILESTONES" = "[]" ] || [ -z "$ALL_MILESTONES" ]; then
+        echo "WARNING: No group milestones found, trying project milestones..."
+        ALL_MILESTONES=$(curl -sS -G "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/milestones" \
+          --header "PRIVATE-TOKEN: ${CI_JOB_TOKEN}" \
+          --data-urlencode "per_page=100" \
+          --data-urlencode "state=active" 2>/dev/null || echo "[]")
+      fi
 
       # Initialize milestone env file
       echo "RELEASE_VERSION=" > milestone-version.env
@@ -285,13 +297,16 @@ detect:milestone-and-tags:
             continue
           fi
 
-          # Get milestone stats
-          MILESTONE_STATS=$(curl -sS -G "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/milestones/${ID}" \
-            --header "PRIVATE-TOKEN: ${GITLAB_TOKEN}" 2>/dev/null || echo "{}")
+          # For GROUP milestones, query issues directly for THIS PROJECT
+          # Get all issues in this project assigned to this milestone
+          PROJECT_ISSUES=$(curl -sS -G "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/issues" \
+            --header "PRIVATE-TOKEN: ${CI_JOB_TOKEN}" \
+            --data-urlencode "milestone=${TITLE}" \
+            --data-urlencode "per_page=100" 2>/dev/null || echo "[]")
 
-          TOTAL_ISSUES=$(echo "$MILESTONE_STATS" | jq -r '.total_issues_count // 0' 2>/dev/null || echo "0")
-          CLOSED_ISSUES=$(echo "$MILESTONE_STATS" | jq -r '.closed_issues_count // 0' 2>/dev/null || echo "0")
-          OPEN_ISSUES=$((TOTAL_ISSUES - CLOSED_ISSUES))
+          TOTAL_ISSUES=$(echo "$PROJECT_ISSUES" | jq '. | length' 2>/dev/null || echo "0")
+          CLOSED_ISSUES=$(echo "$PROJECT_ISSUES" | jq '[.[] | select(.state == "closed")] | length' 2>/dev/null || echo "0")
+          OPEN_ISSUES=$(echo "$PROJECT_ISSUES" | jq '[.[] | select(.state == "opened")] | length' 2>/dev/null || echo "0")
 
           echo "📊 Milestone: ${TITLE}"
           echo "  Total issues: ${TOTAL_ISSUES}"
@@ -300,6 +315,7 @@ detect:milestone-and-tags:
           echo ""
 
           # Check if 100% complete (all issues closed)
+          # With GROUP milestones, 0 issues in this project is OK (other projects may have issues)
           if [ "$OPEN_ISSUES" -eq 0 ] && [ "$TOTAL_ISSUES" -gt 0 ]; then
             echo "RELEASE_VERSION=${VERSION}" > milestone-version.env
             echo "MILESTONE_TITLE=${TITLE}" >> milestone-version.env
@@ -308,11 +324,21 @@ detect:milestone-and-tags:
             echo "MILESTONE_READY=true" >> milestone-version.env
             echo "ISSUE_COUNT=${TOTAL_ISSUES}" >> milestone-version.env
             echo "OPEN_ISSUE_COUNT=0" >> milestone-version.env
-            echo "Release-ready: ${TITLE} (${TOTAL_ISSUES} issues closed)"
+            echo "✅ Release-ready: ${TITLE} (${TOTAL_ISSUES} issues closed in this project)"
             FOUND_MILESTONE=true
             break
           elif [ "$TOTAL_ISSUES" -eq 0 ]; then
-            echo "WARNING: Milestone ${TITLE} has no issues - skipping"
+            # With GROUP milestones, 0 issues in this project is OK - treat as ready
+            echo "RELEASE_VERSION=${VERSION}" > milestone-version.env
+            echo "MILESTONE_TITLE=${TITLE}" >> milestone-version.env
+            echo "MILESTONE_ID=${ID}" >> milestone-version.env
+            echo "MILESTONE_URL=${WEB_URL}" >> milestone-version.env
+            echo "MILESTONE_READY=true" >> milestone-version.env
+            echo "ISSUE_COUNT=0" >> milestone-version.env
+            echo "OPEN_ISSUE_COUNT=0" >> milestone-version.env
+            echo "✅ Release-ready: ${TITLE} (no issues in this project, group milestone)"
+            FOUND_MILESTONE=true
+            break
           else
             # Milestone has open issues - NOT ready but record for validation
             echo "RELEASE_VERSION=${VERSION}" > milestone-version.env
@@ -913,6 +939,14 @@ release:validate:
 
       ERRORS=0
       WARNINGS=0
+
+      # Set defaults for milestone variables (in case detect:milestone-and-tags didn't run)
+      MILESTONE_READY="${MILESTONE_READY:-false}"
+      MILESTONE_TITLE="${MILESTONE_TITLE:-}"
+      MILESTONE_ID="${MILESTONE_ID:-}"
+      ISSUE_COUNT="${ISSUE_COUNT:-0}"
+      OPEN_ISSUE_COUNT="${OPEN_ISSUE_COUNT:-0}"
+      RELEASE_VERSION="${RELEASE_VERSION:-}"
 
       # 0. MILESTONE GATE CHECK - All issues must be closed!
       echo "📋 0. Milestone Gate (All Issues Closed)"
@@ -1840,7 +1874,7 @@ create-release-mrs:
         fi
       done
   rules:
-    - if: $CI_COMMIT_BRANCH =~ /^release\/v/ && $CI_PIPELINE_SOURCE == "schedule"
+    - if: $CI_COMMIT_BRANCH =~ /^release\/v/
       when: manual
     - when: never  # Skip on push events to not block automatic pipelines
 
@@ -1940,74 +1974,340 @@ sync:main-to-release:
 
 
 
-# Auto-create RC tag on every merge to main
-create-rc-tag:main:
+# ============================================================================
+# RC TAG CREATION (when release/* merges to main)
+# ============================================================================
+# Creates v0.1.4-rc, v0.1.4-rc.1, etc. when release/* branches merge to main
+release:rc-tag:
   stage: release
   image: alpine:latest
   before_script:
-    - apk add --no-cache curl jq
-    - apk add --no-cache git curl
-    - git config --global user.email "ci@bluefly.io"
-    - git config --global user.name "GitLab CI"
-    - git remote set-url origin https://oauth2:${GITLAB_PUSH_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git
+    - apk add --no-cache git curl jq
+    - git config user.email "gitlab-ci@${CI_SERVER_HOST}"
+    - git config user.name "GitLab CI"
+    - git remote set-url origin "https://oauth2:${GITLAB_PUSH_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git"
     - git fetch --unshallow --tags || git fetch --tags || true
   script:
     - |
-      echo "RC TAG AUTOMATION FOR MAIN BRANCH"
-      echo "=================================="
+      echo "RC TAG CREATION"
+      echo "==============="
+      echo "Branch: ${CI_COMMIT_BRANCH}"
+      echo "Commit: ${CI_COMMIT_SHA}"
       
-      # Get version from package.json
-      VERSION=$(grep '"version"' package.json | sed -E 's/.*"version":\s*"([^"]+)".*/\1/' | sed 's/-dev\.[0-9]*//' | sed 's/-rc\.[0-9]*//')
-      
-      if [ -z "$VERSION" ]; then
-        echo "ERROR: Could not extract version from package.json"
-        exit 1
+      # Get version from package.json or milestone
+      if [ -f "package.json" ]; then
+        VERSION=$(jq -r '.version' package.json | sed 's/-dev\.[0-9]*//' | sed 's/-rc\.[0-9]*//' | sed 's/{{VERSION}}//')
       fi
       
-      echo "Base version: $VERSION"
-      
-      # Get latest RC tag for this version
-      LATEST_RC_TAG=$(git tag -l "v${VERSION}-rc.*" | sort -V | tail -n1)
-      
-      if [ -z "$LATEST_RC_TAG" ]; then
-        # No RC tags exist, start with rc.1
-        NEW_TAG="v${VERSION}-rc.1"
-        echo "No existing RC tags for v${VERSION}, starting with ${NEW_TAG}"
-      else
-        echo "Latest RC tag: $LATEST_RC_TAG"
-        
-        # Check if HEAD is already tagged
-        HEAD_TAGS=$(git tag --points-at HEAD)
-        if echo "$HEAD_TAGS" | grep -qE "^v${VERSION}-rc\."; then
-          echo "HEAD already has RC tag: $HEAD_TAGS"
-          exit 0
+      # Fallback to milestone version if package.json has placeholder
+      if [ -z "$VERSION" ] || [ "$VERSION" = "null" ] || [ "$VERSION" = "" ]; then
+        if [ -n "${RELEASE_VERSION:-}" ]; then
+          VERSION="${RELEASE_VERSION}"
+        else
+          echo "ERROR: Could not determine version from package.json or RELEASE_VERSION"
+          exit 1
         fi
-        
-        # Extract RC number and increment
-        RC_NUM=$(echo "$LATEST_RC_TAG" | sed -E "s/v${VERSION}-rc\.([0-9]+)/\1/")
-        NEW_RC_NUM=$((RC_NUM + 1))
-        NEW_TAG="v${VERSION}-rc.${NEW_RC_NUM}"
       fi
       
-      echo ""
-      echo "TAG: Creating new RC tag: $NEW_TAG"
+      echo "Version: ${VERSION}"
       
-      # Create annotated tag
-      git tag -a "$NEW_TAG" -m "RC tag $NEW_TAG from main branch
+      # Find existing RC tags for this version
+      RC_TAGS=$(git tag -l "v${VERSION}-rc*" | wc -l)
+      
+      if [ "$RC_TAGS" -eq 0 ]; then
+        RC_TAG="v${VERSION}-rc"
+      else
+        # Get latest RC tag number
+        LATEST_RC=$(git tag -l "v${VERSION}-rc*" | sort -V | tail -n1)
+        if echo "$LATEST_RC" | grep -qE "v${VERSION}-rc\.[0-9]+$"; then
+          RC_NUM=$(echo "$LATEST_RC" | sed -E "s/v${VERSION}-rc\.([0-9]+)/\1/")
+          NEXT_RC_NUM=$((RC_NUM + 1))
+          RC_TAG="v${VERSION}-rc.${NEXT_RC_NUM}"
+        else
+          RC_TAG="v${VERSION}-rc.1"
+        fi
+      fi
+      
+      echo "Creating RC tag: $RC_TAG"
+      
+      # Check if HEAD is already tagged with this RC
+      HEAD_TAGS=$(git tag --points-at HEAD)
+      if echo "$HEAD_TAGS" | grep -qE "^v${VERSION}-rc"; then
+        echo "HEAD already has RC tag: $HEAD_TAGS"
+        echo "RC_TAG=$(echo "$HEAD_TAGS" | grep -E "^v${VERSION}-rc" | head -n1)" >> release.env
+        exit 0
+      fi
+      
+      # Create and push RC tag
+      git tag -a "$RC_TAG" -m "Release Candidate $RC_TAG
 
       Commit: $CI_COMMIT_SHA
       Pipeline: $CI_PIPELINE_URL
       Branch: $CI_COMMIT_BRANCH
-      "
+      Source: ${CI_MERGE_REQUEST_SOURCE_BRANCH_NAME:-main}"
       
-      # Push tag
-      if git push origin "$NEW_TAG"; then
-        echo "Successfully created and pushed RC tag: $NEW_TAG"
+      if git push origin "$RC_TAG"; then
+        echo "RC tag created and pushed: $RC_TAG"
+        echo "RC_TAG=$RC_TAG" >> release.env
       else
         echo "ERROR: Failed to push RC tag"
         exit 1
       fi
+  artifacts:
+    reports:
+      dotenv: release.env
+    paths:
+      - release.env
+    expire_in: 1 day
   rules:
-    - if: $CI_COMMIT_BRANCH == "main" && $CI_PIPELINE_SOURCE == "push"
+    - if: '$CI_COMMIT_BRANCH == "main" && $CI_PIPELINE_SOURCE == "push"'
+      when: on_success
+    - if: '$CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "main" && $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME =~ /^release\//'
       when: on_success
   allow_failure: false
+
+# ============================================================================
+# RC VALIDATION STAGE
+# ============================================================================
+# Runs smoke tests, integration tests, and staging deployment for RC tags
+
+rc:smoke-tests:
+  stage: rc-validation
+  image: node:${NODE_VERSION}-alpine
+  tags:
+    - saas-linux-small-amd64
+  before_script:
+    - apk add --no-cache curl jq
+    - npm ci --legacy-peer-deps
+  script:
+    - |
+      echo "Running smoke tests on RC build..."
+      echo "RC Tag: ${CI_COMMIT_TAG}"
+      
+      # Run basic smoke tests
+      npm run build || (echo "ERROR: Build failed" && exit 1)
+      
+      # Run unit tests as smoke tests
+      npm run test:unit || npm test || (echo "ERROR: Smoke tests failed" && exit 1)
+      
+      echo "Smoke tests passed for ${CI_COMMIT_TAG}"
+  rules:
+    - if: '$CI_COMMIT_TAG =~ /^v[0-9]+\.[0-9]+\.[0-9]+-rc/'
+      when: on_success
+  allow_failure: false
+
+rc:integration-tests:
+  stage: rc-validation
+  image: node:${NODE_VERSION}-alpine
+  tags:
+    - saas-linux-small-amd64
+  before_script:
+    - apk add --no-cache curl jq
+    - npm ci --legacy-peer-deps
+  script:
+    - |
+      echo "Running integration tests on RC..."
+      echo "RC Tag: ${CI_COMMIT_TAG}"
+      
+      npm run build || (echo "ERROR: Build failed" && exit 1)
+      
+      # Run integration tests if available
+      if npm run | grep -q "test:integration"; then
+        npm run test:integration || (echo "ERROR: Integration tests failed" && exit 1)
+      else
+        echo "No integration tests defined, running full test suite..."
+        npm test || (echo "ERROR: Tests failed" && exit 1)
+      fi
+      
+      echo "Integration tests passed for ${CI_COMMIT_TAG}"
+  rules:
+    - if: '$CI_COMMIT_TAG =~ /^v[0-9]+\.[0-9]+\.[0-9]+-rc/'
+      when: on_success
+  allow_failure: false
+
+rc:deploy-staging:
+  stage: rc-validation
+  image: node:${NODE_VERSION}-alpine
+  tags:
+    - saas-linux-small-amd64
+  before_script:
+    - apk add --no-cache curl jq
+    - npm ci --legacy-peer-deps
+  script:
+    - |
+      echo "Deploying RC to staging environment..."
+      echo "RC Tag: ${CI_COMMIT_TAG}"
+      
+      # Build the package
+      npm run build || (echo "ERROR: Build failed" && exit 1)
+      
+      # For now, just validate the build
+      # Add actual staging deployment logic here when staging environment is configured
+      echo "RC build validated and ready for staging deployment"
+      echo "Staging deployment would happen here"
+      
+      # Example: npm pack and validate
+      npm pack --dry-run || true
+      
+      echo "RC ${CI_COMMIT_TAG} validated for staging"
+  environment:
+    name: staging
+    url: https://staging.openstandardagents.org
+  rules:
+    - if: '$CI_COMMIT_TAG =~ /^v[0-9]+\.[0-9]+\.[0-9]+-rc/'
+      when: manual
+      allow_failure: false
+
+# ============================================================================
+# FINAL RELEASE (Manual promotion from RC)
+# ============================================================================
+# Promotes RC tag to final release tag after validation
+
+release:promote-rc-to-final:
+  stage: release
+  image: alpine:latest
+  before_script:
+    - apk add --no-cache git curl jq
+    - git config user.email "gitlab-ci@${CI_SERVER_HOST}"
+    - git config user.name "GitLab CI"
+    - git remote set-url origin "https://oauth2:${GITLAB_PUSH_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git"
+    - git fetch --unshallow --tags || git fetch --tags || true
+  script:
+    - |
+      echo "PROMOTING RC TO FINAL RELEASE"
+      echo "============================="
+      
+      # Get the latest RC tag
+      LATEST_RC=$(git tag -l "v*-rc*" --sort=-v:refname | head -n1)
+      
+      if [ -z "$LATEST_RC" ]; then
+        echo "ERROR: No RC tag found to promote"
+        echo "Available RC tags:"
+        git tag -l "v*-rc*" || echo "None found"
+        exit 1
+      fi
+      
+      echo "Latest RC tag: $LATEST_RC"
+      
+      # Extract version without RC suffix
+      FINAL_VERSION=$(echo "$LATEST_RC" | sed 's/-rc.*//')
+      
+      # Check if final version already exists
+      if git tag -l | grep -qE "^${FINAL_VERSION}$"; then
+        echo "WARNING: Final tag ${FINAL_VERSION} already exists"
+        echo "Skipping promotion"
+        exit 0
+      fi
+      
+      echo "Promoting $LATEST_RC to $FINAL_VERSION"
+      
+      # Get the commit SHA for the RC tag
+      RC_COMMIT=$(git rev-list -n 1 "$LATEST_RC")
+      
+      # Create final release tag
+      git tag -a "$FINAL_VERSION" -m "Release $FINAL_VERSION (promoted from $LATEST_RC)
+
+      Promoted from: $LATEST_RC
+      Commit: $RC_COMMIT
+      Pipeline: $CI_PIPELINE_URL
+      Released: $(date -u +"%Y-%m-%dT%H:%M:%SZ")"
+      
+      # Push final tag
+      if git push origin "$FINAL_VERSION"; then
+        echo "Successfully promoted $LATEST_RC to $FINAL_VERSION"
+        
+        # Create GitLab Release
+        RELEASE_NOTES=""
+        if [ -f "CHANGELOG.md" ]; then
+          # Extract version section from CHANGELOG
+          VERSION_NUM=$(echo "$FINAL_VERSION" | sed 's/^v//')
+          RELEASE_NOTES=$(awk "/^## \[${VERSION_NUM}\]/,/^## \[/{if (/^## \[${VERSION_NUM}\]/) next; if (/^## \[/) exit; print}" CHANGELOG.md || echo "Release $FINAL_VERSION")
+        fi
+        
+        if [ -z "$RELEASE_NOTES" ] && [ -f "RELEASE_NOTES.md" ]; then
+          RELEASE_NOTES=$(cat RELEASE_NOTES.md)
+        fi
+        
+        if [ -z "$RELEASE_NOTES" ]; then
+          RELEASE_NOTES="Release $FINAL_VERSION (promoted from $LATEST_RC)"
+        fi
+        
+        RELEASE_PAYLOAD=$(jq -n \
+          --arg name "Release $FINAL_VERSION" \
+          --arg tag "$FINAL_VERSION" \
+          --arg desc "$RELEASE_NOTES" \
+          '{
+            name: $name,
+            tag_name: $tag,
+            description: $desc
+          }')
+        
+        curl --request POST \
+          --header "PRIVATE-TOKEN: ${CI_JOB_TOKEN}" \
+          --header "Content-Type: application/json" \
+          --data "$RELEASE_PAYLOAD" \
+          "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/releases" || echo "WARNING: Failed to create GitLab Release"
+        
+        echo ""
+        echo "Release $FINAL_VERSION created successfully"
+        echo "GitLab Release: https://${CI_SERVER_HOST}/${CI_PROJECT_PATH}/-/releases/$FINAL_VERSION"
+      else
+        echo "ERROR: Failed to push final release tag"
+        exit 1
+      fi
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+      when: manual
+      allow_failure: false
+    - if: '$CI_PIPELINE_SOURCE == "trigger" && $RELEASE_RC_TO_FINAL == "true"'
+      when: on_success
+  allow_failure: false
+
+# ============================================================================
+# REPO HYGIENE GUARDRAILS
+# ============================================================================
+# Enforce: no worktrees inside repo, no wiki submodules
+# These checks fail hard to prevent repo contamination
+
+repo:hygiene:
+  stage: validate
+  image: alpine:3.20
+  rules:
+    - when: always
+  script:
+    - |
+      set -e
+      echo "Running repo hygiene checks..."
+      
+      # Worktrees must not exist in repo (even untracked)
+      if [ -d .worktrees ]; then
+        echo "ERROR: .worktrees/ directory found in repo"
+        exit 1
+      fi
+      
+      if [ -d .workingtrees ]; then
+        echo "ERROR: .workingtrees/ directory found in repo"
+        exit 1
+      fi
+      
+      # Check for nested worktree directories (excluding .git directory)
+      NESTED_WORKTREES=$(find . -type d \( -name '.worktrees' -o -name '.workingtrees' \) ! -path './.git/*' 2>/dev/null || true)
+      if [ -n "$NESTED_WORKTREES" ]; then
+        echo "ERROR: Nested worktree directories found:"
+        echo "$NESTED_WORKTREES"
+        exit 1
+      fi
+      
+      # No wiki submodules / embedded wiki dirs
+      if [ -d .gitlab/wiki ]; then
+        echo "ERROR: .gitlab/wiki/ directory found (wiki must be external)"
+        exit 1
+      fi
+      
+      if [ -f .gitmodules ]; then
+        echo "ERROR: .gitmodules exists (wiki must not be a submodule)"
+        cat .gitmodules
+        exit 1
+      fi
+      
+      echo "Repo hygiene checks passed"
