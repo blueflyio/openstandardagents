@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **ci**: Map CI_DEPLOY_OSSA group variable to GITLAB_PUSH_TOKEN ([c40709e](https://gitlab.com/blueflyio/openstandardagents/-/commit/c40709ec603c86de291df37bc7bcf9e00c7551e6))
 - **ci**: Support deploy tokens (gldt-*) for git push auth ([9acd90f](https://gitlab.com/blueflyio/openstandardagents/-/commit/9acd90fe84e49d4f44d2444312c2c162b004df4a))
 - **ci**: Refactor milestone detection to be read-only ([70ec64e](https://gitlab.com/blueflyio/openstandardagents/-/commit/70ec64e3e43e8c47ae3327c8c01021b1eddbd5f8))## [0.3.0-dev.11] - 2025-12-17
 
