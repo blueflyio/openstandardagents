@@ -1455,9 +1455,15 @@ create-patch-version:
       echo "GITLAB_PUSH_TOKEN set: ${GITLAB_PUSH_TOKEN:+yes}"
 
       if [ -n "${CI_DEPLOY_OSSA:-}" ]; then
-        echo "Using CI_DEPLOY_OSSA (group deploy token)"
+        echo "Using CI_DEPLOY_OSSA"
         echo "Token prefix: ${CI_DEPLOY_OSSA:0:5}..."
-        REMOTE_URL="https://${DEPLOY_TOKEN_USERNAME:-gitlab+deploy-token-10466652}:${CI_DEPLOY_OSSA}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git"
+        if echo "${CI_DEPLOY_OSSA}" | grep -q "^gldt-"; then
+          echo "Deploy token - using username:token"
+          REMOTE_URL="https://${DEPLOY_TOKEN_USERNAME:-gitlab+deploy-token-10466652}:${CI_DEPLOY_OSSA}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git"
+        else
+          echo "PAT - using oauth2:token"
+          REMOTE_URL="https://oauth2:${CI_DEPLOY_OSSA}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git"
+        fi
       elif [ -n "${GITLAB_PUSH_TOKEN:-}" ]; then
         echo "Using GITLAB_PUSH_TOKEN"
         echo "Token prefix: ${GITLAB_PUSH_TOKEN:0:5}..."
