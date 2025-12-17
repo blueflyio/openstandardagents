@@ -502,4 +502,16 @@ dmypy.json
 # Wiki is now version controlled in .gitlab/wiki/
 # (was previously ignored, now tracked for v0.2.3)
 .DS_Store
+
+# =============================================================================
+# Repo Hygiene - Worktrees and Submodules
+# =============================================================================
+
+# Local worktrees (must never be committed)
 .worktrees/
+.workingtrees/
+**/.worktrees/
+**/.workingtrees/
+
+# Git submodules (wiki must not be a submodule)
+.gitmodules
