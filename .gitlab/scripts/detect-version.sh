@@ -52,11 +52,24 @@ if [[ "$BRANCH_TO_CHECK" =~ ^release/v([0-9]+)\.([0-9]+)\.x$ ]]; then
   
   BASE_VERSION="${MAJOR}.${MINOR}.${PATCH}"
   
-  # Determine if this is a final release (main) or pre-release (release branch)
-  if [ "$CI_COMMIT_BRANCH" == "main" ] || [ "$IS_MR_TO_MAIN" == "true" ]; then
-    # On main or MR to main: v0.3.0 (final release)
-    RELEASE_TAG="v${BASE_VERSION}"
-    IS_RELEASE="true"
+  # Determine tag type based on branch
+  if [ "$CI_COMMIT_BRANCH" == "main" ]; then
+    # On main: create RC tag (v0.3.0-rc.N), NOT final
+    # Final release is done via manual promote-rc-to-final job
+    EXISTING_RC_TAGS=$(git tag -l "v${BASE_VERSION}-rc.*" 2>/dev/null | wc -l | tr -d ' ')
+
+    if [ "$EXISTING_RC_TAGS" -eq 0 ]; then
+      RELEASE_TAG="v${BASE_VERSION}-rc.1"
+    else
+      RELEASE_TAG="v${BASE_VERSION}-rc.$((EXISTING_RC_TAGS + 1))"
+    fi
+    IS_RELEASE="false"  # RC is not final release
+    IS_RC="true"
+  elif [ "$IS_MR_TO_MAIN" == "true" ]; then
+    # MR to main: just detect version, don't tag yet
+    RELEASE_TAG="v${BASE_VERSION}-rc.1"
+    IS_RELEASE="false"
+    IS_RC="true"
   else
     # On release branch: create dev or rc pre-release tags
     # Check if this should be an RC (release candidate) or dev
@@ -85,6 +98,7 @@ if [[ "$BRANCH_TO_CHECK" =~ ^release/v([0-9]+)\.([0-9]+)\.x$ ]]; then
   echo "VERSION=${BASE_VERSION}" >> build.env
   echo "RELEASE_TAG=${RELEASE_TAG}" >> build.env
   echo "IS_RELEASE=${IS_RELEASE}" >> build.env
+  echo "IS_RC=${IS_RC:-false}" >> build.env
   echo "MAJOR=${MAJOR}" >> build.env
   echo "MINOR=${MINOR}" >> build.env
   echo "PATCH=${PATCH}" >> build.env

@@ -84,7 +84,7 @@ sequenceDiagram
     Note over Registry: Search manifests<br/>by capability
 
     Registry->>Registry: Load sales.ossa.yaml
-    Note over Registry: apiVersion: ossa/v0.2.x<br/>capabilities:<br/>  - process_order
+    Note over Registry: apiVersion: ossa/v{{OSSA_DISPLAY_VERSION}}<br/>capabilities:<br/>  - process_order
 
     Registry-->>CustomerAgent: Return Agent Info
     Note over Registry: {<br/>  name: "sales-agent",<br/>  endpoint: "/api/sales",<br/>  manifest: {...}<br/>}
@@ -136,7 +136,7 @@ sequenceDiagram
 
 **OSSA Manifest Example (Customer Agent):**
 ```yaml
-apiVersion: ossa/v0.2.x
+apiVersion: ossa/v{{OSSA_DISPLAY_VERSION}}
 kind: Agent
 metadata:
   name: customer-agent
@@ -184,7 +184,7 @@ sequenceDiagram
 
 **OSSA Manifest Example (Order Agent):**
 ```yaml
-apiVersion: ossa/v0.2.x
+apiVersion: ossa/v{{OSSA_DISPLAY_VERSION}}
 kind: Agent
 metadata:
   name: order-agent
@@ -238,7 +238,7 @@ graph TB
 
 **OSSA Manifest Example (Supervisor):**
 ```yaml
-apiVersion: ossa/v0.2.x
+apiVersion: ossa/v{{OSSA_DISPLAY_VERSION}}
 kind: Agent
 metadata:
   name: supervisor-agent
@@ -300,7 +300,7 @@ graph LR
 
 **OSSA Manifest with Capabilities:**
 ```yaml
-apiVersion: ossa/v0.2.x
+apiVersion: ossa/v{{OSSA_DISPLAY_VERSION}}
 kind: Agent
 metadata:
   name: analytics-agent
@@ -611,7 +611,7 @@ Body: { status: "maintenance" }
 
 ```yaml
 # OSSA Manifest with Auth
-apiVersion: ossa/v0.2.x
+apiVersion: ossa/v{{OSSA_DISPLAY_VERSION}}
 kind: Agent
 metadata:
   name: secure-agent

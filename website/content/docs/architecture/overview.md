@@ -65,10 +65,36 @@ Just like OpenAPI provides a standard contract for REST APIs, OSSA provides a st
 
 ## OSSA Architecture Principles
 
-### 1. Specification-Driven
+### 1. First-Class Agent Citizens
+
+OSSA's architecture is built on the principle that **agents are first-class software components**, not second-class scripts or ad-hoc code. This architectural decision aligns with [industry research on production AI systems](https://nextbigteng.substack.com/p/ai-agents-as-first-class-citizens-in-software-development) and Google's [multi-agent framework architecture](https://developers.googleblog.com/en/architecting-efficient-context-aware-multi-agent-framework-for-production/).
+
+**What This Means Architecturally**:
+
+- **Agents are declarative artifacts** - Defined by manifests, not code
+- **Agents have contracts** - Input/output schemas like APIs
+- **Agents are versioned** - Semantic versioning with compatibility guarantees
+- **Agents are discoverable** - Registries and catalogs like container registries
+- **Agents are composable** - Can invoke other agents as capabilities
+- **Agents are observable** - Native telemetry and monitoring
+- **Agents are deployable** - Standard deployment patterns across infrastructure
+
+This architectural approach contrasts with academic proposals like [Agent Spec](https://arxiv.org/abs/2510.04173), which explore theoretical frameworks. OSSA prioritizes **production deployment patterns** used in real enterprise systems:
+
+| Architectural Aspect | OSSA Approach | Traditional Agent Code |
+|---------------------|---------------|----------------------|
+| **Definition** | Declarative YAML manifest | Imperative Python/JavaScript code |
+| **Contract** | JSON Schema validation | Runtime duck typing |
+| **Deployment** | Standard CI/CD pipelines | Manual or custom deployment |
+| **Versioning** | Semantic versioning in manifest | Git tags (inconsistent) |
+| **Discovery** | Registry with search/metadata | Code repositories (manual search) |
+| **Observability** | OpenTelemetry instrumentation | Custom logging (if any) |
+| **Testing** | Schema validation + integration tests | Unit tests (if any) |
+
+### 2. Specification-Driven
 OSSA defines the **contract**, not the implementation. Your runtime handles the execution.
 
-### 2. Layer Separation
+### 3. Layer Separation
 Clear boundaries between:
 - Application logic
 - Agent runtime
@@ -76,13 +102,13 @@ Clear boundaries between:
 - External tools/APIs
 - Infrastructure
 
-### 3. Framework Agnostic
+### 4. Framework Agnostic
 OSSA doesn't care if you use:
 - LangChain, LlamaIndex, Anthropic SDK, OpenAI SDK
 - Python, TypeScript, Go, Rust
 - Kubernetes, Docker, serverless, on-premise
 
-### 4. Runtime Independent
+### 5. Runtime Independent
 Deploy OSSA agents anywhere:
 - Cloud (AWS, GCP, Azure)
 - Edge computing

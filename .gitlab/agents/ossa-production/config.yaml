@@ -29,6 +29,7 @@ ci_access:
       environments:
         - production
         - staging
+        - review
 
   projects:
     - id: blueflyio/openstandardagents.org
@@ -37,6 +38,8 @@ ci_access:
         ci_job: {}
       environments:
         - production
+        - staging
+        - review
 
 observability:
   logging:

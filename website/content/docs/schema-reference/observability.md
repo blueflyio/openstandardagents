@@ -352,7 +352,7 @@ observability:
 ### Production Observability Stack
 
 ```yaml
-apiVersion: ossa/v0.2.x
+apiVersion: ossa/v{{OSSA_DISPLAY_VERSION}}
 kind: Agent
 metadata:
   name: production-agent
@@ -379,7 +379,7 @@ spec:
 ### Development Environment
 
 ```yaml
-apiVersion: ossa/v0.2.x
+apiVersion: ossa/v{{OSSA_DISPLAY_VERSION}}
 kind: Agent
 metadata:
   name: dev-agent
@@ -405,7 +405,7 @@ spec:
 ### Cloud-Native (Grafana Stack)
 
 ```yaml
-apiVersion: ossa/v0.2.x
+apiVersion: ossa/v{{OSSA_DISPLAY_VERSION}}
 kind: Agent
 metadata:
   name: cloud-agent
@@ -432,7 +432,7 @@ spec:
 ### Minimal Observability
 
 ```yaml
-apiVersion: ossa/v0.2.x
+apiVersion: ossa/v{{OSSA_DISPLAY_VERSION}}
 kind: Agent
 metadata:
   name: minimal-agent
@@ -456,7 +456,7 @@ spec:
 ### High-Volume Agent
 
 ```yaml
-apiVersion: ossa/v0.2.x
+apiVersion: ossa/v{{OSSA_DISPLAY_VERSION}}
 kind: Agent
 metadata:
   name: high-volume-agent

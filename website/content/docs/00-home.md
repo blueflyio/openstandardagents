@@ -4,7 +4,7 @@
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![npm version](https://img.shields.io/npm/v/@bluefly/openstandardagents.svg)](https://www.npmjs.com/package/@bluefly/openstandardagents)
-[![Specification](https://img.shields.io/badge/Spec-v0.2.x-blue)](https://github.com/blueflyio/openstandardagents/blob/main/spec/v0.2.8/ossa-0.2.8.schema.json)
+[![Specification](https://img.shields.io/badge/Spec-v0.2.x-blue)](https://github.com/blueflyio/openstandardagents/blob/main/spec/{{OSSA_VERSION_TAG}}/ossa-{{OSSA_VERSION}}.schema.json)
 
 ---
 
@@ -47,6 +47,20 @@
 OSSA is a **specification standard** for defining AI agents, similar to how OpenAPI standardizes REST APIs.
 
 **OSSA is NOT a framework** - it's a standard that defines the contract. Implementations provide the functionality.
+
+### Agents as First-Class Citizens
+
+OSSA embodies the philosophy of treating AI agents as **first-class citizens** in software development. Just as functions, classes, and APIs are fundamental building blocks in modern programming, OSSA agents are standardized, reusable components that can be discovered, composed, and deployed like any other software artifact.
+
+This approach aligns with emerging industry research showing that [treating agents as first-class citizens](https://nextbigteng.substack.com/p/ai-agents-as-first-class-citizens-in-software-development) enables organizations to build more maintainable, scalable, and production-ready AI systems. By providing a declarative manifest format, OSSA makes agents:
+
+- **Discoverable** - Agents can be cataloged, searched, and shared across teams
+- **Composable** - Agents can invoke other agents as standard capabilities
+- **Testable** - Agents have defined schemas for inputs, outputs, and behavior validation
+- **Deployable** - Agents are infrastructure-independent artifacts
+- **Observable** - Agents expose standard metrics and tracing
+
+This first-class treatment transforms agents from ad-hoc code into production-grade software components with clear contracts, versioning, and lifecycle management.
 
 ### The Problem OSSA Solves
 

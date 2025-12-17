@@ -82,7 +82,7 @@ Framework-specific extensions enable integration with various agent platforms an
 ### Extensions Example
 
 ```yaml
-apiVersion: ossa/v0.2.x
+apiVersion: ossa/v{{OSSA_DISPLAY_VERSION}}
 kind: Agent
 metadata:
   name: multi-platform-agent
@@ -120,7 +120,7 @@ extensions:
 ## Complete Example
 
 ```yaml
-apiVersion: ossa/v0.2.x
+apiVersion: ossa/v{{OSSA_DISPLAY_VERSION}}
 kind: Agent
 
 metadata:
@@ -251,8 +251,8 @@ extensions:
 
 ### apiVersion Validation
 - Must match regex: `^ossa/v(0\.2\.[2-3]|1)(\.0)?(-[a-zA-Z0-9]+)?$`
-- Valid examples: `ossa/v1`, `ossa/v0.2.x`, `ossa/v0.2.8`, `ossa/v1.0`
-- Invalid examples: `v1`, `ossa/v2`, `ossa/0.2.8`
+- Valid examples: `ossa/v1`, `ossa/v0.2.x`, `ossa/{{OSSA_VERSION_TAG}}`, `ossa/v1.0`
+- Invalid examples: `v1`, `ossa/v2`, `ossa/{{OSSA_VERSION}}`
 
 ### kind Validation
 - Must be exactly `Agent` (case-sensitive)
@@ -294,7 +294,7 @@ Invalid names:
 
 The complete JSON Schema is available at:
 ```
-https://openstandardagents.org/schemas/v0.2.8/agent.json
+https://openstandardagents.org/schemas/{{OSSA_VERSION_TAG}}/agent.json
 ```
 
 Use it for validation and editor autocomplete:
