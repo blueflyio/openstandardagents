@@ -1576,22 +1576,13 @@ create-patch-version:
       # Push tag
       echo "Pushing tag to remote..."
       echo "Tag to push: $NEW_TAG"
-      
-      # Determine which token to use
-      if [ -n "${GITLAB_PUSH_TOKEN:-}" ]; then
-        PUSH_TOKEN="${GITLAB_PUSH_TOKEN}"
-        REMOTE_URL="https://oauth2:${PUSH_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git"
-      elif [ -n "${CI_JOB_TOKEN:-}" ]; then
-        PUSH_TOKEN="${CI_JOB_TOKEN}"
-        REMOTE_URL="https://gitlab-ci-token:${PUSH_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git"
-      else
-        echo "ERROR: No token available for pushing"
-        exit 1
-      fi
-      
+
+      # Use CI_JOB_TOKEN directly (simplest, most reliable)
+      REMOTE_URL="https://gitlab-ci-token:${CI_JOB_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git"
+
       # Ensure remote is set correctly before pushing
       git remote set-url origin "$REMOTE_URL"
-      echo "Remote URL configured (token hidden)"
+      echo "Remote URL configured with CI_JOB_TOKEN"
       
       if git push origin "$NEW_TAG" 2>&1; then
         echo "SUCCESS: Created and pushed tag: $NEW_TAG"
