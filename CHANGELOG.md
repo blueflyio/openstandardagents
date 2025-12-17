@@ -5,10 +5,12 @@ All notable changes to OSSA (Open Standard for Scalable AI Agents) will be docum
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.3.0-dev.12] - 2025-12-17
 
 ### Fixed
 
+- **ci**: Detect PAT vs deploy token in CI_DEPLOY_OSSA ([2e29863](https://gitlab.com/blueflyio/openstandardagents/-/commit/2e29863c3a0cd02bfa4a317a30fd6f2d6860e758))
+- **ci**: Check CI_DEPLOY_OSSA directly with debug output ([9d1d58f](https://gitlab.com/blueflyio/openstandardagents/-/commit/9d1d58f40dc5ae727ef5e834eaaabd9b3417d885))
 - **ci**: Map CI_DEPLOY_OSSA group variable to GITLAB_PUSH_TOKEN ([c40709e](https://gitlab.com/blueflyio/openstandardagents/-/commit/c40709ec603c86de291df37bc7bcf9e00c7551e6))
 - **ci**: Support deploy tokens (gldt-*) for git push auth ([9acd90f](https://gitlab.com/blueflyio/openstandardagents/-/commit/9acd90fe84e49d4f44d2444312c2c162b004df4a))
 - **ci**: Refactor milestone detection to be read-only ([70ec64e](https://gitlab.com/blueflyio/openstandardagents/-/commit/70ec64e3e43e8c47ae3327c8c01021b1eddbd5f8))## [0.3.0-dev.11] - 2025-12-17
