@@ -38,6 +38,8 @@ include:
   - template: Jobs/Dependency-Scanning.gitlab-ci.yml
   - template: Jobs/Container-Scanning.gitlab-ci.yml
   - template: Jobs/Code-Quality.gitlab-ci.yml
+  # Review Apps (OrbStack K8s)
+  - local: .gitlab/ci/review-apps.yml
   # OSSA Agent Pipelines
   #- local: .gitlab/ci/seo-automation.yml
 
@@ -279,10 +281,18 @@ build:docker:
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
     - docker build -t $IMAGE_TAG .
     - docker push $IMAGE_TAG
+    - |
+      # Also tag as MR-specific for review apps
+      if [ -n "$CI_MERGE_REQUEST_IID" ]; then
+        docker tag $IMAGE_TAG $CI_REGISTRY_IMAGE:mr-$CI_MERGE_REQUEST_IID
+        docker push $CI_REGISTRY_IMAGE:mr-$CI_MERGE_REQUEST_IID
+      fi
   dependencies:
     - build:website
-  allow_failure: true
+  allow_failure: false
   rules:
+    # Build for MRs (needed for review apps)
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
     - if: $CI_COMMIT_BRANCH =~ /^release\//
     - if: $CI_COMMIT_BRANCH == "main"
 
@@ -388,68 +398,48 @@ quality:metrics:
     - if: $CI_COMMIT_BRANCH == "main"
 
 # =============================================================================
-# REVIEW - Disabled (GitLab artifact URLs don't work for SPAs)
-# Use OrbStack environment for local testing instead
+# REVIEW APPS - Deployed via .gitlab/ci/review-apps.yml
 # =============================================================================
+# - Feature MRs → release: Deploys to http://ossa-mr-<ID>.orb.local
+# - Release MRs → main: Deploys to http://ossa-staging.orb.local
+# - Main branch: Manual "Go Live" button deploys to GitLab Pages
 
 # =============================================================================
-# STAGING - GitLab Pages from release branches
+# PRODUCTION - GitLab Pages (Manual Deploy)
 # =============================================================================
+# The special "pages" job name triggers GitLab Pages deployment
+# This creates the public/ artifact that becomes the live site
 pages:
   stage: deploy
   image: alpine:latest
   dependencies:
     - build:website
   script:
-    - mkdir -p public
-    - cp -r website-build/* public/
-    - echo "✅ Deployed to staging"
+    - |
+      echo "🚀 Deploying to GitLab Pages (Production)"
+      mkdir -p public
+      cp -r website-build/* public/
+
+      echo ""
+      echo "=============================================="
+      echo "✅ PRODUCTION DEPLOYMENT COMPLETE!"
+      echo "=============================================="
+      echo "🌐 URL: https://openstandardagents.org"
+      echo "📝 Commit: ${CI_COMMIT_SHORT_SHA}"
+      echo "🏷️  Branch: ${CI_COMMIT_BRANCH}"
+      echo "=============================================="
   artifacts:
     paths:
       - public
     expire_in: 30 days
   environment:
-    name: orbstack
-    url: http://ossa.orb.local
-    deployment_tier: staging
-  rules:
-    - if: $CI_COMMIT_BRANCH =~ /^release\//
-
-# =============================================================================
-# PRODUCTION - Manual approval required
-# =============================================================================
-deploy:production:
-  stage: deploy
-  image: node:${NODE_VERSION}-alpine
-  dependencies:
-    - detect:version
-    - build:website
-  before_script:
-    - |
-      if [ -f build.env ]; then
-        source build.env
-        echo "Deploying version: ${RELEASE_TAG:-latest}"
-      fi
-  script:
-    - |
-      echo "🚀 Deploying to production"
-      echo "Version: ${RELEASE_TAG:-latest}"
-      echo "Commit: ${CI_COMMIT_SHA}"
-      # Production deployment commands go here
-      # Example: npm run deploy:production
-      echo "✅ Production deployment completed"
-  artifacts:
-    paths:
-      - public
-    expire_in: 90 days
-  environment:
     name: production
-    action: start
     url: https://openstandardagents.org
     deployment_tier: production
   rules:
-    - if: $CI_COMMIT_BRANCH == "main" && $ENABLE_RELEASE == "true"
-      when: manual  # Requires manual trigger + DAP approval
+    # Manual deploy button on main branch
+    - if: $CI_COMMIT_BRANCH == "main"
+      when: manual
   resource_group: production
 
 # =============================================================================
