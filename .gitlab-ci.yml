@@ -1449,21 +1449,30 @@ create-patch-version:
     - git config --global user.email "ci@bluefly.io"
     - git config --global user.name "GitLab CI"
     - |
-      # Use GITLAB_PUSH_TOKEN (preferred) or CI_JOB_TOKEN as fallback
-      if [ -n "${GITLAB_PUSH_TOKEN:-}" ]; then
-        echo "Using GITLAB_PUSH_TOKEN for authentication"
-        # Detect deploy token (gldt-*) vs personal access token (glpat-*)
+      # Token priority: CI_DEPLOY_OSSA (group) > GITLAB_PUSH_TOKEN > CI_JOB_TOKEN
+      echo "Checking available tokens..."
+      echo "CI_DEPLOY_OSSA set: ${CI_DEPLOY_OSSA:+yes}"
+      echo "GITLAB_PUSH_TOKEN set: ${GITLAB_PUSH_TOKEN:+yes}"
+
+      if [ -n "${CI_DEPLOY_OSSA:-}" ]; then
+        echo "Using CI_DEPLOY_OSSA (group deploy token)"
+        echo "Token prefix: ${CI_DEPLOY_OSSA:0:5}..."
+        REMOTE_URL="https://${DEPLOY_TOKEN_USERNAME:-gitlab+deploy-token-10466652}:${CI_DEPLOY_OSSA}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git"
+      elif [ -n "${GITLAB_PUSH_TOKEN:-}" ]; then
+        echo "Using GITLAB_PUSH_TOKEN"
+        echo "Token prefix: ${GITLAB_PUSH_TOKEN:0:5}..."
         if echo "${GITLAB_PUSH_TOKEN}" | grep -q "^gldt-"; then
-          echo "Deploy token detected"
+          echo "Deploy token format detected"
           REMOTE_URL="https://${DEPLOY_TOKEN_USERNAME:-gitlab+deploy-token-10466652}:${GITLAB_PUSH_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git"
         else
+          echo "PAT format detected"
           REMOTE_URL="https://oauth2:${GITLAB_PUSH_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git"
         fi
       elif [ -n "${CI_JOB_TOKEN:-}" ]; then
-        echo "Using CI_JOB_TOKEN for authentication (fallback)"
+        echo "Using CI_JOB_TOKEN (fallback - limited permissions)"
         REMOTE_URL="https://gitlab-ci-token:${CI_JOB_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git"
       else
-        echo "ERROR: Neither GITLAB_PUSH_TOKEN nor CI_JOB_TOKEN is set"
+        echo "ERROR: No authentication token available"
         exit 1
       fi
       echo "Setting git remote with token..."
