@@ -5,7 +5,7 @@ All notable changes to OSSA (Open Standard for Scalable AI Agents) will be docum
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.3.0-dev.11] - 2025-12-17
 
 ### Added
 
@@ -19,6 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **ci**: Handle no release tags case with pipefail ([7905d4d](https://gitlab.com/blueflyio/openstandardagents/-/commit/7905d4d3ced54c489387e04b77a09b1d5a04c5c9))
 - **ci**: CRITICAL - use branch name for version, not milestones ([63cc109](https://gitlab.com/blueflyio/openstandardagents/-/commit/63cc109e4aec53dde06c770ed8e2a517027b900f))
 - **ci**: Use JOB-TOKEN header for CI_JOB_TOKEN API calls ([7796994](https://gitlab.com/blueflyio/openstandardagents/-/commit/7796994f49f74203507e478d7cfcb74b1d9af75e))
 - **ci**: Handle missing dev-tag.env in version sync ([6301b94](https://gitlab.com/blueflyio/openstandardagents/-/commit/6301b9453d1799fdb1d8e9177a633a89c89b931f))
