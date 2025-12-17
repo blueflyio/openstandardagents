@@ -1,0 +1,226 @@
+ossa: v0.3.0
+
+kind: workflow
+metadata:
+  name: mr-agent-router
+  namespace: openstandardagents.org
+  version: 1.0.0
+  title: MR Agent Router
+  description: >-
+    Intelligent routing workflow for merge request events.
+    Routes to appropriate agents based on file changes, mentions, and labels.
+  labels:
+    component: automation
+    domain: gitlab
+    tier: orchestration
+  annotations:
+    maintainer: devops@bluefly.io
+    documentation: https://gitlab.com/blueflyio/openstandardagents.org/-/wikis/agents/mr-router
+
+spec:
+  triggers:
+    - type: webhook
+      config:
+        source: gitlab
+        events:
+          - merge_request
+          - note
+
+  inputs:
+    schema:
+      type: object
+      properties:
+        event_type:
+          type: string
+          enum: [merge_request, note]
+        project_id:
+          type: string
+        mr_iid:
+          type: integer
+        changes:
+          type: array
+          items:
+            type: string
+        labels:
+          type: array
+          items:
+            type: string
+        mentions:
+          type: array
+          items:
+            type: object
+            properties:
+              agent:
+                type: string
+              command:
+                type: string
+      required:
+        - event_type
+        - project_id
+        - mr_iid
+
+  outputs:
+    schema:
+      type: object
+      properties:
+        agents_invoked:
+          type: array
+          items:
+            type: string
+        blocking_issues:
+          type: integer
+        warnings:
+          type: integer
+        summary:
+          type: string
+
+  steps:
+    - id: parse-event
+      name: Parse GitLab Event
+      task: tasks/gitlab-event-parser.ossa.yaml
+      inputs:
+        raw_event: ${{ inputs.event }}
+      outputs:
+        event_type: ${{ steps.parse-event.outputs.event_type }}
+        mentions: ${{ steps.parse-event.outputs.mentions }}
+        changes: ${{ steps.parse-event.outputs.changes }}
+        labels: ${{ steps.parse-event.outputs.labels }}
+
+    - id: route-mentions
+      name: Route Explicit Agent Mentions
+      condition: ${{ length(steps.parse-event.outputs.mentions) > 0 }}
+      loop:
+        items: ${{ steps.parse-event.outputs.mentions }}
+        parallelism: 5
+      dispatch:
+        agent: ${{ item.agent }}
+        inputs:
+          command: ${{ item.command }}
+          context:
+            project_id: ${{ inputs.project_id }}
+            mr_iid: ${{ inputs.mr_iid }}
+            event: ${{ inputs.event }}
+
+    - id: auto-dispatch-ossa
+      name: Auto-dispatch OSSA Validator
+      condition: ${{ contains(steps.parse-event.outputs.changes, '*.ossa.yaml') || contains(steps.parse-event.outputs.changes, '.agents/') || contains(steps.parse-event.outputs.changes, 'spec/') }}
+      dispatch:
+        agent: bot-ossa-validator
+        inputs:
+          command: validate --strict
+          context:
+            project_id: ${{ inputs.project_id }}
+            mr_iid: ${{ inputs.mr_iid }}
+
+    - id: auto-dispatch-ci
+      name: Auto-dispatch CI Fixer
+      condition: ${{ contains(steps.parse-event.outputs.changes, '.gitlab-ci.yml') || contains(steps.parse-event.outputs.changes, '.gitlab/ci/') }}
+      dispatch:
+        agent: bot-gitlab-ci-fixer
+        inputs:
+          command: validate
+          context:
+            project_id: ${{ inputs.project_id }}
+            mr_iid: ${{ inputs.mr_iid }}
+
+    - id: auto-dispatch-website
+      name: Auto-dispatch Website Reviewer
+      condition: ${{ contains(steps.parse-event.outputs.changes, 'website/') }}
+      dispatch:
+        agent: bot-mr-reviewer
+        inputs:
+          command: review --focus website
+          context:
+            project_id: ${{ inputs.project_id }}
+            mr_iid: ${{ inputs.mr_iid }}
+
+    - id: standard-review
+      name: Standard MR Review
+      condition: ${{ !contains(steps.parse-event.outputs.labels, 'hotfix') }}
+      dispatch:
+        agent: bot-mr-reviewer
+        inputs:
+          command: review full
+          context:
+            project_id: ${{ inputs.project_id }}
+            mr_iid: ${{ inputs.mr_iid }}
+
+    - id: hotfix-review
+      name: Expedited Hotfix Review
+      condition: ${{ contains(steps.parse-event.outputs.labels, 'hotfix') }}
+      dispatch:
+        agent: bot-mr-reviewer
+        inputs:
+          command: review urgent --security
+          priority: critical
+          context:
+            project_id: ${{ inputs.project_id }}
+            mr_iid: ${{ inputs.mr_iid }}
+            is_hotfix: true
+
+    - id: aggregate-responses
+      name: Aggregate Agent Responses
+      task: tasks/response-aggregator.ossa.yaml
+      inputs:
+        project_id: ${{ inputs.project_id }}
+        mr_iid: ${{ inputs.mr_iid }}
+      outputs:
+        summary: ${{ steps.aggregate-responses.outputs.summary }}
+        blocking_issues: ${{ steps.aggregate-responses.outputs.blocking_issues }}
+        warnings: ${{ steps.aggregate-responses.outputs.warnings }}
+
+    - id: post-summary
+      name: Post Summary Comment
+      task: tasks/gitlab-comment.ossa.yaml
+      inputs:
+        project_id: ${{ inputs.project_id }}
+        mr_iid: ${{ inputs.mr_iid }}
+        body: |
+          ## Agent Review Summary
+
+          **Blocking Issues:** ${{ steps.aggregate-responses.outputs.blocking_issues }}
+          **Warnings:** ${{ steps.aggregate-responses.outputs.warnings }}
+
+          ${{ steps.aggregate-responses.outputs.summary }}
+
+  error_handling:
+    on_failure: notify
+    notify:
+      channel: slack
+      template: agent-router-failure
+
+  observability:
+    tracing:
+      enabled: true
+      exporter: otlp
+    metrics:
+      enabled: true
+    labels:
+      workflow: mr-agent-router
+
+  # Command mapping for routing
+  command_mapping:
+    # Slash commands → agent routing
+    /review: bot-mr-reviewer
+    /review urgent: bot-mr-reviewer
+    /review security: bot-mr-reviewer
+    /validate: bot-ossa-validator
+    /validate --strict: bot-ossa-validator
+    /ossa validate: bot-ossa-validator
+    /ossa lint: bot-ossa-validator
+    /ci validate: bot-gitlab-ci-fixer
+    /ci lint: bot-gitlab-ci-fixer
+    /fix pipeline: bot-gitlab-ci-fixer
+    /lighthouse: bot-lighthouse
+    /a11y: bot-a11y
+
+  # File pattern → agent routing
+  file_routing:
+    "**/*.ossa.yaml": bot-ossa-validator
+    "**/*.ossa.yml": bot-ossa-validator
+    ".agents/**/*": bot-ossa-validator
+    ".gitlab/agents/**/*": bot-ossa-validator
+    "spec/**/*": bot-ossa-validator
+    ".gitlab-ci.yml": bot-gitlab-ci-fixer
+    ".gitlab/ci/**/*.yml": bot-gitlab-ci-fixer
+    "website/**/*": bot-mr-reviewer

@@ -16,15 +16,18 @@ export default function HomePage() {
       {/* Hero Section */}
       <section className="bg-gradient-to-br from-secondary via-primary to-accent text-white py-24 px-4">
         <div className="container mx-auto max-w-[1440px] text-center">
-          <div className="mb-6 flex flex-col items-center">
-            <span className="inline-block px-4 py-2 bg-white/20 backdrop-blur-sm rounded-full text-sm font-medium mb-4">
+          <div className="mb-6 flex flex-col items-center gap-2">
+            <span className="inline-block px-4 py-2 bg-white/20 backdrop-blur-sm rounded-full text-sm font-medium">
               The OpenAPI for AI Agents ({OSSA_DISPLAY_VERSION_TAG})
             </span>
           </div>
           <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold mb-6 leading-tight">
             Open Standard for AI Agents
           </h1>
-          <p className="text-2xl md:text-3xl lg:text-4xl mb-6 font-bold">
+          <p className="text-2xl md:text-3xl lg:text-4xl mb-4 font-bold">
+            Treating Agents as First-Class Citizens
+          </p>
+          <p className="text-xl md:text-2xl mb-6 text-gray-200">
             Vendor-neutral, compliance-ready, enterprise-grade
           </p>
           <div className="flex flex-wrap justify-center gap-x-8 gap-y-3 max-w-4xl mx-auto mb-8">

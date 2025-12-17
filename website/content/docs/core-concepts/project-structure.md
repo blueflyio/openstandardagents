@@ -74,7 +74,7 @@ Example manifest:
 ```json
 {
   "name": "customer-support-agent",
-  "version": "0.2.9",
+  "version": "{{OSSA_VERSION}}",
   "description": "Handles customer support inquiries",
   "taxonomy": {
     "role": "worker",

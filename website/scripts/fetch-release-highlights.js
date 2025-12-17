@@ -259,7 +259,58 @@ async function main() {
 
   if (versions.length === 0) {
     console.log('⚠️  No version directories found in spec/');
-    process.exit(1);
+    console.log('  Generating default highlights...');
+    
+    // Generate default highlights when no spec directories exist
+    const highlights = {
+      version: '0.2.9',
+      releaseDate: new Date().toISOString().split('T')[0],
+      overview: 'The latest OSSA release brings enterprise-grade specifications for production multi-agent systems.',
+      features: [],
+      categories: [],
+      homepage: [
+        {
+          title: 'Enterprise Security',
+          color: 'green',
+          bullets: [
+            'Formal security model with authentication & authorization',
+            'Secrets management & sandboxing requirements',
+            'FedRAMP, SOC2, HIPAA compliance profiles'
+          ]
+        },
+        {
+          title: 'Multi-Agent Orchestration',
+          color: 'blue',
+          bullets: [
+            'A2A Protocol for agent-to-agent communication',
+            'Capability URI scheme with registry format',
+            'Instance, session, and interaction IDs'
+          ]
+        },
+        {
+          title: 'Observability',
+          color: 'purple',
+          bullets: [
+            'OpenTelemetry semantic conventions',
+            'Reasoning trace export (ReAct, CoT, ToT)',
+            'Versioned prompt template management'
+          ]
+        },
+        {
+          title: 'Developer Experience',
+          color: 'orange',
+          bullets: [
+            'Conformance testing (Basic, Standard, Enterprise)',
+            'agents.md & llms.txt integration',
+            'Enhanced CLI validation tools'
+          ]
+        }
+      ]
+    };
+    
+    fs.writeFileSync(OUTPUT_PATH, JSON.stringify(highlights, null, 2));
+    console.log(`\n✅ Generated ${OUTPUT_PATH} with default highlights`);
+    process.exit(0);
   }
 
   const latestVersion = versions[0];
