@@ -1219,7 +1219,12 @@ release:npm:
     - npm ci --legacy-peer-deps
     - git config --global user.email "ci@bluefly.io"
     - git config --global user.name "GitLab CI Release"
-    - git remote set-url origin https://oauth2:${GITLAB_PUSH_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git
+    - |
+      if echo "${GITLAB_PUSH_TOKEN}" | grep -q "^gldt-"; then
+        git remote set-url origin "https://${DEPLOY_TOKEN_USERNAME:-gitlab+deploy-token-10466652}:${GITLAB_PUSH_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git"
+      else
+        git remote set-url origin "https://oauth2:${GITLAB_PUSH_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git"
+      fi
     - git fetch --unshallow --tags || git fetch --tags || true
     - git checkout -B main origin/main
   script:
@@ -1444,12 +1449,16 @@ create-patch-version:
       # Use GITLAB_PUSH_TOKEN (preferred) or CI_JOB_TOKEN as fallback
       if [ -n "${GITLAB_PUSH_TOKEN:-}" ]; then
         echo "Using GITLAB_PUSH_TOKEN for authentication"
-        PUSH_TOKEN="${GITLAB_PUSH_TOKEN}"
-        REMOTE_URL="https://oauth2:${PUSH_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git"
+        # Detect deploy token (gldt-*) vs personal access token (glpat-*)
+        if echo "${GITLAB_PUSH_TOKEN}" | grep -q "^gldt-"; then
+          echo "Deploy token detected"
+          REMOTE_URL="https://${DEPLOY_TOKEN_USERNAME:-gitlab+deploy-token-10466652}:${GITLAB_PUSH_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git"
+        else
+          REMOTE_URL="https://oauth2:${GITLAB_PUSH_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git"
+        fi
       elif [ -n "${CI_JOB_TOKEN:-}" ]; then
         echo "Using CI_JOB_TOKEN for authentication (fallback)"
-        PUSH_TOKEN="${CI_JOB_TOKEN}"
-        REMOTE_URL="https://gitlab-ci-token:${PUSH_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git"
+        REMOTE_URL="https://gitlab-ci-token:${CI_JOB_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git"
       else
         echo "ERROR: Neither GITLAB_PUSH_TOKEN nor CI_JOB_TOKEN is set"
         exit 1
@@ -2042,10 +2051,15 @@ sync:main-to-release:
   image: alpine:latest
   before_script:
     - apk add --no-cache curl jq
-    - apk add --no-cache git curl jq
+    - apk add --no-cache git curl jq bash
     - git config user.email "ci@bluefly.io"
     - git config user.name "GitLab CI"
-    - git remote set-url origin https://oauth2:${GITLAB_PUSH_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git
+    - |
+      if echo "${GITLAB_PUSH_TOKEN}" | grep -q "^gldt-"; then
+        git remote set-url origin "https://${DEPLOY_TOKEN_USERNAME:-gitlab+deploy-token-10466652}:${GITLAB_PUSH_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git"
+      else
+        git remote set-url origin "https://oauth2:${GITLAB_PUSH_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git"
+      fi
   script:
     - |
       echo "Syncing main → release branches..."
@@ -2109,7 +2123,12 @@ release:rc-tag:
       fi
     - git config user.email "gitlab-ci@${CI_SERVER_HOST}"
     - git config user.name "GitLab CI"
-    - git remote set-url origin "https://oauth2:${GITLAB_PUSH_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git"
+    - |
+      if echo "${GITLAB_PUSH_TOKEN}" | grep -q "^gldt-"; then
+        git remote set-url origin "https://${DEPLOY_TOKEN_USERNAME:-gitlab+deploy-token-10466652}:${GITLAB_PUSH_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git"
+      else
+        git remote set-url origin "https://oauth2:${GITLAB_PUSH_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git"
+      fi
     - git fetch --unshallow --tags || git fetch --tags || true
     - |
       # Load milestone version from artifact if available
@@ -2337,10 +2356,15 @@ release:promote-rc-to-final:
   stage: release
   image: alpine:latest
   before_script:
-    - apk add --no-cache git curl jq
+    - apk add --no-cache git curl jq bash
     - git config user.email "gitlab-ci@${CI_SERVER_HOST}"
     - git config user.name "GitLab CI"
-    - git remote set-url origin "https://oauth2:${GITLAB_PUSH_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git"
+    - |
+      if echo "${GITLAB_PUSH_TOKEN}" | grep -q "^gldt-"; then
+        git remote set-url origin "https://${DEPLOY_TOKEN_USERNAME:-gitlab+deploy-token-10466652}:${GITLAB_PUSH_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git"
+      else
+        git remote set-url origin "https://oauth2:${GITLAB_PUSH_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git"
+      fi
     - git fetch --unshallow --tags || git fetch --tags || true
   script:
     - |
