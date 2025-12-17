@@ -9,7 +9,7 @@
 #   3. Main branch: Manual button to deploy to GitLab Pages
 #
 # Prerequisites:
-#   1. CI/CD Variable: KUBE_CONFIG_B64 (base64 encoded kubeconfig)
+#   1. CI/CD Variable: KUBECONFIG_LOCAL (base64 encoded kubeconfig for OrbStack)
 #      Generate: kubectl config view --raw | base64 | pbcopy
 #   2. OrbStack with nginx-ingress controller installed
 #
@@ -40,15 +40,15 @@ review:deploy:
       # Install envsubst
       apt-get update && apt-get install -y gettext-base curl ca-certificates
 
-      # Configure kubectl from CI variable
-      if [ -n "$KUBE_CONFIG_B64" ]; then
+      # Configure kubectl from CI variable (KUBECONFIG_LOCAL for OrbStack)
+      if [ -n "$KUBECONFIG_LOCAL" ]; then
         mkdir -p ~/.kube
-        echo "$KUBE_CONFIG_B64" | base64 -d > ~/.kube/config
+        echo "$KUBECONFIG_LOCAL" | base64 -d > ~/.kube/config
         chmod 600 ~/.kube/config
-        echo "✅ Kubectl configured from KUBE_CONFIG_B64"
+        echo "✅ Kubectl configured from KUBECONFIG_LOCAL"
       else
-        echo "⚠️  KUBE_CONFIG_B64 not set - skipping K8s deployment"
-        echo "   To enable: Add KUBE_CONFIG_B64 CI/CD variable"
+        echo "⚠️  KUBECONFIG_LOCAL not set - skipping K8s deployment"
+        echo "   To enable: Add KUBECONFIG_LOCAL CI/CD variable"
         echo "   Generate: kubectl config view --raw | base64 | pbcopy"
         exit 0
       fi
@@ -129,9 +129,9 @@ review:stop:
     GIT_STRATEGY: none
   before_script:
     - |
-      if [ -n "$KUBE_CONFIG_B64" ]; then
+      if [ -n "$KUBECONFIG_LOCAL" ]; then
         mkdir -p ~/.kube
-        echo "$KUBE_CONFIG_B64" | base64 -d > ~/.kube/config
+        echo "$KUBECONFIG_LOCAL" | base64 -d > ~/.kube/config
         chmod 600 ~/.kube/config
       fi
   script:
@@ -174,14 +174,14 @@ staging:deploy:
     - |
       apt-get update && apt-get install -y gettext-base ca-certificates
 
-      # Configure kubectl from CI variable
-      if [ -n "$KUBE_CONFIG_B64" ]; then
+      # Configure kubectl from CI variable (KUBECONFIG_LOCAL for OrbStack)
+      if [ -n "$KUBECONFIG_LOCAL" ]; then
         mkdir -p ~/.kube
-        echo "$KUBE_CONFIG_B64" | base64 -d > ~/.kube/config
+        echo "$KUBECONFIG_LOCAL" | base64 -d > ~/.kube/config
         chmod 600 ~/.kube/config
-        echo "✅ Kubectl configured from KUBE_CONFIG_B64"
+        echo "✅ Kubectl configured from KUBECONFIG_LOCAL"
       else
-        echo "⚠️  KUBE_CONFIG_B64 not set - skipping K8s deployment"
+        echo "⚠️  KUBECONFIG_LOCAL not set - skipping K8s deployment"
         exit 0
       fi
 
