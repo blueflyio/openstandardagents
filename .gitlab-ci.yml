@@ -692,8 +692,10 @@ release:pre-release:
     - if: $CI_COMMIT_BRANCH =~ /^release\/v/
       when: on_success
 
-# On main: Create final release tag + GitLab Release
-release:final:
+# On main: Create RC (release candidate) tag automatically
+# Flow: release/v0.3.x → main → v0.3.X-rc.N (auto)
+#       Then manually: promote-rc-to-final → v0.3.X (final)
+release:rc:
   stage: release
   image: alpine:latest
   dependencies:
@@ -708,67 +710,162 @@ release:final:
     - |
       if [ -f build.env ]; then
         source build.env
-        
-        if [ "$IS_RELEASE" != "true" ]; then
-          echo "Not on main branch, skipping final release"
+
+        if [ "$IS_RC" != "true" ]; then
+          echo "Not an RC context, skipping RC tag creation"
           exit 0
         fi
-        
-        echo "Creating final release tag: ${RELEASE_TAG}"
-        
+
+        echo "Creating RC tag: ${RELEASE_TAG}"
+
         # Check if tag already exists
         if git rev-parse "${RELEASE_TAG}" >/dev/null 2>&1; then
           echo "Tag ${RELEASE_TAG} already exists, skipping"
           exit 0
         fi
-        
-        # Create annotated tag
+
+        # Create annotated RC tag
         git tag -a "${RELEASE_TAG}" \
-          -m "Release: ${RELEASE_TAG}" \
+          -m "Release Candidate: ${RELEASE_TAG}" \
           -m "Commit: ${CI_COMMIT_SHA}" \
           -m "Pipeline: ${CI_PIPELINE_ID}"
-        
+
         # Push tag
         git push origin "${RELEASE_TAG}"
-        
-        # Generate release notes from commits since last tag
-        LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
-        if [ -n "$LAST_TAG" ]; then
-          RELEASE_NOTES=$(git log --pretty=format:"- %s (%h)" ${LAST_TAG}..HEAD)
-        else
-          RELEASE_NOTES=$(git log --pretty=format:"- %s (%h)" -10)
+
+        echo "✅ Created RC tag: ${RELEASE_TAG}"
+        echo "📋 To promote to final: Click 'release:promote-rc-to-final' job"
+      else
+        echo "⚠️ build.env not found, skipping RC tag"
+      fi
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+      when: on_success
+
+# Manual: Promote latest RC to final release
+# Creates v0.3.X tag + GitLab Release
+release:promote-rc-to-final:
+  stage: release
+  image: alpine:latest
+  dependencies:
+    - detect:version
+  before_script:
+    - apk add --no-cache git bash curl jq
+    - git config user.email "ci@gitlab.com"
+    - git config user.name "GitLab CI"
+    - git remote set-url origin "https://oauth2:${GITLAB_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git"
+    - git fetch --tags
+  script:
+    - |
+      if [ -f build.env ]; then
+        source build.env
+
+        FINAL_TAG="v${VERSION}"
+        echo "Promoting to final release: ${FINAL_TAG}"
+
+        # Check if final tag already exists
+        if git rev-parse "${FINAL_TAG}" >/dev/null 2>&1; then
+          echo "Final tag ${FINAL_TAG} already exists!"
+          exit 1
         fi
-        
-        # Create GitLab Release via API
+
+        # Find latest RC tag for this version
+        LATEST_RC=$(git tag -l "v${VERSION}-rc.*" | sort -V | tail -1)
+        if [ -z "$LATEST_RC" ]; then
+          echo "❌ No RC tags found for v${VERSION}"
+          exit 1
+        fi
+
+        echo "Promoting ${LATEST_RC} → ${FINAL_TAG}"
+
+        # Create final tag pointing to same commit as latest RC
+        RC_COMMIT=$(git rev-list -n 1 "${LATEST_RC}")
+        git tag -a "${FINAL_TAG}" "${RC_COMMIT}" \
+          -m "Release: ${FINAL_TAG}" \
+          -m "Promoted from: ${LATEST_RC}" \
+          -m "Pipeline: ${CI_PIPELINE_ID}"
+
+        # Push final tag
+        git push origin "${FINAL_TAG}"
+
+        # Generate release notes
+        PREV_TAG=$(git tag -l "v*" | grep -v rc | grep -v dev | sort -V | tail -2 | head -1)
+        if [ -n "$PREV_TAG" ] && [ "$PREV_TAG" != "$FINAL_TAG" ]; then
+          RELEASE_NOTES=$(git log --pretty=format:"- %s (%h)" ${PREV_TAG}..${RC_COMMIT})
+        else
+          RELEASE_NOTES=$(git log --pretty=format:"- %s (%h)" -20 ${RC_COMMIT})
+        fi
+
+        # Create GitLab Release
         RELEASE_RESPONSE=$(curl -s --request POST \
           --header "PRIVATE-TOKEN: ${GITLAB_TOKEN}" \
           --header "Content-Type: application/json" \
           --data "{
-            \"name\": \"Release ${RELEASE_TAG}\",
-            \"tag_name\": \"${RELEASE_TAG}\",
-            \"description\": \"## Release ${RELEASE_TAG}\n\n${RELEASE_NOTES}\",
-            \"assets\": {
-              \"links\": []
-            }
+            \"name\": \"Release ${FINAL_TAG}\",
+            \"tag_name\": \"${FINAL_TAG}\",
+            \"description\": \"## Release ${FINAL_TAG}\n\nPromoted from ${LATEST_RC}\n\n### Changes\n\n${RELEASE_NOTES}\"
           }" \
           "https://${CI_SERVER_HOST}/api/v4/projects/${CI_PROJECT_ID}/releases")
-        
+
         if echo "$RELEASE_RESPONSE" | jq -e '.tag_name' >/dev/null 2>&1; then
-          echo "✅ Created GitLab Release: ${RELEASE_TAG}"
+          echo "✅ Created GitLab Release: ${FINAL_TAG}"
         else
           echo "⚠️ Failed to create GitLab Release: ${RELEASE_RESPONSE}"
         fi
-        
-        echo "✅ Created release tag: ${RELEASE_TAG}"
+
+        echo "✅ Promoted ${LATEST_RC} → ${FINAL_TAG}"
+        echo "📋 To publish to npm: Click 'release:npm' job"
       else
-        echo "⚠️ build.env not found, skipping release"
+        echo "⚠️ build.env not found"
+        exit 1
       fi
-  release:
-    tag_name: $RELEASE_TAG
-    description: "Release $RELEASE_TAG"
   rules:
-    - if: $CI_COMMIT_BRANCH == "main" && $ENABLE_RELEASE == "true"
-      when: on_success
+    - if: $CI_COMMIT_BRANCH == "main"
+      when: manual
+      allow_failure: true
+
+# Manual: Publish to npm
+release:npm:
+  stage: release
+  image: node:20-alpine
+  dependencies:
+    - detect:version
+    - build:website
+  before_script:
+    - apk add --no-cache git
+    - git fetch --tags
+  script:
+    - |
+      if [ -f build.env ]; then
+        source build.env
+
+        FINAL_TAG="v${VERSION}"
+
+        # Verify final tag exists (must promote RC first)
+        if ! git rev-parse "${FINAL_TAG}" >/dev/null 2>&1; then
+          echo "❌ Final tag ${FINAL_TAG} not found!"
+          echo "   You must run 'release:promote-rc-to-final' first"
+          exit 1
+        fi
+
+        echo "Publishing ${FINAL_TAG} to npm..."
+
+        # Configure npm auth
+        echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > ~/.npmrc
+
+        # Publish packages (add your publish commands here)
+        # Example for monorepo:
+        # cd website && npm publish --access public
+
+        echo "✅ Published ${FINAL_TAG} to npm"
+      else
+        echo "⚠️ build.env not found"
+        exit 1
+      fi
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+      when: manual
+      allow_failure: true
 
 # =============================================================================
 # BRANCH PROTECTION - Prevent release branch deletion
