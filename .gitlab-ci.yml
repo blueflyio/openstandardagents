@@ -29,7 +29,7 @@ include:
   - template: Jobs/Dependency-Scanning.gitlab-ci.yml
   # Merge trains enabled via workflow rules (see workflow section at bottom)
   # Component available but private - uncomment when gitlab_components is public
-  # - component: gitlab.com/blueflyio/agent-platform/gitlab_components/merge-train@main
+  # - component: gitlab.com/blueflyio/gitlab_components/merge-train@main
 # OSSA Runners
   - local: '.gitlab/ci/ossa-runners.yml'
 #   - CI/CD variable ENABLE_RELEASE must be set to "true"
@@ -69,6 +69,9 @@ variables:
   NPM_CONFIG_LEGACY_PEER_DEPS: "1"
   HUSKY: "0"
   LEFTHOOK: "0"
+  # Map group-level CI_DEPLOY_OSSA to GITLAB_PUSH_TOKEN (used by all release jobs)
+  GITLAB_PUSH_TOKEN: ${CI_DEPLOY_OSSA}
+  DEPLOY_TOKEN_USERNAME: "gitlab+deploy-token-10466652"
 
 # ============================================================================
 # STAGE 0 - VERSION DETECTION & DEV TAG MANAGEMENT
@@ -96,6 +99,8 @@ detect:version:
     - if: '$CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "main"'
     - if: '$CI_COMMIT_TAG'
 
+# FIXED: detect:milestone-and-tags - ONLY detect, don't push tags
+# Tag creation is handled by create-patch-version which has GITLAB_PUSH_TOKEN
 detect:milestone-and-tags:
   stage: setup
   image: alpine:latest
@@ -104,6 +109,7 @@ detect:milestone-and-tags:
     - apk add --no-cache curl jq git bash
     - git config user.email "ci@bluefly.io"
     - git config user.name "GitLab CI"
+    # READ-ONLY - no push needed in this job
     - git remote set-url origin "https://oauth2:${CI_JOB_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git"
     - git fetch --unshallow --tags --force || git fetch --tags --force || true
   script:
@@ -111,63 +117,10 @@ detect:milestone-and-tags:
       #!/bin/bash
       set -euo pipefail
 
-      # Validate required variables
-      if [ -z "${CI_API_V4_URL:-}" ] || [ -z "${CI_PROJECT_ID:-}" ] || [ -z "${CI_JOB_TOKEN:-}" ]; then
-        echo "ERROR: Missing required CI variables"
-        exit 1
-      fi
-
-      # Rate-limited API call function with exponential backoff
-      safe_api_call() {
-        local url="$1"
-        local max_retries=5
-        local retry=0
-        local wait_time=2
-
-        if [ -z "$url" ]; then
-          echo "ERROR: safe_api_call called with empty URL" >&2
-          echo "[]"
-          return 1
-        fi
-
-        while [ $retry -lt $max_retries ]; do
-          local response
-          local http_code
-          local body
-
-          response=$(curl -sS -w "\n%{http_code}" "$url" \
-            --header "PRIVATE-TOKEN: ${CI_JOB_TOKEN}" 2>&1) || true
-
-          http_code=$(echo "$response" | tail -n1)
-          body=$(echo "$response" | sed '$d')
-
-          if [ "$http_code" = "429" ]; then
-            retry=$((retry + 1))
-            echo "WARNING: Rate limit hit, retrying in ${wait_time}s (attempt $retry/$max_retries)" >&2
-            sleep $wait_time
-            wait_time=$((wait_time * 2))
-            continue
-          elif [ "$http_code" -ge 200 ] && [ "$http_code" -lt 300 ]; then
-            echo "$body"
-            return 0
-          else
-            echo "WARNING: API call failed with HTTP $http_code" >&2
-            retry=$((retry + 1))
-            sleep $wait_time
-            wait_time=$((wait_time * 2))
-            continue
-          fi
-        done
-
-        echo "[]"
-        return 1
-      }
-
-      echo "DEV TAG MANAGEMENT"
-      echo "=================="
+      echo "DEV TAG DETECTION (NOT CREATION)"
+      echo "================================="
       echo "Branch: ${CI_COMMIT_BRANCH}"
       echo "Commit: ${CI_COMMIT_SHA}"
-      echo "Pipeline: ${CI_PIPELINE_ID}"
       echo ""
 
       # Initialize env files
@@ -175,12 +128,10 @@ detect:milestone-and-tags:
       DEV_TAG_VERSION=
       DEV_TAG_NAME=
       DEV_TAG_BUILD=
-      DEV_MILESTONE_ID=
       EOF
 
-      # Only run on release branches - extract version from BRANCH NAME
+      # Only DETECT on release branches - don't create tags here
       if echo "$CI_COMMIT_BRANCH" | grep -qE "^release/v"; then
-        # Extract version from branch name: release/v0.3.x -> 0.3
         BRANCH_VERSION=$(echo "$CI_COMMIT_BRANCH" | sed -n 's|^release/v\([0-9]\+\.[0-9]\+\).*|\1|p')
 
         if [ -z "$BRANCH_VERSION" ]; then
@@ -188,56 +139,39 @@ detect:milestone-and-tags:
         else
           echo "Branch version: ${BRANCH_VERSION}.x"
 
-          # Find next patch version (e.g., 0.3.0, 0.3.1, 0.3.2)
-          LATEST_RELEASE=$(git tag -l "v${BRANCH_VERSION}.*" 2>/dev/null | grep -v "dev\|RC" | sort -V | tail -1)
+          # Find next patch version
+          LATEST_RELEASE=$(git tag -l "v${BRANCH_VERSION}.*" 2>/dev/null | grep -v "dev\|RC" | sort -V | tail -1 || true)
 
           if [ -z "$LATEST_RELEASE" ]; then
             DEV_VERSION="${BRANCH_VERSION}.0"
           else
-            PATCH=$(echo "$LATEST_RELEASE" | sed "s/v${BRANCH_VERSION}\.//" | grep -oE '^[0-9]+')
+            PATCH=$(echo "$LATEST_RELEASE" | sed "s/v${BRANCH_VERSION}\.//" | grep -oE '^[0-9]+' || echo "0")
+            [ -z "$PATCH" ] && PATCH=0
             NEXT_PATCH=$((PATCH + 1))
             DEV_VERSION="${BRANCH_VERSION}.${NEXT_PATCH}"
           fi
 
           echo "Target version: v${DEV_VERSION}"
 
-          # Get latest dev tag for this version (with v prefix and dot format: v0.3.0-dev.1)
-          LATEST_DEV_TAG=$(git tag -l "v${DEV_VERSION}-dev.*" 2>/dev/null | sort -V | tail -1)
+          # Get latest dev tag
+          LATEST_DEV_TAG=$(git tag -l "v${DEV_VERSION}-dev.*" 2>/dev/null | sort -V | tail -1 || true)
           CURRENT_BUILD=$(echo "$LATEST_DEV_TAG" | sed "s/.*-dev\.//" | grep -E '^[0-9]+$' || echo "0")
           [ -z "$CURRENT_BUILD" ] && CURRENT_BUILD=0
           NEXT_BUILD=$((CURRENT_BUILD + 1))
 
-          # Check if we need a new tag
-          if [ -n "$LATEST_DEV_TAG" ]; then
-            TAG_COMMIT=$(git rev-list -n 1 "$LATEST_DEV_TAG" 2>/dev/null || echo "")
-            if [ "$CI_COMMIT_SHA" = "$TAG_COMMIT" ]; then
-              echo "No changes since ${LATEST_DEV_TAG}, skipping"
-            fi
-          fi
-
-          # Create tag with correct format: v0.3.1-dev.1
+          # ONLY DETECT - don't create tag
           NEW_TAG="v${DEV_VERSION}-dev.${NEXT_BUILD}"
-          echo "Creating dev tag: ${NEW_TAG}"
+          echo "Next dev tag will be: ${NEW_TAG}"
 
-          # Create and push tag
-          if git tag -a "$NEW_TAG" -m "Dev build ${NEXT_BUILD} for v${DEV_VERSION}" "$CI_COMMIT_SHA" 2>/dev/null; then
-            if git push origin "$NEW_TAG" 2>/dev/null; then
-              echo "Created dev tag: ${NEW_TAG}"
-              cat > dev-tags.env << EOF
+          # Save to env file for create-patch-version job
+          cat > dev-tags.env << EOF
       DEV_TAG_VERSION=${DEV_VERSION}
       DEV_TAG_NAME=${NEW_TAG}
       DEV_TAG_BUILD=${NEXT_BUILD}
       EOF
-            else
-              echo "Failed to push tag ${NEW_TAG}"
-              git tag -d "$NEW_TAG" 2>/dev/null || true
-            fi
-          else
-            echo "Tag ${NEW_TAG} already exists or failed to create"
-          fi
         fi
       else
-        echo "Skipping dev tag management (not on release/* branch)"
+        echo "Skipping dev tag detection (not on release/* branch)"
       fi
       
       # Detect ACTIVE milestones ready for release
@@ -393,7 +327,7 @@ detect:milestone-and-tags:
       when: always
     - if: $CI_COMMIT_BRANCH =~ /^release\/v/
       when: always
-  allow_failure: true
+  allow_failure: false
 
 # ============================================================================
 # STAGE 1 - SETUP & VALIDATE
@@ -578,7 +512,7 @@ validate:scripts-version:
       fi
 
       # Check scripts don't have hardcoded version paths
-      if node -e "const pkg = require('./package.json'); const scripts = JSON.stringify(pkg.scripts || {}); if (scripts.match(/spec\\/v0\\.[0-9]/)) { process.exit(1); }" 2>/dev/null; then
+      if node -e "const pkg = require('./package.json'); const scripts = JSON.stringify(pkg.scripts || {}); if (scripts.match(/spec\/v0\.[0-9]/)) { process.exit(1); }" 2>/dev/null; then
         echo "Scripts field does not contain hardcoded version paths"
       else
         echo "ERROR: package.json scripts contain hardcoded version paths"
@@ -1174,7 +1108,7 @@ release:validate:
       echo ""
       echo "📋 8. Script Version Check"
 
-      if node -e "const pkg = require('./package.json'); const scripts = JSON.stringify(pkg.scripts || {}); if (scripts.match(/spec\\/v0\\.[0-9]/)) { process.exit(1); }" 2>/dev/null; then
+      if node -e "const pkg = require('./package.json'); const scripts = JSON.stringify(pkg.scripts || {}); if (scripts.match(/spec\/v0\.[0-9]/)) { process.exit(1); }" 2>/dev/null; then
         echo "   No hardcoded versions in scripts"
       else
         echo "ERROR: Hardcoded versions found in package.json scripts"
@@ -1288,7 +1222,12 @@ release:npm:
     - npm ci --legacy-peer-deps
     - git config --global user.email "ci@bluefly.io"
     - git config --global user.name "GitLab CI Release"
-    - git remote set-url origin https://oauth2:${GITLAB_PUSH_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git
+    - |
+      if echo "${GITLAB_PUSH_TOKEN}" | grep -q "^gldt-"; then
+        git remote set-url origin "https://${DEPLOY_TOKEN_USERNAME:-gitlab+deploy-token-10466652}:${GITLAB_PUSH_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git"
+      else
+        git remote set-url origin "https://oauth2:${GITLAB_PUSH_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git"
+      fi
     - git fetch --unshallow --tags || git fetch --tags || true
     - git checkout -B main origin/main
   script:
@@ -1401,7 +1340,11 @@ release:npm:
 
       # If no changelog, use fallback
       if [ -z "$RELEASE_DESCRIPTION" ]; then
-        RELEASE_DESCRIPTION="## Release v${RELEASE_VERSION}\n\nMilestone: ${MILESTONE_TITLE} (${MILESTONE_URL})\n\nSee CHANGELOG.md for details."
+        RELEASE_DESCRIPTION="## Release v${RELEASE_VERSION}
+
+        Milestone: ${MILESTONE_TITLE} (${MILESTONE_URL})
+
+        See CHANGELOG.md for details."
       fi
 
       # Create release with milestone linkage
@@ -1510,17 +1453,36 @@ create-patch-version:
     - git config --global user.email "ci@bluefly.io"
     - git config --global user.name "GitLab CI"
     - |
-      # Use GITLAB_PUSH_TOKEN (preferred) or CI_JOB_TOKEN as fallback
-      if [ -n "${GITLAB_PUSH_TOKEN:-}" ]; then
-        echo "Using GITLAB_PUSH_TOKEN for authentication"
-        PUSH_TOKEN="${GITLAB_PUSH_TOKEN}"
-        REMOTE_URL="https://oauth2:${PUSH_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git"
+      # Token priority: CI_DEPLOY_OSSA (group) > GITLAB_PUSH_TOKEN > CI_JOB_TOKEN
+      echo "Checking available tokens..."
+      echo "CI_DEPLOY_OSSA set: ${CI_DEPLOY_OSSA:+yes}"
+      echo "GITLAB_PUSH_TOKEN set: ${GITLAB_PUSH_TOKEN:+yes}"
+
+      if [ -n "${CI_DEPLOY_OSSA:-}" ]; then
+        echo "Using CI_DEPLOY_OSSA"
+        echo "Token prefix: ${CI_DEPLOY_OSSA:0:5}..."
+        if echo "${CI_DEPLOY_OSSA}" | grep -q "^gldt-"; then
+          echo "Deploy token - using username:token"
+          REMOTE_URL="https://${DEPLOY_TOKEN_USERNAME:-gitlab+deploy-token-10466652}:${CI_DEPLOY_OSSA}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git"
+        else
+          echo "PAT - using oauth2:token"
+          REMOTE_URL="https://oauth2:${CI_DEPLOY_OSSA}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git"
+        fi
+      elif [ -n "${GITLAB_PUSH_TOKEN:-}" ]; then
+        echo "Using GITLAB_PUSH_TOKEN"
+        echo "Token prefix: ${GITLAB_PUSH_TOKEN:0:5}..."
+        if echo "${GITLAB_PUSH_TOKEN}" | grep -q "^gldt-"; then
+          echo "Deploy token format detected"
+          REMOTE_URL="https://${DEPLOY_TOKEN_USERNAME:-gitlab+deploy-token-10466652}:${GITLAB_PUSH_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git"
+        else
+          echo "PAT format detected"
+          REMOTE_URL="https://oauth2:${GITLAB_PUSH_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git"
+        fi
       elif [ -n "${CI_JOB_TOKEN:-}" ]; then
-        echo "Using CI_JOB_TOKEN for authentication (fallback)"
-        PUSH_TOKEN="${CI_JOB_TOKEN}"
-        REMOTE_URL="https://gitlab-ci-token:${PUSH_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git"
+        echo "Using CI_JOB_TOKEN (fallback - limited permissions)"
+        REMOTE_URL="https://gitlab-ci-token:${CI_JOB_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git"
       else
-        echo "ERROR: Neither GITLAB_PUSH_TOKEN nor CI_JOB_TOKEN is set"
+        echo "ERROR: No authentication token available"
         exit 1
       fi
       echo "Setting git remote with token..."
@@ -1614,22 +1576,13 @@ create-patch-version:
       # Push tag
       echo "Pushing tag to remote..."
       echo "Tag to push: $NEW_TAG"
-      
-      # Determine which token to use
-      if [ -n "${GITLAB_PUSH_TOKEN:-}" ]; then
-        PUSH_TOKEN="${GITLAB_PUSH_TOKEN}"
-        REMOTE_URL="https://oauth2:${PUSH_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git"
-      elif [ -n "${CI_JOB_TOKEN:-}" ]; then
-        PUSH_TOKEN="${CI_JOB_TOKEN}"
-        REMOTE_URL="https://gitlab-ci-token:${PUSH_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git"
-      else
-        echo "ERROR: No token available for pushing"
-        exit 1
-      fi
-      
+
+      # Use CI_JOB_TOKEN directly (simplest, most reliable)
+      REMOTE_URL="https://gitlab-ci-token:${CI_JOB_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git"
+
       # Ensure remote is set correctly before pushing
       git remote set-url origin "$REMOTE_URL"
-      echo "Remote URL configured (token hidden)"
+      echo "Remote URL configured with CI_JOB_TOKEN"
       
       if git push origin "$NEW_TAG" 2>&1; then
         echo "SUCCESS: Created and pushed tag: $NEW_TAG"
@@ -2020,7 +1973,7 @@ create-release-mrs:
 
         if [ -z "$EXISTING_MR" ] || [ "$EXISTING_MR" = "null" ]; then
           echo "Creating MR for milestone $MILESTONE_TITLE (branch: $RELEASE_BRANCH)"
-          
+
           CREATE_MR_RESPONSE=$(curl -s -w "\n%{http_code}" --request POST \
             --header "PRIVATE-TOKEN: $GITLAB_PUSH_TOKEN" \
             --header "Content-Type: application/json" \
@@ -2028,7 +1981,7 @@ create-release-mrs:
               \"source_branch\": \"${RELEASE_BRANCH}\",
               \"target_branch\": \"main\",
               \"title\": \"Draft:  Release $MILESTONE_TITLE\",
-              \"description\": \"## Release $MILESTONE_TITLE\\n\\nDraft MR for next release. Features merge to ${RELEASE_BRANCH} and accumulate here.\\n\\n### When Ready\\n1. Mark as ready\\n2. Add to merge train\\n3. Train merges to main\\n4. Release automation runs\",
+              \"description\": \"## Release $MILESTONE_TITLE\n\nDraft MR for next release. Features merge to ${RELEASE_BRANCH} and accumulate here.\n\n### When Ready\n1. Mark as ready\n2. Add to merge train\n3. Train merges to main\n4. Release automation runs\",
               \"milestone_id\": $MILESTONE_ID,
               \"draft\": true,
               \"labels\": \"type::release,status::draft\"
@@ -2111,10 +2064,15 @@ sync:main-to-release:
   image: alpine:latest
   before_script:
     - apk add --no-cache curl jq
-    - apk add --no-cache git curl jq
+    - apk add --no-cache git curl jq bash
     - git config user.email "ci@bluefly.io"
     - git config user.name "GitLab CI"
-    - git remote set-url origin https://oauth2:${GITLAB_PUSH_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git
+    - |
+      if echo "${GITLAB_PUSH_TOKEN}" | grep -q "^gldt-"; then
+        git remote set-url origin "https://${DEPLOY_TOKEN_USERNAME:-gitlab+deploy-token-10466652}:${GITLAB_PUSH_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git"
+      else
+        git remote set-url origin "https://oauth2:${GITLAB_PUSH_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git"
+      fi
   script:
     - |
       echo "Syncing main → release branches..."
@@ -2178,7 +2136,12 @@ release:rc-tag:
       fi
     - git config user.email "gitlab-ci@${CI_SERVER_HOST}"
     - git config user.name "GitLab CI"
-    - git remote set-url origin "https://oauth2:${GITLAB_PUSH_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git"
+    - |
+      if echo "${GITLAB_PUSH_TOKEN}" | grep -q "^gldt-"; then
+        git remote set-url origin "https://${DEPLOY_TOKEN_USERNAME:-gitlab+deploy-token-10466652}:${GITLAB_PUSH_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git"
+      else
+        git remote set-url origin "https://oauth2:${GITLAB_PUSH_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git"
+      fi
     - git fetch --unshallow --tags || git fetch --tags || true
     - |
       # Load milestone version from artifact if available
@@ -2300,7 +2263,6 @@ release:rc-tag:
     - if: '$CI_COMMIT_BRANCH == "main"'
       when: always
   allow_failure: false
-  needs: []
   variables:
     GIT_STRATEGY: clone
     GIT_DEPTH: 0
@@ -2406,10 +2368,15 @@ release:promote-rc-to-final:
   stage: release
   image: alpine:latest
   before_script:
-    - apk add --no-cache git curl jq
+    - apk add --no-cache git curl jq bash
     - git config user.email "gitlab-ci@${CI_SERVER_HOST}"
     - git config user.name "GitLab CI"
-    - git remote set-url origin "https://oauth2:${GITLAB_PUSH_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git"
+    - |
+      if echo "${GITLAB_PUSH_TOKEN}" | grep -q "^gldt-"; then
+        git remote set-url origin "https://${DEPLOY_TOKEN_USERNAME:-gitlab+deploy-token-10466652}:${GITLAB_PUSH_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git"
+      else
+        git remote set-url origin "https://oauth2:${GITLAB_PUSH_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git"
+      fi
     - git fetch --unshallow --tags || git fetch --tags || true
   script:
     - |

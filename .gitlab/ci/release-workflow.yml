@@ -249,8 +249,8 @@ create-release-tag:
     - job: detect-release-version
       artifacts: true
   rules:
-    - if: $CI_COMMIT_BRANCH == "main" && $CI_COMMIT_MESSAGE =~ /Merge branch 'release/
-    - if: $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "main" && $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME =~ /^release//
+    - if: $CI_COMMIT_BRANCH == "main" && $CI_COMMIT_MESSAGE =~ /Merge branch 'release\//
+    - if: $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "main" && $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME =~ /^release\//
       when: manual
   allow_failure: false
 
