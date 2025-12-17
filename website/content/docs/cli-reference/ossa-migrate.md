@@ -26,7 +26,7 @@ Migrate agent manifests between OSSA versions
 ## Examples
 
 ```bash
-ossa migrate agent.yaml --from 0.2.8 --to 0.2.8
+ossa migrate agent.yaml --from 0.2.8 --to {{OSSA_VERSION}}
 ```
 
 ```bash

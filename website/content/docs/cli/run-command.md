@@ -343,7 +343,7 @@ Agent: Max turns reached without completion
 ### Basic Agent
 
 ```yaml
-apiVersion: ossa/v0.2.9
+apiVersion: ossa/v{{OSSA_VERSION}}
 kind: Agent
 metadata:
   name: my-agent
@@ -360,7 +360,7 @@ spec:
 ### Agent with Tools
 
 ```yaml
-apiVersion: ossa/v0.2.9
+apiVersion: ossa/v{{OSSA_VERSION}}
 kind: Agent
 metadata:
   name: tool-agent
@@ -390,7 +390,7 @@ extensions:
 ### Advanced Configuration
 
 ```yaml
-apiVersion: ossa/v0.2.9
+apiVersion: ossa/v{{OSSA_VERSION}}
 kind: Agent
 metadata:
   name: advanced-agent
