@@ -1342,9 +1342,9 @@ release:npm:
       if [ -z "$RELEASE_DESCRIPTION" ]; then
         RELEASE_DESCRIPTION="## Release v${RELEASE_VERSION}
 
-Milestone: ${MILESTONE_TITLE} (${MILESTONE_URL})
+        Milestone: ${MILESTONE_TITLE} (${MILESTONE_URL})
 
-See CHANGELOG.md for details."
+        See CHANGELOG.md for details."
       fi
 
       # Create release with milestone linkage
@@ -1927,8 +1927,7 @@ create-release-mrs:
       echo "Checking for milestones needing release MRs..."
 
       # Fetch milestones with error handling
-      MILESTONES_RESPONSE=$(curl -s -w "
-%{http_code}" --header "PRIVATE-TOKEN: $GITLAB_PUSH_TOKEN" \
+      MILESTONES_RESPONSE=$(curl -s -w "\n%{http_code}" --header "PRIVATE-TOKEN: $GITLAB_PUSH_TOKEN" \
         "$CI_API_V4_URL/projects/$CI_PROJECT_ID/milestones?state=active" 2>&1)
       
       HTTP_CODE=$(echo "$MILESTONES_RESPONSE" | tail -n1)
@@ -1970,8 +1969,7 @@ create-release-mrs:
         fi
 
         # Check for existing MR with error handling
-        MR_RESPONSE=$(curl -s -w "
-%{http_code}" --header "PRIVATE-TOKEN: $GITLAB_PUSH_TOKEN" \
+        MR_RESPONSE=$(curl -s -w "\n%{http_code}" --header "PRIVATE-TOKEN: $GITLAB_PUSH_TOKEN" \
           "$CI_API_V4_URL/projects/$CI_PROJECT_ID/merge_requests?state=opened&source_branch=${RELEASE_BRANCH}&target_branch=main&milestone=$MILESTONE_TITLE" 2>&1)
         
         MR_HTTP_CODE=$(echo "$MR_RESPONSE" | tail -n1)
@@ -1984,9 +1982,8 @@ create-release-mrs:
 
         if [ -z "$EXISTING_MR" ] || [ "$EXISTING_MR" = "null" ]; then
           echo "Creating MR for milestone $MILESTONE_TITLE (branch: $RELEASE_BRANCH)"
-          
-          CREATE_MR_RESPONSE=$(curl -s -w "
-%{http_code}" --request POST \
+
+          CREATE_MR_RESPONSE=$(curl -s -w "\n%{http_code}" --request POST \
             --header "PRIVATE-TOKEN: $GITLAB_PUSH_TOKEN" \
             --header "Content-Type: application/json" \
             --data "{
