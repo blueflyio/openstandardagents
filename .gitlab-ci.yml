@@ -79,6 +79,7 @@ variables:
 
 detect:version:
   stage: setup
+  needs: []  # Skip .pre stage - allows pipeline to auto-start
   image: alpine:latest
   tags:
     - saas-linux-small-amd64
@@ -103,6 +104,7 @@ detect:version:
 # Tag creation is handled by create-patch-version which has GITLAB_PUSH_TOKEN
 detect:milestone-and-tags:
   stage: setup
+  needs: []  # Skip .pre stage - allows pipeline to auto-start
   image: alpine:latest
   timeout: 10 minutes
   before_script:
