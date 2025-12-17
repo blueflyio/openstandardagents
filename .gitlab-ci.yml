@@ -337,6 +337,7 @@ detect:milestone-and-tags:
 
 validate:node:
   stage: validate
+  needs: []
   image: node:${NODE_VERSION}-alpine
   script:
     - node --version
@@ -347,6 +348,7 @@ validate:node:
 
 validate:ossa:
   stage: validate
+  needs: []
   image: node:${NODE_VERSION}-alpine
   script:
     - npm ci --legacy-peer-deps
@@ -359,6 +361,7 @@ validate:ossa:
 
 validate:gitlab-ci:
   stage: validate
+  needs: []
   image: alpine:latest
   script:
     - apk add --no-cache curl jq
@@ -445,6 +448,7 @@ check:ds-store:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
 
 validate:version-sync:
+  needs: []
   stage: validate
   image: node:${NODE_VERSION}-alpine
   script:
@@ -494,6 +498,7 @@ validate:version-sync:
 #   extends: .version-consistency-check
 
 validate:scripts-version:
+  needs: []
   stage: validate
   image: node:${NODE_VERSION}-alpine
   before_script:
@@ -536,6 +541,7 @@ validate:scripts-version:
       when: always
 
 validate:docs-consistency:
+  needs: []
   stage: validate
   image: node:${NODE_VERSION}-alpine
   before_script:
@@ -2479,6 +2485,7 @@ release:promote-rc-to-final:
 
 repo:hygiene:
   stage: validate
+  needs: []  # Skip .pre stage - allows job to auto-start
   image: alpine:3.20
   rules:
     - when: always
