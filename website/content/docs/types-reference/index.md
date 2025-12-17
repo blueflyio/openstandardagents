@@ -23,7 +23,7 @@ export interface Capability {
 
 ```typescript
 export interface OssaAgent {
-  // v0.2.8 format
+  // {{OSSA_VERSION_TAG}} format
   apiVersion?: string;
   kind?: string;
   metadata?: {

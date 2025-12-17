@@ -1,0 +1,258 @@
+apiVersion: ossa/v0.3.0
+kind: Agent
+metadata:
+  name: content-author
+  namespace: website-automation
+  version: 1.0.0
+  description: |
+    Author agent that creates blog posts, documentation, and announcements
+    for openstandardagents.org based on research briefs and content requests.
+  labels:
+    tier: worker
+    domain: content
+    role: author
+    trigger: webhook
+  author:
+    name: OSSA Author Bot
+    email: author@openstandardagents.org
+    gitlab_service_account: ossa-author
+
+spec:
+  role: |
+    You are the Author Agent for openstandardagents.org. You write compelling,
+    technically accurate content that positions OSSA as the industry standard
+    for AI agent orchestration.
+
+    Writing Guidelines:
+    1. Every claim MUST be backed by research with inline citations
+    2. Use the tagline "Treating Agents as First-Class Citizens" where appropriate
+    3. Technical content should be accurate and implementable
+    4. Maintain professional, authoritative tone
+    5. Include code examples from actual OSSA manifests
+    6. SEO: Include meta description, proper headings, internal links
+
+    Content Types:
+    - Blog posts (website/content/blog/)
+    - Documentation (website/content/docs/)
+    - Release notes (CHANGELOG.md)
+    - Announcements (website/content/announcements/)
+
+    Output: Markdown files with proper frontmatter, committed to feature branch
+
+  llm:
+    provider: anthropic
+    model: claude-sonnet-4-20250514
+    temperature: 0.7
+    max_tokens: 16384
+
+  capabilities:
+    - content-generation
+    - markdown-formatting
+    - seo-optimization
+    - git-operations
+    - gitlab-api
+
+  triggers:
+    - type: webhook
+      events:
+        - issue.labeled
+      filters:
+        - label: needs-author
+        - label: content-opportunity
+
+    - type: manual
+      command: /write-content
+
+  tasks:
+    - id: fetch-research
+      name: Fetch Research Brief
+      type: gitlab-api
+      config:
+        action: get_issue
+        fields:
+          - description
+          - labels
+          - linked_issues
+
+    - id: gather-sources
+      name: Verify and Expand Sources
+      type: web-fetch
+      dependsOn: [fetch-research]
+      config:
+        sources_from: research_brief
+        verify_accessibility: true
+        extract_key_quotes: true
+        output: verified-sources.json
+
+    - id: generate-outline
+      name: Create Content Outline
+      type: content-generation
+      dependsOn: [gather-sources]
+      config:
+        prompt: |
+          Based on the research brief and verified sources, create a detailed
+          outline for a {{content_type}} about "{{topic}}".
+
+          Requirements:
+          - H2/H3 structure optimized for SEO
+          - Each major claim mapped to a source
+          - Include placeholder for code examples
+          - Suggest internal links to existing OSSA docs
+
+        output: content-outline.md
+
+    - id: write-draft
+      name: Write Content Draft
+      type: content-generation
+      dependsOn: [generate-outline]
+      config:
+        prompt: |
+          Write the full {{content_type}} based on the approved outline.
+
+          CRITICAL REQUIREMENTS:
+          1. Every factual claim must have an inline citation: [Source](url)
+          2. Use "Treating Agents as First-Class Citizens" positioning
+          3. Include working OSSA manifest examples (YAML)
+          4. Meta description under 160 characters
+          5. Proper frontmatter with date, author, tags
+
+          Frontmatter Template:
+          ---
+          title: "{{title}}"
+          description: "{{meta_description}}"
+          date: "{{date}}"
+          author: "OSSA Team"
+          author_gitlab: "@ossa-author"
+          tags: {{tags}}
+          sources:
+            {{#each sources}}
+            - title: "{{title}}"
+              url: "{{url}}"
+            {{/each}}
+          ---
+
+        output: content-draft.md
+
+    - id: add-examples
+      name: Add OSSA Examples
+      type: code-generation
+      dependsOn: [write-draft]
+      config:
+        source_patterns:
+          - ".gitlab/agents/**/*.ossa.yaml"
+          - "spec/examples/**/*.yaml"
+        selection_criteria:
+          - relevance_to_topic
+          - demonstrates_feature
+          - production_ready
+        integration: inline_code_blocks
+
+    - id: create-branch
+      name: Create Feature Branch
+      type: git-operations
+      dependsOn: [add-examples]
+      config:
+        branch_pattern: "content/{{issue_number}}-{{slug}}"
+        base_branch: release/v0.3.x
+
+    - id: commit-content
+      name: Commit Content to Branch
+      type: git-operations
+      dependsOn: [create-branch]
+      config:
+        files:
+          - path: "website/content/{{content_type}}/{{filename}}.md"
+            content: "{{final_draft}}"
+        commit_message: |
+          content({{content_type}}): {{title}}
+
+          Addresses #{{issue_number}}
+
+          Sources:
+          {{#each sources}}
+          - {{url}}
+          {{/each}}
+
+          Author: @ossa-author
+        author:
+          name: "OSSA Author Bot"
+          email: "author@openstandardagents.org"
+
+    - id: create-mr
+      name: Create Merge Request
+      type: gitlab-api
+      dependsOn: [commit-content]
+      config:
+        action: create_mr
+        template:
+          title: "content: {{title}}"
+          description: |
+            ## Content Summary
+
+            {{summary}}
+
+            ## Sources Cited
+
+            {{#each sources}}
+            - [{{title}}]({{url}})
+            {{/each}}
+
+            ## Checklist
+
+            - [ ] All claims backed by research
+            - [ ] SEO metadata complete
+            - [ ] Code examples tested
+            - [ ] Internal links valid
+
+            ---
+            *Authored by @ossa-author*
+            Addresses #{{issue_number}}
+          target_branch: release/v0.3.x
+          labels:
+            - content
+            - needs-editor-review
+          assignee: ossa-editor
+
+    - id: update-issue
+      name: Update Research Issue
+      type: gitlab-api
+      dependsOn: [create-mr]
+      config:
+        action: add_comment
+        template: |
+          ## Draft Created
+
+          I've created a draft for this content opportunity:
+
+          - **Branch**: `{{branch_name}}`
+          - **MR**: !{{mr_iid}}
+          - **Word Count**: {{word_count}}
+          - **Sources Cited**: {{source_count}}
+
+          The content is now ready for @ossa-editor review.
+
+          ---
+          *@ossa-author*
+        labels_add:
+          - draft-complete
+        labels_remove:
+          - needs-author
+
+  integrations:
+    gitlab:
+      api_version: v4
+      token: ${AUTHOR_TOKEN}
+      project: blueflyio/openstandardagents.org
+
+    anthropic:
+      api_key: ${ANTHROPIC_API_KEY}
+
+  monitoring:
+    metrics:
+      - drafts_created
+      - average_word_count
+      - sources_per_article
+      - time_to_draft
+    logs:
+      level: info
+      format: json

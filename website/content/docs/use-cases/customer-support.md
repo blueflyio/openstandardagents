@@ -86,7 +86,7 @@ graph TB
 ## OSSA Manifest
 
 ```yaml
-apiVersion: ossa/v0.2.x
+apiVersion: ossa/v{{OSSA_DISPLAY_VERSION}}
 kind: Agent
 metadata:
   name: support-triage-agent

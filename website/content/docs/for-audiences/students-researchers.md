@@ -56,7 +56,7 @@ Research migration patterns:
 
 ### Papers & Publications
 
-- OSSA Specification: [spec/v0.2.x/ossa-0.2.x.schema.json](https://github.com/blueflyio/openstandardagents/blob/main/spec/v0.2.8/ossa-0.2.8.schema.json) (latest v0.2.x schema)
+- OSSA Specification: [spec/v0.2.x/ossa-0.2.x.schema.json](https://github.com/blueflyio/openstandardagents/blob/main/spec/{{OSSA_VERSION_TAG}}/ossa-{{OSSA_VERSION}}.schema.json) (latest v0.2.x schema)
 - Examples Library: [examples/](https://github.com/blueflyio/openstandardagents/tree/main/examples)
 
 ### Research Questions

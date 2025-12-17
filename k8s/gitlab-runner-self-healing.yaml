@@ -1,0 +1,63 @@
+# Self-Healing Configuration for Website Runners
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: gitlab-runner-self-healing
+  namespace: gitlab-runner
+data:
+  health-check.sh: |
+    #!/bin/sh
+    if ! pgrep -f "gitlab-runner.*run" > /dev/null; then
+      exit 1
+    fi
+    if ! curl -f http://localhost:8093/metrics > /dev/null 2>&1; then
+      exit 1
+    fi
+    exit 0
+
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: gitlab-runner-pdb
+  namespace: gitlab-runner
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: gitlab-runner
+      component: autoscaler
+
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: runner-health-monitor
+  namespace: gitlab-runner
+spec:
+  schedule: "*/2 * * * *"
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          serviceAccountName: gitlab-runner
+          containers:
+          - name: health-monitor
+            image: bitnami/kubectl:latest
+            command:
+            - /bin/sh
+            - -c
+            - |
+              for pod in $(kubectl get pods -n gitlab-runner -l app=gitlab-runner --no-headers | awk '{print $1}'); do
+                status=$(kubectl get pod $pod -n gitlab-runner -o jsonpath='{.status.phase}')
+                restarts=$(kubectl get pod $pod -n gitlab-runner -o jsonpath='{.status.containerStatuses[0].restartCount}')
+                
+                if [ "$status" != "Running" ] || [ "$restarts" -gt 5 ]; then
+                  echo "Healing pod: $pod"
+                  kubectl delete pod $pod -n gitlab-runner --grace-period=0 --force || true
+                fi
+              done
+          restartPolicy: OnFailure

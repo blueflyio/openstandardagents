@@ -15,7 +15,7 @@ MAJOR.MINOR.PATCH[-PRERELEASE][+BUILD]
 ```
 
 Examples:
-- `0.2.8` - Stable patch release
+- `{{OSSA_VERSION}}` - Stable patch release
 - `0.3.0` - Minor feature release
 - `1.0.0` - Major release with breaking changes
 - `0.3.0-dev.1` - Development pre-release
@@ -37,7 +37,7 @@ Examples:
 - **Purpose**: Stable production releases
 - **Releases**: Final semantic versions (no pre-release tag)
 - **Version Detection**: From release branch when merged (e.g., `release/v0.3.x` → `main` → `v0.3.0`)
-- **Example versions**: `v0.2.8`, `v0.3.0`, `v0.3.1`, `v1.0.0`
+- **Example versions**: `{{OSSA_VERSION_TAG}}`, `v0.3.0`, `v0.3.1`, `v1.0.0`
 
 ---
 
@@ -84,7 +84,7 @@ Migration guide available at docs/migration-v1.md
 Semantic-release analyzes commits since the last release:
 
 ```
-Last release: v0.2.8
+Last release: {{OSSA_VERSION_TAG}}
 New commits:
   - fix: resolve validation error      → PATCH
   - feat: add KAgent bridge support    → MINOR (overrides PATCH)
@@ -165,9 +165,9 @@ OSSA schema versions follow specification versions:
 ```
 Package Version  → Schema Directory
 -----------------------------------------
-v0.2.8          → spec/v0.2.8/
-v0.3.0          → spec/v0.2.8/
-v1.0.0          → spec/v0.2.8/
+v0.2.8          → spec/{{OSSA_VERSION_TAG}}/
+v0.3.0          → spec/{{OSSA_VERSION_TAG}}/
+v1.0.0          → spec/{{OSSA_VERSION_TAG}}/
 ```
 
 ### Schema Compatibility
@@ -207,8 +207,8 @@ E --> F[Manual trigger to publish to npmjs.com]
 
 | Version | Release Date | Type | Highlights |
 |---------|--------------|------|------------|
-| 0.2.8 | 2025-10-28 | Patch | Schema fixes, CI improvements |
-| 0.2.8 | 2025-10-27 | Minor | Added KAgent bridge, MCP tools |
+| {{OSSA_VERSION}} | 2025-10-28 | Patch | Schema fixes, CI improvements |
+| {{OSSA_VERSION}} | 2025-10-27 | Minor | Added KAgent bridge, MCP tools |
 | 0.1.9 | 2024-XX-XX | Minor | Extensions, taxonomy, observability |
 | 0.1.8 | 2024-XX-XX | Minor | Initial stable release |
 
@@ -316,4 +316,4 @@ git commit -m "chore: update docs [skip ci]"
 ---
 
 **Last Updated**: 2025-10-28
-**Version**: 0.2.8
+**Version**: {{OSSA_VERSION}}
