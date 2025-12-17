@@ -1,5 +1,5 @@
 // OSSA version constants
-// AUTO-GENERATED from GitLab tags (major/minor update) - DO NOT EDIT DIRECTLY
+// AUTO-GENERATED from GitLab tags (patch only, no update needed) - DO NOT EDIT DIRECTLY
 // Run: npm run sync-version (fetches latest from GitLab tags or npm registry)
 // NOTE: Website only updates on major/minor releases, not patches
 
