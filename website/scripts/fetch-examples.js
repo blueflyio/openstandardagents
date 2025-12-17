@@ -198,6 +198,22 @@ async function main() {
       fs.mkdirSync(publicDir, { recursive: true });
     }
 
+    // IMPORTANT: Preserve existing examples if fetch failed (e.g., revoked token)
+    // Only write if we got examples OR if no existing file exists
+    if (examples.length === 0 && fs.existsSync(outputFile)) {
+      try {
+        const existing = JSON.parse(fs.readFileSync(outputFile, 'utf8'));
+        if (Array.isArray(existing) && existing.length > 0) {
+          console.log(`⚠️  GitLab API returned 0 examples - preserving ${existing.length} existing examples`);
+          console.log(`   (This usually means the GitLab token was revoked or expired)`);
+          console.log(`\n✅ Preserved ${outputFile} with ${existing.length} examples`);
+          return; // Exit without overwriting
+        }
+      } catch (e) {
+        // Existing file is invalid, proceed with writing
+      }
+    }
+
     fs.writeFileSync(outputFile, JSON.stringify(examples, null, 2));
     
     // Fix hardcoded apiVersion in examples
