@@ -4,23 +4,19 @@
 # Deploys dynamic review environments to OrbStack K8s
 #
 # Flow:
-#   1. Feature MR → Release: Creates review app at ossa-mr-<MR_ID>.<INGRESS_IP>.nip.io
-#   2. Release MR → Main: Creates staging at ossa-staging.<INGRESS_IP>.nip.io
+#   1. Feature MR → Release: Creates review app at ossa-mr-<MR_ID>.review.blueflyagents.com
+#   2. Release MR → Main: Creates staging at ossa-staging.review.blueflyagents.com
 #   3. Main branch: Manual button to deploy to GitLab Pages
 #
 # Prerequisites:
 #   1. CI/CD Variable: KUBECONFIG_LOCAL (base64 encoded kubeconfig for OrbStack)
-#      Generate: kubectl config view --raw | base64 | pbcopy
 #   2. OrbStack with nginx-ingress controller installed
-#
-# DNS: Uses nip.io wildcard DNS - NO /etc/hosts configuration needed!
-#      nip.io resolves *.192.168.139.2.nip.io → 192.168.139.2
+#   3. DNS: *.review.blueflyagents.com → 192.168.139.2 (OrbStack ingress)
 # =============================================================================
 
 variables:
   REVIEW_NAMESPACE: ossa-review
-  # Default OrbStack ingress IP - auto-detected at runtime
-  ORBSTACK_INGRESS_IP: "192.168.139.2"
+  REVIEW_DOMAIN: "review.blueflyagents.com"
 
 # =============================================================================
 # REVIEW APP - Feature → Release MRs
@@ -60,14 +56,9 @@ review:deploy:
         exit 0
       fi
 
-      # Auto-detect ingress IP from nginx-ingress controller
-      INGRESS_IP=$(kubectl get svc -n ingress-nginx ingress-nginx-controller -o jsonpath='{.status.loadBalancer.ingress[0].ip}' 2>/dev/null || echo "${ORBSTACK_INGRESS_IP}")
-      [ -z "$INGRESS_IP" ] && INGRESS_IP="${ORBSTACK_INGRESS_IP}"
-      echo "🌐 Ingress IP: ${INGRESS_IP}"
-
-      # Set review app variables using nip.io wildcard DNS
+      # Set review app variables
       export REVIEW_APP_NAME="ossa-mr-${CI_MERGE_REQUEST_IID}"
-      export REVIEW_APP_HOST="${REVIEW_APP_NAME}.${INGRESS_IP}.nip.io"
+      export REVIEW_APP_HOST="${REVIEW_APP_NAME}.${REVIEW_DOMAIN}"
       export REVIEW_APP_IMAGE="${CI_REGISTRY_IMAGE}:${CI_COMMIT_SHA}"
       export NAMESPACE="${REVIEW_NAMESPACE}"
 
@@ -109,7 +100,7 @@ review:deploy:
       echo "=============================================="
   environment:
     name: review/${CI_MERGE_REQUEST_SOURCE_BRANCH_NAME}
-    url: http://ossa-mr-${CI_MERGE_REQUEST_IID}.192.168.139.2.nip.io
+    url: http://ossa-mr-${CI_MERGE_REQUEST_IID}.review.blueflyagents.com
     on_stop: review:stop
     auto_stop_in: 1 week
     deployment_tier: development
@@ -191,14 +182,9 @@ staging:deploy:
         exit 0
       fi
 
-      # Auto-detect ingress IP from nginx-ingress controller
-      INGRESS_IP=$(kubectl get svc -n ingress-nginx ingress-nginx-controller -o jsonpath='{.status.loadBalancer.ingress[0].ip}' 2>/dev/null || echo "${ORBSTACK_INGRESS_IP}")
-      [ -z "$INGRESS_IP" ] && INGRESS_IP="${ORBSTACK_INGRESS_IP}"
-      echo "🌐 Ingress IP: ${INGRESS_IP}"
-
-      # Set staging app variables using nip.io wildcard DNS
+      # Set staging app variables
       export REVIEW_APP_NAME="ossa-staging"
-      export REVIEW_APP_HOST="ossa-staging.${INGRESS_IP}.nip.io"
+      export REVIEW_APP_HOST="ossa-staging.${REVIEW_DOMAIN}"
       export REVIEW_APP_IMAGE="${CI_REGISTRY_IMAGE}:${CI_COMMIT_SHA}"
       export NAMESPACE="${REVIEW_NAMESPACE}"
 
@@ -239,7 +225,7 @@ staging:deploy:
       echo "=============================================="
   environment:
     name: staging
-    url: http://ossa-staging.192.168.139.2.nip.io
+    url: http://ossa-staging.review.blueflyagents.com
     deployment_tier: staging
   allow_failure: true
   rules:
