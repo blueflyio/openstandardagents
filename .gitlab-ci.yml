@@ -1495,35 +1495,52 @@ release:npm:
 create-patch-version:
   stage: release
   image: alpine:latest
-  needs:
-    - job: quality:gates
   before_script:
-    - apk add --no-cache curl jq
-    - apk add --no-cache git curl
-    - |
-      if [ -z "${GITLAB_PUSH_TOKEN:-}" ]; then
-        echo "ERROR: GITLAB_PUSH_TOKEN is not set"
-        echo "This job requires GITLAB_PUSH_TOKEN to create and push tags"
-        exit 1
-      fi
+    - apk add --no-cache curl jq git bash
     - git config --global user.email "ci@bluefly.io"
     - git config --global user.name "GitLab CI"
-    - git remote set-url origin https://oauth2:${GITLAB_PUSH_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git
+    - |
+      # Use GITLAB_PUSH_TOKEN (preferred) or CI_JOB_TOKEN as fallback
+      if [ -n "${GITLAB_PUSH_TOKEN:-}" ]; then
+        echo "Using GITLAB_PUSH_TOKEN for authentication"
+        PUSH_TOKEN="${GITLAB_PUSH_TOKEN}"
+        REMOTE_URL="https://oauth2:${PUSH_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git"
+      elif [ -n "${CI_JOB_TOKEN:-}" ]; then
+        echo "Using CI_JOB_TOKEN for authentication (fallback)"
+        PUSH_TOKEN="${CI_JOB_TOKEN}"
+        REMOTE_URL="https://gitlab-ci-token:${PUSH_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git"
+      else
+        echo "ERROR: Neither GITLAB_PUSH_TOKEN nor CI_JOB_TOKEN is set"
+        exit 1
+      fi
+      echo "Setting git remote with token..."
+      git remote set-url origin "$REMOTE_URL"
+      # Test the connection
+      if git ls-remote --heads origin 2>&1 | head -5; then
+        echo "Authentication successful"
+      else
+        echo "WARNING: Could not list remote heads, but continuing..."
+      fi
     - git fetch --unshallow --tags || git fetch --tags || true
   script:
     - |
       set -e
-      echo "Automated Patch Version Creation"
-      echo "===================================="
+      echo "=============================================="
+      echo "  DEV TAG CREATION"
+      echo "=============================================="
       echo "Branch: ${CI_COMMIT_BRANCH}"
       echo "Commit: ${CI_COMMIT_SHA}"
+      echo "Pipeline: ${CI_PIPELINE_URL}"
+      echo "Pipeline Source: ${CI_PIPELINE_SOURCE}"
+      echo "All tags: $(git tag -l | head -20)"
+      echo ""
 
       # Check if this is a hotfix branch
       if echo "$CI_COMMIT_BRANCH" | grep -qE "^hotfix/"; then
         echo "Hotfix branch detected - creating dev tag only"
-        # For hotfix, use current version from package.json or latest release tag
+        # For hotfix, try to get version from package.json using jq
         if [ -f "package.json" ]; then
-          CURRENT_VERSION=$(node -p "require('./package.json').version" 2>/dev/null || echo "0.3.0")
+          CURRENT_VERSION=$(jq -r '.version' package.json 2>/dev/null | sed 's/-dev\.[0-9]*//' | sed 's/-rc\.[0-9]*//' || echo "0.3.0")
         else
           CURRENT_VERSION="0.3.0"
         fi
@@ -1543,10 +1560,13 @@ create-patch-version:
       fi
 
       # Get latest dev tag for this release series (v0.3.0-dev.1, v0.3.0-dev.2, etc.)
+      echo "Looking for dev tags matching: v${BRANCH_VERSION}.0-dev.*"
       LATEST_DEV_TAG=$(git tag -l "v${BRANCH_VERSION}.0-dev.*" | sort -V | tail -n1)
+      echo "Latest dev tag found: ${LATEST_DEV_TAG:-none}"
       
       # Also check for non-dev tags (v0.3.0, v0.3.1, etc.)
       LATEST_TAG=$(git tag -l "v${BRANCH_VERSION}.*" | grep -v "dev" | sort -V | tail -n1)
+      echo "Latest non-dev tag found: ${LATEST_TAG:-none}"
 
       if [ -z "$LATEST_DEV_TAG" ]; then
         # No dev tags exist, start with dev.1
@@ -1583,6 +1603,24 @@ create-patch-version:
 
       # Push tag
       echo "Pushing tag to remote..."
+      echo "Tag to push: $NEW_TAG"
+      
+      # Determine which token to use
+      if [ -n "${GITLAB_PUSH_TOKEN:-}" ]; then
+        PUSH_TOKEN="${GITLAB_PUSH_TOKEN}"
+        REMOTE_URL="https://oauth2:${PUSH_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git"
+      elif [ -n "${CI_JOB_TOKEN:-}" ]; then
+        PUSH_TOKEN="${CI_JOB_TOKEN}"
+        REMOTE_URL="https://gitlab-ci-token:${PUSH_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git"
+      else
+        echo "ERROR: No token available for pushing"
+        exit 1
+      fi
+      
+      # Ensure remote is set correctly before pushing
+      git remote set-url origin "$REMOTE_URL"
+      echo "Remote URL configured (token hidden)"
+      
       if git push origin "$NEW_TAG" 2>&1; then
         echo "SUCCESS: Created and pushed tag: $NEW_TAG"
         
@@ -1621,7 +1659,7 @@ create-patch-version:
   rules:
     # Hotfix branches can create dev tags
     - if: $CI_COMMIT_BRANCH =~ /^hotfix\//
-      when: on_success
+      when: always
     # Release branches create dev tags on every push
     - if: $CI_COMMIT_BRANCH =~ /^release\/v[0-9]+\.[0-9]+\.x$/
       when: always
