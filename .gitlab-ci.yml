@@ -255,18 +255,32 @@ detect:milestone-and-tags:
       # Get ACTIVE milestones from GROUP (we use group milestones for version tracking)
       # Group: blueflyio/agent-platform
       GROUP_PATH="blueflyio%2Fagent-platform"
+
+      # CI_JOB_TOKEN requires JOB-TOKEN header, not PRIVATE-TOKEN
       ALL_MILESTONES=$(curl -sS -G "${CI_API_V4_URL}/groups/${GROUP_PATH}/milestones" \
-        --header "PRIVATE-TOKEN: ${CI_JOB_TOKEN}" \
+        --header "JOB-TOKEN: ${CI_JOB_TOKEN}" \
         --data-urlencode "per_page=100" \
         --data-urlencode "state=active" 2>/dev/null || echo "[]")
 
+      # Check if response is valid JSON array (not error message)
+      if ! echo "$ALL_MILESTONES" | jq -e 'type == "array"' > /dev/null 2>&1; then
+        echo "WARNING: Group milestones API returned non-array, trying project milestones..."
+        ALL_MILESTONES="[]"
+      fi
+
       # Fallback to project milestones if group fetch fails
       if [ "$ALL_MILESTONES" = "[]" ] || [ -z "$ALL_MILESTONES" ]; then
-        echo "WARNING: No group milestones found, trying project milestones..."
+        echo "INFO: Trying project milestones..."
         ALL_MILESTONES=$(curl -sS -G "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/milestones" \
-          --header "PRIVATE-TOKEN: ${CI_JOB_TOKEN}" \
+          --header "JOB-TOKEN: ${CI_JOB_TOKEN}" \
           --data-urlencode "per_page=100" \
           --data-urlencode "state=active" 2>/dev/null || echo "[]")
+
+        # Validate response
+        if ! echo "$ALL_MILESTONES" | jq -e 'type == "array"' > /dev/null 2>&1; then
+          echo "WARNING: Project milestones API also failed"
+          ALL_MILESTONES="[]"
+        fi
       fi
 
       # Initialize milestone env file
@@ -300,7 +314,7 @@ detect:milestone-and-tags:
           # For GROUP milestones, query issues directly for THIS PROJECT
           # Get all issues in this project assigned to this milestone
           PROJECT_ISSUES=$(curl -sS -G "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/issues" \
-            --header "PRIVATE-TOKEN: ${CI_JOB_TOKEN}" \
+            --header "JOB-TOKEN: ${CI_JOB_TOKEN}" \
             --data-urlencode "milestone=${TITLE}" \
             --data-urlencode "per_page=100" 2>/dev/null || echo "[]")
 
