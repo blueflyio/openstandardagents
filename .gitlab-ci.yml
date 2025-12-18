@@ -288,7 +288,7 @@ build:docker:
         docker tag $IMAGE_TAG $CI_REGISTRY_IMAGE:mr-$CI_MERGE_REQUEST_IID
         docker push $CI_REGISTRY_IMAGE:mr-$CI_MERGE_REQUEST_IID
       fi
-  dependencies:
+  needs:
     - build:website
   allow_failure: false
   rules:
@@ -308,7 +308,7 @@ container_scanning:
     CS_IMAGE: $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA
     CS_REGISTRY_USER: gitlab-ci-token
     CS_REGISTRY_PASSWORD: $CI_JOB_TOKEN
-  dependencies:
+  needs:
     - build:docker
   allow_failure: true
   rules:
@@ -323,7 +323,7 @@ quality:browser-performance:
   image: docker:latest
   services:
     - docker:dind
-  dependencies:
+  needs:
     - build:website
   variables:
     DOCKER_DRIVER: overlay2
@@ -359,7 +359,7 @@ quality:browser-performance:
 quality:accessibility:
   stage: quality
   image: node:${NODE_VERSION}
-  dependencies:
+  needs:
     - build:website
   before_script:
     - npm install -g pa11y-ci
@@ -413,7 +413,7 @@ quality:metrics:
 pages:
   stage: deploy
   image: alpine:latest
-  dependencies:
+  needs:
     - build:website
   script:
     - |
@@ -576,8 +576,15 @@ detect:version:
   before_script:
     - apk add --no-cache git bash
   script:
-    - chmod +x .gitlab/scripts/detect-version.sh
-    - .gitlab/scripts/detect-version.sh
+    - |
+      # Inline version detection
+      if [ -f website/package.json ]; then
+        VERSION=$(grep '"version"' website/package.json | head -1 | sed 's/.*": *"\([^"]*\)".*/\1/')
+      else
+        VERSION="0.0.0"
+      fi
+      echo "VERSION=$VERSION" > build.env
+      echo "Detected version: $VERSION"
   artifacts:
     reports:
       dotenv: build.env
@@ -592,7 +599,7 @@ detect:version:
 changelog:generate:
   stage: release
   image: alpine:latest
-  dependencies:
+  needs:
     - detect:version
   before_script:
     - apk add --no-cache git bash curl
@@ -645,7 +652,7 @@ changelog:generate:
 release:pre-release:
   stage: release
   image: alpine:latest
-  dependencies:
+  needs:
     - detect:version
   before_script:
     - apk add --no-cache git bash curl
@@ -689,7 +696,7 @@ release:pre-release:
 release:rc:
   stage: release
   image: alpine:latest
-  dependencies:
+  needs:
     - detect:version
     - build:website
   before_script:
@@ -738,7 +745,7 @@ release:rc:
 release:promote-rc-to-final:
   stage: release
   image: alpine:latest
-  dependencies:
+  needs:
     - detect:version
   before_script:
     - apk add --no-cache git bash curl jq
@@ -819,7 +826,7 @@ release:promote-rc-to-final:
 release:npm:
   stage: release
   image: node:20-alpine
-  dependencies:
+  needs:
     - detect:version
     - build:website
   before_script:
