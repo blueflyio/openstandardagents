@@ -73,6 +73,11 @@ workflow:
     - if: $CI_COMMIT_BRANCH == "main"
     - if: $CI_COMMIT_BRANCH =~ /^(feature|bugfix|hotfix|chore)\/.+/
 
+# Use GitLab SaaS shared runners by default (local runners as backup)
+default:
+  tags:
+    - saas-linux-small-amd64
+
 # =============================================================================
 # BRANCH PROTECTION & MR VALIDATION
 # =============================================================================
@@ -795,14 +800,12 @@ release:promote-rc-to-final:
         fi
 
         # Create GitLab Release
+        # Create GitLab Release
+        RELEASE_DESC="## Release ${FINAL_TAG}\n\nPromoted from ${LATEST_RC}\n\n### Changes\n\n${RELEASE_NOTES}"
         RELEASE_RESPONSE=$(curl -s --request POST \
           --header "PRIVATE-TOKEN: ${GITLAB_TOKEN}" \
           --header "Content-Type: application/json" \
-          --data "{
-            \"name\": \"Release ${FINAL_TAG}\",
-            \"tag_name\": \"${FINAL_TAG}\",
-            \"description\": \"## Release ${FINAL_TAG}\n\nPromoted from ${LATEST_RC}\n\n### Changes\n\n${RELEASE_NOTES}\"
-          }" \
+          --data "{\"name\": \"Release ${FINAL_TAG}\", \"tag_name\": \"${FINAL_TAG}\", \"description\": \"${RELEASE_DESC}\"}" \
           "https://${CI_SERVER_HOST}/api/v4/projects/${CI_PROJECT_ID}/releases")
 
         if echo "$RELEASE_RESPONSE" | jq -e '.tag_name' >/dev/null 2>&1; then
