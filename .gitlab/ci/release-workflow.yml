@@ -12,6 +12,7 @@
 
 create-dev-tag:release:
   stage: .post
+  needs: []  # Run independently - don't wait for manual jobs
   image: alpine:latest
   tags:
     - saas-linux-small-amd64

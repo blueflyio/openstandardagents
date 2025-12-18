@@ -1863,6 +1863,7 @@ workflow:
 # Auto-increment dev tag on merge to release branches
 increment-dev-tag:
   stage: .post
+  needs: []  # Run independently - don't wait for manual jobs
   image: node:${NODE_VERSION}
   before_script:
     - apk add --no-cache curl jq
