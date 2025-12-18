@@ -177,77 +177,149 @@ spec:
 
 ---
 
-## Example: A Complete Agent
+## Example: A Complete Enterprise Agent (v0.3.0)
 
-This agent can search the web and answer questions with cited sources:
+This agent demonstrates OSSA's full power—**portable across providers, compliant out of the box, and production-ready**:
 
 ```yaml
 apiVersion: ossa/v0.3.0
 kind: Agent
 
 metadata:
-  name: research-assistant
+  name: compliance-auditor
   version: "1.0.0"
-  description: An agent that researches topics and provides cited answers
+  description: Enterprise compliance auditor with multi-provider support
   labels:
-    category: research
-    environment: production
+    category: compliance
+    domain: enterprise/governance
+  annotations:
+    ossa.io/maintainer: security-team@company.com
+    ossa.io/cost-center: CC-1234
+
+# NEW v0.3.0: Identity for OpenTelemetry + service mesh
+identity:
+  service_name: compliance-auditor
+  service_namespace: agents.compliance
+  service_version: "1.0.0"
 
 spec:
   role: |
-    You are a research assistant. When asked a question:
-    1. Search for relevant information using the search tool
-    2. Analyze and synthesize the results
-    3. Provide a clear answer with citations
+    You are a compliance auditor. Analyze documents for regulatory violations,
+    generate audit reports, and notify stakeholders of findings.
 
+  # Provider-agnostic LLM config - switch providers without code changes
   llm:
-    provider: openai
-    model: gpt-4-turbo-preview
-    temperature: 0.7
-    max_tokens: 2000
+    provider: anthropic          # Change to: openai, azure, bedrock, ollama
+    model: claude-3-5-sonnet-20241022
+    temperature: 0.3
+    fallback:
+      provider: openai
+      model: gpt-4-turbo-preview
 
   tools:
+    - type: mcp
+      server: filesystem
+      capabilities: [read_file, list_directory]
     - type: function
-      name: web_search
+      name: generate_report
       capabilities:
-        - name: search
-          description: Search the web for information
+        - name: create_audit_report
+          description: Generate compliance audit report
           input_schema:
             type: object
             properties:
-              query:
-                type: string
-                description: The search query
-              num_results:
-                type: integer
-                default: 5
-            required: [query]
+              findings: { type: array, items: { type: object } }
+              severity: { type: string, enum: [low, medium, high, critical] }
+            required: [findings, severity]
 
+  # NEW v0.3.0: Agent-to-Agent messaging
+  messaging:
+    publishes:
+      - channel: audit.findings
+        schema: { type: object, properties: { severity: { type: string } } }
+    subscribes:
+      - channel: documents.uploaded
+        handler: on_document_received
+    reliability:
+      deliveryGuarantee: at-least-once
+      ordering: strict
+
+  # NEW v0.3.0: Persistent state with encryption
+  state:
+    storage:
+      type: redis
+      connection: ${REDIS_URL}
+    encryption:
+      enabled: true
+      algorithm: AES-256-GCM
+    ttl: 86400
+
+  # Enterprise-grade safety controls
   safety:
+    content_filtering:
+      block_pii: true
+      block_credentials: true
+      allowed_domains: ["company.com", "*.internal.company.com"]
+    rate_limiting:
+      requests_per_minute: 100
+      tokens_per_hour: 500000
     input_validation:
-      max_length: 1000
-      allowed_patterns: ["^[a-zA-Z0-9\\s\\?]+$"]
+      max_length: 50000
     output_validation:
-      require_citations: true
-      max_length: 5000
+      max_length: 100000
+      require_structured: true
 
+  # NEW v0.3.0: Compliance profiles
+  compliance:
+    frameworks: [SOC2, HIPAA, GDPR]
+    data_residency: us-east-1
+    audit_logging: required
+    pii_handling: encrypt_at_rest
+
+  # Full observability stack
   observability:
     tracing:
       enabled: true
       provider: opentelemetry
+      sampling_rate: 1.0
+      export_endpoint: ${OTEL_EXPORTER_OTLP_ENDPOINT}
     logging:
       level: info
       structured: true
+      redact_pii: true
     metrics:
       track_costs: true
       track_latency: true
+      track_tokens: true
+      export_endpoint: ${PROMETHEUS_PUSHGATEWAY}
+    activity_stream:
+      enabled: true
+      destination: kafka://events.internal
+
+  # NEW v0.3.0: Lifecycle management
+  lifecycle:
+    environments:
+      development:
+        llm: { provider: ollama, model: llama3.2 }
+      staging:
+        llm: { provider: openai, model: gpt-4o-mini }
+      production:
+        llm: { provider: anthropic, model: claude-3-5-sonnet-20241022 }
+    dependencies:
+      - name: document-processor
+        version: ">=2.0.0"
 ```
 
-Save this as `research-assistant.ossa.yaml` and run:
+**What this demonstrates:**
+- **Portability**: Same agent runs on Anthropic, OpenAI, Azure, or local Ollama
+- **A2A Messaging**: Pub/sub communication with other agents
+- **Enterprise Compliance**: SOC2/HIPAA/GDPR built into the manifest
+- **Environment Configs**: Dev/staging/prod with different providers
+- **Full Observability**: OpenTelemetry traces, Prometheus metrics, audit logs
 
 ```bash
-ossa validate research-assistant.ossa.yaml
-ossa run research-assistant.ossa.yaml --input "What is quantum computing?"
+ossa validate compliance-auditor.ossa.yaml
+ossa run compliance-auditor.ossa.yaml --env production
 ```
 
 [**→ See More Examples**](https://openstandardagents.org/examples/)
