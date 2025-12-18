@@ -269,6 +269,7 @@ build:docker:
     IMAGE_TAG: $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA
   script:
     - cd website
+    - mkdir -p out && cp -r ../website-build/* out/
     - |
       cat > Dockerfile << 'EOF'
       FROM node:20-alpine
@@ -278,7 +279,7 @@ build:docker:
       EXPOSE 3000
       CMD ["serve", "-s", "out", "-l", "3000"]
       EOF
-    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - echo $CI_JOB_TOKEN | docker login -u $CI_REGISTRY_USER --password-stdin $CI_REGISTRY
     - docker build -t $IMAGE_TAG .
     - docker push $IMAGE_TAG
     - |
