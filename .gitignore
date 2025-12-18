@@ -29,6 +29,7 @@ coverage/
 # Development directories (not part of npm package)
 .cursor/
 .claude/
+.worktrees/
 
 # Python dependencies
 __pycache__/
