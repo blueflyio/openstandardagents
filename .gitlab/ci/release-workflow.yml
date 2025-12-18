@@ -71,15 +71,15 @@ create-dev-tag:release:
         # First dev tag for this version
         NEXT_NUM=1
       else
-        # Extract number from latest tag (e.g., v0.3.2-dev1 -> 1)
-        CURRENT_NUM=$(echo "$LATEST_DEV_TAG" | sed -n 's/.*-dev\([0-9]*\)/\1/p' | head -1)
+        # Extract number from latest tag (e.g., v0.3.0-dev.14 -> 14)
+        CURRENT_NUM=$(echo "$LATEST_DEV_TAG" | sed -n 's/.*-dev\.\{0,1\}\([0-9]*\)/\1/p' | head -1)
         if [ -z "$CURRENT_NUM" ]; then
           CURRENT_NUM=0
         fi
         NEXT_NUM=$((CURRENT_NUM + 1))
       fi
       
-      NEW_TAG="v${BASE_VERSION}-dev${NEXT_NUM}"
+      NEW_TAG="v${BASE_VERSION}-dev.${NEXT_NUM}"
       
       # Check if tag already exists for this commit
       EXISTING_TAG=$(git tag --points-at "$CI_COMMIT_SHA" | grep "^v${BASE_VERSION}-dev" || echo "")
