@@ -30,8 +30,19 @@ include:
   # Merge trains enabled via workflow rules (see workflow section at bottom)
   # Component available but private - uncomment when gitlab_components is public
   # - component: gitlab.com/blueflyio/gitlab_components/merge-train@main
-# OSSA Runners
+  # OSSA Runners
   - local: '.gitlab/ci/ossa-runners.yml'
+
+# Override SAST template jobs to add needs:[] so they don't block .post stage
+semgrep-sast:
+  needs: []
+
+secret_detection:
+  needs: []
+
+gemnasium-dependency_scanning:
+  needs: []
+
 #   - CI/CD variable ENABLE_RELEASE must be set to "true"
 # This allows deploying to main without releasing. Set the variable only when ready to release.
 #
@@ -648,6 +659,7 @@ test:lint:
 
 test:code-quality:
   stage: test
+  needs: []
   image: node:${NODE_VERSION}-alpine
   tags:
     - saas-linux-small-amd64
@@ -766,6 +778,7 @@ test:e2e:
 
 test:security:
   stage: test
+  needs: []
   image: node:${NODE_VERSION}-alpine
   tags:
     - saas-linux-small-amd64
@@ -2024,6 +2037,7 @@ create-release-mrs:
 # Generate llms.txt context files
 generate:llms-txt:
   stage: build
+  needs: []
   image: python:3.11-slim
   script:
     - pip install llms-txt
