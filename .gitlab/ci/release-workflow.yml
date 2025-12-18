@@ -46,8 +46,8 @@ create-dev-tag:release:
       # Fetch main branch tags
       git fetch origin main:main --tags 2>/dev/null || true
       
-      # Get latest release tag for this major.minor (e.g., v0.3.*)
-      LATEST_RELEASE_TAG=$(git tag -l "v${BRANCH_VERSION}.*" 2>/dev/null | grep -v "dev" | sort -V | tail -1 || echo "")
+      # Get latest FINAL release tag (exclude dev, RC, alpha, beta)
+      LATEST_RELEASE_TAG=$(git tag -l "v${BRANCH_VERSION}.*" 2>/dev/null | grep -v -E "(dev|RC|rc|alpha|beta)" | sort -V | tail -1 || echo "")
       
       if [ -z "$LATEST_RELEASE_TAG" ]; then
         # No release tags yet, start with X.Y.0
