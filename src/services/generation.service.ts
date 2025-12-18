@@ -8,6 +8,10 @@
 import { injectable } from 'inversify';
 import type { AgentTemplate, OssaAgent } from '../types/index.js';
 import { getApiVersion } from '../utils/version.js';
+import { LangChainAdapter } from '../adapters/langchain-adapter.js';
+import { CrewAIAdapter } from '../adapters/crewai-adapter.js';
+import { LangflowAdapter } from '../adapters/langflow-adapter.js';
+import { OpenAPIAdapter } from '../adapters/openapi-adapter.js';
 
 type Platform =
   | 'cursor'
@@ -19,7 +23,8 @@ type Platform =
   | 'langflow'
   | 'langgraph'
   | 'llamaindex'
-  | 'vercel-ai';
+  | 'vercel-ai'
+  | 'openapi';
 
 @injectable()
 export class GenerationService {
@@ -250,49 +255,15 @@ export class GenerationService {
       }
 
       case 'crewai': {
-        const crewaiExt = extensions.crewai as
-          | {
-              role?: string;
-              goal?: string;
-              backstory?: string;
-              tools?: Array<unknown>;
-              agent_type?: string;
-            }
-          | undefined;
-        return {
-          role:
-            crewaiExt?.role ||
-            spec?.role ||
-            (agent as { role?: string })?.role ||
-            '',
-          goal:
-            crewaiExt?.goal ||
-            metadata.description ||
-            (agent as { description?: string })?.description ||
-            '',
-          backstory: crewaiExt?.backstory || '',
-          tools: crewaiExt?.tools || [],
-          agent_type: crewaiExt?.agent_type || 'worker',
-        };
+        return CrewAIAdapter.toCrewAI(manifest) as unknown as Record<string, unknown>;
       }
 
       case 'langchain': {
-        const langchainExt = extensions.langchain as
-          | { chain_type?: string }
-          | undefined;
-        return {
-          type: 'agent',
-          chain_type: langchainExt?.chain_type || 'agent',
-          tools: this.extractTools(
-            (spec?.tools ||
-              (agent as { tools?: Array<Record<string, unknown>> })?.tools ||
-              []) as Array<Record<string, unknown>>
-          ),
-          llm:
-            spec?.llm ||
-            (agent as { llm?: Record<string, unknown> })?.llm ||
-            {},
-        };
+        return LangChainAdapter.toLangChain(manifest) as unknown as Record<string, unknown>;
+      }
+
+      case 'langflow': {
+        return LangflowAdapter.toLangflow(manifest) as unknown as Record<string, unknown>;
       }
 
       case 'anthropic': {
@@ -313,6 +284,10 @@ export class GenerationService {
             (spec?.tools || agentTools || []) as Array<Record<string, unknown>>
           ),
         };
+      }
+
+      case 'openapi': {
+        return OpenAPIAdapter.toOpenAPI(manifest) as unknown as Record<string, unknown>;
       }
 
       default:
