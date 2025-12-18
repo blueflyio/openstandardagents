@@ -101,7 +101,6 @@ describe('validateFilePath', () => {
       // Normalize paths to handle macOS /var vs /private/var symlink
       const expected = path.resolve(tempDir, relativeFile);
       // Use realpathSync to resolve symlinks for comparison
-      const fs = require('fs');
       expect(fs.realpathSync(result)).toBe(fs.realpathSync(expected));
     } finally {
       process.chdir(originalCwd);
@@ -186,7 +185,6 @@ describe('validateDirectoryPath', () => {
       // Normalize paths to handle macOS /var vs /private/var symlink
       const expected = path.resolve(tempDir);
       // Use realpathSync to resolve symlinks for comparison
-      const fs = require('fs');
       expect(fs.realpathSync(result)).toBe(fs.realpathSync(expected));
     } finally {
       process.chdir(originalCwd);

@@ -48,6 +48,18 @@
     "ossa-version": "bin/ossa-version",
     "ossa-validate-all": "bin/ossa-validate-all"
   },
+  "files": [
+    "dist/",
+    "spec/",
+    "bin/",
+    "examples/",
+    "openapi/",
+    "schemas/",
+    "templates/",
+    "README.md",
+    "LICENSE",
+    "CHANGELOG.md"
+  ],
   "publishConfig": {
     "access": "public",
     "registry": "https://registry.npmjs.org/"
