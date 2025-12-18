@@ -60,12 +60,11 @@ variables:
   SAST_EXCLUDED_PATHS: "spec, test, tests, tmp, node_modules, .cache"
   SECRET_DETECTION_EXCLUDED_PATHS: "node_modules, .cache"
   DS_EXCLUDED_PATHS: "spec, test, tests, tmp"
-  # Disable security scans that require GitLab registry auth (Premium/Ultimate)
-  CODE_QUALITY_DISABLED: "true"
-  SAST_DISABLED: "true"
-  SECRET_DETECTION_DISABLED: "true"
-  DEPENDENCY_SCANNING_DISABLED: "true"
-  CONTAINER_SCANNING_DISABLED: "true"
+  CODE_QUALITY_DISABLED: "false"
+  SAST_DISABLED: "false"
+  SECRET_DETECTION_DISABLED: "false"
+  DEPENDENCY_SCANNING_DISABLED: "false"
+  CONTAINER_SCANNING_DISABLED: "false"
 
 workflow:
   rules:
@@ -74,10 +73,10 @@ workflow:
     - if: $CI_COMMIT_BRANCH == "main"
     - if: $CI_COMMIT_BRANCH =~ /^(feature|bugfix|hotfix|chore)\/.+/
 
-# Use local self-hosted runners (saves CI minutes)
+# Use GitLab SaaS shared runners by default (local runners as backup)
 default:
   tags:
-    - local
+    - saas-linux-small-amd64
 
 # =============================================================================
 # BRANCH PROTECTION & MR VALIDATION
@@ -171,16 +170,12 @@ sync:auto:
     - npm run sync-wiki
     - |
       if [ -n "$(git status --porcelain)" ]; then
-        echo "📝 Changes detected, creating feature branch and MR..."
-        SYNC_BRANCH="chore/sync-ossa-${CI_PIPELINE_ID}"
-        git checkout -b "${SYNC_BRANCH}"
+        echo "📝 Changes detected, committing..."
         git add -A
         git commit -m "chore(ci): auto-sync OSSA spec, versions, examples, and wiki [skip ci]"
-        git remote set-url origin "https://oauth2:${GITLAB_TOKEN:-${CI_JOB_TOKEN}}@gitlab.com/${CI_PROJECT_PATH}.git"
-        git push origin "${SYNC_BRANCH}"
-        printf '{"source_branch":"%s","target_branch":"%s","title":"chore(ci): auto-sync OSSA spec and wiki","remove_source_branch":true}' "${SYNC_BRANCH}" "${CI_COMMIT_REF_NAME}" > /tmp/mr.json
-        curl --fail -X POST -H "PRIVATE-TOKEN: ${GITLAB_TOKEN:-${CI_JOB_TOKEN}}" -H "Content-Type: application/json" -d @/tmp/mr.json "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/merge_requests" || echo "MR may already exist"
-        echo "✅ Sync MR created"
+        git remote set-url origin "https://oauth2:${CI_JOB_TOKEN}@gitlab.com/${CI_PROJECT_PATH}.git"
+        git push origin HEAD:${CI_COMMIT_REF_NAME}
+        echo "✅ Synced and committed"
       else
         echo "✅ Already up to date"
       fi
@@ -369,25 +364,18 @@ quality:browser-performance:
 quality:accessibility:
   stage: quality
   image: node:${NODE_VERSION}
-  tags:
-    - local
-  timeout: 10m  # Prevent 1hr timeout
   needs:
     - build:website
   before_script:
     - npm install -g pa11y-ci
   script:
-    # Only check key pages, not full sitemap (prevents timeout)
-    - |
-      echo '{"urls": ["file://'"$(pwd)"'/website-build/index.html"]}' > .pa11yci
-      pa11y-ci --config .pa11yci --json > accessibility.json || true
+    - pa11y-ci --sitemap website-build/sitemap.xml --json > accessibility.json || true
   artifacts:
     reports:
       accessibility: accessibility.json
     paths:
       - accessibility.json
     expire_in: 30 days
-  allow_failure: true
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
     - if: $CI_COMMIT_BRANCH =~ /^release\//
@@ -430,8 +418,6 @@ quality:metrics:
 pages:
   stage: deploy
   image: alpine:latest
-  tags:
-    - local
   needs:
     - build:website
   script:
@@ -646,15 +632,11 @@ changelog:generate:
 
       # Check if changelog changed
       if [ -n "$(git status --porcelain CHANGELOG.md)" ]; then
-        echo "📝 Changelog updated, creating feature branch and MR..."
-        CHANGELOG_BRANCH="chore/changelog-update-${CI_PIPELINE_ID}"
-        git checkout -b "${CHANGELOG_BRANCH}"
+        echo "📝 Changelog updated, committing..."
         git add CHANGELOG.md
         git commit -m "chore(release): update CHANGELOG.md [skip ci]"
-        git push origin "${CHANGELOG_BRANCH}"
-        printf '{"source_branch":"%s","target_branch":"%s","title":"chore(release): update CHANGELOG.md","remove_source_branch":true}' "${CHANGELOG_BRANCH}" "${CI_COMMIT_REF_NAME}" > /tmp/mr.json
-        curl --fail -X POST -H "PRIVATE-TOKEN: ${GITLAB_TOKEN}" -H "Content-Type: application/json" -d @/tmp/mr.json "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/merge_requests" || echo "MR may already exist"
-        echo "✅ Changelog MR created"
+        git push origin HEAD:${CI_COMMIT_REF_NAME}
+        echo "✅ Changelog committed and pushed"
       else
         echo "✅ Changelog already up to date"
       fi
