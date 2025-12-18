@@ -102,14 +102,17 @@ create-dev-tag:release:
       
       This is a dev/pre-release tag and should not be used in production." "$CI_COMMIT_SHA"
       
-      # Push tag
-      if git push origin "$NEW_TAG" 2>/dev/null; then
+      # Push tag - show errors for debugging
+      echo "Pushing tag $NEW_TAG..."
+      echo "Remote URL (redacted): $(git remote get-url origin | sed 's/:[^@]*@/:***@/')"
+      if git push origin "$NEW_TAG" 2>&1; then
         echo "Created dev tag: $NEW_TAG"
         echo "DEV_TAG_NAME=$NEW_TAG" > dev-tag.env
         echo "DEV_TAG_VERSION=$BASE_VERSION" >> dev-tag.env
         echo "DEV_TAG_BUILD=$NEXT_NUM" >> dev-tag.env
       else
-        echo "Failed to push tag $NEW_TAG"
+        echo "ERROR: Failed to push tag $NEW_TAG"
+        echo "Check token permissions and protected tag rules"
         git tag -d "$NEW_TAG" 2>/dev/null || true
         exit 1
       fi
