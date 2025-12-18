@@ -15,6 +15,7 @@ import { GenerationService } from './services/generation.service.js';
 import { MigrationService } from './services/migration.service.js';
 import { ValidationService } from './services/validation.service.js';
 import { AgentsMdService } from './services/agents-md/agents-md.service.js';
+import { TestRunnerService } from './services/test-runner/test-runner.service.js';
 
 // Validators
 import { DependenciesValidator } from './services/validators/dependencies.validator.js';
@@ -32,6 +33,7 @@ container.bind(ValidationService).toSelf();
 container.bind(GenerationService).toSelf();
 container.bind(MigrationService).toSelf();
 container.bind(AgentsMdService).toSelf();
+container.bind(TestRunnerService).toSelf();
 
 // Bind validators
 container.bind(ContractValidator).toSelf();
@@ -61,6 +63,7 @@ export function resetContainer(): void {
   container.bind(GenerationService).toSelf();
   container.bind(MigrationService).toSelf();
   container.bind(AgentsMdService).toSelf();
+  container.bind(TestRunnerService).toSelf();
   container.bind(ContractValidator).toSelf();
   container.bind(DependenciesValidator).toSelf();
 }
