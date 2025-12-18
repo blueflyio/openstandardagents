@@ -38,6 +38,8 @@ include:
   - template: Jobs/Dependency-Scanning.gitlab-ci.yml
   - template: Jobs/Container-Scanning.gitlab-ci.yml
   - template: Jobs/Code-Quality.gitlab-ci.yml
+  # Review Apps (OrbStack K8s)
+  - local: .gitlab/ci/review-apps.yml
   # OSSA Agent Pipelines
   #- local: .gitlab/ci/seo-automation.yml
 
@@ -70,6 +72,11 @@ workflow:
     - if: $CI_COMMIT_BRANCH =~ /^release\//
     - if: $CI_COMMIT_BRANCH == "main"
     - if: $CI_COMMIT_BRANCH =~ /^(feature|bugfix|hotfix|chore)\/.+/
+
+# Use GitLab SaaS shared runners by default (local runners as backup)
+default:
+  tags:
+    - saas-linux-small-amd64
 
 # =============================================================================
 # BRANCH PROTECTION & MR VALIDATION
@@ -267,6 +274,7 @@ build:docker:
     IMAGE_TAG: $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA
   script:
     - cd website
+    - mkdir -p out && cp -r ../website-build/* out/
     - |
       cat > Dockerfile << 'EOF'
       FROM node:20-alpine
@@ -276,13 +284,21 @@ build:docker:
       EXPOSE 3000
       CMD ["serve", "-s", "out", "-l", "3000"]
       EOF
-    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - echo $CI_JOB_TOKEN | docker login -u $CI_REGISTRY_USER --password-stdin $CI_REGISTRY
     - docker build -t $IMAGE_TAG .
     - docker push $IMAGE_TAG
-  dependencies:
+    - |
+      # Also tag as MR-specific for review apps
+      if [ -n "$CI_MERGE_REQUEST_IID" ]; then
+        docker tag $IMAGE_TAG $CI_REGISTRY_IMAGE:mr-$CI_MERGE_REQUEST_IID
+        docker push $CI_REGISTRY_IMAGE:mr-$CI_MERGE_REQUEST_IID
+      fi
+  needs:
     - build:website
-  allow_failure: true
+  allow_failure: false
   rules:
+    # Build for MRs (needed for review apps)
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
     - if: $CI_COMMIT_BRANCH =~ /^release\//
     - if: $CI_COMMIT_BRANCH == "main"
 
@@ -297,7 +313,7 @@ container_scanning:
     CS_IMAGE: $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA
     CS_REGISTRY_USER: gitlab-ci-token
     CS_REGISTRY_PASSWORD: $CI_JOB_TOKEN
-  dependencies:
+  needs:
     - build:docker
   allow_failure: true
   rules:
@@ -312,7 +328,7 @@ quality:browser-performance:
   image: docker:latest
   services:
     - docker:dind
-  dependencies:
+  needs:
     - build:website
   variables:
     DOCKER_DRIVER: overlay2
@@ -348,7 +364,7 @@ quality:browser-performance:
 quality:accessibility:
   stage: quality
   image: node:${NODE_VERSION}
-  dependencies:
+  needs:
     - build:website
   before_script:
     - npm install -g pa11y-ci
@@ -388,68 +404,48 @@ quality:metrics:
     - if: $CI_COMMIT_BRANCH == "main"
 
 # =============================================================================
-# REVIEW - Disabled (GitLab artifact URLs don't work for SPAs)
-# Use OrbStack environment for local testing instead
+# REVIEW APPS - Deployed via .gitlab/ci/review-apps.yml
 # =============================================================================
+# - Feature MRs → release: Deploys to http://ossa-mr-<ID>.orb.local
+# - Release MRs → main: Deploys to http://ossa-staging.orb.local
+# - Main branch: Manual "Go Live" button deploys to GitLab Pages
 
 # =============================================================================
-# STAGING - GitLab Pages from release branches
+# PRODUCTION - GitLab Pages (Manual Deploy)
 # =============================================================================
+# The special "pages" job name triggers GitLab Pages deployment
+# This creates the public/ artifact that becomes the live site
 pages:
   stage: deploy
   image: alpine:latest
-  dependencies:
+  needs:
     - build:website
   script:
-    - mkdir -p public
-    - cp -r website-build/* public/
-    - echo "✅ Deployed to staging"
+    - |
+      echo "🚀 Deploying to GitLab Pages (Production)"
+      mkdir -p public
+      cp -r website-build/* public/
+
+      echo ""
+      echo "=============================================="
+      echo "✅ PRODUCTION DEPLOYMENT COMPLETE!"
+      echo "=============================================="
+      echo "🌐 URL: https://openstandardagents.org"
+      echo "📝 Commit: ${CI_COMMIT_SHORT_SHA}"
+      echo "🏷️  Branch: ${CI_COMMIT_BRANCH}"
+      echo "=============================================="
   artifacts:
     paths:
       - public
     expire_in: 30 days
   environment:
-    name: orbstack
-    url: http://ossa.orb.local
-    deployment_tier: staging
-  rules:
-    - if: $CI_COMMIT_BRANCH =~ /^release\//
-
-# =============================================================================
-# PRODUCTION - Manual approval required
-# =============================================================================
-deploy:production:
-  stage: deploy
-  image: node:${NODE_VERSION}-alpine
-  dependencies:
-    - detect:version
-    - build:website
-  before_script:
-    - |
-      if [ -f build.env ]; then
-        source build.env
-        echo "Deploying version: ${RELEASE_TAG:-latest}"
-      fi
-  script:
-    - |
-      echo "🚀 Deploying to production"
-      echo "Version: ${RELEASE_TAG:-latest}"
-      echo "Commit: ${CI_COMMIT_SHA}"
-      # Production deployment commands go here
-      # Example: npm run deploy:production
-      echo "✅ Production deployment completed"
-  artifacts:
-    paths:
-      - public
-    expire_in: 90 days
-  environment:
     name: production
-    action: start
     url: https://openstandardagents.org
     deployment_tier: production
   rules:
-    - if: $CI_COMMIT_BRANCH == "main" && $ENABLE_RELEASE == "true"
-      when: manual  # Requires manual trigger + DAP approval
+    # Manual deploy button on main branch
+    - if: $CI_COMMIT_BRANCH == "main"
+      when: manual
   resource_group: production
 
 # =============================================================================
@@ -585,8 +581,15 @@ detect:version:
   before_script:
     - apk add --no-cache git bash
   script:
-    - chmod +x .gitlab/scripts/detect-version.sh
-    - .gitlab/scripts/detect-version.sh
+    - |
+      # Inline version detection
+      if [ -f website/package.json ]; then
+        VERSION=$(grep '"version"' website/package.json | head -1 | sed 's/.*": *"\([^"]*\)".*/\1/')
+      else
+        VERSION="0.0.0"
+      fi
+      echo "VERSION=$VERSION" > build.env
+      echo "Detected version: $VERSION"
   artifacts:
     reports:
       dotenv: build.env
@@ -601,7 +604,7 @@ detect:version:
 changelog:generate:
   stage: release
   image: alpine:latest
-  dependencies:
+  needs:
     - detect:version
   before_script:
     - apk add --no-cache git bash curl
@@ -654,7 +657,7 @@ changelog:generate:
 release:pre-release:
   stage: release
   image: alpine:latest
-  dependencies:
+  needs:
     - detect:version
   before_script:
     - apk add --no-cache git bash curl
@@ -698,7 +701,7 @@ release:pre-release:
 release:rc:
   stage: release
   image: alpine:latest
-  dependencies:
+  needs:
     - detect:version
     - build:website
   before_script:
@@ -747,7 +750,7 @@ release:rc:
 release:promote-rc-to-final:
   stage: release
   image: alpine:latest
-  dependencies:
+  needs:
     - detect:version
   before_script:
     - apk add --no-cache git bash curl jq
@@ -797,14 +800,12 @@ release:promote-rc-to-final:
         fi
 
         # Create GitLab Release
+        # Create GitLab Release
+        RELEASE_DESC="## Release ${FINAL_TAG}\n\nPromoted from ${LATEST_RC}\n\n### Changes\n\n${RELEASE_NOTES}"
         RELEASE_RESPONSE=$(curl -s --request POST \
           --header "PRIVATE-TOKEN: ${GITLAB_TOKEN}" \
           --header "Content-Type: application/json" \
-          --data "{
-            \"name\": \"Release ${FINAL_TAG}\",
-            \"tag_name\": \"${FINAL_TAG}\",
-            \"description\": \"## Release ${FINAL_TAG}\n\nPromoted from ${LATEST_RC}\n\n### Changes\n\n${RELEASE_NOTES}\"
-          }" \
+          --data "{\"name\": \"Release ${FINAL_TAG}\", \"tag_name\": \"${FINAL_TAG}\", \"description\": \"${RELEASE_DESC}\"}" \
           "https://${CI_SERVER_HOST}/api/v4/projects/${CI_PROJECT_ID}/releases")
 
         if echo "$RELEASE_RESPONSE" | jq -e '.tag_name' >/dev/null 2>&1; then
@@ -828,7 +829,7 @@ release:promote-rc-to-final:
 release:npm:
   stage: release
   image: node:20-alpine
-  dependencies:
+  needs:
     - detect:version
     - build:website
   before_script:

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import dynamic from 'next/dynamic';
 import { STABLE_VERSION, STABLE_VERSION_TAG } from '@/lib/version';
 import { validateManifest, ValidationResult } from '@/lib/validate';
@@ -16,6 +16,21 @@ const MonacoEditor = dynamic(() => import('@monaco-editor/react'), {
     </div>
   ),
 });
+
+// Available schema versions for validation
+const SCHEMA_VERSIONS = [
+  { value: '0.2.9', label: 'v0.2.9 (Latest Stable)' },
+  { value: '0.2.8', label: 'v0.2.8' },
+  { value: '0.2.3', label: 'v0.2.3' },
+];
+
+// Example manifest interface
+interface Example {
+  name: string;
+  path: string;
+  content: string;
+  category: string;
+}
 
 // Dynamic templates using current stable version
 const getTemplates = (version: string) => ({
@@ -143,11 +158,49 @@ export default function PlaygroundPage() {
   const [validationResult, setValidationResult] = useState<ValidationResult | null>(null);
   const [isValidating, setIsValidating] = useState(false);
   const [activeTemplate, setActiveTemplate] = useState('simple');
+  const [selectedVersion, setSelectedVersion] = useState(SCHEMA_VERSIONS[0].value);
+  const [autoValidate, setAutoValidate] = useState(true);
+  const [examples, setExamples] = useState<Example[]>([]);
+  const [showExamples, setShowExamples] = useState(false);
+  const [format, setFormat] = useState<'yaml' | 'json'>('yaml');
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const validationTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  const handleValidate = async (): Promise<void> => {
-    setIsValidating(true);
+  // Load examples on mount
+  useEffect(() => {
+    fetch('/examples.json')
+      .then(res => res.json())
+      .then(data => {
+        if (Array.isArray(data)) {
+          setExamples(data);
+        }
+      })
+      .catch(err => console.error('Failed to load examples:', err));
+  }, []);
+
+  // Debounced auto-validation
+  useEffect(() => {
+    if (!autoValidate) return;
+
+    if (validationTimeoutRef.current) {
+      clearTimeout(validationTimeoutRef.current);
+    }
+
+    validationTimeoutRef.current = setTimeout(() => {
+      handleValidate(true);
+    }, 800);
+
+    return () => {
+      if (validationTimeoutRef.current) {
+        clearTimeout(validationTimeoutRef.current);
+      }
+    };
+  }, [code, autoValidate, selectedVersion]);
+
+  const handleValidate = useCallback(async (silent = false): Promise<void> => {
+    if (!silent) setIsValidating(true);
     try {
-      const result = await validateManifest(code);
+      const result = await validateManifest(code, { version: selectedVersion });
       setValidationResult(result);
     } catch (error) {
       setValidationResult({
@@ -161,326 +214,536 @@ export default function PlaygroundPage() {
         warnings: []
       });
     } finally {
-      setIsValidating(false);
+      if (!silent) setIsValidating(false);
     }
-  };
+  }, [code, selectedVersion]);
 
   const handleEditorChange = (value: string | undefined): void => {
     setCode(value || '');
-    setValidationResult(null);
+    if (!autoValidate) {
+      setValidationResult(null);
+    }
   };
 
   const downloadManifest = () => {
-    const blob = new Blob([code], { type: 'text/yaml' });
+    const ext = format === 'json' ? 'json' : 'yaml';
+    let content = code;
+
+    // Convert to JSON if needed
+    if (format === 'json' && !code.trim().startsWith('{')) {
+      try {
+        const yaml = require('yaml');
+        const parsed = yaml.parse(code);
+        content = JSON.stringify(parsed, null, 2);
+      } catch {
+        // Keep original if conversion fails
+      }
+    }
+
+    const blob = new Blob([content], { type: format === 'json' ? 'application/json' : 'text/yaml' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'agent.yaml';
+    a.download = `agent.${ext}`;
     a.click();
     URL.revokeObjectURL(url);
   };
 
-  const copyToClipboard = () => {
-    navigator.clipboard.writeText(code);
+  const copyToClipboard = async () => {
+    await navigator.clipboard.writeText(code);
+    // Show brief feedback
+    const btn = document.getElementById('copy-btn');
+    if (btn) {
+      const original = btn.textContent;
+      btn.textContent = 'Copied!';
+      setTimeout(() => { btn.textContent = original; }, 1500);
+    }
   };
 
   const loadTemplate = (template: keyof typeof templates) => {
     setCode(templates[template]);
     setActiveTemplate(template);
     setValidationResult(null);
+    setShowExamples(false);
   };
+
+  const loadExample = (example: Example) => {
+    setCode(example.content);
+    setActiveTemplate('');
+    setShowExamples(false);
+    setValidationResult(null);
+  };
+
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const content = e.target?.result as string;
+      setCode(content);
+      setActiveTemplate('');
+      setValidationResult(null);
+    };
+    reader.readAsText(file);
+    // Reset input
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  const convertFormat = () => {
+    try {
+      if (format === 'yaml') {
+        // Convert YAML to JSON
+        const yaml = require('yaml');
+        const parsed = yaml.parse(code);
+        setCode(JSON.stringify(parsed, null, 2));
+        setFormat('json');
+      } else {
+        // Convert JSON to YAML
+        const yaml = require('yaml');
+        const parsed = JSON.parse(code);
+        setCode(yaml.stringify(parsed));
+        setFormat('yaml');
+      }
+    } catch (error) {
+      alert(`Conversion failed: ${error instanceof Error ? error.message : 'Invalid format'}`);
+    }
+  };
+
+  // Get line number from JSON path
+  const getLineFromPath = (path: string): number | null => {
+    if (!path || path === '/') return null;
+    const lines = code.split('\n');
+    const searchKey = path.split('/').pop();
+    if (!searchKey) return null;
+
+    for (let i = 0; i < lines.length; i++) {
+      if (lines[i].includes(`${searchKey}:`)) {
+        return i + 1;
+      }
+    }
+    return null;
+  };
+
+  // Group examples by category
+  const examplesByCategory = examples.reduce((acc, ex) => {
+    if (!acc[ex.category]) acc[ex.category] = [];
+    acc[ex.category].push(ex);
+    return acc;
+  }, {} as Record<string, Example[]>);
 
   return (
     <>
       {/* Hero Section */}
-      <div className="bg-gradient-to-br from-secondary via-primary to-accent text-white py-16 px-4">
+      <div className="bg-gradient-to-br from-secondary via-primary to-accent text-white py-12 px-4">
         <div className="container mx-auto max-w-6xl text-center">
-          <div className="inline-flex items-center justify-center w-20 h-20 bg-white/20 backdrop-blur-sm rounded-full mb-6">
-            <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-white/20 backdrop-blur-sm rounded-full mb-4">
+            <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 10l-2 1m0 0l-2-1m2 1v2.5M20 7l-2 1m2-1l-2-1m2 1v2.5M14 4l-2-1-2 1M4 7l2-1M4 7l2 1M4 7v2.5M12 21l-2-1m2 1l2-1m-2 1v-2.5M6 18l-2-1v-2.5M18 18l2-1v-2.5" />
             </svg>
           </div>
-          <h1 className="text-5xl font-bold mb-4">OSSA Playground</h1>
-          <p className="text-xl text-white/90 mb-2">
-            Write, validate, and test Open Standard Agents manifests in real-time
-          </p>
-          <p className="text-base text-white/80">
-            Interactive editor with live validation and multiple templates
+          <h1 className="text-4xl font-bold mb-2">OSSA Playground</h1>
+          <p className="text-lg text-white/90">
+            Write, validate, and test Open Standard Agents manifests with real-time schema validation
           </p>
         </div>
       </div>
 
-      <div className="container mx-auto max-w-7xl px-4 py-12">
+      <div className="container mx-auto max-w-7xl px-4 py-8">
 
-      {/* Quick Actions Bar */}
-      <div className="mb-6 bg-gradient-to-r from-primary/5 to-secondary/5 rounded-xl p-4 border border-primary/20">
-        <div className="flex flex-wrap gap-3 items-center justify-between">
-          <div className="flex gap-3">
-            <button
-              onClick={handleValidate}
-              disabled={isValidating}
-              className="bg-gradient-to-r from-secondary via-primary to-accent text-white px-6 py-3 rounded-lg font-medium hover:shadow-lg transition-all disabled:opacity-50"
-            >
-              {isValidating ? 'Validating...' : 'Validate Manifest'}
-            </button>
-            <button
-              onClick={downloadManifest}
-              className="bg-white border-2 border-primary text-primary px-6 py-3 rounded-lg font-medium hover:bg-primary hover:text-white transition-all"
-            >
-              Download YAML
-            </button>
-            <button
-              onClick={copyToClipboard}
-              className="bg-white border-2 border-secondary text-secondary px-6 py-3 rounded-lg font-medium hover:bg-secondary hover:text-white transition-all"
-            >
-              Copy to Clipboard
-            </button>
-          </div>
-          <div className="flex gap-2 items-center">
-            <span className="text-sm text-gray-600 font-semibold">Lines: {code.split('\n').length}</span>
-            <span className="text-sm text-gray-400">|</span>
-            <span className="text-sm text-gray-600 font-semibold">Chars: {code.length}</span>
-          </div>
-        </div>
-      </div>
-
-      {/* Template Selector */}
-      <div className="mb-6">
-        <h2 className="text-2xl font-bold mb-4 text-gray-900">Quick Start Templates</h2>
-        <div className="grid md:grid-cols-4 gap-4">
-          <button
-            onClick={() => loadTemplate('simple')}
-            className={`p-4 rounded-xl border-2 text-left transition-all ${
-              activeTemplate === 'simple'
-                ? 'border-primary bg-primary/5 shadow-md'
-                : 'border-gray-300 hover:border-primary/50 hover:shadow-md'
-            }`}
-          >
-            <div className="font-bold mb-1">Simple Agent</div>
-            <div className="text-sm text-gray-600">Basic manifest structure</div>
-          </button>
-
-          <button
-            onClick={() => loadTemplate('withTools')}
-            className={`p-4 rounded-xl border-2 text-left transition-all ${
-              activeTemplate === 'withTools'
-                ? 'border-primary bg-primary/5 shadow-md'
-                : 'border-gray-300 hover:border-primary/50 hover:shadow-md'
-            }`}
-          >
-            <div className="font-bold mb-1">With Tools</div>
-            <div className="text-sm text-gray-600">HTTP API integration</div>
-          </button>
-
-          <button
-            onClick={() => loadTemplate('autonomous')}
-            className={`p-4 rounded-xl border-2 text-left transition-all ${
-              activeTemplate === 'autonomous'
-                ? 'border-primary bg-primary/5 shadow-md'
-                : 'border-gray-300 hover:border-primary/50 hover:shadow-md'
-            }`}
-          >
-            <div className="font-bold mb-1">Autonomous</div>
-            <div className="text-sm text-gray-600">With autonomy controls</div>
-          </button>
-
-          <button
-            onClick={() => loadTemplate('fullStack')}
-            className={`p-4 rounded-xl border-2 text-left transition-all ${
-              activeTemplate === 'fullStack'
-                ? 'border-primary bg-primary/5 shadow-md'
-                : 'border-gray-300 hover:border-primary/50 hover:shadow-md'
-            }`}
-          >
-            <div className="font-bold mb-1">Full Stack</div>
-            <div className="text-sm text-gray-600">Complete production setup</div>
-          </button>
-        </div>
-      </div>
-
-      <div className="grid lg:grid-cols-2 gap-6 mb-6">
-        <div className="card border-2 border-gray-300">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-2xl font-semibold">Editor</h2>
-            <span className="text-sm bg-gray-100 px-3 py-1 rounded-full">YAML Format</span>
-          </div>
-          <div className="border-2 border-gray-300 rounded-lg overflow-hidden shadow-md" style={{ height: '600px' }}>
-            <MonacoEditor
-              height="600px"
-              defaultLanguage="yaml"
-              value={code}
-              onChange={handleEditorChange}
-              theme="vs-dark"
-              options={{
-                minimap: { enabled: false },
-                fontSize: 15,
-                wordWrap: 'on',
-                automaticLayout: true,
-                lineNumbers: 'on',
-                scrollBeyondLastLine: false,
-              }}
-            />
-          </div>
-        </div>
-
-        <div className="card border-2 border-gray-300">
-          <h2 className="text-2xl font-semibold mb-4">✓ Validation Results</h2>
-
-          {validationResult === null ? (
-            <div className="text-center py-16 bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl border-2 border-dashed border-gray-300">
-              <div className="text-6xl mb-4 text-gray-400">✓</div>
-              <p className="text-gray-600 text-lg mb-2">Ready to validate</p>
-              <p className="text-gray-500 text-sm">Click "Validate Manifest" above to check your OSSA manifest</p>
-            </div>
-          ) : validationResult.valid ? (
-            <div className="bg-gradient-to-br from-green-50 to-emerald-50 border-2 border-green-300 rounded-xl p-6 shadow-lg">
-              <div className="flex items-center mb-4">
-                <div className="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center mr-4">
-                  <svg
-                    className="w-7 h-7 text-white"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={3}
-                      d="M5 13l4 4L19 7"
-                    />
-                  </svg>
-                </div>
-                <div>
-                  <div className="text-2xl font-bold text-green-900 mb-1">
-                    Manifest is Valid! ✓
-                  </div>
-                  <p className="text-base text-green-800">
-                    Conforms to OSSA {STABLE_VERSION_TAG} specification
-                  </p>
-                </div>
-              </div>
-
-              <div className="bg-white rounded-lg p-4 mt-4 border border-green-200">
-                <div className="text-sm font-semibold text-gray-700 mb-3">✓ All Checks Passed:</div>
-                <div className="space-y-2 text-sm text-gray-700">
-                  <div className="flex items-center">
-                    <span className="text-green-500 mr-2">✓</span>
-                    Required fields present
-                  </div>
-                  <div className="flex items-center">
-                    <span className="text-green-500 mr-2">✓</span>
-                    Correct data types
-                  </div>
-                  <div className="flex items-center">
-                    <span className="text-green-500 mr-2">✓</span>
-                    Value constraints met
-                  </div>
-                  <div className="flex items-center">
-                    <span className="text-green-500 mr-2">✓</span>
-                    Schema compliance verified
-                  </div>
-                </div>
-              </div>
-
-              {/* Show warnings if any */}
-              {validationResult.warnings && validationResult.warnings.length > 0 && (
-                <div className="bg-amber-50 rounded-lg p-4 mt-4 border border-amber-200">
-                  <div className="text-sm font-semibold text-amber-800 mb-3">⚠️ Recommendations:</div>
-                  <div className="space-y-2">
-                    {validationResult.warnings.map((warning, index) => (
-                      <div key={index} className="flex items-start text-sm">
-                        <span className="text-amber-500 mr-2 mt-0.5">⚠</span>
-                        <div>
-                          {warning.path && <span className="text-amber-700 font-medium">{warning.path}: </span>}
-                          <span className="text-gray-700">{warning.message}</span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              <div className="mt-4 pt-4 border-t border-green-200">
-                <p className="text-sm text-green-800 font-semibold mb-2">✅ Ready for deployment</p>
-                <p className="text-sm text-gray-700">
-                  This manifest can be used with kAgent, LangChain, CrewAI, OpenAI, and other OSSA-compatible frameworks.
-                </p>
-                {validationResult.schemaVersion && (
-                  <p className="text-xs text-gray-500 mt-2">
-                    Validated against OSSA v{validationResult.schemaVersion} schema
-                  </p>
+        {/* Main Controls */}
+        <div className="mb-6 bg-gradient-to-r from-primary/5 to-secondary/5 rounded-xl p-4 border border-primary/20">
+          <div className="flex flex-wrap gap-3 items-center justify-between">
+            <div className="flex flex-wrap gap-2 items-center">
+              {/* Validate Button */}
+              <button
+                onClick={() => handleValidate(false)}
+                disabled={isValidating}
+                className="bg-gradient-to-r from-secondary via-primary to-accent text-white px-5 py-2.5 rounded-lg font-medium hover:shadow-lg transition-all disabled:opacity-50 flex items-center gap-2"
+              >
+                {isValidating ? (
+                  <>
+                    <div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full"></div>
+                    Validating...
+                  </>
+                ) : (
+                  <>
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    Validate
+                  </>
                 )}
-              </div>
-            </div>
-          ) : (
-            <div className="bg-gradient-to-br from-red-50 to-pink-50 border-2 border-red-300 rounded-xl p-6 shadow-lg">
-              <div className="flex items-center mb-4">
-                <div className="w-12 h-12 bg-red-500 rounded-full flex items-center justify-center mr-4">
-                  <svg
-                    className="w-7 h-7 text-white"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={3}
-                      d="M6 18L18 6M6 6l12 12"
-                    />
-                  </svg>
-                </div>
-                <div>
-                  <div className="text-2xl font-bold text-red-900 mb-1">
-                    Validation Failed
-                  </div>
-                  <p className="text-base text-red-800">
-                    {validationResult.errors.length} error{validationResult.errors.length !== 1 ? 's' : ''} found
-                  </p>
-                </div>
-              </div>
+              </button>
 
-              <div className="bg-white rounded-lg p-4 mt-4 border border-red-200 max-h-96 overflow-y-auto">
-                <div className="text-sm font-semibold text-gray-700 mb-3">Errors to fix:</div>
-                <div className="space-y-3">
-                  {validationResult.errors.map((error, index) => (
-                    <div key={index} className="border-l-4 border-red-400 pl-3 py-2">
-                      <div className="font-bold text-red-900 text-sm mb-1">
-                        {error.path ? `📍 ${error.path}` : '📍 Root level'}
-                      </div>
-                      <div className="text-gray-700 text-sm">{error.message}</div>
+              {/* Version Selector */}
+              <select
+                value={selectedVersion}
+                onChange={(e) => setSelectedVersion(e.target.value)}
+                className="border-2 border-gray-300 rounded-lg px-3 py-2.5 text-sm font-medium bg-white hover:border-primary/50 transition-all"
+              >
+                {SCHEMA_VERSIONS.map(v => (
+                  <option key={v.value} value={v.value}>{v.label}</option>
+                ))}
+              </select>
+
+              {/* Auto-validate Toggle */}
+              <label className="flex items-center gap-2 px-3 py-2 bg-white border-2 border-gray-300 rounded-lg cursor-pointer hover:border-primary/50 transition-all">
+                <input
+                  type="checkbox"
+                  checked={autoValidate}
+                  onChange={(e) => setAutoValidate(e.target.checked)}
+                  className="w-4 h-4 text-primary rounded"
+                />
+                <span className="text-sm font-medium">Auto-validate</span>
+              </label>
+
+              {/* Format Toggle */}
+              <button
+                onClick={convertFormat}
+                className="border-2 border-gray-300 bg-white text-gray-700 px-3 py-2 rounded-lg font-medium hover:border-primary/50 hover:bg-gray-50 transition-all text-sm flex items-center gap-1"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+                </svg>
+                {format === 'yaml' ? 'YAML → JSON' : 'JSON → YAML'}
+              </button>
+            </div>
+
+            <div className="flex gap-2 items-center">
+              {/* File Upload */}
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept=".yaml,.yml,.json"
+                onChange={handleFileUpload}
+                className="hidden"
+              />
+              <button
+                onClick={() => fileInputRef.current?.click()}
+                className="border-2 border-gray-300 bg-white text-gray-700 px-3 py-2 rounded-lg font-medium hover:border-primary/50 hover:bg-gray-50 transition-all text-sm flex items-center gap-1"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                </svg>
+                Upload
+              </button>
+
+              {/* Download */}
+              <button
+                onClick={downloadManifest}
+                className="border-2 border-primary text-primary px-3 py-2 rounded-lg font-medium hover:bg-primary hover:text-white transition-all text-sm flex items-center gap-1"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                </svg>
+                Download
+              </button>
+
+              {/* Copy */}
+              <button
+                id="copy-btn"
+                onClick={copyToClipboard}
+                className="border-2 border-secondary text-secondary px-3 py-2 rounded-lg font-medium hover:bg-secondary hover:text-white transition-all text-sm flex items-center gap-1"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
+                </svg>
+                Copy
+              </button>
+            </div>
+          </div>
+
+          {/* Stats */}
+          <div className="flex gap-4 mt-3 pt-3 border-t border-gray-200">
+            <span className="text-sm text-gray-600">
+              <strong>{code.split('\n').length}</strong> lines
+            </span>
+            <span className="text-sm text-gray-600">
+              <strong>{code.length}</strong> chars
+            </span>
+            <span className="text-sm text-gray-600">
+              Format: <strong>{format.toUpperCase()}</strong>
+            </span>
+            {validationResult && (
+              <span className={`text-sm font-medium ${validationResult.valid ? 'text-green-600' : 'text-red-600'}`}>
+                {validationResult.valid ? '✓ Valid' : `✗ ${validationResult.errors.length} error${validationResult.errors.length !== 1 ? 's' : ''}`}
+              </span>
+            )}
+          </div>
+        </div>
+
+        {/* Templates & Examples Row */}
+        <div className="mb-6">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-bold text-gray-900">Quick Start</h2>
+            <button
+              onClick={() => setShowExamples(!showExamples)}
+              className={`text-sm font-medium px-4 py-2 rounded-lg transition-all ${
+                showExamples
+                  ? 'bg-primary text-white'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              }`}
+            >
+              {showExamples ? 'Hide Examples' : `Browse ${examples.length} Examples`}
+            </button>
+          </div>
+
+          {/* Templates */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+            {[
+              { key: 'simple', name: 'Simple Agent', desc: 'Basic structure' },
+              { key: 'withTools', name: 'With Tools', desc: 'HTTP integration' },
+              { key: 'autonomous', name: 'Autonomous', desc: 'Autonomy controls' },
+              { key: 'fullStack', name: 'Full Stack', desc: 'Production ready' },
+            ].map(t => (
+              <button
+                key={t.key}
+                onClick={() => loadTemplate(t.key as keyof typeof templates)}
+                className={`p-3 rounded-lg border-2 text-left transition-all ${
+                  activeTemplate === t.key
+                    ? 'border-primary bg-primary/5 shadow-md'
+                    : 'border-gray-200 hover:border-primary/50 hover:shadow-sm'
+                }`}
+              >
+                <div className="font-semibold text-sm">{t.name}</div>
+                <div className="text-xs text-gray-500">{t.desc}</div>
+              </button>
+            ))}
+          </div>
+
+          {/* Examples Browser */}
+          {showExamples && examples.length > 0 && (
+            <div className="bg-gray-50 rounded-xl p-4 border border-gray-200 max-h-64 overflow-y-auto">
+              <div className="grid gap-4">
+                {Object.entries(examplesByCategory).map(([category, items]) => (
+                  <div key={category}>
+                    <h3 className="text-sm font-semibold text-gray-700 mb-2">{category}</h3>
+                    <div className="flex flex-wrap gap-2">
+                      {items.slice(0, 10).map((ex, i) => (
+                        <button
+                          key={i}
+                          onClick={() => loadExample(ex)}
+                          className="px-3 py-1.5 bg-white border border-gray-200 rounded-md text-xs font-medium text-gray-700 hover:border-primary hover:text-primary transition-all"
+                        >
+                          {ex.name.replace(/\.(yaml|yml|json)$/, '')}
+                        </button>
+                      ))}
+                      {items.length > 10 && (
+                        <span className="px-2 py-1 text-xs text-gray-400">+{items.length - 10} more</span>
+                      )}
                     </div>
-                  ))}
-                </div>
+                  </div>
+                ))}
               </div>
             </div>
           )}
+        </div>
 
-          {/* Help Section */}
-          <div className="mt-6 bg-gradient-to-br from-blue-50 to-cyan-50 rounded-xl p-5 border border-blue-200">
-            <h3 className="font-bold text-blue-900 mb-3">Need Help?</h3>
-            <div className="space-y-2 text-sm">
-              <div className="bg-white rounded-lg p-3 border border-blue-100">
-                <strong className="text-blue-900">View Schema Reference</strong>
-                <p className="text-gray-700 mt-1">Complete documentation of all fields</p>
-                <a href="/schema" className="text-blue-600 hover:underline mt-1 inline-block">Visit Schema Page →</a>
-              </div>
-              <div className="bg-white rounded-lg p-3 border border-blue-100">
-                <strong className="text-blue-900">Browse Examples</strong>
-                <p className="text-gray-700 mt-1">58+ real-world agent manifests</p>
-                <a href="/examples" className="text-blue-600 hover:underline mt-1 inline-block">View Examples →</a>
-              </div>
-              <div className="bg-white rounded-lg p-3 border border-blue-100">
-                <strong className="text-blue-900">Read Documentation</strong>
-                <p className="text-gray-700 mt-1">Complete guides and tutorials</p>
-                <a href="/docs" className="text-blue-600 hover:underline mt-1 inline-block">Read Docs →</a>
-              </div>
+        {/* Editor & Results */}
+        <div className="grid lg:grid-cols-2 gap-6">
+          {/* Editor */}
+          <div className="bg-white rounded-xl border-2 border-gray-200 overflow-hidden shadow-sm">
+            <div className="flex items-center justify-between px-4 py-3 bg-gray-50 border-b border-gray-200">
+              <h2 className="font-semibold text-gray-900">Editor</h2>
+              <span className="text-xs bg-gray-200 px-2 py-1 rounded font-medium">{format.toUpperCase()}</span>
+            </div>
+            <div style={{ height: '550px' }}>
+              <MonacoEditor
+                height="550px"
+                defaultLanguage="yaml"
+                language={format}
+                value={code}
+                onChange={handleEditorChange}
+                theme="vs-dark"
+                options={{
+                  minimap: { enabled: false },
+                  fontSize: 14,
+                  wordWrap: 'on',
+                  automaticLayout: true,
+                  lineNumbers: 'on',
+                  scrollBeyondLastLine: false,
+                  tabSize: 2,
+                  renderWhitespace: 'selection',
+                }}
+              />
+            </div>
+          </div>
+
+          {/* Validation Results */}
+          <div className="bg-white rounded-xl border-2 border-gray-200 overflow-hidden shadow-sm">
+            <div className="flex items-center justify-between px-4 py-3 bg-gray-50 border-b border-gray-200">
+              <h2 className="font-semibold text-gray-900">Validation Results</h2>
+              {validationResult?.schemaVersion && (
+                <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded font-medium">
+                  Schema v{validationResult.schemaVersion}
+                </span>
+              )}
+            </div>
+
+            <div className="p-4" style={{ height: '510px', overflowY: 'auto' }}>
+              {validationResult === null ? (
+                <div className="h-full flex items-center justify-center">
+                  <div className="text-center py-12">
+                    <div className="text-5xl mb-4 text-gray-300">⌘</div>
+                    <p className="text-gray-500 text-lg mb-2">Ready to validate</p>
+                    <p className="text-gray-400 text-sm">
+                      {autoValidate ? 'Start typing to see results' : 'Click "Validate" to check your manifest'}
+                    </p>
+                  </div>
+                </div>
+              ) : validationResult.valid ? (
+                <div className="space-y-4">
+                  {/* Success Header */}
+                  <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-xl p-4">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center flex-shrink-0">
+                        <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+                        </svg>
+                      </div>
+                      <div>
+                        <div className="text-lg font-bold text-green-900">Valid Manifest</div>
+                        <p className="text-sm text-green-700">
+                          Conforms to OSSA {STABLE_VERSION_TAG} specification
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Checks */}
+                  <div className="bg-white rounded-lg p-4 border border-gray-200">
+                    <div className="text-sm font-semibold text-gray-700 mb-3">Validation Checks</div>
+                    <div className="grid grid-cols-2 gap-2 text-sm">
+                      {[
+                        'Required fields present',
+                        'Correct data types',
+                        'Valid enum values',
+                        'Schema compliance',
+                      ].map((check, i) => (
+                        <div key={i} className="flex items-center gap-2 text-gray-700">
+                          <span className="text-green-500">✓</span>
+                          {check}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Warnings */}
+                  {validationResult.warnings && validationResult.warnings.length > 0 && (
+                    <div className="bg-amber-50 rounded-lg p-4 border border-amber-200">
+                      <div className="text-sm font-semibold text-amber-800 mb-2">
+                        ⚠️ Recommendations ({validationResult.warnings.length})
+                      </div>
+                      <div className="space-y-2">
+                        {validationResult.warnings.map((warning, i) => (
+                          <div key={i} className="flex items-start gap-2 text-sm">
+                            <span className="text-amber-500 mt-0.5">⚠</span>
+                            <div>
+                              {warning.path && warning.path !== '/' && (
+                                <code className="text-amber-700 bg-amber-100 px-1 rounded text-xs mr-1">
+                                  {warning.path}
+                                </code>
+                              )}
+                              <span className="text-gray-700">{warning.message}</span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Ready message */}
+                  <div className="text-center py-4 text-sm text-gray-600">
+                    <span className="inline-flex items-center gap-2 bg-green-50 text-green-700 px-4 py-2 rounded-full">
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                      Ready for deployment with kAgent, LangChain, CrewAI, and more
+                    </span>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {/* Error Header */}
+                  <div className="bg-gradient-to-r from-red-50 to-pink-50 border border-red-200 rounded-xl p-4">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 bg-red-500 rounded-full flex items-center justify-center flex-shrink-0">
+                        <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                      </div>
+                      <div>
+                        <div className="text-lg font-bold text-red-900">Validation Failed</div>
+                        <p className="text-sm text-red-700">
+                          {validationResult.errors.length} error{validationResult.errors.length !== 1 ? 's' : ''} found
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Error List */}
+                  <div className="space-y-2">
+                    {validationResult.errors.map((error, i) => {
+                      const lineNum = getLineFromPath(error.path);
+                      return (
+                        <div key={i} className="bg-white border border-red-200 rounded-lg p-3 hover:border-red-300 transition-all">
+                          <div className="flex items-start gap-2">
+                            <span className="text-red-500 mt-0.5">✗</span>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2 flex-wrap">
+                                {error.path && error.path !== '/' && (
+                                  <code className="text-red-700 bg-red-50 px-1.5 py-0.5 rounded text-xs font-mono">
+                                    {error.path}
+                                  </code>
+                                )}
+                                {lineNum && (
+                                  <span className="text-xs text-gray-400">Line {lineNum}</span>
+                                )}
+                              </div>
+                              <p className="text-sm text-gray-800 mt-1">{error.message}</p>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  {/* Warnings (even on error) */}
+                  {validationResult.warnings && validationResult.warnings.length > 0 && (
+                    <div className="bg-amber-50 rounded-lg p-3 border border-amber-200">
+                      <div className="text-xs font-semibold text-amber-700 mb-1">
+                        Also: {validationResult.warnings.length} recommendation{validationResult.warnings.length !== 1 ? 's' : ''}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           </div>
         </div>
+
+        {/* Help Section */}
+        <div className="mt-8 grid md:grid-cols-3 gap-4">
+          <a href="/schema" className="bg-white rounded-xl p-5 border-2 border-gray-200 hover:border-primary/50 hover:shadow-md transition-all group">
+            <div className="text-2xl mb-2">📋</div>
+            <h3 className="font-bold text-gray-900 group-hover:text-primary transition-colors">Schema Reference</h3>
+            <p className="text-sm text-gray-600 mt-1">Complete field documentation</p>
+          </a>
+          <a href="/examples" className="bg-white rounded-xl p-5 border-2 border-gray-200 hover:border-primary/50 hover:shadow-md transition-all group">
+            <div className="text-2xl mb-2">📚</div>
+            <h3 className="font-bold text-gray-900 group-hover:text-primary transition-colors">Browse Examples</h3>
+            <p className="text-sm text-gray-600 mt-1">{examples.length}+ real-world manifests</p>
+          </a>
+          <a href="/docs" className="bg-white rounded-xl p-5 border-2 border-gray-200 hover:border-primary/50 hover:shadow-md transition-all group">
+            <div className="text-2xl mb-2">📖</div>
+            <h3 className="font-bold text-gray-900 group-hover:text-primary transition-colors">Documentation</h3>
+            <p className="text-sm text-gray-600 mt-1">Guides and tutorials</p>
+          </a>
+        </div>
       </div>
-    </div>
     </>
   );
 }
-
