@@ -80,8 +80,8 @@ variables:
   NPM_CONFIG_LEGACY_PEER_DEPS: "1"
   HUSKY: "0"
   LEFTHOOK: "0"
-  # Map group-level CI_DEPLOY_OSSA to GITLAB_PUSH_TOKEN (used by all release jobs)
-  GITLAB_PUSH_TOKEN: ${CI_DEPLOY_OSSA}
+  # GITLAB_PUSH_TOKEN is now set directly as CI/CD variable (not derived)
+  # This avoids variable expansion issues with masked tokens
   DEPLOY_TOKEN_USERNAME: "gitlab+deploy-token-10466652"
 
 # ============================================================================
