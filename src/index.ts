@@ -7,6 +7,9 @@
 export * from './types/index.js';
 export * from './types/openapi-extensions.js';
 
+// Transports
+export * from './transports/index.js';
+
 // Version utilities (dynamic version detection)
 export {
   getVersionInfo,
