@@ -12,6 +12,7 @@
 
 create-dev-tag:release:
   stage: .post
+  needs: []  # Run independently - don't wait for manual jobs
   image: alpine:latest
   tags:
     - saas-linux-small-amd64
@@ -45,8 +46,8 @@ create-dev-tag:release:
       # Fetch main branch tags
       git fetch origin main:main --tags 2>/dev/null || true
       
-      # Get latest release tag for this major.minor (e.g., v0.3.*)
-      LATEST_RELEASE_TAG=$(git tag -l "v${BRANCH_VERSION}.*" 2>/dev/null | grep -v "dev" | sort -V | tail -1 || echo "")
+      # Get latest FINAL release tag (exclude dev, RC, alpha, beta)
+      LATEST_RELEASE_TAG=$(git tag -l "v${BRANCH_VERSION}.*" 2>/dev/null | grep -v -E "(dev|RC|rc|alpha|beta)" | sort -V | tail -1 || echo "")
       
       if [ -z "$LATEST_RELEASE_TAG" ]; then
         # No release tags yet, start with X.Y.0
@@ -70,15 +71,15 @@ create-dev-tag:release:
         # First dev tag for this version
         NEXT_NUM=1
       else
-        # Extract number from latest tag (e.g., v0.3.2-dev1 -> 1)
-        CURRENT_NUM=$(echo "$LATEST_DEV_TAG" | sed -n 's/.*-dev\([0-9]*\)/\1/p' | head -1)
+        # Extract number from latest tag (e.g., v0.3.0-dev.14 -> 14)
+        CURRENT_NUM=$(echo "$LATEST_DEV_TAG" | sed -n 's/.*-dev\.\{0,1\}\([0-9]*\)/\1/p' | head -1)
         if [ -z "$CURRENT_NUM" ]; then
           CURRENT_NUM=0
         fi
         NEXT_NUM=$((CURRENT_NUM + 1))
       fi
       
-      NEW_TAG="v${BASE_VERSION}-dev${NEXT_NUM}"
+      NEW_TAG="v${BASE_VERSION}-dev.${NEXT_NUM}"
       
       # Check if tag already exists for this commit
       EXISTING_TAG=$(git tag --points-at "$CI_COMMIT_SHA" | grep "^v${BASE_VERSION}-dev" || echo "")
@@ -101,14 +102,17 @@ create-dev-tag:release:
       
       This is a dev/pre-release tag and should not be used in production." "$CI_COMMIT_SHA"
       
-      # Push tag
-      if git push origin "$NEW_TAG" 2>/dev/null; then
+      # Push tag - show errors for debugging
+      echo "Pushing tag $NEW_TAG..."
+      echo "Remote URL (redacted): $(git remote get-url origin | sed 's/:[^@]*@/:***@/')"
+      if git push origin "$NEW_TAG" 2>&1; then
         echo "Created dev tag: $NEW_TAG"
         echo "DEV_TAG_NAME=$NEW_TAG" > dev-tag.env
         echo "DEV_TAG_VERSION=$BASE_VERSION" >> dev-tag.env
         echo "DEV_TAG_BUILD=$NEXT_NUM" >> dev-tag.env
       else
-        echo "Failed to push tag $NEW_TAG"
+        echo "ERROR: Failed to push tag $NEW_TAG"
+        echo "Check token permissions and protected tag rules"
         git tag -d "$NEW_TAG" 2>/dev/null || true
         exit 1
       fi

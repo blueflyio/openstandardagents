@@ -30,8 +30,19 @@ include:
   # Merge trains enabled via workflow rules (see workflow section at bottom)
   # Component available but private - uncomment when gitlab_components is public
   # - component: gitlab.com/blueflyio/gitlab_components/merge-train@main
-# OSSA Runners
+  # OSSA Runners
   - local: '.gitlab/ci/ossa-runners.yml'
+
+# Override SAST template jobs to add needs:[] so they don't block .post stage
+semgrep-sast:
+  needs: []
+
+secret_detection:
+  needs: []
+
+gemnasium-dependency_scanning:
+  needs: []
+
 #   - CI/CD variable ENABLE_RELEASE must be set to "true"
 # This allows deploying to main without releasing. Set the variable only when ready to release.
 #
@@ -69,8 +80,8 @@ variables:
   NPM_CONFIG_LEGACY_PEER_DEPS: "1"
   HUSKY: "0"
   LEFTHOOK: "0"
-  # Map group-level CI_DEPLOY_OSSA to GITLAB_PUSH_TOKEN (used by all release jobs)
-  GITLAB_PUSH_TOKEN: ${CI_DEPLOY_OSSA}
+  # GITLAB_PUSH_TOKEN is now set directly as CI/CD variable (not derived)
+  # This avoids variable expansion issues with masked tokens
   DEPLOY_TOKEN_USERNAME: "gitlab+deploy-token-10466652"
 
 # ============================================================================
@@ -648,6 +659,7 @@ test:lint:
 
 test:code-quality:
   stage: test
+  needs: []
   image: node:${NODE_VERSION}-alpine
   tags:
     - saas-linux-small-amd64
@@ -766,6 +778,7 @@ test:e2e:
 
 test:security:
   stage: test
+  needs: []
   image: node:${NODE_VERSION}-alpine
   tags:
     - saas-linux-small-amd64
@@ -1850,6 +1863,7 @@ workflow:
 # Auto-increment dev tag on merge to release branches
 increment-dev-tag:
   stage: .post
+  needs: []  # Run independently - don't wait for manual jobs
   image: node:${NODE_VERSION}
   before_script:
     - apk add --no-cache curl jq
@@ -2024,6 +2038,7 @@ create-release-mrs:
 # Generate llms.txt context files
 generate:llms-txt:
   stage: build
+  needs: []
   image: python:3.11-slim
   script:
     - pip install llms-txt
