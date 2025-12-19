@@ -138,19 +138,10 @@ export class QdrantService {
     mrIid?: number
   ): Promise<AgentContext> {
     // Search for relevant memories
-    const relevantMemories = await this.searchSimilar(
-      queryEmbedding,
-      agentName,
-      10
-    );
+    const relevantMemories = await this.searchSimilar(queryEmbedding, agentName, 10);
 
     // Search for similar cases (same issue/MR types)
-    const similarCases = await this.searchSimilarCases(
-      queryEmbedding,
-      projectId,
-      issueIid,
-      mrIid
-    );
+    const similarCases = await this.searchSimilarCases(queryEmbedding, projectId, issueIid, mrIid);
 
     return {
       agent_name: agentName,

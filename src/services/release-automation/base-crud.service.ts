@@ -140,9 +140,7 @@ export abstract class BaseCrudService<T, CreateInput, UpdateInput, FilterInput>
         path: e.path.join('.'),
         message: e.message,
       }));
-      throw new Error(
-        `Validation failed: ${details.map((d) => d.message).join(', ')}`
-      );
+      throw new Error(`Validation failed: ${details.map((d) => d.message).join(', ')}`);
     }
     throw error;
   }

@@ -109,9 +109,7 @@ describe('Test Command Enhanced', () => {
     it('should provide agent with capabilities', () => {
       expect(agentWithCapabilities).toBeDefined();
       expect(agentWithCapabilities.spec?.capabilities).toBeDefined();
-      expect(agentWithCapabilities.spec?.capabilities?.length).toBeGreaterThan(
-        0
-      );
+      expect(agentWithCapabilities.spec?.capabilities?.length).toBeGreaterThan(0);
     });
 
     it('should provide agent with policies', () => {

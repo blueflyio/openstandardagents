@@ -36,9 +36,7 @@ export class W3CBaggage {
 
   set(key: string, value: string, metadata?: Record<string, string>): void {
     if (this.entries.size >= W3CBaggage.MAX_PAIRS) {
-      throw new Error(
-        `Baggage exceeds maximum pairs (${W3CBaggage.MAX_PAIRS})`
-      );
+      throw new Error(`Baggage exceeds maximum pairs (${W3CBaggage.MAX_PAIRS})`);
     }
     this.entries.set(key, { key, value, metadata });
   }
@@ -56,26 +54,15 @@ export class W3CBaggage {
   }
 
   setOSSAContext(context: OSSABaggage): void {
-    if (context.agentId)
-      this.set(`${W3CBaggage.OSSA_PREFIX}agent_id`, context.agentId);
+    if (context.agentId) this.set(`${W3CBaggage.OSSA_PREFIX}agent_id`, context.agentId);
     if (context.interactionId)
-      this.set(
-        `${W3CBaggage.OSSA_PREFIX}interaction_id`,
-        context.interactionId
-      );
-    if (context.traceId)
-      this.set(`${W3CBaggage.OSSA_PREFIX}trace_id`, context.traceId);
-    if (context.spanId)
-      this.set(`${W3CBaggage.OSSA_PREFIX}span_id`, context.spanId);
+      this.set(`${W3CBaggage.OSSA_PREFIX}interaction_id`, context.interactionId);
+    if (context.traceId) this.set(`${W3CBaggage.OSSA_PREFIX}trace_id`, context.traceId);
+    if (context.spanId) this.set(`${W3CBaggage.OSSA_PREFIX}span_id`, context.spanId);
     if (context.parentAgentId)
-      this.set(
-        `${W3CBaggage.OSSA_PREFIX}parent_agent_id`,
-        context.parentAgentId
-      );
-    if (context.workflowId)
-      this.set(`${W3CBaggage.OSSA_PREFIX}workflow_id`, context.workflowId);
-    if (context.tenantId)
-      this.set(`${W3CBaggage.OSSA_PREFIX}tenant_id`, context.tenantId);
+      this.set(`${W3CBaggage.OSSA_PREFIX}parent_agent_id`, context.parentAgentId);
+    if (context.workflowId) this.set(`${W3CBaggage.OSSA_PREFIX}workflow_id`, context.workflowId);
+    if (context.tenantId) this.set(`${W3CBaggage.OSSA_PREFIX}tenant_id`, context.tenantId);
     if (context.custom) {
       for (const [k, v] of Object.entries(context.custom)) {
         this.set(`${W3CBaggage.OSSA_PREFIX}custom.${k}`, v);
@@ -118,9 +105,7 @@ export class W3CBaggage {
     }
     const result = parts.join(',');
     if (result.length > W3CBaggage.MAX_BYTES) {
-      throw new Error(
-        `Baggage exceeds maximum size (${W3CBaggage.MAX_BYTES} bytes)`
-      );
+      throw new Error(`Baggage exceeds maximum size (${W3CBaggage.MAX_BYTES} bytes)`);
     }
     return result;
   }
@@ -142,17 +127,11 @@ export class W3CBaggage {
       for (const meta of metaParts) {
         const metaEq = meta.indexOf('=');
         if (metaEq !== -1) {
-          metadata[meta.substring(0, metaEq).trim()] = meta
-            .substring(metaEq + 1)
-            .trim();
+          metadata[meta.substring(0, metaEq).trim()] = meta.substring(metaEq + 1).trim();
         }
       }
 
-      baggage.set(
-        key,
-        value,
-        Object.keys(metadata).length > 0 ? metadata : undefined
-      );
+      baggage.set(key, value, Object.keys(metadata).length > 0 ? metadata : undefined);
     }
     return baggage;
   }
@@ -173,10 +152,7 @@ export class W3CBaggage {
   }
 }
 
-export function propagateOSSAContext(
-  parentBaggage: W3CBaggage,
-  childAgentId: string
-): W3CBaggage {
+export function propagateOSSAContext(parentBaggage: W3CBaggage, childAgentId: string): W3CBaggage {
   const parentContext = parentBaggage.getOSSAContext();
   const childBaggage = new W3CBaggage({
     ...parentContext,
@@ -186,10 +162,7 @@ export function propagateOSSAContext(
   return childBaggage;
 }
 
-export function createOSSABaggage(
-  agentId: string,
-  interactionId: string
-): W3CBaggage {
+export function createOSSABaggage(agentId: string, interactionId: string): W3CBaggage {
   return new W3CBaggage({
     agentId,
     interactionId,
@@ -199,13 +172,9 @@ export function createOSSABaggage(
 }
 
 function generateTraceId(): string {
-  return Array.from({ length: 32 }, () =>
-    Math.floor(Math.random() * 16).toString(16)
-  ).join('');
+  return Array.from({ length: 32 }, () => Math.floor(Math.random() * 16).toString(16)).join('');
 }
 
 function generateSpanId(): string {
-  return Array.from({ length: 16 }, () =>
-    Math.floor(Math.random() * 16).toString(16)
-  ).join('');
+  return Array.from({ length: 16 }, () => Math.floor(Math.random() * 16).toString(16)).join('');
 }

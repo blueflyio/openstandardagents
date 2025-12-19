@@ -16,9 +16,7 @@ describe('Cursor + agents.md Integration', () => {
 
   beforeEach(async () => {
     service = new AgentsMdService();
-    tempDir = await fs.mkdtemp(
-      path.join(os.tmpdir(), 'cursor-agents-md-test-')
-    );
+    tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'cursor-agents-md-test-'));
   });
 
   afterEach(async () => {
@@ -102,12 +100,10 @@ describe('Cursor + agents.md Integration', () => {
     };
 
     // Verify Cursor config references the correct path
-    expect(manifest.extensions?.cursor?.workspace_config?.agents_md_path).toBe(
+    expect(manifest.extensions?.cursor?.workspace_config?.agents_md_path).toBe('.github/AGENTS.md');
+    expect(manifest.extensions?.cursor?.workspace_config?.context_files).toContain(
       '.github/AGENTS.md'
     );
-    expect(
-      manifest.extensions?.cursor?.workspace_config?.context_files
-    ).toContain('.github/AGENTS.md');
   });
 
   it('should parse AGENTS.md and populate Cursor context files', async () => {
@@ -122,15 +118,11 @@ Run tests with \`npm test\`.`;
 
     const result = await service.parseAgentsMd(agentsMdPath);
 
-    expect(
-      result.extensions?.cursor?.workspace_config?.context_files
-    ).toContain('README.md');
-    expect(
-      result.extensions?.cursor?.workspace_config?.context_files
-    ).toContain('CONTRIBUTING.md');
-    expect(
-      result.extensions?.cursor?.workspace_config?.context_files
-    ).toContain('docs/architecture.md');
+    expect(result.extensions?.cursor?.workspace_config?.context_files).toContain('README.md');
+    expect(result.extensions?.cursor?.workspace_config?.context_files).toContain('CONTRIBUTING.md');
+    expect(result.extensions?.cursor?.workspace_config?.context_files).toContain(
+      'docs/architecture.md'
+    );
   });
 
   it('should generate Cursor-compatible content when cursor_integration is true', async () => {
@@ -249,12 +241,8 @@ Run tests with \`npm test\`.`;
     expect(content).toContain('git_operations');
 
     // Verify Cursor can reference AGENTS.md
-    expect(manifest.extensions?.cursor?.workspace_config?.agents_md_path).toBe(
-      agentsMdPath
-    );
-    expect(
-      manifest.extensions?.cursor?.workspace_config?.context_files
-    ).toContain(agentsMdPath);
+    expect(manifest.extensions?.cursor?.workspace_config?.agents_md_path).toBe(agentsMdPath);
+    expect(manifest.extensions?.cursor?.workspace_config?.context_files).toContain(agentsMdPath);
   });
 
   it('should validate AGENTS.md is included in Cursor context', async () => {
@@ -283,10 +271,8 @@ Run tests with \`npm test\`.`;
     };
 
     // Check if AGENTS.md is in context files
-    const contextFiles =
-      manifest.extensions?.cursor?.workspace_config?.context_files || [];
-    const agentsMdPath =
-      manifest.extensions?.cursor?.workspace_config?.agents_md_path;
+    const contextFiles = manifest.extensions?.cursor?.workspace_config?.context_files || [];
+    const agentsMdPath = manifest.extensions?.cursor?.workspace_config?.agents_md_path;
 
     if (agentsMdPath && !contextFiles.includes(agentsMdPath)) {
       // This is a warning condition - AGENTS.md should be in context

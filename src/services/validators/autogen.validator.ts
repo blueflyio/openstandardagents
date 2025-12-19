@@ -13,9 +13,7 @@ export class AutoGenValidator {
     const errors: ErrorObject[] = [];
     const warnings: string[] = [];
 
-    const autogenExt = manifest.extensions?.autogen as
-      | Record<string, unknown>
-      | undefined;
+    const autogenExt = manifest.extensions?.autogen as Record<string, unknown> | undefined;
     if (!autogenExt || (autogenExt.enabled as boolean | undefined) === false) {
       return { valid: true, errors: [], warnings: [] };
     }
@@ -46,14 +44,9 @@ export class AutoGenValidator {
     }
 
     // Validate max_consecutive_auto_reply if provided
-    const maxConsecutiveAutoReply = autogenExt.max_consecutive_auto_reply as
-      | number
-      | undefined;
+    const maxConsecutiveAutoReply = autogenExt.max_consecutive_auto_reply as number | undefined;
     if (maxConsecutiveAutoReply !== undefined) {
-      if (
-        typeof maxConsecutiveAutoReply !== 'number' ||
-        maxConsecutiveAutoReply < 0
-      ) {
+      if (typeof maxConsecutiveAutoReply !== 'number' || maxConsecutiveAutoReply < 0) {
         errors.push({
           instancePath: '/extensions/autogen/max_consecutive_auto_reply',
           schemaPath: '',
@@ -112,9 +105,7 @@ export class AutoGenValidator {
     }
 
     if (agentType === 'assistant' && maxConsecutiveAutoReply === undefined) {
-      warnings.push(
-        'Best practice: Set max_consecutive_auto_reply for AutoGen assistant agents'
-      );
+      warnings.push('Best practice: Set max_consecutive_auto_reply for AutoGen assistant agents');
     }
 
     return {

@@ -16,9 +16,7 @@ export interface TestResult {
 export class TestRunnerService {
   async runTests(manifest: OssaAgent, testId?: string): Promise<TestResult[]> {
     const tests = (manifest.spec as any).tests || [];
-    const testsToRun = testId
-      ? tests.filter((t: any) => t.id === testId)
-      : tests;
+    const testsToRun = testId ? tests.filter((t: any) => t.id === testId) : tests;
 
     if (testsToRun.length === 0) {
       return [];
@@ -76,10 +74,7 @@ export class TestRunnerService {
     }
   }
 
-  private async runIntegrationTest(
-    test: any,
-    manifest: OssaAgent
-  ): Promise<void> {
+  private async runIntegrationTest(test: any, manifest: OssaAgent): Promise<void> {
     await this.runUnitTest(test, manifest);
   }
 
