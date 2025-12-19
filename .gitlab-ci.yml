@@ -444,6 +444,7 @@ quality:metrics:
 pages:
   stage: deploy
   image: alpine:latest
+  tags: []  # Use any available runner (local or shared)
   needs:
     - build:website
   script:
