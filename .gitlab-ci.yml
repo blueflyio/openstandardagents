@@ -170,12 +170,16 @@ sync:auto:
     - npm run sync-wiki
     - |
       if [ -n "$(git status --porcelain)" ]; then
-        echo "📝 Changes detected, committing..."
+        echo "📝 Changes detected, creating feature branch and MR..."
+        SYNC_BRANCH="chore/sync-ossa-${CI_PIPELINE_ID}"
+        git checkout -b "${SYNC_BRANCH}"
         git add -A
         git commit -m "chore(ci): auto-sync OSSA spec, versions, examples, and wiki [skip ci]"
-        git remote set-url origin "https://oauth2:${CI_JOB_TOKEN}@gitlab.com/${CI_PROJECT_PATH}.git"
-        git push origin HEAD:${CI_COMMIT_REF_NAME}
-        echo "✅ Synced and committed"
+        git remote set-url origin "https://oauth2:${GITLAB_TOKEN:-${CI_JOB_TOKEN}}@gitlab.com/${CI_PROJECT_PATH}.git"
+        git push origin "${SYNC_BRANCH}"
+        printf '{"source_branch":"%s","target_branch":"%s","title":"chore(ci): auto-sync OSSA spec and wiki","remove_source_branch":true}' "${SYNC_BRANCH}" "${CI_COMMIT_REF_NAME}" > /tmp/mr.json
+        curl --fail -X POST -H "PRIVATE-TOKEN: ${GITLAB_TOKEN:-${CI_JOB_TOKEN}}" -H "Content-Type: application/json" -d @/tmp/mr.json "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/merge_requests" || echo "MR may already exist"
+        echo "✅ Sync MR created"
       else
         echo "✅ Already up to date"
       fi
@@ -632,11 +636,15 @@ changelog:generate:
 
       # Check if changelog changed
       if [ -n "$(git status --porcelain CHANGELOG.md)" ]; then
-        echo "📝 Changelog updated, committing..."
+        echo "📝 Changelog updated, creating feature branch and MR..."
+        CHANGELOG_BRANCH="chore/changelog-update-${CI_PIPELINE_ID}"
+        git checkout -b "${CHANGELOG_BRANCH}"
         git add CHANGELOG.md
         git commit -m "chore(release): update CHANGELOG.md [skip ci]"
-        git push origin HEAD:${CI_COMMIT_REF_NAME}
-        echo "✅ Changelog committed and pushed"
+        git push origin "${CHANGELOG_BRANCH}"
+        printf '{"source_branch":"%s","target_branch":"%s","title":"chore(release): update CHANGELOG.md","remove_source_branch":true}' "${CHANGELOG_BRANCH}" "${CI_COMMIT_REF_NAME}" > /tmp/mr.json
+        curl --fail -X POST -H "PRIVATE-TOKEN: ${GITLAB_TOKEN}" -H "Content-Type: application/json" -d @/tmp/mr.json "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/merge_requests" || echo "MR may already exist"
+        echo "✅ Changelog MR created"
       else
         echo "✅ Changelog already up to date"
       fi

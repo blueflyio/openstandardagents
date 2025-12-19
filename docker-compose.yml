@@ -1,28 +1,21 @@
 # OSSA Website - Local Development (Docker Compose)
-# NOTE: Review apps are deployed to Kubernetes, not Docker
-# 
+#
 # For local development:
-#   cd website && npm run dev
+#   docker compose up -d
+#   Access at: http://openstandardagents.orb.local
+#
+# For quick dev (no docker):
+#   cd website && pnpm dev
 #   Access at: http://localhost:3000
-#
-# For Kubernetes deployment (main site):
-#   ./k8s/local-deploy.sh
-#   Access at: http://ossa.orb.local
-#
-# For review environments (MR branches):
-#   Review apps are automatically deployed via GitLab CI to Kubernetes
-#   Access at: http://ossa-mr-{MR_ID}.ossa.orb.local
-#
-# This docker-compose.yml is kept for local testing only
 
 services:
-  ossa-local:
+  website:
     build: .
-    container_name: ossa-local-dev
+    container_name: openstandardagents-website
     ports:
       - "3333:80"
     labels:
-      - "dev.orbstack.domains=ossa-local.orb.local"
+      - "dev.orbstack.domains=openstandardagents.orb.local"
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:80"]

@@ -18,19 +18,19 @@ sync:webhook:
   script:
     - echo "🔄 OSSA release webhook triggered"
     - echo "Version: ${OSSA_VERSION:-latest}"
+    - echo "Trigger source: ${TRIGGER_SOURCE:-manual}"
+    - echo "Framework pipeline: ${FRAMEWORK_PIPELINE_ID:-N/A}"
     - |
-      if [ -n "$OSSA_VERSION" ]; then
-        npm install @bluefly/ossa@${OSSA_VERSION}
-      else
-        npm install @bluefly/ossa@latest
-      fi
+      # fetch-spec.js uses GitLab API directly - no npm package needed
+      # It fetches from the openstandardagents repo (project 76265294)
+      export OSSA_SPEC_VERSION="${OSSA_VERSION:-}"
     - npm run fetch-spec
     - npm run fetch-versions
     - npm run sync-version
-    - npm run fetch-examples
-    - npm run sync-wiki
+    - npm run fetch-examples || echo "⚠️  fetch-examples failed (non-blocking)"
+    - npm run sync-wiki || echo "⚠️  sync-wiki failed (non-blocking)"
     - |
-      VERSION=${OSSA_VERSION:-$(npm view @bluefly/ossa version)}
+      VERSION=${OSSA_VERSION:-$(npm view @bluefly/openstandardagents version 2>/dev/null || echo "latest")}
       BRANCH="chore/sync-ossa-${VERSION}"
       
       git checkout -b "$BRANCH"
