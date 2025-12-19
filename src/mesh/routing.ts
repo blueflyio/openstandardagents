@@ -70,10 +70,13 @@ export class MessageFilter {
   /**
    * Check if message matches filter
    */
-  static matches(message: MessageEnvelope, filter?: {
-    expression?: string;
-    fields?: Record<string, unknown>;
-  }): boolean {
+  static matches(
+    message: MessageEnvelope,
+    filter?: {
+      expression?: string;
+      fields?: Record<string, unknown>;
+    }
+  ): boolean {
     if (!filter) {
       return true;
     }
@@ -234,8 +237,10 @@ export class DefaultMessageRouter implements MessageRouter {
  * Default Subscription Manager Implementation
  */
 export class DefaultSubscriptionManager implements SubscriptionManager {
-  private subscriptions: Map<string, { subscription: Subscription; handlers: Set<MessageHandler> }> =
-    new Map();
+  private subscriptions: Map<
+    string,
+    { subscription: Subscription; handlers: Set<MessageHandler> }
+  > = new Map();
 
   subscribe(subscription: Subscription, handler: MessageHandler): void {
     const existing = this.subscriptions.get(subscription.channel);
@@ -309,7 +314,13 @@ export class MessagePriorityQueue {
     ['low', []],
   ]);
 
-  private readonly priorityOrder: MessagePriority[] = ['urgent', 'critical', 'high', 'normal', 'low'];
+  private readonly priorityOrder: MessagePriority[] = [
+    'urgent',
+    'critical',
+    'high',
+    'normal',
+    'low',
+  ];
 
   /**
    * Enqueue a message based on its priority
@@ -440,8 +451,7 @@ export class RoutingStatsCollector {
     const priority = message.priority || 'normal';
     this.stats.messagesByPriority[priority]++;
 
-    this.stats.messagesByType[message.type] =
-      (this.stats.messagesByType[message.type] || 0) + 1;
+    this.stats.messagesByType[message.type] = (this.stats.messagesByType[message.type] || 0) + 1;
 
     this.routingTimes.push(routingTimeMs);
     this.stats.averageRoutingTimeMs =

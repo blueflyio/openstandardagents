@@ -13,9 +13,7 @@ export class VercelAIValidator {
     const errors: ErrorObject[] = [];
     const warnings: string[] = [];
 
-    const vercelExt = manifest.extensions?.vercel_ai as
-      | Record<string, unknown>
-      | undefined;
+    const vercelExt = manifest.extensions?.vercel_ai as Record<string, unknown> | undefined;
     if (!vercelExt || (vercelExt.enabled as boolean | undefined) === false) {
       return { valid: true, errors: [], warnings: [] };
     }
@@ -62,11 +60,7 @@ export class VercelAIValidator {
     // Validate temperature if provided
     const temperature = vercelExt.temperature as number | undefined;
     if (temperature !== undefined) {
-      if (
-        typeof temperature !== 'number' ||
-        temperature < 0 ||
-        temperature > 2
-      ) {
+      if (typeof temperature !== 'number' || temperature < 0 || temperature > 2) {
         errors.push({
           instancePath: '/extensions/vercel_ai/temperature',
           schemaPath: '',
@@ -91,15 +85,11 @@ export class VercelAIValidator {
 
     // Warnings
     if (!runtime) {
-      warnings.push(
-        'Best practice: Specify runtime (edge/nodejs/cloudflare) for Vercel AI SDK'
-      );
+      warnings.push('Best practice: Specify runtime (edge/nodejs/cloudflare) for Vercel AI SDK');
     }
 
     if (runtime === 'edge' && maxTokens && maxTokens > 4096) {
-      warnings.push(
-        'Best practice: Edge runtime has token limits - consider reducing max_tokens'
-      );
+      warnings.push('Best practice: Edge runtime has token limits - consider reducing max_tokens');
     }
 
     return {

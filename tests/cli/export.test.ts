@@ -171,9 +171,9 @@ describe('Export Adapters', () => {
     it('should create nodes for LLM, prompt, and agent', () => {
       const result = LangflowAdapter.toLangflow(testManifest);
 
-      const llmNode = result.nodes.find(n => n.id === 'llm-1');
-      const promptNode = result.nodes.find(n => n.id === 'prompt-1');
-      const agentNode = result.nodes.find(n => n.id === 'agent-1');
+      const llmNode = result.nodes.find((n) => n.id === 'llm-1');
+      const promptNode = result.nodes.find((n) => n.id === 'prompt-1');
+      const agentNode = result.nodes.find((n) => n.id === 'agent-1');
 
       expect(llmNode).toBeDefined();
       expect(promptNode).toBeDefined();
@@ -183,7 +183,7 @@ describe('Export Adapters', () => {
     it('should create tool nodes for each tool', () => {
       const result = LangflowAdapter.toLangflow(testManifest);
 
-      const toolNodes = result.nodes.filter(n => n.id.startsWith('tool-'));
+      const toolNodes = result.nodes.filter((n) => n.id.startsWith('tool-'));
       expect(toolNodes).toHaveLength(2);
     });
 
@@ -193,9 +193,7 @@ describe('Export Adapters', () => {
       expect(result.edges.length).toBeGreaterThan(0);
 
       // Check for LLM to agent edge
-      const llmToAgent = result.edges.find(
-        e => e.source === 'llm-1' && e.target === 'agent-1'
-      );
+      const llmToAgent = result.edges.find((e) => e.source === 'llm-1' && e.target === 'agent-1');
       expect(llmToAgent).toBeDefined();
     });
 
@@ -271,8 +269,8 @@ describe('Export Adapters', () => {
       const result = OpenAPIAdapter.toOpenAPI(testManifest);
 
       expect(result.tags).toBeDefined();
-      expect(result.tags?.some(t => t.name === 'chat')).toBe(true);
-      expect(result.tags?.some(t => t.name === 'tools')).toBe(true);
+      expect(result.tags?.some((t) => t.name === 'chat')).toBe(true);
+      expect(result.tags?.some((t) => t.name === 'tools')).toBe(true);
     });
 
     it('should handle tools without input schema', () => {
@@ -295,7 +293,8 @@ describe('Export Adapters', () => {
     it('should normalize schemas correctly', () => {
       const result = OpenAPIAdapter.toOpenAPI(testManifest);
 
-      const searchSchema = result.paths['/tools/search'].post.requestBody?.content['application/json'].schema;
+      const searchSchema =
+        result.paths['/tools/search'].post.requestBody?.content['application/json'].schema;
       expect(searchSchema).toBeDefined();
       expect(searchSchema.type).toBe('object');
     });

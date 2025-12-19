@@ -76,7 +76,11 @@ export class OpenAPIAdapter {
    */
   static toOpenAPI(manifest: OssaAgent): OpenAPISpec {
     const spec = manifest.spec || { role: '' };
-    const metadata = manifest.metadata || { name: 'unknown-agent', version: '1.0.0', description: '' };
+    const metadata = manifest.metadata || {
+      name: 'unknown-agent',
+      version: '1.0.0',
+      description: '',
+    };
     const tools = spec.tools || [];
 
     const paths: Record<string, Record<string, OpenAPIOperation>> = {};
@@ -111,15 +115,17 @@ export class OpenAPIAdapter {
             description: 'Successful operation',
             content: {
               'application/json': {
-                schema: outputSchema.type ? outputSchema : {
-                  type: 'object',
-                  properties: {
-                    result: {
-                      type: 'string',
-                      description: 'Operation result',
+                schema: outputSchema.type
+                  ? outputSchema
+                  : {
+                      type: 'object',
+                      properties: {
+                        result: {
+                          type: 'string',
+                          description: 'Operation result',
+                        },
+                      },
                     },
-                  },
-                },
               },
             },
           },
@@ -279,7 +285,7 @@ export class OpenAPIAdapter {
     const properties: Record<string, OpenAPISchema> = {};
     const required: string[] = [];
 
-    Object.keys(schema).forEach(key => {
+    Object.keys(schema).forEach((key) => {
       const value = schema[key];
       if (value && typeof value === 'object') {
         if (value.type) {
@@ -354,7 +360,7 @@ export class OpenAPIAdapter {
     let yaml = '';
 
     if (Array.isArray(obj)) {
-      obj.forEach(item => {
+      obj.forEach((item) => {
         yaml += `${spaces}- `;
         if (typeof item === 'object') {
           yaml += '\n' + this.objectToYAML(item, indent + 1);
@@ -363,7 +369,7 @@ export class OpenAPIAdapter {
         }
       });
     } else if (obj && typeof obj === 'object') {
-      Object.keys(obj).forEach(key => {
+      Object.keys(obj).forEach((key) => {
         const value = obj[key];
         yaml += `${spaces}${key}:`;
 

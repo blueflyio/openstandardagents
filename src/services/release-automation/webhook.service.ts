@@ -26,10 +26,7 @@ export class WebhookService {
   private tagService: TagService;
   private mergeRequestService: MergeRequestService;
 
-  constructor(
-    gitlabToken: string,
-    projectId: string | number = process.env.CI_PROJECT_ID || ''
-  ) {
+  constructor(gitlabToken: string, projectId: string | number = process.env.CI_PROJECT_ID || '') {
     this.releaseService = new ReleaseService(gitlabToken, projectId);
     this.milestoneService = new MilestoneService(gitlabToken, projectId);
     this.tagService = new TagService(gitlabToken, projectId);
@@ -50,8 +47,7 @@ export class WebhookService {
       // Determine if this is a create or close event
       const isNewMilestone =
         milestone.state === 'active' &&
-        new Date(milestone.created_at).getTime() ===
-          new Date(milestone.updated_at).getTime();
+        new Date(milestone.created_at).getTime() === new Date(milestone.updated_at).getTime();
 
       if (isNewMilestone) {
         // Milestone created - create dev tag and branch
@@ -109,9 +105,7 @@ export class WebhookService {
   /**
    * Handle milestone creation
    */
-  private async handleMilestoneCreate(
-    payload: MilestoneWebhookPayload
-  ): Promise<{
+  private async handleMilestoneCreate(payload: MilestoneWebhookPayload): Promise<{
     type: string;
     status: string;
     details?: Record<string, unknown>;
@@ -149,9 +143,7 @@ export class WebhookService {
   /**
    * Handle milestone closure
    */
-  private async handleMilestoneClose(
-    payload: MilestoneWebhookPayload
-  ): Promise<{
+  private async handleMilestoneClose(payload: MilestoneWebhookPayload): Promise<{
     type: string;
     status: string;
     details?: Record<string, unknown>;
@@ -167,9 +159,7 @@ export class WebhookService {
 
     // Check all issues are closed
     if (milestoneData.statistics.openIssues > 0) {
-      throw new Error(
-        `Cannot create RC: ${milestoneData.statistics.openIssues} issues still open`
-      );
+      throw new Error(`Cannot create RC: ${milestoneData.statistics.openIssues} issues still open`);
     }
 
     // Extract major.minor from version to determine release branch

@@ -32,9 +32,7 @@ describe('ContractValidator', () => {
                   },
                   required: ['message'],
                 },
-                examples: [
-                  { message: 'Hello World' },
-                ],
+                examples: [{ message: 'Hello World' }],
               },
             ],
             commands: [
@@ -85,11 +83,7 @@ describe('ContractValidator', () => {
 
       const runtimeEvents = ['other.event']; // Not publishing declared event
 
-      const result = validator.validateAgentContract(
-        manifest,
-        runtimeEvents,
-        []
-      );
+      const result = validator.validateAgentContract(manifest, runtimeEvents, []);
 
       expect(result.valid).toBe(false);
       expect(result.errors).toHaveLength(1);
@@ -111,11 +105,7 @@ describe('ContractValidator', () => {
 
       const runtimeEvents = ['undeclared.event'];
 
-      const result = validator.validateAgentContract(
-        manifest,
-        runtimeEvents,
-        []
-      );
+      const result = validator.validateAgentContract(manifest, runtimeEvents, []);
 
       expect(result.valid).toBe(true);
       expect(result.warnings).toHaveLength(1);
@@ -141,11 +131,7 @@ describe('ContractValidator', () => {
 
       const runtimeCommands = ['other.command']; // Not exposing declared command
 
-      const result = validator.validateAgentContract(
-        manifest,
-        [],
-        runtimeCommands
-      );
+      const result = validator.validateAgentContract(manifest, [], runtimeCommands);
 
       expect(result.valid).toBe(false);
       expect(result.errors).toHaveLength(1);

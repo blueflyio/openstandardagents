@@ -32,11 +32,7 @@ export class RegistryService {
     this.config = config;
   }
 
-  async publish(
-    manifestPath: string,
-    agentName: string,
-    version: string
-  ): Promise<void> {
+  async publish(manifestPath: string, agentName: string, version: string): Promise<void> {
     const manifestContent = await fs.readFile(manifestPath, 'utf-8');
 
     if (this.config.type === 'gitlab') {
@@ -54,11 +50,7 @@ export class RegistryService {
     }
   }
 
-  async install(
-    agentName: string,
-    version: string,
-    outputDir: string
-  ): Promise<string> {
+  async install(agentName: string, version: string, outputDir: string): Promise<string> {
     const release = await this.getRelease(agentName, version);
     const manifestUrl = release.assets.find(
       (a) => a.name === 'agent.yaml' || a.name === 'agent.yml'
@@ -76,10 +68,7 @@ export class RegistryService {
     });
 
     await fs.mkdir(outputDir, { recursive: true });
-    const outputPath = path.join(
-      outputDir,
-      `${agentName.replace('@ossa/', '')}.yaml`
-    );
+    const outputPath = path.join(outputDir, `${agentName.replace('@ossa/', '')}.yaml`);
     await fs.writeFile(outputPath, response.data, 'utf-8');
 
     return outputPath;
@@ -139,20 +128,14 @@ export class RegistryService {
     });
   }
 
-  private async searchGitLab(
-    query: string,
-    limit: number
-  ): Promise<AgentRelease[]> {
+  private async searchGitLab(query: string, limit: number): Promise<AgentRelease[]> {
     const projectId = this.config.projectId || '76265294';
     const gitlabUrl = this.config.url || 'https://gitlab.com';
 
-    const response = await axios.get(
-      `${gitlabUrl}/api/v4/projects/${projectId}/releases`,
-      {
-        headers: { 'PRIVATE-TOKEN': this.config.token },
-        params: { per_page: limit },
-      }
-    );
+    const response = await axios.get(`${gitlabUrl}/api/v4/projects/${projectId}/releases`, {
+      headers: { 'PRIVATE-TOKEN': this.config.token },
+      params: { per_page: limit },
+    });
 
     return response.data
       .filter(
@@ -170,10 +153,7 @@ export class RegistryService {
       }));
   }
 
-  private async searchGitHub(
-    query: string,
-    limit: number
-  ): Promise<AgentRelease[]> {
+  private async searchGitHub(query: string, limit: number): Promise<AgentRelease[]> {
     const { Octokit } = await import('@octokit/rest');
     const octokit = new Octokit({ auth: this.config.token });
     const owner = this.config.owner || 'blueflyio';
@@ -201,10 +181,7 @@ export class RegistryService {
       }));
   }
 
-  private async getRelease(
-    agentName: string,
-    version: string
-  ): Promise<AgentRelease> {
+  private async getRelease(agentName: string, version: string): Promise<AgentRelease> {
     if (this.config.type === 'gitlab') {
       return this.getReleaseFromGitLab(agentName, version);
     } else {
@@ -212,14 +189,10 @@ export class RegistryService {
     }
   }
 
-  private async getReleaseFromGitLab(
-    agentName: string,
-    version: string
-  ): Promise<AgentRelease> {
+  private async getReleaseFromGitLab(agentName: string, version: string): Promise<AgentRelease> {
     const projectId = this.config.projectId || '76265294';
     const gitlabUrl = this.config.url || 'https://gitlab.com';
-    const tagName =
-      version === 'latest' ? agentName : `${agentName}-v${version}`;
+    const tagName = version === 'latest' ? agentName : `${agentName}-v${version}`;
 
     const response = await axios.get(
       `${gitlabUrl}/api/v4/projects/${projectId}/releases/${encodeURIComponent(tagName)}`,
@@ -239,16 +212,12 @@ export class RegistryService {
     };
   }
 
-  private async getReleaseFromGitHub(
-    agentName: string,
-    version: string
-  ): Promise<AgentRelease> {
+  private async getReleaseFromGitHub(agentName: string, version: string): Promise<AgentRelease> {
     const { Octokit } = await import('@octokit/rest');
     const octokit = new Octokit({ auth: this.config.token });
     const owner = this.config.owner || 'blueflyio';
     const repo = this.config.repo || 'openstandardagents';
-    const tagName =
-      version === 'latest' ? agentName : `${agentName}-v${version}`;
+    const tagName = version === 'latest' ? agentName : `${agentName}-v${version}`;
 
     const { data: release } = await octokit.repos.getReleaseByTag({
       owner,

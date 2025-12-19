@@ -7,7 +7,10 @@ import type { OssaAgent } from '../types/index.js';
 
 export interface LangChainAgent {
   type: 'agent';
-  agent_type: 'zero-shot-react-description' | 'conversational-react-description' | 'chat-conversational-react-description';
+  agent_type:
+    | 'zero-shot-react-description'
+    | 'conversational-react-description'
+    | 'chat-conversational-react-description';
   tools: Array<{
     name: string;
     description: string;
@@ -70,7 +73,10 @@ export class LangChainAdapter {
   private static determineAgentType(
     role: string,
     tools: Array<Record<string, unknown>>
-  ): 'zero-shot-react-description' | 'conversational-react-description' | 'chat-conversational-react-description' {
+  ):
+    | 'zero-shot-react-description'
+    | 'conversational-react-description'
+    | 'chat-conversational-react-description' {
     const roleLower = role.toLowerCase();
 
     // If role mentions conversation or chat, use conversational agent

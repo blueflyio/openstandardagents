@@ -75,7 +75,7 @@ export class CrewAIAdapter {
     description?: string
   ): { role: string; goal: string; backstory: string } {
     // Try to extract structured information from role text
-    const lines = roleText.split('\n').filter(l => l.trim());
+    const lines = roleText.split('\n').filter((l) => l.trim());
 
     let role = lines[0] || 'AI Assistant';
     let goal = description || 'Assist users with their queries';
