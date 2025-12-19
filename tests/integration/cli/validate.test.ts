@@ -107,13 +107,10 @@ spec:
 
     fs.writeFileSync(manifestPath, manifest);
 
-    const output = execSync(
-      `node bin/ossa validate ${manifestPath} --verbose`,
-      {
-        encoding: 'utf-8',
-        cwd: path.resolve(__dirname, '../../..'),
-      }
-    );
+    const output = execSync(`node bin/ossa validate ${manifestPath} --verbose`, {
+      encoding: 'utf-8',
+      cwd: path.resolve(__dirname, '../../..'),
+    });
 
     expect(output).toContain('test-agent');
   });

@@ -50,9 +50,7 @@ describe('OpenAIAdapter', () => {
     it('should not register handler for non-existent tool', () => {
       const handler = async () => 'result';
       // Should not throw, but won't register if tool doesn't exist
-      expect(() =>
-        adapter.registerToolHandler('nonexistent', handler)
-      ).not.toThrow();
+      expect(() => adapter.registerToolHandler('nonexistent', handler)).not.toThrow();
     });
   });
 
@@ -103,9 +101,7 @@ describe('OpenAIAdapter', () => {
         ...mockManifest,
         spec: {
           ...mockManifest.spec,
-          tools: [
-            { type: 'function', name: 'calculate', capabilities: ['math'] },
-          ],
+          tools: [{ type: 'function', name: 'calculate', capabilities: ['math'] }],
         },
       };
       const toolAdapter = new OpenAIAdapter(manifestWithSpecTools);
@@ -202,9 +198,7 @@ describe('OpenAIAdapter', () => {
       const toolAdapter = new OpenAIAdapter(manifestWithMapping);
       // Tools are lazily loaded, verify adapter can be created with tools_mapping
       expect(toolAdapter).toBeDefined();
-      expect(
-        manifestWithMapping.extensions?.openai_agents?.tools_mapping
-      ).toHaveLength(2);
+      expect(manifestWithMapping.extensions?.openai_agents?.tools_mapping).toHaveLength(2);
     });
 
     it('should handle tool configuration without openai_tool_name', () => {
@@ -267,9 +261,7 @@ describe('OpenAIAdapter', () => {
       expect(toolAdapter).toBeDefined();
       // Both configurations present
       expect(manifestWithDuplicates.spec.tools).toHaveLength(1);
-      expect(
-        manifestWithDuplicates.extensions?.openai_agents?.tools_mapping
-      ).toHaveLength(1);
+      expect(manifestWithDuplicates.extensions?.openai_agents?.tools_mapping).toHaveLength(1);
     });
 
     it('should handle spec.tools without names', () => {

@@ -60,10 +60,10 @@ export class HttpTransport implements Transport {
         headers: {
           'Content-Type': 'application/json',
           ...(message.traceContext?.traceparent && {
-            'traceparent': message.traceContext.traceparent,
+            traceparent: message.traceContext.traceparent,
           }),
           ...(message.traceContext?.tracestate && {
-            'tracestate': message.traceContext.tracestate,
+            tracestate: message.traceContext.tracestate,
           }),
         },
         body: JSON.stringify(message),
@@ -108,11 +108,14 @@ export class AgentMeshClient {
   private readonly subscriptionManager: SubscriptionManager;
   private readonly reliability: ReliabilityConfig;
   private readonly messageQueue: MessagePriorityQueue;
-  private readonly pendingRequests: Map<string, {
-    resolve: (value: MessageEnvelope) => void;
-    reject: (error: Error) => void;
-    timeout: NodeJS.Timeout;
-  }> = new Map();
+  private readonly pendingRequests: Map<
+    string,
+    {
+      resolve: (value: MessageEnvelope) => void;
+      reject: (error: Error) => void;
+      timeout: NodeJS.Timeout;
+    }
+  > = new Map();
   private readonly commands: Map<string, CommandHandler> = new Map();
   private readonly stats: RoutingStatsCollector;
   private processingInterval?: NodeJS.Timeout;
@@ -135,13 +138,17 @@ export class AgentMeshClient {
   /**
    * Send a message to another agent or topic
    */
-  async send(to: string, payload: unknown, options?: {
-    type?: MessageType;
-    priority?: MessagePriority;
-    correlationId?: string;
-    replyTo?: string;
-    ttl?: number;
-  }): Promise<void> {
+  async send(
+    to: string,
+    payload: unknown,
+    options?: {
+      type?: MessageType;
+      priority?: MessagePriority;
+      correlationId?: string;
+      replyTo?: string;
+      ttl?: number;
+    }
+  ): Promise<void> {
     const message = this.createMessage(to, payload, options);
     this.messageQueue.enqueue(message);
   }
@@ -192,10 +199,14 @@ export class AgentMeshClient {
   /**
    * Publish an event to a topic
    */
-  async publish(channel: string, payload: unknown, options?: {
-    priority?: MessagePriority;
-    correlationId?: string;
-  }): Promise<void> {
+  async publish(
+    channel: string,
+    payload: unknown,
+    options?: {
+      priority?: MessagePriority;
+      correlationId?: string;
+    }
+  ): Promise<void> {
     await this.send(`topic://${channel}`, payload, {
       type: 'event',
       priority: options?.priority,
@@ -206,9 +217,13 @@ export class AgentMeshClient {
   /**
    * Broadcast a message to all agents in a namespace
    */
-  async broadcast(namespace: string, payload: unknown, options?: {
-    priority?: MessagePriority;
-  }): Promise<void> {
+  async broadcast(
+    namespace: string,
+    payload: unknown,
+    options?: {
+      priority?: MessagePriority;
+    }
+  ): Promise<void> {
     await this.send(`broadcast://${namespace}/*`, payload, {
       type: 'event',
       priority: options?.priority,
@@ -271,7 +286,11 @@ export class AgentMeshClient {
       }
 
       // Check if it's a command invocation
-      if (message.type === 'request' && typeof message.payload === 'object' && message.payload !== null) {
+      if (
+        message.type === 'request' &&
+        typeof message.payload === 'object' &&
+        message.payload !== null
+      ) {
         const payload = message.payload as { command?: string; input?: unknown };
         if (payload.command && this.commands.has(payload.command)) {
           const handler = this.commands.get(payload.command)!;
@@ -298,15 +317,19 @@ export class AgentMeshClient {
       console.error('Error handling message:', error);
       // Optionally send error response
       if (message.type === 'request' && message.replyTo) {
-        await this.send(message.replyTo, {
-          error: {
-            code: 'PROCESSING_ERROR',
-            message: error instanceof Error ? error.message : 'Unknown error',
+        await this.send(
+          message.replyTo,
+          {
+            error: {
+              code: 'PROCESSING_ERROR',
+              message: error instanceof Error ? error.message : 'Unknown error',
+            },
           },
-        }, {
-          type: 'response',
-          correlationId: message.correlationId,
-        });
+          {
+            type: 'response',
+            correlationId: message.correlationId,
+          }
+        );
       }
     }
   }

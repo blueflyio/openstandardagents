@@ -50,12 +50,7 @@ describe('OpenAIValidator', () => {
   });
 
   it('should validate all valid models', () => {
-    const validModels = [
-      'gpt-4o',
-      'gpt-4o-mini',
-      'gpt-4-turbo',
-      'gpt-3.5-turbo',
-    ];
+    const validModels = ['gpt-4o', 'gpt-4o-mini', 'gpt-4-turbo', 'gpt-3.5-turbo'];
 
     validModels.forEach((model) => {
       const manifest = {

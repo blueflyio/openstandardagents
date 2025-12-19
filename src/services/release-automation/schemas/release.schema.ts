@@ -8,20 +8,16 @@ import { z } from 'zod';
 /**
  * Version pattern: v0.2.5, 0.2.5-RC, 0.2.5-dev.1, etc.
  */
-const VersionPattern = z
-  .string()
-  .regex(/^v?[0-9]+\.[0-9]+\.[0-9]+(-[A-Za-z0-9]+(\.[0-9]+)?)?$/, {
-    message: 'Invalid version format. Expected: v0.2.5, 0.2.5-RC, 0.2.5-dev.1',
-  });
+const VersionPattern = z.string().regex(/^v?[0-9]+\.[0-9]+\.[0-9]+(-[A-Za-z0-9]+(\.[0-9]+)?)?$/, {
+  message: 'Invalid version format. Expected: v0.2.5, 0.2.5-RC, 0.2.5-dev.1',
+});
 
 /**
  * Tag name pattern: v0.2.5-RC, v0.2.5-dev.1, etc.
  */
-const TagNamePattern = z
-  .string()
-  .regex(/^v?[0-9]+\.[0-9]+\.[0-9]+(-[a-z]+\.?[0-9]+)?$/, {
-    message: 'Invalid tag format. Expected: v0.2.5-RC, v0.2.5-dev.1',
-  });
+const TagNamePattern = z.string().regex(/^v?[0-9]+\.[0-9]+\.[0-9]+(-[a-z]+\.?[0-9]+)?$/, {
+  message: 'Invalid tag format. Expected: v0.2.5-RC, v0.2.5-dev.1',
+});
 
 /**
  * Git commit SHA pattern
@@ -33,13 +29,7 @@ const CommitShaPattern = z.string().regex(/^[0-9a-f]{40}$/, {
 /**
  * Release State
  */
-export const ReleaseStateSchema = z.enum([
-  'draft',
-  'dev',
-  'rc',
-  'released',
-  'deprecated',
-]);
+export const ReleaseStateSchema = z.enum(['draft', 'dev', 'rc', 'released', 'deprecated']);
 
 /**
  * Tag Type
@@ -54,12 +44,7 @@ export const MilestoneStateSchema = z.enum(['active', 'closed']);
 /**
  * Merge Request State
  */
-export const MergeRequestStateSchema = z.enum([
-  'opened',
-  'closed',
-  'merged',
-  'locked',
-]);
+export const MergeRequestStateSchema = z.enum(['opened', 'closed', 'merged', 'locked']);
 
 /**
  * Merge Status
@@ -288,9 +273,7 @@ export const ErrorResponseSchema = z
 /**
  * List Response (with pagination)
  */
-export function createListResponseSchema<T extends z.ZodTypeAny>(
-  itemSchema: T
-) {
+export function createListResponseSchema<T extends z.ZodTypeAny>(itemSchema: T) {
   return z.object({
     items: z.array(itemSchema),
     pagination: PaginationSchema.extend({
@@ -308,27 +291,17 @@ export type CreateReleaseRequest = z.infer<typeof CreateReleaseRequestSchema>;
 export type UpdateReleaseRequest = z.infer<typeof UpdateReleaseRequestSchema>;
 
 export type Milestone = z.infer<typeof MilestoneSchema>;
-export type CreateMilestoneRequest = z.infer<
-  typeof CreateMilestoneRequestSchema
->;
-export type UpdateMilestoneRequest = z.infer<
-  typeof UpdateMilestoneRequestSchema
->;
+export type CreateMilestoneRequest = z.infer<typeof CreateMilestoneRequestSchema>;
+export type UpdateMilestoneRequest = z.infer<typeof UpdateMilestoneRequestSchema>;
 
 export type Tag = z.infer<typeof TagSchema>;
 export type CreateTagRequest = z.infer<typeof CreateTagRequestSchema>;
 
 export type MergeRequest = z.infer<typeof MergeRequestSchema>;
-export type CreateMergeRequestRequest = z.infer<
-  typeof CreateMergeRequestRequestSchema
->;
-export type UpdateMergeRequestRequest = z.infer<
-  typeof UpdateMergeRequestRequestSchema
->;
+export type CreateMergeRequestRequest = z.infer<typeof CreateMergeRequestRequestSchema>;
+export type UpdateMergeRequestRequest = z.infer<typeof UpdateMergeRequestRequestSchema>;
 
-export type MilestoneWebhookPayload = z.infer<
-  typeof MilestoneWebhookPayloadSchema
->;
+export type MilestoneWebhookPayload = z.infer<typeof MilestoneWebhookPayloadSchema>;
 export type PushWebhookPayload = z.infer<typeof PushWebhookPayloadSchema>;
 export type WebhookResponse = z.infer<typeof WebhookResponseSchema>;
 export type ErrorResponse = z.infer<typeof ErrorResponseSchema>;

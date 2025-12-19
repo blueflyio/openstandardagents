@@ -103,7 +103,7 @@ alias2: *ref
 
   it('should disable custom tags by default', () => {
     // YAML with custom tag - should parse but tag is not processed
-    const yaml = 'value: text';  // Use simple YAML without custom tags
+    const yaml = 'value: text'; // Use simple YAML without custom tags
     const result = safeParseYAML(yaml);
     // Should parse successfully
     expect(result).toEqual({ value: 'text' });

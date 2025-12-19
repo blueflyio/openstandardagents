@@ -21,10 +21,7 @@ export class GitHubClient {
     return GitHubPRSchema.parse(data);
   }
 
-  async listPRs(filters?: {
-    author?: string;
-    state?: 'open' | 'closed';
-  }): Promise<GitHubPR[]> {
+  async listPRs(filters?: { author?: string; state?: 'open' | 'closed' }): Promise<GitHubPR[]> {
     const { data } = await this.octokit.pulls.list({
       owner: this.owner,
       repo: this.repo,

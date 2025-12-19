@@ -13,9 +13,7 @@ export class CursorValidator {
     const errors: ErrorObject[] = [];
     const warnings: string[] = [];
 
-    const cursorExt = manifest.extensions?.cursor as
-      | Record<string, unknown>
-      | undefined;
+    const cursorExt = manifest.extensions?.cursor as Record<string, unknown> | undefined;
     if (!cursorExt) {
       return { valid: true, errors: [], warnings: [] };
     }
@@ -35,9 +33,7 @@ export class CursorValidator {
       }
 
       // Validate workspace_config if provided
-      const workspaceConfig = cursorExt.workspace_config as
-        | Record<string, unknown>
-        | undefined;
+      const workspaceConfig = cursorExt.workspace_config as Record<string, unknown> | undefined;
       if (workspaceConfig) {
         const rulesFile = workspaceConfig.rules_file as string | undefined;
         if (rulesFile && typeof rulesFile !== 'string') {
@@ -50,9 +46,7 @@ export class CursorValidator {
           });
         }
 
-        const contextFiles = workspaceConfig.context_files as
-          | unknown[]
-          | undefined;
+        const contextFiles = workspaceConfig.context_files as unknown[] | undefined;
         if (contextFiles && !Array.isArray(contextFiles)) {
           errors.push({
             instancePath: '/extensions/cursor/workspace_config/context_files',
@@ -82,9 +76,7 @@ export class CursorValidator {
 
       // Warnings for best practices
       if (!workspaceConfig?.rules_file) {
-        warnings.push(
-          'Best practice: Specify .cursorrules file path for Cursor IDE integration'
-        );
+        warnings.push('Best practice: Specify .cursorrules file path for Cursor IDE integration');
       }
 
       const capabilities = cursorExt.capabilities as unknown[] | undefined;

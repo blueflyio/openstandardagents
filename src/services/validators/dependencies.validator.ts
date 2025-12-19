@@ -121,10 +121,7 @@ export class DependenciesValidator {
    */
   private detectVersionConflicts(manifests: AgentManifest[]): DependencyConflict[] {
     const conflicts: DependencyConflict[] = [];
-    const dependencyVersions = new Map<
-      string,
-      Array<{ requiredBy: string; version: string }>
-    >();
+    const dependencyVersions = new Map<string, Array<{ requiredBy: string; version: string }>>();
 
     // Collect all dependency versions
     for (const manifest of manifests) {
@@ -144,9 +141,7 @@ export class DependenciesValidator {
     for (const [depName, versions] of dependencyVersions.entries()) {
       if (versions.length > 1) {
         // Check if any versions are incompatible
-        const hasConflict = this.hasVersionConflict(
-          versions.map((v) => v.version)
-        );
+        const hasConflict = this.hasVersionConflict(versions.map((v) => v.version));
         if (hasConflict) {
           conflicts.push({
             agent: depName,
@@ -199,20 +194,20 @@ export class DependenciesValidator {
       // Try to find a version that satisfies both ranges
       // Generate comprehensive test versions
       const testVersions: string[] = [];
-      
+
       // Extract base versions from ranges
       const range1Str = range1.raw || range1.toString();
       const range2Str = range2.raw || range2.toString();
-      
+
       // Extract version numbers from range strings (e.g., "~1.2.0" -> "1.2.0")
       const extractVersion = (rangeStr: string): string | null => {
         const match = rangeStr.match(/(\d+\.\d+\.\d+)/);
         return match ? match[1] : null;
       };
-      
+
       const v1 = extractVersion(range1Str);
       const v2 = extractVersion(range2Str);
-      
+
       if (v1) {
         const [major, minor, patch] = v1.split('.').map(Number);
         // Generate versions around v1
@@ -221,7 +216,7 @@ export class DependenciesValidator {
         }
         testVersions.push(`${major}.${minor + 1}.0`);
       }
-      
+
       if (v2) {
         const [major, minor, patch] = v2.split('.').map(Number);
         // Generate versions around v2
@@ -230,20 +225,20 @@ export class DependenciesValidator {
         }
         testVersions.push(`${major}.${minor + 1}.0`);
       }
-      
+
       // Add common test versions
       testVersions.push('0.0.1', '0.1.0', '1.0.0', '1.2.0', '1.2.3', '1.2.9', '1.3.0', '2.0.0');
-      
+
       // Remove duplicates
       const uniqueVersions = Array.from(new Set(testVersions));
-      
+
       // Check if any version satisfies both ranges
       for (const version of uniqueVersions) {
         if (semver.satisfies(version, range1) && semver.satisfies(version, range2)) {
           return true; // Found overlapping version
         }
       }
-      
+
       return false; // No overlap found
     } catch (error) {
       // Fallback: if we can't determine overlap, assume no conflict
@@ -254,9 +249,7 @@ export class DependenciesValidator {
   /**
    * Detect circular dependencies using DFS
    */
-  private detectCircularDependencies(
-    manifests: AgentManifest[]
-  ): CircularDependency[] {
+  private detectCircularDependencies(manifests: AgentManifest[]): CircularDependency[] {
     const cycles: CircularDependency[] = [];
     const adjacencyList = this.buildDependencyGraph(manifests);
     const visited = new Set<string>();
@@ -295,9 +288,7 @@ export class DependenciesValidator {
   /**
    * Build dependency graph as adjacency list
    */
-  private buildDependencyGraph(
-    manifests: AgentManifest[]
-  ): Map<string, string[]> {
+  private buildDependencyGraph(manifests: AgentManifest[]): Map<string, string[]> {
     // Build reverse graph: dependency -> dependents
     // For topological sort, we need edges FROM dependencies TO dependents
     const graph = new Map<string, string[]>();
@@ -316,7 +307,7 @@ export class DependenciesValidator {
     for (const manifest of manifests) {
       const agentName = manifest.metadata.name;
       const deps = manifest.spec.dependencies?.agents || [];
-      
+
       for (const dep of deps) {
         if (manifestMap.has(dep.name)) {
           // Add edge: dependency -> dependent
@@ -363,8 +354,7 @@ export class DependenciesValidator {
     manifests: AgentManifest[],
     agentRegistry: Map<string, AgentManifest>
   ): Array<{ agent: string; dependency: string; violation: string }> {
-    const violations: Array<{ agent: string; dependency: string; violation: string }> =
-      [];
+    const violations: Array<{ agent: string; dependency: string; violation: string }> = [];
 
     for (const manifest of manifests) {
       const deps = manifest.spec.dependencies?.agents || [];

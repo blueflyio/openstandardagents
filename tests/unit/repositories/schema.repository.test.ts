@@ -53,9 +53,7 @@ describe('SchemaRepository', () => {
     it('should load different versions', async () => {
       const versions = repo.getAvailableVersions();
       // Filter to versions with valid schemas (skip 0.2.0 and 0.2.1 which have empty/placeholder schemas)
-      const validVersions = versions.filter(
-        (v) => !['0.2.0', '0.2.1'].includes(v)
-      );
+      const validVersions = versions.filter((v) => !['0.2.0', '0.2.1'].includes(v));
       if (validVersions.length > 1) {
         const schema1 = await repo.getSchema(validVersions[0]);
         const schema2 = await repo.getSchema(validVersions[1]);
@@ -138,9 +136,7 @@ describe('SchemaRepository', () => {
     it('should clear cache and reload schemas correctly', async () => {
       const versions = repo.getAvailableVersions();
       // Filter out versions with known schema issues
-      const validVersions = versions.filter(
-        (v) => !['0.2.0', '0.2.1', '0.2.5-RC'].includes(v)
-      );
+      const validVersions = versions.filter((v) => !['0.2.0', '0.2.1', '0.2.5-RC'].includes(v));
       if (validVersions.length > 1) {
         // Load first schema
         const schema1 = await repo.getSchema(validVersions[0]);
@@ -176,9 +172,7 @@ describe('SchemaRepository', () => {
 
     it('should check if loaded schema has expected structure', async () => {
       const versions = repo.getAvailableVersions();
-      const validVersions = versions.filter(
-        (v) => !['0.2.0', '0.2.1'].includes(v)
-      );
+      const validVersions = versions.filter((v) => !['0.2.0', '0.2.1'].includes(v));
       if (validVersions.length > 0) {
         const schema = await repo.getSchema(validVersions[0]);
         expect(schema).toHaveProperty('$schema');
@@ -187,9 +181,7 @@ describe('SchemaRepository', () => {
     });
 
     it('should return consistent version list across calls', () => {
-      const calls = Array.from({ length: 10 }, () =>
-        repo.getAvailableVersions()
-      );
+      const calls = Array.from({ length: 10 }, () => repo.getAvailableVersions());
       const firstCall = calls[0];
       calls.forEach((call) => {
         expect(call).toEqual(firstCall);
