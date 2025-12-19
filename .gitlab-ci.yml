@@ -77,7 +77,7 @@ workflow:
 # Use GitLab SaaS shared runners by default
 default:
   tags:
-    - saas-linux-small-amd64
+    - local
 
 # =============================================================================
 # BRANCH PROTECTION & MR VALIDATION
@@ -444,6 +444,8 @@ quality:metrics:
 pages:
   stage: deploy
   image: alpine:latest
+  tags:
+    - local
   needs:
     - build:website
   script:
