@@ -25,7 +25,7 @@ describe('ManifestRepository', () => {
       fs.writeFileSync(
         file,
         `
-apiVersion: ossa/v0.2.8
+apiVersion: ossa/v0.3.0
 kind: Agent
 metadata:
   name: test
