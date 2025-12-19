@@ -148,9 +148,7 @@ describe('MigrationService', () => {
 
     it('should throw for unsupported format', async () => {
       const invalid = { random: 'data' };
-      await expect(service.migrate(invalid)).rejects.toThrow(
-        'Unsupported manifest format'
-      );
+      await expect(service.migrate(invalid)).rejects.toThrow('Unsupported manifest format');
     });
   });
 });

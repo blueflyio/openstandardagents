@@ -11,15 +11,9 @@ import { ManifestRepository } from '../../repositories/manifest.repository.js';
 import type { AgentTemplate, OssaAgent } from '../../types/index.js';
 
 export const generateCommand = new Command('generate')
-  .argument(
-    '<type>',
-    'Agent role type (chat, workflow, compliance, audit, monitoring, etc.)'
-  )
+  .argument('<type>', 'Agent role type (chat, workflow, compliance, audit, monitoring, etc.)')
   .option('-n, --name <name>', 'Agent name', 'My Agent')
-  .option(
-    '-i, --id <id>',
-    'Agent ID (auto-generated from name if not provided)'
-  )
+  .option('-i, --id <id>', 'Agent ID (auto-generated from name if not provided)')
   .option('-d, --description <desc>', 'Agent description')
   .option('-r, --runtime <type>', 'Runtime type (docker, k8s, local)', 'docker')
   .option('-o, --output <file>', 'Output file path', './agent.ossa.yaml')
@@ -72,33 +66,20 @@ export const generateCommand = new Command('generate')
           console.log(`  Name: ${chalk.cyan(m.agent.name)}`);
           console.log(`  Role: ${chalk.cyan(m.agent.role)}`);
           console.log(`  Runtime: ${chalk.cyan(m.agent.runtime.type)}`);
-          console.log(
-            `  Capabilities: ${chalk.cyan(m.agent.capabilities.length)}`
-          );
+          console.log(`  Capabilities: ${chalk.cyan(m.agent.capabilities.length)}`);
         }
         console.log(`\nSaved to: ${chalk.cyan(options.output)}`);
 
         console.log(chalk.yellow('\n💡 Next steps:'));
+        console.log(chalk.gray('  1. Review and customize the generated manifest'));
+        console.log(chalk.gray(`  2. Validate: ${chalk.white(`ossa validate ${options.output}`)}`));
         console.log(
-          chalk.gray('  1. Review and customize the generated manifest')
-        );
-        console.log(
-          chalk.gray(
-            `  2. Validate: ${chalk.white(`ossa validate ${options.output}`)}`
-          )
-        );
-        console.log(
-          chalk.gray(
-            `  3. Deploy: ${chalk.white(`buildkit agents deploy ${options.output}`)}`
-          )
+          chalk.gray(`  3. Deploy: ${chalk.white(`buildkit agents deploy ${options.output}`)}`)
         );
 
         process.exit(0);
       } catch (error) {
-        console.error(
-          chalk.red('Error:'),
-          error instanceof Error ? error.message : String(error)
-        );
+        console.error(chalk.red('Error:'), error instanceof Error ? error.message : String(error));
         process.exit(1);
       }
     }

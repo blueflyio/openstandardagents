@@ -16,10 +16,7 @@ import type { TestOptions } from '../../testing/runner.js';
 
 export const testCommand = new Command('test')
   .argument('[path]', 'Path to agent manifest (optional with --manifest)')
-  .option(
-    '-m, --manifest <path>',
-    'Path to agent manifest (alternative to positional argument)'
-  )
+  .option('-m, --manifest <path>', 'Path to agent manifest (alternative to positional argument)')
   .option('--test-id <id>', 'Run specific test by ID')
   .option('-c, --capability <name>', 'Test specific capability')
   .option('--mock', 'Use mocked LLM (for integration tests)')
@@ -60,9 +57,7 @@ export const testCommand = new Command('test')
         const validationService = container.get(ValidationService);
 
         // Create reporter
-        const reporter = options.json
-          ? new JsonReporter()
-          : new ConsoleReporter(options.verbose);
+        const reporter = options.json ? new JsonReporter() : new ConsoleReporter(options.verbose);
 
         // Create test runner
         const runner = new TestRunner(validationService, reporter);
@@ -104,10 +99,7 @@ export const testCommand = new Command('test')
                 JSON.stringify(
                   {
                     error: error instanceof Error ? error.message : String(error),
-                    stack:
-                      options.verbose && error instanceof Error
-                        ? error.stack
-                        : undefined,
+                    stack: options.verbose && error instanceof Error ? error.stack : undefined,
                   },
                   null,
                   2
@@ -137,9 +129,7 @@ export const testCommand = new Command('test')
           // Watch for changes
           watch(manifestPath, { persistent: true }, async (eventType) => {
             if (eventType === 'change') {
-              console.log(
-                chalk.yellow(`\n\nFile changed, rerunning tests...\n`)
-              );
+              console.log(chalk.yellow(`\n\nFile changed, rerunning tests...\n`));
               await runTests();
             }
           });

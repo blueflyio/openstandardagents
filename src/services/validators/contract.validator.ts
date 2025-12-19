@@ -119,9 +119,7 @@ export class ContractValidator {
       // Check for undeclared events being published
       for (const channel of runtimeEvents) {
         if (!declaredChannels.has(channel)) {
-          result.warnings.push(
-            `Agent publishes to undeclared channel "${channel}"`
-          );
+          result.warnings.push(`Agent publishes to undeclared channel "${channel}"`);
         }
       }
     }
@@ -129,9 +127,7 @@ export class ContractValidator {
     // Validate event schemas
     for (const event of declaredPublishes) {
       if (!event.schema) {
-        result.warnings.push(
-          `Event "${event.channel}" has no schema defined`
-        );
+        result.warnings.push(`Event "${event.channel}" has no schema defined`);
       } else {
         // Validate schema is valid JSON Schema
         try {
@@ -167,9 +163,7 @@ export class ContractValidator {
 
     // Validate commands
     const declaredCommands = messaging.commands || [];
-    const declaredCommandNames = new Set(
-      declaredCommands.map((c: any) => c.name)
-    );
+    const declaredCommandNames = new Set(declaredCommands.map((c: any) => c.name));
 
     if (runtimeCommands) {
       // Check that agent exposes what it claims to expose
@@ -187,9 +181,7 @@ export class ContractValidator {
       // Check for undeclared commands being exposed
       for (const commandName of runtimeCommands) {
         if (!declaredCommandNames.has(commandName)) {
-          result.warnings.push(
-            `Agent exposes undeclared command "${commandName}"`
-          );
+          result.warnings.push(`Agent exposes undeclared command "${commandName}"`);
         }
       }
     }
@@ -197,9 +189,7 @@ export class ContractValidator {
     // Validate command schemas
     for (const command of declaredCommands) {
       if (!command.inputSchema) {
-        result.warnings.push(
-          `Command "${command.name}" has no input schema defined`
-        );
+        result.warnings.push(`Command "${command.name}" has no input schema defined`);
       } else {
         // Validate input schema
         try {
@@ -254,26 +244,20 @@ export class ContractValidator {
     const providerMessaging = providerManifest.spec?.messaging;
 
     if (!consumerMessaging || !providerMessaging) {
-      result.warnings.push(
-        `One or both agents have no messaging configuration`
-      );
+      result.warnings.push(`One or both agents have no messaging configuration`);
       return result;
     }
 
     // Check if consumer's subscriptions match provider's publications
     const consumerSubscribes = consumerMessaging.subscribes || [];
     const providerPublishes = providerMessaging.publishes || [];
-    const providerChannels = new Set(
-      providerPublishes.map((p: any) => p.channel)
-    );
+    const providerChannels = new Set(providerPublishes.map((p: any) => p.channel));
 
     for (const subscription of consumerSubscribes) {
       const channel = subscription.channel;
 
       // Find matching published event
-      const publishedEvent = providerPublishes.find(
-        (p: any) => p.channel === channel
-      );
+      const publishedEvent = providerPublishes.find((p: any) => p.channel === channel);
 
       if (!publishedEvent) {
         // Provider doesn't publish this channel
@@ -307,15 +291,11 @@ export class ContractValidator {
     // Check command compatibility
     // If consumer has dependency on provider and expects certain commands
     const consumerDeps = consumerManifest.spec?.dependencies?.agents || [];
-    const providerDep = consumerDeps.find(
-      (d: any) => d.name === providerName
-    );
+    const providerDep = consumerDeps.find((d: any) => d.name === providerName);
 
     if (providerDep && providerDep.contract?.commands) {
       const providerCommands = providerMessaging.commands || [];
-      const providerCommandNames = new Set(
-        providerCommands.map((c: any) => c.name)
-      );
+      const providerCommandNames = new Set(providerCommands.map((c: any) => c.name));
 
       for (const expectedCommand of providerDep.contract.commands) {
         if (!providerCommandNames.has(expectedCommand)) {
@@ -335,10 +315,7 @@ export class ContractValidator {
   /**
    * Detect breaking changes between two versions of an agent
    */
-  detectBreakingChanges(
-    oldManifest: any,
-    newManifest: any
-  ): BreakingChangesResult {
+  detectBreakingChanges(oldManifest: any, newManifest: any): BreakingChangesResult {
     const changes: BreakingChange[] = [];
 
     const oldName = oldManifest.metadata?.name || 'unknown';
@@ -374,14 +351,9 @@ export class ContractValidator {
 
     // Check for event schema changes
     for (const oldEvent of oldPublishes) {
-      const newEvent = newPublishes.find(
-        (p: any) => p.channel === oldEvent.channel
-      );
+      const newEvent = newPublishes.find((p: any) => p.channel === oldEvent.channel);
       if (newEvent && oldEvent.schema && newEvent.schema) {
-        const compatible = this.validateSchemaCompatibility(
-          oldEvent.schema,
-          newEvent.schema
-        );
+        const compatible = this.validateSchemaCompatibility(oldEvent.schema, newEvent.schema);
         if (!compatible.compatible) {
           changes.push({
             type: 'schema_incompatible',
@@ -416,9 +388,7 @@ export class ContractValidator {
 
     // Check for command signature changes
     for (const oldCommand of oldCommands) {
-      const newCommand = newCommands.find(
-        (c: any) => c.name === oldCommand.name
-      );
+      const newCommand = newCommands.find((c: any) => c.name === oldCommand.name);
       if (newCommand) {
         // Check input schema changes
         if (oldCommand.inputSchema && newCommand.inputSchema) {
@@ -512,11 +482,7 @@ export class ContractValidator {
     }
 
     // For arrays, check item schema compatibility
-    if (
-      oldSchema.type === 'array' &&
-      oldSchema.items &&
-      newSchema.items
-    ) {
+    if (oldSchema.type === 'array' && oldSchema.items && newSchema.items) {
       if (typeof oldSchema.items === 'object' && typeof newSchema.items === 'object') {
         return this.validateSchemaCompatibility(
           oldSchema.items as Record<string, unknown>,
@@ -526,11 +492,7 @@ export class ContractValidator {
     }
 
     // Check properties for objects
-    if (
-      oldSchema.type === 'object' &&
-      oldSchema.properties &&
-      newSchema.properties
-    ) {
+    if (oldSchema.type === 'object' && oldSchema.properties && newSchema.properties) {
       const oldProps = oldSchema.properties as Record<string, unknown>;
       const newProps = newSchema.properties as Record<string, unknown>;
 
@@ -544,10 +506,7 @@ export class ContractValidator {
         }
 
         // Recursively check property compatibility
-        if (
-          typeof oldProps[propName] === 'object' &&
-          typeof newProps[propName] === 'object'
-        ) {
+        if (typeof oldProps[propName] === 'object' && typeof newProps[propName] === 'object') {
           const propCompat = this.validateSchemaCompatibility(
             oldProps[propName] as Record<string, unknown>,
             newProps[propName] as Record<string, unknown>
@@ -582,10 +541,7 @@ export class ContractValidator {
     }
 
     // For objects, check that provider has all required fields consumer expects
-    if (
-      consumerSchema.type === 'object' &&
-      providerSchema.type === 'object'
-    ) {
+    if (consumerSchema.type === 'object' && providerSchema.type === 'object') {
       const consumerRequired = Array.isArray(consumerSchema.required)
         ? new Set(consumerSchema.required as string[])
         : new Set<string>();

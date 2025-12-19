@@ -7,10 +7,7 @@
 import { Command } from 'commander';
 import chalk from 'chalk';
 import { z } from 'zod';
-import {
-  TagService,
-  MilestoneService,
-} from '../../services/release-automation/index.js';
+import { TagService, MilestoneService } from '../../services/release-automation/index.js';
 import type {
   CreateTagRequest,
   CreateMilestoneRequest,
@@ -96,56 +93,41 @@ tagCommand
   .option('-v, --version <version>', 'Filter by version')
   .option('-p, --page <page>', 'Page number', '1')
   .option('--per-page <count>', 'Items per page', '20')
-  .action(
-    async (options: {
-      type: string;
-      version?: string;
-      page: string;
-      perPage: string;
-    }) => {
-      try {
-        const config = getGitLabConfig();
-        const tagService = new TagService(config.token, config.projectId);
+  .action(async (options: { type: string; version?: string; page: string; perPage: string }) => {
+    try {
+      const config = getGitLabConfig();
+      const tagService = new TagService(config.token, config.projectId);
 
-        const result = await tagService.list({
-          type: options.type as 'dev' | 'rc' | 'release' | 'all',
-          version: options.version,
-          page: parseInt(options.page, 10),
-          perPage: parseInt(options.perPage, 10),
-        });
+      const result = await tagService.list({
+        type: options.type as 'dev' | 'rc' | 'release' | 'all',
+        version: options.version,
+        page: parseInt(options.page, 10),
+        perPage: parseInt(options.perPage, 10),
+      });
 
-        console.log(
-          chalk.blue(`📋 Tags (${result.pagination.total} total):\n`)
-        );
+      console.log(chalk.blue(`📋 Tags (${result.pagination.total} total):\n`));
 
-        if (result.items.length === 0) {
-          console.log(chalk.yellow('   No tags found'));
-          return;
-        }
-
-        result.items.forEach((tag) => {
-          const typeColor =
-            tag.type === 'release'
-              ? chalk.green
-              : tag.type === 'rc'
-                ? chalk.yellow
-                : chalk.cyan;
-          console.log(
-            `   ${typeColor(tag.name.padEnd(25))} ${chalk.gray(tag.type.padEnd(6))} ${chalk.gray(tag.commitSha.substring(0, 8))}`
-          );
-        });
-
-        console.log(
-          chalk.gray(
-            `\n   Page ${result.pagination.page} of ${result.pagination.totalPages}`
-          )
-        );
-      } catch (error) {
-        console.error(chalk.red('❌ Failed to list tags:'), error);
-        process.exit(1);
+      if (result.items.length === 0) {
+        console.log(chalk.yellow('   No tags found'));
+        return;
       }
+
+      result.items.forEach((tag) => {
+        const typeColor =
+          tag.type === 'release' ? chalk.green : tag.type === 'rc' ? chalk.yellow : chalk.cyan;
+        console.log(
+          `   ${typeColor(tag.name.padEnd(25))} ${chalk.gray(tag.type.padEnd(6))} ${chalk.gray(tag.commitSha.substring(0, 8))}`
+        );
+      });
+
+      console.log(
+        chalk.gray(`\n   Page ${result.pagination.page} of ${result.pagination.totalPages}`)
+      );
+    } catch (error) {
+      console.error(chalk.red('❌ Failed to list tags:'), error);
+      process.exit(1);
     }
-  );
+  });
 
 tagCommand
   .command('show')
@@ -226,10 +208,7 @@ milestoneCommand
     }) => {
       try {
         const config = getGitLabConfig();
-        const milestoneService = new MilestoneService(
-          config.token,
-          config.projectId
-        );
+        const milestoneService = new MilestoneService(config.token, config.projectId);
 
         const milestoneRequest: CreateMilestoneRequest = {
           title: options.title,
@@ -265,49 +244,40 @@ milestoneCommand
   .option('-s, --state <state>', 'Filter by state (active, closed)')
   .option('-p, --page <page>', 'Page number', '1')
   .option('--per-page <count>', 'Items per page', '20')
-  .action(
-    async (options: { state?: string; page: string; perPage: string }) => {
-      try {
-        const config = getGitLabConfig();
-        const milestoneService = new MilestoneService(
-          config.token,
-          config.projectId
-        );
+  .action(async (options: { state?: string; page: string; perPage: string }) => {
+    try {
+      const config = getGitLabConfig();
+      const milestoneService = new MilestoneService(config.token, config.projectId);
 
-        const result = await milestoneService.list({
-          state: options.state as 'active' | 'closed' | undefined,
-          page: parseInt(options.page, 10),
-          perPage: parseInt(options.perPage, 10),
-        });
+      const result = await milestoneService.list({
+        state: options.state as 'active' | 'closed' | undefined,
+        page: parseInt(options.page, 10),
+        perPage: parseInt(options.perPage, 10),
+      });
 
-        console.log(
-          chalk.blue(`📋 Milestones (${result.pagination.total} total):\n`)
-        );
+      console.log(chalk.blue(`📋 Milestones (${result.pagination.total} total):\n`));
 
-        if (result.items.length === 0) {
-          console.log(chalk.yellow('   No milestones found'));
-          return;
-        }
-
-        result.items.forEach((ms) => {
-          const stateColor = ms.state === 'closed' ? chalk.green : chalk.yellow;
-          const progress = `${ms.statistics.closedIssues}/${ms.statistics.totalIssues}`;
-          console.log(
-            `   ${chalk.cyan(ms.title.padEnd(20))} ${stateColor(ms.state.padEnd(8))} ${chalk.gray(progress)}`
-          );
-        });
-
-        console.log(
-          chalk.gray(
-            `\n   Page ${result.pagination.page} of ${result.pagination.totalPages}`
-          )
-        );
-      } catch (error) {
-        console.error(chalk.red('❌ Failed to list milestones:'), error);
-        process.exit(1);
+      if (result.items.length === 0) {
+        console.log(chalk.yellow('   No milestones found'));
+        return;
       }
+
+      result.items.forEach((ms) => {
+        const stateColor = ms.state === 'closed' ? chalk.green : chalk.yellow;
+        const progress = `${ms.statistics.closedIssues}/${ms.statistics.totalIssues}`;
+        console.log(
+          `   ${chalk.cyan(ms.title.padEnd(20))} ${stateColor(ms.state.padEnd(8))} ${chalk.gray(progress)}`
+        );
+      });
+
+      console.log(
+        chalk.gray(`\n   Page ${result.pagination.page} of ${result.pagination.totalPages}`)
+      );
+    } catch (error) {
+      console.error(chalk.red('❌ Failed to list milestones:'), error);
+      process.exit(1);
     }
-  );
+  });
 
 milestoneCommand
   .command('show')
@@ -316,10 +286,7 @@ milestoneCommand
   .action(async (id: string) => {
     try {
       const config = getGitLabConfig();
-      const milestoneService = new MilestoneService(
-        config.token,
-        config.projectId
-      );
+      const milestoneService = new MilestoneService(config.token, config.projectId);
 
       const milestone = await milestoneService.read(parseInt(id, 10));
 
@@ -375,9 +342,7 @@ releaseCommand
       let baseVersion = options.baseVersion;
       if (!baseVersion) {
         const fs = await import('fs');
-        const packageJson = JSON.parse(
-          fs.readFileSync('package.json', 'utf-8')
-        );
+        const packageJson = JSON.parse(fs.readFileSync('package.json', 'utf-8'));
         baseVersion = packageJson.version.split('-dev.')[0];
       }
 

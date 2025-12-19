@@ -39,13 +39,10 @@ describe('Full Workflow E2E', () => {
     expect(fs.existsSync(agentPath)).toBe(true);
 
     // 2. Validate generated agent
-    const validateOutput = execSync(
-      `node dist/cli/index.js validate ${agentPath}`,
-      {
-        encoding: 'utf-8',
-        cwd: cwdPath,
-      }
-    );
+    const validateOutput = execSync(`node dist/cli/index.js validate ${agentPath}`, {
+      encoding: 'utf-8',
+      cwd: cwdPath,
+    });
 
     expect(validateOutput).toContain('✓');
     expect(validateOutput).toContain('valid');
@@ -96,13 +93,10 @@ describe('Full Workflow E2E', () => {
     expect(fs.existsSync(agentPath)).toBe(true);
 
     // Step 2: Validate with verbose
-    const validateOutput = execSync(
-      `node dist/cli/index.js validate ${agentPath} --verbose`,
-      {
-        encoding: 'utf-8',
-        cwd: cwdPath,
-      }
-    );
+    const validateOutput = execSync(`node dist/cli/index.js validate ${agentPath} --verbose`, {
+      encoding: 'utf-8',
+      cwd: cwdPath,
+    });
 
     expect(validateOutput).toContain('development-agent');
     expect(validateOutput).toContain('✓');

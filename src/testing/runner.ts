@@ -62,10 +62,7 @@ export class TestRunner {
   /**
    * Run all tests for an agent manifest
    */
-  async runTests(
-    manifest: OssaAgent,
-    options: TestOptions = {}
-  ): Promise<TestSummary> {
+  async runTests(manifest: OssaAgent, options: TestOptions = {}): Promise<TestSummary> {
     const startTime = Date.now();
     const results: TestResult[] = [];
 
@@ -190,17 +187,12 @@ export class TestRunner {
   /**
    * Run tests defined in the manifest
    */
-  private async runDefinedTests(
-    manifest: OssaAgent,
-    options: TestOptions
-  ): Promise<TestResult[]> {
+  private async runDefinedTests(manifest: OssaAgent, options: TestOptions): Promise<TestResult[]> {
     const tests = (manifest.spec as any)?.tests || [];
     const results: TestResult[] = [];
 
     // Filter tests if testId specified
-    const testsToRun = options.testId
-      ? tests.filter((t: any) => t.id === options.testId)
-      : tests;
+    const testsToRun = options.testId ? tests.filter((t: any) => t.id === options.testId) : tests;
 
     for (const test of testsToRun) {
       const result = await this.runSingleTest(test, manifest, options);
@@ -367,10 +359,7 @@ export class TestRunner {
   /**
    * Run policy compliance tests
    */
-  private async runPolicyTests(
-    manifest: OssaAgent,
-    options: TestOptions
-  ): Promise<TestResult[]> {
+  private async runPolicyTests(manifest: OssaAgent, options: TestOptions): Promise<TestResult[]> {
     const results: TestResult[] = [];
     const policies = (manifest.spec as any)?.policies || [];
 
@@ -499,10 +488,7 @@ export class TestRunner {
   /**
    * Calculate test coverage
    */
-  private calculateCoverage(
-    manifest: OssaAgent,
-    results: TestResult[]
-  ): TestCoverage {
+  private calculateCoverage(manifest: OssaAgent, results: TestResult[]): TestCoverage {
     const coverage: TestCoverage = {};
 
     // Calculate capability coverage
@@ -514,9 +500,7 @@ export class TestRunner {
         total: capabilities.length,
         tested: capabilityTests.filter((r) => r.status === 'passed').length,
         percentage:
-          (capabilityTests.filter((r) => r.status === 'passed').length /
-            capabilities.length) *
-          100,
+          (capabilityTests.filter((r) => r.status === 'passed').length / capabilities.length) * 100,
       };
     }
 
@@ -529,9 +513,7 @@ export class TestRunner {
         total: policies.length,
         tested: policyTests.filter((r) => r.status === 'passed').length,
         percentage:
-          (policyTests.filter((r) => r.status === 'passed').length /
-            policies.length) *
-          100,
+          (policyTests.filter((r) => r.status === 'passed').length / policies.length) * 100,
       };
     }
 

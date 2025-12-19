@@ -51,12 +51,7 @@ export interface FunctionCall {
 /**
  * Value types supported in policy expressions
  */
-export type PolicyValue =
-  | PrimitiveValue
-  | ValueArray
-  | ValueObject
-  | Variable
-  | FunctionCall;
+export type PolicyValue = PrimitiveValue | ValueArray | ValueObject | Variable | FunctionCall;
 
 /**
  * @deprecated Use PolicyValue instead
@@ -154,10 +149,7 @@ export interface FunctionCondition {
 /**
  * Policy condition (union type)
  */
-export type PolicyCondition =
-  | ComparisonCondition
-  | LogicalCondition
-  | FunctionCondition;
+export type PolicyCondition = ComparisonCondition | LogicalCondition | FunctionCondition;
 
 // ============================================================================
 // Actions & Notifications
@@ -369,11 +361,7 @@ export interface PolicyContext {
   };
 
   /** Custom context fields */
-  [key: string]:
-    | PolicyValue
-    | Record<string, PolicyValue>
-    | string[]
-    | undefined;
+  [key: string]: PolicyValue | Record<string, PolicyValue> | string[] | undefined;
 }
 
 // ============================================================================
@@ -516,18 +504,12 @@ export interface PolicyEvaluator {
   /**
    * Evaluate policy rules against context
    */
-  evaluate(
-    policy: PolicyDocument,
-    context: PolicyContext
-  ): PolicyEvaluationResult;
+  evaluate(policy: PolicyDocument, context: PolicyContext): PolicyEvaluationResult;
 
   /**
    * Evaluate single condition against context
    */
-  evaluateCondition(
-    condition: PolicyCondition,
-    context: PolicyContext
-  ): boolean;
+  evaluateCondition(condition: PolicyCondition, context: PolicyContext): boolean;
 
   /**
    * Execute policy action
@@ -582,10 +564,7 @@ export function formatDuration(duration: Duration): string {
 /**
  * Resolve variable path in context
  */
-export function resolveVariable(
-  variable: Variable,
-  context: PolicyContext
-): PolicyValue {
+export function resolveVariable(variable: Variable, context: PolicyContext): PolicyValue {
   let value: unknown = context;
 
   for (const key of variable.path) {

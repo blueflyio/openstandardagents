@@ -43,11 +43,7 @@ export class JsonReporter implements TestReporter {
 
   getOutput(): string {
     if (!this.manifest || !this.summary) {
-      return JSON.stringify(
-        { error: 'Test run not completed' },
-        null,
-        2
-      );
+      return JSON.stringify({ error: 'Test run not completed' }, null, 2);
     }
 
     const report: JsonTestReport = {

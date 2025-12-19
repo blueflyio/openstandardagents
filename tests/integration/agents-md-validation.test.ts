@@ -54,10 +54,7 @@ describe('agents.md Extension Integration', () => {
 
     const result = await validationService.validate(manifest, '0.2.9');
     if (result.errors.length > 0) {
-      console.error(
-        'Validation errors:',
-        JSON.stringify(result.errors, null, 2)
-      );
+      console.error('Validation errors:', JSON.stringify(result.errors, null, 2));
     }
     expect(result.valid).toBe(true);
     expect(result.errors).toHaveLength(0);
@@ -103,10 +100,7 @@ describe('agents.md Extension Integration', () => {
 
     const result = await validationService.validate(manifest, '0.2.9');
     if (result.errors.length > 0) {
-      console.error(
-        'Validation errors:',
-        JSON.stringify(result.errors, null, 2)
-      );
+      console.error('Validation errors:', JSON.stringify(result.errors, null, 2));
     }
     expect(result.valid).toBe(true);
   });
@@ -154,10 +148,7 @@ describe('agents.md Extension Integration', () => {
 
     const result = await validationService.validate(manifest, '0.2.9');
     if (result.errors.length > 0) {
-      console.error(
-        'Validation errors:',
-        JSON.stringify(result.errors, null, 2)
-      );
+      console.error('Validation errors:', JSON.stringify(result.errors, null, 2));
     }
     expect(result.valid).toBe(true);
   });
@@ -204,10 +195,7 @@ describe('agents.md Extension Integration', () => {
 
     const result = await validationService.validate(manifest, '0.2.9');
     if (result.errors.length > 0) {
-      console.error(
-        'Validation errors:',
-        JSON.stringify(result.errors, null, 2)
-      );
+      console.error('Validation errors:', JSON.stringify(result.errors, null, 2));
     }
     expect(result.valid).toBe(true);
   });
@@ -234,10 +222,7 @@ describe('agents.md Extension Integration', () => {
 
           const result = await validationService.validate(manifest, '0.2.9');
           if (result.errors.length > 0) {
-            console.error(
-              `Validation errors for ${file}:`,
-              JSON.stringify(result.errors, null, 2)
-            );
+            console.error(`Validation errors for ${file}:`, JSON.stringify(result.errors, null, 2));
           }
           expect(result.errors).toHaveLength(0);
         } catch (error) {
@@ -266,8 +251,7 @@ describe('agents.md Extension Integration', () => {
             custom: [
               {
                 title: 'Architecture',
-                content:
-                  'This is a microservices architecture using event sourcing.',
+                content: 'This is a microservices architecture using event sourcing.',
               },
               {
                 title: 'Deployment',
@@ -281,10 +265,7 @@ describe('agents.md Extension Integration', () => {
 
     const result = await validationService.validate(manifest, '0.2.9');
     if (result.errors.length > 0) {
-      console.error(
-        'Validation errors:',
-        JSON.stringify(result.errors, null, 2)
-      );
+      console.error('Validation errors:', JSON.stringify(result.errors, null, 2));
     }
     expect(result.valid).toBe(true);
   });
