@@ -96,7 +96,7 @@ Examples: ✅ query
 
 ```json
 {
-  "ossa": "0.2.6",
+  "ossa": "0.3.0",
   "agent": {
     "name": "my-agent"
     // ❌ Missing: version, description, role, capabilities
@@ -112,7 +112,7 @@ ValidationError: Missing required field 'version' at path '/agent/version'
 **Fix:**
 ```json
 {
-  "ossa": "0.2.6",
+  "ossa": "0.3.0",
   "agent": {
     "name": "my-agent",
     "version": "1.0.0",
@@ -252,7 +252,7 @@ ossa validate agents/*.json
 
 ```bash
 $ ossa validate agent.json
-✅ Valid OSSA agent definition (v0.2.6)
+✅ Valid OSSA agent definition (v0.3.0)
 ```
 
 ### Errors

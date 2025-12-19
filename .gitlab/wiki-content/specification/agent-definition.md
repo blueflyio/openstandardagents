@@ -11,7 +11,7 @@ Educational Focus: Detailed field-by-field explanation with examples
 
 ```json
 {
-  "ossa": "0.2.6",
+  "ossa": "0.3.0",
   "agent": {
     "name": "string",
     "version": "string",
@@ -35,7 +35,7 @@ Specification version following semantic versioning.
 
 ```json
 {
-  "ossa": "0.2.6"
+  "ossa": "0.3.0"
 }
 ```
 
@@ -215,7 +215,7 @@ JSON Schema definitions for inputs/outputs.
 
 ```json
 {
-  "ossa": "0.2.6",
+  "ossa": "0.3.0",
   "agent": {
     "name": "customer-support-agent",
     "version": "1.0.0",

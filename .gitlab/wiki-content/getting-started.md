@@ -43,7 +43,7 @@ Create `my-agent.json`:
 
 ```json
 {
-  "ossa": "0.2.6",
+  "ossa": "0.3.0",
   "agent": {
     "name": "hello-agent",
     "version": "1.0.0",
@@ -78,7 +78,7 @@ Create `my-agent.json`:
 
 ```bash
 ossa validate my-agent.json
-# Output: ✅ Valid OSSA agent definition (v0.2.6)
+# Output: ✅ Valid OSSA agent definition (v0.3.0)
 ```
 
 ### 3. Generate Types
