@@ -77,7 +77,6 @@ workflow:
 # Use local self-hosted runners (saves CI minutes)
 default:
   tags:
-    - docker
     - local
 
 # =============================================================================
@@ -370,7 +369,8 @@ quality:browser-performance:
 quality:accessibility:
   stage: quality
   image: node:${NODE_VERSION}
-  tags: []  # Use any available runner
+  tags:
+    - local
   timeout: 10m  # Prevent 1hr timeout
   needs:
     - build:website
@@ -430,7 +430,8 @@ quality:metrics:
 pages:
   stage: deploy
   image: alpine:latest
-  tags: []  # Use any available runner (override default saas-linux-small-amd64)
+  tags:
+    - local
   needs:
     - build:website
   script:
