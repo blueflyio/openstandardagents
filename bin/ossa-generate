@@ -11,26 +11,19 @@ if (!type || !name) {
 }
 
 const templates = {
-  agent: `apiVersion: ossa.ai/v0.2.6
+  agent: `apiVersion: ossa/v0.3.0
 kind: Agent
 metadata:
   name: ${name}
-  version: 1.0.0
-spec:
+  version: "1.0.0"
   description: ${name} agent
-  capabilities:
-    - text-generation
-  interface:
-    input:
-      type: object
-      properties:
-        prompt:
-          type: string
-    output:
-      type: object
-      properties:
-        response:
-          type: string
+spec:
+  role: |
+    You are a helpful assistant.
+  llm:
+    provider: openai
+    model: gpt-4o-mini
+  tools: []
 `,
   adapter: `import { Adapter } from '@ossa/core';
 

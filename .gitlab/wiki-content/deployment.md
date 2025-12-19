@@ -52,7 +52,7 @@ metadata:
 data:
   agent.json: |
     {
-      "ossa": "0.2.6",
+      "ossa": "0.3.0",
       "agent": {...}
     }
 ```

@@ -26,7 +26,7 @@ describe('ossa run command', () => {
     it('should validate manifest before running', () => {
       const manifestPath = path.join(tempDir, 'invalid.ossa.yaml');
       const manifest = `
-apiVersion: ossa/v0.2.8
+apiVersion: ossa/v0.3.0
 kind: Agent
 metadata:
   name: INVALID_NAME
@@ -53,7 +53,7 @@ spec:
     it('should skip validation with --no-validate flag', () => {
       const manifestPath = path.join(tempDir, 'agent.ossa.yaml');
       const manifest = `
-apiVersion: ossa/v0.2.8
+apiVersion: ossa/v0.3.0
 kind: Agent
 metadata:
   name: test-agent
@@ -89,7 +89,7 @@ spec:
     it('should exit with error when OPENAI_API_KEY is not set', () => {
       const manifestPath = path.join(tempDir, 'agent.ossa.yaml');
       const manifest = `
-apiVersion: ossa/v0.2.8
+apiVersion: ossa/v0.3.0
 kind: Agent
 metadata:
   name: test-agent
@@ -124,7 +124,7 @@ spec:
     it('should use openai runtime by default', () => {
       const manifestPath = path.join(tempDir, 'agent.ossa.yaml');
       const manifest = `
-apiVersion: ossa/v0.2.8
+apiVersion: ossa/v0.3.0
 kind: Agent
 metadata:
   name: test-agent
@@ -158,7 +158,7 @@ spec:
     it('should reject unsupported runtime', () => {
       const manifestPath = path.join(tempDir, 'agent.ossa.yaml');
       const manifest = `
-apiVersion: ossa/v0.2.8
+apiVersion: ossa/v0.3.0
 kind: Agent
 metadata:
   name: test-agent
@@ -193,7 +193,7 @@ spec:
     it('should accept -m flag for single message', () => {
       const manifestPath = path.join(tempDir, 'agent.ossa.yaml');
       const manifest = `
-apiVersion: ossa/v0.2.8
+apiVersion: ossa/v0.3.0
 kind: Agent
 metadata:
   name: test-agent
@@ -225,7 +225,7 @@ spec:
     it('should accept --message flag for single message', () => {
       const manifestPath = path.join(tempDir, 'agent.ossa.yaml');
       const manifest = `
-apiVersion: ossa/v0.2.8
+apiVersion: ossa/v0.3.0
 kind: Agent
 metadata:
   name: test-agent
@@ -259,7 +259,7 @@ spec:
     it('should accept -v flag for verbose output', () => {
       const manifestPath = path.join(tempDir, 'agent.ossa.yaml');
       const manifest = `
-apiVersion: ossa/v0.2.8
+apiVersion: ossa/v0.3.0
 kind: Agent
 metadata:
   name: test-agent
@@ -291,7 +291,7 @@ spec:
     it('should accept --verbose flag', () => {
       const manifestPath = path.join(tempDir, 'agent.ossa.yaml');
       const manifest = `
-apiVersion: ossa/v0.2.8
+apiVersion: ossa/v0.3.0
 kind: Agent
 metadata:
   name: test-agent
@@ -325,7 +325,7 @@ spec:
     it('should accept --max-turns flag', () => {
       const manifestPath = path.join(tempDir, 'agent.ossa.yaml');
       const manifest = `
-apiVersion: ossa/v0.2.8
+apiVersion: ossa/v0.3.0
 kind: Agent
 metadata:
   name: test-agent
@@ -414,7 +414,7 @@ spec:
     it('should display agent name when loading', () => {
       const manifestPath = path.join(tempDir, 'agent.ossa.yaml');
       const manifest = `
-apiVersion: ossa/v0.2.8
+apiVersion: ossa/v0.3.0
 kind: Agent
 metadata:
   name: my-test-agent

@@ -14,7 +14,7 @@ Start with agent definition.
 
 ```json
 {
-  "ossa": "0.2.6",
+  "ossa": "0.3.0",
   "agent": {
     "name": "my-agent",
     "version": "1.0.0",

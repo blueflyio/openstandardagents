@@ -201,7 +201,7 @@ ossa validate .agents/my-agent/agent.ossa.yaml
 All agents follow the OSSA v0.2.6 specification:
 
 ```yaml
-apiVersion: ossa/v0.2.6
+apiVersion: ossa/v0.3.0
 kind: Agent
 
 metadata:
