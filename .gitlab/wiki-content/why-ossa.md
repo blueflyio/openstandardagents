@@ -43,7 +43,7 @@ The AI agent ecosystem is experiencing rapid growth, but it's **fragmented**:
 
 ```json
 {
-  "ossa": "0.2.6",
+  "ossa": "0.3.0",
   "agent": {
     "name": "customer-support-agent",
     "version": "1.0.0",
@@ -185,7 +185,7 @@ Ready to adopt OSSA?
 
 ## Questions?
 
-- **Is OSSA production-ready?** Yes, v0.2.6 is stable
+- **Is OSSA production-ready?** Yes, v0.3.0 is stable
 - **Does it work with my framework?** If your framework can read JSON, yes
 - **Is it free?** Yes, Apache 2.0 license
 - **Who maintains it?** Open source community + BlueFly.io

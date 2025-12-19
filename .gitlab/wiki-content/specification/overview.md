@@ -33,7 +33,7 @@ OSSA Agent Definition
 
 ```json
 {
-  "ossa": "0.2.6",
+  "ossa": "0.3.0",
   "agent": {
     "name": "example-agent",
     "version": "1.0.0",
@@ -122,7 +122,7 @@ ossa migrate agent-v0.2.5.json --to 0.2.6
 ## Schema Reference
 
 The full JSON Schema is available at:
-- [OSSA 0.2.6 Schema](https://gitlab.com/blueflyio/openstandardagents/-/blob/main/spec/v0.2.6/ossa-0.2.6.schema.json)
+- [OSSA 0.2.6 Schema](https://gitlab.com/blueflyio/openstandardagents/-/blob/main/spec/v0.3.0/ossa-0.3.0.schema.json)
 
 ## Detailed Documentation
 
@@ -173,10 +173,10 @@ See [Examples](../guides/tutorials.md) for:
 
 ## Questions?
 
-- **Where's the full schema?** [spec/v0.2.6/](https://gitlab.com/blueflyio/openstandardagents/-/tree/main/spec/v0.2.6)
+- **Where's the full schema?** [spec/v0.3.0/](https://gitlab.com/blueflyio/openstandardagents/-/tree/main/spec/v0.3.0)
 - **How do I validate?** Use `ossa validate` CLI command
 - **Can I extend it?** Yes, use custom properties (prefixed with `x-`)
-- **Is it stable?** Yes, v0.2.6 is production-ready
+- **Is it stable?** Yes, v0.3.0 is production-ready
 
 ---
 

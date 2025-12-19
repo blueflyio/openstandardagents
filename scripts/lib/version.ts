@@ -15,24 +15,55 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const ROOT = path.resolve(__dirname, '..', '..');
 
+const SemverPattern = /^\d+\.\d+\.\d+(-[a-zA-Z0-9.]+)?$/;
+
+const VersionJsonSchema = z.object({
+  current: z.string().regex(SemverPattern, 'Invalid semver version'),
+}).passthrough();
+
 const PackageJsonSchema = z.object({
-  version: z.string().regex(/^\d+\.\d+\.\d+(-[a-zA-Z0-9.]+)?$/, 'Invalid semver version'),
+  version: z.string(),
 }).passthrough();
 
 /**
- * Get current version from package.json with Zod validation
+ * Get current version from .version.json (source of truth) with package.json fallback
+ *
+ * Priority:
+ * 1. .version.json (always has real version)
+ * 2. package.json (may have {{VERSION}} placeholder in CI)
  */
 export function getCurrentVersion(): string {
+  // Try .version.json first (source of truth)
+  const versionJsonPath = path.join(ROOT, '.version.json');
+  try {
+    const versionRaw = fs.readFileSync(versionJsonPath, 'utf8');
+    const versionConfig = VersionJsonSchema.parse(JSON.parse(versionRaw));
+    return versionConfig.current;
+  } catch {
+    // Fallback to package.json
+  }
+
+  // Fallback: package.json
   const packageJsonPath = path.join(ROOT, 'package.json');
   try {
     const pkgRaw = fs.readFileSync(packageJsonPath, 'utf8');
     const pkg = PackageJsonSchema.parse(JSON.parse(pkgRaw));
+
+    // Check for CI placeholder
+    if (pkg.version === '{{VERSION}}') {
+      throw new Error('package.json has {{VERSION}} placeholder. Create .version.json with "current" field.');
+    }
+
+    if (!SemverPattern.test(pkg.version)) {
+      throw new Error(`Invalid version in package.json: ${pkg.version}`);
+    }
+
     return pkg.version;
   } catch (error) {
     if (error instanceof z.ZodError) {
-      throw new Error(`package.json validation failed: ${error.issues.map(e => e.message).join(', ')}`);
+      throw new Error(`Validation failed: ${error.issues.map(e => e.message).join(', ')}`);
     }
-    throw new Error(`Failed to read package.json: ${error instanceof Error ? error.message : String(error)}`);
+    throw error;
   }
 }
 
