@@ -424,6 +424,7 @@ quality:metrics:
 pages:
   stage: deploy
   image: alpine:latest
+  tags: []  # Use any available runner (override default saas-linux-small-amd64)
   needs:
     - build:website
   script:
