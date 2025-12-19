@@ -7,12 +7,63 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.0] - 2025-12-18
+
+### Major Release - Unified Task Schema & Agent-to-Agent Messaging
+
+This release introduces **three fundamental resource types** (Agent, Task, Workflow), **Agent-to-Agent (A2A) messaging**, and enterprise-grade features for production deployments.
+
+### Added
+
+#### Core Schema (Breaking Changes)
+- **Unified Task Schema**: Three resource kinds - `Agent` (agentic LLM loops), `Task` (deterministic operations), `Workflow` (orchestrated compositions)
+- **Agent-to-Agent Messaging**: Pub/sub messaging with `publishes`, `subscribes`, `commands`, and `reliability` configuration
+- **Identity Block**: OpenTelemetry-compatible service identity (`service_name`, `service_namespace`, `service_version`)
+- **Lifecycle Management**: Environment-specific configurations (dev/staging/prod) with dependency declarations
+- **Compliance Profiles**: First-class SOC2, HIPAA, GDPR, FedRAMP framework support
+- **State Management**: Persistent agent state with encryption (Redis, PostgreSQL, custom backends)
+
+#### New Resource Types
+- **Task Kind**: Deterministic, non-LLM workflow steps with `execution.type` (deterministic, idempotent, transactional)
+- **Workflow Kind**: Multi-step orchestration with `steps`, `parallel`, `conditional`, and `foreach` constructs
+- **RuntimeBinding**: Capability-to-implementation mappings for Tasks and Workflows
+
+#### Schema Enhancements
+- **20+ LLM Providers**: OpenAI, Anthropic, Azure, Bedrock, Ollama, Mistral, Cohere, Google, and more
+- **MCP Tool Integration**: Native Model Context Protocol support for tool definitions
+- **Execution Profiles**: Preset configurations (fast, balanced, thorough, critical) for different use cases
+- **Resource Limits**: Kubernetes-style compute constraints (memory_mb, cpu_millicores, gpu_required)
+- **Scheduling Configuration**: Priority levels, concurrency limits, timeout management
+
+#### Runtime Adapters
+- **Drupal Adapter**: ECA, Maestro, FlowDrop integration for OSSA Tasks
+- **Symfony Adapter**: Messenger component integration for queue-based execution
+
+#### CLI Enhancements
+- **Type Generation**: `npm run gen:types` - Generate TypeScript types from schema
+- **Zod Generation**: `npm run gen:zod` - Generate Zod validation schemas
+- **Enhanced Validation**: Platform-specific validators (Cursor, OpenAI, Anthropic, LangChain, etc.)
+
 ### Fixed
 
-- **ci**: Fix YAML syntax errors in multiline curl commands ([787329d](https://gitlab.com/blueflyio/openstandardagents/-/commit/787329ddc6f255f003c29d600f3173e6051e5b69))
-- **ci**: Update all gitlab.bluefly.io and agent-platform paths ([6219d5b](https://gitlab.com/blueflyio/openstandardagents/-/commit/6219d5b05b32a20207d1a9bc4ce2354a5dced29e))
-- **ci**: Update component paths to gitlab.com/blueflyio/gitlab_components ([a5103a8](https://gitlab.com/blueflyio/openstandardagents/-/commit/a5103a8577f2846d38def5e4b8eb8d557a12f1dd))
-- Sync main into release/v0.3.x ([115c160](https://gitlab.com/blueflyio/openstandardagents/-/commit/115c160918fe2027d2160e9fd54d767a5afae127))
+- **ci**: Fix YAML syntax errors in multiline curl commands
+- **ci**: Update all gitlab.bluefly.io and agent-platform paths
+- **ci**: Update component paths to gitlab.com/blueflyio/gitlab_components
+- **ci**: Use local runners when shared minutes exhausted
+
+### Migration from v0.2.x
+
+```yaml
+# v0.2.x format
+apiVersion: ossa/v0.2.9
+kind: Agent
+
+# v0.3.0 format (same structure, new features available)
+apiVersion: ossa/v0.3.0
+kind: Agent  # or Task, Workflow
+```
+
+All v0.2.x manifests remain valid. New features (messaging, state, compliance) are opt-in.
 ## [0.3.0-dev.12] - 2025-12-17
 
 ### Fixed
