@@ -82,52 +82,62 @@
           "types": [
             {
               "type": "feat",
-              "section": "\u2728 Features",
+              "section": "Added",
               "hidden": false
             },
             {
               "type": "fix",
-              "section": "\ud83d\udc1b Bug Fixes",
+              "section": "Fixed",
               "hidden": false
             },
             {
               "type": "perf",
-              "section": "\u26a1 Performance",
+              "section": "Changed",
               "hidden": false
             },
             {
               "type": "revert",
-              "section": "\u23ea Reverts",
+              "section": "Removed",
               "hidden": false
             },
             {
               "type": "docs",
-              "section": "\ud83d\udcda Documentation",
+              "section": "Changed",
               "hidden": false
             },
             {
               "type": "refactor",
-              "section": "\u267b\ufe0f Code Refactoring",
+              "section": "Changed",
+              "hidden": false
+            },
+            {
+              "type": "deprecate",
+              "section": "Deprecated",
+              "hidden": false
+            },
+            {
+              "type": "security",
+              "section": "Security",
               "hidden": false
             },
             {
               "type": "test",
-              "section": "\u2705 Tests",
+              "section": "Changed",
               "hidden": true
             },
             {
               "type": "build",
-              "section": "\ud83c\udfd7\ufe0f Build System",
+              "section": "Changed",
               "hidden": true
             },
             {
               "type": "ci",
-              "section": "\ud83d\udc77 CI/CD",
+              "section": "Changed",
               "hidden": true
             },
             {
               "type": "chore",
-              "section": "\ud83d\udd27 Chores",
+              "section": "Changed",
               "hidden": true
             }
           ]
@@ -138,13 +148,13 @@
       "@semantic-release/changelog",
       {
         "changelogFile": "CHANGELOG.md",
-        "changelogTitle": "# Changelog\n\nAll notable changes to OSSA (Open Standard for Scalable AI Agents) will be documented in this file.\n\nThe format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),\nand this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html)."
+        "changelogTitle": "# Changelog\n\nAll notable changes to OSSA (Open Standard for Scalable AI Agents) will be documented in this file.\n\nThe format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),\nand this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html)."
       }
     ],
     [
       "@semantic-release/exec",
       {
-        "prepareCmd": "bash .gitlab/scripts/sync-version-placeholders.sh ${nextRelease.version}"
+        "prepareCmd": "node dist/cli/index.js release version sync --include-examples || bash .gitlab/scripts/sync-version-placeholders.sh ${nextRelease.version}"
       }
     ],
     [

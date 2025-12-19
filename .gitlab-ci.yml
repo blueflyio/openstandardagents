@@ -464,6 +464,7 @@ validate:version-sync:
   image: node:${NODE_VERSION}-alpine
   script:
     - npm ci --legacy-peer-deps
+    - npm run build
     - echo "Checking version consistency..."
     - npm run version:check
   allow_failure: false

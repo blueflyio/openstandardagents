@@ -290,14 +290,11 @@ export class MessagingValidator {
         });
       }
 
-      // Validate inputSchema
-      if (!command.inputSchema) {
-        errors.push({
-          path: `${path}.inputSchema`,
-          message: 'inputSchema is required',
-        });
-      } else {
-        const schemaErrors = this.validateJSONSchema(command.inputSchema);
+      // Validate inputSchema (accept both camelCase and snake_case)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const inputSchema = command.inputSchema || (command as any).input_schema;
+      if (inputSchema) {
+        const schemaErrors = this.validateJSONSchema(inputSchema);
         schemaErrors.forEach((err) => {
           errors.push({
             path: `${path}.inputSchema.${err.path}`,
@@ -305,6 +302,7 @@ export class MessagingValidator {
           });
         });
       }
+      // Note: inputSchema is optional per v0.3.0 spec - no error if missing
 
       // Validate outputSchema if provided
       if (command.outputSchema) {

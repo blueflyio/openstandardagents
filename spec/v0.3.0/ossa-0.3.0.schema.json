@@ -521,6 +521,129 @@
           "items": {
             "$ref": "#/definitions/FunctionDefinition"
           }
+        },
+        "identity": {
+          "type": "object",
+          "description": "OpenTelemetry service identity for tracing and observability",
+          "properties": {
+            "service_name": {
+              "type": "string",
+              "description": "Service name for OpenTelemetry traces"
+            },
+            "service_namespace": {
+              "type": "string",
+              "description": "Service namespace (e.g., production, staging, development)"
+            },
+            "service_version": {
+              "type": "string",
+              "description": "Service version (semver recommended)"
+            },
+            "service_instance_id": {
+              "type": "string",
+              "description": "Unique instance identifier"
+            }
+          },
+          "additionalProperties": false
+        },
+        "compliance": {
+          "type": "object",
+          "description": "Regulatory compliance and data governance configuration",
+          "properties": {
+            "frameworks": {
+              "type": "array",
+              "description": "Applicable compliance frameworks",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "SOC2",
+                  "HIPAA",
+                  "GDPR",
+                  "FedRAMP",
+                  "PCI-DSS",
+                  "ISO27001"
+                ]
+              },
+              "uniqueItems": true
+            },
+            "data_residency": {
+              "type": "string",
+              "description": "Required data residency region (e.g., us-east-1, eu-west-1)"
+            },
+            "audit_logging": {
+              "type": "string",
+              "enum": [
+                "required",
+                "optional",
+                "disabled"
+              ],
+              "default": "optional",
+              "description": "Audit logging requirement level"
+            },
+            "pii_handling": {
+              "type": "string",
+              "enum": [
+                "encrypt_at_rest",
+                "anonymize",
+                "redact",
+                "none"
+              ],
+              "default": "none",
+              "description": "Personally Identifiable Information handling strategy"
+            }
+          },
+          "additionalProperties": false
+        },
+        "lifecycle": {
+          "type": "object",
+          "description": "Agent lifecycle and environment management configuration",
+          "properties": {
+            "environments": {
+              "type": "object",
+              "description": "Environment-specific configurations",
+              "additionalProperties": {
+                "type": "object",
+                "description": "Configuration for a specific environment (e.g., development, staging, production)",
+                "additionalProperties": true
+              }
+            },
+            "dependencies": {
+              "type": "array",
+              "description": "External dependencies required by this agent",
+              "items": {
+                "type": "object",
+                "required": [
+                  "name",
+                  "version"
+                ],
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "description": "Dependency name"
+                  },
+                  "version": {
+                    "type": "string",
+                    "description": "Dependency version (semver recommended)"
+                  },
+                  "type": {
+                    "type": "string",
+                    "enum": [
+                      "runtime",
+                      "build",
+                      "optional"
+                    ],
+                    "default": "runtime",
+                    "description": "Dependency type"
+                  },
+                  "source": {
+                    "type": "string",
+                    "description": "Dependency source (e.g., npm, pip, composer, docker)"
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          },
+          "additionalProperties": false
         }
       },
       "additionalProperties": true
@@ -615,7 +738,8 @@
                 "continue",
                 "rollback",
                 "notify",
-                "compensate"
+                "compensate",
+                "compensation"
               ],
               "default": "halt",
               "description": "Action on step failure"
@@ -679,7 +803,7 @@
               }
             }
           },
-          "additionalProperties": false
+          "additionalProperties": true
         },
         "timeout_seconds": {
           "type": "integer",
@@ -736,10 +860,10 @@
               }
             }
           },
-          "additionalProperties": false
+          "additionalProperties": true
         }
       },
-      "additionalProperties": false
+      "additionalProperties": true
     },
     "RuntimeBinding": {
       "type": "object",
@@ -892,7 +1016,7 @@
           "additionalProperties": true
         }
       },
-      "additionalProperties": false
+      "additionalProperties": true
     },
     "WorkflowStep": {
       "type": "object",
@@ -1135,7 +1259,7 @@
           }
         }
       },
-      "additionalProperties": false
+      "additionalProperties": true
     },
     "JSONSchemaDefinition": {
       "type": "object",
@@ -1204,7 +1328,7 @@
             },
             {
               "type": "string",
-              "pattern": "^\\$\\{[A-Za-z_][A-Za-z0-9_]*(?::-[a-zA-Z0-9_-]+)?\\}$",
+              "pattern": "^[$]\\{[A-Za-z_][A-Za-z0-9_]*(?::-[a-zA-Z0-9_-]+)?\\}$",
               "description": "Environment variable reference with optional default"
             }
           ]
@@ -1253,7 +1377,7 @@
             },
             {
               "type": "string",
-              "pattern": "^\\$\\{[A-Za-z_][A-Za-z0-9_]*(?::-[a-zA-Z0-9_-]+)?\\}$",
+              "pattern": "^[$]\\{[A-Za-z_][A-Za-z0-9_]*(?::-[a-zA-Z0-9_-]+)?\\}$",
               "description": "Environment variable reference with optional default"
             }
           ],
@@ -1296,7 +1420,7 @@
             },
             {
               "type": "string",
-              "pattern": "^\\$\\{[A-Za-z_][A-Za-z0-9_]*(?::-[a-zA-Z0-9_-]+)?\\}$"
+              "pattern": "^[$]\\{[A-Za-z_][A-Za-z0-9_]*(?::-[a-zA-Z0-9_-]+)?\\}$"
             }
           ]
         },
@@ -1308,9 +1432,20 @@
           "type": "number",
           "minimum": 0,
           "maximum": 2
+        },
+        "trigger": {
+          "type": "object",
+          "description": "Conditions that trigger fallback",
+          "properties": {
+            "on_error": { "type": "boolean", "description": "Trigger on any error from primary" },
+            "max_retries": { "type": "integer", "description": "Retries before falling back" },
+            "error_codes": { "type": "array", "items": { "type": "integer" }, "description": "Specific error codes to trigger on" },
+            "latency_threshold_ms": { "type": "integer", "description": "Trigger when latency exceeds this threshold" }
+          },
+          "additionalProperties": true
         }
       },
-      "additionalProperties": false
+      "additionalProperties": true
     },
     "RetryConfig": {
       "type": "object",
@@ -1466,14 +1601,23 @@
           "type": "string",
           "enum": [
             "supervised",
+            "assisted",
+            "semi_autonomous",
             "autonomous",
             "fully_autonomous"
           ],
-          "description": "Autonomy level: supervised (human approval), autonomous (self-directed), fully_autonomous (no oversight)"
+          "description": "Autonomy level: supervised (all approval), assisted (guidance with approval), semi_autonomous (limited autonomy), autonomous (self-directed), fully_autonomous (no oversight)"
         },
         "approval_required": {
-          "type": "boolean",
-          "description": "Whether human approval is required for actions"
+          "description": "Whether human approval is required, or list of specific actions requiring approval",
+          "anyOf": [
+            { "type": "boolean" },
+            {
+              "type": "array",
+              "items": { "type": "string" },
+              "description": "List of action types that require human approval"
+            }
+          ]
         },
         "allowed_actions": {
           "type": "array",
@@ -2198,7 +2342,7 @@
         },
         "filter": {
           "type": "object",
-          "description": "Message filter configuration",
+          "description": "Message filter configuration - supports JSONPath-style filtering",
           "properties": {
             "expression": {
               "type": "string",
@@ -2210,7 +2354,7 @@
               "additionalProperties": true
             }
           },
-          "additionalProperties": false
+          "additionalProperties": true
         },
         "priority": {
           "type": "string",
@@ -2235,8 +2379,7 @@
       "type": "object",
       "description": "RPC-style command that an agent accepts",
       "required": [
-        "name",
-        "inputSchema"
+        "name"
       ],
       "properties": {
         "name": {
@@ -2250,12 +2393,22 @@
         },
         "inputSchema": {
           "type": "object",
-          "description": "JSON Schema for command input",
+          "description": "JSON Schema for command input (camelCase)",
+          "additionalProperties": true
+        },
+        "input_schema": {
+          "type": "object",
+          "description": "JSON Schema for command input (snake_case alias)",
           "additionalProperties": true
         },
         "outputSchema": {
           "type": "object",
-          "description": "JSON Schema for command output",
+          "description": "JSON Schema for command output (camelCase)",
+          "additionalProperties": true
+        },
+        "output_schema": {
+          "type": "object",
+          "description": "JSON Schema for command output (snake_case alias)",
           "additionalProperties": true
         },
         "timeoutSeconds": {
@@ -2263,6 +2416,12 @@
           "minimum": 1,
           "maximum": 3600,
           "description": "Command execution timeout in seconds"
+        },
+        "timeout_seconds": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 3600,
+          "description": "Command execution timeout (snake_case alias)"
         },
         "idempotent": {
           "type": "boolean",
@@ -2275,7 +2434,7 @@
           "description": "Whether the command executes asynchronously"
         }
       },
-      "additionalProperties": false
+      "additionalProperties": true
     },
     "ReliabilityConfig": {
       "type": "object",
@@ -2286,10 +2445,25 @@
           "enum": [
             "at-least-once",
             "at-most-once",
-            "exactly-once"
+            "exactly-once",
+            "at_least_once",
+            "at_most_once",
+            "exactly_once"
           ],
           "default": "at-least-once",
           "description": "Message delivery guarantee"
+        },
+        "delivery": {
+          "type": "string",
+          "enum": [
+            "at-least-once",
+            "at-most-once",
+            "exactly-once",
+            "at_least_once",
+            "at_most_once",
+            "exactly_once"
+          ],
+          "description": "Message delivery guarantee (alias for deliveryGuarantee)"
         },
         "retry": {
           "type": "object",
@@ -2376,13 +2550,23 @@
               "default": "per-source",
               "description": "Ordering guarantee level"
             },
+            "mode": {
+              "type": "string",
+              "enum": [
+                "global",
+                "per_channel",
+                "per-channel",
+                "none"
+              ],
+              "description": "Ordering mode (alias for guarantee)"
+            },
             "timeoutSeconds": {
               "type": "integer",
               "minimum": 1,
               "description": "Ordering timeout in seconds"
             }
           },
-          "additionalProperties": false
+          "additionalProperties": true
         },
         "acknowledgment": {
           "type": "object",
@@ -2407,7 +2591,7 @@
           "additionalProperties": false
         }
       },
-      "additionalProperties": false
+      "additionalProperties": true
     },
     "ExecutionProfiles": {
       "type": "object",
