@@ -1,253 +1,533 @@
-# OSSA Agent Taxonomy Schema
-# Hierarchical domain classification for AI agents
+# OSSA Agent Taxonomy Schema v0.3.0
+# Comprehensive hierarchical classification for AI agents
+# Aligned with OSSA spec roles, multi-agent patterns, and industry standards
 
-apiVersion: ossa/v{{VERSION}}
+apiVersion: ossa/v0.3.0
 kind: Taxonomy
 metadata:
   name: agent-taxonomy
-  version: "{{VERSION}}"
-  description: Formal agent taxonomy with hierarchical domains
+  version: "0.3.0"
+  description: |
+    Formal agent taxonomy with hierarchical domains, cross-cutting capabilities,
+    autonomy levels, and multi-agent orchestration patterns. Designed for
+    enterprise-grade agent classification and discovery.
 
 spec:
-  categories:
-    # ==========================================================================
-    # Category 1: Development & Engineering
-    # ==========================================================================
-    development:
-      description: Software development and engineering agents
-      domains:
-        code-generation:
-          description: Agents that generate source code
-          subtypes:
-            - frontend    # UI/UX code generation
-            - backend     # Server-side code
-            - fullstack   # End-to-end applications
-            - api         # API design and implementation
-            - mobile      # iOS/Android development
+  # ============================================================================
+  # AGENT ROLES (from OSSA Spec)
+  # ============================================================================
+  roles:
+    worker:
+      description: Executes specific tasks with defined inputs and outputs
+      autonomy: supervised
+      typical_patterns: [tool-use, single-task]
 
-        code-review:
-          description: Agents that review and improve code quality
-          subtypes:
-            - style       # Code style and formatting
-            - security    # Security vulnerability detection
-            - performance # Performance optimization
-            - architecture # Design pattern analysis
+    orchestrator:
+      description: Coordinates multiple agents, manages workflows
+      autonomy: semi_autonomous
+      typical_patterns: [delegation, routing, parallel-execution]
 
-        devops:
-          description: CI/CD and infrastructure automation
-          subtypes:
-            - ci-cd       # Pipeline automation
-            - iac         # Infrastructure as Code
-            - monitoring  # Observability and alerting
-            - deployment  # Release automation
+    critic:
+      description: Reviews and provides feedback on agent outputs
+      autonomy: supervised
+      typical_patterns: [evaluation, feedback-loop]
 
-        testing:
-          description: Quality assurance and testing
-          subtypes:
-            - unit        # Unit test generation
-            - integration # Integration testing
-            - e2e         # End-to-end testing
-            - performance # Load and stress testing
+    judge:
+      description: Makes final decisions, resolves conflicts between agents
+      autonomy: semi_autonomous
+      typical_patterns: [arbitration, consensus]
 
-    # ==========================================================================
-    # Category 2: Data & Analytics
-    # ==========================================================================
-    data:
-      description: Data processing, analysis, and ML/AI agents
-      domains:
-        data-engineering:
-          description: Data pipeline and ETL agents
-          subtypes:
-            - etl         # Extract, Transform, Load
-            - streaming   # Real-time data processing
-            - quality     # Data quality validation
-            - migration   # Data migration automation
+    governor:
+      description: Enforces policies, safety constraints, and guardrails
+      autonomy: supervised
+      typical_patterns: [policy-enforcement, rate-limiting]
 
-        analytics:
-          description: Business intelligence and reporting
-          subtypes:
-            - bi          # Business intelligence
-            - visualization # Dashboard creation
-            - forecasting # Predictive analytics
-            - reporting   # Automated reporting
+    monitor:
+      description: Observes system state, triggers alerts, tracks metrics
+      autonomy: autonomous
+      typical_patterns: [observation, alerting]
 
-        machine-learning:
-          description: ML model development and deployment
-          subtypes:
-            - training    # Model training pipelines
-            - inference   # Model serving and inference
-            - mlops       # ML operations
-            - automl      # Automated ML
-
-        research:
-          description: Data exploration and research
-          subtypes:
-            - exploration # Exploratory data analysis
-            - literature  # Literature review
-            - synthesis   # Research synthesis
-            - citation    # Citation management
-
-    # ==========================================================================
-    # Category 3: Content & Communication
-    # ==========================================================================
-    content:
-      description: Content creation, management, and communication
-      domains:
-        writing:
-          description: Text content generation
-          subtypes:
-            - technical   # Technical documentation
-            - marketing   # Marketing copy
-            - creative    # Creative writing
-            - translation # Language translation
-
-        media:
-          description: Multimedia content creation
-          subtypes:
-            - image       # Image generation/editing
-            - video       # Video production
-            - audio       # Audio/podcast creation
-            - design      # Graphic design
-
-        communication:
-          description: Communication and collaboration
-          subtypes:
-            - email       # Email drafting/management
-            - chat        # Chat/messaging
-            - meeting     # Meeting facilitation
-            - presentation # Presentation creation
-
-    # ==========================================================================
-    # Category 4: Business Operations
-    # ==========================================================================
-    operations:
-      description: Business process automation and operations
-      domains:
-        workflow:
-          description: Business workflow automation
-          subtypes:
-            - approval    # Approval workflows
-            - routing     # Task routing
-            - scheduling  # Resource scheduling
-            - notification # Alert and notification
-
-        finance:
-          description: Financial operations
-          subtypes:
-            - accounting  # Bookkeeping automation
-            - invoicing   # Invoice processing
-            - budgeting   # Budget management
-            - compliance  # Financial compliance
-
-        hr:
-          description: Human resources automation
-          subtypes:
-            - recruiting  # Talent acquisition
-            - onboarding  # Employee onboarding
-            - performance # Performance management
-            - benefits    # Benefits administration
-
-        customer:
-          description: Customer-facing operations
-          subtypes:
-            - support     # Customer support
-            - sales       # Sales automation
-            - marketing   # Marketing automation
-            - success     # Customer success
-
-    # ==========================================================================
-    # Category 5: Infrastructure & Security
-    # ==========================================================================
-    infrastructure:
-      description: IT infrastructure and security
-      domains:
-        cloud:
-          description: Cloud infrastructure management
-          subtypes:
-            - provisioning # Resource provisioning
-            - optimization # Cost optimization
-            - migration   # Cloud migration
-            - governance  # Cloud governance
-
-        security:
-          description: Security and compliance
-          subtypes:
-            - threat      # Threat detection
-            - compliance  # Regulatory compliance
-            - access      # Access management
-            - audit       # Security auditing
-
-        networking:
-          description: Network management
-          subtypes:
-            - configuration # Network configuration
-            - monitoring  # Network monitoring
-            - troubleshooting # Issue resolution
-            - optimization # Performance tuning
-
-    # ==========================================================================
-    # Category 6: Specialized Domains
-    # ==========================================================================
-    specialized:
-      description: Industry-specific and specialized agents
-      domains:
-        healthcare:
-          description: Healthcare and medical
-          subtypes:
-            - clinical    # Clinical decision support
-            - administrative # Healthcare admin
-            - research    # Medical research
-            - compliance  # HIPAA compliance
-
-        legal:
-          description: Legal and compliance
-          subtypes:
-            - contract    # Contract analysis
-            - research    # Legal research
-            - compliance  # Regulatory compliance
-            - discovery   # E-discovery
-
-        education:
-          description: Education and training
-          subtypes:
-            - tutoring    # Personalized tutoring
-            - assessment  # Testing and assessment
-            - curriculum  # Curriculum development
-            - administration # Educational admin
+    integrator:
+      description: Bridges external systems, transforms data between formats
+      autonomy: supervised
+      typical_patterns: [adapter, transformation]
 
   # ============================================================================
-  # Cross-Cutting Capabilities
+  # AUTONOMY LEVELS
+  # ============================================================================
+  autonomy_levels:
+    supervised:
+      description: Human approval required for all actions
+      risk_tolerance: low
+      human_oversight: required
+
+    assisted:
+      description: Agent suggests, human approves before execution
+      risk_tolerance: low
+      human_oversight: approval_required
+
+    semi_autonomous:
+      description: Agent acts independently within defined boundaries
+      risk_tolerance: medium
+      human_oversight: monitoring
+
+    autonomous:
+      description: Full autonomy within scope, human notified of actions
+      risk_tolerance: medium
+      human_oversight: notification
+
+    fully_autonomous:
+      description: Complete autonomy, minimal human involvement
+      risk_tolerance: high
+      human_oversight: audit_only
+
+  # ============================================================================
+  # CATEGORY 1: DEVELOPMENT & ENGINEERING
+  # ============================================================================
+  categories:
+    development:
+      description: Software development, engineering, and DevOps agents
+      icon: code
+      domains:
+        code-generation:
+          description: Agents that generate, complete, or transform source code
+          subtypes:
+            - frontend      # UI/UX, React, Vue, Angular
+            - backend       # APIs, services, databases
+            - fullstack     # End-to-end applications
+            - api           # OpenAPI, GraphQL, REST design
+            - mobile        # iOS, Android, React Native
+            - embedded      # IoT, firmware, systems programming
+            - database      # SQL, schema design, migrations
+
+        code-review:
+          description: Static analysis, code quality, and security review
+          subtypes:
+            - style         # Linting, formatting, conventions
+            - security      # SAST, vulnerability detection
+            - performance   # Complexity, optimization opportunities
+            - architecture  # Design patterns, SOLID principles
+            - accessibility # WCAG, a11y compliance
+            - documentation # JSDoc, docstrings, README
+
+        devops:
+          description: CI/CD, infrastructure, and platform engineering
+          subtypes:
+            - ci-cd         # Pipeline automation, GitHub Actions, GitLab CI
+            - iac           # Terraform, Pulumi, CloudFormation
+            - containers    # Docker, Kubernetes, Helm
+            - observability # Logging, metrics, tracing
+            - deployment    # Blue-green, canary, rollback
+            - gitops        # ArgoCD, Flux, GitOps workflows
+
+        testing:
+          description: Quality assurance, test generation, and validation
+          subtypes:
+            - unit          # Unit test generation and maintenance
+            - integration   # API, service integration testing
+            - e2e           # Playwright, Cypress, Selenium
+            - performance   # Load testing, benchmarking
+            - security      # DAST, penetration testing
+            - accessibility # Automated a11y testing
+            - contract      # API contract testing, Pact
+
+        debugging:
+          description: Error analysis, root cause identification, and fixes
+          subtypes:
+            - error-analysis  # Stack trace interpretation
+            - log-analysis    # Log parsing and correlation
+            - profiling       # Performance profiling
+            - memory          # Memory leak detection
+            - concurrency     # Race condition detection
+
+    # ==========================================================================
+    # CATEGORY 2: DATA & INTELLIGENCE
+    # ==========================================================================
+    data:
+      description: Data engineering, analytics, ML/AI, and research
+      icon: database
+      domains:
+        data-engineering:
+          description: Data pipelines, ETL, and data platform management
+          subtypes:
+            - etl           # Extract, Transform, Load pipelines
+            - streaming     # Kafka, Flink, real-time processing
+            - quality       # Data validation, profiling, cleaning
+            - migration     # Schema evolution, data migration
+            - catalog       # Data discovery, lineage, governance
+            - lakehouse     # Delta Lake, Iceberg, data mesh
+
+        analytics:
+          description: Business intelligence, reporting, and insights
+          subtypes:
+            - bi            # Dashboards, KPIs, executive reporting
+            - visualization # Chart generation, data storytelling
+            - forecasting   # Time series, predictive analytics
+            - segmentation  # Customer/market segmentation
+            - attribution   # Marketing attribution, funnel analysis
+            - anomaly       # Outlier detection, alerting
+
+        machine-learning:
+          description: ML model lifecycle from training to deployment
+          subtypes:
+            - training      # Model training, hyperparameter tuning
+            - inference     # Model serving, batch/real-time prediction
+            - mlops         # MLflow, Kubeflow, model registry
+            - automl        # Automated feature engineering, NAS
+            - evaluation    # Model evaluation, A/B testing
+            - explainability # SHAP, LIME, model interpretability
+
+        knowledge:
+          description: Knowledge management, RAG, and semantic search
+          subtypes:
+            - rag           # Retrieval-Augmented Generation
+            - graph         # Knowledge graphs, Neo4j, ontologies
+            - embedding     # Vector embeddings, similarity search
+            - indexing      # Document indexing, chunking strategies
+            - curation      # Knowledge base maintenance
+            - reasoning     # Logical inference, fact verification
+
+        research:
+          description: Scientific research and literature analysis
+          subtypes:
+            - exploration   # Exploratory data analysis
+            - literature    # Paper summarization, citation analysis
+            - synthesis     # Multi-source synthesis
+            - hypothesis    # Hypothesis generation and testing
+            - experiment    # Experiment design and tracking
+
+    # ==========================================================================
+    # CATEGORY 3: CONTENT & COMMUNICATION
+    # ==========================================================================
+    content:
+      description: Content creation, communication, and media production
+      icon: edit
+      domains:
+        writing:
+          description: Text content generation and editing
+          subtypes:
+            - technical     # Documentation, API docs, guides
+            - marketing     # Copy, campaigns, SEO content
+            - creative      # Stories, scripts, creative writing
+            - translation   # Localization, multi-language
+            - editing       # Proofreading, style improvement
+            - summarization # TL;DR, executive summaries
+
+        media:
+          description: Multimedia content creation and editing
+          subtypes:
+            - image         # Generation, editing, enhancement
+            - video         # Production, editing, captioning
+            - audio         # Podcasts, voice synthesis, transcription
+            - design        # UI/UX mockups, graphics
+            - 3d            # 3D modeling, rendering
+            - animation     # Motion graphics, animated content
+
+        communication:
+          description: Business communication and collaboration
+          subtypes:
+            - email         # Drafting, summarization, triage
+            - chat          # Slack/Teams integration, responses
+            - meeting       # Scheduling, notes, action items
+            - presentation  # Slide generation, speaker notes
+            - social        # Social media management
+            - newsletter    # Email campaigns, digest creation
+
+    # ==========================================================================
+    # CATEGORY 4: BUSINESS OPERATIONS
+    # ==========================================================================
+    operations:
+      description: Business process automation and enterprise operations
+      icon: briefcase
+      domains:
+        workflow:
+          description: Business process orchestration
+          subtypes:
+            - approval      # Multi-level approval workflows
+            - routing       # Task assignment, load balancing
+            - scheduling    # Resource and calendar management
+            - notification  # Alerts, escalations, reminders
+            - sla           # SLA monitoring and enforcement
+            - handoff       # Human-agent task handoff
+
+        finance:
+          description: Financial operations and compliance
+          subtypes:
+            - accounting    # Bookkeeping, reconciliation
+            - invoicing     # Invoice processing, AP/AR
+            - budgeting     # Planning, forecasting, variance
+            - expense       # Expense management, receipts
+            - audit         # Financial audit preparation
+            - tax           # Tax preparation, compliance
+
+        hr:
+          description: Human resources and talent management
+          subtypes:
+            - recruiting    # Sourcing, screening, scheduling
+            - onboarding    # New hire workflows
+            - performance   # Reviews, feedback, goals
+            - benefits      # Benefits administration
+            - learning      # Training, skill development
+            - offboarding   # Exit interviews, access revocation
+
+        customer:
+          description: Customer experience and engagement
+          subtypes:
+            - support       # Ticket handling, FAQ, escalation
+            - sales         # Lead qualification, outreach
+            - success       # Health scoring, churn prediction
+            - feedback      # Survey analysis, NPS tracking
+            - loyalty       # Rewards, retention programs
+            - onboarding    # Customer onboarding flows
+
+        procurement:
+          description: Vendor management and purchasing
+          subtypes:
+            - sourcing      # Vendor discovery, comparison
+            - contracts     # Contract analysis, negotiation
+            - ordering      # Purchase order automation
+            - inventory     # Stock management, reordering
+            - compliance    # Vendor compliance tracking
+
+    # ==========================================================================
+    # CATEGORY 5: INFRASTRUCTURE & SECURITY
+    # ==========================================================================
+    infrastructure:
+      description: IT infrastructure, security, and compliance
+      icon: shield
+      domains:
+        cloud:
+          description: Cloud platform management
+          subtypes:
+            - provisioning  # Resource creation, scaling
+            - optimization  # Cost management, right-sizing
+            - migration     # Cloud migration planning
+            - governance    # Policy enforcement, tagging
+            - multicloud    # Cross-cloud orchestration
+            - finops        # Cloud financial management
+
+        security:
+          description: Cybersecurity and threat management
+          subtypes:
+            - threat        # Threat detection, SIEM integration
+            - vulnerability # Vulnerability scanning, CVE tracking
+            - incident      # Incident response, playbooks
+            - access        # IAM, RBAC, privilege management
+            - compliance    # SOC2, ISO27001, GDPR
+            - forensics     # Investigation, evidence collection
+
+        networking:
+          description: Network infrastructure and connectivity
+          subtypes:
+            - configuration # Network provisioning, SDN
+            - monitoring    # Traffic analysis, health checks
+            - troubleshooting # Connectivity issues, DNS
+            - optimization  # Performance tuning, CDN
+            - security      # Firewall rules, WAF, DDoS
+
+        reliability:
+          description: Site reliability and incident management
+          subtypes:
+            - monitoring    # Uptime, SLO tracking
+            - alerting      # PagerDuty, on-call management
+            - incident      # Incident coordination, postmortems
+            - chaos         # Chaos engineering, game days
+            - capacity      # Capacity planning, scaling
+
+    # ==========================================================================
+    # CATEGORY 6: AGENT ORCHESTRATION
+    # ==========================================================================
+    orchestration:
+      description: Multi-agent coordination and agentic workflows
+      icon: network
+      domains:
+        coordination:
+          description: Multi-agent communication and task distribution
+          subtypes:
+            - routing       # Request routing to appropriate agents
+            - delegation    # Task delegation and tracking
+            - consensus     # Multi-agent agreement protocols
+            - handoff       # Agent-to-agent task transfer
+            - load-balancing # Work distribution across agents
+
+        patterns:
+          description: Agentic design patterns
+          subtypes:
+            - reflection    # Self-critique and improvement
+            - planning      # Multi-step plan generation
+            - react         # Reason + Act loop
+            - chain-of-thought # Explicit reasoning chains
+            - tree-of-thought # Branching exploration
+            - debate        # Multi-agent argumentation
+
+        memory:
+          description: Agent memory and state management
+          subtypes:
+            - short-term    # Conversation context
+            - long-term     # Persistent knowledge
+            - episodic      # Event-based memory
+            - semantic      # Fact-based memory
+            - procedural    # How-to knowledge
+
+        safety:
+          description: Guardrails and safety enforcement
+          subtypes:
+            - content       # Content moderation, filtering
+            - boundary      # Scope limitation enforcement
+            - rate-limiting # Request throttling
+            - audit         # Action logging and review
+            - kill-switch   # Emergency stop mechanisms
+
+    # ==========================================================================
+    # CATEGORY 7: SPECIALIZED DOMAINS
+    # ==========================================================================
+    specialized:
+      description: Industry-specific and vertical solutions
+      icon: building
+      domains:
+        healthcare:
+          description: Healthcare and life sciences
+          subtypes:
+            - clinical      # Clinical decision support
+            - administrative # Scheduling, billing, prior auth
+            - research      # Clinical trials, drug discovery
+            - compliance    # HIPAA, FDA regulations
+            - patient       # Patient engagement, education
+
+        legal:
+          description: Legal and regulatory
+          subtypes:
+            - contract      # Contract review, redlining
+            - research      # Case law, precedent analysis
+            - compliance    # Regulatory monitoring
+            - discovery     # E-discovery, document review
+            - ip            # Patent, trademark analysis
+
+        finance-vertical:
+          description: Financial services industry
+          subtypes:
+            - trading       # Algorithmic trading, signals
+            - risk          # Risk modeling, stress testing
+            - fraud         # Fraud detection, AML
+            - advisory      # Robo-advisory, portfolio
+            - regulatory    # SEC, FINRA compliance
+
+        education:
+          description: Education and learning
+          subtypes:
+            - tutoring      # Personalized instruction
+            - assessment    # Testing, grading, feedback
+            - curriculum    # Course design, content
+            - administration # Enrollment, scheduling
+            - accessibility # Learning accommodations
+
+        manufacturing:
+          description: Manufacturing and industrial
+          subtypes:
+            - quality       # QC automation, defect detection
+            - maintenance   # Predictive maintenance
+            - supply-chain  # Logistics optimization
+            - safety        # Workplace safety monitoring
+            - optimization  # Production optimization
+
+        retail:
+          description: Retail and e-commerce
+          subtypes:
+            - merchandising # Product recommendations
+            - pricing       # Dynamic pricing, promotions
+            - inventory     # Stock management
+            - fulfillment   # Order processing, shipping
+            - experience    # Customer experience optimization
+
+  # ============================================================================
+  # CROSS-CUTTING CAPABILITIES
   # ============================================================================
   capabilities:
     reasoning:
-      - planning      # Multi-step planning
-      - analysis      # Data analysis
-      - synthesis     # Information synthesis
-      - evaluation    # Option evaluation
+      description: Cognitive and analytical capabilities
+      items:
+        - planning        # Multi-step task decomposition
+        - analysis        # Data interpretation and insights
+        - synthesis       # Information aggregation
+        - evaluation      # Quality assessment and scoring
+        - inference       # Logical deduction
+        - creativity      # Novel solution generation
 
     interaction:
-      - conversational # Natural conversation
-      - tool-use      # External tool usage
-      - collaboration # Multi-agent collaboration
-      - human-in-loop # Human oversight
+      description: Communication and collaboration modes
+      items:
+        - conversational  # Natural language dialogue
+        - tool-use        # External API and tool integration
+        - multi-agent     # Agent-to-agent communication
+        - human-in-loop   # Human oversight integration
+        - multimodal      # Text, image, audio, video
+        - streaming       # Real-time response streaming
 
     execution:
-      - autonomous    # Fully autonomous
-      - supervised    # Human-supervised
-      - batch         # Batch processing
-      - real-time     # Real-time execution
+      description: Task execution characteristics
+      items:
+        - autonomous      # Self-directed execution
+        - supervised      # Human-approved execution
+        - batch           # Bulk processing mode
+        - real-time       # Immediate response required
+        - scheduled       # Time-triggered execution
+        - event-driven    # Trigger-based activation
+
+    reliability:
+      description: Quality and reliability attributes
+      items:
+        - idempotent      # Safe to retry
+        - deterministic   # Consistent outputs
+        - explainable     # Transparent reasoning
+        - auditable       # Full action logging
+        - recoverable     # Graceful failure handling
+        - testable        # Verifiable behavior
 
   # ============================================================================
-  # Validation Rules
+  # VALIDATION RULES
   # ============================================================================
   validation:
     required_fields:
-      - category
-      - domain
+      - category        # Primary classification
+      - domain          # Specific domain within category
+      - role            # OSSA role (worker, orchestrator, etc.)
+
+    recommended_fields:
+      - subtype         # Specific subtype within domain
+      - capabilities    # Cross-cutting capabilities
+      - autonomy_level  # Autonomy classification
+
     optional_fields:
-      - subtype
-      - capabilities
+      - icon            # Visual identifier
+      - tags            # Additional searchable tags
+
     constraints:
       - "category MUST be one of the defined categories"
       - "domain MUST exist within the specified category"
+      - "role MUST be one of: worker, orchestrator, critic, judge, governor, monitor, integrator"
+      - "autonomy_level MUST be one of: supervised, assisted, semi_autonomous, autonomous, fully_autonomous"
       - "subtype SHOULD exist within the specified domain"
+      - "capabilities SHOULD be from the defined capability sets"
+
+  # ============================================================================
+  # DISCOVERY METADATA
+  # ============================================================================
+  discovery:
+    search_fields:
+      - category
+      - domain
+      - subtype
+      - role
+      - capabilities
+      - tags
+
+    filter_fields:
+      - autonomy_level
+      - role
+      - category
+
+    sort_fields:
+      - name
+      - created_at
+      - popularity
+      - rating
