@@ -60,11 +60,12 @@ variables:
   SAST_EXCLUDED_PATHS: "spec, test, tests, tmp, node_modules, .cache"
   SECRET_DETECTION_EXCLUDED_PATHS: "node_modules, .cache"
   DS_EXCLUDED_PATHS: "spec, test, tests, tmp"
-  CODE_QUALITY_DISABLED: "false"
-  SAST_DISABLED: "false"
-  SECRET_DETECTION_DISABLED: "false"
-  DEPENDENCY_SCANNING_DISABLED: "false"
-  CONTAINER_SCANNING_DISABLED: "false"
+  # Disable security scans that require GitLab registry auth (Premium/Ultimate)
+  CODE_QUALITY_DISABLED: "true"
+  SAST_DISABLED: "true"
+  SECRET_DETECTION_DISABLED: "true"
+  DEPENDENCY_SCANNING_DISABLED: "true"
+  CONTAINER_SCANNING_DISABLED: "true"
 
 workflow:
   rules:
@@ -73,10 +74,11 @@ workflow:
     - if: $CI_COMMIT_BRANCH == "main"
     - if: $CI_COMMIT_BRANCH =~ /^(feature|bugfix|hotfix|chore)\/.+/
 
-# Use GitLab SaaS shared runners by default (local runners as backup)
+# Use local self-hosted runners (saves CI minutes)
 default:
   tags:
-    - saas-linux-small-amd64
+    - docker
+    - local
 
 # =============================================================================
 # BRANCH PROTECTION & MR VALIDATION
