@@ -45,7 +45,7 @@ Validate OSSA with real-world multi-agent workflows in production environments.
 
 **Example:**
 ```yaml
-apiVersion: ossa/v0.3.1
+apiVersion: ossa/v0.3.0
 kind: Workflow
 metadata:
   name: api-normalization-pipeline

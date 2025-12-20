@@ -47,7 +47,7 @@
 **Integration Points:**
 ```yaml
 # api_normalizer agent definition
-apiVersion: ossa/v0.3.1
+apiVersion: ossa/v0.3.0
 kind: Agent
 metadata:
   name: api-normalizer
