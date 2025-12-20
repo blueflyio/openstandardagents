@@ -64,7 +64,7 @@ function fixExamples() {
       
       // Replace apiVersion: ossa/vX.X.X (including pre-release suffixes like -RC, -dev, etc.)
       example.content = example.content.replace(
-        /apiVersion:\s*ossa\/v\d+\.\d+\.\d+(?:-[A-Za-z0-9.-]+)?/gi,
+        /^(\s*)apiVersion:\s*ossa\/v\d+\.\d+\.\d+(?:-[A-Za-z0-9.-]+)?/gim,
         `apiVersion: ossa/v${version}`
       );
       // Replace apiVersion: ossa/vX.X.x (display version)

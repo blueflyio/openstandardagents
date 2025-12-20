@@ -283,7 +283,12 @@ build:docker:
     IMAGE_TAG: $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA
   script:
     - cd website
-    - mkdir -p out && cp -r ../website-build/* out/
+    - |
+      if [ ! -d "../website-build" ] || [ -z "$(ls -A ../website-build 2>/dev/null)" ]; then
+        echo "❌ website-build directory is missing or empty"
+        exit 1
+      fi
+      mkdir -p out && cp -r ../website-build/* out/
     - |
       cat > Dockerfile << 'EOF'
       FROM node:20-alpine
@@ -603,7 +608,11 @@ detect:version:
     - |
       # Inline version detection
       if [ -f website/package.json ]; then
-        VERSION=$(grep '"version"' website/package.json | head -1 | sed 's/.*": *"\([^"]*\)".*/\1/')
+        if command -v jq >/dev/null 2>&1; then
+          VERSION=$(jq -r '.version' website/package.json 2>/dev/null || echo "0.0.0")
+        else
+          VERSION=$(grep '"version"' website/package.json | head -1 | sed 's/.*": *"\([^"]*\)".*/\1/' || echo "0.0.0")
+        fi
       else
         VERSION="0.0.0"
       fi
