@@ -4,7 +4,7 @@
 # Deploys dynamic review environments to OrbStack K8s
 #
 # Flow:
-#   1. Feature MR → Release: Creates review app at ossa-mr-<MR_ID>.review.blueflyagents.com
+#   1. Feature MR → Release: Creates review app at <MR_ID>.review.blueflyagents.com
 #   2. Release MR → Main: Creates staging at ossa-staging.review.blueflyagents.com
 #   3. Main branch: Manual button to deploy to GitLab Pages
 #
@@ -57,8 +57,8 @@ review:deploy:
       fi
 
       # Set review app variables
-      export REVIEW_APP_NAME="ossa-mr-${CI_MERGE_REQUEST_IID}"
-      export REVIEW_APP_HOST="${REVIEW_APP_NAME}.${REVIEW_DOMAIN}"
+      export REVIEW_APP_NAME="mr-${CI_MERGE_REQUEST_IID}"
+      export REVIEW_APP_HOST="${CI_MERGE_REQUEST_IID}.${REVIEW_DOMAIN}"
       export REVIEW_APP_IMAGE="${CI_REGISTRY_IMAGE}:${CI_COMMIT_SHA}"
       export NAMESPACE="${REVIEW_NAMESPACE}"
 
@@ -100,7 +100,7 @@ review:deploy:
       echo "=============================================="
   environment:
     name: review/${CI_MERGE_REQUEST_SOURCE_BRANCH_NAME}
-    url: http://ossa-mr-${CI_MERGE_REQUEST_IID}.review.blueflyagents.com
+    url: http://${CI_MERGE_REQUEST_IID}.review.blueflyagents.com
     on_stop: review:stop
     auto_stop_in: 1 week
     deployment_tier: development
@@ -132,7 +132,7 @@ review:stop:
         exit 0
       fi
 
-      REVIEW_APP_NAME="ossa-mr-${CI_MERGE_REQUEST_IID}"
+      REVIEW_APP_NAME="mr-${CI_MERGE_REQUEST_IID}"
       echo "🧹 Stopping review app: ${REVIEW_APP_NAME}"
 
       kubectl delete deployment "${REVIEW_APP_NAME}" -n "${REVIEW_NAMESPACE}" --ignore-not-found=true
