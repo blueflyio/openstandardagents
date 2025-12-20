@@ -62,9 +62,9 @@ function fixExamples() {
       example.content = example.content.replace(/\{\{OSSA_DISPLAY_VERSION\}\}/g, displayVersion);
       example.content = example.content.replace(/\{\{OSSA_API_VERSION\}\}/g, `ossa/v${version}`);
       
-      // Replace apiVersion: ossa/vX.X.X
+      // Replace apiVersion: ossa/vX.X.X (including pre-release suffixes like -RC, -dev, etc.)
       example.content = example.content.replace(
-        /apiVersion:\s*ossa\/v\d+\.\d+\.\d+/gi,
+        /apiVersion:\s*ossa\/v\d+\.\d+\.\d+(?:-[A-Za-z0-9.-]+)?/gi,
         `apiVersion: ossa/v${version}`
       );
       // Replace apiVersion: ossa/vX.X.x (display version)
@@ -110,9 +110,9 @@ function fixDocs() {
         content = content.replace(/\{\{OSSA_DISPLAY_VERSION\}\}/g, displayVersion);
         content = content.replace(/\{\{OSSA_API_VERSION\}\}/g, `ossa/v${version}`);
 
-        // Replace apiVersion: ossa/vX.X.X (exact versions) with placeholder
+        // Replace apiVersion: ossa/vX.X.X (exact versions, including pre-release) with placeholder
         content = content.replace(
-          /apiVersion:\s*ossa\/v\d+\.\d+\.\d+/gi,
+          /apiVersion:\s*ossa\/v\d+\.\d+\.\d+(?:-[A-Za-z0-9.-]+)?/gi,
           `apiVersion: ossa/v{{OSSA_VERSION}}`
         );
 
