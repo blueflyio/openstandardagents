@@ -31,7 +31,7 @@ npm install -g @bluefly/openstandardagents@latest
 ossa validate agents/*.json
 
 # 3. Update version in definitions
-sed -i 's/"ossa": "0.2.5"/"ossa": "0.2.6"/' agents/*.json
+sed -i 's/"ossa": "0.2.5"/"ossa": "0.3.0"/' agents/*.json
 
 # 4. Re-validate
 ossa validate agents/*.json

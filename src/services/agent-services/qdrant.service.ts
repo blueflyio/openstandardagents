@@ -3,7 +3,6 @@
  * Provides memory and context enhancement for OSSA agents
  */
 
-// @ts-ignore - @qdrant/js-client-rest may not be installed in all environments
 import { QdrantClient } from '@qdrant/js-client-rest';
 
 export interface VectorSearchResult {

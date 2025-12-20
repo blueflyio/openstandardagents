@@ -1,10 +1,10 @@
-# OSSA v0.3.1 Example: Message Routing Configuration
+# OSSA v0.3.0 Example: Message Routing Configuration
 #
 # This MessageRouting resource defines how messages flow between agents
 # in a multi-agent security system. It implements the routing rules
 # for the security-scanner, dependency-healer, and incident-responder agents.
 
-apiVersion: ossa/v0.3.1
+apiVersion: ossa/v0.3.0
 kind: MessageRouting
 metadata:
   name: security-workflow-routing
@@ -201,7 +201,7 @@ spec:
 
 ---
 # Additional MessageRouting for development/staging environment
-apiVersion: ossa/v0.3.1
+apiVersion: ossa/v0.3.0
 kind: MessageRouting
 metadata:
   name: security-workflow-routing-dev
@@ -254,7 +254,7 @@ spec:
 
 ---
 # MessageRouting for high-availability setup with multiple targets
-apiVersion: ossa/v0.3.1
+apiVersion: ossa/v0.3.0
 kind: MessageRouting
 metadata:
   name: security-workflow-routing-ha

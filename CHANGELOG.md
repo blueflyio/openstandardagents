@@ -1,3 +1,24 @@
+# Issue #136: Drupal Extension Schema
+
+## [Unreleased] - 2025-12-20
+
+### Added
+- Formalized `extensions.drupal` schema in OSSA v0.3.0 specification
+- Complete documentation for all 5 Drupal execution models (ECA, Maestro, FlowDrop, AI Agent Runner, Minikanban)
+- RuntimeBinding patterns for Drupal integrations
+- Permission system configuration with multiple modes
+- Symfony Messenger integration with retry strategies
+- MCP server integration support
+- Example: `drupal-content-writer.ossa.yaml` (133 lines)
+
+### Files
+- `spec/v0.3.0/extensions/drupal.md` (490 lines)
+- `spec/v0.3.0/examples/drupal-content-writer.ossa.yaml` (133 lines)
+
+**Total: 623 lines**
+
+---
+
 # Changelog
 
 All notable changes to OSSA (Open Standard for Scalable AI Agents) will be documented in this file.
@@ -5,14 +26,85 @@ All notable changes to OSSA (Open Standard for Scalable AI Agents) will be docum
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+### Guiding Principles
+
+- Changelogs are _for humans_, not machines.
+- There should be an entry for every single version.
+- The same types of changes should be grouped.
+- Versions and sections should be linkable.
+- The latest version comes first.
+- The release date of each version is displayed.
+
+### Types of Changes
+
+- `Added` for new features.
+- `Changed` for changes in existing functionality.
+- `Deprecated` for soon-to-be removed features.
+- `Removed` for now removed features.
+- `Fixed` for any bug fixes.
+- `Security` in case of vulnerabilities.
+
+---
+
 ## [Unreleased]
+
+## [0.3.0] - 2025-12-18
+
+### Major Release - Unified Task Schema & Agent-to-Agent Messaging
+
+This release introduces **three fundamental resource types** (Agent, Task, Workflow), **Agent-to-Agent (A2A) messaging**, and enterprise-grade features for production deployments.
+
+### Added
+
+#### Core Schema (Breaking Changes)
+- **Unified Task Schema**: Three resource kinds - `Agent` (agentic LLM loops), `Task` (deterministic operations), `Workflow` (orchestrated compositions)
+- **Agent-to-Agent Messaging**: Pub/sub messaging with `publishes`, `subscribes`, `commands`, and `reliability` configuration
+- **Identity Block**: OpenTelemetry-compatible service identity (`service_name`, `service_namespace`, `service_version`)
+- **Lifecycle Management**: Environment-specific configurations (dev/staging/prod) with dependency declarations
+- **Compliance Profiles**: First-class SOC2, HIPAA, GDPR, FedRAMP framework support
+- **State Management**: Persistent agent state with encryption (Redis, PostgreSQL, custom backends)
+
+#### New Resource Types
+- **Task Kind**: Deterministic, non-LLM workflow steps with `execution.type` (deterministic, idempotent, transactional)
+- **Workflow Kind**: Multi-step orchestration with `steps`, `parallel`, `conditional`, and `foreach` constructs
+- **RuntimeBinding**: Capability-to-implementation mappings for Tasks and Workflows
+
+#### Schema Enhancements
+- **20+ LLM Providers**: OpenAI, Anthropic, Azure, Bedrock, Ollama, Mistral, Cohere, Google, and more
+- **MCP Tool Integration**: Native Model Context Protocol support for tool definitions
+- **Execution Profiles**: Preset configurations (fast, balanced, thorough, critical) for different use cases
+- **Resource Limits**: Kubernetes-style compute constraints (memory_mb, cpu_millicores, gpu_required)
+- **Scheduling Configuration**: Priority levels, concurrency limits, timeout management
+
+#### Runtime Adapters
+- **Drupal Adapter**: ECA, Maestro, FlowDrop integration for OSSA Tasks
+- **Symfony Adapter**: Messenger component integration for queue-based execution
+
+#### CLI Enhancements
+- **Type Generation**: `npm run gen:types` - Generate TypeScript types from schema
+- **Zod Generation**: `npm run gen:zod` - Generate Zod validation schemas
+- **Enhanced Validation**: Platform-specific validators (Cursor, OpenAI, Anthropic, LangChain, etc.)
 
 ### Fixed
 
-- **ci**: Fix YAML syntax errors in multiline curl commands ([787329d](https://gitlab.com/blueflyio/openstandardagents/-/commit/787329ddc6f255f003c29d600f3173e6051e5b69))
-- **ci**: Update all gitlab.bluefly.io and agent-platform paths ([6219d5b](https://gitlab.com/blueflyio/openstandardagents/-/commit/6219d5b05b32a20207d1a9bc4ce2354a5dced29e))
-- **ci**: Update component paths to gitlab.com/blueflyio/gitlab_components ([a5103a8](https://gitlab.com/blueflyio/openstandardagents/-/commit/a5103a8577f2846d38def5e4b8eb8d557a12f1dd))
-- Sync main into release/v0.3.x ([115c160](https://gitlab.com/blueflyio/openstandardagents/-/commit/115c160918fe2027d2160e9fd54d767a5afae127))
+- **ci**: Fix YAML syntax errors in multiline curl commands
+- **ci**: Update all gitlab.bluefly.io and agent-platform paths
+- **ci**: Update component paths to gitlab.com/blueflyio/gitlab_components
+- **ci**: Use local runners when shared minutes exhausted
+
+### Migration from v0.2.x
+
+```yaml
+# v0.2.x format
+apiVersion: ossa/v0.2.9
+kind: Agent
+
+# v0.3.0 format (same structure, new features available)
+apiVersion: ossa/v0.3.0
+kind: Agent  # or Task, Workflow
+```
+
+All v0.2.x manifests remain valid. New features (messaging, state, compliance) are opt-in.
 ## [0.3.0-dev.12] - 2025-12-17
 
 ### Fixed
@@ -201,10 +293,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **sdk**: Add CloudEvents v1.0 compliant emitter ([311e6fd](https://gitlab.com/blueflyio/openstandardagents/-/commit/311e6fdaf3cd4a6ef40f8e238ee4d8f9d07231d3))
 - **sdk**: Add W3C Baggage support for multi-agent correlation ([b4f5966](https://gitlab.com/blueflyio/openstandardagents/-/commit/b4f5966f44d26559f40859fce11578b13469fa08))
 - **spec**: Add quick-win capabilities to OSSA v0.3.0 spec (spec-only, no infrastructure) ([dcde670](https://gitlab.com/blueflyio/openstandardagents/-/commit/dcde67098fe7521893920e2ce19d65371565a73d))
-- **spec**: Add Agent-to-Agent Messaging Extension for OSSA v0.3.1 ([737968d](https://gitlab.com/blueflyio/openstandardagents/-/commit/737968d47c2c225e408ee9cc29989d20fcb319f2))
-- **spec**: Add Agent-to-Agent Messaging Extension for OSSA v0.3.1 ([ee051cf](https://gitlab.com/blueflyio/openstandardagents/-/commit/ee051cf899eea3b9180c20a1aea65bb26948d33f))
-- **spec**: Add Agent-to-Agent Messaging Extension for OSSA v0.3.1 ([eec5b81](https://gitlab.com/blueflyio/openstandardagents/-/commit/eec5b8118ec2fd89f80fb8b1f1aa8062b1c1f55b))
-- **spec**: OSSA v0.3.1 Messaging Extension + Automated Patch Version Management ([24cef37](https://gitlab.com/blueflyio/openstandardagents/-/commit/24cef37716b70c4313389d68f5d0724d17799580))
+- **spec**: Add Agent-to-Agent Messaging Extension for OSSA v0.3.0 ([737968d](https://gitlab.com/blueflyio/openstandardagents/-/commit/737968d47c2c225e408ee9cc29989d20fcb319f2))
+- **spec**: Add Agent-to-Agent Messaging Extension for OSSA v0.3.0 ([ee051cf](https://gitlab.com/blueflyio/openstandardagents/-/commit/ee051cf899eea3b9180c20a1aea65bb26948d33f))
+- **spec**: Add Agent-to-Agent Messaging Extension for OSSA v0.3.0 ([eec5b81](https://gitlab.com/blueflyio/openstandardagents/-/commit/eec5b8118ec2fd89f80fb8b1f1aa8062b1c1f55b))
+- **spec**: OSSA v0.3.0 Messaging Extension + Automated Patch Version Management ([24cef37](https://gitlab.com/blueflyio/openstandardagents/-/commit/24cef37716b70c4313389d68f5d0724d17799580))
 - **spec**: Add Conformance Testing specification ([5c1594a](https://gitlab.com/blueflyio/openstandardagents/-/commit/5c1594a1e3f595d2ab044e75aad424415bd36230))
 - **spec**: Add Capability Schema and Registry specification ([69d9463](https://gitlab.com/blueflyio/openstandardagents/-/commit/69d94638e0e12e78d6ce4e747c68b3cfdd9882df))
 - **spec**: Formal Policy DSL Specification ([4af084b](https://gitlab.com/blueflyio/openstandardagents/-/commit/4af084b44b972c02f317a42b227599864ecd937e))
@@ -349,7 +441,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **docs**: Correct README to show GitHub as primary public repo ([51f381c](https://gitlab.com/blueflyio/openstandardagents/-/commit/51f381c38370fbbdefd6e8d210a4fecffda08aa0))
 - **docs**: Correct README to show GitHub as primary public repo ([264d48e](https://gitlab.com/blueflyio/openstandardagents/-/commit/264d48e7bc4d9081dde129cecdf08ff940f95108))
 - **gitlab**: Restructure workflows to match GitLab Agent Platform schema ([86398bb](https://gitlab.com/blueflyio/openstandardagents/-/commit/86398bbf92ab1387e95797d7bd38034031635102))
-- **release**: Clean v0.3.0 - remove premature v0.3.1 content ([e58faa1](https://gitlab.com/blueflyio/openstandardagents/-/commit/e58faa12189bd147fb454964b77ce9844b1b060c))
+- **release**: Clean v0.3.0 - remove premature v0.3.0 content ([e58faa1](https://gitlab.com/blueflyio/openstandardagents/-/commit/e58faa12189bd147fb454964b77ce9844b1b060c))
 - **release**: Update ALL version references from 0.2.8 to 0.2.9 ([7b81abc](https://gitlab.com/blueflyio/openstandardagents/-/commit/7b81abc4dce1d13485d9cfefda42992a350a1968))
 - **release**: Update ALL version references from 0.2.8 to 0.2.9 ([5346e24](https://gitlab.com/blueflyio/openstandardagents/-/commit/5346e24c1fd15d3362fb3bed0cc0c587e9ae1fb4))
 - **schema**: Make apiVersion pattern future-proof and tests dynamic ([f78517d](https://gitlab.com/blueflyio/openstandardagents/-/commit/f78517d53f0686fb0d8167a6b1b76aa3643bc371))
@@ -1474,3 +1566,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Complete OSSA implementation before standard separation ([deec80e](https://gitlab.com/blueflyio/openstandardagents/-/commit/deec80eb79ed25c19fb4796c6a2549f037e4b7e9))
 ---
 Generated by [git-cliff](https://git-cliff.org/)
+
+<!-- Comparison Links (Keep a Changelog 1.1.0 compliance) -->
+[Unreleased]: https://gitlab.com/blueflyio/openstandardagents/-/compare/v0.3.0...HEAD
+[0.3.0]: https://gitlab.com/blueflyio/openstandardagents/-/compare/v0.2.8...v0.3.0
+[0.3.0-dev.12]: https://gitlab.com/blueflyio/openstandardagents/-/compare/v0.3.0-dev.11...v0.3.0-dev.12
+[0.3.0-RC]: https://gitlab.com/blueflyio/openstandardagents/-/compare/v0.3.0-dev.1...v0.3.0-RC
+[0.3.0-dev.1]: https://gitlab.com/blueflyio/openstandardagents/-/compare/v0.2.8...v0.3.0-dev.1
+[0.2.8]: https://gitlab.com/blueflyio/openstandardagents/-/compare/v0.2.5...v0.2.8
+[0.2.5]: https://gitlab.com/blueflyio/openstandardagents/-/compare/v0.2.4...v0.2.5
+[0.2.4]: https://gitlab.com/blueflyio/openstandardagents/-/compare/v0.2.3...v0.2.4

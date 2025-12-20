@@ -70,7 +70,7 @@ stages:
   - mirror         # Mirror to external repos
   - .post          # GitLab reserved post-stage (post-release jobs)
 
-# Use GitLab shared runners by default
+# Use SaaS runners (GitLab Ultimate minutes)
 default:
   tags:
     - saas-linux-small-amd64
@@ -92,6 +92,7 @@ detect:version:
   stage: setup
   needs: []  # Skip .pre stage - allows pipeline to auto-start
   image: alpine:latest
+  timeout: 5 minutes
   tags:
     - saas-linux-small-amd64
   before_script:
@@ -200,7 +201,7 @@ detect:milestone-and-tags:
       GROUP_PATH="blueflyio%2Fagent-platform"
 
       # CI_JOB_TOKEN requires JOB-TOKEN header, not PRIVATE-TOKEN
-      ALL_MILESTONES=$(curl -sS -G "${CI_API_V4_URL}/groups/${GROUP_PATH}/milestones" \
+      ALL_MILESTONES=$(curl -sS --max-time 30 -G "${CI_API_V4_URL}/groups/${GROUP_PATH}/milestones" \
         --header "JOB-TOKEN: ${CI_JOB_TOKEN}" \
         --data-urlencode "per_page=100" \
         --data-urlencode "state=active" 2>/dev/null || echo "[]")
@@ -214,7 +215,7 @@ detect:milestone-and-tags:
       # Fallback to project milestones if group fetch fails
       if [ "$ALL_MILESTONES" = "[]" ] || [ -z "$ALL_MILESTONES" ]; then
         echo "INFO: Trying project milestones..."
-        ALL_MILESTONES=$(curl -sS -G "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/milestones" \
+        ALL_MILESTONES=$(curl -sS --max-time 30 -G "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/milestones" \
           --header "JOB-TOKEN: ${CI_JOB_TOKEN}" \
           --data-urlencode "per_page=100" \
           --data-urlencode "state=active" 2>/dev/null || echo "[]")
@@ -256,7 +257,7 @@ detect:milestone-and-tags:
 
           # For GROUP milestones, query issues directly for THIS PROJECT
           # Get all issues in this project assigned to this milestone
-          PROJECT_ISSUES=$(curl -sS -G "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/issues" \
+          PROJECT_ISSUES=$(curl -sS --max-time 30 -G "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/issues" \
             --header "JOB-TOKEN: ${CI_JOB_TOKEN}" \
             --data-urlencode "milestone=${TITLE}" \
             --data-urlencode "per_page=100" 2>/dev/null || echo "[]")
@@ -464,6 +465,7 @@ validate:version-sync:
   image: node:${NODE_VERSION}-alpine
   script:
     - npm ci --legacy-peer-deps
+    - npm run build
     - echo "Checking version consistency..."
     - npm run version:check
   allow_failure: false
@@ -833,7 +835,7 @@ changelog:generate:
     - apk add --no-cache curl jq
     - apk add --no-cache git curl bash
     # Install git-cliff
-    - curl -sSfL https://github.com/orhun/git-cliff/releases/download/v2.7.0/git-cliff-2.7.0-x86_64-unknown-linux-musl.tar.gz | tar xz
+    - curl -sS --max-time 30 -fL https://github.com/orhun/git-cliff/releases/download/v2.7.0/git-cliff-2.7.0-x86_64-unknown-linux-musl.tar.gz | tar xz
     - mv git-cliff-*/git-cliff /usr/local/bin/
     - chmod +x /usr/local/bin/git-cliff
     - git config --global user.email "ci@openstandardagents.org"
@@ -978,7 +980,7 @@ release:validate:
         echo ""
         echo "  Open issues in ${MILESTONE_TITLE}:"
         # Fetch and display open issues
-        OPEN_ISSUES_LIST=$(curl -sS -G "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/issues" \
+        OPEN_ISSUES_LIST=$(curl -sS --max-time 30 -G "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/issues" \
           --header "PRIVATE-TOKEN: ${CI_JOB_TOKEN}" \
           --data-urlencode "milestone=${MILESTONE_TITLE}" \
           --data-urlencode "state=opened" \
@@ -1244,7 +1246,7 @@ release:npm:
     - git config --global user.email "ci@bluefly.io"
     - git config --global user.name "GitLab CI Release"
     - |
-      if echo "${GITLAB_PUSH_TOKEN}" | grep -q "^gldt-"; then
+      if [[ "${GITLAB_PUSH_TOKEN:0:5}" == "gldt-" ]]; then
         git remote set-url origin "https://${DEPLOY_TOKEN_USERNAME:-gitlab+deploy-token-10466652}:${GITLAB_PUSH_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git"
       else
         git remote set-url origin "https://oauth2:${GITLAB_PUSH_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git"
@@ -1421,7 +1423,7 @@ release:npm:
       echo ""
       echo "🔒 Closing milestone: ${MILESTONE_TITLE}..."
       if [ -n "$MILESTONE_ID" ]; then
-        CLOSE_RESULT=$(curl -sS --request PUT \
+        CLOSE_RESULT=$(curl -sS --max-time 30 --request PUT \
           --header "PRIVATE-TOKEN: ${CI_JOB_TOKEN}" \
           --header "Content-Type: application/json" \
           --data '{"state_event": "close"}' \
@@ -1492,7 +1494,7 @@ create-patch-version:
       elif [ -n "${GITLAB_PUSH_TOKEN:-}" ]; then
         echo "Using GITLAB_PUSH_TOKEN"
         echo "Token prefix: ${GITLAB_PUSH_TOKEN:0:5}..."
-        if echo "${GITLAB_PUSH_TOKEN}" | grep -q "^gldt-"; then
+        if [[ "${GITLAB_PUSH_TOKEN:0:5}" == "gldt-" ]]; then
           echo "Deploy token format detected"
           REMOTE_URL="https://${DEPLOY_TOKEN_USERNAME:-gitlab+deploy-token-10466652}:${GITLAB_PUSH_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git"
         else
@@ -1624,7 +1626,7 @@ create-patch-version:
             description: $desc
           }')
         
-        RELEASE_RESPONSE=$(curl -sS --request POST \
+        RELEASE_RESPONSE=$(curl -sS --max-time 30 --request POST \
           --header "PRIVATE-TOKEN: ${CI_JOB_TOKEN}" \
           --header "Content-Type: application/json" \
           --data "$RELEASE_PAYLOAD" \
@@ -1757,7 +1759,7 @@ post-release:cleanup:
       # 2. Tag all closed issues in milestone
       echo ""
       echo "📌 Tagging issues..."
-      ISSUES=$(curl -sS -G \
+      ISSUES=$(curl -sS --max-time 30 -G \
         --header "PRIVATE-TOKEN: ${CI_JOB_TOKEN}" \
         "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/issues" \
         --data-urlencode "milestone=${MILESTONE_TITLE}" \
@@ -1766,7 +1768,7 @@ post-release:cleanup:
 
       echo "$ISSUES" | jq -r '.[].iid' | while read ISSUE_IID; do
         [ -z "$ISSUE_IID" ] && continue
-        curl -sS --request PUT \
+        curl -sS --max-time 30 --request PUT \
           --header "PRIVATE-TOKEN: ${CI_JOB_TOKEN}" \
           --data "add_labels=${LABEL_NAME}" \
           "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/issues/${ISSUE_IID}" > /dev/null
@@ -1776,7 +1778,7 @@ post-release:cleanup:
       # 3. Tag all merged MRs in milestone
       echo ""
       echo "📌 Tagging merge requests..."
-      MRS=$(curl -sS -G \
+      MRS=$(curl -sS --max-time 30 -G \
         --header "PRIVATE-TOKEN: ${CI_JOB_TOKEN}" \
         "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/merge_requests" \
         --data-urlencode "milestone=${MILESTONE_TITLE}" \
@@ -1785,7 +1787,7 @@ post-release:cleanup:
 
       echo "$MRS" | jq -r '.[].iid' | while read MR_IID; do
         [ -z "$MR_IID" ] && continue
-        curl -sS --request PUT \
+        curl -sS --max-time 30 --request PUT \
           --header "PRIVATE-TOKEN: ${CI_JOB_TOKEN}" \
           --data "add_labels=${LABEL_NAME}" \
           "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/merge_requests/${MR_IID}" > /dev/null
@@ -1797,7 +1799,7 @@ post-release:cleanup:
       echo "📅 Creating next milestone..."
       NEXT_VERSION=$(echo "$VERSION" | awk -F. '{print $1"."$2"."$3+1}')
 
-      NEXT_MILESTONE=$(curl -sS --request POST \
+      NEXT_MILESTONE=$(curl -sS --max-time 30 --request POST \
         --header "PRIVATE-TOKEN: ${CI_JOB_TOKEN}" \
         --header "Content-Type: application/json" \
         --data "{
@@ -2091,7 +2093,7 @@ sync:main-to-release:
     - git config user.email "ci@bluefly.io"
     - git config user.name "GitLab CI"
     - |
-      if echo "${GITLAB_PUSH_TOKEN}" | grep -q "^gldt-"; then
+      if [[ "${GITLAB_PUSH_TOKEN:0:5}" == "gldt-" ]]; then
         git remote set-url origin "https://${DEPLOY_TOKEN_USERNAME:-gitlab+deploy-token-10466652}:${GITLAB_PUSH_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git"
       else
         git remote set-url origin "https://oauth2:${GITLAB_PUSH_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git"
@@ -2160,7 +2162,7 @@ release:rc-tag:
     - git config user.email "gitlab-ci@${CI_SERVER_HOST}"
     - git config user.name "GitLab CI"
     - |
-      if echo "${GITLAB_PUSH_TOKEN}" | grep -q "^gldt-"; then
+      if [[ "${GITLAB_PUSH_TOKEN:0:5}" == "gldt-" ]]; then
         git remote set-url origin "https://${DEPLOY_TOKEN_USERNAME:-gitlab+deploy-token-10466652}:${GITLAB_PUSH_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git"
       else
         git remote set-url origin "https://oauth2:${GITLAB_PUSH_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git"
@@ -2395,7 +2397,7 @@ release:promote-rc-to-final:
     - git config user.email "gitlab-ci@${CI_SERVER_HOST}"
     - git config user.name "GitLab CI"
     - |
-      if echo "${GITLAB_PUSH_TOKEN}" | grep -q "^gldt-"; then
+      if [[ "${GITLAB_PUSH_TOKEN:0:5}" == "gldt-" ]]; then
         git remote set-url origin "https://${DEPLOY_TOKEN_USERNAME:-gitlab+deploy-token-10466652}:${GITLAB_PUSH_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git"
       else
         git remote set-url origin "https://oauth2:${GITLAB_PUSH_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git"

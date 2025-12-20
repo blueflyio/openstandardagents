@@ -29,6 +29,7 @@ coverage/
 # Development directories (not part of npm package)
 .cursor/
 .claude/
+.worktrees/
 
 # Python dependencies
 __pycache__/
@@ -515,3 +516,4 @@ dmypy.json
 
 # Git submodules (wiki must not be a submodule)
 .gitmodules
+build.env

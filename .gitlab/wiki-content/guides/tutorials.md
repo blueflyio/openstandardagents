@@ -16,7 +16,7 @@ Build a simple customer support agent.
 
 ```json
 {
-  "ossa": "0.2.6",
+  "ossa": "0.3.0",
   "agent": {
     "name": "support-agent",
     "version": "1.0.0",
@@ -101,7 +101,7 @@ Build an agent with multiple capabilities.
 
 ```json
 {
-  "ossa": "0.2.6",
+  "ossa": "0.3.0",
   "agent": {
     "name": "ticket-manager",
     "version": "1.0.0",
@@ -221,7 +221,7 @@ Build an agent that depends on external services.
 
 ```json
 {
-  "ossa": "0.2.6",
+  "ossa": "0.3.0",
   "agent": {
     "name": "email-agent",
     "version": "1.0.0",
@@ -284,7 +284,7 @@ Build an agent that coordinates other agents.
 
 ```json
 {
-  "ossa": "0.2.6",
+  "ossa": "0.3.0",
   "agent": {
     "name": "workflow-orchestrator",
     "version": "1.0.0",

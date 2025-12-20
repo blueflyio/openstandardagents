@@ -383,7 +383,7 @@ export class DependenciesValidator {
         // Check if target agent exposes expected commands
         if (dep.contract.commands) {
           const targetCommands = new Set(
-            ((targetAgent.spec.messaging as any)?.commands || []).map((c: any) => c.name)
+            ((targetAgent.spec.messaging as { commands?: Array<{ name: string }> })?.commands || []).map((c) => c.name)
           );
           for (const expectedCommand of dep.contract.commands) {
             if (!targetCommands.has(expectedCommand)) {

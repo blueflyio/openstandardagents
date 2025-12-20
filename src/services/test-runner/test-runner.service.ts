@@ -29,15 +29,15 @@ export class TestRunnerService {
       try {
         await this.executeTest(test, manifest);
         results.push({
-          id: test.id || 'unnamed',
-          type: test.type || 'unit',
+          id: (test as { id?: string })?.id || 'unnamed',
+          type: (test as { type?: string })?.type || 'unit',
           status: 'passed',
           duration: Date.now() - startTime,
         });
       } catch (error) {
         results.push({
-          id: test.id || 'unnamed',
-          type: test.type || 'unit',
+          id: (test as { id?: string })?.id || 'unnamed',
+          type: (test as { type?: string })?.type || 'unit',
           status: 'failed',
           message: error instanceof Error ? error.message : String(error),
           duration: Date.now() - startTime,
@@ -48,24 +48,26 @@ export class TestRunnerService {
     return results;
   }
 
-  private async executeTest(test: any, manifest: OssaAgent): Promise<void> {
-    if (test.type === 'unit') {
+  private async executeTest(test: unknown, manifest: OssaAgent): Promise<void> {
+    if ((test as { type?: string })?.type === 'unit') {
       await this.runUnitTest(test, manifest);
-    } else if (test.type === 'integration') {
+    } else if ((test as { type?: string })?.type === 'integration') {
       await this.runIntegrationTest(test, manifest);
-    } else if (test.type === 'e2e') {
+    } else if ((test as { type?: string })?.type === 'e2e') {
       await this.runE2ETest(test, manifest);
     } else {
-      throw new Error(`Unknown test type: ${test.type}`);
+      throw new Error(`Unknown test type: ${(test as { type?: string })?.type}`);
     }
   }
 
-  private async runUnitTest(test: any, manifest: OssaAgent): Promise<void> {
-    if (test.assertions) {
-      for (const assertion of test.assertions) {
-        if (assertion.type === 'equals') {
-          const actual = this.evaluateExpression(assertion.actual, manifest);
-          const expected = assertion.expected;
+  private async runUnitTest(test: unknown, manifest: OssaAgent): Promise<void> {
+    const testTyped = test as { assertions?: unknown[] };
+    if (testTyped.assertions) {
+      for (const assertion of testTyped.assertions) {
+        if ((assertion as { type?: string })?.type === 'equals') {
+          const assertionActual = (assertion as { actual?: string })?.actual;
+          const actual = this.evaluateExpression(assertionActual || '', manifest);
+          const expected = (assertion as { expected?: unknown })?.expected;
           if (actual !== expected) {
             throw new Error(`Expected ${expected}, got ${actual}`);
           }
@@ -78,24 +80,24 @@ export class TestRunnerService {
     await this.runUnitTest(test, manifest);
   }
 
-  private async runE2ETest(test: any, manifest: OssaAgent): Promise<void> {
+  private async runE2ETest(test: unknown, manifest: OssaAgent): Promise<void> {
     await this.runIntegrationTest(test, manifest);
   }
 
-  private evaluateExpression(expr: string, manifest: OssaAgent): any {
+  private evaluateExpression(expr: string, manifest: OssaAgent): unknown {
     if (expr.startsWith('metadata.')) {
       const path = expr.split('.').slice(1);
-      let value: any = manifest.metadata;
+      let value: unknown = manifest.metadata;
       for (const key of path) {
-        value = value?.[key];
+        value = (value as { [key: string]: unknown })?.[key];
       }
       return value;
     }
     if (expr.startsWith('spec.')) {
       const path = expr.split('.').slice(1);
-      let value: any = manifest.spec;
+      let value: unknown = manifest.spec;
       for (const key of path) {
-        value = value?.[key];
+        value = (value as { [key: string]: unknown })?.[key];
       }
       return value;
     }
