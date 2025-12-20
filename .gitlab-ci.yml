@@ -74,10 +74,10 @@ workflow:
     - if: $CI_COMMIT_BRANCH == "main"
     - if: $CI_COMMIT_BRANCH =~ /^(feature|bugfix|hotfix|chore)\/.+/
 
-# Use local self-hosted runners (saves CI minutes)
+# Use GitLab SaaS shared runners (Ultimate tier)
 default:
   tags:
-    - local
+    - saas-linux-medium-amd64
 
 # =============================================================================
 # BRANCH PROTECTION & MR VALIDATION
@@ -381,8 +381,6 @@ quality:browser-performance:
 quality:accessibility:
   stage: quality
   image: node:${NODE_VERSION}
-  tags:
-    - local
   timeout: 10m  # Prevent 1hr timeout
   needs:
     - build:website
@@ -447,7 +445,7 @@ pages:
   stage: deploy
   image: alpine:latest
   tags:
-    - local
+    - saas-linux-medium-amd64
   needs:
     - build:website
   script:
