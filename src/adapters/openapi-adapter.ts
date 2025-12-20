@@ -337,6 +337,10 @@ export class OpenAPIAdapter {
             items: value.length > 0 ? this.inferType(value[0]) : { type: 'string' },
           };
         }
+        // Prevent infinite recursion with circular references
+        if (typeof value === 'object' && value !== null) {
+          return { type: 'object' };
+        }
         return this.normalizeSchema(value);
       default:
         return { type: 'string' };
