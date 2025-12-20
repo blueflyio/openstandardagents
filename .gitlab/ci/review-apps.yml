@@ -39,7 +39,10 @@ review:deploy:
       # Configure kubectl from CI variable (KUBECONFIG_LOCAL for OrbStack)
       if [ -n "$KUBECONFIG_LOCAL" ]; then
         mkdir -p ~/.kube
-        echo "$KUBECONFIG_LOCAL" | base64 -d > ~/.kube/config
+        if ! echo "$KUBECONFIG_LOCAL" | base64 -d > ~/.kube/config; then
+          echo "❌ Failed to decode KUBECONFIG_LOCAL"
+          exit 1
+        fi
         chmod 600 ~/.kube/config
         echo "✅ Kubectl configured from KUBECONFIG_LOCAL"
       else
@@ -82,7 +85,9 @@ review:deploy:
         --docker-server="${CI_REGISTRY}" \
         --docker-username="${CI_REGISTRY_USER}" \
         --docker-password="${CI_REGISTRY_PASSWORD}" \
-        --dry-run=client -o yaml | kubectl apply -f -
+        --dry-run=client -o yaml | kubectl apply -f - || \
+      kubectl patch secret gitlab-registry -n "${NAMESPACE}" \
+        --type='merge' -p="{\"data\":{\".dockerconfigjson\":\"$(echo -n "{\"auths\":{\"${CI_REGISTRY}\":{\"username\":\"${CI_REGISTRY_USER}\",\"password\":\"${CI_REGISTRY_PASSWORD}\"}}}" | base64 -w 0)\"}}"
 
       # Deploy review app
       envsubst < .gitlab/k8s/review-app.yaml | kubectl apply -f -
