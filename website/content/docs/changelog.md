@@ -9,7 +9,7 @@ All notable changes to OSSA (Open Standards Scalable Agents) will be documented 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [{{OSSA_VERSION}}] - 2025-10-14
+## [0.3.0] - 2025-10-14
 
 ### 🧹 Cleanup & Maintenance Release
 
@@ -39,7 +39,7 @@ This release represents a complete transformation of OSSA into an enterprise-gra
 
 ### Fixed
 - **npm Publishing** - Can now publish to npmjs.org (requires NPM_TOKEN env var)
-- **Version Consistency** - No more confusion between 0.1.9, {{OSSA_VERSION}}, and 1.0
+- **Version Consistency** - No more confusion between 0.1.9, 0.3.0, and 1.0
 - **Package Identity** - Clear, consistent naming across all platforms
 - **Dependency Bloat** - Removed inappropriate runtime dependencies from specification package
 
@@ -106,7 +106,7 @@ npm install -g @bluefly/open-standards-scalable-agents
 
 ---
 
-## [{{OSSA_VERSION}}] - 2025-10-11
+## [0.3.0] - 2025-10-11
 
 ### 🎯 Major Consolidation & Standards Compliance Release
 

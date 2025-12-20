@@ -50,7 +50,7 @@ ossa validate agent.ossa.yaml
 ## Complete Schema
 
 View the complete JSON Schema:
-- [v0.2.8-RC Schema](https://github.com/blueflyio/openstandardagents/blob/main/spec/{{OSSA_VERSION_TAG}}/ossa-{{OSSA_VERSION}}.schema.json)
+- [v0.2.8-RC Schema](https://github.com/blueflyio/openstandardagents/blob/main/spec/{{OSSA_VERSION_TAG}}/ossa-0.3.0.schema.json)
 
 ## Related Documentation
 

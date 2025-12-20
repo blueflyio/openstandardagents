@@ -252,7 +252,7 @@ extensions:
 ### apiVersion Validation
 - Must match regex: `^ossa/v(0\.2\.[2-3]|1)(\.0)?(-[a-zA-Z0-9]+)?$`
 - Valid examples: `ossa/v1`, `ossa/v0.2.x`, `ossa/{{OSSA_VERSION_TAG}}`, `ossa/v1.0`
-- Invalid examples: `v1`, `ossa/v2`, `ossa/{{OSSA_VERSION}}`
+- Invalid examples: `v1`, `ossa/v2`, `ossa/0.3.0`
 
 ### kind Validation
 - Must be exactly `Agent` (case-sensitive)

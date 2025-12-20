@@ -15,7 +15,7 @@ MAJOR.MINOR.PATCH[-PRERELEASE][+BUILD]
 ```
 
 Examples:
-- `{{OSSA_VERSION}}` - Stable patch release
+- `0.3.0` - Stable patch release
 - `0.3.0` - Minor feature release
 - `1.0.0` - Major release with breaking changes
 - `0.3.0-dev.1` - Development pre-release
@@ -207,8 +207,8 @@ E --> F[Manual trigger to publish to npmjs.com]
 
 | Version | Release Date | Type | Highlights |
 |---------|--------------|------|------------|
-| {{OSSA_VERSION}} | 2025-10-28 | Patch | Schema fixes, CI improvements |
-| {{OSSA_VERSION}} | 2025-10-27 | Minor | Added KAgent bridge, MCP tools |
+| 0.3.0 | 2025-10-28 | Patch | Schema fixes, CI improvements |
+| 0.3.0 | 2025-10-27 | Minor | Added KAgent bridge, MCP tools |
 | 0.1.9 | 2024-XX-XX | Minor | Extensions, taxonomy, observability |
 | 0.1.8 | 2024-XX-XX | Minor | Initial stable release |
 
@@ -316,4 +316,4 @@ git commit -m "chore: update docs [skip ci]"
 ---
 
 **Last Updated**: 2025-10-28
-**Version**: {{OSSA_VERSION}}
+**Version**: 0.3.0
