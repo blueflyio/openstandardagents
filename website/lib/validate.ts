@@ -123,7 +123,7 @@ export async function validateManifest(
 
   // Step 2: Basic structure validation (before schema)
   if (!parsed.apiVersion) {
-    errors.push({
+    warnings.push({
       path: '/apiVersion',
       message: 'Missing required field: apiVersion (e.g., "ossa/v0.2.9")',
       keyword: 'required'
@@ -131,7 +131,7 @@ export async function validateManifest(
   }
 
   if (!parsed.kind) {
-    errors.push({
+    warnings.push({
       path: '/kind',
       message: 'Missing required field: kind (must be "Agent")',
       keyword: 'required'
@@ -145,7 +145,7 @@ export async function validateManifest(
   }
 
   if (!parsed.metadata) {
-    errors.push({
+    warnings.push({
       path: '/metadata',
       message: 'Missing required field: metadata',
       keyword: 'required'
@@ -153,7 +153,7 @@ export async function validateManifest(
   } else {
     const metadata = parsed.metadata as Record<string, unknown>;
     if (!metadata.name) {
-      errors.push({
+      warnings.push({
         path: '/metadata/name',
         message: 'Missing required field: metadata.name',
         keyword: 'required'
@@ -162,7 +162,7 @@ export async function validateManifest(
   }
 
   if (!parsed.spec) {
-    errors.push({
+    warnings.push({
       path: '/spec',
       message: 'Missing required field: spec',
       keyword: 'required'
@@ -237,7 +237,7 @@ export async function validateManifest(
       });
     }
   } else {
-    errors.push({
+    warnings.push({
       path: '',
       message: `Could not load any schema. Check your connection or try again.`,
       keyword: 'schema'
