@@ -40,7 +40,7 @@
 **Direction**: OSSA provides schema, API Normalizer consumes
 
 **Dependencies:**
-- API Normalizer uses OSSA v0.3.1 schema for agent definitions
+- API Normalizer uses OSSA v0.3.0 schema for agent definitions
 - API Normalizer validates task/workflow patterns
 - API Normalizer provides real-world use case validation
 
@@ -257,9 +257,9 @@ graph TD
 
 **Required from OSSA:**
 - ✅ Agent schema (v0.3.0)
-- 🔄 Task schema (v0.3.1)
-- 🔄 Workflow schema (v0.3.1)
-- 🔄 Messaging extension (v0.3.1)
+- 🔄 Task schema (v0.3.0)
+- 🔄 Workflow schema (v0.3.0)
+- 🔄 Messaging extension (v0.3.0)
 
 **Provides to OSSA:**
 - Real-world use case validation
@@ -270,8 +270,8 @@ graph TD
 
 **Required from OSSA:**
 - ✅ Agent schema (v0.3.0)
-- 🔄 Task schema (v0.3.1)
-- 🔄 Messaging extension (v0.3.1)
+- 🔄 Task schema (v0.3.0)
+- 🔄 Messaging extension (v0.3.0)
 - ⚪ Runtime contract (v0.3.2)
 
 **Provides to OSSA:**
@@ -284,8 +284,8 @@ graph TD
 
 **Required from OSSA:**
 - ✅ Agent schema (v0.3.0)
-- 🔄 Task schema (v0.3.1)
-- 🔄 Workflow schema (v0.3.1)
+- 🔄 Task schema (v0.3.0)
+- 🔄 Workflow schema (v0.3.0)
 - ⚪ Runtime contract (v0.3.2)
 
 **Provides to OSSA:**
@@ -319,7 +319,7 @@ graph TD
 | OSSA Version | API Normalizer | Symfony Adapter | Drupal ECA |
 |--------------|----------------|-----------------|------------|
 | v0.3.0 | ✅ v0.1.0 | ❌ | ❌ |
-| v0.3.1 | 🔄 v0.1.1 | ⚪ v1.0.0 | ⚪ v1.0.0 |
+| v0.3.0 | 🔄 v0.1.1 | ⚪ v1.0.0 | ⚪ v1.0.0 |
 | v0.3.2 | ⚪ v0.1.2 | ⚪ v1.1.0 | ⚪ v1.1.0 |
 | v0.4.0 | ⚪ v0.2.0 | ⚪ v2.0.0 | ⚪ v2.0.0 |
 
@@ -348,7 +348,7 @@ graph TD
 ## 📌 Next Steps
 
 ### Phase 1 (Weeks 1-2)
-- [ ] Finalize OSSA v0.3.1 schema
+- [ ] Finalize OSSA v0.3.0 schema
 - [ ] API Normalizer reviews schema
 - [ ] Symfony team reviews runtime contract
 

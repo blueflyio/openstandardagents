@@ -2,7 +2,7 @@
 
 **Status:** In Progress  
 **Timeline:** Weeks 1-2  
-**Version Target:** v0.3.1
+**Version Target:** v0.3.0
 
 ---
 
@@ -26,7 +26,7 @@ Define the contract for tasks, workflows, and messaging before implementation be
 
 ## 📦 Deliverables
 
-### 1. Task Schema Enhancement (`spec/v0.3.1/task-schema.md`)
+### 1. Task Schema Enhancement (`spec/v0.3.0/task-schema.md`)
 
 **Enhancements from v0.3.0:**
 - Task dependencies (what tasks must run before this one)
@@ -74,7 +74,7 @@ spec:
     fallback_task: handle-error
 ```
 
-### 2. Workflow Schema Enhancement (`spec/v0.3.1/workflow-schema.md`)
+### 2. Workflow Schema Enhancement (`spec/v0.3.0/workflow-schema.md`)
 
 **Enhancements from v0.3.0:**
 - Task ordering (sequential vs parallel)
@@ -136,7 +136,7 @@ spec:
       max_iterations: 100
 ```
 
-### 3. Messaging Extension (`spec/v0.3.1/messaging.md`)
+### 3. Messaging Extension (`spec/v0.3.0/messaging.md`)
 
 **New capabilities:**
 - Channel declarations (what agents publish)
@@ -191,7 +191,7 @@ spec:
 ### 5. JSON Schema Updates
 
 **Files to update:**
-- `spec/v0.3.1/ossa-0.3.1.schema.json`
+- `spec/v0.3.0/ossa-0.3.1.schema.json`
 - Add `Task` enhancements
 - Add `Workflow` enhancements
 - Add `MessagingExtension` definitions
