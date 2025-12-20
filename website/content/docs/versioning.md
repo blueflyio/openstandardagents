@@ -37,7 +37,7 @@ Examples:
 - **Purpose**: Stable production releases
 - **Releases**: Final semantic versions (no pre-release tag)
 - **Version Detection**: From release branch when merged (e.g., `release/v0.3.x` → `main` → `v0.3.0`)
-- **Example versions**: `{{OSSA_VERSION_TAG}}`, `v0.3.0`, `v0.3.1`, `v1.0.0`
+- **Example versions**: `v0.3.0`, `v0.3.0`, `v0.3.1`, `v1.0.0`
 
 ---
 
@@ -84,7 +84,7 @@ Migration guide available at docs/migration-v1.md
 Semantic-release analyzes commits since the last release:
 
 ```
-Last release: {{OSSA_VERSION_TAG}}
+Last release: v0.3.0
 New commits:
   - fix: resolve validation error      → PATCH
   - feat: add KAgent bridge support    → MINOR (overrides PATCH)
@@ -165,9 +165,9 @@ OSSA schema versions follow specification versions:
 ```
 Package Version  → Schema Directory
 -----------------------------------------
-v0.2.8          → spec/{{OSSA_VERSION_TAG}}/
-v0.3.0          → spec/{{OSSA_VERSION_TAG}}/
-v1.0.0          → spec/{{OSSA_VERSION_TAG}}/
+v0.2.8          → spec/v0.3.0/
+v0.3.0          → spec/v0.3.0/
+v1.0.0          → spec/v0.3.0/
 ```
 
 ### Schema Compatibility

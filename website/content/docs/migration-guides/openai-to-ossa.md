@@ -42,7 +42,7 @@ This guide provides a complete migration path from OpenAI's Assistants API to th
 | **Observability** | Limited | Full tracing, metrics, logs (Prometheus, Jaeger) |
 | **Cost Control** | Per-token billing | Configurable cost constraints |
 | **Multi-Agent** | Limited | Native orchestration support |
-| **Standards** | Proprietary | Open standard (OSSA {{OSSA_VERSION_TAG}}) |
+| **Standards** | Proprietary | Open standard (OSSA v0.3.0) |
 
 ---
 
@@ -83,7 +83,7 @@ assistant = client.beta.assistants.create(
 
 **OSSA Equivalent:**
 ```yaml
-apiVersion: ossa/v{{OSSA_VERSION}}
+apiVersion: ossa/v0.3.0
 kind: Agent
 metadata:
   name: data-analyst
@@ -203,7 +203,7 @@ assistant = client.beta.assistants.create(
 
 **OSSA Data Capabilities:**
 ```yaml
-apiVersion: ossa/v{{OSSA_VERSION}}
+apiVersion: ossa/v0.3.0
 kind: Agent
 metadata:
   name: research-assistant
@@ -397,7 +397,7 @@ print(messages.data[0].content[0].text.value)
 
 **1. Create Agent Manifest (`math-tutor.ossa.yaml`):**
 ```yaml
-apiVersion: ossa/v{{OSSA_VERSION}}
+apiVersion: ossa/v0.3.0
 kind: Agent
 metadata:
   name: math-tutor
@@ -528,7 +528,7 @@ if run.status == 'requires_action':
 
 **1. Create Agent Manifest (`stock-assistant.ossa.yaml`):**
 ```yaml
-apiVersion: ossa/v{{OSSA_VERSION}}
+apiVersion: ossa/v0.3.0
 kind: Agent
 metadata:
   name: stock-assistant
@@ -696,7 +696,7 @@ buildkit ecosystem services start qdrant
 
 **2. Create Agent Manifest (`support-assistant.ossa.yaml`):**
 ```yaml
-apiVersion: ossa/v{{OSSA_VERSION}}
+apiVersion: ossa/v0.3.0
 kind: Agent
 metadata:
   name: support-assistant
@@ -905,7 +905,7 @@ OSSA provides native support for multi-agent orchestration, which OpenAI Assista
 
 **OSSA Orchestrator Example:**
 ```yaml
-apiVersion: ossa/v{{OSSA_VERSION}}
+apiVersion: ossa/v0.3.0
 kind: Agent
 metadata:
   name: research-orchestrator
@@ -1196,5 +1196,5 @@ curl http://localhost:3000/metrics
 
 **Version**: 1.0.0
 **Last Updated**: 2025-11-10
-**OSSA Version**: {{OSSA_VERSION_TAG}}
+**OSSA Version**: v0.3.0
 **Maintainer**: BuildKit Team

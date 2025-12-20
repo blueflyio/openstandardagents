@@ -91,10 +91,10 @@ paths:
   "openapi": "3.1.0",
   "info": {
     "title": "Kubernetes Troubleshooter Agent API",
-    "version": "{{OSSA_VERSION}}"
+    "version": "0.3.0"
   },
   "x-ossa-metadata": {
-    "version": "{{OSSA_VERSION}}",
+    "version": "0.3.0",
     "compliance": {
       "level": "enterprise",
       "frameworks": ["OSSA", "OpenAPI 3.1", "RFC7807"]
