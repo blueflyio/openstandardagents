@@ -292,10 +292,25 @@ build:docker:
     - docker build -t $IMAGE_TAG .
     - docker push $IMAGE_TAG
     - |
-      # Also tag as MR-specific for review apps
+      # Tag as MR-specific for review apps
       if [ -n "$CI_MERGE_REQUEST_IID" ]; then
         docker tag $IMAGE_TAG $CI_REGISTRY_IMAGE:mr-$CI_MERGE_REQUEST_IID
         docker push $CI_REGISTRY_IMAGE:mr-$CI_MERGE_REQUEST_IID
+      fi
+
+      # Tag as 'latest' on main branch for GitOps auto-deploy
+      if [ "$CI_COMMIT_BRANCH" = "main" ]; then
+        docker tag $IMAGE_TAG $CI_REGISTRY_IMAGE:latest
+        docker push $CI_REGISTRY_IMAGE:latest
+        echo "✅ Pushed 'latest' tag for main branch"
+      fi
+
+      # Tag with branch name for release branches
+      if echo "$CI_COMMIT_BRANCH" | grep -q "^release/"; then
+        BRANCH_TAG=$(echo "$CI_COMMIT_BRANCH" | sed 's/\//-/g')
+        docker tag $IMAGE_TAG $CI_REGISTRY_IMAGE:$BRANCH_TAG
+        docker push $CI_REGISTRY_IMAGE:$BRANCH_TAG
+        echo "✅ Pushed branch tag: $BRANCH_TAG"
       fi
   needs:
     - build:website
