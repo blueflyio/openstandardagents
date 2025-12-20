@@ -204,7 +204,11 @@ test:unit:
   stage: test
   script:
     - npm run test
-  allow_failure: true
+  # Allow failures on MRs and release branches (development), but require passing on main (production)
+  # This prevents blocking deployments for minor violations during development while ensuring production quality
+  allow_failure:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH =~ /^release\//
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
     - if: $CI_COMMIT_BRANCH =~ /^release\//
@@ -237,7 +241,11 @@ test:e2e:
       - website/playwright-report
       - website/test-results
     expire_in: 30 days
-  allow_failure: true
+  # Allow failures on MRs and release branches (development), but require passing on main (production)
+  # This prevents blocking deployments for minor violations during development while ensuring production quality
+  allow_failure:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH =~ /^release\//
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
     - if: $CI_COMMIT_BRANCH =~ /^release\//
@@ -360,7 +368,11 @@ quality:browser-performance:
     paths:
       - sitespeed-results
     expire_in: 30 days
-  allow_failure: true
+  # Allow failures on MRs and release branches (development), but require passing on main (production)
+  # This prevents blocking deployments for minor violations during development while ensuring production quality
+  allow_failure:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH =~ /^release\//
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
     - if: $CI_COMMIT_BRANCH =~ /^release\//
@@ -387,7 +399,11 @@ quality:accessibility:
     paths:
       - accessibility.json
     expire_in: 30 days
-  allow_failure: true
+  # Allow failures on MRs and release branches (development), but require passing on main (production)
+  # This prevents blocking deployments for minor violations during development while ensuring production quality
+  allow_failure:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH =~ /^release\//
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
     - if: $CI_COMMIT_BRANCH =~ /^release\//
