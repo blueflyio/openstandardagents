@@ -408,12 +408,12 @@ export class MessagingValidator {
       ];
     }
 
-    const schemaObj = schema as Record<string, unknown>;
+    // Type assertion after null check - schema is object but TypeScript needs explicit typing
+    const schemaTyped = schema as { type?: string };
 
     // Basic JSON Schema validation
     if (
-      schemaObj.type &&
-      typeof schemaObj.type === 'string' &&
+      schemaTyped.type &&
       ![
         'object',
         'array',
@@ -422,11 +422,11 @@ export class MessagingValidator {
         'integer',
         'boolean',
         'null',
-      ].includes(schemaObj.type)
+      ].includes(schemaTyped.type)
     ) {
       errors.push({
         path: 'type',
-        message: `invalid schema type: ${schemaObj.type}`,
+        message: `invalid schema type: ${schemaTyped.type}`,
       });
     }
 
