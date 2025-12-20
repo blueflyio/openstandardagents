@@ -50,11 +50,11 @@ Together, they enable powerful agent-driven workflows within Drupal sites that c
 
 ---
 
-## OSSA v0.3.x Features
+## OSSA v0.3.0 Features
 
 ### Agent Messaging (A2A Protocol)
 
-OSSA v0.3.x introduces standardized agent-to-agent messaging:
+OSSA v0.3.0 introduces standardized agent-to-agent messaging:
 
 ```yaml
 apiVersion: ossa/v0.3.0
@@ -386,7 +386,7 @@ function ai_agents_ossa_node_presave(NodeInterface $node) {
 
 ## Research Findings
 
-### OSSA v0.3.x Capabilities
+### OSSA v0.3.0 Capabilities
 
 - **A2A Messaging**: Standardized agent-to-agent communication
 - **Message Routing**: Built-in message routing and delivery
@@ -431,6 +431,6 @@ function ai_agents_ossa_node_presave(NodeInterface $node) {
 
 ## References
 
-- OSSA v0.3.x Specification: https://openstandardagents.org
+- OSSA v0.3.0 Specification: https://openstandardagents.org
 - Symphony Documentation: [Link to Symphony docs]
 - Drupal OSSA Module: [Link to module]
