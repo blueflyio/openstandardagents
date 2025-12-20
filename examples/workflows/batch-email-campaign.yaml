@@ -73,7 +73,7 @@ spec:
           ref: ./tasks/fetch-subscribers.yaml
           input:
             segment_id: ${{ segment_id }}
-            limit: ${{ workflow.input.test_mode ? 10 : null }}
+            limit: ${{ workflow.input.test_mode ? 10 : ~ }}
 
         # Send emails in batch
         - id: send-emails
