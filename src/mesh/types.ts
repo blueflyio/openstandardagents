@@ -1,6 +1,6 @@
 /**
  * Agent Mesh Communication Layer - Type Definitions
- * Based on OSSA v0.3.1 Messaging Specification and v0.2.9 A2A Protocol
+ * Based on OSSA v0.3.0 Messaging Specification and v0.2.9 A2A Protocol
  */
 
 /**

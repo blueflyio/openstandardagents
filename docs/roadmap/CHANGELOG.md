@@ -122,7 +122,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Tracking checkboxes for all criteria
 
 #### Roadmap Index (`README.md`)
-- Overview of OSSA v0.3.1 → v0.4.0 evolution
+- Overview of OSSA v0.3.0 → v0.4.0 evolution
 - Quick navigation to all documents
 - Timeline overview
 - Related issues summary
@@ -143,7 +143,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## Roadmap Milestones
 
-### v0.3.1 - Specification (Target: Week 2)
+### v0.3.0 - Specification (Target: Week 2)
 - **Status**: In Progress
 - **Issues**: #133, #132
 - **Deliverables**: Enhanced schemas, messaging extension, examples

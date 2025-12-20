@@ -24,7 +24,7 @@
  *   uri: 'agent://team-a/my-agent',
  *   name: 'My Agent',
  *   version: '1.0.0',
- *   ossaVersion: '0.3.1',
+ *   ossaVersion: '0.3.0',
  *   capabilities: ['task-execution', 'data-processing'],
  *   endpoints: { http: 'http://localhost:8080' },
  *   transport: ['http'],
