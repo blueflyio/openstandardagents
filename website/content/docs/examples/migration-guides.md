@@ -103,7 +103,7 @@ Migrate agents from existing frameworks to OSSA format.
 
 ```bash
 # Migrate agent between versions
-ossa migrate agent.yaml --target-version {{OSSA_VERSION}}
+ossa migrate agent.yaml --target-version 0.3.0
 ```
 
 ### Manual Migration

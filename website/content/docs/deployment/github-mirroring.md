@@ -306,7 +306,7 @@ Documentation
 - Changelog - https://github.com/blueflyio/openstandardagents/blob/main/CHANGELOG.md
 - Migration Guide - https://openstandardagents.org/docs/migration-guides/
 
-npm Package - @bluefly/openstandardagents@{{OSSA_VERSION}}
+npm Package - @bluefly/openstandardagents@0.3.0
 GitLab Release - https://gitlab.com/blueflyio/openstandardagents/-/releases/{{OSSA_VERSION_TAG}}
 ```
 
