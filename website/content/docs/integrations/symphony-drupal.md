@@ -57,7 +57,7 @@ Together, they enable powerful agent-driven workflows within Drupal sites that c
 OSSA v0.3.x introduces standardized agent-to-agent messaging:
 
 ```yaml
-apiVersion: ossa/v0.3.0
+apiVersion: ossa/v{{OSSA_VERSION}}
 kind: Agent
 metadata:
   name: drupal-content-agent
@@ -336,7 +336,7 @@ async function triggerSymphonyWorkflow(workflowName: string, data: any) {
 
 ```yaml
 # content-processor.ossa.yaml
-apiVersion: ossa/v0.3.0
+apiVersion: ossa/v{{OSSA_VERSION}}
 kind: Agent
 metadata:
   name: content-processor

@@ -91,7 +91,7 @@ metadata:
   description: "Data analyst assistant"
   labels:
     type: specialist
-    ossa-version: "{{OSSA_VERSION}}"
+    ossa-version: "0.3.0"
 spec:
   role: |
     You are a data analyst assistant.

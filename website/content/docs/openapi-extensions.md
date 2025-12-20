@@ -545,7 +545,7 @@ components:
       schema:
         type: string
         pattern: "^\\d+\\.\\d+\\.\\d+(-[a-zA-Z0-9]+)?$"
-      example: "{{OSSA_VERSION}}"
+      example: "0.3.0"
 
 paths:
   /api/v1/execute:
