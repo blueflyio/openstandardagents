@@ -89,7 +89,7 @@ export class TestRunnerService {
       const path = expr.split('.').slice(1);
       let value: unknown = manifest.metadata;
       for (const key of path) {
-        value = (value as { [key: string]: unknown })?.[key];
+        value = value && typeof value === 'object' ? (value as { [key: string]: unknown })[key] : undefined;
       }
       return value;
     }
@@ -97,7 +97,7 @@ export class TestRunnerService {
       const path = expr.split('.').slice(1);
       let value: unknown = manifest.spec;
       for (const key of path) {
-        value = (value as { [key: string]: unknown })?.[key];
+        value = value && typeof value === 'object' ? (value as { [key: string]: unknown })[key] : undefined;
       }
       return value;
     }
