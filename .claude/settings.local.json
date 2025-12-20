@@ -1,0 +1,12 @@
+{
+  "enabledMcpjsonServers": [
+    "memory",
+    "filesystem",
+    "sequential-thinking",
+    "postgres",
+    "redis",
+    "gitlab",
+    "agent-mesh",
+    "browsermcp"
+  ]
+}

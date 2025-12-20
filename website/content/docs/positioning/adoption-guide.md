@@ -64,7 +64,7 @@ ossa init my-first-agent --type autonomous
   "manifestVersion": "1.0.0",
   "agent": {
     "name": "my-first-agent",
-    "version": "{{OSSA_VERSION}}",
+    "version": "0.3.0",
     "type": "autonomous",
     "description": "My first OSSA agent"
   },
@@ -177,7 +177,7 @@ constraints:
   "manifestVersion": "1.0.0",
   "agent": {
     "name": "code-review-assistant",
-    "version": "{{OSSA_VERSION}}",
+    "version": "0.3.0",
     "type": "reactive",
     "description": "Automated code review for pull requests"
   },

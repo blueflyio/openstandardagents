@@ -251,7 +251,7 @@ constraints:
 ### Production Chatbot
 
 ```yaml
-apiVersion: ossa/v{{OSSA_DISPLAY_VERSION}}
+apiVersion: ossa/v0.3.x
 kind: Agent
 metadata:
   name: customer-chatbot
@@ -283,7 +283,7 @@ spec:
 ### Background Data Analyzer
 
 ```yaml
-apiVersion: ossa/v{{OSSA_DISPLAY_VERSION}}
+apiVersion: ossa/v0.3.x
 kind: Agent
 metadata:
   name: data-analyzer
@@ -314,7 +314,7 @@ spec:
 ### Development/Testing Agent
 
 ```yaml
-apiVersion: ossa/v{{OSSA_DISPLAY_VERSION}}
+apiVersion: ossa/v0.3.x
 kind: Agent
 metadata:
   name: dev-assistant
@@ -343,7 +343,7 @@ spec:
 ### High-Performance Code Generator
 
 ```yaml
-apiVersion: ossa/v{{OSSA_DISPLAY_VERSION}}
+apiVersion: ossa/v0.3.x
 kind: Agent
 metadata:
   name: code-generator
@@ -375,7 +375,7 @@ spec:
 ### Cost-Optimized Agent
 
 ```yaml
-apiVersion: ossa/v{{OSSA_DISPLAY_VERSION}}
+apiVersion: ossa/v0.3.x
 kind: Agent
 metadata:
   name: budget-agent
