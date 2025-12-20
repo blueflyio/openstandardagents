@@ -246,9 +246,37 @@ async function fetchVersions() {
   const latestStableTag = stableGitHubTags[0];
   const latestDevTag = devGitHubTags[0];
 
+  // Get existing stable version from versions.json to prevent downgrades
+  let existingStableVersion = null;
+  if (fs.existsSync(OUTPUT_FILE)) {
+    try {
+      const existingData = JSON.parse(fs.readFileSync(OUTPUT_FILE, 'utf8'));
+      existingStableVersion = existingData.stable;
+      console.log(`Existing stable version: ${existingStableVersion}`);
+    } catch (e) {
+      console.log('Could not read existing versions.json');
+    }
+  }
+
   // Prioritize npm's latest tag for stable version
   const npmStableVersion = distTags.latest || allVersions.find(v => v.type === 'stable' && v.published)?.version;
-  const stableVersion = latestStableTag?.version || npmStableVersion || allVersions.find(v => v.type === 'stable')?.version || '0.2.3';
+  let stableVersion = latestStableTag?.version || npmStableVersion || allVersions.find(v => v.type === 'stable')?.version || '0.2.3';
+
+  // Don't downgrade stable version - keep higher version if it exists
+  if (existingStableVersion) {
+    const compareVersions = (a, b) => {
+      const [aMajor, aMinor, aPatch] = a.split('.').map(Number);
+      const [bMajor, bMinor, bPatch] = b.split('.').map(Number);
+      if (aMajor !== bMajor) return aMajor - bMajor;
+      if (aMinor !== bMinor) return aMinor - bMinor;
+      return aPatch - bPatch;
+    };
+    if (compareVersions(existingStableVersion, stableVersion) > 0) {
+      console.log(`Keeping higher stable version: ${existingStableVersion} (not downgrading to ${stableVersion})`);
+      stableVersion = existingStableVersion;
+    }
+  }
+
   const stableTag = latestStableTag?.tag || `v${stableVersion}`;
   
   // Prioritize npm's dev tag for dev version

@@ -1,9 +1,9 @@
 {
-  "stable": "0.2.9",
-  "stableTag": "v0.2.9",
-  "latest": "0.2.9",
-  "dev": "0.2.6-dev",
-  "devTag": "v0.2.6-dev",
+  "stable": "0.3.0",
+  "stableTag": "v0.3.0",
+  "latest": "0.3.0",
+  "dev": "0.3.0-dev",
+  "devTag": "v0.3.0-dev",
   "all": [
     {
       "version": "0.3.0",
