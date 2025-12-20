@@ -11,6 +11,7 @@ import {
   createStep,
   expr,
 } from '../../src/types/workflow';
+import { getApiVersion } from '../../src/utils/version';
 
 describe('OSSA v0.3.0 Workflow Schema', () => {
   let ajv: Ajv;
@@ -383,8 +384,7 @@ describe('OSSA v0.3.0 Workflow Schema', () => {
       });
 
       expect(workflow.kind).toBe('Workflow');
-      // apiVersion should match the schema version being tested (v0.3.0)
-      expect(workflow.apiVersion).toBe('ossa/v0.3.0');
+      expect(workflow.apiVersion).toBe(getApiVersion());
       expect(workflow.metadata.name).toBe('my-workflow');
       expect(workflow.spec.steps).toHaveLength(1);
 
