@@ -1,0 +1,53 @@
+# =============================================================================
+# OSSA Website - Kubernetes Ingress
+# =============================================================================
+# DNS: *.review.blueflyagents.com -> Cloudflare CNAME -> Tailscale Funnel
+# =============================================================================
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ossa-website
+  namespace: ossa-website
+  labels:
+    app: ossa-website
+    app.kubernetes.io/name: ossa-website
+    app.kubernetes.io/managed-by: gitlab-agent
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+    nginx.ingress.kubernetes.io/proxy-body-size: "0"
+spec:
+  ingressClassName: nginx
+  rules:
+    # Primary local development domain
+    - host: ossa.review.blueflyagents.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: ossa-website
+                port:
+                  number: 80
+    # Alternative local domains
+    - host: ossa-website.orb.local
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: ossa-website
+                port:
+                  number: 80
+    - host: openstandardagents.orb.local
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: ossa-website
+                port:
+                  number: 80
