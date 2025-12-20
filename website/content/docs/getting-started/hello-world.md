@@ -29,7 +29,7 @@ This creates a minimal, valid OSSA agent manifest.
 Open `hello-world.ossa.yaml`:
 
 ```yaml
-apiVersion: ossa/v{{OSSA_DISPLAY_VERSION}}
+apiVersion: ossa/v0.3.x
 kind: Agent
 
 metadata:
@@ -55,7 +55,7 @@ spec:
 ### apiVersion & kind
 
 ```yaml
-apiVersion: ossa/v{{OSSA_DISPLAY_VERSION}}
+apiVersion: ossa/v0.3.x
 kind: Agent
 ```
 

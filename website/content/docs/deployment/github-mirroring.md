@@ -156,7 +156,7 @@ mirror:github:
 
 **When Mirror Runs:**
 
-1. **On Git Tags**: When a new version tag is created (e.g., `{{OSSA_VERSION_TAG}}`)
+1. **On Git Tags**: When a new version tag is created (e.g., `v0.3.0`)
 2. **On Main Branch**: When commits are pushed to the `main` branch
 3. **Not on Feature Branches**: Feature branches are not mirrored
 
@@ -277,7 +277,7 @@ Tags are synchronized automatically when created on GitLab:
 
 **Tag Creation Flow:**
 
-1. **GitLab Release**: Tag created on GitLab (e.g., `{{OSSA_VERSION_TAG}}`)
+1. **GitLab Release**: Tag created on GitLab (e.g., `v0.3.0`)
 2. **CI Pipeline Triggers**: Mirror job runs automatically
 3. **GitHub Sync**: Tag pushed to GitHub with `--force`
 4. **GitHub Actions**: Release workflow triggers on new tag
@@ -285,7 +285,7 @@ Tags are synchronized automatically when created on GitLab:
 
 **Tag Types:**
 
-- **Production Tags**: `{{OSSA_VERSION_TAG}}`, `v1.0.0` (semantic versions)
+- **Production Tags**: `v0.3.0`, `v1.0.0` (semantic versions)
 - **Dev Tags**: `0.2.8-dev-1`, `0.2.8-dev-2` (development builds)
 - **RC Tags**: `v0.2.8-RC` (release candidates)
 
@@ -294,7 +294,7 @@ Tags are synchronized automatically when created on GitLab:
 GitLab tags include comprehensive release information:
 
 ```
-Release {{OSSA_VERSION_TAG}}
+Release v0.3.0
 
 Milestone - v0.2.8 - Bug Fixes & Documentation
 Pipeline - 12345678
@@ -307,7 +307,7 @@ Documentation
 - Migration Guide - https://openstandardagents.org/docs/migration-guides/
 
 npm Package - @bluefly/openstandardagents@0.3.0
-GitLab Release - https://gitlab.com/blueflyio/openstandardagents/-/releases/{{OSSA_VERSION_TAG}}
+GitLab Release - https://gitlab.com/blueflyio/openstandardagents/-/releases/v0.3.0
 ```
 
 This metadata is preserved when mirrored to GitHub.
@@ -674,12 +674,12 @@ CONFLICT (content): Merge conflict in <file>
 3. **Delete and recreate tag (if corrupted):**
    ```bash
    # On GitLab
-   git tag -d {{OSSA_VERSION_TAG}}
-   git push origin :refs/tags/{{OSSA_VERSION_TAG}}
+   git tag -d v0.3.0
+   git push origin :refs/tags/v0.3.0
    
    # Recreate tag
-   git tag -a v0.2.8 -m "Release {{OSSA_VERSION_TAG}}"
-   git push origin {{OSSA_VERSION_TAG}}
+   git tag -a v0.2.8 -m "Release v0.3.0"
+   git push origin v0.3.0
    
    # Mirror will sync automatically
    ```

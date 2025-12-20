@@ -109,10 +109,10 @@ paths:
   "openapi": "3.1.0",
   "info": {
     "title": "Kubernetes Troubleshooter Agent API",
-    "version": "{{OSSA_VERSION}}"
+    "version": "0.3.0"
   },
   "x-ossa-metadata": {
-    "version": "{{OSSA_VERSION}}",
+    "version": "0.3.0",
     "compliance": {
       "level": "enterprise",
       "frameworks": ["OSSA", "OpenAPI 3.1", "RFC7807"]
@@ -852,7 +852,7 @@ The OpenAPI spec should reference capabilities and tools defined in the manifest
 
 ```yaml
 # agent.ossa.yaml
-apiVersion: ossa/v{{OSSA_DISPLAY_VERSION}}
+apiVersion: ossa/v0.3.x
 kind: Agent
 metadata:
   name: k8s-troubleshooter

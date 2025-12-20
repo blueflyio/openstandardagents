@@ -36,7 +36,7 @@ sequenceDiagram
     Runtime->>Orchestrator: Initialize Agent
 
     Orchestrator->>Manifest: Load OSSA Manifest
-    Note over Manifest: apiVersion: ossa/v{{OSSA_DISPLAY_VERSION}}<br/>kind: Agent<br/>spec: {...}
+    Note over Manifest: apiVersion: ossa/v0.3.x<br/>kind: Agent<br/>spec: {...}
 
     Manifest-->>Orchestrator: Agent Config
     Note over Orchestrator: Role, Model, Tools, Rules
@@ -101,7 +101,7 @@ Agent Runtime → Orchestrator → OSSA Manifest
 
 **Example Manifest:**
 ```yaml
-apiVersion: ossa/v{{OSSA_DISPLAY_VERSION}}
+apiVersion: ossa/v0.3.x
 kind: Agent
 metadata:
   name: weather-assistant
