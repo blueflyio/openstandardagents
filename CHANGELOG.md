@@ -1,3 +1,24 @@
+# Issue #136: Drupal Extension Schema
+
+## [Unreleased] - 2025-12-20
+
+### Added
+- Formalized `extensions.drupal` schema in OSSA v0.3.0 specification
+- Complete documentation for all 5 Drupal execution models (ECA, Maestro, FlowDrop, AI Agent Runner, Minikanban)
+- RuntimeBinding patterns for Drupal integrations
+- Permission system configuration with multiple modes
+- Symfony Messenger integration with retry strategies
+- MCP server integration support
+- Example: `drupal-content-writer.ossa.yaml` (133 lines)
+
+### Files
+- `spec/v0.3.0/extensions/drupal.md` (490 lines)
+- `spec/v0.3.0/examples/drupal-content-writer.ossa.yaml` (133 lines)
+
+**Total: 623 lines**
+
+---
+
 # Changelog
 
 All notable changes to OSSA (Open Standard for Scalable AI Agents) will be documented in this file.
