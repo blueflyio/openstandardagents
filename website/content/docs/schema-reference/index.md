@@ -33,9 +33,9 @@ OSSA supports multiple resource kinds (v0.3.1+):
 
 ## Schema Versions
 
-- **Current**: v0.2.8-RC
-- **Stable**: v0.2.8
-- **Previous**: {{OSSA_VERSION_TAG}}, {{OSSA_VERSION_TAG}}
+- **Current**: v0.3.0
+- **Stable**: v0.3.0
+- **Previous**: v0.2.9, v0.2.8
 
 See [Versioning Guide](../guides/versioning.md) for migration information.
 
@@ -50,7 +50,7 @@ ossa validate agent.ossa.yaml
 ## Complete Schema
 
 View the complete JSON Schema:
-- [v0.2.8-RC Schema](https://github.com/blueflyio/openstandardagents/blob/main/spec/{{OSSA_VERSION_TAG}}/ossa-{{OSSA_VERSION}}.schema.json)
+- [v0.3.0 Schema](https://gitlab.com/blueflyio/openstandardagents/-/blob/main/spec/v0.3.0/ossa-0.3.0.schema.json)
 
 ## Related Documentation
 
