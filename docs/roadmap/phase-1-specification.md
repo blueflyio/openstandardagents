@@ -39,7 +39,7 @@ Define the contract for tasks, workflows, and messaging before implementation be
 
 **Example:**
 ```yaml
-apiVersion: ossa/v0.3.1
+apiVersion: ossa/v0.3.0
 kind: Task
 metadata:
   name: process-data
@@ -88,7 +88,7 @@ spec:
 
 **Example:**
 ```yaml
-apiVersion: ossa/v0.3.1
+apiVersion: ossa/v0.3.0
 kind: Workflow
 metadata:
   name: complex-workflow
@@ -147,7 +147,7 @@ spec:
 
 **Example:**
 ```yaml
-apiVersion: ossa/v0.3.1
+apiVersion: ossa/v0.3.0
 kind: Agent
 metadata:
   name: security-scanner
