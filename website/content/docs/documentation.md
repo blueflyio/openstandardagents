@@ -89,7 +89,7 @@ Documentation is automatically updated when:
 
 ## 💡 Contributing to Documentation
 
-See our [Documentation Implementation Guide](https://github.com/blueflyio/openstandardagents/blob/main/DOCUMENTATION_IMPLEMENTATION_GUIDE.md) for:
+See our [Documentation Implementation Guide](https://gitlab.com/blueflyio/openstandardagents/blob/main/DOCUMENTATION_IMPLEMENTATION_GUIDE.md) for:
 - Documentation standards
 - Template usage
 - Automation setup

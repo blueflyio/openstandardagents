@@ -66,7 +66,7 @@ x-ossa-metadata:
     logging: true
 ```
 
-**See**: [Full Documentation](https://github.com/blueflyio/openstandardagents/blob/main/docs/openapi-extensions.md#x-ossa-metadata)
+**See**: [Full Documentation](https://gitlab.com/blueflyio/openstandardagents/blob/main/docs/openapi-extensions.md#x-ossa-metadata)
 
 ### x-ossa
 
@@ -93,7 +93,7 @@ x-ossa:
       validatedAt: "2024-01-15T10:30:00Z"
 ```
 
-**See**: [Full Documentation](https://github.com/blueflyio/openstandardagents/blob/main/docs/openapi-extensions.md#x-ossa)
+**See**: [Full Documentation](https://gitlab.com/blueflyio/openstandardagents/blob/main/docs/openapi-extensions.md#x-ossa)
 
 ### x-agent
 
@@ -120,7 +120,7 @@ x-agent:
     - validate-all-inputs
 ```
 
-**See**: [Full Documentation](https://github.com/blueflyio/openstandardagents/blob/main/docs/openapi-extensions.md#x-agent)
+**See**: [Full Documentation](https://gitlab.com/blueflyio/openstandardagents/blob/main/docs/openapi-extensions.md#x-agent)
 
 ---
 
@@ -151,7 +151,7 @@ paths:
         # ... responses ...
 ```
 
-**See**: [Full Documentation](https://github.com/blueflyio/openstandardagents/blob/main/docs/openapi-extensions.md#x-ossa-capability)
+**See**: [Full Documentation](https://gitlab.com/blueflyio/openstandardagents/blob/main/docs/openapi-extensions.md#x-ossa-capability)
 
 ### x-ossa-autonomy
 
@@ -182,7 +182,7 @@ paths:
           - permanent_delete
 ```
 
-**See**: [Full Documentation](https://github.com/blueflyio/openstandardagents/blob/main/docs/openapi-extensions.md#x-ossa-autonomy)
+**See**: [Full Documentation](https://gitlab.com/blueflyio/openstandardagents/blob/main/docs/openapi-extensions.md#x-ossa-autonomy)
 
 ### x-ossa-constraints
 
@@ -211,7 +211,7 @@ paths:
           maxExecutionTime: 300
 ```
 
-**See**: [Full Documentation](https://github.com/blueflyio/openstandardagents/blob/main/docs/openapi-extensions.md#x-ossa-constraints)
+**See**: [Full Documentation](https://gitlab.com/blueflyio/openstandardagents/blob/main/docs/openapi-extensions.md#x-ossa-constraints)
 
 ### x-ossa-tools
 
@@ -237,7 +237,7 @@ paths:
             - get_events
 ```
 
-**See**: [Full Documentation](https://github.com/blueflyio/openstandardagents/blob/main/docs/openapi-extensions.md#x-ossa-tools)
+**See**: [Full Documentation](https://gitlab.com/blueflyio/openstandardagents/blob/main/docs/openapi-extensions.md#x-ossa-tools)
 
 ### x-ossa-llm
 
@@ -260,7 +260,7 @@ paths:
         maxTokens: 4000
 ```
 
-**See**: [Full Documentation](https://github.com/blueflyio/openstandardagents/blob/main/docs/openapi-extensions.md#x-ossa-llm)
+**See**: [Full Documentation](https://gitlab.com/blueflyio/openstandardagents/blob/main/docs/openapi-extensions.md#x-ossa-llm)
 
 ---
 
@@ -287,7 +287,7 @@ components:
         pattern: "^[a-z0-9]([-a-z0-9]*[a-z0-9])?$"
 ```
 
-**See**: [Full Documentation](https://github.com/blueflyio/openstandardagents/blob/main/docs/openapi-extensions.md#x-ossa-agent-id)
+**See**: [Full Documentation](https://gitlab.com/blueflyio/openstandardagents/blob/main/docs/openapi-extensions.md#x-ossa-agent-id)
 
 ### x-ossa-version
 
@@ -308,7 +308,7 @@ components:
         pattern: "^\\d+\\.\\d+\\.\\d+(-[a-zA-Z0-9]+)?$"
 ```
 
-**See**: [Full Documentation](https://github.com/blueflyio/openstandardagents/blob/main/docs/openapi-extensions.md#x-ossa-version)
+**See**: [Full Documentation](https://gitlab.com/blueflyio/openstandardagents/blob/main/docs/openapi-extensions.md#x-ossa-version)
 
 ---
 
@@ -341,7 +341,7 @@ components:
           strict: true
 ```
 
-**See**: [Full Documentation](https://github.com/blueflyio/openstandardagents/blob/main/docs/openapi-extensions.md#x-ossa-capability-schema)
+**See**: [Full Documentation](https://gitlab.com/blueflyio/openstandardagents/blob/main/docs/openapi-extensions.md#x-ossa-capability-schema)
 
 ---
 
@@ -349,15 +349,15 @@ components:
 
 ### Minimal Agent API
 
-See: [`examples/openapi-extensions/minimal-agent-api.openapi.yml`](https://github.com/blueflyio/openstandardagents/blob/main/examples/openapi-extensions/minimal-agent-api.openapi.yml)
+See: [`examples/openapi-extensions/minimal-agent-api.openapi.yml`](https://gitlab.com/blueflyio/openstandardagents/blob/main/examples/openapi-extensions/minimal-agent-api.openapi.yml)
 
 ### Worker Agent API
 
-See: [`examples/openapi-extensions/worker-agent-api.openapi.yml`](https://github.com/blueflyio/openstandardagents/blob/main/examples/openapi-extensions/worker-agent-api.openapi.yml)
+See: [`examples/openapi-extensions/worker-agent-api.openapi.yml`](https://gitlab.com/blueflyio/openstandardagents/blob/main/examples/openapi-extensions/worker-agent-api.openapi.yml)
 
 ### Orchestrator Agent API
 
-See: [`examples/openapi-extensions/orchestrator-agent-api.openapi.yml`](https://github.com/blueflyio/openstandardagents/blob/main/examples/openapi-extensions/orchestrator-agent-api.openapi.yml)
+See: [`examples/openapi-extensions/orchestrator-agent-api.openapi.yml`](https://gitlab.com/blueflyio/openstandardagents/blob/main/examples/openapi-extensions/orchestrator-agent-api.openapi.yml)
 
 ---
 
@@ -368,7 +368,7 @@ OSSA OpenAPI extensions complement OSSA agent manifests (`.ossa.yaml` files). Th
 - **OSSA Agent Manifest** (`.ossa.yaml`) - Declarative agent definition with full configuration
 - **OpenAPI Specification with OSSA Extensions** - API interface definition with agent metadata
 
-See [Full Documentation](https://github.com/blueflyio/openstandardagents/blob/main/docs/openapi-extensions.md#integration-with-ossa-manifests) for details.
+See [Full Documentation](https://gitlab.com/blueflyio/openstandardagents/blob/main/docs/openapi-extensions.md#integration-with-ossa-manifests) for details.
 
 ---
 
@@ -392,15 +392,15 @@ See [Full Documentation](https://github.com/blueflyio/openstandardagents/blob/ma
 
 ## Resources
 
-- **Full Documentation**: [docs/openapi-extensions.md](https://github.com/blueflyio/openstandardagents/blob/main/docs/openapi-extensions.md)
-- **JSON Schema**: [docs/schemas/openapi-extensions.schema.json](https://github.com/blueflyio/openstandardagents/blob/main/docs/schemas/openapi-extensions.schema.json)
-- **Examples**: [examples/openapi-extensions/](https://github.com/blueflyio/openstandardagents/tree/main/examples/openapi-extensions)
-- **OSSA Specification**: [spec/{{OSSA_VERSION_TAG}}/OSSA-SPECIFICATION-v0.2.x.md](https://github.com/blueflyio/openstandardagents/blob/main/spec/{{OSSA_VERSION_TAG}}/OSSA-SPECIFICATION-{{OSSA_VERSION_TAG}}.md)
+- **Full Documentation**: [docs/openapi-extensions.md](https://gitlab.com/blueflyio/openstandardagents/blob/main/docs/openapi-extensions.md)
+- **JSON Schema**: [docs/schemas/openapi-extensions.schema.json](https://gitlab.com/blueflyio/openstandardagents/blob/main/docs/schemas/openapi-extensions.schema.json)
+- **Examples**: [examples/openapi-extensions/](https://gitlab.com/blueflyio/openstandardagents/tree/main/examples/openapi-extensions)
+- **OSSA Specification**: [spec/{{OSSA_VERSION_TAG}}/OSSA-SPECIFICATION-v0.2.x.md](https://gitlab.com/blueflyio/openstandardagents/blob/main/spec/{{OSSA_VERSION_TAG}}/OSSA-SPECIFICATION-{{OSSA_VERSION_TAG}}.md)
 - **npm Package**: [@bluefly/openstandardagents](https://www.npmjs.com/package/@bluefly/openstandardagents)
 
 ---
 
-*For complete documentation with all examples and details, see the [main documentation file](https://github.com/blueflyio/openstandardagents/blob/main/docs/openapi-extensions.md).*
+*For complete documentation with all examples and details, see the [main documentation file](https://gitlab.com/blueflyio/openstandardagents/blob/main/docs/openapi-extensions.md).*
 
 
 ---

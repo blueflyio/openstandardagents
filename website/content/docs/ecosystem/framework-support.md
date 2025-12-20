@@ -217,7 +217,7 @@ console.log(result);
 
 - **Repository**: [github.com/blueflyio/kagent](https://github.com/blueflyio/kagent)
 - **API Reference**: [docs.openstandardagents.org/kagent/api](https://openstandardagents.org/docs/kagent/api)
-- **Examples**: [examples/kagent/](https://github.com/blueflyio/openstandardagents/tree/main/examples/kagent)
+- **Examples**: [examples/kagent/](https://gitlab.com/blueflyio/openstandardagents/tree/main/examples/kagent)
 
 ---
 
@@ -314,7 +314,7 @@ result = agent.invoke("What are the latest AI research papers?")
 
 ### Example Manifest
 
-See [examples/langchain/](https://github.com/blueflyio/openstandardagents/tree/main/examples/langchain) for complete examples.
+See [examples/langchain/](https://gitlab.com/blueflyio/openstandardagents/tree/main/examples/langchain) for complete examples.
 
 ### Documentation
 
@@ -1334,8 +1334,8 @@ Validate migrations:
 
 ### Getting Help
 
-- **Discord**: [discord.gg/ossa](https://github.com/blueflyio/openstandardagents/discussions) - Real-time community support
-- **GitHub Issues**: [GitHub Issues](https://github.com/blueflyio/openstandardagents/issues) - Bug reports and feature requests
+- **Discord**: [discord.gg/ossa](https://gitlab.com/blueflyio/openstandardagents/discussions) - Real-time community support
+- **GitHub Issues**: [GitHub Issues](https://gitlab.com/blueflyio/openstandardagents/issues) - Bug reports and feature requests
 - **Documentation**: [docs.openstandardagents.org](https://docs.openstandardagents.org) - Comprehensive guides
 
 ### Contributing

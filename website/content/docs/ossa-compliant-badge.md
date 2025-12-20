@@ -13,16 +13,16 @@ Display the **OSSA Compliant** badge in your project to show that your AI agent 
 ### Markdown
 
 ```markdown
-[![OSSA Compliant](https://img.shields.io/badge/OSSA-Compliant-00B8D4.svg)](https://github.com/blueflyio/openstandardagents)
+[![OSSA Compliant](https://img.shields.io/badge/OSSA-Compliant-00B8D4.svg)](https://gitlab.com/blueflyio/openstandardagents)
 ```
 
 **Result**:
-[![OSSA Compliant](https://img.shields.io/badge/OSSA-Compliant-00B8D4.svg)](https://github.com/blueflyio/openstandardagents)
+[![OSSA Compliant](https://img.shields.io/badge/OSSA-Compliant-00B8D4.svg)](https://gitlab.com/blueflyio/openstandardagents)
 
 ### HTML
 
 ```html
-<a href="https://github.com/blueflyio/openstandardagents">
+<a href="https://gitlab.com/blueflyio/openstandardagents">
   <img src="https://img.shields.io/badge/OSSA-Compliant-00B8D4.svg" alt="OSSA Compliant">
 </a>
 ```
@@ -31,7 +31,7 @@ Display the **OSSA Compliant** badge in your project to show that your AI agent 
 
 ```rst
 .. image:: https://img.shields.io/badge/OSSA-Compliant-00B8D4.svg
-   :target: https://github.com/blueflyio/openstandardagents
+   :target: https://gitlab.com/blueflyio/openstandardagents
    :alt: OSSA Compliant
 ```
 
@@ -132,9 +132,9 @@ Projects that have achieved OSSA compliance:
 
 | Project | Level | Version | Link |
 |---------|-------|---------|------|
-| Agent Buildkit | Advanced | {{OSSA_VERSION_TAG}} | [GitHub](https://github.com/blueflyio/openstandardagents) |
-| Agent Studio | Advanced | {{OSSA_VERSION_TAG}} | [GitHub](https://github.com/blueflyio/openstandardagents) |
-| KAgent | Advanced | {{OSSA_VERSION_TAG}} | [GitHub](https://github.com/blueflyio/openstandardagents) |
+| Agent Buildkit | Advanced | {{OSSA_VERSION_TAG}} | [GitHub](https://gitlab.com/blueflyio/openstandardagents) |
+| Agent Studio | Advanced | {{OSSA_VERSION_TAG}} | [GitHub](https://gitlab.com/blueflyio/openstandardagents) |
+| KAgent | Advanced | {{OSSA_VERSION_TAG}} | [GitHub](https://gitlab.com/blueflyio/openstandardagents) |
 
 **Add your project**: Submit a merge request to update this table!
 
@@ -238,11 +238,11 @@ extensions:
 - **Examples**: [examples/](Examples/)
 - **CLI Documentation**: [docs/cli/](./cli/)
 - **Contributing**: [CONTRIBUTING.md](../CONTRIBUTING.md)
-- **GitHub Repository**: https://github.com/blueflyio/openstandardagents
+- **GitHub Repository**: https://gitlab.com/blueflyio/openstandardagents
 
 ---
 
-**Questions?** Open an issue on [GitHub](https://github.com/blueflyio/openstandardagents/issues)
+**Questions?** Open an issue on [GitHub](https://gitlab.com/blueflyio/openstandardagents/issues)
 
 **Want to contribute?** See [CONTRIBUTING.md](../CONTRIBUTING.md)
 
