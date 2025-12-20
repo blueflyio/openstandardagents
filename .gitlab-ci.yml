@@ -70,10 +70,10 @@ stages:
   - mirror         # Mirror to external repos
   - .post          # GitLab reserved post-stage (post-release jobs)
 
-# Use LOCAL runners (shared minutes burned)
+# Use SaaS runners (GitLab Ultimate minutes)
 default:
   tags:
-    - local
+    - saas-linux-small-amd64
 
 variables:
   NODE_VERSION: "22"
@@ -93,7 +93,7 @@ detect:version:
   needs: []  # Skip .pre stage - allows pipeline to auto-start
   image: alpine:latest
   tags:
-    - local
+    - saas-linux-small-amd64
   before_script:
     - apk add --no-cache curl jq
     - apk add --no-cache git bash
@@ -598,7 +598,7 @@ build:dist:
   stage: build
   image: node:${NODE_VERSION}-alpine
   tags:
-    - local
+    - saas-linux-small-amd64
   timeout: 30 minutes
   retry:
     max: 2
@@ -638,7 +638,7 @@ test:lint:
   stage: test
   image: node:${NODE_VERSION}-alpine
   tags:
-    - local
+    - saas-linux-small-amd64
   needs:
     - job: version:sync:placeholders
       optional: true
@@ -663,7 +663,7 @@ test:code-quality:
   needs: []
   image: node:${NODE_VERSION}-alpine
   tags:
-    - local
+    - saas-linux-small-amd64
   script:
     - npm ci --legacy-peer-deps
     - npx eslint src/ -f json -o eslint-report.json || true
@@ -682,7 +682,7 @@ test:unit:
   stage: test
   image: node:${NODE_VERSION}-alpine
   tags:
-    - local
+    - saas-linux-small-amd64
   timeout: 20 minutes
   retry:
     max: 2
@@ -727,7 +727,7 @@ test:integration:
   stage: test
   image: node:${NODE_VERSION}-alpine
   tags:
-    - local
+    - saas-linux-small-amd64
   timeout: 20 minutes
   dependencies:
     - build:dist
@@ -754,7 +754,7 @@ test:e2e:
   stage: test
   image: node:${NODE_VERSION}-alpine
   tags:
-    - local
+    - saas-linux-small-amd64
   timeout: 30 minutes
   dependencies:
     - build:dist
@@ -782,7 +782,7 @@ test:security:
   needs: []
   image: node:${NODE_VERSION}-alpine
   tags:
-    - local
+    - saas-linux-small-amd64
   script:
     - npm ci --legacy-peer-deps
     - npm audit --production || echo "WARNING Security vulnerabilities"
@@ -798,7 +798,7 @@ quality:gates:
   stage: quality
   image: node:${NODE_VERSION}-alpine
   tags:
-    - local
+    - saas-linux-small-amd64
   script:
     - echo "Quality gates - all tests must pass"
   rules:
@@ -2300,7 +2300,7 @@ rc:smoke-tests:
   stage: rc-validation
   image: node:${NODE_VERSION}-alpine
   tags:
-    - local
+    - saas-linux-small-amd64
   before_script:
     - apk add --no-cache curl jq
     - npm ci --legacy-peer-deps
@@ -2325,7 +2325,7 @@ rc:integration-tests:
   stage: rc-validation
   image: node:${NODE_VERSION}-alpine
   tags:
-    - local
+    - saas-linux-small-amd64
   before_script:
     - apk add --no-cache curl jq
     - npm ci --legacy-peer-deps
@@ -2354,7 +2354,7 @@ rc:deploy-staging:
   stage: rc-validation
   image: node:${NODE_VERSION}-alpine
   tags:
-    - local
+    - saas-linux-small-amd64
   before_script:
     - apk add --no-cache curl jq
     - npm ci --legacy-peer-deps
