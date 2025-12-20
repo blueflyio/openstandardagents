@@ -38,11 +38,7 @@ The OpenAPI 3.1 specification defines the REST API interface for the AIFlow agen
 
 ### OSSA Schema
 
-<<<<<<< HEAD
 **Location**: [OSSA/spec/v0.3.0/ossa-0.3.0.schema.json](https://gitlab.com/blueflyio/openstandardagents/blob/development/spec/v0.3.0/ossa-0.3.0.schema.json)
-=======
-**Location**: [OSSA/spec/{{OSSA_VERSION_TAG}}/ossa-{{OSSA_VERSION}}.schema.json](https://gitlab.com/blueflyio/openstandardagents/blob/development/spec/{{OSSA_VERSION_TAG}}/ossa-{{OSSA_VERSION}}.schema.json)
->>>>>>> origin/feature/37-update-docs-v030-rebased-v2
 
 JSON Schema definition for OSSA 1.0 manifest validation. All agent manifests must conform to this schema.
 
@@ -106,10 +102,6 @@ This generates Kubernetes manifests and deploys the agent with:
 - **AIFlow Repository**: https://github.com/AIFlow-agent/AIFlow-Agent
 - **OSSA Project**: [openapi-ai-agents-standard](https://gitlab.com/blueflyio/openstandardagents)
 - **Integration Guide**: [agent-buildkit Wiki](https://github.com/blueflyio/agent-buildkit/-/wikis/AIFlow-Integration-with-OSSA-BuildKit-and-K-Agent)
-<<<<<<< HEAD
 - **OSSA Specification Schema**: [OSSA 1.0 Schema](https://gitlab.com/blueflyio/openstandardagents/blob/development/spec/v0.3.0/ossa-0.3.0.schema.json)
-=======
-- **OSSA Specification Schema**: [OSSA 1.0 Schema](https://gitlab.com/blueflyio/openstandardagents/blob/development/spec/{{OSSA_VERSION_TAG}}/ossa-{{OSSA_VERSION}}.schema.json)
->>>>>>> origin/feature/37-update-docs-v030-rebased-v2
 - **Example Manifest**: [social-agent-aiflow.ossa.yaml](https://github.com/blueflyio/agent-buildkit/-/blob/development/examples/aiflow-integration/social-agent-aiflow.ossa.yaml)
 - **OpenAPI Spec**: [aiflow-agent.openapi.yml](https://github.com/blueflyio/agent-buildkit/-/blob/development/openapi/aiflow-agent.openapi.yml)
