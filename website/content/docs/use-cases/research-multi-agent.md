@@ -98,7 +98,7 @@ graph TB
 ### Orchestrator Agent
 
 ```yaml
-apiVersion: ossa/v{{OSSA_DISPLAY_VERSION}}
+apiVersion: ossa/v0.3.x
 kind: Agent
 metadata:
   name: research-debate-orchestrator
@@ -322,7 +322,7 @@ spec:
 ### Methodology Critic Agent
 
 ```yaml
-apiVersion: ossa/v{{OSSA_DISPLAY_VERSION}}
+apiVersion: ossa/v0.3.x
 kind: Agent
 metadata:
   name: methodology-critic
@@ -385,7 +385,7 @@ spec:
 ### Novelty Assessor Agent
 
 ```yaml
-apiVersion: ossa/v{{OSSA_DISPLAY_VERSION}}
+apiVersion: ossa/v0.3.x
 kind: Agent
 metadata:
   name: novelty-assessor
@@ -441,7 +441,7 @@ spec:
 ### Reproducibility Checker Agent
 
 ```yaml
-apiVersion: ossa/v{{OSSA_DISPLAY_VERSION}}
+apiVersion: ossa/v0.3.x
 kind: Agent
 metadata:
   name: reproducibility-checker

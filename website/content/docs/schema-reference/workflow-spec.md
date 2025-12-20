@@ -21,7 +21,7 @@ Workflows allow you to:
 ## Manifest Structure
 
 ```yaml
-apiVersion: ossa/v{{OSSA_VERSION}}
+apiVersion: ossa/v0.3.0
 kind: Workflow
 metadata:
   name: my-workflow

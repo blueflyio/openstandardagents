@@ -92,7 +92,7 @@ Commands:
 
 ### Package Contents
 
-- **JSON Schema**: `spec/v0.2.x/ossa-0.2.x.schema.json` (see latest in `spec/{{OSSA_VERSION_TAG}}/`)
+- **JSON Schema**: `spec/v0.2.x/ossa-0.2.x.schema.json` (see latest in `spec/v0.3.0/`)
 - **TypeScript Types**: Available via package exports
 - **CLI Tool**: `bin/ossa` executable
 

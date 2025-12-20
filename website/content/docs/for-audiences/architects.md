@@ -23,7 +23,7 @@ OSSA provides:
 Simple, standalone agent:
 
 ```yaml
-apiVersion: ossa/v{{OSSA_DISPLAY_VERSION}}
+apiVersion: ossa/v0.3.x
 kind: Agent
 metadata:
   name: standalone-agent
