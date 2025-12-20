@@ -408,9 +408,12 @@ export class MessagingValidator {
       ];
     }
 
+    // Type assertion after null check - schema is object but TypeScript needs explicit typing
+    const schemaTyped = schema as { type?: string };
+
     // Basic JSON Schema validation
     if (
-      schema.type &&
+      schemaTyped.type &&
         ![
           'object',
           'array',
