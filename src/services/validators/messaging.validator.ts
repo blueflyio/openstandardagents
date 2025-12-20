@@ -1,6 +1,6 @@
 import Ajv from 'ajv';
 import addFormats from 'ajv-formats';
-import type { ErrorObject } from 'ajv';
+// ErrorObject type available from ajv if needed for future error handling
 
 interface ValidationError {
   path: string;
@@ -33,7 +33,7 @@ interface Subscription {
   handler?: string;
   filter?: {
     expression?: string;
-    fields?: Record<string, any>;
+    fields?: Record<string, unknown>;
   };
   priority?: 'low' | 'normal' | 'high' | 'critical';
   maxConcurrency?: number;
@@ -396,7 +396,7 @@ export class MessagingValidator {
     return errors;
   }
 
-  private validateJSONSchema(schema: any): ValidationError[] {
+  private validateJSONSchema(schema: unknown): ValidationError[] {
     const errors: ValidationError[] = [];
 
     if (typeof schema !== 'object' || schema === null) {
