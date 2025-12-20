@@ -26,9 +26,9 @@ detect-ossa-version:
       optional: true
       artifacts: true
   before_script:
-    - apk add --no-cache bash git findutils
+    - npm ci --ignore-scripts --prefer-offline 2>/dev/null || npm install tsx --no-save
   script:
-    - bash .gitlab/scripts/detect-ossa-version.sh
+    - npx tsx scripts/detect-ossa-version.ts
   artifacts:
     reports:
       dotenv: ossa-version.env

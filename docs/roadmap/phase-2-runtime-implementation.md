@@ -102,7 +102,7 @@ ossa_task_execute:
 **Example:**
 ```yaml
 # routing.yaml
-apiVersion: ossa/v0.3.1
+apiVersion: ossa/v0.3.0
 kind: MessageRouting
 metadata:
   name: security-workflow
