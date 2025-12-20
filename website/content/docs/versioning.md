@@ -310,8 +310,8 @@ git commit -m "chore: update docs [skip ci]"
 ## Support
 
 - **Documentation**: [docs/](../docs/)
-- **Issues**: https://github.com/blueflyio/openstandardagents/issues
-- **Releases**: https://github.com/blueflyio/openstandardagents/releases
+- **Issues**: https://gitlab.com/blueflyio/openstandardagents/issues
+- **Releases**: https://gitlab.com/blueflyio/openstandardagents/releases
 
 ---
 
