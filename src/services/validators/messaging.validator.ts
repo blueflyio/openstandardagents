@@ -408,9 +408,12 @@ export class MessagingValidator {
       ];
     }
 
+    const schemaObj = schema as Record<string, unknown>;
+
     // Basic JSON Schema validation
     if (
-      schema.type &&
+      schemaObj.type &&
+      typeof schemaObj.type === 'string' &&
       ![
         'object',
         'array',
@@ -419,11 +422,11 @@ export class MessagingValidator {
         'integer',
         'boolean',
         'null',
-      ].includes(schema.type)
+      ].includes(schemaObj.type)
     ) {
       errors.push({
         path: 'type',
-        message: `invalid schema type: ${schema.type}`,
+        message: `invalid schema type: ${schemaObj.type}`,
       });
     }
 

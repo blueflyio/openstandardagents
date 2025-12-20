@@ -1,9 +1,9 @@
-# OSSA v0.3.1 Example: Incident Responder Agent with Messaging
+# OSSA v0.3.0 Example: Incident Responder Agent with Messaging
 #
 # This agent receives security incidents from multiple sources and coordinates
 # response activities across teams via OSSA messaging.
 
-apiVersion: ossa/v0.3.1
+apiVersion: ossa/v0.3.0
 kind: Agent
 metadata:
   name: incident-responder
