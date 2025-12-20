@@ -132,10 +132,10 @@ spec:
       args:
         - @bluefly/openstandardagents
         - validate
-        - ${manifest_path}
-      env:
-        - name: STRICT_MODE
-          value: "${strict_mode:-true}"
+      args:
+        - @bluefly/openstandardagents
+        - validate
+        - /path/to/manifest.ossa.yaml
       outputSchema:
         type: object
         properties:
