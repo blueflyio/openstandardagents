@@ -61,8 +61,9 @@ export class TestRunnerService {
   }
 
   private async runUnitTest(test: unknown, manifest: OssaAgent): Promise<void> {
-    if ((test as { assertions?: unknown[] })?.assertions) {
-      for (const assertion of (test as { assertions?: unknown[] })?.assertions) {
+  private async runUnitTest(test: unknown, manifest: OssaAgent): Promise<void> {
+    const testTyped = test as { assertions?: unknown[] };
+      for (const assertion of testTyped.assertions) {
         if ((assertion as { type?: string })?.type === 'equals') {
           const assertionActual = (assertion as { actual?: string })?.actual;
           const actual = this.evaluateExpression(assertionActual || '', manifest);
