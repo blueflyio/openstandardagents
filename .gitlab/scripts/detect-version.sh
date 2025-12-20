@@ -14,7 +14,7 @@ VERSION=""
 RELEASE_TAG=""
 
 # Method 1: Extract from release branch name (release/v0.3.x -> 0.3.0)
-if [[ "${CI_COMMIT_BRANCH}" =~ ^release/v([0-9]+\.[0-9]+) ]]; then
+if [[ "${CI_COMMIT_BRANCH}" =~ ^release/v([0-9]+\.[0-9]+)\.x$ ]]; then
     BRANCH_VERSION="${BASH_REMATCH[1]}"
     echo "Detected from branch: ${BRANCH_VERSION}"
 
