@@ -1,16 +1,16 @@
 {
-  "stable": "0.2.9",
-  "stableTag": "v0.2.9",
-  "latest": "0.2.9",
-  "dev": "0.2.6-dev",
-  "devTag": "v0.2.6-dev",
+  "stable": "0.3.0",
+  "stableTag": "v0.3.0",
+  "latest": "0.3.0",
+  "dev": "0.3.0-dev",
+  "devTag": "v0.3.0-dev",
   "all": [
     {
       "version": "0.3.0",
       "tag": "v0.3.0",
       "apiVersion": "ossa/v0.3.0",
       "type": "stable",
-      "published": false,
+      "published": true,
       "available": true,
       "schemaPath": "spec/v0.3.0/ossa-0.3.0.schema.json"
     },
