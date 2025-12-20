@@ -35,7 +35,7 @@ The `brand-guide/` directory contains brand and positioning documentation:
 
 ## Roadmap
 
-See [roadmap/README.md](roadmap/README.md) for OSSA evolution roadmap from v0.3.1 to v0.4.0.
+See [roadmap/README.md](roadmap/README.md) for OSSA evolution roadmap from v0.3.0 to v0.4.0.
 
 **Quick Links:**
 - [Master Roadmap](roadmap/v0.3.x-to-v0.4.0.md) - Complete overview

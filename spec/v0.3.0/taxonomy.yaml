@@ -1,11 +1,11 @@
 # =============================================================================
-# OSSA v0.3.1 - Agent Taxonomy Specification
+# OSSA v0.3.0 - Agent Taxonomy Specification
 # =============================================================================
 # Hierarchical classification system for agents with cross-cutting concerns
 # Issue: https://gitlab.com/blueflyio/openstandardagents/-/issues/194
 # =============================================================================
 
-apiVersion: ossa/v0.3.1
+apiVersion: ossa/v0.3.0
 kind: TaxonomySpec
 version: "1.0.0"
 
