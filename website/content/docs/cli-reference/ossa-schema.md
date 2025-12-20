@@ -26,7 +26,7 @@ ossa schema
 ```
 
 ```bash
-ossa schema --version {{OSSA_VERSION}}
+ossa schema --version 0.3.0
 ```
 
 ```bash

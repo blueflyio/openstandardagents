@@ -48,6 +48,6 @@ export function getVersionForMetadata(): { version: string; tag: string; display
   return {
     version: STABLE_VERSION,
     tag: `v${STABLE_VERSION}`,
-    displayVersion: '0.2.x',
+    displayVersion: '0.3.x',
   };
 }

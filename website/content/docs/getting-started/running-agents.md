@@ -30,7 +30,7 @@ export OPENAI_API_KEY=sk-...
 
 ```yaml
 # support-agent.ossa.yaml
-apiVersion: ossa/v{{OSSA_DISPLAY_VERSION}}
+apiVersion: ossa/v0.3.x
 kind: Agent
 
 metadata:
@@ -274,7 +274,7 @@ The run command respects these environment variables:
 ```bash
 # Create the manifest
 cat > support.ossa.yaml << EOF
-apiVersion: ossa/v{{OSSA_VERSION}}
+apiVersion: ossa/v0.3.0
 kind: Agent
 metadata:
   name: support-agent

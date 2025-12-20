@@ -62,9 +62,9 @@ function fixExamples() {
       example.content = example.content.replace(/\{\{OSSA_DISPLAY_VERSION\}\}/g, displayVersion);
       example.content = example.content.replace(/\{\{OSSA_API_VERSION\}\}/g, `ossa/v${version}`);
       
-      // Replace apiVersion: ossa/vX.X.X
+      // Replace apiVersion: ossa/vX.X.X (including pre-release suffixes like -RC, -dev, etc.)
       example.content = example.content.replace(
-        /apiVersion:\s*ossa\/v\d+\.\d+\.\d+/gi,
+        /^(\s*)apiVersion:\s*ossa\/v\d+\.\d+\.\d+(?:-[A-Za-z0-9.-]+)?/gim,
         `apiVersion: ossa/v${version}`
       );
       // Replace apiVersion: ossa/vX.X.x (display version)
@@ -105,48 +105,34 @@ function fixDocs() {
         let content = fs.readFileSync(filePath, 'utf8');
         const oldContent = content;
 
-        // Replace {{OSSA_VERSION}} placeholders first (template system)
+        // Replace {{OSSA_VERSION}} placeholders with concrete versions
         content = content.replace(/\{\{OSSA_VERSION\}\}/g, version);
+        content = content.replace(/\{\{OSSA_VERSION_TAG\}\}/g, `v${version}`);
         content = content.replace(/\{\{OSSA_DISPLAY_VERSION\}\}/g, displayVersion);
         content = content.replace(/\{\{OSSA_API_VERSION\}\}/g, `ossa/v${version}`);
 
-        // Replace apiVersion: ossa/vX.X.X (exact versions) with placeholder
+        // Replace apiVersion: ossa/vX.X.X (including pre-release suffixes) with current version
         content = content.replace(
-          /apiVersion:\s*ossa\/v\d+\.\d+\.\d+/gi,
-          `apiVersion: ossa/v{{OSSA_VERSION}}`
+          /apiVersion:\s*ossa\/v\d+\.\d+\.\d+(?:-[A-Za-z0-9.-]+)?/gi,
+          `apiVersion: ossa/v${version}`
         );
 
-        // Replace apiVersion: ossa/vX.X.x (display versions) - keep as display
-        // These are intentionally kept as display versions for docs
+        // Replace apiVersion: ossa/vX.X.x (display versions) with current display version
         content = content.replace(
           /apiVersion:\s*ossa\/v\d+\.\d+\.x(?!\.)/gi,
-          `apiVersion: ossa/v{{OSSA_DISPLAY_VERSION}}`
+          `apiVersion: ossa/v${displayVersion}`
         );
 
-        // Replace "version": "X.X.X" in JSON examples with placeholder
+        // Replace "version": "X.X.X" in JSON examples with current version
         content = content.replace(
-          /"version":\s*"\d+\.\d+\.\d+"/g,
-          `"version": "{{OSSA_VERSION}}"`
+          /"version":\s*"\d+\.\d+\.\d+(?:-[A-Za-z0-9.-]+)?"/g,
+          `"version": "${version}"`
         );
 
-        // Replace ossaVersion: "X.X.X" with placeholder
+        // Replace ossaVersion: "X.X.X" with current version
         content = content.replace(
-          /ossaVersion:\s*"\d+\.\d+\.\d+"/gi,
-          `ossaVersion: "{{OSSA_VERSION}}"`
-        );
-
-        // Replace hardcoded version references like "v0.2.8" or "0.2.8" in text
-        // But preserve versioning.md examples and specific version references
-        content = content.replace(
-          /\b(v?0\.2\.\d+)\b(?!\s*→|\s*-|\s*→|spec\/|Last release|Example versions)/g,
-          (match) => {
-            // Don't replace if it's part of a path, URL, or specific example
-            if (match.includes('/') || match.includes('http') || match.includes('spec/')) {
-              return match;
-            }
-            // Replace with placeholder
-            return match.startsWith('v') ? '{{OSSA_VERSION_TAG}}' : '{{OSSA_VERSION}}';
-          }
+          /ossaVersion:\s*"\d+\.\d+\.\d+(?:-[A-Za-z0-9.-]+)?"/gi,
+          `ossaVersion: "${version}"`
         );
 
         if (oldContent !== content) {

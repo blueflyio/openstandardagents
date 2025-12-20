@@ -23,7 +23,12 @@ if [[ "${CI_COMMIT_BRANCH}" =~ ^release/v([0-9]+\.[0-9]+) ]]; then
 
     if [ -n "$LATEST_TAG" ]; then
         # Increment patch version
-        CURRENT_PATCH=$(echo "$LATEST_TAG" | sed "s/v${BRANCH_VERSION}\.//" | cut -d. -f1)
+        if [[ "$LATEST_TAG" =~ v${BRANCH_VERSION}\.([0-9]+) ]]; then
+          CURRENT_PATCH="${BASH_REMATCH[1]}"
+        else
+          echo "Warning: Could not parse patch version from $LATEST_TAG, using 0"
+          CURRENT_PATCH=0
+        fi
         NEXT_PATCH=$((CURRENT_PATCH + 1))
         VERSION="${BRANCH_VERSION}.${NEXT_PATCH}"
         echo "Next version after ${LATEST_TAG}: ${VERSION}"
