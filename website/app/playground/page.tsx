@@ -19,9 +19,9 @@ const MonacoEditor = dynamic(() => import('@monaco-editor/react'), {
 
 // Available schema versions for validation
 const SCHEMA_VERSIONS = [
-  { value: '0.2.9', label: 'v0.2.9 (Latest Stable)' },
+  { value: STABLE_VERSION, label: `v${STABLE_VERSION} (Latest Stable)` },
+  { value: '0.2.9', label: 'v0.2.9' },
   { value: '0.2.8', label: 'v0.2.8' },
-  { value: '0.2.3', label: 'v0.2.3' },
 ];
 
 // Example manifest interface
