@@ -9,8 +9,8 @@
 ```mermaid
 graph TD
     A[OSSA Specification v0.3.0] --> B[MR #397: Task/Workflow Basics]
-    B --> C[#133: Enhanced Task/Workflow Schema v0.3.1]
-    C --> D[#132: Messaging Extension v0.3.1]
+    B --> C[#133: Enhanced Task/Workflow Schema v0.3.0]
+    C --> D[#132: Messaging Extension v0.3.0]
     D --> E[#126: Symfony Messenger Adapter v0.3.2]
     E --> F[API Normalizer Integration v0.1.x]
     F --> G[#96: Knowledge Sources v0.3.3]
@@ -220,7 +220,7 @@ While following the critical path, these can be done in parallel:
 
 ## 🎯 Milestone Dependencies
 
-### v0.3.1 Milestone
+### v0.3.0 Milestone
 **Required:**
 - ✅ MR #397
 - 🔄 #133
@@ -234,7 +234,7 @@ While following the critical path, these can be done in parallel:
 
 ### v0.3.2 Milestone
 **Required:**
-- ✅ v0.3.1
+- ✅ v0.3.0
 - ⚪ #126
 - ⚪ API Normalizer
 

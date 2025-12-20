@@ -2,7 +2,7 @@
 
 **Welcome to the OSSA v0.3.x → v0.4.0 Evolution Roadmap**
 
-This directory contains comprehensive documentation for the OSSA evolution from v0.3.1 to v0.4.0, transforming OSSA into "The OpenAPI for AI Agents".
+This directory contains comprehensive documentation for the OSSA evolution from v0.3.0 to v0.4.0, transforming OSSA into "The OpenAPI for AI Agents".
 
 ---
 
@@ -59,8 +59,8 @@ Just as OpenAPI standardized REST API contracts, OSSA v0.4.0 will standardize ag
 
 | Issue | Title | Version | Phase | Status |
 |-------|-------|---------|-------|--------|
-| [#132](https://gitlab.com/blueflyio/openstandardagents/-/issues/132) | Agent-to-Agent Messaging Extension | v0.3.1 | 1 | 🔄 In Progress |
-| [#133](https://gitlab.com/blueflyio/openstandardagents/-/issues/133) | Enhanced Task/Workflow Schema | v0.3.1 | 1 | 🔄 In Progress |
+| [#132](https://gitlab.com/blueflyio/openstandardagents/-/issues/132) | Agent-to-Agent Messaging Extension | v0.3.0 | 1 | 🔄 In Progress |
+| [#133](https://gitlab.com/blueflyio/openstandardagents/-/issues/133) | Enhanced Task/Workflow Schema | v0.3.0 | 1 | 🔄 In Progress |
 | [#96](https://gitlab.com/blueflyio/openstandardagents/-/issues/96) | Knowledge Sources Extension | v0.3.3 | 4 | ⚪ Closed |
 | [Epic #9](https://gitlab.com/groups/blueflyio/-/epics/9) | Unified Task Schema | v0.4.0 | 4 | ⚪ Not Started |
 

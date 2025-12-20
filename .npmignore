@@ -8,6 +8,7 @@
 .vscode/
 .gitlab/
 .git/
+.worktrees/
 
 # Build artifacts (generated during prepublishOnly)
 coverage/

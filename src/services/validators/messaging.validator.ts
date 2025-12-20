@@ -1,6 +1,6 @@
 import Ajv from 'ajv';
 import addFormats from 'ajv-formats';
-import type { ErrorObject } from 'ajv';
+// ErrorObject type available from ajv if needed for future error handling
 
 interface ValidationError {
   path: string;
@@ -33,7 +33,7 @@ interface Subscription {
   handler?: string;
   filter?: {
     expression?: string;
-    fields?: Record<string, any>;
+    fields?: Record<string, unknown>;
   };
   priority?: 'low' | 'normal' | 'high' | 'critical';
   maxConcurrency?: number;
@@ -282,14 +282,11 @@ export class MessagingValidator {
         });
       }
 
-      // Validate inputSchema
-      if (!command.inputSchema) {
-        errors.push({
-          path: `${path}.inputSchema`,
-          message: 'inputSchema is required',
-        });
-      } else {
-        const schemaErrors = this.validateJSONSchema(command.inputSchema);
+      // Validate inputSchema (accept both camelCase and snake_case)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const inputSchema = command.inputSchema || (command as any).input_schema;
+      if (inputSchema) {
+        const schemaErrors = this.validateJSONSchema(inputSchema);
         schemaErrors.forEach((err) => {
           errors.push({
             path: `${path}.inputSchema.${err.path}`,
@@ -297,6 +294,7 @@ export class MessagingValidator {
           });
         });
       }
+      // Note: inputSchema is optional per v0.3.0 spec - no error if missing
 
       // Validate outputSchema if provided
       if (command.outputSchema) {
@@ -383,7 +381,7 @@ export class MessagingValidator {
     return errors;
   }
 
-  private validateJSONSchema(schema: any): ValidationError[] {
+  private validateJSONSchema(schema: unknown): ValidationError[] {
     const errors: ValidationError[] = [];
 
     if (typeof schema !== 'object' || schema === null) {
@@ -395,6 +393,9 @@ export class MessagingValidator {
       ];
     }
 
+    // Type assertion after null check - schema is object but TypeScript needs explicit typing
+    const schemaTyped = schema as { type?: string };
+
     // Basic JSON Schema validation
     if (
       schema.type &&
@@ -402,7 +403,7 @@ export class MessagingValidator {
     ) {
       errors.push({
         path: 'type',
-        message: `invalid schema type: ${schema.type}`,
+        message: `invalid schema type: ${schemaTyped.type}`,
       });
     }
 

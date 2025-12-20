@@ -23,6 +23,18 @@ import { agentsMdCommand } from './commands/agents-md.command.js';
 import { quickstartCommand } from './commands/quickstart.command.js';
 import { dependenciesCommand } from './commands/dependencies.command.js';
 import { contractCommand } from './commands/contract.command.js';
+import { publishCommand } from './commands/publish.command.js';
+import { searchCommand } from './commands/search.command.js';
+import { installCommand } from './commands/install.command.js';
+import { infoCommand } from './commands/info.command.js';
+import { deployGroup } from './commands/deploy.command.js';
+import { testCommand } from './commands/test.command.js';
+import {
+  deployCommand,
+  statusCommand,
+  rollbackCommand,
+  stopCommand,
+} from './commands/deploy.js';
 
 // Load package.json for version (lazy to avoid Jest module resolution issues)
 import * as fs from 'fs';
@@ -128,25 +140,22 @@ program.addCommand(setupCommand);
 program.addCommand(syncCommand);
 program.addCommand(agentsMdCommand);
 
-// Parse arguments
-program.parse();
-
 // Registry commands
-import { publishCommand } from './commands/publish.command.js';
-import { searchCommand } from './commands/search.command.js';
-import { installCommand } from './commands/install.command.js';
-import { infoCommand } from './commands/info.command.js';
-
-// Deploy commands
-import { deployGroup } from './commands/deploy.command.js';
-
-// Test command
-import { testCommand } from './commands/test.command.js';
-
-// Register new commands
 program.addCommand(publishCommand);
 program.addCommand(searchCommand);
 program.addCommand(installCommand);
 program.addCommand(infoCommand);
+
+// Register new enhanced deploy commands
+program.addCommand(deployCommand);
+program.addCommand(statusCommand);
+program.addCommand(rollbackCommand);
+program.addCommand(stopCommand);
+
+// Register legacy deploy group for backward compatibility
 program.addCommand(deployGroup);
+
 program.addCommand(testCommand);
+
+// Parse arguments - MUST be after all commands are registered
+program.parse();

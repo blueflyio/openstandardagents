@@ -22,8 +22,8 @@ JSON Schema files defining OSSA structure.
 
 ```
 spec/
-├── v0.2.6/
-│   ├── ossa-0.2.6.schema.json
+├── v0.3.0/
+│   ├── ossa-0.3.0.schema.json
 │   └── components/
 ```
 

@@ -42,7 +42,7 @@
  *   uri: 'agent://team/my-agent',
  *   name: 'My Agent',
  *   version: '1.0.0',
- *   ossaVersion: '0.3.1',
+ *   ossaVersion: '0.3.0',
  *   capabilities: ['task-execution'],
  *   endpoints: { http: 'http://localhost:8080' },
  *   transport: ['http'],
@@ -298,7 +298,7 @@
  *
  * This implementation follows:
  *
- * - OSSA v0.3.1 Messaging Specification
+ * - OSSA v0.3.0 Messaging Specification
  * - OSSA v0.2.9 A2A Protocol
  * - W3C Trace Context standard
  * - CloudEvents specification (message envelope)

@@ -467,9 +467,10 @@ export class AgentMeshClient {
 
   private calculateBackoff(attempt: number, policy: RetryPolicy): number {
     switch (policy.backoff) {
-      case 'exponential':
+      case 'exponential': {
         const delay = policy.initialDelayMs * Math.pow(policy.multiplier || 2, attempt - 1);
         return Math.min(delay, policy.maxDelayMs);
+      }
       case 'linear':
         return Math.min(policy.initialDelayMs * attempt, policy.maxDelayMs);
       case 'constant':
