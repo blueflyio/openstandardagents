@@ -64,7 +64,6 @@ export class TestRunnerService {
     const testTyped = test as { assertions?: unknown[] };
     if (testTyped.assertions) {
       for (const assertion of testTyped.assertions) {
-      for (const assertion of testTyped.assertions) {
         if ((assertion as { type?: string })?.type === 'equals') {
           const assertionActual = (assertion as { actual?: string })?.actual;
           const actual = this.evaluateExpression(assertionActual || '', manifest);
