@@ -350,7 +350,7 @@ spec:
 The only required field in `spec` is `role`:
 
 ```yaml
-apiVersion: ossa/v{{OSSA_DISPLAY_VERSION}}
+apiVersion: ossa/v0.3.x
 kind: Agent
 metadata:
   name: simple-agent
