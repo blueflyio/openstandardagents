@@ -70,7 +70,7 @@ graph TB
 ## OSSA Manifest
 
 ```yaml
-apiVersion: ossa/v{{OSSA_DISPLAY_VERSION}}
+apiVersion: ossa/v0.3.x
 kind: Agent
 metadata:
   name: financial-compliance-agent

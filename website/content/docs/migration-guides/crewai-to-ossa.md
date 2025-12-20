@@ -115,7 +115,7 @@ result = crew.kickoff()
 **Orchestrator Agent** (`orchestrator.ossa.yaml`):
 
 \`\`\`yaml
-ossaVersion: "{{OSSA_VERSION}}"
+ossaVersion: "0.3.0"
 agent:
   id: research-writing-orchestrator
   name: Research & Writing Orchestrator
@@ -170,7 +170,7 @@ agent:
 **Researcher Agent** (`researcher.ossa.yaml`):
 
 \`\`\`yaml
-ossaVersion: "{{OSSA_VERSION}}"
+ossaVersion: "0.3.0"
 agent:
   id: ai-researcher
   name: AI Research Agent
@@ -203,7 +203,7 @@ agent:
 **Writer Agent** (`writer.ossa.yaml`):
 
 \`\`\`yaml
-ossaVersion: "{{OSSA_VERSION}}"
+ossaVersion: "0.3.0"
 agent:
   id: technical-writer
   name: Technical Writer Agent
