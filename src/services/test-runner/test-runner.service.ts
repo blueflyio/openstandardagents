@@ -64,7 +64,8 @@ export class TestRunnerService {
     if ((test as { assertions?: unknown[] })?.assertions) {
       for (const assertion of (test as { assertions?: unknown[] })?.assertions) {
         if ((assertion as { type?: string })?.type === 'equals') {
-          const actual = this.evaluateExpression((assertion as { actual?: string })?.actual || '', manifest);
+          const assertionActual = (assertion as { actual?: string })?.actual;
+          const actual = this.evaluateExpression(assertionActual || '', manifest);
           const expected = (assertion as { expected?: unknown })?.expected;
           if (actual !== expected) {
             throw new Error(`Expected ${expected}, got ${actual}`);
