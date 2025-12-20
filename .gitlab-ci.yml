@@ -73,10 +73,9 @@ workflow:
     - if: $CI_COMMIT_BRANCH == "main"
     - if: $CI_COMMIT_BRANCH =~ /^(feature|bugfix|hotfix|chore)\/.+/
 
-# Use GitLab SaaS shared runners by default (local runners as backup)
+# Use GitLab shared runners (no tags = eligible for shared runners)
 default:
-  tags:
-    - local
+  interruptible: true
 
 # =============================================================================
 # BRANCH PROTECTION & MR VALIDATION
@@ -434,8 +433,6 @@ quality:metrics:
 pages:
   stage: deploy
   image: alpine:latest
-  tags:
-    - local
   needs:
     - build:website
   script:
