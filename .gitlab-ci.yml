@@ -835,7 +835,7 @@ changelog:generate:
     - apk add --no-cache curl jq
     - apk add --no-cache git curl bash
     # Install git-cliff
-    - curl -sS --max-time 30fL https://github.com/orhun/git-cliff/releases/download/v2.7.0/git-cliff-2.7.0-x86_64-unknown-linux-musl.tar.gz | tar xz
+    - curl -sS --max-time 30 -fL https://github.com/orhun/git-cliff/releases/download/v2.7.0/git-cliff-2.7.0-x86_64-unknown-linux-musl.tar.gz | tar xz
     - mv git-cliff-*/git-cliff /usr/local/bin/
     - chmod +x /usr/local/bin/git-cliff
     - git config --global user.email "ci@openstandardagents.org"
