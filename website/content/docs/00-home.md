@@ -4,7 +4,11 @@
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![npm version](https://img.shields.io/npm/v/@bluefly/openstandardagents.svg)](https://www.npmjs.com/package/@bluefly/openstandardagents)
-[![Specification](https://img.shields.io/badge/Spec-v0.2.x-blue)](https://github.com/blueflyio/openstandardagents/blob/main/spec/v0.3.0/ossa-0.3.0.schema.json)
+<<<<<<< HEAD
+[![Specification](https://img.shields.io/badge/Spec-v0.2.x-blue)](https://gitlab.com/blueflyio/openstandardagents/blob/main/spec/v0.3.0/ossa-0.3.0.schema.json)
+=======
+[![Specification](https://img.shields.io/badge/Spec-v0.3.0-blue)](https://gitlab.com/blueflyio/openstandardagents/-/blob/main/spec/v0.3.0/ossa-0.3.0.schema.json)
+>>>>>>> origin/feature/37-update-docs-v030-rebased-v2
 
 ---
 
@@ -137,10 +141,10 @@ OSSA doesn't care - it's just a standard.
 
 ## Repository Links
 
-- **Main Repository**: [github.com/blueflyio/openstandardagents](https://github.com/blueflyio/openstandardagents)
-- **Issues**: [Report Issues](https://github.com/blueflyio/openstandardagents/issues)
-- **Milestones**: [View Roadmap](https://github.com/blueflyio/openstandardagents/milestones)
-- **Releases**: [View Releases](https://github.com/blueflyio/openstandardagents/releases)
+- **Main Repository**: [gitlab.com/blueflyio/openstandardagents](https://gitlab.com/blueflyio/openstandardagents)
+- **Issues**: [Report Issues](https://gitlab.com/blueflyio/openstandardagents/-/issues)
+- **Milestones**: [View Roadmap](https://gitlab.com/blueflyio/openstandardagents/-/milestones)
+- **Releases**: [View Releases](https://gitlab.com/blueflyio/openstandardagents/-/releases)
 - **npm Package**: [@bluefly/openstandardagents](https://www.npmjs.com/package/@bluefly/openstandardagents)
 
 ---
@@ -150,14 +154,14 @@ OSSA doesn't care - it's just a standard.
 OSSA is an open standard. Contributions welcome!
 
 1. Review [Contributing Guidelines](/docs/contributing)
-2. Check [Open Issues](https://github.com/blueflyio/openstandardagents/issues)
+2. Check [Open Issues](https://gitlab.com/blueflyio/openstandardagents/-/issues)
 3. Create a merge request
 
 ---
 
 ## License
 
-Apache 2.0 - see [LICENSE](https://github.com/blueflyio/openstandardagents/blob/main/LICENSE) for details.
+Apache 2.0 - see [LICENSE](https://gitlab.com/blueflyio/openstandardagents/-/blob/main/LICENSE) for details.
 
 ---
 

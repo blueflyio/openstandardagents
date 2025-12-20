@@ -50,7 +50,11 @@ This guide documents the GitHub mirroring setup for the Open Standard Agents (OS
 
 Before setting up GitHub mirroring, ensure you have:
 
+<<<<<<< HEAD
 1. **GitLab Repository**: Primary repository on GitLab (gitlab.com/blueflyio/openstandardagents)
+=======
+1. **GitLab Repository**: Primary repository on GitLab (github.com/blueflyio/openstandardagents)
+>>>>>>> e4ff4b7 (fix: revert GitHub URLs in github-mirroring.md)
 2. **GitHub Repository**: Target mirror repository (github.com/blueflyio/openstandardagents)
 3. **GitHub Personal Access Token**: With `repo` and `workflow` permissions
 4. **GitLab CI/CD Access**: Ability to set CI/CD variables in GitLab project settings
@@ -306,8 +310,18 @@ Documentation
 - Changelog - https://github.com/blueflyio/openstandardagents/blob/main/CHANGELOG.md
 - Migration Guide - https://openstandardagents.org/docs/migration-guides/
 
+<<<<<<< HEAD
 npm Package - @bluefly/openstandardagents@0.3.0
 GitLab Release - https://gitlab.com/blueflyio/openstandardagents/-/releases/v0.3.0
+=======
+<<<<<<< HEAD
+npm Package - @bluefly/openstandardagents@{{OSSA_VERSION}}
+GitLab Release - https://gitlab.com/blueflyio/openstandardagents/-/releases/{{OSSA_VERSION_TAG}}
+=======
+npm Package - @bluefly/openstandardagents@0.3.0
+GitLab Release - https://github.com/blueflyio/openstandardagents/-/releases/v0.3.0
+>>>>>>> e4ff4b7 (fix: revert GitHub URLs in github-mirroring.md)
+>>>>>>> origin/feature/37-update-docs-v030-rebased-v2
 ```
 
 This metadata is preserved when mirrored to GitHub.
@@ -436,7 +450,11 @@ GitHub protection ensures that:
 
 ```bash
 # Clone both repositories
+<<<<<<< HEAD
 git clone https://gitlab.com/blueflyio/openstandardagents.git gitlab-repo
+=======
+git clone https://github.com/blueflyio/openstandardagents.git gitlab-repo
+>>>>>>> e4ff4b7 (fix: revert GitHub URLs in github-mirroring.md)
 git clone https://github.com/blueflyio/openstandardagents.git github-repo
 
 # Compare latest commits
@@ -581,7 +599,7 @@ error: failed to push some refs
 3. **Manual sync (emergency only):**
    ```bash
    # Clone GitLab repo
-   git clone https://gitlab.com/blueflyio/openstandardagents.git
+   git clone https://github.com/blueflyio/openstandardagents.git
    cd openstandardagents
    
    # Add GitHub remote
@@ -663,7 +681,7 @@ CONFLICT (content): Merge conflict in <file>
 
 1. **Verify tag exists on GitLab:**
    ```bash
-   git ls-remote --tags https://gitlab.com/blueflyio/openstandardagents.git
+   git ls-remote --tags https://github.com/blueflyio/openstandardagents.git
    ```
 
 2. **Force sync tags:**
@@ -906,12 +924,16 @@ monitor:mirror:
 ## Support
 
 **Issues:**
+<<<<<<< HEAD
 - GitLab: https://gitlab.com/blueflyio/openstandardagents/-/issues
+=======
+- GitLab: https://github.com/blueflyio/openstandardagents/-/issues
+>>>>>>> e4ff4b7 (fix: revert GitHub URLs in github-mirroring.md)
 - GitHub: https://github.com/blueflyio/openstandardagents/issues
 
 **Documentation:**
 - Website: https://openstandardagents.org
-- GitLab Wiki: https://gitlab.com/blueflyio/openstandardagents/-/wikis/home
+- GitLab Wiki: https://github.com/blueflyio/openstandardagents/-/wikis/home
 
 **Contact:**
 - Email: support@bluefly.io
