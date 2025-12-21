@@ -40,7 +40,10 @@ class MockWebSocket {
       setTimeout(() => {
         this.readyState = MockWebSocket.CLOSED;
         if (this.onerror) {
-          this.onerror(new Event('error'));
+          // Use ErrorEvent or wrap in Error for better Jest compatibility
+          const errorEvent = new Error('Connection failed') as any;
+          errorEvent.type = 'error';
+          this.onerror(errorEvent);
         }
       }, 5);
     } else {
@@ -349,16 +352,8 @@ describe('WebSocketTransport', () => {
       // Error should have been emitted
       expect(errorFired).toBe(true);
       
-      // Connection promise should reject - catch it properly
-      let rejected = false;
-      try {
-        await connectPromise;
-      } catch (error) {
-        rejected = true;
-        // Event object is expected
-        expect(error).toBeDefined();
-      }
-      expect(rejected).toBe(true);
+      // Verify promise rejected
+      await expect(connectPromise).rejects.toBeDefined();
     });
 
     it('should emit error events', (done) => {
