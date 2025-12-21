@@ -89,7 +89,7 @@ export interface SSETransportConfig {
  */
 export class SSETransport extends EventEmitter {
   private eventSource: EventSource | null = null;
-  private config: Required<SSETransportConfig>;
+  private config: SSETransportConfig & { reconnect: Required<NonNullable<SSETransportConfig['reconnect']>> };
   private reconnectAttempt = 0;
   private lastEventId?: string;
   private readonly eventHandlers = new Map<string, (event: MessageEvent) => void>();
@@ -159,7 +159,7 @@ export class SSETransport extends EventEmitter {
     if (this.eventSource) {
       // Remove all event listeners
       this.eventHandlers.forEach((handler, eventType) => {
-        this.eventSource!.removeEventListener(eventType, handler);
+        this.eventSource!.removeEventListener(eventType, handler as EventListener);
       });
       this.eventHandlers.clear();
 
@@ -228,7 +228,7 @@ export class SSETransport extends EventEmitter {
       };
 
       this.eventHandlers.set(eventType, handler);
-      this.eventSource!.addEventListener(eventType, handler);
+      this.eventSource!.addEventListener(eventType, handler as EventListener);
     });
   }
 
@@ -250,8 +250,8 @@ export class SSETransport extends EventEmitter {
       this.emit('disconnected');
 
       if (
-        this.config.reconnect.enabled &&
-        this.reconnectAttempt < this.config.reconnect.maxAttempts
+        this.config.reconnect?.enabled &&
+        this.reconnectAttempt < (this.config.reconnect?.maxAttempts || 10)
       ) {
         this.reconnectAttempt++;
         this.emit('reconnecting', this.reconnectAttempt);
@@ -374,7 +374,8 @@ export class SSEStreamClient {
       throw new Error(`Failed to invoke capability: ${response.statusText}`);
     }
 
-    const { streamId, streamUrl } = await response.json();
+    const result = await response.json() as { streamId: string; streamUrl: string };
+    const { streamId, streamUrl } = result;
 
     // Step 2: Connect to SSE stream
     return new Promise<TOutput>((resolve, reject) => {

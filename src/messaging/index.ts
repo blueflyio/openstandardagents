@@ -5,6 +5,6 @@
 
 export * from './types.js';
 export * from './broker.js';
-export * from './channels.js';
+export { ChannelManager } from './channels.js';
 export { MemoryMessageBroker } from './protocols/memory.js';
 export { RedisMessageBroker } from './protocols/redis.js';

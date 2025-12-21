@@ -9,6 +9,7 @@ import {
   Message,
   MessageHandler,
   Subscription,
+  SubscriptionConfig,
   SubscriptionHandle,
   MemoryTransportConfig,
 } from '../types.js';
@@ -210,7 +211,7 @@ export class MemoryMessageBroker extends AbstractMessageBroker {
    */
   private async handleRetry(sub: ActiveSubscription, message: Message, error: Error): Promise<void> {
     const maxRetries = sub.subscription.config?.maxRetries || 3;
-    const retryCount = (message.metadata?.headers?.['x-retry-count'] as number) || 0;
+    const retryCount = parseInt(String(message.metadata?.headers?.['x-retry-count'] || '0'), 10) || 0;
 
     if (retryCount < maxRetries) {
       // Calculate backoff delay
@@ -241,7 +242,7 @@ export class MemoryMessageBroker extends AbstractMessageBroker {
   /**
    * Calculate backoff delay for retries
    */
-  private calculateBackoffDelay(retryCount: number, backoff?: Subscription['config']['retryBackoff']): number {
+  private calculateBackoffDelay(retryCount: number, backoff?: SubscriptionConfig['retryBackoff']): number {
     if (!backoff || backoff.strategy === 'none') {
       return 0;
     }

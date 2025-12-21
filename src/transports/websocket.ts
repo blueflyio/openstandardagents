@@ -379,7 +379,7 @@ export class WebSocketTransport extends EventEmitter {
     this.stopKeepalive();
     this.emit('disconnected', event);
 
-    if (this.config.reconnect.enabled && this.reconnectAttempt < this.config.reconnect.maxAttempts) {
+    if (this.config.reconnect?.enabled && this.reconnectAttempt < (this.config.reconnect?.maxAttempts || 10)) {
       this.scheduleReconnect();
     }
   }
@@ -450,7 +450,7 @@ export class WebSocketTransport extends EventEmitter {
    */
   private startKeepalive(): void {
     this.pingTimer = setInterval(() => {
-      if (this.missedPongs >= this.config.keepalive.maxMissedPongs) {
+      if (this.missedPongs >= (this.config.keepalive?.maxMissedPongs || 3)) {
         this.emit('error', new Error('Keepalive timeout'));
         this.ws?.close();
         return;
@@ -468,8 +468,8 @@ export class WebSocketTransport extends EventEmitter {
 
       this.pongTimer = setTimeout(() => {
         this.emit('error', new Error('Pong timeout'));
-      }, this.config.keepalive.pongTimeout);
-    }, this.config.keepalive.pingInterval);
+      }, this.config.keepalive?.pongTimeout || 5000);
+    }, this.config.keepalive?.pingInterval || 30000);
   }
 
   /**
@@ -527,10 +527,12 @@ export class WebSocketTransport extends EventEmitter {
    * Schedule reconnection
    */
   private scheduleReconnect(): void {
+    const initialDelay = this.config.reconnect?.initialDelay || 1000;
+    const multiplier = this.config.reconnect?.multiplier || 2;
+    const maxDelay = this.config.reconnect?.maxDelay || 30000;
     const delay = Math.min(
-      this.config.reconnect.initialDelay *
-        Math.pow(this.config.reconnect.multiplier, this.reconnectAttempt),
-      this.config.reconnect.maxDelay
+      initialDelay * Math.pow(multiplier, this.reconnectAttempt),
+      maxDelay
     );
 
     this.reconnectTimer = setTimeout(async () => {
