@@ -1,9 +1,9 @@
 # GitLab Agent Integration
-# Uses agents from blueflyio/agent-platform
+# Uses agents from blueflyio/platform-agents
 
 variables:
-  # ✅ FIXED: Use correct project path (not component path)
-  AGENT_PLATFORM_PROJECT: blueflyio/agent-platform
+  # ✅ FIXED: Use correct project path
+  AGENT_PLATFORM_PROJECT: blueflyio/platform-agents
 
 # GitHub PR Sync Agent
 github:sync:agent:
