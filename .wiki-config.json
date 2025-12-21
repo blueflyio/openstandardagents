@@ -8,7 +8,7 @@
   "REPO_URL": "https://gitlab.com/blueflyio/openstandardagents",
   "GITLAB_ISSUES_URL": "https://gitlab.com/blueflyio/openstandardagents/-/issues",
   "DOCS_URL": "https://gitlab.com/blueflyio/openstandardagents/-/wikis/home",
-  "TEAM_CONTACT": "thomas@bluefly.io",
+  "TEAM_CONTACT": "thomas.scola@bluefly.io",
   "PREREQUISITES": "- Node.js 20+\n- TypeScript 5.9+",
   "INSTALL_COMMAND": "npm install",
   "START_COMMAND": "npm run dev",
