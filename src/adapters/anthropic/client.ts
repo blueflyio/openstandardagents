@@ -1,416 +1,452 @@
 /**
- * Anthropic API Client Wrapper
- * Wraps @anthropic-ai/sdk with additional features
+ * Tool and Capability Mapping
+ * Convert between OSSA capabilities and Anthropic tools
  */
 
-import Anthropic from '@anthropic-ai/sdk';
-import type {
-  MessageCreateParams,
-  MessageStreamEvent,
-  Message,
-} from '@anthropic-ai/sdk/resources/messages';
-import type { AnthropicConfig } from './config.js';
-import { mergeConfig, validateConfig, calculateCost } from './config.js';
+import type { Tool } from '@anthropic-ai/sdk/resources/messages';
+import type { OssaAgent } from '../../types/index.js';
 
 /**
- * Rate limiter for API requests
+ * OSSA capability definition
  */
-class RateLimiter {
-  private requests: number[] = [];
-  private tokens: number[] = [];
-  private dailyTokens = 0;
-  private lastResetDate = new Date().toDateString();
+export interface OssaCapability {
+  name: string;
+  description: string;
+  input_schema: Record<string, unknown>;
+  output_schema?: Record<string, unknown>;
+  examples?: Array<{
+    name?: string;
+    input?: Record<string, unknown>;
+    output?: Record<string, unknown>;
+  }>;
+}
 
-  constructor(
-    private requestsPerMinute: number,
-    private tokensPerMinute: number,
-    private tokensPerDay: number
-  ) {}
+/**
+ * Tool handler function type
+ */
+export type ToolHandler = (args: Record<string, unknown>) => Promise<string | Record<string, unknown>>;
+
+/**
+ * Tool definition with handler
+ */
+export interface ToolDefinition {
+  tool: Tool;
+  handler?: ToolHandler;
+  capability?: OssaCapability;
+}
+
+/**
+ * Tool mapper for converting OSSA capabilities to Anthropic tools
+ */
+export class ToolMapper {
+  private tools: Map<string, ToolDefinition> = new Map();
 
   /**
-   * Check if request can proceed
+   * Map OSSA capabilities to Anthropic tools
    */
-  canProceed(estimatedTokens: number): boolean {
-    this.cleanup();
+  mapCapabilities(capabilities: OssaCapability[]): Tool[] {
+    const tools: Tool[] = [];
 
-    const now = Date.now();
-    const oneMinuteAgo = now - 60000;
+    for (const capability of capabilities) {
+      const tool = this.convertCapabilityToTool(capability);
+      tools.push(tool);
 
-    // Check requests per minute
-    const recentRequests = this.requests.filter((t) => t > oneMinuteAgo);
-    if (recentRequests.length >= this.requestsPerMinute) {
+      this.tools.set(capability.name, {
+        tool,
+        capability,
+      });
+    }
+
+    return tools;
+  }
+
+  /**
+   * Map OSSA agent tools to Anthropic tools
+   */
+  mapAgentTools(agent: OssaAgent): Tool[] {
+    const tools: Tool[] = [];
+
+    // Map from spec.tools
+    if (agent.spec?.tools) {
+      for (const tool of agent.spec.tools) {
+        if (tool.type === 'function' && tool.name && typeof tool.name === 'string') {
+          const toolName = tool.name;
+          const anthropicTool = this.convertFunctionToTool({ ...tool, name: toolName });
+          tools.push(anthropicTool);
+
+          this.tools.set(tool.name, {
+            tool: anthropicTool,
+          });
+        } else if (tool.type === 'mcp' && tool.capabilities) {
+          // MCP tools - convert each capability
+          for (const capName of tool.capabilities) {
+            const capability: OssaCapability = {
+              name: capName,
+              description: `MCP capability: ${capName}`,
+              input_schema: {
+                type: 'object',
+                properties: {},
+              },
+            };
+
+            const anthropicTool = this.convertCapabilityToTool(capability);
+            tools.push(anthropicTool);
+
+            this.tools.set(capName, {
+              tool: anthropicTool,
+              capability,
+            });
+          }
+        }
+      }
+    }
+
+    // Map from extensions.anthropic.tools
+    const anthropicExt = agent.extensions?.anthropic as {
+      tools?: Tool[];
+    } | undefined;
+
+    if (anthropicExt?.tools) {
+      for (const tool of anthropicExt.tools) {
+        tools.push(tool);
+        this.tools.set(tool.name, { tool });
+      }
+    }
+
+    return tools;
+  }
+
+  /**
+   * Register a tool handler
+   */
+  registerToolHandler(name: string, handler: ToolHandler): boolean {
+    const toolDef = this.tools.get(name);
+    if (!toolDef) {
       return false;
     }
 
-    // Check tokens per minute
-    const recentTokens = this.tokens.filter((t) => t > oneMinuteAgo);
-    const tokensThisMinute = recentTokens.length;
-    if (tokensThisMinute + estimatedTokens > this.tokensPerMinute) {
-      return false;
-    }
-
-    // Check daily tokens
-    const today = new Date().toDateString();
-    if (today !== this.lastResetDate) {
-      this.dailyTokens = 0;
-      this.lastResetDate = today;
-    }
-
-    if (this.dailyTokens + estimatedTokens > this.tokensPerDay) {
-      return false;
-    }
-
+    toolDef.handler = handler;
     return true;
   }
 
   /**
-   * Record a request
+   * Get a tool by name
    */
-  recordRequest(tokens: number): void {
-    const now = Date.now();
-    this.requests.push(now);
-    for (let i = 0; i < tokens; i++) {
-      this.tokens.push(now);
-    }
-    this.dailyTokens += tokens;
+  getTool(name: string): ToolDefinition | undefined {
+    return this.tools.get(name);
   }
 
   /**
-   * Clean up old records
+   * Get all tools
    */
-  private cleanup(): void {
-    const now = Date.now();
-    const oneMinuteAgo = now - 60000;
-    this.requests = this.requests.filter((t) => t > oneMinuteAgo);
-    this.tokens = this.tokens.filter((t) => t > oneMinuteAgo);
+  getTools(): Tool[] {
+    return Array.from(this.tools.values()).map((def) => def.tool);
   }
 
   /**
-   * Get time until next available request (ms)
+   * Execute a tool
    */
-  getWaitTime(): number {
-    const now = Date.now();
-    const oneMinuteAgo = now - 60000;
+  async executeTool(
+    name: string,
+    input: Record<string, unknown>
+  ): Promise<string> {
+    const toolDef = this.tools.get(name);
 
-    const oldestRequest = this.requests.find((t) => t <= oneMinuteAgo);
-    if (oldestRequest) {
-      return oldestRequest + 60000 - now;
-    }
-
-    return 0;
-  }
-}
-
-/**
- * Usage statistics
- */
-export interface UsageStats {
-  requestCount: number;
-  totalInputTokens: number;
-  totalOutputTokens: number;
-  totalCost: number;
-  averageLatency: number;
-}
-
-/**
- * Anthropic client wrapper with enhanced features
- */
-export class AnthropicClient {
-  private client: Anthropic;
-  private config: Required<AnthropicConfig>;
-  private rateLimiter?: RateLimiter;
-  private stats: UsageStats = {
-    requestCount: 0,
-    totalInputTokens: 0,
-    totalOutputTokens: 0,
-    totalCost: 0,
-    averageLatency: 0,
-  };
-
-  constructor(config?: AnthropicConfig) {
-    this.config = mergeConfig(config);
-
-    // Validate configuration
-    const validation = validateConfig(this.config);
-    if (!validation.valid) {
-      throw new Error(
-        `Invalid Anthropic configuration:\n${validation.errors.join('\n')}`
-      );
-    }
-
-    // Initialize Anthropic SDK client
-    this.client = new Anthropic({
-      apiKey: this.config.apiKey,
-      baseURL: this.config.baseURL,
-      timeout: this.config.timeout,
-    });
-
-    // Initialize rate limiter if enabled
-    if (this.config.rateLimit.enableRetry) {
-      const rl = this.config.rateLimit;
-      this.rateLimiter = new RateLimiter(
-        rl.requestsPerMinute || 50,
-        rl.tokensPerMinute || 40000,
-        rl.tokensPerDay || 1000000
-      );
-    }
-
-    if (this.config.debug) {
-      console.log('[AnthropicClient] Initialized with config:', {
-        model: this.config.model,
-        temperature: this.config.temperature,
-        maxTokens: this.config.maxTokens,
-        streaming: this.config.streaming,
+    if (!toolDef) {
+      return JSON.stringify({
+        error: `Tool '${name}' not found`,
       });
     }
-  }
 
-  /**
-   * Create a message
-   */
-  async createMessage(
-    params: Omit<MessageCreateParams, 'model' | 'max_tokens'>
-  ): Promise<Message> {
-    const startTime = Date.now();
-
-    // Apply rate limiting with retry
-    if (this.rateLimiter) {
-      let retries = 0;
-      while (!this.rateLimiter.canProceed(this.config.maxTokens || 4096)) {
-        if (retries >= (this.config.rateLimit?.maxRetries || 3)) {
-          throw new Error('Rate limit exceeded and max retries reached');
-        }
-
-        const waitTime = this.rateLimiter.getWaitTime();
-        const rl = this.config.rateLimit;
-        const initialDelay = rl?.initialRetryDelay || 1000;
-        const maxDelay = rl?.maxRetryDelay || 60000;
-        const delay = Math.min(
-          initialDelay * Math.pow(2, retries),
-          maxDelay
-        );
-
-        if (this.config.debug) {
-          console.log(
-            `[AnthropicClient] Rate limited, waiting ${delay}ms (attempt ${retries + 1}/${this.config.rateLimit.maxRetries})`
-          );
-        }
-
-        await this.sleep(Math.max(waitTime, delay));
-        retries++;
-      }
-    }
-
-    // Make the API call
-    try {
-      const response = await this.client.messages.create({
-        ...params,
-        model: this.config.model,
-        max_tokens: this.config.maxTokens,
-        temperature: params.temperature ?? this.config.temperature,
-        top_p: params.top_p ?? this.config.topP,
-        stop_sequences: params.stop_sequences ?? this.config.stopSequences,
+    if (!toolDef.handler) {
+      return JSON.stringify({
+        error: `No handler registered for tool '${name}'`,
+        message: 'Register a handler using registerToolHandler()',
       });
-
-      // Update statistics
-      const latency = Date.now() - startTime;
-      if ('usage' in response && response.usage) {
-        this.updateStats(
-          response.usage.input_tokens,
-          response.usage.output_tokens,
-          latency
-        );
-      }
-
-      // Record rate limit usage
-      if (this.rateLimiter && 'usage' in response && response.usage) {
-        this.rateLimiter.recordRequest(
-          response.usage.input_tokens + response.usage.output_tokens
-        );
-      }
-
-      if (this.config.debug && 'id' in response) {
-        console.log(`[AnthropicClient] Message created:`, {
-          id: response.id,
-          model: 'model' in response ? response.model : 'unknown',
-          stopReason: 'stop_reason' in response ? response.stop_reason : 'unknown',
-          usage: 'usage' in response ? response.usage : undefined,
-          latency: `${latency}ms`,
-        });
-      }
-
-      return response;
-    } catch (error) {
-      if (this.config.debug) {
-        console.error('[AnthropicClient] Error creating message:', error);
-      }
-      throw error;
-    }
-  }
-
-  /**
-   * Create a streaming message
-   */
-  async createMessageStream(
-    params: Omit<MessageCreateParams, 'model' | 'max_tokens'>
-  ): Promise<AsyncIterable<MessageStreamEvent>> {
-    const startTime = Date.now();
-
-    // Apply rate limiting
-    if (this.rateLimiter) {
-      let retries = 0;
-      while (!this.rateLimiter.canProceed(this.config.maxTokens || 4096)) {
-        if (retries >= (this.config.rateLimit?.maxRetries || 3)) {
-          throw new Error('Rate limit exceeded and max retries reached');
-        }
-
-        const waitTime = this.rateLimiter.getWaitTime();
-        const rl = this.config.rateLimit;
-        const initialDelay = rl?.initialRetryDelay || 1000;
-        const maxDelay = rl?.maxRetryDelay || 60000;
-        const delay = Math.min(
-          initialDelay * Math.pow(2, retries),
-          maxDelay
-        );
-
-        await this.sleep(Math.max(waitTime, delay));
-        retries++;
-      }
     }
 
     try {
-      const stream = await this.client.messages.stream({
-        ...params,
-        model: this.config.model,
-        max_tokens: this.config.maxTokens,
-        temperature: params.temperature ?? this.config.temperature,
-        top_p: params.top_p ?? this.config.topP,
-        stop_sequences: params.stop_sequences ?? this.config.stopSequences,
-      });
-
-      if (this.config.debug) {
-        console.log('[AnthropicClient] Streaming message created');
-      }
-
-      // Track usage when stream completes
-      let inputTokens = 0;
-      let outputTokens = 0;
-
-      const wrappedStream = (async function* (
-        this: AnthropicClient
-      ): AsyncIterable<MessageStreamEvent> {
-        for await (const event of stream) {
-          if (event.type === 'message_start') {
-            inputTokens = event.message.usage.input_tokens;
-          } else if (event.type === 'message_delta') {
-            outputTokens += event.usage.output_tokens;
-          }
-          yield event;
-        }
-
-        // Update stats after stream completes
-        const latency = Date.now() - startTime;
-        this.updateStats(inputTokens, outputTokens, latency);
-
-        if (this.rateLimiter) {
-          this.rateLimiter.recordRequest(inputTokens + outputTokens);
-        }
-      }.bind(this))();
-
-      return wrappedStream;
+      const result = await toolDef.handler(input);
+      return typeof result === 'string' ? result : JSON.stringify(result);
     } catch (error) {
-      if (this.config.debug) {
-        console.error('[AnthropicClient] Error creating stream:', error);
-      }
-      throw error;
+      return JSON.stringify({
+        error: `Error executing tool '${name}'`,
+        message: error instanceof Error ? error.message : String(error),
+      });
     }
   }
 
   /**
-   * Get usage statistics
+   * Clear all tools
    */
-  getStats(): Readonly<UsageStats> {
-    return { ...this.stats };
+  clear(): void {
+    this.tools.clear();
   }
 
   /**
-   * Reset statistics
+   * Convert OSSA capability to Anthropic tool
    */
-  resetStats(): void {
-    this.stats = {
-      requestCount: 0,
-      totalInputTokens: 0,
-      totalOutputTokens: 0,
-      totalCost: 0,
-      averageLatency: 0,
+  private convertCapabilityToTool(capability: OssaCapability): Tool {
+    return {
+      name: capability.name,
+      description: capability.description,
+      input_schema: this.normalizeInputSchema(capability.input_schema),
     };
   }
 
   /**
-   * Get the underlying Anthropic client
+   * Convert OSSA function tool to Anthropic tool
    */
-  getClient(): Anthropic {
-    return this.client;
+  private convertFunctionToTool(tool: {
+    name: string;
+    config?: Record<string, unknown>;
+    capabilities?: string[];
+  }): Tool {
+    const config = tool.config || {};
+    const description =
+      (config.description as string) ||
+      `Function: ${tool.name}`;
+    const inputSchema = (config.input_schema as Record<string, unknown>) || {
+      type: 'object',
+      properties: {},
+    };
+
+    return {
+      name: tool.name,
+      description,
+      input_schema: this.normalizeInputSchema(inputSchema),
+    };
   }
 
   /**
-   * Get current configuration
+   * Normalize input schema to Anthropic format
    */
-  getConfig(): Readonly<Required<AnthropicConfig>> {
-    return { ...this.config };
-  }
+  private normalizeInputSchema(schema: Record<string, unknown>): {
+    type: 'object';
+    properties?: Record<string, unknown>;
+    required?: string[];
+  } {
+    // Ensure schema is object type
+    const normalized: {
+      type: 'object';
+      properties?: Record<string, unknown>;
+      required?: string[];
+    } = {
+      type: 'object',
+      properties: schema.properties as Record<string, unknown> || {},
+    };
 
-  /**
-   * Update configuration
-   */
-  updateConfig(updates: Partial<AnthropicConfig>): void {
-    this.config = mergeConfig({ ...this.config, ...updates });
-
-    const validation = validateConfig(this.config);
-    if (!validation.valid) {
-      throw new Error(
-        `Invalid configuration update:\n${validation.errors.join('\n')}`
-      );
+    // Add required fields if present
+    if (Array.isArray(schema.required)) {
+      normalized.required = schema.required;
     }
 
-    // Recreate rate limiter if settings changed
-    if (updates.rateLimit && this.config.rateLimit.enableRetry) {
-      const rl = this.config.rateLimit;
-      this.rateLimiter = new RateLimiter(
-        rl.requestsPerMinute || 50,
-        rl.tokensPerMinute || 40000,
-        rl.tokensPerDay || 1000000
-      );
-    }
-  }
-
-  /**
-   * Update usage statistics
-   */
-  private updateStats(
-    inputTokens: number,
-    outputTokens: number,
-    latency: number
-  ): void {
-    this.stats.requestCount++;
-    this.stats.totalInputTokens += inputTokens;
-    this.stats.totalOutputTokens += outputTokens;
-    this.stats.totalCost += calculateCost(
-      this.config.model,
-      inputTokens,
-      outputTokens
-    );
-
-    // Update average latency
-    this.stats.averageLatency =
-      (this.stats.averageLatency * (this.stats.requestCount - 1) + latency) /
-      this.stats.requestCount;
-  }
-
-  /**
-   * Sleep helper
-   */
-  private sleep(ms: number): Promise<void> {
-    return new Promise((resolve) => setTimeout(resolve, ms));
+    return normalized;
   }
 }
+
+/**
+ * Create tool mapper from OSSA agent
+ */
+export function createToolMapper(agent: OssaAgent): ToolMapper {
+  const mapper = new ToolMapper();
+  mapper.mapAgentTools(agent);
+  return mapper;
+}
+
+/**
+ * Extract capabilities from OSSA agent
+ */
+export function extractCapabilities(agent: OssaAgent): OssaCapability[] {
+  const capabilities: OssaCapability[] = [];
+
+  // From spec.tools
+  if (agent.spec?.tools) {
+    for (const tool of agent.spec.tools) {
+      if (tool.type === 'function' && tool.name && tool.config) {
+        const config = tool.config;
+        capabilities.push({
+          name: tool.name,
+          description: (config.description as string) || `Capability: ${tool.name}`,
+          input_schema: (config.input_schema as Record<string, unknown>) || {
+            type: 'object',
+            properties: {},
+          },
+          output_schema: config.output_schema as Record<string, unknown> | undefined,
+        });
+      }
+    }
+  }
+
+  return capabilities;
+}
+
+/**
+ * Validate tool input against schema
+ */
+export function validateToolInput(
+  input: Record<string, unknown>,
+  schema: Record<string, unknown>
+): { valid: boolean; errors: string[] } {
+  const errors: string[] = [];
+
+  // Check required fields
+  if (Array.isArray(schema.required)) {
+    for (const field of schema.required) {
+      if (!(field in input)) {
+        errors.push(`Missing required field: ${field}`);
+      }
+    }
+  }
+
+  // Basic type checking for properties
+  const properties = schema.properties as Record<string, { type?: string }> | undefined;
+  if (properties) {
+    for (const [key, value] of Object.entries(input)) {
+      const propSchema = properties[key];
+      if (propSchema?.type) {
+        const actualType = typeof value;
+        const expectedType = propSchema.type;
+
+        if (expectedType === 'array' && !Array.isArray(value)) {
+          errors.push(`Field '${key}' should be an array`);
+        } else if (expectedType === 'object' && (actualType !== 'object' || Array.isArray(value))) {
+          errors.push(`Field '${key}' should be an object`);
+        } else if (expectedType !== 'array' && expectedType !== 'object' && actualType !== expectedType) {
+          errors.push(
+            `Field '${key}' should be type '${expectedType}', got '${actualType}'`
+          );
+        }
+      }
+    }
+  }
+
+  return {
+    valid: errors.length === 0,
+    errors,
+  };
+}
+
+/**
+ * Create a simple tool definition
+ */
+export function createTool(
+  name: string,
+  description: string,
+  properties: Record<string, { type: string; description?: string }>,
+  required?: string[]
+): Tool {
+  return {
+    name,
+    description,
+    input_schema: {
+      type: 'object',
+      properties,
+      required,
+    },
+  };
+}
+
+/**
+ * Common tool templates
+ */
+export const COMMON_TOOLS = {
+  /**
+   * Web search tool
+   */
+  webSearch: createTool(
+    'web_search',
+    'Search the web for information',
+    {
+      query: {
+        type: 'string',
+        description: 'The search query',
+      },
+      max_results: {
+        type: 'number',
+        description: 'Maximum number of results to return',
+      },
+    },
+    ['query']
+  ),
+
+  /**
+   * Read file tool
+   */
+  readFile: createTool(
+    'read_file',
+    'Read contents of a file',
+    {
+      path: {
+        type: 'string',
+        description: 'File path to read',
+      },
+    },
+    ['path']
+  ),
+
+  /**
+   * Write file tool
+   */
+  writeFile: createTool(
+    'write_file',
+    'Write contents to a file',
+    {
+      path: {
+        type: 'string',
+        description: 'File path to write',
+      },
+      content: {
+        type: 'string',
+        description: 'Content to write',
+      },
+    },
+    ['path', 'content']
+  ),
+
+  /**
+   * Execute code tool
+   */
+  executeCode: createTool(
+    'execute_code',
+    'Execute code in a sandboxed environment',
+    {
+      language: {
+        type: 'string',
+        description: 'Programming language (python, javascript, etc.)',
+      },
+      code: {
+        type: 'string',
+        description: 'Code to execute',
+      },
+    },
+    ['language', 'code']
+  ),
+
+  /**
+   * HTTP request tool
+   */
+  httpRequest: createTool(
+    'http_request',
+    'Make an HTTP request',
+    {
+      url: {
+        type: 'string',
+        description: 'URL to request',
+      },
+      method: {
+        type: 'string',
+        description: 'HTTP method (GET, POST, etc.)',
+      },
+      headers: {
+        type: 'object',
+        description: 'Request headers',
+      },
+      body: {
+        type: 'string',
+        description: 'Request body',
+      },
+    },
+    ['url']
+  ),
+} as const;
