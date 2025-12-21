@@ -5,7 +5,6 @@
 
 import type { MessageParam } from '@anthropic-ai/sdk/resources/messages';
 import type { OssaAgent } from '../../types/index.js';
-import { AnthropicClient } from './client.js';
 import { ToolMapper } from './tools.js';
 import type { ToolHandler } from './tools.js';
 import {
@@ -77,7 +76,7 @@ export interface AgentInfo {
  * Anthropic runtime adapter implementing OSSA runtime interface
  */
 export class AnthropicAdapter {
-  private client: AnthropicClient;
+  private client: Anthropic;
   private toolMapper: ToolMapper;
   private agent: OssaAgent;
   private conversationHistory: OssaMessage[] = [];
@@ -89,7 +88,7 @@ export class AnthropicAdapter {
     const agentConfig = this.extractAgentConfig();
     const mergedConfig = { ...agentConfig, ...config };
 
-    this.client = new AnthropicClient(mergedConfig);
+    this.client = new Anthropic({ apiKey: mergedConfig.apiKey });
     this.toolMapper = new ToolMapper();
 
     // Map agent tools
@@ -361,7 +360,7 @@ export class AnthropicAdapter {
   /**
    * Get the underlying client
    */
-  getClient(): AnthropicClient {
+  getClient(): Anthropic {
     return this.client;
   }
 

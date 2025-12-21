@@ -13,8 +13,6 @@ export type {
   AgentInfo,
 } from './runtime.js';
 
-// Client wrapper
-export { AnthropicClient } from './client.js';
 
 
 // Configuration
