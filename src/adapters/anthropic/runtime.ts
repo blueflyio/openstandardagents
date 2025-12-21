@@ -3,6 +3,7 @@
  * OSSA runtime implementation for Anthropic Claude
  */
 
+import Anthropic from '@anthropic-ai/sdk';
 import type { MessageParam } from '@anthropic-ai/sdk/resources/messages';
 import type { OssaAgent } from '../../types/index.js';
 import { ToolMapper } from './tools.js';
@@ -179,7 +180,7 @@ export class AnthropicAdapter {
       }
 
       // Create message
-      const response = await this.client.createMessage({
+      const response = await this.client.messages.create({
         system: systemPrompt,
         messages: conversationMessages,
         tools: tools.length > 0 ? tools : undefined,
