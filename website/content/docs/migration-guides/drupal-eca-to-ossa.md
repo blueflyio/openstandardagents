@@ -1951,12 +1951,12 @@ if ($features->isEnabled('ossa_moderation')) {
 - OSSA Validator: `ossa validate <file>`
 
 ### Examples
-- [OSSA Example Agents](https://gitlab.com/blueflyio/openstandardagents/tree/main/examples)
+- [OSSA Example Agents](https://gitlab.com/blueflyio/openstandardagents/-/tree/main/examples)
 - [Drupal Integration Module](https://github.com/blueflyio/drupal/ossa_integration)
 
 ### Support
 - [GitLab Issues](https://github.com/blueflyio/documentation/-/issues)
-- [OSSA Discussions](https://gitlab.com/blueflyio/openstandardagents/issues)
+- [OSSA Discussions](https://gitlab.com/blueflyio/openstandardagents/-/issues)
 
 ---
 
