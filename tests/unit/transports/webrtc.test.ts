@@ -300,7 +300,7 @@ describe('WebRTCTransport', () => {
     });
 
     it('should send message on data channel', async () => {
-      // Reuse channelMap from above
+      const channelMap = (transport1 as any).dataChannels as Map<string, MockRTCDataChannel>;
       const channel = channelMap.get('control');
       if (channel && channel.readyState !== 'open') {
         channel.simulateOpen();
