@@ -234,7 +234,7 @@ export class RedisMessageBroker extends AbstractMessageBroker {
       xAdd: async (key: string, id: string, fields: Record<string, string>) => {
         console.log(`[Mock Redis] XADD ${key} ${id}:`, fields);
       },
-      pSubscribe: async (pattern: string, callback: Function) => {
+      pSubscribe: async (pattern: string, _callback: (message: string, channel: string) => void) => {
         console.log(`[Mock Redis] PSUBSCRIBE ${pattern}`);
       },
       xAck: async (key: string, group: string, id: string) => {
