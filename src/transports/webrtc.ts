@@ -336,7 +336,8 @@ export class WebRTCTransport extends EventEmitter {
 
     // Connection state handler
     this.peerConnection.onconnectionstatechange = () => {
-      const state = this.peerConnection!.connectionState;
+      if (!this.peerConnection) return;
+      const state = this.peerConnection.connectionState;
       this.emit('connectionstatechange', state);
 
       switch (state) {
@@ -584,7 +585,7 @@ export class InMemorySignalingServer extends EventEmitter {
 
     agent.on('message', (msg: SignalingMessage) => {
       const recipient = this.agents.get(msg.to);
-      if (recipient) {
+      if (recipient && recipient !== agent) {
         recipient.emit('message', msg);
       }
     });
