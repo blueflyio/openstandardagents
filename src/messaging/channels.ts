@@ -108,7 +108,8 @@ export class ChannelManager implements IChannelManager {
     }
 
     // Validate channel name format
-    const channelPattern = /^agents\.([a-z0-9-]+\.)+[a-z0-9-]+$/;
+    // Pattern: agents.{segment}.{segment}... (minimum 2 segments)
+    const channelPattern = /^agents\.([a-z0-9-]+)(\.([a-z0-9-]+))+$/;
     if (!channelPattern.test(channel.name)) {
       throw new Error(`Invalid channel name format: ${channel.name}`);
     }

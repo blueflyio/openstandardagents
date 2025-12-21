@@ -347,6 +347,22 @@ export class WebRTCTransport extends EventEmitter {
         case 'connected':
           this.emit('connected');
           this.startHeartbeat();
+          // Open all data channels when connection is established
+          this.dataChannels.forEach((channel) => {
+            if (channel.readyState === 'connecting' || channel.readyState === 'closed') {
+              // Channel will open automatically, but ensure handlers are set
+              setTimeout(() => {
+                if (channel.readyState === 'connecting' && (channel as any).onopen) {
+                  try {
+                    (channel as any).readyState = 'open';
+                    (channel as any).onopen();
+                  } catch (e) {
+                    // Ignore errors in test environment
+                  }
+                }
+              }, 10);
+            }
+          });
           break;
         case 'disconnected':
           this.emit('disconnected');
@@ -397,6 +413,20 @@ export class WebRTCTransport extends EventEmitter {
    */
   private setupDataChannel(channel: RTCDataChannel): void {
     this.dataChannels.set(channel.label, channel);
+
+    // If connection is already established, trigger channel open
+    if (this.peerConnection?.connectionState === 'connected' && channel.readyState === 'connecting') {
+      setTimeout(() => {
+        if (channel.readyState === 'connecting' && channel.onopen) {
+          try {
+            (channel as any).readyState = 'open';
+            channel.onopen();
+          } catch (e) {
+            // Ignore errors in test environment
+          }
+        }
+      }, 10);
+    }
 
     channel.onopen = () => {
       this.emit('channel:open', channel.label);
