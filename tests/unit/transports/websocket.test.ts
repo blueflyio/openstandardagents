@@ -98,6 +98,10 @@ describe('WebSocketTransport', () => {
 
   afterEach(async () => {
     await transport.disconnect();
+    // Ensure all timers are cleared
+    jest.clearAllTimers();
+    // Wait for any pending async operations
+    await new Promise((resolve) => setTimeout(resolve, 50));
   });
 
   describe('Connection Management', () => {
