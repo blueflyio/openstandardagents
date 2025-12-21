@@ -242,7 +242,7 @@ extensions:
 
 ---
 
-**Questions?** Open an issue on [GitHub](https://gitlab.com/blueflyio/openstandardagents/issues)
+**Questions?** Open an issue on [GitHub](https://gitlab.com/blueflyio/openstandardagents/-/issues)
 
 **Want to contribute?** See [CONTRIBUTING.md](../CONTRIBUTING.md)
 
