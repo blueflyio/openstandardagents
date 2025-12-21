@@ -382,7 +382,7 @@ Submit PRs to: https://gitlab.com/blueflyio/openstandardagents/pulls
 - **Specification**: https://gitlab.com/blueflyio/openstandardagents/spec
 - **Examples**: https://gitlab.com/blueflyio/openstandardagents/examples
 - **Community**: https://gitlab.com/blueflyio/openstandardagents/discussions
-- **Issues**: https://gitlab.com/blueflyio/openstandardagents/issues
+- **Issues**: https://gitlab.com/blueflyio/openstandardagents/-/issues
 
 ## License
 
