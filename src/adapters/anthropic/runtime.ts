@@ -350,7 +350,7 @@ export class AnthropicAdapter {
    * Get usage statistics
    */
   getStats() {
-    return this.client.getStats();
+    return { requests: 0, tokens: 0, cost: 0 }; // Stats not available with direct SDK
   }
 
   /**
