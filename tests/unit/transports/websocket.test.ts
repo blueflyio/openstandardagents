@@ -344,7 +344,11 @@ describe('WebSocketTransport', () => {
       });
       
       // Start connection - error should fire at 5ms, rejecting promise
-      const connectPromise = errorTransport.connect();
+      // Add catch handler immediately to prevent unhandled rejection warning
+      const connectPromise = errorTransport.connect().catch((err) => {
+        // Expected rejection - ignore
+        return Promise.reject(err);
+      });
       
       // Wait for error event to fire (mock fires at 5ms)
       await new Promise((resolve) => setTimeout(resolve, 10));
@@ -353,14 +357,7 @@ describe('WebSocketTransport', () => {
       expect(errorFired).toBe(true);
       
       // Verify promise rejected (rejects with Event object)
-      try {
-        await connectPromise;
-        // Should not reach here
-        expect(true).toBe(false);
-      } catch (error) {
-        // Expected - promise rejected with Event
-        expect(error).toBeDefined();
-      }
+      await expect(connectPromise).rejects.toBeDefined();
     });
 
     it('should emit error events', (done) => {
