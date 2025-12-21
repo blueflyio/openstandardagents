@@ -15,7 +15,7 @@ export type {
 
 // Client wrapper
 export { AnthropicClient } from './client.js';
-export type { UsageStats } from './client.js';
+
 
 // Configuration
 export {
