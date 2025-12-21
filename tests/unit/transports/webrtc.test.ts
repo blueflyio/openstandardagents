@@ -300,7 +300,7 @@ describe('WebRTCTransport', () => {
     });
 
     it('should send message on data channel', async () => {
-      const channelMap = (transport1 as any).dataChannels as Map<string, MockRTCDataChannel>;
+      // Reuse channelMap from above
       const channel = channelMap.get('control');
       if (channel && channel.readyState !== 'open') {
         channel.simulateOpen();
@@ -427,7 +427,7 @@ describe('WebRTCTransport', () => {
 
       await transport1.send('control', 'message', largePayload);
 
-      const channelMap = (transport1 as any).dataChannels as Map<string, MockRTCDataChannel>;
+      // Reuse channelMap from above
       const channel = channelMap.get('control')!;
       const message = channel.getLastMessage() as any;
 
@@ -444,7 +444,7 @@ describe('WebRTCTransport', () => {
       });
 
       // Simulate receiving chunks
-      const channelMap = (transport1 as any).dataChannels as Map<string, MockRTCDataChannel>;
+      // Reuse channelMap from above
       const channel = channelMap.get('control')!;
       const messageId = 'chunked-msg-123';
 
