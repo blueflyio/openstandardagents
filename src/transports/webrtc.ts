@@ -420,7 +420,9 @@ export class WebRTCTransport extends EventEmitter {
         if (channel.readyState === 'connecting' && channel.onopen) {
           try {
             (channel as any).readyState = 'open';
-            channel.onopen();
+            if (channel.onopen) {
+              channel.onopen(new Event('open') as any);
+            }
           } catch (e) {
             // Ignore errors in test environment
           }
