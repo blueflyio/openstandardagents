@@ -335,14 +335,20 @@ describe('WebSocketTransport', () => {
         capabilities: [],
       });
 
-      errorTransport.on('error', () => {}); // Prevent unhandled error
-      // Use Promise.race to handle timeout
-      await expect(
-        Promise.race([
-          errorTransport.connect(),
-          new Promise((_, reject) => setTimeout(() => reject(new Error('Connection timeout')), 5000))
-        ])
-      ).rejects.toThrow();
+      let errorEmitted = false;
+      errorTransport.on('error', () => {
+        errorEmitted = true;
+      });
+
+      // Start connection - error should fire before open
+      const connectPromise = errorTransport.connect();
+      
+      // Wait for error to fire
+      await new Promise((resolve) => setTimeout(resolve, 20));
+      
+      // Connection should have failed
+      expect(errorEmitted).toBe(true);
+      await expect(connectPromise).rejects.toThrow();
     });
 
     it('should emit error events', (done) => {
