@@ -283,8 +283,8 @@ describe('WebRTCTransport', () => {
       });
       // Wait for connection, then trigger channel open
       setTimeout(() => {
-        const channels = (transport1 as any).dataChannels as Map<string, MockRTCDataChannel>;
-        channels.forEach((channel) => {
+        const channelMap = (transport1 as any).dataChannels as Map<string, MockRTCDataChannel>;
+        channelMap.forEach((channel) => {
           if (channel.readyState === 'connecting') {
             channel.simulateOpen();
           }
@@ -300,16 +300,16 @@ describe('WebRTCTransport', () => {
     });
 
     it('should send message on data channel', async () => {
-      const channels = (transport1 as any).dataChannels as Map<string, MockRTCDataChannel>;
-      const channel = channels.get('control');
+      const channelMap = (transport1 as any).dataChannels as Map<string, MockRTCDataChannel>;
+      const channel = channelMap.get('control');
       if (channel && channel.readyState !== 'open') {
         channel.simulateOpen();
         await new Promise((resolve) => setTimeout(resolve, 10));
       }
       await transport1.send('control', 'message', { test: 'data' });
 
-      const channels = (transport1 as any).dataChannels as Map<string, MockRTCDataChannel>;
-      const channel = channels.get('control');
+      const channelMap = (transport1 as any).dataChannels as Map<string, MockRTCDataChannel>;
+      const channel = channelMap.get('control');
       const message = channel!.getLastMessage() as any;
 
       expect(message.type).toBe('message');
@@ -323,8 +323,8 @@ describe('WebRTCTransport', () => {
     });
 
     it('should throw error when channel not open', async () => {
-      const channels = (transport1 as any).dataChannels as Map<string, MockRTCDataChannel>;
-      const channel = channels.get('control')!;
+      const channelMap = (transport1 as any).dataChannels as Map<string, MockRTCDataChannel>;
+      const channel = channelMap.get('control')!;
       channel.readyState = 'connecting';
 
       await expect(
@@ -346,8 +346,8 @@ describe('WebRTCTransport', () => {
         done();
       });
 
-      const channels = (transport1 as any).dataChannels as Map<string, MockRTCDataChannel>;
-      const channel = channels.get('control')!;
+      const channelMap = (transport1 as any).dataChannels as Map<string, MockRTCDataChannel>;
+      const channel = channelMap.get('control')!;
 
       channel.simulateMessage(JSON.stringify({
         type: 'message',
@@ -366,8 +366,8 @@ describe('WebRTCTransport', () => {
     });
 
     it('should invoke capability and receive response', async () => {
-      const channels = (transport1 as any).dataChannels as Map<string, MockRTCDataChannel>;
-      const channel = channels.get('control')!;
+      const channelMap = (transport1 as any).dataChannels as Map<string, MockRTCDataChannel>;
+      const channel = channelMap.get('control')!;
       if (channel.readyState !== 'open') {
         channel.simulateOpen();
         await new Promise((resolve) => setTimeout(resolve, 10));
@@ -397,8 +397,8 @@ describe('WebRTCTransport', () => {
     });
 
     it('should timeout on capability call', async () => {
-      const channels = (transport1 as any).dataChannels as Map<string, MockRTCDataChannel>;
-      const channel = channels.get('control');
+      const channelMap = (transport1 as any).dataChannels as Map<string, MockRTCDataChannel>;
+      const channel = channelMap.get('control');
       if (channel && channel.readyState !== 'open') {
         channel.simulateOpen();
       }
@@ -417,8 +417,8 @@ describe('WebRTCTransport', () => {
     });
 
     it('should chunk large messages', async () => {
-      const channels = (transport1 as any).dataChannels as Map<string, MockRTCDataChannel>;
-      const channel = channels.get('control');
+      const channelMap = (transport1 as any).dataChannels as Map<string, MockRTCDataChannel>;
+      const channel = channelMap.get('control');
       if (channel && channel.readyState !== 'open') {
         channel.simulateOpen();
         await new Promise((resolve) => setTimeout(resolve, 10));
@@ -428,8 +428,8 @@ describe('WebRTCTransport', () => {
 
       await transport1.send('control', 'message', largePayload);
 
-      const channels = (transport1 as any).dataChannels as Map<string, MockRTCDataChannel>;
-      const channel = channels.get('control')!;
+      const channelMap = (transport1 as any).dataChannels as Map<string, MockRTCDataChannel>;
+      const channel = channelMap.get('control')!;
       const message = channel.getLastMessage() as any;
 
       expect(message.metadata.chunked).toBeDefined();
@@ -445,8 +445,8 @@ describe('WebRTCTransport', () => {
       });
 
       // Simulate receiving chunks
-      const channels = (transport1 as any).dataChannels as Map<string, MockRTCDataChannel>;
-      const channel = channels.get('control')!;
+      const channelMap = (transport1 as any).dataChannels as Map<string, MockRTCDataChannel>;
+      const channel = channelMap.get('control')!;
       const messageId = 'chunked-msg-123';
 
       const fullMessage = {
