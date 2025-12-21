@@ -135,7 +135,10 @@ review:stop:
     - |
       if [ -n "$KUBECONFIG_LOCAL" ]; then
         mkdir -p ~/.kube
-        echo "$KUBECONFIG_LOCAL" | base64 -d > ~/.kube/config
+        if ! echo "$KUBECONFIG_LOCAL" | base64 -d > ~/.kube/config; then
+          echo "Failed to decode KUBECONFIG_LOCAL"
+          exit 1
+        fi
         chmod 600 ~/.kube/config
       fi
   script:

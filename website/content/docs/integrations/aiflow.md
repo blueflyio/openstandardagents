@@ -34,11 +34,7 @@ The OpenAPI 3.1 specification defines the REST API interface for the AIFlow agen
 
 ### OSSA Schema
 
-<<<<<<< HEAD
 **Location**: [OSSA/spec/v0.3.0/ossa-0.3.0.schema.json](https://gitlab.com/blueflyio/openstandardagents/blob/development/spec/v0.3.0/ossa-0.3.0.schema.json)
-=======
-**Location**: [OSSA/spec/{{OSSA_VERSION_TAG}}/ossa-{{OSSA_VERSION}}.schema.json](https://gitlab.com/blueflyio/openstandardagents/blob/development/spec/{{OSSA_VERSION_TAG}}/ossa-{{OSSA_VERSION}}.schema.json)
->>>>>>> origin/feature/37-update-docs-v030-rebased-v2
 
 JSON Schema definition for OSSA 1.0 manifest validation. All agent manifests must conform to this schema.
 

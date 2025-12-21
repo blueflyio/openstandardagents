@@ -50,11 +50,7 @@ This guide documents the GitHub mirroring setup for the Open Standard Agents (OS
 
 Before setting up GitHub mirroring, ensure you have:
 
-<<<<<<< HEAD
 1. **GitLab Repository**: Primary repository on GitLab (gitlab.com/blueflyio/openstandardagents)
-=======
-1. **GitLab Repository**: Primary repository on GitLab (github.com/blueflyio/openstandardagents)
->>>>>>> e4ff4b7 (fix: revert GitHub URLs in github-mirroring.md)
 2. **GitHub Repository**: Target mirror repository (github.com/blueflyio/openstandardagents)
 3. **GitHub Personal Access Token**: With `repo` and `workflow` permissions
 4. **GitLab CI/CD Access**: Ability to set CI/CD variables in GitLab project settings
@@ -310,18 +306,8 @@ Documentation
 - Changelog - https://github.com/blueflyio/openstandardagents/blob/main/CHANGELOG.md
 - Migration Guide - https://openstandardagents.org/docs/migration-guides/
 
-<<<<<<< HEAD
 npm Package - @bluefly/openstandardagents@0.3.0
 GitLab Release - https://gitlab.com/blueflyio/openstandardagents/-/releases/v0.3.0
-=======
-<<<<<<< HEAD
-npm Package - @bluefly/openstandardagents@{{OSSA_VERSION}}
-GitLab Release - https://gitlab.com/blueflyio/openstandardagents/-/releases/{{OSSA_VERSION_TAG}}
-=======
-npm Package - @bluefly/openstandardagents@0.3.0
-GitLab Release - https://github.com/blueflyio/openstandardagents/-/releases/v0.3.0
->>>>>>> e4ff4b7 (fix: revert GitHub URLs in github-mirroring.md)
->>>>>>> origin/feature/37-update-docs-v030-rebased-v2
 ```
 
 This metadata is preserved when mirrored to GitHub.
