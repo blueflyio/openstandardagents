@@ -28,7 +28,7 @@ github:sync:agent:
 code:review:agent:
   stage: .pre
   image: node:${NODE_VERSION}-alpine
-  allow_failure: true
+  allow_failure: false
   before_script:
     - npm ci --legacy-peer-deps
     - npm run build || (echo "⚠️  Build failed, skipping code review" && exit 0)
@@ -84,7 +84,7 @@ docs:sync:agent:
 security:scan:agent:
   stage: test
   image: node:${NODE_VERSION}-alpine
-  allow_failure: true
+  allow_failure: false
   before_script:
     - npm ci --legacy-peer-deps
     - npm run build
