@@ -181,6 +181,8 @@ export class AnthropicAdapter {
 
       // Create message
       const response = await this.client.messages.create({
+        model: this.agent.spec?.runtime?.model || 'claude-3-5-sonnet-20241022',
+        max_tokens: options?.maxTokens || 4096,
         system: systemPrompt,
         messages: conversationMessages,
         tools: tools.length > 0 ? tools : undefined,
@@ -355,7 +357,7 @@ export class AnthropicAdapter {
    * Reset statistics
    */
   resetStats(): void {
-    this.client.resetStats();
+    // Stats reset not available with direct SDK client
   }
 
   /**
