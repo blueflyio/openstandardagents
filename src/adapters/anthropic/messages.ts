@@ -66,7 +66,7 @@ export function convertToAnthropicMessages(
     // Convert content blocks
     const content: Array<
       | { type: 'text'; text: string }
-      | { type: 'image'; source: { type: 'base64'; media_type: string; data: string } }
+      | { type: 'image'; source: { type: 'base64'; media_type: 'image/jpeg' | 'image/png' | 'image/gif' | 'image/webp'; data: string } }
       | { type: 'tool_use'; id: string; name: string; input: Record<string, unknown> }
       | { type: 'tool_result'; tool_use_id: string; content: string; is_error?: boolean }
     > = [];

@@ -147,10 +147,11 @@ export class AnthropicClient {
 
     // Initialize rate limiter if enabled
     if (this.config.rateLimit.enableRetry) {
+      const rl = this.config.rateLimit;
       this.rateLimiter = new RateLimiter(
-        this.config.rateLimit.requestsPerMinute,
-        this.config.rateLimit.tokensPerMinute,
-        this.config.rateLimit.tokensPerDay
+        rl.requestsPerMinute || 50,
+        rl.tokensPerMinute || 40000,
+        rl.tokensPerDay || 1000000
       );
     }
 
@@ -175,16 +176,18 @@ export class AnthropicClient {
     // Apply rate limiting with retry
     if (this.rateLimiter) {
       let retries = 0;
-      while (!this.rateLimiter.canProceed(this.config.maxTokens)) {
-        if (retries >= this.config.rateLimit.maxRetries) {
+      while (!this.rateLimiter.canProceed(this.config.maxTokens || 4096)) {
+        if (retries >= (this.config.rateLimit?.maxRetries || 3)) {
           throw new Error('Rate limit exceeded and max retries reached');
         }
 
         const waitTime = this.rateLimiter.getWaitTime();
+        const rl = this.config.rateLimit;
+        const initialDelay = rl?.initialRetryDelay || 1000;
+        const maxDelay = rl?.maxRetryDelay || 60000;
         const delay = Math.min(
-          this.config.rateLimit.initialRetryDelay *
-            Math.pow(2, retries),
-          this.config.rateLimit.maxRetryDelay
+          initialDelay * Math.pow(2, retries),
+          maxDelay
         );
 
         if (this.config.debug) {
@@ -211,25 +214,27 @@ export class AnthropicClient {
 
       // Update statistics
       const latency = Date.now() - startTime;
-      this.updateStats(
-        response.usage.input_tokens,
-        response.usage.output_tokens,
-        latency
-      );
+      if ('usage' in response && response.usage) {
+        this.updateStats(
+          response.usage.input_tokens,
+          response.usage.output_tokens,
+          latency
+        );
+      }
 
       // Record rate limit usage
-      if (this.rateLimiter) {
+      if (this.rateLimiter && 'usage' in response && response.usage) {
         this.rateLimiter.recordRequest(
           response.usage.input_tokens + response.usage.output_tokens
         );
       }
 
-      if (this.config.debug) {
+      if (this.config.debug && 'id' in response) {
         console.log(`[AnthropicClient] Message created:`, {
           id: response.id,
-          model: response.model,
-          stopReason: response.stop_reason,
-          usage: response.usage,
+          model: 'model' in response ? response.model : 'unknown',
+          stopReason: 'stop_reason' in response ? response.stop_reason : 'unknown',
+          usage: 'usage' in response ? response.usage : undefined,
           latency: `${latency}ms`,
         });
       }
@@ -254,16 +259,18 @@ export class AnthropicClient {
     // Apply rate limiting
     if (this.rateLimiter) {
       let retries = 0;
-      while (!this.rateLimiter.canProceed(this.config.maxTokens)) {
-        if (retries >= this.config.rateLimit.maxRetries) {
+      while (!this.rateLimiter.canProceed(this.config.maxTokens || 4096)) {
+        if (retries >= (this.config.rateLimit?.maxRetries || 3)) {
           throw new Error('Rate limit exceeded and max retries reached');
         }
 
         const waitTime = this.rateLimiter.getWaitTime();
+        const rl = this.config.rateLimit;
+        const initialDelay = rl?.initialRetryDelay || 1000;
+        const maxDelay = rl?.maxRetryDelay || 60000;
         const delay = Math.min(
-          this.config.rateLimit.initialRetryDelay *
-            Math.pow(2, retries),
-          this.config.rateLimit.maxRetryDelay
+          initialDelay * Math.pow(2, retries),
+          maxDelay
         );
 
         await this.sleep(Math.max(waitTime, delay));
@@ -368,10 +375,11 @@ export class AnthropicClient {
 
     // Recreate rate limiter if settings changed
     if (updates.rateLimit && this.config.rateLimit.enableRetry) {
+      const rl = this.config.rateLimit;
       this.rateLimiter = new RateLimiter(
-        this.config.rateLimit.requestsPerMinute,
-        this.config.rateLimit.tokensPerMinute,
-        this.config.rateLimit.tokensPerDay
+        rl.requestsPerMinute || 50,
+        rl.tokensPerMinute || 40000,
+        rl.tokensPerDay || 1000000
       );
     }
   }

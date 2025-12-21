@@ -185,7 +185,6 @@ export class AnthropicAdapter {
         messages: conversationMessages,
         tools: tools.length > 0 ? tools : undefined,
         temperature: options?.temperature,
-        max_tokens: options?.maxTokens,
       });
 
       totalInputTokens += response.usage.input_tokens;
