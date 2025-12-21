@@ -96,17 +96,9 @@ This generates Kubernetes manifests and deploys the agent with:
 ## Resources
 
 - **AIFlow Repository**: https://github.com/AIFlow-agent/AIFlow-Agent
-<<<<<<< HEAD
 - **OSSA Project**: [openapi-ai-agents-standard](https://gitlab.com/blueflyio/openstandardagents)
 - **Integration Guide**: [agent-buildkit Wiki](https://gitlab.com/blueflyio/openstandardagents/wiki/AIFlow-Integration-with-OSSA-BuildKit-and-K-Agent)
 - **OSSA Specification Schema**: [OSSA 1.0 Schema](https://gitlab.com/blueflyio/openstandardagents/blob/development/spec/v0.3.0/ossa-0.3.0.schema.json)
 - **Example Manifest**: [social-agent-aiflow.ossa.yaml](https://gitlab.com/blueflyio/openstandardagents/blob/development/examples/aiflow-integration/social-agent-aiflow.ossa.yaml)
 - **OpenAPI Spec**: [aiflow-agent.openapi.yml](https://gitlab.com/blueflyio/openstandardagents/blob/development/openapi/aiflow-agent.openapi.yml)
-=======
-- **OSSA Project**: [openapi-ai-agents-standard](https://gitlab.com/blueflyio/openstandardagents)
-- **Integration Guide**: [agent-buildkit Wiki](https://gitlab.com/blueflyio/openstandardagents/wiki/AIFlow-Integration-with-OSSA-BuildKit-and-K-Agent)
-- **OSSA Specification Schema**: [OSSA 1.0 Schema](https://gitlab.com/blueflyio/openstandardagents/blob/development/spec/{{OSSA_VERSION_TAG}}/ossa-{{OSSA_VERSION}}.schema.json)
-- **Example Manifest**: [social-agent-aiflow.ossa.yaml](https://gitlab.com/blueflyio/openstandardagents/blob/development/examples/aiflow-integration/social-agent-aiflow.ossa.yaml)
-- **OpenAPI Spec**: [aiflow-agent.openapi.yml](https://gitlab.com/blueflyio/openstandardagents/blob/development/openapi/aiflow-agent.openapi.yml)
->>>>>>> origin/feature/37-update-docs-v030-rebased-v2
 
