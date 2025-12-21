@@ -239,7 +239,7 @@ export async function validateManifest(
   } else {
     warnings.push({
       path: '',
-      message: `Could not load any schema. Check your connection or try again.`,
+      message: `Could not load schema for version ${schemaVersion}. Basic validation passed.`,
       keyword: 'schema'
     });
   }
