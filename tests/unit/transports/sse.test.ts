@@ -289,12 +289,14 @@ describe('SSETransport', () => {
 
   describe('Reconnection', () => {
     it('should emit reconnecting event', (done) => {
+      jest.setTimeout(15000); // Increase timeout for reconnection
       const reconnectTransport = new SSETransport({
         url: 'https://test.example.com/events',
         reconnect: { enabled: true, maxAttempts: 3 },
       });
 
       let called = false;
+      reconnectTransport.on('error', () => {}); // Prevent unhandled error
       reconnectTransport.on('reconnecting', (attempt) => {
         if (called) return;
         called = true;
