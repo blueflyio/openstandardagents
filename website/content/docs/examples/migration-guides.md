@@ -10,7 +10,7 @@ Migrate agents from existing frameworks to OSSA format.
 
 ### LangChain → OSSA
 
-**Location**: [examples/migration-guides/from-langchain-to-ossa.yaml](https://github.com/blueflyio/openstandardagents/blob/main/examples/migration-guides/from-langchain-to-ossa.yaml)
+**Location**: [examples/migration-guides/from-langchain-to-ossa.yaml](https://gitlab.com/blueflyio/openstandardagents/-/blob/main/examples/migration-guides/from-langchain-to-ossa.yaml)
 
 **Covers**:
 - Simple LangChain agents
@@ -202,7 +202,7 @@ ossa validate migrated-agent.ossa.yaml --verbose
 
 ### Getting Help
 
-- [GitLab Issues](https://github.com/blueflyio/openstandardagents/issues)
+- [GitLab Issues](https://gitlab.com/blueflyio/openstandardagents/-/issues)
 - [Documentation](../Technical/Specification-Deep-Dive)
 - [Examples](../Getting-Started-Examples)
 

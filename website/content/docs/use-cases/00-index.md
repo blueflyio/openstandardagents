@@ -374,15 +374,15 @@ We welcome contributions! To add a new use case:
 6. Document cost estimates
 7. Add production checklist
 
-Submit PRs to: https://github.com/blueflyio/openstandardagents/pulls
+Submit PRs to: https://gitlab.com/blueflyio/openstandardagents/pulls
 
 ## Support & Resources
 
 - **Documentation**: https://openstandardagents.org/docs
-- **Specification**: https://github.com/blueflyio/openstandardagents/spec
-- **Examples**: https://github.com/blueflyio/openstandardagents/examples
-- **Community**: https://github.com/blueflyio/openstandardagents/discussions
-- **Issues**: https://github.com/blueflyio/openstandardagents/issues
+- **Specification**: https://gitlab.com/blueflyio/openstandardagents/spec
+- **Examples**: https://gitlab.com/blueflyio/openstandardagents/examples
+- **Community**: https://gitlab.com/blueflyio/openstandardagents/discussions
+- **Issues**: https://gitlab.com/blueflyio/openstandardagents/-/issues
 
 ## License
 

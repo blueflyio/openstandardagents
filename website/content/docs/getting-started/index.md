@@ -82,11 +82,11 @@ OSSA doesn't dictate deployment. Deploy to YOUR infrastructure:
 
 - Review [Examples](../examples/migration-guides)
 - Read the [Schema Reference](../schema-reference)
-- Visit the [GitHub Repository](https://github.com/blueflyio/openstandardagents)
+- Visit the [GitHub Repository](https://gitlab.com/blueflyio/openstandardagents)
 
 ## Need More Features?
 
 For production features like GitLab integration, Kubernetes deployment, and monitoring, see:
 
-**[agent-buildkit](https://github.com/blueflyio/openstandardagents)** - Reference implementation with production tooling
+**[agent-buildkit](https://gitlab.com/blueflyio/openstandardagents)** - Reference implementation with production tooling
 

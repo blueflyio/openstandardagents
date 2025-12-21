@@ -19,7 +19,7 @@ Automated documentation generation and validation agent
 - **validate_docs**: Validate documentation completeness and quality
 - **sync_wiki**: Sync documentation to GitLab wiki
 
-**Manifest**: [`.gitlab/agents/doc-agent/manifest.ossa.yaml`](https://github.com/blueflyio/openstandardagents/blob/main/.gitlab/agents/doc-agent/manifest.ossa.yaml)
+**Manifest**: [`.gitlab/agents/doc-agent/manifest.ossa.yaml`](https://gitlab.com/blueflyio/openstandardagents/-/blob/main/.gitlab/agents/doc-agent/manifest.ossa.yaml)
 
 ```bash
 # Deploy agent

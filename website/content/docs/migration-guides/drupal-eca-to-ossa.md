@@ -1941,7 +1941,7 @@ if ($features->isEnabled('ossa_moderation')) {
 ## Additional Resources
 
 ### Documentation
-- [OSSA Specification](https://github.com/blueflyio/openstandardagents/wiki/home)
+- [OSSA Specification](https://gitlab.com/blueflyio/openstandardagents/wiki/home)
 - [Drupal ECA Guide](https://ecaguide.org/)
 - [BuildKit CLI Reference](https://github.com/blueflyio/documentation/-/wikis/BuildKit-CLI-Reference)
 
@@ -1951,12 +1951,12 @@ if ($features->isEnabled('ossa_moderation')) {
 - OSSA Validator: `ossa validate <file>`
 
 ### Examples
-- [OSSA Example Agents](https://github.com/blueflyio/openstandardagents/tree/main/examples)
+- [OSSA Example Agents](https://gitlab.com/blueflyio/openstandardagents/-/tree/main/examples)
 - [Drupal Integration Module](https://github.com/blueflyio/drupal/ossa_integration)
 
 ### Support
 - [GitLab Issues](https://github.com/blueflyio/documentation/-/issues)
-- [OSSA Discussions](https://github.com/blueflyio/openstandardagents/issues)
+- [OSSA Discussions](https://gitlab.com/blueflyio/openstandardagents/-/issues)
 
 ---
 
