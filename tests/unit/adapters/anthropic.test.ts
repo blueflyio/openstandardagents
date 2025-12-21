@@ -227,11 +227,14 @@ describe('AnthropicAdapter', () => {
     });
 
     it('should invalidate config without API key', () => {
+      const originalEnv = process.env.ANTHROPIC_API_KEY;
+      delete process.env.ANTHROPIC_API_KEY;
       const result = validateConfig(
         mergeConfig({
           apiKey: '',
         })
       );
+      if (originalEnv) process.env.ANTHROPIC_API_KEY = originalEnv;
 
       expect(result.valid).toBe(false);
       expect(result.errors.length).toBeGreaterThan(0);
