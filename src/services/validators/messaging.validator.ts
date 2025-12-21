@@ -83,10 +83,7 @@ export class MessagingValidator {
   /**
    * Validate messaging extension in OSSA manifest
    */
-  validateMessagingExtension(
-    messaging: MessagingExtension,
-    apiVersion: string
-  ): ValidationError[] {
+  validateMessagingExtension(messaging: MessagingExtension, apiVersion: string): ValidationError[] {
     const errors: ValidationError[] = [];
 
     // Only validate if apiVersion supports messaging (v0.3.0+)
@@ -159,8 +156,7 @@ export class MessagingValidator {
       ) {
         errors.push({
           path: `${path}.channel`,
-          message:
-            'channel name cannot start with reserved prefixes: ossa., system., internal.',
+          message: 'channel name cannot start with reserved prefixes: ossa., system., internal.',
         });
       }
 
@@ -182,10 +178,7 @@ export class MessagingValidator {
       }
 
       // Validate contentType
-      if (
-        channel.contentType &&
-        !channel.contentType.match(/^[a-z]+\/[a-z0-9+-]+$/)
-      ) {
+      if (channel.contentType && !channel.contentType.match(/^[a-z]+\/[a-z0-9+-]+$/)) {
         errors.push({
           path: `${path}.contentType`,
           message: 'contentType must be a valid MIME type',
@@ -238,8 +231,7 @@ export class MessagingValidator {
       // Validate maxConcurrency
       if (
         subscription.maxConcurrency !== undefined &&
-        (subscription.maxConcurrency < 1 ||
-          !Number.isInteger(subscription.maxConcurrency))
+        (subscription.maxConcurrency < 1 || !Number.isInteger(subscription.maxConcurrency))
       ) {
         errors.push({
           path: `${path}.maxConcurrency`,
@@ -332,22 +324,17 @@ export class MessagingValidator {
     return errors;
   }
 
-  private validateReliability(
-    reliability: ReliabilityConfig
-  ): ValidationError[] {
+  private validateReliability(reliability: ReliabilityConfig): ValidationError[] {
     const errors: ValidationError[] = [];
 
     // Validate deliveryGuarantee
     if (
       reliability.deliveryGuarantee &&
-      !['at-least-once', 'at-most-once', 'exactly-once'].includes(
-        reliability.deliveryGuarantee
-      )
+      !['at-least-once', 'at-most-once', 'exactly-once'].includes(reliability.deliveryGuarantee)
     ) {
       errors.push({
         path: 'messaging.reliability.deliveryGuarantee',
-        message:
-          'deliveryGuarantee must be one of: at-least-once, at-most-once, exactly-once',
+        message: 'deliveryGuarantee must be one of: at-least-once, at-most-once, exactly-once',
       });
     }
 
@@ -368,9 +355,7 @@ export class MessagingValidator {
       if (reliability.retry.backoff) {
         if (
           reliability.retry.backoff.strategy &&
-          !['exponential', 'linear', 'constant'].includes(
-            reliability.retry.backoff.strategy
-          )
+          !['exponential', 'linear', 'constant'].includes(reliability.retry.backoff.strategy)
         ) {
           errors.push({
             path: 'messaging.reliability.retry.backoff.strategy',
@@ -413,22 +398,14 @@ export class MessagingValidator {
 
     // Basic JSON Schema validation
     if (
-      schemaTyped.type &&
-        ![
-          'object',
-          'array',
-          'string',
-          'number',
-          'integer',
-          'boolean',
-          'null',
-        ].includes(schemaTyped.type)
-      ) {
-        errors.push({
-          path: 'type',
-          message: `invalid schema type: ${schemaTyped.type}`,
-        });
-      }
+      schema.type &&
+      !['object', 'array', 'string', 'number', 'integer', 'boolean', 'null'].includes(schema.type)
+    ) {
+      errors.push({
+        path: 'type',
+        message: `invalid schema type: ${schemaTyped.type}`,
+      });
+    }
 
     return errors;
   }

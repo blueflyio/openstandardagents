@@ -507,9 +507,7 @@ export interface Connection {
 /**
  * Message Handler Function
  */
-export type MessageHandler<T = unknown> = (
-  message: MessageEnvelope<T>
-) => Promise<void> | void;
+export type MessageHandler<T = unknown> = (message: MessageEnvelope<T>) => Promise<void> | void;
 
 /**
  * Command Handler Function

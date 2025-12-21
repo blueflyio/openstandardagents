@@ -13,20 +13,13 @@ export class OpenAIValidator {
     const errors: ErrorObject[] = [];
     const warnings: string[] = [];
 
-    const openaiExt = manifest.extensions?.openai_agents as
-      | Record<string, unknown>
-      | undefined;
+    const openaiExt = manifest.extensions?.openai_agents as Record<string, unknown> | undefined;
     if (!openaiExt || (openaiExt.enabled as boolean | undefined) === false) {
       return { valid: true, errors: [], warnings: [] };
     }
 
     // Validate model
-    const validModels = [
-      'gpt-4o',
-      'gpt-4o-mini',
-      'gpt-4-turbo',
-      'gpt-3.5-turbo',
-    ];
+    const validModels = ['gpt-4o', 'gpt-4o-mini', 'gpt-4-turbo', 'gpt-3.5-turbo'];
     const model = openaiExt.model as string | undefined;
     if (model && !validModels.includes(model)) {
       errors.push({
@@ -39,9 +32,7 @@ export class OpenAIValidator {
     }
 
     // Validate tools_mapping if provided
-    const toolsMapping = openaiExt.tools_mapping as
-      | Array<Record<string, unknown>>
-      | undefined;
+    const toolsMapping = openaiExt.tools_mapping as Array<Record<string, unknown>> | undefined;
     if (toolsMapping) {
       if (!Array.isArray(toolsMapping)) {
         errors.push({
@@ -52,26 +43,22 @@ export class OpenAIValidator {
           message: 'tools_mapping must be an array',
         });
       } else {
-        toolsMapping.forEach(
-          (mapping: Record<string, unknown>, index: number) => {
-            if (!mapping.ossa_capability) {
-              errors.push({
-                instancePath: `/extensions/openai_agents/tools_mapping/${index}/ossa_capability`,
-                schemaPath: '',
-                keyword: 'required',
-                params: { missingProperty: 'ossa_capability' },
-                message: 'tools_mapping item must have ossa_capability',
-              });
-            }
+        toolsMapping.forEach((mapping: Record<string, unknown>, index: number) => {
+          if (!mapping.ossa_capability) {
+            errors.push({
+              instancePath: `/extensions/openai_agents/tools_mapping/${index}/ossa_capability`,
+              schemaPath: '',
+              keyword: 'required',
+              params: { missingProperty: 'ossa_capability' },
+              message: 'tools_mapping item must have ossa_capability',
+            });
           }
-        );
+        });
       }
     }
 
     // Validate guardrails
-    const guardrails = openaiExt.guardrails as
-      | Record<string, unknown>
-      | undefined;
+    const guardrails = openaiExt.guardrails as Record<string, unknown> | undefined;
     if (guardrails) {
       const maxToolCalls = guardrails.max_tool_calls as number | undefined;
       if (maxToolCalls !== undefined && maxToolCalls < 1) {
@@ -125,9 +112,7 @@ export class OpenAIValidator {
 
     // Warnings
     if (!toolsMapping || toolsMapping.length === 0) {
-      warnings.push(
-        'Best practice: Define tools_mapping to map OSSA capabilities to OpenAI tools'
-      );
+      warnings.push('Best practice: Define tools_mapping to map OSSA capabilities to OpenAI tools');
     }
 
     if (!guardrails) {
