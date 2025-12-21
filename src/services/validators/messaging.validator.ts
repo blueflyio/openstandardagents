@@ -412,13 +412,8 @@ export class MessagingValidator {
     const schemaTyped = schema as { type?: string };
 
     // Basic JSON Schema validation
-<<<<<<< HEAD
     if (
       schemaTyped.type &&
-=======
-    if ('type' in schema && typeof schema.type === 'string') {
-      if (
->>>>>>> origin/185-openapi-docs
         ![
           'object',
           'array',
@@ -427,7 +422,6 @@ export class MessagingValidator {
           'integer',
           'boolean',
           'null',
-<<<<<<< HEAD
         ].includes(schemaTyped.type)
       ) {
         errors.push({
@@ -435,16 +429,6 @@ export class MessagingValidator {
           message: `invalid schema type: ${schemaTyped.type}`,
         });
       }
-=======
-        ].includes(schema.type)
-      ) {
-        errors.push({
-          path: 'type',
-          message: `invalid schema type: ${schema.type}`,
-        });
-      }
-    }
->>>>>>> origin/185-openapi-docs
 
     return errors;
   }
