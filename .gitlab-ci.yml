@@ -527,11 +527,17 @@ validate:scripts-version:
       VERSION=$(jq -r '.current' .version.json)
       echo "Current version: ${VERSION}"
       
-      # Verify exports["./schema"] matches current version
+      # Verify exports["./schema"] uses dynamic version placeholder or matches current version
       EXPECTED_EXPORT="./spec/v${VERSION}/ossa-${VERSION}.schema.json"
+      PLACEHOLDER_EXPORT='./spec/v{{VERSION}}/ossa-{{VERSION}}.schema.json'
       ACTUAL_EXPORT=$(node -p "require('./package.json').exports?.['./schema'] || ''")
-      if [ "$ACTUAL_EXPORT" != "$EXPECTED_EXPORT" ] && [ -n "$ACTUAL_EXPORT" ]; then
-        echo "ERROR: package.json exports[\"./schema\"] is \"${ACTUAL_EXPORT}\", should be \"${EXPECTED_EXPORT}\""
+      if [ "$ACTUAL_EXPORT" = "$PLACEHOLDER_EXPORT" ]; then
+        echo "exports[\"./schema\"] uses {{VERSION}} placeholder (will be replaced during release)"
+      elif [ "$ACTUAL_EXPORT" = "$EXPECTED_EXPORT" ]; then
+        echo "exports[\"./schema\"] matches current version: ${EXPECTED_EXPORT}"
+      elif [ -n "$ACTUAL_EXPORT" ]; then
+        echo "ERROR: package.json exports[\"./schema\"] is \"${ACTUAL_EXPORT}\""
+        echo "       Expected: \"${PLACEHOLDER_EXPORT}\" (placeholder) or \"${EXPECTED_EXPORT}\" (resolved)"
         exit 1
       fi
 
@@ -1100,15 +1106,18 @@ release:validate:
 
       SCHEMA_EXPORT=$(node -p "require('./package.json').exports?.['./schema'] || ''" 2>/dev/null || echo "")
       EXPECTED_EXPORT="./spec/v${VERSION}/ossa-${VERSION}.schema.json"
+      PLACEHOLDER_EXPORT='./spec/v{{VERSION}}/ossa-{{VERSION}}.schema.json'
 
       if [ "$SCHEMA_EXPORT" = "$EXPECTED_EXPORT" ]; then
         echo "   Schema export correct: ${SCHEMA_EXPORT}"
+      elif [ "$SCHEMA_EXPORT" = "$PLACEHOLDER_EXPORT" ]; then
+        echo "   Schema export uses {{VERSION}} placeholder (valid)"
       elif [ -z "$SCHEMA_EXPORT" ]; then
         echo "WARNING: No ./schema export defined"
         WARNINGS=$((WARNINGS + 1))
       else
         echo "ERROR: Schema export mismatch"
-        echo "     Expected: ${EXPECTED_EXPORT}"
+        echo "     Expected: ${EXPECTED_EXPORT} or ${PLACEHOLDER_EXPORT}"
         echo "     Got: ${SCHEMA_EXPORT}"
         ERRORS=$((ERRORS + 1))
       fi
