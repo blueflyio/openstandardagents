@@ -414,21 +414,21 @@ export class MessagingValidator {
     // Basic JSON Schema validation
     if (
       schemaTyped.type &&
-      ![
-        'object',
-        'array',
-        'string',
-        'number',
-        'integer',
-        'boolean',
-        'null',
-      ].includes(schemaTyped.type)
-    ) {
-      errors.push({
-        path: 'type',
-        message: `invalid schema type: ${schemaTyped.type}`,
-      });
-    }
+        ![
+          'object',
+          'array',
+          'string',
+          'number',
+          'integer',
+          'boolean',
+          'null',
+        ].includes(schemaTyped.type)
+      ) {
+        errors.push({
+          path: 'type',
+          message: `invalid schema type: ${schemaTyped.type}`,
+        });
+      }
 
     return errors;
   }
