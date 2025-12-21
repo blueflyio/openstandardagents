@@ -160,7 +160,7 @@ export class AnthropicAdapter {
 
     const maxTurns = options?.maxTurns || 10;
     let turnCount = 0;
-    let conversationMessages: MessageParam[] = [...messages];
+    const conversationMessages: MessageParam[] = [...messages];
     const toolCalls: Array<{
       name: string;
       input: Record<string, unknown>;
