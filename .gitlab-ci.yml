@@ -325,7 +325,10 @@ detect:milestone-and-tags:
       if [ -s dev-tags.env ]; then
         cat dev-tags.env >> milestone-version.env
       fi
-      
+
+      # Back-compat for older jobs/includes expecting release-version.env
+      cp -f milestone-version.env release-version.env
+
       echo ""
       echo "📋 Summary:"
       cat milestone-version.env
@@ -334,6 +337,7 @@ detect:milestone-and-tags:
       dotenv: milestone-version.env
     paths:
       - milestone-version.env
+      - release-version.env
       - dev-tags.env
     expire_in: 1 day
   rules:
@@ -981,7 +985,7 @@ release:validate:
         echo "  Open issues in ${MILESTONE_TITLE}:"
         # Fetch and display open issues
         OPEN_ISSUES_LIST=$(curl -sS --max-time 30 -G "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/issues" \
-          --header "PRIVATE-TOKEN: ${CI_JOB_TOKEN}" \
+          --header "JOB-TOKEN: ${CI_JOB_TOKEN}" \
           --data-urlencode "milestone=${MILESTONE_TITLE}" \
           --data-urlencode "state=opened" \
           --data-urlencode "per_page=100" 2>/dev/null || echo "[]")
@@ -1412,7 +1416,7 @@ release:npm:
         }')
 
       curl --request POST \
-        --header "PRIVATE-TOKEN: ${CI_JOB_TOKEN}" \
+        --header "JOB-TOKEN: ${CI_JOB_TOKEN}" \
         --header "Content-Type: application/json" \
         --data "$RELEASE_PAYLOAD" \
         "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/releases"
@@ -1424,7 +1428,7 @@ release:npm:
       echo "🔒 Closing milestone: ${MILESTONE_TITLE}..."
       if [ -n "$MILESTONE_ID" ]; then
         CLOSE_RESULT=$(curl -sS --max-time 30 --request PUT \
-          --header "PRIVATE-TOKEN: ${CI_JOB_TOKEN}" \
+          --header "JOB-TOKEN: ${CI_JOB_TOKEN}" \
           --header "Content-Type: application/json" \
           --data '{"state_event": "close"}' \
           "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/milestones/${MILESTONE_ID}" 2>/dev/null)
@@ -1627,7 +1631,7 @@ create-patch-version:
           }')
         
         RELEASE_RESPONSE=$(curl -sS --max-time 30 --request POST \
-          --header "PRIVATE-TOKEN: ${CI_JOB_TOKEN}" \
+          --header "JOB-TOKEN: ${CI_JOB_TOKEN}" \
           --header "Content-Type: application/json" \
           --data "$RELEASE_PAYLOAD" \
           "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/releases" 2>&1)
@@ -1752,7 +1756,7 @@ post-release:cleanup:
       # 1. Create release label if not exists
       echo "Creating label: ${LABEL_NAME}"
       curl --request POST \
-        --header "PRIVATE-TOKEN: ${CI_JOB_TOKEN}" \
+        --header "JOB-TOKEN: ${CI_JOB_TOKEN}" \
         --data "name=${LABEL_NAME}&color=#00FF00&description=Released in v${VERSION}" \
         "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/labels" 2>/dev/null || echo "Label may already exist"
 
@@ -1760,7 +1764,7 @@ post-release:cleanup:
       echo ""
       echo "📌 Tagging issues..."
       ISSUES=$(curl -sS --max-time 30 -G \
-        --header "PRIVATE-TOKEN: ${CI_JOB_TOKEN}" \
+        --header "JOB-TOKEN: ${CI_JOB_TOKEN}" \
         "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/issues" \
         --data-urlencode "milestone=${MILESTONE_TITLE}" \
         --data-urlencode "state=closed" \
@@ -1769,7 +1773,7 @@ post-release:cleanup:
       echo "$ISSUES" | jq -r '.[].iid' | while read ISSUE_IID; do
         [ -z "$ISSUE_IID" ] && continue
         curl -sS --max-time 30 --request PUT \
-          --header "PRIVATE-TOKEN: ${CI_JOB_TOKEN}" \
+          --header "JOB-TOKEN: ${CI_JOB_TOKEN}" \
           --data "add_labels=${LABEL_NAME}" \
           "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/issues/${ISSUE_IID}" > /dev/null
         echo " ✓ Tagged issue #${ISSUE_IID}"
@@ -1779,7 +1783,7 @@ post-release:cleanup:
       echo ""
       echo "📌 Tagging merge requests..."
       MRS=$(curl -sS --max-time 30 -G \
-        --header "PRIVATE-TOKEN: ${CI_JOB_TOKEN}" \
+        --header "JOB-TOKEN: ${CI_JOB_TOKEN}" \
         "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/merge_requests" \
         --data-urlencode "milestone=${MILESTONE_TITLE}" \
         --data-urlencode "state=merged" \
@@ -1788,7 +1792,7 @@ post-release:cleanup:
       echo "$MRS" | jq -r '.[].iid' | while read MR_IID; do
         [ -z "$MR_IID" ] && continue
         curl -sS --max-time 30 --request PUT \
-          --header "PRIVATE-TOKEN: ${CI_JOB_TOKEN}" \
+          --header "JOB-TOKEN: ${CI_JOB_TOKEN}" \
           --data "add_labels=${LABEL_NAME}" \
           "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/merge_requests/${MR_IID}" > /dev/null
         echo " ✓ Tagged MR !${MR_IID}"
@@ -1800,7 +1804,7 @@ post-release:cleanup:
       NEXT_VERSION=$(echo "$VERSION" | awk -F. '{print $1"."$2"."$3+1}')
 
       NEXT_MILESTONE=$(curl -sS --max-time 30 --request POST \
-        --header "PRIVATE-TOKEN: ${CI_JOB_TOKEN}" \
+        --header "JOB-TOKEN: ${CI_JOB_TOKEN}" \
         --header "Content-Type: application/json" \
         --data "{
           \"title\": \"v${NEXT_VERSION}\",
@@ -2118,7 +2122,7 @@ sync:main-to-release:
 
         # Create sync MR automatically
         curl --request POST \
-          --header "PRIVATE-TOKEN: ${CI_JOB_TOKEN}" \
+          --header "JOB-TOKEN: ${CI_JOB_TOKEN}" \
           --header "Content-Type: application/json" \
           --data "{
             \"source_branch\": \"main\",
@@ -2285,8 +2289,11 @@ release:rc-tag:
       - release.env
     expire_in: 1 day
   rules:
-    - if: '$CI_COMMIT_BRANCH == "main"'
-      when: always
+    # Only run when release/* branch merges to main
+    # GitLab format: "Merge branch 'release/v0.3.x' into main"
+    - if: $CI_COMMIT_BRANCH == "main" && $CI_COMMIT_MESSAGE =~ /Merge branch 'release\/v/
+      when: on_success
+    - when: never
   allow_failure: false
   variables:
     GIT_STRATEGY: clone
@@ -2474,7 +2481,7 @@ release:promote-rc-to-final:
           }')
         
         curl --request POST \
-          --header "PRIVATE-TOKEN: ${CI_JOB_TOKEN}" \
+          --header "JOB-TOKEN: ${CI_JOB_TOKEN}" \
           --header "Content-Type: application/json" \
           --data "$RELEASE_PAYLOAD" \
           "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/releases" || echo "WARNING: Failed to create GitLab Release"
