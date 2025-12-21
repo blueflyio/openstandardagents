@@ -1,24 +1,3 @@
-# Issue #136: Drupal Extension Schema
-
-## [Unreleased] - 2025-12-20
-
-### Added
-- Formalized `extensions.drupal` schema in OSSA v0.3.0 specification
-- Complete documentation for all 5 Drupal execution models (ECA, Maestro, FlowDrop, AI Agent Runner, Minikanban)
-- RuntimeBinding patterns for Drupal integrations
-- Permission system configuration with multiple modes
-- Symfony Messenger integration with retry strategies
-- MCP server integration support
-- Example: `drupal-content-writer.ossa.yaml` (133 lines)
-
-### Files
-- `spec/v0.3.0/extensions/drupal.md` (490 lines)
-- `spec/v0.3.0/examples/drupal-content-writer.ossa.yaml` (133 lines)
-
-**Total: 623 lines**
-
----
-
 # Changelog
 
 All notable changes to OSSA (Open Standard for Scalable AI Agents) will be documented in this file.
@@ -26,7 +5,190 @@ All notable changes to OSSA (Open Standard for Scalable AI Agents) will be docum
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.3.0-dev.23] - 2025-12-20
+## [0.3.0-dev.47] - 2025-12-21
+
+### Fixed
+
+- Resolve test failures blocking v0.3.0 release ([8583646](https://gitlab.com/blueflyio/openstandardagents/-/commit/8583646797b8facff74185f65786e78f4e0a2fce))
+## [0.3.0-dev.46] - 2025-12-21
+
+### Fixed
+
+- Add channelMap declaration in send message test ([eb88533](https://gitlab.com/blueflyio/openstandardagents/-/commit/eb88533971a2ae30a670f36cfb18565ee104227b))
+
+- Remove all duplicate channelMap declarations ([074513c](https://gitlab.com/blueflyio/openstandardagents/-/commit/074513c8063a57331dae1a90d42353fcd5f7c4f9))
+
+- Reuse existing channel variable in WebRTC test ([4abdd79](https://gitlab.com/blueflyio/openstandardagents/-/commit/4abdd79474ddf94b73d9530ee0a406e16f741ee4))
+
+- Remove duplicate channel declaration in WebRTC test ([c8cc88a](https://gitlab.com/blueflyio/openstandardagents/-/commit/c8cc88a257e38b71737ccedcf3ced4cb05fc7479))
+
+- Remove duplicate channelMap declaration in WebRTC test ([ee750ce](https://gitlab.com/blueflyio/openstandardagents/-/commit/ee750ce52e6bca503daaafb1d059fe9239597bbc))
+
+- Resolve all remaining test failures ([2e84995](https://gitlab.com/blueflyio/openstandardagents/-/commit/2e8499538af3da637003d20a45599cd87ff0e088))
+
+- WebSocket test - prevent unhandled promise rejection ([e7264b6](https://gitlab.com/blueflyio/openstandardagents/-/commit/e7264b644f6a296fbf1212c7aabf58b0a2874fff))
+
+- Resolve WebRTC duplicate declaration and WebSocket Event handling ([c639c00](https://gitlab.com/blueflyio/openstandardagents/-/commit/c639c0050cd5b89bf8d879a31b10850960b23192))
+
+- WebSocket test - change mock to use Error instead of Event ([a057237](https://gitlab.com/blueflyio/openstandardagents/-/commit/a057237eea4802f55e08c7d604ca87ddbf775e14))
+
+- WebSocket test - use try/catch for Event rejection ([27e1190](https://gitlab.com/blueflyio/openstandardagents/-/commit/27e119058bd7ae83153a624d4e77d59342c57603))
+
+- WebSocket test - accept Event rejection ([4d21c88](https://gitlab.com/blueflyio/openstandardagents/-/commit/4d21c8810cfd2aa317ab40e76a7ad14b8e88bb9e))
+
+- WebSocket test - use toThrow() for promise rejection ([fa52bdd](https://gitlab.com/blueflyio/openstandardagents/-/commit/fa52bddc0e1ea42f4786151acd274349d7d6a26d))
+
+- WebSocket test - use proper expect().rejects ([db3ad14](https://gitlab.com/blueflyio/openstandardagents/-/commit/db3ad1454b7a11726537fef146ff0f7f377731b9))
+
+- Final WebSocket error test - verify error emission ([279f3c7](https://gitlab.com/blueflyio/openstandardagents/-/commit/279f3c7babe6de98e780bcd3776b9c969c3aaee4))
+
+- Resolve final WebSocket test failure ([b3ea839](https://gitlab.com/blueflyio/openstandardagents/-/commit/b3ea8396d33d18e239772e0d0cde628d376d5cad))
+
+- Complete all test failure fixes ([0f698d8](https://gitlab.com/blueflyio/openstandardagents/-/commit/0f698d8d04f67744c39a62daa438d54c7f1db2c0))
+
+- Resolve all 15 test failures for v0.3.0 release ([5dc374c](https://gitlab.com/blueflyio/openstandardagents/-/commit/5dc374cb974d8b50c25af08e5264af9798d9a045))
+
+- Final test fixes - WebSocket error handling and config validation ([4bac021](https://gitlab.com/blueflyio/openstandardagents/-/commit/4bac0211e59f4c78056a1e31bbbca0d722185540))
+
+- Resolve remaining test failures ([163b28b](https://gitlab.com/blueflyio/openstandardagents/-/commit/163b28ba70405ad7fe6405ada9a2551545e98b69))
+
+- Complete pipeline fixes - all null pointers and missing properties ([45cfafb](https://gitlab.com/blueflyio/openstandardagents/-/commit/45cfafb60ed0aaf76f7f55ef466e5281bd624098))
+
+- Resolve pipeline test failures ([e65f580](https://gitlab.com/blueflyio/openstandardagents/-/commit/e65f580e683434c7d93c6d831a66f15d945ff41b))
+
+### Miscellaneous
+
+- Force CI rebuild to clear cache ([0e59875](https://gitlab.com/blueflyio/openstandardagents/-/commit/0e598750321f174b6584eb95390c683a5a016b0e))
+## [0.3.0-rc.2] - 2025-12-20
+
+### Fixed
+
+- **ci**: Use SaaS runners instead of broken local runners ([d242e42](https://gitlab.com/blueflyio/openstandardagents/-/commit/d242e42bc26757970b9ec5a8d57a68cc3501f5dd))## [0.3.0-dev.44] - 2025-12-21
+
+### Fixed
+
+- Update team contact email ([9e8f0e6](https://gitlab.com/blueflyio/openstandardagents/-/commit/9e8f0e649ebd98205063163e5bb7b3abb49b7702))
+## [0.3.0-dev.43] - 2025-12-21
+
+### Fixed
+
+- Update wiki config with all correct information ([2bf1132](https://gitlab.com/blueflyio/openstandardagents/-/commit/2bf1132ed1ea329fd574df3f9bad8d06bebda076))
+## [0.3.0-dev.42] - 2025-12-21
+
+### Fixed
+
+- Correct GitLab URLs in wiki config ([96dc756](https://gitlab.com/blueflyio/openstandardagents/-/commit/96dc7566eb87cec654e89ec1bd4cb45c3e7bac9c))
+## [0.3.0-dev.41] - 2025-12-21
+
+### Fixed
+
+- Resolve all remaining adapter TypeScript errors ([030ef6d](https://gitlab.com/blueflyio/openstandardagents/-/commit/030ef6d74af2b0a1daeea1089befbd8a7949ad5f))
+## [0.3.0-dev.40] - 2025-12-21
+
+### Fixed
+
+- Replace getConfig call with agent config access ([3a508dd](https://gitlab.com/blueflyio/openstandardagents/-/commit/3a508dddc6f56ee138fe7a8c65815e34c5c6d56f))
+## [0.3.0-dev.39] - 2025-12-21
+
+### Fixed
+
+- Stub adapter stats and streaming methods ([f6dbe98](https://gitlab.com/blueflyio/openstandardagents/-/commit/f6dbe9899dfa56d491d76dee543633de45ea5190))
+## [0.3.0-dev.38] - 2025-12-21
+
+### Fixed
+
+- Stub updateConfig and use correct model path ([5416091](https://gitlab.com/blueflyio/openstandardagents/-/commit/5416091871f41adea75362ed3777e853ed4759f9))
+## [0.3.0-dev.37] - 2025-12-21
+
+### Fixed
+
+- Stub adapter methods and add required SDK params ([9e447e2](https://gitlab.com/blueflyio/openstandardagents/-/commit/9e447e2cdc2b3720f2efcb2c8aa947bba92e3d57))
+## [0.3.0-dev.36] - 2025-12-21
+
+### Fixed
+
+- Use SDK messages API correctly ([046f2a0](https://gitlab.com/blueflyio/openstandardagents/-/commit/046f2a0fc78112e18d620e13283112f18785ad77))
+## [0.3.0-dev.35] - 2025-12-21
+
+### Fixed
+
+- Replace missing client class with SDK client ([d0bea24](https://gitlab.com/blueflyio/openstandardagents/-/commit/d0bea247549b644caa0eb4ed3a5511a47670710b))
+## [0.3.0-dev.34] - 2025-12-21
+
+### Fixed
+
+- Export client class and update imports ([39b0359](https://gitlab.com/blueflyio/openstandardagents/-/commit/39b0359e0bf4885f51f2487ba48fcee04d033b1a))
+## [0.3.0-dev.33] - 2025-12-21
+
+### Fixed
+
+- Add return type assertion and fix implicit any parameter ([c2edec6](https://gitlab.com/blueflyio/openstandardagents/-/commit/c2edec6703c678ff360a42b17a9b678143d51c5f))
+## [0.3.0-dev.32] - 2025-12-21
+
+### Fixed
+
+- Resolve final adapter TypeScript errors ([62c191f](https://gitlab.com/blueflyio/openstandardagents/-/commit/62c191fc101ee394e348f8c9c9b9285ca4697936))
+## [0.3.0-dev.31] - 2025-12-21
+
+### Fixed
+
+- Resolve adapter TypeScript errors ([f6fc160](https://gitlab.com/blueflyio/openstandardagents/-/commit/f6fc160636ba7b2025418536b42733dc80139f08))
+## [0.3.0-dev.30] - 2025-12-21
+
+### Fixed
+
+- Add null check for SSE channels array ([1c91c49](https://gitlab.com/blueflyio/openstandardagents/-/commit/1c91c499b2e41484baadbdb5332649cc5e06514b))
+## [0.3.0-dev.29] - 2025-12-21
+
+### Fixed
+
+- Resolve remaining TypeScript errors (broker type cast, SSE undefined checks) ([ce1b8c1](https://gitlab.com/blueflyio/openstandardagents/-/commit/ce1b8c1035e786ef4c5f4d8b0f734a6dd0185250))
+## [0.3.0-dev.28] - 2025-12-21
+
+### Fixed
+
+- Resolve TypeScript compilation errors for v0.3.0 release ([d4f8f28](https://gitlab.com/blueflyio/openstandardagents/-/commit/d4f8f28cbab65d445d4dbaa2b831b0cb710b56fc))
+## [0.3.0-dev.27] - 2025-12-21
+
+### Added
+
+- **agents**: Add OSSA Validator v0.3 agent ([49d4252](https://gitlab.com/blueflyio/openstandardagents/-/commit/49d4252ebafcc96f252655ac7f60b00ff0018a47))
+### Fixed
+
+- **test-runner**: Remove duplicate for loop line ([0b11481](https://gitlab.com/blueflyio/openstandardagents/-/commit/0b11481804c54335cdf24434af15deb6423c05a2))
+- **test-runner**: Extract test assertions to typed variable ([0711963](https://gitlab.com/blueflyio/openstandardagents/-/commit/0711963d03de4686ba5958c9a1666c008a863fa9))
+- **test-runner**: Extract test assertions to typed variable ([9b2b999](https://gitlab.com/blueflyio/openstandardagents/-/commit/9b2b99905414dd43a48fc1511a513efc7085a3f3))
+- **test-runner**: Handle undefined assertion.actual properly ([15cc3ad](https://gitlab.com/blueflyio/openstandardagents/-/commit/15cc3ad7a8dd1ec24b89c1b63677c870e59cd6da))
+- **test-runner**: Handle undefined assertion.actual ([f4af406](https://gitlab.com/blueflyio/openstandardagents/-/commit/f4af406024eb493c88becdfbae87ca9b393605a2))## [0.3.0-dev.26] - 2025-12-21
+
+### Added
+
+- **cli**: Implement ossa export command ([#189](https://gitlab.com/blueflyio/openstandardagents/-/issues/189)) ([facfdb6](https://gitlab.com/blueflyio/openstandardagents/-/commit/facfdb6184ce097117b5d5f1c6fa07725f18042e))
+### Changed
+
+- **cli**: Consolidate error handling and simplify command implementations ([9c764fd](https://gitlab.com/blueflyio/openstandardagents/-/commit/9c764fd7330df501bd9771c48834b0bbf6544ecf))## [0.3.0-dev.25] - 2025-12-21
+
+### Added
+
+- **adapter**: Add Anthropic Claude runtime adapter ([#148](https://gitlab.com/blueflyio/openstandardagents/-/issues/148)) ([007d233](https://gitlab.com/blueflyio/openstandardagents/-/commit/007d2333ba9bbdb14142b4aabd67cd104f6f438b))
+- **cli**: Implement ossa test command ([#150](https://gitlab.com/blueflyio/openstandardagents/-/issues/150)) ([1fc8eb1](https://gitlab.com/blueflyio/openstandardagents/-/commit/1fc8eb13f6ba68d7023dab670ceaaf39eac4f298))
+- **openapi**: Add Agent Communication Standards spec ([#173](https://gitlab.com/blueflyio/openstandardagents/-/issues/173)) ([4cdfad8](https://gitlab.com/blueflyio/openstandardagents/-/commit/4cdfad8db3f09e506fed2ae39fc57762d770382e))
+- **openapi**: Add Agent Identity & Authentication spec ([#171](https://gitlab.com/blueflyio/openstandardagents/-/issues/171)) ([2b4c387](https://gitlab.com/blueflyio/openstandardagents/-/commit/2b4c387f5f31bf324c1dfe5a3e2d063c2a852816))
+- **spec**: Add Agent-to-Agent Messaging extension ([#132](https://gitlab.com/blueflyio/openstandardagents/-/issues/132)) ([6083535](https://gitlab.com/blueflyio/openstandardagents/-/commit/60835359a3377ba7d9ebc8ec6fe0ed79ec23684f))
+- **spec**: Add WebSocket, SSE, and WebRTC protocol support ([#174](https://gitlab.com/blueflyio/openstandardagents/-/issues/174)) ([c9dbf20](https://gitlab.com/blueflyio/openstandardagents/-/commit/c9dbf2075c62c069b2f1db0725005ee1359da805))
+### Changed
+
+- **cli**: Consolidate error handling and simplify command implementations ([0cefc6a](https://gitlab.com/blueflyio/openstandardagents/-/commit/0cefc6a821f98968a659298fe48d93d3601afd87))
+### Documentation
+
+- **examples**: Add reference implementations for OSSA API ([#186](https://gitlab.com/blueflyio/openstandardagents/-/issues/186)) ([104c900](https://gitlab.com/blueflyio/openstandardagents/-/commit/104c9004a55dd570c2f9b992705fa689e1cacda7))
+- **openapi**: Add comprehensive OpenAPI documentation ([#185](https://gitlab.com/blueflyio/openstandardagents/-/issues/185)) ([4d29002](https://gitlab.com/blueflyio/openstandardagents/-/commit/4d290028c9e337197cdbeeb75e87a55572fee131))
+### Fixed
+
+- **examples**: Properly quote YAML template expressions ([5a06c23](https://gitlab.com/blueflyio/openstandardagents/-/commit/5a06c235d3a534fd99d5367770d203e40e176ff1))
+- **examples**: Quote template expressions in YAML ([f5b8f3b](https://gitlab.com/blueflyio/openstandardagents/-/commit/f5b8f3bf105c099f8433d3739449a6690d8f7c7b))
+- **validators**: Add missing type assertion for schema.type ([41c492b](https://gitlab.com/blueflyio/openstandardagents/-/commit/41c492b162bd42a35fa2be26728bdb1e4a824b8e))
+- **validators**: Add type assertion for schema.type access ([e8fa321](https://gitlab.com/blueflyio/openstandardagents/-/commit/e8fa3215438966cf1946947e6ca35b4d4be8f548))## [0.3.0-dev.23] - 2025-12-20
 
 ### Fixed
 
@@ -316,10 +478,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **sdk**: Add CloudEvents v1.0 compliant emitter ([311e6fd](https://gitlab.com/blueflyio/openstandardagents/-/commit/311e6fdaf3cd4a6ef40f8e238ee4d8f9d07231d3))
 - **sdk**: Add W3C Baggage support for multi-agent correlation ([b4f5966](https://gitlab.com/blueflyio/openstandardagents/-/commit/b4f5966f44d26559f40859fce11578b13469fa08))
 - **spec**: Add quick-win capabilities to OSSA v0.3.0 spec (spec-only, no infrastructure) ([dcde670](https://gitlab.com/blueflyio/openstandardagents/-/commit/dcde67098fe7521893920e2ce19d65371565a73d))
-- **spec**: Add Agent-to-Agent Messaging Extension for OSSA v0.3.0 ([737968d](https://gitlab.com/blueflyio/openstandardagents/-/commit/737968d47c2c225e408ee9cc29989d20fcb319f2))
-- **spec**: Add Agent-to-Agent Messaging Extension for OSSA v0.3.0 ([ee051cf](https://gitlab.com/blueflyio/openstandardagents/-/commit/ee051cf899eea3b9180c20a1aea65bb26948d33f))
-- **spec**: Add Agent-to-Agent Messaging Extension for OSSA v0.3.0 ([eec5b81](https://gitlab.com/blueflyio/openstandardagents/-/commit/eec5b8118ec2fd89f80fb8b1f1aa8062b1c1f55b))
-- **spec**: OSSA v0.3.0 Messaging Extension + Automated Patch Version Management ([24cef37](https://gitlab.com/blueflyio/openstandardagents/-/commit/24cef37716b70c4313389d68f5d0724d17799580))
+- **spec**: Add Agent-to-Agent Messaging Extension for OSSA v0.3.1 ([737968d](https://gitlab.com/blueflyio/openstandardagents/-/commit/737968d47c2c225e408ee9cc29989d20fcb319f2))
+- **spec**: Add Agent-to-Agent Messaging Extension for OSSA v0.3.1 ([ee051cf](https://gitlab.com/blueflyio/openstandardagents/-/commit/ee051cf899eea3b9180c20a1aea65bb26948d33f))
+- **spec**: Add Agent-to-Agent Messaging Extension for OSSA v0.3.1 ([eec5b81](https://gitlab.com/blueflyio/openstandardagents/-/commit/eec5b8118ec2fd89f80fb8b1f1aa8062b1c1f55b))
+- **spec**: OSSA v0.3.1 Messaging Extension + Automated Patch Version Management ([24cef37](https://gitlab.com/blueflyio/openstandardagents/-/commit/24cef37716b70c4313389d68f5d0724d17799580))
 - **spec**: Add Conformance Testing specification ([5c1594a](https://gitlab.com/blueflyio/openstandardagents/-/commit/5c1594a1e3f595d2ab044e75aad424415bd36230))
 - **spec**: Add Capability Schema and Registry specification ([69d9463](https://gitlab.com/blueflyio/openstandardagents/-/commit/69d94638e0e12e78d6ce4e747c68b3cfdd9882df))
 - **spec**: Formal Policy DSL Specification ([4af084b](https://gitlab.com/blueflyio/openstandardagents/-/commit/4af084b44b972c02f317a42b227599864ecd937e))
@@ -465,7 +627,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **docs**: Correct README to show GitHub as primary public repo ([51f381c](https://gitlab.com/blueflyio/openstandardagents/-/commit/51f381c38370fbbdefd6e8d210a4fecffda08aa0))
 - **docs**: Correct README to show GitHub as primary public repo ([264d48e](https://gitlab.com/blueflyio/openstandardagents/-/commit/264d48e7bc4d9081dde129cecdf08ff940f95108))
 - **gitlab**: Restructure workflows to match GitLab Agent Platform schema ([86398bb](https://gitlab.com/blueflyio/openstandardagents/-/commit/86398bbf92ab1387e95797d7bd38034031635102))
-- **release**: Clean v0.3.0 - remove premature v0.3.0 content ([e58faa1](https://gitlab.com/blueflyio/openstandardagents/-/commit/e58faa12189bd147fb454964b77ce9844b1b060c))
+- **release**: Clean v0.3.0 - remove premature v0.3.1 content ([e58faa1](https://gitlab.com/blueflyio/openstandardagents/-/commit/e58faa12189bd147fb454964b77ce9844b1b060c))
 - **release**: Update ALL version references from 0.2.8 to 0.2.9 ([7b81abc](https://gitlab.com/blueflyio/openstandardagents/-/commit/7b81abc4dce1d13485d9cfefda42992a350a1968))
 - **release**: Update ALL version references from 0.2.8 to 0.2.9 ([5346e24](https://gitlab.com/blueflyio/openstandardagents/-/commit/5346e24c1fd15d3362fb3bed0cc0c587e9ae1fb4))
 - **schema**: Make apiVersion pattern future-proof and tests dynamic ([f78517d](https://gitlab.com/blueflyio/openstandardagents/-/commit/f78517d53f0686fb0d8167a6b1b76aa3643bc371))

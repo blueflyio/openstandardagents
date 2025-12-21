@@ -4,6 +4,7 @@
  */
 
 import Anthropic from '@anthropic-ai/sdk';
+import { AnthropicClient } from './client.js';
 import type { MessageParam } from '@anthropic-ai/sdk/resources/messages';
 import type { OssaAgent } from '../../types/index.js';
 import { ToolMapper } from './tools.js';
@@ -159,7 +160,7 @@ export class AnthropicAdapter {
 
     const maxTurns = options?.maxTurns || 10;
     let turnCount = 0;
-    let conversationMessages: MessageParam[] = [...messages];
+    const conversationMessages: MessageParam[] = [...messages];
     const toolCalls: Array<{
       name: string;
       input: Record<string, unknown>;
@@ -363,8 +364,14 @@ export class AnthropicAdapter {
   /**
    * Get the underlying client
    */
-  getClient(): Anthropic {
-    return this.client;
+  getClient(): AnthropicClient {
+    const agentConfig = this.extractAgentConfig();
+    return new AnthropicClient({
+      apiKey: process.env.ANTHROPIC_API_KEY || '',
+      model: agentConfig.model || 'claude-3-5-sonnet-20241022',
+      temperature: agentConfig.temperature,
+      maxTokens: agentConfig.maxTokens,
+    });
   }
 
   /**

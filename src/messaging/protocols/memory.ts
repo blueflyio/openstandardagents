@@ -110,6 +110,17 @@ export class MemoryMessageBroker extends AbstractMessageBroker {
   }
 
   /**
+   * Unsubscribe from a channel
+   */
+  async unsubscribe(handle: SubscriptionHandle): Promise<void> {
+    // Remove from active subscriptions
+    this.activeSubscriptions.delete(handle.id);
+    
+    // Remove from channel subscriptions (base class handles this)
+    await super.unsubscribe(handle);
+  }
+
+  /**
    * Acknowledge message receipt
    */
   async acknowledge(messageId: string): Promise<void> {
