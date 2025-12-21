@@ -1,24 +1,3 @@
-# Issue #136: Drupal Extension Schema
-
-## [Unreleased] - 2025-12-20
-
-### Added
-- Formalized `extensions.drupal` schema in OSSA v0.3.0 specification
-- Complete documentation for all 5 Drupal execution models (ECA, Maestro, FlowDrop, AI Agent Runner, Minikanban)
-- RuntimeBinding patterns for Drupal integrations
-- Permission system configuration with multiple modes
-- Symfony Messenger integration with retry strategies
-- MCP server integration support
-- Example: `drupal-content-writer.ossa.yaml` (133 lines)
-
-### Files
-- `spec/v0.3.0/extensions/drupal.md` (490 lines)
-- `spec/v0.3.0/examples/drupal-content-writer.ossa.yaml` (133 lines)
-
-**Total: 623 lines**
-
----
-
 # Changelog
 
 All notable changes to OSSA (Open Standard for Scalable AI Agents) will be documented in this file.
@@ -26,85 +5,119 @@ All notable changes to OSSA (Open Standard for Scalable AI Agents) will be docum
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-### Guiding Principles
-
-- Changelogs are _for humans_, not machines.
-- There should be an entry for every single version.
-- The same types of changes should be grouped.
-- Versions and sections should be linkable.
-- The latest version comes first.
-- The release date of each version is displayed.
-
-### Types of Changes
-
-- `Added` for new features.
-- `Changed` for changes in existing functionality.
-- `Deprecated` for soon-to-be removed features.
-- `Removed` for now removed features.
-- `Fixed` for any bug fixes.
-- `Security` in case of vulnerabilities.
-
----
-
-## [Unreleased]
-
-## [0.3.0] - 2025-12-18
-
-### Major Release - Unified Task Schema & Agent-to-Agent Messaging
-
-This release introduces **three fundamental resource types** (Agent, Task, Workflow), **Agent-to-Agent (A2A) messaging**, and enterprise-grade features for production deployments.
-
-### Added
-
-#### Core Schema (Breaking Changes)
-- **Unified Task Schema**: Three resource kinds - `Agent` (agentic LLM loops), `Task` (deterministic operations), `Workflow` (orchestrated compositions)
-- **Agent-to-Agent Messaging**: Pub/sub messaging with `publishes`, `subscribes`, `commands`, and `reliability` configuration
-- **Identity Block**: OpenTelemetry-compatible service identity (`service_name`, `service_namespace`, `service_version`)
-- **Lifecycle Management**: Environment-specific configurations (dev/staging/prod) with dependency declarations
-- **Compliance Profiles**: First-class SOC2, HIPAA, GDPR, FedRAMP framework support
-- **State Management**: Persistent agent state with encryption (Redis, PostgreSQL, custom backends)
-
-#### New Resource Types
-- **Task Kind**: Deterministic, non-LLM workflow steps with `execution.type` (deterministic, idempotent, transactional)
-- **Workflow Kind**: Multi-step orchestration with `steps`, `parallel`, `conditional`, and `foreach` constructs
-- **RuntimeBinding**: Capability-to-implementation mappings for Tasks and Workflows
-
-#### Schema Enhancements
-- **20+ LLM Providers**: OpenAI, Anthropic, Azure, Bedrock, Ollama, Mistral, Cohere, Google, and more
-- **MCP Tool Integration**: Native Model Context Protocol support for tool definitions
-- **Execution Profiles**: Preset configurations (fast, balanced, thorough, critical) for different use cases
-- **Resource Limits**: Kubernetes-style compute constraints (memory_mb, cpu_millicores, gpu_required)
-- **Scheduling Configuration**: Priority levels, concurrency limits, timeout management
-
-#### Runtime Adapters
-- **Drupal Adapter**: ECA, Maestro, FlowDrop integration for OSSA Tasks
-- **Symfony Adapter**: Messenger component integration for queue-based execution
-
-#### CLI Enhancements
-- **Type Generation**: `npm run gen:types` - Generate TypeScript types from schema
-- **Zod Generation**: `npm run gen:zod` - Generate Zod validation schemas
-- **Enhanced Validation**: Platform-specific validators (Cursor, OpenAI, Anthropic, LangChain, etc.)
+## [0.3.0-dev.23] - 2025-12-20
 
 ### Fixed
 
-- **ci**: Fix YAML syntax errors in multiline curl commands
-- **ci**: Update all gitlab.bluefly.io and agent-platform paths
-- **ci**: Update component paths to gitlab.com/blueflyio/gitlab_components
-- **ci**: Use local runners when shared minutes exhausted
+- Replace bitnami/kubectl with alpine-based kubectl image to fix shell error ([eb3ab79](https://gitlab.com/blueflyio/openstandardagents/-/commit/eb3ab79bc22e714efc880735013d4d77cbf72619))
+## [0.3.0-dev.22] - 2025-12-20
 
-### Migration from v0.2.x
+### Fixed
 
-```yaml
-# v0.2.x format
-apiVersion: ossa/v0.2.9
-kind: Agent
+- **examples**: Simplify template expression to avoid YAML parsing issues ([818a9f8](https://gitlab.com/blueflyio/openstandardagents/-/commit/818a9f84fcab54b4561797c6896a816e2d0173fb))## [0.3.0-dev.21] - 2025-12-20
 
-# v0.3.0 format (same structure, new features available)
-apiVersion: ossa/v0.3.0
-kind: Agent  # or Task, Workflow
-```
+### Fixed
 
-All v0.2.x manifests remain valid. New features (messaging, state, compliance) are opt-in.
+- **examples**: Quote template expressions in YAML ([4e3a084](https://gitlab.com/blueflyio/openstandardagents/-/commit/4e3a0846ecedac7da127d0b39c0b58f5241052c8))
+- **examples**: Fix YAML validation errors ([be1ec04](https://gitlab.com/blueflyio/openstandardagents/-/commit/be1ec046d30e4ac0afe952d7d13b967091a29929))
+- **examples**: Fix YAML syntax errors in workflow examples ([2a5bc9d](https://gitlab.com/blueflyio/openstandardagents/-/commit/2a5bc9dc9a8df77f814f0f107f6c6d60125a8652))
+- **test-runner**: Remove duplicate for loop line ([64cb2eb](https://gitlab.com/blueflyio/openstandardagents/-/commit/64cb2ebb12ae6faf4559898130c0be82d4652263))
+- **test-runner**: Extract test assertions to typed variable ([a502a24](https://gitlab.com/blueflyio/openstandardagents/-/commit/a502a24c783f44d96907ef74ec4dc063c987757e))
+- **test-runner**: Extract test assertions to typed variable ([17170ec](https://gitlab.com/blueflyio/openstandardagents/-/commit/17170ecd1edaa9869c9ae19d644c0bde5ebd0b0d))
+- **test-runner**: Handle undefined assertion.actual properly ([148b60a](https://gitlab.com/blueflyio/openstandardagents/-/commit/148b60a50285287bcdf5a8ed975cf9632af6ef0e))
+- **test-runner**: Handle undefined assertion.actual ([5ef19a5](https://gitlab.com/blueflyio/openstandardagents/-/commit/5ef19a5936b827fa636e61d3abea276425957fba))## [0.3.0-dev.20] - 2025-12-20
+
+### Added
+
+- **sdk**: Create @ossa/runtime package with reference implementations ([#40](https://gitlab.com/blueflyio/openstandardagents/-/issues/40)) ([8f4d2cd](https://gitlab.com/blueflyio/openstandardagents/-/commit/8f4d2cdf5d48cde7d058659fbce0533e9ee2ef49))## [0.3.0-dev.19] - 2025-12-20
+
+### Added
+
+- **sdk**: Runtime SDK + reference implementations ([3bdf98f](https://gitlab.com/blueflyio/openstandardagents/-/commit/3bdf98f124a91d7f7b3090ba90b5df73758fe264))## [0.3.0-dev.18] - 2025-12-20
+
+### Added
+
+- **deploy**: Implement agent deployment ([e21f130](https://gitlab.com/blueflyio/openstandardagents/-/commit/e21f130a33d14037df68b7812196bceb10264939))
+### CI/CD
+
+- Use GitLab SaaS runners instead of local runners ([e83c028](https://gitlab.com/blueflyio/openstandardagents/-/commit/e83c028d4fb367f215809bb926d157813aeecf48))
+
+### Changed
+
+- Convert detect-ossa-version from bash to TypeScript ([47286f2](https://gitlab.com/blueflyio/openstandardagents/-/commit/47286f20d5f92582b5207b5d4cc208cf0552df93))
+
+### Fixed
+
+- **ci**: Use SaaS runners instead of broken local runners ([c22158d](https://gitlab.com/blueflyio/openstandardagents/-/commit/c22158df3082344a3be275abda2c43e18d90e3a1))
+- **ci**: Use local runners for release jobs - shared minutes exhausted ([29d3a95](https://gitlab.com/blueflyio/openstandardagents/-/commit/29d3a95e95819327679b80b46ba77f34e9c376c1))
+- **ci**: Exclude version utility files from placeholder check (cherry-pick) ([7001044](https://gitlab.com/blueflyio/openstandardagents/-/commit/7001044652ad0a43577e2d4f76a022e14457ca21))
+- **ci**: Use local runners - shared minutes exhausted ([520bf54](https://gitlab.com/blueflyio/openstandardagents/-/commit/520bf542400d54fffcb1da2b466716fb2a483d6a))
+- **schema**: Update OSSA v0.3.0 schema for env vars and flexibility ([2a0dfd6](https://gitlab.com/blueflyio/openstandardagents/-/commit/2a0dfd674978fb33217f0897f1bd22ea086eaecc))
+- **test**: Workflow schema test validation for v0.3.0 release ([cd895bc](https://gitlab.com/blueflyio/openstandardagents/-/commit/cd895bc0a82a6f777e9f7caecbbf59e86d4b5028))
+- Replace all v0.3.1 references with v0.3.0 ([f9564b6](https://gitlab.com/blueflyio/openstandardagents/-/commit/f9564b6c4d336158891f61e11267042c86547e3d))
+
+- Replace hardcoded v0.3.1 with v0.3.0 in roadmap docs ([907f4c6](https://gitlab.com/blueflyio/openstandardagents/-/commit/907f4c60d298bcab582aaee94fb6348c85eaafc1))
+
+- Correct all v0.3.1 references to v0.3.0 for release ([4f34c58](https://gitlab.com/blueflyio/openstandardagents/-/commit/4f34c58f61907e86cffb9caf62c452265926f60e))
+
+- Replace any types with unknown and remove unused import ([86f8008](https://gitlab.com/blueflyio/openstandardagents/-/commit/86f80086a2b7dbe92df6e792315e79b7fc2365f4))
+
+- Correct version references from 0.3.1 to 0.3.0 in mesh docs ([b60187a](https://gitlab.com/blueflyio/openstandardagents/-/commit/b60187aa0d2dc98ec12aa7aceb22fba95af5d3fc))
+
+- Remove build.env from tracking - generated by CI ([704d4f6](https://gitlab.com/blueflyio/openstandardagents/-/commit/704d4f6cfd98472432454e219207e4ba48d6486e))
+
+### Miscellaneous
+
+- Lower coverage thresholds to realistic levels ([5fbd112](https://gitlab.com/blueflyio/openstandardagents/-/commit/5fbd1122f7cb3afb9ad4ecba61963ec9c6f9d2fd))
+
+### Specification
+
+- Formalize extensions.drupal schema for Drupal runtime integration ([246ad7b](https://gitlab.com/blueflyio/openstandardagents/-/commit/246ad7be5ca1578ba5f384df06ed01104819bc5a))
+
+- OSSA Drupal extension schema ([b6dbea6](https://gitlab.com/blueflyio/openstandardagents/-/commit/b6dbea6ccfccb72b0cf01a03b701ad2a30f1e989))
+## [0.3.0-rc] - 2025-12-18
+
+### Fixed
+
+- **ci**: Use local runners - shared minutes exhausted ([f54a080](https://gitlab.com/blueflyio/openstandardagents/-/commit/f54a0804a0b286cb0d67c15f3eebe9421ade096e))
+- Resolve lint and build errors for v0.3.0 release ([1b403e5](https://gitlab.com/blueflyio/openstandardagents/-/commit/1b403e502d363f10509881a0c882ca39762abdf2))
+## [0.3.0-dev.16] - 2025-12-18
+
+### Documentation
+
+- **readme**: Enhance Complete Agent example to showcase v0.3.0 features ([ccf9e13](https://gitlab.com/blueflyio/openstandardagents/-/commit/ccf9e134c6b4d967b8f4f04eb05c4d27dfffa361))## [0.3.0-dev.15] - 2025-12-18
+
+### Fixed
+
+- **ci**: Use correct dev tag format v0.3.0-dev.X with period ([58e3b9a](https://gitlab.com/blueflyio/openstandardagents/-/commit/58e3b9a7f7b5b1b49e493fd744486e4ec8287676))
+- **ci**: Exclude RC/alpha/beta from release tag detection - dev tags should be v0.3.0-dev.X until v0.3.0 releases ([01dc254](https://gitlab.com/blueflyio/openstandardagents/-/commit/01dc254dbac9db3565dd0f1fa62b207448fa8952))
+- **ci**: Use GITLAB_PUSH_TOKEN directly instead of deriving from CI_DEPLOY_OSSA ([a936195](https://gitlab.com/blueflyio/openstandardagents/-/commit/a936195254fd094a3bf55c7ff2fc4497014f189b))
+- **ci**: Show git push errors for debugging ([1eeca89](https://gitlab.com/blueflyio/openstandardagents/-/commit/1eeca897a8a6169fffa08fa1f9fafc895e0ac387))
+- **ci**: Add needs:[] to .post tag jobs to run independently of manual jobs ([045ea19](https://gitlab.com/blueflyio/openstandardagents/-/commit/045ea191b712766a2c9da7b042bde5cdaa527ba5))
+- **ci**: Add needs:[] to ALL blocking jobs for .post stage automation ([ed8394f](https://gitlab.com/blueflyio/openstandardagents/-/commit/ed8394f59702904a1c3ee66fad00da23f77e1b3e))
+### Miscellaneous
+
+- Trigger pipeline with GITLAB_PUSH_TOKEN variable ([eee39ae](https://gitlab.com/blueflyio/openstandardagents/-/commit/eee39aed5418b1cf093aa5d01f11afecf889627a))
+
+- Trigger pipeline with unprotected CI token ([d0cf679](https://gitlab.com/blueflyio/openstandardagents/-/commit/d0cf6798dc947b0e0eb6db1a98833e3a4aa38d29))
+
+- Trigger pipeline with updated CI token ([83f8cf3](https://gitlab.com/blueflyio/openstandardagents/-/commit/83f8cf348888ddb4be82a34a33701f95a7c8c84c))
+## [0.3.0-dev.14] - 2025-12-17
+
+### Fixed
+
+- **ci**: Add needs:[] to all validate jobs to bypass .pre blocking ([09cdd9b](https://gitlab.com/blueflyio/openstandardagents/-/commit/09cdd9b159353260412be513c855f3e51393cf4c))
+- **ci**: Add needs:[] to setup jobs to bypass .pre stage blocking ([31b7be1](https://gitlab.com/blueflyio/openstandardagents/-/commit/31b7be1f79d54e75a2fa04a2df2d9895725e0128))
+- **ci**: Escape forward slash in release branch regex patterns ([1962df7](https://gitlab.com/blueflyio/openstandardagents/-/commit/1962df7d206356b7b6bc45157f55526bae363ed5))
+- **ci**: Use CI_JOB_TOKEN for dev tag automation ([261012d](https://gitlab.com/blueflyio/openstandardagents/-/commit/261012d90dad9bbc81c86049303d216c47a4e025))
+- **ci**: Fix YAML syntax errors in multiline curl commands ([787329d](https://gitlab.com/blueflyio/openstandardagents/-/commit/787329ddc6f255f003c29d600f3173e6051e5b69))
+- **ci**: Update all gitlab.bluefly.io and agent-platform paths ([6219d5b](https://gitlab.com/blueflyio/openstandardagents/-/commit/6219d5b05b32a20207d1a9bc4ce2354a5dced29e))
+- **ci**: Update component paths to gitlab.com/blueflyio/gitlab_components ([a5103a8](https://gitlab.com/blueflyio/openstandardagents/-/commit/a5103a8577f2846d38def5e4b8eb8d557a12f1dd))
+- Sync main into release/v0.3.x ([115c160](https://gitlab.com/blueflyio/openstandardagents/-/commit/115c160918fe2027d2160e9fd54d767a5afae127))
+
+### Miscellaneous
+
+- Trigger CI for dev tag automation ([a5d1a20](https://gitlab.com/blueflyio/openstandardagents/-/commit/a5d1a20fb0d1245a386b241d25bb4da88d3e5994))
 ## [0.3.0-dev.12] - 2025-12-17
 
 ### Fixed
@@ -119,12 +132,22 @@ All v0.2.x manifests remain valid. New features (messaging, state, compliance) a
 
 - **ci**: Add automatic GitLab Release creation from tags ([7d939eb](https://gitlab.com/blueflyio/openstandardagents/-/commit/7d939ebd5f1bf6900cd58bf91d7cf6f46ac723f5))
 - **ci**: Add automatic GitLab Release creation from tags ([e1bef4f](https://gitlab.com/blueflyio/openstandardagents/-/commit/e1bef4f0e35fe20682046d6bc8e4978f950fdb8b))
+- **schema**: Add all missing LLM providers to enum ([6cb616b](https://gitlab.com/blueflyio/openstandardagents/-/commit/6cb616b63a2a52fa3ee0b2ed0ace3ab068b61730))
+- **schema**: Implement v0.3.0 schema strengthening additions ([80074ce](https://gitlab.com/blueflyio/openstandardagents/-/commit/80074ceeba2127b438633596009b0b109ad7f392))
+- **spec**: Add quick-win capabilities to OSSA v0.3.0 spec ([1ac59a8](https://gitlab.com/blueflyio/openstandardagents/-/commit/1ac59a82243e18b8b7079875ac28e42bd5d63124))
+- Make release branch configuration dynamic for future versions ([0b65258](https://gitlab.com/blueflyio/openstandardagents/-/commit/0b652588644130ab439b147610f85de98650e72b))
+
+- Make release branch configuration dynamic for future versions ([15c13cc](https://gitlab.com/blueflyio/openstandardagents/-/commit/15c13ccb272b71c6a0fe1b117c683a22ce5dc044))
+
 ### CI/CD
 
 - Trigger v0.3.x dev tag creation ([c92e580](https://gitlab.com/blueflyio/openstandardagents/-/commit/c92e580ff47901519d3d1133293d43d60d91fe4c))
 
 - Trigger dev tag creation [skip ci] ([f51c9bd](https://gitlab.com/blueflyio/openstandardagents/-/commit/f51c9bd7ffcaf50cd051b06d85bccea1f367d31d))
 
+### Documentation
+
+- **messaging**: Audit confirms v0.3.0 messaging capability is complete ([a17227b](https://gitlab.com/blueflyio/openstandardagents/-/commit/a17227bc63abd2326c38f5cd48c4f8da40812c17))
 ### Fixed
 
 - **ci**: Handle no release tags case with pipefail ([7905d4d](https://gitlab.com/blueflyio/openstandardagents/-/commit/7905d4d3ced54c489387e04b77a09b1d5a04c5c9))
@@ -132,12 +155,13 @@ All v0.2.x manifests remain valid. New features (messaging, state, compliance) a
 - **ci**: Use JOB-TOKEN header for CI_JOB_TOKEN API calls ([7796994](https://gitlab.com/blueflyio/openstandardagents/-/commit/7796994f49f74203507e478d7cfcb74b1d9af75e))
 - **ci**: Handle missing dev-tag.env in version sync ([6301b94](https://gitlab.com/blueflyio/openstandardagents/-/commit/6301b9453d1799fdb1d8e9177a633a89c89b931f))
 - **ci**: Handle group milestones with CI_JOB_TOKEN ([38d55f4](https://gitlab.com/blueflyio/openstandardagents/-/commit/38d55f492dada77377017fedc92cfe29c06c2ca5))
-- **ci**: Handle group milestones and unset variables - CRITICAL ([05bd63e](https://gitlab.com/blueflyio/openstandardagents/-/commit/05bd63eed555be1849b383247034c931a6f276b5))
 - **ci**: Handle group milestones and unset variables - CRITICAL ([0340bf2](https://gitlab.com/blueflyio/openstandardagents/-/commit/0340bf2c0fd1e7f1ff6ff81ac435425b449b7ec2))
 - **ci**: Handle group milestones and unset variables - CRITICAL ([a7fd368](https://gitlab.com/blueflyio/openstandardagents/-/commit/a7fd36841a278645d928976e1734df354fe6f390))
 - **ci**: Handle group milestones and unset variables - CRITICAL ([b853e5b](https://gitlab.com/blueflyio/openstandardagents/-/commit/b853e5b96e05abf06aba48707c39d550a9528383))
 - **ci**: Include release-workflow.yml - CRITICAL MISSING INCLUDE ([e79b017](https://gitlab.com/blueflyio/openstandardagents/-/commit/e79b017a2e170074985a88651aac17e7060ac75b))
 - **ci**: Use GitLab shared runners - unblock v0.3.0 release ([9b1e1c1](https://gitlab.com/blueflyio/openstandardagents/-/commit/9b1e1c171354f013b45ce70bfb521a954d47fe8c))
+- **ci**: Hotfix branches create dev tags only, not production releases ([93458ba](https://gitlab.com/blueflyio/openstandardagents/-/commit/93458bad444db5ef80c681bb7304f82109f7dda5))
+- **codeowners**: Set @bluefly as default owner to unblock releases ([2df9b59](https://gitlab.com/blueflyio/openstandardagents/-/commit/2df9b5995b138261e3a746ea85350c89ec657a20))
 - Resolve conflicts with main for MR !513 ([7090fbf](https://gitlab.com/blueflyio/openstandardagents/-/commit/7090fbfa5ef77346c31e8009402f28351b054c5c))
 
 - Use GITLAB_TOKEN for milestone API calls ([acde568](https://gitlab.com/blueflyio/openstandardagents/-/commit/acde568781f4f7fcb4aa70e5635b845e0e516429))
@@ -146,32 +170,6 @@ All v0.2.x manifests remain valid. New features (messaging, state, compliance) a
 
 - Replace development branch refs with release branch strategy ([a3acb8c](https://gitlab.com/blueflyio/openstandardagents/-/commit/a3acb8c8c91da8e2c858d9f270bb0f4bf806e773))
 
-### Miscellaneous
-
-- Add .worktrees/ to .gitignore ([5c2c88a](https://gitlab.com/blueflyio/openstandardagents/-/commit/5c2c88aa48e230476c1faa8b0dc4294197e16997))
-
-- Merge main into release/v0.3.x - resolve conflicts ([771d16d](https://gitlab.com/blueflyio/openstandardagents/-/commit/771d16da62644f63e229c08d9e7d18095472aeeb))
-## [0.3.0-RC] - 2025-12-15
-
-### Added
-
-- **schema**: Add all missing LLM providers to enum ([6cb616b](https://gitlab.com/blueflyio/openstandardagents/-/commit/6cb616b63a2a52fa3ee0b2ed0ace3ab068b61730))
-- **schema**: Implement v0.3.0 schema strengthening additions ([80074ce](https://gitlab.com/blueflyio/openstandardagents/-/commit/80074ceeba2127b438633596009b0b109ad7f392))
-- **spec**: Add quick-win capabilities to OSSA v0.3.0 spec ([1ac59a8](https://gitlab.com/blueflyio/openstandardagents/-/commit/1ac59a82243e18b8b7079875ac28e42bd5d63124))
-- Make release branch configuration dynamic for future versions ([0b65258](https://gitlab.com/blueflyio/openstandardagents/-/commit/0b652588644130ab439b147610f85de98650e72b))
-
-- Make release branch configuration dynamic for future versions ([15c13cc](https://gitlab.com/blueflyio/openstandardagents/-/commit/15c13ccb272b71c6a0fe1b117c683a22ce5dc044))
-
-### Documentation
-
-- **messaging**: Audit confirms v0.3.0 messaging capability is complete ([a17227b](https://gitlab.com/blueflyio/openstandardagents/-/commit/a17227bc63abd2326c38f5cd48c4f8da40812c17))
-### Fixed
-
-- **ci**: Remove development branch requirement, use release/* workflow ([7898227](https://gitlab.com/blueflyio/openstandardagents/-/commit/7898227cae27ae01ab285307e8467ed4b58ff0e0))
-- **ci**: Hotfix branches create dev tags only, not production releases ([93458ba](https://gitlab.com/blueflyio/openstandardagents/-/commit/93458bad444db5ef80c681bb7304f82109f7dda5))
-- **codeowners**: Simplify root CODEOWNERS to single owner @bluefly ([1619682](https://gitlab.com/blueflyio/openstandardagents/-/commit/1619682694ca06d486fa263418262a92c126d5d7))
-- **codeowners**: Simplify .gitlab/CODEOWNERS to single owner @bluefly ([06c72e2](https://gitlab.com/blueflyio/openstandardagents/-/commit/06c72e2f275d97086e760d5cbb36e5d93b45c0ed))
-- **codeowners**: Set @bluefly as default owner to unblock releases ([2df9b59](https://gitlab.com/blueflyio/openstandardagents/-/commit/2df9b5995b138261e3a746ea85350c89ec657a20))
 - Merge main into release/v0.3.x to fix MR !477 rebase ([151d5a5](https://gitlab.com/blueflyio/openstandardagents/-/commit/151d5a58081793b208b6d5860c3a6467b96a5116))
 
 - Merge main into release/v0.3.x to resolve MR !477 conflicts ([78b9a3a](https://gitlab.com/blueflyio/openstandardagents/-/commit/78b9a3a575bcd4c40ca6fac20c4ce1e9ba31dc57))
@@ -179,6 +177,10 @@ All v0.2.x manifests remain valid. New features (messaging, state, compliance) a
 - Resolve conflicts and fix ts:build:agent for release branch ([97c4e6a](https://gitlab.com/blueflyio/openstandardagents/-/commit/97c4e6ac1c87193837ead6b4e84b6d26db5e266b))
 
 ### Miscellaneous
+
+- Add .worktrees/ to .gitignore ([5c2c88a](https://gitlab.com/blueflyio/openstandardagents/-/commit/5c2c88aa48e230476c1faa8b0dc4294197e16997))
+
+- Merge main into release/v0.3.x - resolve conflicts ([771d16d](https://gitlab.com/blueflyio/openstandardagents/-/commit/771d16da62644f63e229c08d9e7d18095472aeeb))
 
 - Merge latest main into release/v0.3.x for MR !477 ([3dce5fa](https://gitlab.com/blueflyio/openstandardagents/-/commit/3dce5faace32f71695a9bf3fe8f78a9f6acd84ec))
 
@@ -293,10 +295,10 @@ All v0.2.x manifests remain valid. New features (messaging, state, compliance) a
 - **sdk**: Add CloudEvents v1.0 compliant emitter ([311e6fd](https://gitlab.com/blueflyio/openstandardagents/-/commit/311e6fdaf3cd4a6ef40f8e238ee4d8f9d07231d3))
 - **sdk**: Add W3C Baggage support for multi-agent correlation ([b4f5966](https://gitlab.com/blueflyio/openstandardagents/-/commit/b4f5966f44d26559f40859fce11578b13469fa08))
 - **spec**: Add quick-win capabilities to OSSA v0.3.0 spec (spec-only, no infrastructure) ([dcde670](https://gitlab.com/blueflyio/openstandardagents/-/commit/dcde67098fe7521893920e2ce19d65371565a73d))
-- **spec**: Add Agent-to-Agent Messaging Extension for OSSA v0.3.0 ([737968d](https://gitlab.com/blueflyio/openstandardagents/-/commit/737968d47c2c225e408ee9cc29989d20fcb319f2))
-- **spec**: Add Agent-to-Agent Messaging Extension for OSSA v0.3.0 ([ee051cf](https://gitlab.com/blueflyio/openstandardagents/-/commit/ee051cf899eea3b9180c20a1aea65bb26948d33f))
-- **spec**: Add Agent-to-Agent Messaging Extension for OSSA v0.3.0 ([eec5b81](https://gitlab.com/blueflyio/openstandardagents/-/commit/eec5b8118ec2fd89f80fb8b1f1aa8062b1c1f55b))
-- **spec**: OSSA v0.3.0 Messaging Extension + Automated Patch Version Management ([24cef37](https://gitlab.com/blueflyio/openstandardagents/-/commit/24cef37716b70c4313389d68f5d0724d17799580))
+- **spec**: Add Agent-to-Agent Messaging Extension for OSSA v0.3.1 ([737968d](https://gitlab.com/blueflyio/openstandardagents/-/commit/737968d47c2c225e408ee9cc29989d20fcb319f2))
+- **spec**: Add Agent-to-Agent Messaging Extension for OSSA v0.3.1 ([ee051cf](https://gitlab.com/blueflyio/openstandardagents/-/commit/ee051cf899eea3b9180c20a1aea65bb26948d33f))
+- **spec**: Add Agent-to-Agent Messaging Extension for OSSA v0.3.1 ([eec5b81](https://gitlab.com/blueflyio/openstandardagents/-/commit/eec5b8118ec2fd89f80fb8b1f1aa8062b1c1f55b))
+- **spec**: OSSA v0.3.1 Messaging Extension + Automated Patch Version Management ([24cef37](https://gitlab.com/blueflyio/openstandardagents/-/commit/24cef37716b70c4313389d68f5d0724d17799580))
 - **spec**: Add Conformance Testing specification ([5c1594a](https://gitlab.com/blueflyio/openstandardagents/-/commit/5c1594a1e3f595d2ab044e75aad424415bd36230))
 - **spec**: Add Capability Schema and Registry specification ([69d9463](https://gitlab.com/blueflyio/openstandardagents/-/commit/69d94638e0e12e78d6ce4e747c68b3cfdd9882df))
 - **spec**: Formal Policy DSL Specification ([4af084b](https://gitlab.com/blueflyio/openstandardagents/-/commit/4af084b44b972c02f317a42b227599864ecd937e))
@@ -428,6 +430,7 @@ All v0.2.x manifests remain valid. New features (messaging, state, compliance) a
 - **ci**: Remove all development branch references and hardcoded values ([eeeaf39](https://gitlab.com/blueflyio/openstandardagents/-/commit/eeeaf393aa6e7a7ea29f9d3d1996330510bb40fa))
 - **ci**: Remove all development branch references ([6ca6914](https://gitlab.com/blueflyio/openstandardagents/-/commit/6ca69140a60b0dafa864766379223a4315d4d0d0))
 - **ci**: Allow release branches to target other release branches ([f403042](https://gitlab.com/blueflyio/openstandardagents/-/commit/f403042073a4287204e6e609ba9f9fc1bbaa64f7))
+- **ci**: Handle group milestones and unset variables - CRITICAL ([05bd63e](https://gitlab.com/blueflyio/openstandardagents/-/commit/05bd63eed555be1849b383247034c931a6f276b5))
 - **cli**: Auto-detect schema version from manifest apiVersion ([73b5c12](https://gitlab.com/blueflyio/openstandardagents/-/commit/73b5c12e3f67b7f8be6bc13f577a10d531c5012b))
 - **codeowners**: Remove redundant docs/ rule covered by default owner ([dfd5ffe](https://gitlab.com/blueflyio/openstandardagents/-/commit/dfd5ffefa129ab669690f99ddf9fabff0323de36))
 - **codeowners**: Replace @flux423 with @bluefly ([89809bd](https://gitlab.com/blueflyio/openstandardagents/-/commit/89809bdcafa5efae64e92790579634ca7e0a6d1d))
@@ -441,7 +444,7 @@ All v0.2.x manifests remain valid. New features (messaging, state, compliance) a
 - **docs**: Correct README to show GitHub as primary public repo ([51f381c](https://gitlab.com/blueflyio/openstandardagents/-/commit/51f381c38370fbbdefd6e8d210a4fecffda08aa0))
 - **docs**: Correct README to show GitHub as primary public repo ([264d48e](https://gitlab.com/blueflyio/openstandardagents/-/commit/264d48e7bc4d9081dde129cecdf08ff940f95108))
 - **gitlab**: Restructure workflows to match GitLab Agent Platform schema ([86398bb](https://gitlab.com/blueflyio/openstandardagents/-/commit/86398bbf92ab1387e95797d7bd38034031635102))
-- **release**: Clean v0.3.0 - remove premature v0.3.0 content ([e58faa1](https://gitlab.com/blueflyio/openstandardagents/-/commit/e58faa12189bd147fb454964b77ce9844b1b060c))
+- **release**: Clean v0.3.0 - remove premature v0.3.1 content ([e58faa1](https://gitlab.com/blueflyio/openstandardagents/-/commit/e58faa12189bd147fb454964b77ce9844b1b060c))
 - **release**: Update ALL version references from 0.2.8 to 0.2.9 ([7b81abc](https://gitlab.com/blueflyio/openstandardagents/-/commit/7b81abc4dce1d13485d9cfefda42992a350a1968))
 - **release**: Update ALL version references from 0.2.8 to 0.2.9 ([5346e24](https://gitlab.com/blueflyio/openstandardagents/-/commit/5346e24c1fd15d3362fb3bed0cc0c587e9ae1fb4))
 - **schema**: Make apiVersion pattern future-proof and tests dynamic ([f78517d](https://gitlab.com/blueflyio/openstandardagents/-/commit/f78517d53f0686fb0d8167a6b1b76aa3643bc371))
@@ -542,7 +545,13 @@ All v0.2.x manifests remain valid. New features (messaging, state, compliance) a
 - OSSA Testing Framework and AgentTest resource ([37a2bd8](https://gitlab.com/blueflyio/openstandardagents/-/commit/37a2bd813e828559883b3fccd2c52bdfb4200d10))
 
 - OSSA Testing Framework and AgentTest resource ([886503b](https://gitlab.com/blueflyio/openstandardagents/-/commit/886503b6109ee95d52752c487d19bed64f3c9abc))
-## [0.2.8] - 2025-12-02
+## [0.3.0-RC] - 2025-12-15
+
+### Fixed
+
+- **ci**: Remove development branch requirement, use release/* workflow ([7898227](https://gitlab.com/blueflyio/openstandardagents/-/commit/7898227cae27ae01ab285307e8467ed4b58ff0e0))
+- **codeowners**: Simplify root CODEOWNERS to single owner @bluefly ([1619682](https://gitlab.com/blueflyio/openstandardagents/-/commit/1619682694ca06d486fa263418262a92c126d5d7))
+- **codeowners**: Simplify .gitlab/CODEOWNERS to single owner @bluefly ([06c72e2](https://gitlab.com/blueflyio/openstandardagents/-/commit/06c72e2f275d97086e760d5cbb36e5d93b45c0ed))## [0.2.8] - 2025-12-02
 
 ### Added
 
@@ -1566,13 +1575,3 @@ All v0.2.x manifests remain valid. New features (messaging, state, compliance) a
 - Complete OSSA implementation before standard separation ([deec80e](https://gitlab.com/blueflyio/openstandardagents/-/commit/deec80eb79ed25c19fb4796c6a2549f037e4b7e9))
 ---
 Generated by [git-cliff](https://git-cliff.org/)
-
-<!-- Comparison Links (Keep a Changelog 1.1.0 compliance) -->
-[Unreleased]: https://gitlab.com/blueflyio/openstandardagents/-/compare/v0.3.0...HEAD
-[0.3.0]: https://gitlab.com/blueflyio/openstandardagents/-/compare/v0.2.8...v0.3.0
-[0.3.0-dev.12]: https://gitlab.com/blueflyio/openstandardagents/-/compare/v0.3.0-dev.11...v0.3.0-dev.12
-[0.3.0-RC]: https://gitlab.com/blueflyio/openstandardagents/-/compare/v0.3.0-dev.1...v0.3.0-RC
-[0.3.0-dev.1]: https://gitlab.com/blueflyio/openstandardagents/-/compare/v0.2.8...v0.3.0-dev.1
-[0.2.8]: https://gitlab.com/blueflyio/openstandardagents/-/compare/v0.2.5...v0.2.8
-[0.2.5]: https://gitlab.com/blueflyio/openstandardagents/-/compare/v0.2.4...v0.2.5
-[0.2.4]: https://gitlab.com/blueflyio/openstandardagents/-/compare/v0.2.3...v0.2.4
