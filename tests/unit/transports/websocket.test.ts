@@ -340,7 +340,7 @@ describe('WebSocketTransport', () => {
         errorFired = true;
       });
       
-      // Start connection
+      // Start connection - error should fire at 5ms, rejecting promise
       const connectPromise = errorTransport.connect();
       
       // Wait for error event to fire (mock fires at 5ms)
@@ -349,15 +349,8 @@ describe('WebSocketTransport', () => {
       // Error should have been emitted
       expect(errorFired).toBe(true);
       
-      // Connection promise should reject (error fires before open)
-      try {
-        await connectPromise;
-        // If we get here, connection succeeded (should not happen for invalid URL)
-        fail('Connection should have failed');
-      } catch (error) {
-        // Expected - connection should fail
-        expect(error).toBeDefined();
-      }
+      // Connection promise should reject
+      await expect(connectPromise).rejects.toBeDefined();
     });
 
     it('should emit error events', (done) => {
