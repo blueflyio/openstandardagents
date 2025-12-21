@@ -272,7 +272,7 @@ export class AnthropicAdapter {
 
       if (textBlocks.length > 0) {
         finalText = textBlocks
-          .map((block) => (block.type === 'text' ? block.text : ''))
+          .map((block: { type: string; [key: string]: unknown }) => (block.type === 'text' ? block.text : ''))
           .join('\n');
         break;
       }
