@@ -319,7 +319,7 @@ export class AnthropicAdapter {
    * Get agent information
    */
   getAgentInfo(): AgentInfo {
-    const config = this.client.getConfig();
+    const config = this.agent.spec?.llm ? { model: this.agent.spec.llm.model } : {};
     const tools = this.toolMapper.getTools().map((t) => t.name);
 
     return {
