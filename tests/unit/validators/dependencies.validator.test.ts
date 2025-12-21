@@ -282,10 +282,7 @@ describe('DependenciesValidator', () => {
           metadata: { name: 'agent-b' },
           spec: {
             messaging: {
-              publishes: [
-                { channel: 'user.created' },
-                { channel: 'user.updated' },
-              ],
+              publishes: [{ channel: 'user.created' }, { channel: 'user.updated' }],
             },
           },
         },
@@ -950,9 +947,7 @@ describe('DependenciesValidator', () => {
           metadata: { name: 'agent-b' },
           spec: {
             dependencies: {
-              agents: [
-                { name: 'agent-d', version: '^1.0.0', required: true },
-              ],
+              agents: [{ name: 'agent-d', version: '^1.0.0', required: true }],
             },
           },
         },
@@ -962,9 +957,7 @@ describe('DependenciesValidator', () => {
           metadata: { name: 'agent-c' },
           spec: {
             dependencies: {
-              agents: [
-                { name: 'agent-d', version: '^1.0.0', required: true },
-              ],
+              agents: [{ name: 'agent-d', version: '^1.0.0', required: true }],
             },
           },
         },
@@ -1030,13 +1023,8 @@ describe('DependenciesValidator', () => {
         },
       ];
 
-      const agentRegistry = new Map(
-        manifests.map((m) => [m.metadata.name, m])
-      );
-      const missing = (validator as any).detectMissingDependencies(
-        manifests,
-        agentRegistry
-      );
+      const agentRegistry = new Map(manifests.map((m) => [m.metadata.name, m]));
+      const missing = (validator as any).detectMissingDependencies(manifests, agentRegistry);
 
       expect(missing).toHaveLength(0);
     });
@@ -1061,13 +1049,8 @@ describe('DependenciesValidator', () => {
         },
       ];
 
-      const agentRegistry = new Map(
-        manifests.map((m) => [m.metadata.name, m])
-      );
-      const missing = (validator as any).detectMissingDependencies(
-        manifests,
-        agentRegistry
-      );
+      const agentRegistry = new Map(manifests.map((m) => [m.metadata.name, m]));
+      const missing = (validator as any).detectMissingDependencies(manifests, agentRegistry);
 
       expect(missing).toHaveLength(1);
       expect(missing[0].agent).toBe('agent-a');
@@ -1099,13 +1082,8 @@ describe('DependenciesValidator', () => {
         },
       ];
 
-      const agentRegistry = new Map(
-        manifests.map((m) => [m.metadata.name, m])
-      );
-      const missing = (validator as any).detectMissingDependencies(
-        manifests,
-        agentRegistry
-      );
+      const agentRegistry = new Map(manifests.map((m) => [m.metadata.name, m]));
+      const missing = (validator as any).detectMissingDependencies(manifests, agentRegistry);
 
       expect(missing).toHaveLength(2);
     });
@@ -1130,13 +1108,8 @@ describe('DependenciesValidator', () => {
         },
       ];
 
-      const agentRegistry = new Map(
-        manifests.map((m) => [m.metadata.name, m])
-      );
-      const missing = (validator as any).detectMissingDependencies(
-        manifests,
-        agentRegistry
-      );
+      const agentRegistry = new Map(manifests.map((m) => [m.metadata.name, m]));
+      const missing = (validator as any).detectMissingDependencies(manifests, agentRegistry);
 
       expect(missing).toHaveLength(0);
     });
@@ -1172,13 +1145,8 @@ describe('DependenciesValidator', () => {
         },
       ];
 
-      const agentRegistry = new Map(
-        manifests.map((m) => [m.metadata.name, m])
-      );
-      const missing = (validator as any).detectMissingDependencies(
-        manifests,
-        agentRegistry
-      );
+      const agentRegistry = new Map(manifests.map((m) => [m.metadata.name, m]));
+      const missing = (validator as any).detectMissingDependencies(manifests, agentRegistry);
 
       expect(missing).toHaveLength(1);
       expect(missing[0].dependency).toBe('missing-agent');
@@ -1194,13 +1162,8 @@ describe('DependenciesValidator', () => {
         },
       ];
 
-      const agentRegistry = new Map(
-        manifests.map((m) => [m.metadata.name, m])
-      );
-      const missing = (validator as any).detectMissingDependencies(
-        manifests,
-        agentRegistry
-      );
+      const agentRegistry = new Map(manifests.map((m) => [m.metadata.name, m]));
+      const missing = (validator as any).detectMissingDependencies(manifests, agentRegistry);
 
       expect(missing).toHaveLength(0);
     });
@@ -1219,13 +1182,8 @@ describe('DependenciesValidator', () => {
         },
       ];
 
-      const agentRegistry = new Map(
-        manifests.map((m) => [m.metadata.name, m])
-      );
-      const missing = (validator as any).detectMissingDependencies(
-        manifests,
-        agentRegistry
-      );
+      const agentRegistry = new Map(manifests.map((m) => [m.metadata.name, m]));
+      const missing = (validator as any).detectMissingDependencies(manifests, agentRegistry);
 
       expect(missing).toHaveLength(0);
     });
@@ -1265,13 +1223,8 @@ describe('DependenciesValidator', () => {
         },
       ];
 
-      const agentRegistry = new Map(
-        manifests.map((m) => [m.metadata.name, m])
-      );
-      const violations = (validator as any).detectContractViolations(
-        manifests,
-        agentRegistry
-      );
+      const agentRegistry = new Map(manifests.map((m) => [m.metadata.name, m]));
+      const violations = (validator as any).detectContractViolations(manifests, agentRegistry);
 
       expect(violations).toHaveLength(0);
     });
@@ -1309,13 +1262,8 @@ describe('DependenciesValidator', () => {
         },
       ];
 
-      const agentRegistry = new Map(
-        manifests.map((m) => [m.metadata.name, m])
-      );
-      const violations = (validator as any).detectContractViolations(
-        manifests,
-        agentRegistry
-      );
+      const agentRegistry = new Map(manifests.map((m) => [m.metadata.name, m]));
+      const violations = (validator as any).detectContractViolations(manifests, agentRegistry);
 
       expect(violations).toHaveLength(1);
       expect(violations[0].agent).toBe('agent-a');
@@ -1337,11 +1285,7 @@ describe('DependenciesValidator', () => {
                   version: '^1.0.0',
                   required: true,
                   contract: {
-                    publishes: [
-                      'user.created',
-                      'user.updated',
-                      'user.deleted',
-                    ],
+                    publishes: ['user.created', 'user.updated', 'user.deleted'],
                   },
                 },
               ],
@@ -1360,13 +1304,8 @@ describe('DependenciesValidator', () => {
         },
       ];
 
-      const agentRegistry = new Map(
-        manifests.map((m) => [m.metadata.name, m])
-      );
-      const violations = (validator as any).detectContractViolations(
-        manifests,
-        agentRegistry
-      );
+      const agentRegistry = new Map(manifests.map((m) => [m.metadata.name, m]));
+      const violations = (validator as any).detectContractViolations(manifests, agentRegistry);
 
       expect(violations).toHaveLength(2);
     });
@@ -1397,13 +1336,8 @@ describe('DependenciesValidator', () => {
         },
       ];
 
-      const agentRegistry = new Map(
-        manifests.map((m) => [m.metadata.name, m])
-      );
-      const violations = (validator as any).detectContractViolations(
-        manifests,
-        agentRegistry
-      );
+      const agentRegistry = new Map(manifests.map((m) => [m.metadata.name, m]));
+      const violations = (validator as any).detectContractViolations(manifests, agentRegistry);
 
       expect(violations).toHaveLength(0);
     });
@@ -1431,13 +1365,8 @@ describe('DependenciesValidator', () => {
         },
       ];
 
-      const agentRegistry = new Map(
-        manifests.map((m) => [m.metadata.name, m])
-      );
-      const violations = (validator as any).detectContractViolations(
-        manifests,
-        agentRegistry
-      );
+      const agentRegistry = new Map(manifests.map((m) => [m.metadata.name, m]));
+      const violations = (validator as any).detectContractViolations(manifests, agentRegistry);
 
       expect(violations).toHaveLength(0);
     });
@@ -1471,13 +1400,8 @@ describe('DependenciesValidator', () => {
         },
       ];
 
-      const agentRegistry = new Map(
-        manifests.map((m) => [m.metadata.name, m])
-      );
-      const violations = (validator as any).detectContractViolations(
-        manifests,
-        agentRegistry
-      );
+      const agentRegistry = new Map(manifests.map((m) => [m.metadata.name, m]));
+      const violations = (validator as any).detectContractViolations(manifests, agentRegistry);
 
       expect(violations).toHaveLength(1);
     });
@@ -1515,13 +1439,8 @@ describe('DependenciesValidator', () => {
         },
       ];
 
-      const agentRegistry = new Map(
-        manifests.map((m) => [m.metadata.name, m])
-      );
-      const violations = (validator as any).detectContractViolations(
-        manifests,
-        agentRegistry
-      );
+      const agentRegistry = new Map(manifests.map((m) => [m.metadata.name, m]));
+      const violations = (validator as any).detectContractViolations(manifests, agentRegistry);
 
       expect(violations).toHaveLength(1);
     });
@@ -1577,13 +1496,8 @@ describe('DependenciesValidator', () => {
         },
       ];
 
-      const agentRegistry = new Map(
-        manifests.map((m) => [m.metadata.name, m])
-      );
-      const violations = (validator as any).detectContractViolations(
-        manifests,
-        agentRegistry
-      );
+      const agentRegistry = new Map(manifests.map((m) => [m.metadata.name, m]));
+      const violations = (validator as any).detectContractViolations(manifests, agentRegistry);
 
       expect(violations).toHaveLength(0);
     });
@@ -1625,13 +1539,8 @@ describe('DependenciesValidator', () => {
         },
       ];
 
-      const agentRegistry = new Map(
-        manifests.map((m) => [m.metadata.name, m])
-      );
-      const violations = (validator as any).detectContractViolations(
-        manifests,
-        agentRegistry
-      );
+      const agentRegistry = new Map(manifests.map((m) => [m.metadata.name, m]));
+      const violations = (validator as any).detectContractViolations(manifests, agentRegistry);
 
       expect(violations).toHaveLength(0);
     });
@@ -1771,9 +1680,7 @@ describe('DependenciesValidator', () => {
           metadata: { name: 'agent-a' },
           spec: {
             dependencies: {
-              agents: [
-                { name: 'agent-b', version: '^1.0.0', required: true },
-              ],
+              agents: [{ name: 'agent-b', version: '^1.0.0', required: true }],
             },
           },
         },
@@ -1783,9 +1690,7 @@ describe('DependenciesValidator', () => {
           metadata: { name: 'agent-b' },
           spec: {
             dependencies: {
-              agents: [
-                { name: 'agent-c', version: '^1.0.0', required: true },
-              ],
+              agents: [{ name: 'agent-c', version: '^1.0.0', required: true }],
             },
           },
         },
@@ -1811,9 +1716,7 @@ describe('DependenciesValidator', () => {
           metadata: { name: 'agent-a' },
           spec: {
             dependencies: {
-              agents: [
-                { name: 'agent-b', version: '^1.0.0', required: true },
-              ],
+              agents: [{ name: 'agent-b', version: '^1.0.0', required: true }],
             },
           },
         },
@@ -1859,9 +1762,7 @@ describe('DependenciesValidator', () => {
           metadata: { name: 'agent-a' },
           spec: {
             dependencies: {
-              agents: [
-                { name: 'agent-b', version: '^1.0.0', required: true },
-              ],
+              agents: [{ name: 'agent-b', version: '^1.0.0', required: true }],
             },
           },
         },
@@ -1871,9 +1772,7 @@ describe('DependenciesValidator', () => {
           metadata: { name: 'agent-b' },
           spec: {
             dependencies: {
-              agents: [
-                { name: 'agent-c', version: '^1.0.0', required: true },
-              ],
+              agents: [{ name: 'agent-c', version: '^1.0.0', required: true }],
             },
           },
         },
@@ -1901,9 +1800,7 @@ describe('DependenciesValidator', () => {
           metadata: { name: 'agent-a' },
           spec: {
             dependencies: {
-              agents: [
-                { name: 'shared-dep', version: '^1.0.0', required: true },
-              ],
+              agents: [{ name: 'shared-dep', version: '^1.0.0', required: true }],
             },
           },
         },
@@ -1913,9 +1810,7 @@ describe('DependenciesValidator', () => {
           metadata: { name: 'agent-b' },
           spec: {
             dependencies: {
-              agents: [
-                { name: 'shared-dep', version: '^1.0.0', required: true },
-              ],
+              agents: [{ name: 'shared-dep', version: '^1.0.0', required: true }],
             },
           },
         },
@@ -1944,9 +1839,7 @@ describe('DependenciesValidator', () => {
           metadata: { name: 'agent-a' },
           spec: {
             dependencies: {
-              agents: [
-                { name: 'agent-b', version: '^1.0.0', required: true },
-              ],
+              agents: [{ name: 'agent-b', version: '^1.0.0', required: true }],
             },
           },
         },
@@ -1956,9 +1849,7 @@ describe('DependenciesValidator', () => {
           metadata: { name: 'agent-b' },
           spec: {
             dependencies: {
-              agents: [
-                { name: 'agent-a', version: '^1.0.0', required: true },
-              ],
+              agents: [{ name: 'agent-a', version: '^1.0.0', required: true }],
             },
           },
         },
@@ -1990,9 +1881,7 @@ describe('DependenciesValidator', () => {
           metadata: { name: 'agent-b' },
           spec: {
             dependencies: {
-              agents: [
-                { name: 'agent-d', version: '^1.0.0', required: true },
-              ],
+              agents: [{ name: 'agent-d', version: '^1.0.0', required: true }],
             },
           },
         },
@@ -2002,9 +1891,7 @@ describe('DependenciesValidator', () => {
           metadata: { name: 'agent-c' },
           spec: {
             dependencies: {
-              agents: [
-                { name: 'agent-d', version: '^1.0.0', required: true },
-              ],
+              agents: [{ name: 'agent-d', version: '^1.0.0', required: true }],
             },
           },
         },
@@ -2051,9 +1938,7 @@ describe('DependenciesValidator', () => {
           metadata: { name: 'level-2-a' },
           spec: {
             dependencies: {
-              agents: [
-                { name: 'level-1', version: '^1.0.0', required: true },
-              ],
+              agents: [{ name: 'level-1', version: '^1.0.0', required: true }],
             },
           },
         },
@@ -2063,9 +1948,7 @@ describe('DependenciesValidator', () => {
           metadata: { name: 'level-2-b' },
           spec: {
             dependencies: {
-              agents: [
-                { name: 'level-1', version: '^1.0.0', required: true },
-              ],
+              agents: [{ name: 'level-1', version: '^1.0.0', required: true }],
             },
           },
         },

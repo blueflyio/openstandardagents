@@ -44,10 +44,7 @@ export class ReleaseService extends BaseCrudService<
   private gitlab: InstanceType<typeof Gitlab>;
   private projectId: string | number;
 
-  constructor(
-    gitlabToken: string,
-    projectId: string | number = process.env.CI_PROJECT_ID || ''
-  ) {
+  constructor(gitlabToken: string, projectId: string | number = process.env.CI_PROJECT_ID || '') {
     super();
     this.gitlab = new Gitlab({ token: gitlabToken });
     this.projectId = projectId;
@@ -106,10 +103,7 @@ export class ReleaseService extends BaseCrudService<
   /**
    * Update release
    */
-  async update(
-    id: string | number,
-    input: UpdateReleaseRequest
-  ): Promise<Release> {
+  async update(id: string | number, input: UpdateReleaseRequest): Promise<Release> {
     this.validateId(id);
     const validated = this.validateUpdate(input);
 
@@ -122,10 +116,7 @@ export class ReleaseService extends BaseCrudService<
       ...existing,
       ...validated,
       updatedAt: new Date().toISOString(),
-      releasedAt:
-        validated.state === 'released'
-          ? new Date().toISOString()
-          : existing.releasedAt,
+      releasedAt: validated.state === 'released' ? new Date().toISOString() : existing.releasedAt,
     };
 
     return this.validateEntity(updated);
@@ -234,11 +225,7 @@ export class ReleaseService extends BaseCrudService<
   /**
    * Helper: Convert GitLab tag to Release entity
    */
-  private tagToRelease(tag: {
-    name: string;
-    commit?: { id: string };
-    message?: string;
-  }): Release {
+  private tagToRelease(tag: { name: string; commit?: { id: string }; message?: string }): Release {
     const version = tag.name.replace(/^v/, '');
     const state = this.determineReleaseState(tag.name);
 

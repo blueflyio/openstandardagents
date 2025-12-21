@@ -93,7 +93,9 @@ const validateDependenciesCommand = new Command('validate')
         if (result.missingDependencies.length > 0) {
           console.log(chalk.yellow('⚠️  Missing Dependencies:'));
           for (const missing of result.missingDependencies) {
-            console.log(chalk.red(`    ${missing.agent} requires ${missing.dependency} (not found)`));
+            console.log(
+              chalk.red(`    ${missing.agent} requires ${missing.dependency} (not found)`)
+            );
           }
           console.log();
         }
@@ -177,81 +179,76 @@ const graphCommand = new Command('graph')
   .option('-o, --output <file>', 'Output file (default: stdout)')
   .option('-f, --format <format>', 'Output format: dot, json', 'dot')
   .description('Generate dependency graph visualization')
-  .action(
-    async (
-      pattern: string,
-      options: { output?: string; format?: string }
-    ) => {
-      try {
-        // Load manifests
-        const files = await glob(pattern, { absolute: true });
-        const manifestRepo = container.get(ManifestRepository);
-        const manifests: AgentManifest[] = [];
+  .action(async (pattern: string, options: { output?: string; format?: string }) => {
+    try {
+      // Load manifests
+      const files = await glob(pattern, { absolute: true });
+      const manifestRepo = container.get(ManifestRepository);
+      const manifests: AgentManifest[] = [];
 
-        for (const file of files) {
-          try {
-            const manifest = await manifestRepo.load(file);
-            manifests.push(manifest as AgentManifest);
-          } catch {
-            // Skip invalid manifests
-          }
+      for (const file of files) {
+        try {
+          const manifest = await manifestRepo.load(file);
+          manifests.push(manifest as AgentManifest);
+        } catch {
+          // Skip invalid manifests
         }
+      }
 
-        if (manifests.length === 0) {
-          console.log(chalk.red('❌ No valid manifests found'));
-          process.exit(1);
-        }
-
-        // Generate graph
-        const validator = container.get(DependenciesValidator);
-        let output: string;
-
-        if (options.format === 'json') {
-          // Generate JSON format
-          const graph: any = {
-            nodes: manifests.map((m) => ({
-              id: m.metadata.name,
-              version: m.metadata.version || 'unknown',
-            })),
-            edges: [],
-          };
-
-          for (const manifest of manifests) {
-            const deps = manifest.spec.dependencies?.agents || [];
-            for (const dep of deps) {
-              graph.edges.push({
-                from: manifest.metadata.name,
-                to: dep.name,
-                version: dep.version,
-                required: dep.required,
-              });
-            }
-          }
-
-          output = JSON.stringify(graph, null, 2);
-        } else {
-          // Generate DOT format
-          output = validator.generateDependencyGraph(manifests);
-        }
-
-        // Output
-        if (options.output) {
-          fs.writeFileSync(options.output, output, 'utf-8');
-          console.log(chalk.green(`\n✅ Dependency graph written to ${options.output}`));
-          if (options.format === 'dot') {
-            console.log(chalk.gray(`\nGenerate PNG: dot -Tpng ${options.output} -o graph.png\n`));
-          }
-        } else {
-          console.log(output);
-        }
-
-        process.exit(0);
-      } catch (error: any) {
-        console.error(chalk.red(`\n❌ Error: ${error.message}\n`));
+      if (manifests.length === 0) {
+        console.log(chalk.red('❌ No valid manifests found'));
         process.exit(1);
       }
+
+      // Generate graph
+      const validator = container.get(DependenciesValidator);
+      let output: string;
+
+      if (options.format === 'json') {
+        // Generate JSON format
+        const graph: any = {
+          nodes: manifests.map((m) => ({
+            id: m.metadata.name,
+            version: m.metadata.version || 'unknown',
+          })),
+          edges: [],
+        };
+
+        for (const manifest of manifests) {
+          const deps = manifest.spec.dependencies?.agents || [];
+          for (const dep of deps) {
+            graph.edges.push({
+              from: manifest.metadata.name,
+              to: dep.name,
+              version: dep.version,
+              required: dep.required,
+            });
+          }
+        }
+
+        output = JSON.stringify(graph, null, 2);
+      } else {
+        // Generate DOT format
+        output = validator.generateDependencyGraph(manifests);
+      }
+
+      // Output
+      if (options.output) {
+        fs.writeFileSync(options.output, output, 'utf-8');
+        console.log(chalk.green(`\n✅ Dependency graph written to ${options.output}`));
+        if (options.format === 'dot') {
+          console.log(chalk.gray(`\nGenerate PNG: dot -Tpng ${options.output} -o graph.png\n`));
+        }
+      } else {
+        console.log(output);
+      }
+
+      process.exit(0);
+    } catch (error: any) {
+      console.error(chalk.red(`\n❌ Error: ${error.message}\n`));
+      process.exit(1);
     }
-  );
+  });
 
 /**
  * ossa dependencies deploy-order <pattern>
@@ -261,68 +258,66 @@ const deployOrderCommand = new Command('deploy-order')
   .argument('<pattern>', 'Glob pattern for agent manifests')
   .option('-f, --format <format>', 'Output format: text, json', 'text')
   .description('Calculate deployment order for agents')
-  .action(
-    async (pattern: string, options: { format?: string }) => {
-      try {
-        console.log(chalk.blue(`\n🔍 Calculating deployment order...\n`));
+  .action(async (pattern: string, options: { format?: string }) => {
+    try {
+      console.log(chalk.blue(`\n🔍 Calculating deployment order...\n`));
 
-        // Load manifests
-        const files = await glob(pattern, { absolute: true });
-        const manifestRepo = container.get(ManifestRepository);
-        const manifests: AgentManifest[] = [];
+      // Load manifests
+      const files = await glob(pattern, { absolute: true });
+      const manifestRepo = container.get(ManifestRepository);
+      const manifests: AgentManifest[] = [];
 
-        for (const file of files) {
-          try {
-            const manifest = await manifestRepo.load(file);
-            manifests.push(manifest as AgentManifest);
-          } catch {
-            // Skip invalid manifests
-          }
+      for (const file of files) {
+        try {
+          const manifest = await manifestRepo.load(file);
+          manifests.push(manifest as AgentManifest);
+        } catch {
+          // Skip invalid manifests
         }
+      }
 
-        if (manifests.length === 0) {
-          console.log(chalk.red('❌ No valid manifests found'));
-          process.exit(1);
-        }
-
-        // Calculate deployment order
-        const validator = container.get(DependenciesValidator);
-        const batches = validator.calculateDeploymentOrder(manifests);
-
-        // Output
-        if (options.format === 'json') {
-          const output = {
-            batches: batches.map((batch, i) => ({
-              batch_id: i + 1,
-              parallel: batch.length > 1,
-              agents: batch,
-            })),
-            total_agents: manifests.length,
-            total_batches: batches.length,
-          };
-          console.log(JSON.stringify(output, null, 2));
-        } else {
-          console.log(chalk.green(`✅ Deployment order (${batches.length} batches):\n`));
-          for (let i = 0; i < batches.length; i++) {
-            const batch = batches[i];
-            console.log(chalk.yellow(`Batch ${i + 1}:`));
-            if (batch.length > 1) {
-              console.log(chalk.gray(`  (Can deploy in parallel)`));
-            }
-            for (const agent of batch) {
-              console.log(chalk.cyan(`  - ${agent}`));
-            }
-            console.log();
-          }
-        }
-
-        process.exit(0);
-      } catch (error: any) {
-        console.error(chalk.red(`\n❌ Error: ${error.message}\n`));
+      if (manifests.length === 0) {
+        console.log(chalk.red('❌ No valid manifests found'));
         process.exit(1);
       }
+
+      // Calculate deployment order
+      const validator = container.get(DependenciesValidator);
+      const batches = validator.calculateDeploymentOrder(manifests);
+
+      // Output
+      if (options.format === 'json') {
+        const output = {
+          batches: batches.map((batch, i) => ({
+            batch_id: i + 1,
+            parallel: batch.length > 1,
+            agents: batch,
+          })),
+          total_agents: manifests.length,
+          total_batches: batches.length,
+        };
+        console.log(JSON.stringify(output, null, 2));
+      } else {
+        console.log(chalk.green(`✅ Deployment order (${batches.length} batches):\n`));
+        for (let i = 0; i < batches.length; i++) {
+          const batch = batches[i];
+          console.log(chalk.yellow(`Batch ${i + 1}:`));
+          if (batch.length > 1) {
+            console.log(chalk.gray(`  (Can deploy in parallel)`));
+          }
+          for (const agent of batch) {
+            console.log(chalk.cyan(`  - ${agent}`));
+          }
+          console.log();
+        }
+      }
+
+      process.exit(0);
+    } catch (error: any) {
+      console.error(chalk.red(`\n❌ Error: ${error.message}\n`));
+      process.exit(1);
     }
-  );
+  });
 
 /**
  * Helper: Count total dependencies

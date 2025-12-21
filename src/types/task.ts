@@ -8,10 +8,7 @@ import { getApiVersion } from '../utils/version.js';
 /**
  * Execution type for tasks
  */
-export type TaskExecutionType =
-  | 'deterministic'
-  | 'idempotent'
-  | 'transactional';
+export type TaskExecutionType = 'deterministic' | 'idempotent' | 'transactional';
 
 /**
  * Backoff strategy for retries
@@ -152,14 +149,7 @@ export interface TaskObservability {
  * JSON Schema definition (simplified)
  */
 export interface JSONSchemaDefinition {
-  type?:
-    | 'object'
-    | 'array'
-    | 'string'
-    | 'number'
-    | 'integer'
-    | 'boolean'
-    | 'null';
+  type?: 'object' | 'array' | 'string' | 'number' | 'integer' | 'boolean' | 'null';
   properties?: Record<string, unknown>;
   required?: string[];
   items?: Record<string, unknown>;
@@ -258,10 +248,7 @@ export function isOssaTask(manifest: unknown): manifest is OssaTask {
 /**
  * Create an empty Task manifest with defaults
  */
-export function createTaskManifest(
-  name: string,
-  options?: Partial<OssaTask>
-): OssaTask {
+export function createTaskManifest(name: string, options?: Partial<OssaTask>): OssaTask {
   return {
     apiVersion: getApiVersion(),
     kind: 'Task',

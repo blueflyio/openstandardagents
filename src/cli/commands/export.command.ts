@@ -22,10 +22,7 @@ export const exportCommand = new Command('export')
   .option('--all', 'Export to all supported platforms')
   .description('Export OSSA agent manifest to platform-specific format')
   .action(
-    async (
-      manifestPath: string,
-      options?: { to?: string; output?: string; all?: boolean }
-    ) => {
+    async (manifestPath: string, options?: { to?: string; output?: string; all?: boolean }) => {
       try {
         const manifestRepo = container.get(ManifestRepository);
         const generationService = container.get(GenerationService);
@@ -65,8 +62,7 @@ export const exportCommand = new Command('export')
                 | 'vercel-ai'
             );
             const outputPath = options?.output || `${platform}-agent.json`;
-            const finalPath =
-              platforms.length > 1 ? `${platform}-${outputPath}` : outputPath;
+            const finalPath = platforms.length > 1 ? `${platform}-${outputPath}` : outputPath;
 
             fs.writeFileSync(finalPath, JSON.stringify(exported, null, 2));
             console.log(chalk.green(`✓ Exported to ${platform}: ${finalPath}`));
@@ -80,10 +76,7 @@ export const exportCommand = new Command('export')
 
         process.exit(0);
       } catch (error) {
-        console.error(
-          chalk.red('Error:'),
-          error instanceof Error ? error.message : String(error)
-        );
+        console.error(chalk.red('Error:'), error instanceof Error ? error.message : String(error));
         process.exit(1);
       }
     }

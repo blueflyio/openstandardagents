@@ -13,12 +13,7 @@ export { isOssaTask, createTaskManifest } from './task';
 // Export Workflow types (v0.3.0)
 export * from './workflow';
 export type { OssaWorkflow, WorkflowSpec, WorkflowStep } from './workflow';
-export {
-  isOssaWorkflow,
-  createWorkflowManifest,
-  createStep,
-  expr,
-} from './workflow';
+export { isOssaWorkflow, createWorkflowManifest, createStep, expr } from './workflow';
 
 // Export Messaging types (v0.3.0)
 export * from './messaging';
@@ -186,13 +181,16 @@ export interface OssaAgent {
         };
       };
     };
-    environments?: Record<string, {
-      version: string;
-      deployedAt: string;
-      deployedBy: string;
-      status: 'deployed' | 'healthy' | 'degraded' | 'failed';
-      endpoint?: string;
-    }>;
+    environments?: Record<
+      string,
+      {
+        version: string;
+        deployedAt: string;
+        deployedBy: string;
+        status: 'deployed' | 'healthy' | 'degraded' | 'failed';
+        endpoint?: string;
+      }
+    >;
   };
   // Legacy v0.1.9 format (for backward compatibility)
   ossaVersion?: string;
@@ -322,10 +320,7 @@ export type SchemaVersion = string;
  * Service interfaces
  */
 export interface IValidationService {
-  validate(
-    manifest: unknown,
-    version: SchemaVersion
-  ): Promise<ValidationResult>;
+  validate(manifest: unknown, version: SchemaVersion): Promise<ValidationResult>;
 }
 
 export interface ISchemaRepository {

@@ -62,9 +62,7 @@ function parseVersion(
   // Handle versions like "0.2.8", "0.2.8-RC", "0.2.8-beta.1"
   const match = version.match(/^(\d+)\.(\d+)\.(\d+)(?:-(.+))?$/);
   if (!match) {
-    throw new Error(
-      `Invalid version format: ${version}. Version must be read from package.json.`
-    );
+    throw new Error(`Invalid version format: ${version}. Version must be read from package.json.`);
   }
   return {
     major: parseInt(match[1], 10),
@@ -126,11 +124,7 @@ function readVersionFromPackageJson(): string {
     if (fs.existsSync(specDir)) {
       const versions = fs
         .readdirSync(specDir)
-        .filter(
-          (d) =>
-            d.startsWith('v') &&
-            fs.statSync(path.join(specDir, d)).isDirectory()
-        )
+        .filter((d) => d.startsWith('v') && fs.statSync(path.join(specDir, d)).isDirectory())
         .map((d) => d.substring(1)) // Remove 'v' prefix
         .filter((v) => /^\d+\.\d+\.\d+/.test(v))
         .sort((a, b) => {

@@ -44,11 +44,7 @@ export class CloudEventsEmitter {
     }
   }
 
-  emit<T>(
-    type: string,
-    data: T,
-    options?: Partial<CloudEvent<T>>
-  ): CloudEvent<T> {
+  emit<T>(type: string, data: T, options?: Partial<CloudEvent<T>>): CloudEvent<T> {
     const event: CloudEvent<T> = {
       specversion: '1.0',
       type,
@@ -113,9 +109,7 @@ export class CloudEventsEmitter {
         break;
       case 'kafka':
         // Kafka implementation would go here
-        console.log(
-          `Would send ${events.length} events to Kafka topic ${sink.topic}`
-        );
+        console.log(`Would send ${events.length} events to Kafka topic ${sink.topic}`);
         break;
     }
   }
@@ -142,5 +136,4 @@ export const OSSA_EVENT_TYPES = {
   WORKFLOW_COMPLETED: 'dev.ossa.workflow.completed',
 } as const;
 
-export type OSSAEventType =
-  (typeof OSSA_EVENT_TYPES)[keyof typeof OSSA_EVENT_TYPES];
+export type OSSAEventType = (typeof OSSA_EVENT_TYPES)[keyof typeof OSSA_EVENT_TYPES];

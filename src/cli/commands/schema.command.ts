@@ -18,20 +18,12 @@ export const schemaCommand = new Command('schema')
     `Schema version (defaults to current: ${getVersion()})`,
     getVersion()
   )
-  .option(
-    '-p, --path <path>',
-    'Show schema for specific path (e.g., definitions.Metadata)'
-  )
+  .option('-p, --path <path>', 'Show schema for specific path (e.g., definitions.Metadata)')
   .option('-j, --json', 'Output raw JSON schema')
   .option('-o, --output <file>', 'Save schema to file')
   .description('View and explore the OSSA schema')
   .action(
-    async (options?: {
-      version?: string;
-      path?: string;
-      json?: boolean;
-      output?: string;
-    }) => {
+    async (options?: { version?: string; path?: string; json?: boolean; output?: string }) => {
       try {
         const schemaRepo = container.get(SchemaRepository);
         const version = options?.version || schemaRepo.getCurrentVersion();
@@ -53,11 +45,7 @@ export const schemaCommand = new Command('schema')
           const parts = options.path.split('.');
           let current: unknown = schema;
           for (const part of parts) {
-            if (
-              typeof current === 'object' &&
-              current !== null &&
-              part in current
-            ) {
+            if (typeof current === 'object' && current !== null && part in current) {
               current = (current as Record<string, unknown>)[part];
             } else {
               console.error(chalk.red(`Path not found: ${options.path}`));
@@ -75,11 +63,7 @@ export const schemaCommand = new Command('schema')
         console.log(chalk.blue(`OSSA Schema v${version}`));
         console.log(chalk.gray(`Title: ${schema.title || 'N/A'}`));
         console.log(chalk.gray(`Description: ${schema.description || 'N/A'}`));
-        console.log(
-          chalk.gray(
-            `\nDefinitions: ${Object.keys(schema.definitions || {}).length}`
-          )
-        );
+        console.log(chalk.gray(`\nDefinitions: ${Object.keys(schema.definitions || {}).length}`));
 
         if (schema.definitions) {
           console.log(chalk.cyan('\nAvailable definitions:'));
@@ -88,12 +72,8 @@ export const schemaCommand = new Command('schema')
           });
         }
 
-        const schemaProps = (schema.properties || {}) as Record<
-          string,
-          unknown
-        >;
-        const extensions = (schemaProps?.extensions as Record<string, unknown>)
-          ?.properties;
+        const schemaProps = (schema.properties || {}) as Record<string, unknown>;
+        const extensions = (schemaProps?.extensions as Record<string, unknown>)?.properties;
         if (extensions) {
           console.log(chalk.cyan('\nSupported platform extensions:'));
           Object.keys(extensions).forEach((ext) => {
@@ -103,10 +83,7 @@ export const schemaCommand = new Command('schema')
 
         process.exit(0);
       } catch (error) {
-        console.error(
-          chalk.red('Error:'),
-          error instanceof Error ? error.message : String(error)
-        );
+        console.error(chalk.red('Error:'), error instanceof Error ? error.message : String(error));
         process.exit(1);
       }
     }
