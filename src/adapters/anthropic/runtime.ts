@@ -209,7 +209,7 @@ export class AnthropicAdapter {
 
       // Check for tool use
       const toolUseBlocks = response.content.filter(
-        (block: { type: string; [key: string]: unknown }) => block.type === 'tool_use'
+        (block) => block.type === 'tool_use'
       );
 
       if (toolUseBlocks.length > 0) {
@@ -269,12 +269,12 @@ export class AnthropicAdapter {
 
       // Extract text response
       const textBlocks = response.content.filter(
-        (block: { type: string; [key: string]: unknown }) => block.type === 'text'
+        (block) => block.type === 'text'
       );
 
       if (textBlocks.length > 0) {
         finalText = textBlocks
-          .map((block: { type: string; [key: string]: unknown }) => (block.type === 'text' ? block.text : ''))
+          .map((block) => (block.type === 'text' ? (block as { text: string }).text : ''))
           .join('\n');
         break;
       }
@@ -292,7 +292,7 @@ export class AnthropicAdapter {
     })) as OssaMessage[];
 
     // Calculate cost
-    const stats = this.client.getStats();
+    const stats = { totalCost: 0 }; // Stats not available with direct SDK
 
     return {
       text: finalText,
@@ -325,7 +325,7 @@ export class AnthropicAdapter {
     return {
       name: this.agent.metadata?.name || 'unnamed',
       version: this.agent.metadata?.version || '1.0.0',
-      model: config.model,
+      model: config.model || 'claude-3-5-sonnet-20241022',
       provider: 'anthropic',
       tools,
       role: this.agent.spec?.role || 'assistant',
