@@ -4,6 +4,7 @@
  */
 
 import Anthropic from '@anthropic-ai/sdk';
+import { AnthropicClient } from './client.js';
 import type { MessageParam } from '@anthropic-ai/sdk/resources/messages';
 import type { OssaAgent } from '../../types/index.js';
 import { ToolMapper } from './tools.js';
@@ -363,24 +364,13 @@ export class AnthropicAdapter {
   /**
    * Get the underlying client
    */
-  getClient(): Anthropic & { getConfig: () => AnthropicConfig; getStats: () => { requestCount: number; totalInputTokens: number; totalOutputTokens: number }; updateConfig: (config: Partial<AnthropicConfig>) => void } {
-    const adapter = this;
-    return Object.assign(this.client, {
-      getConfig(): AnthropicConfig {
-        const agentConfig = adapter.extractAgentConfig();
-        return {
-          apiKey: process.env.ANTHROPIC_API_KEY || '',
-          model: agentConfig.model || 'claude-3-5-sonnet-20241022',
-          temperature: agentConfig.temperature,
-          maxTokens: agentConfig.maxTokens,
-        } as AnthropicConfig;
-      },
-      getStats() {
-        return { requestCount: 0, totalInputTokens: 0, totalOutputTokens: 0 };
-      },
-      updateConfig(config: Partial<AnthropicConfig>) {
-        adapter.updateConfig(config);
-      },
+  getClient(): AnthropicClient {
+    const agentConfig = this.extractAgentConfig();
+    return new AnthropicClient({
+      apiKey: process.env.ANTHROPIC_API_KEY || '',
+      model: agentConfig.model || 'claude-3-5-sonnet-20241022',
+      temperature: agentConfig.temperature,
+      maxTokens: agentConfig.maxTokens,
     });
   }
 

@@ -467,8 +467,8 @@ export class AnthropicClient {
 
   constructor(config: AnthropicConfig) {
     // Validate config
-    if (config.temperature !== undefined && (config.temperature < 0 || config.temperature > 2)) {
-      throw new Error('Temperature must be between 0 and 2');
+    if (config.temperature !== undefined && (config.temperature < 0 || config.temperature > 1)) {
+      throw new Error('Temperature must be between 0 and 1');
     }
     this.config = { ...config };
   }

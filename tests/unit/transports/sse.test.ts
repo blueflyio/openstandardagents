@@ -139,7 +139,10 @@ describe('SSETransport', () => {
     });
 
     it('should receive message events', (done) => {
+      let called = false;
       transport.on('message', (event) => {
+        if (called) return;
+        called = true;
         expect(event.type).toBe('message');
         expect(event.payload).toEqual({ channel: 'test', data: 'value' });
         done();
@@ -291,7 +294,10 @@ describe('SSETransport', () => {
         reconnect: { enabled: true, maxAttempts: 3 },
       });
 
+      let called = false;
       reconnectTransport.on('reconnecting', (attempt) => {
+        if (called) return;
+        called = true;
         expect(attempt).toBe(1);
         reconnectTransport.disconnect();
         done();
