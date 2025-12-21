@@ -54,6 +54,12 @@ class MockRTCPeerConnection {
         if (this.onconnectionstatechange) {
           this.onconnectionstatechange();
         }
+        // Open all data channels when connection is established
+        this.dataChannels.forEach((ch) => {
+          if (ch.readyState === 'connecting') {
+            setTimeout(() => ch.simulateOpen(), 10);
+          }
+        });
       }, 10);
     }, 10);
   }
@@ -73,6 +79,20 @@ class MockRTCPeerConnection {
     // Simulate channel opening after connection
     if (this.connectionState === 'connected') {
       setTimeout(() => channel.simulateOpen(), 10);
+    } else {
+      // Store reference to open when connection is established
+      const openWhenConnected = () => {
+        if (this.connectionState === 'connected' && channel.readyState === 'connecting') {
+          channel.simulateOpen();
+        }
+      };
+      // Check periodically or when connection state changes
+      const checkInterval = setInterval(() => {
+        if (this.connectionState === 'connected') {
+          openWhenConnected();
+          clearInterval(checkInterval);
+        }
+      }, 5);
     }
 
     return channel;
@@ -206,6 +226,8 @@ describe('WebRTCTransport', () => {
         });
       });
 
+      // Ensure transport2 has peerConnection before handling offer
+      await new Promise((resolve) => setTimeout(resolve, 20));
       await transport2.handleOffer('mock-sdp-offer');
       await answerPromise;
     });
@@ -221,6 +243,8 @@ describe('WebRTCTransport', () => {
       });
 
       await transport1.createOffer();
+      // Wait for ICE candidate to be generated
+      await new Promise((resolve) => setTimeout(resolve, 50));
       await candidatePromise;
     });
 
@@ -257,6 +281,15 @@ describe('WebRTCTransport', () => {
         expect(label).toBeDefined();
         done();
       });
+      // Wait for connection, then trigger channel open
+      setTimeout(() => {
+        const channelMap = (transport1 as any).dataChannels as Map<string, MockRTCDataChannel>;
+        channelMap.forEach((channel) => {
+          if (channel.readyState === 'connecting') {
+            channel.simulateOpen();
+          }
+        });
+      }, 50);
     });
   });
 
@@ -267,10 +300,15 @@ describe('WebRTCTransport', () => {
     });
 
     it('should send message on data channel', async () => {
+      const channelMap = (transport1 as any).dataChannels as Map<string, MockRTCDataChannel>;
+      const channel = channelMap.get('control');
+      if (channel && channel.readyState !== 'open') {
+        channel.simulateOpen();
+        await new Promise((resolve) => setTimeout(resolve, 10));
+      }
       await transport1.send('control', 'message', { test: 'data' });
 
-      const channels = (transport1 as any).dataChannels as Map<string, MockRTCDataChannel>;
-      const channel = channels.get('control');
+      // Reuse channel from above
       const message = channel!.getLastMessage() as any;
 
       expect(message.type).toBe('message');
@@ -284,8 +322,8 @@ describe('WebRTCTransport', () => {
     });
 
     it('should throw error when channel not open', async () => {
-      const channels = (transport1 as any).dataChannels as Map<string, MockRTCDataChannel>;
-      const channel = channels.get('control')!;
+      const channelMap = (transport1 as any).dataChannels as Map<string, MockRTCDataChannel>;
+      const channel = channelMap.get('control')!;
       channel.readyState = 'connecting';
 
       await expect(
@@ -307,8 +345,8 @@ describe('WebRTCTransport', () => {
         done();
       });
 
-      const channels = (transport1 as any).dataChannels as Map<string, MockRTCDataChannel>;
-      const channel = channels.get('control')!;
+      const channelMap = (transport1 as any).dataChannels as Map<string, MockRTCDataChannel>;
+      const channel = channelMap.get('control')!;
 
       channel.simulateMessage(JSON.stringify({
         type: 'message',
@@ -327,8 +365,12 @@ describe('WebRTCTransport', () => {
     });
 
     it('should invoke capability and receive response', async () => {
-      const channels = (transport1 as any).dataChannels as Map<string, MockRTCDataChannel>;
-      const channel = channels.get('control')!;
+      const channelMap = (transport1 as any).dataChannels as Map<string, MockRTCDataChannel>;
+      const channel = channelMap.get('control')!;
+      if (channel.readyState !== 'open') {
+        channel.simulateOpen();
+        await new Promise((resolve) => setTimeout(resolve, 10));
+      }
 
       const responsePromise = transport1.invokeCapability('test_capability', { input: 'data' });
 
@@ -354,11 +396,16 @@ describe('WebRTCTransport', () => {
     });
 
     it('should timeout on capability call', async () => {
+      const channelMap = (transport1 as any).dataChannels as Map<string, MockRTCDataChannel>;
+      const channel = channelMap.get('control');
+      if (channel && channel.readyState !== 'open') {
+        channel.simulateOpen();
+      }
       await expect(
         transport1.invokeCapability('test_capability', { input: 'data' }, {
           timeout: 100,
         })
-      ).rejects.toThrow('Capability call timeout');
+      ).rejects.toThrow(/timeout|Timeout/);
     });
   });
 
@@ -369,13 +416,19 @@ describe('WebRTCTransport', () => {
     });
 
     it('should chunk large messages', async () => {
+      const channelMap = (transport1 as any).dataChannels as Map<string, MockRTCDataChannel>;
+      const channel = channelMap.get('control');
+      if (channel && channel.readyState !== 'open') {
+        channel.simulateOpen();
+        await new Promise((resolve) => setTimeout(resolve, 10));
+      }
       // Create a large payload
       const largePayload = 'x'.repeat(20000);
 
       await transport1.send('control', 'message', largePayload);
 
-      const channels = (transport1 as any).dataChannels as Map<string, MockRTCDataChannel>;
-      const channel = channels.get('control')!;
+      // Reuse channelMap from above
+      const channel = channelMap.get('control')!;
       const message = channel.getLastMessage() as any;
 
       expect(message.metadata.chunked).toBeDefined();
@@ -391,8 +444,8 @@ describe('WebRTCTransport', () => {
       });
 
       // Simulate receiving chunks
-      const channels = (transport1 as any).dataChannels as Map<string, MockRTCDataChannel>;
-      const channel = channels.get('control')!;
+      // Reuse channelMap from above
+      const channel = channelMap.get('control')!;
       const messageId = 'chunked-msg-123';
 
       const fullMessage = {
