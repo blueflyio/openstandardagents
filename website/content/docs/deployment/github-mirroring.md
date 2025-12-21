@@ -436,11 +436,7 @@ GitHub protection ensures that:
 
 ```bash
 # Clone both repositories
-<<<<<<< HEAD
 git clone https://gitlab.com/blueflyio/openstandardagents.git gitlab-repo
-=======
-git clone https://github.com/blueflyio/openstandardagents.git gitlab-repo
->>>>>>> e4ff4b7 (fix: revert GitHub URLs in github-mirroring.md)
 git clone https://github.com/blueflyio/openstandardagents.git github-repo
 
 # Compare latest commits
@@ -910,11 +906,7 @@ monitor:mirror:
 ## Support
 
 **Issues:**
-<<<<<<< HEAD
 - GitLab: https://gitlab.com/blueflyio/openstandardagents/-/issues
-=======
-- GitLab: https://github.com/blueflyio/openstandardagents/-/issues
->>>>>>> e4ff4b7 (fix: revert GitHub URLs in github-mirroring.md)
 - GitHub: https://github.com/blueflyio/openstandardagents/issues
 
 **Documentation:**
