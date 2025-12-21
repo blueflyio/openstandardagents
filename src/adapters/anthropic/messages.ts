@@ -84,7 +84,7 @@ export function convertToAnthropicMessages(
           type: 'image',
           source: {
             type: 'base64',
-            media_type: block.mediaType || mediaType.split(':')[1].split(';')[0],
+            media_type: (block.mediaType || mediaType.split(':')[1].split(';')[0]) as 'image/jpeg' | 'image/png' | 'image/gif' | 'image/webp',
             data: data || block.source,
           },
         });

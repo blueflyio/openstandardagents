@@ -207,7 +207,7 @@ export class AnthropicAdapter {
 
       // Check for tool use
       const toolUseBlocks = response.content.filter(
-        (block) => block.type === 'tool_use'
+        (block: { type: string; [key: string]: unknown }) => block.type === 'tool_use'
       );
 
       if (toolUseBlocks.length > 0) {
@@ -267,7 +267,7 @@ export class AnthropicAdapter {
 
       // Extract text response
       const textBlocks = response.content.filter(
-        (block) => block.type === 'text'
+        (block: { type: string; [key: string]: unknown }) => block.type === 'text'
       );
 
       if (textBlocks.length > 0) {
