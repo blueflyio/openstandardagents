@@ -349,8 +349,16 @@ describe('WebSocketTransport', () => {
       // Error should have been emitted
       expect(errorFired).toBe(true);
       
-      // Connection promise should reject (with Event object)
-      await expect(connectPromise).rejects.toBeDefined();
+      // Connection promise should reject - catch it properly
+      let rejected = false;
+      try {
+        await connectPromise;
+      } catch (error) {
+        rejected = true;
+        // Event object is expected
+        expect(error).toBeDefined();
+      }
+      expect(rejected).toBe(true);
     });
 
     it('should emit error events', (done) => {
