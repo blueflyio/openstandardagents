@@ -204,7 +204,7 @@ export class SSETransport extends EventEmitter {
     const url = new URL(this.config.url);
 
     // Add channels if specified
-    if (this.config.channels.length > 0) {
+    if (this.config.channels && this.config.channels.length > 0) {
       url.searchParams.set('channels', this.config.channels.join(','));
     }
 
