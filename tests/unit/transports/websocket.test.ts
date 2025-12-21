@@ -35,12 +35,22 @@ class MockWebSocket {
 
   constructor(public url: string) {
     // Simulate async connection
-    setTimeout(() => {
-      this.readyState = MockWebSocket.OPEN;
-      if (this.onopen) {
-        this.onopen(new Event('open'));
-      }
-    }, 10);
+    if (url.includes('invalid')) {
+      // Fire error immediately for invalid URLs
+      setTimeout(() => {
+        this.readyState = MockWebSocket.CLOSED;
+        if (this.onerror) {
+          this.onerror(new Event('error'));
+        }
+      }, 5);
+    } else {
+      setTimeout(() => {
+        this.readyState = MockWebSocket.OPEN;
+        if (this.onopen) {
+          this.onopen(new Event('open'));
+        }
+      }, 10);
+    }
   }
 
   send(data: string): void {
