@@ -56,8 +56,8 @@ Research migration patterns:
 
 ### Papers & Publications
 
-- OSSA Specification: [spec/v0.2.x/ossa-0.2.x.schema.json](https://gitlab.com/blueflyio/openstandardagents/blob/main/spec/v0.3.0/ossa-0.3.0.schema.json) (latest v0.2.x schema)
-- Examples Library: [examples/](https://gitlab.com/blueflyio/openstandardagents/tree/main/examples)
+- OSSA Specification: [spec/v0.2.x/ossa-0.2.x.schema.json](https://github.com/blueflyio/openstandardagents/blob/main/spec/v0.3.0/ossa-0.3.0.schema.json) (latest v0.2.x schema)
+- Examples Library: [examples/](https://github.com/blueflyio/openstandardagents/tree/main/examples)
 
 ### Research Questions
 
@@ -84,7 +84,7 @@ Read the specification:
 ### Step 2: Study Examples
 
 Review annotated examples:
-- [Hello World Complete](https://gitlab.com/blueflyio/openstandardagents/blob/main/examples/getting-started/hello-world-complete.ossa.yaml)
+- [Hello World Complete](https://github.com/blueflyio/openstandardagents/blob/main/examples/getting-started/hello-world-complete.ossa.yaml)
 - [Integration Patterns](../Examples/Integration-Patterns)
 
 ### Step 3: Create Research Agents
@@ -118,5 +118,5 @@ We welcome research contributions:
 - [Getting Started](../Getting-Started/5-Minute-Overview)
 - [Technical Documentation](../Technical/Specification-Deep-Dive)
 - [Examples & Patterns](../Examples/Getting-Started-Examples)
-- [Repository](https://gitlab.com/blueflyio/openstandardagents)
+- [Repository](https://github.com/blueflyio/openstandardagents)
 

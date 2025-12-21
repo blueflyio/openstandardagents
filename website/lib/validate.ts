@@ -237,9 +237,9 @@ export async function validateManifest(
       });
     }
   } else {
-    warnings.push({
+    errors.push({
       path: '',
-      message: `Could not load schema for version ${schemaVersion}. Basic validation passed.`,
+      message: `Could not load any schema. Check your connection or try again.`,
       keyword: 'schema'
     });
   }
