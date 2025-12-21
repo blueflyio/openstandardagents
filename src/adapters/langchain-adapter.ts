@@ -7,6 +7,7 @@ import type { OssaAgent } from '../types/index.js';
 
 export interface LangChainAgent {
   type: 'agent';
+  chain_type?: string;
   agent_type:
     | 'zero-shot-react-description'
     | 'conversational-react-description'
@@ -49,6 +50,7 @@ export class LangChainAdapter {
 
     return {
       type: 'agent',
+      chain_type: 'llm',
       agent_type: agentType,
       tools: langchainTools,
       llm: {
