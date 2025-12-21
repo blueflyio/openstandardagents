@@ -6,6 +6,7 @@
 import type { OssaAgent } from '../types/index.js';
 
 export interface CrewAIAgent {
+  agent_type?: string;
   role: string;
   goal: string;
   backstory: string;
@@ -52,6 +53,7 @@ export class CrewAIAdapter {
     const crewaiTools = tools.map((tool: any) => tool.name || 'unknown_tool');
 
     return {
+      agent_type: 'custom',
       role,
       goal,
       backstory,
@@ -219,3 +221,4 @@ if __name__ == "__main__":
 }
 
 export default CrewAIAdapter;
+// Force CI rebuild
