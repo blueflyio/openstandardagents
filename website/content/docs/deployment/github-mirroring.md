@@ -581,7 +581,7 @@ error: failed to push some refs
 3. **Manual sync (emergency only):**
    ```bash
    # Clone GitLab repo
-   git clone https://gitlab.com/blueflyio/openstandardagents.git
+   git clone https://github.com/blueflyio/openstandardagents.git
    cd openstandardagents
    
    # Add GitHub remote
@@ -663,7 +663,7 @@ CONFLICT (content): Merge conflict in <file>
 
 1. **Verify tag exists on GitLab:**
    ```bash
-   git ls-remote --tags https://gitlab.com/blueflyio/openstandardagents.git
+   git ls-remote --tags https://github.com/blueflyio/openstandardagents.git
    ```
 
 2. **Force sync tags:**
@@ -911,7 +911,7 @@ monitor:mirror:
 
 **Documentation:**
 - Website: https://openstandardagents.org
-- GitLab Wiki: https://gitlab.com/blueflyio/openstandardagents/-/wikis/home
+- GitLab Wiki: https://github.com/blueflyio/openstandardagents/-/wikis/home
 
 **Contact:**
 - Email: support@bluefly.io
