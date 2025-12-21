@@ -308,7 +308,7 @@ describe('WebRTCTransport', () => {
       }
       await transport1.send('control', 'message', { test: 'data' });
 
-      const channelMap = (transport1 as any).dataChannels as Map<string, MockRTCDataChannel>;
+      // Reuse channelMap from above
       const channel = channelMap.get('control');
       const message = channel!.getLastMessage() as any;
 
