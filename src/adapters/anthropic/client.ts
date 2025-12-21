@@ -4,6 +4,7 @@
  */
 
 import type { Tool } from '@anthropic-ai/sdk/resources/messages';
+import type { AnthropicConfig } from './config.js';
 import type { OssaAgent } from '../../types/index.js';
 
 /**
@@ -450,3 +451,45 @@ export const COMMON_TOOLS = {
     ['url']
   ),
 } as const;
+
+
+/**
+ * Anthropic Client Wrapper
+ * Provides compatibility layer for tests and legacy code
+ */
+export class AnthropicClient {
+  private config: AnthropicConfig;
+  private stats = {
+    requestCount: 0,
+    totalInputTokens: 0,
+    totalOutputTokens: 0,
+  };
+
+  constructor(config: AnthropicConfig) {
+    // Validate config
+    if (config.temperature !== undefined && (config.temperature < 0 || config.temperature > 2)) {
+      throw new Error('Temperature must be between 0 and 2');
+    }
+    this.config = { ...config };
+  }
+
+  getConfig(): AnthropicConfig {
+    return { ...this.config };
+  }
+
+  getStats() {
+    return { ...this.stats };
+  }
+
+  resetStats(): void {
+    this.stats = {
+      requestCount: 0,
+      totalInputTokens: 0,
+      totalOutputTokens: 0,
+    };
+  }
+
+  updateConfig(config: Partial<AnthropicConfig>): void {
+    this.config = { ...this.config, ...config };
+  }
+}

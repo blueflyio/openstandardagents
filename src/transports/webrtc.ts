@@ -132,10 +132,11 @@ export class WebRTCTransport extends EventEmitter {
    */
   async createOffer(): Promise<void> {
     this.createPeerConnection();
+    if (!this.peerConnection) throw new Error('Failed to create peer connection');
     this.createDataChannels();
 
-    const offer = await this.peerConnection!.createOffer();
-    await this.peerConnection!.setLocalDescription(offer);
+    const offer = await this.peerConnection.createOffer();
+    await this.peerConnection.setLocalDescription(offer);
 
     this.config.signaling.emit('message', {
       type: 'offer',
@@ -151,14 +152,15 @@ export class WebRTCTransport extends EventEmitter {
    */
   async handleOffer(sdp: string): Promise<void> {
     this.createPeerConnection();
+    if (!this.peerConnection) throw new Error('Failed to create peer connection');
 
-    await this.peerConnection!.setRemoteDescription({
+    await this.peerConnection.setRemoteDescription({
       type: 'offer',
       sdp,
     });
 
-    const answer = await this.peerConnection!.createAnswer();
-    await this.peerConnection!.setLocalDescription(answer);
+    const answer = await this.peerConnection.createAnswer();
+    await this.peerConnection.setLocalDescription(answer);
 
     this.config.signaling.emit('message', {
       type: 'answer',
@@ -172,7 +174,8 @@ export class WebRTCTransport extends EventEmitter {
    * Handle incoming answer
    */
   async handleAnswer(sdp: string): Promise<void> {
-    await this.peerConnection!.setRemoteDescription({
+    if (!this.peerConnection) throw new Error('Peer connection not initialized');
+    await this.peerConnection.setRemoteDescription({
       type: 'answer',
       sdp,
     });
@@ -370,8 +373,10 @@ export class WebRTCTransport extends EventEmitter {
    * Create data channels
    */
   private createDataChannels(): void {
+    if (!this.peerConnection) throw new Error('Peer connection not initialized');
     this.config.channels.forEach((channelConfig) => {
-      const channel = this.peerConnection!.createDataChannel(
+      if (!this.peerConnection) throw new Error('Peer connection not initialized');
+      const channel = this.peerConnection.createDataChannel(
         channelConfig.label,
         {
           ordered: channelConfig.ordered,
