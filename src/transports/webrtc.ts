@@ -174,7 +174,14 @@ export class WebRTCTransport extends EventEmitter {
    * Handle incoming answer
    */
   async handleAnswer(sdp: string): Promise<void> {
-    if (!this.peerConnection) throw new Error('Peer connection not initialized');
+    if (!this.peerConnection) {
+      // If peer connection doesn't exist, create it first
+      // This can happen if answer arrives before offer is fully processed
+      this.createPeerConnection();
+      if (!this.peerConnection) {
+        throw new Error('Peer connection not initialized');
+      }
+    }
     await this.peerConnection.setRemoteDescription({
       type: 'answer',
       sdp,

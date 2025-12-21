@@ -103,8 +103,8 @@ export abstract class AbstractMessageBroker implements MessageBroker {
       throw new Error('Message payload is required');
     }
 
-    // Validate channel name format
-    const channelPattern = /^agents\.(([a-z0-9-]+|\*)\\.)+([a-z0-9-]+|#)$/;
+    // Validate channel name format (e.g., agents.test.message, agents.*.broadcast, agents.test.#)
+    const channelPattern = /^agents\.([a-z0-9-]+|\*)(\.([a-z0-9-]+|\*|#))*$/;
     if (!channelPattern.test(message.channel)) {
       throw new Error(`Invalid channel name: ${message.channel}`);
     }

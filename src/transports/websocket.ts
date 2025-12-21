@@ -125,6 +125,7 @@ export class WebSocketTransport extends EventEmitter {
   private reconnectAttempt = 0;
   private reconnectTimer?: NodeJS.Timeout;
   private pingTimer?: NodeJS.Timeout;
+  private keepaliveActive = false;
   private pongTimer?: NodeJS.Timeout;
   private missedPongs = 0;
   private messageQueue: WebSocketEvent[] = [];
@@ -194,6 +195,7 @@ export class WebSocketTransport extends EventEmitter {
    * Disconnect from WebSocket server
    */
   async disconnect(): Promise<void> {
+    // Stop keepalive first to prevent new timers
     this.stopKeepalive();
     this.stopReconnect();
 
@@ -208,6 +210,9 @@ export class WebSocketTransport extends EventEmitter {
       reject(new Error('Connection closed'));
     });
     this.pendingAcks.clear();
+    
+    // Small delay to ensure all timer callbacks have completed
+    await new Promise((resolve) => setTimeout(resolve, 10));
   }
 
   /**
@@ -449,9 +454,17 @@ export class WebSocketTransport extends EventEmitter {
    * Start keepalive ping/pong
    */
   private startKeepalive(): void {
+    this.keepaliveActive = true;
     this.pingTimer = setInterval(() => {
+      // Don't send ping if keepalive is not active or not connected
+      if (!this.keepaliveActive || !this.isConnected()) {
+        return;
+      }
+      
       if (this.missedPongs >= (this.config.keepalive?.maxMissedPongs || 3)) {
-        this.emit('error', new Error('Keepalive timeout'));
+        if (this.listenerCount('error') > 0) {
+          this.emit('error', new Error('Keepalive timeout'));
+        }
         this.ws?.close();
         return;
       }
@@ -467,7 +480,16 @@ export class WebSocketTransport extends EventEmitter {
       this.missedPongs++;
 
       this.pongTimer = setTimeout(() => {
-        this.emit('error', new Error('Pong timeout'));
+        // Only emit error if keepalive is still active, connection is still open, timer wasn't cleared, AND there are listeners
+        if (this.keepaliveActive && this.isConnected() && this.pongTimer) {
+          // Check if there are any error listeners to prevent unhandled errors
+          if (this.listenerCount('error') > 0) {
+            this.emit('error', new Error('Pong timeout'));
+          } else {
+            // No listeners - just log instead of emitting unhandled error
+            console.warn('Pong timeout (no error listeners registered)');
+          }
+        }
       }, this.config.keepalive?.pongTimeout || 5000);
     }, this.config.keepalive?.pingInterval || 30000);
   }
@@ -476,6 +498,9 @@ export class WebSocketTransport extends EventEmitter {
    * Stop keepalive timers
    */
   private stopKeepalive(): void {
+    // Set flag to false FIRST to prevent any queued callbacks from executing
+    this.keepaliveActive = false;
+    
     if (this.pingTimer) {
       clearInterval(this.pingTimer);
       this.pingTimer = undefined;
@@ -485,6 +510,9 @@ export class WebSocketTransport extends EventEmitter {
       clearTimeout(this.pongTimer);
       this.pongTimer = undefined;
     }
+    
+    // Reset missed pongs counter
+    this.missedPongs = 0;
   }
 
   /**
