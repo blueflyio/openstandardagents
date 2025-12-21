@@ -59,6 +59,7 @@ const config: Config = {
   setupFilesAfterEnv: ['<rootDir>/tests/setup.ts'],
   verbose: true,
   testTimeout: 10000,
+  forceExit: true,
 };
 
 export default config;

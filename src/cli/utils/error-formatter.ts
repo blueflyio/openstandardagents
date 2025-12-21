@@ -185,41 +185,10 @@ function formatError(error: ErrorObject, index: number, manifest?: unknown): str
         lines.push('');
       }
 
-      // Add example
-      lines.push(chalk.gray('   Example:'));
-      lines.push(chalk.gray(`      ${missingProp}: <value>`));
-      break;
-    }
-
-    case 'enum': {
-      const allowedValues = error.params?.allowedValues as string[];
-      const invalidValue = actualValue;
-
-      lines.push(chalk.red(`   Invalid value: ${chalk.bold(JSON.stringify(invalidValue))}`));
-      lines.push('');
-      lines.push(chalk.cyan('   Expected one of:'));
-      allowedValues.forEach((val) => {
-        lines.push(chalk.cyan(`      • ${val}`));
-      });
-      lines.push('');
-
-      // Try to suggest the closest match
-      if (typeof invalidValue === 'string') {
-        const suggestion = findClosestMatch(invalidValue, allowedValues);
-        if (suggestion) {
-          lines.push(chalk.yellow(`   💡 Did you mean "${chalk.bold(suggestion)}"?`));
-          lines.push('');
-        }
-
-        // Special case: provider suggestions
-        if (fieldName === 'provider' && invalidValue.toLowerCase().includes('claude')) {
-          lines.push(chalk.yellow(`   💡 Claude models use provider: ${chalk.bold('anthropic')}`));
-          lines.push('');
-        }
-        if (fieldName === 'provider' && invalidValue.toLowerCase().includes('gpt')) {
-          lines.push(chalk.yellow(`   💡 GPT models use provider: ${chalk.bold('openai')}`));
-          lines.push('');
-        }
+      {
+        // Add example
+        lines.push(chalk.gray('   Example:'));
+        lines.push(chalk.gray(`      ${missingProp}: <value>`));
       }
       break;
     }
