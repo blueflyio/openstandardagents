@@ -308,9 +308,8 @@ describe('WebRTCTransport', () => {
       }
       await transport1.send('control', 'message', { test: 'data' });
 
-      // Reuse channelMap and channel from above
-      const messageChannel = channelMap.get('control');
-      const message = messageChannel!.getLastMessage() as any;
+      // Reuse channel from above
+      const message = channel!.getLastMessage() as any;
 
       expect(message.type).toBe('message');
       expect(message.payload).toEqual({ test: 'data' });
