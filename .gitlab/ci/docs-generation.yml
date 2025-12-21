@@ -14,7 +14,7 @@ docs:generate:
     # Generate API documentation, CLI docs, schema docs, etc.
     - npm run docs:generate
 
-    # Process templates - replaces {{VERSION}}, {{LAST_UPDATED}}, etc.
+    # Process templates - replaces 0.3.0, {{LAST_UPDATED}}, etc.
     - echo "📝 Processing documentation templates..."
     - npm run docs:process
 

@@ -436,7 +436,7 @@ function main(): void {
   console.log(`📦 Current version: ${version}`);
   console.log(`🔧 Mode: ${config.mode.toUpperCase()}\n`);
 
-  // Handle template versions (e.g., {{VERSION}})
+  // Handle template versions (e.g., 0.3.0)
   if (isTemplateVersion(version)) {
     console.log('ℹ️  Template version detected - skipping version sync operations');
     console.log('   (Template versions are managed by CI/CD automation)\n');

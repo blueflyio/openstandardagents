@@ -30,7 +30,7 @@ const PackageJsonSchema = z.object({
  *
  * Priority:
  * 1. .version.json (always has real version)
- * 2. package.json (may have {{VERSION}} placeholder in CI)
+ * 2. package.json (may have 0.3.0 placeholder in CI)
  */
 export function getCurrentVersion(): string {
   // Try .version.json first (source of truth)
@@ -50,8 +50,8 @@ export function getCurrentVersion(): string {
     const pkg = PackageJsonSchema.parse(JSON.parse(pkgRaw));
 
     // Check for CI placeholder
-    if (pkg.version === '{{VERSION}}') {
-      throw new Error('package.json has {{VERSION}} placeholder. Create .version.json with "current" field.');
+    if (pkg.version === '0.3.0') {
+      throw new Error('package.json has 0.3.0 placeholder. Create .version.json with "current" field.');
     }
 
     if (!SemverPattern.test(pkg.version)) {

@@ -16,7 +16,7 @@ const lastUpdated = new Date().toISOString().split('T')[0];
 const specVersion = versionConfig.spec_version || versionConfig.current;
 
 const replacements = {
-  '{{VERSION}}': versionConfig.current,
+  '0.3.0': versionConfig.current,
   '{{VERSION_STABLE}}': versionConfig.latest_stable,
   '{{SPEC_VERSION}}': specVersion,
   '{{LAST_UPDATED}}': lastUpdated,

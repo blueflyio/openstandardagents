@@ -38,7 +38,7 @@ spec:
        - OpenAPI specifications
        - CHANGELOG.md
        - RELEASING.md
-    3. Process {{VERSION}} placeholders in documentation templates
+    3. Process 0.3.0 placeholders in documentation templates
     4. Create spec directories for new versions
     5. Validate version consistency across all files
     6. Create GitLab merge requests for version updates
