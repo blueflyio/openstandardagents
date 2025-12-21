@@ -181,7 +181,7 @@ export class AnthropicAdapter {
 
       // Create message
       const response = await this.client.messages.create({
-        model: this.agent.spec?.runtime?.model || 'claude-3-5-sonnet-20241022',
+        model: this.agent.spec?.llm?.model || 'claude-3-5-sonnet-20241022',
         max_tokens: options?.maxTokens || 4096,
         system: systemPrompt,
         messages: conversationMessages,
@@ -378,7 +378,8 @@ export class AnthropicAdapter {
    * Update configuration
    */
   updateConfig(config: Partial<AnthropicConfig>): void {
-    this.client.updateConfig(config);
+    // Config updates require recreating client - not implemented
+    // TODO: Implement config update by recreating client
   }
 
   /**
