@@ -70,7 +70,8 @@ export class ToolMapper {
     if (agent.spec?.tools) {
       for (const tool of agent.spec.tools) {
         if (tool.type === 'function' && tool.name && typeof tool.name === 'string') {
-          const anthropicTool = this.convertFunctionToTool(tool);
+          const toolName = tool.name;
+          const anthropicTool = this.convertFunctionToTool({ ...tool, name: toolName });
           tools.push(anthropicTool);
 
           this.tools.set(tool.name, {
