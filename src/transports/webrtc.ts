@@ -323,7 +323,7 @@ export class WebRTCTransport extends EventEmitter {
     this.peerConnection = new RTCPeerConnection(config);
 
     // ICE candidate handler
-    this.peerConnection.onicecandidate = (event) => {
+    this.peerConnection.onicecandidate = (event: RTCPeerConnectionIceEvent) => {
       if (event.candidate) {
         this.config.signaling.emit('message', {
           type: 'ice-candidate',
@@ -360,7 +360,7 @@ export class WebRTCTransport extends EventEmitter {
     };
 
     // Data channel handler (for answerer)
-    this.peerConnection.ondatachannel = (event) => {
+    this.peerConnection.ondatachannel = (event: RTCDataChannelEvent) => {
       this.setupDataChannel(event.channel);
     };
   }
