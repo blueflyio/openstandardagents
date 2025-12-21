@@ -239,7 +239,7 @@ content:author-draft:
           draft_content = response.content[0].text
 
           # Create branch and commit
-          branch_name = f"content/{issue.iid}-draft"
+          branch_name = f"feature/content-{issue.iid}-draft"
           filename = f"website/content/blog/{datetime.now().strftime('%Y-%m-%d')}-{issue.iid}.md"
 
           try:

@@ -69,8 +69,8 @@ All OSSA migrations share common patterns:
 
 ## Getting Help
 
-- **Documentation**: [OSSA Wiki](https://github.com/blueflyio/openstandardagents/wiki/home)
-- **Issues**: [GitHub Issues](https://github.com/blueflyio/openstandardagents/issues)
-- **Discord**: [OSSA Community](https://github.com/blueflyio/openstandardagents/discussions)
+- **Documentation**: [OSSA Wiki](https://gitlab.com/blueflyio/openstandardagents/wiki/home)
+- **Issues**: [GitHub Issues](https://gitlab.com/blueflyio/openstandardagents/-/issues)
+- **Discord**: [OSSA Community](https://gitlab.com/blueflyio/openstandardagents/discussions)
 
 Ready to migrate? Choose your framework above and get started!
