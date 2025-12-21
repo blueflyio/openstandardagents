@@ -169,7 +169,7 @@ export function validateConfig(
   const errors: string[] = [];
 
   // Validate API key
-  if (!config.apiKey) {
+  if (!config.apiKey || config.apiKey.trim() === '') {
     errors.push(
       'API key is required. Set ANTHROPIC_API_KEY env var or pass apiKey in config'
     );

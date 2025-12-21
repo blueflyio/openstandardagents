@@ -6,6 +6,7 @@ import addFormats from 'ajv-formats';
 import * as fs from 'fs';
 import * as path from 'path';
 import { isOssaWorkflow, createWorkflowManifest, createStep, expr } from '../../src/types/workflow';
+import { getApiVersion } from '../../src/utils/version.js';
 
 describe('OSSA v0.3.0 Workflow Schema', () => {
   let ajv: Ajv;
