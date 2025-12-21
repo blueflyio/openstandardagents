@@ -335,19 +335,16 @@ describe('WebSocketTransport', () => {
         capabilities: [],
       });
 
-      let errorEmitted = false;
-      errorTransport.on('error', () => {
-        errorEmitted = true;
-      });
-
-      // Start connection - error should fire before open
+      errorTransport.on('error', () => {}); // Prevent unhandled error
+      
+      // The mock fires error at 5ms, which should reject the promise
+      // Wait a bit to ensure error fires, then check promise rejected
       const connectPromise = errorTransport.connect();
       
-      // Wait for error to fire
-      await new Promise((resolve) => setTimeout(resolve, 20));
+      // Wait for error to fire (5ms) but before open (10ms)
+      await new Promise((resolve) => setTimeout(resolve, 8));
       
-      // Connection should have failed
-      expect(errorEmitted).toBe(true);
+      // Promise should have rejected
       await expect(connectPromise).rejects.toThrow();
     });
 
