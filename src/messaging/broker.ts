@@ -125,7 +125,7 @@ export abstract class AbstractMessageBroker implements MessageBroker {
     }
 
     for (const [key, value] of Object.entries(filter)) {
-      const messagePath = this.getNestedValue(message as Record<string, unknown>, key);
+      const messagePath = this.getNestedValue(message as unknown as Record<string, unknown>, key);
       if (messagePath !== value) {
         return false;
       }
