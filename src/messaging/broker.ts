@@ -185,12 +185,14 @@ export class BrokerFactory {
    */
   static async create(type: 'redis' | 'memory', config: Record<string, unknown>): Promise<MessageBroker> {
     switch (type) {
-      case 'redis':
+      case 'redis': {
         const { RedisMessageBroker } = await import('./protocols/redis.js');
         return new RedisMessageBroker(config);
-      case 'memory':
+      }
+      case 'memory': {
         const { MemoryMessageBroker } = await import('./protocols/memory.js');
         return new MemoryMessageBroker(config);
+      }
       default:
         throw new Error(`Unsupported transport type: ${type}`);
     }

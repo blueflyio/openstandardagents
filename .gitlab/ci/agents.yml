@@ -1,8 +1,9 @@
 # GitLab Agent Integration
-# Uses agents from blueflyio/agent-platform
+# Uses agents from blueflyio/platform-agents
 
 variables:
-  AGENT_PLATFORM_PROJECT: blueflyio/agent-platform/gitlab_components
+  # ✅ FIXED: Use correct project path
+  AGENT_PLATFORM_PROJECT: blueflyio/platform-agents
 
 # GitHub PR Sync Agent
 github:sync:agent:
@@ -27,7 +28,7 @@ github:sync:agent:
 code:review:agent:
   stage: .pre
   image: node:${NODE_VERSION}-alpine
-  allow_failure: true
+  allow_failure: false
   before_script:
     - npm ci --legacy-peer-deps
     - npm run build || (echo "⚠️  Build failed, skipping code review" && exit 0)
@@ -83,7 +84,7 @@ docs:sync:agent:
 security:scan:agent:
   stage: test
   image: node:${NODE_VERSION}-alpine
-  allow_failure: true
+  allow_failure: false
   before_script:
     - npm ci --legacy-peer-deps
     - npm run build
@@ -111,10 +112,9 @@ security:scan:agent:
       when: on_success
 
 # TypeScript Build Agent
-# Requires AGENT_PLATFORM_PROJECT variable to be set
+# ✅ FIXED: Added proper rules with when clause and allow_failure at rule level
 ts:build:agent:
   stage: build
-  allow_failure: true
   trigger:
     project: ${AGENT_PLATFORM_PROJECT}
     strategy: depend
@@ -126,7 +126,11 @@ ts:build:agent:
     - if: $AGENT_PLATFORM_PROJECT == null
       when: never
     - if: $CI_COMMIT_BRANCH == "main"
+      when: on_success
+      allow_failure: true
     - if: $CI_COMMIT_TAG
+      when: on_success
+      allow_failure: true
 
 # Deployment Agent (Infrastructure)
 deploy:infra:agent:
@@ -143,8 +147,10 @@ deploy:infra:agent:
     - if: $CI_COMMIT_BRANCH == "main"
       changes:
         - infrastructure/**/*
+      when: on_success
       allow_failure: true
     - if: $CI_COMMIT_TAG
+      when: on_success
       allow_failure: true
 
 # ML Model Deployment Agent
@@ -161,6 +167,7 @@ deploy:ml:agent:
     - if: $CI_COMMIT_BRANCH == "main"
       changes:
         - models/**/*
+      when: on_success
       allow_failure: true
 
 # Drupal Integration Agent
@@ -177,10 +184,11 @@ drupal:sync:agent:
     - if: $CI_COMMIT_BRANCH == "main"
       changes:
         - spec/**/*
+      when: on_success
       allow_failure: true
 
 # Native Build Agent
-# Requires AGENT_PLATFORM_PROJECT variable to be set
+# ✅ FIXED: Added proper rules with when clause and allow_failure at rule level
 native:build:agent:
   stage: build
   allow_failure: true
@@ -195,6 +203,8 @@ native:build:agent:
     - if: $AGENT_PLATFORM_PROJECT == null
       when: never
     - if: $CI_COMMIT_TAG
+      when: on_success
+      allow_failure: true
 
 # ============================================================================
 # WEBHOOK-TRIGGERED AGENTS
