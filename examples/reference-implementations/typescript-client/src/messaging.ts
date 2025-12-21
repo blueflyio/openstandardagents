@@ -372,7 +372,7 @@ export class MessagingClient {
       params.append('batch_size', options.batch_size.toString());
     }
 
-    const baseUrl = (this.client as any).baseUrl;
+    const baseUrl = this.client.getBaseUrl();
     return `${baseUrl}/messaging/stream?${params.toString()}`;
   }
 
@@ -380,6 +380,6 @@ export class MessagingClient {
    * Build headers for streaming
    */
   private buildHeaders(): Record<string, string> {
-    return (this.client as any).buildHeaders();
+    return this.client.buildHeaders();
   }
 }
