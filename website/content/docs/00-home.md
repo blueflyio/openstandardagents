@@ -4,11 +4,7 @@
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![npm version](https://img.shields.io/npm/v/@bluefly/openstandardagents.svg)](https://www.npmjs.com/package/@bluefly/openstandardagents)
-<<<<<<< HEAD
-[![Specification](https://img.shields.io/badge/Spec-v0.2.x-blue)](https://gitlab.com/blueflyio/openstandardagents/blob/main/spec/v0.3.0/ossa-0.3.0.schema.json)
-=======
 [![Specification](https://img.shields.io/badge/Spec-v0.3.0-blue)](https://gitlab.com/blueflyio/openstandardagents/-/blob/main/spec/v0.3.0/ossa-0.3.0.schema.json)
->>>>>>> origin/feature/37-update-docs-v030-rebased-v2
 
 ---
 

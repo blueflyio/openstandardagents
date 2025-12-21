@@ -238,7 +238,7 @@ spec:
 
 ### Enterprise Support
 
-- [GitLab Issues](https://gitlab.com/blueflyio/openstandardagents/issues)
+- [GitLab Issues](https://gitlab.com/blueflyio/openstandardagents/-/issues)
 - [Documentation](../Technical/Specification-Deep-Dive)
 - [Examples](../Examples/Enterprise-Examples)
 
