@@ -1,0 +1,109 @@
+# ============================================================================
+# FINAL RELEASE (Manual promotion from RC)
+# ============================================================================
+# Promotes RC tag to final release tag after validation
+
+release:promote-rc-to-final:
+  stage: release
+  image: alpine:latest
+  before_script:
+    - apk add --no-cache git curl jq bash
+    - git config user.email "gitlab-ci@${CI_SERVER_HOST}"
+    - git config user.name "GitLab CI"
+    - |
+      if [[ "${GITLAB_PUSH_TOKEN:0:5}" == "gldt-" ]]; then
+        git remote set-url origin "https://${DEPLOY_TOKEN_USERNAME:-gitlab+deploy-token-10466652}:${GITLAB_PUSH_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git"
+      else
+        git remote set-url origin "https://oauth2:${GITLAB_PUSH_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git"
+      fi
+    - git fetch --unshallow --tags || git fetch --tags || true
+  script:
+    - |
+      echo "PROMOTING RC TO FINAL RELEASE"
+      echo "============================="
+      
+      # Get the latest RC tag
+      LATEST_RC=$(git tag -l "v*-rc*" --sort=-v:refname | head -n1)
+      
+      if [ -z "$LATEST_RC" ]; then
+        echo "ERROR: No RC tag found to promote"
+        echo "Available RC tags:"
+        git tag -l "v*-rc*" || echo "None found"
+        exit 1
+      fi
+      
+      echo "Latest RC tag: $LATEST_RC"
+      
+      # Extract version without RC suffix
+      FINAL_VERSION=$(echo "$LATEST_RC" | sed 's/-rc.*//')
+      
+      # Check if final version already exists
+      if git tag -l | grep -qE "^${FINAL_VERSION}$"; then
+        echo "WARNING: Final tag ${FINAL_VERSION} already exists"
+        echo "Skipping promotion"
+        exit 0
+      fi
+      
+      echo "Promoting $LATEST_RC to $FINAL_VERSION"
+      
+      # Get the commit SHA for the RC tag
+      RC_COMMIT=$(git rev-list -n 1 "$LATEST_RC")
+      
+      # Create final release tag
+      git tag -a "$FINAL_VERSION" -m "Release $FINAL_VERSION (promoted from $LATEST_RC)
+
+      Promoted from: $LATEST_RC
+      Commit: $RC_COMMIT
+      Pipeline: $CI_PIPELINE_URL
+      Released: $(date -u +"%Y-%m-%dT%H:%M:%SZ")"
+      
+      # Push final tag
+      if git push origin "$FINAL_VERSION"; then
+        echo "Successfully promoted $LATEST_RC to $FINAL_VERSION"
+        
+        # Create GitLab Release
+        RELEASE_NOTES=""
+        if [ -f "CHANGELOG.md" ]; then
+          # Extract version section from CHANGELOG
+          VERSION_NUM=$(echo "$FINAL_VERSION" | sed 's/^v//')
+          RELEASE_NOTES=$(awk "/^## \[${VERSION_NUM}\]/,/^## \[/{if (/^## \[${VERSION_NUM}\]/) next; if (/^## \[/) exit; print}" CHANGELOG.md || echo "Release $FINAL_VERSION")
+        fi
+        
+        if [ -z "$RELEASE_NOTES" ] && [ -f "RELEASE_NOTES.md" ]; then
+          RELEASE_NOTES=$(cat RELEASE_NOTES.md)
+        fi
+        
+        if [ -z "$RELEASE_NOTES" ]; then
+          RELEASE_NOTES="Release $FINAL_VERSION (promoted from $LATEST_RC)"
+        fi
+        
+        RELEASE_PAYLOAD=$(jq -n \
+          --arg name "Release $FINAL_VERSION" \
+          --arg tag "$FINAL_VERSION" \
+          --arg desc "$RELEASE_NOTES" \
+          '{
+            name: $name,
+            tag_name: $tag,
+            description: $desc
+          }')
+        
+        curl --request POST \
+          --header "JOB-TOKEN: ${CI_JOB_TOKEN}" \
+          --header "Content-Type: application/json" \
+          --data "$RELEASE_PAYLOAD" \
+          "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/releases" || echo "WARNING: Failed to create GitLab Release"
+        
+        echo ""
+        echo "Release $FINAL_VERSION created successfully"
+        echo "GitLab Release: https://${CI_SERVER_HOST}/${CI_PROJECT_PATH}/-/releases/$FINAL_VERSION"
+      else
+        echo "ERROR: Failed to push final release tag"
+        exit 1
+      fi
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+      when: manual
+      allow_failure: false
+    - if: '$CI_PIPELINE_SOURCE == "trigger" && $RELEASE_RC_TO_FINAL == "true"'
+      when: on_success
+  allow_failure: false

@@ -1,6 +1,5 @@
 import { describe, it, expect, beforeEach } from '@jest/globals';
 import { MigrationService } from '../../../src/services/migration.service.js';
-import { getApiVersion } from '../../../src/utils/version';
 
 describe('MigrationService', () => {
   let service: MigrationService;
@@ -18,6 +17,7 @@ describe('MigrationService', () => {
         spec: { role: 'test' },
       };
       const result = await service.migrate(input);
+      const { getApiVersion } = require('../../../src/utils/version');
       expect(result.apiVersion).toBe(getApiVersion());
     });
 
@@ -52,6 +52,7 @@ describe('MigrationService', () => {
         },
       };
       const result = await service.migrate(v1Input);
+      const { getApiVersion } = require('../../../src/utils/version');
       expect(result.apiVersion).toBe(getApiVersion());
       expect(result.metadata.name).toBe('test-agent');
       expect(result.metadata.labels?.test).toBe('true');

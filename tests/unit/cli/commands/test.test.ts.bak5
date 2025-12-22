@@ -10,7 +10,6 @@ import {
   agentWithCapabilities,
   agentWithPolicies,
 } from '../../../../src/testing/fixtures.js';
-import { getApiVersion } from '../../../../src/utils/version';
 
 describe('Test Command Enhanced', () => {
   describe('Command Options', () => {
@@ -103,6 +102,7 @@ describe('Test Command Enhanced', () => {
   describe('Test Fixtures', () => {
     it('should provide basic agent manifest', () => {
       expect(basicAgentManifest).toBeDefined();
+      const { getApiVersion } = require('../../../../src/utils/version');
       expect(basicAgentManifest.apiVersion).toBe(getApiVersion());
       expect(basicAgentManifest.metadata?.name).toBe('test-agent');
     });
