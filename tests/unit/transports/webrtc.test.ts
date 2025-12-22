@@ -276,47 +276,40 @@ describe('WebRTCTransport', () => {
       expect(channels.has('control')).toBe(true);
     });
 
-    it('should emit channel open events', (done) => {
-      let eventReceived = false;
-      
-      transport1.on('channel:open', (label) => {
-        expect(label).toBeDefined();
-        if (!eventReceived) {
-          eventReceived = true;
-          done();
-        }
+    it('should emit channel open events', async () => {
+      const channelOpenPromise = new Promise<string>((resolve) => {
+        transport1.on('channel:open', (label) => {
+          resolve(label);
+        });
       });
-      
-      const waitForConnection = () => {
-        const pc = (transport1 as any).peerConnection as MockRTCPeerConnection;
-        const channelMap = (transport1 as any).dataChannels as Map<string, MockRTCDataChannel>;
-        
-        if (pc && pc.connectionState === 'connected') {
-          let hasConnecting = false;
-          channelMap.forEach((channel) => {
-            if (channel.readyState === 'connecting') {
-              hasConnecting = true;
-              channel.simulateOpen();
-            }
-          });
-          
-          if (!hasConnecting && channelMap.size > 0) {
-            const firstChannel = channelMap.values().next().value;
-            if (firstChannel) {
-              if (firstChannel.readyState === 'open' && !eventReceived) {
-                transport1.emit('channel:open', firstChannel.label);
-              } else if (firstChannel.readyState !== 'open') {
-                firstChannel.simulateOpen();
-              }
-            }
+
+      // Wait for connection to be established
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      // Manually trigger channel open events if not already open
+      const channelMap = (transport1 as any).dataChannels as Map<string, MockRTCDataChannel>;
+      const pc = (transport1 as any).peerConnection as MockRTCPeerConnection;
+
+      if (pc && pc.connectionState === 'connected') {
+        channelMap.forEach((channel) => {
+          if (channel.readyState === 'connecting') {
+            channel.simulateOpen();
+          } else if (channel.readyState === 'open') {
+            // Emit event for already-open channels
+            transport1.emit('channel:open', channel.label);
           }
-        } else {
-          setTimeout(waitForConnection, 20);
-        }
-      };
-      
-      setTimeout(waitForConnection, 100);
-    }, 6000);
+        });
+      }
+
+      const label = await Promise.race([
+        channelOpenPromise,
+        new Promise<string>((_, reject) =>
+          setTimeout(() => reject(new Error('Timeout waiting for channel:open event')), 5000)
+        ),
+      ]);
+
+      expect(label).toBeDefined();
+    });
   });
 
   describe('Message Sending', () => {
