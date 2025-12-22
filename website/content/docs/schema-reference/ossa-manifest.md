@@ -12,7 +12,7 @@ The root object of an OSSA agent manifest. This is the top-level container for a
 
 | Field Name | Type | Required | Description |
 |------------|------|----------|-------------|
-| `apiVersion` | string | **Yes** | OSSA API version. Must match pattern `ossa/v(0.2.[2-3]\|1)`. Examples: `ossa/v1`, `ossa/v0.2.x` |
+| `apiVersion` | string | **Yes** | OSSA API version. Must match pattern `ossa/v(0.2.[2-3]\|1)`. Examples: `ossa/v1`, `ossa/v0.3.x` |
 | `kind` | string | **Yes** | Resource type. Currently only `Agent` is supported |
 | `metadata` | [Metadata](#metadata-object) | **Yes** | Agent metadata including name, version, labels, and annotations |
 | `spec` | [AgentSpec](./agent-spec.md) | **Yes** | Agent specification defining behavior, capabilities, and configuration |
@@ -251,7 +251,7 @@ extensions:
 
 ### apiVersion Validation
 - Must match regex: `^ossa/v(0\.2\.[2-3]|1)(\.0)?(-[a-zA-Z0-9]+)?$`
-- Valid examples: `ossa/v1`, `ossa/v0.2.x`, `ossa/v0.3.0`, `ossa/v1.0`
+- Valid examples: `ossa/v1`, `ossa/v0.3.x`, `ossa/v0.3.0`, `ossa/v1.0`
 - Invalid examples: `v1`, `ossa/v2`, `ossa/0.3.0`
 
 ### kind Validation
@@ -300,8 +300,8 @@ https://openstandardagents.org/schemas/v0.3.0/agent.json
 Use it for validation and editor autocomplete:
 ```json
 {
-  "$schema": "https://openstandardagents.org/schemas/v0.2.x/agent.json",
-  "apiVersion": "ossa/v0.2.x",
+  "$schema": "https://openstandardagents.org/schemas/v0.3.0/agent.json",
+  "apiVersion": "ossa/v0.3.x",
   "kind": "Agent",
   "metadata": { ... },
   "spec": { ... }

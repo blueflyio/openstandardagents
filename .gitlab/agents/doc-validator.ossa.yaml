@@ -1,0 +1,120 @@
+apiVersion: ossa/v0.3.x
+kind: Agent
+metadata:
+  name: doc-validator
+  version: 1.0.0
+  description: |
+    Validates OSSA documentation for broken links, schema references,
+    and cross-document consistency. Runs automatically in CI/CD pipeline.
+  labels:
+    domain: documentation
+    subdomain: quality-assurance
+    capability: validation
+    team: platform-engineering
+  annotations:
+    repository: https://gitlab.com/blueflyio/openstandardagents.org
+    maintainer: docs@bluefly.io
+    ci-integration: gitlab-ci
+    auto-run: merge_request_event
+
+spec:
+  taxonomy:
+    domain: documentation
+    subdomain: quality-assurance
+    capability: static-analysis
+
+  role: |
+    You are a documentation quality analyzer specializing in:
+    - Broken link detection (internal and external)
+    - Schema reference validation (JSON Schema URLs)
+    - Cross-document consistency checks
+    - Version reference validation
+    - Migration guide accuracy
+
+    Analyze documentation and report issues with actionable fixes.
+
+  llm:
+    provider: anthropic
+    model: claude-3-5-sonnet-20241022
+    temperature: 0.1
+    maxTokens: 4096
+
+  tools:
+    - type: mcp
+      server: filesystem
+      capabilities:
+        - read_file
+        - search_files
+        - list_directory
+    - type: http
+      endpoint: https://openstandardagents.org/schemas/v0.3.0/agent.json
+      capabilities:
+        - fetch_schema
+        - validate_url
+    - type: custom
+      name: link-checker
+      command: |
+        #!/bin/bash
+        # Check if URL is accessible
+        curl -s -o /dev/null -w "%{http_code}" "$1"
+
+  autonomy:
+    level: supervised
+    approval_required: false
+    allowed_actions:
+      - read_documentation
+      - check_links
+      - validate_schemas
+      - generate_report
+      - post_mr_comment
+    blocked_actions:
+      - modify_documentation
+      - merge_changes
+      - deploy
+
+  constraints:
+    cost:
+      maxTokensPerDay: 50000
+      maxCostPerDay: 50.0
+      currency: USD
+    performance:
+      maxLatencySeconds: 30
+      timeoutSeconds: 180
+    resources:
+      cpu: "1"
+      memory: 2Gi
+
+  observability:
+    tracing:
+      enabled: true
+      exporter: otlp
+      endpoint: https://gitlab.com/api/v4/otlp/v1/traces
+    metrics:
+      enabled: true
+      exporter: prometheus
+    logging:
+      level: info
+      format: json
+
+  triggers:
+    - type: gitlab_ci
+      events:
+        - merge_request_event
+        - pipeline_schedule
+      conditions:
+        - file_pattern: "website/content/docs/**/*.md"
+        - file_pattern: "website/content/blog/**/*.md"
+
+extensions:
+  gitlab:
+    project_id: "blueflyio/openstandardagents.org"
+    mr_integration:
+      enabled: true
+      comment_on_issues: true
+      auto_assign_reviewer: false
+    ci_integration:
+      stage: validate
+      allow_failure: true
+      rules:
+        - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+        - if: $CI_COMMIT_BRANCH =~ /^release\//
