@@ -1066,9 +1066,8 @@ release:validate:
 
         # Check apiVersion has valid format (ossa/vX.Y.Z)
         # Examples can have older versions for backwards compatibility demos
-        if grep -qE "apiVersion.*ossa/v[0-9]+\.[0-9]+\.[0-9]+" "$example" 2>/dev/null || \
-           jq -e '.apiVersion | test("^ossa/v[0-9]+\\.[0-9]+\\.[0-9]+$")' "$example" 2>/dev/null; then
-          EXAMPLE_API=$(grep -oE "ossa/v[0-9]+\.[0-9]+\.[0-9]+" "$example" 2>/dev/null | head -1)
+        EXAMPLE_API=$(grep -oE "ossa/v[0-9]+\.[0-9]+\.[0-9]+" "$example" 2>/dev/null | head -1 || true)
+        if [ -n "$EXAMPLE_API" ]; then
           echo "   ${example} (${EXAMPLE_API})"
         else
           echo "WARNING: ${example} missing valid apiVersion format"
