@@ -23,10 +23,10 @@ train:quick-validate:
   image: node:${NODE_VERSION}-alpine
   script:
     - npm ci --legacy-peer-deps
-    - echo "🚄 Merge Train Quick Validation"
-    - echo "   Skipping heavy tests (already passed in MR pipeline)"
+    - echo "Merge Train Quick Validation"
+    - echo "Skipping heavy tests (already passed in MR pipeline)"
     - npm run typecheck
-    - npm run lint -- --max-warnings=0 || echo "⚠️ Lint warnings"
+    - npm run lint || echo "Lint warnings (non-blocking in merge train)"
     - npm run test:unit -- --testPathIgnorePatterns="integration|e2e" --bail
   allow_failure: false
 
