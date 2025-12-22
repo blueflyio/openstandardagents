@@ -1,0 +1,165 @@
+openapi: 3.1.0
+info:
+  title: Multi-System Integrator Agent API
+  version: 1.4.0
+  description: |
+    Enterprise integration agent for connecting heterogeneous systems and APIs.
+    Transforms protocols, maps schemas, and routes messages between systems.
+
+x-ossa-metadata:
+  version: 0.2.5-RC
+  compliance:
+    level: enterprise
+    frameworks:
+      - OSSA
+      - OpenAPI 3.1
+
+x-ossa:
+  version: 0.2.5-RC
+  agent:
+    id: multi-system-integrator
+    type: integrator
+    compliance:
+      standards:
+        - openapi-first
+        - type-safe
+      validated: true
+      validatedAt: "2024-01-15T10:00:00Z"
+
+servers:
+  - url: https://integrator.platform.com/api/v1
+    description: Production
+
+tags:
+  - name: integration
+    description: System integration operations
+  - name: transformation
+    description: Data transformation operations
+  - name: routing
+    description: Message routing operations
+
+paths:
+  /integrate/connect:
+    post:
+      summary: Connect systems
+      description: Establish connection between two or more systems
+      operationId: connectSystems
+      tags: [integration]
+      x-ossa-capability: connect-systems
+      x-ossa-autonomy:
+        level: supervised
+        approval_required: true
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [systems]
+              properties:
+                systems:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      system_id:
+                        type: string
+                      protocol:
+                        type: string
+                      endpoint:
+                        type: string
+                mapping:
+                  type: object
+                  description: Schema mapping configuration
+      responses:
+        '200':
+          description: Systems connected
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  connection_id:
+                    type: string
+                  status:
+                    type: string
+                    enum: [connected, failed]
+
+  /transform:
+    post:
+      summary: Transform data
+      description: Transform data between different formats and schemas
+      operationId: transformData
+      tags: [transformation]
+      x-ossa-capability: map-schemas
+      x-ossa-autonomy:
+        level: autonomous
+        approval_required: false
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [data, from_format, to_format]
+              properties:
+                data:
+                  type: object
+                from_format:
+                  type: string
+                to_format:
+                  type: string
+                mapping:
+                  type: object
+      responses:
+        '200':
+          description: Data transformed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  transformed:
+                    type: object
+                  metadata:
+                    type: object
+
+  /route:
+    post:
+      summary: Route message
+      description: Route message to appropriate system based on routing rules
+      operationId: routeMessage
+      tags: [routing]
+      x-ossa-capability: route-messages
+      x-ossa-autonomy:
+        level: autonomous
+        approval_required: false
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [message, destination]
+              properties:
+                message:
+                  type: object
+                destination:
+                  type: string
+                routing_rules:
+                  type: object
+      responses:
+        '200':
+          description: Message routed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  routed:
+                    type: boolean
+                  destination:
+                    type: string
+                  status:
+                    type: string
+

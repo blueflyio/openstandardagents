@@ -1,0 +1,77 @@
+# Intelligence-Driven Automation
+# Advanced AI agents that make OSSA truly autonomous
+
+stages:
+  - intelligence
+  - research
+  - evolution
+  - release
+
+intelligence:daily-orchestration:
+  stage: intelligence
+  image: node:20
+  before_script:
+    - npm install -g @bluefly/openstandardagents
+  script:
+    - |
+      echo "🧠 Daily Intelligence Orchestration"
+      ossa run .gitlab/agents/intelligence-orchestrator/manifest.ossa.yaml \
+        --runtime anthropic \
+        --message "Review ecosystem state, prioritize improvements, and coordinate agent teams"
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "schedule"
+  schedule:
+    - cron: "0 1 * * *"  # 1 AM daily
+  allow_failure: false
+
+ecosystem:continuous-monitoring:
+  stage: research
+  image: node:20
+  before_script:
+    - npm install -g @bluefly/openstandardagents
+  script:
+    - |
+      echo "📊 Continuous Ecosystem Monitoring"
+      ossa run .gitlab/agents/ecosystem-monitor/manifest.ossa.yaml \
+        --runtime anthropic \
+        --message "Scan ecosystem for new frameworks, patterns, and trends. Create research issues."
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "schedule"
+  schedule:
+    - cron: "*/6 * * * *"  # Every 6 hours
+  allow_failure: true
+
+evolution:adaptive-schema:
+  stage: evolution
+  image: node:20
+  before_script:
+    - npm install -g @bluefly/openstandardagents
+  script:
+    - |
+      echo "🔄 Adaptive Schema Evolution"
+      ossa run .gitlab/agents/schema-evolution/manifest.ossa.yaml \
+        --runtime anthropic \
+        --message "Review approved issues and evolve schema while maintaining backward compatibility"
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "webhook"
+      variables:
+        - $CI_WEBHOOK_EVENT == "issue"
+  when: manual
+  allow_failure: true
+
+release:autonomous-releases:
+  stage: release
+  image: node:20
+  before_script:
+    - npm install -g @bluefly/openstandardagents
+  script:
+    - |
+      echo "🚀 Autonomous Release Management"
+      ossa run .gitlab/agents/release-automation/manifest.ossa.yaml \
+        --runtime anthropic \
+        --message "Monitor milestones, generate changelogs, create releases, publish packages"
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "webhook"
+      variables:
+        - $CI_WEBHOOK_EVENT == "milestone"
+  allow_failure: false

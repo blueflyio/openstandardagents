@@ -1,0 +1,767 @@
+# =============================================================================
+# GITLAB DUO AGENT - POWERED BY OSSA v0.3.0
+# =============================================================================
+#
+# THIS IS THE ULTIMATE DOGFOODING: Using OSSA to define GitLab's own agents!
+#
+# This manifest defines a GitLab Duo agent that:
+# 1. Uses OSSA v0.3.0 schema as the source of truth
+# 2. Demonstrates all v0.3.0 capabilities in production
+# 3. Auto-generates GitLab Duo config from this manifest
+# 4. Proves OSSA is the standard GitLab should adopt
+#
+# COPY TO: https://gitlab.com/blueflyio/openstandardagents/-/automate/agents/1261/edit
+# =============================================================================
+
+apiVersion: ossa/v0.3.0
+kind: Agent
+
+metadata:
+  name: gitlab-duo-ossa-agent
+  version: 1.0.0
+  description: |
+    The ULTIMATE GitLab Duo Agent - powered by OSSA v0.3.0.
+
+    This agent demonstrates how OSSA can standardize GitLab's agent ecosystem.
+    It validates code, reviews MRs, suggests fixes, and self-heals - all while
+    proving that OSSA is the schema GitLab should adopt for agent orchestration.
+
+    DOGFOODING OSSA INSIDE GITLAB TO SHOW THEM THE WAY! 🚀
+
+  labels:
+    domain: gitlab-integration
+    subdomain: duo-agents
+    category: code-quality
+    autonomy: fully_autonomous
+    ossa-version: v0.3.0
+    dogfooding: "true"
+    gitlab-native: "true"
+
+  annotations:
+    gitlab.com/duo-agent-id: "1261"
+    gitlab.com/project: blueflyio/openstandardagents
+    gitlab.com/author: thomas-scola
+    ossa.standard/compliance: full
+    ossa.standard/showcase: "true"
+
+spec:
+  # ============================================================================
+  # ROLE & IDENTITY
+  # ============================================================================
+
+  role: |
+    You are the ULTIMATE GitLab Duo Agent, powered by OSSA v0.3.0.
+
+    You are PROOF that OSSA works. Every action you take demonstrates the power
+    of standardized agent schemas. You are dogfooding OSSA inside GitLab itself.
+
+    YOUR MISSION:
+    1. Validate ALL code against OSSA v0.3.0 schema
+    2. Review merge requests with superhuman thoroughness
+    3. Detect and auto-fix issues before humans even see them
+    4. Generate comprehensive reports that prove OSSA's value
+    5. Self-heal broken configurations
+    6. Coordinate with other agents via A2A messaging
+    7. Track costs and demonstrate ROI
+    8. Show GitLab that OSSA is the future
+
+    CAPABILITIES:
+    - Deep OSSA v0.3.0 schema validation
+    - Code quality analysis (TypeScript, Python, YAML, Shell)
+    - Security scanning (secrets, vulnerabilities, dependencies)
+    - Documentation validation (README, CHANGELOG, API docs)
+    - Test coverage analysis
+    - Self-healing suggestions
+    - Multi-agent coordination
+    - Cost tracking and optimization
+
+    PHILOSOPHY:
+    - Be thorough but fast
+    - Be helpful, not annoying
+    - Explain the "why" behind suggestions
+    - Celebrate good code
+    - Fix problems, don't just report them
+    - PROVE that OSSA makes agents better
+
+  prompts:
+    system:
+      template: |
+        You are a GitLab Duo agent powered by OSSA v0.3.0.
+
+        Your capabilities:
+        {{#each capabilities}}
+        - {{this.name}}: {{this.description}}
+        {{/each}}
+
+        Current context:
+        - Project: {{context.project}}
+        - Branch: {{context.branch}}
+        - MR: {{context.mr_id}}
+
+        Execute with precision, report with clarity, prove OSSA's value.
+      version: "1.0.0"
+
+    user:
+      template: |
+        Analyze the following changes and provide comprehensive feedback:
+
+        {{diff}}
+
+        Focus on:
+        1. OSSA schema compliance
+        2. Code quality
+        3. Security issues
+        4. Documentation completeness
+        5. Test coverage
+      version: "1.0.0"
+
+  # ============================================================================
+  # LLM CONFIGURATION (Runtime-Configurable)
+  # ============================================================================
+
+  llm:
+    # Primary model - env var with smart default
+    provider: ${LLM_PROVIDER:-anthropic}
+    model: ${LLM_MODEL:-claude-sonnet-4}
+    temperature: 0.1  # Low for consistency
+    maxTokens: 16000
+
+    # Execution profile for different tasks
+    profile: ${LLM_PROFILE:-balanced}
+
+    # Multi-provider fallback chain
+    fallback_models:
+      - provider: ${LLM_FALLBACK_1_PROVIDER:-openai}
+        model: ${LLM_FALLBACK_1_MODEL:-gpt-4o}
+        temperature: 0.1
+      - provider: ${LLM_FALLBACK_2_PROVIDER:-google}
+        model: ${LLM_FALLBACK_2_MODEL:-gemini-2.0-flash}
+        temperature: 0.1
+      - provider: ${LLM_FALLBACK_3_PROVIDER:-anthropic}
+        model: ${LLM_FALLBACK_3_MODEL:-claude-haiku-3.5}
+        temperature: 0.1
+
+    # Retry configuration
+    retry_config:
+      max_attempts: 5
+      backoff_strategy: exponential
+      initial_delay_ms: 1000
+      max_delay_ms: 60000
+
+    # Cost tracking - PROVE ROI!
+    cost_tracking:
+      enabled: true
+      budget_alert_threshold: 50.00
+      daily_limit: 200.00
+      cost_allocation_tags:
+        project: openstandardagents
+        team: ossa-core
+        service: gitlab-duo-agent
+        purpose: dogfooding
+        environment: production
+
+  # ============================================================================
+  # CAPABILITIES (What this agent can do)
+  # ============================================================================
+
+  capabilities:
+    - name: ossa_validation
+      description: Deep OSSA v0.3.0 schema validation with compliance checks
+      version: "1.0.0"
+      scopes: [read, validate]
+
+    - name: code_review
+      description: Comprehensive code quality analysis
+      version: "1.0.0"
+      scopes: [read, comment]
+
+    - name: security_scan
+      description: Security vulnerability and secrets detection
+      version: "1.0.0"
+      scopes: [read, alert]
+
+    - name: auto_fix
+      description: Automatic fix suggestions and self-healing
+      version: "1.0.0"
+      scopes: [read, suggest]
+
+    - name: documentation_check
+      description: Documentation completeness validation
+      version: "1.0.0"
+      scopes: [read, validate]
+
+    - name: test_coverage
+      description: Test coverage analysis and reporting
+      version: "1.0.0"
+      scopes: [read, report]
+
+    - name: agent_coordination
+      description: Multi-agent orchestration via A2A
+      version: "1.0.0"
+      scopes: [communicate, orchestrate]
+
+  # ============================================================================
+  # TOOLS (MCP-Compliant)
+  # ============================================================================
+
+  tools:
+    - type: mcp
+      name: validate_ossa
+      description: Validate files against OSSA v0.3.0 schema
+      inputSchema:
+        type: object
+        required: [file_path]
+        properties:
+          file_path:
+            type: string
+            description: Path to OSSA manifest file
+          schema_version:
+            type: string
+            default: "v0.3.0"
+          strict_mode:
+            type: boolean
+            default: true
+      outputSchema:
+        type: object
+        properties:
+          valid:
+            type: boolean
+          errors:
+            type: array
+            items:
+              type: object
+              properties:
+                path:
+                  type: string
+                message:
+                  type: string
+                severity:
+                  type: string
+                  enum: [error, warning, info]
+          compliance_score:
+            type: number
+            minimum: 0
+            maximum: 100
+
+    - type: mcp
+      name: analyze_code
+      description: Analyze code quality and suggest improvements
+      inputSchema:
+        type: object
+        required: [file_path]
+        properties:
+          file_path:
+            type: string
+          language:
+            type: string
+            enum: [typescript, javascript, python, yaml, shell, php]
+          checks:
+            type: array
+            items:
+              type: string
+              enum: [lint, security, complexity, style, types]
+      outputSchema:
+        type: object
+        properties:
+          issues:
+            type: array
+          suggestions:
+            type: array
+          quality_score:
+            type: number
+
+    - type: mcp
+      name: scan_security
+      description: Scan for security vulnerabilities
+      inputSchema:
+        type: object
+        properties:
+          paths:
+            type: array
+            items:
+              type: string
+          check_secrets:
+            type: boolean
+            default: true
+          check_dependencies:
+            type: boolean
+            default: true
+          check_vulnerabilities:
+            type: boolean
+            default: true
+      outputSchema:
+        type: object
+        properties:
+          vulnerabilities:
+            type: array
+          secrets_found:
+            type: array
+          dependency_issues:
+            type: array
+          risk_score:
+            type: string
+            enum: [low, medium, high, critical]
+
+    - type: mcp
+      name: generate_fix
+      description: Generate automatic fix for detected issue
+      inputSchema:
+        type: object
+        required: [issue, file_path]
+        properties:
+          issue:
+            type: object
+          file_path:
+            type: string
+          auto_apply:
+            type: boolean
+            default: false
+      outputSchema:
+        type: object
+        properties:
+          fix:
+            type: string
+          diff:
+            type: string
+          applied:
+            type: boolean
+          confidence:
+            type: number
+
+    - type: api
+      name: gitlab_api
+      description: GitLab API for MR operations
+      base_url: https://gitlab.com/api/v4
+      auth:
+        type: bearer
+        credentials: env:GITLAB_TOKEN
+      scopes:
+        - api
+        - read_repository
+        - write_repository
+
+  # ============================================================================
+  # AUTONOMY & CONSTRAINTS
+  # ============================================================================
+
+  autonomy:
+    level: autonomous
+
+    approval_required:
+      - merge_request
+      - delete_branch
+      - modify_protected_files
+
+    allowed_actions:
+      - validate_ossa
+      - analyze_code
+      - scan_security
+      - generate_fix
+      - post_comment
+      - request_changes
+      - approve_mr
+
+    blocked_actions:
+      - delete_repository
+      - modify_ci_variables
+      - access_secrets
+
+    escalation_policy:
+      triggers:
+        - security_critical
+        - cost_threshold_exceeded
+        - repeated_failures
+      notify:
+        - gitlab:@bluefly
+        - slack:#ossa-alerts
+
+  constraints:
+    cost:
+      maxTokensPerDay: 2000000
+      maxTokensPerRequest: 32000
+      maxCostPerDay: 200.00
+      currency: USD
+
+    performance:
+      maxLatencySeconds: 60
+      maxConcurrentRequests: 20
+      timeoutSeconds: 300
+
+    resources:
+      cpu: "4"
+      memory: "8Gi"
+
+  # ============================================================================
+  # STATE MANAGEMENT
+  # ============================================================================
+
+  state:
+    mode: persistent
+    storage:
+      type: kv
+      provider: ${STATE_PROVIDER:-redis}
+      endpoint: ${STATE_ENDPOINT:-redis://localhost:6379}
+      retention: 30d
+      encryption:
+        enabled: true
+        algorithm: aes-256-gcm
+        keyRef: env:STATE_ENCRYPTION_KEY
+    context_window:
+      max_messages: 200
+      max_tokens: 64000
+      strategy: importance_weighted
+
+  # ============================================================================
+  # OBSERVABILITY (Full OpenTelemetry)
+  # ============================================================================
+
+  observability:
+    tracing:
+      enabled: true
+      exporter: otlp
+      endpoint: ${OTEL_ENDPOINT:-http://otel-collector:4317}
+      sample_rate: 1.0
+
+    metrics:
+      enabled: true
+      exporter: prometheus
+      port: 9090
+      customMetrics:
+        - name: ossa_validations_total
+          type: counter
+          description: Total OSSA validations performed
+          labels: [version, result, project]
+        - name: ossa_validation_duration_seconds
+          type: histogram
+          description: Time to validate OSSA manifest
+          labels: [version, file_count]
+        - name: code_issues_detected
+          type: counter
+          description: Code issues detected by category
+          labels: [category, severity, language]
+        - name: security_vulnerabilities
+          type: counter
+          description: Security vulnerabilities found
+          labels: [severity, type]
+        - name: auto_fixes_generated
+          type: counter
+          description: Automatic fixes generated
+          labels: [type, applied]
+        - name: agent_cost_usd
+          type: gauge
+          description: Running cost in USD
+          labels: [model, task]
+        - name: dogfooding_proof_points
+          type: counter
+          description: Evidence that OSSA works inside GitLab
+          labels: [feature, success]
+
+    logging:
+      level: info
+      format: json
+      include_input: false
+      include_output: false
+
+    alerting:
+      enabled: true
+      channels: [gitlab, slack]
+      rules:
+        - name: high_error_rate
+          condition: error_rate > 0.1
+          severity: critical
+          notify: immediate
+        - name: cost_spike
+          condition: hourly_cost > 20
+          severity: warning
+        - name: validation_failures
+          condition: validation_failure_rate > 0.2
+          severity: warning
+
+    slo:
+      availability: 0.999
+      latency_p95_ms: 30000
+      error_budget: 0.001
+
+  # ============================================================================
+  # SAFETY & SECURITY
+  # ============================================================================
+
+  safety:
+    content_filtering:
+      enabled: true
+      categories: [pii, credentials, secrets, api_keys]
+      threshold: strict
+      action: redact
+
+    pii_detection:
+      enabled: true
+      types: [email, phone, ssn, api_key, credit_card, private_key]
+      action: redact
+
+    rate_limiting:
+      enabled: true
+      requests_per_minute: 200
+      burst_limit: 500
+
+    guardrails:
+      enabled: true
+      policies:
+        - name: max_tool_calls
+          max_tool_calls: 100
+        - name: max_execution_time
+          max_execution_time_seconds: 300
+        - name: max_tokens_per_turn
+          max_tokens_per_turn: 32000
+        - name: no_destructive_actions
+          blocked_patterns: ["rm -rf", "DROP TABLE", "DELETE FROM"]
+
+    human_in_loop:
+      enabled: true
+      triggers:
+        - security_critical_finding
+        - cost_threshold_exceeded
+        - confidence_below_threshold
+        - manual_override_requested
+
+  # ============================================================================
+  # A2A MESSAGING (Agent Coordination)
+  # ============================================================================
+
+  messaging:
+    publishes:
+      - channel: gitlab.duo.validation_complete
+        description: Published when OSSA validation completes
+        schema:
+          type: object
+          required: [project, result, timestamp]
+          properties:
+            project:
+              type: string
+            result:
+              type: string
+              enum: [passed, failed, warnings]
+            manifest_count:
+              type: integer
+            errors:
+              type: array
+            duration_ms:
+              type: integer
+        tags: [ossa, validation, gitlab]
+
+      - channel: gitlab.duo.security_alert
+        description: Published when security issue detected
+        schema:
+          type: object
+          required: [severity, type, location]
+          properties:
+            severity:
+              type: string
+              enum: [low, medium, high, critical]
+            type:
+              type: string
+            location:
+              type: string
+            details:
+              type: object
+        tags: [security, alert, critical]
+
+      - channel: gitlab.duo.mr_reviewed
+        description: Published when MR review completes
+        schema:
+          type: object
+          required: [mr_id, decision, summary]
+          properties:
+            mr_id:
+              type: string
+            decision:
+              type: string
+              enum: [approved, changes_requested, blocked]
+            summary:
+              type: string
+            issues:
+              type: array
+            auto_fixes:
+              type: array
+        tags: [mr, review, decision]
+
+    subscribes:
+      - channel: gitlab.mr.created
+        description: Listen for new merge requests
+        handler: on_mr_created
+        priority: high
+        maxConcurrency: 10
+
+      - channel: gitlab.mr.updated
+        description: Listen for MR updates
+        handler: on_mr_updated
+        priority: normal
+        maxConcurrency: 10
+
+      - channel: gitlab.pipeline.failed
+        description: Listen for pipeline failures
+        handler: on_pipeline_failed
+        priority: high
+        maxConcurrency: 5
+
+    commands:
+      - name: validate_manifest
+        description: Validate a specific OSSA manifest
+        inputSchema:
+          type: object
+          required: [path]
+          properties:
+            path:
+              type: string
+            version:
+              type: string
+        outputSchema:
+          type: object
+          properties:
+            valid:
+              type: boolean
+            errors:
+              type: array
+        timeoutSeconds: 60
+        idempotent: true
+
+      - name: review_mr
+        description: Review a merge request
+        inputSchema:
+          type: object
+          required: [mr_id, project_id]
+          properties:
+            mr_id:
+              type: integer
+            project_id:
+              type: integer
+        outputSchema:
+          type: object
+          properties:
+            decision:
+              type: string
+            comments:
+              type: array
+        timeoutSeconds: 300
+        idempotent: false
+
+    reliability:
+      deliveryGuarantee: at-least-once
+      retry:
+        maxAttempts: 5
+        backoff:
+          strategy: exponential
+          initialDelayMs: 1000
+          maxDelayMs: 60000
+      dlq:
+        enabled: true
+        channel: gitlab.duo.dlq
+        retentionDays: 30
+
+  # ============================================================================
+  # MCP EXTENSION
+  # ============================================================================
+
+  extensions:
+    mcp:
+      enabled: true
+      server_type: stdio
+      server_name: gitlab-duo-ossa-mcp
+
+      tools:
+        - name: ossa_validate
+          description: Validate OSSA manifests
+        - name: code_analyze
+          description: Analyze code quality
+        - name: security_scan
+          description: Scan for security issues
+        - name: fix_generate
+          description: Generate fixes
+
+      resources:
+        - uri: file:///spec/v0.3.0
+          name: OSSA v0.3.0 Specification
+          description: The complete OSSA v0.3.0 specification
+          mimeType: application/json
+
+        - uri: file:///examples
+          name: OSSA Examples
+          description: Example OSSA manifests
+          mimeType: application/yaml
+
+      prompts:
+        - name: validate_workflow
+          description: Complete validation workflow
+          arguments:
+            - name: project
+              required: true
+            - name: branch
+              required: false
+
+        - name: review_workflow
+          description: Complete MR review workflow
+          arguments:
+            - name: mr_id
+              required: true
+
+    gitlab_duo:
+      enabled: true
+      flow_execution: true
+      model: ${GITLAB_DUO_MODEL:-claude-sonnet-4}
+      auto_respond: true
+
+  # ============================================================================
+  # RUNTIME BINDINGS
+  # ============================================================================
+
+  runtime:
+    type: container
+    image: node:20-bookworm
+    transport: sync
+
+    bindings:
+      validate_ossa:
+        handler: OSSAValidator::validate
+        tool: ossa_validate
+        config:
+          schema_path: /spec/v0.3.0
+          strict_mode: true
+
+      analyze_code:
+        handler: CodeAnalyzer::analyze
+        tool: code_analyze
+        config:
+          languages: [typescript, python, yaml, shell]
+
+      scan_security:
+        handler: SecurityScanner::scan
+        tool: security_scan
+        config:
+          check_all: true
+
+  # ============================================================================
+  # REASONING & TRACING
+  # ============================================================================
+
+  reasoning:
+    strategy: react
+    max_steps: 30
+    trace_enabled: true
+    export_format: otel
+
+    chains:
+      - name: validation_chain
+        steps:
+          - fetch_files
+          - parse_manifests
+          - validate_schema
+          - check_compliance
+          - generate_report
+
+      - name: review_chain
+        steps:
+          - fetch_changes
+          - analyze_code
+          - check_security
+          - validate_docs
+          - generate_feedback
+          - make_decision

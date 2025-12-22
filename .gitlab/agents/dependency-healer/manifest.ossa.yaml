@@ -1,0 +1,484 @@
+# ============================================================================
+# OSSA Dependency Healer Agent
+# ============================================================================
+#
+# PURPOSE:
+#   Automated dependency vulnerability scanning and remediation agent.
+#   Scans dependencies for security vulnerabilities, tests updates,
+#   and generates update merge requests with automatic rollback support.
+#
+# CAPABILITIES:
+#   - Scan dependencies for vulnerabilities
+#   - Check CVE databases and security advisories
+#   - Test dependency updates in isolation
+#   - Rollback failed updates automatically
+#   - Generate SBOM (Software Bill of Materials)
+#
+# ============================================================================
+
+apiVersion: ossa/v0.3.0
+kind: Agent
+
+metadata:
+  name: dependency-healer
+  version: 1.0.0
+  description: |
+    Dependency vulnerability scanning and remediation agent. Scans
+    dependencies for security vulnerabilities, tests updates safely,
+    generates update MRs, and provides automatic rollback on failures.
+
+  labels:
+    environment: production
+    team: security
+    domain: security
+    capability: dependency-management
+    wave: "3"
+
+  annotations:
+    documentation: https://openstandardagents.org/docs/agents/dependency-healer
+    support: ops@openstandardagents.org
+    category: "Security"
+
+spec:
+  # ==========================================================================
+  # TAXONOMY: Security Domain Classification
+  # ==========================================================================
+  taxonomy:
+    domain: security
+    subdomain: dependency-management
+    capability: vulnerability-remediation
+
+  # ==========================================================================
+  # ROLE: Dependency Security Expertise
+  # ==========================================================================
+  role: |
+    You are an expert dependency security analyst specializing in
+    vulnerability detection, safe updates, and SBOM generation.
+
+    Your responsibilities:
+    1. Scan all dependencies for known vulnerabilities
+    2. Check CVE databases (NVD, OSV, GitHub Advisory)
+    3. Test dependency updates in isolated environments
+    4. Generate update merge requests with changelog
+    5. Rollback failed updates automatically
+    6. Generate SBOM for compliance requirements
+    7. Coordinate with other agents for remediation workflows
+
+    When scanning dependencies:
+    - Check all package managers (npm, composer, pip, go.mod)
+    - Cross-reference multiple vulnerability databases
+    - Calculate CVSS scores and severity levels
+    - Identify transitive dependency vulnerabilities
+    - Check for malicious packages
+
+    For updates:
+    - Test updates in isolated CI environments
+    - Run full test suite before merging
+    - Generate semantic versioning changelog
+    - Provide rollback instructions
+
+  # ==========================================================================
+  # LLM CONFIGURATION: Security-Focused Model
+  # ==========================================================================
+  llm:
+    provider: anthropic
+    model: claude-3-5-sonnet-20241022
+    temperature: 0.1
+    maxTokens: 8000
+
+  # ==========================================================================
+  # TOOLS: Dependency Scanning
+  # ==========================================================================
+  tools:
+    - type: http
+      name: npm-audit
+      description: |
+        Scan npm dependencies for vulnerabilities.
+      endpoint: http://npm-audit:8080/audit
+      config:
+        method: POST
+        timeout: 120
+
+    - type: http
+      name: osv-scanner
+      description: |
+        Scan dependencies using Google OSV database.
+      endpoint: http://osv-scanner:8080/scan
+      config:
+        method: POST
+        timeout: 120
+
+    - type: http
+      name: trivy-deps
+      description: |
+        Scan dependencies using Trivy vulnerability database.
+      endpoint: http://trivy-server:8080/scan/deps
+      config:
+        method: POST
+        timeout: 180
+
+    - type: mcp
+      name: filesystem
+      description: |
+        Read lock files and generate SBOM.
+      config:
+        server: filesystem-mcp
+        allowed_paths:
+          - "package*.json"
+          - "composer*.json"
+          - "go.mod"
+          - "go.sum"
+          - "requirements*.txt"
+          - "Pipfile*"
+
+    - type: mcp
+      name: gitlab-api
+      description: |
+        Create merge requests for dependency updates.
+      config:
+        server: gitlab-mcp
+        scope: repository
+      auth:
+        type: bearer
+        tokenPath: /var/secrets/gitlab-token
+
+    - type: a2a
+      name: agent-mesh
+      description: |
+        Communicate with security-scanner and rollback-coordinator.
+      endpoint: http://agent-mesh:9090/a2a
+      config:
+        protocol: json-rpc
+        version: "2.0"
+
+  # ==========================================================================
+  # CAPABILITIES: Dependency Management Operations
+  # ==========================================================================
+  capabilities:
+    - name: scan_dependencies
+      description: Scan all dependencies for vulnerabilities
+      input_schema:
+        type: object
+        properties:
+          repository_path:
+            type: string
+          package_managers:
+            type: array
+            items:
+              type: string
+              enum: [npm, composer, pip, go, cargo, maven]
+            default: [npm, composer, pip, go]
+          include_dev:
+            type: boolean
+            default: true
+        required:
+          - repository_path
+      output_schema:
+        type: object
+        properties:
+          vulnerabilities:
+            type: array
+            items:
+              type: object
+              properties:
+                package:
+                  type: string
+                version:
+                  type: string
+                cve_id:
+                  type: string
+                cvss_score:
+                  type: number
+                severity:
+                  type: string
+                  enum: [low, medium, high, critical]
+                fixed_version:
+                  type: string
+                description:
+                  type: string
+          total_dependencies:
+            type: integer
+          vulnerable_count:
+            type: integer
+          success:
+            type: boolean
+
+    - name: check_vulnerabilities
+      description: Check specific packages against vulnerability databases
+      input_schema:
+        type: object
+        properties:
+          packages:
+            type: array
+            items:
+              type: object
+              properties:
+                name:
+                  type: string
+                version:
+                  type: string
+                ecosystem:
+                  type: string
+        required:
+          - packages
+      output_schema:
+        type: object
+        properties:
+          results:
+            type: array
+            items:
+              type: object
+              properties:
+                package:
+                  type: string
+                vulnerable:
+                  type: boolean
+                vulnerabilities:
+                  type: array
+                  items:
+                    type: object
+          success:
+            type: boolean
+
+    - name: test_updates
+      description: Test dependency updates in isolated environment
+      input_schema:
+        type: object
+        properties:
+          updates:
+            type: array
+            items:
+              type: object
+              properties:
+                package:
+                  type: string
+                from_version:
+                  type: string
+                to_version:
+                  type: string
+          test_commands:
+            type: array
+            items:
+              type: string
+            default: ["npm test", "npm run build"]
+        required:
+          - updates
+      output_schema:
+        type: object
+        properties:
+          test_results:
+            type: array
+            items:
+              type: object
+              properties:
+                package:
+                  type: string
+                passed:
+                  type: boolean
+                error:
+                  type: string
+          all_passed:
+            type: boolean
+          success:
+            type: boolean
+
+    - name: rollback_failures
+      description: Rollback failed dependency updates
+      input_schema:
+        type: object
+        properties:
+          branch:
+            type: string
+          failed_updates:
+            type: array
+            items:
+              type: object
+              properties:
+                package:
+                  type: string
+                version:
+                  type: string
+        required:
+          - branch
+          - failed_updates
+      output_schema:
+        type: object
+        properties:
+          rollback_successful:
+            type: boolean
+          restored_versions:
+            type: array
+            items:
+              type: object
+              properties:
+                package:
+                  type: string
+                version:
+                  type: string
+          success:
+            type: boolean
+
+    - name: generate_sbom
+      description: Generate Software Bill of Materials
+      input_schema:
+        type: object
+        properties:
+          repository_path:
+            type: string
+          format:
+            type: string
+            enum: [spdx, cyclonedx, syft]
+            default: cyclonedx
+          include_dev:
+            type: boolean
+            default: false
+        required:
+          - repository_path
+      output_schema:
+        type: object
+        properties:
+          sbom:
+            type: string
+          format:
+            type: string
+          component_count:
+            type: integer
+          success:
+            type: boolean
+
+  # ==========================================================================
+  # TRIGGERS: Event-Driven Dependency Scanning
+  # ==========================================================================
+  triggers:
+    - type: schedule
+      name: weekly_schedule
+      schedule: "0 2 * * 1"  # Monday 2am
+      description: Weekly vulnerability scan
+
+    - type: webhook
+      name: on_security_alert
+      event: security_alert
+      description: Respond to security alerts
+
+    - type: webhook
+      name: on_cve_published
+      event: cve_published
+      filter:
+        ecosystems:
+          - npm
+          - composer
+          - pip
+          - go
+      description: Respond to new CVE publications
+
+    - type: workflow
+      name: on_status_validation
+      status: Validation
+      description: Scan during validation phase
+
+  # ==========================================================================
+  # OUTPUTS: Dependency Artifacts
+  # ==========================================================================
+  outputs:
+    - name: update_mrs
+      type: merge_request
+      description: Dependency update merge requests
+
+    - name: security_report
+      type: file
+      format: json
+      path: reports/security/
+
+    - name: compatibility_matrix
+      type: file
+      format: json
+      path: reports/compatibility/
+
+  # ==========================================================================
+  # AUTONOMY: Supervised with Auto-Scanning
+  # ==========================================================================
+  autonomy:
+    level: autonomous
+    approval_required: false  # Auto-scan enabled
+
+    allowed_actions:
+      - scan_dependencies
+      - check_vulnerabilities
+      - test_updates
+      - generate_sbom
+      - create_merge_requests
+      - send_alerts
+
+    blocked_actions:
+      - force_merge
+      - delete_branches
+      - bypass_ci
+
+  # ==========================================================================
+  # CONSTRAINTS: Dependency Agent Limits
+  # ==========================================================================
+  constraints:
+    cost:
+      maxTokensPerDay: 300000
+      maxTokensPerRequest: 8000
+      maxCostPerDay: 30.00
+      currency: USD
+
+    performance:
+      maxLatencySeconds: 180
+      maxConcurrentRequests: 10
+      timeoutSeconds: 600
+
+    resources:
+      cpu: "2000m"
+      memory: "4Gi"
+      ephemeralStorage: "10Gi"
+
+  # ==========================================================================
+  # OBSERVABILITY: Security Metrics
+  # ==========================================================================
+  observability:
+    tracing:
+      enabled: true
+      exporter: otlp
+      endpoint: http://jaeger-collector:4318
+      samplingRate: 1.0  # 100% for security
+
+    metrics:
+      enabled: true
+      exporter: prometheus
+      endpoint: http://prometheus:9090/metrics
+      customMetrics:
+        - name: dependency_scans
+          type: counter
+          description: "Total dependency scans"
+        - name: vulnerabilities_found
+          type: gauge
+          description: "Vulnerabilities by severity"
+          labels: [severity, ecosystem]
+        - name: updates_applied
+          type: counter
+          description: "Dependency updates applied"
+        - name: rollbacks_performed
+          type: counter
+          description: "Update rollbacks performed"
+
+    logging:
+      level: info
+      format: json
+      auditLog:
+        enabled: true
+        destination: /var/log/security/dependency-audit.log
+        retention: 365
+
+  # ==========================================================================
+  # STATE: Vulnerability Database Cache
+  # ==========================================================================
+  state:
+    backend: redis
+    config:
+      host: redis-cluster.default.svc.cluster.local
+      port: 6379
+      database: 6
+      ttl: 3600  # 1h for vulnerability data
+      keyPrefix: "dep-healer:"

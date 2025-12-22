@@ -1,0 +1,376 @@
+apiVersion: ossa/${OSSA_VERSION}
+kind: Agent
+metadata:
+  name: security-scanner
+  version: "${CI_COMMIT_SHA}"
+  description: |
+    Autonomous security vulnerability scanner for Kubernetes deployments.
+    Performs container image scanning, RBAC audits, secret detection, and
+    compliance validation against CIS benchmarks and OWASP standards.
+  labels:
+    environment: production
+    team: security-ops
+    domain: security
+    capability: vulnerability-scanning
+    compliance: cis-kubernetes
+    ossa-version: v0.3.0
+  annotations:
+    documentation: https://openstandardagents.org/docs/agents/security-scanner
+    support: ops@openstandardagents.org
+    runbook: https://openstandardagents.org/docs/runbooks/security-scanner
+    compliance: CIS Kubernetes Benchmark v1.8, OWASP Top 10
+spec:
+  taxonomy:
+    domain: security
+    subdomain: vulnerability-management
+    capability: container-scanning
+  role: |
+    You are an expert security scanner specializing in Kubernetes and container security.
+
+    Your responsibilities:
+    1. Scan container images for CVE vulnerabilities using Trivy and Grype
+    2. Audit Kubernetes RBAC configurations for privilege escalation risks
+    3. Detect hardcoded secrets, API keys, and credentials in code/configs
+    4. Analyze application dependencies (npm, composer, pip) for known vulnerabilities
+    5. Validate compliance with CIS Kubernetes Benchmark and OWASP Top 10
+    6. Generate security reports with severity levels and remediation guidance
+    7. Coordinate with other agents (compliance-auditor, rollback-coordinator) for fixes
+
+    Always prioritize critical (CVSS >= 9.0) and high (CVSS >= 7.0) vulnerabilities.
+    For each finding, provide:
+    - CVE ID or security issue identifier
+    - CVSS score and severity level
+    - Affected component and version
+    - Remediation steps (upgrade version, apply patch, configuration change)
+    - Estimated effort (low/medium/high)
+  llm:
+    provider: anthropic
+    model: ${LLM_MODEL:-claude-sonnet}
+    temperature: 0.1
+    maxTokens: 8000
+    topP: 0.9
+    fallback_models:
+      - provider: openai
+        model: ${LLM_FALLBACK_MODEL_1:-gpt-4o}
+      - provider: anthropic
+        model: ${LLM_FALLBACK_MODEL_2:-claude-haiku}
+    retry_config:
+      max_attempts: 3
+      backoff_strategy: exponential
+    cost_tracking:
+      enabled: true
+      budget_alert_threshold: 40
+      cost_allocation_tags:
+        project: ossa-agents
+        team: security-ops
+        service: security-scanner
+  tools:
+    - type: mcp
+      name: trivy-scanner
+      description: |
+        Trivy vulnerability scanner for container images, filesystems,
+        and git repositories. Detects CVEs, misconfigurations, and secrets.
+      config:
+        server: trivy-mcp
+        endpoint: http://trivy-server:8080
+      auth:
+        type: bearer
+        tokenPath: /var/secrets/trivy-token
+    - type: mcp
+      name: kubernetes-rbac
+      description: |
+        Kubernetes RBAC audit capabilities. Analyzes roles, role bindings,
+        service accounts, and cluster roles for security risks.
+      config:
+        server: kubernetes-mcp
+        namespace: all
+      auth:
+        type: mtls
+        certPath: /var/secrets/k8s-client-cert.pem
+        keyPath: /var/secrets/k8s-client-key.pem
+    - type: mcp
+      name: secret-scanner
+      description: |
+        Detect hardcoded secrets, API keys, tokens, and credentials in
+        code repositories, ConfigMaps, and environment variables.
+      config:
+        server: gitleaks-mcp
+        patterns: /etc/gitleaks/patterns.toml
+      auth:
+        type: apikey
+        keyPath: /var/secrets/gitleaks-api-key
+    - type: http
+      name: dependency-scanner
+      description: |
+        Analyze application dependencies (npm, composer, pip, go.mod) for
+        known vulnerabilities using OSV, Snyk, and GitHub Advisory Database.
+      endpoint: http://dependency-check:8080/scan
+      config:
+        method: POST
+        timeout: 120
+        databases:
+          - osv
+          - snyk
+          - github-advisory
+      auth:
+        type: bearer
+        tokenPath: /var/secrets/snyk-token
+    - type: a2a
+      name: compliance-coordinator
+      description: |
+        Communicate with compliance-auditor and rollback-coordinator agents
+        to orchestrate security remediation workflows.
+      endpoint: http://agent-mesh:9090/a2a
+      config:
+        protocol: json-rpc
+        version: "2.0"
+      auth:
+        type: mtls
+        certPath: /var/secrets/a2a-client-cert.pem
+  autonomy:
+    level: autonomous
+    approval_required: false
+    allowed_actions:
+      - scan_container_images
+      - audit_rbac_configs
+      - detect_secrets
+      - scan_dependencies
+      - generate_security_reports
+      - read_kubernetes_resources
+    blocked_actions:
+      - delete_pods
+      - modify_rbac
+      - delete_secrets
+      - scale_deployments
+  constraints:
+    cost:
+      maxTokensPerDay: 500000
+      maxTokensPerRequest: 8000
+      maxCostPerDay: 50
+      currency: USD
+    performance:
+      maxLatencySeconds: 300
+      maxConcurrentRequests: 20
+      timeoutSeconds: 600
+    resources:
+      cpu: 2000m
+      memory: 4Gi
+      ephemeralStorage: 10Gi
+  observability:
+    tracing:
+      enabled: true
+      exporter: otlp
+      endpoint: http://jaeger-collector:4318
+      samplingRate: 1
+    metrics:
+      enabled: true
+      exporter: prometheus
+      endpoint: http://prometheus:9090/metrics
+      customMetrics:
+        - name: security_scans_total
+          type: counter
+          description: Total number of security scans performed
+        - name: vulnerabilities_detected
+          type: gauge
+          description: Number of vulnerabilities by severity
+          labels:
+            - severity
+            - cve_id
+            - component
+        - name: scan_duration_seconds
+          type: histogram
+          description: Security scan duration
+    logging:
+      level: info
+      format: json
+      auditLog:
+        enabled: true
+        destination: /var/log/security/audit.log
+        retention: 365
+  state:
+    mode: session
+    storage:
+      type: kv
+      retention: "86400"
+  reliability:
+    sla:
+      availability_percent: 99.5
+      latency_p95_ms: 60000
+      error_rate_percent: 0.5
+    circuit_breaker:
+      enabled: true
+      failure_threshold: 5
+      timeout_seconds: 120
+      half_open_requests: 3
+    health_check:
+      enabled: true
+      interval_seconds: 30
+      timeout_seconds: 10
+    failover:
+      enabled: true
+      strategy: active-passive
+  security:
+    authentication:
+      required: true
+      methods:
+        - mtls
+        - bearer
+    authorization:
+      model: rbac
+      roles:
+        - security-scanner
+        - agent-operator
+      permissions:
+        - kubernetes:read
+        - images:scan
+        - secrets:detect
+    encryption:
+      in_transit:
+        enabled: true
+        tls_version: "1.3"
+      at_rest:
+        enabled: true
+        algorithm: aes-256-gcm
+        key_management: vault
+    audit:
+      enabled: true
+      log_level: detailed
+      retention_days: 365
+      pii_redaction: true
+    compliance:
+      frameworks:
+        - soc2
+      data_residency:
+        - US
+  safety:
+    content_filtering:
+      enabled: true
+      categories:
+        - violence
+        - hate
+      threshold: high
+      action: block
+    pii_detection:
+      enabled: true
+      types:
+        - ssn
+        - email
+        - phone
+        - credit_card
+      action: redact
+    rate_limiting:
+      enabled: true
+      requests_per_minute: 60
+      burst_limit: 20
+    guardrails:
+      enabled: true
+      policies:
+        - name: read_only_kubernetes
+          type: output
+          rules:
+            - no_modify_kubernetes
+        - name: no_data_exfiltration
+          type: output
+          rules:
+            - no_send_secrets_externally
+      max_tool_calls: 100
+      max_execution_time_seconds: 600
+  deployment:
+    strategy: rolling
+    rollback:
+      enabled: true
+      automatic: true
+    versioning:
+      scheme: semver
+      compatibility: backward
+    lifecycle:
+      startup_probe:
+        enabled: true
+        initial_delay_seconds: 10
+        period_seconds: 10
+        failure_threshold: 6
+      readiness_probe:
+        enabled: true
+        period_seconds: 10
+      liveness_probe:
+        enabled: true
+        period_seconds: 30
+      graceful_shutdown:
+        enabled: true
+        timeout_seconds: 60
+  extensions:
+    kagent:
+      kubernetes:
+        namespace: security-system
+        labels:
+          app: security-scanner
+          team: security-ops
+          compliance: cis-kubernetes
+        annotations:
+          description: Automated security vulnerability scanner
+          contact: ops@openstandardagents.org
+          compliance: CIS Kubernetes Benchmark v1.8
+        resourceLimits:
+          cpu: 2000m
+          memory: 4Gi
+          ephemeralStorage: 10Gi
+        serviceAccount: security-scanner-sa
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 65534
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop:
+              - ALL
+      guardrails:
+        requireApproval: false
+        costLimits:
+          maxTokensPerDay: 500000
+          maxCostPerDay: 50
+          currency: USD
+        allowedActions:
+          - kubernetes:get:pods
+          - kubernetes:get:deployments
+          - kubernetes:get:secrets
+          - kubernetes:get:configmaps
+          - kubernetes:get:roles
+          - kubernetes:get:rolebindings
+          - kubernetes:get:clusterroles
+          - kubernetes:get:clusterrolebindings
+        auditLog:
+          destination: compliance-engine
+          retention: 1year
+      a2aConfig:
+        enabled: true
+        protocol: json-rpc
+        endpoints:
+          - http://compliance-auditor:8080/a2a
+          - http://rollback-coordinator:8080/a2a
+          - http://monitoring-agent:8080/a2a
+        authentication:
+          type: mtls
+          certPath: /var/secrets/a2a-client-cert.pem
+          keyPath: /var/secrets/a2a-client-key.pem
+      meshIntegration:
+        enabled: true
+        istioIntegration: true
+        ambientMesh: true
+        mtlsMode: STRICT
+        trafficPolicy:
+          connectionPool:
+            tcp:
+              maxConnections: 100
+            http:
+              http2MaxRequests: 1000
+              maxRequestsPerConnection: 2
+    gitlab_duo:
+      enabled: true
+      flow_execution: true
+      model: ${GITLAB_DUO_MODEL:-claude-sonnet-4.5-20250929}
+      knowledge_graph:
+        enabled: true
+        index_on_push: true
+    mcp:
+      enabled: true
+      server_type: stdio
+      server_name: security-scanner-mcp

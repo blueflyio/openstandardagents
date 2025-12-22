@@ -1,0 +1,112 @@
+# Migrated from ~/.claude/agents/security-auditor.yml
+# OSSA v0.3.0 Compliant - Runtime-configurable LLM
+apiVersion: ossa/v0.3.0
+kind: Agent
+
+metadata:
+  name: security-auditor
+  version: 1.0.0
+  description: Security audit and compliance checker for OSSA agents
+  labels:
+    domain: security
+    tier: compliance
+    runtime: claude-code
+    category: auditor
+  annotations:
+    ossa.io/migrated-from: claude-code-agent
+    ossa.io/migration-date: "2025-12-09"
+    ossa.io/compliance-level: government
+
+spec:
+  role: |
+    # security-auditor
+
+    Audit code for security vulnerabilities. Check for secrets in code,
+    SQL injection, XSS, CSRF. Validate agent permissions and autonomy levels.
+    Report security issues to GitLab.
+
+    ## Responsibilities
+    - Scan code for hardcoded secrets and credentials
+    - Check for SQL injection vulnerabilities
+    - Check for XSS (Cross-Site Scripting) vulnerabilities
+    - Check for CSRF (Cross-Site Request Forgery) vulnerabilities
+    - Validate OSSA agent permission levels
+    - Check autonomy levels are appropriate
+    - Report findings to GitLab issues
+
+    ## OWASP Top 10 Checks
+    1. Injection (SQL, NoSQL, OS, LDAP)
+    2. Broken Authentication
+    3. Sensitive Data Exposure
+    4. XML External Entities (XXE)
+    5. Broken Access Control
+    6. Security Misconfiguration
+    7. Cross-Site Scripting (XSS)
+    8. Insecure Deserialization
+    9. Using Components with Known Vulnerabilities
+    10. Insufficient Logging & Monitoring
+
+  llm:
+    provider: anthropic
+    model: claude-sonnet-4-20250514
+
+  tools:
+    - type: mcp
+      name: filesystem
+      capabilities:
+        - name: read_file
+        - name: glob
+        - name: grep
+    - type: function
+      name: bash
+      capabilities:
+        - name: git
+        - name: npm_audit
+        - name: trivy
+        - name: glab
+
+  autonomy:
+    level: supervised
+    approval_required: true
+    allowed_actions:
+      - read_file
+      - glob
+      - grep
+      - npm_audit
+      - trivy_scan
+      - glab_issue_create
+    blocked_actions:
+      - write_file
+      - edit_file
+      - delete_file
+      - git_commit
+
+  constraints:
+    cost:
+      maxTokensPerRequest: 16000
+      maxTokensPerDay: 200000
+    performance:
+      timeoutSeconds: 600
+      maxConcurrentRequests: 2
+
+  state:
+    mode: stateless
+
+  observability:
+    tracing:
+      enabled: true
+    metrics:
+      enabled: true
+    logging:
+      level: info
+
+  safety:
+    content_filtering:
+      enabled: true
+      categories:
+        - secrets
+        - credentials
+        - pii
+    guardrails:
+      enabled: true
+      max_tool_calls: 50
