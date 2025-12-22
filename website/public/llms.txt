@@ -1,21 +1,152 @@
-# Open Standard for Scalable Agents (OSSA)
+# Open Standard for Scalable Agents (OSSA) - AI Agent Manifest
 
-> OSSA is a vendor-neutral, open specification for defining, deploying, and orchestrating AI agents across platforms. Visit openstandardagents.org for the complete specification, examples, and documentation.
+> OSSA is a vendor-neutral, open specification for defining, deploying, and orchestrating AI agents across platforms. Think of it as "OpenAPI for AI Agents" - enabling interoperability, portability, and standardization.
 
-## Specification
+## Current Version: v0.3.0
 
-- [OSSA Schema v0.2.8](https://openstandardagents.org/schemas/ossa-schema.yaml): Complete agent definition schema
-- [API Documentation](https://openstandardagents.org/api-docs.html): OpenAPI specification for OSSA APIs
-- [Examples](https://openstandardagents.org/examples.json): 35+ agent definition examples
+**Status**: Stable (Released 2025-12-20)
+**Website**: https://openstandardagents.org
+**Repository**: https://gitlab.com/blueflyio/openstandardagents.org
+**NPM**: @bluefly/openstandardagents
 
-## Project Resources
+## Specification Resources
 
-- [GitLab Repository](https://gitlab.com/blueflyio/openstandardagents): Source code and development
-- [Project llms.txt](https://gitlab.com/blueflyio/openstandardagents/-/blob/main/llms.txt): Detailed project documentation
-- [Wiki](https://gitlab.com/blueflyio/openstandardagents/-/wikis/home): Complete documentation wiki
+- **[Complete Specification](https://openstandardagents.org/docs/specification)**: Single source of truth - authoritative reference
+- **[JSON Schema v0.3.0](https://openstandardagents.org/schemas/v0.3.0/agent.json)**: Complete agent definition schema
+- **[Schema Reference](https://openstandardagents.org/docs/schema-reference)**: Field-by-field documentation
+- **[API Documentation](https://openstandardagents.org/api-docs.html)**: OpenAPI specification for OSSA APIs
+- **[Examples](https://openstandardagents.org/examples.json)**: 50+ validated agent definitions
 
-## Integration
+## For AI Assistants: Critical Guidelines
 
-- [GitLab Duo Platform](https://gitlab.com/blueflyio/openstandardagents/-/issues/73): Integration guide
-- [12 OSSA Agents](https://gitlab.com/blueflyio/openstandardagents/-/wikis/Specialized-Bot-Deployment): Agent registry
-- [AgentFlow Lifecycle](https://gitlab.com/blueflyio/openstandardagents/-/wikis/AgentFlow-Lifecycle): Workflow states
+### Documentation Structure
+```
+/docs/specification.md          # SINGLE SOURCE OF TRUTH - reference this first
+/docs/schema-reference/         # Complete field reference
+/docs/getting-started/          # Quickstart guides
+/docs/migration-guides/         # Framework migration guides
+/docs/api-reference/            # API documentation
+/docs/cli-reference/            # CLI commands
+```
+
+### Validation Rules
+1. **Always validate against current schema**: v0.3.0 at https://openstandardagents.org/schemas/v0.3.0/agent.json
+2. **Check specification.md first**: It's the authoritative reference for all OSSA concepts
+3. **Use proper API versions**: `ossa/v0.3.x` or `ossa/v1` (not `ossa/v0.2.x` unless migrating)
+4. **Follow DNS-1123 naming**: `lowercase-with-hyphens` for agent names (max 253 chars)
+5. **Use semantic versioning**: MAJOR.MINOR.PATCH format
+
+### Agent Manifest Structure
+```yaml
+apiVersion: ossa/v0.3.x
+kind: Agent|Workflow|Task|MessageRouting
+metadata:
+  name: agent-name              # DNS-1123 format
+  version: 1.0.0                # Semantic version
+  description: Purpose          # Max 2000 chars
+spec:
+  taxonomy:                     # Domain classification
+    domain: string
+    subdomain: string
+    capability: string
+  role: string                  # LLM system prompt
+  llm:                          # LLM configuration
+    provider: anthropic|openai
+    model: string
+    temperature: number
+  tools: []                     # Available tools
+  autonomy:                     # Autonomy settings
+    level: supervised|autonomous
+  constraints:                  # Resource limits
+  observability:                # Tracing, metrics, logs
+```
+
+## Commands & Scripts
+
+```bash
+# Validate agent manifest
+ossa validate <file.ossa.yaml>
+
+# Generate agent from OpenAPI
+ossa generate --openapi <spec.yaml> --output <agent.ossa.yaml>
+
+# Migrate from other frameworks
+ossa migrate --from langchain --input <file> --output <agent.ossa.yaml>
+
+# Schema operations
+ossa schema validate <file>
+ossa schema export --version v0.3.0
+```
+
+## Project Integration
+
+### GitLab CI/CD
+- **Pipeline**: `.gitlab-ci.yml` - Complete CI/CD with Auto DevOps
+- **Agents**: `.gitlab/agents/*.ossa.yaml` - Agent definitions
+- **MR Template**: `.gitlab/merge_request_templates/ossa-agent.md`
+- **Validation Stage**: Automatic schema validation on MRs
+- **Wiki Sync**: Automated wiki → docs synchronization
+
+### NPM Scripts
+```bash
+npm run fetch-spec      # Fetch latest schema from GitLab
+npm run validate-docs   # Validate documentation links
+npm run sync-wiki       # Sync GitLab wiki to docs/
+npm run fetch-examples  # Fetch example agents
+```
+
+## Framework Compatibility
+
+| Framework | Adapter | Status |
+|-----------|---------|--------|
+| LangChain | @bluefly/langchain-ossa | ✅ Available |
+| CrewAI | @bluefly/crewai-ossa | ✅ Available |
+| Anthropic MCP | Native | ✅ Built-in |
+| OpenAI Agents | @bluefly/openai-agents-ossa | ✅ Available |
+| AutoGPT | @bluefly/autogpt-ossa | ⚠️ Beta |
+| Drupal ECA | Drupal LLM Platform | ✅ Available |
+
+## Version History
+
+- **v0.3.0** (2025-12-20): Agent-to-Agent (A2A) messaging, enhanced workflows, improved observability
+- **v0.2.9**: Previous stable - Basic agent definition
+- **v0.2.8**: Legacy - Deprecated
+- **v0.2.6**: Legacy - Deprecated
+
+## Migration Guides
+
+- [LangChain → OSSA](https://openstandardagents.org/docs/migration-guides/langchain-to-ossa)
+- [CrewAI → OSSA](https://openstandardagents.org/docs/migration-guides/crewai-to-ossa)
+- [Anthropic MCP → OSSA](https://openstandardagents.org/docs/migration-guides/anthropic-mcp-to-ossa)
+- [OpenAI → OSSA](https://openstandardagents.org/docs/migration-guides/openai-to-ossa)
+- [v0.2.x → v0.3.0](https://openstandardagents.org/docs/specification#version-migrations)
+
+## Support & Community
+
+- **Issues**: https://gitlab.com/blueflyio/openstandardagents/-/issues
+- **Discussions**: https://gitlab.com/blueflyio/openstandardagents/-/issues
+- **Documentation**: https://openstandardagents.org/docs
+- **Wiki**: https://gitlab.com/blueflyio/openstandardagents/-/wikis/home
+
+## Key Principles
+
+1. **Framework Agnostic**: Works with any agent framework or runtime
+2. **Language Independent**: Not tied to Python, JavaScript, or any language
+3. **Vendor Neutral**: Open standard, no vendor lock-in
+4. **Enterprise Ready**: Built-in governance, compliance, observability
+5. **Versioned**: Semantic versioning with clear migration paths
+6. **OpenAPI-Inspired**: Similar design philosophy to OpenAPI/Swagger
+
+## Common Pitfalls for AI Assistants
+
+❌ **Don't**: Reference outdated versions (v0.2.x) unless explicitly migrating
+❌ **Don't**: Create documentation outside of specification.md without justification
+❌ **Don't**: Use uppercase or underscores in agent names
+❌ **Don't**: Skip validation against JSON Schema
+❌ **Don't**: Ignore semantic versioning rules
+
+✅ **Do**: Check specification.md as the single source of truth
+✅ **Do**: Validate all manifests with `ossa validate`
+✅ **Do**: Use DNS-1123 naming conventions
+✅ **Do**: Include observability configuration
+✅ **Do**: Define autonomy levels and constraints
