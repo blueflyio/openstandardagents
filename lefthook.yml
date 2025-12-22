@@ -4,8 +4,17 @@
 # Enforces: GitLab-First workflow, code quality, AI attribution blocking
 
 pre-commit:
-  parallel: true
+  parallel: false
   commands:
+    # Validate GitLab CI configuration (CRITICAL - prevents wasting CI minutes)
+    validate-gitlab-ci:
+      run: .lefthook/checks/validate-gitlab-ci.sh
+      priority: 1
+      stage_fixed: false
+      skip:
+        - merge
+        - rebase
+
     # Validate version consistency (CRITICAL for releases)
     validate-version-sync:
       run: |
