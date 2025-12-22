@@ -280,7 +280,8 @@ describe('OSSA v0.3.0 Task Schema', () => {
       });
 
       expect(task.kind).toBe('Task');
-      expect(task.apiVersion).toBe('ossa/v0.3.0');
+      const { getApiVersion } = require('../../src/utils/version');
+      expect(task.apiVersion).toBe(getApiVersion());
       expect(task.metadata.name).toBe('my-task');
       expect(task.spec.capabilities).toContain('do_something');
 
