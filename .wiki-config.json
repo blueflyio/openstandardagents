@@ -1,7 +1,7 @@
 {
   "PROJECT_NAME": "@bluefly/openstandardagents",
   "PROJECT_DESCRIPTION": "OSSA - Open Standard for Scalable AI Agents. A specification standard for AI agents (like OpenAPI for REST APIs). NOT a framework.",
-  "VERSION": "{{VERSION}}",
+  "VERSION": "0.3.0",
   "STATUS": "Active",
   "LICENSE": "Apache-2.0",
   "KEY_FEATURES": "- OSSA v0.3.0 specification\n- Type-safe TypeScript validation\n- OpenAPI 3.1 specifications\n- Reference implementations\n- Agent-to-Agent messaging\n- Web-native protocols",
