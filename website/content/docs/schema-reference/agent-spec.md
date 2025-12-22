@@ -397,7 +397,7 @@ spec:
 
 The `spec` object is validated against the JSON Schema:
 ```
-https://openstandardagents.org/schemas/v0.2.x/agent.json#/definitions/AgentSpec
+https://openstandardagents.org/schemas/v0.3.0/agent.json#/definitions/AgentSpec
 ```
 
 Required fields:

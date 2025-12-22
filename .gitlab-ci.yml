@@ -202,8 +202,170 @@ sync:auto:
   allow_failure: false
 
 # =============================================================================
-# VALIDATE
+# VALIDATE - Agent-Driven Documentation Validation
 # =============================================================================
+validate:documentation:
+  stage: validate
+  image: node:${NODE_VERSION}-alpine
+  variables:
+    NODE_ENV: production
+  before_script:
+    - cd website
+    - npm ci --prefer-offline --no-audit
+  script:
+    - |
+      echo "🔍 Validating documentation with agent-driven checks..."
+
+      # Check for broken internal links
+      echo "Checking internal links..."
+
+      find content/docs -name "*.md" -exec grep -H -E "\]\(/docs/[^)]+\)" {} \; | while read -r line; do
+        file=$(echo "$line" | cut -d: -f1)
+        link=$(echo "$line" | grep -o -E "\(/docs/[^)]+\)" | sed 's/^(//' | sed 's/)$//')
+        if [ ! -f "$target" ]; then
+          echo "❌ Broken link in $file: $link (target: $target not found)"
+        fi
+      done
+
+      # Validate schema references
+      echo "Validating schema URLs..."
+
+      # Check for outdated schema refs, excluding migration guides and examples
+      OUTDATED_REFS=$(grep -r "openstandardagents.org/schemas" content/docs/ | \
+        grep -v "v0.3.0" | \
+        grep -v "v1" | \
+        grep -v "migration" | \
+        grep -v "migration-guides" | \
+        grep -v "/examples/" | \
+        grep -v "/pre-release/" || true)
+      if [ -n "$OUTDATED_REFS" ]; then
+        echo "❌ Found outdated schema references (not v0.3.0 or v1):"
+        echo "$OUTDATED_REFS"
+        exit 1
+      else
+        echo "✅ Schema URLs up to date"
+      fi
+      # Check for version consistency
+      echo "Checking version references..."
+      SPEC_VERSION=$(grep -m1 "Version: v" content/docs/specification.md | sed 's/.*v//' | cut -d' ' -f1)
+      echo "Specification declares version: $SPEC_VERSION"
+
+      # Validate llms.txt is accessible
+      echo "Validating llms.txt..."
+      if [ ! -f "public/llms.txt" ]; then
+        echo "❌ llms.txt not found"
+        exit 1
+      fi
+      echo "✅ llms.txt exists and is accessible"
+
+      echo "✅ Documentation validation complete"
+  allow_failure: true
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      changes:
+        - website/content/docs/**/*.md
+        - website/content/blog/**/*.md
+        - website/public/llms.txt
+    - if: $CI_COMMIT_BRANCH =~ /^release\//
+    - if: $CI_COMMIT_BRANCH == "main"
+
+validate:agent-manifests:
+  stage: validate
+  image: alpine:latest
+  before_script:
+    - apk add --no-cache bash curl jq yq
+  script:
+    - |
+      echo "🤖 Validating OSSA agent manifests..."
+
+      # Find all .ossa.yaml files
+      AGENT_FILES=$(find .gitlab/agents -name "*.ossa.yaml" 2>/dev/null || echo "")
+
+      if [ -z "$AGENT_FILES" ]; then
+        echo "ℹ️  No agent manifests found in .gitlab/agents/"
+        exit 0
+      fi
+
+      # Validate each agent manifest
+      for file in $AGENT_FILES; do
+        echo "Validating $file..."
+
+        # Check required fields with yq
+        if ! yq eval '.apiVersion' "$file" >/dev/null 2>&1; then
+          echo "❌ Missing or invalid apiVersion in $file"
+          exit 1
+        fi
+
+        if [ "$(yq eval '.kind' "$file")" != "Agent" ]; then
+          echo "❌ Missing or invalid kind in $file"
+          exit 1
+        fi
+
+        if ! yq eval '.metadata' "$file" >/dev/null 2>&1; then
+          echo "❌ Missing metadata in $file"
+          exit 1
+        fi
+
+        echo "✅ $file passed basic validation"
+      done
+
+      echo "✅ All agent manifests validated"
+  allow_failure: true
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      changes:
+        - .gitlab/agents/**/*.ossa.yaml
+    - if: $CI_COMMIT_BRANCH =~ /^release\//
+    - if: $CI_COMMIT_BRANCH == "main"
+
+validate:llms-txt:
+  stage: validate
+  image: alpine:latest
+  before_script:
+    - apk add --no-cache curl
+  script:
+    - |
+      echo "🔍 Validating llms.txt for AI assistant compatibility..."
+
+      if [ ! -f "website/public/llms.txt" ]; then
+        echo "❌ llms.txt not found"
+        exit 1
+      fi
+
+      # Check for required sections
+      REQUIRED_SECTIONS="Current Version|Specification Resources|For AI Assistants|Commands & Scripts|Version History"
+
+      echo "$REQUIRED_SECTIONS" | tr '|' '\n' | while IFS= read -r section; do
+        # Escape special characters for grep
+        escaped_section=$(printf '%s\n' "$section" | sed 's/[[.*^$()+?{|]/\\&/g')
+        if ! grep -q "$escaped_section" website/public/llms.txt; then
+        if ! grep -q "$section" website/public/llms.txt; then
+          echo "❌ Missing required section: $section"
+          exit 1
+        fi
+      done
+
+      # Check for proper version references
+      if grep -q "v0.2" website/public/llms.txt; then
+        if ! grep -q "Legacy\|Deprecated\|Previous" website/public/llms.txt; then
+          echo "⚠️  Found v0.2 references without deprecation notice"
+        fi
+      fi
+
+      # Validate schema URL format
+      if ! grep -q "openstandardagents.org/schemas/v0.3.0/agent.json" website/public/llms.txt; then
+        echo "❌ Missing or incorrect schema URL for v0.3.0"
+        exit 1
+      fi
+
+      echo "✅ llms.txt validation passed"
+  allow_failure: true
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      changes:
+        - website/public/llms.txt
+    - if: $CI_COMMIT_BRANCH =~ /^release\//
+    - if: $CI_COMMIT_BRANCH == "main"
 
 # =============================================================================
 # TEST
