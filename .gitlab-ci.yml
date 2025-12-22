@@ -23,6 +23,7 @@ include:
   - local: '.gitlab/ci/fix-mr-targets.yml'  # Fix MRs targeting main branch
   - local: '.gitlab/ci/ossa-version-management.yml'  # Dynamic OSSA version detection and injection
   - local: '.gitlab/ci/release-workflow.yml'  # Dev tag automation and GitLab Release creation
+  - local: '.gitlab/ci/validate-documentation.yml'  # Documentation validation
   # Security scanning from Auto DevOps
   - template: Jobs/SAST.gitlab-ci.yml
   - template: Jobs/Secret-Detection.gitlab-ci.yml
