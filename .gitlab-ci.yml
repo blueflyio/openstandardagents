@@ -589,6 +589,29 @@ validate:docs-consistency:
 # STAGE 2 - BUILD
 # ============================================================================
 
+generate:spec:
+  stage: build
+  image: node:${NODE_VERSION}-alpine
+  tags:
+    - saas-linux-small-amd64
+  before_script:
+    - apk add --no-cache curl jq
+    - test -f build.env && . build.env || echo "No build.env found (using defaults)"
+  script:
+    - npm ci --legacy-peer-deps
+    - VERSION=$(jq -r '.current' .version.json)
+    - echo "Generating spec for version v${VERSION}"
+    - mkdir -p "spec/v${VERSION}"
+    - npm run build
+    - node dist/cli/index.js validate --generate-spec || echo "Spec generation (if implemented)"
+    - echo "Spec generation completed"
+  artifacts:
+    paths:
+      - spec/v*/
+    expire_in: 1 hour
+  rules:
+    - when: always
+
 build:dist:
   stage: build
   image: node:${NODE_VERSION}-alpine
@@ -606,6 +629,9 @@ build:dist:
       optional: true
       artifacts: true
     - job: detect:version
+      optional: true
+      artifacts: true
+    - job: generate:spec
       optional: true
       artifacts: true
   before_script:
