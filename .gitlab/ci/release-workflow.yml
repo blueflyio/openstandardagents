@@ -229,6 +229,13 @@ create-rc-tag:
 
       # Extract base version (e.g., v0.3.0-dev.48 -> 0.3.0)
       BASE_VERSION=$(echo "$LATEST_DEV_TAG" | sed 's/^v//' | sed 's/-dev.*//')
+      
+      # Validate extracted version is valid semver
+      if ! echo "$BASE_VERSION" | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+$'; then
+        echo "ERROR: Invalid version format extracted: $BASE_VERSION"
+        exit 1
+      fi
+      
       echo "Base version: $BASE_VERSION"
 
       # Get next RC number
@@ -237,6 +244,10 @@ create-rc-tag:
         NEXT_RC=1
       else
         CURRENT_RC=$(echo "$LATEST_RC" | sed 's/.*-rc\.//')
+        if ! [[ "$CURRENT_RC" =~ ^[0-9]+$ ]]; then
+          echo "ERROR: Could not extract RC number from tag: $LATEST_RC"
+          exit 1
+        fi
         NEXT_RC=$((CURRENT_RC + 1))
       fi
 
