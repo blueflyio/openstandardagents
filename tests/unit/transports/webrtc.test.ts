@@ -295,8 +295,8 @@ describe('WebRTCTransport', () => {
           if (channel.readyState === 'connecting') {
             channel.simulateOpen();
           } else if (channel.readyState === 'open') {
-            // Emit event for already-open channels
-            transport1.emit('channel:open', channel.label);
+            // Channel already open - simulateOpen will handle it
+            channel.simulateOpen();
           }
         });
       }
