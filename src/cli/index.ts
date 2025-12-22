@@ -36,7 +36,7 @@ import {
   stopCommand,
 } from './commands/deploy.js';
 import { lintCommand } from './commands/lint.command.js';
-import { docsCommand } from './commands/docs.command.js';
+import { serveCommand } from './commands/serve.command.js';
 
 // Load package.json for version (lazy to avoid Jest module resolution issues)
 import * as fs from 'fs';
@@ -159,7 +159,7 @@ program.addCommand(deployGroup);
 
 program.addCommand(testCommand);
 program.addCommand(lintCommand);
-program.addCommand(docsCommand);
+program.addCommand(serveCommand);
 
 // Parse arguments - MUST be after all commands are registered
 program.parse();
