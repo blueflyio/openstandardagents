@@ -1,0 +1,70 @@
+{
+  "version": "1.0.0",
+  "protectedBranches": [
+    {
+      "name": "development",
+      "protection": {
+        "allowDirectCommits": false,
+        "allowDirectPushes": false,
+        "requirePullRequest": true,
+        "requiredStatusChecks": [
+          "ci/gitlab-ci",
+          "test/unit-tests",
+          "test/integration-tests"
+        ],
+        "enforceAdmins": true,
+        "allowForcePushes": false,
+        "allowDeletions": false
+      }
+    },
+    {
+      "name": "main",
+      "protection": {
+        "allowDirectCommits": false,
+        "allowDirectPushes": false,
+        "requirePullRequest": true,
+        "requiredStatusChecks": [
+          "ci/gitlab-ci",
+          "test/unit-tests",
+          "test/integration-tests",
+          "security/scan"
+        ],
+        "enforceAdmins": true,
+        "allowForcePushes": false,
+        "allowDeletions": false
+      }
+    }
+  ],
+  "allowedBranchPrefixes": [
+    "feature/",
+    "bug/",
+    "fix/",
+    "hotfix/",
+    "release/",
+    "chore/",
+    "docs/",
+    "style/",
+    "refactor/",
+    "test/",
+    "perf/",
+    "ci/",
+    "build/",
+    "revert/",
+    "wip/",
+    "experiment/"
+  ],
+  "workflow": {
+    "steps": [
+      "1. Pull latest development: git checkout development && git pull",
+      "2. Create feature branch: git checkout -b feature/task-name",
+      "3. Make changes and commit to feature branch",
+      "4. Push feature branch: git push -u origin feature/task-name",
+      "5. Create GitLab Merge Request to development",
+      "6. Get code review and CI approval",
+      "7. Merge via GitLab interface"
+    ]
+  },
+  "installedBy": "agent-buildkit",
+  "installedAt": "2025-09-11T05:45:40.017Z",
+  "lastUpdated": "2025-09-11T05:45:40.017Z"
+}

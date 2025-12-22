@@ -1,0 +1,354 @@
+# OSSA v0.3.0 Example: Dependency Healer Agent with Messaging
+#
+# This agent monitors dependencies, detects outdated packages, and coordinates
+# updates while communicating with security scanners via OSSA messaging.
+
+apiVersion: ossa/v0.3.0
+kind: Agent
+metadata:
+  name: dependency-healer
+  version: 1.0.0
+  description: Monitors and heals outdated dependencies across repositories
+  labels:
+    domain: devops
+    tier: core
+  annotations:
+    ossa.openstandardagents.org/category: maintenance
+    ossa.openstandardagents.org/schedule: daily
+
+spec:
+  role: |
+    You are a dependency management specialist. Your responsibilities:
+    1. Monitor package dependencies for available updates
+    2. Assess update compatibility and breaking changes
+    3. Coordinate with security scanners for vulnerability information
+    4. Create update plans with rollback strategies
+    5. Publish dependency change notifications
+
+    When evaluating updates:
+    - Check semantic versioning for breaking changes
+    - Review changelogs for migration requirements
+    - Verify compatibility with existing dependencies
+    - Request security scans for critical packages
+
+  llm:
+    provider: anthropic
+    model: claude-sonnet-4-20250514
+    temperature: 0.1
+    maxTokens: 4096
+
+  tools:
+    - type: mcp
+      name: package-registry
+      capabilities:
+        - name: check_updates
+          description: Check for available package updates
+          input_schema:
+            type: object
+            properties:
+              package:
+                type: string
+              current_version:
+                type: string
+              ecosystem:
+                type: string
+        - name: get_changelog
+          description: Fetch changelog for a package version
+          input_schema:
+            type: object
+            properties:
+              package:
+                type: string
+              from_version:
+                type: string
+              to_version:
+                type: string
+
+    - type: http
+      name: github-api
+      capabilities:
+        - name: get_release_notes
+          description: Fetch release notes from GitHub
+          input_schema:
+            type: object
+            properties:
+              repo:
+                type: string
+              tag:
+                type: string
+
+  messaging:
+    # Channels this agent publishes to
+    publishes:
+      - channel: dependency.updates
+        description: Notifications about dependency updates that are available
+        schema:
+          type: object
+          required:
+            - package
+            - current_version
+            - available_version
+            - update_type
+          properties:
+            package:
+              type: string
+              description: Package name
+            ecosystem:
+              type: string
+              enum: [npm, pypi, maven, go, rubygems]
+            current_version:
+              type: string
+            available_version:
+              type: string
+            update_type:
+              type: string
+              enum: [major, minor, patch, prerelease]
+              description: Type of version bump
+            breaking_changes:
+              type: boolean
+              description: Whether update contains breaking changes
+            security_related:
+              type: boolean
+              description: Whether update addresses security issues
+            severity:
+              type: string
+              enum: [low, medium, high, critical]
+              description: Urgency of the update
+            changelog_summary:
+              type: string
+              description: Brief summary of changes
+            dependencies_affected:
+              type: array
+              items:
+                type: string
+              description: Other packages that depend on this one
+            recommended_action:
+              type: string
+              enum: [update_immediately, update_soon, evaluate, skip]
+        examples:
+          - package: "lodash"
+            ecosystem: "npm"
+            current_version: "4.17.20"
+            available_version: "4.17.21"
+            update_type: "patch"
+            breaking_changes: false
+            security_related: true
+            severity: "critical"
+            changelog_summary: "Security fix for prototype pollution vulnerability"
+            dependencies_affected: ["express", "webpack"]
+            recommended_action: "update_immediately"
+
+      - channel: dependency.health.report
+        description: Periodic health reports on dependency status
+        schema:
+          type: object
+          required:
+            - repository
+            - report_time
+            - summary
+          properties:
+            repository:
+              type: string
+            report_time:
+              type: string
+              format: date-time
+            summary:
+              type: object
+              properties:
+                total_dependencies:
+                  type: integer
+                up_to_date:
+                  type: integer
+                minor_updates:
+                  type: integer
+                major_updates:
+                  type: integer
+                security_updates:
+                  type: integer
+                deprecated:
+                  type: integer
+            health_score:
+              type: number
+              minimum: 0
+              maximum: 100
+              description: Overall health score (0-100)
+            critical_issues:
+              type: array
+              items:
+                type: object
+                properties:
+                  package:
+                    type: string
+                  issue:
+                    type: string
+                  severity:
+                    type: string
+
+    # Channels this agent subscribes to
+    subscribes:
+      - channel: security.vulnerabilities
+        description: Receive vulnerability findings from security scanners
+        handler: process_vulnerability
+        filter:
+          fields:
+            severity: [high, critical]
+        priority: critical
+        maxConcurrency: 20
+
+      - channel: repository.changes
+        description: Notifications about repository changes (new deps, etc.)
+        handler: process_repo_change
+        filter:
+          expression: "${{ 'package.json' in message.files_changed or 'requirements.txt' in message.files_changed }}"
+        priority: high
+        maxConcurrency: 10
+
+      - channel: dependency.scan.requested
+        description: Manual requests to scan dependencies
+        handler: process_scan_request
+        priority: normal
+        maxConcurrency: 5
+
+    # Commands this agent accepts
+    commands:
+      - name: check_package_updates
+        description: Check for updates to a specific package
+        inputSchema:
+          type: object
+          required:
+            - package
+          properties:
+            package:
+              type: string
+            ecosystem:
+              type: string
+              default: npm
+            include_prerelease:
+              type: boolean
+              default: false
+        outputSchema:
+          type: object
+          properties:
+            current_version:
+              type: string
+            latest_version:
+              type: string
+            updates_available:
+              type: array
+              items:
+                type: object
+                properties:
+                  version:
+                    type: string
+                  release_date:
+                    type: string
+                  type:
+                    type: string
+        timeoutSeconds: 60
+        idempotent: true
+
+      - name: generate_health_report
+        description: Generate dependency health report for a repository
+        inputSchema:
+          type: object
+          required:
+            - repository
+          properties:
+            repository:
+              type: string
+              description: Repository path or URL
+            include_dev_deps:
+              type: boolean
+              default: true
+        outputSchema:
+          type: object
+          properties:
+            report:
+              $ref: "#/spec/messaging/publishes/1/schema"
+        timeoutSeconds: 300
+        idempotent: true
+
+      - name: request_security_scan
+        description: Request security scanner to scan a package
+        inputSchema:
+          type: object
+          required:
+            - package
+            - version
+          properties:
+            package:
+              type: string
+            version:
+              type: string
+            priority:
+              type: string
+              enum: [low, normal, high, critical]
+              default: normal
+        outputSchema:
+          type: object
+          properties:
+            scan_requested:
+              type: boolean
+            scan_id:
+              type: string
+            estimated_completion:
+              type: string
+              format: date-time
+        timeoutSeconds: 30
+        async: true
+
+    # Reliability configuration
+    reliability:
+      deliveryGuarantee: at-least-once
+      retry:
+        maxAttempts: 3
+        backoff:
+          strategy: exponential
+          initialDelayMs: 2000
+          maxDelayMs: 60000
+      dlq:
+        enabled: true
+        channel: dependency.dlq
+        retentionDays: 14
+      ordering:
+        guarantee: per-channel
+        timeoutSeconds: 600
+
+  autonomy:
+    level: supervised
+    approval_required: true
+    allowed_actions:
+      - check_updates
+      - analyze_changelogs
+      - publish_notifications
+      - request_scans
+    blocked_actions:
+      - auto_update_dependencies
+      - modify_lockfiles
+      - create_pull_requests
+
+  constraints:
+    cost:
+      maxTokensPerDay: 50000
+      maxTokensPerRequest: 4000
+    performance:
+      maxLatencySeconds: 60
+      maxConcurrentRequests: 10
+      timeoutSeconds: 300
+
+  state:
+    mode: session
+    storage:
+      type: kv
+      retention: 7d
+
+  observability:
+    tracing:
+      enabled: true
+      exporter: otlp
+    metrics:
+      enabled: true
+      exporter: prometheus
+    logging:
+      level: info
+      format: json

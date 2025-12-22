@@ -1,0 +1,223 @@
+apiVersion: ossa/v0.3.0
+kind: Agent
+
+metadata:
+  name: jetbrains-agent
+  version: 1.0.0
+  description: |
+    OSSA-compliant agent for JetBrains IDEs (IntelliJ, PyCharm, WebStorm, etc.).
+    Provides AI-powered coding assistance integrated with JetBrains AI.
+
+  labels:
+    ossa-version: v0.3.0
+    platform: jetbrains
+    provider: jetbrains
+    category: ide
+
+spec:
+  taxonomy:
+    domain: development
+    subdomain: code-editing
+    capability: intelligent-assistance
+
+  role: |
+    You are an AI assistant integrated with JetBrains IDEs.
+
+    Your responsibilities:
+    1. Provide intelligent code completions
+    2. Generate code from natural language
+    3. Refactor and optimize code
+    4. Explain code and documentation
+    5. Assist with debugging and testing
+
+    Leverage JetBrains' powerful code analysis.
+
+  llm:
+    provider: ${LLM_PROVIDER:-openai}
+    model: ${LLM_MODEL:-gpt-4o}
+    temperature: 0.2
+    maxTokens: 4000
+
+    fallback_models:
+      - provider: ${LLM_FALLBACK_PROVIDER_1:-anthropic}
+        model: ${LLM_FALLBACK_MODEL_1:-claude-sonnet-4}
+
+    retry_config:
+      max_attempts: 3
+      backoff_strategy: exponential
+
+    cost_tracking:
+      enabled: true
+      budget_alert_threshold: 50.00
+      cost_allocation_tags:
+        platform: jetbrains
+        team: ide-agents
+
+  capabilities:
+    - name: smart_completion
+      description: Generate context-aware completions
+      input_schema:
+        type: object
+        required: [context, language]
+        properties:
+          context:
+            type: object
+            properties:
+              prefix:
+                type: string
+              suffix:
+                type: string
+              file:
+                type: string
+          language:
+            type: string
+          project_type:
+            type: string
+      output_schema:
+        type: object
+        properties:
+          completions:
+            type: array
+            items:
+              type: object
+              properties:
+                text:
+                  type: string
+                priority:
+                  type: integer
+                type:
+                  type: string
+
+    - name: ai_chat
+      description: Chat-based coding assistance
+      input_schema:
+        type: object
+        required: [message]
+        properties:
+          message:
+            type: string
+          context:
+            type: object
+            properties:
+              file:
+                type: string
+              selection:
+                type: string
+              project:
+                type: string
+      output_schema:
+        type: object
+        properties:
+          response:
+            type: string
+          code_snippets:
+            type: array
+            items:
+              type: object
+          actions:
+            type: array
+            items:
+              type: string
+
+    - name: refactoring_suggestions
+      description: Suggest intelligent refactorings
+      input_schema:
+        type: object
+        required: [code, language]
+        properties:
+          code:
+            type: string
+          language:
+            type: string
+          scope:
+            type: string
+            enum: [method, class, file, module]
+          intent:
+            type: string
+      output_schema:
+        type: object
+        properties:
+          refactorings:
+            type: array
+            items:
+              type: object
+              properties:
+                type:
+                  type: string
+                description:
+                  type: string
+                preview:
+                  type: string
+                confidence:
+                  type: number
+
+    - name: test_generation
+      description: Generate unit tests
+      input_schema:
+        type: object
+        required: [code, language]
+        properties:
+          code:
+            type: string
+          language:
+            type: string
+          framework:
+            type: string
+          coverage_target:
+            type: number
+      output_schema:
+        type: object
+        properties:
+          tests:
+            type: string
+          coverage:
+            type: number
+          assertions:
+            type: array
+            items:
+              type: string
+
+    - name: documentation_generation
+      description: Generate code documentation
+      input_schema:
+        type: object
+        required: [code, language]
+        properties:
+          code:
+            type: string
+          language:
+            type: string
+          style:
+            type: string
+            enum: [javadoc, jsdoc, pydoc, rustdoc]
+      output_schema:
+        type: object
+        properties:
+          documentation:
+            type: string
+          examples:
+            type: array
+            items:
+              type: string
+
+  runtime:
+    type: local
+    config:
+      timeout: 30
+      retries: 2
+
+  integration:
+    platform: jetbrains
+    version: ">=2024.1"
+    configuration:
+      ides:
+        - IntelliJ IDEA
+        - PyCharm
+        - WebStorm
+        - PhpStorm
+        - GoLand
+        - RubyMine
+        - CLion
+        - Rider
+      ai_assistant_enabled: true
+      inline_completion: true

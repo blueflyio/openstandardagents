@@ -1,0 +1,94 @@
+ossaVersion: "1.0"
+agent:
+  id: kubernetes-ops-agent
+  name: Kubernetes Operations Agent
+  version: 1.0.0
+  description: OSSA agent with kagent.dev bridge for Kubernetes operations
+  role: orchestration
+  tags: ["kubernetes", "k8s", "devops", "kagent"]
+
+  runtime:
+    type: k8s
+    resources:
+      cpu: "500m"
+      memory: "512Mi"
+
+  capabilities:
+    - name: manage_deployments
+      description: Manage Kubernetes deployments
+      input_schema:
+        type: object
+        properties:
+          action:
+            type: string
+            enum: ["create", "update", "delete", "scale"]
+          deployment:
+            type: string
+          namespace:
+            type: string
+      output_schema:
+        type: object
+        properties:
+          status:
+            type: string
+          message:
+            type: string
+
+  monitoring:
+    traces: true
+    metrics: true
+    logs: true
+
+  # kagent.dev bridge configuration
+  bridge:
+    kagent:
+      enabled: true
+      api_version: kagent.dev/v1alpha2
+      agent_type: declarative
+      deployment:
+        replicas: 1
+        resources:
+          requests:
+            cpu: "100m"
+            memory: "256Mi"
+          limits:
+            cpu: "1000m"
+            memory: "1Gi"
+      model_config: default-model-config
+      system_message: |
+        You are a Kubernetes operations expert. You help users manage
+        and troubleshoot Kubernetes clusters. Use your tools to query
+        cluster state and perform operations safely.
+      tools:
+        - type: McpServer
+          mcpServer:
+            toolServer: kagent-tool-server
+            toolNames:
+              - k8s_get_resources
+              - k8s_get_available_api_resources
+              - k8s_apply_manifest
+              - k8s_delete_resource
+      a2a_config:
+        skills:
+          - id: cluster-management
+            name: Cluster Management
+            description: Manage Kubernetes cluster resources
+            examples:
+              - "Scale deployment nginx to 3 replicas"
+              - "Get all pods in production namespace"
+              - "Delete failed jobs in default namespace"
+            tags:
+              - kubernetes
+              - deployment
+              - operations
+          - id: troubleshooting
+            name: Cluster Troubleshooting
+            description: Diagnose and resolve cluster issues
+            examples:
+              - "Why is my pod crashing?"
+              - "Check resource usage across nodes"
+              - "Find pods consuming most memory"
+            tags:
+              - debugging
+              - diagnostics
+              - troubleshooting

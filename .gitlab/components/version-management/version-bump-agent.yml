@@ -1,0 +1,236 @@
+# ============================================================================
+# GitLab CI/CD Component: Version Bump via GitLab Agent
+# ============================================================================
+#
+# PURPOSE:
+#   GitLab CI/CD job component that uses the version-manager GitLab agent
+#   to automate version bumping. Demonstrates "dogfooding" by using OSSA
+#   agents to manage OSSA itself.
+#
+# USAGE:
+#   Include in .gitlab-ci.yml:
+#     include:
+#       - component: gitlab.com/blueflyio/openstandardagents/version-management/version-bump-agent@main
+#
+#   Then use:
+#     extends: .version-bump-agent
+#     variables:
+#       BUMP_TYPE: "patch"  # major, minor, patch, rc, release
+#       TARGET_BRANCH: "development"
+#
+# ============================================================================
+
+.version-bump-agent:
+  stage: version-detect
+  image: node:${NODE_VERSION}-alpine
+  before_script:
+    - apk add --no-cache git curl jq bash
+    - npm ci --legacy-peer-deps
+    - git config --global user.email "ci@bluefly.io"
+    - git config --global user.name "GitLab CI Version Manager"
+    - git remote set-url origin https://oauth2:${GITLAB_PUSH_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git
+    - git fetch --unshallow --tags || git fetch --tags || true
+  script:
+    - |
+      #!/bin/bash
+      set -e
+      
+      echo "🤖 VERSION BUMP VIA GITLAB AGENT"
+      echo "================================="
+      echo "Branch: ${CI_COMMIT_BRANCH}"
+      echo "Bump Type: ${BUMP_TYPE:-patch}"
+      echo "Target Branch: ${TARGET_BRANCH:-development}"
+      echo ""
+      
+      # Read current version from .version.json
+      if [ ! -f ".version.json" ]; then
+        echo "❌ ERROR: .version.json not found"
+        exit 1
+      fi
+      
+      CURRENT_VERSION=$(jq -r '.current' .version.json)
+      echo "📦 Current version: ${CURRENT_VERSION}"
+      
+      # Determine bump type from milestone or variable
+      if [ -n "${MILESTONE_TITLE}" ]; then
+        # Extract version from milestone (e.g., "v0.2.8" or "0.2.8")
+        MILESTONE_VERSION=$(echo "${MILESTONE_TITLE}" | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -1)
+        if [ -n "${MILESTONE_VERSION}" ]; then
+          BUMP_TYPE="auto"
+          TARGET_VERSION="${MILESTONE_VERSION}"
+          echo "🎯 Milestone version detected: ${TARGET_VERSION}"
+        fi
+      fi
+      
+      # Use service account token (preferred) or fallback to GITLAB_AGENT_TOKEN
+      SERVICE_ACCOUNT_TOKEN="${SERVICE_ACCOUNT_VERSION_MANAGER_TOKEN:-${GITLAB_AGENT_TOKEN}}"
+      
+      # Use GitLab Agent API to trigger version-manager agent
+      if [ -n "${SERVICE_ACCOUNT_TOKEN}" ]; then
+        echo "🤖 Invoking version-manager GitLab agent via service account..."
+        
+        # Call GitLab Agent API using service account token
+        AGENT_RESPONSE=$(curl -sS -X POST \
+          "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/agents/${GITLAB_AGENT_ID}/jobs" \
+          --header "PRIVATE-TOKEN: ${SERVICE_ACCOUNT_TOKEN}" \
+          --header "Content-Type: application/json" \
+          --data "{
+            \"job\": {
+              \"name\": \"version-bump\",
+              \"variables\": {
+                \"BUMP_TYPE\": \"${BUMP_TYPE:-patch}\",
+                \"CURRENT_VERSION\": \"${CURRENT_VERSION}\",
+                \"TARGET_VERSION\": \"${TARGET_VERSION:-}\",
+                \"TARGET_BRANCH\": \"${TARGET_BRANCH:-development}\",
+                \"CI_COMMIT_BRANCH\": \"${CI_COMMIT_BRANCH}\",
+                \"CI_COMMIT_SHA\": \"${CI_COMMIT_SHA}\"
+              }
+            }
+          }" || echo "{}")
+        
+        JOB_ID=$(echo "${AGENT_RESPONSE}" | jq -r '.id // empty')
+        
+        if [ -n "${JOB_ID}" ] && [ "${JOB_ID}" != "null" ]; then
+          echo "✅ Version bump job created: ${JOB_ID}"
+          echo "📊 Monitor job: ${CI_SERVER_URL}/${CI_PROJECT_PATH}/-/jobs/${JOB_ID}"
+          
+          # Wait for job completion (with timeout)
+          echo "⏳ Waiting for version bump to complete..."
+          TIMEOUT=300
+          ELAPSED=0
+          while [ $ELAPSED -lt $TIMEOUT ]; do
+            JOB_STATUS=$(curl -sS \
+              "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/jobs/${JOB_ID}" \
+              --header "PRIVATE-TOKEN: ${SERVICE_ACCOUNT_TOKEN}" | jq -r '.status // "unknown"')
+            
+            if [ "${JOB_STATUS}" = "success" ]; then
+              echo "✅ Version bump completed successfully!"
+              break
+            elif [ "${JOB_STATUS}" = "failed" ] || [ "${JOB_STATUS}" = "canceled" ]; then
+              echo "❌ Version bump failed with status: ${JOB_STATUS}"
+              exit 1
+            fi
+            
+            sleep 5
+            ELAPSED=$((ELAPSED + 5))
+            echo "   Status: ${JOB_STATUS} (${ELAPSED}s elapsed)"
+          done
+          
+          if [ $ELAPSED -ge $TIMEOUT ]; then
+            echo "⏰ Timeout waiting for version bump job"
+            exit 1
+          fi
+        else
+          echo "⚠️  GitLab Agent API not available, falling back to direct script execution"
+          FALLBACK_MODE=true
+        fi
+      else
+        echo "⚠️  GITLAB_AGENT_TOKEN not set, using direct script execution"
+        FALLBACK_MODE=true
+      fi
+      
+      # Fallback: Direct script execution (when agent not available)
+      if [ "${FALLBACK_MODE}" = "true" ]; then
+        echo "📝 Executing version bump directly..."
+        
+        # Run version bump script
+        npm run version:bump ${BUMP_TYPE:-patch}
+        
+        # Get new version
+        NEW_VERSION=$(jq -r '.current' .version.json)
+        echo "✅ Version bumped: ${CURRENT_VERSION} → ${NEW_VERSION}"
+        
+        # Export for downstream jobs
+        echo "NEW_VERSION=${NEW_VERSION}" >> version.env
+        echo "VERSION_BUMPED=true" >> version.env
+      else
+        # Read new version from agent job output
+        NEW_VERSION=$(jq -r '.current' .version.json)
+        echo "NEW_VERSION=${NEW_VERSION}" >> version.env
+        echo "VERSION_BUMPED=true" >> version.env
+      fi
+      
+      echo ""
+      echo "✅ Version management complete!"
+      echo "   Current: ${CURRENT_VERSION}"
+      echo "   New: ${NEW_VERSION}"
+  artifacts:
+    reports:
+      dotenv: version.env
+    paths:
+      - .version.json
+      - package.json
+      - website/package.json
+    expire_in: 1 week
+  rules:
+    - if: '$BUMP_VERSION == "true"'
+    - if: '$CI_MERGE_REQUEST_TITLE =~ /^chore:.*version/i'
+    - if: '$CI_COMMIT_MESSAGE =~ /\[version-bump\]/i'
+    - manual:
+        when: on_success
+        allow_failure: false
+  variables:
+    BUMP_TYPE: "patch"
+    TARGET_BRANCH: "development"
+    # Use service account token (preferred) or fallback to GITLAB_AGENT_TOKEN
+    SERVICE_ACCOUNT_VERSION_MANAGER_TOKEN: ${SERVICE_ACCOUNT_VERSION_MANAGER_TOKEN:-${GITLAB_AGENT_TOKEN}}
+
+.version-sync-agent:
+  stage: version-detect
+  image: node:${NODE_VERSION}-alpine
+  needs: []
+  before_script:
+    - apk add --no-cache git
+    - npm ci --legacy-peer-deps
+  script:
+    - |
+      #!/bin/bash
+      set -e
+      
+      echo "🔄 VERSION SYNC VIA GITLAB AGENT"
+      echo "================================="
+      
+      # Use GitLab Agent if available, otherwise direct execution
+      if [ -n "${GITLAB_AGENT_TOKEN}" ] && [ -n "${GITLAB_AGENT_ID}" ]; then
+        echo "🤖 Invoking version-manager agent for sync..."
+        # Agent-based sync would go here
+      fi
+      
+      # Always run sync to ensure consistency
+      npm run version:sync -- --check || npm run version:sync -- --fix
+      
+      echo "✅ Version sync complete"
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "push"'
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+    - if: '$VERSION_SYNC == "true"'
+  allow_failure: true
+
+.version-consistency-check:
+  stage: validate
+  image: node:${NODE_VERSION}-alpine
+  needs: []
+  before_script:
+    - npm ci --legacy-peer-deps
+  script:
+    - |
+      echo "🔍 VERSION CONSISTENCY CHECK"
+      echo "============================"
+      
+      # Check version consistency
+      npm run version:sync -- --check
+      
+      if [ $? -ne 0 ]; then
+        echo "❌ Version consistency check failed"
+        echo "Run: npm run version:sync -- --fix"
+        exit 1
+      fi
+      
+      echo "✅ All version references are consistent"
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "push"'
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+    - schedule:
+        cron: "0 2 * * *"  # Daily at 2 AM
+  allow_failure: false
+

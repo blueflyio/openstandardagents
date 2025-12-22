@@ -1,0 +1,31 @@
+# Webhook Triggers for Autonomous Evolution
+# These webhooks trigger agent workflows automatically
+
+webhook:milestone-closed:
+  description: Trigger release automation when milestone closes
+  events:
+    - milestone_close
+  actions:
+    - run: release:milestone-release
+
+webhook:issue-approved:
+  description: Trigger schema evolution when schema issue is approved
+  events:
+    - issue_close
+  conditions:
+    labels:
+      - schema
+      - approved
+  actions:
+    - run: implement:schema-update
+
+webhook:community-mention:
+  description: Trigger community listener on OSSA mentions
+  events:
+    - external_mention
+  sources:
+    - github
+    - twitter
+    - reddit
+  actions:
+    - run: intelligence:community-feedback
