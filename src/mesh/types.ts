@@ -1,6 +1,6 @@
 /**
  * Agent Mesh Communication Layer - Type Definitions
- * Based on OSSA v0.3.0 Messaging Specification and v0.2.9 A2A Protocol
+ * Based on OSSA v0.3.0 Messaging Specification and v0.3.0 A2A Protocol
  */
 
 /**
@@ -76,7 +76,7 @@ export type AgentStatus = 'healthy' | 'degraded' | 'unavailable';
  * Standard envelope format for all A2A messages
  */
 export interface MessageEnvelope<T = unknown> {
-  /** Protocol version - MUST be ossa/a2a/v0.2.9 */
+  /** Protocol version - MUST be ossa/a2a/v0.3.0 */
   version: string;
   /** Unique message identifier (UUID) */
   id: string;
