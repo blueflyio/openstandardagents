@@ -5,7 +5,14 @@ All notable changes to OSSA (Open Standard for Scalable AI Agents) will be docum
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.3.0-dev.51] - 2025-12-21
+## [Unreleased]
+
+### Fixed
+
+- **ci**: Prevent SIGPIPE in release:validate examples loop ([57f5056](https://gitlab.com/blueflyio/openstandardagents/-/commit/57f5056e5c117f0ba041c0e614224bee3e879df0))
+- **ci**: Accept {{VERSION}} placeholder in package.json exports validation ([85f208d](https://gitlab.com/blueflyio/openstandardagents/-/commit/85f208d20116208b218e54dc1a6fdbf7a1cce76d))
+- **ci**: Use .version.json as single source of truth for all version detection ([00f9220](https://gitlab.com/blueflyio/openstandardagents/-/commit/00f92203b825b4e1ba0dc19e9cd43d0f16b2b39d))
+- **test**: Restore v0.2.9 version in backwards-compat test case ([f9c64b3](https://gitlab.com/blueflyio/openstandardagents/-/commit/f9c64b3d1a282b21e23a79999884b4410b301925))## [0.3.0-dev.51] - 2025-12-21
 
 ### Fixed
 
