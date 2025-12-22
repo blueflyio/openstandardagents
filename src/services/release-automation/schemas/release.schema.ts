@@ -129,7 +129,7 @@ export const MilestoneSchema = z.object({
  */
 export const CreateMilestoneRequestSchema = z.object({
   title: z.string().regex(/^v?[0-9]+\.[0-9]+\.[0-9]+/, {
-    message: 'Milestone title must contain version (e.g., v0.2.9)',
+    message: 'Milestone title must contain version (e.g., v0.3.0)',
   }),
   description: z.string().optional(),
   dueDate: z.string().optional(),

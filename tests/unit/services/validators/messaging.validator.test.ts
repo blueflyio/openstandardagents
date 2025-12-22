@@ -126,7 +126,7 @@ describe('MessagingValidator', () => {
         ],
       };
 
-      const errors = validator.validateMessagingExtension(messaging, 'ossa/v0.2.9');
+      const errors = validator.validateMessagingExtension(messaging, 'ossa/v0.3.0');
       expect(errors).toHaveLength(0);
     });
 
