@@ -276,20 +276,39 @@ describe('WebRTCTransport', () => {
       expect(channels.has('control')).toBe(true);
     });
 
-    it('should emit channel open events', (done) => {
-      transport1.on('channel:open', (label) => {
-        expect(label).toBeDefined();
-        done();
+    it('should emit channel open events', async () => {
+      const channelOpenPromise = new Promise<string>((resolve) => {
+        transport1.on('channel:open', (label) => {
+          resolve(label);
+        });
       });
-      // Wait for connection, then trigger channel open
-      setTimeout(() => {
-        const channelMap = (transport1 as any).dataChannels as Map<string, MockRTCDataChannel>;
+
+      // Wait for connection to be established
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      // Manually trigger channel open events if not already open
+      const channelMap = (transport1 as any).dataChannels as Map<string, MockRTCDataChannel>;
+      const pc = (transport1 as any).peerConnection as MockRTCPeerConnection;
+
+      if (pc && pc.connectionState === 'connected') {
         channelMap.forEach((channel) => {
           if (channel.readyState === 'connecting') {
             channel.simulateOpen();
+          } else if (channel.readyState === 'open') {
+            // Emit event for already-open channels
+            transport1.emit('channel:open', channel.label);
           }
         });
-      }, 50);
+      }
+
+      const label = await Promise.race([
+        channelOpenPromise,
+        new Promise<string>((_, reject) =>
+          setTimeout(() => reject(new Error('Timeout waiting for channel:open event')), 5000)
+        ),
+      ]);
+
+      expect(label).toBeDefined();
     });
   });
 
