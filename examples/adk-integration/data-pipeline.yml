@@ -1,7 +1,7 @@
 # Example: ADK Data Processing Pipeline with OSSA Agents
 # Demonstrates LoopAgent and ConditionalAgent patterns
 
-apiVersion: ossa/v0.2.9
+apiVersion: ossa/v0.3.0
 kind: Workflow
 metadata:
   name: data-processing-pipeline

@@ -1,5 +1,5 @@
 # GitLab Webhook-Triggered Agent Pipeline
-# Enterprise-grade agent automation using OSSA v0.2.9
+# Enterprise-grade agent automation using OSSA v0.3.0
 # Part of BlueFly.io Agent Platform
 #
 # Trigger Flow:
@@ -27,7 +27,7 @@ variables:
   WEBHOOK_VALIDATION_ENABLED: "true"
 
   # OSSA Configuration
-  OSSA_SCHEMA_VERSION: "v0.2.9"
+  OSSA_SCHEMA_VERSION: "v0.3.0"
   OSSA_MANIFEST_PATH: ".gitlab/agents"
 
 # ============================================================================

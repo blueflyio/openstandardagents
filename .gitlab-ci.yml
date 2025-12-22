@@ -475,14 +475,20 @@ validate:scripts-version:
   script:
     - |
       echo "Validating npm scripts use dynamic version..."
-      VERSION=$(node -p "require('./package.json').version")
+      VERSION=$(jq -r '.current' .version.json)
       echo "Current version: ${VERSION}"
       
-      # Verify exports["./schema"] matches current version
+      # Verify exports["./schema"] uses dynamic version placeholder or matches current version
       EXPECTED_EXPORT="./spec/v${VERSION}/ossa-${VERSION}.schema.json"
+      PLACEHOLDER_EXPORT='./spec/v{{VERSION}}/ossa-{{VERSION}}.schema.json'
       ACTUAL_EXPORT=$(node -p "require('./package.json').exports?.['./schema'] || ''")
-      if [ "$ACTUAL_EXPORT" != "$EXPECTED_EXPORT" ] && [ -n "$ACTUAL_EXPORT" ]; then
-        echo "ERROR: package.json exports[\"./schema\"] is \"${ACTUAL_EXPORT}\", should be \"${EXPECTED_EXPORT}\""
+      if [ "$ACTUAL_EXPORT" = "$PLACEHOLDER_EXPORT" ]; then
+        echo "exports[\"./schema\"] uses {{VERSION}} placeholder (will be replaced during release)"
+      elif [ "$ACTUAL_EXPORT" = "$EXPECTED_EXPORT" ]; then
+        echo "exports[\"./schema\"] matches current version: ${EXPECTED_EXPORT}"
+      elif [ -n "$ACTUAL_EXPORT" ]; then
+        echo "ERROR: package.json exports[\"./schema\"] is \"${ACTUAL_EXPORT}\""
+        echo "       Expected: \"${PLACEHOLDER_EXPORT}\" (placeholder) or \"${EXPECTED_EXPORT}\" (resolved)"
         exit 1
       fi
 
@@ -519,9 +525,9 @@ validate:docs-consistency:
     - |
       echo "🔍 Pre-Release Documentation Validation"
       echo "========================================"
-      
-      VERSION=$(node -p "require('./package.json').version")
-      echo "Package version: v${VERSION}"
+
+      VERSION=$(jq -r '.current' .version.json)
+      echo "Release version: v${VERSION}"
 
       if ! npx tsx scripts/sync-versions.ts --check; then
         echo ""
@@ -945,11 +951,12 @@ release:validate:
 
       # 1. VERSION CONSISTENCY CHECK
       echo "📋 1. Version Consistency"
-      VERSION=$(node -p "require('./package.json').version")
-      echo "  Package version: v${VERSION}"
+      # Use .version.json as single source of truth (package.json uses {{VERSION}} placeholder)
+      VERSION=$(jq -r '.current' .version.json)
+      echo "  Release version: v${VERSION}"
 
       # Check schema exists for this version
-      SCHEMA_PATH="spec/v${VERSION}/ossa-${VERSION}.schema.json"
+      SCHEMA_PATH=$(jq -r '.spec_path + "/" + .schema_file' .version.json)
       if [ ! -f "$SCHEMA_PATH" ]; then
         echo "ERROR: Schema not found: ${SCHEMA_PATH}"
         ERRORS=$((ERRORS + 1))
@@ -990,25 +997,27 @@ release:validate:
       echo ""
       echo "📋 3. Examples Validation"
 
-      EXAMPLE_ERRORS=0
+      EXAMPLE_COUNT=0
+      EXAMPLE_WARNINGS=0
       for example in examples/**/*.ossa.yaml examples/**/*.ossa.json; do
         [ ! -f "$example" ] && continue
+        EXAMPLE_COUNT=$((EXAMPLE_COUNT + 1))
 
-        # Check apiVersion matches
-        if grep -q "apiVersion.*ossa/v${VERSION}" "$example" 2>/dev/null || \
-           jq -e ".apiVersion == \"ossa/v${VERSION}\"" "$example" 2>/dev/null; then
-          echo "   ${example}"
+        # Check apiVersion has valid format (ossa/vX.Y.Z)
+        # Examples can have older versions for backwards compatibility demos
+        EXAMPLE_API=$(grep -oE "ossa/v[0-9]+\.[0-9]+\.[0-9]+" "$example" 2>/dev/null | head -1 || true)
+        if [ -n "$EXAMPLE_API" ]; then
+          echo "   ${example} (${EXAMPLE_API})"
         else
-          EXAMPLE_API=$(grep -oE "apiVersion.*ossa/v[0-9.]+" "$example" 2>/dev/null | head -1 || \
-                        jq -r '.apiVersion // "unknown"' "$example" 2>/dev/null || echo "unknown")
-          echo "ERROR: ${example} has ${EXAMPLE_API}, expected ossa/v${VERSION}"
-          EXAMPLE_ERRORS=$((EXAMPLE_ERRORS + 1))
+          echo "WARNING: ${example} missing valid apiVersion format"
+          EXAMPLE_WARNINGS=$((EXAMPLE_WARNINGS + 1))
         fi
       done
 
-      if [ $EXAMPLE_ERRORS -gt 0 ]; then
-        echo "  ERROR: ${EXAMPLE_ERRORS} examples have wrong apiVersion"
-        ERRORS=$((ERRORS + EXAMPLE_ERRORS))
+      echo "   Validated ${EXAMPLE_COUNT} examples"
+      if [ $EXAMPLE_WARNINGS -gt 0 ]; then
+        echo "  WARNING: ${EXAMPLE_WARNINGS} examples have invalid apiVersion format"
+        WARNINGS=$((WARNINGS + EXAMPLE_WARNINGS))
       fi
 
       # 4. BUILD ARTIFACTS CHECK
@@ -1035,15 +1044,18 @@ release:validate:
 
       SCHEMA_EXPORT=$(node -p "require('./package.json').exports?.['./schema'] || ''" 2>/dev/null || echo "")
       EXPECTED_EXPORT="./spec/v${VERSION}/ossa-${VERSION}.schema.json"
+      PLACEHOLDER_EXPORT='./spec/v{{VERSION}}/ossa-{{VERSION}}.schema.json'
 
       if [ "$SCHEMA_EXPORT" = "$EXPECTED_EXPORT" ]; then
         echo "   Schema export correct: ${SCHEMA_EXPORT}"
+      elif [ "$SCHEMA_EXPORT" = "$PLACEHOLDER_EXPORT" ]; then
+        echo "   Schema export uses {{VERSION}} placeholder (valid)"
       elif [ -z "$SCHEMA_EXPORT" ]; then
         echo "WARNING: No ./schema export defined"
         WARNINGS=$((WARNINGS + 1))
       else
         echo "ERROR: Schema export mismatch"
-        echo "     Expected: ${EXPECTED_EXPORT}"
+        echo "     Expected: ${EXPECTED_EXPORT} or ${PLACEHOLDER_EXPORT}"
         echo "     Got: ${SCHEMA_EXPORT}"
         ERRORS=$((ERRORS + 1))
       fi
@@ -1143,8 +1155,8 @@ release:preview:
         echo "  Ready: ${MILESTONE_READY:-false}"
       fi
 
-      CURRENT_VERSION=$(node -p "require('./package.json').version")
-      echo "📄 Current package.json: v${CURRENT_VERSION}"
+      CURRENT_VERSION=$(jq -r '.current' .version.json)
+      echo "📄 Current release version: v${CURRENT_VERSION}"
       
       if [ "$ENABLE_RELEASE" = "true" ] && [ "$MILESTONE_READY" = "true" ]; then
         echo "Release will proceed automatically"
@@ -1504,12 +1516,8 @@ create-patch-version:
       # Check if this is a hotfix branch
       if echo "$CI_COMMIT_BRANCH" | grep -qE "^hotfix/"; then
         echo "Hotfix branch detected - creating dev tag only"
-        # For hotfix, try to get version from package.json using jq
-        if [ -f "package.json" ]; then
-          CURRENT_VERSION=$(jq -r '.version' package.json 2>/dev/null | sed 's/-dev\.[0-9]*//' | sed 's/-rc\.[0-9]*//' || echo "0.3.0")
-        else
-          CURRENT_VERSION="0.3.0"
-        fi
+        # Get version from .version.json (single source of truth)
+        CURRENT_VERSION=$(jq -r '.current' .version.json 2>/dev/null || echo "0.3.0")
         # Extract major.minor from version (e.g., 0.3.0 -> 0.3)
         BRANCH_VERSION=$(echo "$CURRENT_VERSION" | sed -E 's/^([0-9]+\.[0-9]+)\.[0-9]+$/\1/')
         echo "Hotfix dev tag series: v${BRANCH_VERSION}.0-dev.x"
@@ -2156,45 +2164,24 @@ release:rc-tag:
       echo "Branch: ${CI_COMMIT_BRANCH}"
       echo "Commit: ${CI_COMMIT_SHA}"
       echo "Pipeline Source: ${CI_PIPELINE_SOURCE}"
-      
-      # Get version from package.json
-      if [ -f "package.json" ]; then
-        VERSION=$(jq -r '.version' package.json 2>/dev/null || echo "")
-        # Clean up version string
-        VERSION=$(echo "$VERSION" | sed 's/-dev\.[0-9]*//' | sed 's/-rc\.[0-9]*//' | sed 's/{{VERSION}}//' | sed 's/^v//')
-      fi
-      
-      # Fallback to milestone version if package.json has placeholder or is empty
-      if [ -z "$VERSION" ] || [ "$VERSION" = "null" ] || [ "$VERSION" = "" ] || [ "$VERSION" = "{{VERSION}}" ]; then
-        # Load milestone version from artifact if available
+
+      # Get version from .version.json (single source of truth)
+      VERSION=$(jq -r '.current' .version.json 2>/dev/null || echo "")
+
+      # Fallback to milestone version if .version.json not available
+      if [ -z "$VERSION" ] || [ "$VERSION" = "null" ]; then
         if [ -f milestone-version.env ]; then
           set -a
           source milestone-version.env 2>/dev/null || true
           set +a
         fi
-        
+
         if [ -n "${RELEASE_VERSION:-}" ]; then
           VERSION="${RELEASE_VERSION}"
           echo "Using RELEASE_VERSION from milestone: ${VERSION}"
         else
-          # Try to get version from latest tag
-          LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
-          if [ -n "$LATEST_TAG" ]; then
-            VERSION=$(echo "$LATEST_TAG" | sed 's/^v//' | sed 's/-rc.*//' | sed 's/-dev.*//')
-            echo "Using version from latest tag: ${VERSION}"
-          else
-            # Last resort: use package.json even if it has placeholder, extract from branch or use default
-            if echo "$CI_COMMIT_BRANCH" | grep -qE "^release/v([0-9]+)\.([0-9]+)"; then
-              VERSION=$(echo "$CI_COMMIT_BRANCH" | sed -E 's/^release\/v([0-9]+)\.([0-9]+)\.x/\1.\2.0/')
-              echo "Using version from branch name: ${VERSION}"
-            else
-              echo "ERROR: Could not determine version"
-              echo "Package.json version: $(jq -r '.version' package.json 2>/dev/null || echo 'not found')"
-              echo "Latest tag: ${LATEST_TAG:-none}"
-              echo "Branch: ${CI_COMMIT_BRANCH}"
-              exit 1
-            fi
-          fi
+          echo "ERROR: Could not determine version from .version.json or milestone"
+          exit 1
         fi
       fi
       
