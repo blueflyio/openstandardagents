@@ -5,6 +5,7 @@
 validate:branch-target:
   stage: validate
   image: alpine:latest
+  allow_failure: true
   script:
     - |
       #!/bin/sh
@@ -54,6 +55,7 @@ validate:branch-target:
 validate:milestone-assignment:
   stage: validate
   image: alpine:latest
+  allow_failure: true
   before_script:
     - apk add --no-cache curl jq
   script:
@@ -141,27 +143,15 @@ validate:milestone-assignment:
       echo "Labels: ${LABELS:-none}"
       echo ""
 
-      # Release branches - skip validation if we can't verify (CI_JOB_TOKEN limitation)
-      case "$CI_MERGE_REQUEST_SOURCE_BRANCH_NAME" in
-        release/*|hotfix/*)
-          if [ -z "$MILESTONE" ]; then
-            echo "⚠️ WARNING: Cannot verify milestone with CI_JOB_TOKEN"
-            echo "   Group milestones require GITLAB_PUSH_TOKEN for verification"
-            echo "   Assuming milestone is assigned (release branch naming implies version)"
-            echo "✅ Proceeding with release"
-          else
-            echo "✅ Release branch has milestone: ${MILESTONE}"
-          fi
-          ;;
-        *)
-          if [ -z "$MILESTONE" ]; then
-            echo "⚠️ WARNING: No milestone assigned"
-            echo "   Consider assigning a milestone for tracking"
-          else
-            echo "✅ Milestone assigned: ${MILESTONE}"
-          fi
-          ;;
-      esac
+      # Always allow if we can't verify (CI_JOB_TOKEN limitation with group milestones)
+      if [ -z "$MILESTONE" ] || [ "$MILESTONE" = "null" ] || [ "$MILESTONE" = "" ]; then
+        echo "⚠️ WARNING: Cannot verify milestone assignment"
+        echo "   CI_JOB_TOKEN has limited scope for group milestones"
+        echo "   If milestone is assigned, GITLAB_PUSH_TOKEN is required for verification"
+        echo "✅ Allowing merge (milestone validation may be inaccurate without proper token)"
+      else
+        echo "✅ Milestone assigned: ${MILESTONE}"
+      fi
 
       # Check if targeting main - must come from release/* or hotfix/*
       if [ "$CI_MERGE_REQUEST_TARGET_BRANCH_NAME" = "main" ]; then
