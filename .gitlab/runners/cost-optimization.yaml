@@ -1,0 +1,90 @@
+# Cost Optimization for OSSA Runners
+# Spot instances, resource optimization, scheduling
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: runner-cost-optimization
+  namespace: gitlab-runner
+data:
+  cost-config.json: |
+    {
+      "spotInstances": {
+        "enabled": true,
+        "maxPrice": "0.10",
+        "interruptionBehavior": "terminate",
+        "fallbackToOnDemand": true
+      },
+      "scheduling": {
+        "timeWindows": {
+          "scaleDown": ["00:00-06:00"],
+          "scaleUp": ["08:00-18:00"]
+        },
+        "timezone": "UTC"
+      },
+      "resourceOptimization": {
+        "rightSizing": true,
+        "wasteThreshold": 0.3,
+        "optimizationInterval": "24h"
+      },
+      "costTracking": {
+        "enabled": true,
+        "budget": 100.00,
+        "currency": "USD",
+        "alertThreshold": 0.8
+      }
+    }
+
+---
+apiVersion: scheduling.k8s.io/v1
+kind: PriorityClass
+metadata:
+  name: runner-spot-priority
+value: 50
+globalDefault: false
+description: "Low priority for spot instance runners"
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gitlab-runner-spot
+  namespace: gitlab-runner
+  labels:
+    app: gitlab-runner
+    component: spot
+spec:
+  replicas: 0
+  selector:
+    matchLabels:
+      app: gitlab-runner
+      component: spot
+  template:
+    metadata:
+      labels:
+        app: gitlab-runner
+        component: spot
+    spec:
+      priorityClassName: runner-spot-priority
+      tolerations:
+      - key: "spot-instance"
+        operator: "Equal"
+        value: "true"
+        effect: "NoSchedule"
+      nodeSelector:
+        node-type: spot
+      containers:
+      - name: gitlab-runner
+        image: gitlab/gitlab-runner:latest
+        command:
+        - /usr/bin/gitlab-runner
+        - run
+        - --config=/etc/gitlab-runner/config.toml
+        resources:
+          requests:
+            cpu: 200m
+            memory: 512Mi
+          limits:
+            cpu: 1
+            memory: 2Gi
+      restartPolicy: Always

@@ -1,0 +1,83 @@
+# OSSA v0.3.0 Task: PHPCS Check
+# Deterministic task - no LLM required
+apiVersion: ossa/v0.3.0
+kind: Task
+
+metadata:
+  name: phpcs-check
+  version: 1.0.0
+  description: Run PHP CodeSniffer to check Drupal coding standards
+  labels:
+    domain: drupal
+    tier: lint
+    category: quality
+  annotations:
+    ossa.io/created-date: "2025-12-09"
+
+spec:
+  execution:
+    type: deterministic
+    runtime: drupal
+    entrypoint: vendor/bin/phpcs
+    timeout_seconds: 120
+
+  capabilities:
+    - lint_php
+    - check_standards
+
+  input:
+    type: object
+    properties:
+      path:
+        type: string
+        description: Path to check
+      standard:
+        type: string
+        description: Coding standard to use
+      extensions:
+        type: string
+        description: File extensions to check
+    required:
+      - path
+
+  output:
+    type: object
+    properties:
+      violations:
+        type: integer
+        description: Number of violations found
+      errors:
+        type: integer
+        description: Number of errors
+      warnings:
+        type: integer
+        description: Number of warnings
+      has_errors:
+        type: boolean
+        description: Whether errors were found
+      report:
+        type: string
+        description: Full PHPCS report
+
+  batch:
+    enabled: true
+    parallelism: 4
+    chunk_size: 10
+    retry:
+      max_attempts: 2
+      backoff_strategy: fixed
+      initial_delay_ms: 500
+    on_item_error: skip
+
+  error_handling:
+    on_error: fail
+
+  observability:
+    logging:
+      level: info
+    metrics:
+      enabled: true
+      custom_labels:
+        tool: phpcs
+    tracing:
+      enabled: true

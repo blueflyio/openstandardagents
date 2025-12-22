@@ -1,0 +1,61 @@
+apiVersion: ossa/v0.3.0
+kind: Agent
+
+metadata:
+  name: basic-openai-agent
+  version: 1.0.0
+  description: A basic OpenAI agent demonstrating simple tool usage
+
+spec:
+  role: |
+    You are a helpful assistant that can search the web and perform calculations.
+    Always provide clear and concise answers.
+
+  llm:
+    provider: openai
+    model: gpt-4o-mini
+    temperature: 0.7
+
+extensions:
+  openai_agents:
+    model: gpt-4o-mini
+    instructions: |
+      You are a helpful assistant with access to web search and calculator tools.
+      Use the search tool to find current information.
+      Use the calculator for mathematical operations.
+      Always explain your reasoning.
+    
+    tools_mapping:
+      - ossa_capability: web_search
+        openai_tool_name: search
+        description: Search the web for current information
+        parameters:
+          type: object
+          properties:
+            query:
+              type: string
+              description: The search query
+          required:
+            - query
+      
+      - ossa_capability: calculator
+        openai_tool_name: calculate
+        description: Perform mathematical calculations
+        parameters:
+          type: object
+          properties:
+            expression:
+              type: string
+              description: Mathematical expression to evaluate (e.g., "2 + 2", "sqrt(16)")
+          required:
+            - expression
+    
+    guardrails:
+      enabled: true
+      max_tool_calls: 5
+      timeout_seconds: 60
+    
+    memory:
+      enabled: true
+      type: session
+      max_messages: 20

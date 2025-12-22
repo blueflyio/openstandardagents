@@ -1,0 +1,74 @@
+# OSSA agents.md Extension - Basic Example
+# Demonstrates basic agents.md generation from OSSA manifest
+
+apiVersion: ossa/v0.3.0
+kind: Agent
+metadata:
+  name: code-review-agent
+  version: 1.0.0
+  description: AI agent for automated code review and quality checks
+  labels:
+    domain: development
+    capability: code-review
+
+spec:
+  role: |
+    You are a code review agent that analyzes pull requests for code quality,
+    best practices, and potential issues. You provide constructive feedback
+    and suggest improvements.
+
+  llm:
+    provider: openai
+    model: gpt-4
+    temperature: 0.3
+    maxTokens: 4000
+
+  tools:
+    - type: mcp
+      name: git_operations
+      server: git-mcp-server
+      namespace: default
+      capabilities:
+        - read_diff
+        - list_files
+        - get_file_content
+
+    - type: function
+      name: run_linter
+      config:
+        command: npm run lint
+
+  autonomy:
+    level: supervised
+    approval_required: true
+    allowed_actions:
+      - comment_on_pr
+      - request_changes
+      - approve_pr
+
+  constraints:
+    performance:
+      maxLatencySeconds: 30
+      timeoutSeconds: 60
+
+extensions:
+  agents_md:
+    enabled: true
+    generate: true
+    output_path: AGENTS.md
+    sections:
+      dev_environment:
+        enabled: true
+        source: spec.tools
+      testing:
+        enabled: true
+        custom: |
+          - Run linting: `npm run lint`
+          - Run tests: `npm test`
+          - Ensure all checks pass before requesting review
+      pr_instructions:
+        enabled: true
+        source: spec.autonomy
+    sync:
+      on_manifest_change: true
+      include_comments: true

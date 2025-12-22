@@ -1,0 +1,2562 @@
+# GitLab CI/CD Pipeline for OSSA
+# Release Branch Strategy
+# - Code flows: Feature → release/v0.X.x → main (CI validates, auto-release on merge to main)
+# - Website deployment - Manual button (independent of releases)
+# - NPM releases - Milestone-gated + ENABLE_RELEASE variable required
+#
+# Workflow
+# 1. Feature branches → merge to release/v0.X.x (CI validates)
+# 2. Release branches → merge to main via merge train (CI validates)
+# 3. Click "Deploy Website" button → GitLab Pages deploys
+# 4. To release - Set ENABLE_RELEASE=true + close milestone → automatic npm publish + git tag
+#
+# Release Gate
+# Releases require BOTH conditions
+#   - Milestone must be 100% complete and closed
+
+include:
+  - local: '.gitlab/ci/agents.yml'
+  - local: '.gitlab/ci/branch-policy.yml'
+  - local: '.gitlab/ci/webhook-agents.yml'  # OSSA v0.2.9 webhook-triggered agents
+  - local: '.gitlab/ci/merge-train-optimized.yml'  # Optimized merge train pipeline
+  - local: '.gitlab/ci/milestone-workflow.yml'  # Milestone-driven workflow enforcement
+  - local: '.gitlab/ci/fix-mr-targets.yml'  # Fix MRs targeting main branch
+  - local: '.gitlab/ci/ossa-version-management.yml'  # Dynamic OSSA version detection and injection
+  - local: '.gitlab/ci/release-workflow.yml'  # Dev tag automation and GitLab Release creation
+  # Security scanning from Auto DevOps
+  - template: Jobs/SAST.gitlab-ci.yml
+  - template: Jobs/Secret-Detection.gitlab-ci.yml
+  - template: Jobs/Dependency-Scanning.gitlab-ci.yml
+  # Merge trains enabled via workflow rules (see workflow section at bottom)
+  # Component available but private - uncomment when gitlab_components is public
+  # - component: gitlab.com/blueflyio/gitlab_components/merge-train@main
+  # OSSA Runners
+  - local: '.gitlab/ci/ossa-runners.yml'
+
+# Override SAST template jobs to add needs:[] so they don't block .post stage
+semgrep-sast:
+  needs: []
+
+secret_detection:
+  needs: []
+
+gemnasium-dependency_scanning:
+  needs: []
+
+#   - CI/CD variable ENABLE_RELEASE must be set to "true"
+# This allows deploying to main without releasing. Set the variable only when ready to release.
+#
+# To set ENABLE_RELEASE
+#   GitLab UI - Settings → CI/CD → Variables → Add variable
+#   Variable - ENABLE_RELEASE
+#   Value - true
+#   Protected - Yes (recommended)
+#   Masked - No
+#
+# Status - ACTIVE MODE
+# Last updated - 2025-11-25
+
+stages:
+  - .pre           # GitLab reserved pre-stage (used by create-release-mrs)
+  - setup          # Version detection and sync happen here (earliest stage)
+  - version-detect # Used by included CI files (release-workflow.yml, version-bump-agent.yml)
+  - validate       # Validation jobs (can use version from setup)
+  - build          # Build jobs (can use version from setup)
+  - test           # Test jobs (can use version from setup)
+  - quality        # Quality gates
+  - deploy         # Deployment
+  - release        # Release automation
+  - rc-validation  # RC validation stage (smoke tests, integration tests, staging deployment)
+  - mirror         # Mirror to external repos
+  - .post          # GitLab reserved post-stage (post-release jobs)
+
+# Use SaaS runners (GitLab Ultimate minutes)
+default:
+  tags:
+    - saas-linux-small-amd64
+
+variables:
+  NODE_VERSION: "22"
+  NPM_CONFIG_LEGACY_PEER_DEPS: "1"
+  HUSKY: "0"
+  LEFTHOOK: "0"
+  # GITLAB_PUSH_TOKEN is now set directly as CI/CD variable (not derived)
+  # This avoids variable expansion issues with masked tokens
+  DEPLOY_TOKEN_USERNAME: "gitlab+deploy-token-10466652"
+
+# ============================================================================
+# STAGE 0 - VERSION DETECTION & DEV TAG MANAGEMENT
+# ============================================================================
+
+detect:version:
+  stage: setup
+  needs: []  # Skip .pre stage - allows pipeline to auto-start
+  image: alpine:latest
+  timeout: 5 minutes
+  tags:
+    - saas-linux-small-amd64
+  before_script:
+    - apk add --no-cache curl jq
+    - apk add --no-cache git bash
+    - chmod +x .gitlab/scripts/detect-version.sh
+  script:
+    - .gitlab/scripts/detect-version.sh
+  artifacts:
+    expire_in: 1 hour
+    paths:
+      - build.env
+  rules:
+    - if: '$CI_COMMIT_BRANCH =~ /^release\/v/'
+    - if: '$CI_COMMIT_BRANCH == "main"'
+    - if: '$CI_MERGE_REQUEST_TARGET_BRANCH_NAME =~ /^release\/v/'
+    - if: '$CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "main"'
+    - if: '$CI_COMMIT_TAG'
+
+# FIXED: detect:milestone-and-tags - ONLY detect, don't push tags
+# Tag creation is handled by create-patch-version which has GITLAB_PUSH_TOKEN
+detect:milestone-and-tags:
+  stage: setup
+  needs: []  # Skip .pre stage - allows pipeline to auto-start
+  image: alpine:latest
+  timeout: 10 minutes
+  before_script:
+    - apk add --no-cache curl jq git bash
+    - git config user.email "ci@bluefly.io"
+    - git config user.name "GitLab CI"
+    # READ-ONLY - no push needed in this job
+    - git remote set-url origin "https://oauth2:${CI_JOB_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git"
+    - git fetch --unshallow --tags --force || git fetch --tags --force || true
+  script:
+    - |
+      #!/bin/bash
+      set -euo pipefail
+
+      echo "DEV TAG DETECTION (NOT CREATION)"
+      echo "================================="
+      echo "Branch: ${CI_COMMIT_BRANCH}"
+      echo "Commit: ${CI_COMMIT_SHA}"
+      echo ""
+
+      # Initialize env files
+      cat > dev-tags.env << 'EOF'
+      DEV_TAG_VERSION=
+      DEV_TAG_NAME=
+      DEV_TAG_BUILD=
+      EOF
+
+      # Only DETECT on release branches - don't create tags here
+      if echo "$CI_COMMIT_BRANCH" | grep -qE "^release/v"; then
+        BRANCH_VERSION=$(echo "$CI_COMMIT_BRANCH" | sed -n 's|^release/v\([0-9]\+\.[0-9]\+\).*|\1|p')
+
+        if [ -z "$BRANCH_VERSION" ]; then
+          echo "ERROR: Could not extract version from branch: $CI_COMMIT_BRANCH"
+        else
+          echo "Branch version: ${BRANCH_VERSION}.x"
+
+          # Find next patch version
+          LATEST_RELEASE=$(git tag -l "v${BRANCH_VERSION}.*" 2>/dev/null | grep -v "dev\|RC" | sort -V | tail -1 || true)
+
+          if [ -z "$LATEST_RELEASE" ]; then
+            DEV_VERSION="${BRANCH_VERSION}.0"
+          else
+            PATCH=$(echo "$LATEST_RELEASE" | sed "s/v${BRANCH_VERSION}\.//" | grep -oE '^[0-9]+' || echo "0")
+            [ -z "$PATCH" ] && PATCH=0
+            NEXT_PATCH=$((PATCH + 1))
+            DEV_VERSION="${BRANCH_VERSION}.${NEXT_PATCH}"
+          fi
+
+          echo "Target version: v${DEV_VERSION}"
+
+          # Get latest dev tag
+          LATEST_DEV_TAG=$(git tag -l "v${DEV_VERSION}-dev.*" 2>/dev/null | sort -V | tail -1 || true)
+          CURRENT_BUILD=$(echo "$LATEST_DEV_TAG" | sed "s/.*-dev\.//" | grep -E '^[0-9]+$' || echo "0")
+          [ -z "$CURRENT_BUILD" ] && CURRENT_BUILD=0
+          NEXT_BUILD=$((CURRENT_BUILD + 1))
+
+          # ONLY DETECT - don't create tag
+          NEW_TAG="v${DEV_VERSION}-dev.${NEXT_BUILD}"
+          echo "Next dev tag will be: ${NEW_TAG}"
+
+          # Save to env file for create-patch-version job
+          cat > dev-tags.env << EOF
+      DEV_TAG_VERSION=${DEV_VERSION}
+      DEV_TAG_NAME=${NEW_TAG}
+      DEV_TAG_BUILD=${NEXT_BUILD}
+      EOF
+        fi
+      else
+        echo "Skipping dev tag detection (not on release/* branch)"
+      fi
+      
+      # Detect ACTIVE milestones ready for release
+      # NEW FLOW: Milestone stays ACTIVE, release closes it
+      echo ""
+      echo "RELEASE READINESS CHECK"
+      echo "========================"
+      echo "Looking for ACTIVE milestone matching release version..."
+      echo "(Range milestones like v0.3.x cover multiple patch releases)"
+      echo ""
+
+      if [ ! -f .version.json ]; then
+        echo "ERROR: .version.json not found"
+        exit 1
+      fi
+      if ! jq -e '.current' .version.json >/dev/null 2>&1; then
+        echo "ERROR: .version.json does not contain valid 'current' field"
+        exit 1
+      fi
+      VERSION="$(jq -r '.current' .version.json)"
+      if [ -z "$VERSION" ] || [ "$VERSION" = "null" ]; then
+        echo "ERROR: Could not read version from .version.json"
+        exit 1
+      fi
+      MM="$(echo "$VERSION" | awk -F. '{print $1"."$2}')"
+      RANGE_TITLE="v${MM}.x"
+
+      # Default to root namespace; allow override
+      RELEASE_GROUP_FULL_PATH="${RELEASE_GROUP_FULL_PATH:-$CI_PROJECT_ROOT_NAMESPACE}"
+
+      # Resolve group id from full path (URL-encode slash)
+      ENC_GROUP_PATH="$(printf '%s' "$RELEASE_GROUP_FULL_PATH" | sed 's/\//%2F/g')"
+      GROUP_JSON="$(curl -sS --max-time 30 --header "JOB-TOKEN: ${CI_JOB_TOKEN}" \
+        "${CI_API_V4_URL}/groups/${ENC_GROUP_PATH}")"
+      GROUP_ID="$(echo "$GROUP_JSON" | jq -r '.id // empty')"
+
+      if [ -z "$GROUP_ID" ]; then
+        echo "ERROR: Could not resolve group id for: ${RELEASE_GROUP_FULL_PATH}"
+        echo "$GROUP_JSON" | jq -r '.message // .error // empty' || true
+        # Fallback to project milestones
+        echo "WARNING: Falling back to project milestones..."
+        MILESTONES_JSON="$(curl -sS --max-time 30 -G --header "JOB-TOKEN: ${CI_JOB_TOKEN}" \
+          "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/milestones" \
+          --data-urlencode "state=active" \
+          --data-urlencode "search=${MM}")"
+      else
+        MILESTONES_JSON="$(curl -sS --max-time 30 -G --header "JOB-TOKEN: ${CI_JOB_TOKEN}" \
+          "${CI_API_V4_URL}/groups/${GROUP_ID}/milestones" \
+          --data-urlencode "state=active" \
+          --data-urlencode "search=${MM}")"
+      fi
+
+      # Validate JSON before parsing
+      if ! echo "$MILESTONES_JSON" | jq -e 'type == "array"' > /dev/null 2>&1; then
+        echo "ERROR: Invalid JSON response from milestones API"
+        echo "$MILESTONES_JSON" | head -20
+        exit 1
+      fi
+
+      # Match range milestone first, then exact
+      # Use ($| ) instead of \b for word boundary (works better in jq regex)
+      MILESTONE="$(echo "$MILESTONES_JSON" | jq -c --arg range "^${RANGE_TITLE}(\$| )" --arg exact "^v?${VERSION}(\$| )" '
+        map(select(.state=="active")) |
+        (map(select(.title|test($range))) + map(select(.title|test($exact)))) |
+        .[0] // empty
+      ')"
+
+      if [ -z "$MILESTONE" ] || [ "$MILESTONE" = "null" ]; then
+        echo "RELEASE_VERSION=" > milestone-version.env
+        echo "MILESTONE_TITLE=" >> milestone-version.env
+        echo "MILESTONE_ID=" >> milestone-version.env
+        echo "MILESTONE_URL=" >> milestone-version.env
+        echo "MILESTONE_READY=false" >> milestone-version.env
+        echo "ISSUE_COUNT=0" >> milestone-version.env
+        echo "OPEN_ISSUE_COUNT=0" >> milestone-version.env
+        echo "RANGE_MILESTONE=false" >> milestone-version.env
+        echo "ERROR: No active milestone matching ${RANGE_TITLE} or v${VERSION} in group ${RELEASE_GROUP_FULL_PATH}"
+        exit 0
+      fi
+
+      TITLE="$(echo "$MILESTONE" | jq -r '.title // ""')"
+      ID="$(echo "$MILESTONE" | jq -r '.id // ""')"
+      WEB_URL="$(echo "$MILESTONE" | jq -r '.web_url // ""')"
+      TOTAL_ISSUES="$(echo "$MILESTONE" | jq -r '.issues_stats.total // 0')"
+      OPEN_ISSUES="$(echo "$MILESTONE" | jq -r '.issues_stats.opened // 0')"
+      if [ -n "$TITLE" ]; then
+        IS_RANGE="$(echo "$TITLE" | grep -Eq 'v[0-9]+\.[0-9]+\.x' && echo true || echo false)"
+      else
+        IS_RANGE="false"
+      fi
+
+      {
+        echo "RELEASE_VERSION=${VERSION}"
+        echo "MILESTONE_TITLE=${TITLE}"
+        echo "MILESTONE_ID=${ID}"
+        echo "MILESTONE_URL=${WEB_URL}"
+        # Range milestones (v0.3.x) stay ACTIVE for multiple patch releases
+        # Open issues don't block release - they continue to next patch
+        # This is INTENTIONAL: range milestones track a release line, not a single release
+        # BEHAVIORAL CHANGE: Previous logic required all issues closed. New logic allows
+        # open issues for range milestones (v0.3.x) since they span multiple patch releases.
+        # Exact version milestones (v0.3.0) would still require all issues closed if we used them.
+        echo "MILESTONE_READY=true"
+        echo "ISSUE_COUNT=${TOTAL_ISSUES}"
+        echo "OPEN_ISSUE_COUNT=${OPEN_ISSUES}"
+        echo "RANGE_MILESTONE=${IS_RANGE}"
+      } > milestone-version.env
+
+      echo "Milestone: ${TITLE}"
+      echo "  Total issues: ${TOTAL_ISSUES}"
+      echo "  Open issues: ${OPEN_ISSUES}"
+      if [ "$IS_RANGE" = "true" ]; then
+        echo "  Range milestone: open issues are informational (will continue in next patch)"
+        echo "  Release-ready: ${TITLE} (range milestone - open issues allowed)"
+      else
+        echo "  Release-ready: ${TITLE}"
+      fi
+
+      TITLE="$(echo "$MILESTONE" | jq -r '.title')"
+      ID="$(echo "$MILESTONE" | jq -r '.id')"
+      WEB_URL="$(echo "$MILESTONE" | jq -r '.web_url')"
+      TOTAL_ISSUES="$(echo "$MILESTONE" | jq -r '.issues_stats.total // 0')"
+      OPEN_ISSUES="$(echo "$MILESTONE" | jq -r '.issues_stats.opened // 0')"
+      IS_RANGE="$(echo "$TITLE" | grep -Eq 'v[0-9]+\.[0-9]+\.x' && echo true || echo false)"
+
+      {
+        echo "RELEASE_VERSION=${VERSION}"
+        echo "MILESTONE_TITLE=${TITLE}"
+        echo "MILESTONE_ID=${ID}"
+        echo "MILESTONE_URL=${WEB_URL}"
+        echo "MILESTONE_READY=true"
+        echo "ISSUE_COUNT=${TOTAL_ISSUES}"
+        echo "OPEN_ISSUE_COUNT=${OPEN_ISSUES}"
+        echo "RANGE_MILESTONE=${IS_RANGE}"
+      } > milestone-version.env
+
+      echo "Milestone: ${TITLE}"
+      echo "  Total issues: ${TOTAL_ISSUES}"
+      echo "  Open issues: ${OPEN_ISSUES}"
+      if [ "$IS_RANGE" = "true" ]; then
+        echo "  Range milestone: open issues are informational (will continue in next patch)"
+      fi
+      echo "  Release-ready: ${TITLE}"
+      
+      # Merge dev-tags.env into milestone-version.env
+      if [ -s dev-tags.env ]; then
+        cat dev-tags.env >> milestone-version.env
+      fi
+
+      # Back-compat for older jobs/includes expecting release-version.env
+      cp -f milestone-version.env release-version.env
+
+      echo ""
+      echo "📋 Summary:"
+      cat milestone-version.env
+  artifacts:
+    reports:
+      dotenv: milestone-version.env
+    paths:
+      - milestone-version.env
+      - release-version.env
+      - dev-tags.env
+    expire_in: 1 day
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+      when: always
+    - if: $CI_COMMIT_BRANCH =~ /^release\/v/
+      when: always
+  allow_failure: false
+
+# ============================================================================
+# STAGE 1 - SETUP & VALIDATE
+# ============================================================================
+
+validate:node:
+  stage: validate
+  needs: []
+  image: node:${NODE_VERSION}-alpine
+  script:
+    - node --version
+    - npm --version
+    - echo "Node.js ${NODE_VERSION} ready"
+  rules:
+    - when: always
+
+validate:ossa:
+  stage: validate
+  needs: []
+  image: node:${NODE_VERSION}-alpine
+  script:
+    - npm ci --legacy-peer-deps
+    - npm run build
+    - echo "Validating example manifests..."
+    - node dist/cli/index.js validate examples/getting-started/hello-world-complete.ossa.yaml || echo "WARNING Validation warnings (non-blocking)"
+  allow_failure: true
+  rules:
+    - when: always
+
+validate:gitlab-ci:
+  stage: validate
+  needs: []
+  image: alpine:latest
+  script:
+    - apk add --no-cache curl jq
+    - |
+      for file in $(find . -name ".gitlab-ci*.yml" -o -name "*.gitlab-ci.yml" 2>/dev/null | grep -v "^./examples/" | head -1); do
+        if [ -f "$file" ]; then
+          echo "Validating $file"
+          RESPONSE=$(curl --silent --request POST \
+            --header "JOB-TOKEN: ${CI_JOB_TOKEN}" \
+            --header "Content-Type: application/json" \
+            --data "$(jq -Rs '{content: .}' < "$file")" \
+            "${CI_API_V4_URL}/ci/lint")
+          
+          # Check if the response contains a valid field
+          if echo "$RESPONSE" | jq -e '.valid' > /dev/null 2>&1; then
+            if echo "$RESPONSE" | jq -e '.valid == true' > /dev/null 2>&1; then
+              echo "CI configuration is valid"
+            else
+              echo "CI configuration is invalid:"
+              echo "$RESPONSE" | jq -r '.errors[]' 2>/dev/null || echo "Unknown validation error"
+              exit 1
+            fi
+          else
+            echo "WARNING: CI validation API returned unexpected response:"
+            echo "$RESPONSE"
+            echo "Continuing anyway..."
+          fi
+        fi
+      done
+  allow_failure: true
+  rules:
+    - when: always
+
+# Check for divergent branches before merging to protected branches
+check:divergence:
+  stage: validate
+  image: alpine:latest
+  before_script:
+    - apk add --no-cache curl jq
+    - apk add --no-cache git
+  script:
+    - |
+      if [ "$CI_MERGE_REQUEST_TARGET_BRANCH" = "main" ] || echo "$CI_MERGE_REQUEST_TARGET_BRANCH" | grep -qE "^release/v"; then
+        echo "🔍 Checking for divergent branches..."
+        git fetch origin
+        
+        BEHIND=$(git log --oneline origin/$CI_MERGE_REQUEST_SOURCE_BRANCH..origin/$CI_MERGE_REQUEST_TARGET_BRANCH 2>/dev/null | wc -l)
+        AHEAD=$(git log --oneline origin/$CI_MERGE_REQUEST_TARGET_BRANCH..origin/$CI_MERGE_REQUEST_SOURCE_BRANCH 2>/dev/null | wc -l)
+        
+        if [ $BEHIND -gt 0 ] && [ $AHEAD -gt 0 ]; then
+          echo "ERROR: DIVERGENT BRANCHES DETECTED"
+          echo "Target has $BEHIND commits not in source"
+          echo "Source has $AHEAD commits not in target"
+          echo "Use squash merge or force push recovery"
+          exit 1
+        fi
+        
+        if [ $BEHIND -gt 0 ]; then
+          echo "WARNING: Source behind target by $BEHIND commits"
+          exit 1
+        fi
+        
+        echo "No divergence detected"
+      fi
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+
+# Check for .DS_Store files
+check:ds-store:
+  stage: validate
+  image: alpine:latest
+  before_script:
+    - apk add --no-cache curl jq
+    - apk add --no-cache git
+  script:
+    - |
+      echo "🔍 Checking for .DS_Store files..."
+      if git diff --name-only $CI_MERGE_REQUEST_DIFF_BASE_SHA 2>/dev/null | grep -q "\.DS_Store"; then
+        echo "ERROR: .DS_Store files in MR"
+        exit 1
+      fi
+      echo "No .DS_Store files"
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+
+validate:version-sync:
+  needs: []
+  stage: validate
+  image: node:${NODE_VERSION}-alpine
+  script:
+    - npm ci --legacy-peer-deps
+    - npm run build
+    - echo "Checking version consistency..."
+    - npm run version:check
+  allow_failure: false
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      when: always
+    - if: $CI_COMMIT_BRANCH =~ /^release\/v/
+      when: always
+    - if: $CI_COMMIT_BRANCH == "main"
+      when: always
+    - changes:
+      - package.json
+      - README.md
+      - spec/**/*
+      when: always
+
+# ============================================================================
+# VERSION MANAGEMENT VIA GITLAB AGENTS (Dogfooding)
+# ============================================================================
+# TODO: Enable after component is published to main
+# include:
+#   - component: gitlab.com/blueflyio/openstandardagents/version-management/version-bump-agent@main
+
+# version:bump:agent:
+#   extends: .version-bump-agent
+#   variables:
+#     BUMP_TYPE: "patch"
+#     TARGET_BRANCH: "release/v0.X.x"
+#   rules:
+#     - if: '$BUMP_VERSION == "true"'
+#       when: manual
+#       allow_failure: false
+
+# version:sync:agent:
+#   extends: .version-sync-agent
+#   rules:
+#     - if: '$CI_PIPELINE_SOURCE == "push"'
+#       when: always
+#     - if: '$VERSION_SYNC == "true"'
+#       when: manual
+
+# version:consistency:check:
+#   extends: .version-consistency-check
+
+validate:scripts-version:
+  needs: []
+  stage: validate
+  image: node:${NODE_VERSION}-alpine
+  before_script:
+    - apk add --no-cache curl jq
+    - npm ci --legacy-peer-deps
+  script:
+    - |
+      echo "Validating npm scripts use dynamic version..."
+      VERSION=$(jq -r '.current' .version.json)
+      echo "Current version: ${VERSION}"
+      
+      # Verify exports["./schema"] uses dynamic version placeholder or matches current version
+      EXPECTED_EXPORT="./spec/v${VERSION}/ossa-${VERSION}.schema.json"
+      PLACEHOLDER_EXPORT='./spec/v{{VERSION}}/ossa-{{VERSION}}.schema.json'
+      ACTUAL_EXPORT=$(node -p "require('./package.json').exports?.['./schema'] || ''")
+      if [ "$ACTUAL_EXPORT" = "$PLACEHOLDER_EXPORT" ]; then
+        echo "exports[\"./schema\"] uses {{VERSION}} placeholder (will be replaced during release)"
+      elif [ "$ACTUAL_EXPORT" = "$EXPECTED_EXPORT" ]; then
+        echo "exports[\"./schema\"] matches current version: ${EXPECTED_EXPORT}"
+      elif [ -n "$ACTUAL_EXPORT" ]; then
+        echo "ERROR: package.json exports[\"./schema\"] is \"${ACTUAL_EXPORT}\""
+        echo "       Expected: \"${PLACEHOLDER_EXPORT}\" (placeholder) or \"${EXPECTED_EXPORT}\" (resolved)"
+        exit 1
+      fi
+
+      # Check scripts don't have hardcoded version paths
+      if node -e "const pkg = require('./package.json'); const scripts = JSON.stringify(pkg.scripts || {}); if (scripts.match(/spec\/v0\.[0-9]/)) { process.exit(1); }" 2>/dev/null; then
+        echo "Scripts field does not contain hardcoded version paths"
+      else
+        echo "ERROR: package.json scripts contain hardcoded version paths"
+        exit 1
+      fi
+
+      echo "All scripts use dynamic version detection"
+  allow_failure: false
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      when: always
+    - if: $CI_COMMIT_BRANCH =~ /^release\/v/
+      when: always
+    - if: $CI_COMMIT_BRANCH == "main"
+      when: always
+    - changes:
+      - package.json
+      - scripts/**/*
+      when: always
+
+validate:docs-consistency:
+  needs: []
+  stage: validate
+  image: node:${NODE_VERSION}-alpine
+  before_script:
+    - apk add --no-cache curl jq
+    - npm ci --legacy-peer-deps
+  script:
+    - |
+      echo "🔍 Pre-Release Documentation Validation"
+      echo "========================================"
+
+      VERSION=$(jq -r '.current' .version.json)
+      echo "Release version: v${VERSION}"
+
+      if ! npx tsx scripts/sync-versions.ts --check; then
+        echo ""
+        echo "ERROR: Documentation is out of sync!"
+        echo ""
+        echo "FIX REQUIRED:"
+        echo "1. Run locally: npx tsx scripts/sync-versions.ts --fix"
+        echo "2. Commit the changes"
+        echo "3. Push and re-run pipeline"
+        exit 1
+      fi
+
+      echo "ALL DOCUMENTATION CONSISTENCY CHECKS PASSED"
+  allow_failure: false
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+      when: always
+    - if: $CI_COMMIT_BRANCH =~ /^release\/v/
+      when: always
+    - if: $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "main"
+      when: always
+    - if: $CI_MERGE_REQUEST_TARGET_BRANCH_NAME =~ /^release\/v/
+      when: always
+
+# ============================================================================
+# STAGE 2 - BUILD
+# ============================================================================
+
+build:dist:
+  stage: build
+  image: node:${NODE_VERSION}-alpine
+  tags:
+    - saas-linux-small-amd64
+  timeout: 30 minutes
+  retry:
+    max: 2
+    when:
+      - runner_system_failure
+      - stuck_or_timeout_failure
+      - api_failure
+  needs:
+    - job: version:sync:placeholders
+      optional: true
+      artifacts: true
+    - job: detect:version
+      optional: true
+      artifacts: true
+  before_script:
+    - apk add --no-cache curl jq
+    - test -f build.env && . build.env || echo "No build.env found (using defaults)"
+  script:
+    - npm ci --legacy-peer-deps
+    - npm run build
+    - test -f dist/cli/index.js || (echo "ERROR ERROR dist/cli/index.js missing" && exit 1)
+    - echo "Build completed"
+  artifacts:
+    paths:
+      - dist/
+      - package.json
+      - package-lock.json
+    expire_in: 1 hour
+  rules:
+    - when: always
+
+# ============================================================================
+# STAGE 3 - TEST
+# ============================================================================
+
+test:lint:
+  stage: test
+  image: node:${NODE_VERSION}-alpine
+  tags:
+    - saas-linux-small-amd64
+  needs:
+    - job: version:sync:placeholders
+      optional: true
+      artifacts: true
+    - job: detect:version
+      optional: true
+      artifacts: true
+  before_script:
+    - apk add --no-cache curl jq
+    - test -f build.env && . build.env || echo "No build.env found (using defaults)"
+  script:
+    - npm ci --legacy-peer-deps
+    - npm run build
+    - npm run lint || echo "WARNING Lint warnings"
+    - npm run typecheck || echo "WARNING Typecheck warnings"
+  allow_failure: true
+  rules:
+    - when: always
+
+test:code-quality:
+  stage: test
+  needs: []
+  image: node:${NODE_VERSION}-alpine
+  tags:
+    - saas-linux-small-amd64
+  script:
+    - npm ci --legacy-peer-deps
+    - npx eslint src/ -f json -o eslint-report.json || true
+    - node scripts/eslint-to-codequality.cjs
+  artifacts:
+    reports:
+      codequality: gl-code-quality-report.json
+    paths:
+      - gl-code-quality-report.json
+      - eslint-report.json
+    expire_in: 7 days
+  rules:
+    - when: always
+
+test:unit:
+  stage: test
+  image: node:${NODE_VERSION}-alpine
+  tags:
+    - saas-linux-small-amd64
+  timeout: 20 minutes
+  retry:
+    max: 2
+    when:
+      - runner_system_failure
+      - stuck_or_timeout_failure
+      - api_failure
+  dependencies:
+    - build:dist
+  needs:
+    - job: build:dist
+      artifacts: true
+    - job: version:sync:placeholders
+      optional: true
+      artifacts: true
+    - job: detect:version
+      optional: true
+      artifacts: true
+  before_script:
+    - apk add --no-cache curl jq
+    - test -f build.env && . build.env || echo "No build.env found (using defaults)"
+    - npm ci --legacy-peer-deps
+  script:
+    - npm run build
+    - npm run test:coverage
+  coverage: '/All files[^|]*\|[^|]*\s+([\d\.]+)/'
+  artifacts:
+    reports:
+      junit: test-results/junit.xml
+      coverage_report:
+        coverage_format: cobertura
+        path: coverage/cobertura-coverage.xml
+    paths:
+      - coverage/
+      - test-results/
+    expire_in: 7 days
+  allow_failure: false
+  rules:
+    - when: always
+
+test:integration:
+  stage: test
+  image: node:${NODE_VERSION}-alpine
+  tags:
+    - saas-linux-small-amd64
+  timeout: 20 minutes
+  dependencies:
+    - build:dist
+  needs:
+    - job: build:dist
+      artifacts: true
+  before_script:
+    - apk add --no-cache curl jq
+    - npm ci --legacy-peer-deps
+  script:
+    - npm run build
+    - npm run test:integration
+  artifacts:
+    reports:
+      junit: test-results/junit.xml
+    paths:
+      - test-results/
+    expire_in: 7 days
+  allow_failure: false
+  rules:
+    - when: always
+
+test:e2e:
+  stage: test
+  image: node:${NODE_VERSION}-alpine
+  tags:
+    - saas-linux-small-amd64
+  timeout: 30 minutes
+  dependencies:
+    - build:dist
+  needs:
+    - job: build:dist
+      artifacts: true
+  before_script:
+    - apk add --no-cache curl jq
+    - npm ci --legacy-peer-deps
+  script:
+    - npm run build
+    - npm run test:e2e
+  artifacts:
+    reports:
+      junit: test-results/junit.xml
+    paths:
+      - test-results/
+    expire_in: 7 days
+  allow_failure: false
+  rules:
+    - when: always
+
+test:security:
+  stage: test
+  needs: []
+  image: node:${NODE_VERSION}-alpine
+  tags:
+    - saas-linux-small-amd64
+  script:
+    - npm ci --legacy-peer-deps
+    - npm audit --production || echo "WARNING Security vulnerabilities"
+  allow_failure: true
+  rules:
+    - when: always
+
+# ============================================================================
+# STAGE 4 - QUALITY GATES
+# ============================================================================
+
+quality:gates:
+  stage: quality
+  image: node:${NODE_VERSION}-alpine
+  tags:
+    - saas-linux-small-amd64
+  script:
+    - echo "Quality gates - all tests must pass"
+  rules:
+    - when: always
+  needs:
+    - job: test:unit
+    - job: test:integration
+    - job: test:e2e
+    - job: test:lint
+      optional: true
+    - job: test:security
+      optional: true
+
+# ============================================================================
+# STAGE 5 - DEPLOY (Removed - Website moved to openstandardagents.org)
+# ============================================================================
+# Website deployment is now handled by the openstandardagents.org repository.
+# This repo (openstandardagents) is the spec/CLI npm package only.
+
+# ============================================================================
+# STAGE 6 - RELEASE (NPM - Milestone-Gated)
+# ============================================================================
+
+# AUTOMATED CHANGELOG GENERATION (git-cliff)
+# Runs on every merge to release branches - generates Keep a Changelog format
+changelog:generate:
+  stage: release
+  image: alpine:latest
+  variables:
+    GIT_STRATEGY: clone
+    GIT_DEPTH: 0  # Full history needed for changelog generation
+  before_script:
+    - apk add --no-cache curl jq
+    - apk add --no-cache git curl bash
+    # Install git-cliff
+    - curl -sS --max-time 30 -fL https://github.com/orhun/git-cliff/releases/download/v2.7.0/git-cliff-2.7.0-x86_64-unknown-linux-musl.tar.gz | tar xz
+    - mv git-cliff-*/git-cliff /usr/local/bin/
+    - chmod +x /usr/local/bin/git-cliff
+    - git config --global user.email "ci@openstandardagents.org"
+    - git config --global user.name "OSSA CI Bot"
+  script:
+    - |
+      echo "Generating changelog with git-cliff..."
+      echo "Branch: $CI_COMMIT_BRANCH"
+      echo "Commit: $CI_COMMIT_SHA"
+
+      # Generate changelog
+      git cliff --output CHANGELOG.md
+
+      # Check if changelog changed
+      if git diff --quiet CHANGELOG.md 2>/dev/null; then
+        echo "No changelog updates needed"
+        exit 0
+      fi
+
+      echo "Changelog updated:"
+      head -100 CHANGELOG.md
+
+      # Commit and push if there are changes
+      git add CHANGELOG.md
+      git commit -m "chore(release): update changelog [skip ci]"
+
+      # Push using CI token
+      git remote set-url origin "https://gitlab-ci-token:${CI_JOB_TOKEN}@gitlab.com/${CI_PROJECT_PATH}.git"
+      git push origin HEAD:$CI_COMMIT_BRANCH
+
+      echo "Changelog committed and pushed"
+  rules:
+    # Run on merges to release branches
+    - if: $CI_COMMIT_BRANCH =~ /^release\/v[0-9]+\.[0-9]+\.x$/
+      when: on_success
+    # Run on merges to main
+    - if: $CI_COMMIT_BRANCH == "main"
+      when: on_success
+  allow_failure: true  # Don't block pipeline if changelog fails
+
+# GENERATE CHANGELOG from milestone issues (legacy - for release notes)
+release:changelog:
+  stage: release
+  image: node:${NODE_VERSION}-alpine
+  timeout: 10 minutes
+  before_script:
+    - apk add --no-cache curl jq
+    - apk add --no-cache git curl jq bash
+    - npm ci --legacy-peer-deps
+    - npm install -g tsx
+    - test -f build.env && . build.env || echo "No build.env found (using defaults)"
+  script:
+    - |
+      #!/bin/bash
+      set -euo pipefail
+      echo "CHANGELOG GENERATION"
+      echo "======================="
+
+      if [ "$MILESTONE_READY" != "true" ]; then
+        echo "WARNING: No release-ready milestone - skipping"
+        exit 0
+      fi
+
+      echo "Milestone: ${MILESTONE_TITLE}"
+      echo "Version: v${RELEASE_VERSION}"
+      echo "Milestone ID: ${MILESTONE_ID}"
+      echo ""
+
+      # Generate changelog from milestone issues
+      MILESTONE_ID=${MILESTONE_ID} \
+      RELEASE_VERSION=${RELEASE_VERSION} \
+      CHANGELOG_OUTPUT="RELEASE_NOTES.md" \
+      tsx .gitlab/release-automation/scripts/generate-changelog.ts
+
+      # Also create version-specific changelog
+      VERSION_CHANGELOG="spec/v${RELEASE_VERSION}/CHANGELOG.md"
+      mkdir -p "spec/v${RELEASE_VERSION}"
+      cp RELEASE_NOTES.md "$VERSION_CHANGELOG"
+
+      echo ""
+      echo "Changelog generated successfully"
+      cat RELEASE_NOTES.md
+  artifacts:
+    paths:
+      - RELEASE_NOTES.md
+      - spec/v*/CHANGELOG.md
+      - changelog.env
+    reports:
+      dotenv: changelog.env
+    expire_in: 7 days
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main" && $MILESTONE_READY == "true"
+      when: on_success
+    - if: $CI_COMMIT_BRANCH == "main"
+      when: manual
+  needs:
+    - job: detect:version
+      optional: true
+      artifacts: true
+    - job: detect:milestone-and-tags
+      optional: true
+      artifacts: true
+  allow_failure: false
+
+# PRE-RELEASE VALIDATION - Critical checks before any release
+release:validate:
+  stage: release
+  image: node:${NODE_VERSION}-alpine
+  timeout: 10 minutes
+  dependencies:
+    - build:dist
+  before_script:
+    - apk add --no-cache curl jq
+    - apk add --no-cache git jq bash curl
+    - npm ci --legacy-peer-deps
+  script:
+    - |
+      #!/bin/bash
+      set -euo pipefail
+      echo "🔒 PRE-RELEASE VALIDATION"
+      echo "========================="
+      echo ""
+
+      ERRORS=0
+      WARNINGS=0
+
+      # Set defaults for milestone variables (in case detect:milestone-and-tags didn't run)
+      MILESTONE_READY="${MILESTONE_READY:-false}"
+      MILESTONE_TITLE="${MILESTONE_TITLE:-}"
+      MILESTONE_ID="${MILESTONE_ID:-}"
+      ISSUE_COUNT="${ISSUE_COUNT:-0}"
+      OPEN_ISSUE_COUNT="${OPEN_ISSUE_COUNT:-0}"
+      RELEASE_VERSION="${RELEASE_VERSION:-}"
+
+      # 0. MILESTONE GATE CHECK
+      echo "📋 0. Milestone Gate"
+      RANGE_MILESTONE="${RANGE_MILESTONE:-false}"
+      if [ "${MILESTONE_READY}" != "true" ]; then
+        echo "RELEASE BLOCKED: no matching active milestone"
+        ERRORS=$((ERRORS + 1))
+      else
+        echo "   Milestone ready: ${MILESTONE_TITLE}"
+        echo "   Total issues: ${ISSUE_COUNT:-0}"
+        echo "   Open issues: ${OPEN_ISSUE_COUNT:-0}"
+        if [ "${RANGE_MILESTONE}" = "true" ]; then
+          echo "   Range milestone in use; open issues are informational."
+        else
+          echo "   Exact milestone in use."
+        fi
+      fi
+      echo ""
+
+      # 1. VERSION CONSISTENCY CHECK
+      echo "📋 1. Version Consistency"
+      # Use .version.json as single source of truth (package.json uses {{VERSION}} placeholder)
+      VERSION=$(jq -r '.current' .version.json)
+      echo "  Release version: v${VERSION}"
+
+      # Check schema exists for this version
+      SCHEMA_PATH=$(jq -r '.spec_path + "/" + .schema_file' .version.json)
+      if [ ! -f "$SCHEMA_PATH" ]; then
+        echo "ERROR: Schema not found: ${SCHEMA_PATH}"
+        ERRORS=$((ERRORS + 1))
+      else
+        echo "   Schema exists: ${SCHEMA_PATH}"
+      fi
+
+      # Check README version badge matches
+      if grep -q "v${VERSION}" README.md; then
+        echo "   README version badge matches"
+      else
+        echo "WARNING: README may not reference v${VERSION}"
+        WARNINGS=$((WARNINGS + 1))
+      fi
+
+      # 2. SCHEMA VALIDATION
+      echo ""
+      echo "📋 2. Schema Validation"
+
+      # Check schema is valid JSON
+      if jq empty "$SCHEMA_PATH" 2>/dev/null; then
+        echo "   Schema is valid JSON"
+      else
+        echo "ERROR: Schema is not valid JSON"
+        ERRORS=$((ERRORS + 1))
+      fi
+
+      # Check schema has required fields
+      SCHEMA_VERSION=$(jq -r '.properties.apiVersion.const // .properties.apiVersion.enum[0] // ""' "$SCHEMA_PATH" 2>/dev/null || echo "")
+      if [ -n "$SCHEMA_VERSION" ]; then
+        echo "   Schema apiVersion: ${SCHEMA_VERSION}"
+      else
+        echo "WARNING: Could not detect apiVersion in schema"
+        WARNINGS=$((WARNINGS + 1))
+      fi
+
+      # 3. EXAMPLES VALIDATION
+      echo ""
+      echo "📋 3. Examples Validation"
+
+      EXAMPLE_COUNT=0
+      EXAMPLE_WARNINGS=0
+      for example in examples/**/*.ossa.yaml examples/**/*.ossa.json; do
+        [ ! -f "$example" ] && continue
+        EXAMPLE_COUNT=$((EXAMPLE_COUNT + 1))
+
+        # Check apiVersion has valid format (ossa/vX.Y.Z)
+        # Examples can have older versions for backwards compatibility demos
+        EXAMPLE_API=$(grep -oE "ossa/v[0-9]+\.[0-9]+\.[0-9]+" "$example" 2>/dev/null | head -1 || true)
+        if [ -n "$EXAMPLE_API" ]; then
+          echo "   ${example} (${EXAMPLE_API})"
+        else
+          echo "WARNING: ${example} missing valid apiVersion format"
+          EXAMPLE_WARNINGS=$((EXAMPLE_WARNINGS + 1))
+        fi
+      done
+
+      echo "   Validated ${EXAMPLE_COUNT} examples"
+      if [ $EXAMPLE_WARNINGS -gt 0 ]; then
+        echo "  WARNING: ${EXAMPLE_WARNINGS} examples have invalid apiVersion format"
+        WARNINGS=$((WARNINGS + EXAMPLE_WARNINGS))
+      fi
+
+      # 4. BUILD ARTIFACTS CHECK
+      echo ""
+      echo "📋 4. Build Artifacts"
+
+      if [ -f "dist/cli/index.js" ]; then
+        echo "   CLI built: dist/cli/index.js"
+      else
+        echo "ERROR: CLI not built"
+        ERRORS=$((ERRORS + 1))
+      fi
+
+      if [ -d "dist/lib" ]; then
+        echo "   Library built: dist/lib/"
+      else
+        echo "WARNING: dist/lib/ not found"
+        WARNINGS=$((WARNINGS + 1))
+      fi
+
+      # 5. PACKAGE.JSON EXPORTS CHECK
+      echo ""
+      echo "📋 5. Package Exports"
+
+      SCHEMA_EXPORT=$(node -p "require('./package.json').exports?.['./schema'] || ''" 2>/dev/null || echo "")
+      EXPECTED_EXPORT="./spec/v${VERSION}/ossa-${VERSION}.schema.json"
+      PLACEHOLDER_EXPORT='./spec/v{{VERSION}}/ossa-{{VERSION}}.schema.json'
+
+      if [ "$SCHEMA_EXPORT" = "$EXPECTED_EXPORT" ]; then
+        echo "   Schema export correct: ${SCHEMA_EXPORT}"
+      elif [ "$SCHEMA_EXPORT" = "$PLACEHOLDER_EXPORT" ]; then
+        echo "   Schema export uses {{VERSION}} placeholder (valid)"
+      elif [ -z "$SCHEMA_EXPORT" ]; then
+        echo "WARNING: No ./schema export defined"
+        WARNINGS=$((WARNINGS + 1))
+      else
+        echo "ERROR: Schema export mismatch"
+        echo "     Expected: ${EXPECTED_EXPORT} or ${PLACEHOLDER_EXPORT}"
+        echo "     Got: ${SCHEMA_EXPORT}"
+        ERRORS=$((ERRORS + 1))
+      fi
+
+      # 6. TEST RUN
+      echo ""
+      echo "📋 6. Test Suite"
+
+      if npm run test 2>&1; then
+        echo "   All tests passed"
+      else
+        echo "ERROR: Tests failed"
+        ERRORS=$((ERRORS + 1))
+      fi
+
+      # 7. TYPECHECK
+      echo ""
+      echo "📋 7. TypeScript Validation"
+
+      if npm run typecheck 2>&1; then
+        echo "   TypeScript compilation clean"
+      else
+        echo "ERROR: TypeScript errors"
+        ERRORS=$((ERRORS + 1))
+      fi
+
+      # 8. NO HARDCODED VERSIONS IN SCRIPTS
+      echo ""
+      echo "📋 8. Script Version Check"
+
+      if node -e "const pkg = require('./package.json'); const scripts = JSON.stringify(pkg.scripts || {}); if (scripts.match(/spec\/v0\.[0-9]/)) { process.exit(1); }" 2>/dev/null; then
+        echo "   No hardcoded versions in scripts"
+      else
+        echo "ERROR: Hardcoded versions found in package.json scripts"
+        ERRORS=$((ERRORS + 1))
+      fi
+
+      # SUMMARY
+      echo ""
+      echo "========================================"
+      echo "📊 VALIDATION SUMMARY"
+      echo "========================================"
+      echo "  Errors: ${ERRORS}"
+      echo "  Warnings: ${WARNINGS}"
+      echo ""
+
+      if [ $ERRORS -gt 0 ]; then
+        echo "ERROR: RELEASE BLOCKED: ${ERRORS} error(s) must be fixed"
+        echo ""
+        echo "Fix the errors above before releasing."
+        exit 1
+      fi
+
+      if [ $WARNINGS -gt 0 ]; then
+        echo "WARNING: RELEASE APPROVED WITH WARNINGS: ${WARNINGS} warning(s)"
+      else
+        echo "RELEASE APPROVED: All checks passed"
+      fi
+  artifacts:
+    reports:
+      dotenv: validation-report.env
+    when: always
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+      when: always
+  needs:
+    - build:dist
+    - test:unit
+    - job: detect:milestone-and-tags
+      optional: true
+      artifacts: true
+
+release:preview:
+  stage: release
+  image: node:${NODE_VERSION}-alpine
+  dependencies:
+    - build:dist
+  before_script:
+    - apk add --no-cache curl jq
+    - apk add --no-cache git
+    - npm ci --legacy-peer-deps
+  script:
+    - |
+      echo "🔍 Release Preview (Dry-Run)"
+      echo "============================"
+      
+      if [ "$ENABLE_RELEASE" = "true" ]; then
+        echo "ENABLE_RELEASE: ${ENABLE_RELEASE} (releases enabled)"
+      else
+        echo "WARNING: ENABLE_RELEASE: ${ENABLE_RELEASE:-not set} (releases disabled)"
+      fi
+      
+      if [ -n "$RELEASE_VERSION" ]; then
+        echo "📦 Detected from closed milestone:"
+        echo "  Milestone: ${MILESTONE_TITLE}"
+        echo "  Version: v${RELEASE_VERSION}"
+        echo "  Ready: ${MILESTONE_READY:-false}"
+      fi
+
+      CURRENT_VERSION=$(jq -r '.current' .version.json)
+      echo "📄 Current release version: v${CURRENT_VERSION}"
+      
+      if [ "$ENABLE_RELEASE" = "true" ] && [ "$MILESTONE_READY" = "true" ]; then
+        echo "Release will proceed automatically"
+      else
+        echo "WARNING: Release blocked (see conditions above)"
+      fi
+      
+      npx semantic-release --dry-run || true
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+      when: always
+  allow_failure: true
+  needs:
+    - build:dist
+    - job: detect:milestone-and-tags
+      optional: true
+      artifacts: true
+
+release:audit:
+  stage: release
+  image: node:${NODE_VERSION}-alpine
+  script:
+    - npm ci --legacy-peer-deps
+    - npm run build
+    - npm pack --dry-run | tee audit-pack-dry-run.txt
+    - PKG="$(npm pack)"
+    - sha256sum "$PKG" | tee audit-sha256.txt
+    - tar -tzf "$PKG" | head -200 | tee audit-tar-list-head.txt
+  artifacts:
+    paths:
+      - "*.tgz"
+      - "audit-pack-dry-run.txt"
+      - "audit-sha256.txt"
+      - "audit-tar-list-head.txt"
+    expire_in: 1 day
+  rules:
+    - if: '$CI_COMMIT_TAG =~ /^v\d+\.\d+\.\d+$/'
+      when: on_success
+    - if: '$CI_COMMIT_BRANCH =~ /^release\/v\d+\.\d+\.x$/ && $ENABLE_RELEASE == "true"'
+      when: on_success
+  # No dependencies needed - this job builds from source (npm run build)
+  # Removing build:dist dependency resolves circular dependency concern
+
+release:npm:
+  stage: release
+  image: node:${NODE_VERSION}-alpine
+  timeout: 15 minutes
+  retry:
+    max: 2
+    when:
+      - runner_system_failure
+      - stuck_or_timeout_failure
+      - api_failure
+  environment:
+    name: npm-registry
+    url: https://www.npmjs.com/package/@bluefly/openstandardagents
+    deployment_tier: production
+    auto_stop_in: never
+  dependencies:
+    - build:dist
+    - detect:milestone-and-tags
+    - release:changelog
+    - release:audit
+  needs:
+    - release:audit
+  before_script:
+    - apk add --no-cache curl jq
+    - apk add --no-cache git curl jq bash
+    - npm ci --legacy-peer-deps
+    - git config --global user.email "ci@bluefly.io"
+    - git config --global user.name "GitLab CI Release"
+    - |
+      if [[ "${GITLAB_PUSH_TOKEN:0:5}" == "gldt-" ]]; then
+        git remote set-url origin "https://${DEPLOY_TOKEN_USERNAME:-gitlab+deploy-token-10466652}:${GITLAB_PUSH_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git"
+      else
+        git remote set-url origin "https://oauth2:${GITLAB_PUSH_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git"
+      fi
+    - git fetch --unshallow --tags || git fetch --tags || true
+    - git checkout -B main origin/main
+  script:
+    - |
+      #!/bin/bash
+      set -euo pipefail
+      echo "MILESTONE-GATED RELEASE"
+      echo "=========================="
+
+      # Load milestone variables from artifact (safety check - should already be in env via dotenv report)
+      if [ -f milestone-version.env ]; then
+        set -a
+        source milestone-version.env
+        set +a
+      fi
+
+      # Check ENABLE_RELEASE gate
+      if [ "$ENABLE_RELEASE" != "true" ]; then
+        echo "🚫 RELEASE BLOCKED: ENABLE_RELEASE not set"
+        echo ""
+        echo "To enable releases:"
+        echo "Settings → CI/CD → Variables → Add variable"
+        echo "Variable: ENABLE_RELEASE"
+        echo "Value: true"
+        exit 0
+      fi
+
+      # Check milestone readiness
+      if [ "$MILESTONE_READY" != "true" ]; then
+        echo "🚫 RELEASE BLOCKED: No release-ready milestone"
+        echo ""
+        echo "Requirements:"
+        echo "1.  ENABLE_RELEASE = true"
+        echo "2. ERROR: Milestone must be closed and 100% complete"
+        exit 0
+      fi
+
+      echo "Release gate passed"
+      echo "  ENABLE_RELEASE: ${ENABLE_RELEASE}"
+      echo "  Milestone: ${MILESTONE_TITLE}"
+      echo "  Version: v${RELEASE_VERSION}"
+      echo "  Issues Closed: ${ISSUE_COUNT:-0}"
+
+      # Update package.json
+      npm version ${RELEASE_VERSION} --no-git-tag-version --allow-same-version
+
+      # Sync documentation
+      echo "Syncing documentation..."
+      npx tsx scripts/sync-versions.ts --fix
+
+      if ! npx tsx scripts/sync-versions.ts --check; then
+        echo "ERROR: Documentation sync failed"
+        exit 1
+      fi
+
+      # Configure npm using npm config (safer than .npmrc file)
+      GITLAB_HOST="${CI_SERVER_HOST}"
+      npm config set @bluefly:registry "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/npm/"
+      npm config set "//${GITLAB_HOST}/api/v4/projects/${CI_PROJECT_ID}/packages/npm/:_authToken" "${CI_JOB_TOKEN}"
+      if [ -n "$NPM_TOKEN" ]; then
+        npm config set "//registry.npmjs.org/:_authToken" "${NPM_TOKEN}"
+      fi
+      # Ensure .npmrc is not committed
+      echo ".npmrc" >> .gitignore || true
+
+      # Final tests
+      echo "🧪 Running final tests..."
+      npm run test || (echo "ERROR: Tests failed" && exit 1)
+
+      # Publish to npm
+      echo "📦 Publishing v${RELEASE_VERSION} to npm..."
+      if ! npm publish --access public; then
+        echo "ERROR: npm publish failed"
+        exit 1
+      fi
+
+      # Create git tag with comprehensive release information
+      PROD_TAG="v${RELEASE_VERSION}"
+      RELEASE_DATE=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+
+      # Load changelog content if available
+      CHANGELOG_CONTENT=""
+      if [ -f "RELEASE_NOTES.md" ]; then
+        CHANGELOG_CONTENT=$(cat RELEASE_NOTES.md)
+      fi
+
+      # Build comprehensive tag message using heredoc
+      read -r -d '' TAG_MESSAGE << EOF || true
+      Release v${RELEASE_VERSION}
+
+      Milestone: ${MILESTONE_TITLE}
+      Issues Closed: ${ISSUE_COUNT:-0}
+      Pipeline: ${CI_PIPELINE_ID}
+      Released: ${RELEASE_DATE}
+      Commit: ${CI_COMMIT_SHA}
+
+      See full changelog: https://gitlab.com/${CI_PROJECT_PATH}/-/blob/main/spec/v${RELEASE_VERSION}/CHANGELOG.md
+
+      Links:
+      - npm Package: https://www.npmjs.com/package/@bluefly/openstandardagents/v/${RELEASE_VERSION}
+      - Documentation: https://openstandardagents.org/
+      - Milestone: ${MILESTONE_URL:-https://gitlab.com/${CI_PROJECT_PATH}/-/milestones}
+      EOF
+
+      git tag -a "$PROD_TAG" -m "$TAG_MESSAGE" "$CI_COMMIT_SHA"
+
+      # Commit and push
+      git add package.json package-lock.json README.md spec/ RELEASE_NOTES.md || true
+      git commit -m "chore(release): v${RELEASE_VERSION} [skip ci]" || echo "No changes to commit"
+      git push origin main --tags
+
+      # Create GitLab Release with auto-generated changelog
+      echo "📋 Creating GitLab Release with milestone integration..."
+
+      # Prepare changelog for release description
+      RELEASE_DESCRIPTION="${CHANGELOG_CONTENT}"
+
+      # If no changelog, use fallback
+      if [ -z "$RELEASE_DESCRIPTION" ]; then
+        RELEASE_DESCRIPTION="## Release v${RELEASE_VERSION}
+
+        Milestone: ${MILESTONE_TITLE} (${MILESTONE_URL})
+
+        See CHANGELOG.md for details."
+      fi
+
+      # Create release with milestone linkage
+      RELEASE_PAYLOAD=$(jq -n \
+        --arg name "Release v${RELEASE_VERSION}" \
+        --arg tag "v${RELEASE_VERSION}" \
+        --arg desc "$RELEASE_DESCRIPTION" \
+        --arg milestone "${MILESTONE_TITLE}" \
+        --arg npm_url "https://www.npmjs.com/package/@bluefly/openstandardagents/v/${RELEASE_VERSION}" \
+        --arg schema_url "https://openstandardagents.org/schema/" \
+        --arg docs_url "https://openstandardagents.org/" \
+        --arg milestone_url "${MILESTONE_URL}" \
+        '{
+          name: $name,
+          tag_name: $tag,
+          description: $desc,
+          milestones: [$milestone],
+          assets: {
+            links: [
+              {
+                name: "npm package",
+                url: $npm_url,
+                link_type: "package"
+              },
+              {
+                name: "JSON Schema",
+                url: $schema_url,
+                link_type: "other"
+              },
+              {
+                name: "Documentation",
+                url: $docs_url,
+                link_type: "other"
+              },
+              {
+                name: "Milestone",
+                url: $milestone_url,
+                link_type: "other"
+              }
+            ]
+          }
+        }')
+
+      curl --request POST \
+        --header "JOB-TOKEN: ${CI_JOB_TOKEN}" \
+        --header "Content-Type: application/json" \
+        --data "$RELEASE_PAYLOAD" \
+        "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/releases"
+
+      echo "GitLab Release created: https://${CI_SERVER_HOST}/${CI_PROJECT_PATH}/-/releases/v${RELEASE_VERSION}"
+
+      # Range milestones (v0.3.x) stay OPEN for patch releases
+      # Only close specific version milestones (v0.3.0)
+      echo ""
+      RANGE_MILESTONE="${RANGE_MILESTONE:-false}"
+      if [ "${RANGE_MILESTONE}" = "true" ]; then
+        echo "Keeping range milestone open: ${MILESTONE_TITLE}"
+      else
+        # Optional: close exact milestones only if you ever use them
+        echo "Exact milestone detected: ${MILESTONE_TITLE} (not closing - range milestones preferred)"
+      fi
+
+      echo ""
+      echo "Release v${RELEASE_VERSION} completed!"
+      echo ""
+      echo "📊 Release Summary:"
+      echo "  Version: v${RELEASE_VERSION}"
+      echo "  Milestone: ${MILESTONE_TITLE} ($(echo "${MILESTONE_TITLE}" | grep -qE '\.x' && echo 'ACTIVE for patches' || echo 'CLOSED'))"
+      echo "  Issues: ${ISSUE_COUNT:-0}"
+      echo "  npm: https://www.npmjs.com/package/@bluefly/openstandardagents/v/${RELEASE_VERSION}"
+      echo "  Release: https://${CI_SERVER_HOST}/${CI_PROJECT_PATH}/-/releases/v${RELEASE_VERSION}"
+      echo "  Milestone: ${MILESTONE_URL}"
+  rules:
+    # Hotfix branches should NOT create production releases
+    - if: $CI_COMMIT_BRANCH =~ /^hotfix\//
+      when: never
+    # Only main branch creates production releases
+    - if: $CI_COMMIT_BRANCH == "main" && $MILESTONE_READY == "true" && $ENABLE_RELEASE == "true"
+      when: on_success
+    - if: $CI_COMMIT_BRANCH == "main" && $ENABLE_RELEASE == "true"
+      when: manual
+  needs:
+    - release:audit
+    - quality:gates
+    - build:dist
+    - release:preview
+    - release:validate
+    - release:changelog
+    - validate:docs-consistency
+    - detect:milestone-and-tags
+
+create-patch-version:
+  stage: release
+  image: alpine:latest
+  before_script:
+    - apk add --no-cache curl jq git bash
+    - git config --global user.email "ci@bluefly.io"
+    - git config --global user.name "GitLab CI"
+    - |
+      # Token priority: CI_DEPLOY_OSSA (group) > GITLAB_PUSH_TOKEN > CI_JOB_TOKEN
+      echo "Checking available tokens..."
+      echo "CI_DEPLOY_OSSA set: ${CI_DEPLOY_OSSA:+yes}"
+      echo "GITLAB_PUSH_TOKEN set: ${GITLAB_PUSH_TOKEN:+yes}"
+
+      if [ -n "${CI_DEPLOY_OSSA:-}" ]; then
+        echo "Using CI_DEPLOY_OSSA"
+        echo "Token prefix: ${CI_DEPLOY_OSSA:0:5}..."
+        if echo "${CI_DEPLOY_OSSA}" | grep -q "^gldt-"; then
+          echo "Deploy token - using username:token"
+          REMOTE_URL="https://${DEPLOY_TOKEN_USERNAME:-gitlab+deploy-token-10466652}:${CI_DEPLOY_OSSA}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git"
+        else
+          echo "PAT - using oauth2:token"
+          REMOTE_URL="https://oauth2:${CI_DEPLOY_OSSA}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git"
+        fi
+      elif [ -n "${GITLAB_PUSH_TOKEN:-}" ]; then
+        echo "Using GITLAB_PUSH_TOKEN"
+        echo "Token prefix: ${GITLAB_PUSH_TOKEN:0:5}..."
+        if [[ "${GITLAB_PUSH_TOKEN:0:5}" == "gldt-" ]]; then
+          echo "Deploy token format detected"
+          REMOTE_URL="https://${DEPLOY_TOKEN_USERNAME:-gitlab+deploy-token-10466652}:${GITLAB_PUSH_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git"
+        else
+          echo "PAT format detected"
+          REMOTE_URL="https://oauth2:${GITLAB_PUSH_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git"
+        fi
+      elif [ -n "${CI_JOB_TOKEN:-}" ]; then
+        echo "Using CI_JOB_TOKEN (fallback - limited permissions)"
+        REMOTE_URL="https://gitlab-ci-token:${CI_JOB_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git"
+      else
+        echo "ERROR: No authentication token available"
+        exit 1
+      fi
+      echo "Setting git remote with token..."
+      git remote set-url origin "$REMOTE_URL"
+      # Test the connection
+      if git ls-remote --heads origin 2>&1 | head -5; then
+        echo "Authentication successful"
+      else
+        echo "WARNING: Could not list remote heads, but continuing..."
+      fi
+    - git fetch --unshallow --tags || git fetch --tags || true
+  script:
+    - |
+      set -e
+      echo "=============================================="
+      echo "  DEV TAG CREATION"
+      echo "=============================================="
+      echo "Branch: ${CI_COMMIT_BRANCH}"
+      echo "Commit: ${CI_COMMIT_SHA}"
+      echo "Pipeline: ${CI_PIPELINE_URL}"
+      echo "Pipeline Source: ${CI_PIPELINE_SOURCE}"
+      echo "All tags: $(git tag -l | head -20)"
+      echo ""
+
+      # Check if this is a hotfix branch
+      if echo "$CI_COMMIT_BRANCH" | grep -qE "^hotfix/"; then
+        echo "Hotfix branch detected - creating dev tag only"
+        # Get version from .version.json (single source of truth)
+        CURRENT_VERSION=$(jq -r '.current' .version.json 2>/dev/null || echo "0.3.0")
+        # Extract major.minor from version (e.g., 0.3.0 -> 0.3)
+        BRANCH_VERSION=$(echo "$CURRENT_VERSION" | sed -E 's/^([0-9]+\.[0-9]+)\.[0-9]+$/\1/')
+        echo "Hotfix dev tag series: v${BRANCH_VERSION}.0-dev.x"
+      else
+        # Extract version from branch name (e.g., release/v0.1.x -> 0.1)
+        BRANCH_VERSION=$(echo "$CI_COMMIT_BRANCH" | sed -E 's/release\/v?([0-9]+\.[0-9]+)\.x/\1/')
+
+        if [ -z "$BRANCH_VERSION" ] || [ "$BRANCH_VERSION" = "$CI_COMMIT_BRANCH" ]; then
+          echo "WARNING: Not a release branch format (release/v0.X.x)"
+          exit 0
+        fi
+
+        echo "Release series: v${BRANCH_VERSION}.x"
+      fi
+
+      # Get latest dev tag for this release series (v0.3.0-dev.1, v0.3.0-dev.2, etc.)
+      echo "Looking for dev tags matching: v${BRANCH_VERSION}.0-dev.*"
+      LATEST_DEV_TAG=$(git tag -l "v${BRANCH_VERSION}.0-dev.*" | sort -V | tail -n1)
+      echo "Latest dev tag found: ${LATEST_DEV_TAG:-none}"
+      
+      # Also check for non-dev tags (v0.3.0, v0.3.1, etc.)
+      LATEST_TAG=$(git tag -l "v${BRANCH_VERSION}.*" | grep -v "dev" | sort -V | tail -n1)
+      echo "Latest non-dev tag found: ${LATEST_TAG:-none}"
+
+      if [ -z "$LATEST_DEV_TAG" ]; then
+        # No dev tags exist, start with dev.1
+        NEW_TAG="v${BRANCH_VERSION}.0-dev.1"
+        echo "No existing dev tags for v${BRANCH_VERSION}.x series, starting with ${NEW_TAG}"
+      else
+        echo "Latest dev tag: $LATEST_DEV_TAG"
+
+        # Check if HEAD is already tagged
+        HEAD_TAGS=$(git tag --points-at HEAD)
+        if echo "$HEAD_TAGS" | grep -qE "^v${BRANCH_VERSION}.0-dev."; then
+          echo "HEAD already has dev tag: $HEAD_TAGS"
+          exit 0
+        fi
+
+        # Extract dev number and increment
+        DEV_NUM=$(echo "$LATEST_DEV_TAG" | sed -E "s/v${BRANCH_VERSION}\.0-dev\.([0-9]+)/\1/")
+        if [ -z "$DEV_NUM" ] || [ "$DEV_NUM" = "$LATEST_DEV_TAG" ]; then
+          DEV_NUM=0
+        fi
+        NEW_DEV_NUM=$((DEV_NUM + 1))
+        NEW_TAG="v${BRANCH_VERSION}.0-dev.${NEW_DEV_NUM}"
+      fi
+
+      echo ""
+      echo "TAG: Creating new tag: $NEW_TAG"
+
+      # Create annotated tag
+      git tag -a "$NEW_TAG" -m "Release $NEW_TAG from $CI_COMMIT_BRANCH
+
+      Commit: $CI_COMMIT_SHA
+      Pipeline: $CI_PIPELINE_URL
+      Branch: $CI_COMMIT_BRANCH"
+
+      # Push tag
+      echo "Pushing tag to remote..."
+      echo "Tag to push: $NEW_TAG"
+
+      # Use CI_JOB_TOKEN directly (simplest, most reliable)
+      REMOTE_URL="https://gitlab-ci-token:${CI_JOB_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git"
+
+      # Ensure remote is set correctly before pushing
+      git remote set-url origin "$REMOTE_URL"
+      echo "Remote URL configured with CI_JOB_TOKEN"
+      
+      if git push origin "$NEW_TAG" 2>&1; then
+        echo "SUCCESS: Created and pushed tag: $NEW_TAG"
+        
+        # Create GitLab Release for dev tag
+        echo ""
+        echo "Creating GitLab Release for $NEW_TAG"
+        
+        RELEASE_DESCRIPTION="Dev build $NEW_TAG from $CI_COMMIT_BRANCH - Commit $CI_COMMIT_SHA - Pipeline $CI_PIPELINE_URL - Branch $CI_COMMIT_BRANCH - This is a development/pre-release tag and should not be used in production."
+        
+        RELEASE_PAYLOAD=$(jq -n \
+          --arg name "Dev Release $NEW_TAG" \
+          --arg tag "$NEW_TAG" \
+          --arg desc "$RELEASE_DESCRIPTION" \
+          '{
+            name: $name,
+            tag_name: $tag,
+            description: $desc
+          }')
+        
+        RELEASE_RESPONSE=$(curl -sS --max-time 30 --request POST \
+          --header "JOB-TOKEN: ${CI_JOB_TOKEN}" \
+          --header "Content-Type: application/json" \
+          --data "$RELEASE_PAYLOAD" \
+          "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/releases" 2>&1)
+        
+        if echo "$RELEASE_RESPONSE" | jq -e '.tag_name' > /dev/null 2>&1; then
+          echo "GitLab Release created: https://${CI_SERVER_HOST}/${CI_PROJECT_PATH}/-/releases/$NEW_TAG"
+        else
+          echo "WARNING: Failed to create GitLab Release (tag was created successfully)"
+          echo "Response: $RELEASE_RESPONSE"
+        fi
+      else
+        echo "ERROR: Failed to push tag"
+        exit 1
+      fi
+  rules:
+    # Hotfix branches can create dev tags
+    - if: $CI_COMMIT_BRANCH =~ /^hotfix\//
+      when: always
+    # Release branches create dev tags on every push
+    - if: $CI_COMMIT_BRANCH =~ /^release\/v[0-9]+\.[0-9]+\.x$/
+      when: always
+  allow_failure: false
+  variables:
+    GIT_STRATEGY: clone
+    GIT_DEPTH: 0
+
+create-release:
+  stage: release
+  image: registry.gitlab.com/gitlab-org/cli:latest
+  script:
+    - |
+      echo "📋 Creating GitLab Release for $CI_COMMIT_TAG"
+
+      # Extract version number
+      VERSION=$(echo "$CI_COMMIT_TAG" | sed 's/^v//')
+
+      # Load changelog if available
+      DESCRIPTION="Release $CI_COMMIT_TAG"
+      if [ -f "CHANGELOG.md" ]; then
+        # Extract this version's section from CHANGELOG
+        DESCRIPTION=$(awk "/^## \[${VERSION}\]/,/^## \[/{if (/^## \[${VERSION}\]/) next; if (/^## \[/) exit; print}" CHANGELOG.md || echo "Release $CI_COMMIT_TAG")
+      fi
+
+      echo "Creating release with description:"
+      echo "$DESCRIPTION"
+  release:
+    tag_name: $CI_COMMIT_TAG
+    name: "Release $CI_COMMIT_TAG"
+    description: "Release $CI_COMMIT_TAG of components in $CI_PROJECT_PATH"
+  rules:
+    - if: $CI_COMMIT_TAG =~ /^v\d+\.\d+\.\d+$/  # Only semantic version tags
+      when: on_success
+
+# ============================================================================
+# STAGE 7 - MIRROR
+# ============================================================================
+
+mirror:github:
+  stage: mirror
+  image: alpine:latest
+  before_script:
+    - apk add --no-cache curl jq
+    - apk add --no-cache git
+    - git config --global user.email "ci@bluefly.io"
+    - git config --global user.name "GitLab CI"
+  script:
+    - |
+      # Use GH_TOKEN (group variable) or GITHUB_MIRROR_TOKEN (legacy)
+      MIRROR_TOKEN="${GH_TOKEN:-$GITHUB_MIRROR_TOKEN}"
+
+      if [ -z "$MIRROR_TOKEN" ]; then
+        echo "INFO: No GitHub token set (GH_TOKEN or GITHUB_MIRROR_TOKEN) - skipping"
+        exit 0
+      fi
+
+      echo "Syncing to GitHub..."
+      git remote add github https://${MIRROR_TOKEN}@github.com/blueflyio/openstandardagents.git || true
+      git push github --all --force || true
+      git push github --tags --force || true
+      echo "GitHub mirror synced"
+  rules:
+    - if: $CI_COMMIT_TAG
+      when: on_success
+    - if: $CI_COMMIT_BRANCH == "main"
+      when: on_success
+  allow_failure: true
+
+# ============================================================================
+# POST-RELEASE CLEANUP
+# ============================================================================
+# After successful release:
+# 1. Tag all issues with released::v{VERSION}
+# 2. Tag all MRs with released::v{VERSION}
+# 3. Create next milestone (patch increment)
+
+post-release:cleanup:
+  stage: .post
+  image: alpine:latest
+  before_script:
+    - apk add --no-cache curl jq
+    - apk add --no-cache curl jq bash
+  script:
+    - |
+      #!/bin/bash
+      set -euo pipefail
+      echo "🧹 POST-RELEASE CLEANUP"
+      echo "======================="
+
+      # Check if release just happened
+      if [ -z "$RELEASE_VERSION" ] || [ -z "$MILESTONE_ID" ]; then
+        echo "INFO: No release detected - skipping cleanup"
+        exit 0
+      fi
+
+      VERSION="${RELEASE_VERSION}"
+      LABEL_NAME="released::v${VERSION}"
+
+      echo "📌 Version: v${VERSION}"
+      echo "📌 Milestone: ${MILESTONE_TITLE}"
+      echo ""
+
+      # 1. Create release label if not exists
+      echo "Creating label: ${LABEL_NAME}"
+      curl --request POST \
+        --header "JOB-TOKEN: ${CI_JOB_TOKEN}" \
+        --data "name=${LABEL_NAME}&color=#00FF00&description=Released in v${VERSION}" \
+        "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/labels" 2>/dev/null || echo "Label may already exist"
+
+      # 2. Tag all closed issues in milestone
+      echo ""
+      echo "📌 Tagging issues..."
+      ISSUES=$(curl -sS --max-time 30 -G \
+        --header "JOB-TOKEN: ${CI_JOB_TOKEN}" \
+        "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/issues" \
+        --data-urlencode "milestone=${MILESTONE_TITLE}" \
+        --data-urlencode "state=closed" \
+        --data-urlencode "per_page=100")
+
+      echo "$ISSUES" | jq -r '.[].iid' | while read ISSUE_IID; do
+        [ -z "$ISSUE_IID" ] && continue
+        curl -sS --max-time 30 --request PUT \
+          --header "JOB-TOKEN: ${CI_JOB_TOKEN}" \
+          --data "add_labels=${LABEL_NAME}" \
+          "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/issues/${ISSUE_IID}" > /dev/null
+        echo " ✓ Tagged issue #${ISSUE_IID}"
+      done
+
+      # 3. Tag all merged MRs in milestone
+      echo ""
+      echo "📌 Tagging merge requests..."
+      MRS=$(curl -sS --max-time 30 -G \
+        --header "JOB-TOKEN: ${CI_JOB_TOKEN}" \
+        "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/merge_requests" \
+        --data-urlencode "milestone=${MILESTONE_TITLE}" \
+        --data-urlencode "state=merged" \
+        --data-urlencode "per_page=100")
+
+      echo "$MRS" | jq -r '.[].iid' | while read MR_IID; do
+        [ -z "$MR_IID" ] && continue
+        curl -sS --max-time 30 --request PUT \
+          --header "JOB-TOKEN: ${CI_JOB_TOKEN}" \
+          --data "add_labels=${LABEL_NAME}" \
+          "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/merge_requests/${MR_IID}" > /dev/null
+        echo " ✓ Tagged MR !${MR_IID}"
+      done
+
+      # 4. Create next milestone (patch increment)
+      echo ""
+      echo "📅 Creating next milestone..."
+      NEXT_VERSION=$(echo "$VERSION" | awk -F. '{print $1"."$2"."$3+1}')
+
+      NEXT_MILESTONE=$(curl -sS --max-time 30 --request POST \
+        --header "JOB-TOKEN: ${CI_JOB_TOKEN}" \
+        --header "Content-Type: application/json" \
+        --data "{
+          \"title\": \"v${NEXT_VERSION}\",
+          \"description\": \"Next patch release (auto-created after v${VERSION})\"
+        }" \
+        "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/milestones" 2>/dev/null)
+
+      NEXT_ID=$(echo "$NEXT_MILESTONE" | jq -r '.id // empty')
+      if [ -n "$NEXT_ID" ]; then
+        echo " ✓ Created milestone v${NEXT_VERSION}"
+      else
+        echo " WARNING:  Milestone v${NEXT_VERSION} may already exist"
+      fi
+
+      echo ""
+      echo "POST-RELEASE CLEANUP COMPLETE"
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main" && $MILESTONE_READY == "true" && $ENABLE_RELEASE == "true"
+      when: on_success
+  needs:
+    - job: release:npm
+      artifacts: true
+    - job: detect:milestone-and-tags
+      artifacts: true
+  allow_failure: true
+
+# ============================================================================
+# WORKFLOW - MERGE TRAINS ENABLED
+# ============================================================================
+# Merge trains prevent branch divergence by:
+# 1. Queuing MRs instead of racing to merge
+# 2. Testing merged state before allowing merge
+# 3. Auto-rebasing when target branch updates
+# 4. Failing fast on conflicts
+#
+# Enabled for: development, main branches
+# Eliminates: Manual sync commits between releases
+# See: https://docs.gitlab.com/ee/ci/pipelines/merge_trains.html
+# ============================================================================
+
+workflow:
+  rules:
+    # Merge train pipelines (combined state testing)
+    - if: $CI_MERGE_REQUEST_EVENT_TYPE == "merge_train"
+    # Merged result pipelines (pre-merge validation)
+    - if: $CI_MERGE_REQUEST_EVENT_TYPE == "merged_result"
+    # Regular MR pipelines
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    # Regular branch pipelines
+    - if: $CI_COMMIT_BRANCH
+    # Tag pipelines
+    - if: $CI_COMMIT_TAG
+    # Scheduled and webhook pipelines
+    - if: $CI_PIPELINE_SOURCE == "schedule"
+    - if: $CI_PIPELINE_SOURCE == "web"
+    - if: $CI_PIPELINE_SOURCE == "trigger"
+
+# ============================================================================
+# RELEASE AUTOMATION - Enterprise Grade
+# ============================================================================
+
+# Auto-increment dev tag on merge to release branches
+increment-dev-tag:
+  stage: .post
+  needs: []  # Run independently - don't wait for manual jobs
+  image: node:${NODE_VERSION}-alpine
+  before_script:
+    - apk add --no-cache curl jq
+    - npm ci
+    - npm install -g tsx
+  script:
+    - tsx .gitlab/release-automation/scripts/increment-dev-tag.ts
+  rules:
+    - if: $CI_COMMIT_BRANCH =~ /^release\/v/ && $CI_PIPELINE_SOURCE == "push"
+      when: on_success
+  allow_failure: true
+
+# Manual release buttons (main branch only)
+release-to-npm:
+  stage: release
+  image: node:${NODE_VERSION}-alpine
+  before_script:
+    - apk add --no-cache curl jq
+    - npm ci
+  script:
+    - RELEASE_ACTION=npm tsx .gitlab/release-automation/scripts/release-buttons.ts
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+      when: manual
+  environment:
+    name: npm-registry
+    url: https://www.npmjs.com/package/@bluefly/openstandardagents
+    deployment_tier: production
+
+release-to-github:
+  stage: release
+  image: node:${NODE_VERSION}-alpine
+  needs: [release-to-npm]
+  before_script:
+    - apk add --no-cache curl jq
+    - npm ci
+  script:
+    - RELEASE_ACTION=github tsx .gitlab/release-automation/scripts/release-buttons.ts
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+      when: manual
+  environment:
+    name: github
+    url: https://github.com/blueflyio/openstandardagents
+    deployment_tier: production
+
+# Website deployment moved to openstandardagents.org repository
+# See: https://gitlab.com/blueflyio/openstandardagents.org
+
+announce-release:
+  stage: .post
+  image: node:${NODE_VERSION}-alpine
+  needs: [release-to-github]
+  before_script:
+    - apk add --no-cache curl jq
+    - npm ci
+  script:
+    - RELEASE_ACTION=announce tsx .gitlab/release-automation/scripts/release-buttons.ts
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+      when: manual
+# ============================================================================
+# AUTOMATED RELEASE MR CREATION
+# ============================================================================
+
+create-release-mrs:
+  stage: .pre
+  image: alpine:latest
+  before_script:
+    - apk add --no-cache curl jq
+  script:
+    - |
+      : "${GITLAB_PUSH_TOKEN:?GITLAB_PUSH_TOKEN not set}"
+      echo "Checking for milestones needing release MRs..."
+
+      # Fetch milestones with error handling
+      MILESTONES_RESPONSE=$(curl -s -w "\n%{http_code}" --header "PRIVATE-TOKEN: $GITLAB_PUSH_TOKEN" \
+        "$CI_API_V4_URL/projects/$CI_PROJECT_ID/milestones?state=active" 2>&1)
+      
+      HTTP_CODE=$(echo "$MILESTONES_RESPONSE" | tail -n1)
+      MILESTONES_BODY=$(echo "$MILESTONES_RESPONSE" | sed '$d')
+      
+      if [ "$HTTP_CODE" != "200" ]; then
+        echo "WARNING: Failed to fetch milestones (HTTP $HTTP_CODE)"
+        echo "Response: $MILESTONES_BODY"
+        exit 0
+      fi
+      
+      # Validate JSON before parsing
+      if ! echo "$MILESTONES_BODY" | jq empty 2>/dev/null; then
+        echo "WARNING: Invalid JSON response from milestones API"
+        echo "Response: $MILESTONES_BODY"
+        exit 0
+      fi
+      
+      MILESTONES="$MILESTONES_BODY"
+      
+      # Check if we got an array
+      if ! echo "$MILESTONES" | jq -e 'type == "array"' >/dev/null 2>&1; then
+        echo "WARNING: Expected array but got: $(echo "$MILESTONES" | jq -r 'type' 2>/dev/null || echo 'unknown')"
+        exit 0
+      fi
+
+      echo "$MILESTONES" | jq -r '.[] | select(.title | startswith("v")) | "\(.id) \(.title)"' | while read -r MILESTONE_ID MILESTONE_TITLE; do
+        # Skip if empty
+        [ -z "$MILESTONE_ID" ] || [ -z "$MILESTONE_TITLE" ] && continue
+        
+        echo "Processing milestone: $MILESTONE_TITLE (ID: $MILESTONE_ID)"
+        
+        # Extract version from milestone title (e.g., v0.3.x from "v0.3.5")
+        RELEASE_BRANCH=$(echo "$MILESTONE_TITLE" | sed -E 's/v([0-9]+\.[0-9]+)\.[0-9]+/release\/v\1.x/')
+        
+        if [ -z "$RELEASE_BRANCH" ] || [ "$RELEASE_BRANCH" = "$MILESTONE_TITLE" ]; then
+          echo "WARNING: Could not extract release branch from milestone title: $MILESTONE_TITLE"
+          continue
+        fi
+
+        # Check for existing MR with error handling
+        MR_RESPONSE=$(curl -s -w "\n%{http_code}" --header "PRIVATE-TOKEN: $GITLAB_PUSH_TOKEN" \
+          "$CI_API_V4_URL/projects/$CI_PROJECT_ID/merge_requests?state=opened&source_branch=${RELEASE_BRANCH}&target_branch=main&milestone=$MILESTONE_TITLE" 2>&1)
+        
+        MR_HTTP_CODE=$(echo "$MR_RESPONSE" | tail -n1)
+        MR_BODY=$(echo "$MR_RESPONSE" | sed '$d')
+        
+        EXISTING_MR=""
+        if [ "$MR_HTTP_CODE" = "200" ] && echo "$MR_BODY" | jq empty 2>/dev/null; then
+          EXISTING_MR=$(echo "$MR_BODY" | jq -r '.[0].iid // empty' 2>/dev/null || echo "")
+        fi
+
+        if [ -z "$EXISTING_MR" ] || [ "$EXISTING_MR" = "null" ]; then
+          echo "Creating MR for milestone $MILESTONE_TITLE (branch: $RELEASE_BRANCH)"
+
+          CREATE_MR_RESPONSE=$(curl -s -w "\n%{http_code}" --request POST \
+            --header "PRIVATE-TOKEN: $GITLAB_PUSH_TOKEN" \
+            --header "Content-Type: application/json" \
+            --data "{
+              \"source_branch\": \"${RELEASE_BRANCH}\",
+              \"target_branch\": \"main\",
+              \"title\": \"Draft:  Release $MILESTONE_TITLE\",
+              \"description\": \"## Release $MILESTONE_TITLE\n\nDraft MR for next release. Features merge to ${RELEASE_BRANCH} and accumulate here.\n\n### When Ready\n1. Mark as ready\n2. Add to merge train\n3. Train merges to main\n4. Release automation runs\",
+              \"milestone_id\": $MILESTONE_ID,
+              \"draft\": true,
+              \"labels\": \"type::release,status::draft\"
+            }" \
+            "$CI_API_V4_URL/projects/$CI_PROJECT_ID/merge_requests" 2>&1)
+          
+          CREATE_MR_HTTP_CODE=$(echo "$CREATE_MR_RESPONSE" | tail -n1)
+          CREATE_MR_BODY=$(echo "$CREATE_MR_RESPONSE" | sed '$d')
+          
+          if [ "$CREATE_MR_HTTP_CODE" = "201" ]; then
+            MR_IID=$(echo "$CREATE_MR_BODY" | jq -r '.iid // empty' 2>/dev/null || echo "")
+            if [ -n "$MR_IID" ] && [ "$MR_IID" != "null" ]; then
+              echo "Created MR !$MR_IID for milestone $MILESTONE_TITLE"
+            else
+              echo "WARNING: MR created but could not parse MR IID"
+            fi
+          else
+            echo "WARNING: Failed to create MR (HTTP $CREATE_MR_HTTP_CODE)"
+            echo "Response: $CREATE_MR_BODY"
+          fi
+        else
+          echo "MR already exists for milestone $MILESTONE_TITLE: !$EXISTING_MR"
+        fi
+      done
+      
+      echo "Finished checking milestones"
+  rules:
+    - if: $CI_COMMIT_BRANCH =~ /^release\/v/
+      when: manual
+    - when: never  # Skip on push events to not block automatic pipelines
+
+# Generate llms.txt context files
+generate:llms-txt:
+  stage: build
+  needs: []
+  image: python:3.11-slim
+  script:
+    - pip install llms-txt
+    - llms_txt2ctx llms.txt > llms-ctx.txt
+    - llms_txt2ctx llms.txt --optional True > llms-ctx-full.txt
+  artifacts:
+    paths:
+      - llms.txt
+      - llms-ctx.txt
+      - llms-ctx-full.txt
+    expire_in: never
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+      when: on_success
+    - if: $CI_COMMIT_BRANCH =~ /^release\/v/
+      when: on_success
+
+# ============================================================================
+# POST-RELEASE SYNC - Sync main back to release branches after releases
+# ============================================================================
+
+dependency:update:
+  stage: .post
+  image: node:${NODE_VERSION}-alpine
+  before_script:
+    - apk add --no-cache curl jq
+    - apk add --no-cache git
+  script:
+    - |
+      echo "📦 Checking for outdated dependencies..."
+      npm outdated || true
+
+      echo ""
+      echo "🔒 Running security audit..."
+      npm audit || true
+
+      echo ""
+      echo "💡 To fix vulnerabilities, run: npm audit fix --audit-level=moderate"
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+      when: manual
+  allow_failure: true
+
+sync:main-to-release:
+  stage: .post
+  image: alpine:latest
+  before_script:
+    - apk add --no-cache curl jq
+    - apk add --no-cache git curl jq bash
+    - git config user.email "ci@bluefly.io"
+    - git config user.name "GitLab CI"
+    - |
+      if [[ "${GITLAB_PUSH_TOKEN:0:5}" == "gldt-" ]]; then
+        git remote set-url origin "https://${DEPLOY_TOKEN_USERNAME:-gitlab+deploy-token-10466652}:${GITLAB_PUSH_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git"
+      else
+        git remote set-url origin "https://oauth2:${GITLAB_PUSH_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git"
+      fi
+  script:
+    - |
+      echo "Syncing main → release branches..."
+
+      # Extract version from latest tag to determine release branch
+      LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.3.0")
+      RELEASE_BRANCH=$(echo "$LATEST_TAG" | sed -E 's/v([0-9]+\.[0-9]+)\.[0-9]+/release\/v\1.x/')
+
+      git fetch origin main "$RELEASE_BRANCH"
+      git checkout "$RELEASE_BRANCH"
+      git pull origin "$RELEASE_BRANCH"
+
+      # Check if main has commits not in release branch
+      BEHIND=$(git rev-list --count "${RELEASE_BRANCH}..origin/main")
+
+      if [ "$BEHIND" -gt 0 ]; then
+        echo "${RELEASE_BRANCH} is $BEHIND commits behind main"
+
+        # Create sync MR automatically
+        curl --request POST \
+          --header "JOB-TOKEN: ${CI_JOB_TOKEN}" \
+          --header "Content-Type: application/json" \
+          --data "{
+            \"source_branch\": \"main\",
+            \"target_branch\": \"${RELEASE_BRANCH}\",
+            \"title\": \"chore: sync main → ${RELEASE_BRANCH} post-release [skip ci]\",
+            \"description\": \"Automated sync after release. Contains release commits.\",
+            \"remove_source_branch\": false,
+            \"squash\": true
+          }" \
+          "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/merge_requests"
+      else
+        echo "${RELEASE_BRANCH} is up-to-date with main"
+      fi
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main" && $CI_COMMIT_TAG
+      when: on_success
+    - when: never
+
+
+
+# ============================================================================
+# RC TAG CREATION (when release/* merges to main)
+# ============================================================================
+# Creates v0.1.4-rc, v0.1.4-rc.1, etc. when release/* branches merge to main
+release:rc-tag:
+  stage: release
+  image: alpine:latest
+  needs:
+    - job: quality:gates
+    - job: detect:milestone-and-tags
+      optional: true
+      artifacts: true
+  before_script:
+    - apk add --no-cache git curl jq
+    - |
+      if [ -z "${GITLAB_PUSH_TOKEN:-}" ]; then
+        echo "ERROR: GITLAB_PUSH_TOKEN is not set"
+        echo "This job requires GITLAB_PUSH_TOKEN to create and push tags"
+        exit 1
+      fi
+    - git config user.email "gitlab-ci@${CI_SERVER_HOST}"
+    - git config user.name "GitLab CI"
+    - |
+      if [[ "${GITLAB_PUSH_TOKEN:0:5}" == "gldt-" ]]; then
+        git remote set-url origin "https://${DEPLOY_TOKEN_USERNAME:-gitlab+deploy-token-10466652}:${GITLAB_PUSH_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git"
+      else
+        git remote set-url origin "https://oauth2:${GITLAB_PUSH_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git"
+      fi
+    - git fetch --unshallow --tags || git fetch --tags || true
+    - |
+      # Load milestone version from artifact if available
+      if [ -f milestone-version.env ]; then
+        echo "Loading milestone version from artifact..."
+        set -a
+        source milestone-version.env
+        set +a
+        echo "RELEASE_VERSION from artifact: ${RELEASE_VERSION:-not set}"
+      fi
+  script:
+    - |
+      set -e
+      echo "RC TAG CREATION"
+      echo "==============="
+      echo "Branch: ${CI_COMMIT_BRANCH}"
+      echo "Commit: ${CI_COMMIT_SHA}"
+      echo "Pipeline Source: ${CI_PIPELINE_SOURCE}"
+
+      # Get version from .version.json (single source of truth)
+      VERSION=$(jq -r '.current' .version.json 2>/dev/null || echo "")
+
+      # Fallback to milestone version if .version.json not available
+      if [ -z "$VERSION" ] || [ "$VERSION" = "null" ]; then
+        if [ -f milestone-version.env ]; then
+          set -a
+          source milestone-version.env 2>/dev/null || true
+          set +a
+        fi
+
+        if [ -n "${RELEASE_VERSION:-}" ]; then
+          VERSION="${RELEASE_VERSION}"
+          echo "Using RELEASE_VERSION from milestone: ${VERSION}"
+        else
+          echo "ERROR: Could not determine version from .version.json or milestone"
+          exit 1
+        fi
+      fi
+      
+      echo "Version: ${VERSION}"
+      
+      # Find existing RC tags for this version
+      RC_TAGS=$(git tag -l "v${VERSION}-rc*" | wc -l)
+      
+      if [ "$RC_TAGS" -eq 0 ]; then
+        RC_TAG="v${VERSION}-rc"
+      else
+        # Get latest RC tag number
+        LATEST_RC=$(git tag -l "v${VERSION}-rc*" | sort -V | tail -n1)
+        if echo "$LATEST_RC" | grep -qE "v${VERSION}-rc\.[0-9]+$"; then
+          RC_NUM=$(echo "$LATEST_RC" | sed -E "s/v${VERSION}-rc\.([0-9]+)/\1/")
+          NEXT_RC_NUM=$((RC_NUM + 1))
+          RC_TAG="v${VERSION}-rc.${NEXT_RC_NUM}"
+        else
+          RC_TAG="v${VERSION}-rc.1"
+        fi
+      fi
+      
+      echo "Creating RC tag: $RC_TAG"
+      
+      # Check if HEAD is already tagged with this RC
+      HEAD_TAGS=$(git tag --points-at HEAD)
+      if echo "$HEAD_TAGS" | grep -qE "^v${VERSION}-rc"; then
+        echo "HEAD already has RC tag: $HEAD_TAGS"
+        echo "RC_TAG=$(echo "$HEAD_TAGS" | grep -E "^v${VERSION}-rc" | head -n1)" >> release.env
+        exit 0
+      fi
+      
+      # Create and push RC tag
+      echo "Creating annotated tag: $RC_TAG"
+      git tag -a "$RC_TAG" -m "Release Candidate $RC_TAG
+
+      Commit: $CI_COMMIT_SHA
+      Pipeline: $CI_PIPELINE_URL
+      Branch: $CI_COMMIT_BRANCH
+      Source: ${CI_MERGE_REQUEST_SOURCE_BRANCH_NAME:-main}"
+      
+      echo "Pushing tag to remote..."
+      if git push origin "$RC_TAG" 2>&1; then
+        echo "SUCCESS: RC tag created and pushed: $RC_TAG"
+        echo "RC_TAG=$RC_TAG" >> release.env
+        echo "RC_TAG=$RC_TAG" | tee -a release.env
+      else
+        echo "ERROR: Failed to push RC tag"
+        echo "Checking if tag exists locally..."
+        git tag -l "$RC_TAG"
+        echo "Checking remote connection..."
+        git remote -v
+        exit 1
+      fi
+  artifacts:
+    reports:
+      dotenv: release.env
+    paths:
+      - release.env
+    expire_in: 1 day
+  rules:
+    # Only run when release/* branch merges to main
+    # GitLab format: "Merge branch 'release/v0.3.x' into main"
+    - if: $CI_COMMIT_BRANCH == "main" && $CI_COMMIT_MESSAGE =~ /Merge branch 'release\/v/
+      when: on_success
+    - when: never
+  allow_failure: false
+  variables:
+    GIT_STRATEGY: clone
+    GIT_DEPTH: 0
+
+# ============================================================================
+# RC VALIDATION STAGE
+# ============================================================================
+# Runs smoke tests, integration tests, and staging deployment for RC tags
+
+rc:smoke-tests:
+  stage: rc-validation
+  image: node:${NODE_VERSION}-alpine
+  tags:
+    - saas-linux-small-amd64
+  before_script:
+    - apk add --no-cache curl jq
+    - npm ci --legacy-peer-deps
+  script:
+    - |
+      echo "Running smoke tests on RC build..."
+      echo "RC Tag: ${CI_COMMIT_TAG}"
+      
+      # Run basic smoke tests
+      npm run build || (echo "ERROR: Build failed" && exit 1)
+      
+      # Run unit tests as smoke tests
+      npm run test:unit || npm test || (echo "ERROR: Smoke tests failed" && exit 1)
+      
+      echo "Smoke tests passed for ${CI_COMMIT_TAG}"
+  rules:
+    - if: '$CI_COMMIT_TAG =~ /^v[0-9]+\.[0-9]+\.[0-9]+-rc/'
+      when: on_success
+  allow_failure: false
+
+rc:integration-tests:
+  stage: rc-validation
+  image: node:${NODE_VERSION}-alpine
+  tags:
+    - saas-linux-small-amd64
+  before_script:
+    - apk add --no-cache curl jq
+    - npm ci --legacy-peer-deps
+  script:
+    - |
+      echo "Running integration tests on RC..."
+      echo "RC Tag: ${CI_COMMIT_TAG}"
+      
+      npm run build || (echo "ERROR: Build failed" && exit 1)
+      
+      # Run integration tests if available
+      if npm run | grep -q "test:integration"; then
+        npm run test:integration || (echo "ERROR: Integration tests failed" && exit 1)
+      else
+        echo "No integration tests defined, running full test suite..."
+        npm test || (echo "ERROR: Tests failed" && exit 1)
+      fi
+      
+      echo "Integration tests passed for ${CI_COMMIT_TAG}"
+  rules:
+    - if: '$CI_COMMIT_TAG =~ /^v[0-9]+\.[0-9]+\.[0-9]+-rc/'
+      when: on_success
+  allow_failure: false
+
+rc:deploy-staging:
+  stage: rc-validation
+  image: node:${NODE_VERSION}-alpine
+  tags:
+    - saas-linux-small-amd64
+  before_script:
+    - apk add --no-cache curl jq
+    - npm ci --legacy-peer-deps
+  script:
+    - |
+      echo "Deploying RC to staging environment..."
+      echo "RC Tag: ${CI_COMMIT_TAG}"
+      
+      # Build the package
+      npm run build || (echo "ERROR: Build failed" && exit 1)
+      
+      # For now, just validate the build
+      # Add actual staging deployment logic here when staging environment is configured
+      echo "RC build validated and ready for staging deployment"
+      echo "Staging deployment would happen here"
+      
+      # Example: npm pack and validate
+      npm pack --dry-run || true
+      
+      echo "RC ${CI_COMMIT_TAG} validated for staging"
+  environment:
+    name: staging
+    url: https://staging.openstandardagents.org
+  rules:
+    - if: '$CI_COMMIT_TAG =~ /^v[0-9]+\.[0-9]+\.[0-9]+-rc/'
+      when: manual
+      allow_failure: false
+
+# ============================================================================
+# FINAL RELEASE (Manual promotion from RC)
+# ============================================================================
+# Promotes RC tag to final release tag after validation
+
+release:promote-rc-to-final:
+  stage: release
+  image: alpine:latest
+  before_script:
+    - apk add --no-cache git curl jq bash
+    - git config user.email "gitlab-ci@${CI_SERVER_HOST}"
+    - git config user.name "GitLab CI"
+    - |
+      if [[ "${GITLAB_PUSH_TOKEN:0:5}" == "gldt-" ]]; then
+        git remote set-url origin "https://${DEPLOY_TOKEN_USERNAME:-gitlab+deploy-token-10466652}:${GITLAB_PUSH_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git"
+      else
+        git remote set-url origin "https://oauth2:${GITLAB_PUSH_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git"
+      fi
+    - git fetch --unshallow --tags || git fetch --tags || true
+  script:
+    - |
+      echo "PROMOTING RC TO FINAL RELEASE"
+      echo "============================="
+      
+      # Get the latest RC tag
+      LATEST_RC=$(git tag -l "v*-rc*" --sort=-v:refname | head -n1)
+      
+      if [ -z "$LATEST_RC" ]; then
+        echo "ERROR: No RC tag found to promote"
+        echo "Available RC tags:"
+        git tag -l "v*-rc*" || echo "None found"
+        exit 1
+      fi
+      
+      echo "Latest RC tag: $LATEST_RC"
+      
+      # Extract version without RC suffix
+      FINAL_VERSION=$(echo "$LATEST_RC" | sed 's/-rc.*//')
+      
+      # Check if final version already exists
+      if git tag -l | grep -qE "^${FINAL_VERSION}$"; then
+        echo "WARNING: Final tag ${FINAL_VERSION} already exists"
+        echo "Skipping promotion"
+        exit 0
+      fi
+      
+      echo "Promoting $LATEST_RC to $FINAL_VERSION"
+      
+      # Get the commit SHA for the RC tag
+      RC_COMMIT=$(git rev-list -n 1 "$LATEST_RC")
+      
+      # Create final release tag
+      git tag -a "$FINAL_VERSION" -m "Release $FINAL_VERSION (promoted from $LATEST_RC)
+
+      Promoted from: $LATEST_RC
+      Commit: $RC_COMMIT
+      Pipeline: $CI_PIPELINE_URL
+      Released: $(date -u +"%Y-%m-%dT%H:%M:%SZ")"
+      
+      # Push final tag
+      if git push origin "$FINAL_VERSION"; then
+        echo "Successfully promoted $LATEST_RC to $FINAL_VERSION"
+        
+        # Create GitLab Release
+        RELEASE_NOTES=""
+        if [ -f "CHANGELOG.md" ]; then
+          # Extract version section from CHANGELOG
+          VERSION_NUM=$(echo "$FINAL_VERSION" | sed 's/^v//')
+          RELEASE_NOTES=$(awk "/^## \[${VERSION_NUM}\]/,/^## \[/{if (/^## \[${VERSION_NUM}\]/) next; if (/^## \[/) exit; print}" CHANGELOG.md || echo "Release $FINAL_VERSION")
+        fi
+        
+        if [ -z "$RELEASE_NOTES" ] && [ -f "RELEASE_NOTES.md" ]; then
+          RELEASE_NOTES=$(cat RELEASE_NOTES.md)
+        fi
+        
+        if [ -z "$RELEASE_NOTES" ]; then
+          RELEASE_NOTES="Release $FINAL_VERSION (promoted from $LATEST_RC)"
+        fi
+        
+        RELEASE_PAYLOAD=$(jq -n \
+          --arg name "Release $FINAL_VERSION" \
+          --arg tag "$FINAL_VERSION" \
+          --arg desc "$RELEASE_NOTES" \
+          '{
+            name: $name,
+            tag_name: $tag,
+            description: $desc
+          }')
+        
+        curl --request POST \
+          --header "JOB-TOKEN: ${CI_JOB_TOKEN}" \
+          --header "Content-Type: application/json" \
+          --data "$RELEASE_PAYLOAD" \
+          "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/releases" || echo "WARNING: Failed to create GitLab Release"
+        
+        echo ""
+        echo "Release $FINAL_VERSION created successfully"
+        echo "GitLab Release: https://${CI_SERVER_HOST}/${CI_PROJECT_PATH}/-/releases/$FINAL_VERSION"
+      else
+        echo "ERROR: Failed to push final release tag"
+        exit 1
+      fi
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+      when: manual
+      allow_failure: false
+    - if: '$CI_PIPELINE_SOURCE == "trigger" && $RELEASE_RC_TO_FINAL == "true"'
+      when: on_success
+  allow_failure: false
+
+# ============================================================================
+# REPO HYGIENE GUARDRAILS
+# ============================================================================
+# Enforce: no worktrees inside repo, no wiki submodules
+# These checks fail hard to prevent repo contamination
+
+repo:hygiene:
+  stage: validate
+  needs: []  # Skip .pre stage - allows job to auto-start
+  image: alpine:3.20
+  rules:
+    - when: always
+  script:
+    - |
+      set -e
+      echo "Running repo hygiene checks..."
+      
+      # Worktrees must not exist in repo (even untracked)
+      if [ -d .worktrees ]; then
+        echo "ERROR: .worktrees/ directory found in repo"
+        exit 1
+      fi
+      
+      if [ -d .workingtrees ]; then
+        echo "ERROR: .workingtrees/ directory found in repo"
+        exit 1
+      fi
+      
+      # Check for nested worktree directories (excluding .git directory)
+      NESTED_WORKTREES=$(find . -type d \( -name '.worktrees' -o -name '.workingtrees' \) ! -path './.git/*' 2>/dev/null || true)
+      if [ -n "$NESTED_WORKTREES" ]; then
+        echo "ERROR: Nested worktree directories found:"
+        echo "$NESTED_WORKTREES"
+        exit 1
+      fi
+      
+      # No wiki submodules / embedded wiki dirs
+      if [ -d .gitlab/wiki ]; then
+        echo "ERROR: .gitlab/wiki/ directory found (wiki must be external)"
+        exit 1
+      fi
+      
+      if [ -f .gitmodules ]; then
+        echo "ERROR: .gitmodules exists (wiki must not be a submodule)"
+        cat .gitmodules
+        exit 1
+      fi
+      
+      echo "Repo hygiene checks passed"
