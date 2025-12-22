@@ -83,19 +83,55 @@ validate:milestone-assignment:
       fi
 
       MILESTONE=$(echo "$MR_DATA" | jq -r '.milestone.title // empty' 2>/dev/null || echo "")
+      MILESTONE_ID=$(echo "$MR_DATA" | jq -r '.milestone.id // empty' 2>/dev/null || echo "")
 
       # If no milestone from MR API (CI_JOB_TOKEN can't see group milestones), check group milestones directly
-      if [ -z "$MILESTONE" ]; then
+      if [ -z "$MILESTONE" ] || [ "$MILESTONE" = "null" ] || [ "$MILESTONE" = "" ]; then
         echo "ℹ️ Checking group milestones (CI_JOB_TOKEN has limited scope)..."
-        # Get group milestones for blueflyio group (87749026)
-        GROUP_MILESTONES=$(curl -sS --header "JOB-TOKEN: ${CI_JOB_TOKEN}" \
-          "${CI_API_V4_URL}/groups/87749026/milestones?state=active" 2>/dev/null || echo "[]")
-
-        # Check if any active group milestone exists - if so, assume it's assigned
-        if echo "$GROUP_MILESTONES" | jq -e '.[0].title' > /dev/null 2>&1; then
-          MILESTONE=$(echo "$GROUP_MILESTONES" | jq -r '.[0].title' 2>/dev/null || echo "")
-          echo "ℹ️ Found active group milestone: ${MILESTONE}"
-          echo "   (CI_JOB_TOKEN cannot verify MR assignment, trusting group milestone exists)"
+        
+        # Get project namespace to find group ID dynamically
+        if [ -n "${GITLAB_PUSH_TOKEN:-}" ]; then
+          PROJECT_DATA=$(curl -sS --header "PRIVATE-TOKEN: ${GITLAB_PUSH_TOKEN}" "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}" 2>/dev/null || echo "{}")
+        else
+          PROJECT_DATA=$(curl -sS --header "JOB-TOKEN: ${CI_JOB_TOKEN}" "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}" 2>/dev/null || echo "{}")
+        fi
+        
+        NAMESPACE_ID=$(echo "$PROJECT_DATA" | jq -r '.namespace.id // empty' 2>/dev/null || echo "")
+        
+        # Fallback to hardcoded group ID if namespace lookup fails
+        if [ -z "$NAMESPACE_ID" ] || [ "$NAMESPACE_ID" = "null" ]; then
+          NAMESPACE_ID="87749026"
+        fi
+        
+        # Try with better token if available for group milestone access
+        if [ -n "${GITLAB_PUSH_TOKEN:-}" ]; then
+          TOKEN_HEADER="PRIVATE-TOKEN: ${GITLAB_PUSH_TOKEN}"
+        elif [ -n "${GITLAB_TOKEN:-}" ]; then
+          TOKEN_HEADER="PRIVATE-TOKEN: ${GITLAB_TOKEN}"
+        else
+          TOKEN_HEADER="JOB-TOKEN: ${CI_JOB_TOKEN}"
+        fi
+        
+        # Get all group milestones to find the one assigned to MR
+        GROUP_MILESTONES=$(curl -sS --header "${TOKEN_HEADER}" "${CI_API_V4_URL}/groups/${NAMESPACE_ID}/milestones?per_page=100" 2>/dev/null || echo "[]")
+        
+        # If we have a milestone_id from MR, try to match it against group milestones
+        if [ -n "$MILESTONE_ID" ] && [ "$MILESTONE_ID" != "null" ] && [ "$MILESTONE_ID" != "" ]; then
+          MILESTONE=$(echo "$GROUP_MILESTONES" | jq -r ".[] | select(.id == ${MILESTONE_ID}) | .title" 2>/dev/null || echo "")
+          if [ -n "$MILESTONE" ] && [ "$MILESTONE" != "null" ]; then
+            echo "✅ Found group milestone assigned to MR: ${MILESTONE}"
+          fi
+        fi
+        
+        # Also check milestone_id field directly (different API response format)
+        if [ -z "$MILESTONE" ] || [ "$MILESTONE" = "null" ] || [ "$MILESTONE" = "" ]; then
+          MR_MILESTONE_ID=$(echo "$MR_DATA" | jq -r '.milestone_id // empty' 2>/dev/null || echo "")
+          if [ -n "$MR_MILESTONE_ID" ] && [ "$MR_MILESTONE_ID" != "null" ] && [ "$MR_MILESTONE_ID" != "" ]; then
+            MILESTONE=$(echo "$GROUP_MILESTONES" | jq -r ".[] | select(.id == ${MR_MILESTONE_ID}) | .title" 2>/dev/null || echo "")
+            if [ -n "$MILESTONE" ] && [ "$MILESTONE" != "null" ]; then
+              echo "✅ Found group milestone by milestone_id: ${MILESTONE}"
+            fi
+          fi
         fi
       fi
       LABELS=$(echo "$MR_DATA" | jq -r 'if .labels then (.labels | join(", ")) else "" end' 2>/dev/null || echo "")
