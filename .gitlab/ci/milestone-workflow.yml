@@ -127,24 +127,25 @@ validate:milestone-assignment:
           ;;
       esac
 
-      # Check if targeting main - must come from release/*
+      # Check if targeting main - must come from release/* or hotfix/*
       if [ "$CI_MERGE_REQUEST_TARGET_BRANCH_NAME" = "main" ]; then
         case "$CI_MERGE_REQUEST_SOURCE_BRANCH_NAME" in
-          release/*)
+          release/*|hotfix/*)
             if [ -z "$MILESTONE" ]; then
               echo "⚠️ Cannot verify milestone - CI_JOB_TOKEN has limited scope"
               echo "   Release version determined from branch name"
             fi
-            echo "✅ Release MR to main from ${CI_MERGE_REQUEST_SOURCE_BRANCH_NAME}"
+            echo "✅ Release/hotfix MR to main from ${CI_MERGE_REQUEST_SOURCE_BRANCH_NAME}"
             ;;
           *)
             echo ""
-            echo "❌ ERROR: Only 'release/*' branches can merge to 'main'"
+            echo "❌ ERROR: Only 'release/*' or 'hotfix/*' branches can merge to 'main'"
             echo ""
             echo "Workflow:"
             echo "  1. feature/* → release/* (✅ allowed)"
             echo "  2. release/* → main (✅ allowed)"
-            echo "  3. ${CI_MERGE_REQUEST_SOURCE_BRANCH_NAME} → main (❌ blocked)"
+            echo "  3. hotfix/* → main (✅ allowed for urgent fixes)"
+            echo "  4. ${CI_MERGE_REQUEST_SOURCE_BRANCH_NAME} → main (❌ blocked)"
             exit 1
             ;;
         esac
