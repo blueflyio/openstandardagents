@@ -9,11 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Migrate to gitlab_components security components from MR 361
 - Add auto-deploy to OrbStack Kubernetes for release branches
 - Add automated changelog generation with git-cliff
-- Make website 100% dynamic - eliminate hardcoded values
 - Add GitOps deployment with auto-update on main
+- Implement agent-driven documentation infrastructure
 
 ### Changed
 
@@ -31,15 +30,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- Remove all .bak and .tmp files
-- Sync main into release/v0.3.x to resolve conflicts
-- Eliminate remaining hardcoded versions and colors
 - Eliminate remaining hardcoded versions and colors
 - Sync:auto use git remote set-url for authentication
 - Add seo-automation.yml to release branch
 - Add seo-automation.yml include to CI
-- Merge main into release/v0.3.x - resolve conflicts
-- Use feature branches + MRs instead of direct push to protected branches
 - Use local runners and disable security scans
 - Use local runners for pages job
 - Add timeout and reduce scope for accessibility job
