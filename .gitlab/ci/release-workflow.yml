@@ -192,10 +192,10 @@ detect-release-version:
       when: on_success
 
 # ============================================================================
-# CREATE FINAL RELEASE TAG ON MERGE TO main
+# CREATE RC TAG ON MERGE TO main
 # ============================================================================
 
-create-release-tag:
+create-rc-tag:
   stage: release
   image: alpine:latest
   tags:
@@ -210,52 +210,69 @@ create-release-tag:
     - |
       #!/bin/bash
       set -e
-      
-      if [ ! -f release-version.env ]; then
-        echo "release-version.env not found, skipping tag creation"
-        exit 0
-      fi
-      
-      source release-version.env
-      
-      echo "CREATING FINAL RELEASE TAG"
-      echo "=========================="
-      echo "Version: $RELEASE_VERSION"
+
+      echo "CREATING RC TAG"
+      echo "==============="
       echo "Commit: ${CI_COMMIT_SHA}"
       echo ""
-      
-      # Check if tag already exists
-      if git tag -l "$RELEASE_VERSION" | grep -q "^${RELEASE_VERSION}$"; then
-        echo "Tag $RELEASE_VERSION already exists"
-        exit 0
-      fi
-      
-      # Create annotated release tag
-      git tag -a "$RELEASE_VERSION" -m "Release ${RELEASE_VERSION}
 
-      Production release from ${CI_COMMIT_BRANCH} branch
-      - Version: ${RELEASE_VERSION}
-      - Commit: ${CI_COMMIT_SHA:0:8}
-      - Pipeline: ${CI_PIPELINE_URL}
-      - Previous dev tag: ${LATEST_DEV_TAG:-none}
-      
-      This is a stable production release." "$CI_COMMIT_SHA"
-      
-      # Push tag
-      if git push origin "$RELEASE_VERSION" 2>/dev/null; then
-        echo "Created release tag: $RELEASE_VERSION"
-      else
-        echo "Failed to push tag $RELEASE_VERSION"
-        git tag -d "$RELEASE_VERSION" 2>/dev/null || true
+      # Detect version from latest dev tags (inline - no artifact dependency)
+      LATEST_DEV_TAG=$(git tag -l "v0.3.*-dev*" 2>/dev/null | sort -V | tail -1 || echo "")
+
+      if [ -z "$LATEST_DEV_TAG" ]; then
+        echo "ERROR: No dev tags found. Cannot create RC."
+        echo "Expected tags like: v0.3.0-dev.1, v0.3.0-dev.2, etc."
         exit 1
       fi
-  needs:
-    - job: detect-release-version
-      artifacts: true
+
+      echo "Latest dev tag: $LATEST_DEV_TAG"
+
+      # Extract base version (e.g., v0.3.0-dev.48 -> 0.3.0)
+      BASE_VERSION=$(echo "$LATEST_DEV_TAG" | sed 's/^v//' | sed 's/-dev.*//')
+      echo "Base version: $BASE_VERSION"
+
+      # Get next RC number
+      LATEST_RC=$(git tag -l "v${BASE_VERSION}-rc.*" 2>/dev/null | sort -V | tail -1 || echo "")
+      if [ -z "$LATEST_RC" ]; then
+        NEXT_RC=1
+      else
+        CURRENT_RC=$(echo "$LATEST_RC" | sed 's/.*-rc\.//')
+        NEXT_RC=$((CURRENT_RC + 1))
+      fi
+
+      RC_TAG="v${BASE_VERSION}-rc.${NEXT_RC}"
+
+      # Check if tag already exists
+      if git tag -l "$RC_TAG" | grep -q "^${RC_TAG}$"; then
+        echo "Tag $RC_TAG already exists"
+        exit 0
+      fi
+
+      echo "Creating RC tag: $RC_TAG"
+
+      # Create annotated RC tag
+      git tag -a "$RC_TAG" -m "Release Candidate ${RC_TAG}
+
+      RC from merge of release branch to main
+      - Version: ${BASE_VERSION}
+      - RC iteration: ${NEXT_RC}
+      - Commit: ${CI_COMMIT_SHA:0:8}
+      - Pipeline: ${CI_PIPELINE_URL}
+      - Based on dev tag: ${LATEST_DEV_TAG}
+
+      This is a release candidate for testing before final release." "$CI_COMMIT_SHA"
+
+      # Push tag
+      if git push origin "$RC_TAG" 2>&1; then
+        echo "✅ Created RC tag: $RC_TAG"
+      else
+        echo "Failed to push tag $RC_TAG"
+        git tag -d "$RC_TAG" 2>/dev/null || true
+        exit 1
+      fi
   rules:
     - if: $CI_COMMIT_BRANCH == "main" && $CI_COMMIT_MESSAGE =~ /Merge branch 'release\//
-    - if: $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "main" && $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME =~ /^release\//
-      when: manual
+      when: on_success
   allow_failure: false
 
 # ============================================================================

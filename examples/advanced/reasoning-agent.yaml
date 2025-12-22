@@ -1,6 +1,6 @@
 # OSSA v0.2.9 - Reasoning Agent Example
 # Demonstrates: reasoning strategies, prompt templates, knowledge graph
-apiVersion: ossa/v0.2.9
+apiVersion: ossa/v0.3.0
 kind: Agent
 metadata:
   name: research-analyst

@@ -5,6 +5,30 @@ All notable changes to OSSA (Open Standard for Scalable AI Agents) will be docum
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Fixed
+
+- **ci**: Prevent SIGPIPE in release:validate examples loop ([57f5056](https://gitlab.com/blueflyio/openstandardagents/-/commit/57f5056e5c117f0ba041c0e614224bee3e879df0))
+- **ci**: Accept {{VERSION}} placeholder in package.json exports validation ([85f208d](https://gitlab.com/blueflyio/openstandardagents/-/commit/85f208d20116208b218e54dc1a6fdbf7a1cce76d))
+- **ci**: Use .version.json as single source of truth for all version detection ([00f9220](https://gitlab.com/blueflyio/openstandardagents/-/commit/00f92203b825b4e1ba0dc19e9cd43d0f16b2b39d))
+- **test**: Restore v0.2.9 version in backwards-compat test case ([f9c64b3](https://gitlab.com/blueflyio/openstandardagents/-/commit/f9c64b3d1a282b21e23a79999884b4410b301925))## [0.3.0-dev.51] - 2025-12-21
+
+### Fixed
+
+- **ci**: Correct CI token headers and release tag automation ([2a61549](https://gitlab.com/blueflyio/openstandardagents/-/commit/2a61549bcb0402ddba925b4474b0a07d2e98d077))## [0.3.0-dev.50] - 2025-12-21
+
+### Fixed
+
+- **ci**: Correct CI token headers and release tag automation ([13aa6d5](https://gitlab.com/blueflyio/openstandardagents/-/commit/13aa6d5a6cca2b54a5d7a335d93eca78c127f311))## [0.3.0-dev.49] - 2025-12-21
+
+### Fixed
+
+- **ci**: Correct CI token headers and release tag automation ([9e43d09](https://gitlab.com/blueflyio/openstandardagents/-/commit/9e43d09d3bd1d69432bd90542a790261e9d1493e))## [0.3.0-dev.48] - 2025-12-21
+
+### Fixed
+
+- Resolve test failures blocking v0.3.0 release ([81ece93](https://gitlab.com/blueflyio/openstandardagents/-/commit/81ece93d68ec931a01df1af7a2700aff2d29636c))
 ## [0.3.0-dev.47] - 2025-12-21
 
 ### Fixed
@@ -59,6 +83,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Miscellaneous
 
 - Force CI rebuild to clear cache ([0e59875](https://gitlab.com/blueflyio/openstandardagents/-/commit/0e598750321f174b6584eb95390c683a5a016b0e))
+## [0.3.0-rc.8] - 2025-12-21
+
+### Fixed
+
+- Set package.json version to 0.3.0 ([3134b92](https://gitlab.com/blueflyio/openstandardagents/-/commit/3134b92976ab49bf73c7ec882c76fd94c4693875))
+## [0.3.0-rc.7] - 2025-12-21
+
+### Fixed
+
+- Skip agent trigger jobs when AGENT_PLATFORM_PROJECT not set ([dc230db](https://gitlab.com/blueflyio/openstandardagents/-/commit/dc230db6cd361d733543c059ff14e2347525d165))
+## [0.3.0-rc.6] - 2025-12-21
+
+### Fixed
+
+- Create RC tag on release merge, inline version detection ([6b56945](https://gitlab.com/blueflyio/openstandardagents/-/commit/6b56945fe31883c4a4f6484c2c513b4a7c57a001))
 ## [0.3.0-rc.2] - 2025-12-20
 
 ### Fixed
