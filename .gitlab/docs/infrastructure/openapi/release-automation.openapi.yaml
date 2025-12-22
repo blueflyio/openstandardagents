@@ -557,7 +557,7 @@ components:
           type: integer
         title:
           type: string
-          example: "v0.2.9"
+          example: "v0.3.0"
         description:
           type: string
         state:

@@ -1,5 +1,5 @@
 {
-  "apiVersion": "ossa/v0.2.9",
+  "apiVersion": "ossa/v0.3.0",
   "kind": "Agent",
   "metadata": {
     "name": "research-agent",

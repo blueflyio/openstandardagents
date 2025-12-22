@@ -365,7 +365,7 @@ export class AgentMeshClient {
     }
   ): MessageEnvelope {
     return {
-      version: 'ossa/a2a/v0.2.9',
+      version: 'ossa/a2a/v0.3.0',
       id: randomUUID(),
       timestamp: new Date().toISOString(),
       from: this.localAgent.uri,

@@ -6,7 +6,7 @@
 # Last Updated: 2025-11-10
 # ============================================================================
 
-apiVersion: ossa/v0.2.9
+apiVersion: ossa/v0.3.0
 kind: Agent
 metadata:
   # Core identity metadata for the security scanning agent
