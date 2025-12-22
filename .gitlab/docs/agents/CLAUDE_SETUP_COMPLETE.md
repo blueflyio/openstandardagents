@@ -49,7 +49,7 @@ $ node bin/ossa validate examples/anthropic/claude-simple.ossa.yaml
 **File:** `examples/anthropic/claude-simple.ossa.yaml`
 
 ```yaml
-apiVersion: ossa/v0.2.6
+apiVersion: ossa/v0.3.0
 kind: Agent
 metadata:
   name: claude-assistant

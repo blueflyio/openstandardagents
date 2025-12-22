@@ -1,7 +1,7 @@
 # OSSA agents.md Extension - Advanced Example
 # Demonstrates advanced features including Cursor integration and custom sections
 
-apiVersion: ossa/v0.2.8
+apiVersion: ossa/v0.3.0
 kind: Agent
 metadata:
   name: fullstack-dev-agent

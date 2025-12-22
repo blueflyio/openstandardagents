@@ -38,7 +38,7 @@ spec:
     ```
     ✅ examples/getting-started/hello-world.ossa.yaml
     ❌ examples/advanced/broken-agent.ossa.yaml
-       Line 15: apiVersion 'ossa/v0.2.9' should be 'ossa/v0.3.0'
+       Line 15: apiVersion 'ossa/v0.3.0' should be 'ossa/v0.3.0'
        Line 42: Unknown field 'deprecatedField' in spec.llm
 
     Summary: 23/25 examples valid (92%)

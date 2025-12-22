@@ -29,7 +29,7 @@ Close a milestone matching pattern `vX.Y.Z` with all issues closed.
 
 ```bash
 # Close milestone - agent handles the rest
-glab milestone close "v0.2.9 - Stability & Polish"
+glab milestone close "v0.3.0 - Release & Polish"
 ```
 
 See full documentation in this directory.
