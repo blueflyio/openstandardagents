@@ -45,7 +45,9 @@ async function rebaseMR(mr: any): Promise<boolean> {
     const worktreePath = `../rebase-${iid}-${source_branch.replace(/\//g, '-')}`;
     try {
       execSync(`git worktree remove ${worktreePath}`, { stdio: 'ignore' });
-    } catch {}
+    } catch {
+      // Worktree may not exist
+    }
     
     execSync(`git worktree add ${worktreePath} origin/${source_branch}`, { stdio: 'inherit' });
     

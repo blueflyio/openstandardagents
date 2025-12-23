@@ -3,30 +3,30 @@
  * Reference implementation for executing OSSA agents
  */
 
-// Export types
+// Export types (interfaces renamed to avoid collision with classes)
 export type {
   Capability,
   AgentManifest,
   ExecutionContext,
   ExecutionResult,
   CapabilityHandler,
-  OssaAgent,
-  Runtime,
-  ManifestLoader,
-  CapabilityRegistry,
+  OssaAgent as IOssaAgent,
+  Runtime as IRuntime,
+  ManifestLoader as IManifestLoader,
+  CapabilityRegistry as ICapabilityRegistry,
 } from './types.js';
 
-// Export agent implementation
+// Export agent implementation (class)
 export { OssaAgent, createAgent } from './agent.js';
 
-// Export runtime implementation
+// Export runtime implementation (class)
 export { OssaRuntime, createRuntime } from './runtime.js';
 export type { RuntimeConfig } from './runtime.js';
 
-// Export manifest loader
+// Export manifest loader (class)
 export { ManifestLoader, createManifestLoader } from './manifest.js';
 
-// Export capability registry
+// Export capability registry (class)
 export { CapabilityRegistry, createCapabilityRegistry } from './capabilities.js';
 
 /**
