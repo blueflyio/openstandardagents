@@ -346,6 +346,7 @@ logs/**/*.json
 # Spec files are generated in CI - do not commit versioned specs
 spec/v*/
 !spec/v0.3.0/.gitkeep
+!spec/v0.3.1/**/*
 !spec/extensions/**/*
 !spec/registry/**/*
 !spec/schema/**/*
