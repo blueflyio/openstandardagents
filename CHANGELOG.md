@@ -9,8 +9,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Add auto-deploy to OrbStack Kubernetes for release branches
-- Add automated changelog generation with git-cliff
 - Add GitOps deployment with auto-update on main
 - Implement agent-driven documentation infrastructure
 
@@ -20,7 +18,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Documentation
 
-- Update to v0.3.0 for release
 - Update Symphony + Drupal integration page for v0.3.0
 - Update Symphony + Drupal integration page for v0.3.0
 - Consolidate documentation variants (issue #37)
@@ -30,17 +27,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- Eliminate remaining hardcoded versions and colors
-- Sync:auto use git remote set-url for authentication
 - Add seo-automation.yml to release branch
 - Add seo-automation.yml include to CI
-- Use local runners and disable security scans
+- Ensure all docs use GitLab URLs (GitLab = master/private)
+- Ensure all docs use GitLab URLs (GitLab = master/private)
 - Use local runners for pages job
 - Add timeout and reduce scope for accessibility job
 - Use 'local' tag for all jobs
 - Make accessibility testing allow_failure conditional
-- Ensure all docs use GitLab URLs (GitLab = master/private)
-- Ensure all docs use GitLab URLs (GitLab = master/private)
 - Change required field validations to warnings
 - Address Duo agent feedback on MR #187
 - Block invalid branch names and fix content agent
