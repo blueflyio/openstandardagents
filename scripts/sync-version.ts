@@ -22,7 +22,7 @@ fs.writeFileSync(websitePkgPath, JSON.stringify(websitePkg, null, 2) + '\n');
 const readmePath = path.join(process.cwd(), 'README.md');
 let readme = fs.readFileSync(readmePath, 'utf-8');
 readme = readme.replace(
-  /\[!\[Specification\]\(https:\/\/img\.shields\.io\/badge\/Spec-v[^-\)]+(-[^-\)]+)?-blue\)\]/g,
+  /\[!\[Specification\]\(https:\/\/img\.shields\.io\/badge\/Spec-v[^-)]+(-[^-)]+)?-blue\)\]/g,
   `[![Specification](https://img.shields.io/badge/Spec-v${current}-blue)]`
 );
 fs.writeFileSync(readmePath, readme);
@@ -31,7 +31,7 @@ fs.writeFileSync(readmePath, readme);
 const homePath = path.join(process.cwd(), 'website/content/docs/00-HOME.md');
 let home = fs.readFileSync(homePath, 'utf-8');
 home = home.replace(
-  /\[!\[Specification\]\(https:\/\/img\.shields\.io\/badge\/Spec-v[^-\)]+(-[^-\)]+)?-blue\)\]/g,
+  /\[!\[Specification\]\(https:\/\/img\.shields\.io\/badge\/Spec-v[^-)]+(-[^-)]+)?-blue\)\]/g,
   `[![Specification](https://img.shields.io/badge/Spec-v${current}-blue)]`
 );
 fs.writeFileSync(homePath, home);
