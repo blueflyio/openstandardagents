@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { Logo } from '@/components/Logo';
+import Image from 'next/image';
 
 export const metadata = {
   title: 'OSSA Design Guide',
@@ -43,7 +43,7 @@ export default function DesignGuidePage() {
             <div className="card">
               <h3 className="text-xl font-bold mb-4 text-gray-900">Logo</h3>
               <div className="bg-gray-50 rounded-lg p-8 flex items-center justify-center mb-4">
-                <img src="/assets/brand/ossa-logo.svg" alt="OSSA Logo" className="h-32 w-32" />
+                <Image src="/assets/brand/ossa-logo.svg" width={128} height={128} alt="OSSA Logo" className="h-32 w-32" />
               </div>
               <p className="text-gray-700 mb-4">
                 The OSSA logo represents the hub-and-spoke architecture of agent orchestration.
