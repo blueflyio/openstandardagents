@@ -19,7 +19,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Documentation
 
 - Update Symphony + Drupal integration page for v0.3.0
-- Update Symphony + Drupal integration page for v0.3.0
 - Consolidate documentation variants (issue #37)
 - Update to v0.3.0 for release
 - Create consolidated OSSA specification document
@@ -27,30 +26,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- Add seo-automation.yml to release branch
-- Add seo-automation.yml include to CI
-- Ensure all docs use GitLab URLs (GitLab = master/private)
-- Ensure all docs use GitLab URLs (GitLab = master/private)
-- Use local runners for pages job
-- Add timeout and reduce scope for accessibility job
-- Use 'local' tag for all jobs
-- Make accessibility testing allow_failure conditional
 - Change required field validations to warnings
 - Address Duo agent feedback on MR #187
+- Use 'local' tag for all jobs
+- Make accessibility testing allow_failure conditional
 - Block invalid branch names and fix content agent
 - Resolve merge conflicts and add error handling
 - Resolve all remaining merge conflicts
-- Use local runners for pages job
 - Update all version references to v0.3.0
 - Properly expand version placeholders to concrete v0.3.0
 - Update versions.json and playground to v0.3.0
 - Set v0.3.0 as stable version (do not overwrite)
 - Prevent sync from downgrading stable version
 - Resolve merge conflicts between release/v0.3.x and main
-
-### Hotfix
-
-- Use local runner for all jobs
+- Improve schema page responsiveness + fix CI workflow rules
 
 ### Release
 
