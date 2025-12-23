@@ -166,6 +166,7 @@ export class ManifestLoader implements IManifestLoader {
 
     // Convert legacy to k8s-style
     if (manifest.agent) {
+      const legacyLlm = manifest.agent.llm;
       return {
         apiVersion: manifest.ossaVersion || 'v0.3.0',
         kind: 'Agent',
@@ -176,8 +177,15 @@ export class ManifestLoader implements IManifestLoader {
         },
         spec: {
           role: manifest.agent.role,
-          llm: manifest.agent.llm,
-          tools: manifest.agent.tools,
+          llm:
+            legacyLlm?.provider && legacyLlm?.model
+              ? {
+                  provider: legacyLlm.provider,
+                  model: legacyLlm.model,
+                  temperature: legacyLlm.temperature,
+                  maxTokens: legacyLlm.maxTokens,
+                }
+              : undefined,
         },
       };
     }
