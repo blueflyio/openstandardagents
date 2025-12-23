@@ -1,0 +1,68 @@
+# OSSA v0.3.1 Agent with Identity Configuration
+# Demonstrates service account integration for automated git operations
+apiVersion: ossa/v0.3.1
+kind: Agent
+metadata:
+  name: typescript-worker
+  version: 1.0.0
+  description: TypeScript development agent with GitLab service account identity
+  labels:
+    team: platform
+    tier: development
+spec:
+  role: |
+    You are a TypeScript development assistant that manages code changes
+    for the agent-buildkit and related TypeScript projects.
+
+  llm:
+    provider: anthropic
+    model: claude-sonnet-4-20250514
+    temperature: 0.2
+
+  # Agent Identity Configuration (v0.3.1+)
+  identity:
+    provider: gitlab
+    service_account:
+      id: 31840529
+      username: bot-ts-local
+      email: bot-ts-local@bluefly.io
+    token_source:
+      env_var: GITLAB_BOT_TS_TOKEN
+      file_path: ~/.tokens/bot-ts-local
+    patterns:
+      - "*/common_npm/*"
+      - "*/agent-buildkit"
+      - "*/agent-studio"
+    dora_tracking:
+      enabled: true
+      metrics:
+        - deployment_frequency
+        - lead_time
+        - change_failure_rate
+        - mttr
+    observability:
+      service_name: typescript-worker
+      service_namespace: development
+      service_version: "1.0.0"
+
+  tools:
+    - name: git
+      type: mcp
+      config:
+        server: git-mcp-server
+    - name: file-operations
+      type: mcp
+      config:
+        server: filesystem-mcp-server
+
+  autonomy:
+    level: supervised
+    require_approval:
+      - push_to_protected_branch
+      - delete_branch
+      - force_push
+
+  safety:
+    max_tokens_per_turn: 8000
+    rate_limits:
+      requests_per_minute: 30
