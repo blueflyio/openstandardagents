@@ -5,10 +5,120 @@ All notable changes to OSSA (Open Standard for Scalable AI Agents) will be docum
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [v0.3.0] - 2025-12-22
+## [0.3.2-dev.15] - 2025-12-23
+
+### Added
+
+- **ci**: Generate TypeScript types in CI instead of committing ([f22b239](https://gitlab.com/blueflyio/openstandardagents/-/commit/f22b239df8c22591762e5ea5106cf0bbd754da77))## [0.3.2-dev.14] - 2025-12-23
+
+### Added
+
+- Implement OSSA compliance bot ([#283](https://gitlab.com/blueflyio/openstandardagents/-/issues/283)) ([b7b73a7](https://gitlab.com/blueflyio/openstandardagents/-/commit/b7b73a7a784b70c21516e917372838102299b1cb))
+## [0.3.2-dev.13] - 2025-12-23
+
+### Added
+
+- **ci**: Generate TypeScript types in CI instead of committing ([a5efee0](https://gitlab.com/blueflyio/openstandardagents/-/commit/a5efee06196e10f933488f18541856f8561ab312))## [0.3.2-dev.12] - 2025-12-23
+
+### Added
+
+- Implement architecture validator bot ([#285](https://gitlab.com/blueflyio/openstandardagents/-/issues/285)) ([7440daf](https://gitlab.com/blueflyio/openstandardagents/-/commit/7440dafcde938e48fae887b5bd7166f285bb9d7e))
+## [0.3.0-dev.80] - 2025-12-23
+
+### Added
+
+- Implement security scanner bot ([#284](https://gitlab.com/blueflyio/openstandardagents/-/issues/284)) ([9a26258](https://gitlab.com/blueflyio/openstandardagents/-/commit/9a262588276268fcc083cd0dde4c577d4e49335c))
+## [0.3.2-dev.11] - 2025-12-23
+
+### Added
+
+- Implement CI pipeline bot ([#286](https://gitlab.com/blueflyio/openstandardagents/-/issues/286)) ([e501834](https://gitlab.com/blueflyio/openstandardagents/-/commit/e501834d4c794e9705d71f8edc171a20ae634d2f))
+## [0.3.2-dev.10] - 2025-12-23
+
+### Added
+
+- **ci**: Generate TypeScript types in CI instead of committing ([bebd278](https://gitlab.com/blueflyio/openstandardagents/-/commit/bebd278964f46b0eeac3920640e9ee8b74f3bcd3))## [0.3.2-dev.9] - 2025-12-23
+
+### Added
+
+- **ci**: Generate TypeScript types in CI instead of committing ([5ca34c2](https://gitlab.com/blueflyio/openstandardagents/-/commit/5ca34c2240c38a0409fb6025787f9d0629c1e6d9))
+- **ci**: Generate TypeScript types in CI instead of committing ([56ec22f](https://gitlab.com/blueflyio/openstandardagents/-/commit/56ec22fab1f685e35f37dea8effb37c3f542ac9f))
+- **cli**: Implement ossa command for issue #192 ([194c0cb](https://gitlab.com/blueflyio/openstandardagents/-/commit/194c0cbda1bb709271c1d5e083bfb5ce3e793534))
+- **cli**: Implement ossa command for issue #190 ([d4fa1de](https://gitlab.com/blueflyio/openstandardagents/-/commit/d4fa1de63421eb42f713225bfee3efca90c7c303))
+- **cli**: Implement ossa command for issue #193 ([fa9209c](https://gitlab.com/blueflyio/openstandardagents/-/commit/fa9209ca7691f7da1ec61b3e1bccb58e10fc1a2d))
+- **cli**: Implement ossa lint command ([cd3a97c](https://gitlab.com/blueflyio/openstandardagents/-/commit/cd3a97c5dc395aa93fec219629eaee02b9dea6c1))
+- Generate spec files in CI instead of committing to git ([3152d2d](https://gitlab.com/blueflyio/openstandardagents/-/commit/3152d2d2a0234cbfddc32dbe4a721a86e8022993))
+
+### Documentation
+
+- Add documentation for issue #349 ([f3a0999](https://gitlab.com/blueflyio/openstandardagents/-/commit/f3a0999cfa36ac44f2161890250f1ef417598309))
+
+- Add documentation for issue #348 ([7e38fbd](https://gitlab.com/blueflyio/openstandardagents/-/commit/7e38fbdfe43cd6726ac7cb56096e805b011d7913))
 
 ### Fixed
 
+- **ci**: Add validate:documentation CI job ([63c1ae7](https://gitlab.com/blueflyio/openstandardagents/-/commit/63c1ae7445593925710d1559adb5f54b769ebbad))
+- **test**: Use dynamic API version in migration tests ([d226e23](https://gitlab.com/blueflyio/openstandardagents/-/commit/d226e232012f89645f2068daf01be9adc347927e))
+- Disable all platform-agents trigger jobs - use gitlab_components or local execution instead ([cfb60ff](https://gitlab.com/blueflyio/openstandardagents/-/commit/cfb60ffcab9bdf71096a31598a9eba3090d0d608))
+
+### Miscellaneous
+
+- Close MR !580 - audit remediation completed ([9dac47a](https://gitlab.com/blueflyio/openstandardagents/-/commit/9dac47aaba2a6c85f87d2f9fb19820f329d27039))
+## [0.3.0-dev.68] - 2025-12-22
+
+### Fixed
+
+- **ci**: Use alpine image for increment-dev-tag and release jobs ([f8434a1](https://gitlab.com/blueflyio/openstandardagents/-/commit/f8434a1d84cf4394c06daea8a9b899dc665ad129))## [0.3.0-dev.67] - 2025-12-22
+
+### Fixed
+
+- Update wiki-config VERSION to 0.3.0 ([2aaf66b](https://gitlab.com/blueflyio/openstandardagents/-/commit/2aaf66bf49731e2c165017b0424a5f1d3c5145b5))
+## [0.3.0-dev.66] - 2025-12-22
+
+### Fixed
+
+- Replace remaining {{VERSION}} placeholders and version CHANGELOG ([ad98e72](https://gitlab.com/blueflyio/openstandardagents/-/commit/ad98e722aac9545d765644b04dddfcea90c445cc))
+## [0.3.0-dev.65] - 2025-12-22
+
+### Fixed
+
+- Regenerate package-lock.json with 0.3.0 ([a5e216e](https://gitlab.com/blueflyio/openstandardagents/-/commit/a5e216e9f4958dcf2d2ce7ef58d00f208bc211af))
+## [0.3.0-dev.64] - 2025-12-22
+
+### Fixed
+
+- Set version to 0.3.0 (replace placeholder) ([71807c5](https://gitlab.com/blueflyio/openstandardagents/-/commit/71807c5521536dcfb9016f2e0dbd06220986dfa3))
+## [0.3.0-dev.63] - 2025-12-22
+
+### Fixed
+
+- **ci**: Add main branch to release:audit rules ([e664ad3](https://gitlab.com/blueflyio/openstandardagents/-/commit/e664ad3cb059a05f8f795176183419663d0f1ad8))## [0.3.0-dev.62] - 2025-12-22
+
+### Fixed
+
+- **ci**: Make release:audit optional for release:npm job ([10a2ff0](https://gitlab.com/blueflyio/openstandardagents/-/commit/10a2ff09adbdcb2c2be9d533293782d4f86c62b9))## [0.3.0-dev.59] - 2025-12-22
+
+### Fixed
+
+- **ci**: Accept active group range milestone for v0.3.x releases ([bc0d889](https://gitlab.com/blueflyio/openstandardagents/-/commit/bc0d889049e4c331397151b3efd5a28c3cfbccb9))## [0.3.0-dev.58] - 2025-12-22
+
+### Fixed
+
+- WebRTC transport test timeout - comprehensive audit and fix ([14e43b3](https://gitlab.com/blueflyio/openstandardagents/-/commit/14e43b33f76fd462dbe58421b635db701b419af4))
+## [0.3.0-dev.57] - 2025-12-22
+
+### Fixed
+
+- Create RC tag on release merge, inline version detection ([9c62c63](https://gitlab.com/blueflyio/openstandardagents/-/commit/9c62c631edbc0581c00fe885b6b5a718e2b9363d))
+## [0.3.0-dev.53] - 2025-12-22
+
+### Fixed
+
+- **test**: Fix WebRTC channel open event test timeout ([571dd01](https://gitlab.com/blueflyio/openstandardagents/-/commit/571dd01b58d19a5de0590516c938cfca44e5892a))## [0.3.0-dev.52] - 2025-12-22
+
+### Fixed
+
+- **ci**: Accept active group range milestone for v0.3.x releases ([22d3227](https://gitlab.com/blueflyio/openstandardagents/-/commit/22d3227301d7f16dac510103c5deeb8703940157))
 - **ci**: Prevent SIGPIPE in release:validate examples loop ([57f5056](https://gitlab.com/blueflyio/openstandardagents/-/commit/57f5056e5c117f0ba041c0e614224bee3e879df0))
 - **ci**: Accept {{VERSION}} placeholder in package.json exports validation ([85f208d](https://gitlab.com/blueflyio/openstandardagents/-/commit/85f208d20116208b218e54dc1a6fdbf7a1cce76d))
 - **ci**: Use .version.json as single source of truth for all version detection ([00f9220](https://gitlab.com/blueflyio/openstandardagents/-/commit/00f92203b825b4e1ba0dc19e9cd43d0f16b2b39d))
