@@ -1437,10 +1437,25 @@
           "type": "object",
           "description": "Conditions that trigger fallback",
           "properties": {
-            "on_error": { "type": "boolean", "description": "Trigger on any error from primary" },
-            "max_retries": { "type": "integer", "description": "Retries before falling back" },
-            "error_codes": { "type": "array", "items": { "type": "integer" }, "description": "Specific error codes to trigger on" },
-            "latency_threshold_ms": { "type": "integer", "description": "Trigger when latency exceeds this threshold" }
+            "on_error": {
+              "type": "boolean",
+              "description": "Trigger on any error from primary"
+            },
+            "max_retries": {
+              "type": "integer",
+              "description": "Retries before falling back"
+            },
+            "error_codes": {
+              "type": "array",
+              "items": {
+                "type": "integer"
+              },
+              "description": "Specific error codes to trigger on"
+            },
+            "latency_threshold_ms": {
+              "type": "integer",
+              "description": "Trigger when latency exceeds this threshold"
+            }
           },
           "additionalProperties": true
         }
@@ -1611,10 +1626,14 @@
         "approval_required": {
           "description": "Whether human approval is required, or list of specific actions requiring approval",
           "anyOf": [
-            { "type": "boolean" },
+            {
+              "type": "boolean"
+            },
             {
               "type": "array",
-              "items": { "type": "string" },
+              "items": {
+                "type": "string"
+              },
               "description": "List of action types that require human approval"
             }
           ]
