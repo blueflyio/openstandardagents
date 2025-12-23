@@ -18,7 +18,7 @@ function updateYamlFiles(dir: string) {
     if (file.isDirectory()) {
       updateYamlFiles(fullPath);
     } else if (file.name.endsWith('.yaml') || file.name.endsWith('.yml')) {
-      let content = readFileSync(fullPath, 'utf-8');
+      const content = readFileSync(fullPath, 'utf-8');
       const updated_content = content.replace(
         /apiVersion:\s*ossa\/v[\d.]+/g,
         `apiVersion: ossa/v${version}`

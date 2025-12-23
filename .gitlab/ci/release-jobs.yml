@@ -758,36 +758,51 @@ create-patch-version:
         echo "Release series: v${BRANCH_VERSION}.x"
       fi
 
-      # Get latest dev tag for this release series (v0.3.0-dev.1, v0.3.0-dev.2, etc.)
-      echo "Looking for dev tags matching: v${BRANCH_VERSION}.0-dev.*"
-      LATEST_DEV_TAG=$(git tag -l "v${BRANCH_VERSION}.0-dev.*" | sort -V | tail -n1)
+      # USE .version.json AS SINGLE SOURCE OF TRUTH
+      # This is the correct approach - no guessing from git tags!
+      if [ -f .version.json ]; then
+        BASE_VERSION=$(jq -r '.current' .version.json)
+        echo "Version from .version.json: ${BASE_VERSION}"
+      else
+        # Fallback only if .version.json doesn't exist
+        echo "WARNING: .version.json not found, falling back to git tag calculation"
+        LATEST_RELEASE=$(git tag -l "v${BRANCH_VERSION}.*" 2>/dev/null | grep -v -E "(dev|RC|rc|alpha|beta)" | sort -V | tail -1 || echo "")
+        if [ -z "$LATEST_RELEASE" ]; then
+          BASE_VERSION="${BRANCH_VERSION}.0"
+        else
+          CURRENT_PATCH=$(echo "$LATEST_RELEASE" | sed "s/v${BRANCH_VERSION}\.//" | grep -oE '^[0-9]+' || echo "0")
+          NEXT_PATCH=$((CURRENT_PATCH + 1))
+          BASE_VERSION="${BRANCH_VERSION}.${NEXT_PATCH}"
+        fi
+      fi
+      echo "Dev tags will be: v${BASE_VERSION}-dev.*"
+
+      # Get latest dev tag for this NEXT version (not hardcoded .0!)
+      echo "Looking for dev tags matching: v${BASE_VERSION}-dev.*"
+      LATEST_DEV_TAG=$(git tag -l "v${BASE_VERSION}-dev.*" | sort -V | tail -n1)
       echo "Latest dev tag found: ${LATEST_DEV_TAG:-none}"
-      
-      # Also check for non-dev tags (v0.3.0, v0.3.1, etc.)
-      LATEST_TAG=$(git tag -l "v${BRANCH_VERSION}.*" | grep -v "dev" | sort -V | tail -n1)
-      echo "Latest non-dev tag found: ${LATEST_TAG:-none}"
 
       if [ -z "$LATEST_DEV_TAG" ]; then
-        # No dev tags exist, start with dev.1
-        NEW_TAG="v${BRANCH_VERSION}.0-dev.1"
-        echo "No existing dev tags for v${BRANCH_VERSION}.x series, starting with ${NEW_TAG}"
+        # No dev tags exist for next version, start with dev.1
+        NEW_TAG="v${BASE_VERSION}-dev.1"
+        echo "No existing dev tags for v${BASE_VERSION}, starting with ${NEW_TAG}"
       else
         echo "Latest dev tag: $LATEST_DEV_TAG"
 
         # Check if HEAD is already tagged
         HEAD_TAGS=$(git tag --points-at HEAD)
-        if echo "$HEAD_TAGS" | grep -qE "^v${BRANCH_VERSION}.0-dev."; then
+        if echo "$HEAD_TAGS" | grep -qE "^v${BASE_VERSION}-dev\."; then
           echo "HEAD already has dev tag: $HEAD_TAGS"
           exit 0
         fi
 
         # Extract dev number and increment
-        DEV_NUM=$(echo "$LATEST_DEV_TAG" | sed -E "s/v${BRANCH_VERSION}\.0-dev\.([0-9]+)/\1/")
+        DEV_NUM=$(echo "$LATEST_DEV_TAG" | sed -E "s/v${BASE_VERSION}-dev\.([0-9]+)/\1/")
         if [ -z "$DEV_NUM" ] || [ "$DEV_NUM" = "$LATEST_DEV_TAG" ]; then
           DEV_NUM=0
         fi
         NEW_DEV_NUM=$((DEV_NUM + 1))
-        NEW_TAG="v${BRANCH_VERSION}.0-dev.${NEW_DEV_NUM}"
+        NEW_TAG="v${BASE_VERSION}-dev.${NEW_DEV_NUM}"
       fi
 
       echo ""
