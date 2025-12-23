@@ -14,16 +14,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- Update all version references to v0.3.0
 - Properly expand version placeholders to concrete v0.3.0
 - Update versions.json and playground to v0.3.0
 - Set v0.3.0 as stable version (do not overwrite)
 - Prevent sync from downgrading stable version
 - Newest post featured, smaller tags/date, no author on teasers
-
-### Hotfix
-
-- Use local runner for all jobs
+- Add schema files to git for GitLab Pages deployment
 
 ### Release
 
