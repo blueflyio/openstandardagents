@@ -5,7 +5,11 @@ All notable changes to OSSA (Open Standard for Scalable AI Agents) will be docum
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.3.1-dev.22] - 2025-12-23
+## [0.3.1-dev.23] - 2025-12-23
+
+### Added
+
+- **identity**: Comprehensive Agent Identity Extension for OSSA v0.3.1 ([5667703](https://gitlab.com/blueflyio/openstandardagents/-/commit/56677037489c3287b88d0f976de006848854a08d))## [0.3.1-dev.22] - 2025-12-23
 
 ### Fixed
 
