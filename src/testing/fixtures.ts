@@ -4,12 +4,13 @@
  */
 
 import type { OssaAgent } from '../types/index.js';
+import { getApiVersion } from '../utils/version.js';
 
 /**
  * Basic valid agent manifest
  */
 export const basicAgentManifest: OssaAgent = {
-  apiVersion: 'ossa/v0.3.0',
+  apiVersion: getApiVersion(),
   kind: 'Agent',
   metadata: {
     name: 'test-agent',
@@ -185,7 +186,7 @@ export const agentWithTests: OssaAgent = {
  * Invalid agent manifest (missing required fields)
  */
 export const invalidAgentManifest: any = {
-  apiVersion: 'ossa/v0.3.0',
+  apiVersion: getApiVersion(),
   kind: 'Agent',
   metadata: {
     name: 'invalid-agent',

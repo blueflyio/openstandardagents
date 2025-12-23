@@ -39,7 +39,7 @@ agent:ci-cd-optimizer:
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
       when: on_success
-    - if: $CI_COMMIT_BRANCH == "main" || $CI_COMMIT_BRANCH == "development"
+    - if: $CI_COMMIT_BRANCH == "main"
       when: on_success
   allow_failure: true
 
@@ -165,7 +165,7 @@ deploy:agents:kagent:
   rules:
     - if: $CI_COMMIT_BRANCH == "main"
       when: manual
-    - if: $CI_COMMIT_BRANCH == "development"
+    - if: $CI_COMMIT_BRANCH =~ /^release\/v/
       when: manual
   allow_failure: true
 
@@ -196,7 +196,7 @@ validate:duo-flows:
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
       when: always
-    - if: $CI_COMMIT_BRANCH == "main" || $CI_COMMIT_BRANCH == "development"
+    - if: $CI_COMMIT_BRANCH == "main"
       when: always
   allow_failure: false
 

@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach } from '@jest/globals';
 import { MigrationService } from '../../../src/services/migration.service.js';
+import { getApiVersion } from '../../../src/utils/version';
 
 describe('MigrationService', () => {
   let service: MigrationService;
@@ -17,7 +18,7 @@ describe('MigrationService', () => {
         spec: { role: 'test' },
       };
       const result = await service.migrate(input);
-      expect(result.apiVersion).toBe('ossa/v0.3.0');
+      expect(result.apiVersion).toBe(getApiVersion());
     });
 
     it('should migrate legacy v1.0 to k8s-style with full metadata', async () => {
@@ -51,7 +52,7 @@ describe('MigrationService', () => {
         },
       };
       const result = await service.migrate(v1Input);
-      expect(result.apiVersion).toBe('ossa/v0.3.0');
+      expect(result.apiVersion).toBe(getApiVersion());
       expect(result.metadata.name).toBe('test-agent');
       expect(result.metadata.labels?.test).toBe('true');
       expect(result.metadata.annotations?.author).toContain('Author 1');
