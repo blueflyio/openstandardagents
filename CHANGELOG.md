@@ -5,7 +5,11 @@ All notable changes to OSSA (Open Standard for Scalable AI Agents) will be docum
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.3.1-dev.19] - 2025-12-23
+## [0.3.1-dev.22] - 2025-12-23
+
+### Fixed
+
+- **ci**: Create-rc-tag and changelog URL fixes ([93f410f](https://gitlab.com/blueflyio/openstandardagents/-/commit/93f410f9d0638615f58e90bd8ddaddd28f2552b3))## [0.3.1-dev.19] - 2025-12-23
 
 ### Fixed
 
