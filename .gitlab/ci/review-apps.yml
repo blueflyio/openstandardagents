@@ -22,6 +22,14 @@ variables:
 # REVIEW APP - Feature → Release MRs (REQUIRES LOCAL RUNNER)
 # =============================================================================
 review:deploy:
+  cache: {}  # Disable cache to avoid Docker networking issues
+  retry:
+    max: 2
+    when:
+      - runner_system_failure
+      - stuck_or_timeout_failure
+      - scheduler_failure
+      - unknown_failure
   stage: deploy
   tags:
     - ossa  # Self-hosted runner with OrbStack K8s access
@@ -137,6 +145,12 @@ review:deploy:
 
 # Stop review app when MR is closed/merged
 review:stop:
+  cache: {}  # Disable cache to avoid Docker networking issues
+  retry:
+    max: 2
+    when:
+      - runner_system_failure
+      - unknown_failure
   stage: deploy
   tags:
     - ossa
@@ -183,6 +197,14 @@ review:stop:
 # =============================================================================
 # Deploys staging preview when release branch merges to main
 staging:deploy:
+  cache: {}  # Disable cache to avoid Docker networking issues
+  retry:
+    max: 2
+    when:
+      - runner_system_failure
+      - stuck_or_timeout_failure
+      - scheduler_failure
+      - unknown_failure
   stage: deploy
   tags:
     - ossa  # Self-hosted runner with OrbStack K8s access

@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import type { Metadata } from 'next';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
-import { STABLE_VERSION, STABLE_VERSION_TAG } from '@/lib/version';
+import { STABLE_VERSION } from '@/lib/version';
 
 export const metadata: Metadata = {
   title: 'Changelog - OSSA Release History',
