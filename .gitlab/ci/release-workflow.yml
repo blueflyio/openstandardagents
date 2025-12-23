@@ -42,27 +42,30 @@ create-dev-tag:release:
       fi
       
       echo "Branch version: $BRANCH_VERSION"
-      
+
       # Fetch main branch tags
       git fetch origin main:main --tags 2>/dev/null || true
-      
-      # Get latest FINAL release tag (exclude dev, RC, alpha, beta)
-      LATEST_RELEASE_TAG=$(git tag -l "v${BRANCH_VERSION}.*" 2>/dev/null | grep -v -E "(dev|RC|rc|alpha|beta)" | sort -V | tail -1 || echo "")
-      
-      if [ -z "$LATEST_RELEASE_TAG" ]; then
-        # No release tags yet, start with X.Y.0
-        BASE_VERSION="${BRANCH_VERSION}.0"
+
+      # USE .version.json AS SINGLE SOURCE OF TRUTH
+      # This is the correct approach - no guessing from git tags!
+      if [ -f .version.json ]; then
+        BASE_VERSION=$(jq -r '.current' .version.json)
+        echo "Version from .version.json: ${BASE_VERSION}"
       else
-        # Extract version number (e.g., v0.3.0 -> 0.3.0)
-        VERSION_NUM=$(echo "$LATEST_RELEASE_TAG" | sed 's/^v//')
-        # Increment patch version (0.3.1 -> 0.3.2)
-        MAJOR_MINOR=$(echo "$VERSION_NUM" | cut -d. -f1-2)
-        PATCH=$(echo "$VERSION_NUM" | cut -d. -f3)
-        NEXT_PATCH=$((PATCH + 1))
-        BASE_VERSION="${MAJOR_MINOR}.${NEXT_PATCH}"
-        echo "Latest release tag: ${LATEST_RELEASE_TAG}"
-        echo "Next version: v${BASE_VERSION}"
+        # Fallback only if .version.json doesn't exist
+        echo "WARNING: .version.json not found, falling back to git tag calculation"
+        LATEST_RELEASE_TAG=$(git tag -l "v${BRANCH_VERSION}.*" 2>/dev/null | grep -v -E "(dev|RC|rc|alpha|beta)" | sort -V | tail -1 || echo "")
+        if [ -z "$LATEST_RELEASE_TAG" ]; then
+          BASE_VERSION="${BRANCH_VERSION}.0"
+        else
+          VERSION_NUM=$(echo "$LATEST_RELEASE_TAG" | sed 's/^v//')
+          MAJOR_MINOR=$(echo "$VERSION_NUM" | cut -d. -f1-2)
+          PATCH=$(echo "$VERSION_NUM" | cut -d. -f3)
+          NEXT_PATCH=$((PATCH + 1))
+          BASE_VERSION="${MAJOR_MINOR}.${NEXT_PATCH}"
+        fi
       fi
+      echo "Dev tags will be: v${BASE_VERSION}-dev.*"
       
       # Get latest dev tag for this version
       LATEST_DEV_TAG=$(git tag -l "v${BASE_VERSION}-dev*" 2>/dev/null | sort -V | tail -1 || echo "")

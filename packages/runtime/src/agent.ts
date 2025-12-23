@@ -106,12 +106,9 @@ export class OssaAgent implements IOssaAgent {
           error: {
             code: 'HANDLER_NOT_FOUND',
             message: `Handler for capability '${capabilityName}' not found`,
-    // Mark agent as busy
-    const agentInfo = this.agents.get(agent.id);
-    if (!agentInfo) {
-      throw new Error(`Agent ${agent.id} not found in registry`);
-    }
-    agentInfo.status = 'busy';
+          },
+          executionTime: Date.now() - startTime,
+        };
       }
 
       // Execute with timeout if specified
@@ -121,14 +118,14 @@ export class OssaAgent implements IOssaAgent {
 
       let result: TOutput;
       if (timeoutMs) {
-        result = await this.executeWithTimeout(
+        result = (await this.executeWithTimeout(
           handler,
           input,
           fullContext,
           timeoutMs
-        );
+        )) as TOutput;
       } else {
-        result = await handler(input, fullContext);
+        result = (await handler(input, fullContext)) as TOutput;
       }
 
       return {
