@@ -73,7 +73,7 @@ function bumpVersion(current: string, type: BumpType): string {
   const match = current.match(/^(\d+)\.(\d+)\.(\d+)$/);
   if (!match) throw new Error(`Invalid version format: ${current}`);
   
-  let [, major, minor, patch] = match.map(Number);
+  const [, major, minor, patch] = match.map(Number);
   
   switch (type) {
     case 'major':
