@@ -11,6 +11,7 @@ import {
   agentWithCapabilities,
   agentWithPolicies,
 } from '../../../../src/testing/fixtures.js';
+import { getApiVersion } from '../../../../src/utils/version';
 
 describe('Test Command Enhanced', () => {
   describe('Command Options', () => {
