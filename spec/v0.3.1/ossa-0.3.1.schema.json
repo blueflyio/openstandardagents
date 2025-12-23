@@ -110,6 +110,237 @@
     }
   ],
   "definitions": {
+    "AgentIdentity": {
+      "type": "object",
+      "description": "Comprehensive agent identity configuration for service accounts, authentication, and observability",
+      "properties": {
+        "provider": {
+          "type": "string",
+          "enum": ["gitlab", "github", "azure-devops", "bitbucket", "generic"],
+          "description": "Identity provider type for service account integration"
+        },
+        "service_account": {
+          "type": "object",
+          "description": "Service account details for automated operations",
+          "required": ["username", "email"],
+          "properties": {
+            "id": {
+              "oneOf": [{"type": "integer"}, {"type": "string"}],
+              "description": "Provider-specific account ID"
+            },
+            "username": {
+              "type": "string",
+              "pattern": "^[a-z0-9_\\[\\]-]+$",
+              "minLength": 1,
+              "maxLength": 64,
+              "description": "Service account username"
+            },
+            "email": {
+              "type": "string",
+              "format": "email",
+              "description": "Service account email for git attribution"
+            },
+            "display_name": {
+              "type": "string",
+              "description": "Human-readable display name"
+            },
+            "roles": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": ["developer", "maintainer", "owner", "reporter", "guest"]
+              },
+              "description": "Roles assigned to this service account"
+            }
+          }
+        },
+        "authentication": {
+          "type": "object",
+          "description": "Authentication method configuration",
+          "properties": {
+            "method": {
+              "type": "string",
+              "enum": ["personal_access_token", "project_access_token", "group_access_token", "deploy_token", "oauth2", "ssh_key", "mtls", "github_app", "azure_service_principal"],
+              "default": "personal_access_token",
+              "description": "Authentication method type"
+            },
+            "scopes": {
+              "type": "array",
+              "items": {"type": "string"},
+              "description": "Required token scopes (provider-specific)"
+            },
+            "auto_refresh": {
+              "type": "boolean",
+              "default": false,
+              "description": "Automatically refresh token before expiry"
+            },
+            "expiry_warning_days": {
+              "type": "integer",
+              "default": 7,
+              "minimum": 1,
+              "maximum": 90,
+              "description": "Days before expiry to warn about token rotation"
+            },
+            "rotation_policy": {
+              "type": "object",
+              "properties": {
+                "enabled": {"type": "boolean", "default": false},
+                "interval_days": {"type": "integer", "default": 90, "minimum": 7, "maximum": 365},
+                "notify_on_rotation": {"type": "boolean", "default": true}
+              }
+            }
+          }
+        },
+        "token_source": {
+          "type": "object",
+          "description": "Token/credential source configuration with priority order",
+          "properties": {
+            "env_var": {
+              "type": "string",
+              "pattern": "^[A-Z][A-Z0-9_]*$",
+              "description": "Environment variable name containing the token (highest priority)"
+            },
+            "file_path": {
+              "type": "string",
+              "description": "Path to token file (second priority, supports ~ expansion)"
+            },
+            "vault": {
+              "type": "object",
+              "properties": {
+                "path": {"type": "string", "description": "Vault secret path"},
+                "key": {"type": "string", "default": "value"},
+                "role": {"type": "string", "description": "Vault role for authentication"}
+              }
+            },
+            "kubernetes_secret": {
+              "type": "object",
+              "properties": {
+                "name": {"type": "string"},
+                "namespace": {"type": "string"},
+                "key": {"type": "string", "default": "token"}
+              }
+            }
+          }
+        },
+        "patterns": {
+          "type": "array",
+          "items": {"type": "string"},
+          "description": "Glob patterns for auto-detection based on working directory (picomatch syntax)"
+        },
+        "fallback": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["provider", "service_account"],
+            "properties": {
+              "provider": {"type": "string", "enum": ["gitlab", "github", "azure-devops", "bitbucket", "generic"]},
+              "service_account": {"$ref": "#/definitions/AgentIdentity/properties/service_account"},
+              "token_source": {"$ref": "#/definitions/AgentIdentity/properties/token_source"},
+              "condition": {
+                "type": "object",
+                "properties": {
+                  "pattern_match": {"type": "array", "items": {"type": "string"}},
+                  "platform_unavailable": {"type": "boolean"}
+                }
+              }
+            }
+          },
+          "description": "Fallback identity chain for high availability"
+        },
+        "dora_tracking": {
+          "type": "object",
+          "description": "DORA metrics tracking configuration",
+          "properties": {
+            "enabled": {"type": "boolean", "default": false},
+            "metrics": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": ["deployment_frequency", "lead_time", "change_failure_rate", "mttr"]
+              },
+              "uniqueItems": true
+            },
+            "labels": {
+              "type": "object",
+              "additionalProperties": {"type": "string"},
+              "description": "Additional labels for metrics"
+            },
+            "prometheus": {
+              "type": "object",
+              "properties": {
+                "push_gateway": {"type": "string", "format": "uri"},
+                "job_name": {"type": "string"}
+              }
+            }
+          }
+        },
+        "session": {
+          "type": "object",
+          "description": "Session management for Claude Code integration",
+          "properties": {
+            "init_on_start": {"type": "boolean", "default": true},
+            "propagate_to_subprocesses": {"type": "boolean", "default": true},
+            "git_attribution": {"type": "boolean", "default": true},
+            "heartbeat_interval": {"type": "integer", "default": 300, "minimum": 30, "maximum": 3600},
+            "timeout": {"type": "integer", "default": 3600, "minimum": 60, "maximum": 86400},
+            "hooks": {
+              "type": "object",
+              "properties": {
+                "pre_prompt_submit": {"type": "boolean", "default": true},
+                "post_session": {"type": "boolean", "default": false}
+              }
+            }
+          }
+        },
+        "observability": {
+          "type": "object",
+          "description": "OpenTelemetry service identity for distributed tracing",
+          "properties": {
+            "service_name": {"type": "string"},
+            "service_namespace": {"type": "string"},
+            "service_version": {"type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+(-[a-zA-Z0-9.]+)?$"},
+            "service_instance_id": {"type": "string"},
+            "resource_attributes": {
+              "type": "object",
+              "additionalProperties": {"type": "string"}
+            }
+          }
+        },
+        "security": {
+          "type": "object",
+          "description": "Security policies for identity management",
+          "properties": {
+            "token_encryption": {
+              "type": "string",
+              "enum": ["none", "at_rest", "in_transit", "both"],
+              "default": "both"
+            },
+            "minimum_token_length": {"type": "integer", "default": 32},
+            "prohibited_actions": {
+              "type": "array",
+              "items": {"type": "string"}
+            },
+            "required_approvals": {
+              "type": "object",
+              "properties": {
+                "force_push": {"type": "boolean", "default": true},
+                "delete_protected_branch": {"type": "boolean", "default": true},
+                "modify_ci_config": {"type": "boolean", "default": false}
+              }
+            },
+            "rate_limits": {
+              "type": "object",
+              "properties": {
+                "requests_per_minute": {"type": "integer", "default": 60},
+                "requests_per_hour": {"type": "integer", "default": 1000},
+                "git_operations_per_hour": {"type": "integer", "default": 100}
+              }
+            }
+          }
+        }
+      },
+      "additionalProperties": false
+    },
     "Metadata": {
       "type": "object",
       "required": [
@@ -523,27 +754,8 @@
           }
         },
         "identity": {
-          "type": "object",
-          "description": "OpenTelemetry service identity for tracing and observability",
-          "properties": {
-            "service_name": {
-              "type": "string",
-              "description": "Service name for OpenTelemetry traces"
-            },
-            "service_namespace": {
-              "type": "string",
-              "description": "Service namespace (e.g., production, staging, development)"
-            },
-            "service_version": {
-              "type": "string",
-              "description": "Service version (semver recommended)"
-            },
-            "service_instance_id": {
-              "type": "string",
-              "description": "Unique instance identifier"
-            }
-          },
-          "additionalProperties": false
+          "$ref": "#/definitions/AgentIdentity",
+          "description": "Agent identity configuration including service accounts, authentication, and observability (v0.3.1+)"
         },
         "compliance": {
           "type": "object",

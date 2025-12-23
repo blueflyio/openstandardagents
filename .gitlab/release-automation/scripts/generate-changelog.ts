@@ -29,8 +29,15 @@ interface MilestoneData {
   web_url: string;
 }
 
+// CI_SERVER_HOST is just 'gitlab.com' without protocol - ensure we have the full URL
+const gitlabHost = process.env.CI_SERVER_HOST
+  ? (process.env.CI_SERVER_HOST.startsWith('http')
+      ? process.env.CI_SERVER_HOST
+      : `https://${process.env.CI_SERVER_HOST}`)
+  : 'https://gitlab.com';
+
 const gitlab = new Gitlab({
-  host: process.env.CI_SERVER_HOST || 'https://gitlab.com',
+  host: gitlabHost,
   token: process.env.GITLAB_PUSH_TOKEN || process.env.CI_JOB_TOKEN!,
 });
 
