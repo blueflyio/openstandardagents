@@ -1,0 +1,31 @@
+apiVersion: ossa/v0.3.0
+kind: Agent
+metadata:
+  name: bot-security-scanner
+  version: 1.0.0
+  description: Automated security scanning for agent code
+  labels:
+    domain: security
+    tier: core
+    bot: true
+spec:
+  llm:
+    provider: anthropic
+    model: "${LLM_MODEL:-claude-sonnet-4-20250514}"
+  capabilities:
+    - name: secret-detection
+      description: Scan for exposed secrets and tokens
+      scopes:
+        - read:repository
+    - name: dependency-scanning
+      description: Scan dependencies for vulnerabilities
+      scopes:
+        - read:repository
+    - name: sast-scanning
+      description: Static application security testing
+      scopes:
+        - read:repository
+  triggers:
+    - type: merge_request
+      events: [opened, updated]
+      action: security-scan

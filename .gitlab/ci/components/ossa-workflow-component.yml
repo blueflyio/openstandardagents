@@ -19,7 +19,6 @@ spec:
       type: string
       default: "workflow-system"
 
----
 .ossa_workflow_base:
   image: node:22-alpine
   before_script:
