@@ -5,7 +5,11 @@ All notable changes to OSSA (Open Standard for Scalable AI Agents) will be docum
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.3.1-dev.23] - 2025-12-23
+## [0.3.1-dev.25] - 2025-12-23
+
+### Added
+
+- **ci**: Generate TypeScript types in CI instead of committing ([627efe4](https://gitlab.com/blueflyio/openstandardagents/-/commit/627efe4e899b85db1303c51dc1eac8b8088b1202))## [0.3.1-dev.23] - 2025-12-23
 
 ### Added
 
