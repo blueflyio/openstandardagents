@@ -84,6 +84,13 @@ stages:
 
 # Use SaaS runners (GitLab Ultimate minutes)
 default:
+  # Cache npm dependencies to speed up pipelines
+  cache:
+    key: ${CI_COMMIT_REF_SLUG}-npm
+    paths:
+      - .npm/
+      - node_modules/
+    policy: pull-push
   tags:
     - saas-linux-small-amd64
 
