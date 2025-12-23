@@ -147,7 +147,7 @@ function main() {
   
   let updated = 0;
   let skipped = 0;
-  let errors = 0;
+  const errors = 0;
   
   for (const manifestPath of manifests) {
     const relativePath = manifestPath.replace(process.cwd() + '/', '');
