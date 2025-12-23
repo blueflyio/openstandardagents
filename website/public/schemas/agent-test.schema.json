@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://openstandardagents.org/schemas/v0.3.0/agent-test.json",
+  "$id": "https://openstandardagents.org/schemas/v0.3.1/agent-test.json",
   "title": "OSSA AgentTest Resource",
   "description": "Test definition for OSSA agents - declarative testing framework for agent behavior, performance, and compliance validation",
   "type": "object",
@@ -13,7 +13,7 @@
   "properties": {
     "apiVersion": {
       "type": "string",
-      "const": "ossa/v0.3.0",
+      "const": "ossa/v0.3.1",
       "description": "OSSA API version for AgentTest resources"
     },
     "kind": {
