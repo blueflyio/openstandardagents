@@ -4,7 +4,7 @@ title: "Drupal ECA to OSSA"
 
 # Drupal ECA to OSSA Migration Guide
 
-> **Comprehensive guide for converting Drupal ECA (Event-Condition-Action) rules to OSSA (Open Standard for Smart & Scalable Agents) agents**
+> **Comprehensive guide for converting Drupal ECA (Event-Condition-Action) rules to OSSA (Open Standard for Scalable AI Agents) agents**
 
 ## Table of Contents
 
@@ -1943,7 +1943,7 @@ if ($features->isEnabled('ossa_moderation')) {
 ### Documentation
 - [OSSA Specification](https://gitlab.com/blueflyio/openstandardagents/wiki/home)
 - [Drupal ECA Guide](https://ecaguide.org/)
-- [BuildKit CLI Reference](https://github.com/blueflyio/documentation/-/wikis/BuildKit-CLI-Reference)
+- [BuildKit CLI Reference](https://gitlab.com/blueflyio/agent-platform/technical-docs/-/wikis/BuildKit-CLI-Reference)
 
 ### Tools
 - OSSA CLI: `npm install -g @ossa/cli`
@@ -1955,7 +1955,7 @@ if ($features->isEnabled('ossa_moderation')) {
 - [Drupal Integration Module](https://github.com/blueflyio/drupal/ossa_integration)
 
 ### Support
-- [GitLab Issues](https://github.com/blueflyio/documentation/-/issues)
+- [GitLab Issues](https://gitlab.com/blueflyio/agent-platform/technical-docs/-/issues)
 - [OSSA Discussions](https://gitlab.com/blueflyio/openstandardagents/-/issues)
 
 ---

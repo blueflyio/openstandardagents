@@ -542,4 +542,4 @@ The question is not **if** your organization will standardize autonomous agentsâ
 - [Compare OSSA to Frameworks](/docs/positioning/comparison-matrix)
 - [Plan Your OSSA Adoption](/docs/positioning/adoption-guide)
 - [Get Started with OSSA](/docs/getting-started)
-- [Read Technical Documentation](/docs/core-concepts)
+- [Read Technical Documentation](/docs/core-concepts/project-structure)

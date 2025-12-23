@@ -71,7 +71,9 @@ workflow:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
     - if: $CI_COMMIT_BRANCH =~ /^release\//
     - if: $CI_COMMIT_BRANCH == "main"
-    - if: $CI_COMMIT_BRANCH =~ /^(feature|bugfix|hotfix|chore)\/.+/
+    - if: $CI_COMMIT_BRANCH =~ /^(feature|bugfix|hotfix|chore|fix)\/.+/
+    # GitLab issue branches: <issue-number>-<slug>
+    - if: $CI_COMMIT_BRANCH =~ /^[0-9]+-/
 
 # Use GitLab shared runners (no tags = eligible for shared runners)
 default:
@@ -214,23 +216,13 @@ validate:documentation:
     - npm ci --prefer-offline --no-audit
   script:
     - |
-      echo "🔍 Validating documentation with agent-driven checks..."
+      echo "🔍 Validating documentation..."
 
-      # Check for broken internal links
-      echo "Checking internal links..."
-
-      find content/docs -name "*.md" -exec grep -H -E "\]\(/docs/[^)]+\)" {} \; | while read -r line; do
-        file=$(echo "$line" | cut -d: -f1)
-        link=$(echo "$line" | grep -o -E "\(/docs/[^)]+\)" | sed 's/^(//' | sed 's/)$//')
-        if [ ! -f "$target" ]; then
-          echo "❌ Broken link in $file: $link (target: $target not found)"
-        fi
-      done
+      # Run link validation via npm script
+      npm run validate:links
 
       # Validate schema references
       echo "Validating schema URLs..."
-
-      # Check for outdated schema refs, excluding migration guides and examples
       OUTDATED_REFS=$(grep -r "openstandardagents.org/schemas" content/docs/ | \
         grep -v "v0.3.0" | \
         grep -v "v1" | \
@@ -245,21 +237,16 @@ validate:documentation:
       else
         echo "✅ Schema URLs up to date"
       fi
-      # Check for version consistency
-      echo "Checking version references..."
-      SPEC_VERSION=$(grep -m1 "Version: v" content/docs/specification.md | sed 's/.*v//' | cut -d' ' -f1)
-      echo "Specification declares version: $SPEC_VERSION"
 
-      # Validate llms.txt is accessible
-      echo "Validating llms.txt..."
+      # Validate llms.txt exists
       if [ ! -f "public/llms.txt" ]; then
         echo "❌ llms.txt not found"
         exit 1
       fi
-      echo "✅ llms.txt exists and is accessible"
+      echo "✅ llms.txt exists"
 
       echo "✅ Documentation validation complete"
-  allow_failure: true
+  allow_failure: false
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
       changes:
