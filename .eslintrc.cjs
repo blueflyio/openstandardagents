@@ -28,6 +28,7 @@ module.exports = {
     '*.d.ts',
     'website/',
     'examples/',
+    'spec/',
   ],
   overrides: [
     {
@@ -37,6 +38,13 @@ module.exports = {
       },
       rules: {
         '@typescript-eslint/no-explicit-any': 'off',
+      },
+    },
+    {
+      // Scripts, bin, packages, and root config files - no type-aware linting
+      files: ['scripts/**/*.ts', 'bin/**/*.ts', 'packages/**/*.ts', '*.ts'],
+      parserOptions: {
+        project: null,
       },
     },
   ],
