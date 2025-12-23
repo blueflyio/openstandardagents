@@ -36,7 +36,6 @@ spec:
       type: string
       default: "22"
 
----
 .ossa_agent_base:
   image: node:22-alpine
   before_script:
