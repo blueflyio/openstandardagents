@@ -22,7 +22,7 @@ export default function HomePage() {
             </span>
           </div>
           <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold mb-6 leading-tight">
-            Open Standard for AI Agents
+            Open Standard for Scalable AI Agents
           </h1>
           <p className="text-2xl md:text-3xl lg:text-4xl mb-4 font-bold">
             Treating Agents as First-Class Citizens

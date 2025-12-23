@@ -26,7 +26,7 @@ export interface ValidationResult {
 const schemaCache: Map<string, object> = new Map();
 
 // Available schema versions in order of preference (newest first)
-const AVAILABLE_SCHEMAS = ['0.2.9', '0.2.8', '0.2.3'];
+const AVAILABLE_SCHEMAS = ['0.3.0', '0.2.9', '0.2.8', '0.2.3'];
 
 /**
  * Load schema from public directory (client-side)

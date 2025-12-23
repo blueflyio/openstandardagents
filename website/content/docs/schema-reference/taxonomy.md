@@ -499,7 +499,7 @@ SELECT * WHERE taxonomy.capability LIKE '%scanning%'
 
 - [Agent Spec](./agent-spec.md) - Parent object containing taxonomy
 - [OSSA Manifest](./ossa-manifest.md) - Metadata labels alignment
-- [Examples](/docs/examples/) - Real-world taxonomy usage
+- [Examples](/docs/examples) - Real-world taxonomy usage
 
 ## Validation
 
