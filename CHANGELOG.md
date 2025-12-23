@@ -49,14 +49,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- **ci**: Use .version.json as single source of truth for dev tags ([4e5a67b](https://gitlab.com/blueflyio/openstandardagents/-/commit/4e5a67b1acaf99b20279e4d4059fa904f1eaef4c))
-- **ci**: Add validate:documentation CI job ([63c1ae7](https://gitlab.com/blueflyio/openstandardagents/-/commit/63c1ae7445593925710d1559adb5f54b769ebbad))
-- **test**: Use dynamic API version in migration tests ([d226e23](https://gitlab.com/blueflyio/openstandardagents/-/commit/d226e232012f89645f2068daf01be9adc347927e))
 - Disable all platform-agents trigger jobs - use gitlab_components or local execution instead ([cfb60ff](https://gitlab.com/blueflyio/openstandardagents/-/commit/cfb60ffcab9bdf71096a31598a9eba3090d0d608))
-
-### Miscellaneous
-
-- Close MR !580 - audit remediation completed ([9dac47a](https://gitlab.com/blueflyio/openstandardagents/-/commit/9dac47aaba2a6c85f87d2f9fb19820f329d27039))
 ## [0.3.0-dev.68] - 2025-12-22
 
 ### Fixed
