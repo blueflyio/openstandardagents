@@ -99,7 +99,6 @@ async function fetchRepoInfo(): Promise<GitHubRepoInfo | null> {
           openPullRequests = Array.isArray(prsData) ? prsData.length : 0;
         }
       } catch (error) {
-        console.error('Error parsing PRs response:', error);
         openPullRequests = 0;
       }
     }
@@ -115,7 +114,6 @@ async function fetchRepoInfo(): Promise<GitHubRepoInfo | null> {
       watchers: repoData?.watchers_count || 0,
     };
   } catch (error) {
-    console.error('Error fetching GitHub repo info:', error);
     return null;
   }
 }
@@ -128,7 +126,7 @@ interface PageProps {
 
 const docsDirectory = path.join(process.cwd(), 'content/docs');
 
-function getDocContent(slug: string[]): { content: string; metadata: any } | null {
+function getDocContent(slug: string[]): { content: string; metadata: Record<string, unknown> } | null {
   // Convert URL slug to PascalCase for legacy wiki files
   // Directories stay lowercase, but file names are PascalCase
   const slugPath = slug.map(s =>
@@ -175,11 +173,13 @@ function getDocContent(slug: string[]): { content: string; metadata: any } | nul
     .map(w => w.charAt(0).toUpperCase() + w.slice(1))
     .join(' ');
 
+  const description = data.description || '';
+
   return {
     content,
     metadata: {
       title,
-      description: data.description,
+      description,
     },
   };
 }
@@ -190,7 +190,6 @@ function getAllDocPaths(): string[][] {
   function traverseDir(dir: string, currentPath: string[] = []): void {
     try {
     if (!fs.existsSync(dir)) {
-      console.warn(`Directory does not exist: ${dir}`);
       return;
     }
 
@@ -213,16 +212,12 @@ function getAllDocPaths(): string[][] {
         }
       }
     }
-    } catch (error) {
-      console.error(`Error traversing directory ${dir}:`, error);
-    }
+    } catch {}
   }
 
   try {
   traverseDir(docsDirectory);
-  } catch (error) {
-    console.error(`Error getting doc paths from ${docsDirectory}:`, error);
-  }
+  } catch {}
 
   return paths;
 }
@@ -232,7 +227,6 @@ export const dynamicParams = false;
 export function generateStaticParams(): Array<{ slug: string[] }> {
   try {
     if (!fs.existsSync(docsDirectory)) {
-      console.warn(`Docs directory not found: ${docsDirectory}`);
       return [{ slug: [] }];
     }
 
@@ -246,7 +240,6 @@ export function generateStaticParams(): Array<{ slug: string[] }> {
 
     return result;
   } catch (error) {
-    console.error('Error in generateStaticParams:', error);
     return [{ slug: [] }];
   }
 }
@@ -283,19 +276,19 @@ export async function generateMetadata({ params }: MetadataProps): Promise<Metad
   }
 
   const title = `${doc.metadata.title} - OSSA Docs`;
-  const description = doc.metadata.description || `Learn about ${doc.metadata.title} in the OSSA documentation.`;
+  const description = String(doc.metadata.description || `Learn about ${doc.metadata.title} in the OSSA documentation.`);
 
   return {
     title,
     description,
     openGraph: {
-      title: doc.metadata.title,
+      title: String(doc.metadata.title),
       description,
       type: 'article',
     },
     twitter: {
       card: 'summary_large_image',
-      title: doc.metadata.title,
+      title: String(doc.metadata.title),
       description,
     },
   };
@@ -310,10 +303,7 @@ export default async function DocsPage({ params }: PageProps) {
   if (slug.length === 0) {
     try {
       repoInfo = await fetchRepoInfo();
-    } catch (error) {
-      console.error('Failed to fetch GitHub repo info:', error);
-      // Continue without repo info rather than crashing
-    }
+    } catch {}
   }
 
   // Handle root /docs route - CLEAN, PROFESSIONAL DESIGN
@@ -888,9 +878,9 @@ export default async function DocsPage({ params }: PageProps) {
       <div className="flex-1 flex flex-col lg:ml-64">
         <main className="flex-1 container mx-auto max-w-4xl px-4 py-8 pt-16 lg:pt-8">
           <article className="prose prose-lg max-w-none">
-            <h1>{doc.metadata.title}</h1>
-            {doc.metadata.description && (
-              <p className="text-xl text-gray-600">{doc.metadata.description}</p>
+            <h1>{String(doc.metadata.title)}</h1>
+            {doc.metadata.description && String(doc.metadata.description) && (
+              <p className="text-xl text-gray-600">{String(doc.metadata.description)}</p>
             )}
             <div className="mt-8">
               <MarkdownContent content={doc.content} currentPath={`/docs/${slug.join('/')}`} />

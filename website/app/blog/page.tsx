@@ -1,4 +1,19 @@
 import Link from 'next/link';
+
+interface BlogMetadata {
+  title: string;
+  date: string;
+  formattedDate: string;
+  author: string;
+  category: string;
+  tags: string[];
+  excerpt: string;
+}
+
+interface BlogPost {
+  slug: string;
+  metadata: BlogMetadata;
+}
 import type { Metadata } from 'next';
 import fs from 'fs';
 import path from 'path';
@@ -40,7 +55,6 @@ function fixYamlFrontmatter(content: string): string {
 
 function getAllBlogPosts(): BlogPost[] {
   if (!fs.existsSync(blogDirectory)) {
-    console.warn(`Blog directory does not exist: ${blogDirectory}`);
     return [];
   }
 
@@ -58,15 +72,15 @@ function getAllBlogPosts(): BlogPost[] {
         const { data } = matter(fixedContent);
 
         // Clean up extracted values (remove extra quotes if present)
-        const cleanValue = (value: any): any => {
+        const cleanValue = (value: unknown): string => {
           if (typeof value === 'string') {
             // Remove surrounding double quotes if present
             return value.replace(/^""(.*)""$/, '$1').replace(/^"(.*)"$/, '$1');
           }
-          return value;
+          return String(value);
         };
 
-        const dateValue = cleanValue(data.date) || new Date().toISOString();
+        const dateValue: string = cleanValue(data.date) || new Date().toISOString();
         const dateObj = new Date(dateValue);
         const validDate = isNaN(dateObj.getTime()) ? new Date() : dateObj;
         
@@ -79,16 +93,15 @@ function getAllBlogPosts(): BlogPost[] {
 
         return {
           slug,
-          title: cleanValue(data.title) || slug,
+          title: (cleanValue(data.title) || slug) as string,
           date: validDate.toISOString(),
           formattedDate,
-          author: cleanValue(data.author) || 'OSSA Team',
-          category: cleanValue(data.category) || 'General',
-          tags: Array.isArray(data.tags) ? data.tags.map(cleanValue) : [],
-          excerpt: cleanValue(data.excerpt) || '',
+          author: (cleanValue(data.author) || 'OSSA Team') as string,
+          category: (cleanValue(data.category) || 'General') as string,
+          tags: Array.isArray(data.tags) ? (data.tags.map((tag) => cleanValue(tag)) as string[]) : [],
+          excerpt: (cleanValue(data.excerpt) || '') as string,
         };
       } catch (error) {
-        console.error(`Error parsing blog post ${fileName}:`, error);
         // Return a default post so the page doesn't crash
         const defaultDate = new Date();
         return {
@@ -119,7 +132,7 @@ function getAllBlogPosts(): BlogPost[] {
       }
     });
 
-  return posts;
+  return posts as BlogPost[];
 }
 
 export default function BlogPage() {
@@ -133,10 +146,7 @@ export default function BlogPage() {
     const featuredSlug = 'welcome-to-ossa';
     featuredPost = posts.find(p => p.slug.toLowerCase() === featuredSlug);
     otherPosts = posts.filter(p => p.slug !== featuredPost?.slug);
-  } catch (error) {
-    console.error('Error loading blog posts:', error);
-    // Continue with empty arrays - page will show "No blog posts yet"
-  }
+  } catch {}
 
   return (
     <div className="min-h-screen bg-gray-50">

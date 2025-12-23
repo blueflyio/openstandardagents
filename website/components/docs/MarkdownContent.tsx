@@ -305,18 +305,18 @@ export function MarkdownContent({ content, currentPath }: MarkdownContentProps) 
           ),
 
           // Code
-          code({ className, children, ...props }: any) {
+          code({ className, children, ...props }: { className?: string; children?: React.ReactNode; node?: { parent?: { tagName?: string } }; [key: string]: unknown }) {
             const match = /language-(\w+)/.exec(className || '');
             const isInline = !match;
 
             // Check if this code is inside a pre tag (block code)
-            const isBlockCode = (props.node?.parent as any)?.tagName === 'pre';
+            const isBlockCode = (props.node?.parent as { tagName?: string })?.tagName === 'pre';
 
             if (match) {
               return (
                 <div className="my-4 rounded-lg overflow-hidden overflow-x-auto">
                   <SyntaxHighlighter
-                    style={vscDarkPlus as any}
+                    style={vscDarkPlus}
                     language={match[1]}
                     PreTag="div"
                     customStyle={{
@@ -354,7 +354,10 @@ export function MarkdownContent({ content, currentPath }: MarkdownContentProps) 
           pre: ({ children }) => {
             // Check if children contain a code element
             const hasCode = React.Children.toArray(children).some(
-              (child: any) => child?.type === 'code' || child?.props?.node?.tagName === 'code'
+              (child: unknown) => {
+                const childObj = child as { type?: string; props?: { node?: { tagName?: string } } };
+                return childObj?.type === 'code' || childObj?.props?.node?.tagName === 'code';
+              }
             );
 
             return (

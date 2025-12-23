@@ -36,15 +36,24 @@ function fixYamlFrontmatter(content: string): string {
 }
 
 // Helper to clean extracted values
-function cleanValue(value: any): any {
-  if (typeof value === 'string') {
-    // Remove surrounding double quotes if present
-    return value.replace(/^""(.*)""$/, '$1').replace(/^"(.*)"$/, '$1');
+function cleanValue(value: unknown): string {
+    if (typeof value === 'string') {
+      return value.replace(/^""(.*)""$/, '$1').replace(/^"(.*)"$/, '$1');
+    }
+    return String(value);
   }
-  return value;
-}
 
-function getBlogPost(slug: string): { content: string; metadata: any } | null {
+interface BlogMetadata {
+    title: string;
+    date: string;
+    formattedDate: string;
+    author: string;
+    category: string;
+    tags: string[];
+    excerpt: string;
+  }
+
+  function getBlogPost(slug: string): { content: string; metadata: BlogMetadata } | null {
   const fullPath = path.join(blogDirectory, `${slug}.md`);
 
   if (!fs.existsSync(fullPath)) {
@@ -58,7 +67,7 @@ function getBlogPost(slug: string): { content: string; metadata: any } | null {
     const fixedContent = fixYamlFrontmatter(fileContents);
     const { data, content } = matter(fixedContent);
 
-    const dateValue = cleanValue(data.date) || new Date().toISOString();
+    const dateValue: string = (cleanValue(data.date) || new Date().toISOString()) as string;
     const dateObj = new Date(dateValue);
     const validDate = isNaN(dateObj.getTime()) ? new Date() : dateObj;
     
@@ -72,17 +81,16 @@ function getBlogPost(slug: string): { content: string; metadata: any } | null {
     return {
       content,
       metadata: {
-        title: cleanValue(data.title) || slug,
+        title: (cleanValue(data.title) || slug) as string,
         date: validDate.toISOString(),
         formattedDate,
-        author: cleanValue(data.author) || 'OSSA Team',
-        category: cleanValue(data.category) || 'General',
-        tags: Array.isArray(data.tags) ? data.tags.map(cleanValue) : [],
-        excerpt: cleanValue(data.excerpt) || '',
+        author: (cleanValue(data.author) || 'OSSA Team') as string,
+        category: (cleanValue(data.category) || 'General') as string,
+        tags: Array.isArray(data.tags) ? data.tags.map((tag) => cleanValue(tag)) as string[] : [],
+        excerpt: (cleanValue(data.excerpt) || '') as string,
       },
     };
   } catch (error) {
-    console.error(`Error parsing blog post ${slug}:`, error);
     return null;
   }
 }
@@ -128,7 +136,7 @@ export async function generateMetadata({ params }: MetadataProps): Promise<Metad
       type: 'article',
       publishedTime: post.metadata.date,
       authors: [post.metadata.author],
-      tags: post.metadata.tags,
+      tags: post.metadata.tags || [],
     },
     twitter: {
       card: 'summary_large_image',
@@ -191,13 +199,13 @@ export default async function BlogPostPage({ params }: PageProps) {
               <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
               </svg>
-              <span>{post.metadata.author}</span>
+              <span>{post.metadata.author as string}</span>
             </div>
             <div className="flex items-center gap-2">
               <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
               </svg>
-              <span>{post.metadata.formattedDate}</span>
+              <span>{post.metadata.formattedDate as string}</span>
             </div>
           </div>
         </div>
@@ -228,11 +236,11 @@ export default async function BlogPostPage({ params }: PageProps) {
           </div>
 
           {/* Tags */}
-          {post.metadata.tags.length > 0 && (
+          {(post.metadata.tags as string[]).length > 0 && (
             <div className="mt-12 pt-8 border-t border-gray-200">
               <h3 className="text-sm font-semibold text-gray-900 mb-3">Tags</h3>
               <div className="flex flex-wrap gap-2">
-                {post.metadata.tags.map((tag: string) => (
+                {(post.metadata.tags as string[]).map((tag: string) => (
                   <span
                     key={tag}
                     className="px-3 py-1 bg-blue-100 text-primary text-sm font-medium rounded-full"
