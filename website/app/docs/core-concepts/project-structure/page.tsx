@@ -1,4 +1,5 @@
 import { DocsSidebar } from '@/components/docs/DocsSidebar';
+import Link from 'next/link';
 
 export default function ProjectStructurePage() {
   return (
@@ -336,9 +337,9 @@ export default function ProjectStructurePage() {
               <h2>Next Steps</h2>
 
               <ul>
-                <li><a href="/docs/getting-started/first-agent" className="text-primary hover:underline">Create Your First Agent</a></li>
-                <li><a href="/docs/quick-reference" className="text-primary hover:underline">Agent Manifest Reference</a></li>
-                <li><a href="/examples" className="text-primary hover:underline">Multi-Agent Examples</a></li>
+                <li><Link href="/docs/getting-started/first-agent" className="text-primary hover:underline">Create Your First Agent</Link></li>
+                <li><Link href="/docs/quick-reference" className="text-primary hover:underline">Agent Manifest Reference</Link></li>
+                <li><Link href="/examples" className="text-primary hover:underline">Multi-Agent Examples</Link></li>
               </ul>
             </div>
           </article>

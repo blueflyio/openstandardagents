@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { SchemaExplorer } from '@/components/schema/SchemaExplorer';
 import { SchemaComponentsAccordion } from '@/components/schema/SchemaComponentsAccordion';
-import { STABLE_VERSION, STABLE_VERSION_TAG, getSchemaPath } from '@/lib/version';
+import { STABLE_VERSION, STABLE_VERSION_TAG } from '@/lib/version';
 import { Logo } from '@/components/Logo';
 import fs from 'fs';
 import path from 'path';
@@ -14,15 +14,13 @@ function getStableVersion(): string {
       const versions = JSON.parse(fs.readFileSync(versionsPath, 'utf8'));
       return versions.stable || STABLE_VERSION;
     }
-  } catch (error) {
-    console.error('Error reading versions.json:', error);
-  }
+  } catch {}
   // Fallback to 0.2.9 if versions.json not available
   return STABLE_VERSION;
 }
 
 // Try to load schema dynamically - fallback to stable version
-function loadSchema(version?: string): any {
+function loadSchema(version?: string): Record<string, unknown> | null {
   const stableVersion = version || getStableVersion();
   try {
     // Try to load from public/schemas first
@@ -39,13 +37,15 @@ function loadSchema(version?: string): any {
     
     // Final fallback - try to require (for build time)
     try {
-      return require(`../../public/schemas/ossa-${stableVersion}.schema.json`);
+        const schemaPath = path.join(process.cwd(), 'public', 'schemas', `ossa-${stableVersion}.schema.json`);
+        if (fs.existsSync(schemaPath)) {
+          return JSON.parse(fs.readFileSync(schemaPath, 'utf8'));
+        }
     } catch {
       // If all else fails, return null
       return null;
     }
   } catch (error) {
-    console.error('Error loading schema:', error);
     return null;
   }
 }

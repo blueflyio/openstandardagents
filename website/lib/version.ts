@@ -1,8 +1,10 @@
+import type { VersionInfo, VersionsData } from "./version-types";
 // OSSA version constants
 // AUTO-GENERATED from npm registry (patch only, no update needed, fallback) - DO NOT EDIT DIRECTLY
 // Run: npm run sync-version (fetches latest from GitLab tags or npm registry)
 // NOTE: Website only updates on major/minor releases, not patches
 
+import type { VersionInfo, VersionsData } from "./version-types";
 import versionsData from './versions.json';
 
 export const OSSA_VERSION = "0.3.0";
@@ -19,14 +21,14 @@ export const STABLE_VERSION = OSSA_VERSION;
 export const STABLE_VERSION_TAG = OSSA_VERSION_TAG;
 
 // Version data from versions.json
-export const STABLE_VERSIONS = versionsData.all.filter((v: any) => v.type === 'stable');
-export const DEV_VERSIONS = versionsData.all.filter((v: any) => v.type === 'dev' || v.type === 'prerelease');
+export const STABLE_VERSIONS = versionsData.all.filter((v: VersionInfo) => v.type === 'stable') as VersionInfo[];
+export const DEV_VERSIONS = versionsData.all.filter((v: VersionInfo) => v.type === 'dev' || v.type === 'prerelease') as VersionInfo[];
 export const ALL_VERSIONS = versionsData.all;
 export const DEV_VERSION_TAG = versionsData.dev ? `v${versionsData.dev}` : undefined;
 
 // Utility to get version info
-export function getVersionInfo(version: string): any {
-  return versionsData.all.find((v: any) => v.version === version);
+export function getVersionInfo(version: string): VersionInfo | undefined {
+  return versionsData.all.find((v: VersionInfo) => v.version === version);
 }
 
 // Utility to get schema path
