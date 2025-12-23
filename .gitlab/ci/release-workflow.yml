@@ -232,14 +232,32 @@ create-rc-tag:
       echo "Branch: ${CI_COMMIT_BRANCH}"
       echo ""
 
-      # Extract major.minor from branch name (e.g., release/v0.3.x -> 0.3)
-      BRANCH_VERSION=$(echo "$CI_COMMIT_BRANCH" | sed -n 's|^release/v\([0-9]\+\.[0-9]\+\).*|\1|p')
-      
-      if [ -z "$BRANCH_VERSION" ]; then
-        echo "ERROR: Could not extract version from branch: $CI_COMMIT_BRANCH"
-        exit 1
+      # USE .version.json AS SINGLE SOURCE OF TRUTH
+      # This job runs on main after merge from release/* branch
+      # The branch name is 'main' so we cannot extract from it
+      if [ -f .version.json ]; then
+        BASE_VERSION=$(jq -r '.current' .version.json)
+        echo "Version from .version.json: ${BASE_VERSION}"
+
+        # Validate format
+        if ! echo "$BASE_VERSION" | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+$'; then
+          echo "ERROR: Invalid version format in .version.json: $BASE_VERSION"
+          exit 1
+        fi
+
+        BRANCH_VERSION=$(echo "$BASE_VERSION" | cut -d. -f1-2)
+      else
+        # Fallback: try to extract from merge commit message
+        MERGED_BRANCH=$(echo "$CI_COMMIT_MESSAGE" | grep -oP "release/v\d+\.\d+" | head -1 || echo "")
+        if [ -n "$MERGED_BRANCH" ]; then
+          BRANCH_VERSION=$(echo "$MERGED_BRANCH" | sed 's|release/v||')
+          echo "Extracted version from commit message: ${BRANCH_VERSION}"
+        else
+          echo "ERROR: Could not determine version - no .version.json and cannot extract from commit message"
+          exit 1
+        fi
       fi
-      
+
       echo "Branch version: ${BRANCH_VERSION}"
 
       # Detect version from latest dev tags (dynamic based on branch)
