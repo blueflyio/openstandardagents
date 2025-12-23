@@ -6,6 +6,7 @@ import addFormats from 'ajv-formats';
 import * as fs from 'fs';
 import * as path from 'path';
 import { isOssaTask, createTaskManifest } from '../../src/types/task';
+import { getApiVersion } from '../../src/utils/version';
 
 describe('OSSA v0.3.0 Task Schema', () => {
   let ajv: Ajv;
@@ -280,11 +281,10 @@ describe('OSSA v0.3.0 Task Schema', () => {
       });
 
       expect(task.kind).toBe('Task');
-      const { getApiVersion } = require('../../src/utils/version');
+
       expect(task.apiVersion).toBe(getApiVersion());
       expect(task.metadata.name).toBe('my-task');
       expect(task.spec.capabilities).toContain('do_something');
-
       const validate = ajv.getSchema('ossa-0.3.0');
       const valid = validate!(task);
       expect(valid).toBe(true);

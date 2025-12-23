@@ -4,12 +4,14 @@
  */
 
 import { describe, it, expect } from '@jest/globals';
+import { getApiVersion } from '../../../../src/utils/version.js';
 import {
   basicAgentManifest,
   agentWithTests,
   agentWithCapabilities,
   agentWithPolicies,
 } from '../../../../src/testing/fixtures.js';
+import { getApiVersion } from '../../../../src/utils/version';
 
 describe('Test Command Enhanced', () => {
   describe('Command Options', () => {
@@ -102,7 +104,7 @@ describe('Test Command Enhanced', () => {
   describe('Test Fixtures', () => {
     it('should provide basic agent manifest', () => {
       expect(basicAgentManifest).toBeDefined();
-      expect(basicAgentManifest.apiVersion).toBe('ossa/v0.3.0');
+      expect(basicAgentManifest.apiVersion).toBe(getApiVersion());
       expect(basicAgentManifest.metadata?.name).toBe('test-agent');
     });
 

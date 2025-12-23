@@ -343,7 +343,13 @@ data/processed/
 data/**/*.json
 logs/**/*.json
 *.data.json
-!spec/**/*.json
+# Spec files are generated in CI - do not commit versioned specs
+spec/v*/
+!spec/v0.3.0/.gitkeep
+!spec/extensions/**/*
+!spec/registry/**/*
+!spec/schema/**/*
+
 !docs/**/*.json
 !examples/**/*.json
 !openapi/**/*.json

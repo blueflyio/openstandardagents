@@ -1,0 +1,23 @@
+apiVersion: ossa/v0.3.0
+kind: Agent
+metadata:
+  name: bot-architecture-validator
+  version: 1.0.0
+  description: Validate agent architecture patterns
+  labels:
+    domain: validation
+    tier: core
+    bot: true
+spec:
+  llm:
+    provider: "${LLM_PROVIDER:-anthropic}"
+    model: "${LLM_MODEL:-claude-sonnet-4-20250514}"
+  capabilities:
+    - name: pattern-validation
+      description: Validate architecture patterns
+      scopes:
+        - read:repository
+    - name: dependency-validation
+      description: Validate dependency structure
+      scopes:
+        - read:repository

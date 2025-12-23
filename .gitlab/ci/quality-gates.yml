@@ -1,0 +1,22 @@
+# ============================================================================
+# STAGE 4 - QUALITY GATES
+# ============================================================================
+
+quality:gates:
+  stage: quality
+  image: node:${NODE_VERSION}-alpine
+  tags:
+    - saas-linux-small-amd64
+  script:
+    - echo "Quality gates - all tests must pass"
+  rules:
+    - when: always
+  needs:
+    - job: test:unit
+    - job: test:integration
+    - job: test:e2e
+    - job: test:lint
+      optional: true
+    - job: test:security
+      optional: true
+
