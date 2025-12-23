@@ -58,6 +58,7 @@ function getAllExamples(): ExampleFile[] {
     
     return [];
   } catch (error) {
+
     return [];
   }
 }

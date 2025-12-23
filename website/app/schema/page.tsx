@@ -14,7 +14,7 @@ function getStableVersion(): string {
       const versions = JSON.parse(fs.readFileSync(versionsPath, 'utf8'));
       return versions.stable || STABLE_VERSION;
     }
-  } catch {}
+} catch {}
   // Fallback to 0.2.9 if versions.json not available
   return STABLE_VERSION;
 }
@@ -37,7 +37,7 @@ function loadSchema(version?: string): Record<string, unknown> | null {
     
     // Final fallback - try to require (for build time)
     try {
-        const schemaPath = path.join(process.cwd(), 'public', 'schemas', `ossa-${stableVersion}.schema.json`);
+const schemaPath = path.join(process.cwd(), 'public', 'schemas', `ossa-${stableVersion}.schema.json`);
         if (fs.existsSync(schemaPath)) {
           return JSON.parse(fs.readFileSync(schemaPath, 'utf8'));
         }
@@ -46,6 +46,7 @@ function loadSchema(version?: string): Record<string, unknown> | null {
       return null;
     }
   } catch (error) {
+
     return null;
   }
 }
