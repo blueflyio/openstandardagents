@@ -1,0 +1,187 @@
+openapi: 3.1.0
+info:
+  title: Customer Support Agent API
+  version: 1.0.0
+  description: |
+    A helpful customer support agent that answers questions and helps with orders.
+    Demonstrates OSSA quickstart patterns for production-ready agents.
+
+x-ossa-metadata:
+  version: 0.2.5-RC
+  compliance:
+    level: intermediate
+    frameworks:
+      - OSSA
+      - OpenAPI 3.1
+
+x-ossa:
+  version: 0.2.5-RC
+  agent:
+    id: support-agent
+    type: chat
+    compliance:
+      standards:
+        - openapi-first
+      validated: true
+      validatedAt: "2024-01-15T10:00:00Z"
+
+servers:
+  - url: http://localhost:3000
+    description: Local development server
+
+tags:
+  - name: support
+    description: Customer support operations
+  - name: orders
+    description: Order management operations
+
+paths:
+  /chat:
+    post:
+      summary: Chat with support agent
+      description: |
+        Interactive chat endpoint for customer support.
+        The agent can answer questions about orders, shipping, returns, and products.
+      operationId: chat
+      tags: [support]
+      x-ossa-capability: customer_support
+      x-ossa-autonomy:
+        level: supervised
+        approval_required: false
+      x-ossa-llm:
+        provider: openai
+        model: gpt-4o-mini
+        temperature: 0.7
+        maxTokens: 1000
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [message]
+              properties:
+                message:
+                  type: string
+                  description: Customer message
+                session_id:
+                  type: string
+                  description: Session identifier for conversation continuity
+                context:
+                  type: object
+                  description: Additional context for the conversation
+      responses:
+        '200':
+          description: Support response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  response:
+                    type: string
+                    description: Agent response message
+                  session_id:
+                    type: string
+                  needs_escalation:
+                    type: boolean
+                    description: Whether human agent escalation is needed
+                  suggested_actions:
+                    type: array
+                    items:
+                      type: string
+
+  /orders/{order_id}/status:
+    get:
+      summary: Get order status
+      description: Retrieve the status of a customer order
+      operationId: getOrderStatus
+      tags: [orders]
+      x-ossa-capability: order_tracking
+      x-ossa-autonomy:
+        level: autonomous
+        approval_required: false
+      parameters:
+        - name: order_id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: The order ID to look up (e.g., ORD-12345)
+      responses:
+        '200':
+          description: Order status retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  order_id:
+                    type: string
+                  status:
+                    type: string
+                    enum: [pending, processing, shipped, delivered, cancelled]
+                  tracking_number:
+                    type: string
+                  estimated_delivery:
+                    type: string
+                    format: date-time
+                  items:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        name:
+                          type: string
+                        quantity:
+                          type: integer
+                        price:
+                          type: number
+        '404':
+          description: Order not found
+
+  /orders/{order_id}/track:
+    get:
+      summary: Track order package
+      description: Get detailed tracking information for an order
+      operationId: trackOrder
+      tags: [orders]
+      x-ossa-capability: order_tracking
+      x-ossa-autonomy:
+        level: autonomous
+        approval_required: false
+      parameters:
+        - name: order_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Tracking information
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  order_id:
+                    type: string
+                  tracking_number:
+                    type: string
+                  carrier:
+                    type: string
+                  events:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        timestamp:
+                          type: string
+                          format: date-time
+                        location:
+                          type: string
+                        status:
+                          type: string
+                        description:
+                          type: string
+

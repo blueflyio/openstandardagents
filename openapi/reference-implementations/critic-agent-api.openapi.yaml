@@ -1,0 +1,151 @@
+openapi: 3.1.0
+info:
+  title: Code Quality Critic Agent API
+  version: 1.0.0
+  description: |
+    Quality assurance agent for code review, testing, and continuous improvement.
+    Analyzes code quality, detects issues, and suggests improvements.
+
+x-ossa-metadata:
+  version: 0.2.5-RC
+  compliance:
+    level: intermediate
+    frameworks:
+      - OSSA
+      - OpenAPI 3.1
+
+x-ossa:
+  version: 0.2.5-RC
+  agent:
+    id: code-quality-critic
+    type: critic
+    compliance:
+      standards:
+        - openapi-first
+        - type-safe
+      validated: true
+      validatedAt: "2024-01-15T10:00:00Z"
+
+servers:
+  - url: https://critic.platform.com/api/v1
+    description: Production
+
+tags:
+  - name: review
+    description: Code review operations
+  - name: analysis
+    description: Code analysis operations
+
+paths:
+  /review:
+    post:
+      summary: Review code changes
+      description: Analyze code changes for quality, security, and best practices
+      operationId: reviewCode
+      tags: [review]
+      x-ossa-capability: review-changes
+      x-ossa-autonomy:
+        level: autonomous
+        approval_required: false
+      x-ossa-llm:
+        provider: openai
+        model: gpt-4
+        temperature: 0.2
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [code, language]
+              properties:
+                code:
+                  type: string
+                  description: Code to review
+                language:
+                  type: string
+                  enum: [javascript, typescript, python, java, go, rust, csharp]
+                diff:
+                  type: string
+                  description: Git diff of changes
+      responses:
+        '200':
+          description: Review completed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  issues:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        severity:
+                          type: string
+                          enum: [critical, high, medium, low]
+                        type:
+                          type: string
+                          enum: [security, performance, maintainability, style]
+                        message:
+                          type: string
+                        line:
+                          type: integer
+                  suggestions:
+                    type: array
+                    items:
+                      type: string
+                  quality_score:
+                    type: number
+                    minimum: 0
+                    maximum: 100
+
+  /analyze:
+    post:
+      summary: Analyze code quality
+      description: Perform comprehensive code quality analysis
+      operationId: analyzeCode
+      tags: [analysis]
+      x-ossa-capability: analyze-code
+      x-ossa-autonomy:
+        level: autonomous
+        approval_required: false
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [code]
+              properties:
+                code:
+                  type: string
+                metrics:
+                  type: array
+                  items:
+                    type: string
+                    enum: [complexity, maintainability, reliability, security, performance, testability]
+      responses:
+        '200':
+          description: Analysis completed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  metrics:
+                    type: object
+                    properties:
+                      complexity:
+                        type: number
+                      maintainability:
+                        type: number
+                      reliability:
+                        type: number
+                      security:
+                        type: number
+                      performance:
+                        type: number
+                      testability:
+                        type: number
+

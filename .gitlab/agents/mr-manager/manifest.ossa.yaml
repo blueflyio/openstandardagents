@@ -1,0 +1,103 @@
+apiVersion: ossa/v0.3.0
+kind: Agent
+metadata:
+  name: mr-manager
+  version: 1.0.0
+  description: Automated MR lifecycle management using GitLab Ultimate
+  labels:
+    ossa-version: v0.3.0
+spec:
+  role: orchestrator
+  llm:
+    provider: ${LLM_PROVIDER:-anthropic}
+    model: ${LLM_MODEL:-claude-sonnet}
+    temperature: 0.1
+    fallback_models:
+      - provider: ${LLM_FALLBACK_PROVIDER_1:-openai}
+        model: ${LLM_FALLBACK_MODEL_1:-gpt-4o}
+      - provider: ${LLM_FALLBACK_PROVIDER_2:-anthropic}
+        model: ${LLM_FALLBACK_MODEL_2:-claude-haiku}
+    retry_config:
+      max_attempts: 3
+      backoff_strategy: exponential
+    cost_tracking:
+      enabled: true
+      budget_alert_threshold: 20
+      cost_allocation_tags:
+        project: ossa-agents
+        team: platform
+        service: mr-manager
+  capabilities:
+    - name: create_mr_from_issue
+      description: Create MR from GitLab issue automatically
+      input_schema:
+        type: object
+        properties:
+          issue_id:
+            type: integer
+          project_id:
+            type: string
+    - name: checkout_mr_head
+      description: Checkout MR using head ref (refs/merge-requests/:iid/head)
+      input_schema:
+        type: object
+        properties:
+          mr_iid:
+            type: integer
+    - name: auto_merge_when_ready
+      description: Monitor pipeline and auto-merge when green
+      input_schema:
+        type: object
+        properties:
+          mr_iid:
+            type: integer
+  triggers:
+    - type: webhook
+      event: issue_update
+      conditions:
+        - labels.includes('status::ready-for-dev')
+        - assignee.username.startsWith('bot-')
+  workflow:
+    steps:
+      - name: create_branch
+        description: Create feature branch from issue
+      - name: create_mr
+        description: Create MR targeting development
+      - name: checkout_and_implement
+        description: Checkout via head ref and implement changes
+      - name: monitor_pipeline
+        description: Wait for pipeline success
+      - name: auto_merge
+        description: Merge when pipeline succeeds
+      - name: close_issue
+        description: Close issue after merge
+extensions:
+  kagent:
+    api_version: kagent.dev/v1alpha2
+    kubernetes:
+      namespace: agent-system
+      labels:
+        app.kubernetes.io/name: mr-manager
+        app.kubernetes.io/part-of: ossa-showcase
+        openstandardagents.org/version: v0.3.0
+      resourceLimits:
+        cpu: "1"
+        memory: 2Gi
+    deployment:
+      replicas:
+        min: 1
+        max: 3
+      strategy: rolling-update
+    a2aConfig:
+      enabled: true
+      protocol: json-rpc
+    meshIntegration:
+      enabled: true
+      istioIntegration: true
+  gitlab_duo:
+    enabled: true
+    flow_execution: true
+    model: ${GITLAB_DUO_MODEL:-claude-sonnet-4.5-20250929}
+    knowledge_graph:
+      enabled: true
+      index_on_push: true

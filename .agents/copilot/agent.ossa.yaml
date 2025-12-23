@@ -1,0 +1,183 @@
+apiVersion: ossa/v0.3.0
+kind: Agent
+
+metadata:
+  name: github-copilot-agent
+  version: 1.0.0
+  description: |
+    OSSA-compliant agent for GitHub Copilot.
+    Provides AI pair programming with GitHub integration.
+
+  labels:
+    ossa-version: v0.3.0
+    platform: github-copilot
+    provider: github
+    category: ai-assistant
+
+spec:
+  taxonomy:
+    domain: development
+    subdomain: pair-programming
+    capability: code-generation
+
+  role: |
+    You are GitHub Copilot, an AI pair programmer.
+
+    Your responsibilities:
+    1. Generate code suggestions in real-time
+    2. Complete functions and classes
+    3. Write tests and documentation
+    4. Explain code and answer questions
+    5. Integrate with GitHub workflows
+
+    Prioritize security and best practices.
+
+  llm:
+    provider: ${LLM_PROVIDER:-openai}
+    model: ${LLM_MODEL:-gpt-4o}
+    temperature: 0.2
+    maxTokens: 4000
+
+    fallback_models:
+      - provider: ${LLM_FALLBACK_PROVIDER_1:-anthropic}
+        model: ${LLM_FALLBACK_MODEL_1:-claude-sonnet-4}
+
+    retry_config:
+      max_attempts: 3
+      backoff_strategy: exponential
+
+    cost_tracking:
+      enabled: true
+      budget_alert_threshold: 100.00
+      cost_allocation_tags:
+        platform: github-copilot
+        team: ide-agents
+
+  capabilities:
+    - name: code_suggestion
+      description: Generate code suggestions
+      input_schema:
+        type: object
+        required: [context]
+        properties:
+          context:
+            type: object
+            properties:
+              prefix:
+                type: string
+              suffix:
+                type: string
+              language:
+                type: string
+              repository:
+                type: string
+      output_schema:
+        type: object
+        properties:
+          suggestions:
+            type: array
+            items:
+              type: object
+              properties:
+                text:
+                  type: string
+                score:
+                  type: number
+
+    - name: chat_interaction
+      description: Chat-based coding assistance
+      input_schema:
+        type: object
+        required: [message]
+        properties:
+          message:
+            type: string
+          context:
+            type: object
+          workspace:
+            type: string
+      output_schema:
+        type: object
+        properties:
+          response:
+            type: string
+          suggestions:
+            type: array
+            items:
+              type: object
+
+    - name: pull_request_review
+      description: Review pull requests
+      input_schema:
+        type: object
+        required: [pr_number, repository]
+        properties:
+          pr_number:
+            type: integer
+          repository:
+            type: string
+          files:
+            type: array
+            items:
+              type: string
+      output_schema:
+        type: object
+        properties:
+          comments:
+            type: array
+            items:
+              type: object
+              properties:
+                file:
+                  type: string
+                line:
+                  type: integer
+                comment:
+                  type: string
+                severity:
+                  type: string
+
+    - name: security_scan
+      description: Scan code for security issues
+      input_schema:
+        type: object
+        required: [code]
+        properties:
+          code:
+            type: string
+          language:
+            type: string
+          context:
+            type: object
+      output_schema:
+        type: object
+        properties:
+          vulnerabilities:
+            type: array
+            items:
+              type: object
+              properties:
+                type:
+                  type: string
+                severity:
+                  type: string
+                line:
+                  type: integer
+                description:
+                  type: string
+                fix:
+                  type: string
+
+  runtime:
+    type: cloud
+    config:
+      timeout: 30
+      retries: 2
+
+  integration:
+    platform: github-copilot
+    version: ">=1.0.0"
+    configuration:
+      github_integration: true
+      enterprise_features: true
+      telemetry: opt-in
