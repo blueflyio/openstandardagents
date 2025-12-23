@@ -993,8 +993,8 @@ OSSA delivers measurable enterprise value:
 **Bottom Line**: OSSA is the only standard that delivers vendor independence, production readiness, compliance automation, and cost optimization for enterprise AI agents.
 
 **Next Steps**:
-1. [Read the Value Proposition](/docs/value-proposition)
-2. [Compare OSSA to Alternatives](/docs/comparison-matrix)
+1. [Read the Value Proposition](/docs/positioning/value-narrative)
+2. [Compare OSSA to Alternatives](/docs/positioning/comparison-matrix)
 3. [Get Started with OSSA](/docs/getting-started)
 4. [Contact Us for Enterprise Support](mailto:enterprise@openstandardagents.org)
 

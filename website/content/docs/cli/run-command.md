@@ -430,5 +430,5 @@ extensions:
 - [Running Agents Guide](/docs/getting-started/running-agents) - Getting started guide
 - [OpenAI Adapter](/docs/adapters/openai-adapter) - OpenAI adapter documentation
 - [Manifest Reference](/docs/schema-reference/ossa-manifest) - Complete manifest schema
-- [ossa validate](/docs/cli/validate-command) - Validate manifests
+- [ossa validate](/docs/cli-reference/ossa-validate) - Validate manifests
 - [Migration Guides](/docs/migration-guides) - Migrate from other frameworks

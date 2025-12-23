@@ -625,4 +625,4 @@ Required fields by tool type:
 
 - [Model Context Protocol (MCP)](https://modelcontextprotocol.io/)
 - [Kubernetes API](https://kubernetes.io/docs/reference/)
-- [Example Agents](/docs/examples/)
+- [Example Agents](/docs/examples)

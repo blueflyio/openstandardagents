@@ -1,6 +1,6 @@
 ---
 title: "OSSA Value Narrative"
-description: "Understanding the value proposition of Open Standard for Autonomous Agents"
+description: "Understanding the value proposition of Open Standard for Scalable AI Agents"
 weight: 1
 ---
 
@@ -8,7 +8,7 @@ weight: 1
 
 ## What is OSSA?
 
-**Open Standard for Autonomous Agents (OSSA)** is an open specification that defines how autonomous AI agents should be built, deployed, and orchestrated across different platforms and vendors. OSSA provides a standardized manifest format, lifecycle management protocol, and interoperability framework that enables agents from different sources to work together seamlessly.
+**Open Standard for Scalable AI Agents (OSSA)** is an open specification that defines how AI agents should be built, deployed, and orchestrated across different platforms and vendors. OSSA provides a standardized manifest format, lifecycle management protocol, and interoperability framework that enables agents from different sources to work together seamlessly.
 
 ## Why OSSA Matters
 
