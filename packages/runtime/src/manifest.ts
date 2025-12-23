@@ -186,6 +186,7 @@ export class ManifestLoader implements IManifestLoader {
                   maxTokens: legacyLlm.maxTokens,
                 }
               : undefined,
+          tools: manifest.agent.tools,
         },
       };
     }
