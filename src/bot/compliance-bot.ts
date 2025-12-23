@@ -191,7 +191,7 @@ export class OSSAComplianceBot {
       /invalid format/i,
       /must be one of/i,
     ];
-    const message = typeof error === 'object' && error !== null && 'message' in error ? error.message : String(error);
+    const message = typeof error === 'object' && error !== null && 'message' in error ? String(error.message) : String(error);
     return fixablePatterns.some(pattern => pattern.test(message));
   }
 
