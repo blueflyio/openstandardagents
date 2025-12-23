@@ -129,10 +129,9 @@ export default function BlogPage() {
 
   try {
     posts = getAllBlogPosts();
-    // Featured post - Welcome to OSSA
-    const featuredSlug = 'welcome-to-ossa';
-    featuredPost = posts.find(p => p.slug.toLowerCase() === featuredSlug);
-    otherPosts = posts.filter(p => p.slug !== featuredPost?.slug);
+    // Featured post - newest post (first in sorted array)
+    featuredPost = posts[0];
+    otherPosts = posts.slice(1);
   } catch (error) {
     console.error('Error loading blog posts:', error);
     // Continue with empty arrays - page will show "No blog posts yet"
@@ -201,7 +200,7 @@ export default function BlogPage() {
             <Link
               key={post.slug}
               href={`/blog/${post.slug}`}
-              className="bg-white p-6 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 block border border-gray-200"
+              className="bg-white p-6 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 flex flex-col border border-gray-200"
             >
               <div className="mb-4">
                 <span className="inline-block px-3 py-1 text-xs font-semibold text-primary bg-blue-100 rounded-full">
@@ -209,31 +208,29 @@ export default function BlogPage() {
                 </span>
               </div>
 
-              <h2 className="text-2xl font-bold mb-3 text-gray-900 hover:text-primary transition-colors">
+              <h2 className="text-xl font-bold mb-3 text-gray-900 hover:text-primary transition-colors">
                 {post.title}
               </h2>
 
-              <p className="text-gray-600 mb-4 line-clamp-3">
+              <p className="text-gray-600 mb-4 text-sm leading-relaxed">
                 {post.excerpt}
               </p>
 
-              <div className="flex items-center justify-between text-sm text-gray-500">
-                <span>{post.author}</span>
+              <div className="flex items-center justify-between text-xs text-gray-400 mt-auto">
                 <span>{post.formattedDate}</span>
+                {post.tags.length > 0 && (
+                  <div className="flex flex-wrap gap-1">
+                    {post.tags.slice(0, 2).map((tag) => (
+                      <span
+                        key={tag}
+                        className="px-1.5 py-0.5 bg-gray-100 text-gray-500 rounded text-[10px]"
+                      >
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                )}
               </div>
-
-              {post.tags.length > 0 && (
-                <div className="mt-4 flex flex-wrap gap-2">
-                  {post.tags.map((tag) => (
-                    <span
-                      key={tag}
-                      className="text-xs px-2 py-1 bg-gray-100 text-gray-600 rounded"
-                    >
-                      {tag}
-                    </span>
-                  ))}
-                </div>
-              )}
             </Link>
           ))}
         </div>
