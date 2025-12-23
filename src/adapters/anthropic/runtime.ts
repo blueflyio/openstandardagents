@@ -406,7 +406,6 @@ export class AnthropicAdapter {
     config?: AnthropicConfig
   ): Promise<AnthropicAdapter> {
     const fs = await import('fs/promises');
-    const yaml = await import('yaml');
 
     const manifestContent = await fs.readFile(manifestPath, 'utf-8');
 
@@ -414,7 +413,8 @@ export class AnthropicAdapter {
     if (manifestPath.endsWith('.json')) {
       manifest = JSON.parse(manifestContent);
     } else if (manifestPath.endsWith('.yaml') || manifestPath.endsWith('.yml')) {
-      manifest = yaml.parse(manifestContent);
+      const { parse: parseYaml } = await import('yaml');
+      manifest = parseYaml(manifestContent);
     } else {
       throw new Error('Manifest file must be .json, .yaml, or .yml');
     }

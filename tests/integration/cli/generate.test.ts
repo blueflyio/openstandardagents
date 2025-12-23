@@ -8,6 +8,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
 import { parse as parseYaml } from 'yaml';
+import { getApiVersion } from '../../../src/utils/version';
 
 describe('ossa generate command', () => {
   let tempDir: string;
@@ -41,7 +42,7 @@ describe('ossa generate command', () => {
     const content = fs.readFileSync(outputPath, 'utf-8');
     const manifest = parseYaml(content);
 
-    expect(manifest.apiVersion).toBe('ossa/v0.3.0');
+    expect(manifest.apiVersion).toBe(getApiVersion());
     expect(manifest.kind).toBe('Agent');
     expect(manifest.metadata.name).toBe('chat-bot');
     expect(manifest.spec.role).toBe('chat');
