@@ -1,6 +1,5 @@
-import Link from 'next/link';
 import type { Metadata } from 'next';
-import { OSSA_VERSION, OSSA_DISPLAY_VERSION } from '@/lib/version';
+import { OSSA_DISPLAY_VERSION } from '@/lib/version';
 
 export const metadata: Metadata = {
   title: 'Brand Guide - OSSA',
