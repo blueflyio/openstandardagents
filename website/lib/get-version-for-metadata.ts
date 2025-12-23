@@ -20,7 +20,7 @@ export function getVersionForMetadata(): { version: string; tag: string; display
         displayVersion: `${major}.${minor}.x`,
       };
     }
-  } catch {}
+} catch {}
 
   // Fallback: try to read from version.ts (extract from export)
   try {
@@ -38,7 +38,7 @@ export function getVersionForMetadata(): { version: string; tag: string; display
         };
       }
     }
-  } catch {}
+} catch {}
 
   // Final fallback
   return {

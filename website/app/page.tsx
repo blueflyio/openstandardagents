@@ -2,7 +2,7 @@ import Link from 'next/link';
 import type { Metadata } from 'next';
 import { Logo } from '@/components/Logo';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
-import { OSSA_DISPLAY_VERSION_TAG, STABLE_VERSION_TAG, STABLE_VERSION } from '@/lib/version';
+import { OSSA_DISPLAY_VERSION_TAG } from '@/lib/version';
 import { WhatsNewSection } from '@/components/WhatsNewSection';
 
 export const metadata: Metadata = {
