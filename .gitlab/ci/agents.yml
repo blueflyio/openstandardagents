@@ -116,19 +116,25 @@ security:scan:agent:
       when: on_success
 
 # TypeScript Build Agent
-# ✅ FIXED: Added proper rules with when clause and allow_failure at rule level
+# Uses the main build:dist job artifacts instead of rebuilding
 ts:build:agent:
   stage: build
-  trigger:
-    project: ${AGENT_PLATFORM_PROJECT}
-    strategy: depend
-  variables:
-    AGENT_NAME: ts-prod
-    AGENT_TASK: build
-    BUILD_TARGET: production
+  image: node:${NODE_VERSION}-alpine
+  allow_failure: true
+  needs:
+    - job: build:dist
+      artifacts: true
+      optional: true
+  script:
+    - |
+      echo "🔨 TypeScript Build Agent"
+      if [ -d "dist" ]; then
+        echo "✅ Using build artifacts from build:dist job"
+        ls -la dist/ | head -10
+      else
+        echo "ℹ️  No build artifacts found, skipping"
+      fi
   rules:
-    - if: $AGENT_PLATFORM_PROJECT == null
-      when: never
     - if: $CI_COMMIT_BRANCH == "main"
       when: on_success
       allow_failure: true
@@ -187,20 +193,25 @@ drupal:sync:agent:
       when: never
 
 # Native Build Agent
-# ✅ FIXED: Added proper rules with when clause and allow_failure at rule level
+# Uses the main build:dist job artifacts - no native bindings needed for this project
 native:build:agent:
   stage: build
+  image: node:${NODE_VERSION}-alpine
   allow_failure: true
-  trigger:
-    project: ${AGENT_PLATFORM_PROJECT}
-    strategy: depend
-  variables:
-    AGENT_NAME: native-local
-    AGENT_TASK: build-native
-    PLATFORM: multi
+  needs:
+    - job: build:dist
+      artifacts: true
+      optional: true
+  script:
+    - |
+      echo "🔨 Native Build Agent"
+      if [ -d "dist" ]; then
+        echo "✅ Using build artifacts from build:dist job"
+        echo "ℹ️  No native bindings required for this TypeScript project"
+      else
+        echo "ℹ️  No build artifacts found, skipping"
+      fi
   rules:
-    - if: $AGENT_PLATFORM_PROJECT == null
-      when: never
     - if: $CI_COMMIT_TAG
       when: on_success
       allow_failure: true

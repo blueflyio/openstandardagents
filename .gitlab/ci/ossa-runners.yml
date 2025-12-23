@@ -37,7 +37,7 @@ schema:validate-examples:
   allow_failure: false
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-    - if: $CI_COMMIT_BRANCH == "main" || $CI_COMMIT_BRANCH == "development"
+    - if: $CI_COMMIT_BRANCH == "main"
     - if: $CI_COMMIT_TAG
 
 # OSSA Agent Execution Runner
@@ -88,6 +88,6 @@ ossa:generate-schema:
       - src/schemas/
     expire_in: 1 day
   rules:
-    - if: $CI_COMMIT_BRANCH == "main" || $CI_COMMIT_BRANCH == "development"
+    - if: $CI_COMMIT_BRANCH == "main"
       changes:
         - spec/**/*.json
