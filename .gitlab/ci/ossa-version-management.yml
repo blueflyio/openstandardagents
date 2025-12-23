@@ -190,28 +190,6 @@ version:consistency:check:
     - if: '$CI_COMMIT_BRANCH == "main"'
     - if: '$CI_COMMIT_BRANCH =~ /^release\//'
   allow_failure: false
-
-# OSSA agent deployment - PLACEHOLDER
-# OSSA manifests are NOT Kubernetes resources - they're agent specifications
-# Validation is done by validate-and-inject-version using `ossa validate`
-# Real deployment would use agent-mesh or KAgent, not kubectl
-deploy-agents-with-version:
-  stage: deploy
-  image: alpine:latest
-  needs: [validate-and-inject-version]
-  script:
-    - |
-      set -euo pipefail
-      DIR=".gitlab/agents_rendered"
-      echo "OSSA agents validated and ready for deployment:"
-      find "$DIR" -type f -name "*.ossa.yaml" -exec basename {} \;
-      echo ""
-      echo "Deployment to agent-mesh/KAgent would happen here"
-      echo "OSSA manifests are agent specs, NOT Kubernetes resources"
-  rules:
-    - if: '$CI_COMMIT_BRANCH == "main"'
-      when: manual
-    - if: '$CI_COMMIT_TAG'
-      when: on_success
-  environment:
-    name: production
+# NOTE: deploy-agents-with-version has been moved to:
+# https://gitlab.com/blueflyio/platform-agents
+# That project handles agent deployment via webhooks, CI, and other methods
