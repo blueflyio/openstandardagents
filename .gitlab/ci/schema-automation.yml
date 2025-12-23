@@ -180,7 +180,7 @@ schema:commit-generated:
   rules:
     - if: $CI_COMMIT_BRANCH =~ /^release\/v[0-9]+\.[0-9]+\.x$/
       when: on_success
-    - if: $CI_COMMIT_BRANCH == "development" && $AUTO_COMMIT_GENERATED == "true"
+    - if: $CI_COMMIT_BRANCH =~ /^release\/v/ && $AUTO_COMMIT_GENERATED == "true"
       when: on_success
     - when: never
 

@@ -4,6 +4,7 @@
  */
 
 import { describe, it, expect } from '@jest/globals';
+import { getApiVersion } from '../../../../src/utils/version.js';
 import {
   basicAgentManifest,
   agentWithTests,
