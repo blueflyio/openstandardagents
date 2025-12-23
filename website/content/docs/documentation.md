@@ -74,7 +74,7 @@ Documentation stays in sync with code through:
 ## 📖 Additional Resources
 
 - [Getting Started](/docs/getting-started) - Quick start guide
-- [Architecture](/docs/architecture) - System architecture
+- [Architecture](/docs/architecture/overview) - System architecture
 - [Migration Guides](/docs/migration-guides) - Framework migrations
 - [Examples](/docs/examples) - Real-world examples
 

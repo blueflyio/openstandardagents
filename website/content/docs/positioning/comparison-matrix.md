@@ -318,4 +318,4 @@ All major frameworks can be wrapped with OSSA adapters:
 - [Enterprise Benefits of OSSA](/docs/positioning/enterprise-benefits)
 - [OSSA Adoption Guide](/docs/positioning/adoption-guide)
 - [Get Started with OSSA](/docs/getting-started)
-- [OSSA Technical Documentation](/docs/core-concepts)
+- [OSSA Technical Documentation](/docs/core-concepts/project-structure)

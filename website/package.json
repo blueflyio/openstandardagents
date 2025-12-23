@@ -20,6 +20,7 @@
     "start": "next start",
     "lint": "next lint",
     "test": "echo 'No unit tests yet' && exit 0",
+    "validate:links": "node scripts/validate-links.js",
     "typecheck": "tsc --noEmit",
     "export": "npm run fetch-spec && npm run fetch-examples && npm run fetch-versions && npm run sync-version && npm run fix-versions && npm run sync-wiki && NODE_ENV=production next build",
     "test:e2e": "playwright test tests/e2e",
