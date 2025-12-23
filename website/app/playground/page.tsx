@@ -234,14 +234,15 @@ export default function PlaygroundPage() {
     }
   };
 
-  const downloadManifest = () => {
+  const downloadManifest = async () => {
     const ext = format === 'json' ? 'json' : 'yaml';
     let content = code;
 
     // Convert to JSON if needed
     if (format === 'json' && !code.trim().startsWith('{')) {
       try {
-        // Using dynamic import for yaml - handled in async function
+        const yamlModule = await import('yaml');
+        const yaml = yamlModule.default || yamlModule;
         const parsed = yaml.parse(code);
         content = JSON.stringify(parsed, null, 2);
       } catch {
@@ -301,17 +302,19 @@ export default function PlaygroundPage() {
     }
   };
 
-  const convertFormat = () => {
+  const convertFormat = async () => {
     try {
       if (format === 'yaml') {
         // Convert YAML to JSON
-        // Using dynamic import for yaml - handled in async function
+        const yamlModule = await import('yaml');
+        const yaml = yamlModule.default || yamlModule;
         const parsed = yaml.parse(code);
         setCode(JSON.stringify(parsed, null, 2));
         setFormat('json');
       } else {
         // Convert JSON to YAML
-        // Using dynamic import for yaml - handled in async function
+        const yamlModule = await import('yaml');
+        const yaml = yamlModule.default || yamlModule;
         const parsed = JSON.parse(code);
         setCode(yaml.stringify(parsed));
         setFormat('yaml');

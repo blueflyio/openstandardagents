@@ -53,13 +53,14 @@ async function loadSchema(version: string = OSSA_VERSION): Promise<{ schema: obj
         const schema = await response.json();
         schemaCache.set(cacheKey, schema);
         if (ver !== normalizedVersion) {
-          }
+}
         return { schema, actualVersion: ver };
       }
     } catch {
       // Try next version
     }
   }
+
 
   return null;
 }
