@@ -1,0 +1,226 @@
+# Chaos Engineering Tests for AIFlow Social Agent
+# Using Chaos Mesh or LitmusChaos
+
+---
+# Test 1: Pod Failure
+apiVersion: chaos-mesh.org/v1alpha1
+kind: PodChaos
+metadata:
+  name: aiflow-pod-failure
+  namespace: agents-staging
+spec:
+  action: pod-failure
+  mode: one
+  selector:
+    namespaces:
+      - agents-staging
+    labelSelectors:
+      app: aiflow-social-agent
+  duration: "30s"
+  scheduler:
+    cron: "@every 1h"
+
+---
+# Test 2: Pod Kill (Immediate termination)
+apiVersion: chaos-mesh.org/v1alpha1
+kind: PodChaos
+metadata:
+  name: aiflow-pod-kill
+  namespace: agents-staging
+spec:
+  action: pod-kill
+  mode: fixed-percent
+  value: "50"  # Kill 50% of pods
+  selector:
+    namespaces:
+      - agents-staging
+    labelSelectors:
+      app: aiflow-social-agent
+  duration: "1m"
+
+---
+# Test 3: Network Delay
+apiVersion: chaos-mesh.org/v1alpha1
+kind: NetworkChaos
+metadata:
+  name: aiflow-network-delay
+  namespace: agents-staging
+spec:
+  action: delay
+  mode: one
+  selector:
+    namespaces:
+      - agents-staging
+    labelSelectors:
+      app: aiflow-social-agent
+  delay:
+    latency: "500ms"
+    correlation: "50"
+    jitter: "100ms"
+  duration: "2m"
+  direction: to
+
+---
+# Test 4: Network Partition (BuildKit unreachable)
+apiVersion: chaos-mesh.org/v1alpha1
+kind: NetworkChaos
+metadata:
+  name: aiflow-buildkit-partition
+  namespace: agents-staging
+spec:
+  action: partition
+  mode: all
+  selector:
+    namespaces:
+      - agents-staging
+    labelSelectors:
+      app: aiflow-social-agent
+  direction: to
+  target:
+    selector:
+      namespaces:
+        - agent-buildkit
+      labelSelectors:
+        app: buildkit-registry
+  duration: "1m"
+
+---
+# Test 5: CPU Stress
+apiVersion: chaos-mesh.org/v1alpha1
+kind: StressChaos
+metadata:
+  name: aiflow-cpu-stress
+  namespace: agents-staging
+spec:
+  mode: one
+  selector:
+    namespaces:
+      - agents-staging
+    labelSelectors:
+      app: aiflow-social-agent
+  stressors:
+    cpu:
+      workers: 2
+      load: 80
+  duration: "3m"
+
+---
+# Test 6: Memory Stress
+apiVersion: chaos-mesh.org/v1alpha1
+kind: StressChaos
+metadata:
+  name: aiflow-memory-stress
+  namespace: agents-staging
+spec:
+  mode: one
+  selector:
+    namespaces:
+      - agents-staging
+    labelSelectors:
+      app: aiflow-social-agent
+  stressors:
+    memory:
+      workers: 1
+      size: "512MB"
+  duration: "2m"
+
+---
+# Test 7: DNS Failure
+apiVersion: chaos-mesh.org/v1alpha1
+kind: NetworkChaos
+metadata:
+  name: aiflow-dns-failure
+  namespace: agents-staging
+spec:
+  action: partition
+  mode: all
+  selector:
+    namespaces:
+      - agents-staging
+    labelSelectors:
+      app: aiflow-social-agent
+  direction: to
+  target:
+    selector:
+      namespaces:
+        - kube-system
+      labelSelectors:
+        k8s-app: kube-dns
+  duration: "1m"
+
+---
+# Test 8: Time Chaos (Clock skew)
+apiVersion: chaos-mesh.org/v1alpha1
+kind: TimeChaos
+metadata:
+  name: aiflow-time-skew
+  namespace: agents-staging
+spec:
+  mode: one
+  selector:
+    namespaces:
+      - agents-staging
+    labelSelectors:
+      app: aiflow-social-agent
+  timeOffset: "-10m"  # Clock 10 minutes behind
+  duration: "1m"
+
+---
+# Test 9: HTTP Abort (500 errors)
+apiVersion: chaos-mesh.org/v1alpha1
+kind: HTTPChaos
+metadata:
+  name: aiflow-http-abort
+  namespace: agents-staging
+spec:
+  mode: one
+  selector:
+    namespaces:
+      - agents-staging
+    labelSelectors:
+      app: aiflow-social-agent
+  port: 8000
+  path: "/generate_post"
+  method: POST
+  abort: true
+  duration: "2m"
+
+---
+# Test 10: HTTP Delay
+apiVersion: chaos-mesh.org/v1alpha1
+kind: HTTPChaos
+metadata:
+  name: aiflow-http-delay
+  namespace: agents-staging
+spec:
+  mode: all
+  selector:
+    namespaces:
+      - agents-staging
+    labelSelectors:
+      app: aiflow-social-agent
+  port: 8000
+  path: "/generate_*"
+  method: POST
+  delay: "3s"
+  duration: "2m"
+
+---
+# Chaos Experiment Schedule
+apiVersion: chaos-mesh.org/v1alpha1
+kind: Schedule
+metadata:
+  name: aiflow-chaos-schedule
+  namespace: agents-staging
+spec:
+  schedule: "0 2 * * *"  # Run daily at 2 AM
+  type: PodChaos
+  podChaos:
+    action: pod-kill
+    mode: one
+    selector:
+      namespaces:
+        - agents-staging
+      labelSelectors:
+        app: aiflow-social-agent
+

@@ -1,0 +1,348 @@
+openapi: 3.1.0
+info:
+  title: Drupal LLM Platform Agent API
+  version: 1.0.0
+  description: |
+    **Drupal llm-platform API for Agent Integration**
+    
+    Single source of truth for all agent data:
+    - Content management (nodes, taxonomy, media)
+    - User management (users, roles, permissions)
+    - Site building (modules, config, deployments)
+    - Data aggregation (reports, analytics, tracking)
+    - Workflow orchestration (agent tasks, CI/CD jobs)
+    
+    All agents write/read data through this API.
+    Drupal becomes the central data store and management platform.
+
+servers:
+  - url: https://platform.orb.local/api/v1
+    description: Production
+  - url: http://drupal-platform.default.svc.cluster.local/api/v1
+    description: Kubernetes internal
+
+security:
+  - OAuth2: [read, write]
+  - ApiKeyAuth: []
+
+tags:
+  - name: content
+    description: Content node operations
+  - name: users
+    description: User management
+  - name: sites
+    description: Drupal site building
+  - name: agents
+    description: Agent session/task tracking
+  - name: workflows
+    description: Workflow orchestration
+
+paths:
+  # Content CRUD
+  /content:
+    post:
+      tags: [content]
+      summary: Create content node
+      operationId: createContent
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ContentCreateRequest'
+      responses:
+        '201':
+          description: Content created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContentResponse'
+    
+    get:
+      tags: [content]
+      summary: Query content
+      operationId: queryContent
+      parameters:
+        - name: type
+          in: query
+          schema:
+            type: string
+        - name: status
+          in: query
+          schema:
+            type: string
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 50
+      responses:
+        '200':
+          description: Content list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ContentResponse'
+
+  /content/{nid}:
+    get:
+      tags: [content]
+      summary: Get content by ID
+      operationId: getContent
+      parameters:
+        - name: nid
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Content node
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContentResponse'
+    
+    put:
+      tags: [content]
+      summary: Update content
+      operationId: updateContent
+      parameters:
+        - name: nid
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ContentUpdateRequest'
+      responses:
+        '200':
+          description: Content updated
+    
+    delete:
+      tags: [content]
+      summary: Delete content
+      operationId: deleteContent
+      parameters:
+        - name: nid
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Content deleted
+
+  # Agent Tracking
+  /agents/sessions:
+    post:
+      tags: [agents]
+      summary: Create agent session
+      description: Track agent activity in Drupal
+      operationId: createAgentSession
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - agent_id
+                - session_type
+              properties:
+                agent_id:
+                  type: string
+                session_type:
+                  type: string
+                  enum: [coding, chat, workflow, deployment]
+                metadata:
+                  type: object
+      responses:
+        '201':
+          description: Session created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  session_id:
+                    type: string
+                  drupal_nid:
+                    type: integer
+
+  /agents/tasks:
+    post:
+      tags: [agents]
+      summary: Log agent task
+      description: Store agent task execution in Drupal for tracking/reporting
+      operationId: logAgentTask
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - agent_id
+                - task_name
+                - status
+              properties:
+                agent_id:
+                  type: string
+                task_name:
+                  type: string
+                status:
+                  type: string
+                  enum: [queued, running, completed, failed]
+                input:
+                  type: object
+                output:
+                  type: object
+                duration_ms:
+                  type: integer
+                error:
+                  type: string
+      responses:
+        '201':
+          description: Task logged
+
+  # Site Building
+  /sites/create:
+    post:
+      tags: [sites]
+      summary: Build new Drupal site
+      description: Agent orchestrates complete site build via GitLab CI
+      operationId: createSite
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - site_name
+                - modules
+              properties:
+                site_name:
+                  type: string
+                modules:
+                  type: array
+                  items:
+                    type: string
+                  example: ["ai_agents", "ai_provider_langchain", "mcp_registry"]
+                theme:
+                  type: string
+                  default: "llm_platform_enterprise"
+                config:
+                  type: object
+                agent_id:
+                  type: string
+                  description: Agent responsible for build
+      responses:
+        '202':
+          description: Site build started
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  job_id:
+                    type: string
+                  gitlab_pipeline:
+                    type: string
+                    format: uri
+                  status_url:
+                    type: string
+                    format: uri
+
+components:
+  securitySchemes:
+    OAuth2:
+      type: oauth2
+      flows:
+        authorizationCode:
+          authorizationUrl: https://platform.orb.local/oauth/authorize
+          tokenUrl: https://platform.orb.local/oauth/token
+          scopes:
+            read: Read access
+            write: Write access
+            admin: Admin access
+    
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+
+  schemas:
+    ContentCreateRequest:
+      type: object
+      required:
+        - type
+        - title
+      properties:
+        type:
+          type: string
+          description: Content type machine name
+        title:
+          type: string
+        body:
+          type: object
+          properties:
+            value:
+              type: string
+            format:
+              type: string
+              default: "markdown"
+        fields:
+          type: object
+          additionalProperties: true
+        agent_metadata:
+          type: object
+          properties:
+            created_by_agent:
+              type: string
+            session_id:
+              type: string
+
+    ContentResponse:
+      type: object
+      properties:
+        nid:
+          type: integer
+        uuid:
+          type: string
+        type:
+          type: string
+        title:
+          type: string
+        body:
+          type: string
+        url:
+          type: string
+          format: uri
+        created:
+          type: string
+          format: date-time
+        changed:
+          type: string
+          format: date-time
+
+    ContentUpdateRequest:
+      type: object
+      properties:
+        title:
+          type: string
+        body:
+          type: object
+        fields:
+          type: object
+        status:
+          type: string
+          enum: [published, draft, archived]
+

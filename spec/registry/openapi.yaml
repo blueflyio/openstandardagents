@@ -1,0 +1,1124 @@
+openapi: 3.1.0
+info:
+  title: OSSA Agent Registry API
+  description: |
+    The OSSA Agent Registry API enables discovery, publishing, and distribution of OSSA-compliant agents.
+
+    ## Authentication
+    Most write operations require authentication via Bearer token:
+    ```
+    Authorization: Bearer ossa_tok_xxx
+    ```
+
+    Obtain a token by running `ossa login` or via the web UI at https://registry.openstandardagents.org
+
+    ## Rate Limits
+    - Authenticated: 1000 requests/hour (most endpoints)
+    - Unauthenticated: 100 requests/hour (read-only endpoints)
+
+    Rate limit headers are included in all responses:
+    - `X-RateLimit-Limit`: Total requests allowed
+    - `X-RateLimit-Remaining`: Remaining requests
+    - `X-RateLimit-Reset`: Unix timestamp when limit resets
+  version: 1.0.0
+  contact:
+    name: OSSA Technical Committee
+    url: https://openstandardagents.org
+    email: registry@openstandardagents.org
+  license:
+    name: Apache 2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0.html
+
+servers:
+  - url: https://registry.openstandardagents.org/api/v1
+    description: Production registry
+  - url: https://staging-registry.openstandardagents.org/api/v1
+    description: Staging registry (for testing)
+
+security:
+  - BearerAuth: []
+
+tags:
+  - name: Agents
+    description: Agent discovery and metadata operations
+  - name: Publishing
+    description: Agent publishing and lifecycle management
+  - name: Reviews
+    description: User ratings and reviews
+  - name: Organizations
+    description: Organization management
+  - name: Stats
+    description: Download and usage statistics
+
+paths:
+  /agents:
+    get:
+      summary: List/Search agents
+      description: Search and list available agents with filtering, sorting, and pagination
+      operationId: searchAgents
+      tags:
+        - Agents
+      security: []
+      parameters:
+        - name: q
+          in: query
+          description: Full-text search query
+          schema:
+            type: string
+          example: "security scanner"
+        - name: tag
+          in: query
+          description: Filter by tag
+          schema:
+            type: string
+          example: "security"
+        - name: capability
+          in: query
+          description: Filter by capability
+          schema:
+            type: string
+          example: "vulnerability-detection"
+        - name: domain
+          in: query
+          description: Filter by domain
+          schema:
+            type: string
+            enum: [infrastructure, security, development, documentation, compliance, operations, data, ml, other]
+          example: "security"
+        - name: publisher
+          in: query
+          description: Filter by publisher
+          schema:
+            type: string
+          example: "blueflyio"
+        - name: license
+          in: query
+          description: Filter by license (SPDX identifier)
+          schema:
+            type: string
+          example: "Apache-2.0"
+        - name: compliance
+          in: query
+          description: Filter by compliance profile
+          schema:
+            type: string
+            enum: [fedramp-low, fedramp-moderate, fedramp-high, hipaa, soc2, gdpr, pci-dss]
+          example: "fedramp-moderate"
+        - name: verified
+          in: query
+          description: Only verified publishers
+          schema:
+            type: boolean
+        - name: min_rating
+          in: query
+          description: Minimum rating (1-5)
+          schema:
+            type: number
+            minimum: 1
+            maximum: 5
+          example: 4.0
+        - name: sort
+          in: query
+          description: Sort order
+          schema:
+            type: string
+            enum: [downloads, rating, updated, created, relevance]
+            default: relevance
+        - name: limit
+          in: query
+          description: Results per page (max 100)
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+        - name: offset
+          in: query
+          description: Pagination offset
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SearchResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+
+    post:
+      summary: Publish agent
+      description: Publish a new agent or new version of existing agent
+      operationId: publishAgent
+      tags:
+        - Publishing
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PublishRequest'
+      responses:
+        '201':
+          description: Agent published successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PublishResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+
+  /agents/{publisher}/{name}:
+    get:
+      summary: Get agent details
+      description: Retrieve detailed information about a specific agent (latest version)
+      operationId: getAgent
+      tags:
+        - Agents
+      security: []
+      parameters:
+        - $ref: '#/components/parameters/Publisher'
+        - $ref: '#/components/parameters/AgentName'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentDetails'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+
+  /agents/{publisher}/{name}/versions:
+    get:
+      summary: List agent versions
+      description: List all published versions of an agent
+      operationId: listAgentVersions
+      tags:
+        - Agents
+      security: []
+      parameters:
+        - $ref: '#/components/parameters/Publisher'
+        - $ref: '#/components/parameters/AgentName'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VersionsResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+
+  /agents/{publisher}/{name}/{version}:
+    get:
+      summary: Get specific version
+      description: Retrieve details for a specific version of an agent
+      operationId: getAgentVersion
+      tags:
+        - Agents
+      security: []
+      parameters:
+        - $ref: '#/components/parameters/Publisher'
+        - $ref: '#/components/parameters/AgentName'
+        - $ref: '#/components/parameters/Version'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentDetails'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+
+    delete:
+      summary: Unpublish agent version
+      description: Remove a specific version from the registry (requires ownership)
+      operationId: unpublishAgent
+      tags:
+        - Publishing
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/Publisher'
+        - $ref: '#/components/parameters/AgentName'
+        - $ref: '#/components/parameters/Version'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                reason:
+                  type: string
+                  description: Reason for unpublishing
+                  example: "Critical security vulnerability - use 1.1.0 or later"
+      responses:
+        '200':
+          description: Agent unpublished successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum: [unpublished]
+                  agent:
+                    type: string
+                    example: "blueflyio/security-scanner"
+                  version:
+                    type: string
+                    example: "1.0.0"
+                  unpublished_at:
+                    type: string
+                    format: date-time
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+
+  /agents/{publisher}/{name}/{version}/deprecate:
+    post:
+      summary: Deprecate version
+      description: Mark a version as deprecated (still available but discouraged)
+      operationId: deprecateAgent
+      tags:
+        - Publishing
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/Publisher'
+        - $ref: '#/components/parameters/AgentName'
+        - $ref: '#/components/parameters/Version'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [reason]
+              properties:
+                reason:
+                  type: string
+                  description: Reason for deprecation
+                  example: "Replaced by version 2.0.0 with improved performance"
+                replacement_version:
+                  type: string
+                  description: Recommended replacement version
+                  example: "2.0.0"
+      responses:
+        '200':
+          description: Version deprecated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum: [deprecated]
+                  agent:
+                    type: string
+                    example: "blueflyio/security-scanner"
+                  version:
+                    type: string
+                    example: "1.0.0"
+                  deprecated_at:
+                    type: string
+                    format: date-time
+                  replacement_version:
+                    type: string
+                    example: "2.0.0"
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+
+  /agents/{publisher}/{name}/stats:
+    get:
+      summary: Get download stats
+      description: Retrieve download and usage statistics for an agent
+      operationId: getAgentStats
+      tags:
+        - Stats
+      security: []
+      parameters:
+        - $ref: '#/components/parameters/Publisher'
+        - $ref: '#/components/parameters/AgentName'
+        - name: period
+          in: query
+          description: Time period for statistics
+          schema:
+            type: string
+            enum: [day, week, month, year, all]
+            default: all
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatsResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+
+  /agents/{publisher}/{name}/reviews:
+    get:
+      summary: Get agent reviews
+      description: Retrieve user reviews and ratings for an agent
+      operationId: getAgentReviews
+      tags:
+        - Reviews
+      security: []
+      parameters:
+        - $ref: '#/components/parameters/Publisher'
+        - $ref: '#/components/parameters/AgentName'
+        - name: version
+          in: query
+          description: Filter by version
+          schema:
+            type: string
+        - name: min_rating
+          in: query
+          description: Minimum rating (1-5)
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 5
+        - name: sort
+          in: query
+          description: Sort order
+          schema:
+            type: string
+            enum: [helpful, recent, rating]
+            default: helpful
+        - name: limit
+          in: query
+          description: Results per page (max 50)
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 50
+            default: 10
+        - name: offset
+          in: query
+          description: Pagination offset
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReviewsResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+
+    post:
+      summary: Submit review
+      description: Submit a rating and review for an agent
+      operationId: submitReview
+      tags:
+        - Reviews
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/Publisher'
+        - $ref: '#/components/parameters/AgentName'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReviewRequest'
+      responses:
+        '201':
+          description: Review submitted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReviewResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+
+  /agents/{publisher}/{name}/dependencies:
+    get:
+      summary: Get dependencies
+      description: Retrieve agent dependencies with version resolution
+      operationId: getAgentDependencies
+      tags:
+        - Agents
+      security: []
+      parameters:
+        - $ref: '#/components/parameters/Publisher'
+        - $ref: '#/components/parameters/AgentName'
+        - name: version
+          in: query
+          description: Specific version (default: latest)
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DependenciesResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: |
+        JWT bearer token obtained via `ossa login` or web UI.
+        Token format: `ossa_tok_xxx`
+
+  parameters:
+    Publisher:
+      name: publisher
+      in: path
+      required: true
+      description: Publisher identifier
+      schema:
+        type: string
+        pattern: '^[a-z0-9]([-a-z0-9]*[a-z0-9])?$'
+      example: "blueflyio"
+
+    AgentName:
+      name: name
+      in: path
+      required: true
+      description: Agent name
+      schema:
+        type: string
+        pattern: '^[a-z0-9]([-a-z0-9]*[a-z0-9])?$'
+      example: "security-scanner"
+
+    Version:
+      name: version
+      in: path
+      required: true
+      description: Semantic version
+      schema:
+        type: string
+        pattern: '^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$'
+      example: "1.2.0"
+
+  schemas:
+    PublishRequest:
+      type: object
+      required: [manifest, package, license]
+      properties:
+        manifest:
+          type: object
+          description: OSSA agent manifest
+        package:
+          type: object
+          required: [tarball_url, shasum, size_bytes]
+          properties:
+            tarball_url:
+              type: string
+              format: uri
+              description: Package tarball URL
+            shasum:
+              type: string
+              pattern: '^[a-f0-9]{64}$'
+              description: SHA-256 checksum
+            size_bytes:
+              type: integer
+              minimum: 0
+        documentation:
+          type: object
+          properties:
+            readme:
+              type: string
+              format: uri
+            changelog:
+              type: string
+              format: uri
+            repository:
+              type: string
+              format: uri
+        license:
+          type: string
+          description: SPDX license identifier
+          example: "Apache-2.0"
+        keywords:
+          type: array
+          items:
+            type: string
+          maxItems: 20
+        dependencies:
+          type: object
+          additionalProperties:
+            type: string
+
+    PublishResponse:
+      type: object
+      required: [status, agent, verification]
+      properties:
+        status:
+          type: string
+          enum: [published, pending, failed]
+        agent:
+          type: object
+          properties:
+            name:
+              type: string
+            version:
+              type: string
+            publisher:
+              type: string
+            published_at:
+              type: string
+              format: date-time
+            registry_url:
+              type: string
+              format: uri
+            package_url:
+              type: string
+              format: uri
+        verification:
+          type: object
+          properties:
+            schema_valid:
+              type: boolean
+            security_scan:
+              type: string
+              enum: [passed, failed, pending]
+            verified_publisher:
+              type: boolean
+
+    SearchResponse:
+      type: object
+      required: [total, limit, offset, agents]
+      properties:
+        total:
+          type: integer
+          minimum: 0
+        limit:
+          type: integer
+        offset:
+          type: integer
+        agents:
+          type: array
+          items:
+            $ref: '#/components/schemas/AgentSearchResult'
+
+    AgentSearchResult:
+      type: object
+      properties:
+        name:
+          type: string
+        version:
+          type: string
+        publisher:
+          type: string
+        description:
+          type: string
+        license:
+          type: string
+        downloads:
+          type: integer
+        rating:
+          type: number
+          minimum: 1
+          maximum: 5
+        verified:
+          type: boolean
+        tags:
+          type: array
+          items:
+            type: string
+        capabilities:
+          type: array
+          items:
+            type: string
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+        registry_url:
+          type: string
+          format: uri
+
+    AgentDetails:
+      type: object
+      properties:
+        name:
+          type: string
+        version:
+          type: string
+        publisher:
+          $ref: '#/components/schemas/PublisherInfo'
+        description:
+          type: string
+        long_description:
+          type: string
+        license:
+          type: string
+        repository:
+          type: string
+          format: uri
+        homepage:
+          type: string
+          format: uri
+        documentation:
+          type: string
+          format: uri
+        tags:
+          type: array
+          items:
+            type: string
+        capabilities:
+          type: array
+          items:
+            type: string
+        taxonomy:
+          $ref: '#/components/schemas/TaxonomyInfo'
+        compliance_profiles:
+          type: array
+          items:
+            type: string
+        downloads:
+          $ref: '#/components/schemas/DownloadStats'
+        rating:
+          $ref: '#/components/schemas/RatingInfo'
+        versions:
+          type: array
+          items:
+            type: object
+            properties:
+              version:
+                type: string
+              published_at:
+                type: string
+                format: date-time
+              changelog:
+                type: string
+        dependencies:
+          type: object
+          additionalProperties:
+            type: string
+        llm_requirements:
+          $ref: '#/components/schemas/LLMRequirements'
+        manifest_url:
+          type: string
+          format: uri
+        package_url:
+          type: string
+          format: uri
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    PublisherInfo:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        verified:
+          type: boolean
+        website:
+          type: string
+          format: uri
+        email:
+          type: string
+          format: email
+        github:
+          type: string
+
+    TaxonomyInfo:
+      type: object
+      properties:
+        domain:
+          type: string
+          enum: [infrastructure, security, development, documentation, compliance, operations, data, ml, other]
+        subdomain:
+          type: string
+        capability:
+          type: string
+
+    LLMRequirements:
+      type: object
+      properties:
+        provider:
+          type: string
+          enum: [anthropic, openai, google, azure, aws, cohere, huggingface, other]
+        model:
+          type: string
+        estimated_cost_per_run:
+          type: string
+          pattern: '^\$\d+\.\d{2}$'
+
+    DownloadStats:
+      type: object
+      properties:
+        total:
+          type: integer
+        last_month:
+          type: integer
+        last_week:
+          type: integer
+
+    RatingInfo:
+      type: object
+      properties:
+        average:
+          type: number
+          minimum: 1
+          maximum: 5
+        count:
+          type: integer
+
+    VersionsResponse:
+      type: object
+      properties:
+        agent:
+          type: string
+        versions:
+          type: array
+          items:
+            type: object
+            properties:
+              version:
+                type: string
+              published_at:
+                type: string
+                format: date-time
+              downloads:
+                type: integer
+              changelog_url:
+                type: string
+                format: uri
+              manifest_url:
+                type: string
+                format: uri
+              package_url:
+                type: string
+                format: uri
+              deprecated:
+                type: boolean
+              deprecation_reason:
+                type: string
+
+    StatsResponse:
+      type: object
+      properties:
+        agent:
+          type: string
+        period:
+          type: string
+        downloads:
+          type: object
+          properties:
+            total:
+              type: integer
+            by_version:
+              type: object
+              additionalProperties:
+                type: integer
+            by_date:
+              type: array
+              items:
+                type: object
+                properties:
+                  date:
+                    type: string
+                    format: date
+                  count:
+                    type: integer
+        installs:
+          type: object
+          properties:
+            total_unique:
+              type: integer
+            by_region:
+              type: object
+              additionalProperties:
+                type: integer
+
+    ReviewRequest:
+      type: object
+      required: [rating]
+      properties:
+        version:
+          type: string
+        rating:
+          type: integer
+          minimum: 1
+          maximum: 5
+        review:
+          type: string
+          maxLength: 5000
+        use_case:
+          type: string
+          maxLength: 500
+
+    ReviewResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [submitted, pending_moderation, published]
+        review_id:
+          type: string
+        published_at:
+          type: string
+          format: date-time
+
+    ReviewsResponse:
+      type: object
+      properties:
+        agent:
+          type: string
+        total_reviews:
+          type: integer
+        average_rating:
+          type: number
+        rating_distribution:
+          type: object
+          properties:
+            '5':
+              type: integer
+            '4':
+              type: integer
+            '3':
+              type: integer
+            '2':
+              type: integer
+            '1':
+              type: integer
+        reviews:
+          type: array
+          items:
+            type: object
+            properties:
+              review_id:
+                type: string
+              version:
+                type: string
+              rating:
+                type: integer
+              review:
+                type: string
+              author:
+                type: object
+                properties:
+                  username:
+                    type: string
+                  verified:
+                    type: boolean
+              use_case:
+                type: string
+              helpful_count:
+                type: integer
+              published_at:
+                type: string
+                format: date-time
+
+    DependenciesResponse:
+      type: object
+      properties:
+        agent:
+          type: string
+        version:
+          type: string
+        dependencies:
+          type: object
+          properties:
+            runtime:
+              type: object
+              additionalProperties:
+                type: object
+                properties:
+                  required:
+                    type: string
+                  resolved:
+                    type: string
+                  type:
+                    type: string
+            agents:
+              type: object
+              additionalProperties:
+                type: object
+                properties:
+                  required:
+                    type: string
+                  resolved:
+                    type: string
+                  type:
+                    type: string
+            tools:
+              type: object
+              additionalProperties:
+                type: object
+                properties:
+                  required:
+                    type: string
+                  resolved:
+                    type: string
+                  type:
+                    type: string
+        dependency_tree:
+          type: object
+
+    ErrorResponse:
+      type: object
+      required: [error, message]
+      properties:
+        error:
+          type: string
+        message:
+          type: string
+        details:
+          type: object
+        retry_after:
+          type: integer
+
+  responses:
+    BadRequest:
+      description: Bad request - invalid parameters or body
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            error: "bad_request"
+            message: "Invalid search query parameters"
+
+    Unauthorized:
+      description: Unauthorized - missing or invalid token
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            error: "unauthorized"
+            message: "Authentication required"
+
+    Forbidden:
+      description: Forbidden - insufficient permissions
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            error: "forbidden"
+            message: "Not authorized to perform this action"
+
+    NotFound:
+      description: Not found - agent or version does not exist
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            error: "not_found"
+            message: "Agent not found"
+
+    Conflict:
+      description: Conflict - version already exists
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            error: "conflict"
+            message: "Version 1.2.0 already exists"
+
+    UnprocessableEntity:
+      description: Unprocessable entity - validation failed
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            error: "unprocessable_entity"
+            message: "Manifest validation failed"
+            details:
+              schema_errors:
+                - "spec.role is required"
+
+    RateLimited:
+      description: Rate limited - too many requests
+      headers:
+        X-RateLimit-Limit:
+          schema:
+            type: integer
+          description: Total requests allowed per hour
+        X-RateLimit-Remaining:
+          schema:
+            type: integer
+          description: Remaining requests in current window
+        X-RateLimit-Reset:
+          schema:
+            type: integer
+          description: Unix timestamp when limit resets
+        Retry-After:
+          schema:
+            type: integer
+          description: Seconds to wait before retry
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            error: "rate_limited"
+            message: "Rate limit exceeded"
+            retry_after: 3600

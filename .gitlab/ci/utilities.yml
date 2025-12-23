@@ -1,0 +1,49 @@
+# ============================================================================
+# REPO HYGIENE GUARDRAILS
+# ============================================================================
+# Enforce: no worktrees inside repo, no wiki submodules
+# These checks fail hard to prevent repo contamination
+
+repo:hygiene:
+  stage: validate
+  needs: []  # Skip .pre stage - allows job to auto-start
+  image: alpine:3.20
+  rules:
+    - when: always
+  script:
+    - |
+      set -e
+      echo "Running repo hygiene checks..."
+      
+      # Worktrees must not exist in repo (even untracked)
+      if [ -d .worktrees ]; then
+        echo "ERROR: .worktrees/ directory found in repo"
+        exit 1
+      fi
+      
+      if [ -d .workingtrees ]; then
+        echo "ERROR: .workingtrees/ directory found in repo"
+        exit 1
+      fi
+      
+      # Check for nested worktree directories (excluding .git directory)
+      NESTED_WORKTREES=$(find . -type d \( -name '.worktrees' -o -name '.workingtrees' \) ! -path './.git/*' 2>/dev/null || true)
+      if [ -n "$NESTED_WORKTREES" ]; then
+        echo "ERROR: Nested worktree directories found:"
+        echo "$NESTED_WORKTREES"
+        exit 1
+      fi
+      
+      # No wiki submodules / embedded wiki dirs
+      if [ -d .gitlab/wiki ]; then
+        echo "ERROR: .gitlab/wiki/ directory found (wiki must be external)"
+        exit 1
+      fi
+      
+      if [ -f .gitmodules ]; then
+        echo "ERROR: .gitmodules exists (wiki must not be a submodule)"
+        cat .gitmodules
+        exit 1
+      fi
+      
+      echo "Repo hygiene checks passed"

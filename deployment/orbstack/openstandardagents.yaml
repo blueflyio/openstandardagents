@@ -1,0 +1,95 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: openstandardagents
+  namespace: development
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: openstandardagents
+  template:
+    metadata:
+      labels:
+        app: openstandardagents
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:alpine
+        ports:
+        - containerPort: 80
+          name: http
+        volumeMounts:
+        - name: html
+          mountPath: /usr/share/nginx/html
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 80
+          initialDelaySeconds: 10
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 80
+          initialDelaySeconds: 5
+          periodSeconds: 5
+      initContainers:
+      - name: placeholder-content
+        image: busybox
+        command:
+        - /bin/sh
+        - -c
+        - |
+          cat > /html/index.html << 'EOF'
+          <!DOCTYPE html>
+          <html>
+          <head>
+            <title>OSSA - Open Standard for Scalable AI Agents</title>
+            <style>
+              body { font-family: system-ui; max-width: 800px; margin: 50px auto; padding: 20px; }
+              h1 { color: #333; }
+              .status { background: #e8f5e9; padding: 20px; border-radius: 8px; margin: 20px 0; }
+            </style>
+          </head>
+          <body>
+            <h1>🚀 OSSA Platform</h1>
+            <div class="status">
+              <h2>✅ Platform Running</h2>
+              <p>The OSSA agent platform is operational on OrbStack.</p>
+            </div>
+            <h3>Services:</h3>
+            <ul>
+              <li>Agent Router (LiteLLM) - OpenAI + Anthropic gateway</li>
+              <li>Agent Chat (LibreChat) - Chat interface</li>
+              <li>Agent Tracer (Phoenix) - Observability</li>
+              <li>Qdrant - Vector database</li>
+              <li>PostgreSQL - Relational database</li>
+              <li>MongoDB - Document database</li>
+              <li>MinIO - Object storage</li>
+            </ul>
+            <h3>Documentation:</h3>
+            <p>See <a href="https://gitlab.com/blueflyio/openstandardagents">GitLab Repository</a></p>
+          </body>
+          </html>
+          EOF
+        volumeMounts:
+        - name: html
+          mountPath: /html
+      volumes:
+      - name: html
+        emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: openstandardagents
+  namespace: development
+spec:
+  selector:
+    app: openstandardagents
+  ports:
+  - port: 80
+    targetPort: 80
+    name: http
+  type: LoadBalancer

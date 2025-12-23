@@ -1,0 +1,67 @@
+{
+  "$id": "https://ossa.dev/schema/components/llm-config.schema.json",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "OSSA LLM Configuration Component",
+  "description": "Reusable LLM configuration for OSSA agents",
+  "type": "object",
+  "properties": {
+    "provider": {
+      "type": "string",
+      "enum": ["openai", "anthropic", "google", "azure", "bedrock", "ollama", "custom"],
+      "description": "LLM provider"
+    },
+    "model": {
+      "type": "string",
+      "description": "Model identifier"
+    },
+    "temperature": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 2,
+      "description": "Sampling temperature"
+    },
+    "maxTokens": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Maximum tokens in response"
+    },
+    "topP": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1,
+      "description": "Top-p (nucleus) sampling"
+    },
+    "frequencyPenalty": {
+      "type": "number",
+      "minimum": -2,
+      "maximum": 2,
+      "description": "Frequency penalty for repetition"
+    },
+    "presencePenalty": {
+      "type": "number",
+      "minimum": -2,
+      "maximum": 2,
+      "description": "Presence penalty for topic diversity"
+    },
+    "stopSequences": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Stop sequences to end generation"
+    },
+    "responseFormat": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["text", "json_object", "json_schema"]
+        },
+        "schema": {
+          "type": "object",
+          "description": "JSON Schema for structured output"
+        }
+      }
+    }
+  },
+  "required": ["provider", "model"],
+  "additionalProperties": false
+}
