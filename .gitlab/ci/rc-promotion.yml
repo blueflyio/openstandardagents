@@ -1,11 +1,22 @@
 # ============================================================================
-# FINAL RELEASE (Manual promotion from RC)
+# RC PROMOTION - Release Candidate to Final Release
 # ============================================================================
-# Promotes RC tag to final release tag after validation
+# Handles promotion of validated Release Candidates to final releases
+#
+# Workflow:
+# 1. RC tag validated via rc-validation.yml jobs
+# 2. Manual approval triggers release:promote-rc-to-final
+# 3. Final tag created → triggers production release
+
+# ============================================================================
+# FINAL RELEASE PROMOTION
+# ============================================================================
 
 release:promote-rc-to-final:
   stage: release
   image: alpine:latest
+  tags:
+    - saas-linux-small-amd64
   before_script:
     - apk add --no-cache git curl jq bash
     - git config user.email "gitlab-ci@${CI_SERVER_HOST}"

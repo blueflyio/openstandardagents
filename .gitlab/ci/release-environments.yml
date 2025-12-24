@@ -1,52 +1,43 @@
-# Release Branch Environments
-# Creates environment per release branch for tracking and deployment
+# ============================================================================
+# RELEASE ENVIRONMENTS
+# ============================================================================
+# Only three environments: production, orbstack, release/v0.3.x
+# release/v0.3.x is the review app
 
-# Deploy to release environment when MR merges to release/*
-deploy:release-env:
+# Deploy to release/v0.3.x review app when MR targets release/v0.3.x
+deploy:release-review:
   stage: deploy
   image: alpine:latest
   script:
     - |
-      echo "🚀 Deploying to release environment"
+      echo "Deploying to release/v0.3.x review app"
       echo "   Branch: ${CI_COMMIT_BRANCH}"
+      echo "   MR: ${CI_MERGE_REQUEST_IID}"
       echo "   Commit: ${CI_COMMIT_SHORT_SHA}"
       echo "   Pipeline: ${CI_PIPELINE_ID}"
   environment:
-    name: release/$CI_COMMIT_BRANCH
-    url: https://gitlab.com/blueflyio/openstandardagents/-/tree/$CI_COMMIT_BRANCH
-    on_stop: stop:release-env
+    name: release/v0.3.x
+    url: https://gitlab.com/blueflyio/openstandardagents/-/tree/release/v0.3.x
+    on_stop: stop:release-review
     auto_stop_in: 30 days
   rules:
-    - if: $CI_COMMIT_BRANCH =~ /^release\/.*/
+    - if: $CI_COMMIT_BRANCH == "release/v0.3.x"
+      when: on_success
+    - if: $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "release/v0.3.x"
       when: on_success
 
-# Stop release environment (manual or auto after 30 days)
-stop:release-env:
+# Stop release review app
+stop:release-review:
   stage: deploy
   image: alpine:latest
   script:
-    - echo "🛑 Stopping release environment ${CI_COMMIT_BRANCH}"
+    - echo "Stopping release/v0.3.x review app"
   environment:
-    name: release/$CI_COMMIT_BRANCH
+    name: release/v0.3.x
     action: stop
   rules:
-    - if: $CI_COMMIT_BRANCH =~ /^release\/.*/
+    - if: $CI_COMMIT_BRANCH == "release/v0.3.x"
+      when: manual
+    - if: $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "release/v0.3.x"
       when: manual
   allow_failure: true
-
-# Validate release branch before merge to main
-validate:release-to-main:
-  stage: validate
-  image: node:${NODE_VERSION}-alpine
-  script:
-    - npm ci --legacy-peer-deps
-    - echo "🔍 Validating release branch for production"
-    - npm run build
-    - npm run test
-    - npm run validate
-  environment:
-    name: release/$CI_MERGE_REQUEST_SOURCE_BRANCH_NAME
-    action: verify
-  rules:
-    - if: $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "main" && $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME =~ /^release\/.*/
-      when: on_success
