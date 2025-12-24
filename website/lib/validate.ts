@@ -1,11 +1,12 @@
 /**
+import type { AjvErrorParams } from "./ajv-types";
  * OSSA Manifest Validation Utility
  * Uses AJV for full JSON Schema validation against the OSSA spec
  */
 
 import Ajv from 'ajv';
 import addFormats from 'ajv-formats';
-import { OSSA_VERSION, getSchemaPath } from './version';
+import { OSSA_VERSION } from './version';
 
 export interface ValidationError {
   path: string;
@@ -26,7 +27,7 @@ export interface ValidationResult {
 const schemaCache: Map<string, object> = new Map();
 
 // Available schema versions in order of preference (newest first)
-const AVAILABLE_SCHEMAS = ['0.2.9', '0.2.8', '0.2.3'];
+const AVAILABLE_SCHEMAS = ['0.3.0', '0.2.9', '0.2.8', '0.2.3'];
 
 /**
  * Load schema from public directory (client-side)
@@ -52,16 +53,15 @@ async function loadSchema(version: string = OSSA_VERSION): Promise<{ schema: obj
         const schema = await response.json();
         schemaCache.set(cacheKey, schema);
         if (ver !== normalizedVersion) {
-          console.log(`Schema ${version} not found, using ${ver} as fallback`);
-        }
+}
         return { schema, actualVersion: ver };
       }
-    } catch (error) {
+    } catch {
       // Try next version
     }
   }
 
-  console.error(`No schema found for ${version} or any fallback`);
+
   return null;
 }
 
@@ -211,16 +211,20 @@ export async function validateManifest(
 
           // Enhance error messages with fix suggestions
           if (err.keyword === 'additionalProperties') {
-            const prop = (err.params as any)?.additionalProperty;
+            const params = err.params as AjvErrorParams;
+            const prop = params?.additionalProperty;
             error.message = `Unknown property: "${prop}". Remove it or check spelling.`;
           } else if (err.keyword === 'enum') {
-            const allowed = (err.params as any)?.allowedValues;
+            const params = err.params as AjvErrorParams;
+            const allowed = params?.allowedValues;
             error.message = `Invalid value. Allowed: ${JSON.stringify(allowed)}`;
           } else if (err.keyword === 'type') {
-            const expected = (err.params as any)?.type;
+            const params = err.params as AjvErrorParams;
+            const expected = params?.type;
             error.message = `Invalid type: expected ${expected}`;
           } else if (err.keyword === 'required') {
-            const missing = (err.params as any)?.missingProperty;
+            const params = err.params as AjvErrorParams;
+            const missing = params?.missingProperty;
             error.message = `Missing required property: "${missing}"`;
           } else if (err.keyword === 'pattern') {
             error.message = `Invalid format: ${err.message}`;

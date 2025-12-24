@@ -5,7 +5,7 @@ import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/cjs/styles/prism';
 
 interface SchemaExplorerProps {
-  schema: any;
+  schema: Record<string, unknown>;
 }
 
 interface PropertyInfo {
@@ -16,7 +16,7 @@ interface PropertyInfo {
   properties?: PropertyInfo[];
 }
 
-function extractProperties(schema: any, path = ''): PropertyInfo[] {
+function extractProperties(schema: Record<string, unknown>, path = ''): PropertyInfo[] {
   if (!schema || typeof schema !== 'object') {
     return [];
   }
@@ -25,7 +25,7 @@ function extractProperties(schema: any, path = ''): PropertyInfo[] {
 
   if (schema.properties) {
     for (const [key, value] of Object.entries(schema.properties)) {
-      const prop = value as any;
+      const prop = value as Record<string, unknown>;
       const propInfo: PropertyInfo = {
         name: key,
         type: prop.type || 'object',
@@ -121,9 +121,9 @@ export function SchemaExplorer({ schema }: SchemaExplorerProps) {
     );
   };
 
-  const getPropertyAtPath = (path: string): any => {
+  const getPropertyAtPath = (path: string): Record<string, unknown> | undefined => {
     const parts = path.split('.').filter(Boolean);
-    let current: any = schema;
+    let current: Record<string, unknown> = schema;
 
     for (const part of parts) {
       if (current?.properties?.[part]) {
@@ -173,7 +173,7 @@ export function SchemaExplorer({ schema }: SchemaExplorerProps) {
               <div>
                 <h3 className="font-semibold mb-2">Allowed Values</h3>
                 <ul className="list-disc list-inside text-gray-700">
-                  {selectedProperty.enum.map((value: any, index: number) => (
+                  {selectedProperty.enum.map((value: unknown, index: number) => (
                     <li key={index}>{String(value)}</li>
                   ))}
                 </ul>

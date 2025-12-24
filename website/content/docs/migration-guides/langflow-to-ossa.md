@@ -2052,7 +2052,7 @@ ossa-migrate validate \
 
 - **OSSA Specification**: https://gitlab.com/blueflyio/openstandardagents/wiki/home
 - **OSSA Quick Reference**: [OSSA-QUICK-REFERENCE.md](../OSSA-QUICK-REFERENCE.md)
-- **BuildKit CLI**: https://github.com/blueflyio/documentation/-/wikis/BuildKit-CLI-Reference
+- **BuildKit CLI**: https://gitlab.com/blueflyio/agent-platform/technical-docs/-/wikis/BuildKit-CLI-Reference
 - **Langflow Documentation**: https://docs.langflow.org/
 
 ### Example Repositories
@@ -2062,7 +2062,7 @@ ossa-migrate validate \
 
 ### Community & Support
 
-- **GitLab Issues**: https://github.com/blueflyio/documentation/-/issues
+- **GitLab Issues**: https://gitlab.com/blueflyio/agent-platform/technical-docs/-/issues
 - **Migration Support**: Tag issues with `migration::langflow`
 
 ---
@@ -2072,4 +2072,4 @@ ossa-migrate validate \
 **Maintained By:** OSSA Team
 **License:** MIT
 
-**Feedback**: Please report issues or suggestions at https://github.com/blueflyio/documentation/-/issues/new?issue[title]=Langflow%20Migration%20Guide%20Feedback
+**Feedback**: Please report issues or suggestions at https://gitlab.com/blueflyio/agent-platform/technical-docs/-/issues/new?issue[title]=Langflow%20Migration%20Guide%20Feedback
