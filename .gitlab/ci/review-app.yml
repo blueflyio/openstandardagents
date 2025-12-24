@@ -1,4 +1,7 @@
-# Review App for OrbStack Kubernetes
+# ============================================================================
+# REVIEW APP - Release/v0.3.x
+# ============================================================================
+# Review app uses release/v0.3.x environment
 # Updates existing ossa.orb.local deployment with MR branch
 
 .review_app_base:
@@ -91,12 +94,12 @@ review:deploy:
     - kubectl rollout status deployment/ossa -n ${REVIEW_NAMESPACE} --timeout=5m
     
   environment:
-    name: review/mr-${CI_MERGE_REQUEST_IID}
+    name: release/v0.3.x
     url: http://ossa-mr-${CI_MERGE_REQUEST_IID}.ossa.orb.local
     on_stop: review:stop
     auto_stop_in: 7 days
   rules:
-    - if: $CI_MERGE_REQUEST_IID
+    - if: $CI_MERGE_REQUEST_IID && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "release/v0.3.x"
       when: on_success
   allow_failure: false
 
@@ -108,9 +111,9 @@ review:stop:
     - kubectl delete namespace ${REVIEW_NAMESPACE} --ignore-not-found
     - echo "Review app stopped"
   environment:
-    name: review/mr-${CI_MERGE_REQUEST_IID}
+    name: release/v0.3.x
     action: stop
   rules:
-    - if: $CI_MERGE_REQUEST_IID
+    - if: $CI_MERGE_REQUEST_IID && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "release/v0.3.x"
       when: manual
   allow_failure: true

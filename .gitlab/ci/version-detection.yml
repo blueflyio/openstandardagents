@@ -175,7 +175,7 @@ detect:milestone-and-tags:
 
       # Match range milestone first, then exact
       # Use ($| ) instead of \b for word boundary (works better in jq regex)
-      MILESTONE="$(echo "$MILESTONES_JSON" | jq -c --arg range "^${RANGE_TITLE}(\$| )" --arg exact "^v?${VERSION}(\$| )" '
+      MILESTONE="$(echo "$MILESTONES_JSON" | jq -c --arg range "^${RANGE_TITLE}(\\s*\\(GROUP\\))?(\$| )" --arg exact "^v?${VERSION}(\\s*\\(GROUP\\))?(\$| )" '
         map(select(.state=="active")) |
         (map(select(.title|test($range))) + map(select(.title|test($exact)))) |
         .[0] // empty
