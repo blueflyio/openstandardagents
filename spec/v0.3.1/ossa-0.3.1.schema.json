@@ -1171,6 +1171,10 @@
             },
             "additionalProperties": false
           }
+        },
+        "kubernetes": {
+          "$ref": "#/definitions/KubernetesConfig",
+          "description": "Kubernetes-specific configuration (KAS-inspired)"
         }
       },
       "additionalProperties": false
@@ -3010,6 +3014,69 @@
         "credentials_ref": {
           "type": "string",
           "description": "Reference to credentials for authentication"
+        }
+      },
+      "additionalProperties": false
+    },
+    "KubernetesConfig": {
+      "type": "object",
+      "description": "Kubernetes-specific runtime configuration (KAS-inspired)",
+      "properties": {
+        "namespace": {
+          "type": "string",
+          "pattern": "^[a-z0-9]([-a-z0-9]*[a-z0-9])?$",
+          "description": "Kubernetes namespace (DNS-1123 subdomain)"
+        },
+        "service_account": {
+          "type": "string",
+          "pattern": "^[a-z0-9]([-a-z0-9]*[a-z0-9])?$",
+          "description": "Kubernetes service account name"
+        },
+        "api_server_url": {
+          "type": "string",
+          "format": "uri",
+          "description": "Kubernetes API server URL (similar to KAS private API URL)"
+        },
+        "network_family": {
+          "type": "string",
+          "enum": [
+            "tcp",
+            "tcp4",
+            "tcp6"
+          ],
+          "default": "tcp",
+          "description": "Network family (KAS pattern: tcp, tcp4, tcp6)"
+        },
+        "health_check_endpoint": {
+          "type": "string",
+          "format": "uri",
+          "description": "Health check endpoint URL"
+        },
+        "config_map_ref": {
+          "type": "string",
+          "description": "Reference to Kubernetes ConfigMap"
+        },
+        "secret_ref": {
+          "type": "string",
+          "description": "Reference to Kubernetes Secret"
+        },
+        "rbac": {
+          "type": "object",
+          "properties": {
+            "role": {
+              "type": "string",
+              "description": "Kubernetes Role name"
+            },
+            "cluster_role": {
+              "type": "string",
+              "description": "Kubernetes ClusterRole name"
+            },
+            "role_binding": {
+              "type": "string",
+              "description": "Kubernetes RoleBinding name"
+            }
+          },
+          "additionalProperties": false
         }
       },
       "additionalProperties": false
