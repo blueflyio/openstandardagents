@@ -59,7 +59,7 @@ Native OpenTelemetry tracing, structured logging, cost tracking, and performance
 curl -fsSL https://ossa.dev/quickstart.sh | bash
 
 # Or with npx (works everywhere)
-npx @bluefly/ossa-cli quickstart
+npx @bluefly/openstandardagents quickstart
 
 # Windows PowerShell
 iwr -useb https://ossa.dev/quickstart.ps1 | iex
@@ -69,7 +69,7 @@ iwr -useb https://ossa.dev/quickstart.ps1 | iex
 
 ```bash
 # Install the CLI
-npm install -g @bluefly/ossa-cli
+npm install -g @bluefly/openstandardagents
 
 # Create your first agent
 ossa init my-agent --type agent

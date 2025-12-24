@@ -173,10 +173,6 @@ release-to-npm:
   rules:
     - if: $CI_COMMIT_BRANCH == "main"
       when: manual
-  environment:
-    name: npm-registry
-    url: https://www.npmjs.com/package/@bluefly/openstandardagents
-    deployment_tier: production
 
 release-to-github:
   stage: release
@@ -190,11 +186,6 @@ release-to-github:
   rules:
     - if: $CI_COMMIT_BRANCH == "main"
       when: manual
-  environment:
-    name: github
-    url: https://github.com/blueflyio/openstandardagents
-    deployment_tier: production
-
 # Website deployment moved to openstandardagents.org repository
 # See: https://gitlab.com/blueflyio/openstandardagents.org
 
