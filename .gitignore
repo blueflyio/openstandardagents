@@ -522,3 +522,4 @@ dmypy.json
 # Git submodules (wiki must not be a submodule)
 .gitmodules
 build.env
+.env.local

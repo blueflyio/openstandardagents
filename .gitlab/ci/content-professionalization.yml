@@ -1,0 +1,61 @@
+# ============================================================================
+# Content Professionalization - AI-Powered Emoji Removal
+# ============================================================================
+# 
+# This CI job uses AI to:
+# 1. Detect and remove emojis from commit messages, MR descriptions, issue descriptions
+# 2. Replace emojis with professional language
+# 3. Ensure all content maintains professional tone
+#
+# Runs on:
+# - Commits (checks commit messages)
+# - Merge Requests (checks and updates MR descriptions)
+# - Issues (checks issue descriptions)
+#
+# Requires: ANTHROPIC_API_KEY or CLAUDE_API_KEY CI variable
+
+professionalize:content:
+  stage: validate
+  image: node:22-alpine
+  tags:
+    - saas-linux-small-amd64
+  before_script:
+    - apk add --no-cache git
+    - npm ci
+  script:
+    - |
+      echo "=== Content Professionalization Check ==="
+      
+      # Check if we have API key
+      if [ -z "$ANTHROPIC_API_KEY" ] && [ -z "$CLAUDE_API_KEY" ]; then
+        echo "WARNING: ANTHROPIC_API_KEY or CLAUDE_API_KEY not set"
+        echo "Skipping professionalization (content will not be modified)"
+        exit 0
+      fi
+      
+      # Export API key for script
+      export ANTHROPIC_API_KEY="${ANTHROPIC_API_KEY:-$CLAUDE_API_KEY}"
+      
+      # Process based on context
+      if [ -n "$CI_MERGE_REQUEST_IID" ]; then
+        echo "Processing Merge Request #$CI_MERGE_REQUEST_IID description..."
+        node scripts/professionalize-content.ts
+      elif [ -n "$CI_COMMIT_SHA" ]; then
+        echo "Processing commit message..."
+        node scripts/professionalize-content.ts
+      else
+        echo "No commit or MR context, skipping"
+        exit 0
+      fi
+      
+      echo "✓ Content professionalization complete"
+  rules:
+    # Run on MRs (to check/update MR descriptions)
+    - if: $CI_MERGE_REQUEST_IID
+      when: on_success
+    # Run on commits to main/release branches
+    - if: $CI_COMMIT_BRANCH == "main" || $CI_COMMIT_BRANCH =~ /^release\/v[0-9]+\.[0-9]+\.x$/
+      when: on_success
+  allow_failure: true
+  variables:
+    CI: "true"
