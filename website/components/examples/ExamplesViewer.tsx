@@ -110,8 +110,7 @@ export function ExamplesViewer({ examples }: ExamplesViewerProps) {
       await navigator.clipboard.writeText(text);
       // Could add a toast notification here
     } catch (error) {
-      console.error('Failed to copy:', error);
-    }
+}
   };
 
   return (

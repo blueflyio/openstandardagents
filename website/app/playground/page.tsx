@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
+import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import { STABLE_VERSION, STABLE_VERSION_TAG } from '@/lib/version';
 import { validateManifest, ValidationResult } from '@/lib/validate';
@@ -168,34 +169,22 @@ export default function PlaygroundPage() {
 
   // Load examples on mount
   useEffect(() => {
-    fetch('/examples.json')
-      .then(res => res.json())
-      .then(data => {
+    const loadExamples = async (): Promise<void> => {
+      try {
+        const response = await fetch('/examples.json');
+        if (!response.ok) {
+          return;
+        }
+        const data = await response.json();
         if (Array.isArray(data)) {
           setExamples(data);
         }
-      })
-      .catch(err => console.error('Failed to load examples:', err));
-  }, []);
-
-  // Debounced auto-validation
-  useEffect(() => {
-    if (!autoValidate) return;
-
-    if (validationTimeoutRef.current) {
-      clearTimeout(validationTimeoutRef.current);
-    }
-
-    validationTimeoutRef.current = setTimeout(() => {
-      handleValidate(true);
-    }, 800);
-
-    return () => {
-      if (validationTimeoutRef.current) {
-        clearTimeout(validationTimeoutRef.current);
+      } catch {
+        // Silently fail - examples are optional
       }
     };
-  }, [code, autoValidate, selectedVersion]);
+    void loadExamples();
+  }, []);
 
   const handleValidate = useCallback(async (silent = false): Promise<void> => {
     if (!silent) setIsValidating(true);
@@ -218,6 +207,26 @@ export default function PlaygroundPage() {
     }
   }, [code, selectedVersion]);
 
+  // Debounced auto-validation
+  useEffect(() => {
+    if (!autoValidate) return;
+
+    if (validationTimeoutRef.current) {
+      clearTimeout(validationTimeoutRef.current);
+    }
+
+    validationTimeoutRef.current = setTimeout(() => {
+      handleValidate(true);
+    }, 800);
+
+    return () => {
+      if (validationTimeoutRef.current) {
+        clearTimeout(validationTimeoutRef.current);
+      }
+    };
+  }, [code, autoValidate, selectedVersion, handleValidate]);
+
+
   const handleEditorChange = (value: string | undefined): void => {
     setCode(value || '');
     if (!autoValidate) {
@@ -225,14 +234,15 @@ export default function PlaygroundPage() {
     }
   };
 
-  const downloadManifest = () => {
+  const downloadManifest = async () => {
     const ext = format === 'json' ? 'json' : 'yaml';
     let content = code;
 
     // Convert to JSON if needed
     if (format === 'json' && !code.trim().startsWith('{')) {
       try {
-        const yaml = require('yaml');
+        const yamlModule = await import('yaml');
+        const yaml = yamlModule.default || yamlModule;
         const parsed = yaml.parse(code);
         content = JSON.stringify(parsed, null, 2);
       } catch {
@@ -292,17 +302,19 @@ export default function PlaygroundPage() {
     }
   };
 
-  const convertFormat = () => {
+  const convertFormat = async () => {
     try {
       if (format === 'yaml') {
         // Convert YAML to JSON
-        const yaml = require('yaml');
+        const yamlModule = await import('yaml');
+        const yaml = yamlModule.default || yamlModule;
         const parsed = yaml.parse(code);
         setCode(JSON.stringify(parsed, null, 2));
         setFormat('json');
       } else {
         // Convert JSON to YAML
-        const yaml = require('yaml');
+        const yamlModule = await import('yaml');
+        const yaml = yamlModule.default || yamlModule;
         const parsed = JSON.parse(code);
         setCode(yaml.stringify(parsed));
         setFormat('yaml');
@@ -727,21 +739,21 @@ export default function PlaygroundPage() {
 
         {/* Help Section */}
         <div className="mt-8 grid md:grid-cols-3 gap-4">
-          <a href="/schema" className="bg-white rounded-xl p-5 border-2 border-gray-200 hover:border-primary/50 hover:shadow-md transition-all group">
+          <Link href="/schema" className="bg-white rounded-xl p-5 border-2 border-gray-200 hover:border-primary/50 hover:shadow-md transition-all group">
             <div className="text-2xl mb-2">📋</div>
             <h3 className="font-bold text-gray-900 group-hover:text-primary transition-colors">Schema Reference</h3>
             <p className="text-sm text-gray-600 mt-1">Complete field documentation</p>
-          </a>
-          <a href="/examples" className="bg-white rounded-xl p-5 border-2 border-gray-200 hover:border-primary/50 hover:shadow-md transition-all group">
+          </Link>
+          <Link href="/examples" className="bg-white rounded-xl p-5 border-2 border-gray-200 hover:border-primary/50 hover:shadow-md transition-all group">
             <div className="text-2xl mb-2">📚</div>
             <h3 className="font-bold text-gray-900 group-hover:text-primary transition-colors">Browse Examples</h3>
             <p className="text-sm text-gray-600 mt-1">{examples.length}+ real-world manifests</p>
-          </a>
-          <a href="/docs" className="bg-white rounded-xl p-5 border-2 border-gray-200 hover:border-primary/50 hover:shadow-md transition-all group">
+          </Link>
+          <Link href="/docs" className="bg-white rounded-xl p-5 border-2 border-gray-200 hover:border-primary/50 hover:shadow-md transition-all group">
             <div className="text-2xl mb-2">📖</div>
             <h3 className="font-bold text-gray-900 group-hover:text-primary transition-colors">Documentation</h3>
             <p className="text-sm text-gray-600 mt-1">Guides and tutorials</p>
-          </a>
+          </Link>
         </div>
       </div>
     </>

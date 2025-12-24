@@ -58,7 +58,7 @@ function getAllExamples(): ExampleFile[] {
     
     return [];
   } catch (error) {
-    console.error('Error loading examples:', error);
+
     return [];
   }
 }

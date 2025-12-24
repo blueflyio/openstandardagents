@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { SchemaExplorer } from '@/components/schema/SchemaExplorer';
 import { SchemaComponentsAccordion } from '@/components/schema/SchemaComponentsAccordion';
-import { STABLE_VERSION, STABLE_VERSION_TAG, getSchemaPath } from '@/lib/version';
+import { STABLE_VERSION, STABLE_VERSION_TAG } from '@/lib/version';
 import { Logo } from '@/components/Logo';
 import fs from 'fs';
 import path from 'path';
@@ -14,15 +14,13 @@ function getStableVersion(): string {
       const versions = JSON.parse(fs.readFileSync(versionsPath, 'utf8'));
       return versions.stable || STABLE_VERSION;
     }
-  } catch (error) {
-    console.error('Error reading versions.json:', error);
-  }
+} catch {}
   // Fallback to 0.2.9 if versions.json not available
   return STABLE_VERSION;
 }
 
 // Try to load schema dynamically - fallback to stable version
-function loadSchema(version?: string): any {
+function loadSchema(version?: string): Record<string, unknown> | null {
   const stableVersion = version || getStableVersion();
   try {
     // Try to load from public/schemas first
@@ -39,13 +37,16 @@ function loadSchema(version?: string): any {
     
     // Final fallback - try to require (for build time)
     try {
-      return require(`../../public/schemas/ossa-${stableVersion}.schema.json`);
+const schemaPath = path.join(process.cwd(), 'public', 'schemas', `ossa-${stableVersion}.schema.json`);
+        if (fs.existsSync(schemaPath)) {
+          return JSON.parse(fs.readFileSync(schemaPath, 'utf8'));
+        }
     } catch {
       // If all else fails, return null
       return null;
     }
   } catch (error) {
-    console.error('Error loading schema:', error);
+
     return null;
   }
 }
@@ -75,7 +76,7 @@ export default function SchemaPage() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
             </svg>
           </div>
-          <h1 className="text-5xl font-bold mb-4">OSSA Schema Reference</h1>
+          <h1 className="text-3xl md:text-5xl font-bold mb-4">OSSA Schema Reference</h1>
           <p className="text-xl text-white/90 mb-2">
             Complete JSON Schema for defining portable, framework-agnostic AI agents
           </p>
@@ -197,7 +198,7 @@ export default function SchemaPage() {
                     <div className="bg-white rounded-lg p-5 border-2 border-gray-200 shadow-sm hover:shadow-md transition-all">
                       <div className="font-bold text-gray-900 text-lg mb-2">llm</div>
                       <div className="text-base text-gray-700 mb-4">Configuration for the Large Language Model that powers the agent's reasoning and responses.</div>
-                      <div className="grid grid-cols-2 gap-3 text-base text-gray-700">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-base text-gray-700">
                         <div className="bg-gray-50 rounded-lg p-3 border border-gray-200">
                           <strong className="text-gray-900">provider</strong>
                           <div className="text-sm text-gray-600 mt-1">openai | anthropic | azure</div>
@@ -249,7 +250,7 @@ export default function SchemaPage() {
                     <div className="bg-white rounded-lg p-5 border-2 border-gray-200 shadow-sm hover:shadow-md transition-all">
                       <div className="font-bold text-gray-900 text-lg mb-2">taxonomy</div>
                       <div className="text-base text-gray-700 mb-4">Categorization metadata for organizing and discovering agents across domains and use cases.</div>
-                      <div className="grid grid-cols-2 gap-3 text-base">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-base">
                         <div className="bg-gray-50 rounded-lg p-3 border border-gray-200">
                           <strong className="text-gray-900">domain</strong>
                           <div className="text-sm text-gray-600 mt-1">customer_service, engineering, etc.</div>
@@ -293,7 +294,7 @@ export default function SchemaPage() {
                     <div className="bg-white rounded-lg p-5 border-2 border-gray-200 shadow-sm hover:shadow-md transition-all">
                       <div className="font-bold text-gray-900 text-lg mb-2">observability</div>
                       <div className="text-base text-gray-700 mb-4">Monitoring and debugging capabilities for tracking agent behavior and performance.</div>
-                      <div className="grid grid-cols-3 gap-3 text-base">
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-base">
                         <div className="bg-gray-50 rounded-lg p-3 border border-gray-200 text-center">
                           <div className="font-bold text-gray-900">logging</div>
                           <div className="text-sm text-gray-600 mt-1">Logs & audit trails</div>
@@ -316,7 +317,7 @@ export default function SchemaPage() {
                         <span className="text-sm bg-gray-200 text-gray-700 px-2 py-1 rounded font-normal">Optional</span>
                       </div>
                       <div className="text-base text-gray-700 mb-4">Resource limits and operational boundaries to ensure safe and controlled agent execution.</div>
-                      <div className="grid grid-cols-2 gap-3 text-base">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-base">
                         <div className="bg-gray-50 rounded-lg p-3 border border-gray-200">
                           <strong className="text-gray-900">cost</strong>
                           <div className="text-sm text-gray-600 mt-1">Budget and spending limits</div>
@@ -552,7 +553,7 @@ export default function SchemaPage() {
               <div className="flex flex-col items-center">
                 <div className="bg-white border-2 border-gray-300 rounded-xl p-6 shadow-md w-full max-w-2xl">
                   <div className="text-xl font-bold mb-4 text-center text-gray-900">Agent Execution</div>
-                  <div className="grid grid-cols-3 gap-3 text-base">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-base">
                     <div className="bg-gray-50 border border-gray-200 rounded-lg p-3 text-center">
                       <div className="font-bold mb-1 text-gray-900">LLM Calls</div>
                       <div className="text-sm text-gray-600">GPT-4, Claude, etc.</div>
@@ -574,7 +575,7 @@ export default function SchemaPage() {
               <div className="flex flex-col items-center">
                 <div className="bg-white border-2 border-gray-300 rounded-xl p-6 shadow-md w-full max-w-2xl">
                   <div className="text-xl font-bold mb-4 text-center text-gray-900">Observability</div>
-                  <div className="grid grid-cols-3 gap-3 text-base">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-base">
                     <div className="bg-gray-50 border border-gray-200 rounded-lg p-3 text-center">
                       <div className="font-bold mb-1 text-gray-900">Logs</div>
                       <div className="text-sm text-gray-600">Debug & audit</div>

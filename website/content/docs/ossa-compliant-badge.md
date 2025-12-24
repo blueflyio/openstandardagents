@@ -4,7 +4,7 @@ title: "OSSA COMPLIANT BADGE"
 
 # OSSA Compliant Badge
 
-Display the **OSSA Compliant** badge in your project to show that your AI agent follows the Open Standard for AI Agents (OSSA) specification.
+Display the **OSSA Compliant** badge in your project to show that your AI agent follows the Open Standard for Scalable AI Agents (OSSA) specification.
 
 ---
 

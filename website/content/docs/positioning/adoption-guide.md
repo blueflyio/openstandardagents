@@ -829,7 +829,7 @@ OSSA adoption is a **journey, not a destination**. The key to success:
 - [Create Your First Agent](/docs/getting-started)
 - [Explore OSSA Examples](https://github.com/openstandardagents/examples)
 - [Join OSSA Community](https://discord.gg/ossa)
-- [Read Technical Docs](/docs/core-concepts)
+- [Read Technical Docs](/docs/core-concepts/project-structure)
 
 **Questions?**
 - 💬 Discord: https://discord.gg/ossa

@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import type { Metadata } from 'next';
-import { STABLE_VERSION_TAG, STABLE_VERSION, OSSA_DISPLAY_VERSION } from '@/lib/version';
+import { STABLE_VERSION_TAG, STABLE_VERSION } from '@/lib/version';
 import { StructuredData } from '@/components/StructuredData';
 
 export const metadata: Metadata = {

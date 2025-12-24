@@ -1188,9 +1188,9 @@ curl http://localhost:3000/metrics
 
 ## Support
 
-- **Issues**: [https://github.com/blueflyio/documentation/-/issues](https://github.com/blueflyio/documentation/-/issues)
+- **Issues**: [https://gitlab.com/blueflyio/agent-platform/technical-docs/-/issues](https://gitlab.com/blueflyio/agent-platform/technical-docs/-/issues)
 - **BuildKit Repo**: [https://github.com/blueflyio/agent-buildkit](https://github.com/blueflyio/agent-buildkit)
-- **Wiki**: [https://github.com/blueflyio/documentation/-/wikis/home](https://github.com/blueflyio/documentation/-/wikis/home)
+- **Wiki**: [https://gitlab.com/blueflyio/agent-platform/technical-docs/-/wikis/home](https://gitlab.com/blueflyio/agent-platform/technical-docs/-/wikis/home)
 
 ---
 
