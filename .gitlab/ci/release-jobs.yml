@@ -406,13 +406,8 @@ release:audit:
     - npm ci --legacy-peer-deps
     - npm run build
     - npm pack --dry-run | tee audit-pack-dry-run.txt
-    - PKG=$(npm pack 2>&1 | tail -1 | xargs)
-    - |
-      if [ -z "$PKG" ]; then
-        echo "Error: npm pack failed to produce output"
-        exit 1
-      fi
-    - sha256sum "$PKG" | tee audit-sha256.txt
+    - PKG="$(npm pack)"
+    - sha256 -r "$PKG" | tee audit-sha256.txt
     - tar -tzf "$PKG" | head -200 | tee audit-tar-list-head.txt
   artifacts:
     paths:

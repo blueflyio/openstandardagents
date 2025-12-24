@@ -135,8 +135,7 @@
     "// RELEASE & PUBLISH": "",
     "prerelease": "npm run quality && npm run test && npm run validate",
     "prepublishOnly": "npm run build:clean && npm run test && npm run lint",
-    "release:check": "npm run prerelease && echo '✅ Ready for release'",
-    "professionalize-content": "tsx scripts/professionalize-content.ts"
+    "release:check": "npm run prerelease && echo '✅ Ready for release'"
   },
   "keywords": [
     "ossa",
@@ -152,7 +151,7 @@
   "author": "OSSA Standards Team",
   "license": "Apache-2.0",
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.71.2",
+    "@anthropic-ai/sdk": "^0.71.0",
     "@aws-sdk/client-bedrock-runtime": "^3.955.0",
     "@gitbeaker/node": "^35.8.1",
     "@google/generative-ai": "^0.21.0",
