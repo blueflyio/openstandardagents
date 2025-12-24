@@ -48,7 +48,6 @@ ENV/
 
 # Environment files
 .env
-.env.local
 .env.*.local
 .env.development
 .env.test
@@ -95,7 +94,6 @@ coverage/
 test-results/
 *.lcov
 *.coverage
-junit.xml
 
 # Jest
 .jest/

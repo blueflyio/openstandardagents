@@ -52,7 +52,3 @@ pages:deploy:
   rules:
     - if: $CI_COMMIT_BRANCH == "main"
     - if: $CI_COMMIT_BRANCH =~ /^release\//
-  environment:
-    name: pages
-    url: https://openstandardagents.org
-
