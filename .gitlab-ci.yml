@@ -19,6 +19,7 @@ include:
   - local: '.gitlab/ci/branch-policy.yml'
   - local: '.gitlab/ci/webhook-agents.yml'  # OSSA v0.2.9 webhook-triggered agents
   - local: '.gitlab/ci/merge-train-optimized.yml'  # Optimized merge train pipeline
+  - local: '.gitlab/ci/release-merge-trains.yml'
   - local: '.gitlab/ci/milestone-workflow.yml'  # Milestone-driven workflow enforcement
   - local: '.gitlab/ci/fix-mr-targets.yml'  # Fix MRs targeting main branch
   - local: '.gitlab/ci/ossa-version-management.yml'  # Dynamic OSSA version detection and injection
