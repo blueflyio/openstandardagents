@@ -57,7 +57,7 @@ rc:integration-tests:
       when: on_success
   allow_failure: false
 
-rc:deploy-staging:
+rc:deploy-orbstack:
   stage: rc-validation
   image: node:${NODE_VERSION}-alpine
   tags:
@@ -67,24 +67,24 @@ rc:deploy-staging:
     - npm ci --legacy-peer-deps
   script:
     - |
-      echo "Deploying RC to staging environment..."
+      echo "Deploying RC to OrbStack environment..."
       echo "RC Tag: ${CI_COMMIT_TAG}"
       
       # Build the package
       npm run build || (echo "ERROR: Build failed" && exit 1)
       
       # For now, just validate the build
-      # Add actual staging deployment logic here when staging environment is configured
-      echo "RC build validated and ready for staging deployment"
-      echo "Staging deployment would happen here"
+      # Add actual OrbStack deployment logic here when configured
+      echo "RC build validated and ready for OrbStack deployment"
+      echo "OrbStack deployment would happen here"
       
       # Example: npm pack and validate
       npm pack --dry-run || true
       
-      echo "RC ${CI_COMMIT_TAG} validated for staging"
+      echo "RC ${CI_COMMIT_TAG} validated for OrbStack"
   environment:
-    name: staging
-    url: https://staging.openstandardagents.org
+    name: orbstack
+    url: https://ossa.orb.local
   rules:
     - if: '$CI_COMMIT_TAG =~ /^v[0-9]+\.[0-9]+\.[0-9]+-rc/'
       when: manual

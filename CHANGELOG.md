@@ -5,11 +5,66 @@ All notable changes to OSSA (Open Standard for Scalable AI Agents) will be docum
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.3.1-dev.26] - 2025-12-24
+
+### Added
+
+- **ci**: Generate TypeScript types in CI instead of committing ([5e227a7](https://gitlab.com/blueflyio/openstandardagents/-/commit/5e227a75e9a4b06825655c36a2c61528ea9c5bb0))## [0.3.1-dev.25] - 2025-12-23
+
+### Added
+
+- **ci**: Generate TypeScript types in CI instead of committing ([627efe4](https://gitlab.com/blueflyio/openstandardagents/-/commit/627efe4e899b85db1303c51dc1eac8b8088b1202))## [0.3.1-dev.23] - 2025-12-23
+
+### Added
+
+- **identity**: Comprehensive Agent Identity Extension for OSSA v0.3.1 ([5667703](https://gitlab.com/blueflyio/openstandardagents/-/commit/56677037489c3287b88d0f976de006848854a08d))## [0.3.1-dev.22] - 2025-12-23
 
 ### Fixed
 
+- **ci**: Create-rc-tag and changelog URL fixes ([93f410f](https://gitlab.com/blueflyio/openstandardagents/-/commit/93f410f9d0638615f58e90bd8ddaddd28f2552b3))## [0.3.1-dev.19] - 2025-12-23
+
+### Fixed
+
+- Remove duplicate bot configs from .gitlab/agents/bots/ ([3a2020a](https://gitlab.com/blueflyio/openstandardagents/-/commit/3a2020a67c4ebfa60b39dbfe1cf85bf7b611e2cf))
+## [0.3.1-dev.18] - 2025-12-23
+
+### Added
+
+- **ci**: Generate TypeScript types in CI instead of committing ([f22b239](https://gitlab.com/blueflyio/openstandardagents/-/commit/f22b239df8c22591762e5ea5106cf0bbd754da77))
+- **ci**: Generate TypeScript types in CI instead of committing ([a5efee0](https://gitlab.com/blueflyio/openstandardagents/-/commit/a5efee06196e10f933488f18541856f8561ab312))
+- **ci**: Generate TypeScript types in CI instead of committing ([bebd278](https://gitlab.com/blueflyio/openstandardagents/-/commit/bebd278964f46b0eeac3920640e9ee8b74f3bcd3))
+- **ci**: Generate TypeScript types in CI instead of committing ([5ca34c2](https://gitlab.com/blueflyio/openstandardagents/-/commit/5ca34c2240c38a0409fb6025787f9d0629c1e6d9))
+- **ci**: Generate TypeScript types in CI instead of committing ([56ec22f](https://gitlab.com/blueflyio/openstandardagents/-/commit/56ec22fab1f685e35f37dea8effb37c3f542ac9f))
+- **cli**: Implement ossa command for issue #192 ([194c0cb](https://gitlab.com/blueflyio/openstandardagents/-/commit/194c0cbda1bb709271c1d5e083bfb5ce3e793534))
+- **cli**: Implement ossa command for issue #190 ([d4fa1de](https://gitlab.com/blueflyio/openstandardagents/-/commit/d4fa1de63421eb42f713225bfee3efca90c7c303))
+- **cli**: Implement ossa command for issue #193 ([fa9209c](https://gitlab.com/blueflyio/openstandardagents/-/commit/fa9209ca7691f7da1ec61b3e1bccb58e10fc1a2d))
+- **cli**: Implement ossa lint command ([cd3a97c](https://gitlab.com/blueflyio/openstandardagents/-/commit/cd3a97c5dc395aa93fec219629eaee02b9dea6c1))
+- Implement OSSA compliance bot ([#283](https://gitlab.com/blueflyio/openstandardagents/-/issues/283)) ([b7b73a7](https://gitlab.com/blueflyio/openstandardagents/-/commit/b7b73a7a784b70c21516e917372838102299b1cb))
+
+- Implement architecture validator bot ([#285](https://gitlab.com/blueflyio/openstandardagents/-/issues/285)) ([7440daf](https://gitlab.com/blueflyio/openstandardagents/-/commit/7440dafcde938e48fae887b5bd7166f285bb9d7e))
+
+- Implement security scanner bot ([#284](https://gitlab.com/blueflyio/openstandardagents/-/issues/284)) ([9a26258](https://gitlab.com/blueflyio/openstandardagents/-/commit/9a262588276268fcc083cd0dde4c577d4e49335c))
+
+- Implement CI pipeline bot ([#286](https://gitlab.com/blueflyio/openstandardagents/-/issues/286)) ([e501834](https://gitlab.com/blueflyio/openstandardagents/-/commit/e501834d4c794e9705d71f8edc171a20ae634d2f))
+
+- Generate spec files in CI instead of committing to git ([3152d2d](https://gitlab.com/blueflyio/openstandardagents/-/commit/3152d2d2a0234cbfddc32dbe4a721a86e8022993))
+
+### Documentation
+
+- Add documentation for issue #349 ([f3a0999](https://gitlab.com/blueflyio/openstandardagents/-/commit/f3a0999cfa36ac44f2161890250f1ef417598309))
+
+- Add documentation for issue #348 ([7e38fbd](https://gitlab.com/blueflyio/openstandardagents/-/commit/7e38fbdfe43cd6726ac7cb56096e805b011d7913))
+
+### Fixed
+
+- **ci**: Use .version.json as single source of truth for dev tags ([4e5a67b](https://gitlab.com/blueflyio/openstandardagents/-/commit/4e5a67b1acaf99b20279e4d4059fa904f1eaef4c))
+- **ci**: Add validate:documentation CI job ([63c1ae7](https://gitlab.com/blueflyio/openstandardagents/-/commit/63c1ae7445593925710d1559adb5f54b769ebbad))
+- **test**: Use dynamic API version in migration tests ([d226e23](https://gitlab.com/blueflyio/openstandardagents/-/commit/d226e232012f89645f2068daf01be9adc347927e))
 - Disable all platform-agents trigger jobs - use gitlab_components or local execution instead ([cfb60ff](https://gitlab.com/blueflyio/openstandardagents/-/commit/cfb60ffcab9bdf71096a31598a9eba3090d0d608))
+
+### Miscellaneous
+
+- Close MR !580 - audit remediation completed ([9dac47a](https://gitlab.com/blueflyio/openstandardagents/-/commit/9dac47aaba2a6c85f87d2f9fb19820f329d27039))
 ## [0.3.0-dev.68] - 2025-12-22
 
 ### Fixed
