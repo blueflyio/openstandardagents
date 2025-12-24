@@ -1,0 +1,35 @@
+name: Discord Notifications
+
+on:
+  issues:
+    types: [opened, closed, reopened]
+  pull_request:
+    types: [opened, closed, merged, reopened]
+  release:
+    types: [published]
+  discussion:
+    types: [created]
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    if: github.event.repository.private == false
+    steps:
+      - name: Notify Discord
+        uses: sarisia/actions-status-discord@v1
+        if: env.DISCORD_WEBHOOK != ''
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+          DISCORD_USERNAME: GitHub
+          DISCORD_AVATAR: https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png
+        with:
+          status: ${{ job.status }}
+          title: |
+            ${{ github.event.issue && 'Issue' || github.event.pull_request && 'Pull Request' || github.event.release && 'Release' || 'Discussion' }}
+            ${{ github.event.action == 'opened' && 'Opened' || github.event.action == 'closed' && 'Closed' || github.event.action == 'merged' && 'Merged' || github.event.action == 'published' && 'Published' || github.event.action == 'created' && 'Created' || github.event.action == 'reopened' && 'Reopened' }}
+          description: |
+            ${{ github.event.issue && format('**{0}**\n{1}', github.event.issue.title, github.event.issue.html_url) || '' }}
+            ${{ github.event.pull_request && format('**{0}**\n{1}', github.event.pull_request.title, github.event.pull_request.html_url) || '' }}
+            ${{ github.event.release && format('**{0}**\n{1}', github.event.release.name, github.event.release.html_url) || '' }}
+            ${{ github.event.discussion && format('**{0}**\n{1}', github.event.discussion.title, github.event.discussion.html_url) || '' }}
+          color: ${{ github.event.action == 'opened' || github.event.action == 'created' || github.event.action == 'published' && '0x00ff00' || github.event.action == 'merged' && '0x0099ff' || github.event.action == 'closed' && '0xff0000' || '0x808080' }}
