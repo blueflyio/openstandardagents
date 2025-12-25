@@ -346,14 +346,14 @@ This extension provides:
 ## Acknowledgments
 
 This extension is part of the OSSA project:
-- **GitHub**: https://github.com/blueflyio/openstandardagents
+- **GitHub**: https://gitlab.com/blueflyio/ossa/openstandardagents
 - **Website**: https://openstandardagents.org
 - **License**: Apache 2.0
 
 ## Contact & Support
 
-- **Issues**: https://github.com/blueflyio/openstandardagents/issues
-- **Discussions**: https://github.com/blueflyio/openstandardagents/discussions
+- **Issues**: https://gitlab.com/blueflyio/ossa/openstandardagents/issues
+- **Discussions**: https://gitlab.com/blueflyio/ossa/openstandardagents/discussions
 - **Email**: support@openstandardagents.org (if available)
 
 ---

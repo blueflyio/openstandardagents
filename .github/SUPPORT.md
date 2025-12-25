@@ -18,14 +18,14 @@ We're here to help! Here are the best ways to get support for OSSA:
 - **Response Time**: Community members typically respond within hours
 
 #### GitHub Discussions
-- **Link**: [github.com/blueflyio/openstandardagents/discussions](https://github.com/blueflyio/openstandardagents/discussions)
+- **Link**: [github.com/blueflyio/openstandardagents/discussions](https://gitlab.com/blueflyio/ossa/openstandardagents/discussions)
 - **Best for**: Longer-form questions, feature discussions, sharing examples
 - **Response Time**: Maintainers respond within 1-2 business days
 
 ### Bug Reports
 
 #### GitHub Issues
-- **Link**: [github.com/blueflyio/openstandardagents/issues](https://github.com/blueflyio/openstandardagents/issues)
+- **Link**: [github.com/blueflyio/openstandardagents/issues](https://gitlab.com/blueflyio/ossa/openstandardagents/issues)
 - **Use for**: Bug reports, feature requests
 - **Before creating**: Search existing issues to avoid duplicates
 - **Template**: Use the bug report template when creating an issue
