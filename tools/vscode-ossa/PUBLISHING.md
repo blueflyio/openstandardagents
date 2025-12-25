@@ -203,7 +203,7 @@ Tools: LICEcap (Mac/Win), peek (Linux), or VS Code built-in recording.
 ## Support and Maintenance
 
 ### Issue Tracking
-- GitHub Issues: https://github.com/blueflyio/openstandardagents/issues
+- GitHub Issues: https://gitlab.com/blueflyio/ossa/openstandardagents/issues
 - Label extension issues with `vscode-extension`
 
 ### User Support

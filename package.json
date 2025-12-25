@@ -59,7 +59,6 @@
     "README.md",
     "LICENSE",
     "CHANGELOG.md",
-    ".env.local",
     ".devfile.yaml",
     ".wiki-config.json",
     ".gitlab-ci-trigger",
@@ -73,10 +72,10 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/blueflyio/openstandardagents/"
+    "url": "https://gitlab.com/blueflyio/ossa/openstandardagents/"
   },
   "bugs": {
-    "url": "https://github.com/blueflyio/openstandardagents/issues"
+    "url": "https://gitlab.com/blueflyio/ossa/openstandardagents/issues"
   },
   "homepage": "https://openstandardagents.org",
   "scripts": {

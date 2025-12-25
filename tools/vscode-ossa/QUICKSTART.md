@@ -13,7 +13,7 @@ Get started with the OSSA VS Code extension in 5 minutes!
 
 ```bash
 # Clone the repository
-git clone https://github.com/blueflyio/openstandardagents.git
+git clone https://gitlab.com/blueflyio/ossa/openstandardagents.git
 cd openstandardagents/tools/vscode-ossa
 
 # Install dependencies
@@ -177,7 +177,7 @@ Open Settings (`Cmd+,` or `Ctrl+,`) and search for "OSSA":
 ## Next Steps
 
 ### 1. Explore Examples
-Check out the [OSSA examples](https://github.com/blueflyio/openstandardagents/tree/main/examples):
+Check out the [OSSA examples](https://gitlab.com/blueflyio/ossa/openstandardagents/tree/main/examples):
 - Getting Started examples
 - Multi-agent workflows
 - Real-world use cases
@@ -187,7 +187,7 @@ Check out the [OSSA examples](https://github.com/blueflyio/openstandardagents/tr
 - [OSSA Specification](https://openstandardagents.org/schemas/v0.3.0/manifest.json)
 
 ### 3. Join the Community
-- GitHub: [openstandardagents](https://github.com/blueflyio/openstandardagents)
+- GitHub: [openstandardagents](https://gitlab.com/blueflyio/ossa/openstandardagents)
 - Discord: [OSSA Community](https://discord.gg/ossa) (coming soon)
 
 ## Troubleshooting
