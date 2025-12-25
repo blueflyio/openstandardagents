@@ -20,7 +20,7 @@ jobs:
             **Quick Tips:**
             - Make sure you've searched existing issues to avoid duplicates
             - Include as much detail as possible (OSSA version, steps to reproduce, etc.)
-            - Check out our [Contributing Guide](https://github.com/blueflyio/openstandardagents/blob/main/CONTRIBUTING.md)
+            - Check out our [Contributing Guide](https://gitlab.com/blueflyio/ossa/openstandardagents/blob/main/CONTRIBUTING.md)
             
             **Need Help?**
             - 📚 [Documentation](https://openstandardagents.org/docs)
@@ -35,7 +35,7 @@ jobs:
             - Make sure all tests pass (`npm test`)
             - Run linting (`npm run lint`)
             - Update documentation if needed
-            - Follow our [Contributing Guide](https://github.com/blueflyio/openstandardagents/blob/main/CONTRIBUTING.md)
+            - Follow our [Contributing Guide](https://gitlab.com/blueflyio/ossa/openstandardagents/blob/main/CONTRIBUTING.md)
             
             **What Happens Next:**
             - Our CI will run automatically
