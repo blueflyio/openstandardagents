@@ -60,7 +60,7 @@ Customize behavior in VS Code settings:
 ### Manual Installation (Development)
 1. Clone the repository:
    ```bash
-   git clone https://github.com/blueflyio/openstandardagents.git
+   git clone https://gitlab.com/blueflyio/ossa/openstandardagents.git
    cd openstandardagents/tools/vscode-ossa
    ```
 
@@ -163,9 +163,9 @@ For the best OSSA development experience, install:
 ## OSSA Resources
 
 - **Documentation**: [https://openstandardagents.org](https://openstandardagents.org)
-- **GitHub**: [https://github.com/blueflyio/openstandardagents](https://github.com/blueflyio/openstandardagents)
+- **GitHub**: [https://gitlab.com/blueflyio/ossa/openstandardagents](https://gitlab.com/blueflyio/ossa/openstandardagents)
 - **Schema**: [https://openstandardagents.org/schemas/v0.3.0/manifest.json](https://openstandardagents.org/schemas/v0.3.0/manifest.json)
-- **Examples**: [https://github.com/blueflyio/openstandardagents/tree/main/examples](https://github.com/blueflyio/openstandardagents/tree/main/examples)
+- **Examples**: [https://gitlab.com/blueflyio/ossa/openstandardagents/tree/main/examples](https://gitlab.com/blueflyio/ossa/openstandardagents/tree/main/examples)
 
 ## The Three Kinds of OSSA Resources
 
@@ -241,17 +241,17 @@ We welcome contributions! This extension is part of the OSSA project.
 3. Make your changes
 4. Submit a pull request
 
-See [CONTRIBUTING.md](https://github.com/blueflyio/openstandardagents/blob/main/CONTRIBUTING.md) for details.
+See [CONTRIBUTING.md](https://gitlab.com/blueflyio/ossa/openstandardagents/blob/main/CONTRIBUTING.md) for details.
 
 ## Support
 
-- **Issues**: [GitHub Issues](https://github.com/blueflyio/openstandardagents/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/blueflyio/openstandardagents/discussions)
+- **Issues**: [GitHub Issues](https://gitlab.com/blueflyio/ossa/openstandardagents/issues)
+- **Discussions**: [GitHub Discussions](https://gitlab.com/blueflyio/ossa/openstandardagents/discussions)
 - **Discord**: [Join our community](https://discord.gg/ossa) (coming soon)
 
 ## License
 
-Apache 2.0 - See [LICENSE](https://github.com/blueflyio/openstandardagents/blob/main/LICENSE)
+Apache 2.0 - See [LICENSE](https://gitlab.com/blueflyio/ossa/openstandardagents/blob/main/LICENSE)
 
 ## Changelog
 
@@ -266,4 +266,4 @@ Apache 2.0 - See [LICENSE](https://github.com/blueflyio/openstandardagents/blob/
 
 **Made with ❤️ by the OSSA community**
 
-[⭐ Star us on GitHub](https://github.com/blueflyio/openstandardagents) | [📖 Read the Docs](https://openstandardagents.org)
+[⭐ Star us on GitHub](https://gitlab.com/blueflyio/ossa/openstandardagents) | [📖 Read the Docs](https://openstandardagents.org)
