@@ -540,6 +540,23 @@ create-patch-version:
       if [ -f .version.json ]; then
         BASE_VERSION=$(jq -r '.current' .version.json)
         echo "Version from .version.json: ${BASE_VERSION}"
+        
+        # Check if a stable release already exists for this version
+        # If v0.3.1 stable exists, we should create v0.3.2-dev.* tags, not v0.3.1-dev.*
+        STABLE_TAG="v${BASE_VERSION}"
+        if git tag -l "$STABLE_TAG" | grep -q . && ! echo "$STABLE_TAG" | grep -qE "(dev|RC|rc|alpha|beta)"; then
+          echo "Stable release ${STABLE_TAG} already exists"
+          # Extract major.minor.patch and increment patch
+          MAJOR_MINOR=$(echo "$BASE_VERSION" | sed -E 's/^([0-9]+\.[0-9]+)\.[0-9]+$/\1/')
+          CURRENT_PATCH=$(echo "$BASE_VERSION" | sed -E 's/^[0-9]+\.[0-9]+\.([0-9]+)$/\1/')
+          if [ "$MAJOR_MINOR" = "$BASE_VERSION" ] || [ "$CURRENT_PATCH" = "$BASE_VERSION" ]; then
+            echo "ERROR: Invalid version format: $BASE_VERSION"
+            exit 1
+          fi
+          NEXT_PATCH=$((CURRENT_PATCH + 1))
+          BASE_VERSION="${MAJOR_MINOR}.${NEXT_PATCH}"
+          echo "Bumping to next patch version for dev tags: ${BASE_VERSION}"
+        fi
       else
         # Fallback only if .version.json doesn't exist
         echo "WARNING: .version.json not found, falling back to git tag calculation"
