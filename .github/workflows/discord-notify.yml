@@ -17,7 +17,7 @@ jobs:
     steps:
       - name: Notify Discord
         uses: sarisia/actions-status-discord@v1
-        if: env.DISCORD_WEBHOOK != ''
+        if: ${{ secrets.DISCORD_WEBHOOK != '' }}
         env:
           DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
           DISCORD_USERNAME: GitHub
