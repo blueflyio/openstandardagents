@@ -18,6 +18,8 @@ import { join } from 'path';
 import Anthropic from '@anthropic-ai/sdk';
 
 interface ProfessionalizeOptions {
+  retryCount?: number;
+  maxRetries?: number;
   dryRun?: boolean;
   inputFile?: string;
   outputFile?: string;
@@ -34,7 +36,7 @@ async function professionalizeContent(
   const hasEmojis = EMOJI_REGEX.test(content);
   
   if (!hasEmojis) {
-    console.log('✓ No emojis detected, content is already professional');
+    console.log(' No emojis detected, content is already professional');
     return content;
   }
 
@@ -66,7 +68,7 @@ Return ONLY the professionalized content, no explanations or markdown formatting
 
   try {
     const message = await anthropic.messages.create({
-      model: 'claude-3-5-sonnet-20241022',
+      model: process.env.CLAUDE_MODEL || process.env.ANTHROPIC_MODEL || 'claude-3-5-sonnet-20241022',
       max_tokens: 4096,
       temperature: 0.2,
       messages: [
@@ -81,10 +83,18 @@ Return ONLY the professionalized content, no explanations or markdown formatting
       ? message.content[0].text.trim()
       : content;
 
-    // Double-check: ensure no emojis remain
+    // Double-check: ensure no emojis remain with retry limit
+    const maxRetries = options.maxRetries || 3;
+    const retryCount = (options.retryCount || 0) + 1;
+    
     if (EMOJI_REGEX.test(professionalized)) {
-      console.warn('⚠️  Warning: Some emojis may still remain. Running second pass...');
-      return await professionalizeContent(professionalized, options);
+      if (retryCount < maxRetries) {
+        console.warn(`Warning: Some emojis may still remain. Running retry ${retryCount}/${maxRetries}...`);
+        return await professionalizeContent(professionalized, { ...options, retryCount });
+      } else {
+        console.warn('Max retries reached, some emojis may remain. Using fallback removal.');
+        return professionalized.replace(EMOJI_REGEX, '').trim();
+      }
     }
 
     return professionalized;
@@ -105,7 +115,7 @@ async function processFile(filePath: string, options: ProfessionalizeOptions): P
   const hasEmojis = EMOJI_REGEX.test(originalContent);
 
   if (!hasEmojis) {
-    console.log(`✓ ${filePath}: No emojis detected`);
+    console.log(` ${filePath}: No emojis detected`);
     return;
   }
 
@@ -124,7 +134,7 @@ async function processFile(filePath: string, options: ProfessionalizeOptions): P
   } else {
     const outputPath = options.outputFile || filePath;
     writeFileSync(outputPath, professionalized, 'utf-8');
-    console.log(`✓ Professionalized content written to ${outputPath}`);
+    console.log(` Professionalized content written to ${outputPath}`);
   }
 }
 
@@ -194,7 +204,7 @@ async function processMRDescription(mrIid: string): Promise<void> {
       }
     );
 
-    console.log('✓ MR description professionalized');
+    console.log(' MR description professionalized');
   } catch (error) {
     console.error('Error processing MR description:', error);
   }
