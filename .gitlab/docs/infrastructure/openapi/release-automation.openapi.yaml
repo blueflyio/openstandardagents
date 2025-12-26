@@ -17,7 +17,7 @@ servers:
     description: GitLab API
     variables:
       projectId:
-        default: "blueflyio/openstandardagents"
+        default: "blueflyio/ossa/openstandardagents"
   - url: http://localhost:3000/api/v1
     description: Local development
 
