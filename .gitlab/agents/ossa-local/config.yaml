@@ -3,11 +3,11 @@
 
 ci_access:
   projects:
-    - id: blueflyio/openstandardagents
+    - id: blueflyio/ossa/openstandardagents
 
 gitops:
   manifest_projects:
-    - id: blueflyio/openstandardagents
+    - id: blueflyio/ossa/openstandardagents
       default_namespace: ossa-dev
       paths:
         - glob: 'k8s/**/*.yaml'

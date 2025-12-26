@@ -5,7 +5,7 @@
 # Source: .gitlab/agents/gitlab-duo-ossa/manifest.ossa.yaml
 # Generated: 2025-12-12T03:47:06.928Z
 #
-# COPY THIS TO: https://gitlab.com/blueflyio/openstandardagents/-/automate/agents/1261/edit
+# COPY THIS TO: https://gitlab.com/blueflyio/ossa/openstandardagents/-/automate/agents/1261/edit
 #
 # DOGFOODING OSSA INSIDE GITLAB! 🚀
 # =============================================================================

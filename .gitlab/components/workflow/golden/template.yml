@@ -387,7 +387,7 @@ promote:to-main:
     # Test SSH connection before proceeding
     - ssh -T git@gitlab.com || echo "SSH test completed"
     # Configure git to use SSH
-    - git remote set-url origin git@gitlab.com:blueflyio/openstandardagents.git
+    - git remote set-url origin git@gitlab.com:blueflyio/ossa/openstandardagents.git
     # Perform the merge
     - git fetch origin main
     - git checkout main
@@ -445,7 +445,7 @@ release:production:
     # Test SSH connection before proceeding
     - ssh -T git@gitlab.com || echo "SSH test completed"
     # Configure git to use SSH
-    - git remote set-url origin git@gitlab.com:blueflyio/openstandardagents.git
+    - git remote set-url origin git@gitlab.com:blueflyio/ossa/openstandardagents.git
     - git push origin "$RELEASE_TAG"
     - "if [ -f 'CHANGELOG.md' ]; then export RELEASE_NOTES=$(sed -n \"/## \\[${PROJECT_VERSION}\\]/,/## \\[/p\" CHANGELOG.md | head -n -1); else export RELEASE_NOTES='Release ${RELEASE_TAG}'; fi"
     - "curl --request POST --header \"PRIVATE-TOKEN: ${CI_JOB_TOKEN}\" --header 'Content-Type: application/json' --data \"{\\\"name\\\": \\\"${RELEASE_TAG}\\\", \\\"tag_name\\\": \\\"${RELEASE_TAG}\\\", \\\"description\\\": \\\"${RELEASE_NOTES}\\\", \\\"ref\\\": \\\"main\\\", \\\"assets\\\": {\\\"links\\\": []}}\" \"${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/releases\" || echo 'Release creation may require permissions'"
