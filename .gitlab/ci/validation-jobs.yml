@@ -142,7 +142,7 @@ validate:version-sync:
 # ============================================================================
 # TODO: Enable after component is published to main
 # include:
-#   - component: gitlab.com/blueflyio/openstandardagents/version-management/version-bump-agent@main
+#   - component: gitlab.com/blueflyio/ossa/openstandardagents/version-management/version-bump-agent@main
 
 # version:bump:agent:
 #   extends: .version-bump-agent

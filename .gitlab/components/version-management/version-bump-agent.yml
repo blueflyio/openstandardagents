@@ -10,7 +10,7 @@
 # USAGE:
 #   Include in .gitlab-ci.yml:
 #     include:
-#       - component: gitlab.com/blueflyio/openstandardagents/version-management/version-bump-agent@main
+#       - component: gitlab.com/blueflyio/ossa/openstandardagents/version-management/version-bump-agent@main
 #
 #   Then use:
 #     extends: .version-bump-agent
