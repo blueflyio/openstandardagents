@@ -59,6 +59,7 @@
     "README.md",
     "LICENSE",
     "CHANGELOG.md",
+    ".env.local",
     ".devfile.yaml",
     ".wiki-config.json",
     ".gitlab-ci-trigger",
