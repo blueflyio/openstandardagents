@@ -222,8 +222,8 @@ native:build:agent:
 # These agents are triggered by GitLab webhooks (issues, merge requests)
 # Setup:
 #   1. Create service account: https://gitlab.com/groups/blueflyio/-/settings/service_accounts
-#   2. Add AGENT_SERVICE_TOKEN variable: https://gitlab.com/blueflyio/openstandardagents/-/settings/ci_cd
-#   3. Create webhook: https://gitlab.com/blueflyio/openstandardagents/-/settings/integrations
+#   2. Add AGENT_SERVICE_TOKEN variable: https://gitlab.com/blueflyio/ossa/openstandardagents/-/settings/ci_cd
+#   3. Create webhook: https://gitlab.com/blueflyio/ossa/openstandardagents/-/settings/integrations
 #   4. Add WEBHOOK_SECRET variable
 
 # MR Manager Agent - Triggered by webhook events
