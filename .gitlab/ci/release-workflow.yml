@@ -450,7 +450,7 @@ create-gitlab-release:
         }" \
         "https://gitlab.com/api/v4/projects/${CI_PROJECT_ID}/releases"
 
-      echo "✅ Created GitLab Release: https://gitlab.com/blueflyio/openstandardagents/-/releases/${CI_COMMIT_TAG}"
+      echo "✅ Created GitLab Release: https://gitlab.com/blueflyio/ossa/openstandardagents/-/releases/${CI_COMMIT_TAG}"
   rules:
     - if: '$CI_COMMIT_TAG =~ /^v[0-9]+\.[0-9]+\.[0-9]+(-RC|-dev[0-9]*)?$/'
       when: on_success
