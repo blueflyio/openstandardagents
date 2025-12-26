@@ -94,6 +94,57 @@ function extractLinks(filePath) {
 }
 
 /**
+ * Validate schema URLs in markdown files
+ */
+function validateSchemaUrls() {
+  console.log('Validating schema URLs...');
+  
+  const mdFiles = findMarkdownFiles(CONTENT_DIR);
+  const outdatedSchemas = [];
+  
+  // Pattern to match schema URLs
+  const schemaPattern = /https:\/\/openstandardagents\.org\/schemas\/([^/]+)\/agent\.json/g;
+  
+  for (const file of mdFiles) {
+    const content = fs.readFileSync(file, 'utf-8');
+    const relativeFile = path.relative(CONTENT_DIR, file);
+    
+    let match;
+    schemaPattern.lastIndex = 0;
+    
+    while ((match = schemaPattern.exec(content)) !== null) {
+      const version = match[1];
+      // Allow v0.3.x (any patch version), v1, and v1.x
+      if (!version.match(/^v0\.3\.\d+$/) && !version.match(/^v1(\.\d+)?$/)) {
+        outdatedSchemas.push({
+          file: relativeFile,
+          url: match[0],
+          version: version
+        });
+      }
+    }
+  }
+  
+  if (outdatedSchemas.length > 0) {
+    console.log('ERROR: Found outdated schema references (not v0.3.x or v1):');
+    for (const schema of outdatedSchemas) {
+      console.log(`${schema.file}:${schema.url}`);
+      // Find and print the line context
+      const content = fs.readFileSync(path.join(CONTENT_DIR, schema.file), 'utf-8');
+      const lines = content.split('\n');
+      for (let i = 0; i < lines.length; i++) {
+        if (lines[i].includes(schema.url)) {
+          console.log(`${schema.file}:  ${lines[i].trim()}`);
+        }
+      }
+    }
+    return 1;
+  }
+  
+  return 0;
+}
+
+/**
  * Main validation function
  */
 function validateLinks() {
@@ -127,6 +178,13 @@ function validateLinks() {
   // Report results
   if (brokenLinks.length === 0) {
     console.log(`✅ All ${validLinks.size} unique internal links are valid\n`);
+    
+    // Now validate schema URLs
+    const schemaExitCode = validateSchemaUrls();
+    if (schemaExitCode !== 0) {
+      return schemaExitCode;
+    }
+    
     return 0;
   }
 
