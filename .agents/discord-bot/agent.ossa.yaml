@@ -44,7 +44,7 @@ metadata:
   annotations:
     documentation: https://openstandardagents.org/docs/discord-bot
     support: support@openstandardagents.org
-    repository: https://gitlab.com/blueflyio/openstandardagents.org
+    repository: https://gitlab.com/blueflyio/ossa/openstandardagents.org
     openstandardagents.org/stability: stable
 
 spec:

@@ -242,7 +242,7 @@ spec:
     gitlab:
       api_version: v4
       token: ${AUTHOR_TOKEN}
-      project: blueflyio/openstandardagents.org
+      project: blueflyio/ossa/openstandardagents.org
 
     anthropic:
       api_key: ${ANTHROPIC_API_KEY}

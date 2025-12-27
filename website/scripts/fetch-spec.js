@@ -149,7 +149,7 @@ function copyLatestSchema() {
 }
 
 async function main() {
-  console.log('🔄 Fetching spec from blueflyio/openstandardagents (main branch)...\n');
+  console.log('🔄 Fetching spec from blueflyio/ossa/openstandardagents (main branch)...\n');
 
   try {
     // Clean existing spec dir

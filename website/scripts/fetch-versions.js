@@ -4,7 +4,7 @@ const https = require('https');
 
 const NPM_PACKAGE_NAME = '@bluefly/openstandardagents';
 const NPM_REGISTRY_URL = `https://registry.npmjs.org/${NPM_PACKAGE_NAME}`;
-const GITHUB_REPO = 'blueflyio/openstandardagents';
+const GITHUB_REPO = 'blueflyio/ossa/openstandardagents';
 const GITHUB_API_URL = `https://api.github.com/repos/${GITHUB_REPO}/tags`;
 const SPEC_DIR = path.join(__dirname, '../../spec');
 const OUTPUT_FILE = path.join(__dirname, '../lib/versions.json');

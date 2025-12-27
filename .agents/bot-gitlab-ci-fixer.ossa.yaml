@@ -15,7 +15,7 @@ metadata:
     tier: automation
   annotations:
     maintainer: devops@bluefly.io
-    documentation: https://gitlab.com/blueflyio/openstandardagents.org/-/wikis/agents/ci-fixer
+    documentation: https://gitlab.com/blueflyio/ossa/openstandardagents.org/-/wikis/agents/ci-fixer
     service-account: bot-gitlab-ci-fixer
 
 spec:

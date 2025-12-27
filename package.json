@@ -25,7 +25,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://gitlab.com/blueflyio/openstandardagents.org.git"
+    "url": "https://gitlab.com/blueflyio/ossa/openstandardagents.org.git"
   },
   "keywords": [
     "ossa",
