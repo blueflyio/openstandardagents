@@ -345,6 +345,7 @@ logs/**/*.json
 spec/v*/
 !spec/v0.3.0/.gitkeep
 !spec/v0.3.1/**/*
+!spec/v0.3.2/**/*
 !spec/extensions/**/*
 !spec/registry/**/*
 !spec/schema/**/*
