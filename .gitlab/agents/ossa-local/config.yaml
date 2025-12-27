@@ -14,7 +14,7 @@
 gitops:
   manifest_projects:
     # Sync k8s/ manifests to local cluster
-    - id: blueflyio/openstandardagents.org
+    - id: blueflyio/ossa/openstandardagents.org
       default_namespace: ossa-website
       paths:
         - glob: 'k8s/**/*.yaml'
@@ -26,7 +26,7 @@ gitops:
 
 ci_access:
   projects:
-    - id: blueflyio/openstandardagents.org
+    - id: blueflyio/ossa/openstandardagents.org
       default_namespace: ossa-website
       access_as:
         ci_job: {}
@@ -47,4 +47,4 @@ user_access:
   access_as:
     agent: {}
   projects:
-    - id: blueflyio/openstandardagents.org
+    - id: blueflyio/ossa/openstandardagents.org

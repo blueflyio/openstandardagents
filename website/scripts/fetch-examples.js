@@ -3,7 +3,7 @@
  * Fetch examples from main openstandardagents repo
  * This ensures the website always uses the latest examples from the source of truth
  *
- * Source: https://gitlab.com/blueflyio/openstandardagents
+ * Source: https://gitlab.com/blueflyio/ossa/openstandardagents
  */
 
 const https = require('https');
@@ -165,7 +165,7 @@ async function listFilesRecursive(dirPath, allFiles = []) {
 }
 
 async function main() {
-  console.log('🔄 Fetching examples from blueflyio/openstandardagents (main branch)...\n');
+  console.log('🔄 Fetching examples from blueflyio/ossa/openstandardagents (main branch)...\n');
 
   try {
     // List all example files

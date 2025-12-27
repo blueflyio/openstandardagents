@@ -15,7 +15,7 @@ metadata:
     tier: automation
   annotations:
     maintainer: devops@bluefly.io
-    documentation: https://gitlab.com/blueflyio/openstandardagents.org/-/wikis/agents/ossa-validator
+    documentation: https://gitlab.com/blueflyio/ossa/openstandardagents.org/-/wikis/agents/ossa-validator
     service-account: bot-ossa-validator
 
 spec:

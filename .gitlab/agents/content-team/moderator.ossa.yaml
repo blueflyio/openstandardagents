@@ -75,7 +75,7 @@ spec:
           - website/content/blog/**/*.md
           - website/content/docs/**/*.md
         link_patterns:
-          - 'https?://[^\s\)\"\'<>]+'
+          - 'https?://[^\s\)\"''<>]+'
         checks:
           - http_status
           - redirect_chains
@@ -312,7 +312,7 @@ spec:
     gitlab:
       api_version: v4
       token: ${MODERATOR_TOKEN}
-      project: blueflyio/openstandardagents.org
+      project: blueflyio/ossa/openstandardagents.org
 
     anthropic:
       api_key: ${ANTHROPIC_API_KEY}

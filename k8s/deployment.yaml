@@ -37,7 +37,7 @@ spec:
     spec:
       containers:
         - name: website
-          image: registry.gitlab.com/blueflyio/openstandardagents.org:latest
+          image: registry.gitlab.com/blueflyio/ossa/openstandardagents.org:latest
           imagePullPolicy: Always
           ports:
             - containerPort: 3000
