@@ -124,11 +124,11 @@ spec:
         - check-seo
       config:
         criteria:
-          - accuracy: Verify technical claims match sources
-          - clarity: Ensure content is understandable
-          - voice: Check brand consistency
-          - completeness: All sections fully developed
-          - positioning: "First-class citizens" theme present
+          accuracy: "Verify technical claims match sources"
+          clarity: "Ensure content is understandable"
+          voice: "Check brand consistency"
+          completeness: "All sections fully developed"
+          positioning: "First-class citizens theme present"
 
         scoring:
           pass_threshold: 80
@@ -233,7 +233,7 @@ spec:
     gitlab:
       api_version: v4
       token: ${EDITOR_TOKEN}
-      project: blueflyio/openstandardagents.org
+      project: blueflyio/ossa/openstandardagents.org
 
     anthropic:
       api_key: ${ANTHROPIC_API_KEY}

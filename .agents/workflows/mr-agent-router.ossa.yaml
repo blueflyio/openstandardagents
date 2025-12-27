@@ -15,7 +15,7 @@ metadata:
     tier: orchestration
   annotations:
     maintainer: devops@bluefly.io
-    documentation: https://gitlab.com/blueflyio/openstandardagents.org/-/wikis/agents/mr-router
+    documentation: https://gitlab.com/blueflyio/ossa/openstandardagents.org/-/wikis/agents/mr-router
 
 spec:
   triggers:

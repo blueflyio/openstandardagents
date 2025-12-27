@@ -11,7 +11,7 @@
 gitops:
   manifest_projects:
     # Website static site (if deployed to K8s)
-    - id: blueflyio/openstandardagents.org
+    - id: blueflyio/ossa/openstandardagents.org
       paths:
         - glob: 'k8s/**/*.yaml'
       reconcile_timeout: 3600s
@@ -32,7 +32,7 @@ ci_access:
         - review
 
   projects:
-    - id: blueflyio/openstandardagents.org
+    - id: blueflyio/ossa/openstandardagents.org
       default_namespace: ossa-website
       access_as:
         ci_job: {}
@@ -53,7 +53,7 @@ user_access:
   access_as:
     agent: {}
   projects:
-    - id: blueflyio/openstandardagents.org
+    - id: blueflyio/ossa/openstandardagents.org
 
 # Remote development (GitLab Workspaces)
 remote_development:
