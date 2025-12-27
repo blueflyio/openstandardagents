@@ -51,6 +51,25 @@ create-dev-tag:release:
       if [ -f .version.json ]; then
         BASE_VERSION=$(jq -r '.current' .version.json)
         echo "Version from .version.json: ${BASE_VERSION}"
+
+        # CRITICAL: Check if this version was already released
+        # If v${BASE_VERSION} exists, we must NOT create dev tags for it
+        # Instead, increment to next patch version
+        SAFETY_COUNTER=0
+        while git tag -l "v${BASE_VERSION}" 2>/dev/null | grep -q "^v${BASE_VERSION}$"; do
+          echo "⚠️  Version v${BASE_VERSION} already released!"
+          MAJOR_MINOR=$(echo "$BASE_VERSION" | cut -d. -f1-2)
+          PATCH=$(echo "$BASE_VERSION" | cut -d. -f3)
+          NEXT_PATCH=$((PATCH + 1))
+          BASE_VERSION="${MAJOR_MINOR}.${NEXT_PATCH}"
+          echo "→ Incrementing to v${BASE_VERSION} for dev tags"
+          
+          SAFETY_COUNTER=$((SAFETY_COUNTER + 1))
+          if [ $SAFETY_COUNTER -gt 100 ]; then
+            echo "ERROR: Too many version increments, possible infinite loop"
+            exit 1
+          fi
+        done
       else
         # Fallback only if .version.json doesn't exist
         echo "WARNING: .version.json not found, falling back to git tag calculation"
