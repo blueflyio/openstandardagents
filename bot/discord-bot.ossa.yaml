@@ -22,7 +22,7 @@ spec:
   
   runtime:
     platform: kubernetes
-    image: registry.gitlab.com/blueflyio/openstandardagents.org/discord-bot:latest
+    image: registry.gitlab.com/blueflyio/ossa/openstandardagents.org/discord-bot:latest
     resources:
       cpu: 500m
       memory: 512Mi

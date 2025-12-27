@@ -20,7 +20,7 @@ const fs = require('fs');
 const path = require('path');
 const https = require('https');
 
-const GITLAB_PROJECT = 'blueflyio/openstandardagents';
+const GITLAB_PROJECT = 'blueflyio/ossa/openstandardagents';
 const GITLAB_API_BASE = 'https://gitlab.com/api/v4';
 const NPM_PACKAGE = '@bluefly/openstandardagents';
 const packageJsonPath = path.join(__dirname, '..', 'package.json');

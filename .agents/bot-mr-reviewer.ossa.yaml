@@ -15,7 +15,7 @@ metadata:
     tier: automation
   annotations:
     maintainer: devops@bluefly.io
-    documentation: https://gitlab.com/blueflyio/openstandardagents.org/-/wikis/agents/mr-reviewer
+    documentation: https://gitlab.com/blueflyio/ossa/openstandardagents.org/-/wikis/agents/mr-reviewer
     service-account: bot-mr-reviewer
 
 spec:
