@@ -43,15 +43,16 @@ changelog:generate:
       echo "Changelog updated:"
       head -100 CHANGELOG.md
 
-      # Commit and push if there are changes
+      # Commit locally (but don't push to protected branch)
       git add CHANGELOG.md
       git commit -m "chore(release): update changelog [skip ci]"
 
-      # Push using CI token
-      git remote set-url origin "https://gitlab-ci-token:${CI_JOB_TOKEN}@gitlab.com/${CI_PROJECT_PATH}.git"
-      git push origin HEAD:$CI_COMMIT_BRANCH
-
-      echo "Changelog committed and pushed"
+      echo "Changelog generated and committed locally"
+      echo "Note: Not pushing to protected branch - changelog saved as artifact"
+  artifacts:
+    paths:
+      - CHANGELOG.md
+    expire_in: 1 week
   rules:
     # Run on merges to release branches
     - if: $CI_COMMIT_BRANCH =~ /^release\/v[0-9]+\.[0-9]+\.x$/
@@ -407,7 +408,7 @@ release:audit:
     - npm run build
     - npm pack --dry-run | tee audit-pack-dry-run.txt
     - PKG="$(npm pack)"
-    - sha256 -r "$PKG" | tee audit-sha256.txt
+    - sha256sum "$PKG" | tee audit-sha256.txt
     - tar -tzf "$PKG" | head -200 | tee audit-tar-list-head.txt
   artifacts:
     paths:
