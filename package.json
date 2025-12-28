@@ -33,6 +33,7 @@
       "import": "./dist/types/openapi-extensions.js",
       "require": "./dist/types/openapi-extensions.js"
     },
+    "./openapi-extensions-schema": "./spec/extensions/openapi/ossa-openapi-extensions.schema.json",
     "./mesh": {
       "types": "./dist/mesh/index.d.ts",
       "import": "./dist/mesh/index.js",
@@ -110,6 +111,7 @@
     "validate:examples": "find examples -name '*.yaml' -o -name '*.yml' | xargs -I {} sh -c 'yq eval . {} > /dev/null || exit 1'",
     "validate:all": "node scripts/validate-all.js",
     "validate:power": "tsx bin/validate-ossa.ts",
+    "validate:openapi": "tsx scripts/validate-openapi-extensions.ts",
     "// VERSION MANAGEMENT (via ossa CLI - single source of truth)": "",
     "version:status": "node dist/cli/index.js release version status",
     "version:bump": "node dist/cli/index.js release version bump",
