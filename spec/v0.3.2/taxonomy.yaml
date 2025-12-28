@@ -1,13 +1,22 @@
 # =============================================================================
-# OSSA v0.3.1 - Agent Taxonomy Specification
+# OSSA v0.3.2 - Agent Taxonomy Specification
 # =============================================================================
 # Hierarchical classification system for agents with cross-cutting concerns
-# Issue: https://gitlab.com/blueflyio/openstandardagents/-/issues/194
+# Now includes access tier integration for separation of duties
+# Issues:
+#   - https://gitlab.com/blueflyio/openstandardagents/-/issues/194 (taxonomy)
+#   - https://gitlab.com/blueflyio/openstandardagents/-/issues/363 (separation of duties)
 # =============================================================================
 
-apiVersion: ossa/v0.3.1
+apiVersion: ossa/v0.3.2
 kind: TaxonomySpec
-version: "1.0.0"
+version: "2.0.0"
+
+# =============================================================================
+# ACCESS TIER INTEGRATION
+# Links taxonomy to access_tiers.yaml for separation of duties
+# =============================================================================
+access_tier_reference: "./access_tiers.yaml"
 
 # =============================================================================
 # PRIMARY DOMAINS
@@ -177,24 +186,122 @@ concerns:
 
 # =============================================================================
 # AGENT TYPE CLASSIFICATION
-# Based on OSSA spec.type field
+# Based on OSSA spec.type field - now with access tier recommendations
 # =============================================================================
 agent_types:
+  analyzer:
+    description: "Read-only analysis, scanning, auditing - no modifications"
+    typical_domains: ["security", "development", "data"]
+    recommended_tier: tier_1_read
+    can_delegate_to: []
+
   worker:
-    description: "Executes specific tasks, no delegation"
-    typical_domains: ["development", "security", "documentation"]
+    description: "Executes specific tasks, limited write access"
+    typical_domains: ["development", "documentation", "content"]
+    recommended_tier: tier_2_write_limited
+    can_delegate_to: ["analyzer"]
+
+  operator:
+    description: "Modifies production systems, requires approval"
+    typical_domains: ["infrastructure", "agents"]
+    recommended_tier: tier_3_write_elevated
+    can_delegate_to: ["worker", "analyzer"]
 
   supervisor:
     description: "Coordinates other agents, can delegate"
     typical_domains: ["agents", "infrastructure"]
+    recommended_tier: tier_3_write_elevated
+    can_delegate_to: ["worker", "analyzer"]
 
   orchestrator:
     description: "High-level coordination, workflow management"
     typical_domains: ["agents"]
+    recommended_tier: tier_3_write_elevated
+    can_delegate_to: ["supervisor", "worker", "analyzer"]
+
+  governor:
+    description: "Defines policies, cannot execute - ISOLATED"
+    typical_domains: ["security", "agents"]
+    recommended_tier: tier_4_policy
+    can_delegate_to: ["operator"]  # Delegation only, not execution
+    isolation: strict
 
   specialist:
     description: "Deep expertise in narrow domain"
     typical_domains: ["security", "data", "backend"]
+    recommended_tier: tier_1_read  # Most specialists are analyzers
+    can_delegate_to: []
+
+  critic:
+    description: "Reviews and provides feedback, cannot approve"
+    typical_domains: ["development", "security"]
+    recommended_tier: tier_1_read
+    prohibited_actions: ["approve", "merge", "execute"]
+    can_delegate_to: []
+
+# =============================================================================
+# DOMAIN-TIER MAPPINGS
+# Recommended access tiers by domain for separation of duties
+# =============================================================================
+domain_tier_recommendations:
+  security:
+    default_tier: tier_1_read
+    rationale: "Security agents should analyze, not modify"
+    exceptions:
+      - role: remediator
+        tier: tier_3_write_elevated
+        requires: governor_approval
+      - role: policy_definer
+        tier: tier_4_policy
+
+  infrastructure:
+    default_tier: tier_3_write_elevated
+    rationale: "Infrastructure requires elevated access"
+    separation_required:
+      - readers: ["monitor", "cost_reporter"]
+        tier: tier_1_read
+      - operators: ["deployer", "provisioner"]
+        tier: tier_3_write_elevated
+
+  documentation:
+    default_tier: tier_2_write_limited
+    rationale: "Doc changes are low-risk"
+
+  development:
+    default_tier: tier_2_write_limited
+    rationale: "Code generation is sandboxed"
+    separation_required:
+      - critics: ["reviewer", "analyzer"]
+        tier: tier_1_read
+        prohibited: ["approve", "merge"]
+      - generators: ["scaffolder", "test_writer"]
+        tier: tier_2_write_limited
+
+  agents:
+    default_tier: tier_3_write_elevated
+    rationale: "Agent orchestration needs elevated access"
+    separation_required:
+      - governors: ["policy_definer", "compliance_enforcer"]
+        tier: tier_4_policy
+        isolation: strict
+      - orchestrators: ["coordinator", "scheduler"]
+        tier: tier_3_write_elevated
+
+  backend:
+    default_tier: tier_2_write_limited
+    separation_required:
+      - analyzers: ["db_analyzer", "api_auditor"]
+        tier: tier_1_read
+      - operators: ["db_migrator", "service_deployer"]
+        tier: tier_3_write_elevated
+
+  data:
+    default_tier: tier_1_read
+    rationale: "Data access is sensitive - read-only by default"
+    exceptions:
+      - role: etl_operator
+        tier: tier_3_write_elevated
+        requires: data_governance_approval
 
 # =============================================================================
 # USAGE IN AGENT MANIFESTS
