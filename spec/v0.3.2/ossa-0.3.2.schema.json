@@ -2,7 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "https://openstandardagents.org/schemas/v0.3.2/manifest.json",
   "title": "OSSA v0.3.2 Manifest Schema",
-  "description": "Open Standard for Scalable AI Agents (OSSA) v0.3.2 - Unified Task Schema. Supports Agent (agentic loops with LLM), Task (deterministic workflow steps), and Workflow (composition of Tasks and Agents) kinds Includes Agent-to-Agent Messaging Extension.",
+  "description": "Open Standard for Scalable AI Agents (OSSA) v0.3.2 - Unified Task Schema with Access Tiers & Separation of Duties. Supports Agent (agentic loops with LLM), Task (deterministic workflow steps), and Workflow (composition of Tasks and Agents) kinds. Includes Agent-to-Agent Messaging Extension and Access Control Tiers for privilege separation.",
   "type": "object",
   "required": [
     "apiVersion",
@@ -110,6 +110,216 @@
     }
   ],
   "definitions": {
+    "AccessTier": {
+      "type": "object",
+      "description": "Access tier configuration for separation of duties (v0.3.2+). Defines privilege levels and role separations for agents.",
+      "required": ["tier"],
+      "properties": {
+        "tier": {
+          "type": "string",
+          "enum": ["tier_1_read", "tier_2_write_limited", "tier_3_write_elevated", "tier_4_policy"],
+          "description": "Access tier level: tier_1_read (analyzers), tier_2_write_limited (workers), tier_3_write_elevated (operators), tier_4_policy (governors)"
+        },
+        "permissions": {
+          "type": "array",
+          "description": "Explicit permissions granted to this agent",
+          "items": {
+            "type": "string",
+            "enum": [
+              "read_code",
+              "read_configs",
+              "read_metrics",
+              "read_logs",
+              "read_issues",
+              "read_mrs",
+              "execute_queries",
+              "write_docs",
+              "write_tests",
+              "write_scaffolds",
+              "write_configs_draft",
+              "create_issues",
+              "create_mrs_draft",
+              "execute_sandboxed",
+              "write_production_code",
+              "merge_mrs",
+              "delete_branches",
+              "modify_infrastructure",
+              "modify_secrets",
+              "execute_deployments",
+              "modify_pipelines",
+              "modify_configs",
+              "execute_commands",
+              "define_policies",
+              "publish_policies",
+              "audit_compliance",
+              "report_violations"
+            ]
+          },
+          "uniqueItems": true
+        },
+        "prohibited": {
+          "type": "array",
+          "description": "Explicitly prohibited actions for this agent",
+          "items": {
+            "type": "string"
+          },
+          "uniqueItems": true
+        },
+        "audit_level": {
+          "type": "string",
+          "enum": ["standard", "detailed", "comprehensive"],
+          "default": "standard",
+          "description": "Audit logging level: standard (30 days), detailed (90 days), comprehensive (365 days)"
+        },
+        "requires_approval": {
+          "type": "boolean",
+          "default": false,
+          "description": "Whether operations require approval chain"
+        },
+        "approval_chain": {
+          "type": "string",
+          "enum": ["standard", "elevated", "critical"],
+          "description": "Approval workflow to use when requires_approval is true"
+        },
+        "isolation": {
+          "type": "string",
+          "enum": ["none", "standard", "strict"],
+          "default": "none",
+          "description": "Isolation level: none (default), standard (limited delegation), strict (no execution, policy only)"
+        }
+      },
+      "additionalProperties": false
+    },
+    "SeparationOfDuties": {
+      "type": "object",
+      "description": "Role separation rules for preventing conflicts of interest",
+      "properties": {
+        "role": {
+          "type": "string",
+          "description": "Primary role of this agent",
+          "enum": [
+            "analyzer",
+            "auditor",
+            "scanner",
+            "reviewer",
+            "monitor",
+            "generator",
+            "scaffolder",
+            "documenter",
+            "test_writer",
+            "deployer",
+            "operator",
+            "executor",
+            "maintainer",
+            "governor",
+            "policy_definer",
+            "compliance_officer",
+            "approver",
+            "critic",
+            "remediator",
+            "enforcer"
+          ]
+        },
+        "conflicts_with": {
+          "type": "array",
+          "description": "Roles that this agent must NOT also perform (separation of duties)",
+          "items": {
+            "type": "string"
+          },
+          "uniqueItems": true
+        },
+        "can_delegate_to": {
+          "type": "array",
+          "description": "Roles/tiers this agent can delegate tasks to",
+          "items": {
+            "type": "string"
+          },
+          "uniqueItems": true
+        },
+        "prohibited_actions": {
+          "type": "array",
+          "description": "Specific actions this role must never perform",
+          "items": {
+            "type": "string",
+            "enum": ["approve", "merge", "execute", "deploy", "delete", "modify_production", "define_policies", "bypass_approvals"]
+          },
+          "uniqueItems": true
+        }
+      },
+      "additionalProperties": false
+    },
+    "DelegationConfig": {
+      "type": "object",
+      "description": "Configuration for delegating tasks to other agents",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Whether this agent can delegate to others"
+        },
+        "allowed_tiers": {
+          "type": "array",
+          "description": "Tiers this agent can delegate to",
+          "items": {
+            "type": "string",
+            "enum": ["tier_1_read", "tier_2_write_limited", "tier_3_write_elevated"]
+          },
+          "uniqueItems": true
+        },
+        "allowed_operations": {
+          "type": "array",
+          "description": "Operations that can be delegated",
+          "items": {
+            "type": "string"
+          }
+        },
+        "requires": {
+          "type": "array",
+          "description": "Requirements for delegation",
+          "items": {
+            "type": "string",
+            "enum": ["delegation_token", "audit_trail", "violation_report", "task_specification", "approval"]
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "TaxonomyClassification": {
+      "type": "object",
+      "description": "Hierarchical taxonomy classification for agents (v0.3.2+). Links to taxonomy.yaml spec.",
+      "required": ["domain"],
+      "properties": {
+        "domain": {
+          "type": "string",
+          "enum": ["security", "infrastructure", "documentation", "backend", "frontend", "data", "agents", "development", "content"],
+          "description": "Primary domain classification - every agent belongs to exactly one domain"
+        },
+        "subdomain": {
+          "type": "string",
+          "description": "Subdomain within the primary domain (e.g., auth, ci-cd, api-docs)"
+        },
+        "capability": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_]*$",
+          "description": "Primary capability this agent provides"
+        },
+        "concerns": {
+          "type": "array",
+          "description": "Cross-cutting concerns that apply to this agent",
+          "items": {
+            "type": "string",
+            "enum": ["quality", "observability", "governance", "performance", "architecture", "cost", "reliability"]
+          },
+          "uniqueItems": true
+        },
+        "recommended_tier": {
+          "type": "string",
+          "enum": ["tier_1_read", "tier_2_write_limited", "tier_3_write_elevated", "tier_4_policy"],
+          "description": "Recommended access tier based on domain defaults"
+        }
+      },
+      "additionalProperties": false
+    },
     "AgentIdentity": {
       "type": "object",
       "description": "Comprehensive agent identity configuration for service accounts, authentication, and observability",
@@ -756,6 +966,27 @@
         "identity": {
           "$ref": "#/definitions/AgentIdentity",
           "description": "Agent identity configuration including service accounts, authentication, and observability (v0.3.2+)"
+        },
+        "access": {
+          "$ref": "#/definitions/AccessTier",
+          "description": "Access tier configuration for separation of duties (v0.3.2+). Defines privilege level and allowed operations."
+        },
+        "separation": {
+          "$ref": "#/definitions/SeparationOfDuties",
+          "description": "Role separation configuration to prevent conflicts of interest (v0.3.2+)"
+        },
+        "delegation": {
+          "$ref": "#/definitions/DelegationConfig",
+          "description": "Delegation configuration for multi-agent hierarchies (v0.3.2+)"
+        },
+        "type": {
+          "type": "string",
+          "enum": ["analyzer", "worker", "operator", "supervisor", "orchestrator", "governor", "specialist", "critic"],
+          "description": "Agent type classification aligned with access tiers (v0.3.2+)"
+        },
+        "taxonomy": {
+          "$ref": "#/definitions/TaxonomyClassification",
+          "description": "Taxonomy classification for domain and cross-cutting concerns (v0.3.2+)"
         },
         "compliance": {
           "type": "object",

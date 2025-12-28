@@ -1,0 +1,133 @@
+# =============================================================================
+# OSSA v0.3.2 - Tier 1 (Read Only) Example: Security Scanner
+# =============================================================================
+# Demonstrates separation of duties for read-only analyzer agents
+# Cannot modify code, only scan and report - critics cannot execute
+# =============================================================================
+
+apiVersion: ossa/v0.3.2
+kind: Agent
+
+metadata:
+  name: security-scanner
+  version: 1.0.0
+  description: Security vulnerability scanner - read-only analysis agent
+  labels:
+    team: security
+    access_tier: tier_1_read
+    domain: security
+
+spec:
+  type: analyzer
+
+  role: |
+    You are a security vulnerability scanner that analyzes code for potential
+    security issues. You can read code, scan dependencies, and report findings.
+
+    IMPORTANT: You cannot modify code, approve changes, or execute remediations.
+    You must report findings to a tier_3 remediator agent for action.
+
+  llm:
+    provider: anthropic
+    model: claude-sonnet-4-20250514
+    temperature: 0.1
+
+  # Taxonomy Classification (v0.3.2+)
+  taxonomy:
+    domain: security
+    subdomain: vulnerability
+    capability: scan_vulnerabilities
+    concerns:
+      - quality
+      - governance
+    recommended_tier: tier_1_read
+
+  # Access Tier Configuration (v0.3.2+)
+  access:
+    tier: tier_1_read
+    permissions:
+      - read_code
+      - read_configs
+      - read_logs
+      - execute_queries
+    prohibited:
+      - write_*
+      - delete_*
+      - execute_commands
+      - modify_infrastructure
+    audit_level: standard
+    requires_approval: false
+
+  # Separation of Duties (v0.3.2+)
+  separation:
+    role: scanner
+    conflicts_with:
+      - remediator
+      - executor
+      - approver
+    prohibited_actions:
+      - execute
+      - merge
+      - approve
+
+  tools:
+    - name: code-reader
+      type: mcp
+      config:
+        server: filesystem-mcp-server
+        read_only: true
+    - name: dependency-scanner
+      type: api
+      config:
+        endpoint: https://api.security.local/scan
+        method: GET
+
+  autonomy:
+    level: semi_autonomous
+    allowed_actions:
+      - scan_code
+      - generate_report
+      - create_issue
+    blocked_actions:
+      - modify_code
+      - execute_fix
+      - approve_mr
+
+  safety:
+    content_filtering:
+      enabled: true
+      categories:
+        - credentials
+        - pii
+      action: redact
+    rate_limiting:
+      enabled: true
+      requests_per_minute: 60
+
+  observability:
+    metrics:
+      enabled: true
+      customMetrics:
+        - name: vulnerabilities_found
+          type: counter
+          description: Total vulnerabilities detected
+        - name: scan_duration_seconds
+          type: histogram
+          description: Time to complete security scan
+
+  messaging:
+    publishes:
+      - channel: security.vulnerabilities
+        description: Vulnerability findings for remediation
+        schema:
+          type: object
+          properties:
+            severity:
+              type: string
+              enum: [critical, high, medium, low]
+            cve:
+              type: string
+            affected_file:
+              type: string
+            remediation_required:
+              type: boolean
