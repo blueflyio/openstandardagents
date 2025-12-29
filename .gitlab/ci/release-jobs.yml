@@ -407,10 +407,8 @@ release:audit:
     - npm ci --legacy-peer-deps
     - npm run build
     - npm pack --dry-run | tee audit-pack-dry-run.txt
-    # npm pack outputs notices to stderr and filename to stdout - capture just the filename
-    - PKG="$(npm pack 2>/dev/null | tail -1)"
-    - echo "Package file: $PKG"
-    - test -f "$PKG" || { echo "ERROR: Package file not found"; exit 1; }
+    - 'PKG="$(npm pack 2>/dev/null | tail -1)" && echo "Package file: $PKG"'
+    - 'test -f "$PKG" || { echo "ERROR: Package file not found"; exit 1; }'
     - sha256sum "$PKG" | tee audit-sha256.txt
     - tar -tzf "$PKG" | head -200 | tee audit-tar-list-head.txt
   artifacts:
