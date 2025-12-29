@@ -46,6 +46,7 @@ include:
   - local: '.gitlab/ci/rc-validation.yml'
   - local: '.gitlab/ci/rc-promotion.yml'
   - local: '.gitlab/ci/utilities.yml'
+  - local: '.gitlab/ci/openapi-validation.yml'  # OpenAPI & OSSA extensions validation (#176)
 
 # Override SAST template jobs to add needs:[] so they don't block .post stage
 semgrep-sast:
