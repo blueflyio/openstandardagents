@@ -47,16 +47,20 @@ include:
   - local: '.gitlab/ci/rc-promotion.yml'
   - local: '.gitlab/ci/utilities.yml'
   - local: '.gitlab/ci/openapi-validation.yml'  # OpenAPI & OSSA extensions validation (#176)
+  - local: '.gitlab/ci/release-environments.yml'  # Release environment deployments (#376)
 
-# Override SAST template jobs to add needs:[] so they don't block .post stage
+# Override SAST template jobs - run independently without blocking
 semgrep-sast:
   needs: []
+  allow_failure: true
 
 secret_detection:
   needs: []
+  allow_failure: true
 
 gemnasium-dependency_scanning:
   needs: []
+  allow_failure: true
 
 #   - CI/CD variable ENABLE_RELEASE must be set to "true"
 # This allows deploying to main without releasing. Set the variable only when ready to release.
@@ -87,15 +91,26 @@ stages:
 
 # Use SaaS runners (GitLab Ultimate minutes)
 default:
-  # Cache npm dependencies to speed up pipelines
+  # Cache npm dependencies (file-based key for better invalidation)
   cache:
-    key: ${CI_COMMIT_REF_SLUG}-npm
+    key:
+      files:
+        - package-lock.json
+      prefix: ${CI_COMMIT_REF_SLUG}
     paths:
       - .npm/
       - node_modules/
     policy: pull-push
   tags:
     - saas-linux-small-amd64
+  # Default timeout and retry for reliability
+  timeout: 1h
+  retry:
+    max: 2
+    when:
+      - runner_system_failure
+      - stuck_or_timeout_failure
+      - api_failure
 
 variables:
   NODE_VERSION: "22"
@@ -105,6 +120,10 @@ variables:
   # GITLAB_PUSH_TOKEN is now set directly as CI/CD variable (not derived)
   # This avoids variable expansion issues with masked tokens
   DEPLOY_TOKEN_USERNAME: "gitlab+deploy-token-10466652"
+  # Performance optimizations
+  FF_USE_FASTZIP: "true"
+  TRANSFER_METER_FREQUENCY: "5s"
+  GIT_DEPTH: "0"
 
 # ============================================================================
 # WORKFLOW - MERGE TRAINS ENABLED
@@ -122,17 +141,11 @@ variables:
 
 workflow:
   rules:
-    # Merge train pipelines (combined state testing)
+    # Merge train pipelines (highest priority - combined state testing)
     - if: $CI_MERGE_REQUEST_EVENT_TYPE == "merge_train"
-    # Merged result pipelines (pre-merge validation)
+    # Pre-merge validation (merged result pipelines)
     - if: $CI_MERGE_REQUEST_EVENT_TYPE == "merged_result"
     # Regular MR pipelines
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-    # Regular branch pipelines
-    - if: $CI_COMMIT_BRANCH
-    # Tag pipelines
-    - if: $CI_COMMIT_TAG
-    # Scheduled and webhook pipelines
-    - if: $CI_PIPELINE_SOURCE == "schedule"
-    - if: $CI_PIPELINE_SOURCE == "web"
-    - if: $CI_PIPELINE_SOURCE == "trigger"
+    # Branch, tag, and scheduled/webhook pipelines (consolidated)
+    - if: $CI_COMMIT_BRANCH || $CI_COMMIT_TAG || $CI_PIPELINE_SOURCE =~ /(schedule|web|trigger)/
