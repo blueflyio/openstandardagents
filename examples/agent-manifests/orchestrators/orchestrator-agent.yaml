@@ -20,7 +20,7 @@
 # ============================================================================
 
 # OSSA manifest version - defines the schema and features available
-apiVersion: ossa/v0.3.0
+apiVersion: ossa/v0.3.2
 
 # Kind declares this as an Agent manifest (vs. Bridge, Tool, etc.)
 kind: Agent

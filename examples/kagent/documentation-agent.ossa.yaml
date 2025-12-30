@@ -2,7 +2,7 @@
 # Documentation Agent
 # Domain: documentation.generation.automated
 
-apiVersion: ossa/v0.3.0
+apiVersion: ossa/v0.3.2
 kind: Agent
 metadata:
   name: documentation-agent
