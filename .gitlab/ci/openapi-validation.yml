@@ -60,17 +60,18 @@ validate:openapi:ossa-extensions:
       echo ""
 
       # Run OSSA extension validation
+      VALIDATION_FAILED=0
       while IFS= read -r file; do
-        npx tsx scripts/validate-openapi-extensions.ts "$file" || {
+        if ! npx tsx scripts/validate-openapi-extensions.ts "$file"; then
           echo ""
-          echo "ERROR: OSSA OpenAPI extension validation failed"
-          exit 1
-        }
+          echo "ERROR: OSSA OpenAPI extension validation failed for $file"
+          VALIDATION_FAILED=1
+        fi
       done <<< "$OPENAPI_FILES"
-        echo ""
-        echo "ERROR: OSSA OpenAPI extension validation failed"
+
+      if [ $VALIDATION_FAILED -eq 1 ]; then
         exit 1
-      }
+      fi
   artifacts:
     when: always
     paths:
