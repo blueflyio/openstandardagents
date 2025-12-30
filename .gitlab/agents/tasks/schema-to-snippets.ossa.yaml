@@ -8,7 +8,7 @@
 #
 # ═══════════════════════════════════════════════════════════════════════════════
 
-apiVersion: ossa/v0.3.0
+apiVersion: ossa/v0.3.2
 kind: Task
 metadata:
   name: schema-to-snippets

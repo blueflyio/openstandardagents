@@ -62,11 +62,11 @@ Closes #<!-- issue number -->
 
 ---
 
-## OSSA v0.3.0 Compliance Checklist
+## OSSA v0.3.2 Compliance Checklist
 
 ### Version Requirements
 - [ ] No hardcoded version numbers (use `getApiVersion()` or `getVersion()`)
-- [ ] Agent manifests use `apiVersion: ossa/v0.3.0` format
+- [ ] Agent manifests use `apiVersion: ossa/v0.3.2` format
 - [ ] Dynamic LLM config: `${LLM_PROVIDER:-anthropic}`, `${LLM_MODEL:-claude-sonnet-4}`
 
 ### LLM Configuration

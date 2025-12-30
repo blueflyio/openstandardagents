@@ -1,6 +1,6 @@
 # Example: Batch Email Campaign Workflow
 # Demonstrates loops, parallel execution, and batch processing
-apiVersion: ossa/v0.3.0
+apiVersion: ossa/v0.3.2
 kind: Workflow
 metadata:
   name: batch-email-campaign

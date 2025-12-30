@@ -2,7 +2,7 @@
 # Universal agent platform: OSSA + GitLab Duo + Google A2A + MCP
 # Zero hardcoded models, runtime-agnostic, infrastructure-driven
 
-apiVersion: ossa/v0.3.1
+apiVersion: ossa/v0.3.2
 kind: Agent
 
 metadata:
