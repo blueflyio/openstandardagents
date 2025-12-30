@@ -101,7 +101,7 @@ function getAllBlogPosts(): BlogPost[] {
           tags: Array.isArray(data.tags) ? (data.tags.map((tag) => cleanValue(tag)) as string[]) : [],
           excerpt: (cleanValue(data.excerpt) || '') as string,
         };
-      } catch (error) {
+      } catch (_error) {
         // Return a default post so the page doesn't crash
         const defaultDate = new Date();
         return {

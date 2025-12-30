@@ -27,6 +27,13 @@ export const metadata: Metadata = {
   creator: 'OSSA Standards Team',
   publisher: 'OSSA Standards Team',
   metadataBase: new URL('https://openstandardagents.org'),
+  viewport: {
+    width: 'device-width',
+    initialScale: 1,
+    maximumScale: 5,
+    userScalable: true,
+  },
+
   openGraph: {
     title: `Open Standard Agents ${versionInfo.tag} - Enterprise Multi-Agent Specification`,
     description: 'Production-ready specification for autonomous agent systems with formal security models, multi-agent orchestration, and OpenTelemetry observability.',

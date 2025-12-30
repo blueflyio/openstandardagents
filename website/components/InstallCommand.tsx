@@ -31,7 +31,8 @@ export function InstallCommand() {
       setCopiedIndex(index);
       setTimeout(() => setCopiedIndex(null), 2000);
     } catch (err) {
-}
+      // Failed to copy to clipboard
+    }
   };
 
   return (

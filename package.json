@@ -6,7 +6,7 @@
   "private": true,
   "workspaces": [
     "website",
-    "discord-bot"
+    "bots/ossa-discord"
   ],
   "scripts": {
     "dev": "pnpm -r dev",
@@ -19,8 +19,8 @@
     "sync:examples": "pnpm --filter website sync:examples",
     "website:dev": "pnpm --filter website dev",
     "website:build": "pnpm --filter website build",
-    "bot:dev": "pnpm --filter discord-bot dev",
-    "bot:start": "pnpm --filter discord-bot start",
+    "bot:dev": "pnpm --filter bots/ossa-discord dev",
+    "bot:start": "pnpm --filter bots/ossa-discord start",
     "typecheck": "pnpm -r typecheck"
   },
   "repository": {

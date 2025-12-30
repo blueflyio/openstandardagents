@@ -81,7 +81,7 @@ review:deploy:
 
       # Set review app variables
       export REVIEW_APP_NAME="mr-${CI_MERGE_REQUEST_IID}"
-      export REVIEW_APP_HOST="${CI_MERGE_REQUEST_IID}.${REVIEW_DOMAIN}"
+      export REVIEW_APP_HOST="openstandardagents.orb.local"
       export REVIEW_APP_IMAGE="${CI_REGISTRY_IMAGE}:${CI_COMMIT_SHA}"
       export NAMESPACE="${REVIEW_NAMESPACE}"
 
@@ -133,7 +133,7 @@ review:deploy:
       echo "=============================================="
   environment:
     name: review/${CI_MERGE_REQUEST_SOURCE_BRANCH_NAME}
-    url: http://${CI_MERGE_REQUEST_IID}.review.blueflyagents.com
+    url: http://openstandardagents.orb.local
     on_stop: review:stop
     auto_stop_in: 1 week
     deployment_tier: development

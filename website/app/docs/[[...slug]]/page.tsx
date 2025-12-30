@@ -98,7 +98,7 @@ async function fetchRepoInfo(): Promise<GitHubRepoInfo | null> {
           const prsData = await prsResponse.json();
           openPullRequests = Array.isArray(prsData) ? prsData.length : 0;
         }
-      } catch (error) {
+      } catch (_error) {
         openPullRequests = 0;
       }
     }
@@ -113,7 +113,7 @@ async function fetchRepoInfo(): Promise<GitHubRepoInfo | null> {
       updatedAt: repoData?.updated_at || '',
       watchers: repoData?.watchers_count || 0,
     };
-  } catch (error) {
+  } catch (_error) {
     return null;
   }
 }
@@ -239,7 +239,7 @@ export function generateStaticParams(): Array<{ slug: string[] }> {
   ];
 
     return result;
-  } catch (error) {
+  } catch (_error) {
     return [{ slug: [] }];
   }
 }
@@ -879,7 +879,7 @@ export default async function DocsPage({ params }: PageProps) {
         <main className="flex-1 container mx-auto max-w-4xl px-4 py-8 pt-16 lg:pt-8">
           <article className="prose prose-lg max-w-none">
             <h1>{String(doc.metadata.title)}</h1>
-            {doc.metadata.description && String(doc.metadata.description) && (
+            {typeof doc.metadata.description === 'string' && doc.metadata.description && (
               <p className="text-xl text-gray-600">{String(doc.metadata.description)}</p>
             )}
             <div className="mt-8">
