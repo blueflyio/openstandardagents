@@ -42,8 +42,8 @@ Thumbs.db
 *.temp
 
 # Synced content (generated from @bluefly/openstandardagents package)
-website/public/schema/
-website/public/schemas/
+# NOTE: schemas MUST be committed for GitLab Pages deployment
+# website/public/schemas/  <- REMOVED - needed for deployment
 website/public/examples/
 
 # Spec folder (fetched from blueflyio/openstandardagents main branch)

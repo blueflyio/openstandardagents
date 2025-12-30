@@ -1,0 +1,7 @@
+pre-commit:
+  parallel: true
+  commands:
+    audit-tokens:
+      run: node scripts/audit-tokens.js
+      stage: pre-commit
+      only: git diff --cached --name-only | grep -E "(\.gitlab-ci\.yml|scripts/|package\.json|\.env)" || true
