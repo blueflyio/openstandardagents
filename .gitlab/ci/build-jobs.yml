@@ -20,7 +20,7 @@ generate:all:
     - test -f build.env && . build.env || echo "No build.env found (using defaults)"
   script:
     - npm ci --legacy-peer-deps
-    - npm run build  # Build CLI first
+    - npm run build
     - node dist/cli/index.js generate all
     - echo "Generated all: types, zod, manifests, vscode, openapi"
   artifacts:
