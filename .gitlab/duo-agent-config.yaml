@@ -267,7 +267,7 @@ commands:
     # 1. Check for missing apiVersion in OSSA manifests
     for manifest in $(find . -name "*.ossa.yaml" ! -path "./node_modules/*"); do
       if ! grep -q "^apiVersion:" "$manifest"; then
-        echo "🔧 FIX: Add 'apiVersion: ossa/v0.3.0' to $manifest"
+        echo "🔧 FIX: Add 'apiVersion: ossa/v0.3.2' to $manifest"
         FIXES_SUGGESTED=$((FIXES_SUGGESTED + 1))
       fi
     done
