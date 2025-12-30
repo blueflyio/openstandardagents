@@ -47,7 +47,7 @@ validate:version-drift:
     - npm ci --legacy-peer-deps
     - npm run build
     - node dist/cli/index.js generate validate
-    - git diff --exit-code || (echo "ERROR: Version drift detected! Run 'ossa generate sync' locally" && exit 1)
+    - git diff --exit-code
   rules:
     - if: $CI_MERGE_REQUEST_IID
       when: always
