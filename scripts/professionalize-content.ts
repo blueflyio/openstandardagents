@@ -190,7 +190,7 @@ async function processMRDescription(mrIid: string): Promise<void> {
     });
 
     // Update MR description
-    await fetch(
+    const updateResponse = await fetch(
       `${apiUrl}/projects/${projectId}/merge_requests/${mrIid}`,
       {
         method: 'PUT',
@@ -203,6 +203,11 @@ async function processMRDescription(mrIid: string): Promise<void> {
         }),
       }
     );
+
+    if (!updateResponse.ok) {
+      console.error(`Failed to update MR description: ${updateResponse.statusText}`);
+      return;
+    }
 
     console.log(' MR description professionalized');
   } catch (error) {
