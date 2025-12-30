@@ -5,7 +5,7 @@
 # Demonstrates OSSA v0.3.0 Task kind with all features
 # ============================================================================
 
-apiVersion: ossa/v0.3.0
+apiVersion: ossa/v0.3.2
 kind: Task
 metadata:
   name: generate-changelog-task

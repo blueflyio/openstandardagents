@@ -2,7 +2,7 @@
 # Kubernetes Troubleshooter Agent with KAgent Bridge
 # Fully compatible with kagent.dev/v1alpha2
 
-apiVersion: ossa/v0.3.0
+apiVersion: ossa/v0.3.2
 ossaVersion: "1.0"
 
 agent:
