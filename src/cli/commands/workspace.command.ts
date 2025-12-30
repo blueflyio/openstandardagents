@@ -61,9 +61,9 @@ workspaceCommand
         apiVersion: 'ossa.dev/v1',
         kind: 'AgentRegistry',
         metadata: {
-          name: options.name,
+          name: options.name.replace(/[^a-zA-Z0-9-_]/g, '-'),
           version: getVersion(),
-          description: `Agent registry for ${options.name}`,
+          description: `Agent registry for ${options.name.replace(/[^a-zA-Z0-9-_]/g, '-')}`,
         },
         agents: [],
         discovery: {

@@ -52,11 +52,6 @@ spec:
     - Independent tests (no shared state)
     - Fast execution
 
-  llm:
-    provider: ${OSSA_LLM_PROVIDER:-anthropic}
-    model: ${OSSA_LLM_MODEL:-claude-sonnet-4}
-    temperature: 0.3
-    maxTokens: ${OSSA_LLM_MAX_TOKENS:-16384}
 
   tools:
     - name: code.parse
