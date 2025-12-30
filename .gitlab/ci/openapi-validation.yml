@@ -60,7 +60,13 @@ validate:openapi:ossa-extensions:
       echo ""
 
       # Run OSSA extension validation
-      echo "$OPENAPI_FILES" | xargs npx tsx scripts/validate-openapi-extensions.ts || {
+      while IFS= read -r file; do
+        npx tsx scripts/validate-openapi-extensions.ts "$file" || {
+          echo ""
+          echo "ERROR: OSSA OpenAPI extension validation failed"
+          exit 1
+        }
+      done <<< "$OPENAPI_FILES"
         echo ""
         echo "ERROR: OSSA OpenAPI extension validation failed"
         exit 1
