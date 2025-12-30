@@ -4,6 +4,7 @@
 # Uses: ossa generate all (types, zod, manifests, vscode, openapi)
 # Single source of truth: package.json version
 # ============================================================================
+# Fixed: Removed inline comments from script arrays
 
 generate:all:
   stage: build
