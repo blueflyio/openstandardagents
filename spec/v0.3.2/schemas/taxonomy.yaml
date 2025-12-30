@@ -2,7 +2,7 @@
 # Comprehensive hierarchical classification for AI agents
 # Aligned with OSSA spec roles, multi-agent patterns, and industry standards
 
-apiVersion: ossa/v0.3.1
+apiVersion: ossa/v0.3.2
 kind: Taxonomy
 metadata:
   name: agent-taxonomy
