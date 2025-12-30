@@ -46,7 +46,7 @@ validate:openapi:ossa-extensions:
   needs: []
   script:
     - echo "OSSA OpenAPI Extensions Validation"
-    - echo "==================================" 
+    - echo "=================================="
     - |
       # Find all OpenAPI files
       OPENAPI_FILES=$(find openapi -name "*.yaml" -o -name "*.yml" 2>/dev/null | sort)
