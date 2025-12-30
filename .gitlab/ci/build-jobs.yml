@@ -1,10 +1,16 @@
 # ============================================================================
-generate:types:
+# STAGE 1 - GENERATE (CodegenService via CLI)
+# ============================================================================
+# Uses: ossa generate all (types, zod, manifests, vscode, openapi)
+# Single source of truth: package.json version
+# ============================================================================
+
+generate:all:
   stage: build
   image: node:${NODE_VERSION}-alpine
   tags:
     - saas-linux-small-amd64
-  timeout: 10 minutes
+  timeout: 15 minutes
   needs:
     - job: detect:version
       optional: true
@@ -14,15 +20,37 @@ generate:types:
     - test -f build.env && . build.env || echo "No build.env found (using defaults)"
   script:
     - npm ci --legacy-peer-deps
-    - npm run gen:types
-    - npm run gen:zod
-    - echo "Generated TypeScript types and Zod schemas"
+    - npm run build  # Build CLI first
+    - node dist/cli/index.js generate all
+    - echo "Generated all: types, zod, manifests, vscode, openapi"
   artifacts:
     paths:
       - src/types/generated/
+      - tools/vscode-ossa/
+      - openapi/
     expire_in: 1 hour
   rules:
     - when: always
+
+# Version Drift Detection (fails on drift in MRs)
+validate:version-drift:
+  stage: build
+  image: node:${NODE_VERSION}-alpine
+  tags:
+    - saas-linux-small-amd64
+  timeout: 10 minutes
+  needs:
+    - job: generate:all
+      artifacts: true
+  script:
+    - npm ci --legacy-peer-deps
+    - npm run build
+    - node dist/cli/index.js generate validate
+    - git diff --exit-code || (echo "ERROR: Version drift detected! Run 'ossa generate sync' locally" && exit 1)
+  rules:
+    - if: $CI_MERGE_REQUEST_IID
+      when: always
+    - when: never
 
 # STAGE 2 - BUILD
 # ============================================================================
@@ -46,7 +74,7 @@ build:dist:
     - job: detect:version
       optional: true
       artifacts: true
-    - job: generate:types
+    - job: generate:all
       artifacts: true
   before_script:
     - apk add --no-cache curl jq
