@@ -123,7 +123,7 @@ export function DocsSidebar() {
       {/* Mobile hamburger button - fixed at top left */}
       <button
         onClick={() => setIsMobileOpen(!isMobileOpen)}
-        className="lg:hidden fixed top-4 left-4 z-50 p-2 bg-white rounded-md shadow-md border border-gray-200"
+        className="lg:hidden fixed top-4 left-4 z-50 p-3 min-h-[44px] min-w-[44px] flex items-center justify-center bg-white rounded-md shadow-md border border-gray-200"
         aria-label="Toggle navigation"
       >
         <svg

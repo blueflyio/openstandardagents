@@ -169,21 +169,18 @@ export default function PlaygroundPage() {
 
   // Load examples on mount
   useEffect(() => {
-    const loadExamples = async (): Promise<void> => {
+    const loadExamples = async () => {
       try {
-        const response = await fetch('/examples.json');
-        if (!response.ok) {
-          return;
-        }
-        const data = await response.json();
+        const res = await fetch('/examples.json');
+        const data = await res.json();
         if (Array.isArray(data)) {
           setExamples(data);
         }
       } catch {
-        // Silently fail - examples are optional
+        // Failed to load examples - use empty array
       }
     };
-    void loadExamples();
+    loadExamples();
   }, []);
 
   const handleValidate = useCallback(async (silent = false): Promise<void> => {
