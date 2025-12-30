@@ -1,0 +1,139 @@
+# ============================================================================
+# OSSA Power Agent: Compliance Validator
+# ============================================================================
+# OSSA specification compliance validation agent. Validates agent manifests,
+# ensures schema compliance, and enforces organizational policies.
+#
+# Showcases: Contract validation, schema enforcement, policy DSL
+# ============================================================================
+
+apiVersion: ossa/v0.3.2
+kind: Agent
+metadata:
+  name: compliance-validator
+  version: 1.0.0
+  description: OSSA compliance validation and policy enforcement agent
+  labels:
+    ossa.dev/category: compliance
+    ossa.dev/tier: power-agent
+  annotations:
+    ossa.dev/documentation: https://openstandardagents.org/agents/compliance-validator
+
+spec:
+  capabilities:
+    - name: validate.manifest
+      description: Validate OSSA manifest against schema
+    - name: validate.contract
+      description: Validate agent contracts
+    - name: validate.policy
+      description: Enforce organizational policies
+    - name: validate.migration
+      description: Validate migration compatibility
+
+  role: |
+    You are the OSSA compliance validator responsible for ensuring all agent
+    manifests comply with the OSSA specification and organizational policies.
+
+    Validation scope:
+    1. Schema Compliance - Validate against OSSA JSON Schema
+    2. Contract Validation - Verify input/output contracts
+    3. Policy Enforcement - Apply organizational policies
+    4. Migration Checks - Ensure backward compatibility
+
+    Report all violations with:
+    - Severity level (error, warning, info)
+    - Location in manifest
+    - Specific violation description
+    - Remediation guidance
+
+  llm:
+    provider: ${OSSA_LLM_PROVIDER:-anthropic}
+    model: ${OSSA_LLM_MODEL:-claude-sonnet-4}
+    temperature: 0.1  # Very low for consistent validation
+    maxTokens: ${OSSA_LLM_MAX_TOKENS:-8192}
+
+  tools:
+    - name: schema.validate
+      description: Validate manifest against JSON Schema
+      handler:
+        runtime: local
+        capability: jsonschema.validate
+
+    - name: manifest.parse
+      description: Parse OSSA manifest (YAML/JSON)
+      handler:
+        runtime: local
+        capability: manifest.parse
+
+    - name: policy.evaluate
+      description: Evaluate against policy rules
+      handler:
+        runtime: local
+        capability: policy.evaluate
+
+    - name: report.generate
+      description: Generate validation report
+      handler:
+        runtime: local
+        capability: report.generate
+
+  policies:
+    # Built-in policies for OSSA compliance
+    rules:
+      - id: require-metadata-version
+        description: All manifests must specify metadata.version
+        severity: error
+        check: "metadata.version != null"
+
+      - id: require-role-definition
+        description: Agents must have role definition
+        severity: error
+        check: "spec.role != null && spec.role.length > 50"
+
+      - id: require-capabilities
+        description: Agents should declare capabilities
+        severity: warning
+        check: "spec.capabilities != null && spec.capabilities.length > 0"
+
+      - id: require-llm-config
+        description: Agents should specify LLM configuration
+        severity: warning
+        check: "spec.llm != null"
+
+      - id: no-hardcoded-secrets
+        description: No hardcoded secrets in manifest
+        severity: error
+        check: "!contains(toString(.), 'sk-') && !contains(toString(.), 'glpat-')"
+
+  contracts:
+    provides:
+      - name: ossa-validation
+        version: "1.0"
+        schema:
+          input:
+            type: object
+            properties:
+              manifest_path:
+                type: string
+                description: Path to manifest file
+              policy_set:
+                type: string
+                description: Policy set to apply (default, strict, permissive)
+          output:
+            type: object
+            properties:
+              valid:
+                type: boolean
+              errors:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    severity:
+                      type: string
+                    path:
+                      type: string
+                    message:
+                      type: string
+              warnings:
+                type: array
