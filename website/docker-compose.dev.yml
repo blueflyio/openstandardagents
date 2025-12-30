@@ -5,27 +5,24 @@
 #   cd website && docker compose -f docker-compose.dev.yml up
 #
 # Domains:
-#   /openstandardagents/website     → ossa.orb.local (main repo)
-#   /worktrees/website-design       → website-design.orb.local
-#   /worktrees/ossa-97-sync-cli     → ossa-97-sync-cli.orb.local
+#   OSSA_DOMAIN=openstandardagents → openstandardagents.orb.local
 
 services:
   ossa-dev:
     image: node:22-alpine
-    working_dir: /app
-    command: sh -c "npm install --legacy-peer-deps && npm run dev"
+    working_dir: /app/website
+    command: sh -c "npm install --legacy-peer-deps && npx next dev --turbopack -H 0.0.0.0"
     ports:
       - "3000:3000"
     volumes:
-      - .:/app
-      - node_modules:/app/node_modules
-      - ../examples:/examples:ro
+      - ..:/app
+      - node_modules:/app/website/node_modules
     environment:
       - NODE_ENV=development
       - WATCHPACK_POLLING=true
     labels:
-      # OrbStack auto-domain: uses parent directory name
-      - "dev.orbstack.domains=${OSSA_DOMAIN:-ossa}.orb.local"
+      # OrbStack auto-domain - routes to container port 3000
+      dev.orbstack.domains: "${OSSA_DOMAIN:-openstandardagents}.orb.local=3000"
     healthcheck:
       test: ["CMD", "wget", "-q", "--spider", "http://localhost:3000"]
       interval: 10s

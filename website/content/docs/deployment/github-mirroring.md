@@ -911,7 +911,7 @@ monitor:mirror:
 
 **Documentation:**
 - Website: https://openstandardagents.org
-- GitLab Wiki: https://gitlab.com/blueflyio/openstandardagents/-/wikis/home
+- GitLab Wiki: https://github.com/blueflyio/openstandardagents/-/wikis/home
 
 **Contact:**
 - Email: support@bluefly.io

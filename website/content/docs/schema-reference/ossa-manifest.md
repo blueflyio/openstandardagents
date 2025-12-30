@@ -294,13 +294,13 @@ Invalid names:
 
 The complete JSON Schema is available at:
 ```
-https://openstandardagents.org/schemas/v0.3.0/agent.json
+https://openstandardagents.org/schemas/v0.3.1/agent.json
 ```
 
 Use it for validation and editor autocomplete:
 ```json
 {
-  "$schema": "https://openstandardagents.org/schemas/v0.3.0/agent.json",
+  "$schema": "https://openstandardagents.org/schemas/v0.3.1/agent.json",
   "apiVersion": "ossa/v0.3.x",
   "kind": "Agent",
   "metadata": { ... },
