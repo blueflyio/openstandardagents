@@ -157,7 +157,7 @@ done
 
 ## Schema Version
 
-All agents use `apiVersion: ossa/v0.3.0` to demonstrate v0.2.6 features:
+All agents use `apiVersion: ossa/v0.3.2` to demonstrate v0.2.6 features:
 - Transport metadata
 - State management
 - Security scopes
