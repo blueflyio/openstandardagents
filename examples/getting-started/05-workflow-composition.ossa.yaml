@@ -19,7 +19,7 @@
 # Run:   ossa validate 05-workflow-composition.ossa.yaml
 # =============================================================================
 
-apiVersion: ossa/v0.3.0
+apiVersion: ossa/v0.3.2
 kind: Workflow
 metadata:
   name: code-review-pipeline

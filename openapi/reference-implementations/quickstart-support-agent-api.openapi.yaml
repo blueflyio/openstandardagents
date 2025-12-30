@@ -9,7 +9,7 @@ info:
 x-ossa-metadata:
   version: 0.2.5-RC
   compliance:
-    level: intermediate
+    level: standard
     frameworks:
       - OSSA
       - OpenAPI 3.1
