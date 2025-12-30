@@ -23,7 +23,7 @@ generate:all:
     - npm ci --legacy-peer-deps
     - npm run build
     - node dist/cli/index.js generate all
-    - echo "Generated all: types, zod, manifests, vscode, openapi"
+    - echo "Generated all"
   artifacts:
     paths:
       - src/types/generated/
