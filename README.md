@@ -145,152 +145,152 @@ spec:
 
 ---
 
-## Example: A Complete Enterprise Agent (v0.3.0)
+## What's New in v0.3.2
 
-This agent demonstrates OSSA's full power—**portable across providers, compliant out of the box, and production-ready**:
+### 🔐 Access Tiers System
+**Enterprise privilege separation built into the spec**
+
+v0.3.2 introduces a 4-tier access hierarchy for agents:
+
+| Tier | Name | Permissions | Example Agents |
+|------|------|-------------|----------------|
+| **Tier 1** | Read Only | Analyze, audit, scan (no writes) | security-scanner, code-analyzer |
+| **Tier 2** | Write Limited | Docs, tests, drafts only | doc-generator, test-generator |
+| **Tier 3** | Write Elevated | Production code with approval | code-assistant, refactorer |
+| **Tier 4** | Policy | Full access + governance | compliance-governor |
 
 ```yaml
-apiVersion: ossa/v0.3.0
+spec:
+  access:
+    tier: tier_1_read  # NEW: Declare access level
+    approval_chain: standard
+```
+
+### 🏗️ Workspace Governance Layer
+**`.agents-workspace/` for multi-agent management**
+
+```
+.agents-workspace/
+├── registry/index.yaml       # Agent discovery
+├── policies/tool-allowlist.yaml  # MCP permissions
+├── policies/security-tiers.yaml  # Access controls
+├── orchestration/            # Workflow definitions
+└── shared-context/           # Global standards
+```
+
+### 🤖 10 Production-Ready Showcase Agents
+Consolidated from 60+ agents into optimized examples:
+- `code-assistant` - Universal IDE integration
+- `security-scanner` - SAST/DAST analysis
+- `ci-pipeline` - GitLab/GitHub automation
+- `compliance-validator` - SOC2/HIPAA/GDPR
+- `workflow-orchestrator` - Multi-agent composition
+
+### 📡 A2A Protocol Support
+**Agent-to-Agent discovery with agent-card.json**
+
+```bash
+ossa agent-card generate my-agent.ossa.yaml
+ossa agent-card validate agent-card.json
+```
+
+---
+
+## Example: Security Scanner with Access Tiers (v0.3.2)
+
+This agent demonstrates OSSA v0.3.2's **access tier system**—a Tier 1 (read-only) agent that can analyze but never modify:
+
+```yaml
+apiVersion: ossa/v0.3.2
 kind: Agent
 
 metadata:
-  name: compliance-auditor
+  name: security-scanner
   version: "1.0.0"
-  description: Enterprise compliance auditor with multi-provider support
+  description: SAST/DAST security analysis agent
   labels:
-    category: compliance
-    domain: enterprise/governance
-  annotations:
-    ossa.io/maintainer: security-team@company.com
-    ossa.io/cost-center: CC-1234
-
-# NEW v0.3.0: Identity for OpenTelemetry + service mesh
-identity:
-  service_name: compliance-auditor
-  service_namespace: agents.compliance
-  service_version: "1.0.0"
+    ossa.dev/category: security
+    ossa.dev/tier: tier_1_read  # Access tier label
 
 spec:
-  role: |
-    You are a compliance auditor. Analyze documents for regulatory violations,
-    generate audit reports, and notify stakeholders of findings.
+  # NEW v0.3.2: Access tier declaration
+  access:
+    tier: tier_1_read           # Read-only - cannot modify code
+    approval_chain: none        # No approval needed for read ops
+    audit_level: enhanced       # Full audit trail
 
-  # Provider-agnostic LLM config - switch providers without code changes
+  role: |
+    You are a security scanner. Analyze code for vulnerabilities,
+    check dependencies for CVEs, and generate security reports.
+    You have READ-ONLY access - you cannot modify any files.
+
   llm:
-    provider: anthropic          # Change to: openai, azure, bedrock, ollama
-    model: claude-3-5-sonnet-20241022
-    temperature: 0.3
-    fallback:
-      provider: openai
-      model: gpt-4-turbo-preview
+    provider: anthropic
+    model: claude-sonnet-4
+    temperature: 0.1            # Low temp for consistent analysis
+
+  capabilities:
+    - type: function
+      name: scan.sast
+      description: Static application security testing
+    - type: function
+      name: scan.dependencies
+      description: Check dependencies for known CVEs
+    - type: function
+      name: report.generate
+      description: Generate security findings report
 
   tools:
     - type: mcp
       server: filesystem
-      capabilities: [read_file, list_directory]
+      capabilities: [read_file, list_directory]  # Read-only!
     - type: function
-      name: generate_report
-      capabilities:
-        - name: create_audit_report
-          description: Generate compliance audit report
-          input_schema:
-            type: object
-            properties:
-              findings: { type: array, items: { type: object } }
-              severity: { type: string, enum: [low, medium, high, critical] }
-            required: [findings, severity]
+      name: trivy_scan
+      description: Container vulnerability scanning
 
-  # NEW v0.3.0: Agent-to-Agent messaging
-  messaging:
-    publishes:
-      - channel: audit.findings
-        schema: { type: object, properties: { severity: { type: string } } }
-    subscribes:
-      - channel: documents.uploaded
-        handler: on_document_received
-    reliability:
-      deliveryGuarantee: at-least-once
-      ordering: strict
-
-  # NEW v0.3.0: Persistent state with encryption
-  state:
-    storage:
-      type: redis
-      connection: ${REDIS_URL}
-    encryption:
-      enabled: true
-      algorithm: AES-256-GCM
-    ttl: 86400
-
-  # Enterprise-grade safety controls
+  # Safety enforces the tier restrictions
   safety:
-    content_filtering:
-      block_pii: true
-      block_credentials: true
-      allowed_domains: ["company.com", "*.internal.company.com"]
-    rate_limiting:
-      requests_per_minute: 100
-      tokens_per_hour: 500000
-    input_validation:
-      max_length: 50000
-    output_validation:
-      max_length: 100000
-      require_structured: true
+    constraints:
+      - "NEVER write, edit, or delete any files"
+      - "NEVER execute commands that modify state"
+      - "Report findings only - never auto-fix"
+    prohibited_tools:
+      - file.write
+      - file.edit
+      - terminal.run
 
-  # NEW v0.3.0: Compliance profiles
-  compliance:
-    frameworks: [SOC2, HIPAA, GDPR]
-    data_residency: us-east-1
-    audit_logging: required
-    pii_handling: encrypt_at_rest
+  # NEW v0.3.2: Separation of duties
+  separation_of_duties:
+    cannot_be_same_as:
+      - code-assistant    # Scanner can't also be the fixer
+      - deployment-agent  # Scanner can't also deploy
+    requires_review_by:
+      - security-team
 
-  # Full observability stack
   observability:
     tracing:
       enabled: true
       provider: opentelemetry
-      sampling_rate: 1.0
-      export_endpoint: ${OTEL_EXPORTER_OTLP_ENDPOINT}
-    logging:
-      level: info
-      structured: true
-      redact_pii: true
     metrics:
-      track_costs: true
-      track_latency: true
-      track_tokens: true
-      export_endpoint: ${PROMETHEUS_PUSHGATEWAY}
-    activity_stream:
-      enabled: true
-      destination: kafka://events.internal
-
-  # NEW v0.3.0: Lifecycle management
-  lifecycle:
-    environments:
-      development:
-        llm: { provider: ollama, model: llama3.2 }
-      staging:
-        llm: { provider: openai, model: gpt-4o-mini }
-      production:
-        llm: { provider: anthropic, model: claude-3-5-sonnet-20241022 }
-    dependencies:
-      - name: document-processor
-        version: ">=2.0.0"
+      track_findings: true
+      track_scan_duration: true
 ```
 
-**What this demonstrates:**
-- **Portability**: Same agent runs on Anthropic, OpenAI, Azure, or local Ollama
-- **A2A Messaging**: Pub/sub communication with other agents
-- **Enterprise Compliance**: SOC2/HIPAA/GDPR built into the manifest
-- **Environment Configs**: Dev/staging/prod with different providers
-- **Full Observability**: OpenTelemetry traces, Prometheus metrics, audit logs
+**What v0.3.2 Access Tiers provide:**
+- **Privilege Separation**: Tier 1 agents physically cannot write files
+- **Audit Trail**: All actions logged with tier context
+- **Separation of Duties**: Scanner can't also be the fixer
+- **Approval Chains**: Higher tiers require explicit approval
 
 ```bash
-ossa validate compliance-auditor.ossa.yaml
-ossa run compliance-auditor.ossa.yaml --env production
+# Validate access tier compliance
+ossa validate security-scanner.ossa.yaml --check-access-tiers
+
+# Run with tier enforcement
+ossa run security-scanner.ossa.yaml --enforce-tier
 ```
 
-[**→ See More Examples**](https://openstandardagents.org/examples/)
+[**→ See Access Tiers Examples**](spec/v0.3.2/examples/access-tiers/)
 
 ---
 
@@ -420,7 +420,7 @@ docker run -v $(pwd):/workspace bluefly/ossa validate agent.ossa.yaml
 - **Full Documentation**: [openstandardagents.org/docs/](https://openstandardagents.org/docs/)
 - **Schema Reference**: [openstandardagents.org/schema/](https://openstandardagents.org/schema/)
 - **Specification**: [spec/v0.3.2/ossa-0.3.2.schema.json](https://github.com/blueflyio/openstandardagents/blob/main/spec/v0.3.2/ossa-0.3.2.schema.json)
-- **Messaging Extension**: [spec/v0.3.2/messaging.md](spec/v0.3.2/messaging.md) - Agent-to-agent messaging (v0.3.0+)
+- **Messaging Extension**: [spec/v0.3.2/messaging.md](spec/v0.3.2/messaging.md) - Agent-to-agent messaging (v0.3.2+)
 - **Examples**: [openstandardagents.org/examples/](https://openstandardagents.org/examples/)
 - **Blog**: [openstandardagents.org/blog/](https://openstandardagents.org/blog/)
 
