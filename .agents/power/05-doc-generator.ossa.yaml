@@ -68,7 +68,7 @@ spec:
     - name: openapi.parse
       description: Parse OpenAPI specification
       handler:
-    model: ${OSSA_LLM_MODEL:-claude-3-5-haiku}  # Faster model for data tasks
+        runtime: local
         capability: openapi.parse
 
     - name: git.log
