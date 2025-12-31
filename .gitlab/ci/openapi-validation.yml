@@ -121,8 +121,6 @@ validate:openapi:spectral:
       # Track failures
       FAILURES=0
 
-<<<<<<< HEAD
-=======
       # Detect spectral command once (avoid fallback masking errors in loop)
       if command -v spectral >/dev/null 2>&1; then
         SPECTRAL_CMD="spectral"
@@ -136,19 +134,10 @@ validate:openapi:spectral:
       fi
       echo "Using: $SPECTRAL_CMD"
 
->>>>>>> origin/main
       # Validate each file
       for file in $OPENAPI_FILES; do
         echo ""
         echo "Validating: $file"
-<<<<<<< HEAD
-        if npx spectral lint "$file" $RULESET_ARG --format=text 2>/dev/null || npx @stoplight/spectral-cli lint "$file" $RULESET_ARG --format=text 2>/dev/null; then
-          echo "  OK"
-        else
-          echo "  FAILED or warnings found"
-          # Don't increment failures for warnings (exit 1 from Spectral)
-          # Only real errors are exit code 2
-=======
         if $SPECTRAL_CMD lint "$file" $RULESET_ARG --format=text; then
           echo "  OK"
         else
@@ -159,7 +148,6 @@ validate:openapi:spectral:
             echo "  FAILED (exit code: $EXIT_CODE)"
             FAILURES=$((FAILURES + 1))
           fi
->>>>>>> origin/main
         fi
       done
 
