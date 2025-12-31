@@ -9,7 +9,7 @@
 # - Use this as reference for updating all agents
 # ============================================================================
 
-apiVersion: ossa/v0.3.0
+apiVersion: ossa/v0.3.2
 kind: Agent
 metadata:
   name: template-agent-v0-3-0

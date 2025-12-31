@@ -5,7 +5,7 @@
 # Source: .gitlab/agents/gitlab-duo-ossa/manifest.ossa.yaml
 # Generated: 2025-12-12T03:47:06.928Z
 #
-# COPY THIS TO: https://gitlab.com/blueflyio/openstandardagents/-/automate/agents/1261/edit
+# COPY THIS TO: https://gitlab.com/blueflyio/ossa/openstandardagents/-/automate/agents/1261/edit
 #
 # DOGFOODING OSSA INSIDE GITLAB! 🚀
 # =============================================================================
@@ -164,7 +164,7 @@ commands:
     for manifest in $(find . -name "*.ossa.yaml" ! -path "./node_modules/*"); do
       # Missing apiVersion
       if ! grep -q "^apiVersion:" "$manifest"; then
-        echo "🔧 $manifest: Add 'apiVersion: ossa/v0.3.0'"
+        echo "🔧 $manifest: Add 'apiVersion: ossa/v0.3.2'"
         FIXES=$((FIXES + 1))
       fi
     

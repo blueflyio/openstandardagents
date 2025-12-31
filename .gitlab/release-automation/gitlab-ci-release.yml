@@ -207,7 +207,7 @@ dry-run-github:
   image: node:20
   script:
     - echo "Simulating GitHub release..."
-    - gh release view v$(node -p "require('./package.json').version") --repo blueflyio/openstandardagents || echo "Release would be created"
+    - gh release view v$(node -p "require('./package.json').version") --repo blueflyio/ossa/openstandardagents || echo "Release would be created"
   rules:
     - if: '$CI_COMMIT_BRANCH == "development" && $MILESTONE_CLOSED == "true"'
 
@@ -259,7 +259,7 @@ release-github:
       when: manual
   environment:
     name: github-production
-    url: https://github.com/blueflyio/openstandardagents/releases
+    url: https://github.com/blueflyio/ossa/openstandardagents/releases
 
 release-website:
   stage: release

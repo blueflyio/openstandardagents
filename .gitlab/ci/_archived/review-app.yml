@@ -46,7 +46,7 @@ review:deploy:
               args:
                 - |
                   apk add --no-cache git
-                  git clone --branch ${CI_COMMIT_REF_NAME} --depth 1 https://gitlab.com/blueflyio/openstandardagents.git /app
+                  git clone --branch ${CI_COMMIT_REF_NAME} --depth 1 https://gitlab.com/blueflyio/ossa/openstandardagents.git /app
                   cd /app
                   npm ci --legacy-peer-deps
                   npm run build

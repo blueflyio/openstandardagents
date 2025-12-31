@@ -37,7 +37,7 @@
 # ============================================================================
 
 # OSSA specification version - defines which features are available
-apiVersion: ossa/v0.3.0
+apiVersion: ossa/v0.3.2
 ossaVersion: "1.0"
 
 # Agent metadata and configuration
