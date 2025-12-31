@@ -63,7 +63,7 @@ export function Header() {
 
           {/* Mobile Menu Button */}
           <button
-            className="md:hidden p-2 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 rounded"
+            className="md:hidden p-3 min-h-[44px] min-w-[44px] flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 rounded"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             aria-label="Toggle menu"
             aria-expanded={mobileMenuOpen}
@@ -105,49 +105,49 @@ export function Header() {
         >
             <Link
               href="/about"
-              className={`block px-3 py-2 rounded-lg transition-all font-medium ${isActive('/about') ? 'text-primary bg-primary/10' : 'text-gray-600 hover:text-primary hover:bg-primary/5'}`}
+              className={`block px-4 py-3 min-h-[44px] rounded-lg transition-all font-medium ${isActive('/about') ? 'text-primary bg-primary/10' : 'text-gray-600 hover:text-primary hover:bg-primary/5'}`}
               onClick={() => setMobileMenuOpen(false)}
             >
               About
             </Link>
             <Link
               href="/specification"
-              className={`block px-3 py-2 rounded-lg transition-all font-medium ${isActive('/specification') ? 'text-primary bg-primary/10' : 'text-gray-600 hover:text-primary hover:bg-primary/5'}`}
+              className={`block px-4 py-3 min-h-[44px] rounded-lg transition-all font-medium ${isActive('/specification') ? 'text-primary bg-primary/10' : 'text-gray-600 hover:text-primary hover:bg-primary/5'}`}
               onClick={() => setMobileMenuOpen(false)}
             >
               Specification
             </Link>
             <Link
               href="/schema"
-              className={`block px-3 py-2 rounded-lg transition-all font-medium ${isActive('/schema') ? 'text-primary bg-primary/10' : 'text-gray-600 hover:text-primary hover:bg-primary/5'}`}
+              className={`block px-4 py-3 min-h-[44px] rounded-lg transition-all font-medium ${isActive('/schema') ? 'text-primary bg-primary/10' : 'text-gray-600 hover:text-primary hover:bg-primary/5'}`}
               onClick={() => setMobileMenuOpen(false)}
             >
               Schema
             </Link>
             <Link
               href="/docs"
-              className={`block px-3 py-2 rounded-lg transition-all font-medium ${isActive('/docs') ? 'text-primary bg-primary/10' : 'text-gray-600 hover:text-primary hover:bg-primary/5'}`}
+              className={`block px-4 py-3 min-h-[44px] rounded-lg transition-all font-medium ${isActive('/docs') ? 'text-primary bg-primary/10' : 'text-gray-600 hover:text-primary hover:bg-primary/5'}`}
               onClick={() => setMobileMenuOpen(false)}
             >
               Docs
             </Link>
             <Link
               href="/blog"
-              className={`block px-3 py-2 rounded-lg transition-all font-medium ${isActive('/blog') ? 'text-primary bg-primary/10' : 'text-gray-600 hover:text-primary hover:bg-primary/5'}`}
+              className={`block px-4 py-3 min-h-[44px] rounded-lg transition-all font-medium ${isActive('/blog') ? 'text-primary bg-primary/10' : 'text-gray-600 hover:text-primary hover:bg-primary/5'}`}
               onClick={() => setMobileMenuOpen(false)}
             >
               Blog
             </Link>
             <Link
               href="/playground"
-              className={`block px-3 py-2 rounded-lg transition-all font-medium ${isActive('/playground') ? 'text-primary bg-primary/10' : 'text-gray-600 hover:text-primary hover:bg-primary/5'}`}
+              className={`block px-4 py-3 min-h-[44px] rounded-lg transition-all font-medium ${isActive('/playground') ? 'text-primary bg-primary/10' : 'text-gray-600 hover:text-primary hover:bg-primary/5'}`}
               onClick={() => setMobileMenuOpen(false)}
             >
               Playground
             </Link>
             <Link
               href="/examples"
-              className={`block px-3 py-2 rounded-lg transition-all font-medium ${isActive('/examples') ? 'text-primary bg-primary/10' : 'text-gray-600 hover:text-primary hover:bg-primary/5'}`}
+              className={`block px-4 py-3 min-h-[44px] rounded-lg transition-all font-medium ${isActive('/examples') ? 'text-primary bg-primary/10' : 'text-gray-600 hover:text-primary hover:bg-primary/5'}`}
               onClick={() => setMobileMenuOpen(false)}
             >
               Examples

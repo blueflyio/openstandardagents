@@ -90,7 +90,7 @@ interface BlogMetadata {
         excerpt: (cleanValue(data.excerpt) || '') as string,
       },
     };
-  } catch (error) {
+  } catch (_error) {
     return null;
   }
 }

@@ -69,7 +69,7 @@ variables:
 workflow:
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-    - if: $CI_COMMIT_BRANCH =~ /^release\//
+    - if: $CI_COMMIT_BRANCH =~ /^release/
     - if: $CI_COMMIT_BRANCH == "main"
     - if: $CI_COMMIT_BRANCH =~ /^(feature|bugfix|hotfix|chore|fix)\/.+/
     # GitLab issue branches: <issue-number>-<slug>
@@ -89,8 +89,8 @@ validate:mr-target:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
   before_script:
     - apk add --no-cache bash
-  # Allow failures on MRs and release branches (development), but require passing on main (production)
-  # This prevents blocking deployments for minor violations during development while ensuring production quality
+  # Allow failures on MRs and release branches, but require passing on main (production)
+  # This prevents blocking deployments for minor violations during development work while ensuring production quality
   allow_failure: true
   script:
     - |
@@ -98,7 +98,7 @@ validate:mr-target:
       # Feature branches → release/* (latest milestone)
       # Reject invalid branch names (workloads/, content/, etc. from automation)
       if [[ "$CI_MERGE_REQUEST_SOURCE_BRANCH_NAME" =~ ^(workloads|content)/ ]]; then
-        echo "❌ Invalid branch name: $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME"
+        echo "ERROR: Invalid branch name: $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME"
         echo "   Branch names must start with: feature/, bugfix/, chore/, hotfix/, fix/, or release/"
         echo "   This branch appears to be from GitLab Duo or content automation."
         echo "   Please use proper branch naming: feature/ISSUE-desc or bugfix/ISSUE-desc"
@@ -108,7 +108,7 @@ validate:mr-target:
       if [[ "$CI_MERGE_REQUEST_SOURCE_BRANCH_NAME" =~ \
         ^(feature|bugfix|chore|hotfix|fix)/ ]]; then
         if [[ ! "$CI_MERGE_REQUEST_TARGET_BRANCH_NAME" =~ ^release/v ]]; then
-          echo "❌ Feature branches must target release/* branches"
+          echo "ERROR: Feature branches must target release/* branches"
           echo "   Current target: $CI_MERGE_REQUEST_TARGET_BRANCH_NAME"
           echo "   Expected: release/v*.*.x"
           exit 1
@@ -118,13 +118,13 @@ validate:mr-target:
       # release/* → main ONLY
       if [[ "$CI_MERGE_REQUEST_SOURCE_BRANCH_NAME" =~ ^release/ ]]; then
         if [ "$CI_MERGE_REQUEST_TARGET_BRANCH_NAME" != "main" ]; then
-          echo "❌ Release branches must target main"
+          echo "ERROR: Release branches must target main"
           echo "   Current target: $CI_MERGE_REQUEST_TARGET_BRANCH_NAME"
           exit 1
         fi
       fi
       
-      echo "✅ MR target validation passed"
+      echo "SUCCESS: MR target validation passed"
       BASH_SCRIPT
 
 enforce-main-branch-policy:
@@ -134,20 +134,20 @@ enforce-main-branch-policy:
     - if: $CI_MERGE_REQUEST_TARGET_BRANCH == "main"
   before_script:
     - apk add --no-cache bash
-  # Allow failures on MRs and release branches (development), but require passing on main (production)
-  # This prevents blocking deployments for minor violations during development while ensuring production quality
+  # Allow failures on MRs and release branches, but require passing on main (production)
+  # This prevents blocking deployments for minor violations during development work while ensuring production quality
   allow_failure: true
   script:
     - |
       /bin/bash <<'BASH_SCRIPT'
       if [[ ! "$CI_MERGE_REQUEST_SOURCE_BRANCH_NAME" =~ ^release/ ]]; then
-        echo "❌ ERROR: Main branch only accepts merges from 'release/*'"
+        echo "ERROR: ERROR: Main branch only accepts merges from 'release/*'"
         echo "   Source: $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME"
         echo "   Target: $CI_MERGE_REQUEST_TARGET_BRANCH"
         exit 1
       fi
       BASH_SCRIPT
-    - echo "✅ Branch policy check passed"
+    - echo "SUCCESS Branch policy check passed"
 
 # =============================================================================
 # TEMPLATES
@@ -171,47 +171,106 @@ sync:auto:
     NODE_ENV: production
     GIT_STRATEGY: clone
   before_script:
-    - apk add --no-cache git
+    - git remote set-url origin "https://oauth2:${CI_JOB_TOKEN}@gitlab.com/${CI_PROJECT_PATH}.git"
+    - apk add --no-cache git curl jq
     - git config user.email "ci@blueflyio.com"
     - git config user.name "GitLab CI"
+    - |
+      # Determine branch name (handle detached HEAD)
+      if [ -n "$CI_COMMIT_BRANCH" ]; then
+        TARGET_BRANCH="$CI_COMMIT_BRANCH"
+      elif [ -n "$CI_MERGE_REQUEST_SOURCE_BRANCH_NAME" ]; then
+        TARGET_BRANCH="$CI_MERGE_REQUEST_SOURCE_BRANCH_NAME"
+      else
+        TARGET_BRANCH=$(git branch -r --contains HEAD 2>/dev/null | head -1 | sed 's|origin/||' | xargs || echo "")
+      fi
+      if [ -z "$TARGET_BRANCH" ]; then
+        echo "ERROR: Cannot determine target branch"
+        exit 1
+      fi
+      echo "TARGET_BRANCH=$TARGET_BRANCH" >> build.env
+      echo "INFO: Target branch: $TARGET_BRANCH"
+      # Check out branch if in detached HEAD
+      git fetch origin "$TARGET_BRANCH" 2>/dev/null || true
+      git checkout -B "$TARGET_BRANCH" "origin/$TARGET_BRANCH" 2>/dev/null || true
     - cd website
     - npm ci --prefer-offline --no-audit
   script:
-    - echo "🔄 Syncing OSSA spec, versions, examples, and wiki..."
+    - source ../build.env
+    - echo "SYNC  Syncing OSSA spec, versions, examples, and wiki..."
+    - |
+      # Pull latest changes before syncing to avoid conflicts
+      git fetch origin "$TARGET_BRANCH"
+      git pull origin "$TARGET_BRANCH" --rebase || {
+        echo "WARNING: Rebase failed, trying merge instead..."
+        git pull origin "$TARGET_BRANCH" --no-rebase || {
+          echo "WARNING: Pull failed, but continuing..."
+        }
+      }
     - npm run fetch-spec
     - npm run fetch-versions
     - npm run sync-version
     - npm run fetch-examples
     - npm run sync-wiki
+    - echo "INFO Validating synced content with contract tests..."
+    - |
+      npm run test:contracts || (echo "ERROR: Contract tests failed after sync" && echo "   OSSA spec/example structure validation failed" && exit 1)
     - |
       if [ -n "$(git status --porcelain)" ]; then
-        echo "📝 Changes detected, committing..."
+        echo "NOTE:  Changes detected, committing..."
         git add -A
         git commit -m "chore(ci): auto-sync OSSA spec, versions, examples, and wiki [skip ci]"
         git remote set-url origin "https://oauth2:${CI_JOB_TOKEN}@gitlab.com/${CI_PROJECT_PATH}.git"
-        # Rebase to handle concurrent commits from other jobs
-        git pull --rebase origin ${CI_COMMIT_REF_NAME} || {
-          echo "⚠️  Rebase conflict detected, attempting auto-resolve..."
-          git rebase --abort
-          echo "❌ Could not auto-resolve rebase conflict"
-          exit 1
-        }
-        git push origin HEAD:${CI_COMMIT_REF_NAME}
-        echo "✅ Synced and committed"
+        # For main branch: create feature branch and MR instead of direct push
+        if [ "$TARGET_BRANCH" = "main" ]; then
+          echo "INFO: Main branch detected - creating feature branch and MR..."
+          SYNC_BRANCH="chore/auto-sync-$(date +%Y%m%d-%H%M%S)"
+          git checkout -b "$SYNC_BRANCH"
+          git push origin "$SYNC_BRANCH" || {
+            echo "ERROR: Failed to push feature branch"
+            exit 1
+          }
+          # Create MR via API
+          MR_RESPONSE=$(curl -s --request POST \
+            --header "PRIVATE-TOKEN: ${CI_JOB_TOKEN}" \
+            --header "Content-Type: application/json" \
+            --data '{"source_branch": "'"${SYNC_BRANCH}"'", "target_branch": "main", "title": "chore(ci): auto-sync OSSA spec, versions, examples, and wiki", "description": "Automated sync of OSSA spec, versions, examples, and wiki content.", "remove_source_branch": false}' \
+            "https://${CI_SERVER_HOST}/api/v4/projects/${CI_PROJECT_ID}/merge_requests" 2>/dev/null || echo "{}")
+          if echo "$MR_RESPONSE" | jq -e '.iid' >/dev/null 2>&1; then
+            MR_IID=$(echo "$MR_RESPONSE" | jq -r '.iid')
+            MR_URL=$(echo "$MR_RESPONSE" | jq -r '.web_url')
+            echo "SUCCESS: Created MR !${MR_IID}: ${MR_URL}"
+          else
+            echo "WARNING: Failed to create MR (may already exist): ${MR_RESPONSE}"
+          fi
+        else
+          # For release branches: pull latest then push
+          echo "INFO: Release branch detected - pushing directly..."
+          git fetch origin "$TARGET_BRANCH"
+          git pull origin "$TARGET_BRANCH" --rebase || git pull origin "$TARGET_BRANCH" --no-rebase
+          git push origin "$TARGET_BRANCH" || {
+            echo "ERROR: Failed to push to $TARGET_BRANCH"
+            exit 1
+          }
+          echo "SUCCESS: Synced and committed to $TARGET_BRANCH"
+        fi
       else
-        echo "✅ Already up to date"
+        echo "SUCCESS: Already up to date"
       fi
   rules:
     - if: $CI_COMMIT_MESSAGE =~ /\[skip ci\]/
       when: never
     - if: $CI_PIPELINE_SOURCE == "schedule"
-    - if: $CI_COMMIT_BRANCH =~ /^release\//
+    - if: $CI_COMMIT_BRANCH =~ /^release/
     - if: $CI_COMMIT_BRANCH == "main"
-  # Allow failures on MRs and release branches (development), but require passing on main (production)
-  # This prevents blocking deployments for minor violations during development while ensuring production quality
+  # Allow failures on MRs and release branches, but require passing on main (production)
+  # This prevents blocking deployments for minor violations during development work while ensuring production quality
   allow_failure: false
 
 # =============================================================================
+
+
+
 # VALIDATE - Agent-Driven Documentation Validation
 # =============================================================================
 validate:documentation:
@@ -225,7 +284,7 @@ validate:documentation:
     - npm ci --prefer-offline --no-audit
   script:
     - |
-      echo "🔍 Validating documentation..."
+      echo "INFO: Validating documentation..."
 
       # Run link validation via npm script
       npm run validate:links
@@ -233,28 +292,28 @@ validate:documentation:
       # Validate schema references
       echo "Validating schema URLs..."
       OUTDATED_REFS=$(grep -r "openstandardagents.org/schemas" content/docs/ | \
-        grep -v "v0.3.0" | \
+        grep -v "v0.3.1" | \
         grep -v "v1" | \
         grep -v "migration" | \
         grep -v "migration-guides" | \
         grep -v "/examples/" | \
         grep -v "/pre-release/" || true)
       if [ -n "$OUTDATED_REFS" ]; then
-        echo "❌ Found outdated schema references (not v0.3.0 or v1):"
+        echo "ERROR: Found outdated schema references (not v0.3.1 or v1):"
         echo "$OUTDATED_REFS"
         exit 1
       else
-        echo "✅ Schema URLs up to date"
+        echo "SUCCESS: Schema URLs up to date"
       fi
 
       # Validate llms.txt exists
       if [ ! -f "public/llms.txt" ]; then
-        echo "❌ llms.txt not found"
+        echo "ERROR: llms.txt not found"
         exit 1
       fi
-      echo "✅ llms.txt exists"
+      echo "SUCCESS: llms.txt exists"
 
-      echo "✅ Documentation validation complete"
+      echo "SUCCESS: Documentation validation complete"
   allow_failure: false
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
@@ -262,7 +321,7 @@ validate:documentation:
         - website/content/docs/**/*.md
         - website/content/blog/**/*.md
         - website/public/llms.txt
-    - if: $CI_COMMIT_BRANCH =~ /^release\//
+    - if: $CI_COMMIT_BRANCH =~ /^release/
     - if: $CI_COMMIT_BRANCH == "main"
 
 validate:agent-manifests:
@@ -288,30 +347,30 @@ validate:agent-manifests:
 
         # Check required fields with yq
         if ! yq eval '.apiVersion' "$file" >/dev/null 2>&1; then
-          echo "❌ Missing or invalid apiVersion in $file"
+          echo "ERROR: Missing or invalid apiVersion in $file"
           exit 1
         fi
 
         if [ "$(yq eval '.kind' "$file")" != "Agent" ]; then
-          echo "❌ Missing or invalid kind in $file"
+          echo "ERROR: Missing or invalid kind in $file"
           exit 1
         fi
 
         if ! yq eval '.metadata' "$file" >/dev/null 2>&1; then
-          echo "❌ Missing metadata in $file"
+          echo "ERROR: Missing metadata in $file"
           exit 1
         fi
 
-        echo "✅ $file passed basic validation"
+        echo "SUCCESS: $file passed basic validation"
       done
 
-      echo "✅ All agent manifests validated"
+      echo "SUCCESS: All agent manifests validated"
   allow_failure: true
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
       changes:
         - .gitlab/agents/**/*.ossa.yaml
-    - if: $CI_COMMIT_BRANCH =~ /^release\//
+    - if: $CI_COMMIT_BRANCH =~ /^release/
     - if: $CI_COMMIT_BRANCH == "main"
 
 validate:llms-txt:
@@ -321,10 +380,10 @@ validate:llms-txt:
     - apk add --no-cache curl
   script:
     - |
-      echo "🔍 Validating llms.txt for AI assistant compatibility..."
+      echo "INFO: Validating llms.txt for AI assistant compatibility..."
 
       if [ ! -f "website/public/llms.txt" ]; then
-        echo "❌ llms.txt not found"
+        echo "ERROR: llms.txt not found"
         exit 1
       fi
 
@@ -336,7 +395,7 @@ validate:llms-txt:
         escaped_section=$(printf '%s\n' "$section" | sed 's/[[.*^$()+?{|]/\\&/g')
         if ! grep -q "$escaped_section" website/public/llms.txt; then
         if ! grep -q "$section" website/public/llms.txt; then
-          echo "❌ Missing required section: $section"
+          echo "ERROR: Missing required section: $section"
           exit 1
         fi
       done
@@ -344,23 +403,23 @@ validate:llms-txt:
       # Check for proper version references
       if grep -q "v0.2" website/public/llms.txt; then
         if ! grep -q "Legacy\|Deprecated\|Previous" website/public/llms.txt; then
-          echo "⚠️  Found v0.2 references without deprecation notice"
+          echo "WARNING: Found v0.2 references without deprecation notice"
         fi
       fi
 
       # Validate schema URL format
-      if ! grep -q "openstandardagents.org/schemas/v0.3.0/agent.json" website/public/llms.txt; then
-        echo "❌ Missing or incorrect schema URL for v0.3.0"
+      if ! grep -q "openstandardagents.org/schemas/v0.3.1/agent.json" website/public/llms.txt; then
+        echo "ERROR: Missing or incorrect schema URL for v0.3.1"
         exit 1
       fi
 
-      echo "✅ llms.txt validation passed"
+      echo "SUCCESS: llms.txt validation passed"
   allow_failure: true
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
       changes:
         - website/public/llms.txt
-    - if: $CI_COMMIT_BRANCH =~ /^release\//
+    - if: $CI_COMMIT_BRANCH =~ /^release/
     - if: $CI_COMMIT_BRANCH == "main"
 
 # =============================================================================
@@ -371,12 +430,12 @@ test:unit:
   stage: test
   script:
     - npm run test
-  # Allow failures on MRs and release branches (development), but require passing on main (production)
-  # This prevents blocking deployments for minor violations during development while ensuring production quality
+  # Allow failures on MRs and release branches, but require passing on main (production)
+  # This prevents blocking deployments for minor violations during development work while ensuring production quality
   allow_failure: true
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-    - if: $CI_COMMIT_BRANCH =~ /^release\//
+    - if: $CI_COMMIT_BRANCH =~ /^release/
     - if: $CI_COMMIT_BRANCH == "main"
 
 test:e2e:
@@ -407,12 +466,12 @@ test:e2e:
       - website/playwright-report
       - website/test-results
     expire_in: 30 days
-  # Allow failures on MRs and release branches (development), but require passing on main (production)
-  # This prevents blocking deployments for minor violations during development while ensuring production quality
+  # Allow failures on MRs and release branches, but require passing on main (production)
+  # This prevents blocking deployments for minor violations during development work while ensuring production quality
   allow_failure: true
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-    - if: $CI_COMMIT_BRANCH =~ /^release\//
+    - if: $CI_COMMIT_BRANCH =~ /^release/
     - if: $CI_COMMIT_BRANCH == "main"
 
 # =============================================================================
@@ -439,7 +498,7 @@ build:website:
     expire_in: 1 day
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-    - if: $CI_COMMIT_BRANCH =~ /^release\//
+    - if: $CI_COMMIT_BRANCH =~ /^release/
     - if: $CI_COMMIT_BRANCH == "main"
 
 build:docker:
@@ -455,7 +514,7 @@ build:docker:
     - cd website
     - |
       if [ ! -d "../website-build" ] || [ -z "$(ls -A ../website-build 2>/dev/null)" ]; then
-        echo "❌ website-build directory is missing or empty"
+        echo "ERROR: website-build directory is missing or empty"
         exit 1
       fi
       mkdir -p out && cp -r ../website-build/* out/
@@ -482,7 +541,7 @@ build:docker:
       if [ "$CI_COMMIT_BRANCH" = "main" ]; then
         docker tag $IMAGE_TAG $CI_REGISTRY_IMAGE:latest
         docker push $CI_REGISTRY_IMAGE:latest
-        echo "✅ Pushed 'latest' tag for main branch"
+        echo "SUCCESS: Pushed 'latest' tag for main branch"
       fi
 
       # Tag with branch name for release branches
@@ -490,17 +549,17 @@ build:docker:
         BRANCH_TAG=$(echo "$CI_COMMIT_BRANCH" | sed 's/\//-/g')
         docker tag $IMAGE_TAG $CI_REGISTRY_IMAGE:$BRANCH_TAG
         docker push $CI_REGISTRY_IMAGE:$BRANCH_TAG
-        echo "✅ Pushed branch tag: $BRANCH_TAG"
+        echo "SUCCESS: Pushed branch tag: $BRANCH_TAG"
       fi
   needs:
     - build:website
-  # Allow failures on MRs and release branches (development), but require passing on main (production)
-  # This prevents blocking deployments for minor violations during development while ensuring production quality
+  # Allow failures on MRs and release branches, but require passing on main (production)
+  # This prevents blocking deployments for minor violations during development work while ensuring production quality
   allow_failure: true
   rules:
     # Build for MRs (needed for review apps)
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-    - if: $CI_COMMIT_BRANCH =~ /^release\//
+    - if: $CI_COMMIT_BRANCH =~ /^release/
     - if: $CI_COMMIT_BRANCH == "main"
 
 # =============================================================================
@@ -516,11 +575,11 @@ container_scanning:
     CS_REGISTRY_PASSWORD: $CI_JOB_TOKEN
   needs:
     - build:docker
-  # Allow failures on MRs and release branches (development), but require passing on main (production)
-  # This prevents blocking deployments for minor violations during development while ensuring production quality
+  # Allow failures on MRs and release branches, but require passing on main (production)
+  # This prevents blocking deployments for minor violations during development work while ensuring production quality
   allow_failure: true
   rules:
-    - if: $CI_COMMIT_BRANCH =~ /^release\//
+    - if: $CI_COMMIT_BRANCH =~ /^release/
     - if: $CI_COMMIT_BRANCH == "main"
 
 # =============================================================================
@@ -558,12 +617,12 @@ quality:browser-performance:
     paths:
       - sitespeed-results
     expire_in: 30 days
-  # Allow failures on MRs and release branches (development), but require passing on main (production)
-  # This prevents blocking deployments for minor violations during development while ensuring production quality
+  # Allow failures on MRs and release branches, but require passing on main (production)
+  # This prevents blocking deployments for minor violations during development work while ensuring production quality
   allow_failure: true
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-    - if: $CI_COMMIT_BRANCH =~ /^release\//
+    - if: $CI_COMMIT_BRANCH =~ /^release/
     - if: $CI_COMMIT_BRANCH == "main"
 
 quality:accessibility:
@@ -581,12 +640,12 @@ quality:accessibility:
     paths:
       - accessibility.json
     expire_in: 30 days
-  # Allow failures on MRs and release branches (development), but require passing on main (production)
-  # This prevents blocking deployments for minor violations during development while ensuring production quality
+  # Allow failures on MRs and release branches, but require passing on main (production)
+  # This prevents blocking deployments for minor violations during development work while ensuring production quality
   allow_failure: true
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-    - if: $CI_COMMIT_BRANCH =~ /^release\//
+    - if: $CI_COMMIT_BRANCH =~ /^release/
     - if: $CI_COMMIT_BRANCH == "main"
 
 quality:metrics:
@@ -608,7 +667,7 @@ quality:metrics:
     expire_in: 30 days
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-    - if: $CI_COMMIT_BRANCH =~ /^release\//
+    - if: $CI_COMMIT_BRANCH =~ /^release/
     - if: $CI_COMMIT_BRANCH == "main"
 
 # =============================================================================
@@ -630,17 +689,17 @@ pages:
     - build:website
   script:
     - |
-      echo "🚀 Deploying to GitLab Pages (Production)"
+      echo "DEPLOY:  Deploying to GitLab Pages (Production)"
       mkdir -p public
       cp -r website-build/* public/
 
       echo ""
       echo "=============================================="
-      echo "✅ PRODUCTION DEPLOYMENT COMPLETE!"
+      echo "SUCCESS: PRODUCTION DEPLOYMENT COMPLETE!"
       echo "=============================================="
-      echo "🌐 URL: https://openstandardagents.org"
-      echo "📝 Commit: ${CI_COMMIT_SHORT_SHA}"
-      echo "🏷️  Branch: ${CI_COMMIT_BRANCH}"
+      echo "URL:  URL: https://openstandardagents.org"
+      echo "NOTE:  Commit: ${CI_COMMIT_SHORT_SHA}"
+      echo "Branch: Branch: ${CI_COMMIT_BRANCH}"
       echo "=============================================="
   artifacts:
     paths:
@@ -667,7 +726,7 @@ notify:discord:
   script:
     - |
       if [ -z "$DISCORD_WEBHOOK_URL" ]; then
-        echo "⚠️  DISCORD_WEBHOOK_URL not set"
+        echo "WARNING: DISCORD_WEBHOOK_URL not set"
         exit 0
       fi
 
@@ -688,7 +747,7 @@ notify:discord:
       PAYLOAD=$(cat <<EOF
       {
         "embeds": [{
-          "title": "🚀 ${ENV} Deployment",
+          "title": "DEPLOY:  ${ENV} Deployment",
           "description": "**openstandardagents.org** has been deployed",
           "color": ${COLOR},
           "fields": [
@@ -734,14 +793,14 @@ notify:discord:
         -d "$PAYLOAD" \
         "$DISCORD_WEBHOOK_URL"
 
-      echo "✅ Discord notification sent"
+      echo "SUCCESS: Discord notification sent"
   rules:
     - if: $CI_COMMIT_BRANCH == "main"
       when: on_success
-    - if: $CI_COMMIT_BRANCH =~ /^release\//
+    - if: $CI_COMMIT_BRANCH =~ /^release/
       when: on_success
-  # Allow failures on MRs and release branches (development), but require passing on main (production)
-  # This prevents blocking deployments for minor violations during development while ensuring production quality
+  # Allow failures on MRs and release branches, but require passing on main (production)
+  # This prevents blocking deployments for minor violations during development work while ensuring production quality
   allow_failure: true
 
 # =============================================================================
@@ -752,8 +811,8 @@ notify:discord:
 
 .agent-job-template:
   stage: .pre
-  # Allow failures on MRs and release branches (development), but require passing on main (production)
-  # This prevents blocking deployments for minor violations during development while ensuring production quality
+  # Allow failures on MRs and release branches, but require passing on main (production)
+  # This prevents blocking deployments for minor violations during development work while ensuring production quality
   allow_failure: true
 
 mr-manager-agent:
@@ -810,10 +869,9 @@ detect:version:
     reports:
       dotenv: build.env
   rules:
-    - if: $CI_COMMIT_BRANCH =~ /^release\/v/
-    - if: $CI_COMMIT_BRANCH == "main"
-    - if: $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME =~ /^release\/v/ && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "main"
-
+  - if: $CI_COMMIT_BRANCH =~ /^release\/v/
+  - if: $CI_COMMIT_BRANCH == "main"
+  - if: $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME =~ /^release\/v/ && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "main"
 # =============================================================================
 # CHANGELOG AUTOMATION (git-cliff)
 # =============================================================================
@@ -833,7 +891,7 @@ changelog:generate:
     - chmod +x /usr/local/bin/git-cliff
   script:
     - |
-      echo "📝 Generating CHANGELOG.md with git-cliff..."
+      echo "NOTE:  Generating CHANGELOG.md with git-cliff..."
 
       # Fetch all tags for proper changelog generation
       git fetch --tags
@@ -848,13 +906,13 @@ changelog:generate:
 
       # Check if changelog changed
       if [ -n "$(git status --porcelain CHANGELOG.md)" ]; then
-        echo "📝 Changelog updated, committing..."
+        echo "NOTE:  Changelog updated, committing..."
         git add CHANGELOG.md
         git commit -m "chore(release): update CHANGELOG.md [skip ci]"
         git push origin HEAD:${CI_COMMIT_REF_NAME}
-        echo "✅ Changelog committed and pushed"
+        echo "SUCCESS: Changelog committed and pushed"
       else
-        echo "✅ Changelog already up to date"
+        echo "SUCCESS: Changelog already up to date"
       fi
   artifacts:
     paths:
@@ -869,7 +927,7 @@ changelog:generate:
 # =============================================================================
 # RELEASE TAGGING
 # =============================================================================
-# On release/* branches: Create pre-release tags (v0.3.0-dev, v0.3.0-dev1, etc.)
+# On release/* branches: Create pre-release tags (v0.3.1-dev, v0.3.1-dev1, etc.)
 release:pre-release:
   stage: release
   image: alpine:latest
@@ -902,9 +960,9 @@ release:pre-release:
         # Push tag
         git push origin "${RELEASE_TAG}"
         
-        echo "✅ Created pre-release tag: ${RELEASE_TAG}"
+        echo "SUCCESS: Created pre-release tag: ${RELEASE_TAG}"
       else
-        echo "⚠️ build.env not found, skipping tag creation"
+        echo "WARNING: build.env not found, skipping tag creation"
       fi
   rules:
     # Auto-create dev tags on release branches (no manual approval needed)
@@ -952,10 +1010,10 @@ release:rc:
         # Push tag
         git push origin "${RELEASE_TAG}"
 
-        echo "✅ Created RC tag: ${RELEASE_TAG}"
-        echo "📋 To promote to final: Click 'release:promote-rc-to-final' job"
+        echo "SUCCESS: Created RC tag: ${RELEASE_TAG}"
+        echo "REF:  To promote to final: Click 'release:promote-rc-to-final' job"
       else
-        echo "⚠️ build.env not found, skipping RC tag"
+        echo "WARNING: build.env not found, skipping RC tag"
       fi
   rules:
     - if: $CI_COMMIT_BRANCH == "main"
@@ -991,7 +1049,7 @@ release:promote-rc-to-final:
         # Find latest RC tag for this version
         LATEST_RC=$(git tag -l "v${VERSION}-rc.*" | sort -V | tail -1)
         if [ -z "$LATEST_RC" ]; then
-          echo "❌ No RC tags found for v${VERSION}"
+          echo "ERROR: No RC tags found for v${VERSION}"
           exit 1
         fi
 
@@ -1025,22 +1083,22 @@ release:promote-rc-to-final:
           "https://${CI_SERVER_HOST}/api/v4/projects/${CI_PROJECT_ID}/releases")
 
         if echo "$RELEASE_RESPONSE" | jq -e '.tag_name' >/dev/null 2>&1; then
-          echo "✅ Created GitLab Release: ${FINAL_TAG}"
+          echo "SUCCESS: Created GitLab Release: ${FINAL_TAG}"
         else
-          echo "⚠️ Failed to create GitLab Release: ${RELEASE_RESPONSE}"
+          echo "WARNING: Failed to create GitLab Release: ${RELEASE_RESPONSE}"
         fi
 
-        echo "✅ Promoted ${LATEST_RC} → ${FINAL_TAG}"
-        echo "📋 To publish to npm: Click 'release:npm' job"
+        echo "SUCCESS: Promoted ${LATEST_RC} → ${FINAL_TAG}"
+        echo "REF:  To publish to npm: Click 'release:npm' job"
       else
-        echo "⚠️ build.env not found"
+        echo "WARNING: build.env not found"
         exit 1
       fi
   rules:
     - if: $CI_COMMIT_BRANCH == "main"
       when: manual
-      # Allow failures on MRs and release branches (development), but require passing on main (production)
-  # This prevents blocking deployments for minor violations during development while ensuring production quality
+      # Allow failures on MRs and release branches, but require passing on main (production)
+  # This prevents blocking deployments for minor violations during development work while ensuring production quality
   allow_failure: true
 
 # Manual: Publish to npm
@@ -1062,7 +1120,7 @@ release:npm:
 
         # Verify final tag exists (must promote RC first)
         if ! git rev-parse "${FINAL_TAG}" >/dev/null 2>&1; then
-          echo "❌ Final tag ${FINAL_TAG} not found!"
+          echo "ERROR: Final tag ${FINAL_TAG} not found!"
           echo "   You must run 'release:promote-rc-to-final' first"
           exit 1
         fi
@@ -1076,16 +1134,16 @@ release:npm:
         # Example for monorepo:
         # cd website && npm publish --access public
 
-        echo "✅ Published ${FINAL_TAG} to npm"
+        echo "SUCCESS: Published ${FINAL_TAG} to npm"
       else
-        echo "⚠️ build.env not found"
+        echo "WARNING: build.env not found"
         exit 1
       fi
   rules:
     - if: $CI_COMMIT_BRANCH == "main"
       when: manual
-      # Allow failures on MRs and release branches (development), but require passing on main (production)
-  # This prevents blocking deployments for minor violations during development while ensuring production quality
+      # Allow failures on MRs and release branches, but require passing on main (production)
+  # This prevents blocking deployments for minor violations during development work while ensuring production quality
   allow_failure: true
 
 # =============================================================================
@@ -1124,9 +1182,9 @@ protect:release-branches:
             "https://${CI_SERVER_HOST}/api/v4/projects/${CI_PROJECT_ID}/protected_branches" 2>/dev/null || echo "{}")
 
           if echo "$PROTECT_RESPONSE" | jq -e '.name' >/dev/null 2>&1; then
-            echo "✅ Branch protection created for $CI_COMMIT_BRANCH"
+            echo "SUCCESS: Branch protection created for $CI_COMMIT_BRANCH"
           else
-            echo "⚠️  Could not create branch protection (may require maintainer/admin access)"
+            echo "WARNING: Could not create branch protection (may require maintainer/admin access)"
             echo "Response: $PROTECT_RESPONSE"
           fi
         fi
@@ -1146,6 +1204,26 @@ protect:release-branches:
   rules:
     - if: $CI_COMMIT_BRANCH =~ /^release\/v/
       when: on_success
-  # Allow failures on MRs and release branches (development), but require passing on main (production)
-  # This prevents blocking deployments for minor violations during development while ensuring production quality
+  # Allow failures on MRs and release branches, but require passing on main (production)
+  # This prevents blocking deployments for minor violations during development work while ensuring production quality
   allow_failure: true
+
+# Contract tests - validate OSSA spec structure before sync jobs
+test:contracts:
+  stage: validate
+  image: node:${NODE_VERSION}-alpine
+  variables:
+    NODE_ENV: production
+  before_script:
+    - cd website
+    - npm ci --prefer-offline --no-audit
+  script:
+    - echo "INFO Running OSSA spec contract tests..."
+    - |
+      npm run test:contracts || (echo "ERROR: Contract tests failed - OSSA spec/example structure changed" && echo "   This prevents platform-agents or OSSA changes from breaking sync jobs" && exit 1)
+    - echo "SUCCESS Contract tests passed"
+  allow_failure: false
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH =~ /^release/
+    - if: $CI_COMMIT_BRANCH == "main"

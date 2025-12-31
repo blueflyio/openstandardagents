@@ -28,14 +28,14 @@ function extractProperties(schema: Record<string, unknown>, path = ''): Property
       const prop = value as Record<string, unknown>;
       const propInfo: PropertyInfo = {
         name: key,
-        type: prop.type || 'object',
-        description: prop.description,
-        required: schema.required?.includes(key),
+        type: (typeof prop.type === 'string' ? prop.type : 'object') as string,
+        description: (typeof prop.description === 'string' ? prop.description : undefined) as string | undefined,
+        required: (Array.isArray(schema.required) ? schema.required.includes(key) : false),
       };
 
       if (prop.properties || prop.items) {
         propInfo.properties = extractProperties(
-          prop.properties || prop.items,
+          (prop.properties || prop.items) as Record<string, unknown>,
           `${path}.${key}`
         );
       }
@@ -126,10 +126,11 @@ export function SchemaExplorer({ schema }: SchemaExplorerProps) {
     let current: Record<string, unknown> = schema;
 
     for (const part of parts) {
-      if (current?.properties?.[part]) {
-        current = current.properties[part];
+      const props = current?.properties as Record<string, unknown> | undefined;
+      if (props && props[part]) {
+        current = props[part] as Record<string, unknown>;
       } else {
-        return null;
+        return undefined;
       }
     }
 
@@ -159,17 +160,17 @@ export function SchemaExplorer({ schema }: SchemaExplorerProps) {
           <div className="space-y-4">
             <div>
               <h3 className="font-semibold mb-2">Type</h3>
-              <p className="text-gray-700">{selectedProperty.type || 'object'}</p>
+              <p className="text-gray-700">{(typeof selectedProperty.type === 'string' ? selectedProperty.type : 'object') || 'object'}</p>
             </div>
 
-            {selectedProperty.description && (
+            {(typeof selectedProperty.description === 'string') && selectedProperty.description && (
               <div>
                 <h3 className="font-semibold mb-2">Description</h3>
-                <p className="text-gray-700">{selectedProperty.description}</p>
+                <p className="text-gray-700">{String(selectedProperty.description)}</p>
               </div>
             )}
 
-            {selectedProperty.enum && (
+            {(Array.isArray(selectedProperty.enum)) && (
               <div>
                 <h3 className="font-semibold mb-2">Allowed Values</h3>
                 <ul className="list-disc list-inside text-gray-700">

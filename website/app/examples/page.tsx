@@ -57,8 +57,8 @@ function getAllExamples(): ExampleFile[] {
     }
     
     return [];
-  } catch (error) {
-
+  } catch (_error) {
+    // Error loading examples - use empty array
     return [];
   }
 }

@@ -305,7 +305,7 @@ export function MarkdownContent({ content, currentPath }: MarkdownContentProps) 
           ),
 
           // Code
-          code({ className, children, ...props }: { className?: string; children?: React.ReactNode; node?: { parent?: { tagName?: string } }; [key: string]: unknown }) {
+          code: (({ className, children, ...props }: { className?: string; children?: React.ReactNode; node?: { parent?: { tagName?: string } }; [key: string]: unknown }) => {
             const match = /language-(\w+)/.exec(className || '');
             const isInline = !match;
 
@@ -348,7 +348,7 @@ export function MarkdownContent({ content, currentPath }: MarkdownContentProps) 
                 {children}
               </code>
             );
-          },
+          }) as any,
 
           // Pre (for code blocks without language)
           pre: ({ children }) => {

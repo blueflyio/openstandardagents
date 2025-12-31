@@ -6,7 +6,7 @@
   "private": true,
   "workspaces": [
     "website",
-    "discord-bot"
+    "bots/ossa-discord"
   ],
   "scripts": {
     "dev": "pnpm -r dev",
@@ -19,13 +19,13 @@
     "sync:examples": "pnpm --filter website sync:examples",
     "website:dev": "pnpm --filter website dev",
     "website:build": "pnpm --filter website build",
-    "bot:dev": "pnpm --filter discord-bot dev",
-    "bot:start": "pnpm --filter discord-bot start",
+    "bot:dev": "pnpm --filter bots/ossa-discord dev",
+    "bot:start": "pnpm --filter bots/ossa-discord start",
     "typecheck": "pnpm -r typecheck"
   },
   "repository": {
     "type": "git",
-    "url": "https://gitlab.com/blueflyio/openstandardagents.org.git"
+    "url": "https://gitlab.com/blueflyio/ossa/openstandardagents.org.git"
   },
   "keywords": [
     "ossa",
@@ -45,5 +45,8 @@
   "engines": {
     "node": ">=20.0.0",
     "pnpm": ">=9.0.0"
+  },
+  "dependencies": {
+    "zod": "^3.25.76"
   }
 }
