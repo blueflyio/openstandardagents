@@ -156,6 +156,7 @@ Migrate agents from popular frameworks to OSSA:
 
 - [LangChain to OSSA](/docs/migration-guides/langchain-to-ossa)
 - [CrewAI to OSSA](/docs/migration-guides/crewai-to-ossa)
+- [AutoGPT to OSSA](/docs/migration-guides/autogpt-to-ossa)
 - [Drupal ECA to OSSA](/docs/migration-guides/drupal-eca-to-ossa)
 - [Anthropic MCP to OSSA](/docs/migration-guides/anthropic-mcp-to-ossa)
 - [OpenAI to OSSA](/docs/migration-guides/openai-to-ossa)
