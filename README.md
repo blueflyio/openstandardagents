@@ -145,12 +145,12 @@ spec:
 
 ---
 
-## Example: A Complete Enterprise Agent (v0.3.0)
+## Example: A Complete Enterprise Agent (v0.3.2)
 
 This agent demonstrates OSSA's full power—**portable across providers, compliant out of the box, and production-ready**:
 
 ```yaml
-apiVersion: ossa/v0.3.0
+apiVersion: ossa/v0.3.2
 kind: Agent
 
 metadata:
@@ -164,7 +164,7 @@ metadata:
     ossa.io/maintainer: security-team@company.com
     ossa.io/cost-center: CC-1234
 
-# NEW v0.3.0: Identity for OpenTelemetry + service mesh
+# NEW v0.3.2: Identity for OpenTelemetry + service mesh
 identity:
   service_name: compliance-auditor
   service_namespace: agents.compliance
@@ -200,7 +200,7 @@ spec:
               severity: { type: string, enum: [low, medium, high, critical] }
             required: [findings, severity]
 
-  # NEW v0.3.0: Agent-to-Agent messaging
+  # NEW v0.3.2: Agent-to-Agent messaging
   messaging:
     publishes:
       - channel: audit.findings
@@ -212,7 +212,7 @@ spec:
       deliveryGuarantee: at-least-once
       ordering: strict
 
-  # NEW v0.3.0: Persistent state with encryption
+  # NEW v0.3.2: Persistent state with encryption
   state:
     storage:
       type: redis
@@ -237,7 +237,7 @@ spec:
       max_length: 100000
       require_structured: true
 
-  # NEW v0.3.0: Compliance profiles
+  # NEW v0.3.2: Compliance profiles
   compliance:
     frameworks: [SOC2, HIPAA, GDPR]
     data_residency: us-east-1
@@ -264,7 +264,7 @@ spec:
       enabled: true
       destination: kafka://events.internal
 
-  # NEW v0.3.0: Lifecycle management
+  # NEW v0.3.2: Lifecycle management
   lifecycle:
     environments:
       development:
@@ -420,7 +420,7 @@ docker run -v $(pwd):/workspace bluefly/ossa validate agent.ossa.yaml
 - **Full Documentation**: [openstandardagents.org/docs/](https://openstandardagents.org/docs/)
 - **Schema Reference**: [openstandardagents.org/schema/](https://openstandardagents.org/schema/)
 - **Specification**: [spec/v0.3.2/ossa-0.3.2.schema.json](https://github.com/blueflyio/openstandardagents/blob/main/spec/v0.3.2/ossa-0.3.2.schema.json)
-- **Messaging Extension**: [spec/v0.3.2/messaging.md](spec/v0.3.2/messaging.md) - Agent-to-agent messaging (v0.3.0+)
+- **Messaging Extension**: [spec/v0.3.2/messaging.md](spec/v0.3.2/messaging.md) - Agent-to-agent messaging (v0.3.2+)
 - **Examples**: [openstandardagents.org/examples/](https://openstandardagents.org/examples/)
 - **Blog**: [openstandardagents.org/blog/](https://openstandardagents.org/blog/)
 
