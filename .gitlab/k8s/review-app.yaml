@@ -10,7 +10,7 @@
 # Required Environment Variables:
 #   - REVIEW_APP_NAME: e.g., "mr-123" or "ossa-staging"
 #   - REVIEW_APP_HOST: e.g., "123.review.blueflyagents.com"
-#   - REVIEW_APP_IMAGE: e.g., "registry.gitlab.com/blueflyio/ossa/openstandardagents.org:sha"
+#   - REVIEW_APP_IMAGE: e.g., "registry.gitlab.com/blueflyio/openstandardagents.org:sha"
 #   - NAMESPACE: e.g., "ossa-review"
 # =============================================================================
 ---

@@ -16,12 +16,12 @@ test.describe('Mobile Responsiveness', () => {
     await page.goto('/');
     const menuButton = page.locator('button[aria-label="Toggle menu"]');
     await expect(menuButton).toBeVisible();
-    
+
     // Check touch target size (min 44x44pt)
     const box = await menuButton.boundingBox();
     expect(box?.width).toBeGreaterThanOrEqual(44);
     expect(box?.height).toBeGreaterThanOrEqual(44);
-    
+
     // Test menu toggle
     await menuButton.click();
     const mobileMenu = page.locator('#mobile-menu');
@@ -38,7 +38,7 @@ test.describe('Mobile Responsiveness', () => {
   test('text is readable on mobile', async ({ page }) => {
     await page.goto('/');
     const bodyText = page.locator('body');
-    const fontSize = await bodyText.evaluate((el) => 
+    const fontSize = await bodyText.evaluate((el) =>
       parseFloat(getComputedStyle(el).fontSize)
     );
     expect(fontSize).toBeGreaterThanOrEqual(14); // Minimum readable size

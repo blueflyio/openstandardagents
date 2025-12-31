@@ -1,17 +1,17 @@
 # =============================================================================
 # Review Apps CI/CD Configuration
 # =============================================================================
-# Deploys dynamic review environments to OrbStack K8s using local runner.
-#
-# Requirements:
-#   1. Self-hosted GitLab runner with tag "ossa" and K8s network access
-#   2. CI/CD variable: KUBECONFIG_LOCAL (base64 encoded kubeconfig)
-#   3. CI/CD variable: REVIEW_APPS_ENABLED=true
-#   4. DNS: *.review.blueflyagents.com → OrbStack ingress IP
+# Deploys dynamic review environments to OrbStack K8s
 #
 # Flow:
-#   Feature MR → release/* : Creates review app at <MR_ID>.review.blueflyagents.com
-#   Release MR → main      : Creates staging at ossa-staging.review.blueflyagents.com
+#   1. Feature MR → Release: Creates review app at <MR_ID>.review.blueflyagents.com
+#   2. Release MR → Main: Creates staging at ossa-staging.review.blueflyagents.com
+#   3. Main branch: Manual button to deploy to GitLab Pages
+#
+# Prerequisites:
+#   1. CI/CD Variable: KUBECONFIG_LOCAL (base64 encoded kubeconfig for OrbStack)
+#   2. OrbStack with nginx-ingress controller installed
+#   3. DNS: *.review.blueflyagents.com → 192.168.139.2 (OrbStack ingress)
 # =============================================================================
 
 variables:
@@ -19,20 +19,11 @@ variables:
   REVIEW_DOMAIN: "review.blueflyagents.com"
 
 # =============================================================================
-# REVIEW APP - Feature → Release MRs (REQUIRES LOCAL RUNNER)
+# REVIEW APP - Feature → Release MRs
 # =============================================================================
+# Automatically deploys a review app for each MR targeting release branches
 review:deploy:
-  cache: {}  # Disable cache to avoid Docker networking issues
-  retry:
-    max: 2
-    when:
-      - runner_system_failure
-      - stuck_or_timeout_failure
-      - scheduler_failure
-      - unknown_failure
   stage: deploy
-  tags:
-    - ossa  # Self-hosted runner with OrbStack K8s access
   image:
     name: bitnami/kubectl:latest
     entrypoint: [""]
@@ -42,21 +33,8 @@ review:deploy:
     GIT_STRATEGY: clone
   before_script:
     - |
-      # Check if review apps are enabled
-      if [ "$REVIEW_APPS_ENABLED" != "true" ]; then
-        echo "ℹ️  Review apps disabled (REVIEW_APPS_ENABLED != true)"
-        echo "   Review apps require self-hosted runner with K8s access"
-        exit 0
-      fi
-
-      # Install envsubst - detect package manager (bitnami/kubectl switched to Debian)
-      if command -v apk >/dev/null 2>&1; then
-        apk add --no-cache gettext curl ca-certificates
-      elif command -v apt-get >/dev/null 2>&1; then
-        apt-get update && apt-get install -y --no-install-recommends gettext-base curl ca-certificates
-      else
-        echo "⚠️  No package manager found, envsubst may not be available"
-      fi
+      # Install envsubst (bitnami/kubectl is Alpine-based, use apk)
+      apk add --no-cache gettext curl ca-certificates
 
       # Configure kubectl from CI variable (KUBECONFIG_LOCAL for OrbStack)
       if [ -n "$KUBECONFIG_LOCAL" ]; then
@@ -68,20 +46,22 @@ review:deploy:
         chmod 600 ~/.kube/config
         echo "✅ Kubectl configured from KUBECONFIG_LOCAL"
       else
-        echo "❌ KUBECONFIG_LOCAL not set"
+        echo "⚠️  KUBECONFIG_LOCAL not set - skipping K8s deployment"
         echo "   To enable: Add KUBECONFIG_LOCAL CI/CD variable"
+        echo "   Generate: kubectl config view --raw | base64 | pbcopy"
         exit 0
       fi
 
-      # Verify kubectl connection
+      # Verify kubectl connection (skip validation errors, just check if config exists)
       if ! kubectl cluster-info >/dev/null 2>&1; then
-        echo "❌ Cannot connect to Kubernetes cluster"
-        exit 0
+        echo "⚠️  Cannot connect to Kubernetes cluster"
+        echo "   Check KUBECONFIG_LOCAL is valid and cluster is accessible"
+        echo "   Continuing anyway - deployment may fail if cluster is unreachable"
       fi
 
-      # Set review app variables
+      # Set review app variables - dynamic URL per MR
       export REVIEW_APP_NAME="mr-${CI_MERGE_REQUEST_IID}"
-      export REVIEW_APP_HOST="openstandardagents.orb.local"
+      export REVIEW_APP_HOST="mr-${CI_MERGE_REQUEST_IID}.openstandardagents.orb.local"
       export REVIEW_APP_IMAGE="${CI_REGISTRY_IMAGE}:${CI_COMMIT_SHA}"
       export NAMESPACE="${REVIEW_NAMESPACE}"
 
@@ -133,27 +113,19 @@ review:deploy:
       echo "=============================================="
   environment:
     name: review/${CI_MERGE_REQUEST_SOURCE_BRANCH_NAME}
-    url: http://openstandardagents.orb.local
+    url: http://mr-${CI_MERGE_REQUEST_IID}.openstandardagents.orb.local
     on_stop: review:stop
     auto_stop_in: 1 week
     deployment_tier: development
   allow_failure: true
   rules:
-    # Auto deploy when targeting release/* and review apps enabled
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME =~ /^release\// && $REVIEW_APPS_ENABLED == "true"
+    # Feature/bugfix MRs targeting release branches
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME =~ /^release\//
       when: on_success
 
 # Stop review app when MR is closed/merged
 review:stop:
-  cache: {}  # Disable cache to avoid Docker networking issues
-  retry:
-    max: 2
-    when:
-      - runner_system_failure
-      - unknown_failure
   stage: deploy
-  tags:
-    - ossa
   image:
     name: bitnami/kubectl:latest
     entrypoint: [""]
@@ -189,7 +161,7 @@ review:stop:
     action: stop
   allow_failure: true
   rules:
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME =~ /^release\// && $REVIEW_APPS_ENABLED == "true"
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME =~ /^release\//
       when: manual
 
 # =============================================================================
@@ -197,17 +169,7 @@ review:stop:
 # =============================================================================
 # Deploys staging preview when release branch merges to main
 staging:deploy:
-  cache: {}  # Disable cache to avoid Docker networking issues
-  retry:
-    max: 2
-    when:
-      - runner_system_failure
-      - stuck_or_timeout_failure
-      - scheduler_failure
-      - unknown_failure
   stage: deploy
-  tags:
-    - ossa  # Self-hosted runner with OrbStack K8s access
   image:
     name: bitnami/kubectl:latest
     entrypoint: [""]
@@ -217,12 +179,8 @@ staging:deploy:
     GIT_STRATEGY: clone
   before_script:
     - |
-      # Install envsubst - detect package manager (bitnami/kubectl switched to Debian)
-      if command -v apk >/dev/null 2>&1; then
-        apk add --no-cache gettext ca-certificates
-      elif command -v apt-get >/dev/null 2>&1; then
-        apt-get update && apt-get install -y --no-install-recommends gettext-base curl ca-certificates
-      fi
+      # Install envsubst (bitnami/kubectl is Alpine-based, use apk)
+      apk add --no-cache gettext ca-certificates
 
       # Configure kubectl from CI variable (KUBECONFIG_LOCAL for OrbStack)
       if [ -n "$KUBECONFIG_LOCAL" ]; then
@@ -288,8 +246,8 @@ staging:deploy:
     deployment_tier: staging
   allow_failure: true
   rules:
-    # Auto deploy release → main MRs when review apps enabled
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME =~ /^release\// && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "main" && $REVIEW_APPS_ENABLED == "true"
+    # Release branch MRs targeting main
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME =~ /^release\// && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "main"
       when: on_success
 
 # =============================================================================
