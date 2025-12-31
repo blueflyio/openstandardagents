@@ -25,14 +25,13 @@ The **Open Standard for Scalable AI Agents (OSSA)** is a specification standard 
 
 ## Specification Versions
 
-### Current Version: v0.3.1
+### Current Version: v0.3.0
 
 **Status**: Stable  
-**Release Date: 2025-12-23  
-**Schema**: [v0.3.1 JSON Schema](https://gitlab.com/blueflyio/openstandardagents/-/blob/main/spec/v0.3.1/ossa-0.3.1.schema.json)
+**Release Date**: 2025-12-20  
+**Schema**: [v0.3.0 JSON Schema](https://gitlab.com/blueflyio/openstandardagents/-/blob/main/spec/v0.3.0/ossa-0.3.0.schema.json)
 
-### - **v0.3.0**: Previous stable release
-- **v0.2.9**: Legacy version
+### Previous Versions
 
 - **v0.2.9**: Previous stable release
 - **v0.2.8**: Legacy version
@@ -157,6 +156,7 @@ Migrate agents from popular frameworks to OSSA:
 
 - [LangChain to OSSA](/docs/migration-guides/langchain-to-ossa)
 - [CrewAI to OSSA](/docs/migration-guides/crewai-to-ossa)
+- [AutoGPT to OSSA](/docs/migration-guides/autogpt-to-ossa)
 - [Drupal ECA to OSSA](/docs/migration-guides/drupal-eca-to-ossa)
 - [Anthropic MCP to OSSA](/docs/migration-guides/anthropic-mcp-to-ossa)
 - [OpenAI to OSSA](/docs/migration-guides/openai-to-ossa)
@@ -265,7 +265,7 @@ For detailed comparison, see:
 - **OSSA Specification Repository**: https://gitlab.com/blueflyio/openstandardagents
 - **npm Package**: @bluefly/openstandardagents
 - **Website**: https://openstandardagents.org
-- **JSON Schema**: [v0.3.0 Schema](https://gitlab.com/blueflyio/openstandardagents/-/blob/main/spec/v0.3.1/ossa-0.3.1.schema.json)
+- **JSON Schema**: [v0.3.0 Schema](https://gitlab.com/blueflyio/openstandardagents/-/blob/main/spec/v0.3.0/ossa-0.3.0.schema.json)
 
 ---
 
@@ -275,6 +275,6 @@ See [Changelog](/docs/changelog) for detailed version history and changes.
 
 ---
 
-**Last Updated**: 2025-12-23  
-**Specification Version**: v0.3.1  
+**Last Updated**: 2025-12-21  
+**Specification Version**: v0.3.0  
 **Document Status**: Complete and Authoritative
