@@ -87,7 +87,7 @@ metadata:
   name: data-processor-manifest
 data:
   agent.ossa.yaml: |
-    apiVersion: ossa/v0.3.1
+    apiVersion: ossa/v0.3.0
     kind: Agent
     metadata:
       name: data-processor
