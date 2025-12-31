@@ -26,7 +26,7 @@ info:
 paths:
   /cli/agent/create:
     post:
-      summary: Create agent (CLI: ossa agent create)
+      summary: "Create agent (CLI: ossa agent create)"
       description: Register a new agent via CLI
       operationId: cliAgentCreate
       requestBody:
@@ -47,7 +47,7 @@ paths:
 
   /cli/agent/list:
     get:
-      summary: List agents (CLI: ossa agent list)
+      summary: "List agents (CLI: ossa agent list)"
       description: List all agents with filtering
       operationId: cliAgentList
       parameters:
@@ -84,7 +84,7 @@ paths:
 
   /cli/agent/get:
     get:
-      summary: Get agent (CLI: ossa agent get)
+      summary: "Get agent (CLI: ossa agent get)"
       description: Get detailed information about an agent
       operationId: cliAgentGet
       parameters:
@@ -106,7 +106,7 @@ paths:
 
   /cli/agent/update:
     put:
-      summary: Update agent (CLI: ossa agent update)
+      summary: "Update agent (CLI: ossa agent update)"
       description: Update an existing agent
       operationId: cliAgentUpdate
       parameters:
@@ -135,7 +135,7 @@ paths:
 
   /cli/agent/delete:
     delete:
-      summary: Delete agent (CLI: ossa agent delete)
+      summary: "Delete agent (CLI: ossa agent delete)"
       description: Delete an agent
       operationId: cliAgentDelete
       parameters:
