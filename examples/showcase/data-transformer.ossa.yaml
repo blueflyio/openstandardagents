@@ -34,13 +34,17 @@ spec:
       backoff: exponential
 
   capabilities:
-    - name: data.extract
+    - type: function
+      name: data.extract
       description: Extract data from various sources
-    - name: data.transform
+    - type: function
+      name: data.transform
       description: Transform data between formats
-    - name: data.validate
+    - type: function
+      name: data.validate
       description: Validate data against schemas
-    - name: data.load
+    - type: function
+      name: data.load
       description: Load data to destination
 
   role: |
@@ -63,112 +67,12 @@ spec:
 
   # Note: Tasks may not need LLM for deterministic operations
   llm:
-    provider: ${OSSA_LLM_PROVIDER:-anthropic}
+    provider: anthropic
     model: ${OSSA_LLM_MODEL:-claude-haiku-3-5}  # Faster model for data tasks
     temperature: 0.0  # Deterministic
-    maxTokens: ${OSSA_LLM_MAX_TOKENS:-4096}
+    maxTokens: 4096
 
   tools:
-    - name: data.read.json
+    - type: function
+      name: data.read.json
       description: Read JSON data
-      handler:
-        runtime: local
-        capability: fs.read.json
-
-    - name: data.read.csv
-      description: Read CSV data
-      handler:
-        runtime: local
-        capability: fs.read.csv
-
-    - name: data.read.yaml
-      description: Read YAML data
-      handler:
-        runtime: local
-        capability: fs.read.yaml
-
-    - name: data.write
-      description: Write data to file
-      handler:
-        runtime: local
-        capability: fs.write
-
-    - name: data.validate
-      description: Validate against JSON Schema
-      handler:
-        runtime: local
-        capability: jsonschema.validate
-
-    - name: db.query
-      description: Query database
-      handler:
-        runtime: local
-        capability: db.query
-
-  # Input/output contracts for deterministic execution
-  input:
-    type: object
-    required: [source, destination]
-    properties:
-      source:
-        type: object
-        properties:
-          type:
-            type: string
-            enum: [file, api, database]
-          path:
-            type: string
-          format:
-            type: string
-            enum: [json, csv, yaml, xml]
-      destination:
-        type: object
-        properties:
-          type:
-            type: string
-            enum: [file, api, database]
-          path:
-            type: string
-          format:
-            type: string
-      transformations:
-        type: array
-        items:
-          type: object
-          properties:
-            field:
-              type: string
-            operation:
-              type: string
-              enum: [rename, map, filter, aggregate, join]
-            config:
-              type: object
-
-  output:
-    type: object
-    properties:
-      records_processed:
-        type: integer
-      records_succeeded:
-        type: integer
-      records_failed:
-        type: integer
-      errors:
-        type: array
-        items:
-          type: object
-          properties:
-            record_id:
-              type: string
-            error:
-              type: string
-      duration_ms:
-        type: integer
-
-  contracts:
-    provides:
-      - name: data-transformation
-        version: "1.0"
-        schema:
-          input: ${spec.input}
-          output: ${spec.output}

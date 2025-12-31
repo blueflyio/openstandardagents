@@ -22,13 +22,17 @@ metadata:
 
 spec:
   capabilities:
-    - name: security.scan
+    - type: function
+      name: security.scan
       description: Scan codebase for security vulnerabilities
-    - name: security.audit
+    - type: function
+      name: security.audit
       description: Audit dependencies for known CVEs
-    - name: security.secrets
+    - type: function
+      name: security.secrets
       description: Detect exposed secrets and credentials
-    - name: security.compliance
+    - type: function
+      name: security.compliance
       description: Check compliance against security policies
 
   role: |
@@ -50,56 +54,12 @@ spec:
     - References to CVEs or security advisories
 
   llm:
-    provider: ${OSSA_LLM_PROVIDER:-anthropic}
-    model: ${OSSA_LLM_MODEL:-claude-sonnet-4}
+    provider: anthropic
+    model: claude-sonnet-4
     temperature: 0.1  # Low temperature for consistent security analysis
-    maxTokens: ${OSSA_LLM_MAX_TOKENS:-16384}
+    maxTokens: 16384
 
   tools:
-    - name: scan.sast
+    - type: function
+      name: scan.sast
       description: Run static application security testing
-      handler:
-        runtime: docker
-        image: returntocorp/semgrep:latest
-        command: ["semgrep", "--config=auto"]
-
-    - name: scan.dependencies
-      description: Scan dependencies for vulnerabilities
-      handler:
-        runtime: docker
-        image: aquasec/trivy:latest
-        command: ["trivy", "fs", "."]
-
-    - name: scan.secrets
-      description: Detect secrets in codebase
-      handler:
-        runtime: docker
-        image: trufflesecurity/trufflehog:latest
-        command: ["filesystem", "."]
-
-    - name: report.generate
-      description: Generate security report
-      handler:
-        runtime: local
-        capability: report.generate
-
-  safety:
-    constraints:
-      - Never expose actual secret values in reports
-      - Redact sensitive information before logging
-      - Rate limit external vulnerability database queries
-    policies:
-      - policy: no-secret-exposure
-        description: All detected secrets must be redacted in output
-      - policy: audit-logging
-        description: All scans must be logged for compliance
-
-  identity:
-    access_tier: elevated
-    permissions:
-      - security.scan.read
-      - security.report.write
-      - security.config.read
-    audit:
-      enabled: true
-      retention_days: 90

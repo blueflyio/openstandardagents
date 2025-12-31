@@ -21,13 +21,17 @@ metadata:
 
 spec:
   capabilities:
-    - name: docs.api
+    - type: function
+      name: docs.api
       description: Generate API documentation from code
-    - name: docs.readme
+    - type: function
+      name: docs.readme
       description: Generate or update README files
-    - name: docs.changelog
+    - type: function
+      name: docs.changelog
       description: Generate changelog from commits
-    - name: docs.technical
+    - type: function
+      name: docs.technical
       description: Generate technical documentation
 
   role: |
@@ -47,10 +51,10 @@ spec:
     - Keep documentation in sync with code
 
   llm:
-    provider: ${OSSA_LLM_PROVIDER:-anthropic}
-    model: ${OSSA_LLM_MODEL:-claude-sonnet-4}
+    provider: anthropic
+    model: claude-sonnet-4
     temperature: 0.5
-    maxTokens: ${OSSA_LLM_MAX_TOKENS:-16384}
+    maxTokens: 16384
     # Fallback providers for high availability
     fallback:
       - provider: openai
@@ -59,47 +63,6 @@ spec:
         model: gemini-2.0-flash
 
   tools:
-    - name: code.analyze
+    - type: function
+      name: code.analyze
       description: Analyze code structure for documentation
-      handler:
-        runtime: local
-        capability: ast.parse
-
-    - name: openapi.parse
-      description: Parse OpenAPI specification
-      handler:
-        runtime: local
-        capability: openapi.parse
-
-    - name: git.log
-      description: Get git commit history
-      handler:
-        runtime: local
-        capability: git.log
-
-    - name: markdown.write
-      description: Write markdown documentation
-      handler:
-        runtime: local
-        capability: fs.write
-
-    - name: wiki.publish
-      description: Publish to GitLab wiki
-      handler:
-        runtime: api
-        endpoint: ${GITLAB_API_URL}/projects/${CI_PROJECT_ID}/wikis
-        method: POST
-
-  templates:
-    readme:
-      path: .ossa/templates/readme.md.template
-      variables:
-        - project_name
-        - description
-        - installation
-        - usage
-        - contributing
-
-    changelog:
-      path: .ossa/templates/changelog.md.template
-      format: conventional-commits

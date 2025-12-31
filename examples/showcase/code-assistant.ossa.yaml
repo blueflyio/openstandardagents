@@ -22,15 +22,20 @@ metadata:
 
 spec:
   capabilities:
-    - name: code.complete
+    - type: function
+      name: code.complete
       description: Intelligent code completion with context awareness
-    - name: code.refactor
+    - type: function
+      name: code.refactor
       description: Automated refactoring with safety checks
-    - name: code.explain
+    - type: function
+      name: code.explain
       description: Explain code functionality and architecture
-    - name: code.generate
+    - type: function
+      name: code.generate
       description: Generate code from natural language descriptions
-    - name: code.debug
+    - type: function
+      name: code.debug
       description: Identify and suggest fixes for bugs
 
   role: |
@@ -46,41 +51,31 @@ spec:
     5. Root cause analysis for debugging
 
   llm:
-    provider: ${OSSA_LLM_PROVIDER:-anthropic}
-    model: ${OSSA_LLM_MODEL:-claude-sonnet-4}
-    temperature: ${OSSA_LLM_TEMPERATURE:-0.3}
-    maxTokens: ${OSSA_LLM_MAX_TOKENS:-8192}
+    provider: anthropic
+    model: claude-sonnet-4
+    temperature: 0.3
+    maxTokens: 8192
 
   tools:
-    - name: file.read
+    - type: function
+      name: file.read
       description: Read file contents with line numbers
-      handler:
-        runtime: ide
-        capability: fs.read
 
-    - name: file.edit
+    - type: function
+      name: file.edit
       description: Edit file with diff preview
-      handler:
-        runtime: ide
-        capability: fs.edit
 
-    - name: search.code
+    - type: function
+      name: search.code
       description: Search codebase with regex
-      handler:
-        runtime: ide
-        capability: search.code
 
-    - name: search.files
+    - type: function
+      name: search.files
       description: Find files by glob pattern
-      handler:
-        runtime: ide
-        capability: search.files
 
-    - name: terminal.run
+    - type: function
+      name: terminal.run
       description: Execute terminal commands
-      handler:
-        runtime: ide
-        capability: terminal.execute
 
   safety:
     constraints:
