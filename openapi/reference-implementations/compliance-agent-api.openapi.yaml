@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: FedRAMP Compliance Scanner Agent API
-  version: 1.0.0
+  version: 0.3.2
   description: |
     Automated FedRAMP compliance scanning agent that validates
     infrastructure against FedRAMP Moderate controls.
