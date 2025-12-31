@@ -1,5 +1,5 @@
 {
-  "apiVersion": "ossa/v0.3.0",
+  "apiVersion": "ossa/v0.3.2",
   "kind": "Agent",
   "metadata": {
     "name": "code-assistant",
@@ -23,9 +23,15 @@
         "name": "filesystem",
         "server": "filesystem",
         "capabilities": [
-          { "name": "read_file" },
-          { "name": "write_file" },
-          { "name": "list_directory" }
+          {
+            "name": "read_file"
+          },
+          {
+            "name": "write_file"
+          },
+          {
+            "name": "list_directory"
+          }
         ]
       },
       {
@@ -33,9 +39,15 @@
         "name": "git",
         "server": "git",
         "capabilities": [
-          { "name": "status" },
-          { "name": "diff" },
-          { "name": "commit" }
+          {
+            "name": "status"
+          },
+          {
+            "name": "diff"
+          },
+          {
+            "name": "commit"
+          }
         ]
       }
     ],
@@ -48,8 +60,15 @@
     "autonomy": {
       "level": "supervised",
       "approval_required": true,
-      "allowed_actions": ["read", "write", "test"],
-      "blocked_actions": ["deploy", "delete"]
+      "allowed_actions": [
+        "read",
+        "write",
+        "test"
+      ],
+      "blocked_actions": [
+        "deploy",
+        "delete"
+      ]
     }
   },
   "extensions": {
@@ -92,8 +111,14 @@
       "enabled": true,
       "agent_type": "composer",
       "workspace_config": {
-        "context_files": ["src/**/*.ts", "tests/**/*.ts"],
-        "ignore_patterns": ["node_modules/**", "dist/**"]
+        "context_files": [
+          "src/**/*.ts",
+          "tests/**/*.ts"
+        ],
+        "ignore_patterns": [
+          "node_modules/**",
+          "dist/**"
+        ]
       }
     }
   }

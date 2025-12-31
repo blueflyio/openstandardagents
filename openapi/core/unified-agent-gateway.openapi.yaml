@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: Unified Agent Gateway
-  version: 1.0.0
+  version: 0.3.2
   description: |
     **Single Entry Point for All LLM Platform Agents**
     

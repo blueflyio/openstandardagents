@@ -14,8 +14,6 @@ test:lint:
     - job: detect:version
       optional: true
       artifacts: true
-    - job: generate:types
-      artifacts: true
   before_script:
     - apk add --no-cache curl jq
     - test -f build.env && . build.env || echo "No build.env found (using defaults)"
