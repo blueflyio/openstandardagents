@@ -60,22 +60,22 @@ validate:openapi:ossa-extensions:
       echo "$OPENAPI_FILES" | while read f; do echo "  - $f"; done
       echo ""
 
-      # Run OSSA extension validation
+      # Run OSSA extension validation using for loop (sh compatible)
       VALIDATION_FAILED=0
-      while IFS= read -r file; do
+      for file in $OPENAPI_FILES; do
         if ! npx tsx scripts/validate-openapi-extensions.ts "$file"; then
           echo ""
           echo "ERROR: OSSA OpenAPI extension validation failed for $file"
           VALIDATION_FAILED=1
         fi
-      done <<< "$OPENAPI_FILES"
+      done
 
       # Create report file if not exists
       if [ ! -f openapi-validation-report.json ]; then
         echo '{"files":[],"status":"validated"}' > openapi-validation-report.json
       fi
 
-      if [ $VALIDATION_FAILED -eq 1 ]; then
+      if [ "$VALIDATION_FAILED" = "1" ]; then
         exit 1
       fi
   artifacts:
