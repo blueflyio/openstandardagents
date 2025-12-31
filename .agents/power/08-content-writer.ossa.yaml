@@ -55,13 +55,7 @@ spec:
     provider: ${OSSA_LLM_PROVIDER:-anthropic}
     model: ${OSSA_LLM_MODEL:-claude-sonnet-4}
     temperature: 0.7
-    maxTokens: ${OSSA_LLM_MAX_TOKENS:-8192}
-
   tools:
-    - name: drupal.node.create
-      description: Create Drupal content node
-      handler:
-        runtime: drupal
         capability: node.create
 
     - name: drupal.node.update
