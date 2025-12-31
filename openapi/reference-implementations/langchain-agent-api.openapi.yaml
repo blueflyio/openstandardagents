@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: LangChain Agent API
-  version: 1.0.0
+  version: 0.3.2
   description: |
     LangChain agent with tool chain integration.
     Uses tools to accomplish tasks with memory and chain capabilities.
