@@ -5,7 +5,36 @@ All notable changes to OSSA (Open Standard for Scalable AI Agents) will be docum
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.3.2] - 2025-12-28
+## [v0.3.2] - 2025-12-30
+
+### Added
+
+- **cli**: Two-tier architecture with OpenAPI-first CRUD commands ([#377](https://gitlab.com/blueflyio/openstandardagents/-/issues/377))
+  - `.agents-workspace/` governance layer (one per workspace)
+    - `registry/index.yaml` - Agent discovery index
+    - `policies/tool-allowlist.yaml` - MCP server permissions
+    - `policies/security-tiers.yaml` - Access control levels
+    - `orchestration/` - Workflow definitions
+    - `shared-context/` - Global coding standards and security guidelines
+  - `examples/showcase/` - 10 production-ready showcase agents
+    - Agent kind: code-assistant, security-scanner, ci-pipeline, code-reviewer, doc-generator, compliance-validator, content-writer, test-generator
+    - Workflow kind: workflow-orchestrator (multi-agent composition)
+    - Task kind: data-transformer (deterministic ETL)
+  - New CLI commands:
+    - `ossa workspace init|list|discover|policy` - Workspace management
+    - `ossa registry list|add|remove|discover|validate` - Agent registry CRUD
+    - `ossa agent-card generate|validate|show` - A2A Protocol discovery
+  - Codegen service (`src/services/codegen/`) for version automation
+  - A2A Protocol agent-card.json support
+
+### Changed
+
+- **agents**: Consolidated 60+ agents into 10 optimized showcase agents
+- **structure**: Removed archive folder (git history preserved)
+- **structure**: Removed migrated/ folder (agents consolidated into showcase/)
+- **docs**: Updated migration guide for v0.3.x with access tiers and lifecycle
+
+## [0.3.2-rc.1] - 2025-12-28
 
 ### Added
 
