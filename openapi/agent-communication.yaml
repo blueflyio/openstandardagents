@@ -1093,21 +1093,9 @@ tags:
     description: Service health and status
 
 x-ossa-metadata:
-  version: 0.3.0
-  specification: OSSA Agent Communication Standards
+  version: 0.3.2
   compliance:
     level: standard
     frameworks:
-      - OSSA v0.3.0
+      - OSSA v0.3.2
       - OpenAPI 3.1
-      - RFC7807
-  patterns:
-    - Point-to-point messaging
-    - Pub/sub channels
-    - Request/reply
-    - Server-Sent Events
-    - Webhooks
-  deliveryGuarantees:
-    - At-least-once delivery
-    - Message acknowledgment
-    - Retry with exponential backoff
