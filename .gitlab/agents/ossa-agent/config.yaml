@@ -14,7 +14,7 @@ user_access:
   # Projects whose members should have access to this agent
   # Members can access the cluster through this agent for deployments and operations
   projects:
-    - id: blueflyio/openstandardagents
+    - id: blueflyio/ossa/openstandardagents
     # Add more projects as needed:
     # - id: blueflyio/agent-platform/agent-buildkit
 
@@ -30,7 +30,7 @@ user_access:
 ci_access:
   # Projects whose CI/CD pipelines can access the cluster
   projects:
-    - id: blueflyio/openstandardagents
+    - id: blueflyio/ossa/openstandardagents
       access_as:
         # Impersonate the CI/CD job user for better security
         # Requires RBAC configuration in the cluster
@@ -55,7 +55,7 @@ ci_access:
 # Enables GitLab to manage Kubernetes resources via GitOps workflows
 gitops:
   manifest_projects:
-    - id: blueflyio/openstandardagents
+    - id: blueflyio/ossa/openstandardagents
       default_namespace: ossa-agents
       paths:
         - glob: '.gitlab/agents/*/deployment.yaml'

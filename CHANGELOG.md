@@ -5,6 +5,77 @@ All notable changes to OSSA (Open Standard for Scalable AI Agents) will be docum
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.2] - 2025-12-28
+
+### Added
+
+- **spec**: Access Tiers & Separation of Duties for OSSA v0.3.2 ([#363](https://gitlab.com/blueflyio/openstandardagents/-/issues/363))
+  - 4-tier access hierarchy (tier_1_read, tier_2_write_limited, tier_3_write_elevated, tier_4_policy)
+  - Role separation rules (Critic-Executor, Governor-Executor, Read-Write separation)
+  - Approval chains (Standard, Elevated, Critical)
+  - Delegation rules between tiers
+  - Audit requirements by tier
+  - Schema definitions in `spec/v0.3.2/access_tiers.yaml`
+  - Example agents in `spec/v0.3.2/examples/access-tiers/`
+  - Schema integration in `ossa-0.3.2.schema.json`
+
+- **identity**: Comprehensive Agent Identity Extension for OSSA v0.3.1+
+  - Service account integration with automatic git attribution
+  - Multi-provider identity (GitLab, GitHub, Azure DevOps, Bitbucket)
+  - Token management with secure storage and rotation policies
+  - DORA metrics tracking for agent performance measurement
+  - Session management for Claude Code and similar AI assistants
+  - Multi-provider identity federation for complex environments
+
+- **ci**: Generate TypeScript types in CI instead of committing
+- **ci**: Generate spec files in CI instead of committing to git
+- **ci**: Add validate:documentation CI job
+- **cli**: Implement ossa lint command
+- **cli**: Implement ossa commands for issues #190, #192, #193
+
+- **bots**: Implement OSSA compliance bot ([#283](https://gitlab.com/blueflyio/openstandardagents/-/issues/283))
+- **bots**: Implement architecture validator bot ([#285](https://gitlab.com/blueflyio/openstandardagents/-/issues/285))
+- **bots**: Implement security scanner bot ([#284](https://gitlab.com/blueflyio/openstandardagents/-/issues/284))
+- **bots**: Implement CI pipeline bot ([#286](https://gitlab.com/blueflyio/openstandardagents/-/issues/286))
+
+### Fixed
+
+- **ci**: Use .version.json as single source of truth for dev tags
+- **ci**: Create-rc-tag and changelog URL fixes
+- **ci**: Accept active group range milestone for v0.3.x releases
+- **ci**: Proper npm dist-tag management
+- **test**: Use dynamic API version in migration tests
+- **release**: Setup v0.3.2 spec and versioning after v0.3.1 release
+- **release**: Sync version references to v0.3.2
+- **security**: Address GitLab Duo security review comments
+- **security**: Remove .env.local and KAS_AUDIT.md from git tracking
+- Disable all platform-agents trigger jobs - use gitlab_components or local execution instead
+
+### Changed
+
+- **ci**: Configure release-based merge trains
+- **ci**: Add content professionalization automation
+- **chore**: Update repository URLs after migration to ossa group
+- **chore**: Remove .env.local from package.json files array
+- **chore**: Cleanup project files and configuration
+
+### Documentation
+
+- Add documentation for issues #348, #349
+- Add adoption priorities for framework integrations
+
+### Miscellaneous
+
+- Close MR !580 - audit remediation completed
+
+### Breaking Changes
+
+**None** - v0.3.2 is fully backward compatible with v0.3.1. All v0.3.1 manifests validate against v0.3.2 schema.
+
+### Migration
+
+See [Migration Guide](spec/v0.3.2/MIGRATION-v0.3.1-to-v0.3.2.md) for details on migrating from v0.3.1 to v0.3.2.
+
 ## [0.3.1-dev.26] - 2025-12-24
 
 ### Added
