@@ -5,7 +5,7 @@ All notable changes to OSSA (Open Standard for Scalable AI Agents) will be docum
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [v0.3.2] - 2025-12-31
+## [v0.3.2] - 2025-12-30
 
 ### Added
 
@@ -16,7 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - `policies/security-tiers.yaml` - Access control levels
     - `orchestration/` - Workflow definitions
     - `shared-context/` - Global coding standards and security guidelines
-  - `.agents/power/` - 10 optimized power agents showcasing OSSA capabilities
+  - `examples/showcase/` - 10 production-ready showcase agents
     - Agent kind: code-assistant, security-scanner, ci-pipeline, code-reviewer, doc-generator, compliance-validator, content-writer, test-generator
     - Workflow kind: workflow-orchestrator (multi-agent composition)
     - Task kind: data-transformer (deterministic ETL)
@@ -29,11 +29,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- **agents**: Consolidated 60+ agents into 10 optimized power agents
+- **agents**: Consolidated 60+ agents into 10 optimized showcase agents
 - **structure**: Removed archive folder (git history preserved)
-- **structure**: Removed migrated/ folder (agents consolidated into power/)
+- **structure**: Removed migrated/ folder (agents consolidated into showcase/)
+- **docs**: Updated migration guide for v0.3.x with access tiers and lifecycle
 
-## [0.3.2] - 2025-12-28
+## [0.3.2-rc.1] - 2025-12-28
 
 ### Added
 
