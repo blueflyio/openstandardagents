@@ -3,7 +3,7 @@
 # This agent scans dependencies for vulnerabilities and publishes findings
 # to OSSA messaging channels. It also accepts commands for on-demand scans.
 
-apiVersion: ossa/v0.3.0
+apiVersion: ossa/v0.3.2
 kind: Agent
 metadata:
   name: security-scanner
