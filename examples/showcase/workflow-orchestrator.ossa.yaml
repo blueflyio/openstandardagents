@@ -27,13 +27,17 @@ spec:
     timeout: 3600s
 
   capabilities:
-    - name: workflow.create
+    - type: function
+      name: workflow.create
       description: Create and configure workflows
-    - name: workflow.execute
+    - type: function
+      name: workflow.execute
       description: Execute multi-agent workflows
-    - name: workflow.monitor
+    - type: function
+      name: workflow.monitor
       description: Monitor workflow execution status
-    - name: workflow.route
+    - type: function
+      name: workflow.route
       description: Route tasks to appropriate agents
 
   role: |
@@ -49,10 +53,10 @@ spec:
     5. Human-in-the-loop - Pause for human approval
 
   llm:
-    provider: ${OSSA_LLM_PROVIDER:-anthropic}
-    model: ${OSSA_LLM_MODEL:-claude-sonnet-4}
+    provider: anthropic
+    model: claude-sonnet-4
     temperature: 0.2
-    maxTokens: ${OSSA_LLM_MAX_TOKENS:-8192}
+    maxTokens: 8192
 
   # Agent composition
   agents:

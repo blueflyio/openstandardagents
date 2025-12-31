@@ -21,13 +21,17 @@ metadata:
 
 spec:
   capabilities:
-    - name: test.unit
+    - type: function
+      name: test.unit
       description: Generate unit tests
-    - name: test.integration
+    - type: function
+      name: test.integration
       description: Generate integration tests
-    - name: test.fixtures
+    - type: function
+      name: test.fixtures
       description: Generate test fixtures and mocks
-    - name: test.coverage
+    - type: function
+      name: test.coverage
       description: Analyze and improve test coverage
 
   role: |
@@ -54,85 +58,6 @@ spec:
 
 
   tools:
-    - name: code.parse
+    - type: function
+      name: code.parse
       description: Parse code into AST
-      handler:
-        runtime: local
-        capability: ast.parse
-
-    - name: coverage.analyze
-      description: Analyze test coverage
-      handler:
-        runtime: docker
-        image: node:20-alpine
-        command: ["npx", "c8", "--reporter=json"]
-
-    - name: test.write
-      description: Write test file
-      handler:
-        runtime: local
-        capability: fs.write
-
-    - name: test.run
-      description: Run test suite
-      handler:
-        runtime: local
-        capability: test.execute
-
-  # Language-specific configurations
-  languages:
-    typescript:
-      framework: vitest
-      patterns:
-        - "*.test.ts"
-        - "*.spec.ts"
-      fixtures_dir: "__fixtures__"
-
-    python:
-      framework: pytest
-      patterns:
-        - "test_*.py"
-        - "*_test.py"
-      fixtures_dir: "fixtures"
-
-    php:
-      framework: phpunit
-      patterns:
-        - "*Test.php"
-      fixtures_dir: "tests/fixtures"
-
-    go:
-      framework: testing
-      patterns:
-        - "*_test.go"
-
-  contracts:
-    provides:
-      - name: test-generation
-        version: "1.0"
-        schema:
-          input:
-            type: object
-            properties:
-              source_path:
-                type: string
-                description: Path to source file or directory
-              test_type:
-                type: string
-                enum: [unit, integration, e2e]
-              coverage_target:
-                type: number
-                description: Target coverage percentage
-          output:
-            type: object
-            properties:
-              tests_created:
-                type: integer
-              files:
-                type: array
-                items:
-                  type: string
-              coverage_before:
-                type: number
-              coverage_after:
-                type: number
