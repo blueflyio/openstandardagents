@@ -28,7 +28,7 @@ describe('Full Workflow E2E', () => {
     // 1. Generate agent
     const reflectMetadataPath = require.resolve('reflect-metadata');
     const generateOutput = execSync(
-      `node --require ${reflectMetadataPath} dist/cli/index.js generate chat --name "My Agent" --output ${agentPath}`,
+      `node --require ${reflectMetadataPath} dist/cli/index.js generate agent chat --name "My Agent" --output ${agentPath}`,
       {
         encoding: 'utf-8',
         cwd: cwdPath,
@@ -57,7 +57,7 @@ describe('Full Workflow E2E', () => {
 
       // Generate
       execSync(
-        `node dist/cli/index.js generate ${agent.includes('chat') ? 'chat' : agent.includes('workflow') ? 'workflow' : 'compliance'} --name "${agent}" --output ${agentPath}`,
+        `node dist/cli/index.js generate agent ${agent.includes('chat') ? 'chat' : agent.includes('workflow') ? 'workflow' : 'compliance'} --name "${agent}" --output ${agentPath}`,
         {
           encoding: 'utf-8',
           cwd: cwdPath,
@@ -83,7 +83,7 @@ describe('Full Workflow E2E', () => {
 
     // Step 1: Generate
     execSync(
-      `node dist/cli/index.js generate workflow --name "Development Agent" --runtime k8s --output ${agentPath}`,
+      `node dist/cli/index.js generate agent workflow --name "Development Agent" --runtime k8s --output ${agentPath}`,
       {
         encoding: 'utf-8',
         cwd: cwdPath,

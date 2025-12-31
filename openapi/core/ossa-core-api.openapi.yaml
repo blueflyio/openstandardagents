@@ -2,7 +2,7 @@ openapi: 3.1.0
 jsonSchemaDialect: https://spec.openapis.org/oas/3.1/dialect/base
 info:
   title: OSSA Master API
-  version: 0.1.9
+  version: 0.3.2
   description: |
     # OSSA - Open Standards for Scalable Agents
 

@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: OSSA Agent Discovery & Registry API
-  version: 1.0.0
+  version: 0.3.2
   description: |
     Agent Discovery and Registry API for OSSA v0.3.0.
 
@@ -70,7 +70,7 @@ paths:
                   name: security-scanner
                   version: 1.0.0
                   manifest:
-                    apiVersion: ossa/v0.3.0
+                    apiVersion: ossa/v0.3.2
                     kind: Agent
                     metadata:
                       name: security-scanner
