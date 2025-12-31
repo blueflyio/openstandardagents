@@ -1,3 +1,138 @@
-include:
-  - component: $CI_SERVER_FQDN/blueflyio/gitlab_components/golden@release/v0.1.x
+# GitLab CI/CD Pipeline for OSSA
+# Release Branch Strategy
+# - Code flows: Feature → release/v0.X.x → main (CI validates, auto-release on merge to main)
+# - Website deployment - Manual button (independent of releases)
+# - NPM releases - Milestone-gated + ENABLE_RELEASE variable required
+#
+# Workflow
+# 1. Feature branches → merge to release/v0.X.x (CI validates)
+# 2. Release branches → merge to main via merge train (CI validates)
+# 3. Click "Deploy Website" button → GitLab Pages deploys
+# 4. To release - Set ENABLE_RELEASE=true + close milestone → automatic npm publish + git tag
+#
+# Release Gate
+# Releases require BOTH conditions
+#   - Milestone must be 100% complete and closed
 
+include:
+  - local: '.gitlab/ci/agents.yml'
+  - local: '.gitlab/ci/branch-policy.yml'
+  - local: '.gitlab/ci/webhook-agents.yml'  # OSSA v0.2.9 webhook-triggered agents
+  - local: '.gitlab/ci/merge-train-optimized.yml'  # Optimized merge train pipeline
+  - local: '.gitlab/ci/release-merge-trains.yml'
+  - local: '.gitlab/ci/milestone-workflow.yml'  # Milestone-driven workflow enforcement
+  - local: '.gitlab/ci/fix-mr-targets.yml'  # Fix MRs targeting main branch
+  - local: '.gitlab/ci/ossa-version-management.yml'  # Dynamic OSSA version detection and injection
+  - local: '.gitlab/ci/release-workflow.yml'  # Dev tag automation and GitLab Release creation
+  # Security scanning from Auto DevOps
+  - template: Jobs/SAST.gitlab-ci.yml
+  - template: Jobs/Secret-Detection.gitlab-ci.yml
+  - template: Jobs/Dependency-Scanning.gitlab-ci.yml
+  # Merge trains enabled via workflow rules (see workflow section at bottom)
+  # Component available but private - uncomment when gitlab_components is public
+  # - component: gitlab.com/blueflyio/gitlab_components/merge-train@main
+  # OSSA Runners
+  - local: '.gitlab/ci/ossa-runners.yml'
+  # Modular CI sections
+  - local: '.gitlab/ci/version-detection.yml'
+  - local: '.gitlab/ci/validation-jobs.yml'
+  - local: '.gitlab/ci/build-jobs.yml'
+  - local: '.gitlab/ci/test-jobs.yml'
+  - local: '.gitlab/ci/quality-gates.yml'
+  - local: '.gitlab/ci/release-jobs.yml'
+  - local: '.gitlab/ci/mirror-jobs.yml'
+  - local: '.gitlab/ci/content-professionalization.yml'
+  - local: '.gitlab/ci/post-release.yml'
+  - local: '.gitlab/ci/rc-validation.yml'
+  - local: '.gitlab/ci/rc-promotion.yml'
+  - local: '.gitlab/ci/utilities.yml'
+  - local: '.gitlab/ci/openapi-validation.yml'  # OpenAPI & OSSA extensions validation (#176)
+  - local: '.gitlab/ci/release-environments.yml'  # Release environment deployments (#376)
+
+# Override SAST template jobs - run independently without blocking
+semgrep-sast:
+  needs: []
+  allow_failure: true
+
+secret_detection:
+  needs: []
+  allow_failure: true
+
+gemnasium-dependency_scanning:
+  needs: []
+  allow_failure: true
+
+stages:
+  - .pre           # GitLab reserved pre-stage (used by create-release-mrs)
+  - setup          # Version detection and sync happen here (earliest stage)
+  - version-detect # Used by included CI files (release-workflow.yml, version-bump-agent.yml)
+  - validate       # Validation jobs (can use version from setup)
+  - build          # Build jobs (can use version from setup)
+  - test           # Test jobs (can use version from setup)
+  - quality        # Quality gates
+  - deploy         # Deployment
+  - release        # Release automation
+  - rc-validation  # RC validation stage (smoke tests, integration tests, staging deployment)
+  - mirror         # Mirror to external repos
+  - .post          # GitLab reserved post-stage (post-release jobs)
+
+# Use SaaS runners (GitLab Ultimate minutes)
+default:
+  # Cache npm dependencies (file-based key for better invalidation)
+  cache:
+    key:
+      files:
+        - package-lock.json
+      prefix: ${CI_COMMIT_REF_SLUG}
+    paths:
+      - .npm/
+      - node_modules/
+    policy: pull-push
+  tags:
+    - saas-linux-small-amd64
+  # Default timeout and retry for reliability
+  timeout: 1h
+  retry:
+    max: 2
+    when:
+      - runner_system_failure
+      - stuck_or_timeout_failure
+      - api_failure
+
+variables:
+  NODE_VERSION: "22"
+  NPM_CONFIG_LEGACY_PEER_DEPS: "1"
+  HUSKY: "0"
+  LEFTHOOK: "0"
+  # GITLAB_PUSH_TOKEN is now set directly as CI/CD variable (not derived)
+  # This avoids variable expansion issues with masked tokens
+  DEPLOY_TOKEN_USERNAME: "gitlab+deploy-token-10466652"
+  # Performance optimizations
+  FF_USE_FASTZIP: "true"
+  TRANSFER_METER_FREQUENCY: "5s"
+  GIT_DEPTH: "0"
+
+# ============================================================================
+# WORKFLOW - MERGE TRAINS ENABLED
+# ============================================================================
+# Merge trains prevent branch divergence by:
+# 1. Queuing MRs instead of racing to merge
+# 2. Testing merged state before allowing merge
+# 3. Auto-rebasing when target branch updates
+# 4. Failing fast on conflicts
+#
+# Enabled for: development, main branches
+# Eliminates: Manual sync commits between releases
+# See: https://docs.gitlab.com/ee/ci/pipelines/merge_trains.html
+# ============================================================================
+
+workflow:
+  rules:
+    # Merge train pipelines (highest priority - combined state testing)
+    - if: $CI_MERGE_REQUEST_EVENT_TYPE == "merge_train"
+    # Pre-merge validation (merged result pipelines)
+    - if: $CI_MERGE_REQUEST_EVENT_TYPE == "merged_result"
+    # Regular MR pipelines
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    # Branch, tag, and scheduled/webhook pipelines (consolidated)
+    - if: $CI_COMMIT_BRANCH || $CI_COMMIT_TAG || $CI_PIPELINE_SOURCE =~ /(schedule|web|trigger)/
