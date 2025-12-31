@@ -1,6 +1,6 @@
 # OSSA v0.3.1 Multi-Provider Identity Configuration
 # Enterprise-grade agent with fallback identity chain and compliance
-apiVersion: ossa/v0.3.1
+apiVersion: ossa/v0.3.2
 kind: Agent
 metadata:
   name: enterprise-deployer

@@ -34,7 +34,7 @@ export class OSSAValidator {
 
       // Get schema version from config or manifest
       const config = vscode.workspace.getConfiguration('ossa');
-      const configVersion = config.get<string>('validation.schemaVersion', 'v0.3.0');
+      const configVersion = config.get<string>('validation.schemaVersion', 'v0.3.2');
       const manifestVersion = data?.apiVersion?.replace('ossa/', '') || configVersion;
 
       // Fetch and validate against schema
