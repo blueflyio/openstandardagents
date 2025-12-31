@@ -137,13 +137,16 @@ export class VSCodeGenerator implements Generator {
     // Replace ossa/v0.x.x patterns
     updated = updated.replace(/ossa\/v\d+\.\d+\.\d+/g, apiVersion);
 
-    // Replace v0.x.x patterns (standalone)
-    updated = updated.replace(/"v\d+\.\d+\.\d+"/g, `"v${version}"`);
-
     // Replace schema URLs
     updated = updated.replace(
       /schemas\/v\d+\.\d+\.\d+\//g,
       `schemas/v${version}/`
+    );
+
+    // Replace "default": "vX.X.X" pattern (but NOT enum arrays)
+    updated = updated.replace(
+      /"default":\s*"v\d+\.\d+\.\d+"/g,
+      `"default": "v${version}"`
     );
 
     return updated;
@@ -173,7 +176,8 @@ export class VSCodeGenerator implements Generator {
       (match) => {
         // Only replace if it looks like an OSSA version
         if (match.includes("v0.3") || match.includes("v0.2")) {
-          return `'v${apiVersion.replace('ossa/', '')}'`;
+          // apiVersion is "ossa/v0.3.2", so .replace('ossa/', '') gives "v0.3.2"
+          return `'${apiVersion.replace('ossa/', '')}'`;
         }
         return match;
       }
