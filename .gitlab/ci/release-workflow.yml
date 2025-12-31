@@ -345,6 +345,10 @@ create-rc-tag:
         exit 1
       fi
   rules:
+    # Trigger on merge train completing to main from release branch
+    - if: $CI_MERGE_REQUEST_EVENT_TYPE == "merge_train" && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "main" && $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME =~ /^release\//
+      when: on_success
+    # Trigger on direct push to main with merge commit from release branch
     - if: $CI_COMMIT_BRANCH == "main" && $CI_COMMIT_MESSAGE =~ /Merge branch 'release\//
       when: on_success
   allow_failure: false
