@@ -18,7 +18,7 @@ function test(name: string, fn: () => void) {
     fn();
     console.log(`✅ ${name}`);
   } catch (_error) {
-    console.error(`❌ ${name}: ${error instanceof Error ? error.message : String(error)}`);
+    console.error(`❌ ${name}: ${_error instanceof Error ? _error.message : String(_error)}`);
     process.exit(1);
   }
 }

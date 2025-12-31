@@ -9,13 +9,13 @@ import logger from '../utils/logger';
 export const data = new SlashCommandBuilder()
   .setName('ask')
   .setDescription('Ask a question about OSSA (powered by AI)')
-  .addStringOption((option: any) =>
+  .addStringOption((option) =>
     option
       .setName('question')
       .setDescription('Your question about OSSA')
       .setRequired(true)
   )
-  .addStringOption((option: any) =>
+  .addStringOption((option) =>
     option
       .setName('provider')
       .setDescription('LLM provider to use')
