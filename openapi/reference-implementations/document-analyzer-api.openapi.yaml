@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: Document Analyzer Agent API
-  version: 2.1.0
+  version: 0.3.2
   description: |
     Production document analysis agent with NLP capabilities.
     Analyzes documents for sentiment, extracts entities, generates summaries, and classifies content.

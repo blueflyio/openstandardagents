@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: OSSA Agent Registry API
-  version: 0.1.9
+  version: 0.3.2
   license:
     name: MIT
     url: https://opensource.org/licenses/MIT

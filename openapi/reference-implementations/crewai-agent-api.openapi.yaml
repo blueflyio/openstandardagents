@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: CrewAI Research Agent API
-  version: 1.0.0
+  version: 0.3.2
   description: |
     CrewAI research agent for multi-agent collaboration.
     Specializes in gathering comprehensive information on assigned topics.
