@@ -15,10 +15,10 @@ x-ossa-metadata:
       - OpenAPI 3.1
 
 x-ossa:
-  version: 0.2.5-RC
+  version: 0.3.2
   agent:
     id: gitlab-ml-recommender
-    type: integration
+    type: integrator
     compliance:
       standards:
         - openapi-first
