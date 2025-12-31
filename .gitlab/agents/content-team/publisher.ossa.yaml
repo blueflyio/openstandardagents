@@ -275,7 +275,7 @@ spec:
     gitlab:
       api_version: v4
       token: ${PUBLISHER_TOKEN}
-      project: blueflyio/openstandardagents.org
+      project: blueflyio/ossa/openstandardagents.org
 
     social:
       twitter:

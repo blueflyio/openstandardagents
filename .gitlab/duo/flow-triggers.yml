@@ -9,7 +9,7 @@ triggers:
     flow: issue-worker
     conditions:
       - labels: ["ready-for-dev", "duo-enabled"]
-      - project_path: "blueflyio/openstandardagents*"
+      - project_path: "blueflyio/ossa/openstandardagents"
     config:
       model: claude-sonnet-4-20250514
       max_iterations: 10

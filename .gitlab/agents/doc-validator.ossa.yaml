@@ -12,7 +12,7 @@ metadata:
     capability: validation
     team: platform-engineering
   annotations:
-    repository: https://gitlab.com/blueflyio/openstandardagents.org
+    repository: https://gitlab.com/blueflyio/ossa/openstandardagents.org
     maintainer: docs@bluefly.io
     ci-integration: gitlab-ci
     auto-run: merge_request_event
@@ -107,7 +107,7 @@ spec:
 
 extensions:
   gitlab:
-    project_id: "blueflyio/openstandardagents.org"
+    project_id: "blueflyio/ossa/openstandardagents.org"
     mr_integration:
       enabled: true
       comment_on_issues: true

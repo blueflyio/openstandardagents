@@ -1,12 +1,15 @@
 /**
-import type { AjvErrorParams } from "./ajv-types";
  * OSSA Manifest Validation Utility
  * Uses AJV for full JSON Schema validation against the OSSA spec
  */
-
+import type { AjvErrorParams } from "./ajv-types";
 import Ajv from 'ajv';
 import addFormats from 'ajv-formats';
 import { OSSA_VERSION } from './version';
+import { ALL_VERSIONS } from './version';
+
+const AVAILABLE_SCHEMAS = ALL_VERSIONS.map((v: { version: string }) => v.version);
+const schemaCache = new Map<string, object>();
 
 export interface ValidationError {
   path: string;
@@ -18,21 +21,11 @@ export interface ValidationError {
 export interface ValidationResult {
   valid: boolean;
   errors: ValidationError[];
-  warnings: ValidationError[];
-  parsedManifest?: Record<string, unknown>;
+  warnings?: ValidationError[];
   schemaVersion?: string;
+  parsedManifest?: Record<string, unknown>;
 }
 
-// Cache for loaded schemas
-const schemaCache: Map<string, object> = new Map();
-
-// Available schema versions in order of preference (newest first)
-const AVAILABLE_SCHEMAS = ['0.3.0', '0.2.9', '0.2.8', '0.2.3'];
-
-/**
- * Load schema from public directory (client-side)
- * Falls back to latest available if requested version doesn't exist
- */
 async function loadSchema(version: string = OSSA_VERSION): Promise<{ schema: object; actualVersion: string } | null> {
   // Normalize version (remove -RC, -dev suffixes for matching)
   const normalizedVersion = version.replace(/-.*$/, '');
@@ -53,7 +46,8 @@ async function loadSchema(version: string = OSSA_VERSION): Promise<{ schema: obj
         const schema = await response.json();
         schemaCache.set(cacheKey, schema);
         if (ver !== normalizedVersion) {
-}
+          // Schema version not found, using fallback
+        }
         return { schema, actualVersion: ver };
       }
     } catch {
@@ -61,7 +55,7 @@ async function loadSchema(version: string = OSSA_VERSION): Promise<{ schema: obj
     }
   }
 
-
+  // No schema found for version or any fallback
   return null;
 }
 

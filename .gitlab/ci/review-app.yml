@@ -58,7 +58,7 @@
           echo "  1. Register the agent in GitLab UI: Infrastructure > Kubernetes clusters > Connect a cluster"
           echo "  2. Ensure agent is running and connected (check agent status in GitLab)"
           echo "  3. Verify agent config.yaml has ci_access for this project with 'review' environment"
-          echo "  4. The agent must be registered in the SAME project where CI runs (blueflyio/openstandardagents.org)"
+          echo "  4. The agent must be registered in the SAME project where CI runs (blueflyio/ossa/openstandardagents.org)"
           echo ""
           echo "Note: Found KUBECONFIG_DEV and KUBECONFIG_PROD variables, but GitLab agent kubeconfig is missing."
           echo "This suggests the agent is not registered or not connected for this project."
