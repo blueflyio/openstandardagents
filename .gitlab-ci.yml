@@ -167,6 +167,7 @@ sync:auto:
   stage: sync
   image: node:${NODE_VERSION}-alpine
   tags: []
+  # allow_failure: true  # CI token can't push to protected branches - see end of job
   variables:
     NODE_ENV: production
     GIT_STRATEGY: clone
@@ -878,6 +879,7 @@ detect:version:
 changelog:generate:
   stage: release
   image: alpine:latest
+  allow_failure: true  # CI token can't push to protected branches
   needs:
     - detect:version
   before_script:
