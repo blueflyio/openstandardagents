@@ -14,15 +14,6 @@
       "available": true
     },
     {
-      "version": "0.3.1",
-      "tag": "v0.3.1",
-      "apiVersion": "ossa/v0.3.1",
-      "type": "stable",
-      "published": false,
-      "available": true,
-      "schemaPath": "spec/v0.3.1/ossa-0.3.1.schema.json"
-    },
-    {
       "version": "0.3.0",
       "tag": "v0.3.0",
       "apiVersion": "ossa/v0.3.0",

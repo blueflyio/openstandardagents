@@ -109,8 +109,9 @@ export function ExamplesViewer({ examples }: ExamplesViewerProps) {
     try {
       await navigator.clipboard.writeText(text);
       // Could add a toast notification here
-    } catch (error) {
-}
+    } catch (_error) {
+      // Failed to copy to clipboard
+    }
   };
 
   return (

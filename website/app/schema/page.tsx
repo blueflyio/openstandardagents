@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { SchemaExplorer } from '@/components/schema/SchemaExplorer';
 import { SchemaComponentsAccordion } from '@/components/schema/SchemaComponentsAccordion';
-import { STABLE_VERSION, STABLE_VERSION_TAG } from '@/lib/version';
+import { STABLE_VERSION } from '@/lib/version';
 import { Logo } from '@/components/Logo';
 import fs from 'fs';
 import path from 'path';
@@ -14,7 +14,9 @@ function getStableVersion(): string {
       const versions = JSON.parse(fs.readFileSync(versionsPath, 'utf8'));
       return versions.stable || STABLE_VERSION;
     }
-} catch {}
+  } catch {
+    // Fallback to STABLE_VERSION constant
+  }
   // Fallback to 0.2.9 if versions.json not available
   return STABLE_VERSION;
 }
@@ -37,16 +39,17 @@ function loadSchema(version?: string): Record<string, unknown> | null {
     
     // Final fallback - try to require (for build time)
     try {
-const schemaPath = path.join(process.cwd(), 'public', 'schemas', `ossa-${stableVersion}.schema.json`);
-        if (fs.existsSync(schemaPath)) {
-          return JSON.parse(fs.readFileSync(schemaPath, 'utf8'));
+      const schemaPath = path.join(process.cwd(), 'public', 'schemas', `ossa-${stableVersion}.schema.json`);
+      if (fs.existsSync(schemaPath)) {
+        return JSON.parse(fs.readFileSync(schemaPath, 'utf8'));
         }
     } catch {
       // If all else fails, return null
       return null;
     }
-  } catch (error) {
-
+    return null;
+  } catch (_error) {
+    // Error loading schema - fallback to default
     return null;
   }
 }
