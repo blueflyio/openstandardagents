@@ -43,6 +43,8 @@ validate:version-drift:
   needs:
     - job: generate:all
       artifacts: true
+  before_script:
+    - apk add --no-cache git
   script:
     - npm ci --legacy-peer-deps
     - npm run build
