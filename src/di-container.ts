@@ -18,6 +18,14 @@ import { AgentsMdService } from './services/agents-md/agents-md.service.js';
 import { TestRunnerService } from './services/test-runner/test-runner.service.js';
 import { GitService } from './services/git.service.js';
 
+// Codegen Service and Generators
+import { CodegenService } from './services/codegen/codegen.service.js';
+import { ManifestGenerator } from './services/codegen/generators/manifest.generator.js';
+import { VSCodeGenerator } from './services/codegen/generators/vscode.generator.js';
+import { OpenAPIGenerator } from './services/codegen/generators/openapi.generator.js';
+import { TypesGenerator } from './services/codegen/generators/types.generator.js';
+import { ZodGenerator } from './services/codegen/generators/zod.generator.js';
+
 // Validators
 import { DependenciesValidator } from './services/validators/dependencies.validator.js';
 import { ContractValidator } from './services/validators/contract.validator.js';
@@ -36,6 +44,14 @@ container.bind(MigrationService).toSelf();
 container.bind(AgentsMdService).toSelf();
 container.bind(TestRunnerService).toSelf();
 container.bind(GitService).toSelf();
+
+// Bind codegen generators (must be bound before CodegenService)
+container.bind(ManifestGenerator).toSelf();
+container.bind(VSCodeGenerator).toSelf();
+container.bind(OpenAPIGenerator).toSelf();
+container.bind(TypesGenerator).toSelf();
+container.bind(ZodGenerator).toSelf();
+container.bind(CodegenService).toSelf();
 
 // Bind validators
 container.bind(ContractValidator).toSelf();
@@ -65,6 +81,12 @@ export function resetContainer(): void {
   container.bind(AgentsMdService).toSelf();
   container.bind(TestRunnerService).toSelf();
   container.bind(GitService).toSelf();
+  container.bind(ManifestGenerator).toSelf();
+  container.bind(VSCodeGenerator).toSelf();
+  container.bind(OpenAPIGenerator).toSelf();
+  container.bind(TypesGenerator).toSelf();
+  container.bind(ZodGenerator).toSelf();
+  container.bind(CodegenService).toSelf();
   container.bind(ContractValidator).toSelf();
   container.bind(DependenciesValidator).toSelf();
 }

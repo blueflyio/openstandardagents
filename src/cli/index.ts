@@ -38,6 +38,9 @@ import {
 import { lintCommand } from './commands/lint.command.js';
 import { diffCommand } from './commands/diff.command.js';
 import { agentsCommandGroup } from './commands/agents.command.js';
+import { workspaceCommand } from './commands/workspace.command.js';
+import { registryCommand } from './commands/registry.command.js';
+import { agentCardCommand } from './commands/agent-card.command.js';
 
 // Load package.json for version (lazy to avoid Jest module resolution issues)
 import * as fs from 'fs';
@@ -162,6 +165,11 @@ program.addCommand(testCommand);
 program.addCommand(lintCommand);
 program.addCommand(diffCommand);
 program.addCommand(agentsCommandGroup);
+
+// Two-tier architecture commands
+program.addCommand(workspaceCommand);
+program.addCommand(registryCommand);
+program.addCommand(agentCardCommand);
 
 // Parse arguments - MUST be after all commands are registered
 program.parse();
