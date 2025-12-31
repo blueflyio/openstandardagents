@@ -61,17 +61,22 @@ validate:openapi:ossa-extensions:
       echo ""
 
       # Run OSSA extension validation
+      VALIDATION_FAILED=0
       while IFS= read -r file; do
-        npx tsx scripts/validate-openapi-extensions.ts "$file" || {
+        if ! npx tsx scripts/validate-openapi-extensions.ts "$file"; then
           echo ""
-          echo "ERROR: OSSA OpenAPI extension validation failed"
-          exit 1
-        }
+          echo "ERROR: OSSA OpenAPI extension validation failed for $file"
+          VALIDATION_FAILED=1
+        fi
       done <<< "$OPENAPI_FILES"
 
       # Create report file if not exists
       if [ ! -f openapi-validation-report.json ]; then
         echo '{"files":[],"status":"validated"}' > openapi-validation-report.json
+      fi
+
+      if [ $VALIDATION_FAILED -eq 1 ]; then
+        exit 1
       fi
   artifacts:
     when: always
@@ -116,16 +121,45 @@ validate:openapi:spectral:
       # Track failures
       FAILURES=0
 
+<<<<<<< HEAD
+=======
+      # Detect spectral command once (avoid fallback masking errors in loop)
+      if command -v spectral >/dev/null 2>&1; then
+        SPECTRAL_CMD="spectral"
+      elif npx spectral --version >/dev/null 2>&1; then
+        SPECTRAL_CMD="npx spectral"
+      elif npx @stoplight/spectral-cli --version >/dev/null 2>&1; then
+        SPECTRAL_CMD="npx @stoplight/spectral-cli"
+      else
+        echo "ERROR: Spectral not found"
+        exit 1
+      fi
+      echo "Using: $SPECTRAL_CMD"
+
+>>>>>>> origin/main
       # Validate each file
       for file in $OPENAPI_FILES; do
         echo ""
         echo "Validating: $file"
+<<<<<<< HEAD
         if npx spectral lint "$file" $RULESET_ARG --format=text 2>/dev/null || npx @stoplight/spectral-cli lint "$file" $RULESET_ARG --format=text 2>/dev/null; then
           echo "  OK"
         else
           echo "  FAILED or warnings found"
           # Don't increment failures for warnings (exit 1 from Spectral)
           # Only real errors are exit code 2
+=======
+        if $SPECTRAL_CMD lint "$file" $RULESET_ARG --format=text; then
+          echo "  OK"
+        else
+          EXIT_CODE=$?
+          if [ $EXIT_CODE -eq 1 ]; then
+            echo "  Warnings found (non-blocking)"
+          else
+            echo "  FAILED (exit code: $EXIT_CODE)"
+            FAILURES=$((FAILURES + 1))
+          fi
+>>>>>>> origin/main
         fi
       done
 
