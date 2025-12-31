@@ -43,15 +43,16 @@ changelog:generate:
       echo "Changelog updated:"
       head -100 CHANGELOG.md
 
-      # Commit and push if there are changes
+      # Commit locally (but don't push to protected branch)
       git add CHANGELOG.md
       git commit -m "chore(release): update changelog [skip ci]"
 
-      # Push using CI token
-      git remote set-url origin "https://gitlab-ci-token:${CI_JOB_TOKEN}@gitlab.com/${CI_PROJECT_PATH}.git"
-      git push origin HEAD:$CI_COMMIT_BRANCH
-
-      echo "Changelog committed and pushed"
+      echo "Changelog generated and committed locally"
+      echo "Note: Not pushing to protected branch - changelog saved as artifact"
+  artifacts:
+    paths:
+      - CHANGELOG.md
+    expire_in: 1 week
   rules:
     # Run on merges to release branches
     - if: $CI_COMMIT_BRANCH =~ /^release\/v[0-9]+\.[0-9]+\.x$/
@@ -403,12 +404,18 @@ release:audit:
   stage: release
   image: node:${NODE_VERSION}-alpine
   script:
-    - npm ci --legacy-peer-deps
-    - npm run build
-    - npm pack --dry-run | tee audit-pack-dry-run.txt
-    - PKG="$(npm pack)"
-    - sha256 -r "$PKG" | tee audit-sha256.txt
-    - tar -tzf "$PKG" | head -200 | tee audit-tar-list-head.txt
+    - |
+      npm ci --legacy-peer-deps
+      npm run build
+      npm pack --dry-run | tee audit-pack-dry-run.txt
+      PKG="$(npm pack 2>/dev/null | tail -1)"
+      echo "Package file: $PKG"
+      if [ ! -f "$PKG" ]; then
+        echo "ERROR: Package file not found"
+        exit 1
+      fi
+      sha256sum "$PKG" | tee audit-sha256.txt
+      tar -tzf "$PKG" | head -200 | tee audit-tar-list-head.txt
   artifacts:
     paths:
       - "*.tgz"
@@ -540,6 +547,23 @@ create-patch-version:
       if [ -f .version.json ]; then
         BASE_VERSION=$(jq -r '.current' .version.json)
         echo "Version from .version.json: ${BASE_VERSION}"
+        
+        # Check if a stable release already exists for this version
+        # If v0.3.1 stable exists, we should create v0.3.2-dev.* tags, not v0.3.1-dev.*
+        STABLE_TAG="v${BASE_VERSION}"
+        if git tag -l "$STABLE_TAG" | grep -q . && ! echo "$STABLE_TAG" | grep -qE "(dev|RC|rc|alpha|beta)"; then
+          echo "Stable release ${STABLE_TAG} already exists"
+          # Extract major.minor.patch and increment patch
+          MAJOR_MINOR=$(echo "$BASE_VERSION" | sed -E 's/^([0-9]+\.[0-9]+)\.[0-9]+$/\1/')
+          CURRENT_PATCH=$(echo "$BASE_VERSION" | sed -E 's/^[0-9]+\.[0-9]+\.([0-9]+)$/\1/')
+          if [ "$MAJOR_MINOR" = "$BASE_VERSION" ] || [ "$CURRENT_PATCH" = "$BASE_VERSION" ]; then
+            echo "ERROR: Invalid version format: $BASE_VERSION"
+            exit 1
+          fi
+          NEXT_PATCH=$((CURRENT_PATCH + 1))
+          BASE_VERSION="${MAJOR_MINOR}.${NEXT_PATCH}"
+          echo "Bumping to next patch version for dev tags: ${BASE_VERSION}"
+        fi
       else
         # Fallback only if .version.json doesn't exist
         echo "WARNING: .version.json not found, falling back to git tag calculation"

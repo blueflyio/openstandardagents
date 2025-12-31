@@ -7,7 +7,7 @@
 | **Agent Name** | <!-- e.g., security-scanner --> |
 | **Kind** | <!-- Agent / Task / Workflow --> |
 | **Version** | <!-- e.g., 1.2.0 → 1.3.0 --> |
-| **Schema Version** | `ossa/v0.3.0` |
+| **Schema Version** | `ossa/v0.3.2` |
 
 ### Change Type
 
@@ -70,7 +70,7 @@
 
 ---
 
-## OSSA v0.3.0 Compliance Checklist
+## OSSA v0.3.2 Compliance Checklist
 
 ### LLM Configuration
 - [ ] No hardcoded model names (use `${LLM_MODEL:-default}`)

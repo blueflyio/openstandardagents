@@ -187,7 +187,7 @@ release-to-github:
     - if: $CI_COMMIT_BRANCH == "main"
       when: manual
 # Website deployment moved to openstandardagents.org repository
-# See: https://gitlab.com/blueflyio/openstandardagents.org
+# See: https://gitlab.com/blueflyio/ossa/openstandardagents.org
 
 announce-release:
   stage: .post

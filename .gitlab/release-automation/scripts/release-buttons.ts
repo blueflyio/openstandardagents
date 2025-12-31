@@ -13,29 +13,73 @@ const gitlab = new Gitlab({
 
 async function releaseToNpm() {
   console.log('🚀 Starting npm release...');
-  
-  // 1. Dry run first
-  console.log('Running dry-run...');
-  execSync('npm publish --dry-run', { stdio: 'inherit' });
-  
-  // 2. Actual publish
-  console.log('Publishing to npm...');
-  execSync('npm publish --access public', { stdio: 'inherit' });
-  
-  // 3. Verify package is downloadable
+
   const packageJson = JSON.parse(execSync('cat package.json').toString());
   const packageName = packageJson.name;
   const version = packageJson.version;
-  
+
+  // Determine version type and appropriate tag
+  const isRC = version.includes('-rc');
+  const isDev = version.includes('-dev');
+  const isPrerelease = isRC || isDev || version.includes('-alpha') || version.includes('-beta');
+
+  // Determine npm tag based on version type
+  let npmTag = 'latest';
+  if (isRC) {
+    npmTag = 'rc';
+  } else if (isDev) {
+    npmTag = 'dev';
+  } else if (isPrerelease) {
+    npmTag = 'next';
+  }
+
+  console.log(`📦 Package: ${packageName}@${version}`);
+  console.log(`🏷️  Publishing with tag: ${npmTag}`);
+
+  // 1. Dry run first
+  console.log('Running dry-run...');
+  execSync(`npm publish --dry-run --tag ${npmTag}`, { stdio: 'inherit' });
+
+  // 2. Get current latest version before publishing (for legacy tag update)
+  let previousLatest: string | null = null;
+  if (!isPrerelease) {
+    try {
+      previousLatest = execSync(`npm view ${packageName} dist-tags.latest 2>/dev/null`).toString().trim();
+      console.log(`📌 Current latest version: ${previousLatest}`);
+    } catch {
+      console.log('No previous latest version found');
+    }
+  }
+
+  // 3. Actual publish with appropriate tag
+  console.log(`Publishing to npm with --tag ${npmTag}...`);
+  execSync(`npm publish --access public --tag ${npmTag}`, { stdio: 'inherit' });
+
+  // 4. For stable releases, update legacy tag to previous stable
+  if (!isPrerelease && previousLatest && previousLatest !== version) {
+    console.log(`📌 Updating legacy tag to point to ${previousLatest}...`);
+    try {
+      execSync(`npm dist-tag add ${packageName}@${previousLatest} legacy`, { stdio: 'inherit' });
+      console.log(`✅ Legacy tag updated to ${previousLatest}`);
+    } catch (error) {
+      console.warn(`⚠️ Failed to update legacy tag: ${error}`);
+    }
+  }
+
+  // 5. Verify package is downloadable
   console.log('Verifying package...');
   execSync(`npm view ${packageName}@${version}`, { stdio: 'inherit' });
-  
-  // 4. Run smoke tests on published package
+
+  // 6. Verify dist-tags are correct
+  console.log('Verifying dist-tags...');
+  execSync(`npm view ${packageName} dist-tags`, { stdio: 'inherit' });
+
+  // 7. Run smoke tests on published package
   console.log('Running smoke tests...');
   const tempDir = execSync('mktemp -d').toString().trim();
   execSync(`cd ${tempDir} && npm install ${packageName}@${version}`, { stdio: 'inherit' });
   execSync(`cd ${tempDir} && npx ${packageName} --version`, { stdio: 'inherit' });
-  
+
   console.log('✅ npm release successful');
 }
 

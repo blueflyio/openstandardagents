@@ -1,0 +1,43 @@
+# ============================================================================
+# RELEASE ENVIRONMENTS
+# ============================================================================
+# Only three environments: production, orbstack, release/v0.3.x
+# release/v0.3.x is the review app
+
+# Deploy to release/v0.3.x review app when MR targets release/v0.3.x
+deploy:release-review:
+  stage: deploy
+  image: alpine:latest
+  script:
+    - |
+      echo "Deploying to release/v0.3.x review app"
+      echo "   Branch: ${CI_COMMIT_BRANCH}"
+      echo "   MR: ${CI_MERGE_REQUEST_IID}"
+      echo "   Commit: ${CI_COMMIT_SHORT_SHA}"
+      echo "   Pipeline: ${CI_PIPELINE_ID}"
+  environment:
+    name: release/v0.3.x
+    url: https://gitlab.com/blueflyio/ossa/openstandardagents/-/tree/release/v0.3.x
+    on_stop: stop:release-review
+    auto_stop_in: 30 days
+  rules:
+    - if: $CI_COMMIT_BRANCH == "release/v0.3.x"
+      when: on_success
+    - if: $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "release/v0.3.x"
+      when: on_success
+
+# Stop release review app
+stop:release-review:
+  stage: deploy
+  image: alpine:latest
+  script:
+    - echo "Stopping release/v0.3.x review app"
+  environment:
+    name: release/v0.3.x
+    action: stop
+  rules:
+    - if: $CI_COMMIT_BRANCH == "release/v0.3.x"
+      when: manual
+    - if: $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "release/v0.3.x"
+      when: manual
+  allow_failure: true

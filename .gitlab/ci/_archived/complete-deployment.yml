@@ -20,4 +20,4 @@ deploy:complete-runner-infrastructure:
   allow_failure: false
   environment:
     name: production
-    url: https://gitlab.com/blueflyio/openstandardagents
+    url: https://gitlab.com/blueflyio/ossa/openstandardagents
