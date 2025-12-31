@@ -21,13 +21,17 @@ metadata:
 
 spec:
   capabilities:
-    - name: validate.manifest
+    - type: function
+      name: validate.manifest
       description: Validate OSSA manifest against schema
-    - name: validate.contract
+    - type: function
+      name: validate.contract
       description: Validate agent contracts
-    - name: validate.policy
+    - type: function
+      name: validate.policy
       description: Enforce organizational policies
-    - name: validate.migration
+    - type: function
+      name: validate.migration
       description: Validate migration compatibility
 
   role: |
@@ -47,93 +51,12 @@ spec:
     - Remediation guidance
 
   llm:
-    provider: ${OSSA_LLM_PROVIDER:-anthropic}
-    model: ${OSSA_LLM_MODEL:-claude-sonnet-4}
+    provider: anthropic
+    model: claude-sonnet-4
     temperature: 0.1  # Very low for consistent validation
-    maxTokens: ${OSSA_LLM_MAX_TOKENS:-8192}
+    maxTokens: 8192
 
   tools:
-    - name: schema.validate
+    - type: function
+      name: schema.validate
       description: Validate manifest against JSON Schema
-      handler:
-        runtime: local
-        capability: jsonschema.validate
-
-    - name: manifest.parse
-      description: Parse OSSA manifest (YAML/JSON)
-      handler:
-        runtime: local
-        capability: manifest.parse
-
-    - name: policy.evaluate
-      description: Evaluate against policy rules
-      handler:
-        runtime: local
-        capability: policy.evaluate
-
-    - name: report.generate
-      description: Generate validation report
-      handler:
-        runtime: local
-        capability: report.generate
-
-  policies:
-    # Built-in policies for OSSA compliance
-    rules:
-      - id: require-metadata-version
-        description: All manifests must specify metadata.version
-        severity: error
-        check: "metadata.version != null"
-
-      - id: require-role-definition
-        description: Agents must have role definition
-        severity: error
-        check: "spec.role != null && spec.role.length > 50"
-
-      - id: require-capabilities
-        description: Agents should declare capabilities
-        severity: warning
-        check: "spec.capabilities != null && spec.capabilities.length > 0"
-
-      - id: require-llm-config
-        description: Agents should specify LLM configuration
-        severity: warning
-        check: "spec.llm != null"
-
-      - id: no-hardcoded-secrets
-        description: No hardcoded secrets in manifest
-        severity: error
-        check: "!contains(toString(.), 'sk-') && !contains(toString(.), 'glpat-')"
-
-  contracts:
-    provides:
-      - name: ossa-validation
-        version: "1.0"
-        schema:
-          input:
-            type: object
-            properties:
-              manifest_path:
-                type: string
-                description: Path to manifest file
-              policy_set:
-                type: string
-                description: Policy set to apply (default, strict, permissive)
-          output:
-            type: object
-            properties:
-              valid:
-                type: boolean
-              errors:
-                type: array
-                items:
-                  type: object
-                  properties:
-                    severity:
-                      type: string
-                    path:
-                      type: string
-                    message:
-                      type: string
-              warnings:
-                type: array

@@ -22,13 +22,17 @@ metadata:
 
 spec:
   capabilities:
-    - name: ci.trigger
+    - type: function
+      name: ci.trigger
       description: Trigger CI/CD pipeline runs
-    - name: ci.monitor
+    - type: function
+      name: ci.monitor
       description: Monitor pipeline status and jobs
-    - name: ci.fix
+    - type: function
+      name: ci.fix
       description: Analyze and fix pipeline failures
-    - name: ci.optimize
+    - type: function
+      name: ci.optimize
       description: Optimize pipeline performance
 
   role: |
@@ -44,62 +48,12 @@ spec:
     5. Manage deployment approvals and rollbacks
 
   llm:
-    provider: ${OSSA_LLM_PROVIDER:-anthropic}
-    model: ${OSSA_LLM_MODEL:-claude-sonnet-4}
+    provider: anthropic
+    model: claude-sonnet-4
     temperature: 0.2
-    maxTokens: ${OSSA_LLM_MAX_TOKENS:-8192}
+    maxTokens: 8192
 
   tools:
-    - name: gitlab.pipeline.trigger
+    - type: function
+      name: gitlab.pipeline.trigger
       description: Trigger a GitLab CI pipeline
-      handler:
-        runtime: api
-        endpoint: ${GITLAB_API_URL}/projects/${CI_PROJECT_ID}/pipeline
-        method: POST
-
-    - name: gitlab.pipeline.status
-      description: Get pipeline status
-      handler:
-        runtime: api
-        endpoint: ${GITLAB_API_URL}/projects/${CI_PROJECT_ID}/pipelines/${PIPELINE_ID}
-        method: GET
-
-    - name: gitlab.job.log
-      description: Get job logs for analysis
-      handler:
-        runtime: api
-        endpoint: ${GITLAB_API_URL}/projects/${CI_PROJECT_ID}/jobs/${JOB_ID}/trace
-        method: GET
-
-    - name: gitlab.mr.create
-      description: Create merge request with fixes
-      handler:
-        runtime: api
-        endpoint: ${GITLAB_API_URL}/projects/${CI_PROJECT_ID}/merge_requests
-        method: POST
-
-  messaging:
-    transport: redis
-    queues:
-      - name: ci-events
-        description: CI/CD event notifications
-      - name: ci-commands
-        description: Pipeline commands
-    events:
-      publish:
-        - pipeline.triggered
-        - pipeline.completed
-        - pipeline.failed
-      subscribe:
-        - merge_request.created
-        - push.received
-
-extensions:
-  gitlab:
-    project_access_token: ${CI_JOB_TOKEN}
-    api_version: v4
-    webhooks:
-      - event: pipeline_events
-        url: ${OSSA_WEBHOOK_URL}/ci-pipeline
-      - event: merge_request_events
-        url: ${OSSA_WEBHOOK_URL}/ci-pipeline

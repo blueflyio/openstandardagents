@@ -22,13 +22,17 @@ metadata:
 
 spec:
   capabilities:
-    - name: content.create
+    - type: function
+      name: content.create
       description: Create CMS content entities
-    - name: content.translate
+    - type: function
+      name: content.translate
       description: Translate content to multiple languages
-    - name: content.moderate
+    - type: function
+      name: content.moderate
       description: Review and moderate content
-    - name: content.optimize
+    - type: function
+      name: content.optimize
       description: Optimize content for SEO
 
   role: |
@@ -52,81 +56,12 @@ spec:
     - Follow brand voice guidelines
 
   llm:
-    provider: ${OSSA_LLM_PROVIDER:-anthropic}
-    model: ${OSSA_LLM_MODEL:-claude-sonnet-4}
+    provider: anthropic
+    model: claude-sonnet-4
     temperature: 0.7
-    maxTokens: ${OSSA_LLM_MAX_TOKENS:-8192}
+    maxTokens: 8192
 
   tools:
-    - name: drupal.node.create
+    - type: function
+      name: drupal.node.create
       description: Create Drupal content node
-      handler:
-        runtime: drupal
-        capability: node.create
-
-    - name: drupal.node.update
-      description: Update existing content node
-      handler:
-        runtime: drupal
-        capability: node.update
-
-    - name: drupal.media.search
-      description: Search media library
-      handler:
-        runtime: drupal
-        capability: media.search
-
-    - name: drupal.taxonomy.suggest
-      description: Suggest taxonomy terms
-      handler:
-        runtime: drupal
-        capability: taxonomy.suggest
-
-    - name: seo.analyze
-      description: Analyze content for SEO
-      handler:
-        runtime: local
-        capability: seo.analyze
-
-extensions:
-  drupal:
-    module: ai_agents_ossa
-    config_entity: true
-
-    permissions:
-      entity_permissions:
-        - "create article content"
-        - "edit any article content"
-        - "view media"
-        - "use ai content generation"
-      custom_permissions:
-        - "execute content writer agent"
-      execution_user: "1"
-      permission_mode: agent_only
-
-    # Async processing via Symfony Messenger
-    messenger:
-      transport: redis
-      queue: content_generation
-      retry_strategy:
-        max_retries: 3
-        delay: 2000
-        multiplier: 2
-        max_delay: 30000
-
-    # ECA workflow integration
-    workflow_engine: eca
-    eca_events:
-      - content_brief_submitted
-      - content_review_requested
-      - content_approved
-
-    # Discovery paths
-    discovery_paths:
-      - "config/agents/*.ossa.yaml"
-      - "modules/custom/*/agents/*.ossa.yaml"
-
-    hooks:
-      before_execute: ai_agents_ossa_before_execute
-      after_execute: ai_agents_ossa_after_execute
-      on_error: ai_agents_ossa_on_error
