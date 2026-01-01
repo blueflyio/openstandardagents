@@ -56,7 +56,7 @@ OSSA follows semantic versioning. Development specs are marked with `-dev` suffi
 
 1. **AgentGraph Resource Type**
    ```yaml
-   apiVersion: ossa/v0.3.0
+   apiVersion: ossa/v0.3.2
    kind: AgentGraph  # New!
    metadata:
      name: customer-support-cluster

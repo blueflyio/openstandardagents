@@ -16,22 +16,42 @@ const __dirname = dirname(__filename);
 import path from 'path';
 
 
-// Read current version from website/lib/version.ts
+// Read current version from installed @bluefly/openstandardagents package
 function getCurrentVersion() {
-  try {
-    // __dirname is scripts/website/, version.ts is in website/lib/
-    const versionTsPath = path.join(__dirname, '..', '..', 'website', 'lib', 'version.ts');
+  const rootDir = path.join(__dirname, '..', '..');
+  const websiteDir = path.join(rootDir, 'website');
 
+  const locations = [
+    path.join(rootDir, 'node_modules', '@bluefly', 'openstandardagents', 'package.json'),
+    path.join(websiteDir, 'node_modules', '@bluefly', 'openstandardagents', 'package.json'),
+  ];
+
+  for (const loc of locations) {
+    if (fs.existsSync(loc)) {
+      try {
+        const pkg = JSON.parse(fs.readFileSync(loc, 'utf-8'));
+        return pkg.version;
+      } catch (e) {
+        console.error('Error reading package:', e);
+      }
+    }
+  }
+
+  // Fallback: try to parse from version.ts comment
+  try {
+    const versionTsPath = path.join(websiteDir, 'lib', 'version.ts');
     if (fs.existsSync(versionTsPath)) {
       const content = fs.readFileSync(versionTsPath, 'utf8');
-      const match = content.match(/export const OSSA_VERSION = "([^"]+)"/);
+      // Look for comment like "// Get version from the installed package (0.3.2)"
+      const match = content.match(/installed package \(([^)]+)\)/);
       if (match) {
         return match[1];
       }
     }
   } catch (e) {
-    console.error('Error reading version:', e);
+    console.error('Error reading version.ts:', e);
   }
+
   return null;
 }
 
