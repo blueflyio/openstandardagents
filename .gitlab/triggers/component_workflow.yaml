@@ -1,6 +1,0 @@
-on:
-  merge_request:
-    events: ["created"]
-
-run:
-  flow: component_workflow_flow
