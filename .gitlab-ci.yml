@@ -678,7 +678,7 @@ quality:metrics:
 # - Main branch: Manual "Go Live" button deploys to GitLab Pages
 
 # =============================================================================
-# PRODUCTION - GitLab Pages (Manual Deploy)
+# PRODUCTION - GitLab Pages (Auto Deploy on Main)
 # =============================================================================
 # The special "pages" job name triggers GitLab Pages deployment
 # This creates the public/ artifact that becomes the live site
@@ -710,9 +710,9 @@ pages:
     url: https://openstandardagents.org
     deployment_tier: production
   rules:
-    # Manual deploy button on main branch
+    # Auto-deploy to Pages on main branch
     - if: $CI_COMMIT_BRANCH == "main"
-      when: manual
+      when: on_success
   resource_group: production
 
 # =============================================================================
