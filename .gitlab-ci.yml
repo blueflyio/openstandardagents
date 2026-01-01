@@ -918,6 +918,8 @@ changelog:generate:
     paths:
       - CHANGELOG.md
     expire_in: 30 days
+  # Allow failure until GITLAB_TOKEN with push permissions is configured
+  allow_failure: true
   rules:
     - if: $CI_COMMIT_BRANCH =~ /^release\/v/ && $CI_COMMIT_MESSAGE !~ /\[skip ci\]/
       when: on_success
