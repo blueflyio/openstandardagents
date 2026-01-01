@@ -4,7 +4,7 @@
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![npm version](https://img.shields.io/npm/v/@bluefly/openstandardagents.svg)](https://www.npmjs.com/package/@bluefly/openstandardagents)
-[![Specification](https://img.shields.io/badge/Spec-v0.2.x-blue)](https://github.com/blueflyio/openstandardagents/blob/main/spec/v0.3.0/ossa-0.3.0.schema.json)
+[![Specification](https://img.shields.io/badge/Spec-v0.3.2-blue)](https://gitlab.com/blueflyio/openstandardagents/-/blob/main/spec/v0.3.2/ossa-0.3.2.schema.json)
 
 ---
 
@@ -14,29 +14,30 @@
 
 ### Quick Navigation
 
-#### 🚀 Getting Started
+#### Getting Started
 - [5-Minute Overview](/docs/getting-started/5-minute-overview)
 - [Installation Guide](/docs/getting-started/installation)
 - [Hello World Tutorial](/docs/getting-started/hello-world)
 - [First Agent Creation](/docs/getting-started/first-agent)
 
-#### 👥 For Different Audiences
+#### For Different Audiences
 - [Students & Researchers](/docs/for-audiences/students-researchers)
 - [Developers](/docs/for-audiences/developers)
 - [Architects & Platform Engineers](/docs/for-audiences/architects)
 - [Enterprises](/docs/for-audiences/enterprises)
 
-#### 📚 Technical Documentation
+#### Technical Documentation
 - [Specification](/docs/specification)
 - [Schema Reference](/docs/schema-reference)
+- [LLM Configuration](/docs/schema-reference/llm-config) - NEW in v0.3.2
 - [OpenAPI Extensions](/docs/openapi-extensions)
 
-#### 💡 Examples & Patterns
+#### Examples & Patterns
 - [Migration Guides](/docs/migration-guides/langchain-to-ossa)
 - [Ecosystem Overview](/docs/ecosystem/overview)
 - [Framework Support](/docs/ecosystem/framework-support)
 
-#### 🌐 Ecosystem
+#### Ecosystem
 - [Ecosystem Overview](/docs/ecosystem/overview)
 - [Framework Support](/docs/ecosystem/framework-support)
 
@@ -72,11 +73,11 @@ Before OSSA, AI agents were:
 - **Difficult to discover** - No standard registry or discovery mechanism
 
 **OSSA solves these problems** by providing a standard, declarative format for agent definition that is:
-- ✅ **Framework-agnostic** - Works with any LLM framework or SDK
-- ✅ **Runtime-independent** - Deploy to Kubernetes, Docker, serverless, or on-premise
-- ✅ **Portable** - Move agents between teams, organizations, and infrastructures
-- ✅ **Validatable** - JSON Schema validation ensures correctness
-- ✅ **Discoverable** - Standard format enables agent registries and marketplaces
+- Framework-agnostic - Works with any LLM framework or SDK
+- Runtime-independent - Deploy to Kubernetes, Docker, serverless, or on-premise
+- Portable - Move agents between teams, organizations, and infrastructures
+- Validatable - JSON Schema validation ensures correctness
+- Discoverable - Standard format enables agent registries and marketplaces
 
 ### OSSA vs. Frameworks
 
@@ -91,6 +92,46 @@ Before OSSA, AI agents were:
 **Think of it like this:**
 - **OpenAPI** = Standard for API contracts (not an API framework)
 - **OSSA** = Standard for agent contracts (not an agent framework)
+
+---
+
+## What's New in v0.3.2
+
+### Unified LLM Configuration
+
+OSSA v0.3.2 introduces a **unified LLM configuration** that eliminates hardcoded model names and enables runtime model selection:
+
+```yaml
+apiVersion: ossa/v0.3.0
+kind: Agent
+metadata:
+  name: flexible-agent
+  version: 1.0.0
+spec:
+  llm:
+    provider: ${LLM_PROVIDER:-anthropic}
+    model: ${LLM_MODEL:-claude-sonnet-4}
+    profile: balanced
+    temperature: 0.3
+
+    fallback_models:
+      - provider: openai
+        model: gpt-4o
+        condition: on_error
+
+    retry_config:
+      max_attempts: 3
+      backoff_strategy: exponential
+```
+
+**Key features:**
+- **Runtime-configurable models** - No hardcoded providers
+- **Environment variable substitution** - `${LLM_PROVIDER:-default}`
+- **Fallback models** - Automatic failover on error/timeout/rate-limit
+- **Retry configuration** - Exponential, linear, or constant backoff
+- **Cross-platform compatibility** - OSSA, GitLab Duo, Google A2A, MCP
+
+See [LLM Configuration](/docs/schema-reference/llm-config) for full documentation.
 
 ---
 
@@ -137,10 +178,10 @@ OSSA doesn't care - it's just a standard.
 
 ## Repository Links
 
-- **Main Repository**: [github.com/blueflyio/openstandardagents](https://github.com/blueflyio/openstandardagents)
-- **Issues**: [Report Issues](https://github.com/blueflyio/openstandardagents/issues)
-- **Milestones**: [View Roadmap](https://github.com/blueflyio/openstandardagents/milestones)
-- **Releases**: [View Releases](https://github.com/blueflyio/openstandardagents/releases)
+- **Main Repository**: [gitlab.com/blueflyio/openstandardagents](https://gitlab.com/blueflyio/openstandardagents)
+- **Issues**: [Report Issues](https://gitlab.com/blueflyio/openstandardagents/-/issues)
+- **Milestones**: [View Roadmap](https://gitlab.com/blueflyio/openstandardagents/-/milestones)
+- **Releases**: [View Releases](https://gitlab.com/blueflyio/openstandardagents/-/releases)
 - **npm Package**: [@bluefly/openstandardagents](https://www.npmjs.com/package/@bluefly/openstandardagents)
 
 ---
@@ -150,14 +191,14 @@ OSSA doesn't care - it's just a standard.
 OSSA is an open standard. Contributions welcome!
 
 1. Review [Contributing Guidelines](/docs/contributing)
-2. Check [Open Issues](https://github.com/blueflyio/openstandardagents/issues)
+2. Check [Open Issues](https://gitlab.com/blueflyio/openstandardagents/-/issues)
 3. Create a merge request
 
 ---
 
 ## License
 
-Apache 2.0 - see [LICENSE](https://github.com/blueflyio/openstandardagents/blob/main/LICENSE) for details.
+Apache 2.0 - see [LICENSE](https://gitlab.com/blueflyio/openstandardagents/-/blob/main/LICENSE) for details.
 
 ---
 

@@ -25,17 +25,17 @@ The **Open Standard for Scalable AI Agents (OSSA)** is a specification standard 
 
 ## Specification Versions
 
-### Current Version: v0.3.0
+### Current Version: v0.3.2
 
 **Status**: Stable  
-**Release Date**: 2025-12-20  
-**Schema**: [v0.3.0 JSON Schema](https://gitlab.com/blueflyio/openstandardagents/-/blob/main/spec/v0.3.0/ossa-0.3.0.schema.json)
+**Release Date**: 2025-12-31  
+**Schema**: [v0.3.2 JSON Schema](https://gitlab.com/blueflyio/openstandardagents/-/blob/main/spec/v0.3.2/ossa-0.3.2.schema.json)
 
 ### Previous Versions
 
-- **v0.2.9**: Previous stable release
-- **v0.2.8**: Legacy version
-- **v0.2.6**: Legacy version
+- **v0.3.1**: Previous stable release
+- **v0.3.0**: First v0.3.x stable release
+- **v0.2.9**: Legacy version
 
 ### Version Migration
 
@@ -64,7 +64,7 @@ OSSA is a **specification standard** (not a framework) that defines:
 
 ### Resource Kinds
 
-OSSA v0.3.0+ supports multiple resource kinds:
+OSSA v0.3.2 supports multiple resource kinds:
 
 - **Agent**: Single agent definition
 - **Workflow**: Multi-agent composition
@@ -116,11 +116,11 @@ ossa validate agent.ossa.yaml
 
 | Framework | Type | OSSA Compatibility | Enterprise Features |
 |-----------|------|-------------------|-------------------|
-| **OSSA** | Open Standard | ✅ Native | ✅ Built-in |
-| **LangChain** | Development Framework | ⚠️ Via adapter | 🟡 Limited |
-| **AutoGPT** | Autonomous Agent | ⚠️ Via adapter | ❌ None |
-| **CrewAI** | Multi-Agent Framework | ⚠️ Via adapter | ❌ None |
-| **Microsoft AutoGen** | Conversational Framework | ⚠️ Via adapter | 🟡 Limited |
+| **OSSA** | Open Standard | Native | Built-in |
+| **LangChain** | Development Framework | Via adapter | Limited |
+| **AutoGPT** | Autonomous Agent | Via adapter | None |
+| **CrewAI** | Multi-Agent Framework | Via adapter | None |
+| **Microsoft AutoGen** | Conversational Framework | Via adapter | Limited |
 
 ### Key Differentiators
 
@@ -164,31 +164,112 @@ Migrate agents from popular frameworks to OSSA:
 
 ### Version Migrations
 
-#### v0.2.x → v0.3.0
+#### v0.3.1 -> v0.3.2
+
+**New Features**:
+- Unified LLM configuration with runtime-configurable models
+- Environment variable substitution for LLM config
+- Fallback models configuration
+- Retry configuration with backoff strategies
+- Cross-platform compatibility (GitLab Duo, Google A2A, MCP)
+
+**Migration Steps**:
+1. Update `apiVersion` to `ossa/v0.3.2`
+2. Optionally migrate hardcoded provider/model to env vars
+3. Add fallback_models for production resilience
+4. Configure retry_config for transient failures
+5. Validate with `ossa validate`
+
+**Migration Tool**:
+```bash
+ossa migrate agent.ossa.yaml --from v0.3.1 --to v0.3.2
+```
+
+#### v0.2.x -> v0.3.2
 
 **Breaking Changes**:
 - Agent messaging (A2A protocol) introduced
 - Workflow composition enhanced
 - Schema structure updated
+- Unified LLM configuration
 
 **Migration Steps**:
-1. Update `apiVersion` to `ossa/v0.3.0`
+1. Update `apiVersion` to `ossa/v0.3.2`
 2. Review messaging configuration
 3. Update workflow definitions
-4. Validate with `ossa validate`
+4. Migrate LLM config to new unified format
+5. Validate with `ossa validate`
 
 **Migration Tool**:
 ```bash
-ossa migrate agent.ossa.yaml --from v0.2.9 --to v0.3.0
+ossa migrate agent.ossa.yaml --from v0.2.9 --to v0.3.2
 ```
 
 ---
 
 ## Version-Specific Information
 
-### OSSA v0.3.0
+### OSSA v0.3.2
 
 #### New Features
+
+1. **Unified LLM Configuration**
+   - Runtime-configurable models (no hardcoded providers)
+   - Environment variable substitution: `${LLM_PROVIDER:-anthropic}`
+   - Fallback models for automatic failover
+   - Retry configuration with backoff strategies
+   - Cross-platform compatibility (OSSA, GitLab Duo, Google A2A, MCP)
+
+2. **Execution Profiles**
+   - Task-specific optimization profiles
+   - Compatible with Google A2A
+   - Profiles: `fast`, `balanced`, `deep`, `safe`
+
+3. **Enhanced Resilience**
+   - Fallback conditions: `on_error`, `on_timeout`, `on_rate_limit`, `always`
+   - Backoff strategies: `exponential`, `linear`, `constant`
+
+4. **Enterprise Governance**
+   - Compliance metadata (SOC2, GDPR, HIPAA)
+   - Policy enforcement
+   - Audit logging
+
+#### Schema Changes
+
+- Added `fallback_models` to LLM config
+- Added `retry_config` to LLM config
+- Added `profile` field for execution profiles
+- Environment variable substitution support
+
+#### Example Configuration
+
+```yaml
+apiVersion: ossa/v0.3.0
+kind: Agent
+metadata:
+  name: production-agent
+  version: 1.0.0
+spec:
+  llm:
+    provider: ${LLM_PROVIDER:-anthropic}
+    model: ${LLM_MODEL:-claude-sonnet-4}
+    profile: balanced
+    temperature: 0.3
+    maxTokens: 8192
+
+    fallback_models:
+      - provider: openai
+        model: gpt-4o
+        condition: on_error
+
+    retry_config:
+      max_attempts: 3
+      backoff_strategy: exponential
+```
+
+### OSSA v0.3.1
+
+#### Features
 
 1. **Agent-to-Agent (A2A) Messaging**
    - Standardized message envelopes
@@ -204,21 +285,6 @@ ossa migrate agent.ossa.yaml --from v0.2.9 --to v0.3.0
    - OpenTelemetry integration
    - Distributed tracing
    - Structured logging
-
-4. **Enterprise Governance**
-   - Compliance metadata (SOC2, GDPR, HIPAA)
-   - Policy enforcement
-   - Audit logging
-
-#### Schema Changes
-
-- Added `messaging` section to agent spec
-- Enhanced `workflow` specification
-- New `messageRouting` resource kind
-
-#### Migration from v0.2.x
-
-See [Migration Guides](#migration-guides) section above.
 
 ---
 
@@ -252,6 +318,7 @@ For detailed comparison, see:
 - [Schema Reference](/docs/schema-reference)
 - [CLI Reference](/docs/cli-reference)
 - [API Reference](/docs/api-reference)
+- [LLM Configuration](/docs/schema-reference/llm-config)
 
 ### Integration Guides
 - [Drupal Integration](/docs/integrations/drupal)
@@ -265,7 +332,7 @@ For detailed comparison, see:
 - **OSSA Specification Repository**: https://gitlab.com/blueflyio/openstandardagents
 - **npm Package**: @bluefly/openstandardagents
 - **Website**: https://openstandardagents.org
-- **JSON Schema**: [v0.3.0 Schema](https://gitlab.com/blueflyio/openstandardagents/-/blob/main/spec/v0.3.0/ossa-0.3.0.schema.json)
+- **JSON Schema**: [v0.3.2 Schema](https://gitlab.com/blueflyio/openstandardagents/-/blob/main/spec/v0.3.2/ossa-0.3.2.schema.json)
 
 ---
 
@@ -275,6 +342,6 @@ See [Changelog](/docs/changelog) for detailed version history and changes.
 
 ---
 
-**Last Updated**: 2025-12-21  
-**Specification Version**: v0.3.0  
+**Last Updated**: 2025-12-31  
+**Specification Version**: v0.3.2  
 **Document Status**: Complete and Authoritative

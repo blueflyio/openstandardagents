@@ -293,6 +293,7 @@ validate:documentation:
       # Validate schema references
       echo "Validating schema URLs..."
       OUTDATED_REFS=$(grep -r "openstandardagents.org/schemas" content/docs/ | \
+        grep -v "v0.3.2" | \
         grep -v "v0.3.1" | \
         grep -v "v1" | \
         grep -v "migration" | \
@@ -300,7 +301,7 @@ validate:documentation:
         grep -v "/examples/" | \
         grep -v "/pre-release/" || true)
       if [ -n "$OUTDATED_REFS" ]; then
-        echo "ERROR: Found outdated schema references (not v0.3.1 or v1):"
+        echo "ERROR: Found outdated schema references (not v0.3.2, v0.3.1 or v1):"
         echo "$OUTDATED_REFS"
         exit 1
       else
@@ -392,9 +393,6 @@ validate:llms-txt:
       REQUIRED_SECTIONS="Current Version|Specification Resources|For AI Assistants|Commands & Scripts|Version History"
 
       echo "$REQUIRED_SECTIONS" | tr '|' '\n' | while IFS= read -r section; do
-        # Escape special characters for grep
-        escaped_section=$(printf '%s\n' "$section" | sed 's/[[.*^$()+?{|]/\\&/g')
-        if ! grep -q "$escaped_section" website/public/llms.txt; then
         if ! grep -q "$section" website/public/llms.txt; then
           echo "ERROR: Missing required section: $section"
           exit 1
@@ -409,8 +407,8 @@ validate:llms-txt:
       fi
 
       # Validate schema URL format
-      if ! grep -q "openstandardagents.org/schemas/v0.3.1/agent.json" website/public/llms.txt; then
-        echo "ERROR: Missing or incorrect schema URL for v0.3.1"
+      if ! grep -q "openstandardagents.org/schemas/v0.3.2/agent.json" website/public/llms.txt; then
+        echo "ERROR: Missing or incorrect schema URL for v0.3.2"
         exit 1
       fi
 
