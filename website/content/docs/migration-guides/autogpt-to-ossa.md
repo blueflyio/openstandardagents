@@ -26,7 +26,7 @@ AutoGPT is an autonomous AI agent framework. This guide maps AutoGPT concepts to
 ### 1. Create OSSA Manifest
 
 ```yaml
-apiVersion: ossa/v0.3.1
+apiVersion: ossa/v0.3.0
 kind: Agent
 metadata:
   name: my-autogpt-agent
