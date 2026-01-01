@@ -705,12 +705,8 @@ pages:
     paths:
       - public
     expire_in: 30 days
-  environment:
-    name: production
-    url: https://openstandardagents.org
-    deployment_tier: production
   rules:
-    # Auto-deploy to Pages on main branch (no manual approval needed)
+    # Auto-deploy to Pages on main branch
     - if: $CI_COMMIT_BRANCH == "main"
 
 # =============================================================================
