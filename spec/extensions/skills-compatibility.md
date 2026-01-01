@@ -4,7 +4,7 @@
 
 This extension defines OSSA compatibility with the [Anthropic Skills](https://github.com/anthropics/skills) and [Agent Skills](https://agentskills.io) specifications. It enables OSSA agents to be packaged and distributed as Skills, and allows Skills to be consumed by OSSA-compliant runtimes.
 
-**Version**: 0.3.2
+**Version**: 0.3.3
 **Status**: Draft
 **Authors**: Bluefly AI Platform Team
 
@@ -21,7 +21,6 @@ Skills use a simple folder structure:
 ```
 my-skill/
 ├── SKILL.md          # Required - YAML frontmatter + Markdown instructions
-├── scripts/          # Optional - Executable code (Python, Bash, JS)
 ├── references/       # Optional - On-demand documentation
 └── assets/           # Optional - Static resources (templates, data)
 ```
@@ -91,7 +90,7 @@ description: What this skill does and when to use it
 
 OSSA equivalent:
 ```yaml
-apiVersion: ossa/v0.3.2
+apiVersion: ossa/v0.3.3
 kind: Agent
 metadata:
   name: my-skill
@@ -104,9 +103,9 @@ Full SKILL.md body loaded on activation.
 OSSA equivalent: `spec.instructions` field.
 
 ### Stage 3: Resources (on-demand)
-Scripts, references, assets loaded as needed.
+References and assets loaded as needed via OpenAPI endpoints.
 
-OSSA equivalent: `runtime.resources[]` bindings.
+OSSA equivalent: `runtime.resources[]` bindings with OpenAPI-first access.
 
 ## Directory Conventions
 
@@ -114,7 +113,6 @@ OSSA agents supporting Skills format SHOULD use these directories:
 
 | Directory | Purpose | OSSA Mapping |
 |-----------|---------|--------------|
-| `scripts/` | Executable code | `runtime.bindings[].script` |
 | `references/` | Documentation | `runtime.resources[type=documentation]` |
 | `assets/` | Static files | `runtime.resources[type=static]` |
 
@@ -147,7 +145,6 @@ ossa export --format skills --output ./my-skill/
 
 # Generates:
 # - SKILL.md with YAML frontmatter
-# - scripts/ directory from runtime.bindings
 # - references/ directory from documentation resources
 ```
 
@@ -159,7 +156,6 @@ ossa import --format skills --path ./my-skill/
 
 # Creates:
 # - .agents/my-skill/manifest.yaml
-# - References to scripts/, references/, assets/
 ```
 
 ## Example: Full Mapping
@@ -203,7 +199,7 @@ This skill helps you publish content to Drupal with proper validation.
 
 ### Equivalent OSSA Manifest
 ```yaml
-apiVersion: ossa/v0.3.2
+apiVersion: ossa/v0.3.3
 kind: Agent
 metadata:
   name: drupal-content-publisher
