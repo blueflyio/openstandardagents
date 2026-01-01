@@ -15,7 +15,7 @@ export {
   type StatusUpdatePayload,
   type ErrorPayload,
   type AckPayload,
-} from './websocket';
+} from './websocket.js';
 
 // SSE Transport
 export {
@@ -28,7 +28,7 @@ export {
   type SSEStatusPayload,
   type SSECapabilityResponsePayload,
   type SSEErrorPayload,
-} from './sse';
+} from './sse.js';
 
 // WebRTC Transport
 export {
@@ -41,4 +41,4 @@ export {
   type SignalingMessage,
   type SignalingMessageType,
   type DataChannelConfig,
-} from './webrtc';
+} from './webrtc.js';

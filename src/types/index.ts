@@ -6,17 +6,17 @@
 import { ErrorObject } from 'ajv';
 
 // Export Task types (v0.3.0)
-export * from './task';
-export type { OssaTask, TaskSpec, RuntimeBinding } from './task';
-export { isOssaTask, createTaskManifest } from './task';
+export * from './task.js';
+export type { OssaTask, TaskSpec, RuntimeBinding } from './task.js';
+export { isOssaTask, createTaskManifest } from './task.js';
 
 // Export Workflow types (v0.3.0)
-export * from './workflow';
-export type { OssaWorkflow, WorkflowSpec, WorkflowStep } from './workflow';
-export { isOssaWorkflow, createWorkflowManifest, createStep, expr } from './workflow';
+export * from './workflow.js';
+export type { OssaWorkflow, WorkflowSpec, WorkflowStep } from './workflow.js';
+export { isOssaWorkflow, createWorkflowManifest, createStep, expr } from './workflow.js';
 
 // Export Messaging types (v0.3.0)
-export * from './messaging';
+export * from './messaging.js';
 export type {
   MessagingExtension,
   PublishedChannel,
@@ -25,7 +25,7 @@ export type {
   ReliabilityConfig,
   MessageEnvelope,
   RoutingRule,
-} from './messaging';
+} from './messaging.js';
 
 /**
  * Capability definition (OpenAPI-style operation)
