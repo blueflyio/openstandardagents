@@ -2,9 +2,9 @@
 
 > OSSA is a vendor-neutral, open specification for defining, deploying, and orchestrating AI agents across platforms. Think of it as "OpenAPI for AI Agents" - enabling interoperability, portability, and standardization.
 
-## Current Version: v0.3.0
+## Current Version: v0.3.2
 
-**Status**: Stable (Released 2025-12-20)
+**Status**: Stable (Released 2025-12-31)
 **Website**: https://openstandardagents.org
 **Repository**: https://gitlab.com/blueflyio/openstandardagents.org
 **NPM**: @bluefly/openstandardagents
@@ -12,7 +12,7 @@
 ## Specification Resources
 
 - **[Complete Specification](https://openstandardagents.org/docs/specification)**: Single source of truth - authoritative reference
-- **[JSON Schema v0.3.0](https://openstandardagents.org/schemas/v0.3.0/agent.json)**: Complete agent definition schema
+- **[JSON Schema v0.3.2](https://openstandardagents.org/schemas/v0.3.2/agent.json)**: Complete agent definition schema
 - **[Schema Reference](https://openstandardagents.org/docs/schema-reference)**: Field-by-field documentation
 - **[API Documentation](https://openstandardagents.org/api-docs.html)**: OpenAPI specification for OSSA APIs
 - **[Examples](https://openstandardagents.org/examples.json)**: 50+ validated agent definitions
@@ -30,7 +30,7 @@
 ```
 
 ### Validation Rules
-1. **Always validate against current schema**: v0.3.0 at https://openstandardagents.org/schemas/v0.3.0/agent.json
+1. **Always validate against current schema**: v0.3.2 at https://openstandardagents.org/schemas/v0.3.2/agent.json
 2. **Check specification.md first**: It's the authoritative reference for all OSSA concepts
 3. **Use proper API versions**: `ossa/v0.3.x` or `ossa/v1` (not `ossa/v0.2.x` unless migrating)
 4. **Follow DNS-1123 naming**: `lowercase-with-hyphens` for agent names (max 253 chars)
@@ -75,7 +75,7 @@ ossa migrate --from langchain --input <file> --output <agent.ossa.yaml>
 
 # Schema operations
 ossa schema validate <file>
-ossa schema export --version v0.3.0
+ossa schema export --version v0.3.2
 ```
 
 ## Project Integration
@@ -108,10 +108,11 @@ npm run fetch-examples  # Fetch example agents
 
 ## Version History
 
+- **v0.3.2** (2025-12-31): Unified LLM config, execution profiles, runtime spec, access tiers
+- **v0.3.1** (2025-12-25): A2A messaging, protocol specs
 - **v0.3.0** (2025-12-20): Agent-to-Agent (A2A) messaging, enhanced workflows, improved observability
 - **v0.2.9**: Previous stable - Basic agent definition
 - **v0.2.8**: Legacy - Deprecated
-- **v0.2.6**: Legacy - Deprecated
 
 ## Migration Guides
 
@@ -119,7 +120,8 @@ npm run fetch-examples  # Fetch example agents
 - [CrewAI → OSSA](https://openstandardagents.org/docs/migration-guides/crewai-to-ossa)
 - [Anthropic MCP → OSSA](https://openstandardagents.org/docs/migration-guides/anthropic-mcp-to-ossa)
 - [OpenAI → OSSA](https://openstandardagents.org/docs/migration-guides/openai-to-ossa)
-- [v0.2.x → v0.3.0](https://openstandardagents.org/docs/specification#version-migrations)
+- [v0.2.x → v0.3.2](https://openstandardagents.org/docs/specification#version-migrations)
+- [v0.3.0 → v0.3.2](https://openstandardagents.org/docs/specification#version-migrations)
 
 ## Support & Community
 

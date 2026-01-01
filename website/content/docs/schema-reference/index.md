@@ -8,7 +8,7 @@ The OSSA schema defines the structure of agent manifests. Every field serves a s
 
 ## Resource Kinds
 
-OSSA supports multiple resource kinds (v0.3.1+):
+OSSA supports multiple resource kinds (v0.3.2):
 
 - **[Agent](./agent-spec.md)** - Single agent definition
 - **[Workflow](./workflow-spec.md)** - Multi-agent composition
@@ -26,6 +26,13 @@ OSSA supports multiple resource kinds (v0.3.1+):
 ### Agent Capabilities
 - [agent.capabilities](./agent-capabilities.md) - What the agent can do
 
+### LLM Configuration
+- [llm](./llm-config.md) - Unified LLM configuration (v0.3.2)
+  - Runtime-configurable models
+  - Environment variable substitution
+  - Fallback models
+  - Retry configuration
+
 ### Workflow Composition
 - [workflow.spec](./workflow-spec.md) - Workflow specification
 - [workflow.steps](./workflow-spec.md#workflowstep-object) - Workflow steps
@@ -33,9 +40,9 @@ OSSA supports multiple resource kinds (v0.3.1+):
 
 ## Schema Versions
 
-- **Current**: v0.2.8-RC
-- **Stable**: v0.2.8
-- **Previous**: v0.3.0, v0.3.0
+- **Current**: v0.3.2
+- **Stable**: v0.3.2
+- **Previous**: v0.3.1, v0.3.0
 
 See [Versioning Guide](../guides/versioning.md) for migration information.
 
@@ -50,7 +57,7 @@ ossa validate agent.ossa.yaml
 ## Complete Schema
 
 View the complete JSON Schema:
-- [v0.2.8-RC Schema](https://github.com/blueflyio/openstandardagents/blob/main/spec/v0.3.0/ossa-0.3.0.schema.json)
+- [v0.3.2 Schema](https://gitlab.com/blueflyio/openstandardagents/-/blob/main/spec/v0.3.2/ossa-0.3.2.schema.json)
 
 ## Related Documentation
 
