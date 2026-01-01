@@ -7,7 +7,7 @@
 # Showcases: Task kind (deterministic), batch processing, data contracts
 # ============================================================================
 
-apiVersion: ossa/v0.3.2
+apiVersion: ossa/v0.3.3
 kind: Task
 metadata:
   name: data-transformer
