@@ -152,11 +152,18 @@
     "AccessTier": {
       "type": "object",
       "description": "Access tier configuration for separation of duties (v0.3.3+). Defines privilege levels and role separations for agents.",
-      "required": ["tier"],
+      "required": [
+        "tier"
+      ],
       "properties": {
         "tier": {
           "type": "string",
-          "enum": ["tier_1_read", "tier_2_write_limited", "tier_3_write_elevated", "tier_4_policy"],
+          "enum": [
+            "tier_1_read",
+            "tier_2_write_limited",
+            "tier_3_write_elevated",
+            "tier_4_policy"
+          ],
           "description": "Access tier level: tier_1_read (analyzers), tier_2_write_limited (workers), tier_3_write_elevated (operators), tier_4_policy (governors)"
         },
         "permissions": {
@@ -206,7 +213,11 @@
         },
         "audit_level": {
           "type": "string",
-          "enum": ["standard", "detailed", "comprehensive"],
+          "enum": [
+            "standard",
+            "detailed",
+            "comprehensive"
+          ],
           "default": "standard",
           "description": "Audit logging level: standard (30 days), detailed (90 days), comprehensive (365 days)"
         },
@@ -217,12 +228,20 @@
         },
         "approval_chain": {
           "type": "string",
-          "enum": ["standard", "elevated", "critical"],
+          "enum": [
+            "standard",
+            "elevated",
+            "critical"
+          ],
           "description": "Approval workflow to use when requires_approval is true"
         },
         "isolation": {
           "type": "string",
-          "enum": ["none", "standard", "strict"],
+          "enum": [
+            "none",
+            "standard",
+            "strict"
+          ],
           "default": "none",
           "description": "Isolation level: none (default), standard (limited delegation), strict (no execution, policy only)"
         }
@@ -280,7 +299,16 @@
           "description": "Specific actions this role must never perform",
           "items": {
             "type": "string",
-            "enum": ["approve", "merge", "execute", "deploy", "delete", "modify_production", "define_policies", "bypass_approvals"]
+            "enum": [
+              "approve",
+              "merge",
+              "execute",
+              "deploy",
+              "delete",
+              "modify_production",
+              "define_policies",
+              "bypass_approvals"
+            ]
           },
           "uniqueItems": true
         }
@@ -301,7 +329,11 @@
           "description": "Tiers this agent can delegate to",
           "items": {
             "type": "string",
-            "enum": ["tier_1_read", "tier_2_write_limited", "tier_3_write_elevated"]
+            "enum": [
+              "tier_1_read",
+              "tier_2_write_limited",
+              "tier_3_write_elevated"
+            ]
           },
           "uniqueItems": true
         },
@@ -317,7 +349,13 @@
           "description": "Requirements for delegation",
           "items": {
             "type": "string",
-            "enum": ["delegation_token", "audit_trail", "violation_report", "task_specification", "approval"]
+            "enum": [
+              "delegation_token",
+              "audit_trail",
+              "violation_report",
+              "task_specification",
+              "approval"
+            ]
           }
         }
       },
@@ -326,11 +364,23 @@
     "TaxonomyClassification": {
       "type": "object",
       "description": "Hierarchical taxonomy classification for agents (v0.3.3+). Links to taxonomy.yaml spec.",
-      "required": ["domain"],
+      "required": [
+        "domain"
+      ],
       "properties": {
         "domain": {
           "type": "string",
-          "enum": ["security", "infrastructure", "documentation", "backend", "frontend", "data", "agents", "development", "content"],
+          "enum": [
+            "security",
+            "infrastructure",
+            "documentation",
+            "backend",
+            "frontend",
+            "data",
+            "agents",
+            "development",
+            "content"
+          ],
           "description": "Primary domain classification - every agent belongs to exactly one domain"
         },
         "subdomain": {
@@ -347,13 +397,26 @@
           "description": "Cross-cutting concerns that apply to this agent",
           "items": {
             "type": "string",
-            "enum": ["quality", "observability", "governance", "performance", "architecture", "cost", "reliability"]
+            "enum": [
+              "quality",
+              "observability",
+              "governance",
+              "performance",
+              "architecture",
+              "cost",
+              "reliability"
+            ]
           },
           "uniqueItems": true
         },
         "recommended_tier": {
           "type": "string",
-          "enum": ["tier_1_read", "tier_2_write_limited", "tier_3_write_elevated", "tier_4_policy"],
+          "enum": [
+            "tier_1_read",
+            "tier_2_write_limited",
+            "tier_3_write_elevated",
+            "tier_4_policy"
+          ],
           "description": "Recommended access tier based on domain defaults"
         }
       },
@@ -365,16 +428,32 @@
       "properties": {
         "provider": {
           "type": "string",
-          "enum": ["gitlab", "github", "azure-devops", "bitbucket", "generic"],
+          "enum": [
+            "gitlab",
+            "github",
+            "azure-devops",
+            "bitbucket",
+            "generic"
+          ],
           "description": "Identity provider type for service account integration"
         },
         "service_account": {
           "type": "object",
           "description": "Service account details for automated operations",
-          "required": ["username", "email"],
+          "required": [
+            "username",
+            "email"
+          ],
           "properties": {
             "id": {
-              "oneOf": [{"type": "integer"}, {"type": "string"}],
+              "oneOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "string"
+                }
+              ],
               "description": "Provider-specific account ID"
             },
             "username": {
@@ -397,7 +476,13 @@
               "type": "array",
               "items": {
                 "type": "string",
-                "enum": ["developer", "maintainer", "owner", "reporter", "guest"]
+                "enum": [
+                  "developer",
+                  "maintainer",
+                  "owner",
+                  "reporter",
+                  "guest"
+                ]
               },
               "description": "Roles assigned to this service account"
             }
@@ -409,13 +494,25 @@
           "properties": {
             "method": {
               "type": "string",
-              "enum": ["personal_access_token", "project_access_token", "group_access_token", "deploy_token", "oauth2", "ssh_key", "mtls", "github_app", "azure_service_principal"],
+              "enum": [
+                "personal_access_token",
+                "project_access_token",
+                "group_access_token",
+                "deploy_token",
+                "oauth2",
+                "ssh_key",
+                "mtls",
+                "github_app",
+                "azure_service_principal"
+              ],
               "default": "personal_access_token",
               "description": "Authentication method type"
             },
             "scopes": {
               "type": "array",
-              "items": {"type": "string"},
+              "items": {
+                "type": "string"
+              },
               "description": "Required token scopes (provider-specific)"
             },
             "auto_refresh": {
@@ -433,9 +530,20 @@
             "rotation_policy": {
               "type": "object",
               "properties": {
-                "enabled": {"type": "boolean", "default": false},
-                "interval_days": {"type": "integer", "default": 90, "minimum": 7, "maximum": 365},
-                "notify_on_rotation": {"type": "boolean", "default": true}
+                "enabled": {
+                  "type": "boolean",
+                  "default": false
+                },
+                "interval_days": {
+                  "type": "integer",
+                  "default": 90,
+                  "minimum": 7,
+                  "maximum": 365
+                },
+                "notify_on_rotation": {
+                  "type": "boolean",
+                  "default": true
+                }
               }
             }
           }
@@ -456,40 +564,81 @@
             "vault": {
               "type": "object",
               "properties": {
-                "path": {"type": "string", "description": "Vault secret path"},
-                "key": {"type": "string", "default": "value"},
-                "role": {"type": "string", "description": "Vault role for authentication"}
+                "path": {
+                  "type": "string",
+                  "description": "Vault secret path"
+                },
+                "key": {
+                  "type": "string",
+                  "default": "value"
+                },
+                "role": {
+                  "type": "string",
+                  "description": "Vault role for authentication"
+                }
               }
             },
             "kubernetes_secret": {
               "type": "object",
               "properties": {
-                "name": {"type": "string"},
-                "namespace": {"type": "string"},
-                "key": {"type": "string", "default": "token"}
+                "name": {
+                  "type": "string"
+                },
+                "namespace": {
+                  "type": "string"
+                },
+                "key": {
+                  "type": "string",
+                  "default": "token"
+                }
               }
             }
           }
         },
         "patterns": {
           "type": "array",
-          "items": {"type": "string"},
+          "items": {
+            "type": "string"
+          },
           "description": "Glob patterns for auto-detection based on working directory (picomatch syntax)"
         },
         "fallback": {
           "type": "array",
           "items": {
             "type": "object",
-            "required": ["provider", "service_account"],
+            "required": [
+              "provider",
+              "service_account"
+            ],
             "properties": {
-              "provider": {"type": "string", "enum": ["gitlab", "github", "azure-devops", "bitbucket", "generic"]},
-              "service_account": {"$ref": "#/definitions/AgentIdentity/properties/service_account"},
-              "token_source": {"$ref": "#/definitions/AgentIdentity/properties/token_source"},
+              "provider": {
+                "type": "string",
+                "enum": [
+                  "gitlab",
+                  "github",
+                  "azure-devops",
+                  "bitbucket",
+                  "generic"
+                ]
+              },
+              "service_account": {
+                "$ref": "#/definitions/AgentIdentity/properties/service_account"
+              },
+              "token_source": {
+                "$ref": "#/definitions/AgentIdentity/properties/token_source"
+              },
               "condition": {
                 "type": "object",
                 "properties": {
-                  "pattern_match": {"type": "array", "items": {"type": "string"}},
-                  "platform_unavailable": {"type": "boolean"}
+                  "pattern_match": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "platform_unavailable": {
+                    "type": "boolean"
+                  }
                 }
               }
             }
@@ -500,25 +649,40 @@
           "type": "object",
           "description": "DORA metrics tracking configuration",
           "properties": {
-            "enabled": {"type": "boolean", "default": false},
+            "enabled": {
+              "type": "boolean",
+              "default": false
+            },
             "metrics": {
               "type": "array",
               "items": {
                 "type": "string",
-                "enum": ["deployment_frequency", "lead_time", "change_failure_rate", "mttr"]
+                "enum": [
+                  "deployment_frequency",
+                  "lead_time",
+                  "change_failure_rate",
+                  "mttr"
+                ]
               },
               "uniqueItems": true
             },
             "labels": {
               "type": "object",
-              "additionalProperties": {"type": "string"},
+              "additionalProperties": {
+                "type": "string"
+              },
               "description": "Additional labels for metrics"
             },
             "prometheus": {
               "type": "object",
               "properties": {
-                "push_gateway": {"type": "string", "format": "uri"},
-                "job_name": {"type": "string"}
+                "push_gateway": {
+                  "type": "string",
+                  "format": "uri"
+                },
+                "job_name": {
+                  "type": "string"
+                }
               }
             }
           }
@@ -527,16 +691,41 @@
           "type": "object",
           "description": "Session management for Claude Code integration",
           "properties": {
-            "init_on_start": {"type": "boolean", "default": true},
-            "propagate_to_subprocesses": {"type": "boolean", "default": true},
-            "git_attribution": {"type": "boolean", "default": true},
-            "heartbeat_interval": {"type": "integer", "default": 300, "minimum": 30, "maximum": 3600},
-            "timeout": {"type": "integer", "default": 3600, "minimum": 60, "maximum": 86400},
+            "init_on_start": {
+              "type": "boolean",
+              "default": true
+            },
+            "propagate_to_subprocesses": {
+              "type": "boolean",
+              "default": true
+            },
+            "git_attribution": {
+              "type": "boolean",
+              "default": true
+            },
+            "heartbeat_interval": {
+              "type": "integer",
+              "default": 300,
+              "minimum": 30,
+              "maximum": 3600
+            },
+            "timeout": {
+              "type": "integer",
+              "default": 3600,
+              "minimum": 60,
+              "maximum": 86400
+            },
             "hooks": {
               "type": "object",
               "properties": {
-                "pre_prompt_submit": {"type": "boolean", "default": true},
-                "post_session": {"type": "boolean", "default": false}
+                "pre_prompt_submit": {
+                  "type": "boolean",
+                  "default": true
+                },
+                "post_session": {
+                  "type": "boolean",
+                  "default": false
+                }
               }
             }
           }
@@ -545,13 +734,24 @@
           "type": "object",
           "description": "OpenTelemetry service identity for distributed tracing",
           "properties": {
-            "service_name": {"type": "string"},
-            "service_namespace": {"type": "string"},
-            "service_version": {"type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+(-[a-zA-Z0-9.]+)?$"},
-            "service_instance_id": {"type": "string"},
+            "service_name": {
+              "type": "string"
+            },
+            "service_namespace": {
+              "type": "string"
+            },
+            "service_version": {
+              "type": "string",
+              "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+(-[a-zA-Z0-9.]+)?$"
+            },
+            "service_instance_id": {
+              "type": "string"
+            },
             "resource_attributes": {
               "type": "object",
-              "additionalProperties": {"type": "string"}
+              "additionalProperties": {
+                "type": "string"
+              }
             }
           }
         },
@@ -561,28 +761,56 @@
           "properties": {
             "token_encryption": {
               "type": "string",
-              "enum": ["none", "at_rest", "in_transit", "both"],
+              "enum": [
+                "none",
+                "at_rest",
+                "in_transit",
+                "both"
+              ],
               "default": "both"
             },
-            "minimum_token_length": {"type": "integer", "default": 32},
+            "minimum_token_length": {
+              "type": "integer",
+              "default": 32
+            },
             "prohibited_actions": {
               "type": "array",
-              "items": {"type": "string"}
+              "items": {
+                "type": "string"
+              }
             },
             "required_approvals": {
               "type": "object",
               "properties": {
-                "force_push": {"type": "boolean", "default": true},
-                "delete_protected_branch": {"type": "boolean", "default": true},
-                "modify_ci_config": {"type": "boolean", "default": false}
+                "force_push": {
+                  "type": "boolean",
+                  "default": true
+                },
+                "delete_protected_branch": {
+                  "type": "boolean",
+                  "default": true
+                },
+                "modify_ci_config": {
+                  "type": "boolean",
+                  "default": false
+                }
               }
             },
             "rate_limits": {
               "type": "object",
               "properties": {
-                "requests_per_minute": {"type": "integer", "default": 60},
-                "requests_per_hour": {"type": "integer", "default": 1000},
-                "git_operations_per_hour": {"type": "integer", "default": 100}
+                "requests_per_minute": {
+                  "type": "integer",
+                  "default": 60
+                },
+                "requests_per_hour": {
+                  "type": "integer",
+                  "default": 1000
+                },
+                "git_operations_per_hour": {
+                  "type": "integer",
+                  "default": 100
+                }
               }
             }
           }
@@ -1020,7 +1248,16 @@
         },
         "type": {
           "type": "string",
-          "enum": ["analyzer", "worker", "operator", "supervisor", "orchestrator", "governor", "specialist", "critic"],
+          "enum": [
+            "analyzer",
+            "worker",
+            "operator",
+            "supervisor",
+            "orchestrator",
+            "governor",
+            "specialist",
+            "critic"
+          ],
           "description": "Agent type classification aligned with access tiers (v0.3.3+)"
         },
         "taxonomy": {
@@ -2093,7 +2330,13 @@
               "type": "array",
               "items": {
                 "type": "string",
-                "examples": ["k8s.write", "gitlab.write", "storage.write", "flux.sync", "gitops.reconcile"]
+                "examples": [
+                  "k8s.write",
+                  "gitlab.write",
+                  "storage.write",
+                  "flux.sync",
+                  "gitops.reconcile"
+                ]
               },
               "description": "Side effects this capability produces (for policy evaluation)"
             },
@@ -2106,12 +2349,20 @@
                 },
                 "approval_tier": {
                   "type": "string",
-                  "enum": ["operator", "admin", "security"],
+                  "enum": [
+                    "operator",
+                    "admin",
+                    "security"
+                  ],
                   "description": "Minimum tier required for approval"
                 },
                 "audit_level": {
                   "type": "string",
-                  "enum": ["none", "basic", "full"],
+                  "enum": [
+                    "none",
+                    "basic",
+                    "full"
+                  ],
                   "description": "Audit logging level"
                 }
               },
@@ -2696,7 +2947,12 @@
           "type": "array",
           "items": {
             "type": "string",
-            "examples": ["Claude", "Claude Code", "Cursor", "Kiro"]
+            "examples": [
+              "Claude",
+              "Claude Code",
+              "Cursor",
+              "Kiro"
+            ]
           },
           "description": "Compatible AI platforms/environments"
         },
@@ -2750,7 +3006,11 @@
           "type": "string",
           "default": "AGENTS.md",
           "description": "Path to AGENTS.md file (relative to repository root)",
-          "examples": ["AGENTS.md", ".github/AGENTS.md", "docs/AGENTS.md"]
+          "examples": [
+            "AGENTS.md",
+            ".github/AGENTS.md",
+            "docs/AGENTS.md"
+          ]
         },
         "generate": {
           "type": "boolean",
@@ -2880,7 +3140,12 @@
         "source": {
           "type": "string",
           "description": "OSSA manifest path to derive content from",
-          "examples": ["spec.tools", "spec.constraints", "spec.autonomy", "spec.role"]
+          "examples": [
+            "spec.tools",
+            "spec.constraints",
+            "spec.autonomy",
+            "spec.role"
+          ]
         },
         "custom": {
           "type": "string",
@@ -2901,7 +3166,9 @@
         "title_format": {
           "type": "string",
           "description": "Format string for section title",
-          "examples": ["[{metadata.labels.domain}] {title}"]
+          "examples": [
+            "[{metadata.labels.domain}] {title}"
+          ]
         }
       },
       "additionalProperties": false
@@ -2950,7 +3217,13 @@
                   },
                   "api_type": {
                     "type": "string",
-                    "enum": ["openai", "azure", "anthropic", "ollama", "litellm"],
+                    "enum": [
+                      "openai",
+                      "azure",
+                      "anthropic",
+                      "ollama",
+                      "litellm"
+                    ],
                     "description": "API provider type"
                   },
                   "api_version": {
@@ -2975,8 +3248,12 @@
             },
             "cache_seed": {
               "oneOf": [
-                {"type": "integer"},
-                {"type": "null"}
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
               ],
               "description": "Seed for response caching (null disables caching)"
             }
@@ -2984,7 +3261,11 @@
         },
         "human_input_mode": {
           "type": "string",
-          "enum": ["ALWAYS", "NEVER", "TERMINATE"],
+          "enum": [
+            "ALWAYS",
+            "NEVER",
+            "TERMINATE"
+          ],
           "default": "NEVER",
           "description": "When to request human input: ALWAYS (after every response), NEVER (fully autonomous), TERMINATE (on termination conditions)"
         },
@@ -3001,8 +3282,12 @@
                 },
                 "use_docker": {
                   "oneOf": [
-                    {"type": "boolean"},
-                    {"type": "string"}
+                    {
+                      "type": "boolean"
+                    },
+                    {
+                      "type": "string"
+                    }
                   ],
                   "description": "Docker image for sandboxed execution (true, false, or image name)",
                   "default": false
@@ -3021,7 +3306,12 @@
                 },
                 "executor_type": {
                   "type": "string",
-                  "enum": ["local_command_line", "docker_command_line", "jupyter", "azure_container_instance"],
+                  "enum": [
+                    "local_command_line",
+                    "docker_command_line",
+                    "jupyter",
+                    "azure_container_instance"
+                  ],
                   "default": "local_command_line",
                   "description": "Type of code executor to use"
                 },
@@ -3029,9 +3319,18 @@
                   "type": "array",
                   "items": {
                     "type": "string",
-                    "enum": ["python", "bash", "shell", "javascript", "powershell"]
+                    "enum": [
+                      "python",
+                      "bash",
+                      "shell",
+                      "javascript",
+                      "powershell"
+                    ]
                   },
-                  "default": ["python", "bash"],
+                  "default": [
+                    "python",
+                    "bash"
+                  ],
                   "description": "Languages allowed for code execution"
                 }
               }
@@ -3060,8 +3359,12 @@
             },
             "termination_keywords": {
               "type": "array",
-              "items": {"type": "string"},
-              "default": ["TERMINATE"],
+              "items": {
+                "type": "string"
+              },
+              "default": [
+                "TERMINATE"
+              ],
               "description": "Keywords that trigger conversation termination"
             },
             "max_turns": {
@@ -3077,7 +3380,9 @@
           "properties": {
             "agents": {
               "type": "array",
-              "items": {"type": "string"},
+              "items": {
+                "type": "string"
+              },
               "description": "References to OSSA agents participating in group chat"
             },
             "max_round": {
@@ -3093,7 +3398,13 @@
             },
             "speaker_selection_method": {
               "type": "string",
-              "enum": ["auto", "manual", "random", "round_robin", "custom"],
+              "enum": [
+                "auto",
+                "manual",
+                "random",
+                "round_robin",
+                "custom"
+              ],
               "default": "auto",
               "description": "Method for selecting next speaker"
             },
@@ -3103,8 +3414,15 @@
             },
             "allow_repeat_speaker": {
               "oneOf": [
-                {"type": "boolean"},
-                {"type": "array", "items": {"type": "string"}}
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
               ],
               "default": true,
               "description": "Allow same speaker consecutive turns (true/false or list of agent names)"
@@ -3118,7 +3436,9 @@
         },
         "function_map": {
           "type": "object",
-          "additionalProperties": {"type": "string"},
+          "additionalProperties": {
+            "type": "string"
+          },
           "description": "Mapping of function names to implementations (module.function or class.method)"
         },
         "register_for_llm": {
@@ -3126,7 +3446,9 @@
           "description": "Functions registered for LLM to call (tool definitions)",
           "items": {
             "type": "object",
-            "required": ["name"],
+            "required": [
+              "name"
+            ],
             "properties": {
               "name": {
                 "type": "string",
@@ -3145,7 +3467,9 @@
         },
         "register_for_execution": {
           "type": "array",
-          "items": {"type": "string"},
+          "items": {
+            "type": "string"
+          },
           "description": "Function names that this agent can execute"
         },
         "nested_chat_config": {
@@ -3233,7 +3557,9 @@
     "LangFlowExtension": {
       "type": "object",
       "description": "LangFlow visual flow builder integration - enables bidirectional mapping between LangFlow flows and OSSA manifests",
-      "required": ["flow_id"],
+      "required": [
+        "flow_id"
+      ],
       "properties": {
         "flow_id": {
           "type": "string",
@@ -3245,7 +3571,10 @@
           "description": "LangFlow component mappings to OSSA capabilities",
           "items": {
             "type": "object",
-            "required": ["node_id", "component_type"],
+            "required": [
+              "node_id",
+              "component_type"
+            ],
             "properties": {
               "node_id": {
                 "type": "string",
@@ -3295,17 +3624,27 @@
           "description": "Runtime parameter overrides for flow execution. Keys are parameter names or component IDs.",
           "additionalProperties": {
             "oneOf": [
-              {"type": "string"},
-              {"type": "number"},
-              {"type": "boolean"},
-              {"type": "object"}
+              {
+                "type": "string"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "object"
+              }
             ]
           }
         },
         "api_endpoint": {
           "type": "object",
           "description": "LangFlow API configuration",
-          "required": ["base_url"],
+          "required": [
+            "base_url"
+          ],
           "properties": {
             "base_url": {
               "type": "string",
@@ -3314,7 +3653,11 @@
             },
             "auth_method": {
               "type": "string",
-              "enum": ["api_key", "bearer_token", "none"],
+              "enum": [
+                "api_key",
+                "bearer_token",
+                "none"
+              ],
               "default": "api_key",
               "description": "Authentication method"
             },
@@ -3340,7 +3683,12 @@
         },
         "execution_mode": {
           "type": "string",
-          "enum": ["sync", "async", "stream", "batch"],
+          "enum": [
+            "sync",
+            "async",
+            "stream",
+            "batch"
+          ],
           "default": "sync",
           "description": "Flow execution mode: sync (blocking), async (non-blocking), stream (SSE), batch (parallel)"
         },
@@ -3350,7 +3698,9 @@
           "properties": {
             "target_components": {
               "type": "array",
-              "items": {"type": "string"},
+              "items": {
+                "type": "string"
+              },
               "description": "Component IDs to receive input"
             },
             "field_mappings": {
@@ -3358,7 +3708,10 @@
               "description": "Map OSSA input fields to component parameters",
               "additionalProperties": {
                 "type": "object",
-                "required": ["component", "parameter"],
+                "required": [
+                  "component",
+                  "parameter"
+                ],
                 "properties": {
                   "component": {
                     "type": "string",
@@ -3381,7 +3734,9 @@
           "properties": {
             "source_components": {
               "type": "array",
-              "items": {"type": "string"},
+              "items": {
+                "type": "string"
+              },
               "description": "Component IDs to extract output from"
             },
             "field_mappings": {
@@ -3389,7 +3744,9 @@
               "description": "Map component outputs to OSSA output fields",
               "additionalProperties": {
                 "type": "object",
-                "required": ["component"],
+                "required": [
+                  "component"
+                ],
                 "properties": {
                   "component": {
                     "type": "string",
@@ -4147,7 +4504,18 @@
           "properties": {
             "name": {
               "type": "string",
-              "enum": ["openai", "anthropic", "google", "mistral", "groq", "azure", "amazon-bedrock", "cohere", "fireworks", "custom"],
+              "enum": [
+                "openai",
+                "anthropic",
+                "google",
+                "mistral",
+                "groq",
+                "azure",
+                "amazon-bedrock",
+                "cohere",
+                "fireworks",
+                "custom"
+              ],
               "description": "Provider identifier"
             },
             "model": {
@@ -4176,7 +4544,11 @@
         },
         "stream_protocol": {
           "type": "string",
-          "enum": ["data", "text", "sse"],
+          "enum": [
+            "data",
+            "text",
+            "sse"
+          ],
           "default": "data",
           "description": "Streaming protocol: data (AI SDK format), text (plain), sse (Server-Sent Events)"
         },
@@ -4194,7 +4566,10 @@
               "description": "Component mappings for streamUI",
               "items": {
                 "type": "object",
-                "required": ["name", "render"],
+                "required": [
+                  "name",
+                  "render"
+                ],
                 "properties": {
                   "name": {
                     "type": "string",
@@ -4272,7 +4647,10 @@
               "description": "Server Actions for state mutations",
               "items": {
                 "type": "object",
-                "required": ["name", "handler"],
+                "required": [
+                  "name",
+                  "handler"
+                ],
                 "properties": {
                   "name": {
                     "type": "string",
@@ -4322,11 +4700,18 @@
                   "description": "Initial conversation messages",
                   "items": {
                     "type": "object",
-                    "required": ["role", "content"],
+                    "required": [
+                      "role",
+                      "content"
+                    ],
                     "properties": {
                       "role": {
                         "type": "string",
-                        "enum": ["user", "assistant", "system"]
+                        "enum": [
+                          "user",
+                          "assistant",
+                          "system"
+                        ]
                       },
                       "content": {
                         "type": "string"
@@ -4354,7 +4739,10 @@
                 },
                 "stream_mode": {
                   "type": "string",
-                  "enum": ["stream", "complete"],
+                  "enum": [
+                    "stream",
+                    "complete"
+                  ],
                   "default": "stream",
                   "description": "Streaming mode"
                 }
@@ -4376,7 +4764,11 @@
                 },
                 "thread_persistence": {
                   "type": "string",
-                  "enum": ["session", "database", "none"],
+                  "enum": [
+                    "session",
+                    "database",
+                    "none"
+                  ],
                   "default": "session",
                   "description": "Thread persistence strategy"
                 }
@@ -4392,7 +4784,11 @@
           "properties": {
             "mode": {
               "type": "string",
-              "enum": ["auto", "required", "none"],
+              "enum": [
+                "auto",
+                "required",
+                "none"
+              ],
               "default": "auto",
               "description": "Tool calling mode"
             },
@@ -4408,7 +4804,10 @@
               "description": "Tool definitions",
               "items": {
                 "type": "object",
-                "required": ["name", "description"],
+                "required": [
+                  "name",
+                  "description"
+                ],
                 "properties": {
                   "name": {
                     "type": "string",
@@ -4460,7 +4859,11 @@
             },
             "mode": {
               "type": "string",
-              "enum": ["json", "tool", "auto"],
+              "enum": [
+                "json",
+                "tool",
+                "auto"
+              ],
               "default": "auto",
               "description": "Output generation mode"
             },
@@ -4551,7 +4954,10 @@
           "type": "string",
           "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
           "description": "LangChain version compatibility (e.g., 0.3.0)",
-          "examples": ["0.3.0", "0.2.16"]
+          "examples": [
+            "0.3.0",
+            "0.2.16"
+          ]
         },
         "chains": {
           "type": "array",
@@ -4602,7 +5008,15 @@
               "properties": {
                 "type": {
                   "type": "string",
-                  "enum": ["chroma", "qdrant", "pinecone", "weaviate", "milvus", "pgvector", "faiss"],
+                  "enum": [
+                    "chroma",
+                    "qdrant",
+                    "pinecone",
+                    "weaviate",
+                    "milvus",
+                    "pgvector",
+                    "faiss"
+                  ],
                   "description": "Vector store backend type"
                 },
                 "collection_name": {
@@ -4700,7 +5114,10 @@
             },
             "early_stopping_method": {
               "type": "string",
-              "enum": ["force", "generate"],
+              "enum": [
+                "force",
+                "generate"
+              ],
               "default": "generate",
               "description": "Method for early stopping"
             },
@@ -4723,7 +5140,10 @@
     "LangChainChainConfig": {
       "type": "object",
       "description": "LCEL chain configuration for LangChain integration",
-      "required": ["name", "type"],
+      "required": [
+        "name",
+        "type"
+      ],
       "properties": {
         "name": {
           "type": "string",
@@ -4762,7 +5182,16 @@
             "properties": {
               "type": {
                 "type": "string",
-                "enum": ["prompt", "llm", "parser", "retriever", "tool", "function", "passthrough", "itemgetter"],
+                "enum": [
+                  "prompt",
+                  "llm",
+                  "parser",
+                  "retriever",
+                  "tool",
+                  "function",
+                  "passthrough",
+                  "itemgetter"
+                ],
                 "description": "Component type"
               },
               "ref": {
@@ -4827,7 +5256,10 @@
     "LangGraphConfig": {
       "type": "object",
       "description": "LangGraph state machine configuration",
-      "required": ["name", "nodes"],
+      "required": [
+        "name",
+        "nodes"
+      ],
       "properties": {
         "name": {
           "type": "string",
@@ -4843,7 +5275,10 @@
           "description": "Graph nodes",
           "items": {
             "type": "object",
-            "required": ["id", "type"],
+            "required": [
+              "id",
+              "type"
+            ],
             "properties": {
               "id": {
                 "type": "string",
@@ -4851,7 +5286,15 @@
               },
               "type": {
                 "type": "string",
-                "enum": ["agent", "tool", "function", "subgraph", "passthrough", "conditional", "human_in_loop"],
+                "enum": [
+                  "agent",
+                  "tool",
+                  "function",
+                  "subgraph",
+                  "passthrough",
+                  "conditional",
+                  "human_in_loop"
+                ],
                 "description": "Node type"
               },
               "handler": {
@@ -4871,7 +5314,10 @@
           "description": "Graph edges (transitions)",
           "items": {
             "type": "object",
-            "required": ["from", "to"],
+            "required": [
+              "from",
+              "to"
+            ],
             "properties": {
               "from": {
                 "type": "string",
@@ -4907,7 +5353,12 @@
           "properties": {
             "type": {
               "type": "string",
-              "enum": ["memory", "sqlite", "postgres", "redis"],
+              "enum": [
+                "memory",
+                "sqlite",
+                "postgres",
+                "redis"
+              ],
               "description": "Checkpointer backend type"
             },
             "connection_string": {
@@ -4937,7 +5388,9 @@
     "LangChainCallbackConfig": {
       "type": "object",
       "description": "LangChain callback handler configuration",
-      "required": ["type"],
+      "required": [
+        "type"
+      ],
       "properties": {
         "type": {
           "type": "string",
@@ -5020,7 +5473,9 @@
     "SwarmAgentConfig": {
       "type": "object",
       "description": "Swarm agent configuration within an OSSA manifest",
-      "required": ["name"],
+      "required": [
+        "name"
+      ],
       "properties": {
         "name": {
           "type": "string",
@@ -5048,7 +5503,11 @@
         },
         "tool_choice": {
           "type": "string",
-          "enum": ["auto", "none", "required"],
+          "enum": [
+            "auto",
+            "none",
+            "required"
+          ],
           "description": "Tool selection strategy"
         },
         "parallel_tool_calls": {
@@ -5065,7 +5524,11 @@
       "properties": {
         "strategy": {
           "type": "string",
-          "enum": ["function_return", "workflow_transition", "explicit"],
+          "enum": [
+            "function_return",
+            "workflow_transition",
+            "explicit"
+          ],
           "default": "function_return",
           "description": "Handoff strategy: function_return (Swarm-native), workflow_transition (OSSA workflow), explicit (manual)"
         },
@@ -5091,7 +5554,10 @@
           "description": "Explicit handoff definitions",
           "items": {
             "type": "object",
-            "required": ["function", "target_agent"],
+            "required": [
+              "function",
+              "target_agent"
+            ],
             "properties": {
               "function": {
                 "type": "string",
@@ -5106,11 +5572,19 @@
                 "description": "Conditions that trigger this handoff",
                 "items": {
                   "type": "object",
-                  "required": ["type"],
+                  "required": [
+                    "type"
+                  ],
                   "properties": {
                     "type": {
                       "type": "string",
-                      "enum": ["explicit_request", "capability_mismatch", "billing_keyword_detected", "technical_issue_detected", "custom"],
+                      "enum": [
+                        "explicit_request",
+                        "capability_mismatch",
+                        "billing_keyword_detected",
+                        "technical_issue_detected",
+                        "custom"
+                      ],
                       "description": "Condition type"
                     },
                     "expression": {
@@ -5139,13 +5613,20 @@
         },
         "propagation": {
           "type": "string",
-          "enum": ["all_agents", "handoff_only", "none"],
+          "enum": [
+            "all_agents",
+            "handoff_only",
+            "none"
+          ],
           "default": "all_agents",
           "description": "How context variables propagate between agents"
         },
         "mutability": {
           "type": "string",
-          "enum": ["read_only", "read_write"],
+          "enum": [
+            "read_only",
+            "read_write"
+          ],
           "default": "read_write",
           "description": "Whether agents can modify context variables"
         },
@@ -5160,7 +5641,11 @@
             },
             "merge_strategy": {
               "type": "string",
-              "enum": ["shallow_merge", "deep_merge", "replace"],
+              "enum": [
+                "shallow_merge",
+                "deep_merge",
+                "replace"
+              ],
               "default": "deep_merge",
               "description": "Strategy for merging context variable updates"
             },
@@ -5207,7 +5692,11 @@
         },
         "instruction_source": {
           "type": "string",
-          "enum": ["system_prompt", "system_prompt_template", "external"],
+          "enum": [
+            "system_prompt",
+            "system_prompt_template",
+            "external"
+          ],
           "description": "Source for agent instructions"
         },
         "lifecycle": {
@@ -5421,7 +5910,10 @@
               "properties": {
                 "type": {
                   "type": "string",
-                  "enum": ["auto", "last_messages"],
+                  "enum": [
+                    "auto",
+                    "last_messages"
+                  ],
                   "default": "auto"
                 },
                 "last_messages": {
@@ -5436,14 +5928,20 @@
               "oneOf": [
                 {
                   "type": "string",
-                  "enum": ["auto", "text"]
+                  "enum": [
+                    "auto",
+                    "text"
+                  ]
                 },
                 {
                   "type": "object",
                   "properties": {
                     "type": {
                       "type": "string",
-                      "enum": ["json_object", "json_schema"]
+                      "enum": [
+                        "json_object",
+                        "json_schema"
+                      ]
                     },
                     "json_schema": {
                       "type": "object",
@@ -5581,7 +6079,10 @@
               "type": "array",
               "items": {
                 "type": "string",
-                "enum": ["message_creation", "tool_calls"]
+                "enum": [
+                  "message_creation",
+                  "tool_calls"
+                ]
               },
               "description": "Step types to trace"
             },
@@ -5592,7 +6093,11 @@
             },
             "otel_exporter": {
               "type": "string",
-              "enum": ["otlp", "console", "none"],
+              "enum": [
+                "otlp",
+                "console",
+                "none"
+              ],
               "default": "otlp",
               "description": "OpenTelemetry exporter type"
             }
@@ -5605,11 +6110,17 @@
     "OpenAIAssistantTool": {
       "type": "object",
       "description": "OpenAI Assistant tool definition",
-      "required": ["type"],
+      "required": [
+        "type"
+      ],
       "properties": {
         "type": {
           "type": "string",
-          "enum": ["code_interpreter", "file_search", "function"],
+          "enum": [
+            "code_interpreter",
+            "file_search",
+            "function"
+          ],
           "description": "Tool type"
         },
         "function": {
@@ -5638,7 +6149,9 @@
               "description": "Enable strict mode for structured outputs"
             }
           },
-          "required": ["name"],
+          "required": [
+            "name"
+          ],
           "additionalProperties": false
         }
       },
@@ -5647,11 +6160,17 @@
     "OpenAIAssistantMessage": {
       "type": "object",
       "description": "OpenAI Assistant message definition",
-      "required": ["role", "content"],
+      "required": [
+        "role",
+        "content"
+      ],
       "properties": {
         "role": {
           "type": "string",
-          "enum": ["user", "assistant"],
+          "enum": [
+            "user",
+            "assistant"
+          ],
           "description": "Message role"
         },
         "content": {
@@ -5684,7 +6203,10 @@
                   "properties": {
                     "type": {
                       "type": "string",
-                      "enum": ["code_interpreter", "file_search"]
+                      "enum": [
+                        "code_interpreter",
+                        "file_search"
+                      ]
                     }
                   },
                   "additionalProperties": false
@@ -5709,11 +6231,17 @@
     "OpenAIAssistantContentPart": {
       "type": "object",
       "description": "Content part for multimodal messages",
-      "required": ["type"],
+      "required": [
+        "type"
+      ],
       "properties": {
         "type": {
           "type": "string",
-          "enum": ["text", "image_url", "image_file"],
+          "enum": [
+            "text",
+            "image_url",
+            "image_file"
+          ],
           "description": "Content part type"
         },
         "text": {
@@ -5730,7 +6258,11 @@
             },
             "detail": {
               "type": "string",
-              "enum": ["auto", "low", "high"],
+              "enum": [
+                "auto",
+                "low",
+                "high"
+              ],
               "default": "auto",
               "description": "Image detail level"
             }
@@ -5747,7 +6279,11 @@
             },
             "detail": {
               "type": "string",
-              "enum": ["auto", "low", "high"],
+              "enum": [
+                "auto",
+                "low",
+                "high"
+              ],
               "default": "auto",
               "description": "Image detail level"
             }
@@ -5776,7 +6312,14 @@
         },
         "planner_type": {
           "type": "string",
-          "enum": ["sequential", "stepwise", "action", "handlebars", "function_calling", "none"],
+          "enum": [
+            "sequential",
+            "stepwise",
+            "action",
+            "handlebars",
+            "function_calling",
+            "none"
+          ],
           "default": "function_calling",
           "description": "Planner strategy for goal decomposition and task orchestration"
         },
@@ -5805,12 +6348,16 @@
             },
             "excluded_plugins": {
               "type": "array",
-              "items": { "type": "string" },
+              "items": {
+                "type": "string"
+              },
               "description": "Plugin names to exclude from planning"
             },
             "excluded_functions": {
               "type": "array",
-              "items": { "type": "string" },
+              "items": {
+                "type": "string"
+              },
               "description": "Function names to exclude from planning (format: PluginName.FunctionName)"
             },
             "semantic_memory_config": {
@@ -5855,7 +6402,11 @@
           "properties": {
             "type": {
               "type": "string",
-              "enum": ["chat_completion", "openai_assistant", "azure_assistant"],
+              "enum": [
+                "chat_completion",
+                "openai_assistant",
+                "azure_assistant"
+              ],
               "default": "chat_completion",
               "description": "Agent implementation type"
             },
@@ -5893,7 +6444,11 @@
                 },
                 "tool_choice": {
                   "type": "string",
-                  "enum": ["auto", "required", "none"],
+                  "enum": [
+                    "auto",
+                    "required",
+                    "none"
+                  ],
                   "default": "auto",
                   "description": "Tool selection mode"
                 }
@@ -5946,7 +6501,9 @@
     "SemanticKernelPlugin": {
       "type": "object",
       "description": "Semantic Kernel plugin definition",
-      "required": ["name"],
+      "required": [
+        "name"
+      ],
       "properties": {
         "name": {
           "type": "string",
@@ -5954,7 +6511,12 @@
         },
         "type": {
           "type": "string",
-          "enum": ["native", "semantic", "openapi", "grpc"],
+          "enum": [
+            "native",
+            "semantic",
+            "openapi",
+            "grpc"
+          ],
           "default": "native",
           "description": "Plugin type: native (C#/Python class), semantic (prompt-based), openapi (OpenAPI spec), grpc (gRPC service)"
         },
@@ -5967,7 +6529,9 @@
           "description": "Functions provided by this plugin",
           "items": {
             "type": "object",
-            "required": ["name"],
+            "required": [
+              "name"
+            ],
             "properties": {
               "name": {
                 "type": "string",
@@ -5996,7 +6560,13 @@
           "properties": {
             "type": {
               "type": "string",
-              "enum": ["none", "bearer", "api_key", "oauth2", "basic"],
+              "enum": [
+                "none",
+                "bearer",
+                "api_key",
+                "oauth2",
+                "basic"
+              ],
               "default": "none"
             },
             "token_ref": {
@@ -6019,7 +6589,16 @@
       "properties": {
         "type": {
           "type": "string",
-          "enum": ["volatile", "azure_cognitive_search", "qdrant", "chroma", "pinecone", "redis", "postgres", "sqlite"],
+          "enum": [
+            "volatile",
+            "azure_cognitive_search",
+            "qdrant",
+            "chroma",
+            "pinecone",
+            "redis",
+            "postgres",
+            "sqlite"
+          ],
           "default": "volatile",
           "description": "Memory store backend type"
         },
@@ -6089,7 +6668,15 @@
         },
         "provider": {
           "type": "string",
-          "enum": ["azure_openai", "openai", "huggingface", "ollama", "anthropic", "google", "mistral"],
+          "enum": [
+            "azure_openai",
+            "openai",
+            "huggingface",
+            "ollama",
+            "anthropic",
+            "google",
+            "mistral"
+          ],
           "description": "AI service provider"
         },
         "model_id": {
@@ -6172,7 +6759,10 @@
     "SemanticKernelFilter": {
       "type": "object",
       "description": "Individual filter configuration",
-      "required": ["name", "handler"],
+      "required": [
+        "name",
+        "handler"
+      ],
       "properties": {
         "name": {
           "type": "string",
@@ -6180,7 +6770,13 @@
         },
         "type": {
           "type": "string",
-          "enum": ["pre", "post", "both", "pre_render", "post_render"],
+          "enum": [
+            "pre",
+            "post",
+            "both",
+            "pre_render",
+            "post_render"
+          ],
           "default": "both",
           "description": "Filter execution point"
         },
@@ -6207,7 +6803,12 @@
       "properties": {
         "app_type": {
           "type": "string",
-          "enum": ["chat", "completion", "agent", "workflow"],
+          "enum": [
+            "chat",
+            "completion",
+            "agent",
+            "workflow"
+          ],
           "description": "Dify application type: chat (conversational), completion (single-shot), agent (autonomous with tools), workflow (DAG-based)"
         },
         "app_id": {
@@ -6235,7 +6836,10 @@
                   "type": "array",
                   "items": {
                     "type": "object",
-                    "required": ["id", "type"],
+                    "required": [
+                      "id",
+                      "type"
+                    ],
                     "properties": {
                       "id": {
                         "type": "string",
@@ -6243,7 +6847,22 @@
                       },
                       "type": {
                         "type": "string",
-                        "enum": ["start", "end", "llm", "knowledge-retrieval", "code", "template", "http-request", "tool", "if-else", "iterator", "parameter-extractor", "variable-aggregator", "answer", "human-review"],
+                        "enum": [
+                          "start",
+                          "end",
+                          "llm",
+                          "knowledge-retrieval",
+                          "code",
+                          "template",
+                          "http-request",
+                          "tool",
+                          "if-else",
+                          "iterator",
+                          "parameter-extractor",
+                          "variable-aggregator",
+                          "answer",
+                          "human-review"
+                        ],
                         "description": "Dify workflow node type"
                       },
                       "data": {
@@ -6254,8 +6873,12 @@
                       "position": {
                         "type": "object",
                         "properties": {
-                          "x": { "type": "number" },
-                          "y": { "type": "number" }
+                          "x": {
+                            "type": "number"
+                          },
+                          "y": {
+                            "type": "number"
+                          }
                         },
                         "description": "Visual position in workflow editor"
                       }
@@ -6266,7 +6889,10 @@
                   "type": "array",
                   "items": {
                     "type": "object",
-                    "required": ["source", "target"],
+                    "required": [
+                      "source",
+                      "target"
+                    ],
                     "properties": {
                       "source": {
                         "type": "string",
@@ -6278,8 +6904,12 @@
                       },
                       "condition": {
                         "oneOf": [
-                          { "type": "boolean" },
-                          { "type": "string" }
+                          {
+                            "type": "boolean"
+                          },
+                          {
+                            "type": "string"
+                          }
                         ],
                         "description": "Edge condition for branching"
                       }
@@ -6297,7 +6927,14 @@
                 "properties": {
                   "type": {
                     "type": "string",
-                    "enum": ["text", "paragraph", "select", "number", "file", "file-list"],
+                    "enum": [
+                      "text",
+                      "paragraph",
+                      "select",
+                      "number",
+                      "file",
+                      "file-list"
+                    ],
                     "description": "Dify variable type"
                   },
                   "max_length": {
@@ -6309,7 +6946,9 @@
                   },
                   "options": {
                     "type": "array",
-                    "items": { "type": "string" },
+                    "items": {
+                      "type": "string"
+                    },
                     "description": "Options for select type"
                   },
                   "required": {
@@ -6321,7 +6960,9 @@
             },
             "output_variables": {
               "type": "array",
-              "items": { "type": "string" },
+              "items": {
+                "type": "string"
+              },
               "description": "Names of workflow output variables"
             }
           },
@@ -6384,7 +7025,11 @@
                 },
                 "backoff": {
                   "type": "string",
-                  "enum": ["fixed", "exponential", "linear"],
+                  "enum": [
+                    "fixed",
+                    "exponential",
+                    "linear"
+                  ],
                   "default": "exponential"
                 },
                 "initial_delay_ms": {
@@ -6436,7 +7081,9 @@
             },
             "variables": {
               "type": "object",
-              "additionalProperties": { "type": "string" },
+              "additionalProperties": {
+                "type": "string"
+              },
               "description": "Conversation-scoped variable types"
             },
             "suggested_questions": {
@@ -6472,7 +7119,12 @@
               "properties": {
                 "type": {
                   "type": "string",
-                  "enum": ["buffer", "buffer_window", "summary", "conversation_kg"],
+                  "enum": [
+                    "buffer",
+                    "buffer_window",
+                    "summary",
+                    "conversation_kg"
+                  ],
                   "default": "buffer_window"
                 },
                 "window_size": {
@@ -6504,9 +7156,17 @@
                   "type": "array",
                   "items": {
                     "type": "string",
-                    "enum": ["like", "dislike", "regenerate", "report_error"]
+                    "enum": [
+                      "like",
+                      "dislike",
+                      "regenerate",
+                      "report_error"
+                    ]
                   },
-                  "default": ["like", "dislike"]
+                  "default": [
+                    "like",
+                    "dislike"
+                  ]
                 }
               }
             },
@@ -6519,7 +7179,11 @@
                 },
                 "detail_level": {
                   "type": "string",
-                  "enum": ["minimal", "standard", "comprehensive"],
+                  "enum": [
+                    "minimal",
+                    "standard",
+                    "comprehensive"
+                  ],
                   "default": "standard"
                 }
               }
@@ -6533,12 +7197,18 @@
                 },
                 "export_format": {
                   "type": "string",
-                  "enum": ["prometheus", "opentelemetry", "json"],
+                  "enum": [
+                    "prometheus",
+                    "opentelemetry",
+                    "json"
+                  ],
                   "default": "prometheus"
                 },
                 "labels": {
                   "type": "object",
-                  "additionalProperties": { "type": "string" }
+                  "additionalProperties": {
+                    "type": "string"
+                  }
                 }
               }
             },
@@ -6551,7 +7221,11 @@
                 },
                 "destination": {
                   "type": "string",
-                  "enum": ["opentelemetry", "elasticsearch", "loki"]
+                  "enum": [
+                    "opentelemetry",
+                    "elasticsearch",
+                    "loki"
+                  ]
                 },
                 "endpoint": {
                   "type": "string",
@@ -6568,7 +7242,11 @@
                 },
                 "format": {
                   "type": "string",
-                  "enum": ["jsonl", "parquet", "csv"],
+                  "enum": [
+                    "jsonl",
+                    "parquet",
+                    "csv"
+                  ],
                   "default": "jsonl"
                 },
                 "path": {
@@ -6586,7 +7264,11 @@
                 },
                 "format": {
                   "type": "string",
-                  "enum": ["inline", "footnote", "endnote"],
+                  "enum": [
+                    "inline",
+                    "footnote",
+                    "endnote"
+                  ],
                   "default": "inline"
                 }
               }
@@ -6600,7 +7282,11 @@
           "properties": {
             "mode": {
               "type": "string",
-              "enum": ["semantic", "keyword", "hybrid"],
+              "enum": [
+                "semantic",
+                "keyword",
+                "hybrid"
+              ],
               "default": "hybrid"
             },
             "top_k": {
@@ -6624,7 +7310,10 @@
               "properties": {
                 "mode": {
                   "type": "string",
-                  "enum": ["automatic", "custom"],
+                  "enum": [
+                    "automatic",
+                    "custom"
+                  ],
                   "default": "automatic"
                 },
                 "max_tokens": {
@@ -6667,7 +7356,9 @@
           }
         }
       },
-      "required": ["app_type"],
+      "required": [
+        "app_type"
+      ],
       "additionalProperties": false
     },
     "CrewAIExtension": {
@@ -6695,7 +7386,11 @@
         },
         "process_type": {
           "type": "string",
-          "enum": ["sequential", "hierarchical", "consensual"],
+          "enum": [
+            "sequential",
+            "hierarchical",
+            "consensual"
+          ],
           "default": "sequential",
           "description": "Process execution pattern - maps to OSSA workflow step ordering"
         },
@@ -6714,7 +7409,16 @@
           "properties": {
             "provider": {
               "type": "string",
-              "enum": ["openai", "anthropic", "google", "azure", "ollama", "groq", "together", "fireworks"]
+              "enum": [
+                "openai",
+                "anthropic",
+                "google",
+                "azure",
+                "ollama",
+                "groq",
+                "together",
+                "fireworks"
+              ]
             },
             "model": {
               "type": "string"
@@ -6779,7 +7483,10 @@
     "CrewAIAgentConfig": {
       "type": "object",
       "description": "CrewAI agent configuration mapped to OSSA Agent",
-      "required": ["role", "goal"],
+      "required": [
+        "role",
+        "goal"
+      ],
       "properties": {
         "role": {
           "type": "string",
@@ -6801,7 +7508,16 @@
           "properties": {
             "provider": {
               "type": "string",
-              "enum": ["openai", "anthropic", "google", "azure", "ollama", "groq", "together", "fireworks"]
+              "enum": [
+                "openai",
+                "anthropic",
+                "google",
+                "azure",
+                "ollama",
+                "groq",
+                "together",
+                "fireworks"
+              ]
             },
             "model": {
               "type": "string"
@@ -6871,7 +7587,10 @@
         },
         "code_execution_mode": {
           "type": "string",
-          "enum": ["safe", "unsafe"],
+          "enum": [
+            "safe",
+            "unsafe"
+          ],
           "default": "safe",
           "description": "Code execution security mode"
         },
@@ -6885,7 +7604,10 @@
     "CrewAITaskConfig": {
       "type": "object",
       "description": "CrewAI task configuration mapped to OSSA Task/WorkflowStep",
-      "required": ["description", "agent"],
+      "required": [
+        "description",
+        "agent"
+      ],
       "properties": {
         "description": {
           "type": "string",
@@ -6963,7 +7685,11 @@
           "properties": {
             "provider": {
               "type": "string",
-              "enum": ["rag", "simple", "custom"],
+              "enum": [
+                "rag",
+                "simple",
+                "custom"
+              ],
               "default": "rag"
             },
             "embedder": {
@@ -6971,7 +7697,12 @@
               "properties": {
                 "provider": {
                   "type": "string",
-                  "enum": ["openai", "cohere", "google", "huggingface"]
+                  "enum": [
+                    "openai",
+                    "cohere",
+                    "google",
+                    "huggingface"
+                  ]
                 },
                 "model": {
                   "type": "string"
@@ -6991,7 +7722,11 @@
           "properties": {
             "provider": {
               "type": "string",
-              "enum": ["rag", "sqlite", "custom"],
+              "enum": [
+                "rag",
+                "sqlite",
+                "custom"
+              ],
               "default": "rag"
             },
             "storage": {
@@ -6999,7 +7734,15 @@
               "properties": {
                 "type": {
                   "type": "string",
-                  "enum": ["chroma", "qdrant", "pinecone", "weaviate", "pgvector", "milvus", "faiss"]
+                  "enum": [
+                    "chroma",
+                    "qdrant",
+                    "pinecone",
+                    "weaviate",
+                    "pgvector",
+                    "milvus",
+                    "faiss"
+                  ]
                 },
                 "connection": {
                   "type": "string",
@@ -7020,7 +7763,11 @@
             },
             "provider": {
               "type": "string",
-              "enum": ["rag", "spacy", "custom"]
+              "enum": [
+                "rag",
+                "spacy",
+                "custom"
+              ]
             }
           },
           "additionalProperties": true
@@ -7160,6 +7907,522 @@
             }
           },
           "additionalProperties": true
+        }
+      },
+      "additionalProperties": true
+    },
+    "BedrockAgentsExtension": {
+      "type": "object",
+      "description": "AWS Bedrock Agents extension for OSSA v0.3.3 - supports Amazon Bedrock Agents for building, testing, and deploying conversational AI agents",
+      "properties": {
+        "agent_id": {
+          "type": "string",
+          "pattern": "^[A-Z0-9]{10}$",
+          "description": "Bedrock Agent ID (10 alphanumeric characters)"
+        },
+        "agent_alias_id": {
+          "type": "string",
+          "description": "Agent alias ID for versioning (TSTALIASID for draft)"
+        },
+        "foundation_model": {
+          "type": "string",
+          "enum": [
+            "anthropic.claude-3-5-sonnet-20241022-v2:0",
+            "anthropic.claude-3-5-haiku-20241022-v1:0",
+            "anthropic.claude-3-sonnet-20240229-v1:0",
+            "anthropic.claude-3-haiku-20240307-v1:0",
+            "anthropic.claude-3-opus-20240229-v1:0",
+            "amazon.titan-text-premier-v1:0",
+            "amazon.titan-text-express-v1",
+            "amazon.titan-text-lite-v1",
+            "meta.llama3-1-70b-instruct-v1:0",
+            "meta.llama3-1-8b-instruct-v1:0",
+            "cohere.command-r-plus-v1:0",
+            "cohere.command-r-v1:0"
+          ],
+          "description": "Bedrock foundation model ID"
+        },
+        "instruction": {
+          "type": "string",
+          "maxLength": 4000,
+          "description": "Agent instructions (system prompt) - max 4000 characters"
+        },
+        "idle_session_ttl_in_seconds": {
+          "type": "integer",
+          "minimum": 60,
+          "maximum": 3600,
+          "default": 600,
+          "description": "Session timeout in seconds"
+        },
+        "knowledge_base_configurations": {
+          "type": "array",
+          "description": "Knowledge bases attached to the agent",
+          "items": {
+            "type": "object",
+            "required": [
+              "knowledge_base_id"
+            ],
+            "properties": {
+              "knowledge_base_id": {
+                "type": "string",
+                "pattern": "^[A-Z0-9]{10}$",
+                "description": "Knowledge Base ID"
+              },
+              "description": {
+                "type": "string",
+                "description": "Description of when to query this knowledge base"
+              },
+              "retrieval_configuration": {
+                "type": "object",
+                "properties": {
+                  "vector_search_configuration": {
+                    "type": "object",
+                    "properties": {
+                      "number_of_results": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 100,
+                        "default": 5
+                      },
+                      "override_search_type": {
+                        "type": "string",
+                        "enum": [
+                          "HYBRID",
+                          "SEMANTIC"
+                        ]
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "action_groups": {
+          "type": "array",
+          "description": "Action groups for the agent (Lambda functions, OpenAPI schemas)",
+          "items": {
+            "type": "object",
+            "required": [
+              "action_group_name"
+            ],
+            "properties": {
+              "action_group_name": {
+                "type": "string",
+                "pattern": "^[a-zA-Z0-9_-]{1,100}$",
+                "description": "Action group name"
+              },
+              "description": {
+                "type": "string",
+                "description": "Description of when to use this action group"
+              },
+              "action_group_executor": {
+                "type": "object",
+                "properties": {
+                  "lambda": {
+                    "type": "string",
+                    "pattern": "^arn:aws:lambda:",
+                    "description": "Lambda function ARN"
+                  },
+                  "custom_control": {
+                    "type": "string",
+                    "enum": [
+                      "RETURN_CONTROL"
+                    ],
+                    "description": "Return control to calling application"
+                  }
+                }
+              },
+              "api_schema": {
+                "type": "object",
+                "description": "OpenAPI schema for the action group",
+                "properties": {
+                  "s3": {
+                    "type": "object",
+                    "properties": {
+                      "s3_bucket_name": {
+                        "type": "string"
+                      },
+                      "s3_object_key": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "payload": {
+                    "type": "string",
+                    "description": "Inline OpenAPI schema (YAML or JSON)"
+                  }
+                }
+              },
+              "function_schema": {
+                "type": "object",
+                "description": "Function definitions for code interpreter",
+                "properties": {
+                  "functions": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "required": [
+                        "name"
+                      ],
+                      "properties": {
+                        "name": {
+                          "type": "string"
+                        },
+                        "description": {
+                          "type": "string"
+                        },
+                        "parameters": {
+                          "type": "object",
+                          "additionalProperties": {
+                            "type": "object",
+                            "properties": {
+                              "type": {
+                                "type": "string"
+                              },
+                              "description": {
+                                "type": "string"
+                              },
+                              "required": {
+                                "type": "boolean"
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "parent_action_group_signature": {
+                "type": "string",
+                "enum": [
+                  "AMAZON.UserInput",
+                  "AMAZON.CodeInterpreter"
+                ],
+                "description": "Built-in action group type"
+              }
+            }
+          }
+        },
+        "guardrail_configuration": {
+          "type": "object",
+          "description": "Bedrock Guardrails configuration",
+          "properties": {
+            "guardrail_identifier": {
+              "type": "string",
+              "description": "Guardrail ID or ARN"
+            },
+            "guardrail_version": {
+              "type": "string",
+              "default": "DRAFT",
+              "description": "Guardrail version"
+            }
+          }
+        },
+        "prompt_override_configuration": {
+          "type": "object",
+          "description": "Custom prompt templates",
+          "properties": {
+            "override_lambda": {
+              "type": "string",
+              "pattern": "^arn:aws:lambda:",
+              "description": "Lambda ARN for prompt processing"
+            },
+            "prompt_configurations": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "prompt_type": {
+                    "type": "string",
+                    "enum": [
+                      "PRE_PROCESSING",
+                      "ORCHESTRATION",
+                      "POST_PROCESSING",
+                      "KNOWLEDGE_BASE_RESPONSE_GENERATION"
+                    ]
+                  },
+                  "prompt_creation_mode": {
+                    "type": "string",
+                    "enum": [
+                      "DEFAULT",
+                      "OVERRIDDEN"
+                    ]
+                  },
+                  "base_prompt_template": {
+                    "type": "string",
+                    "description": "Custom prompt template"
+                  },
+                  "inference_configuration": {
+                    "type": "object",
+                    "properties": {
+                      "temperature": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1
+                      },
+                      "top_p": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1
+                      },
+                      "top_k": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 500
+                      },
+                      "maximum_length": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 4096
+                      },
+                      "stop_sequences": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "memory_configuration": {
+          "type": "object",
+          "description": "Agent memory/state configuration",
+          "properties": {
+            "enabled_memory_types": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "SESSION_SUMMARY"
+                ]
+              },
+              "description": "Memory types to enable"
+            },
+            "storage_days": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 30,
+              "default": 30,
+              "description": "Days to retain memory"
+            }
+          }
+        },
+        "customer_encryption_key_arn": {
+          "type": "string",
+          "pattern": "^arn:aws:kms:",
+          "description": "KMS key ARN for encryption"
+        },
+        "tags": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "AWS resource tags"
+        }
+      },
+      "additionalProperties": true
+    },
+    "LlamaIndexExtension": {
+      "type": "object",
+      "description": "LlamaIndex extension for OSSA v0.3.3 - supports LlamaIndex agents, query engines, and data loaders",
+      "properties": {
+        "agent_type": {
+          "type": "string",
+          "enum": [
+            "openai_agent",
+            "react_agent",
+            "function_calling_agent",
+            "structured_planner_agent",
+            "introspective_agent",
+            "custom_agent"
+          ],
+          "description": "LlamaIndex agent type"
+        },
+        "llm": {
+          "type": "object",
+          "description": "LLM configuration",
+          "properties": {
+            "model": {
+              "type": "string",
+              "description": "Model identifier"
+            },
+            "temperature": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 2
+            },
+            "max_tokens": {
+              "type": "integer"
+            },
+            "api_key_env": {
+              "type": "string",
+              "pattern": "^[A-Z][A-Z0-9_]*$",
+              "description": "Environment variable for API key"
+            }
+          }
+        },
+        "embed_model": {
+          "type": "object",
+          "description": "Embedding model configuration",
+          "properties": {
+            "model_name": {
+              "type": "string",
+              "description": "Embedding model name"
+            },
+            "api_key_env": {
+              "type": "string",
+              "pattern": "^[A-Z][A-Z0-9_]*$"
+            }
+          }
+        },
+        "vector_store": {
+          "type": "object",
+          "description": "Vector store configuration",
+          "properties": {
+            "type": {
+              "type": "string",
+              "enum": [
+                "simple",
+                "chroma",
+                "pinecone",
+                "qdrant",
+                "weaviate",
+                "milvus",
+                "pgvector"
+              ]
+            },
+            "connection_string_env": {
+              "type": "string",
+              "description": "Environment variable for connection"
+            },
+            "collection_name": {
+              "type": "string"
+            }
+          }
+        },
+        "index_type": {
+          "type": "string",
+          "enum": [
+            "vector_store_index",
+            "summary_index",
+            "tree_index",
+            "keyword_table_index",
+            "knowledge_graph_index",
+            "document_summary_index"
+          ],
+          "description": "Type of index to use"
+        },
+        "query_engine_config": {
+          "type": "object",
+          "description": "Query engine configuration",
+          "properties": {
+            "similarity_top_k": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 5
+            },
+            "response_mode": {
+              "type": "string",
+              "enum": [
+                "refine",
+                "compact",
+                "tree_summarize",
+                "simple_summarize",
+                "no_text",
+                "accumulate"
+              ]
+            },
+            "streaming": {
+              "type": "boolean",
+              "default": false
+            }
+          }
+        },
+        "tools": {
+          "type": "array",
+          "description": "Tools available to the agent",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "description": {
+                "type": "string"
+              },
+              "tool_type": {
+                "type": "string",
+                "enum": [
+                  "function_tool",
+                  "query_engine_tool",
+                  "retriever_tool",
+                  "llama_hub_tool"
+                ]
+              },
+              "function_ref": {
+                "type": "string",
+                "description": "Reference to tool function"
+              }
+            }
+          }
+        },
+        "data_loaders": {
+          "type": "array",
+          "description": "LlamaHub data loaders",
+          "items": {
+            "type": "object",
+            "properties": {
+              "loader_type": {
+                "type": "string",
+                "description": "LlamaHub loader identifier"
+              },
+              "config": {
+                "type": "object",
+                "additionalProperties": true
+              }
+            }
+          }
+        },
+        "memory": {
+          "type": "object",
+          "description": "Agent memory configuration",
+          "properties": {
+            "type": {
+              "type": "string",
+              "enum": [
+                "chat_memory_buffer",
+                "chat_summary_memory",
+                "vector_memory"
+              ]
+            },
+            "token_limit": {
+              "type": "integer"
+            }
+          }
+        },
+        "callbacks": {
+          "type": "array",
+          "description": "Callback handlers",
+          "items": {
+            "type": "string",
+            "enum": [
+              "llama_debug",
+              "wandb",
+              "arize_phoenix",
+              "langfuse",
+              "openinference"
+            ]
+          }
+        },
+        "system_prompt": {
+          "type": "string",
+          "description": "System prompt for the agent"
         }
       },
       "additionalProperties": true
