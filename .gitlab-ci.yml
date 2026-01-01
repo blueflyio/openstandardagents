@@ -171,8 +171,8 @@ sync:auto:
     NODE_ENV: production
     GIT_STRATEGY: clone
   before_script:
-    - git remote set-url origin "https://oauth2:${CI_JOB_TOKEN}@gitlab.com/${CI_PROJECT_PATH}.git"
     - apk add --no-cache git curl jq
+    - git remote set-url origin "https://oauth2:${CI_JOB_TOKEN}@gitlab.com/${CI_PROJECT_PATH}.git"
     - git config user.email "ci@blueflyio.com"
     - git config user.name "GitLab CI"
     - |
