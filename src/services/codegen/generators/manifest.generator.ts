@@ -28,6 +28,10 @@ export class ManifestGenerator implements Generator {
     'dist/**',
     '.git/**',
     '**/*.template.*',
+    // Exclude old spec versions - they should retain their original apiVersion
+    'spec/v0.3.0/**',
+    'spec/v0.3.1/**',
+    'spec/v0.3.2/**',
   ];
 
   /**

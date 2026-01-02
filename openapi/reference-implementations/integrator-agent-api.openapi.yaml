@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: Multi-System Integrator Agent API
-  version: 0.3.2
+  version: 0.3.3
   description: |
     Enterprise integration agent for connecting heterogeneous systems and APIs.
     Transforms protocols, maps schemas, and routes messages between systems.

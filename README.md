@@ -290,7 +290,7 @@ ossa validate security-scanner.ossa.yaml --check-access-tiers
 ossa run security-scanner.ossa.yaml --enforce-tier
 ```
 
-[**→ See Access Tiers Examples**](spec/v0.3.2/examples/access-tiers/)
+[**→ See Access Tiers Examples**](spec/v0.3.3/examples/access-tiers/)
 
 ---
 
@@ -419,8 +419,8 @@ docker run -v $(pwd):/workspace bluefly/ossa validate agent.ossa.yaml
 - **Getting Started**: [openstandardagents.org/docs/getting-started/](https://openstandardagents.org/docs/getting-started/)
 - **Full Documentation**: [openstandardagents.org/docs/](https://openstandardagents.org/docs/)
 - **Schema Reference**: [openstandardagents.org/schema/](https://openstandardagents.org/schema/)
-- **Specification**: [spec/v0.3.2/ossa-0.3.2.schema.json](https://github.com/blueflyio/openstandardagents/blob/main/spec/v0.3.2/ossa-0.3.2.schema.json)
-- **Messaging Extension**: [spec/v0.3.2/messaging.md](spec/v0.3.2/messaging.md) - Agent-to-agent messaging (v0.3.2+)
+- **Specification**: [spec/v0.3.3/ossa-0.3.3.schema.json](https://github.com/blueflyio/openstandardagents/blob/main/spec/v0.3.3/ossa-0.3.3.schema.json)
+- **Messaging Extension**: [spec/v0.3.3/messaging.md](spec/v0.3.3/messaging.md) - Agent-to-agent messaging (v0.3.2+)
 - **Examples**: [openstandardagents.org/examples/](https://openstandardagents.org/examples/)
 - **Blog**: [openstandardagents.org/blog/](https://openstandardagents.org/blog/)
 

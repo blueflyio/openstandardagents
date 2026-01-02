@@ -127,7 +127,7 @@ describe('MessagingValidator', () => {
       };
 
       // Test that v0.2.x versions skip messaging validation (feature added in v0.3.0)
-      const errors = validator.validateMessagingExtension(messaging, 'ossa/v0.2.9');
+      const errors = validator.validateMessagingExtension(messaging, 'ossa/v0.2.8');
       expect(errors).toHaveLength(0);
     });
 
