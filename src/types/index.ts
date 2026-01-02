@@ -27,6 +27,80 @@ export type {
   RoutingRule,
 } from './messaging.js';
 
+// Export Identity types (v0.3.2)
+export * from './identity.js';
+export type {
+  IdentitySpec,
+  IdentityProvider,
+  ServiceAccount,
+  TokenSource,
+  AuthenticationConfig,
+  FallbackIdentity,
+  DORATracking,
+  SessionConfig,
+  ObservabilityIdentity,
+  IdentityCompliance,
+  IdentitySecurity,
+  GitLabIdentity,
+  GitLabServiceAccount,
+  GitLabTokenRef,
+  AnthropicIdentity,
+  AnthropicTokenRef,
+  IdentityShortcuts,
+} from './identity.js';
+
+// Export Personality types (v0.3.2)
+export * from './personality.js';
+export type {
+  PersonalitySpec,
+  TonePreset,
+  ToneConfig,
+  ExpertiseDomain,
+  ExpertiseEntry,
+  ExpertiseLevel,
+  BehavioralTraits,
+  CommunicationFormat,
+  StyleModifier,
+} from './personality.js';
+export {
+  isToneConfig,
+  isExpertiseEntry,
+  normalizeTone,
+  normalizeExpertise,
+  createDefaultPersonality,
+} from './personality.js';
+
+// Export Prompts types (v0.3.2)
+export * from './prompts.js';
+export type {
+  PromptsSpec,
+  Message,
+  MessageRole,
+  PromptExample,
+  ExampleCollection,
+  TemplateVariable,
+  PromptTemplate,
+  GreetingConfig,
+  SystemPromptConfig,
+  SystemPromptSection,
+} from './prompts.js';
+export {
+  isSystemPromptConfig,
+  isGreetingConfig,
+  isExampleCollectionArray,
+  normalizeSystemPrompt,
+  normalizeGreeting,
+  flattenExamples,
+  renderTemplate,
+  createDefaultPrompts,
+  buildSystemPrompt,
+} from './prompts.js';
+
+// Export Zod schemas for validation
+export * as IdentitySchemas from './identity.zod.js';
+export * as PersonalitySchemas from './personality.zod.js';
+export * as PromptsSchemas from './prompts.zod.js';
+
 /**
  * Capability definition (OpenAPI-style operation)
  */
