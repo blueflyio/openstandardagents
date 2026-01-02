@@ -1,6 +1,6 @@
 # OSSA Agent Manifest with agents.md Extension
 # Demonstrates monorepo support with nested AGENTS.md files
-apiVersion: ossa/v0.3.2
+apiVersion: ossa/v0.3.3
 kind: Agent
 metadata:
   name: monorepo-assistant
