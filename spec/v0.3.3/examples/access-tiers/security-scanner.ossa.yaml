@@ -5,7 +5,7 @@
 # Cannot modify code, only scan and report - critics cannot execute
 # =============================================================================
 
-apiVersion: ossa/v0.3.2
+apiVersion: ossa/v0.3.3
 kind: Agent
 
 metadata:

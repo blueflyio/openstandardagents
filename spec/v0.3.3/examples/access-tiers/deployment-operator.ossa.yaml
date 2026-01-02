@@ -5,7 +5,7 @@
 # Can modify production systems but requires approval chains
 # =============================================================================
 
-apiVersion: ossa/v0.3.2
+apiVersion: ossa/v0.3.3
 kind: Agent
 
 metadata:

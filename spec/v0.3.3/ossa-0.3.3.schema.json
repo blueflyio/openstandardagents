@@ -3049,10 +3049,10 @@
               "items": {
                 "$ref": "#/definitions/AgentsMdSection"
               },
-              "description": "Additional custom sections"
+              "description": "Additional custom sections beyond the predefined ones. Use this array for any custom section names."
             }
           },
-          "additionalProperties": true
+          "additionalProperties": false
         },
         "sync": {
           "type": "object",
