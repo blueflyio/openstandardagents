@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: Policy Compliance Governor Agent API
-  version: 0.3.2
+  version: 0.3.3
   description: |
     Governance agent enforcing policies, compliance, and security standards across systems.
     Validates compliance, assesses risks, and generates audit reports.

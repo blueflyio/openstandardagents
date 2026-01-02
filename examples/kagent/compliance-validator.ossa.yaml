@@ -2,7 +2,7 @@
 # Compliance Validator Agent
 # Domain: compliance.validation.continuous
 
-apiVersion: ossa/v0.3.2
+apiVersion: ossa/v0.3.3
 kind: Agent
 metadata:
   name: compliance-validator
