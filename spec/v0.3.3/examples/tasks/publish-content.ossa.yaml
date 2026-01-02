@@ -1,0 +1,125 @@
+# ============================================================================
+# OSSA Task: Content Publishing
+# ============================================================================
+# Deterministic task for publishing content - no LLM decision-making
+# Use kind: Task for pure functions, batch operations, and system integrations
+#
+# @see https://openstandardagents.org/spec/v0.3.2/task
+# ============================================================================
+
+apiVersion: ossa/v0.3.3
+kind: Task
+metadata:
+  name: publish-content
+  version: 1.0.0
+  labels:
+    domain: content-management
+    tier: tier_2_write_limited
+  annotations:
+    ossa.io/description: "Publish content to production with validation"
+    ossa.io/category: "content"
+    ossa.io/compliance: "SOC2"
+
+spec:
+  # Execution configuration
+  execution:
+    type: transactional  # all-or-nothing (rollback on failure)
+    runtime: drupal      # target runtime
+    entrypoint: "Drupal\\ossa_content\\Task\\PublishContentTask::execute"
+    timeout_seconds: 60
+
+  # Required capabilities (bound at runtime)
+  capabilities:
+    - publish_content
+    - invalidate_cache
+    - send_notification
+
+  # Input validation schema
+  input:
+    type: object
+    required:
+      - content_id
+      - content_type
+    properties:
+      content_id:
+        type: string
+        pattern: "^[a-zA-Z0-9_-]+$"
+        description: "Unique content identifier"
+      content_type:
+        type: string
+        enum:
+          - article
+          - page
+          - product
+          - announcement
+      notify_subscribers:
+        type: boolean
+        default: true
+      schedule_at:
+        type: string
+        format: date-time
+        description: "Optional scheduled publish time"
+
+  # Output schema
+  output:
+    type: object
+    required:
+      - success
+      - published_url
+    properties:
+      success:
+        type: boolean
+      published_url:
+        type: string
+        format: uri
+      published_at:
+        type: string
+        format: date-time
+      cache_invalidated:
+        type: boolean
+      notifications_sent:
+        type: integer
+        minimum: 0
+
+  # Batch processing support
+  batch:
+    enabled: true
+    parallelism: 5
+    retry: 3
+    backoff_seconds: 10
+
+  # Error handling
+  error_handling:
+    on_failure: rollback
+    retryable_errors:
+      - NETWORK_TIMEOUT
+      - DATABASE_LOCK
+      - CACHE_UNAVAILABLE
+    fatal_errors:
+      - CONTENT_NOT_FOUND
+      - VALIDATION_ERROR
+      - PERMISSION_DENIED
+
+# Runtime bindings (how capabilities map to concrete implementations)
+runtime:
+  drupal:
+    publish_content:
+      service: "@content_moderation.moderation_information"
+      method: "transitionContent"
+    invalidate_cache:
+      service: "@cache.render"
+      method: "invalidateAll"
+    send_notification:
+      service: "@ossa_notifications.subscriber_notifier"
+      method: "notifySubscribers"
+
+  symfony:
+    publish_content:
+      service: "App\\Service\\ContentPublisher"
+      method: "publish"
+    invalidate_cache:
+      service: "symfony.cache.adapter.redis"
+      method: "clear"
+    send_notification:
+      service: "App\\Notification\\SubscriberNotifier"
+      method: "send"

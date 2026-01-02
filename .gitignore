@@ -341,14 +341,24 @@ data/processed/
 data/**/*.json
 logs/**/*.json
 *.data.json
-# Spec files are generated in CI - do not commit versioned specs
+# Spec files - track released versions, ignore development/deprecated
+# First ignore all spec/v* directories
 spec/v*/
-!spec/v0.3.0/.gitkeep
-!spec/v0.3.1/**/*
-!spec/v0.3.2/**/*
-!spec/extensions/**/*
-!spec/registry/**/*
-!spec/schema/**/*
+# Then re-include specific v0.3.x versions (both directory and contents)
+!spec/v0.3.0/
+!spec/v0.3.0/**
+!spec/v0.3.1/
+!spec/v0.3.1/**
+!spec/v0.3.2/
+!spec/v0.3.2/**
+!spec/v0.3.3/
+!spec/v0.3.3/**
+!spec/extensions/
+!spec/extensions/**
+!spec/registry/
+!spec/registry/**
+!spec/schema/
+!spec/schema/**
 
 !docs/**/*.json
 !examples/**/*.json

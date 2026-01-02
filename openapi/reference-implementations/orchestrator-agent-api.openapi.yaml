@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: Multi-Workflow Orchestrator Agent API
-  version: 0.3.2
+  version: 0.3.3
   description: |
     Enterprise orchestrator managing complex multi-agent workflows across distributed systems.
     Coordinates worker agents, manages dependencies, and handles failure recovery.

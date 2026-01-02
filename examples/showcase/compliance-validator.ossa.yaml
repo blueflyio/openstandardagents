@@ -7,7 +7,7 @@
 # Showcases: Contract validation, schema enforcement, policy DSL
 # ============================================================================
 
-apiVersion: ossa/v0.3.2
+apiVersion: ossa/v0.3.3
 kind: Agent
 metadata:
   name: compliance-validator

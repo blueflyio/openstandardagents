@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: Drupal LLM Platform Agent API
-  version: 0.3.2
+  version: 0.3.3
   description: |
     **Drupal llm-platform API for Agent Integration**
     

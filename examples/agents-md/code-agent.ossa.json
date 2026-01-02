@@ -1,5 +1,5 @@
 {
-  "apiVersion": "ossa/v0.3.2",
+  "apiVersion": "ossa/v0.3.3",
   "kind": "Agent",
   "metadata": {
     "name": "code-assistant",
@@ -75,7 +75,7 @@
     "agents_md": {
       "enabled": true,
       "generate": true,
-      "output_path": "AGENTS.md",
+      "file_path": "AGENTS.md",
       "sections": {
         "dev_environment": {
           "enabled": true,
