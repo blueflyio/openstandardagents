@@ -5,7 +5,7 @@
 # ISOLATED: Can define policies but CANNOT execute - must delegate to Tier 3
 # =============================================================================
 
-apiVersion: ossa/v0.3.2
+apiVersion: ossa/v0.3.3
 kind: Agent
 
 metadata:

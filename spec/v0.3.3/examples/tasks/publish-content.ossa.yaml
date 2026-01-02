@@ -7,7 +7,7 @@
 # @see https://openstandardagents.org/spec/v0.3.2/task
 # ============================================================================
 
-apiVersion: ossa/v0.3.2
+apiVersion: ossa/v0.3.3
 kind: Task
 metadata:
   name: publish-content

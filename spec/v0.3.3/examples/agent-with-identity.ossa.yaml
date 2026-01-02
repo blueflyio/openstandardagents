@@ -1,6 +1,6 @@
 # OSSA v0.3.1 Agent with Identity Configuration
 # Demonstrates service account integration for automated git operations
-apiVersion: ossa/v0.3.2
+apiVersion: ossa/v0.3.3
 kind: Agent
 metadata:
   name: typescript-worker
