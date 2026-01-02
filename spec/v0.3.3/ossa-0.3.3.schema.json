@@ -3052,9 +3052,7 @@
               "description": "Additional custom sections"
             }
           },
-          "additionalProperties": {
-            "$ref": "#/definitions/AgentsMdSection"
-          }
+          "additionalProperties": true
         },
         "sync": {
           "type": "object",
