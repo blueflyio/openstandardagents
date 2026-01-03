@@ -13,7 +13,7 @@ Complete, validated examples of OSSA Workflow manifests demonstrating multi-agen
 Execute agents in sequence:
 
 ```yaml
-apiVersion: ossa/v0.3.0
+apiVersion: ossa/v0.3.2
 kind: Workflow
 metadata:
   name: code-review-workflow
@@ -74,7 +74,7 @@ spec:
 Execute multiple agents in parallel:
 
 ```yaml
-apiVersion: ossa/v0.3.0
+apiVersion: ossa/v0.3.2
 kind: Workflow
 metadata:
   name: parallel-analysis-workflow
@@ -116,7 +116,7 @@ spec:
 Execute steps based on conditions:
 
 ```yaml
-apiVersion: ossa/v0.3.0
+apiVersion: ossa/v0.3.2
 kind: Workflow
 metadata:
   name: conditional-review-workflow
@@ -164,7 +164,7 @@ spec:
 Process items in a collection:
 
 ```yaml
-apiVersion: ossa/v0.3.0
+apiVersion: ossa/v0.3.2
 kind: Workflow
 metadata:
   name: batch-processing-workflow
@@ -196,7 +196,7 @@ spec:
 Workflow with error handling and rollback:
 
 ```yaml
-apiVersion: ossa/v0.3.0
+apiVersion: ossa/v0.3.2
 kind: Workflow
 metadata:
   name: transaction-workflow
@@ -247,7 +247,7 @@ spec:
 Complex multi-agent workflow:
 
 ```yaml
-apiVersion: ossa/v0.3.0
+apiVersion: ossa/v0.3.2
 kind: Workflow
 metadata:
   name: customer-support-workflow
@@ -307,7 +307,7 @@ spec:
 Workflow triggered by cron:
 
 ```yaml
-apiVersion: ossa/v0.3.0
+apiVersion: ossa/v0.3.2
 kind: Workflow
 metadata:
   name: daily-report-workflow
@@ -351,7 +351,7 @@ spec:
 Workflow triggered by events:
 
 ```yaml
-apiVersion: ossa/v0.3.0
+apiVersion: ossa/v0.3.2
 kind: Workflow
 metadata:
   name: gitlab-mr-workflow
