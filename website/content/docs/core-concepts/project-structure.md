@@ -74,7 +74,7 @@ Example manifest:
 ```json
 {
   "name": "customer-support-agent",
-  "version": "0.3.0",
+  "version": "0.3.2",
   "description": "Handles customer support inquiries",
   "taxonomy": {
     "role": "worker",

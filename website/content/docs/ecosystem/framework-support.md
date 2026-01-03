@@ -174,7 +174,7 @@ console.log(result);
 {
   "ossa": "1.0.0",
   "name": "data-analyst",
-  "version": "0.3.0",
+  "version": "0.3.2",
   "description": "Data analysis and visualization agent",
   "type": "worker",
   "author": {
@@ -770,7 +770,7 @@ print(result)
 {
   "ossa": "1.0.0",
   "name": "content-crew",
-  "version": "0.3.0",
+  "version": "0.3.2",
   "type": "orchestrator",
   "description": "Multi-agent content creation crew",
   "agents": [
@@ -893,7 +893,7 @@ await agent.execute({ task: 'List all files in the directory' });
 {
   "ossa": "1.0.0",
   "name": "data-processor",
-  "version": "0.3.0",
+  "version": "0.3.2",
   "type": "worker",
   "capabilities": {
     "tools": [
@@ -1046,7 +1046,7 @@ actions:
 {
   "ossa": "1.0.0",
   "name": "drupal-content-moderator",
-  "version": "0.3.0",
+  "version": "0.3.2",
   "type": "worker",
   "description": "AI content moderation for Drupal",
   "capabilities": {
@@ -1149,7 +1149,7 @@ console.log(`Created assistant: ${assistant.id}`);
 {
   "ossa": "1.0.0",
   "name": "code-reviewer",
-  "version": "0.3.0",
+  "version": "0.3.2",
   "type": "worker",
   "description": "AI code review assistant",
   "capabilities": {
