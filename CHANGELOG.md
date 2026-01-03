@@ -13,7 +13,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- Improve schema page responsiveness + fix CI workflow rules
 - Remove unsupported regex operators from GitLab CI rules
 - Allow v0.3.x schema versions in documentation validation
 - Improve schema page responsiveness + fix CI workflow rules
