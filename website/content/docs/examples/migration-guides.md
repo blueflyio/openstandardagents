@@ -125,7 +125,7 @@ agent = create_agent(llm, tools)
 
 **After** (OSSA):
 ```yaml
-apiVersion: ossa/v0.3.0
+apiVersion: ossa/v0.3.2
 kind: Agent
 spec:
   role: Agent description
