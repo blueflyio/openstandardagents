@@ -2,8 +2,8 @@
   "stable": "0.3.2",
   "stableTag": "v0.3.2",
   "latest": "0.3.2",
-  "dev": "0.3.3-dev",
-  "devTag": "v0.3.3-dev",
+  "dev": "0.2.5-dev",
+  "devTag": "v0.2.5-dev",
   "all": [
     {
       "version": "0.3.2",
