@@ -138,10 +138,12 @@ ossa run agent.ossa.yaml --max-turns 10
 
 | Runtime | Status | Provider |
 |---------|--------|----------|
-| openai | Available | OpenAI API |
-| anthropic | Coming Soon | Anthropic Claude |
-| ollama | Coming Soon | Local LLMs |
-| gemini | Coming Soon | Google AI |
+| openai | ✅ Available | OpenAI API |
+| anthropic | 🔄 v0.4.0 | Anthropic Claude |
+| ollama | 🔄 v0.4.0 | Local LLMs |
+| gemini | 🔄 v0.4.0 | Google AI |
+
+> **Note**: Multi-runtime support is planned for v0.4.0. Currently, use the OpenAI runtime with any OpenAI-compatible API.
 
 ## Adding Tools
 

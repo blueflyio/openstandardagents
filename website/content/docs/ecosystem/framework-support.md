@@ -80,19 +80,19 @@ User Input → Agent Execution → Tool Calls → LLM Responses → Output
 
 | Framework | Status | OSSA Version | Migration Complexity | Documentation |
 |-----------|--------|--------------|---------------------|---------------|
-| kAgent | ✅ Native | 1.0.0+ | N/A (Native) | [Docs](#kagent) |
-| LangChain | ✅ Supported | 1.0.0+ | Low | [Docs](#langchain) |
-| LangGraph | ✅ Supported | 1.0.0+ | Low | [Docs](#langgraph) |
-| CrewAI | ✅ Supported | 1.0.0+ | Medium | [Docs](#crewai) |
-| AutoGen | ✅ Supported | 1.0.0+ | Medium | [Docs](#autogen) |
-| Semantic Kernel | ✅ Supported | 1.0.0+ | Medium | [Docs](#semantic-kernel) |
-| Anthropic MCP | ✅ Supported | 1.0.0+ | Low | [Docs](#anthropic-mcp) |
-| Langflow | ✅ Supported | 1.0.0+ | Low | [Docs](#langflow) |
-| LlamaIndex | ✅ Supported | 1.0.0+ | Low | [Docs](#llamaindex) |
-| Haystack | 🔄 Planned | 1.1.0+ | Medium | Coming Soon |
-| Drupal ECA | ✅ Supported | 1.0.0+ | Medium | [Docs](#drupal-eca) |
-| OpenAI Assistants | ✅ Supported | 1.0.0+ | Medium | [Docs](#openai-assistants) |
-| Vercel AI SDK | 🔄 Planned | 1.1.0+ | Low | Coming Soon |
+| kAgent | ✅ Native | 0.3.0+ | N/A (Native) | [Docs](#kagent) |
+| LangChain | ✅ Supported | 0.3.0+ | Low | [Docs](#langchain) |
+| LangGraph | ✅ Supported | 0.3.0+ | Low | [Docs](#langgraph) |
+| CrewAI | ✅ Supported | 0.3.0+ | Medium | [Docs](#crewai) |
+| AutoGen | ✅ Supported | 0.3.0+ | Medium | [Docs](#autogen) |
+| Semantic Kernel | ✅ Supported | 0.3.0+ | Medium | [Docs](#semantic-kernel) |
+| Anthropic MCP | ✅ Supported | 0.3.0+ | Low | [Docs](#anthropic-mcp) |
+| Langflow | ✅ Supported | 0.3.0+ | Low | [Docs](#langflow) |
+| LlamaIndex | ✅ Supported | 0.3.0+ | Low | [Docs](#llamaindex) |
+| Haystack | 🔄 Planned | 0.4.0+ | Medium | Planned |
+| Drupal ECA | ✅ Supported | 0.3.0+ | Medium | [Docs](#drupal-eca) |
+| OpenAI Assistants | ✅ Supported | 0.3.0+ | Medium | [Docs](#openai-assistants) |
+| Vercel AI SDK | 🔄 Planned | 0.4.0+ | Low | Planned |
 
 **Legend:**
 - ✅ **Native**: Built on OSSA from the ground up

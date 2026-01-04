@@ -86,7 +86,7 @@ Best for:
 
 ```yaml
 # Example: Delegation request
-apiVersion: ossa/v0.3.0
+apiVersion: ossa/v0.3.2
 kind: DelegationRequest
 metadata:
   request_id: "req-456"

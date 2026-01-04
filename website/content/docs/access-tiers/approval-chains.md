@@ -49,7 +49,7 @@ Action Executed
 #### Configuration Example
 
 ```yaml
-apiVersion: ossa/v0.3.0
+apiVersion: ossa/v0.3.2
 kind: Agent
 
 metadata:
@@ -109,7 +109,7 @@ Action Executed
 #### Configuration Example
 
 ```yaml
-apiVersion: ossa/v0.3.0
+apiVersion: ossa/v0.3.2
 kind: Agent
 
 metadata:
@@ -198,7 +198,7 @@ Action Executed
 #### Configuration Example
 
 ```yaml
-apiVersion: ossa/v0.3.0
+apiVersion: ossa/v0.3.2
 kind: Agent
 
 metadata:
@@ -340,7 +340,7 @@ autonomy:
 ### Agent-Side Configuration
 
 ```yaml
-apiVersion: ossa/v0.3.0
+apiVersion: ossa/v0.3.2
 kind: Agent
 
 metadata:
@@ -382,7 +382,7 @@ spec:
 Governors can pre-approve operations within policy bounds:
 
 ```yaml
-apiVersion: ossa/v0.3.0
+apiVersion: ossa/v0.3.2
 kind: Agent
 
 metadata:
@@ -508,7 +508,7 @@ approval_chains:
 ### Using Custom Chains
 
 ```yaml
-apiVersion: ossa/v0.3.0
+apiVersion: ossa/v0.3.2
 kind: Agent
 
 metadata:

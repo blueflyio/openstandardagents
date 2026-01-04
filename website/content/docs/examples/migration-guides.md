@@ -24,24 +24,16 @@ Migrate agents from existing frameworks to OSSA format.
 - LangChain: Framework-specific
 - OSSA: Framework-agnostic
 
-### Anthropic SDK → OSSA
+### Anthropic MCP → OSSA
 
-**Status**: Coming soon
+**Status**: ✅ Available via MCP Extension
 
-**Will Cover**:
-- Anthropic SDK agent structure
-- Tool definitions
-- Message handling
-- Migration patterns
+OSSA integrates with Anthropic's Model Context Protocol. See [MCP Integration](/docs/ecosystem/framework-support#anthropic-mcp) for details.
 
-### MCP-Only Agents → OSSA
-
-**Status**: Coming soon
-
-**Will Cover**:
+**Covers**:
 - MCP server integration
-- Tool exposure
-- Protocol bridging
+- Tool exposure via MCP
+- Protocol bridging between OSSA and MCP
 
 ### Custom Framework → OSSA
 
