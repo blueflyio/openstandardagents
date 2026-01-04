@@ -17,7 +17,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- Allow v0.3.x schema versions in documentation validation
 - Improve schema page responsiveness + fix CI workflow rules
 - Use explicit gitlab.com instead of $CI_SERVER_FQDN
 - Correct version to 0.3.1
