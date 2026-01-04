@@ -1,44 +1,44 @@
 {
   "version": "0.3.2",
-  "releaseDate": "2026-01-04",
-  "overview": "OSSA v0.3.2 introduces enterprise governance with Access Tiers, Separation of Duties, and Taxonomy Classification for production-ready multi-agent systems.",
+  "releaseDate": "2025-12-31",
+  "overview": "The latest OSSA release brings enterprise-grade specifications for production multi-agent systems.",
   "features": [],
   "categories": [],
   "homepage": [
     {
-      "title": "Access Tiers & Governance",
+      "title": "Enterprise Security",
       "color": "green",
       "bullets": [
-        "Tiered access control (read, write, execute, admin)",
-        "Separation of Duties enforcement for compliance",
-        "Taxonomy Classification for agent categorization"
+        "Formal security model with authentication & authorization",
+        "Secrets management & sandboxing requirements",
+        "FedRAMP, SOC2, HIPAA compliance profiles"
       ]
     },
     {
-      "title": "Agent Identity & Delegation",
+      "title": "Multi-Agent Orchestration",
       "color": "blue",
       "bullets": [
-        "AgentIdentity for cryptographic identity verification",
-        "DelegationConfig for controlled capability sharing",
-        "Fine-grained permission boundaries"
+        "A2A Protocol for agent-to-agent communication",
+        "Capability URI scheme with registry format",
+        "Instance, session, and interaction IDs"
       ]
     },
     {
-      "title": "Kubernetes Native",
+      "title": "Observability",
       "color": "purple",
       "bullets": [
-        "KubernetesConfig for native K8s deployment",
-        "Pod security contexts and resource limits",
-        "Service mesh integration patterns"
+        "OpenTelemetry semantic conventions",
+        "Reasoning trace export (ReAct, CoT, ToT)",
+        "Versioned prompt template management"
       ]
     },
     {
-      "title": "Enhanced LLM Configuration",
+      "title": "Developer Experience",
       "color": "orange",
       "bullets": [
-        "Multi-model fallback chains",
-        "Cost tracking and budget controls",
-        "Execution profiles for different environments"
+        "Conformance testing (Basic, Standard, Enterprise)",
+        "agents.md & llms.txt integration",
+        "Enhanced CLI validation tools"
       ]
     }
   ]
