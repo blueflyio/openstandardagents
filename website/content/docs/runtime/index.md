@@ -24,7 +24,7 @@ The runtime specification consists of several key components:
 Define runtime configuration in your agent manifest:
 
 ```yaml
-apiVersion: ossa/v0.3.0
+apiVersion: ossa/v0.3.2
 kind: Agent
 
 metadata:
@@ -70,7 +70,7 @@ Multiple timeout levels protect against runaway executions:
 Agents run in isolated sandboxes to prevent unauthorized access:
 
 ```yaml
-apiVersion: ossa/v0.3.0
+apiVersion: ossa/v0.3.2
 kind: RuntimeSpec
 
 execution:
@@ -256,7 +256,7 @@ backup:
 ## Complete Example
 
 ```yaml
-apiVersion: ossa/v0.3.0
+apiVersion: ossa/v0.3.2
 kind: RuntimeSpec
 
 lifecycle:

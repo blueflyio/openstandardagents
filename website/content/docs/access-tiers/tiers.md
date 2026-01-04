@@ -67,7 +67,7 @@ tier_4_policy        Policy governors (isolated)
 ### Configuration
 
 ```yaml
-apiVersion: ossa/v0.3.0
+apiVersion: ossa/v0.3.2
 kind: Agent
 
 metadata:
@@ -174,7 +174,7 @@ spec:
 ### Configuration
 
 ```yaml
-apiVersion: ossa/v0.3.0
+apiVersion: ossa/v0.3.2
 kind: Agent
 
 metadata:
@@ -300,7 +300,7 @@ approval_chain:
 ### Configuration
 
 ```yaml
-apiVersion: ossa/v0.3.0
+apiVersion: ossa/v0.3.2
 kind: Agent
 
 metadata:
@@ -442,7 +442,7 @@ Tier 4 agents have **strict isolation**:
 ### Configuration
 
 ```yaml
-apiVersion: ossa/v0.3.0
+apiVersion: ossa/v0.3.2
 kind: Agent
 
 metadata:

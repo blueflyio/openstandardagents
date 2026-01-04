@@ -244,7 +244,7 @@ ossa migrate agent.ossa.yaml --from v0.2.9 --to v0.3.2
 #### Example Configuration
 
 ```yaml
-apiVersion: ossa/v0.3.0
+apiVersion: ossa/v0.3.2
 kind: Agent
 metadata:
   name: production-agent

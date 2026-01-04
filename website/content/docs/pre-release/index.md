@@ -166,10 +166,9 @@ We welcome feedback on development specifications:
 
 | Version | Focus | Status | Target |
 |---------|-------|--------|--------|
-| v0.3.0 | Documentation & Examples | **Stable** | Released |
-| v0.3.0 | Transport & Security | Development | Feb 2025 |
-| v0.2.8-RC | Multi-Agent Composition | Development | Mar 2025 |
-| v0.3.0 | Gamma Release | Planned | Apr 2025 |
-| v1.0.0 | Genesis Release | Planned | TBD |
+| v0.3.2 | Access Tiers & Governance | **Stable** | Released |
+| v0.3.3 | Runtime SDK & Task Schema | Development | Q1 2026 |
+| v0.4.0 | Multi-Runtime Support | Planned | Q2 2026 |
+| v1.0.0 | Genesis Release | Planned | 2026 |
 
-See [milestones](https://github.com/blueflyio/openstandardagents/milestones) for full details.
+See [milestones](https://gitlab.com/blueflyio/openstandardagents/-/milestones) for full details.

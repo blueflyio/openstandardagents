@@ -1,10 +1,19 @@
 {
   "stable": "0.3.2",
   "stableTag": "v0.3.2",
-  "latest": "0.3.2",
-  "dev": "0.2.5-dev",
-  "devTag": "v0.2.5-dev",
+  "latest": "0.3.3",
+  "latestTag": "v0.3.3-rc.1",
+  "dev": "0.3.3-dev.3",
+  "devTag": "v0.3.3-dev.3",
   "all": [
+    {
+      "version": "0.3.3",
+      "tag": "v0.3.3-rc.1",
+      "apiVersion": "ossa/v0.3.3",
+      "type": "prerelease",
+      "published": false,
+      "available": true
+    },
     {
       "version": "0.3.2",
       "tag": "v0.3.2",
@@ -25,22 +34,6 @@
       "version": "0.3.0",
       "tag": "v0.3.0",
       "apiVersion": "ossa/v0.3.0",
-      "type": "stable",
-      "published": true,
-      "available": true
-    },
-    {
-      "version": "0.2.4",
-      "tag": "v0.2.4",
-      "apiVersion": "ossa/v0.2.4",
-      "type": "stable",
-      "published": true,
-      "available": true
-    },
-    {
-      "version": "0.2.5-RC",
-      "tag": "v0.2.5-RC",
-      "apiVersion": "ossa/v0.2.5-RC",
       "type": "stable",
       "published": true,
       "available": true
@@ -70,18 +63,34 @@
       "available": true
     },
     {
-      "version": "0.1.9",
-      "tag": "v0.1.9",
-      "apiVersion": "ossa/v0.1.9",
+      "version": "0.2.6",
+      "tag": "v0.2.6",
+      "apiVersion": "ossa/v0.2.6",
+      "type": "stable",
+      "published": true,
+      "available": true
+    },
+    {
+      "version": "0.2.5",
+      "tag": "v0.2.5",
+      "apiVersion": "ossa/v0.2.5",
+      "type": "stable",
+      "published": true,
+      "available": true
+    },
+    {
+      "version": "0.2.4",
+      "tag": "v0.2.4",
+      "apiVersion": "ossa/v0.2.4",
       "type": "stable",
       "published": true,
       "available": true
     }
   ],
   "githubTags": {
-    "latestStable": null,
-    "latestDev": null,
-    "total": 0
+    "latestStable": "v0.3.2",
+    "latestDev": "v0.3.3-dev.3",
+    "total": 20
   },
-  "fallbackVersion": "0.2.3"
+  "fallbackVersion": "0.3.2"
 }

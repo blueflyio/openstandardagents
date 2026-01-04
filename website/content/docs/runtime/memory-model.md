@@ -18,7 +18,7 @@ The memory model consists of three main components:
 ## Memory Model Schema
 
 ```yaml
-apiVersion: ossa/v0.3.0
+apiVersion: ossa/v0.3.2
 kind: MemoryModel
 
 short_term:
@@ -57,7 +57,7 @@ Short-term memory is volatile and typically cleared between agent invocations. I
 Manages the conversation history window available to the agent:
 
 ```yaml
-apiVersion: ossa/v0.3.0
+apiVersion: ossa/v0.3.2
 kind: MemoryModel
 
 short_term:
@@ -86,7 +86,7 @@ short_term:
 A scratchpad for intermediate computations during agent execution:
 
 ```yaml
-apiVersion: ossa/v0.3.0
+apiVersion: ossa/v0.3.2
 kind: MemoryModel
 
 short_term:
@@ -107,7 +107,7 @@ short_term:
 Manages session-level state for multi-turn interactions:
 
 ```yaml
-apiVersion: ossa/v0.3.0
+apiVersion: ossa/v0.3.2
 kind: MemoryModel
 
 short_term:
@@ -134,7 +134,7 @@ Long-term memory provides persistent storage for knowledge, learned patterns, an
 ### Storage Types
 
 ```yaml
-apiVersion: ossa/v0.3.0
+apiVersion: ossa/v0.3.2
 kind: MemoryModel
 
 long_term:
@@ -156,7 +156,7 @@ long_term:
 Structured knowledge storage with versioning:
 
 ```yaml
-apiVersion: ossa/v0.3.0
+apiVersion: ossa/v0.3.2
 kind: MemoryModel
 
 long_term:
@@ -177,7 +177,7 @@ long_term:
 Vector embeddings for semantic search and retrieval:
 
 ```yaml
-apiVersion: ossa/v0.3.0
+apiVersion: ossa/v0.3.2
 kind: MemoryModel
 
 long_term:
@@ -212,7 +212,7 @@ long_term:
 Persistent archive of conversation history:
 
 ```yaml
-apiVersion: ossa/v0.3.0
+apiVersion: ossa/v0.3.2
 kind: MemoryModel
 
 long_term:
@@ -228,7 +228,7 @@ long_term:
 Checkpointing for agent state across invocations:
 
 ```yaml
-apiVersion: ossa/v0.3.0
+apiVersion: ossa/v0.3.2
 kind: MemoryModel
 
 long_term:
@@ -244,7 +244,7 @@ long_term:
 Storage for learned behaviors and user preferences:
 
 ```yaml
-apiVersion: ossa/v0.3.0
+apiVersion: ossa/v0.3.2
 kind: MemoryModel
 
 long_term:
@@ -285,7 +285,7 @@ All memory providers MUST implement a standard interface for interoperability.
 Every provider MUST implement these operations:
 
 ```yaml
-apiVersion: ossa/v0.3.0
+apiVersion: ossa/v0.3.2
 kind: MemoryModel
 
 provider_interface:
@@ -369,7 +369,7 @@ provider_interface:
 Automatic cleanup of expired or unused memory:
 
 ```yaml
-apiVersion: ossa/v0.3.0
+apiVersion: ossa/v0.3.2
 kind: MemoryModel
 
 lifecycle:
@@ -396,7 +396,7 @@ lifecycle:
 Memory backup configuration:
 
 ```yaml
-apiVersion: ossa/v0.3.0
+apiVersion: ossa/v0.3.2
 kind: MemoryModel
 
 lifecycle:
@@ -413,7 +413,7 @@ lifecycle:
 Memory compaction for fragmentation:
 
 ```yaml
-apiVersion: ossa/v0.3.0
+apiVersion: ossa/v0.3.2
 kind: MemoryModel
 
 lifecycle:
@@ -428,7 +428,7 @@ lifecycle:
 Configuration for migrating between providers:
 
 ```yaml
-apiVersion: ossa/v0.3.0
+apiVersion: ossa/v0.3.2
 kind: MemoryModel
 
 lifecycle:
@@ -445,7 +445,7 @@ lifecycle:
 Configure connections to memory providers:
 
 ```yaml
-apiVersion: ossa/v0.3.0
+apiVersion: ossa/v0.3.2
 kind: MemoryModel
 
 short_term:
@@ -476,7 +476,7 @@ long_term:
 A production-ready memory model configuration:
 
 ```yaml
-apiVersion: ossa/v0.3.0
+apiVersion: ossa/v0.3.2
 kind: MemoryModel
 
 short_term:

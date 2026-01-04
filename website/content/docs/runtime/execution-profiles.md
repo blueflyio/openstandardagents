@@ -23,7 +23,7 @@ OSSA v0.3.2 defines four standard execution profiles:
 ### Basic Structure
 
 ```yaml
-apiVersion: ossa/v0.3.0
+apiVersion: ossa/v0.3.2
 kind: Agent
 
 spec:
@@ -70,7 +70,7 @@ spec:
 Optimized for quick responses and triage operations.
 
 ```yaml
-apiVersion: ossa/v0.3.0
+apiVersion: ossa/v0.3.2
 kind: Agent
 
 spec:
@@ -110,7 +110,7 @@ spec:
 Default profile for standard agent operations.
 
 ```yaml
-apiVersion: ossa/v0.3.0
+apiVersion: ossa/v0.3.2
 kind: Agent
 
 spec:
@@ -150,7 +150,7 @@ spec:
 Extended capabilities for complex analysis and reasoning.
 
 ```yaml
-apiVersion: ossa/v0.3.0
+apiVersion: ossa/v0.3.2
 kind: Agent
 
 spec:
@@ -195,7 +195,7 @@ spec:
 Compliance-grade execution with full audit trails.
 
 ```yaml
-apiVersion: ossa/v0.3.0
+apiVersion: ossa/v0.3.2
 kind: Agent
 
 spec:
@@ -286,7 +286,7 @@ LLM_PROFILE=deep ossa run my-agent
 ### Agent Manifest
 
 ```yaml
-apiVersion: ossa/v0.3.0
+apiVersion: ossa/v0.3.2
 kind: Agent
 
 spec:
@@ -305,7 +305,7 @@ spec:
 Agents can switch profiles during execution based on task requirements:
 
 ```yaml
-apiVersion: ossa/v0.3.0
+apiVersion: ossa/v0.3.2
 kind: Agent
 
 spec:
@@ -328,7 +328,7 @@ spec:
 A security scanner agent with profile-aware execution:
 
 ```yaml
-apiVersion: ossa/v0.3.0
+apiVersion: ossa/v0.3.2
 kind: Agent
 
 metadata:

@@ -51,10 +51,10 @@ Select the runtime adapter to use for agent execution.
 **Available runtimes:**
 - `openai` - OpenAI API (GPT-4, GPT-3.5, etc.)
 
-**Coming soon:**
+**Planned for v0.4.0:**
 - `anthropic` - Anthropic Claude
-- `ollama` - Local LLMs
-- `gemini` - Google AI
+- `ollama` - Local LLMs via Ollama
+- `gemini` - Google Gemini AI
 
 **Examples:**
 ```bash

@@ -5,6 +5,26 @@ All notable changes to OSSA will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.2] - 2026-01-03
+
+### Added
+
+- **Access Tiers & Governance**: New AccessTier, SeparationOfDuties, and TaxonomyClassification definitions
+- **Agent Identity & Delegation**: AgentIdentity for cryptographic verification, DelegationConfig for capability sharing
+- **Kubernetes Native**: KubernetesConfig for native K8s deployment with pod security contexts
+- **Enhanced LLM Configuration**: ExecutionProfiles, CostTracking, and multi-model fallback chains
+
+### Changed
+
+- Updated `@bluefly/openstandardagents` dependency to 0.3.2
+- Updated release-highlights.json with v0.3.2 features for dynamic homepage
+- Synced documentation with latest OSSA spec changes
+
+### Fixed
+
+- Version sync now correctly reflects 0.3.2 in version.ts
+- Package.json versions aligned across root and website workspaces
+
 ## [Unreleased]
 
 ### Documentation
