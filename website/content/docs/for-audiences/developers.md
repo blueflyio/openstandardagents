@@ -66,7 +66,7 @@ See: [Migration Guide: LangChain](../Examples/Migration-Guides/from-langchain-to
 
 ### Anthropic SDK → OSSA
 
-Coming soon: Anthropic SDK migration guide
+OSSA supports Anthropic's Model Context Protocol (MCP) natively. See the [MCP Integration Guide](/docs/ecosystem/framework-support#anthropic-mcp) for details on using Claude with OSSA agents.
 
 ### Custom Framework → OSSA
 

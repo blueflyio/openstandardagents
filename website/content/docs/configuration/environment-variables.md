@@ -45,7 +45,7 @@ OSSA agents support runtime configuration through environment variables.
 ## Usage in Manifests
 
 ```yaml
-apiVersion: ossa/v0.3.0
+apiVersion: ossa/v0.3.2
 kind: Agent
 
 spec:

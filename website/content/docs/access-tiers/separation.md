@@ -36,7 +36,7 @@ Agents that review or critique cannot also approve or execute:
 #### Implementation
 
 ```yaml
-apiVersion: ossa/v0.3.0
+apiVersion: ossa/v0.3.2
 kind: Agent
 
 metadata:
@@ -116,7 +116,7 @@ Policy-defining agents cannot execute policies:
 #### Implementation
 
 ```yaml
-apiVersion: ossa/v0.3.0
+apiVersion: ossa/v0.3.2
 kind: Agent
 
 metadata:
@@ -212,7 +212,7 @@ exceptions:
 #### Implementation
 
 ```yaml
-apiVersion: ossa/v0.3.0
+apiVersion: ossa/v0.3.2
 kind: Agent
 
 metadata:
@@ -286,7 +286,7 @@ Agents modifying production must have explicit elevation:
 #### Implementation
 
 ```yaml
-apiVersion: ossa/v0.3.0
+apiVersion: ossa/v0.3.2
 kind: Agent
 
 metadata:

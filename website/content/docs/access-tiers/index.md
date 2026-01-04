@@ -23,7 +23,7 @@ The Access Tiers system provides:
 Every agent must declare exactly one access tier in its manifest:
 
 ```yaml
-apiVersion: ossa/v0.3.0
+apiVersion: ossa/v0.3.2
 kind: Agent
 
 metadata:
@@ -97,7 +97,7 @@ ossa validate my-agent.ossa.yaml --check access-tier
 ## Example: Complete Agent with Access Tier
 
 ```yaml
-apiVersion: ossa/v0.3.0
+apiVersion: ossa/v0.3.2
 kind: Agent
 
 metadata:

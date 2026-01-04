@@ -490,7 +490,7 @@ eventSource.addEventListener('status', (event) => {
 ### OSSA Agent Manifest with SSE
 
 ```yaml
-apiVersion: ossa/v0.3.0
+apiVersion: ossa/v0.3.2
 kind: Agent
 metadata:
   name: event-streamer

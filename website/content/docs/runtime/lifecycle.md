@@ -36,7 +36,7 @@ The init phase handles all setup required before the agent can begin processing 
 **Configuration**:
 
 ```yaml
-apiVersion: ossa/v0.3.0
+apiVersion: ossa/v0.3.2
 kind: RuntimeSpec
 
 lifecycle:
@@ -391,7 +391,7 @@ control_signals:
 ## Complete Configuration Example
 
 ```yaml
-apiVersion: ossa/v0.3.0
+apiVersion: ossa/v0.3.2
 kind: RuntimeSpec
 
 lifecycle:
