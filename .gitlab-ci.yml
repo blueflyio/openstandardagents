@@ -167,7 +167,6 @@ sync:auto:
   stage: sync
   image: node:${NODE_VERSION}-alpine
   tags: []
-  allow_failure: true  # CI token can't push to protected branches
   variables:
     NODE_ENV: production
     GIT_STRATEGY: clone
@@ -293,15 +292,14 @@ validate:documentation:
       # Validate schema references
       echo "Validating schema URLs..."
       OUTDATED_REFS=$(grep -r "openstandardagents.org/schemas" content/docs/ | \
-        grep -v "v0.3.2" | \
-        grep -v "v0.3.1" | \
+        grep -v "v0.3" | \
         grep -v "v1" | \
         grep -v "migration" | \
         grep -v "migration-guides" | \
         grep -v "/examples/" | \
         grep -v "/pre-release/" || true)
       if [ -n "$OUTDATED_REFS" ]; then
-        echo "ERROR: Found outdated schema references (not v0.3.2, v0.3.1 or v1):"
+        echo "ERROR: Found outdated schema references (not v0.3.x or v1):"
         echo "$OUTDATED_REFS"
         exit 1
       else
@@ -406,9 +404,9 @@ validate:llms-txt:
         fi
       fi
 
-      # Validate schema URL format
-      if ! grep -q "openstandardagents.org/schemas/v0.3.2/agent.json" website/public/llms.txt; then
-        echo "ERROR: Missing or incorrect schema URL for v0.3.2"
+      # Validate schema URL format (check for current stable version)
+      if ! grep -q "openstandardagents.org/schemas/v0.3" website/public/llms.txt; then
+        echo "ERROR: Missing schema URL for v0.3.x"
         exit 1
       fi
 
@@ -677,7 +675,7 @@ quality:metrics:
 # - Main branch: Manual "Go Live" button deploys to GitLab Pages
 
 # =============================================================================
-# PRODUCTION - GitLab Pages (Manual Deploy)
+# PRODUCTION - GitLab Pages (Auto Deploy on Main)
 # =============================================================================
 # The special "pages" job name triggers GitLab Pages deployment
 # This creates the public/ artifact that becomes the live site
@@ -704,15 +702,9 @@ pages:
     paths:
       - public
     expire_in: 30 days
-  environment:
-    name: production
-    url: https://openstandardagents.org
-    deployment_tier: production
   rules:
-    # Manual deploy button on main branch
+    # Auto-deploy to Pages on main branch
     - if: $CI_COMMIT_BRANCH == "main"
-      when: manual
-  resource_group: production
 
 # =============================================================================
 # NOTIFICATIONS
@@ -877,7 +869,6 @@ detect:version:
 changelog:generate:
   stage: release
   image: alpine:latest
-  allow_failure: true  # CI token can't push to protected branches
   needs:
     - detect:version
   before_script:
@@ -918,16 +909,15 @@ changelog:generate:
     paths:
       - CHANGELOG.md
     expire_in: 30 days
+  # Only run on release branches - main is protected and requires special token setup
   rules:
     - if: $CI_COMMIT_BRANCH =~ /^release\/v/ && $CI_COMMIT_MESSAGE !~ /\[skip ci\]/
-      when: on_success
-    - if: $CI_COMMIT_BRANCH == "main" && $CI_COMMIT_MESSAGE !~ /\[skip ci\]/
       when: on_success
 
 # =============================================================================
 # RELEASE TAGGING
 # =============================================================================
-# On release/* branches: Create pre-release tags (v0.3.1-dev, v0.3.1-dev1, etc.)
+# On release/* branches: Create pre-release tags (v0.X.Y-dev, v0.X.Y-dev1, etc.)
 release:pre-release:
   stage: release
   image: alpine:latest
@@ -1019,132 +1009,11 @@ release:rc:
     - if: $CI_COMMIT_BRANCH == "main"
       when: on_success
 
-# Manual: Promote latest RC to final release
-# Creates v0.3.X tag + GitLab Release
-release:promote-rc-to-final:
-  stage: release
-  image: alpine:latest
-  needs:
-    - detect:version
-  before_script:
-    - apk add --no-cache git bash curl jq
-    - git config user.email "ci@gitlab.com"
-    - git config user.name "GitLab CI"
-    - git remote set-url origin "https://oauth2:${GITLAB_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git"
-    - git fetch --tags
-  script:
-    - |
-      if [ -f build.env ]; then
-        source build.env
-
-        FINAL_TAG="v${VERSION}"
-        echo "Promoting to final release: ${FINAL_TAG}"
-
-        # Check if final tag already exists
-        if git rev-parse "${FINAL_TAG}" >/dev/null 2>&1; then
-          echo "Final tag ${FINAL_TAG} already exists!"
-          exit 1
-        fi
-
-        # Find latest RC tag for this version
-        LATEST_RC=$(git tag -l "v${VERSION}-rc.*" | sort -V | tail -1)
-        if [ -z "$LATEST_RC" ]; then
-          echo "ERROR: No RC tags found for v${VERSION}"
-          exit 1
-        fi
-
-        echo "Promoting ${LATEST_RC} → ${FINAL_TAG}"
-
-        # Create final tag pointing to same commit as latest RC
-        RC_COMMIT=$(git rev-list -n 1 "${LATEST_RC}")
-        git tag -a "${FINAL_TAG}" "${RC_COMMIT}" \
-          -m "Release: ${FINAL_TAG}" \
-          -m "Promoted from: ${LATEST_RC}" \
-          -m "Pipeline: ${CI_PIPELINE_ID}"
-
-        # Push final tag
-        git push origin "${FINAL_TAG}"
-
-        # Generate release notes
-        PREV_TAG=$(git tag -l "v*" | grep -v rc | grep -v dev | sort -V | tail -2 | head -1)
-        if [ -n "$PREV_TAG" ] && [ "$PREV_TAG" != "$FINAL_TAG" ]; then
-          RELEASE_NOTES=$(git log --pretty=format:"- %s (%h)" ${PREV_TAG}..${RC_COMMIT})
-        else
-          RELEASE_NOTES=$(git log --pretty=format:"- %s (%h)" -20 ${RC_COMMIT})
-        fi
-
-        # Create GitLab Release
-        # Create GitLab Release
-        RELEASE_DESC="## Release ${FINAL_TAG}\n\nPromoted from ${LATEST_RC}\n\n### Changes\n\n${RELEASE_NOTES}"
-        RELEASE_RESPONSE=$(curl -s --request POST \
-          --header "PRIVATE-TOKEN: ${GITLAB_TOKEN}" \
-          --header "Content-Type: application/json" \
-          --data "{\"name\": \"Release ${FINAL_TAG}\", \"tag_name\": \"${FINAL_TAG}\", \"description\": \"${RELEASE_DESC}\"}" \
-          "https://${CI_SERVER_HOST}/api/v4/projects/${CI_PROJECT_ID}/releases")
-
-        if echo "$RELEASE_RESPONSE" | jq -e '.tag_name' >/dev/null 2>&1; then
-          echo "SUCCESS: Created GitLab Release: ${FINAL_TAG}"
-        else
-          echo "WARNING: Failed to create GitLab Release: ${RELEASE_RESPONSE}"
-        fi
-
-        echo "SUCCESS: Promoted ${LATEST_RC} → ${FINAL_TAG}"
-        echo "REF:  To publish to npm: Click 'release:npm' job"
-      else
-        echo "WARNING: build.env not found"
-        exit 1
-      fi
-  rules:
-    - if: $CI_COMMIT_BRANCH == "main"
-      when: manual
-      # Allow failures on MRs and release branches, but require passing on main (production)
-  # This prevents blocking deployments for minor violations during development work while ensuring production quality
-  allow_failure: true
-
-# Manual: Publish to npm
-release:npm:
-  stage: release
-  image: node:20-alpine
-  needs:
-    - detect:version
-    - build:website
-  before_script:
-    - apk add --no-cache git
-    - git fetch --tags
-  script:
-    - |
-      if [ -f build.env ]; then
-        source build.env
-
-        FINAL_TAG="v${VERSION}"
-
-        # Verify final tag exists (must promote RC first)
-        if ! git rev-parse "${FINAL_TAG}" >/dev/null 2>&1; then
-          echo "ERROR: Final tag ${FINAL_TAG} not found!"
-          echo "   You must run 'release:promote-rc-to-final' first"
-          exit 1
-        fi
-
-        echo "Publishing ${FINAL_TAG} to npm..."
-
-        # Configure npm auth
-        echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > ~/.npmrc
-
-        # Publish packages (add your publish commands here)
-        # Example for monorepo:
-        # cd website && npm publish --access public
-
-        echo "SUCCESS: Published ${FINAL_TAG} to npm"
-      else
-        echo "WARNING: build.env not found"
-        exit 1
-      fi
-  rules:
-    - if: $CI_COMMIT_BRANCH == "main"
-      when: manual
-      # Allow failures on MRs and release branches, but require passing on main (production)
-  # This prevents blocking deployments for minor violations during development work while ensuring production quality
-  allow_failure: true
+# =============================================================================
+# NOTE: release:promote-rc-to-final and release:npm jobs REMOVED
+# This is a website deployed to GitLab Pages, not an npm package.
+# Production deployment is handled by the 'pages' job above.
+# =============================================================================
 
 # =============================================================================
 # BRANCH PROTECTION - Prevent release branch deletion
