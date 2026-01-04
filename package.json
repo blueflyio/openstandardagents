@@ -47,7 +47,6 @@
     "pnpm": ">=9.0.0"
   },
   "dependencies": {
-    "@bluefly/openstandardagents": "^0.3.2",
     "zod": "^3.25.76"
   }
 }
