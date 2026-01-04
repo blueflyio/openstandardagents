@@ -18,14 +18,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- Use explicit gitlab.com instead of $CI_SERVER_FQDN
 - Correct version to 0.3.1
 - Add allow_failure to changelog and sync jobs
 - Install git before using git commands in sync:auto
-- Add rebase before push to handle race conditions
 - Remove release:npm and release:promote-rc-to-final jobs - not needed for GitLab Pages
 - Remove all release jobs, auto-deploy pages on main
-- Improve schema page responsiveness + fix CI workflow rules
 - Update OSSA_VERSION to 0.3.1 on main
 - Update versions.json to 0.3.1 on main
 - Add rebase before push in sync:auto job to handle concurrent commits
